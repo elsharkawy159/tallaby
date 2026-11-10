@@ -370,14 +370,14 @@ function mostCommon(values: readonly string[]): string | null {
   return best;
 }
 
-/** Each name once per batch: `ensureTaxonomyItem` finds or adds it in the seller's own list. */
-function taxonomyResolver(kind: "category" | "brand") {
+/** Each name once per batch: `ensureTaxonomyItem` finds or adds it in the batch store's list (F-87d). */
+function taxonomyResolver(storeId: string, kind: "category" | "brand") {
   const seen = new Map<string, Promise<string | null>>();
   return (input: { name: string } | { sourceId: string }) => {
     const key = JSON.stringify(input);
     let found = seen.get(key);
     if (!found) {
-      found = ensureTaxonomyItem(kind, input)
+      found = ensureTaxonomyItem(storeId, kind, input)
         .then((result) => (result.success ? result.data.id : null))
         .catch(() => null);
       seen.set(key, found);
@@ -532,8 +532,8 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput, optio
     const tree = await loadAllCategories();
     const storage = getServiceClient();
     const images = await importRowImages(storage, ready.map((entry) => entry.row));
-    const storeCategory = taxonomyResolver("category");
-    const storeBrand = taxonomyResolver("brand");
+    const storeCategory = taxonomyResolver(options.storeId, "category");
+    const storeBrand = taxonomyResolver(options.storeId, "brand");
 
     const prepared = ready.map((entry) => {
       const ai = copies.get(entry.row.row) ?? null;

@@ -1,4 +1,5 @@
 import { generateStructured, type GenerateContentPart } from "@workspace/ai"
+import type { TaxonomyScope } from "@workspace/lib/stores/scope/server"
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data"
 import {
   AUTOFILL_FEATURE,
@@ -26,14 +27,21 @@ export type AutofillRun = {
 }
 
 export async function autofillProduct(
-  sellerId: string,
+  /**
+   * The seller and the checked store (F-87d): the prompt names that store's own
+   * category names only (a short list the seller owns, docs/ai.md rule 2; the
+   * Tallaby category is matched in code from `categoryHint`). The names are part
+   * of the prompt, so the result cache never mixes stores.
+   */
+  taxonomy: TaxonomyScope,
   input: AutofillInput,
   /** Its own usage-log name when another feature calls this (the AI Store Builder). */
   options: { feature?: string; refId?: string } = {},
 ): Promise<AutofillRun> {
+  const { sellerId } = taxonomy
   const today = cairoToday()
-  const taxonomy = await loadSellerTaxonomyOptions(sellerId)
-  const storeCategories = taxonomy.categories.map((c) => c.nameAr || c.name).filter(Boolean)
+  const owned = await loadSellerTaxonomyOptions(taxonomy)
+  const storeCategories = owned.categories.map((c) => c.nameAr || c.name).filter(Boolean)
 
   const content: GenerateContentPart[] = [
     {

@@ -121,7 +121,7 @@ async function attempt<T, K extends string>(key: K, failed: K[], load: () => Pro
 export async function loadEditorStoreData(sellerId: string, catalog: StoreCatalogScope | null): Promise<EditorStoreData> {
   const failed: EditorStoreData["failed"] = [];
   const [brandRows, reviewRows, reviewStats, coupons] = await Promise.all([
-    attempt("brands", failed, () => sellerBrandList(sellerId)),
+    attempt("brands", failed, () => sellerBrandList(sellerId, catalog)),
     attempt("reviews", failed, () => storeReviews(sellerId, catalog, { limit: 24 })),
     attempt("reviews", failed, () => storeReviewStats(sellerId, catalog)),
     attempt("coupons", failed, () => sellerCoupons(sellerId)),

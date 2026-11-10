@@ -267,7 +267,10 @@ async function photoBytes(sellerId: string, path: string) {
 
 async function generateProduct(ctx: RunContext, build: BuildRow, product: BuilderProduct) {
   const images = (await Promise.all(product.photos.slice(0, BUILDER_LIMITS.photosPerProduct).map((path) => photoBytes(ctx.sellerId, path)))).filter((image) => image !== null);
-  const { output, cached } = await autofillProduct(ctx.sellerId, { text: productRequestText(product), images, pdf: null, current: null }, { feature: BUILDER_FEATURES.product, refId: build.id });
+  // The build's own store: its category names go in the prompt (F-87d).
+  const store = await requireStoreOf(ctx, build);
+  const taxonomy = { sellerId: ctx.sellerId, storeId: store.id, catalogSplit: await isSwitchOn("stores_catalog_split") };
+  const { output, cached } = await autofillProduct(taxonomy, { text: productRequestText(product), images, pdf: null, current: null }, { feature: BUILDER_FEATURES.product, refId: build.id });
   return { value: output as unknown, cached };
 }
 

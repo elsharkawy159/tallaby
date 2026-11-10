@@ -244,6 +244,7 @@ function AddProductForm({
     if (!name && data.sellerCategoryId) return data.sellerCategoryId;
     if (!name && !data.categoryId) return null;
     const result = await ensureTaxonomyItem(
+      productStoreId,
       "category",
       name ? { name } : { sourceId: data.categoryId },
     );

@@ -96,15 +96,16 @@ async function applyCategories(ctx: RunContext, build: BuildRow): Promise<StepOu
   const rows = fileRowsToAdd(state.fileRows);
   const names = [...new Set(rows.flatMap((row) => (row.category ? [row.category.trim()] : [])).filter(Boolean))].slice(0, MAX_CATEGORIES);
   let fallbackName: string | null = null;
+  // The build's own store: its categories are created in that store's list (F-87d).
+  const store = await requireStoreOf(ctx, build);
   if (!names.length && (rows.length || state.products.length)) {
     const industry = STORE_INDUSTRIES.find((i) => i.id === state.industryId);
-    const store = await requireStoreOf(ctx, build);
     fallbackName = industry ? (storeLocale(store) === "en" ? industry.en : industry.ar) : null;
   }
   const all = names.length ? names : fallbackName ? [fallbackName] : [];
   let created = 0;
   for (const name of all) {
-    const result = await ensureTaxonomyItem("category", { name });
+    const result = await ensureTaxonomyItem(store.id, "category", { name });
     if (result.success) created++;
   }
   return { data: { names: all, created, fallbackName } };

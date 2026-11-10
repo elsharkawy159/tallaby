@@ -5,6 +5,7 @@ import { isProActive } from "@workspace/lib/billing"
 import { claimAiCredit, getAiCreditStatus, refundAiCredit } from "@workspace/lib/billing/credits"
 import { getBillingState } from "@workspace/lib/billing/server"
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server"
+import { requireProductStore, taxonomyScopeOf } from "@/lib/products/product-store.server"
 import { createRateLimiter } from "@/lib/rate-limit.lib"
 import { autofillProduct } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.server"
 import {
@@ -87,6 +88,17 @@ export async function POST(request: NextRequest) {
   const invalid = validateAutofillInput(input)
   if (invalid) return fail(invalid)
 
+  // The page's store (F-87d): its own category names go in the prompt. Checked
+  // against the session like every store id from a client; a foreign, deleted
+  // or forged one is refused before any AI is used.
+  let taxonomy
+  try {
+    taxonomy = taxonomyScopeOf(await requireProductStore(form.get("storeId"), { read: true }))
+  } catch (error) {
+    if (isAccessError(error)) return fail("unauthorized")
+    throw error
+  }
+
   if (!burstLimiter.check(sellerId)) return fail("rateLimited")
   // Once credits are on (0136, F-57), Pro's 2,000 a month needs a higher abuse guard.
   const billing = await getBillingState().catch(() => null)
@@ -126,7 +138,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { output, cached } = await autofillProduct(sellerId, input)
+    const { output, cached } = await autofillProduct(taxonomy, input)
     if (cached) await giveBack()
     const credits = billing.usdLive ? await getAiCreditStatus(sellerId).catch(() => null) : null
     return NextResponse.json<ProductAutofillResponse>({

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { PageContainer } from "@/components/seller-ui";
-import { loadProductStorePage } from "@/lib/products/product-store.server";
+import { loadProductStorePage, taxonomyScopeOf } from "@/lib/products/product-store.server";
 import { loadSellerTaxonomyList } from "./categories-brands.data";
 import { TaxonomyManager } from "./categories-brands.client";
 import type { TaxonomyKind } from "./categories-brands.dto";
@@ -15,10 +15,14 @@ export async function taxonomyPageMetadata(kind: TaxonomyKind): Promise<Metadata
   return { title: t("pageTitle"), description: t("pageSubtitle") };
 }
 
-/** The lists are still the seller's (per store in F-87d); the URL store is checked against the session first. */
+/**
+ * The URL store is checked against the session first; the list is the store's
+ * (the seller's one list until the catalog split, F-87d). The client sends the
+ * same store id back with every action, and the server checks it again.
+ */
 export async function TaxonomyPage({ kind, storeId }: { kind: TaxonomyKind; storeId: string }) {
-  const { seller } = await loadProductStorePage(storeId);
-  const items = await loadSellerTaxonomyList(seller.sellerId, kind);
+  const ctx = await loadProductStorePage(storeId);
+  const items = await loadSellerTaxonomyList(taxonomyScopeOf(ctx), kind);
 
   return (
     <PageContainer narrow>

@@ -12,7 +12,7 @@ import { and, coupons, db, desc, eq, gte, inArray, orderItems, orders, productTr
 import { isNotNull } from "drizzle-orm";
 import { isCouponPopupTrigger, type StoreCouponOfferCandidate } from "../orders/coupon-popup.lib";
 import { getCouponChannels, getCouponProductIds } from "../orders/coupon-scope.lib";
-import { aliasedProductShownInStore, productShownInStore, type StoreCatalogScope } from "../stores/store-scope.server";
+import { aliasedProductShownInStore, productShownInStore, taxonomyInStore, type StoreCatalogScope } from "../stores/store-scope.server";
 import { BEST_SELLER_DAYS, SOLD_ORDER_STATUSES, UNSOLD_ITEM_STATUSES, couponDiscountType, isCouponLive, type CouponDiscountType, ratingStats, reviewAuthorName, type RatingStats } from "./catalog-data.lib";
 
 /** Units sold per product in this store's orders over the last `days` days. */
@@ -41,12 +41,20 @@ export async function storeProductSales(sellerId: string, storeId: string, days 
 
 export type SellerBrandRow = { id: string; name: string; nameAr: string | null; logoUrl: string | null };
 
-/** The seller's own brand list (0068), in the seller's order. */
-export async function sellerBrandList(sellerId: string, limit = 48): Promise<SellerBrandRow[]> {
+/**
+ * The seller's own brand list (0068), in the seller's order. With `catalog`
+ * and the catalog split on, only that store's brands (F-87d, `taxonomyInStore`);
+ * before the split, or with null (no store), the seller's whole list as today.
+ */
+export async function sellerBrandList(sellerId: string, catalog: StoreCatalogScope | null, limit = 48): Promise<SellerBrandRow[]> {
   return db
     .select({ id: sellerProductBrands.id, name: sellerProductBrands.name, nameAr: sellerProductBrands.nameAr, logoUrl: sellerProductBrands.logoUrl })
     .from(sellerProductBrands)
-    .where(eq(sellerProductBrands.sellerId, sellerId))
+    .where(
+      catalog
+        ? taxonomyInStore(sellerProductBrands, { sellerId, storeId: catalog.storeId, catalogSplit: catalog.catalogSplit })
+        : eq(sellerProductBrands.sellerId, sellerId),
+    )
     .orderBy(sellerProductBrands.position, sellerProductBrands.name)
     .limit(Math.min(Math.max(limit, 1), 100));
 }
@@ -79,7 +87,10 @@ export type StoreCategoryGroup = {
  * products, the seller's own first in their order, then the roots by size.
  * With `catalog` only the products that store shows count (`productInStore`,
  * scope `shown`: before the split its picks in selected mode, after it its own
- * products); null is the seller's whole account catalog.
+ * products); null is the seller's whole account catalog. After the split a
+ * product's seller category is one of its own store's (F-87d): the join also
+ * needs `spc.store_id = p.store_id`, so another store's pick of the same
+ * Tallaby category never claims the product.
  */
 export async function storeCategoryGroups(
   sellerId: string,
@@ -87,6 +98,7 @@ export async function storeCategoryGroups(
   q: Pick<typeof db, "execute"> = db,
 ): Promise<StoreCategoryGroup[]> {
   const selected = catalog ? sql`AND ${aliasedProductShownInStore("p", catalog)}` : sql``;
+  const sameStore = catalog?.catalogSplit ? sql`AND spc.store_id = p.store_id` : sql``;
   const rows = await q.execute(sql`
     WITH RECURSIVE ancestry AS (
       SELECT id, id AS root_id, parent_id FROM categories
@@ -100,7 +112,7 @@ export async function storeCategoryGroups(
              spc.image_url, spc.position, spc.created_at AS spc_created_at,
              r.id AS root_id, r.slug AS root_slug, r.name AS root_name, r.name_ar AS root_name_ar
       FROM products p
-      LEFT JOIN seller_product_categories spc ON spc.seller_id = p.seller_id
+      LEFT JOIN seller_product_categories spc ON spc.seller_id = p.seller_id ${sameStore}
         AND (spc.id = p.seller_category_id OR (p.seller_category_id IS NULL AND spc.source_category_id = p.category_id))
       LEFT JOIN ancestry a ON spc.id IS NULL AND a.id = p.category_id AND a.parent_id IS NULL
       LEFT JOIN categories r ON r.id = a.root_id

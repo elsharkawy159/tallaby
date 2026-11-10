@@ -32,7 +32,7 @@ import { setStockContext } from "@workspace/db/inventory";
 import { normalizePrice } from "@workspace/lib";
 import { resolveProductSlug } from "@workspace/lib/products/slug/server";
 import { getSellerAccess } from "@/lib/auth/seller-access";
-import { requireProductStore, requireStoreProduct } from "@/lib/products/product-store.server";
+import { assertProductTaxonomyInStore, requireProductStore, requireStoreProduct } from "@/lib/products/product-store.server";
 import {
   hasProductImage,
   nextProductStatus,
@@ -1119,7 +1119,8 @@ export async function createProduct(
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
-    const { store } = await requireProductStore(storeId);
+    const productStore = await requireProductStore(storeId);
+    const { store } = productStore;
 
     const { productUrl: _productUrl, ...rest } = data as CreateProductLegacy & {
       productUrl?: string;
@@ -1172,6 +1173,8 @@ export async function createProduct(
     if (productPayload.price != null) {
       productPayload.price = normalizeProductPricePayload(productPayload.price);
     }
+    // The bulk imports send their own category and brand here: both must be this store's (F-87d).
+    await assertProductTaxonomyInStore(productStore, productPayload);
 
     const slugsForSnapshot: { locale: string; slug: string | null }[] = [];
 
@@ -1401,7 +1404,7 @@ export async function updateProduct(
       throw new Error("Unauthorized");
     }
 
-    await requireStoreProduct(storeId, productId);
+    const productStore = await requireStoreProduct(storeId, productId);
     const before = await toSnapshot(productId);
     if (!before || before.sellerId !== session.user.id) {
       throw new Error("Product not found or unauthorized");
@@ -1443,6 +1446,8 @@ export async function updateProduct(
         productData.price
       );
     }
+    // A category or brand in the payload must be this store's (F-87d).
+    await assertProductTaxonomyInStore(productStore, productData as { sellerCategoryId?: unknown; sellerBrandId?: unknown });
 
     const updatedProduct = await db.transaction(async (tx) => {
       await setStockContext(tx, { reason: "edit", actorId: session.user.id });

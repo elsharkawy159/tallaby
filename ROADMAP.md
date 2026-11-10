@@ -1676,7 +1676,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
 - [x] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (all 6 slices built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`; switch still off)
-- [ ] F-87d Seller categories and brands per store
+- [x] F-87d Taxonomy per store: lists, pickers, product form, AI autofill names, agent categories, AI builder, discount scope, category positions, storefront brands and category groups, caches; behind `stores_catalog_split` (built and committed 2026-11-10). DB trigger `products_taxonomy_same_store` proposed for 0163 (`docs/plans/stores-separation.md` §3.2).
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
 - [ ] F-87g Top-ups and activation per store
@@ -1691,6 +1691,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87d seller categories and brands per store (dark; no migration)
+
+- One condition, `taxonomyInStore` (per seller with the switch off, `store_id = store` with it on), on every list, picker, write, reorder, delete and assignment: Categories & brands pages, product form, file import, AI builder, AI autofill (store's own names only; the Tallaby category still matched in code), category order, discount-rule category scope, agent categories (MCP `list_store_categories` says "this store's own"), storefront brands and category groups, both editors.
+- New taxonomy rows write `store_id` (0163 must not assume NULL). `createProduct`, `updateProduct` and `setProductSellerTaxonomy` refuse a category or brand outside the product's store (closes a gap where a client-sent id had only the 0068 same-seller trigger behind it). The autofill route needs a checked `storeId` before any credit is used.
+- Caches: `storefront:seller-brands:v3` keyed by store and switch; taxonomy writes purge `invalidateStoreProducts` (store tag plus seller tags).
+- Proposed for 0163: triggers `products_taxonomy_same_store` and `seller_taxonomy_store_in_use`, with invariants, rollback and an SQL test (`docs/plans/stores-separation.md` §3.2).
+- Manager review: typecheck clean everywhere (ecommerce bar the 16 known errors); tests pass: lib 1,315, dashboard 1,147, ecommerce 699, admin 102, agent 64. Integration cases written, not run (no `TEST_DATABASE_URL`).
 
 ### 2026-11-10 — F-87c slice 6: agents, AI builder, feeds and sitemap per store; F-87c complete (dark; no migration)
 

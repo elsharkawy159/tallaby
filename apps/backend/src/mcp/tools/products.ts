@@ -66,7 +66,7 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
   registerTool(server, actor, {
     name: "list_store_categories",
     title: "List store categories",
-    description: "The seller's own product categories (shown on their store), with ids for storeCategoryId and how many products each has.",
+    description: "This store's own product categories (made by the seller and shown on the store), with ids for storeCategoryId and how many products use each. Use only these ids in this store.",
     input: agentStoreRefSchema,
     scope: "store.read",
     write: false,

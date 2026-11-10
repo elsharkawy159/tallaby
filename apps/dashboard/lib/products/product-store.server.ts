@@ -1,6 +1,6 @@
 import type { SQL } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
-import { productInStore, storeHasProduct } from "@workspace/lib/stores/scope/server";
+import { productInStore, storeHasProduct, taxonomyItemsInStore, type TaxonomyScope } from "@workspace/lib/stores/scope/server";
 import type { AccessOptions } from "@/lib/auth/access.lib";
 import {
   AccessError,
@@ -57,6 +57,37 @@ export async function requireProductStore(
   const storeAccess: AccessOptions = !read && catalogSplit ? { ...access, forWrite: true } : access;
   const { seller, store } = await requireStore(typeof storeId === "string" ? storeId : "", storeAccess);
   return { seller, store, catalogSplit, inStore: productInStore(store.id, { catalogSplit, scope: "managed" }) };
+}
+
+/**
+ * The seller taxonomy scope (F-87d) of a checked store: the session's seller,
+ * the store `requireProductStore` / `loadProductStorePage` checked, and the
+ * switch read with it. Never built from a client id.
+ */
+export function taxonomyScopeOf(ctx: Pick<ProductStoreContext, "seller" | "store" | "catalogSplit">): TaxonomyScope {
+  return { sellerId: ctx.seller.sellerId, storeId: ctx.store.id, catalogSplit: ctx.catalogSplit };
+}
+
+/**
+ * A product payload's own category and brand (`sellerCategoryId`,
+ * `sellerBrandId`, when present and not empty) must be in the store's list
+ * (F-87d, `taxonomyItemsInStore`): the seller's before the split, the store's
+ * after it, so a store B product can never point at store A's category even
+ * when a client sends the id straight to createProduct / updateProduct. Throws
+ * `AccessError('not_found')`. Absent or empty values are left to the caller.
+ */
+export async function assertProductTaxonomyInStore(
+  ctx: Pick<ProductStoreContext, "seller" | "store" | "catalogSplit">,
+  data: { sellerCategoryId?: unknown; sellerBrandId?: unknown },
+): Promise<void> {
+  const pick = (value: unknown) => (value === undefined || value === null || value === "" ? null : value);
+  const sellerCategoryId = pick(data.sellerCategoryId);
+  const sellerBrandId = pick(data.sellerBrandId);
+  if (sellerCategoryId === null && sellerBrandId === null) return;
+  if ((sellerCategoryId !== null && typeof sellerCategoryId !== "string") || (sellerBrandId !== null && typeof sellerBrandId !== "string")) {
+    throw new AccessError("not_found");
+  }
+  if (!(await taxonomyItemsInStore(taxonomyScopeOf(ctx), { sellerCategoryId, sellerBrandId }))) throw new AccessError("not_found");
 }
 
 /** `requireProductStore` plus one product: a product outside the store is `not_found` (never says which). */

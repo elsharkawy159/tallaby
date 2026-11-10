@@ -13,7 +13,7 @@ import { buildEditDefaultValues } from "./edit-product.lib";
 import { getSellerProfile } from "@/actions/seller";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
-import { loadProductStorePage } from "@/lib/products/product-store.server";
+import { loadProductStorePage, taxonomyScopeOf } from "@/lib/products/product-store.server";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
 import { loadProductLinkHost } from "../../add/product-link-host.data";
@@ -51,7 +51,7 @@ export default async function EditProductPage({
       getProduct(store.id, productId),
       getAllCategories(),
       getSellerProfile(),
-      loadSellerTaxonomyOptions(sellerId),
+      loadSellerTaxonomyOptions(taxonomyScopeOf(access)),
       loadProductLinkHost(sellerId),
       loadProductSocialProof(sellerId, productId, access.inStore),
       getBillingState(),

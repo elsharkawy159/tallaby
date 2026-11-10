@@ -2,7 +2,7 @@
 
 > **Status:** Planned (owner request 2026-11-10). Planning only: no code changed and no migration run.
 > **Owner decisions already given (2026-11-10)** are in §0. The open questions in §6 were **answered by the owner on 2026-11-10** (§6 "Decided"); the tasks and migrations below follow those answers.
-> **Progress (2026-11-10):** Phase A is done and committed. F-87a: switch reader `isSwitchOn` (`packages/lib/src/stores/platform-switches.server.ts`, React `cache` wrappers in the dashboard and ecommerce apps), `primaryStoreId` / `storeOwnedBy` / `assertStoreProduct` (`packages/lib/src/stores/store-scope.server.ts`), unit tests, and the DB isolation suite skeleton `store-separation.integration.test.ts` (not run: no `TEST_DATABASE_URL`). F-87b: `0160_store_separation_columns.sql` and its drizzle mirror, **applied on staging and production 2026-11-10** (owner-approved; both switches off); `packages/db/scripts/stores-split-dry-run.sql` run read-only on both, totals in `ROADMAP.md` §7 (production: 59 copies to create, 0 orphans, 4 non-primary stores lose activation). Nothing reads the new columns yet. Next: Phase B (F-87c).
+> **Progress (2026-11-10):** Phase A is done and committed. F-87a: switch reader `isSwitchOn` (`packages/lib/src/stores/platform-switches.server.ts`, React `cache` wrappers in the dashboard and ecommerce apps), `primaryStoreId` / `storeOwnedBy` / `assertStoreProduct` (`packages/lib/src/stores/store-scope.server.ts`), unit tests, and the DB isolation suite skeleton `store-separation.integration.test.ts` (not run: no `TEST_DATABASE_URL`). F-87b: `0160_store_separation_columns.sql` and its drizzle mirror, **applied on staging and production 2026-11-10** (owner-approved; both switches off); `packages/db/scripts/stores-split-dry-run.sql` run read-only on both, totals in `ROADMAP.md` §7 (production: 59 copies to create, 0 orphans, 4 non-primary stores lose activation). Phase B: F-87c is complete and committed (slices 1–6, [`stores-separation-f87c-slices.md`](stores-separation-f87c-slices.md)). **F-87d (taxonomy per store) built 2026-11-10, uncommitted** (slices doc §10): every seller category and brand read and write goes through `taxonomyInStore`, dark behind `stores_catalog_split`; the `products_taxonomy_same_store` trigger is proposed for 0163 in §3.2 (after step 8), not written as a migration. Next: F-87e leftovers, then F-87m.
 > Money and ledger changes here are covered by the owner's request (CLAUDE.md rule 4). Every migration still goes to staging first, then to production with owner approval (rule 6).
 
 ## 0. What the owner asked for, and the decisions already made
@@ -286,7 +286,111 @@ Runs in **one transaction** (the dry run gives the size; on production today it 
 5. **Product copies:** for each (product, non-kept member store): `INSERT INTO products SELECT … gen_random_uuid(), store_id = :store, seller_category_id/brand_id mapped, same quantity, status`, then variants, translations, digital rows, quantity offers, category positions; map rows `product` / `variant`. Stock movements are written with reason `'copy'` through `set_config('tallaby.stock_reason','copy', true)`.
 6. **Cross-sells, discount rules, coupons, reviews, questions:** per §2.1.4.
 7. **Remap references:** open carts and cart items, back-in-stock subscriptions, email campaigns, builder jsonb (`jsonb_replace_ids` on drafts, live revisions, saved blocks, shared header/footer) for every store whose ids changed.
-8. **Constraints:** drop `unique_product_seller_sku_idx`, create `unique_product_store_sku_idx`; install `products_store_same_seller` and `products_taxonomy_same_store`; `CHECK (store_id IS NOT NULL) NOT VALID` then `VALIDATE`.
+8. **Constraints:** drop `unique_product_seller_sku_idx`, create `unique_product_store_sku_idx`; install `products_store_same_seller` and `products_taxonomy_same_store` (proposed SQL below, F-87d); `CHECK (store_id IS NOT NULL) NOT VALID` then `VALIDATE`.
+
+   **Taxonomy in 0163 (F-87d, 2026-11-10).** Notes for steps 4, 8 and 9, from the code built in F-87d:
+
+   - **`store_id` is already set on new taxonomy rows.** Since the F-87d deploy every new seller category and brand is written with `store_id` = the store it was added from (Products › Categories / Brands, the product form, the file import, the AI Store Builder, the MCP and in-app agent). Nothing reads it while the switch is off. Step 4 must **not assume `store_id IS NULL`**: the kept row of a category or brand goes to its own `store_id` when that store is not deleted, else to the primary store; then step 4 copies it to every other store. Rows with `store_id` NULL (made before F-87d) go to the primary store, as planned. The same applies to `products.store_id` (§3 of the slices doc).
+   - **CASCADE before the split.** `seller_product_categories.store_id` and `seller_product_brands.store_id` are `ON DELETE CASCADE` (0160). The apps only soft-delete stores, so nothing hard-deletes one today, but a hard store delete before 0163 would now remove a category the whole seller shares. Any hard delete of a store must wait for 0163, or set these columns to NULL first.
+   - **Unique keys.** `seller_product_categories_name_key` / `_source_key` and the brand pair stay `(seller_id, …)` until 0163 replaces them with `(store_id, lower(btrim(name)))` and `(store_id, source_*_id)` (§2.1.3). Until then two stores can't hold the same name (as today: one list).
+   - **`seller_categories`** (Tallaby category picks, PK `(seller_id, category_id)`) has no reader or writer in the app code (checked 2026-11-10: only the schema names it). Step 4 can copy it per store or leave it; no code depends on it.
+   - The app already refuses a cross-store category or brand with the switch on (`taxonomyItemsInStore` in `setProductSellerTaxonomy`, `assertProductTaxonomyInStore` in `createProduct` / `updateProduct`, `resolveCategories` in the agent). The trigger below makes the database refuse it for every writer.
+
+   Proposed SQL. Place it in `0163_store_catalog_split.sql` **after** step 7, once every product and taxonomy row has its store. The 0068 trigger `products_seller_taxonomy_same_seller` stays until 0165 (both pass after the split). The rollback script drops these triggers and functions first.
+
+   ```sql
+   -- A product may only use its own store's seller category and brand (F-87d).
+   -- Replaces 0068's same-seller check (that one is dropped in 0165).
+   CREATE OR REPLACE FUNCTION public.products_taxonomy_same_store()
+   RETURNS trigger
+   LANGUAGE plpgsql
+   SET search_path = public
+   AS $$
+   BEGIN
+     IF NEW.seller_category_id IS NOT NULL AND NOT EXISTS (
+       SELECT 1 FROM seller_product_categories c
+       WHERE c.id = NEW.seller_category_id
+         AND c.seller_id = NEW.seller_id
+         AND c.store_id = NEW.store_id          -- a NULL store on either side fails
+     ) THEN
+       RAISE EXCEPTION 'products: seller category % is not in store %', NEW.seller_category_id, NEW.store_id
+         USING ERRCODE = 'check_violation';
+     END IF;
+     IF NEW.seller_brand_id IS NOT NULL AND NOT EXISTS (
+       SELECT 1 FROM seller_product_brands b
+       WHERE b.id = NEW.seller_brand_id
+         AND b.seller_id = NEW.seller_id
+         AND b.store_id = NEW.store_id
+     ) THEN
+       RAISE EXCEPTION 'products: seller brand % is not in store %', NEW.seller_brand_id, NEW.store_id
+         USING ERRCODE = 'check_violation';
+     END IF;
+     RETURN NEW;
+   END;
+   $$;
+
+   DROP TRIGGER IF EXISTS products_taxonomy_same_store ON public.products;
+   CREATE TRIGGER products_taxonomy_same_store
+     BEFORE INSERT OR UPDATE OF seller_category_id, seller_brand_id, seller_id, store_id ON public.products
+     FOR EACH ROW EXECUTE FUNCTION public.products_taxonomy_same_store();
+
+   -- The other direction: a category or brand can't move to another store (or seller)
+   -- while a product of a different store still uses it.
+   CREATE OR REPLACE FUNCTION public.seller_taxonomy_store_in_use()
+   RETURNS trigger
+   LANGUAGE plpgsql
+   SET search_path = public
+   AS $$
+   BEGIN
+     IF NEW.store_id IS DISTINCT FROM OLD.store_id OR NEW.seller_id IS DISTINCT FROM OLD.seller_id THEN
+       IF (TG_TABLE_NAME = 'seller_product_categories' AND EXISTS (
+             SELECT 1 FROM products p
+             WHERE p.seller_category_id = OLD.id
+               AND (p.store_id IS DISTINCT FROM NEW.store_id OR p.seller_id <> NEW.seller_id)))
+          OR (TG_TABLE_NAME = 'seller_product_brands' AND EXISTS (
+             SELECT 1 FROM products p
+             WHERE p.seller_brand_id = OLD.id
+               AND (p.store_id IS DISTINCT FROM NEW.store_id OR p.seller_id <> NEW.seller_id))) THEN
+         RAISE EXCEPTION '%: % is used by products of another store', TG_TABLE_NAME, OLD.id
+           USING ERRCODE = 'check_violation';
+       END IF;
+     END IF;
+     RETURN NEW;
+   END;
+   $$;
+
+   DROP TRIGGER IF EXISTS seller_product_categories_store_in_use ON public.seller_product_categories;
+   CREATE TRIGGER seller_product_categories_store_in_use
+     BEFORE UPDATE OF store_id, seller_id ON public.seller_product_categories
+     FOR EACH ROW EXECUTE FUNCTION public.seller_taxonomy_store_in_use();
+   DROP TRIGGER IF EXISTS seller_product_brands_store_in_use ON public.seller_product_brands;
+   CREATE TRIGGER seller_product_brands_store_in_use
+     BEFORE UPDATE OF store_id, seller_id ON public.seller_product_brands
+     FOR EACH ROW EXECUTE FUNCTION public.seller_taxonomy_store_in_use();
+
+   -- Step 9, one more invariant: no product uses another store's category or brand.
+   DO $$
+   BEGIN
+     IF EXISTS (
+       SELECT 1 FROM products p
+       LEFT JOIN seller_product_categories c ON c.id = p.seller_category_id
+       LEFT JOIN seller_product_brands b ON b.id = p.seller_brand_id
+       WHERE (p.seller_category_id IS NOT NULL AND c.store_id IS DISTINCT FROM p.store_id)
+          OR (p.seller_brand_id IS NOT NULL AND b.store_id IS DISTINCT FROM p.store_id)
+     ) THEN
+       RAISE EXCEPTION '0163: a product uses a category or brand of another store';
+     END IF;
+   END $$;
+
+   -- Rollback (first lines of 0163_rollback.sql):
+   --   DROP TRIGGER IF EXISTS products_taxonomy_same_store ON public.products;
+   --   DROP TRIGGER IF EXISTS seller_product_categories_store_in_use ON public.seller_product_categories;
+   --   DROP TRIGGER IF EXISTS seller_product_brands_store_in_use ON public.seller_product_brands;
+   --   DROP FUNCTION IF EXISTS public.products_taxonomy_same_store();
+   --   DROP FUNCTION IF EXISTS public.seller_taxonomy_store_in_use();
+   ```
+
+   Add an SQL test with it (`packages/db/sql-tests/stores_invariants.sql`): a store B product can't take a store A category or brand (insert and update), and a store A category that a store A product uses can't be moved to store B.
 9. **Invariant checks** (each `RAISE EXCEPTION` rolls everything back):
    - every product has a `store_id`, and `products.seller_id = stores.seller_id`;
    - for every store: the set of `(store, product)` visible after (active, not trashed, `store_id = store`, resolved through the map back to old ids) **equals** `before_visible`; `before_counts` equal;
@@ -314,7 +418,7 @@ Every task: lint, typecheck, test (rule 15), `ROADMAP.md` §6/§7 updated, DB te
 ### Phase B — Store-scoped catalog code (dark until `stores_catalog_split`)
 
 - **F-87c · P1 · deps: F-87b** Move `/products/*` to `/stores/[storeId]/products/*` (old URLs redirect to the selected store), so every product action takes an explicit `storeId` and calls `requireStore`. Catalog reads behind the switch: storefront catalog, product page, slug lookup, category pages, search, sitemap, feeds, back-in-stock, cart add, `place-order.ts` product/store checks, the cross-seller listing rule (§2.1.5); cache keys and tags gain `storeId` (rule 8) for every product, category and brand query; dashboard /products, inventory, low stock, trash, bulk edit, import, export, reviews/questions, quantity offers, cross-sells, discount rules, category positions use `storeId` from the URL or explicit argument (the `tallaby_store` cookie only picks where links go, `apps/dashboard/lib/stores/current-store.server.ts:7-29`); writes set `store_id`. *Accept:* with the switch off, all existing tests pass; with it on (test DB), store A never returns store B's product. *Tests:* tenant isolation: read, update, trash, restore, bulk edit, import, offer and cross-sell create across stores are refused (`not_found`), including forged `storeId`/`productId` pairs.
-- **F-87d · P1 · deps: F-87c** Taxonomy per store: category and brand lists, pickers, the product form, AI autofill category matching, discount rule scope, category positions. *Accept/tests:* a product in A cannot use B's category (trigger + action).
+- **F-87d · P1 · deps: F-87c** Taxonomy per store: category and brand lists, pickers, the product form, AI autofill category matching, discount rule scope, category positions. *Accept/tests:* a product in A cannot use B's category (trigger + action). **Built 2026-11-10 (uncommitted):** the action side and its tests ([slices doc §10](stores-separation-f87c-slices.md)); the trigger is the proposed SQL in §3.2 and lands with 0163 (F-87m).
 - **F-87e · P1 · deps: F-87c** MCP and agent: product tools filter by `store_id` and create in the given store; the MCP server instructions (`apps/backend/src/mcp/server.ts:8`) say "products belong to one store" (today: "Products belong to the seller's account; a store shows all of them or only its picks"); AI Store Builder `activateProducts` and the builder's product writes set `store_id`, never `store_products`. *Tests:* a grant limited to store A cannot read or write B's products.
 - **F-87m · P1 · deps: F-87c** Migration `0163` (+ rollback script) on staging; full manual E2E on a seeded multi-store seller (§23 PLAN.md): every store shows the same products as before, carts survive, a return on a pre-split store B order restocks B's copy. Production with owner approval.
 

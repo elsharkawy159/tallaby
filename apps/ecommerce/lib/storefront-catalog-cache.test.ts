@@ -136,4 +136,18 @@ describe("storefront.server caches", { timeout: 30_000 }, () => {
       expect(q.tags).toEqual(expect.arrayContaining([reviewTags.seller(SELLER), productTags.store(SELLER, STORE_A), storeTags.catalog(SELLER, STORE_A)]));
     }
   });
+
+  it("the store's brand list (F-87d) is keyed by store and switch, tagged by seller and that store only", async () => {
+    const { getCachedSellerBrands } = await import("@/lib/store-site/store-data.server");
+    await getCachedSellerBrands(SELLER, STORE_A, false);
+    await getCachedSellerBrands(SELLER, STORE_A, true);
+    await getCachedSellerBrands(SELLER, STORE_B, true);
+    const [off, on, other] = recorded.queries;
+    expect(off!.name).toBe("storefront:seller-brands:v3");
+    expect(off!.args).toEqual([SELLER, STORE_A, false]);
+    expect(on!.args).toEqual([SELLER, STORE_A, true]);
+    expect(on!.tags).toEqual([productTags.seller(SELLER), productTags.store(SELLER, STORE_A)]);
+    expect(other!.tags).toContain(productTags.store(SELLER, STORE_B));
+    expect(other!.tags).not.toContain(productTags.store(SELLER, STORE_A));
+  });
 });

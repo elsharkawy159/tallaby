@@ -277,9 +277,9 @@ async function resolveStoreExtras(
   const brandLimit = Math.max(0, ...entries.map(([, q]) => (q.kind === "brands" ? q.limit : 0)));
   const reviewQueries = entries.filter((e): e is [string, Extract<CatalogQuery, { kind: "reviews" }>] => e[1].kind === "reviews");
   const couponIds = [...new Set(entries.flatMap(([, q]) => (q.kind === "coupon" ? [q.couponId] : [])))].sort();
-  const { catalogSplit } = reviewQueries.length ? await storefrontCatalog({ storeId }) : { catalogSplit: false };
+  const { catalogSplit } = reviewQueries.length || brandLimit ? await storefrontCatalog({ storeId }) : { catalogSplit: false };
   const [brandRows, reviewLists, reviewStats, couponRows] = await Promise.all([
-    brandLimit ? safe("brands", () => getCachedSellerBrands(sellerId, storeId)) : null,
+    brandLimit ? safe("brands", () => getCachedSellerBrands(sellerId, storeId, catalogSplit)) : null,
     Promise.all(
       reviewQueries.map(
         async ([instanceId, q]) =>

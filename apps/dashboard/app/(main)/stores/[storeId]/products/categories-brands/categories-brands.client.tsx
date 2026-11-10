@@ -85,6 +85,7 @@ import {
 } from "./categories-brands.lib";
 import { RemoteImage } from "@/components/media/remote-image";
 import { CategoryOrderDialog } from "../category-order/category-order.client";
+import { useProductStoreId } from "../_components/product-store.client";
 
 const KEY: Record<TaxonomyKind, "categories" | "brands"> = { category: "categories", brand: "brands" };
 
@@ -162,6 +163,8 @@ function TaxonomyList({
   const [isPending, startTransition] = useTransition();
   const [isOrdering, startOrdering] = useTransition();
   const showError = useErrorToast();
+  // The page's store (the URL segment); the server checks it against the session again (F-87d).
+  const storeId = useProductStoreId();
   const k = KEY[kind];
   const filtering = query.trim().length > 0;
 
@@ -182,6 +185,7 @@ function TaxonomyList({
     setItems(next);
     startOrdering(async () => {
       const result = await reorderTaxonomyItems(
+        storeId,
         kind,
         next.map((i) => i.id),
       );
@@ -205,7 +209,7 @@ function TaxonomyList({
     const item = removing;
     if (!item) return;
     startTransition(async () => {
-      const result = await deleteTaxonomyItem(kind, item.id);
+      const result = await deleteTaxonomyItem(storeId, kind, item.id);
       if (!result.success) return showError(result.error);
       setItems((current) => current.filter((i) => i.id !== item.id));
       setRemoving(null);
@@ -540,6 +544,7 @@ function AddItemDialog({
   const [custom, setCustom] = useState<CustomItem | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const storeId = useProductStoreId();
 
   useEffect(() => {
     if (!open) {
@@ -579,7 +584,7 @@ function AddItemDialog({
 
   const add = (input: { sourceId: string } | CustomItem) =>
     startTransition(async () => {
-      const result = await addTaxonomyItem(kind, input);
+      const result = await addTaxonomyItem(storeId, kind, input);
       if (!result.success) return showError(result.error);
       onAdded(result.data);
       toast.success(t("added", { name: taxonomyLabel(result.data, locale) }));
@@ -738,6 +743,7 @@ function EditDialog({
   });
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const storeId = useProductStoreId();
 
   useEffect(() => {
     if (item) setValues({ name: item.name, nameAr: item.nameAr ?? "", image: item.image });
@@ -748,7 +754,7 @@ function EditDialog({
     // Send the image only when it changed, so a pack image path is kept as is.
     const imageChanged = values.image !== item.image;
     startTransition(async () => {
-      const result = await updateTaxonomyItem(kind, item.id, {
+      const result = await updateTaxonomyItem(storeId, kind, item.id, {
         name: values.name,
         nameAr: values.nameAr,
         ...(imageChanged ? { image: values.image } : {}),

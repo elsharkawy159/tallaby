@@ -13,6 +13,9 @@
  *   `shown`), for every store-host catalog read (F-87c slice 4);
  *   `productInStoreOf` takes the store id from a column, for one query over
  *   many stores (the back-in-stock cron).
+ * - `taxonomyInStore` / `aliasedTaxonomyInStore` / `taxonomyItemsInStore`:
+ *   the seller categories and brands of one store (F-87d): per seller before
+ *   the split, `store_id = store` after it.
  * - `storeHasProduct` / `assertStoreProduct`: the same condition for one pair.
  *   Callers check `storeOwnedBy` (or `requireStore`) first; these only check
  *   the pair.
@@ -21,7 +24,7 @@
  * caller's transaction.
  */
 import type { SQL } from "drizzle-orm";
-import { and, db, eq, isNull, products, sql, storeProducts, stores } from "@workspace/db";
+import { and, db, eq, isNull, products, sellerProductBrands, sellerProductCategories, sql, storeProducts, stores } from "@workspace/db";
 import { isSwitchOn } from "./platform-switches.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -181,6 +184,86 @@ export async function assertStoreProduct(
   if (!(await storeHasProduct(storeId, productId, options))) {
     throw new StoreScopeError("product_not_in_store");
   }
+}
+
+/**
+ * The seller taxonomy of one store (ROADMAP.md F-87d; docs/plans/stores-separation.md
+ * §2.1.3): the seller's own categories and brands (0068). The ids come from the
+ * session or the request host, never from the client alone; `storeId` is null
+ * only on a page with no store (it then matches nothing after the split).
+ */
+export type TaxonomyScope = { sellerId: string; storeId: string | null; catalogSplit: boolean };
+
+type TaxonomyTable = typeof sellerProductCategories | typeof sellerProductBrands;
+
+/**
+ * The SQL condition "this seller category / brand row belongs to the scope",
+ * for a WHERE on `seller_product_categories` or `seller_product_brands`:
+ * - switch off: the seller's row (today's per-seller list, shared by every
+ *   store; `store_id` is never read, even where a row already names a store);
+ * - switch on: the seller's row **and** `store_id` = the store.
+ * A malformed seller or store id matches nothing.
+ */
+export function taxonomyInStore(table: TaxonomyTable, { sellerId, storeId, catalogSplit }: TaxonomyScope): SQL {
+  if (typeof sellerId !== "string" || !UUID_RE.test(sellerId)) return sql`false`;
+  if (!catalogSplit) return eq(table.sellerId, sellerId);
+  if (typeof storeId !== "string" || !UUID_RE.test(storeId)) return sql`false`;
+  return and(eq(table.sellerId, sellerId), eq(table.storeId, storeId))!;
+}
+
+/**
+ * The same condition for raw SQL that aliases the table (`seller_product_categories spc`).
+ * `alias` is a plain identifier the caller writes.
+ */
+export function aliasedTaxonomyInStore(alias: string, { sellerId, storeId, catalogSplit }: TaxonomyScope): SQL {
+  if (!/^[a-z_][a-z0-9_]*$/.test(alias)) throw new Error("aliasedTaxonomyInStore: bad alias");
+  if (typeof sellerId !== "string" || !UUID_RE.test(sellerId)) return sql`false`;
+  const a = sql.raw(alias);
+  if (!catalogSplit) return sql`${a}.seller_id = ${sellerId}`;
+  if (typeof storeId !== "string" || !UUID_RE.test(storeId)) return sql`false`;
+  return sql`(${a}.seller_id = ${sellerId} AND ${a}.store_id = ${storeId})`;
+}
+
+/**
+ * The `store_id` a new taxonomy row is written with: the scope's store, in
+ * both modes. Before the split nothing reads it (lists stay per seller); 0163
+ * must not assume `store_id IS NULL` on existing rows (§3 of the plan).
+ */
+export function taxonomyStoreIdForWrite({ storeId }: TaxonomyScope): string | null {
+  return typeof storeId === "string" && UUID_RE.test(storeId) ? storeId : null;
+}
+
+/**
+ * Whether a product may use these seller category / brand ids in this scope:
+ * each non-null id must be a row of `taxonomyInStore`. With the switch on the
+ * caller has already checked the product is in `scope.storeId`, so this is
+ * the "same store" rule of the 0163 trigger, enforced in the app too.
+ */
+export async function taxonomyItemsInStore(
+  scope: TaxonomyScope,
+  ids: { sellerCategoryId?: string | null; sellerBrandId?: string | null },
+  q: Queryable = db,
+): Promise<boolean> {
+  const { sellerCategoryId, sellerBrandId } = ids;
+  if (sellerCategoryId != null && (typeof sellerCategoryId !== "string" || !UUID_RE.test(sellerCategoryId))) return false;
+  if (sellerBrandId != null && (typeof sellerBrandId !== "string" || !UUID_RE.test(sellerBrandId))) return false;
+  const [category, brand] = await Promise.all([
+    sellerCategoryId
+      ? q
+          .select({ id: sellerProductCategories.id })
+          .from(sellerProductCategories)
+          .where(and(eq(sellerProductCategories.id, sellerCategoryId), taxonomyInStore(sellerProductCategories, scope)))
+          .limit(1)
+      : [{ id: null }],
+    sellerBrandId
+      ? q
+          .select({ id: sellerProductBrands.id })
+          .from(sellerProductBrands)
+          .where(and(eq(sellerProductBrands.id, sellerBrandId), taxonomyInStore(sellerProductBrands, scope)))
+          .limit(1)
+      : [{ id: null }],
+  ]);
+  return category.length > 0 && brand.length > 0;
 }
 
 /** Throws `StoreScopeError('store_not_found')` unless the store is this seller's. */

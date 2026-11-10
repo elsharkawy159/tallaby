@@ -1,7 +1,9 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { parseStoreCurrency } from "@workspace/lib";
 import { getStore } from "@workspace/lib/stores/server";
-import { asc, db, eq, sellerProductCategories } from "@workspace/db";
+import { asc, db, sellerProductCategories } from "@workspace/db";
+import { taxonomyInStore } from "@workspace/lib/stores/scope/server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { PageHeader } from "@/components/seller-ui";
@@ -14,11 +16,12 @@ import { listDiscountRules } from "./discount-rules.server";
  * The URL's store wins when it is one of theirs, else the sidebar's selected store.
  */
 export async function DiscountRulesData(props: { storeId: string | null }) {
-  const [seller, { stores, selected }, t, locale] = await Promise.all([
+  const [seller, { stores, selected }, t, locale, catalogSplit] = await Promise.all([
     requireSeller(),
     getSellerStores(),
     getTranslations("discountRules"),
     getLocale(),
+    isSwitchOn("stores_catalog_split"),
   ]);
   const store = stores.find((s) => s.id === props.storeId) ?? selected;
   const [rules, storeRow, categories] = await Promise.all([
@@ -27,7 +30,8 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
     db
       .select({ id: sellerProductCategories.id, name: sellerProductCategories.name, nameAr: sellerProductCategories.nameAr })
       .from(sellerProductCategories)
-      .where(eq(sellerProductCategories.sellerId, seller.sellerId))
+      // The category scope picker: the store's list (the seller's before the split, F-87d); the save checks it again.
+      .where(taxonomyInStore(sellerProductCategories, { sellerId: seller.sellerId, storeId: store?.id ?? null, catalogSplit }))
       .orderBy(asc(sellerProductCategories.position)),
   ]);
 

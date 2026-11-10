@@ -11,6 +11,7 @@ import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
 import { buildFormValuesFromImport } from "../build-form-values-from-import.lib"
 import { OPEN_SECTION_EVENT } from "../add-product.lib"
+import { useProductStoreId } from "../../_components/product-store.client"
 import {
   AUTOFILL_IMAGE_TYPES,
   AUTOFILL_LIMITS,
@@ -131,6 +132,7 @@ export function useAiAutofill ({
 }) {
   const t = useTranslations("productForm.ai")
   const isEdit = mode === "edit"
+  const productStoreId = useProductStoreId()
   // The prompt has its own small form: registered (uncontrolled), so typing
   // never re-renders the product form and no keystroke is lost.
   const promptForm = useForm<PromptValues>({ defaultValues: { prompt: "" } })
@@ -221,6 +223,8 @@ export function useAiAutofill ({
   /** Sends the prompt and files; `sent` lists the images in the order the model numbers them. */
   const requestAutofill = async (text: string, sent: PickedImage[]): Promise<ProductAutofillResponse> => {
     const body = new FormData()
+    // The page's store: its own category names guide the model (F-87d); the route checks it against the session.
+    body.set("storeId", productStoreId)
     body.set("text", text)
     for (const item of images) {
       const jpeg = await toJpeg(item.file, AI_IMAGE_MAX_SIDE).catch(() => null)

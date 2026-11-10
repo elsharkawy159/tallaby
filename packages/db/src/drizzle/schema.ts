@@ -1462,7 +1462,7 @@ export const users = pgTable("users", {
 export const sellerProductCategories = pgTable("seller_product_categories", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
-	/** The store that will own it after the catalog split (0160, F-87); NULL until 0163. Not read yet. */
+	/** The store that owns it after the catalog split (0160, F-87). Written on new rows since F-87d (the store it was added from); read only once `stores_catalog_split` is on (`taxonomyInStore`). Older rows NULL until 0163. */
 	storeId: uuid("store_id"),
 	name: text().notNull(),
 	nameAr: text("name_ar"),
@@ -1498,7 +1498,7 @@ export const sellerProductCategories = pgTable("seller_product_categories", {
 export const sellerProductBrands = pgTable("seller_product_brands", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
-	/** The store that will own it after the catalog split (0160, F-87); NULL until 0163. Not read yet. */
+	/** The store that owns it after the catalog split (0160, F-87). Written on new rows since F-87d (the store it was added from); read only once `stores_catalog_split` is on (`taxonomyInStore`). Older rows NULL until 0163. */
 	storeId: uuid("store_id"),
 	name: text().notNull(),
 	nameAr: text("name_ar"),

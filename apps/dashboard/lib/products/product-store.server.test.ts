@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   isSwitchOn: vi.fn(async () => false),
   storeHasProduct: vi.fn(async () => true),
   productInStore: vi.fn(() => "IN_STORE"),
+  taxonomyItemsInStore: vi.fn(async () => true),
   notFound: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
   }),
@@ -37,12 +38,15 @@ vi.mock("@/lib/stores/platform-switches.server", () => ({ isSwitchOn: mocks.isSw
 vi.mock("@workspace/lib/stores/scope/server", () => ({
   storeHasProduct: mocks.storeHasProduct,
   productInStore: mocks.productInStore,
+  taxonomyItemsInStore: mocks.taxonomyItemsInStore,
 }));
 
 const { AccessError } = (await import("@/lib/auth/require-seller.server")) as unknown as {
   AccessError: new (code: string) => Error & { code: string };
 };
-const { loadProductStorePage, requireProductStore, requireStoreProduct } = await import("./product-store.server");
+const { assertProductTaxonomyInStore, loadProductStorePage, requireProductStore, requireStoreProduct, taxonomyScopeOf } = await import(
+  "./product-store.server"
+);
 
 const STORE = "22222222-2222-4222-8222-222222222222";
 const PRODUCT = "33333333-3333-4333-8333-333333333333";
@@ -139,5 +143,35 @@ describe("loadProductStorePage (the /stores/[storeId]/products pages)", () => {
     mocks.requireStore.mockRejectedValueOnce(new Error("db down"));
     await expect(loadProductStorePage(STORE)).rejects.toThrow("db down");
     expect(mocks.notFound).not.toHaveBeenCalled();
+  });
+});
+
+describe("taxonomy per store (F-87d)", () => {
+  const CATEGORY = "44444444-4444-4444-8444-444444444444";
+  const ctx = (catalogSplit: boolean) => ({ ...owned, catalogSplit }) as never;
+
+  it("taxonomyScopeOf is the session seller, the checked store and the switch", () => {
+    expect(taxonomyScopeOf(ctx(true))).toEqual({ sellerId: "s1", storeId: STORE, catalogSplit: true });
+  });
+
+  it("a payload with no category or brand needs no check", async () => {
+    await assertProductTaxonomyInStore(ctx(true), { sellerCategoryId: "", sellerBrandId: null });
+    await assertProductTaxonomyInStore(ctx(true), {});
+    expect(mocks.taxonomyItemsInStore).not.toHaveBeenCalled();
+  });
+
+  it("checks the ids against the store's list, and refuses one outside it", async () => {
+    await assertProductTaxonomyInStore(ctx(true), { sellerCategoryId: CATEGORY });
+    expect(mocks.taxonomyItemsInStore).toHaveBeenCalledWith(
+      { sellerId: "s1", storeId: STORE, catalogSplit: true },
+      { sellerCategoryId: CATEGORY, sellerBrandId: null },
+    );
+    mocks.taxonomyItemsInStore.mockResolvedValueOnce(false);
+    await expect(assertProductTaxonomyInStore(ctx(true), { sellerCategoryId: CATEGORY })).rejects.toMatchObject({ code: "not_found" });
+  });
+
+  it("refuses an id that is not a string without a query", async () => {
+    await expect(assertProductTaxonomyInStore(ctx(false), { sellerBrandId: 42 })).rejects.toMatchObject({ code: "not_found" });
+    expect(mocks.taxonomyItemsInStore).not.toHaveBeenCalled();
   });
 });

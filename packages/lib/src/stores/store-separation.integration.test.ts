@@ -8,6 +8,7 @@ import { agentCanUseStore } from "../agents/actor.lib";
 import {
   AgentProductError,
   agentGetProduct,
+  agentListStoreCategories,
   agentRestoreProducts,
   agentSearchProducts,
   agentSetProductStatus,
@@ -19,7 +20,7 @@ import { createIsolationWorld, type IsolationWorld } from "./isolation.fixtures"
 import { cartProductsOutsideStoreCatalog, productsOutsideStore, setStoreCatalog, storeSellsProduct } from "./catalog.server";
 import { isSwitchOn } from "./platform-switches.server";
 import { storeHasVisibleProducts } from "./server";
-import { storeCategoryGroups } from "../store-sites/catalog-data.server";
+import { sellerBrandList, storeCategoryGroups } from "../store-sites/catalog-data.server";
 import { subscribeToStockAlert } from "../stock-alerts/stock-alerts.server";
 import {
   assertStoreProduct,
@@ -28,7 +29,10 @@ import {
   productShownInStore,
   storeHasProduct,
   storeOwnedBy,
+  taxonomyInStore,
+  taxonomyItemsInStore,
   type ProductStoreScope,
+  type TaxonomyScope,
 } from "./store-scope.server";
 
 /**
@@ -720,6 +724,144 @@ describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", 
       expect((await agentSearchProducts(throughB, { storeId: ids.storeB, limit: 50, cursor: 0 })).items.map((r) => r.id)).toEqual([p.s1b]);
       const all = (await agentSearchProducts(agentCtx(ids.s1, ids.storeA), { storeId: ids.storeA, limit: 50, cursor: 0 })).items.map((r) => r.id).sort();
       expect(all).toEqual([p.s1a, p.s1b].sort());
+    });
+  });
+
+  // ── F-87d: seller categories and brands per store ───────────────────────
+  // The dashboard taxonomy actions run requireStore (storeOwnedBy for the
+  // session seller), then `taxonomyInStore` in the WHERE of every list, edit
+  // and delete, and `taxonomyItemsInStore` + `productInStore(managed)` before a
+  // product gets a category (categories-brands.server.ts). These run the same
+  // statements; the agent commands are called for real.
+
+  const tax = { catA: "", catB: "", brandA: "", catS2: "" };
+
+  async function withTaxonomy(run: () => Promise<void>) {
+    const tag = randomUUID().slice(0, 8);
+    const [catA] = await db.insert(s.sellerProductCategories).values({ sellerId: ids.s1, storeId: ids.storeA, name: `A cat ${tag}` }).returning({ id: s.sellerProductCategories.id });
+    const [catB] = await db.insert(s.sellerProductCategories).values({ sellerId: ids.s1, storeId: ids.storeB, name: `B cat ${tag}` }).returning({ id: s.sellerProductCategories.id });
+    const [brandA] = await db.insert(s.sellerProductBrands).values({ sellerId: ids.s1, storeId: ids.storeA, name: `A brand ${tag}` }).returning({ id: s.sellerProductBrands.id });
+    const [catS2] = await db.insert(s.sellerProductCategories).values({ sellerId: ids.s2, storeId: ids.storeS2, name: `S2 cat ${tag}` }).returning({ id: s.sellerProductCategories.id });
+    Object.assign(tax, { catA: catA!.id, catB: catB!.id, brandA: brandA!.id, catS2: catS2!.id });
+    try {
+      await run();
+    } finally {
+      forced.catalogSplit = null;
+      await db.update(s.products).set({ storeId: null, sellerCategoryId: null, sellerBrandId: null }).where(inArray(s.products.id, [p.s1a, p.s1b, p.s2]));
+      await db.delete(s.sellerProductCategories).where(inArray(s.sellerProductCategories.id, [tax.catA, tax.catB, tax.catS2]));
+      await db.delete(s.sellerProductBrands).where(eq(s.sellerProductBrands.id, tax.brandA));
+    }
+  }
+
+  const scopeOf = (sellerId: string, storeId: string, catalogSplit: boolean): TaxonomyScope => ({ sellerId, storeId, catalogSplit });
+
+  /** The store's category list as the page loads it (after requireStore). */
+  async function listedCategories(sellerId: string, storeId: string, catalogSplit: boolean): Promise<string[]> {
+    if (!(await storeOwnedBy(sellerId, storeId, db))) return [];
+    const rows = await db
+      .select({ id: s.sellerProductCategories.id })
+      .from(s.sellerProductCategories)
+      .where(taxonomyInStore(s.sellerProductCategories, scopeOf(sellerId, storeId, catalogSplit)));
+    return rows.map((r) => r.id);
+  }
+
+  /** Rename one category through a store, as updateTaxonomyItem does; returns the ids changed. */
+  async function renameCategory(sellerId: string, storeId: string, id: string, catalogSplit: boolean): Promise<string[]> {
+    if (!(await storeOwnedBy(sellerId, storeId, db))) return [];
+    const rows = await db
+      .update(s.sellerProductCategories)
+      .set({ nameAr: "x" })
+      .where(and(eq(s.sellerProductCategories.id, id), taxonomyInStore(s.sellerProductCategories, scopeOf(sellerId, storeId, catalogSplit))))
+      .returning({ id: s.sellerProductCategories.id });
+    await db.update(s.sellerProductCategories).set({ nameAr: null }).where(eq(s.sellerProductCategories.id, id));
+    return rows.map((r) => r.id);
+  }
+
+  /** setProductSellerTaxonomy: true when the product now has the category and brand. */
+  async function assign(
+    sellerId: string,
+    storeId: string,
+    productId: string,
+    ids_: { sellerCategoryId?: string | null; sellerBrandId?: string | null },
+    catalogSplit: boolean,
+  ): Promise<boolean> {
+    if (!(await storeOwnedBy(sellerId, storeId, db))) return false;
+    if (!(await taxonomyItemsInStore(scopeOf(sellerId, storeId, catalogSplit), ids_, db))) return false;
+    const rows = await db
+      .update(s.products)
+      .set({ sellerCategoryId: ids_.sellerCategoryId ?? null, sellerBrandId: ids_.sellerBrandId ?? null })
+      .where(and(eq(s.products.id, productId), eq(s.products.sellerId, sellerId), productInStore(storeId, { catalogSplit, scope: "managed" })))
+      .returning({ id: s.products.id });
+    return rows.length === 1;
+  }
+
+  it("F-87d, switch on: store B can't list, edit or assign store A's category or brand", async () => {
+    await withTaxonomy(async () => {
+      await db.update(s.products).set({ storeId: ids.storeA }).where(eq(s.products.id, p.s1a));
+      await db.update(s.products).set({ storeId: ids.storeB }).where(eq(s.products.id, p.s1b));
+
+      const listB = await listedCategories(ids.s1, ids.storeB, true);
+      expect(listB).toContain(tax.catB);
+      expect(listB).not.toContain(tax.catA);
+      expect(await listedCategories(ids.s1, ids.storeA, true)).toEqual([tax.catA]);
+      expect((await sellerBrandList(ids.s1, { storeId: ids.storeB, catalogSplit: true })).map((b) => b.id)).not.toContain(tax.brandA);
+      expect((await sellerBrandList(ids.s1, { storeId: ids.storeA, catalogSplit: true })).map((b) => b.id)).toContain(tax.brandA);
+
+      expect(await renameCategory(ids.s1, ids.storeB, tax.catA, true)).toEqual([]);
+      expect(await renameCategory(ids.s1, ids.storeA, tax.catA, true)).toEqual([tax.catA]);
+
+      // Store B's own product can't take store A's category or brand; its own category is fine.
+      expect(await assign(ids.s1, ids.storeB, p.s1b, { sellerCategoryId: tax.catA }, true)).toBe(false);
+      expect(await assign(ids.s1, ids.storeB, p.s1b, { sellerBrandId: tax.brandA }, true)).toBe(false);
+      expect(await assign(ids.s1, ids.storeB, p.s1b, { sellerCategoryId: tax.catB }, true)).toBe(true);
+      // Through store B, store A's product can't be touched even with A's own category.
+      expect(await assign(ids.s1, ids.storeB, p.s1a, { sellerCategoryId: tax.catA }, true)).toBe(false);
+      const [row] = await db.select({ cat: s.products.sellerCategoryId, brand: s.products.sellerBrandId }).from(s.products).where(eq(s.products.id, p.s1a));
+      expect(row).toEqual({ cat: null, brand: null });
+
+      // The storefront's category groups: store B shows only its own category.
+      const groupsB = await storeCategoryGroups(ids.s1, { storeId: ids.storeB, catalogSplit: true }, db);
+      expect(groupsB.map((g) => g.sellerCategoryId).filter(Boolean)).toEqual([tax.catB]);
+
+      // The agent (MCP / in-app) through store B: A's category is not in its list and can't be used.
+      forced.catalogSplit = true;
+      const throughB = agentCtx(ids.s1, ids.storeB);
+      expect((await agentListStoreCategories(throughB)).map((c) => c.id)).not.toContain(tax.catA);
+      await expect(agentUpdateProduct(throughB, { storeId: ids.storeB, productId: p.s1b, storeCategoryId: tax.catA }, noUpload)).rejects.toEqual(
+        refusedWith("invalid_store_category"),
+      );
+    });
+  });
+
+  it("F-87d: a forged storeId from another seller is refused, and S2's category never matches S1, in both modes", async () => {
+    await withTaxonomy(async () => {
+      for (const catalogSplit of [false, true]) {
+        expect(await listedCategories(ids.s1, ids.storeS2, catalogSplit)).toEqual([]);
+        expect(await renameCategory(ids.s1, ids.storeS2, tax.catS2, catalogSplit)).toEqual([]);
+        expect(await assign(ids.s1, ids.storeS2, p.s2, { sellerCategoryId: tax.catS2 }, catalogSplit)).toBe(false);
+        // The condition alone, without the session check: another seller's row never matches.
+        expect(await taxonomyItemsInStore(scopeOf(ids.s1, ids.storeA, catalogSplit), { sellerCategoryId: tax.catS2 }, db)).toBe(false);
+        expect(await renameCategory(ids.s2, ids.storeA, tax.catA, catalogSplit)).toEqual([]);
+        forced.catalogSplit = catalogSplit;
+        await expect(agentListStoreCategories(agentCtx(ids.s1, ids.storeS2))).rejects.toEqual(refusedWith("not_found"));
+      }
+    });
+  });
+
+  it("F-87d, switch off: every store of S1 shares the seller's list, as today", async () => {
+    await withTaxonomy(async () => {
+      for (const store of [ids.storeA, ids.storeB]) {
+        const listed = await listedCategories(ids.s1, store, false);
+        expect(listed).toEqual(expect.arrayContaining([tax.catA, tax.catB]));
+        expect(listed).not.toContain(tax.catS2);
+        expect((await sellerBrandList(ids.s1, { storeId: store, catalogSplit: false })).map((b) => b.id)).toContain(tax.brandA);
+      }
+      expect(await renameCategory(ids.s1, ids.storeB, tax.catA, false)).toEqual([tax.catA]);
+      // Store B (selected mode) still manages every S1 product, with any of the seller's categories.
+      expect(await assign(ids.s1, ids.storeB, p.s1a, { sellerCategoryId: tax.catA, sellerBrandId: tax.brandA }, false)).toBe(true);
+      forced.catalogSplit = false;
+      const agentList = (await agentListStoreCategories(agentCtx(ids.s1, ids.storeB))).map((c) => c.id);
+      expect(agentList).toEqual(expect.arrayContaining([tax.catA, tax.catB]));
     });
   });
 

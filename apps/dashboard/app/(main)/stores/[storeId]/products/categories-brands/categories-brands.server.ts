@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { applyInvalidation, invalidateSellerProducts } from "@workspace/cache";
+import { applyInvalidation, invalidateStoreProducts } from "@workspace/cache";
 import {
   and,
   asc,
@@ -19,8 +19,15 @@ import {
   sellerProductCategories,
   sql,
 } from "@workspace/db";
+import {
+  aliasedTaxonomyInStore,
+  taxonomyInStore,
+  taxonomyItemsInStore,
+  taxonomyStoreIdForWrite,
+  type TaxonomyScope,
+} from "@workspace/lib/stores/scope/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
-import { requireProductStore } from "@/lib/products/product-store.server";
+import { requireProductStore, taxonomyScopeOf } from "@/lib/products/product-store.server";
 import {
   SELLER_TAXONOMY_MAX_ITEMS,
   addTaxonomyItemSchema,
@@ -45,9 +52,23 @@ import {
 } from "./categories-brands.lib";
 
 /**
- * Products › Categories and Products › Brands (0068). Every list belongs to the session's
- * seller: ids from the client are only ever matched together with that
- * seller_id, so another seller's items read and write as "not found".
+ * Products › Categories and Products › Brands (0068), per store (ROADMAP.md
+ * F-87d). Every action takes an explicit `storeId` (the page's
+ * `/stores/[storeId]/...` segment, sent back by the client) and checks it with
+ * `requireProductStore`: the session's seller must own the store (a foreign,
+ * deleted, forged or malformed id is "not found"). Every item id is then
+ * matched with `taxonomyInStore` in the same WHERE:
+ * - `stores_catalog_split` off: the seller's one list, exactly as before
+ *   (every store of the seller shares it);
+ * - on: only rows with `store_id` = the store, so store B can't read, edit,
+ *   reorder, delete or assign store A's items.
+ * New rows always write `store_id` = the checked store (nothing reads it before
+ * the split; 0163 must not assume it is NULL). Archived and suspended stores
+ * are read-only only after the split (`requireProductStore`, slice 2 rule).
+ *
+ * Caches: every write purges `invalidateStoreProducts(seller, store)`: the
+ * store's storefront tag plus the seller tags, which stay while a list is
+ * shared by every store (rule 8; drop them only after the split).
  */
 
 const SUGGESTION_LIMIT = 12;
@@ -116,62 +137,82 @@ export async function searchTaxonomyPack(kind: TaxonomyKind, query: string): Pro
   }
 }
 
-/** Add to the seller's list: a pack item (copied in) or the seller's own name. */
-export async function addTaxonomyItem(kind: TaxonomyKind, input: unknown): Promise<TaxonomyResult<SellerTaxonomyItem>> {
+type TaxonomyContext = { scope: TaxonomyScope; storeId: string };
+
+/** The checked store of a taxonomy action (session seller, owned store, switch). */
+async function requireTaxonomyStore(storeId: unknown): Promise<TaxonomyContext> {
+  const ctx = await requireProductStore(storeId);
+  return { scope: taxonomyScopeOf(ctx), storeId: ctx.store.id };
+}
+
+/** Purges the store's storefront entries plus the seller-wide ones (lists are shared until the split). */
+const invalidateTaxonomy = ({ scope, storeId }: TaxonomyContext) =>
+  applyInvalidation(invalidateStoreProducts(scope.sellerId, storeId), { from: "dashboard", mode: "action" });
+
+/** Add to the store's list: a pack item (copied in) or the seller's own name. */
+export async function addTaxonomyItem(storeId: string, kind: TaxonomyKind, input: unknown): Promise<TaxonomyResult<SellerTaxonomyItem>> {
   try {
-    const seller = await requireSeller({ forWrite: true });
-    const parsed = addTaxonomyItemSchema.safeParse(input);
-    if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
-    if ("image" in parsed.data && !isAllowedImage(parsed.data.image, seller.sellerId)) return { success: false, error: "invalidImage" };
-    const { table } = tableFor(kind);
-
-    const [{ total }] = await db.select({ total: count() }).from(table).where(eq(table.sellerId, seller.sellerId));
-    if ((total ?? 0) >= SELLER_TAXONOMY_MAX_ITEMS) return { success: false, error: "limit" };
-
-    let values: { name: string; nameAr: string | null; sourceId: string | null; image: string | null };
-    if ("sourceId" in parsed.data) {
-      const source = await loadPackItem(kind, parsed.data.sourceId);
-      if (!source) return { success: false, error: "notFound" };
-      values = source;
-    } else {
-      values = {
-        name: cleanTaxonomyName(parsed.data.name),
-        nameAr: parsed.data.nameAr ? cleanTaxonomyName(parsed.data.nameAr) : null,
-        sourceId: null,
-        image: parsed.data.image ?? null,
-      };
-    }
-
-    const position = sql<number>`(SELECT coalesce(max(t.position), -1) + 1 FROM ${table} t WHERE t.seller_id = ${seller.sellerId})`;
-    const [row] =
-      kind === "category"
-        ? await db
-            .insert(sellerProductCategories)
-            .values({ sellerId: seller.sellerId, name: values.name, nameAr: values.nameAr, sourceCategoryId: values.sourceId, imageUrl: values.image, position })
-            .returning({ id: sellerProductCategories.id })
-        : await db
-            .insert(sellerProductBrands)
-            .values({ sellerId: seller.sellerId, name: values.name, nameAr: values.nameAr, sourceBrandId: values.sourceId, logoUrl: values.image, position })
-            .returning({ id: sellerProductBrands.id });
-
-    revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
-    // A category picked from a Tallaby one takes in that category's unlinked products on the storefront (storeCategoryGroups).
-    // A new brand shows in the store's brands section at once.
-    if (kind === "brand" || values.sourceId) await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
-    return { success: true, data: { id: row!.id, ...values, productCount: 0 } };
+    return await addItem(await requireTaxonomyStore(storeId), kind, input);
   } catch (error) {
     return failure(error, "add");
   }
 }
 
+async function addItem(ctx: TaxonomyContext, kind: TaxonomyKind, input: unknown): Promise<TaxonomyResult<SellerTaxonomyItem>> {
+  const { scope } = ctx;
+  const parsed = addTaxonomyItemSchema.safeParse(input);
+  if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
+  if ("image" in parsed.data && !isAllowedImage(parsed.data.image, scope.sellerId)) return { success: false, error: "invalidImage" };
+  const { table } = tableFor(kind);
+
+  // The limit counts the list the store sees: the seller's before the split, the store's after it.
+  const [{ total }] = await db.select({ total: count() }).from(table).where(taxonomyInStore(table, scope));
+  if ((total ?? 0) >= SELLER_TAXONOMY_MAX_ITEMS) return { success: false, error: "limit" };
+
+  let values: { name: string; nameAr: string | null; sourceId: string | null; image: string | null };
+  if ("sourceId" in parsed.data) {
+    const source = await loadPackItem(kind, parsed.data.sourceId);
+    if (!source) return { success: false, error: "notFound" };
+    values = source;
+  } else {
+    values = {
+      name: cleanTaxonomyName(parsed.data.name),
+      nameAr: parsed.data.nameAr ? cleanTaxonomyName(parsed.data.nameAr) : null,
+      sourceId: null,
+      image: parsed.data.image ?? null,
+    };
+  }
+
+  const position = sql<number>`(SELECT coalesce(max(t.position), -1) + 1 FROM ${table} t WHERE ${aliasedTaxonomyInStore("t", scope)})`;
+  // store_id: the checked store, in both modes (read only after the split).
+  const owner = { sellerId: scope.sellerId, storeId: taxonomyStoreIdForWrite(scope) };
+  const [row] =
+    kind === "category"
+      ? await db
+          .insert(sellerProductCategories)
+          .values({ ...owner, name: values.name, nameAr: values.nameAr, sourceCategoryId: values.sourceId, imageUrl: values.image, position })
+          .returning({ id: sellerProductCategories.id })
+      : await db
+          .insert(sellerProductBrands)
+          .values({ ...owner, name: values.name, nameAr: values.nameAr, sourceBrandId: values.sourceId, logoUrl: values.image, position })
+          .returning({ id: sellerProductBrands.id });
+
+  revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
+  // A category picked from a Tallaby one takes in that category's unlinked products on the storefront (storeCategoryGroups).
+  // A new brand shows in the store's brands section at once.
+  if (kind === "brand" || values.sourceId) await invalidateTaxonomy(ctx);
+  return { success: true, data: { id: row!.id, ...values, productCount: 0 } };
+}
+
 /**
- * The product form's category: the seller's item with that name (English or
- * Arabic, case-insensitive) or picked from that Tallaby item, added to their
- * list when it isn't there yet.
+ * The product form's category (also the file import and the AI Store Builder):
+ * the store's item with that name (English or Arabic, case-insensitive) or
+ * picked from that Tallaby item, added to the store's list when it isn't there
+ * yet. Matching is done here in code, never by an AI prompt (rule 20).
  */
-export async function ensureTaxonomyItem(kind: TaxonomyKind, input: unknown): Promise<TaxonomyResult<SellerTaxonomyOption>> {
+export async function ensureTaxonomyItem(storeId: string, kind: TaxonomyKind, input: unknown): Promise<TaxonomyResult<SellerTaxonomyOption>> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const ctx = await requireTaxonomyStore(storeId);
     const parsed = ensureTaxonomyItemSchema.safeParse(input);
     if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
     const sourceId = "sourceId" in parsed.data ? parsed.data.sourceId : null;
@@ -191,7 +232,7 @@ export async function ensureTaxonomyItem(kind: TaxonomyKind, input: unknown): Pr
       const [row] = await db
         .select({ id: table.id, name: table.name, nameAr: table.nameAr, sourceId: sourceColumn })
         .from(table)
-        .where(and(eq(table.sellerId, seller.sellerId), or(...(sourceId ? [eq(sourceColumn, sourceId)] : []), ...byName)))
+        .where(and(taxonomyInStore(table, ctx.scope), or(...(sourceId ? [eq(sourceColumn, sourceId)] : []), ...byName)))
         // The item copied from this Tallaby one first, then a same-named one.
         .orderBy(sourceId ? sql`(${sourceColumn} IS NOT DISTINCT FROM ${sourceId}::uuid) DESC` : asc(table.position))
         .limit(1);
@@ -201,7 +242,7 @@ export async function ensureTaxonomyItem(kind: TaxonomyKind, input: unknown): Pr
     const existing = await findExisting();
     if (existing) return { success: true, data: existing };
 
-    const added = await addTaxonomyItem(kind, sourceId ? { sourceId } : { name: names[0] });
+    const added = await addItem(ctx, kind, sourceId ? { sourceId } : { name: names[0] });
     if (added.success) {
       return {
         success: true,
@@ -233,14 +274,15 @@ async function loadPackItem(kind: TaxonomyKind, id: string) {
   return row ? { name: cleanTaxonomyName(row.name), nameAr: null, sourceId: id, image: row.image } : null;
 }
 
-/** Rename an item in the seller's list, and set or remove its image. */
-export async function updateTaxonomyItem(kind: TaxonomyKind, id: string, input: unknown): Promise<TaxonomyResult> {
+/** Rename an item in the store's list, and set or remove its image. */
+export async function updateTaxonomyItem(storeId: string, kind: TaxonomyKind, id: string, input: unknown): Promise<TaxonomyResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const ctx = await requireTaxonomyStore(storeId);
+    const { scope } = ctx;
     const parsed = updateTaxonomyItemSchema.safeParse(input);
     if (!isKind(kind) || !parsed.success || typeof id !== "string") return { success: false, error: "invalidInput" };
     const { image } = parsed.data;
-    if (!isAllowedImage(image, seller.sellerId)) return { success: false, error: "invalidImage" };
+    if (!isAllowedImage(image, scope.sellerId)) return { success: false, error: "invalidImage" };
     const patch = {
       name: cleanTaxonomyName(parsed.data.name),
       nameAr: parsed.data.nameAr ? cleanTaxonomyName(parsed.data.nameAr) : null,
@@ -252,18 +294,18 @@ export async function updateTaxonomyItem(kind: TaxonomyKind, id: string, input: 
         ? await db
             .update(sellerProductCategories)
             .set(image === undefined ? patch : { ...patch, imageUrl: image })
-            .where(and(eq(sellerProductCategories.id, id), eq(sellerProductCategories.sellerId, seller.sellerId)))
+            .where(and(eq(sellerProductCategories.id, id), taxonomyInStore(sellerProductCategories, scope)))
             .returning({ id: sellerProductCategories.id })
         : await db
             .update(sellerProductBrands)
             .set(image === undefined ? patch : { ...patch, logoUrl: image })
-            .where(and(eq(sellerProductBrands.id, id), eq(sellerProductBrands.sellerId, seller.sellerId)))
+            .where(and(eq(sellerProductBrands.id, id), taxonomyInStore(sellerProductBrands, scope)))
             .returning({ id: sellerProductBrands.id });
     if (!updated.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
-    // Storefront category tiles show this image (getStorefrontCategories is tagged by the seller products tag).
-    // Brands show too (the store's brands section, getCachedSellerBrands), cached under the seller products tag.
-    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    // Storefront category tiles show this image (getStorefrontCategories); brands show in the store's brands
+    // section (getCachedSellerBrands). Both carry the seller and store tags.
+    await invalidateTaxonomy(ctx);
     return { success: true };
   } catch (error) {
     return failure(error, "update");
@@ -271,19 +313,18 @@ export async function updateTaxonomyItem(kind: TaxonomyKind, id: string, input: 
 }
 
 /** Remove an item; products that used it keep everything else (the link is set to null). */
-export async function deleteTaxonomyItem(kind: TaxonomyKind, id: string): Promise<TaxonomyResult> {
+export async function deleteTaxonomyItem(storeId: string, kind: TaxonomyKind, id: string): Promise<TaxonomyResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const ctx = await requireTaxonomyStore(storeId);
     if (!isKind(kind) || typeof id !== "string") return { success: false, error: "invalidInput" };
     const { table } = tableFor(kind);
     const deleted = await db
       .delete(table)
-      .where(and(eq(table.id, id), eq(table.sellerId, seller.sellerId)))
+      .where(and(eq(table.id, id), taxonomyInStore(table, ctx.scope)))
       .returning({ id: table.id });
     if (!deleted.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
-    // Brands show too (the store's brands section, getCachedSellerBrands), cached under the seller products tag.
-    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    await invalidateTaxonomy(ctx);
     return { success: true };
   } catch (error) {
     return failure(error, "delete");
@@ -291,18 +332,18 @@ export async function deleteTaxonomyItem(kind: TaxonomyKind, id: string): Promis
 }
 
 /**
- * Save the list order. `ids` must be exactly the seller's items (a stale list,
+ * Save the list order. `ids` must be exactly the store's items (a stale list,
  * after an add or delete in another tab, reads as "not found").
  */
-export async function reorderTaxonomyItems(kind: TaxonomyKind, ids: unknown): Promise<TaxonomyResult> {
+export async function reorderTaxonomyItems(storeId: string, kind: TaxonomyKind, ids: unknown): Promise<TaxonomyResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const ctx = await requireTaxonomyStore(storeId);
     const parsed = reorderTaxonomySchema.safeParse(ids);
     if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
     const order = parsed.data;
     const { table } = tableFor(kind);
 
-    const owned = await db.select({ id: table.id }).from(table).where(eq(table.sellerId, seller.sellerId));
+    const owned = await db.select({ id: table.id }).from(table).where(taxonomyInStore(table, ctx.scope));
     const ownedIds = new Set(owned.map((r) => r.id));
     if (owned.length !== order.length || !order.every((id) => ownedIds.has(id))) return { success: false, error: "notFound" };
     if (!order.length) return { success: true };
@@ -314,12 +355,11 @@ export async function reorderTaxonomyItems(kind: TaxonomyKind, ids: unknown): Pr
     await db
       .update(table)
       .set({ position, updatedAt: sql`now()` })
-      .where(and(eq(table.sellerId, seller.sellerId), inArray(table.id, order)));
+      .where(and(taxonomyInStore(table, ctx.scope), inArray(table.id, order)));
 
     revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
-    // The first category photo by position is the storefront tile photo.
-    // Brands show too (the store's brands section, getCachedSellerBrands), cached under the seller products tag.
-    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    // The first category photo by position is the storefront tile photo; brands show in their order.
+    await invalidateTaxonomy(ctx);
     return { success: true };
   } catch (error) {
     return failure(error, "reorder");
@@ -328,46 +368,34 @@ export async function reorderTaxonomyItems(kind: TaxonomyKind, ids: unknown): Pr
 
 /**
  * Set a product's own category and brand (the product form calls this after
- * create/update, so actions/products.ts stays untouched). Both items must
- * belong to the session's seller (the 0068 trigger checks it again; per-store
- * lists are F-87d), and the product must be in the page's store (F-87c:
- * `productInStore`, scope `managed`, in the UPDATE), else `notFound`.
+ * create/update, so actions/products.ts stays untouched). The product must be
+ * in the page's store (`productInStore`, scope `managed`, in the UPDATE), and
+ * each item must be in the same store's list (`taxonomyItemsInStore`: the
+ * seller's before the split, `store_id` = the store after it, F-87d), else
+ * `notFound`. The 0068 trigger checks the seller again; the proposed 0163
+ * trigger `products_taxonomy_same_store` (docs/plans/stores-separation.md §3.2)
+ * will check the store in the database too.
  */
 export async function setProductSellerTaxonomy(storeId: string, productId: string, input: unknown): Promise<TaxonomyResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId);
+    const ctx = await requireProductStore(storeId);
+    const scope = taxonomyScopeOf(ctx);
     const parsed = productTaxonomySchema.safeParse(input);
     if (!parsed.success || typeof productId !== "string") return { success: false, error: "invalidInput" };
     const { sellerCategoryId, sellerBrandId } = parsed.data;
 
-    const [category, brand] = await Promise.all([
-      sellerCategoryId
-        ? db
-            .select({ id: sellerProductCategories.id })
-            .from(sellerProductCategories)
-            .where(and(eq(sellerProductCategories.id, sellerCategoryId), eq(sellerProductCategories.sellerId, seller.sellerId)))
-            .limit(1)
-        : [null],
-      sellerBrandId
-        ? db
-            .select({ id: sellerProductBrands.id })
-            .from(sellerProductBrands)
-            .where(and(eq(sellerProductBrands.id, sellerBrandId), eq(sellerProductBrands.sellerId, seller.sellerId)))
-            .limit(1)
-        : [null],
-    ]);
-    if ((sellerCategoryId && !category[0]) || (sellerBrandId && !brand[0])) return { success: false, error: "notFound" };
+    if (!(await taxonomyItemsInStore(scope, { sellerCategoryId, sellerBrandId }))) return { success: false, error: "notFound" };
 
     const updated = await db
       .update(products)
       .set({ sellerCategoryId, sellerBrandId })
-      .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), inStore))
+      .where(and(eq(products.id, productId), eq(products.sellerId, scope.sellerId), ctx.inStore))
       .returning({ id: products.id });
     if (!updated.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF.category, "page");
     revalidatePath(TAXONOMY_PAGE_HREF.brand, "page");
     // The product's category can change which photo its storefront category tile shows.
-    await applyInvalidation(invalidateSellerProducts(seller.sellerId), { from: "dashboard", mode: "action" });
+    await invalidateTaxonomy({ scope, storeId: ctx.store.id });
     return { success: true };
   } catch (error) {
     return failure(error, "set product");

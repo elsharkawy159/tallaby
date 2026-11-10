@@ -18,7 +18,8 @@ import {
 } from "@workspace/db";
 import type { SQL } from "drizzle-orm";
 import { isAccessError } from "@/lib/auth/require-seller.server";
-import { requireProductStore } from "@/lib/products/product-store.server";
+import { taxonomyInStore, type TaxonomyScope } from "@workspace/lib/stores/scope/server";
+import { requireProductStore, taxonomyScopeOf, type ProductStoreContext } from "@/lib/products/product-store.server";
 import { priceDisplay } from "../bulk-edit/bulk-edit.lib";
 import {
   CATEGORY_ORDER_MAX_PRODUCTS,
@@ -33,8 +34,9 @@ import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
 
 /**
  * Products › Categories › "Arrange products" (ROADMAP.md F-24d, 0128). The
- * seller comes from the session; a category is used only together with its
- * seller_id (categories stay per seller until F-87d), and only the products of
+ * seller comes from the session; a category is used only when it is in the
+ * page's store list (F-87d, `taxonomyInStore`: the seller's list before the
+ * split, `store_id` = the store after it), and only the products of
  * the page's store in it can be placed or cleared (F-87c: the store must be the
  * seller's, products filtered with `productInStore`, scope `managed`; before
  * the split that is every product of the seller, as before). The
@@ -53,11 +55,12 @@ function failure(error: unknown, label: string): { success: false; error: Catego
   return { success: false, error: "generic" };
 }
 
-async function ownedCategory(sellerId: string, categoryId: string) {
+async function ownedCategory(ctx: ProductStoreContext, categoryId: string) {
+  const scope: TaxonomyScope = taxonomyScopeOf(ctx);
   const [row] = await db
     .select({ id: sellerProductCategories.id, sourceId: sellerProductCategories.sourceCategoryId })
     .from(sellerProductCategories)
-    .where(and(eq(sellerProductCategories.id, categoryId), eq(sellerProductCategories.sellerId, sellerId)))
+    .where(and(eq(sellerProductCategories.id, categoryId), taxonomyInStore(sellerProductCategories, scope)))
     .limit(1);
   return row ?? null;
 }
@@ -86,9 +89,10 @@ const isUuid = (value: unknown): value is string =>
 /** The category's products in their current "Featured" order. */
 export async function loadCategoryProductOrder(storeId: string, categoryId: unknown): Promise<CategoryOrderLoadResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId, { read: true });
+    const ctx = await requireProductStore(storeId, { read: true });
+    const { seller, inStore } = ctx;
     if (!isUuid(categoryId)) return { success: false, error: "invalidInput" };
-    const category = await ownedCategory(seller.sellerId, categoryId);
+    const category = await ownedCategory(ctx, categoryId);
     if (!category) return { success: false, error: "notFound" };
     const locale = await getLocale();
 
@@ -141,10 +145,11 @@ async function afterChange(sellerId: string, storeId: string) {
 /** Saves the order: the listed products get positions 0..n-1, the rest of the category follows newest first. */
 export async function saveCategoryProductOrder(storeId: string, input: unknown): Promise<CategoryOrderSaveResult> {
   try {
-    const { seller, store, inStore } = await requireProductStore(storeId);
+    const ctx = await requireProductStore(storeId);
+    const { seller, store, inStore } = ctx;
     const parsed = saveCategoryOrderSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
-    const category = await ownedCategory(seller.sellerId, parsed.data.categoryId);
+    const category = await ownedCategory(ctx, parsed.data.categoryId);
     if (!category) return { success: false, error: "notFound" };
 
     const ids = parsed.data.productIds;
@@ -186,9 +191,10 @@ export async function saveCategoryProductOrder(storeId: string, input: unknown):
 /** Forgets the manual order: the category goes back to newest first. */
 export async function resetCategoryProductOrder(storeId: string, categoryId: unknown): Promise<CategoryOrderSaveResult> {
   try {
-    const { seller, store, inStore } = await requireProductStore(storeId);
+    const ctx = await requireProductStore(storeId);
+    const { seller, store, inStore } = ctx;
     if (!isUuid(categoryId)) return { success: false, error: "invalidInput" };
-    const category = await ownedCategory(seller.sellerId, categoryId);
+    const category = await ownedCategory(ctx, categoryId);
     if (!category) return { success: false, error: "notFound" };
     await db
       .delete(sellerCategoryProductPositions)

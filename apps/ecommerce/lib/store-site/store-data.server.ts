@@ -21,15 +21,17 @@ export const getCachedStoreSales = createCachedQuery({
 export const SALES_DAYS = { "best-sellers": BEST_SELLER_DAYS, trending: TRENDING_DAYS } as const;
 
 /**
- * The seller's brand list. Brands are still per seller (per store with F-87d),
- * but the entry is already keyed and tagged per store (F-87c), so that move
- * needs no cache change.
+ * The store's brand list (F-87d): the seller's whole list before the catalog
+ * split, the store's own after it (`taxonomyInStore`). Keyed by seller, store
+ * and `catalogSplit` (read by the caller, outside the cached function), so an
+ * entry never mixes stores or modes; tagged with the seller (taxonomy writes
+ * still purge it, rule 8) and the store.
  */
 export const getCachedSellerBrands = createCachedQuery({
-  name: "storefront:seller-brands:v2",
+  name: "storefront:seller-brands:v3",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, storeId: string) => [productTags.seller(sellerId), productTags.store(sellerId, storeId)],
-  query: (sellerId: string, _storeId: string) => sellerBrandList(sellerId),
+  tags: (sellerId: string, storeId: string, _catalogSplit: boolean) => [productTags.seller(sellerId), productTags.store(sellerId, storeId)],
+  query: (sellerId: string, storeId: string, catalogSplit: boolean) => sellerBrandList(sellerId, { storeId, catalogSplit }),
 });
 
 /**

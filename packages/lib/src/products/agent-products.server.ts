@@ -54,7 +54,14 @@ import {
 import { syncCategoryProductCountForProductChange, syncCategoryProductCountForProductMutation } from "@workspace/db/categories";
 import { setStockContext } from "@workspace/db/inventory";
 import { syncProductVariants } from "@workspace/db/products";
-import { aliasedProductShownInStore, productInStore } from "../stores/store-scope.server";
+import {
+  aliasedProductShownInStore,
+  aliasedTaxonomyInStore,
+  productInStore,
+  taxonomyInStore,
+  taxonomyStoreIdForWrite,
+  type TaxonomyScope,
+} from "../stores/store-scope.server";
 import { isSwitchOn } from "../stores/platform-switches.server";
 import { isRichTextEmpty, sanitizeRichTextHtml } from "@workspace/tiptap/sanitize";
 import type { AgentCreateProductInput, AgentSearchProductsInput, AgentUpdateProductInput } from "./agent-products.dto";
@@ -197,8 +204,16 @@ async function requireProduct(store: AgentStore, sellerId: string, productId: st
 
 // ── Taxonomy ────────────────────────────────────────────────────────────────
 
+/** The store's own categories (F-87d): the seller's list before the split, `store_id` = the store after it. */
+const taxonomyOf = (ctx: AgentProductContext, store: AgentStore): TaxonomyScope => ({
+  sellerId: ctx.sellerId,
+  storeId: store.id,
+  catalogSplit: store.catalogSplit,
+});
+
 async function resolveCategories(
   ctx: AgentProductContext,
+  store: AgentStore,
   input: {
     categoryId?: string;
     storeCategoryId?: string | null;
@@ -209,14 +224,14 @@ async function resolveCategories(
   let sourceCategoryId: string | null = null;
 
   if (input.storeCategoryName) {
-    const found = await findOrAddStoreCategory(ctx.sellerId, input.storeCategoryName);
+    const found = await findOrAddStoreCategory(taxonomyOf(ctx, store), input.storeCategoryName);
     sellerCategoryId = found.id;
     sourceCategoryId = found.sourceCategoryId;
   } else if (sellerCategoryId) {
     const [own] = await db
       .select({ id: sellerProductCategories.id, sourceCategoryId: sellerProductCategories.sourceCategoryId })
       .from(sellerProductCategories)
-      .where(and(eq(sellerProductCategories.id, sellerCategoryId), eq(sellerProductCategories.sellerId, ctx.sellerId)))
+      .where(and(eq(sellerProductCategories.id, sellerCategoryId), taxonomyInStore(sellerProductCategories, taxonomyOf(ctx, store))))
       .limit(1);
     if (!own) throw new AgentProductError("invalid_store_category", "Store category not found. Use list_store_categories.");
     sourceCategoryId = own.sourceCategoryId;
@@ -234,7 +249,8 @@ async function resolveCategories(
 
 const nameKey = (name: string) => name.trim().replace(/\s+/g, " ").toLowerCase();
 
-async function findOrAddStoreCategory(sellerId: string, name: { ar?: string; en: string }) {
+async function findOrAddStoreCategory(scope: TaxonomyScope, name: { ar?: string; en: string }) {
+  const { sellerId } = scope;
   const keys = [name.en, name.ar].filter((n): n is string => Boolean(n?.trim())).map(nameKey);
   const findExisting = async () => {
     const [row] = await db
@@ -242,7 +258,7 @@ async function findOrAddStoreCategory(sellerId: string, name: { ar?: string; en:
       .from(sellerProductCategories)
       .where(
         and(
-          eq(sellerProductCategories.sellerId, sellerId),
+          taxonomyInStore(sellerProductCategories, scope),
           or(
             ...keys.flatMap((key) => [
               sql`lower(btrim(${sellerProductCategories.name})) = ${key}`,
@@ -258,16 +274,18 @@ async function findOrAddStoreCategory(sellerId: string, name: { ar?: string; en:
   const existing = await findExisting();
   if (existing) return existing;
 
-  const [counted] = await db.select({ total: count() }).from(sellerProductCategories).where(eq(sellerProductCategories.sellerId, sellerId));
+  const [counted] = await db.select({ total: count() }).from(sellerProductCategories).where(taxonomyInStore(sellerProductCategories, scope));
   if ((counted?.total ?? 0) >= SELLER_TAXONOMY_MAX_ITEMS) throw new AgentProductError("store_category_limit", "The store already has the maximum number of categories.");
   try {
     const [row] = await db
       .insert(sellerProductCategories)
       .values({
         sellerId,
+        // The store the agent works in; read only after the split (0163 must not assume NULL).
+        storeId: taxonomyStoreIdForWrite(scope),
         name: name.en.trim().replace(/\s+/g, " "),
         nameAr: name.ar?.trim().replace(/\s+/g, " ") || null,
-        position: sql<number>`(SELECT coalesce(max(t.position), -1) + 1 FROM ${sellerProductCategories} t WHERE t.seller_id = ${sellerId})`,
+        position: sql<number>`(SELECT coalesce(max(t.position), -1) + 1 FROM ${sellerProductCategories} t WHERE ${aliasedTaxonomyInStore("t", scope)})`,
       })
       .returning({ id: sellerProductCategories.id, sourceCategoryId: sellerProductCategories.sourceCategoryId });
     return row!;
@@ -409,7 +427,7 @@ export async function agentCreateProduct(
   const variantProblem = checkAgentVariants(variants);
   if (variantProblem) throw new AgentProductError("variants_invalid", `Variants are not valid: ${variantProblem}.`);
 
-  const taxonomy = await resolveCategories(ctx, input);
+  const taxonomy = await resolveCategories(ctx, store, input);
   if (!taxonomy.categoryId) {
     throw new AgentProductError("category_required", "Pick a Tallaby category (search_categories) for the product.");
   }
@@ -516,7 +534,7 @@ export async function agentUpdateProduct(
     const problem = checkAgentVariants(input.variants);
     if (problem) throw new AgentProductError("variants_invalid", `Variants are not valid: ${problem}.`);
   }
-  const taxonomy = await resolveCategories(ctx, input);
+  const taxonomy = await resolveCategories(ctx, store, input);
   if (input.sku && (await skuTaken(ctx.sellerId, input.sku.trim(), input.productId))) {
     throw new AgentProductError("sku_taken", `SKU "${input.sku}" is already used by another product.`);
   }
@@ -793,7 +811,7 @@ export async function agentGetProduct(ctx: AgentProductContext, productId: strin
     ? await db
         .select({ id: sellerProductCategories.id, name: sellerProductCategories.name, nameAr: sellerProductCategories.nameAr })
         .from(sellerProductCategories)
-        .where(and(eq(sellerProductCategories.id, product.sellerCategoryId), eq(sellerProductCategories.sellerId, ctx.sellerId)))
+        .where(and(eq(sellerProductCategories.id, product.sellerCategoryId), taxonomyInStore(sellerProductCategories, taxonomyOf(ctx, store))))
         .limit(1)
     : [];
   const enSlug = product.productTranslations.find((r) => r.locale === "en")?.slug ?? null;
@@ -841,7 +859,7 @@ export async function agentGetProduct(ctx: AgentProductContext, productId: strin
 
 export async function agentListStoreCategories(ctx: AgentProductContext) {
   const store = await loadStore(ctx, false);
-  // The list is still per seller (taxonomy per store: F-87d). After the split the count is this store's products only.
+  // The store's list (F-87d: the seller's before the split, the store's after it). After the split the count is this store's products only.
   const inThisStore = store.catalogSplit
     ? sql` AND ${aliasedProductShownInStore("p", { storeId: store.id, catalogSplit: true })}`
     : sql``;
@@ -855,7 +873,7 @@ export async function agentListStoreCategories(ctx: AgentProductContext) {
       products: sql<number>`${sql`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.deleted_at IS NULL${inThisStore})`}`,
     })
     .from(sellerProductCategories)
-    .where(eq(sellerProductCategories.sellerId, ctx.sellerId))
+    .where(taxonomyInStore(sellerProductCategories, taxonomyOf(ctx, store)))
     .orderBy(asc(sellerProductCategories.position))
     .limit(SELLER_TAXONOMY_MAX_ITEMS);
   return rows;
