@@ -1224,6 +1224,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-85c · P1 · deps: F-85b** Shared SEO defaults, length meters, preview, checklist; Pages SEO list and sheet.
 - **F-85d · P1 · deps: F-85c** AI writing (`seo_write`, 1 credit, fast tier, thinking minimal, 10-minute cache, 30 a day ×10 on Pro).
 - **F-85e · P2 · deps: —** Store sitemap stylesheet titled with the store name (per-host `/sitemap.xsl`).
+- **F-85f · P1 · deps: —** Foolproof DNS step for a custom domain: TTL on every record (3600, any 60–3600, or Auto), copy buttons for Name/Value/TTL, `@` hint, per-registrar steps (Hostinger, GoDaddy, Namecheap, Cloudflare, EgyHosting, Other), remove conflicting records, "Check now" under the records (owner, 2026-11-10).
 
 ### F-86 Setup-only home for new sellers — P1 · owner request
 
@@ -1245,6 +1246,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 | 2026-11-10 | Dashboard sidebar: clicking an accordion group goes to the group's main page AND opens the group (e.g. "Products" opens /products, All products); remove "All products" from the group's list so there are fewer items | Sidebar group links (no feature ID) | Done (§7 2026-11-10) |
 | 2026-11-10 | "New sellers shouldn't see metrics on the dashboard home — it confuses them. Until the store is set up, the home shows ONLY a clean setup screen with four cards: Add your first product, Choose your store design (theme + brand together), Set up payments, Set up shipping. Once the seller has set up the store, the home shows the metrics normally" | F-86 | Built |
 | 2026-11-09 | "separate /website/domain page and /website/seo page … domain page is just for domain and subdomain configurations. seo page for store main SEO and pages SEO, and add Keywords for Store SEO and pages too, make SEO advanced and easy in clear design, make them have default values in good advanced SEO values … on store's sitemap.xml ensure to add the store title in the page title"; then: "add AI buttons icons on SEO to let AI write the SEO for the seller, low cost and take 1 point per page SEO improvement written" | F-85 | Built (uncommitted) |
+| 2026-11-10 | A seller on Hostinger got stuck on the TTL field (owner told them to type 60): "make the custom-domain setup on the seller dashboard easy for anybody: show the TTL to use on our domain page, plus whatever else makes the DNS step foolproof" | F-85f | Built |
 | 2026-11-09 | Public store from day one with real orders; grace period: orders visible until the second order or 14 days (from 2026-11-09 for existing sellers), the first order stays visible, then top up to see new ones; first-order bell + push "top up to keep seeing new orders"; AI and emails still need a top-up | F-84 (replaces F-76, changes F-68) | Done (uncommitted, 0159 not applied) |
 | 2026-11-08 | "check the 'Creating Full ready E-commerce website with AI Agent from tallaby.com homepage hero section input' plan … upgrade the plan … Output should be full ready website with applied template and design system and products … simple prompt and product csv file or written with uploaded brand logo and primary color … agent can ask seller for any missing data … in question and Choices way … suggest 3 templates … everything is published … low cost AI, professional AI experience (like Claude or ChatGPT)"; then: "make the AI agent advanced with all skills … (Website design builder, shipping, products, integrations, apps, etc) … a reusable big assistant agent and use each part of it as separated agents for the related part … the shipping agent on the shipping page" | F-82, F-83 | Planned (design 2026-11-08), needs owner decisions |
 | 2026-11-08 | "Allow Order Confirmation Email to customers, and add it in the pricing plans as a plan feature" | F-63 (F-63d) | Done (§7 2026-11-08) |
@@ -1639,12 +1641,20 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-85c Shared SEO defaults, meters, preview, checklist, Pages SEO sheet (2026-11-09; uncommitted; not seen in a browser)
 - [x] F-85d "Write with AI" on SEO, 1 credit per target (2026-11-09; uncommitted; live cost ≈ $0.0003 a call)
 - [x] F-85e Store sitemap page titled with the store name (2026-11-09; uncommitted)
+- [x] F-85f Custom domain DNS step: TTL, copy buttons, per-registrar steps (2026-11-10; not seen in a browser)
 - [x] F-86a Four home setup steps, payments flag, real-orders rule, tests (2026-11-10)
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-85f Custom domain DNS step made foolproof (owner; no migration)
+
+- **Records (`website/domain/domain-dns.lib.ts`):** the DNS table moved out of `custom-domain-card.client.tsx` into `dnsRecords(domain, verification)`; every record has a TTL (`RECOMMENDED_TTL` 3600, range 60–3600) shown in the row as "3600 (1 hour)" with its own copy button, and Name and Value got copy buttons too. A subdomain domain (`shop.example.com`, detected by `splitDomain`, which treats `com.eg`-style second levels as part of the root) now shows `CNAME shop` and `CNAME www.shop` → `cname.vercel-dns.com` instead of the wrong `A @`; TXT names are relative to the root. Display only: the Vercel calls and the verify logic are unchanged.
+- **Guide (`dns-registrar-steps.client.tsx`):** chips for Hostinger, GoDaddy, Namecheap, Cloudflare, EgyHosting and Other, 5 steps each from `REGISTRAR_GUIDES` (menu path and the registrar's field names in Latin, e.g. Hostinger: Name / Points to; delete old A/AAAA/CNAME records on the same names, keep MX/TXT mail records; the TTL to type for that registrar; Cloudflare: Proxy status DNS only). EgyHosting and Other stay generic (menu not named). Notes under the table: `@` means the domain itself (leave Name empty if the provider won't take @) and the TTL rule; "Check now" repeated next to the propagation line (few minutes to a few hours, rarely 48 h).
+- **Strings:** `settings.customDomain.{ttl,ttlHuman,copyName,copyTtl,nameHint,ttlNote,guide.*}` in ar and en; `propagation` reworded.
+- **Checks:** `domain-dns.lib.test.ts` 9 pass (TTL range, root/subdomain split, records, a guide for every provider id plus Other, 3–5 steps, step texts in both languages); dashboard typecheck clean; tests pass. Not browser-tested.
 
 ### 2026-11-10 — Sidebar group labels open the group's page (owner; no migration)
 

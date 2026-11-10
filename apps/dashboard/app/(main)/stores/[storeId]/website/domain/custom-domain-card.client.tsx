@@ -10,30 +10,13 @@ import { addCustomDomain, removeCustomDomain, verifyCustomDomain, type CustomDom
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { IconButton, InputGroup, Note, ResponsiveTable, SectionCard, SellerButton, StatusBadge, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
-
-/** Vercel's targets; mirrors packages/lib/src/storefront/vercel-domains.ts. */
-const APEX_A_RECORD = "76.76.21.21";
-const WWW_CNAME = "cname.vercel-dns.com";
+import { dnsRecords, type DnsRecord } from "./domain-dns.lib";
+import { DnsRegistrarSteps } from "./dns-registrar-steps.client";
 
 /** Reasons `checkCustomDomain` reports while a domain isn't live. */
 const CHECK_KEYS = new Set(["unverified", "dns", "not_attached"]);
 
 const STEPS = ["buy", "enter", "dns"] as const;
-
-type DnsRecord = { type: string; name: string; value: string };
-
-function dnsRecords(view: CustomDomainView): DnsRecord[] {
-  const records: DnsRecord[] = [
-    { type: "A", name: "@", value: APEX_A_RECORD },
-    { type: "CNAME", name: "www", value: WWW_CNAME },
-  ];
-  for (const v of view.verification) {
-    // `_vercel.faster-eg.com` → `_vercel` (registrars want the host part).
-    const name = v.domain.endsWith(`.${view.domain}`) ? v.domain.slice(0, -(view.domain.length + 1)) : v.domain;
-    records.push({ type: v.type, name, value: v.value });
-  }
-  return records;
-}
 
 /**
  * A domain the seller owns, in the design's layout: add it, follow the DNS
@@ -90,6 +73,8 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
     setConfirmRemove(false);
     run("remove", () => removeCustomDomain(storeId), () => toast.success(t("removed")));
   };
+
+  const records = view ? dnsRecords(view.domain, view.verification) : [];
 
   const copy = async (value: string) => {
     try {
@@ -207,31 +192,27 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
               </Note>
               <ResponsiveTable
                 label={t("dnsTitle")}
-                rows={dnsRecords(view)}
+                rows={records}
                 rowKey={(r) => `${r.type}-${r.name}-${r.value}`}
                 columns={[
                   { key: "type", header: t("type"), phone: "title", cell: (r) => <bdi className="font-montserrat text-[12.5px] font-semibold">{r.type}</bdi> },
-                  { key: "name", header: t("name"), phone: "end", cell: (r) => <bdi dir="ltr" className="font-montserrat text-[12.5px] font-semibold">{r.name}</bdi> },
-                  {
-                    key: "value",
-                    header: t("value"),
-                    phone: "full",
-                    cell: (r) => (
-                      <span className="flex items-center gap-1">
-                        <bdi dir="ltr" className="min-w-0 break-all font-montserrat text-[12.5px] font-semibold">
-                          {r.value}
-                        </bdi>
-                        <IconButton onClick={() => copy(r.value)} aria-label={t("copyValue")} className="relative z-10 size-8">
-                          <Copy className="!size-3.5" aria-hidden />
-                        </IconButton>
-                      </span>
-                    ),
-                  },
+                  { key: "name", header: t("name"), phone: "full", cell: (r) => <CopyCell value={r.name} label={t("copyName")} onCopy={copy} /> },
+                  { key: "value", header: t("value"), phone: "full", cell: (r) => <CopyCell value={r.value} label={t("copyValue")} onCopy={copy} breakAll /> },
+                  { key: "ttl", header: t("ttl"), phone: "full", cell: (r) => <CopyCell value={String(r.ttl)} label={t("copyTtl")} onCopy={copy} suffix={t("ttlHuman")} /> },
                 ]}
               />
+              {records.some((r) => r.name === "@") && <p className="text-pretty text-xs text-(--s-faint)">{t("nameHint")}</p>}
+              <p className="text-pretty text-xs text-(--s-faint)">{t("ttlNote")}</p>
               {view.lastError && <Note>{t(`checks.${CHECK_KEYS.has(view.lastError) ? view.lastError : "dns"}`)}</Note>}
-              <p className="text-pretty text-xs text-(--s-faint)">{t("propagation")}</p>
+              <DnsRegistrarSteps names={cleanupNames(records)} />
               <p className="text-pretty text-xs text-(--s-faint)">{t("cloudflare")}</p>
+              <div className="flex flex-wrap items-center gap-2.5 max-[720px]:[&>button]:w-full">
+                <p className="min-w-0 flex-1 basis-[240px] text-pretty text-xs text-(--s-faint)">{t("propagation")}</p>
+                <SellerButton variant="mini" size="sm" onClick={verify} disabled={pending || readOnly}>
+                  {action === "verify" ? <LoaderCircle className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />}
+                  {t("verify")}
+                </SellerButton>
+              </div>
             </div>
           )}
 
@@ -243,6 +224,28 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
         </>
       )}
     </SectionCard>
+  );
+}
+
+/** The A/CNAME record names, for "delete old records with the same name". */
+function cleanupNames(records: DnsRecord[]): string {
+  return [...new Set(records.filter((r) => r.type === "A" || r.type === "CNAME").map((r) => r.name))].join(" / ");
+}
+
+/** A record field in Latin with its copy button; `suffix` is a small note after it (the TTL in words). */
+function CopyCell({ value, label, onCopy, suffix, breakAll }: { value: string; label: string; onCopy: (value: string) => void; suffix?: string; breakAll?: boolean }) {
+  return (
+    <span className="flex items-center gap-1">
+      <span className="min-w-0">
+        <bdi dir="ltr" className={cn("font-montserrat text-[12.5px] font-semibold", breakAll && "break-all")}>
+          {value}
+        </bdi>
+        {suffix && <small className="ms-1.5 whitespace-nowrap text-[11.5px] text-(--s-subtle)">({suffix})</small>}
+      </span>
+      <IconButton onClick={() => onCopy(value)} aria-label={`${label}: ${value}`} className="relative z-10 size-8 shrink-0">
+        <Copy className="!size-3.5" aria-hidden />
+      </IconButton>
+    </span>
   );
 }
 

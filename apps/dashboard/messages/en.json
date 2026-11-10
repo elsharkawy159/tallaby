@@ -2415,7 +2415,7 @@
       "type": "Type",
       "name": "Name / Host",
       "value": "Value / Points to",
-      "propagation": "Changes usually take a few minutes, sometimes up to 48 hours. We check automatically every day, or press “Check now”.",
+      "propagation": "DNS changes take from a few minutes up to a few hours (rarely up to 48 hours). We check every day on our own, or press “Check now”.",
       "cloudflare": "Using Cloudflare? Set these records to “DNS only” (grey cloud), or the secure certificate can't be issued.",
       "activeNote": "Your store is live on your domain with a free secure certificate. Your Tallaby address now forwards here.",
       "checks": {
@@ -2455,7 +2455,30 @@
           "body": "We’ll show you the values to copy."
         }
       },
-      "copyFailed": "Couldn't copy. Select the text and copy it yourself."
+      "copyFailed": "Couldn't copy. Select the text and copy it yourself.",
+      "ttl": "TTL",
+      "ttlHuman": "1 hour",
+      "copyName": "Copy name",
+      "copyTtl": "Copy TTL",
+      "nameHint": "@ means the domain itself. If your provider won't accept @, leave Name empty.",
+      "ttlNote": "TTL: if your provider asks for a number, type 3600. Any number from 60 to 3600 works (Hostinger also accepts 60, for a faster start). If it shows Auto or Default, leave it.",
+      "guide": {
+        "title": "Steps for your domain provider",
+        "label": "Where did you buy your domain?",
+        "other": "Other",
+        "steps": {
+          "open": "Sign in to <l>{registrar}</l> and open: <l>{menu}</l>",
+          "openGeneric": "Sign in where you bought the domain and open its DNS settings (often called DNS Management, DNS Zone or Manage DNS). Can't find it? Ask their support to add the records above.",
+          "clean": "Delete old A, AAAA or CNAME records with the same name (<l>{names}</l>), such as a parking page record. Keep MX and TXT email records.",
+          "add": "Add each record from the table: pick the Type, put the name in <l>{nameField}</l> and the value in <l>{valueField}</l>.",
+          "ttlHostinger": "TTL: type 3600, or 60 for a faster start. Hostinger accepts numbers from 60.",
+          "ttlGodaddy": "TTL: leave the default (1 Hour), or choose Custom and type 3600.",
+          "ttlAuto": "TTL: leave it on Automatic.",
+          "ttlCloudflare": "Proxy status: turn it off so it shows DNS only (grey cloud). TTL: leave it on Auto.",
+          "ttlNumber": "TTL: if it asks for a number, type 3600. If it shows Auto or Default, leave it.",
+          "save": "Save each record, then come back here and press “Check now”."
+        }
+      }
     },
     "title": "Store settings",
     "subtitle": "Your store as customers see it, its links, and verification documents.",
