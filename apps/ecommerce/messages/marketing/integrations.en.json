@@ -7,6 +7,18 @@
     "integration-meta-pixel": {
       "title": "Connect your store to Meta Pixel",
       "description": "Connect Meta Pixel and the Conversions API to your Tallaby store and measure your Facebook and Instagram ads."
+    },
+    "integration-bosta": {
+      "title": "Ship with Bosta from your store dashboard",
+      "description": "Connect your Bosta account to your store, send orders in one click, print waybills and follow each shipment without copy-paste."
+    },
+    "integration-paymob": {
+      "title": "Accept cards with your own Paymob account",
+      "description": "Connect your Paymob account and take card payments straight into it. Paymob sets the payment fees; Tallaby takes no share."
+    },
+    "integration-kashier": {
+      "title": "Accept cards with your own Kashier account",
+      "description": "Connect your Kashier account and take card payments straight into it. Kashier sets its fees; Tallaby takes no share of sales."
     }
   },
   "integrationsHub": {
@@ -129,6 +141,204 @@
         "eventsTitle": "Meta events",
         "eventsHint": "Choose which events the Pixel sends",
         "appHint": "Measure your ads"
+      }
+    },
+    "bosta": {
+      "crumbHub": "Integrations",
+      "crumb": "Bosta",
+      "title": "Bosta, inside your store",
+      "lead": "Connect your Bosta account, send an order from your dashboard in one click, print the waybill and follow the shipment, with no addresses to copy by hand.",
+      "whatTitle": "How does the Bosta integration work?",
+      "what": [
+        "With the Bosta integration, an order's details go straight to your Bosta account: the customer's name, phone, address, area and the amount to collect. You copy nothing and write no waybill yourself.",
+        "You connect your account once with an API key from Bosta. Then you open an order, press \"Ship with Bosta\", check the area, the amount to collect and the package size, and send it. The tracking number shows on the order, you print the waybill from your dashboard, and the order's status follows Bosta's updates.",
+        "Shipping runs on your own Bosta account at your own rates. Tallaby doesn't deliver orders and adds nothing to the shipping price."
+      ],
+      "usesTitle": "What you do with Bosta from your dashboard",
+      "uses": [
+        { "title": "Send an order in one click", "body": "Customer details, address and the amount to collect go to Bosta with no copy-paste." },
+        { "title": "Print the waybill", "body": "Print the shipping label from your dashboard and stick it on the package." },
+        { "title": "Status updates", "body": "The order's status changes with each Bosta update: picked up, on the way, delivered." },
+        { "title": "Cash collection", "body": "Bosta collects the cash on delivery amount, up to EGP 30,000 per shipment." }
+      ],
+      "requirementsTitle": "What you need before connecting",
+      "requirements": [
+        { "title": "A Bosta merchant account", "body": "Your own account, at the shipping rates agreed with you." },
+        { "title": "A Bosta API key", "body": "Created in your Bosta account settings, allowed to create shipments." },
+        { "title": "A pickup location in Bosta", "body": "Where Bosta's courier picks up your packages." },
+        { "title": "A Tallaby store", "body": "You connect from Store › Apps › Bosta." }
+      ],
+      "stepsTitle": "How to connect Bosta and ship your first order",
+      "steps": [
+        { "title": "Connect your account", "body": "In Store › Apps › Bosta, paste your API key and press Connect." },
+        { "title": "Send the order to Bosta", "body": "Open the order, press \"Ship with Bosta\", check the area, amount to collect and package size, then send." },
+        { "title": "Print the waybill", "body": "The tracking number shows on the order, and you print the waybill from your dashboard." },
+        { "title": "Follow the status", "body": "The order's status follows Bosta's updates until delivery." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Shipping in Egypt", "body": "Shipping zones, your riders and Wassalha." },
+        { "title": "All integrations", "body": "Shipping, payments and measurement tools." },
+        { "title": "An online store in Egypt", "body": "Payments and shipping with local tools." },
+        { "title": "Cash on delivery store", "body": "Confirm before you ship." }
+      ],
+      "faq": [
+        { "q": "Is the Bosta integration free?", "a": "Connecting adds no Tallaby fee. You pay Bosta for shipping at your account's rates, and Tallaby's order fee stays what your plan charges." },
+        { "q": "Do I need a Bosta account?", "a": "Yes. Shipping runs on your own Bosta account; Tallaby doesn't ship for you." },
+        { "q": "Does the order status update by itself?", "a": "Yes. The order's status in your dashboard follows Bosta's updates, and you can open tracking on Bosta from the order." },
+        { "q": "Can I pick the Bosta area if the address isn't recognised?", "a": "Yes. If the address doesn't match a Bosta area, you choose the area from the list before sending." },
+        { "q": "What about orders paid by card?", "a": "They go with nothing to collect. An order that isn't paid yet can't go to Bosta until the payment lands." },
+        { "q": "Does it work with more than one store?", "a": "Yes. Each store has its own connection, so each store can use a different Bosta account." }
+      ],
+      "closingTitle": "Connect Bosta and ship your first order today",
+      "mock": {
+        "title": "Order #2209",
+        "path": "Orders › Ship with Bosta",
+        "dialogTitle": "Ship with Bosta",
+        "pickup": "Bosta picks it up from your warehouse",
+        "fields": [["Bosta area", "Dokki, Giza"], ["Bosta collects", "EGP 275"], ["Package size", "Small"]],
+        "send": "Send to Bosta",
+        "cardTitle": "Bosta shipment",
+        "state": "Waiting for pickup",
+        "tracking": "Tracking no.",
+        "print": "Print waybill",
+        "connectHint": "Paste your Bosta API key",
+        "connect": "Connect",
+        "areaLabel": "Bosta area",
+        "areaValue": "Dokki, Giza",
+        "states": ["Picked up", "Delivered"]
+      }
+    },
+    "paymob": {
+      "crumbHub": "Integrations",
+      "crumb": "Paymob",
+      "title": "Paymob in your store, money in your account",
+      "lead": "Connect your Paymob account to your store, so customers pay by card and the money goes straight to your Paymob account.",
+      "whatTitle": "How does the Paymob integration work?",
+      "what": [
+        "With the Paymob integration, card payments in your store run on your own gateway. The customer picks card payment, your Paymob account's payment page opens, and the amount lands in your account there.",
+        "You paste your account's keys once in Store settings › Payment methods. Tallaby checks them with a test payment that is never charged, then saves them encrypted. Once connected, card payment shows next to cash on delivery.",
+        "Paymob sets the payment fees for your account. Tallaby takes no share of sales; its fee is your plan's usual order fee."
+      ],
+      "usesTitle": "What Paymob adds to your store",
+      "uses": [
+        { "title": "Card payments", "body": "Customers pay by bank card on your account's Paymob payment page." },
+        { "title": "Mobile wallets", "body": "If your account has a wallet integration, add its ID and customers see it." },
+        { "title": "Your keys stay safe", "body": "Keys are saved encrypted and never show in your store or to anyone." },
+        { "title": "Checked before it goes live", "body": "Tallaby checks your keys before saving, so customers never see a broken gateway." }
+      ],
+      "requirementsTitle": "What you need before connecting",
+      "requirements": [
+        { "title": "A Paymob merchant account", "body": "An active account in your name or your company's." },
+        { "title": "Your account keys", "body": "The secret key, public key and HMAC secret from your Paymob dashboard." },
+        { "title": "A card integration ID", "body": "And a wallet integration ID if you want to take wallets." },
+        { "title": "A Tallaby store", "body": "You connect from Store settings › Payment methods." }
+      ],
+      "stepsTitle": "How to connect Paymob to your store",
+      "steps": [
+        { "title": "Copy your keys from Paymob", "body": "In your Paymob dashboard, copy the keys and the card integration ID." },
+        { "title": "Paste them in Payment methods", "body": "In Store settings › Payment methods › Card payments, choose Paymob and paste the keys." },
+        { "title": "Tallaby checks the keys", "body": "With a test payment that is never charged, then the keys are saved encrypted." },
+        { "title": "Customers pay by card", "body": "Card payment shows at checkout next to cash on delivery." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Kashier integration", "body": "The option if your account is with Kashier." },
+        { "title": "Cash on delivery store", "body": "Cash on delivery ready from the start." },
+        { "title": "All integrations", "body": "Shipping, payments and measurement tools." },
+        { "title": "Pricing", "body": "Tallaby's fees on each plan." }
+      ],
+      "faq": [
+        {
+          "q": "Does Tallaby take a share of card payments?",
+          "a": "No. The money goes to your Paymob account, and Paymob sets the payment fees. Tallaby's fee is your plan's order fee, such as {orderFee} per order on the Free plan."
+        },
+        { "q": "When do I get the money?", "a": "On your terms with Paymob: the money is paid to your account there, not to Tallaby." },
+        { "q": "Can I connect Paymob and Kashier together?", "a": "Each store has one card gateway. Choose Paymob or Kashier for each store." },
+        { "q": "Does cash on delivery stay available?", "a": "Yes. Card payment shows next to cash on delivery, and you can turn either off whenever you like." },
+        { "q": "Are my keys safe?", "a": "Keys are saved encrypted on the server and never show in your store, in messages or in logs." },
+        { "q": "Do I need a developer?", "a": "No. You paste the keys in your dashboard, and Tallaby checks them before turning card payment on." }
+      ],
+      "closingTitle": "Connect Paymob and take card payments",
+      "mock": {
+        "title": "Payment methods",
+        "path": "Store settings › Payment methods › Card payments",
+        "cardHint": "Your own Paymob account",
+        "keys": ["Secret key", "Public key", "HMAC secret", "Card integration ID"],
+        "copyHint": "From your Paymob dashboard",
+        "connectHint": "Paste your account's keys",
+        "connect": "Connect",
+        "checking": "Checking your keys",
+        "checked": "Keys checked",
+        "checkoutTitle": "What your customer sees at checkout",
+        "card": "Pay by card",
+        "cod": "Cash on delivery"
+      }
+    },
+    "kashier": {
+      "crumbHub": "Integrations",
+      "crumb": "Kashier",
+      "title": "Kashier in your store, money in your account",
+      "lead": "Connect your Kashier account to your store, so customers pay by card on your gateway and the money goes straight to you.",
+      "whatTitle": "How does Kashier work in your store?",
+      "what": [
+        "The Kashier gateway in your Tallaby store is your own Kashier account. The customer picks card payment, your account's payment page opens, and the amount lands with you there.",
+        "You paste your Merchant ID, Payment API key and secret key in Store settings › Payment methods, and choose test or live mode. Tallaby checks the keys with a test payment that is never charged before saving them.",
+        "Kashier sets the payment fees for your account, and Tallaby takes no share of sales. If your account is with Paymob instead, you connect it the same way."
+      ],
+      "usesTitle": "What Kashier adds to your store",
+      "uses": [
+        { "title": "Card payments", "body": "Customers pay on the Kashier payment page of your account." },
+        { "title": "Money in your account", "body": "The amount goes to your Kashier account, not to Tallaby." },
+        { "title": "Test before going live", "body": "Try the connection in test mode, then switch it to live." },
+        { "title": "Follow it in your dashboard", "body": "The order shows as paid by card once the payment lands." }
+      ],
+      "requirementsTitle": "What you need before connecting",
+      "requirements": [
+        { "title": "A Kashier merchant account", "body": "An active account in your name or your company's." },
+        { "title": "Merchant ID", "body": "Your merchant number from the Kashier dashboard." },
+        { "title": "Payment API key and secret key", "body": "From your Kashier account settings." },
+        { "title": "A Tallaby store", "body": "You connect from Store settings › Payment methods." }
+      ],
+      "stepsTitle": "How to connect Kashier to your store",
+      "steps": [
+        { "title": "Copy your keys from Kashier", "body": "The Merchant ID, Payment API key and secret key." },
+        { "title": "Paste them in Payment methods", "body": "In Store settings › Payment methods › Card payments, choose Kashier and test or live mode." },
+        { "title": "Tallaby checks the keys", "body": "With a test payment that is never charged, then the keys are saved encrypted." },
+        { "title": "Customers pay by card", "body": "Card payment shows at checkout next to cash on delivery." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Paymob integration", "body": "The option if your account is with Paymob." },
+        { "title": "An online store in Egypt", "body": "Payments and shipping with local tools." },
+        { "title": "All integrations", "body": "Shipping, payments and measurement tools." },
+        { "title": "Store cost calculator", "body": "Add your gateway's fees to your monthly cost." }
+      ],
+      "faq": [
+        {
+          "q": "Does Tallaby take a share of my Kashier sales?",
+          "a": "No. The money goes to your Kashier account, and Kashier sets the payment fees. Tallaby's fee is your plan's order fee, such as {orderFee} per order on the Free plan."
+        },
+        { "q": "Can I test before going live?", "a": "Yes. Choose test mode when connecting, and once you're sure, switch to live with your live keys." },
+        { "q": "Can I connect Kashier and Paymob together?", "a": "Each store has one card gateway. Choose Kashier or Paymob for each store." },
+        { "q": "Does cash on delivery stay available?", "a": "Yes. Card payment shows next to cash on delivery." },
+        { "q": "Are my keys safe?", "a": "Keys are saved encrypted on the server and never show in your store or in logs." },
+        { "q": "What if a customer pays a different amount from the order?", "a": "An order is only marked paid when the amount matches the order total." }
+      ],
+      "closingTitle": "Connect Kashier and take card payments",
+      "mock": {
+        "title": "Payment methods",
+        "path": "Store settings › Payment methods › Card payments",
+        "cardHint": "Your own Kashier account",
+        "keys": ["Merchant ID", "Payment API key", "Secret key"],
+        "copyHint": "From your Kashier dashboard",
+        "connectHint": "Paste your account's keys",
+        "connect": "Connect",
+        "checking": "Checking your keys",
+        "checked": "Keys checked",
+        "checkoutTitle": "What your customer sees at checkout",
+        "card": "Pay by card",
+        "cod": "Cash on delivery"
       }
     }
   }

@@ -19,7 +19,7 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
   const t = await getTranslations(`detailPages.${page.slug}`);
   const shared = await getTranslations("contentPages");
   const isIntegration = page.kind === "integration";
-  const hub = isIntegration ? "/integrations" : undefined;
+  const hub = isIntegration ? "/integrations" : "/features";
   const path = `/${isIntegration ? "integrations" : "features"}/${page.slug}`;
 
   const what = t.raw("what") as string[];
@@ -79,7 +79,7 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
             </div>
           </div>
           <div className="min-w-0">
-            <DetailShotView shot={page.shot} />
+            <DetailShotView shot={page.shot} slug={page.slug} partner={page.partner} />
           </div>
         </Container>
       </section>
@@ -189,7 +189,7 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
                   </p>
                 </div>
                 <div className="min-w-0 min-[641px]:col-start-2 min-[1081px]:col-start-auto">
-                  <StepVisual visual={page.steps[i]!} slug={page.slug} />
+                  <StepVisual visual={page.steps[i]!} slug={page.slug} partner={page.partner} />
                 </div>
               </Reveal>
             ))}

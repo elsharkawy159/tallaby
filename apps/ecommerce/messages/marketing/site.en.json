@@ -8,12 +8,15 @@
     "ctaMobile": "Create your free store",
     "login": "Log in",
     "closeMenu": "Close menu",
-    "mobile": "Mobile menu"
+    "mobile": "Mobile menu",
+    "solutions": "Solutions"
   },
   "siteFooter": {
     "solutions": "Solutions",
     "integrations": "Integrations",
-    "compare": "Compare"
+    "compare": "Compare",
+    "allSolutions": "All solutions",
+    "allFeatures": "All features"
   },
   "site": {
     "breadcrumb": "Breadcrumb",

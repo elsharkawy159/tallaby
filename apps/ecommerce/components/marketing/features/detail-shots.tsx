@@ -3,6 +3,7 @@ import { Activity, Check, Copy, Globe, KeyRound, Lock, RefreshCw } from "lucide-
 import { getTranslations } from "next-intl/server";
 import { DashFrame, MockButton, MockCard, MockCardHead, MockCode, MockField, MockPill, MockTable, MockToggle } from "@/components/marketing/pages/dash-mock";
 import type { DetailShot, DetailStepVisual } from "@/lib/marketing/detail-pages.lib";
+import { MoreShotView, moreStepContent } from "./detail-shots-more";
 
 /** The real records the dashboard asks for (apps/dashboard settings/custom-domain.client.tsx). */
 const DNS_ROWS = [
@@ -102,15 +103,18 @@ async function PixelShot() {
   );
 }
 
-export function DetailShotView({ shot }: { shot: DetailShot }) {
-  return shot === "domain" ? <DomainShot /> : <PixelShot />;
+export function DetailShotView({ shot, slug, partner }: { shot: DetailShot; slug: string; partner?: string }) {
+  if (shot === "domain") return <DomainShot />;
+  if (shot === "pixel") return <PixelShot />;
+  return <MoreShotView shot={shot} slug={slug} partner={partner} />;
 }
 
 /** The small picture beside a step. Its words live under the page's `mock`. */
-export async function StepVisual({ visual, slug }: { visual: DetailStepVisual; slug: string }) {
+export async function StepVisual({ visual, slug, partner }: { visual: DetailStepVisual; slug: string; partner?: string }) {
   const t = await getTranslations(`detailPages.${slug}.mock`);
   const label = (text: string) => <span className="text-[11px] font-semibold text-[#808080]">{text}</span>;
   const content: Record<DetailStepVisual, () => React.ReactNode> = {
+    ...moreStepContent(t, partner),
     registrar: () => (
       <>
         {label(t("registrarLabel"))}

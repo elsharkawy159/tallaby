@@ -1,18 +1,26 @@
 {
   "meta": {
     "tool-profit-margin-calculator": {
-      "title": "Profit margin calculator for online stores",
-      "description": "Work out your net profit per order, your margin and a suggested selling price for your online store. Free, in Egyptian pounds."
+      "title": "Profit margin and selling price calculator",
+      "description": "Work out your real profit per order after cost, shipping, ads and platform fees, and find the price that hits the margin you want."
+    },
+    "tool-store-cost-calculator": {
+      "title": "Online store cost calculator for Egypt",
+      "description": "Work out your store's monthly cost from your order count: platform fees, domain and card payments, Free plan vs Pro."
+    },
+    "tools": {
+      "title": "Free tools for online store owners",
+      "description": "Free calculators with no signup: your store's monthly cost, profit margin and selling price. Made for sellers in Egypt, in EGP."
     }
   },
   "toolPages": {
     "profit-margin-calculator": {
-      "name": "Profit margin calculator for online stores",
+      "name": "Profit margin and selling price calculator",
       "crumbHub": "Free tools",
       "crumb": "Profit margin calculator",
       "eyebrow": "Free tool",
-      "title": "Profit margin calculator <em>for online stores</em>",
-      "lead": "Enter your costs and selling price, and see what you really keep from each order before you start advertising.",
+      "title": "Work out your margin <em>and selling price</em>",
+      "lead": "Enter your costs, and see your real profit per order and the price that hits the margin you want, before you start advertising.",
       "calculator": {
         "title": "Costs and selling price",
         "reset": "Reset",
@@ -41,13 +49,7 @@
           "suggested": "Suggested price for a 30% margin",
           "suggestedHint": "EGP per item"
         },
-        "segments": {
-          "buy": "Purchase",
-          "ship": "Shipping",
-          "ad": "Ads",
-          "fee": "Tallaby fee",
-          "profit": "Profit"
-        },
+        "segments": { "buy": "Purchase", "ship": "Shipping", "ad": "Ads", "fee": "Tallaby fee", "profit": "Profit" },
         "messages": {
           "needsPrice": "Enter a selling price to see your profit.",
           "loss": "You lose EGP {loss} on every order. Raise the price to at least EGP {price} to cover your costs.",
@@ -105,19 +107,134 @@
           "q": "How do I work out my ad cost per order?",
           "a": "Divide your total ad spend over a period by the orders from the same period. For example, EGP 3,000 ÷ 50 orders = EGP 60 per order."
         },
-        "saved": {
-          "q": "Are the numbers I enter saved?",
-          "a": "Only on your device, so they're there when you come back. Nothing is sent to a server. Press Reset to go back to the example figures."
-        },
+        "saved": { "q": "Are the numbers I enter saved?", "a": "Only on your device, so they're there when you come back. Nothing is sent to a server. Press Reset to go back to the example figures." },
         "fee": {
           "q": "How does the calculator count the Tallaby fee?",
           "a": "The Free plan's fee is {orderFee} per order at today's exchange rate, taken from your store wallet, while your orders and prices stay in pounds. So the calculator counts {fee} EGP per order. Pro costs {pro} a month with no order fee, so it doesn't count against a single order."
         }
       },
-      "closing": {
-        "title": "Turn your numbers into a store that sells",
-        "body": "No monthly subscription on the Free plan, and {orderFee} per order."
-      }
+      "closing": { "title": "Turn your numbers into a store that sells", "body": "No monthly subscription on the Free plan, and {orderFee} per order." },
+      "relatedTitle": "Related tools and pages",
+      "related": [
+        { "title": "Store cost calculator", "body": "What does your store cost each month?" },
+        { "title": "Tallaby pricing", "body": "Each plan's fees in detail." },
+        { "title": "Cash on delivery store", "body": "Cut returns before you ship." }
+      ]
+    },
+    "store-cost-calculator": {
+      "name": "Online store cost calculator",
+      "crumbHub": "Free tools",
+      "crumb": "Store cost calculator",
+      "eyebrow": "Free tool",
+      "title": "What will your online store cost <em>each month?</em>",
+      "lead": "Enter your order count and average order value, and see what your Tallaby store costs each month on Free and on Pro, with card fees and a domain.",
+      "calculator": {
+        "title": "Your store's numbers",
+        "reset": "Reset",
+        "currency": "EGP",
+        "ordersUnit": "orders",
+        "fields": {
+          "orders": "Orders a month",
+          "ordersHint": "Your estimate",
+          "averageOrder": "Average order value",
+          "averageOrderHint": "Before shipping",
+          "cardShare": "Orders paid by card",
+          "cardShareHint": "The rest pay on delivery",
+          "gatewayPct": "Gateway percentage",
+          "gatewayPctHint": "An example; type your rate",
+          "gatewayFixed": "Fixed amount per payment",
+          "gatewayFixedHint": "If any",
+          "domainYearly": "Domain price per year",
+          "domainYearlyHint": "0 for the free link"
+        },
+        "note": "Tallaby's fees use today's exchange rate and come out of your store wallet. Gateway fees and domain prices are your own numbers; Tallaby doesn't set them. Shipping is left out, since the customer usually pays it.",
+        "results": {
+          "title": "Your monthly cost",
+          "platform": "Tallaby fees",
+          "gateway": "Gateway fees",
+          "domain": "Domain, per month",
+          "total": "Total",
+          "perOrder": "Per order",
+          "best": "Costs less",
+          "cardOrders": "{count, plural, =0 {No card orders this month.} one {# card order this month.} other {# card orders this month.}}"
+        },
+        "verdict": {
+          "free": "Free costs you about EGP {saving} less a month. Pro costs less from about {orders} orders a month.",
+          "pro": "Pro costs you about EGP {saving} less a month, since it has no order fees.",
+          "same": "Both plans cost the same at this order count."
+        }
+      },
+      "soft": { "title": "Know your cost? Start your store now", "body": "No monthly fee on the Free plan, and no credit card.", "cta": "Create your store for free" },
+      "costs": {
+        "title": "What goes into an online store's cost?",
+        "lead": "The cost of an online store in Egypt isn't one number. These are the items you pay each month, and who sets each one.",
+        "items": [
+          { "title": "Platform fees", "body": "On Tallaby: {orderFee} per order on the Free plan, or {pro} a month on Pro with no order fees." },
+          { "title": "Payment gateway", "body": "If you take cards through Paymob or Kashier, the gateway charges its fees for your account. Cash on delivery has no gateway fee." },
+          { "title": "Domain", "body": "Optional. Your store starts on a free link; for your own domain you pay a registrar each year." },
+          { "title": "Shipping", "body": "The customer usually pays it with the order, and you pay your carrier or rider as agreed." },
+          { "title": "Apps", "body": "Some apps have a cost, such as order notification emails. You see the cost in your dashboard before turning one on." },
+          { "title": "Ads", "body": "The biggest item for most sellers, and yours to set. See its effect on profit with the profit margin calculator." }
+        ]
+      },
+      "example": {
+        "title": "A worked example at today's rate",
+        "lead": "A store with {orders} orders a month at EGP {average} each on average, {cardShare}% of them paid by card at {gatewayPct}%.",
+        "item": "Item",
+        "orders": "Orders",
+        "platform": "Tallaby fees",
+        "gateway": "Gateway fees",
+        "total": "Monthly total",
+        "note": "In this example Free costs EGP {freeTotal} and Pro EGP {proTotal}, and Pro costs less from about {breakEven} orders a month."
+      },
+      "faqTitle": "Questions about the cost of an online store",
+      "faq": {
+        "total": {
+          "q": "How much does it cost to create an online store in Egypt?",
+          "a": "On Tallaby there's no setup fee and no monthly fee on the Free plan, and you pay {orderFee} per order. Add your gateway's fees if you take cards, and a domain if you want your own."
+        },
+        "free": { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly fee, and you pay {orderFee} for each order you get." },
+        "pro": { "q": "When does Pro cost less?", "a": "When your Free order fees add up to more than Pro's monthly {pro}. Enter your order count in the calculator to see which costs less." },
+        "domain": { "q": "Do I need to buy a domain?", "a": "No. Your store starts on a free tallaby.com link, and connecting your own domain is optional and on both plans." },
+        "gateway": { "q": "What do payment gateways charge?", "a": "Paymob or Kashier set it for your account, and Tallaby takes no share of sales. Type your account's rate in the calculator." },
+        "shipping": {
+          "q": "Why doesn't the calculator include shipping?",
+          "a": "The customer usually pays shipping with the order, and it costs the same on both plans. To see shipping's effect on profit, use the profit margin calculator."
+        },
+        "topUp": {
+          "q": "How do I pay Tallaby's fees?",
+          "a": "Fees come out of your store wallet, which you top up in EGP from {topUpMin}. You need a first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders."
+        }
+      },
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Profit margin calculator", "body": "Work out profit and price per product." },
+        { "title": "Tallaby pricing", "body": "Both plans and their fees in detail." },
+        { "title": "Free online store", "body": "No monthly fee and no credit card." },
+        { "title": "Paymob integration", "body": "Card payments on your own account." }
+      ],
+      "closing": { "title": "Start your store with no monthly fee", "body": "Free: {orderFee} per order. Pro: {pro} a month with no order fees." }
     }
+  },
+  "toolsHub": {
+    "crumb": "Free tools",
+    "eyebrow": "No signup",
+    "title": "Free tools <em>that help you sell</em>",
+    "lead": "Simple calculators that run in your browser, with your own numbers in EGP, so you decide before you spend.",
+    "search": "Search",
+    "searchPlaceholder": "Search for a tool, e.g. profit",
+    "categoriesLabel": "Tools",
+    "categories": { "all": "All", "costs": "Store cost", "pricing": "Pricing and profit" },
+    "soon": "Soon",
+    "featured": "Most visited",
+    "featuredCta": "Open the tool",
+    "count": "{count} tools",
+    "noneTitle": "No results",
+    "noneBody": "Try another word or pick a different category.",
+    "items": { "store-cost-calculator": "What your store costs each month on Free and on Pro.", "profit-margin-calculator": "Your profit per order, and the price that hits the margin you want." },
+    "explainerTitle": "Why work it out before you sell?",
+    "explainer": "Most sellers know their buying price, but few add up shipping, ads, platform fees and card fees together. These tools do it for you: the store cost calculator tells you what you pay each month and which plan costs less, and the profit margin calculator tells you what you keep from each order. Your numbers stay in your browser and are sent nowhere.",
+    "closingTitle": "Done the maths? Start your store",
+    "closingBody": "No monthly fee on the Free plan."
   }
 }

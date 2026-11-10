@@ -1,6 +1,7 @@
 /** Header navigation. "key" is the "nav.*" message and the page id for aria-current. */
 export const NAV_ITEMS = [
   { key: "features", href: "/#features" },
+  { key: "solutions", href: "/solutions" },
   { key: "ai", href: "/#ai" },
   { key: "templates", href: "/templates" },
   { key: "marketing", href: "/#marketing" },

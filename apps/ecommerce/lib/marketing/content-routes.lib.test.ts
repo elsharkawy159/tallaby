@@ -29,7 +29,8 @@ describe("contentPagePaths", () => {
 describe("integrations hub", () => {
   it("links only to detail pages that exist", () => {
     expect(integrationHref("meta-pixel")).toBe("/integrations/meta-pixel");
-    expect(integrationHref("bosta")).toBeUndefined();
+    expect(integrationHref("bosta")).toBe("/integrations/bosta");
+    expect(integrationHref("aramex")).toBeUndefined();
   });
 
   it("marks what the code does not have yet as soon", () => {
@@ -62,9 +63,12 @@ describe("footerSolutionLinks", () => {
     const links = footerSolutionLinks();
     expect(links).toEqual(
       expect.arrayContaining([
+        { href: "/solutions/free-online-store", metaKey: "solution-free-online-store" },
         { href: "/solutions/create-online-store", metaKey: "solution-create-online-store" },
         { href: "/industries/clothing-store", metaKey: "industry-clothing-store" },
-        { href: "/features/custom-domain", metaKey: "feature-custom-domain" },
+        { href: "/features/ai-online-store", metaKey: "feature-ai-online-store" },
+        { href: "/features/fake-order-protection", metaKey: "feature-fake-order-protection" },
+        { href: "/tools/store-cost-calculator", metaKey: "tool-store-cost-calculator" },
         { href: "/tools/profit-margin-calculator", metaKey: "tool-profit-margin-calculator" },
       ]),
     );

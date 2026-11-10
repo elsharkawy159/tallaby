@@ -43,6 +43,22 @@ export const CONTENT_PAGE_LASTMOD: Record<string, string> = {
   "/industries/car-accessories-store": "2026-11-10",
   "/industries/handmade-store": "2026-11-10",
   "/industries/sports-store": "2026-11-10",
+  "/solutions": "2026-11-10",
+  "/features": "2026-11-10",
+  "/tools": "2026-11-10",
+  "/solutions/free-online-store": "2026-11-10",
+  "/solutions/online-store-egypt": "2026-11-10",
+  "/solutions/create-online-store": "2026-11-10",
+  "/solutions/cash-on-delivery-store": "2026-11-10",
+  "/features/ai-online-store": "2026-11-10",
+  "/features/fake-order-protection": "2026-11-10",
+  "/features/abandoned-checkouts": "2026-11-10",
+  "/features/shipping": "2026-11-10",
+  "/integrations/bosta": "2026-11-10",
+  "/integrations/paymob": "2026-11-10",
+  "/integrations/kashier": "2026-11-10",
+  "/tools/store-cost-calculator": "2026-11-10",
+  "/tools/profit-margin-calculator": "2026-11-10",
 };
 
 /** A page's sitemap date: its own entry, else the content pages' date. */

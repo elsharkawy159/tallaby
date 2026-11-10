@@ -1,8 +1,24 @@
 {
   "meta": {
     "solution-create-online-store": {
-      "title": "Create an online store without a developer",
-      "description": "Create your online store with Tallaby: ready-made templates, cash on delivery and shipping connections. No monthly fee on the Free plan and no developer needed."
+      "title": "Create an online store step by step",
+      "description": "Build your own online store in clear steps: pick a template, add products with AI, turn on payments and shipping, then publish."
+    },
+    "solution-free-online-store": {
+      "title": "Create a free online store, no monthly fee",
+      "description": "Open your online store with no monthly fee: {orderFee} per order, and orders show from day one. Set it up in minutes."
+    },
+    "solution-online-store-egypt": {
+      "title": "An ecommerce platform built for Egypt",
+      "description": "An online store made for sellers in Egypt: cash on delivery, Bosta, your own Paymob or Kashier, and shipping zones by governorate."
+    },
+    "solution-cash-on-delivery-store": {
+      "title": "An online store with cash on delivery",
+      "description": "Cash on delivery is on for every store from the start, with fake-order protection, WhatsApp confirmation and shipping zones."
+    },
+    "solutions": {
+      "title": "Online store solutions for every seller",
+      "description": "Every Tallaby solution in one place: a free store, a store for Egypt, cash on delivery, and the steps to create your store."
     }
   },
   "solutionPages": {
@@ -42,12 +58,20 @@
       "kindsKicker": "For every business",
       "kindsTitle": "Who is it for?",
       "kindsLead": "Any seller who sells products and wants a store under their own name, whatever they sell.",
-      "relatedTitle": "Related pages"
+      "relatedTitle": "Related pages",
+      "seePricing": "See pricing and fees",
+      "stepMock": {
+        "cod": "Cash on delivery",
+        "zones": [["Cairo and Giza", "EGP 50"], ["Alexandria", "EGP 60"], ["Upper Egypt", "EGP 75"]],
+        "ask": "Ask to confirm on WhatsApp",
+        "confirmed": "Confirmed"
+      },
+      "crumbHub": "Solutions"
     },
     "create-online-store": {
       "crumb": "Create an online store",
-      "title": "Create an online store <em>without a developer</em>",
-      "lead": "Type your store's name, pick a ready-made template, add your products and start selling from one dashboard.",
+      "title": "Create your online store, <em>step by step</em>",
+      "lead": "Clear steps to build your own online store: type your store's name, pick a template, add your products, then turn on payments and shipping and publish.",
       "dashboard": {
         "title": "Home",
         "greeting": "Good morning, Nour",
@@ -60,30 +84,26 @@
         ],
         "ordersTitle": "Latest orders",
         "ordersHead": ["Order", "Customer", "Total", "Status"],
-        "orders": [
-          ["#2481", "Mariam", "420 EGP", "New"],
-          ["#2480", "Ahmed", "260 EGP", "Shipping"],
-          ["#2479", "Salma", "310 EGP", "Delivered"]
-        ]
+        "orders": [["#2481", "Mariam", "420 EGP", "New"], ["#2480", "Ahmed", "260 EGP", "Shipping"], ["#2479", "Salma", "310 EGP", "Delivered"]]
       },
       "trust": ["No monthly subscription on Free", "{orderFee} per order", "No developer needed", "A store in Arabic and English"],
-      "introTitle": "What is an online store, and why do you need one?",
+      "introTitle": "How do you create an online store yourself?",
       "intro": [
-        "An online store is a website that shows your products with their photos and prices, and takes orders from your customers at any time. A customer picks a product, adds it to the cart and pays on delivery or by card, and the order reaches you with the customer's details and address.",
-        "Many sellers in Egypt start on Facebook, Instagram and WhatsApp. That's a good start, but orders can get lost in messages, you answer the same questions about price and size again and again, and it's hard to measure your ads. An online store gives you one link with your brand's name to put in every post and ad, a page for each product that can show up on Google, and a dashboard for your orders, shipping and payments.",
-        "You don't need a developer or a big budget to create one. On Tallaby, you type your store's name and pick a ready-made template, then add your products and publish."
+        "Creating an online store takes four steps: claim your store's link, pick a template, add your products, then turn on payments and shipping and publish. On Tallaby every step happens in your dashboard, with no developer and no code.",
+        "An online store is a website that shows your products with their photos and prices and takes orders at any time. Many sellers in Egypt start on Facebook, Instagram and WhatsApp, but orders get lost in messages. A store gives you one link with your brand's name, a page for each product that can show up on Google, and a dashboard for orders, shipping and payments.",
+        "You can get through the steps in a day, then publish when you're ready. If you need a hand, message us on WhatsApp."
       ],
-      "stepsTitle": "How to create your online store",
+      "stepsTitle": "Steps to create an online store",
       "steps": [
         { "title": "Type your store's name and claim its link", "body": "Sign up with email or a Google account and get a free link for your store." },
-        { "title": "Pick a ready-made template", "body": "Start with a template made for what you sell, and edit the text and photos with Drag & Drop." },
-        { "title": "Add your products", "body": "From an Excel file or a product link, and Tallaby AI helps you write titles and descriptions in Arabic and English." },
+        { "title": "Pick a ready-made template", "body": "Start with a template made for what you sell, and edit the text and photos by drag and drop." },
+        { "title": "Add your products", "body": "From an Excel file or a product link, and AI writes titles and descriptions in Arabic and English." },
         { "title": "Turn on payment and shipping, then publish", "body": "Cash on delivery is on from the start, and you can connect Paymob or Kashier and Bosta whenever you like." }
       ],
       "features": [
-        { "title": "Tallaby AI for product copy", "body": "Titles and descriptions in Arabic and English, for you to review before publishing." },
+        { "title": "AI for product copy", "body": "Titles and descriptions in Arabic and English, for you to review before publishing." },
         { "title": "Templates for each category", "body": "Templates for fashion, beauty, electronics and the home, and you can change at any time." },
-        { "title": "Drag & Drop editor", "body": "Edit any text or photo with a click, and preview your store on a phone before publishing." },
+        { "title": "Drag and drop editor", "body": "Edit any text or photo with a click, and preview your store on a phone before publishing." },
         { "title": "Your own domain", "body": "Start on a free yourbrand.tallaby.com link, and connect your domain whenever you like." },
         { "title": "Online payment and cash on delivery", "body": "Cards and wallets through your own Paymob or Kashier account, and InstaPay straight to your account." },
         { "title": "Shipping connections", "body": "Issue Bosta waybills and tracking numbers from your dashboard, or use your own riders." },
@@ -100,23 +120,244 @@
         { "label": "Time to launch", "tallaby": "You can publish the same day", "other": "Weeks to months" },
         { "label": "Payment and shipping", "tallaby": "Ready to connect from your dashboard", "other": "Each connection needs development" }
       ],
-      "faqTitle": "Questions about creating an online store",
+      "faqTitle": "Questions about the steps to create an online store",
       "faq": [
+        {
+          "q": "How do I create an online store step by step?",
+          "a": "Sign up and claim your store's link, pick a template, add your products, turn on payments and shipping, then publish. Every step happens in your dashboard."
+        },
         { "q": "How long does it take to create an online store on Tallaby?", "a": "You can sign up, pick a template and add your products in a day, then publish when you're ready." },
-        { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on." },
+        {
+          "q": "Is creating a store free?",
+          "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
+        },
         { "q": "Do I need a developer or technical experience?", "a": "No. Every step happens visually in your dashboard, from picking a template to connecting payment and shipping." },
         { "q": "Can I use my own domain?", "a": "Yes. Your store starts on a free link like yourbrand.tallaby.com, and you can connect a domain you own to your main store by adding its DNS records." },
-        { "q": "How can my customers pay?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account." },
-        { "q": "How do I ship orders?", "a": "Tallaby doesn't deliver orders itself. Connect your Bosta account and issue waybills from your dashboard, download the Wassalha sheet or use your own riders, and set shipping rates by area." },
-        { "q": "Can I bring products over from another store or page?", "a": "Yes. Import your products from an Excel file, a product link or Shopify." }
+        {
+          "q": "How do I ship orders?",
+          "a": "Tallaby doesn't deliver orders itself. Connect your Bosta account and issue waybills from your dashboard, download the Wassalha sheet or use your own riders, and set shipping rates by area."
+        },
+        { "q": "Can I move my products from another store or page?", "a": "Yes. Import your products from an Excel file, a product link or Shopify." }
       ],
       "related": [
+        { "title": "Free online store", "body": "No monthly fee and no credit card." },
+        { "title": "AI that writes your products", "body": "Names and descriptions in Arabic and English." },
         { "title": "Integrations", "body": "Shipping, payments and measurement tools." },
-        { "title": "Templates", "body": "Browse templates by category." },
-        { "title": "Pricing", "body": "Plans and fees in detail." },
-        { "title": "Profit margin calculator", "body": "Work out what you make on each order." }
+        { "title": "Pricing", "body": "Plans and fees in detail." }
       ],
       "closingTitle": "Create your online store now"
+    },
+    "free-online-store": {
+      "crumb": "Free online store",
+      "title": "A free online store, <em>with no monthly fee</em>",
+      "lead": "Open your store on Tallaby with no monthly fee and no setup fee, and pay only {orderFee} for each order you get.",
+      "dashboard": {
+        "title": "Plan and wallet",
+        "greeting": "Your plan: Free",
+        "sub": "No monthly fee. You only pay per order.",
+        "planName": "Free plan",
+        "planHint": "Fees come out of your store wallet",
+        "planActive": "Active",
+        "planRows": [{ "label": "Monthly fee", "value": "None" }, { "label": "Setup fee", "value": "None" }, { "label": "Fee per order", "value": "{orderFee}" }],
+        "ordersTitle": "Latest orders",
+        "ordersHead": ["Order", "Customer", "Total", "Status"],
+        "orders": [["#1032", "Mona", "380 EGP", "New"], ["#1031", "Karim", "245 EGP", "Shipping"], ["#1030", "Hala", "510 EGP", "Delivered"]]
+      },
+      "trust": ["No monthly fee", "{orderFee} per order", "Orders show from day one", "No credit card"],
+      "introTitle": "Can I really create a free online store?",
+      "intro": [
+        "Yes. You can create a free online store on Tallaby with no monthly fee and no setup fee. On the Free plan you pay {orderFee} for each order you get, so if no orders come in, you pay no fees.",
+        "It's a complete store: a ready-made template you edit by drag and drop, a link with your store's name, cash on delivery on from the start, and Bosta, Paymob and Kashier ready to connect from your dashboard. The two plans differ in fees, AI credits and campaign emails, not in the tools you sell with.",
+        "As your orders grow, Pro at {pro} a month with no order fees may cost you less. Check it with the store cost calculator before you decide."
+      ],
+      "stepsTitle": "Your free store in 4 steps",
+      "steps": [
+        { "title": "Claim your store's link", "body": "Type your store's name and get a link like yourbrand.tallaby.com, with no credit card." },
+        { "title": "Pick a ready-made template", "body": "Start with a template that suits what you sell, and edit its text and photos by drag and drop." },
+        { "title": "Add your products", "body": "Write them yourself, or let AI write the name and description in Arabic and English from a product photo." },
+        { "title": "Publish and take orders", "body": "Cash on delivery is on from the start, and orders show in your dashboard from day one." }
+      ],
+      "features": [
+        { "title": "AI that writes your products", "body": "Names, descriptions and search fields in two languages, with monthly credits included on Free." },
+        { "title": "Ready-made templates", "body": "Templates for every kind of business, edited without code and changed whenever you like." },
+        { "title": "Cash on delivery", "body": "On in every store, with number blocking and WhatsApp order confirmation." },
+        { "title": "A free link or your own domain", "body": "Start on a tallaby.com link, and connect your domain whenever you like." }
+      ],
+      "costTitle": "What does a free store really cost?",
+      "cost": [
+        { "label": "Monthly fee", "tallaby": "None", "other": "Depends on the platform" },
+        { "label": "Setup fee", "tallaby": "EGP 0", "other": "The developer's fee" },
+        { "label": "Order fees", "tallaby": "{orderFee} per order", "other": "Depends on the platform" },
+        { "label": "Hosting and SSL", "tallaby": "Included", "other": "Paid to your hosting provider" },
+        { "label": "Store link", "tallaby": "A free tallaby.com link", "other": "A domain you buy and renew" }
+      ],
+      "faqTitle": "Questions about a free online store",
+      "faq": [
+        {
+          "q": "Is the store free forever?",
+          "a": "The Free plan has no monthly fee, and we don't ask for a credit card. It isn't cost-free, though: you pay {orderFee} per order, and you need a first wallet top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns."
+        },
+        {
+          "q": "What's the difference between Free and Pro?",
+          "a": "On Free you pay {orderFee} per order and no monthly fee. On Pro you pay {pro} a month and no order fees, with more AI credits and campaign emails. Which costs less depends on how many orders you get."
+        },
+        { "q": "Do I need a credit card to sign up?", "a": "No. Sign up with email or a Google account, and top up your wallet later in EGP." },
+        {
+          "q": "Can I open a free online store in Egypt and sell with cash on delivery?",
+          "a": "Yes. Cash on delivery is on in every store from the start, you set shipping prices by governorate or area, and you can connect your Bosta account whenever you like."
+        },
+        {
+          "q": "Do apps cost extra?",
+          "a": "Some apps have a cost, like the Order Notifications app that emails your customers about their orders. You see each app's cost in your dashboard before you turn it on."
+        },
+        {
+          "q": "Does Tallaby take a share of my sales?",
+          "a": "No. The Free plan's fee is a fixed amount per order, not a share of its value. If you connect Paymob or Kashier, your payment provider sets its own card fees."
+        }
+      ],
+      "related": [
+        { "title": "Tallaby pricing", "body": "Both plans and their fees in detail." },
+        { "title": "An online store in Egypt", "body": "Payments and shipping with local tools." },
+        { "title": "Store cost calculator", "body": "Compare Free and Pro for your order count." },
+        { "title": "Store templates", "body": "Browse templates by kind of business." }
+      ],
+      "closingTitle": "Create your free store now"
+    },
+    "online-store-egypt": {
+      "crumb": "Online store in Egypt",
+      "title": "Your online store in Egypt, <em>with local tools</em>",
+      "lead": "An ecommerce platform made for sellers in Egypt: prices in EGP, cash on delivery, Bosta, and your own Paymob or Kashier account.",
+      "dashboard": {
+        "title": "Shipping and delivery",
+        "greeting": "Shipping zones",
+        "sub": "Set a shipping price for each governorate or area.",
+        "zonesTitle": "Shipping zones",
+        "zonesHint": "Cash on delivery is on",
+        "zonesHead": ["Zone", "Shipping", "Free over"],
+        "zones": [["Cairo and Giza", "50 EGP", "1,000 EGP"], ["Alexandria", "60 EGP", "1,200 EGP"], ["Aswan", "85 EGP", "1,500 EGP"]],
+        "ordersTitle": "Latest orders",
+        "ordersHead": ["Order", "Governorate", "Total", "Status"],
+        "orders": [["#2210", "Dakahlia", "430 EGP", "Awaiting confirmation"], ["#2209", "Giza", "275 EGP", "With Bosta"], ["#2208", "Alexandria", "620 EGP", "Delivered"]]
+      },
+      "trust": ["Cash on delivery", "Shipping with Bosta", "Paymob and Kashier, your account", "Shipping prices by governorate"],
+      "introTitle": "Why build your online store in Egypt on Tallaby?",
+      "intro": [
+        "An ecommerce platform for Egypt needs more than a nice website. Most customers pay on delivery, shipping costs differ from one governorate to the next, and sellers want card payments to land in their own account. Tallaby is an Egyptian platform built around those details.",
+        "Cash on delivery is on in every store, and you set shipping prices for each governorate or area, with free shipping over an amount you choose. Connect your Bosta account to send orders and print waybills, or use your own riders. For card payments, connect your own Paymob or Kashier account and the money goes to you.",
+        "Tallaby doesn't deliver orders and doesn't hold your sales money. You choose your shipping company and payment provider; we give you the store and the dashboard that brings them together."
+      ],
+      "stepsTitle": "How to start your store in Egypt",
+      "steps": [
+        { "title": "Sign up and claim your link", "body": "With email or a Google account, no credit card needed." },
+        { "title": "Add products in EGP", "body": "Set prices in EGP, and let AI write the description in Arabic and English." },
+        { "title": "Set your shipping zones", "body": "A price for each governorate or area, with cash on delivery per zone as you like." },
+        { "title": "Connect shipping and payments, then publish", "body": "Bosta, Paymob and Kashier from your dashboard, then publish your store." }
+      ],
+      "features": [
+        { "title": "Cash on delivery", "body": "On in every store, and you can turn it off for a zone." },
+        { "title": "Shipping with Bosta", "body": "Send an order to your Bosta account and print the waybill from your dashboard." },
+        { "title": "Paymob and Kashier", "body": "Card payments on your own account; your provider sets the payment fees." },
+        { "title": "Zones for every governorate", "body": "Different prices by governorate or area, with free shipping over an amount you choose." },
+        { "title": "Fake-order protection", "body": "Block numbers, and see a warning on numbers that refused earlier orders." },
+        { "title": "Arabic and English", "body": "Your store and dashboard in both languages, Arabic first." }
+      ],
+      "faqTitle": "Questions about an online store in Egypt",
+      "faq": [
+        {
+          "q": "What's the easiest way to create an online store in Egypt without a developer?",
+          "a": "Use a platform with cash on delivery and local shipping built in. On Tallaby you sign up, pick a template, add your products and set your shipping zones, then publish, all from your dashboard."
+        },
+        { "q": "Can I create a free online store in Egypt?", "a": "Yes. The Free plan has no monthly fee, and you pay {orderFee} per order. You top up your wallet in EGP, from {topUpMin}." },
+        {
+          "q": "Does Tallaby deliver orders to customers?",
+          "a": "No. Tallaby doesn't deliver orders itself. Connect your Bosta account, download the Wassalha sheet for Egypt Post, or use your own riders."
+        },
+        {
+          "q": "How do I get paid for card orders?",
+          "a": "Connect your own Paymob or Kashier account. The customer pays on your gateway and the money goes to your account with that provider. Tallaby takes no share of sales."
+        },
+        {
+          "q": "Can customers pay with InstaPay or Vodafone Cash?",
+          "a": "Yes. A customer can transfer straight to your account with InstaPay or a wallet, then upload a screenshot of the transfer with the order."
+        },
+        { "q": "Can I sell to every governorate?", "a": "Yes. You choose the governorates and areas you ship to and the price of each, and the customer sees the shipping cost before ordering." }
+      ],
+      "related": [
+        { "title": "Free online store", "body": "No monthly fee and no credit card." },
+        { "title": "Bosta integration", "body": "Send orders and print waybills from your dashboard." },
+        { "title": "Kashier integration", "body": "Card payments on your own account." },
+        { "title": "Store cost calculator", "body": "What will your store cost each month?" }
+      ],
+      "closingTitle": "Start your online store in Egypt today"
+    },
+    "cash-on-delivery-store": {
+      "crumb": "Cash on delivery store",
+      "title": "Cash on delivery, <em>ready in your store</em>",
+      "lead": "Every Tallaby store takes cash on delivery from day one, with tools that cut the orders refused at the door.",
+      "dashboard": {
+        "title": "Orders",
+        "greeting": "Cash on delivery orders",
+        "sub": "Two orders are waiting for WhatsApp confirmation.",
+        "kpis": [
+          { "label": "Today's orders", "value": "18", "unit": "orders" },
+          { "label": "Confirmed", "value": "14", "unit": "orders" },
+          { "label": "Awaiting", "value": "4", "unit": "orders" },
+          { "label": "Delivered", "value": "96", "unit": "%" }
+        ],
+        "ordersTitle": "Latest orders",
+        "ordersHead": ["Order", "Governorate", "Total", "Status"],
+        "orders": [["#3307", "Qalyubia", "340 EGP", "Awaiting confirmation"], ["#3306", "Sharqia", "520 EGP", "With the rider"], ["#3305", "Cairo", "260 EGP", "Confirmed"]]
+      },
+      "trust": ["Cash on delivery on", "WhatsApp order confirmation", "Block problem numbers", "Shipping by governorate"],
+      "introTitle": "Why does your store need cash on delivery?",
+      "intro": [
+        "Cash on delivery is how most shoppers in Egypt prefer to pay, because they see the product before paying. So every online store on Tallaby takes cash on delivery from the start, with nothing to set up.",
+        "Cash on delivery has a cost, though: an order refused at the door means shipping both ways. So your dashboard has a button that opens WhatsApp with a ready confirmation message, a warning on numbers that refused earlier orders, number blocking, and an automatic limit on repeat orders from the same number.",
+        "You can turn cash on delivery off for a shipping zone, and offer card payment through your own Paymob or Kashier account, or InstaPay transfers."
+      ],
+      "stepsTitle": "How cash on delivery works in your store",
+      "steps": [
+        { "title": "On from the start", "body": "Customers see cash on delivery in every new store, with nothing to set up." },
+        { "title": "Set your shipping zones", "body": "A price for each governorate or area, and you can turn cash on delivery off for a zone." },
+        { "title": "Confirm the order on WhatsApp", "body": "Press \"Ask to confirm\" to open WhatsApp with the order number, items and address, then mark the order confirmed." },
+        { "title": "Ship the order", "body": "Send it to your Bosta account so Bosta collects the cash, or hand it to your rider." }
+      ],
+      "features": [
+        { "title": "Cash on delivery per zone", "body": "Turn it on or off for each shipping zone." },
+        { "title": "WhatsApp confirmation", "body": "A ready confirmation message for every order, with text you can edit." },
+        { "title": "Risky order warnings", "body": "Numbers that refused earlier orders, and repeat orders within minutes." },
+        { "title": "Unfinished checkouts", "body": "People who added an address but didn't order, so you can call or message them." },
+        { "title": "Bosta collects the cash", "body": "Send the order to your Bosta account with the amount to collect." },
+        { "title": "Your own riders", "body": "Add your riders and assign orders to them from your dashboard." }
+      ],
+      "faqTitle": "Questions about a cash on delivery store",
+      "faq": [
+        {
+          "q": "Is cash on delivery on in every store?",
+          "a": "Yes. Every new store takes cash on delivery from the start. You can turn it off for a shipping zone, or turn it off entirely once another payment method is on."
+        },
+        {
+          "q": "How do I confirm cash on delivery orders?",
+          "a": "Each new order has an \"Ask to confirm\" button that opens WhatsApp to the customer with a ready message. When they reply, press \"Confirm order\". Orders still unconfirmed after 24 hours are highlighted."
+        },
+        { "q": "Does Tallaby send WhatsApp messages automatically?", "a": "No. You send the message from your phone in one tap; the text is ready and you can edit it for each store." },
+        {
+          "q": "How do I cut fake orders?",
+          "a": "Block numbers that keep refusing, watch for the \"refused earlier orders\" warning on an order, and confirm before you ship. The platform also limits repeat orders from the same number within a short time."
+        },
+        {
+          "q": "Who collects the cash from the customer?",
+          "a": "Your shipping company or your rider. With Bosta, you send the amount to collect with the shipment. Tallaby doesn't deliver orders or collect money."
+        },
+        { "q": "Can I offer card payment too?", "a": "Yes. Connect your own Paymob or Kashier account, and card payment shows next to cash on delivery." }
+      ],
+      "related": [
+        { "title": "Fake-order protection", "body": "Number blocking and risky order warnings." },
+        { "title": "Shipping in Egypt", "body": "Shipping zones, Bosta and your riders." },
+        { "title": "Bosta integration", "body": "Send orders with the amount to collect." },
+        { "title": "Unfinished checkouts", "body": "Reach people who didn't finish ordering." }
+      ],
+      "closingTitle": "Open your cash on delivery store today"
     }
   },
   "blogRanking": {
@@ -146,5 +387,31 @@
     "chooseTitle": "How to choose the right platform",
     "faqTitle": "Common questions",
     "readAlso": "Read next"
+  },
+  "solutionsHub": {
+    "crumb": "Solutions",
+    "eyebrow": "For every seller",
+    "title": "Solutions for every seller <em>who wants to sell online</em>",
+    "lead": "Whether you're opening your first store for free or selling in Egypt with cash on delivery, here's the page that answers your question.",
+    "search": "Search",
+    "searchPlaceholder": "Search, e.g. free",
+    "categoriesLabel": "Solutions",
+    "categories": { "all": "All", "start": "Start your store", "sell": "Selling and payments" },
+    "soon": "Soon",
+    "featured": "Most visited",
+    "featuredCta": "Read more",
+    "count": "{count} pages",
+    "noneTitle": "No results",
+    "noneBody": "Try another word or pick a different category.",
+    "items": {
+      "free-online-store": "A complete store with no monthly fee, and fees on orders only.",
+      "online-store-egypt": "Cash on delivery, Bosta, Paymob, Kashier and shipping zones by governorate.",
+      "create-online-store": "Clear steps from claiming your link to publishing your store.",
+      "cash-on-delivery-store": "Cash on delivery from day one, with WhatsApp order confirmation."
+    },
+    "explainerTitle": "Which online store platform fits you?",
+    "explainer": "An online store platform gives you the website and the dashboard together, so you need no developer or hosting. Pick the page closest to where you are: to start with no monthly cost, read about the free store; if you sell in Egypt, read about cash on delivery, Bosta shipping and card payments on your own account; and if you want the steps in order, follow the step-by-step guide.",
+    "closingTitle": "Start your online store today",
+    "closingBody": "Sign up in minutes, pick a template and add your products."
   }
 }

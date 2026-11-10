@@ -35,6 +35,7 @@ export const MARKETING_CLIENT_NAMESPACES = [
   "templates",
   "toast",
   "toolPages.profit-margin-calculator.calculator",
+  "toolPages.store-cost-calculator.calculator",
   "trackingConsent",
 ] as const;
 

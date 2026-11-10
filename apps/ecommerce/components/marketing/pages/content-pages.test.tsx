@@ -5,10 +5,15 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { DetailPageView } from "@/components/marketing/features/detail-page";
 import IntegrationsPage from "@/app/[locale]/(marketing)/(site)/integrations/page";
 import CompareHub from "@/app/[locale]/(marketing)/(site)/compare/page";
+import SolutionsHub from "@/app/[locale]/(marketing)/(site)/solutions/page";
+import FeaturesHub from "@/app/[locale]/(marketing)/(site)/features/page";
+import ToolsHub from "@/app/[locale]/(marketing)/(site)/tools/page";
+import { TOOL_SLUGS } from "@/lib/marketing/tools.lib";
 import IndustriesHub from "@/app/[locale]/(marketing)/(site)/industries/page";
 import { ComparePageView } from "@/components/marketing/compare/compare-page";
 import { AlternativesPageView } from "@/components/marketing/compare/alternatives-page";
 import { MarginToolPage } from "@/components/marketing/tools/margin-tool-page";
+import { StoreCostToolPage } from "@/components/marketing/tools/store-cost-tool-page";
 import { IndustryPageView } from "@/components/marketing/industries/industry-page";
 import { SolutionPageView } from "@/components/marketing/solutions/solution-page";
 import { RankingArticleView } from "@/components/marketing/blog-ranking/ranking-article";
@@ -48,6 +53,7 @@ vi.mock("@/i18n/navigation", () => ({
 vi.mock("next/image", () => ({ default: ({ alt }: { alt: string }) => <img alt={alt} /> }));
 vi.mock("@/components/marketing/signup/signup-trigger.client", () => ({
   SignupTrigger: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>,
+  SlugClaimForm: ({ submitLabel }: { submitLabel?: React.ReactNode }) => <form>{submitLabel}</form>,
 }));
 vi.mock("@/lib/marketing/templates.server", () => ({
   getTemplateGallery: async () => [
@@ -115,7 +121,8 @@ describe.each(["ar", "en"])("content pages render (%s)", (locale) => {
     const out = await html(await IntegrationsPage());
     check(out);
     expect(out).toContain('href="/integrations/meta-pixel"');
-    expect(out).not.toContain('href="/integrations/bosta"');
+    expect(out).toContain('href="/integrations/bosta"');
+    expect(out).not.toContain('href="/integrations/aramex"');
   });
 
   it("the compare hub and every comparison, without unverified rows", async () => {
@@ -145,6 +152,14 @@ describe.each(["ar", "en"])("content pages render (%s)", (locale) => {
     check(out);
     expect(out).toContain("306.5");
     expect(out).toContain("143.5");
+    expect(out).toContain('href="/tools/store-cost-calculator"');
+  });
+
+  it("the store cost tool, with Free and Pro from the billing module", async () => {
+    const out = await html(await StoreCostToolPage());
+    check(out);
+    expect(out).toContain("WebApplication");
+    expect(out).toContain('href="/tools/profit-margin-calculator"');
   });
 
   it("industry pages, with templates from the catalog and a linked hub crumb", async () => {
@@ -169,8 +184,28 @@ describe.each(["ar", "en"])("content pages render (%s)", (locale) => {
     for (const industry of INDUSTRIES) expect(out, industry.slug).toContain(`href="/industries/${industry.slug}"`);
   });
 
+  it("the solutions, features and tools hubs link every page under them", async () => {
+    const hubs: [() => Promise<React.ReactNode>, string[]][] = [
+      [SolutionsHub, SOLUTIONS.map((solution) => `/solutions/${solution.slug}`)],
+      [FeaturesHub, FEATURE_PAGES.map((page) => `/features/${page.slug}`)],
+      [ToolsHub, TOOL_SLUGS.map((slug) => `/tools/${slug}`)],
+    ];
+    for (const [Hub, hrefs] of hubs) {
+      const out = await html(await Hub());
+      check(out);
+      expect(out).toContain("ItemList");
+      for (const href of hrefs) expect(out).toContain(`href="${href}"`);
+    }
+  });
+
   it("solution pages", async () => {
-    for (const solution of SOLUTIONS) check(await html(<SolutionPageView solution={solution} />));
+    for (const solution of SOLUTIONS) {
+      const out = await html(<SolutionPageView solution={solution} />);
+      check(out);
+      // {days} is filled on the server; price tokens go to the visitor-currency <Price> (raw here, with no provider).
+      expect(out, solution.slug).not.toContain("{days}");
+      for (const href of solution.featureHrefs ?? []) if (href) expect(out, solution.slug).toContain(`href="${href}"`);
+    }
   });
 
   it("the ranking layout leaves out what an item doesn't have", async () => {

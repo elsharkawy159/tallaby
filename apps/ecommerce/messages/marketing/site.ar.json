@@ -8,12 +8,15 @@
     "ctaMobile": "أنشئ متجرك مجانًا",
     "login": "تسجيل الدخول",
     "closeMenu": "إغلاق القائمة",
-    "mobile": "قائمة التنقل"
+    "mobile": "قائمة التنقل",
+    "solutions": "الحلول"
   },
   "siteFooter": {
     "solutions": "حلول طلبي",
     "integrations": "التكاملات",
-    "compare": "المقارنات"
+    "compare": "المقارنات",
+    "allSolutions": "كل الحلول",
+    "allFeatures": "كل المميزات"
   },
   "site": {
     "breadcrumb": "مسار التنقل",

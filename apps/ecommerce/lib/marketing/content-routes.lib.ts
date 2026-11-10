@@ -9,6 +9,9 @@ export function contentPagePaths(comparePublic: boolean = COMPARE_PUBLIC): strin
   return [
     "/integrations",
     "/industries",
+    "/solutions",
+    "/features",
+    "/tools",
     ...FEATURE_PAGES.map((page) => `/features/${page.slug}`),
     ...INTEGRATION_PAGES.map((page) => `/integrations/${page.slug}`),
     ...TOOL_SLUGS.map((slug) => `/tools/${slug}`),

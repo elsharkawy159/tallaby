@@ -12,6 +12,7 @@ import { calculateMargin, DEFAULT_MARGIN_INPUT, markupPct, TARGET_MARGIN } from 
 import { localizedUrl } from "@/lib/marketing/seo.lib";
 import { cn } from "@workspace/ui/lib/utils";
 import { MarginCalculator } from "./margin-calculator.client";
+import { ToolRelated } from "./tool-related";
 
 const SLUG = "profit-margin-calculator";
 const FAQ_KEYS = ["markup", "healthy", "shipping", "ads", "saved", "fee"] as const;
@@ -74,7 +75,7 @@ export async function MarginToolPage() {
           offers: { "@type": "Offer", price: "0", priceCurrency: "EGP" },
         }}
       />
-      <PageTrail path={path} items={[{ label: t("crumbHub") }, { label: t("crumb") }]} />
+      <PageTrail path={path} items={[{ label: t("crumbHub"), href: "/tools" }, { label: t("crumb") }]} />
 
       <Container className="pt-8 pb-7 text-center">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
@@ -163,6 +164,7 @@ export async function MarginToolPage() {
       </Section>
 
       <FaqBlock items={faq} />
+      <ToolRelated slug={SLUG} />
 
       <ClosingCta title={t("closing.title")} body={withPrices(t("closing.body", PRICE_TOKENS))} secondary="pricing" />
     </>

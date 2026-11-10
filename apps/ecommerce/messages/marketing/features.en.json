@@ -3,6 +3,26 @@
     "feature-custom-domain": {
       "title": "Connect your own domain to your store",
       "description": "Connect your own domain to your Tallaby store so customers see your brand. Connecting is free on both plans, with a free security certificate."
+    },
+    "feature-ai-online-store": {
+      "title": "AI for your online store: products written for you",
+      "description": "Take a photo or upload a file, and AI writes the name, description and search fields in Arabic and English. Review it, then publish."
+    },
+    "feature-fake-order-protection": {
+      "title": "Stop fake cash on delivery orders",
+      "description": "Cut fake cash on delivery orders: block numbers, see a risk badge on each order, confirm on WhatsApp and limit repeat orders."
+    },
+    "feature-abandoned-checkouts": {
+      "title": "Recover abandoned checkouts and missed orders",
+      "description": "See who started an order and didn't finish, contact them on WhatsApp or by phone from one page, and track who you reached."
+    },
+    "feature-shipping": {
+      "title": "Ship orders across Egypt: Bosta and your riders",
+      "description": "Ship with Bosta from your dashboard or with your own riders, and set prices per area with free shipping over an amount you choose."
+    },
+    "features": {
+      "title": "Online store features: everything you need to sell",
+      "description": "AI that writes your products, cash on delivery, Bosta shipping, fake-order protection and unfinished checkouts, in one dashboard."
     }
   },
   "contentPages": {
@@ -89,6 +109,291 @@
         "freeHint": "Forwards visitors to your domain",
         "registrarLabel": "Search for a domain at a registrar"
       }
+    },
+    "ai-online-store": {
+      "crumbHub": "Features",
+      "crumb": "AI",
+      "title": "AI that writes your products in two languages",
+      "lead": "Take a photo of your product or describe it in a line, and Tallaby's AI writes the name, description and search fields in Arabic and English. You review, then publish.",
+      "whatTitle": "How does AI help you build your online store?",
+      "what": [
+        "With Tallaby, AI takes on the hardest part of building an online store: writing the product pages. Upload up to 4 photos or a PDF, or type a few words about the product, and AI writes its name, description and search keywords in Arabic and English at once.",
+        "AI never sets the price, stock or SKU; you type those. Everything it writes shows up in the product form for you to edit before you save.",
+        "Got a lot of products? Upload an Excel, CSV or PDF file and it writes their copy in one go. You can also connect your store to Claude or ChatGPT to add and edit products from a chat. The store's design starts from a ready-made template that you pick and edit by drag and drop."
+      ],
+      "benefits": [
+        { "title": "Arabic and English together", "body": "Every product is written in both languages at once, so customers read your store in the language they prefer." },
+        { "title": "Ready for search engines", "body": "A search title, description and keywords with every product, without writing them yourself." },
+        { "title": "You decide", "body": "Price and stock come from you, and you review and edit every line before it goes live." }
+      ],
+      "usesTitle": "Where you use AI in your store",
+      "uses": [
+        { "title": "A product from a photo", "body": "Upload product photos or describe it in a line, and get a complete product page." },
+        { "title": "Many products from a file", "body": "An Excel, CSV or PDF file, with AI writing their copy in one go." },
+        { "title": "From Claude or ChatGPT", "body": "Connect your store, then add, edit or search your products from a chat." },
+        { "title": "Monthly credits", "body": "AI credits every month on both plans, and more on Pro." }
+      ],
+      "stepsTitle": "How to add a product with AI",
+      "steps": [
+        { "title": "Upload photos or a short description", "body": "In Products › Add product, upload up to 4 photos or a PDF, or type a few words about the product." },
+        { "title": "Review what AI wrote", "body": "The name and description in Arabic and English and the search fields fill the form, and you edit any line." },
+        { "title": "Add price and stock, then save", "body": "Price and stock come from you; save the product and it shows in your store." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Create an online store step by step", "body": "From claiming your link to publishing." },
+        { "title": "Free online store", "body": "No monthly fee and no credit card." },
+        { "title": "Store templates", "body": "Start with a design made for what you sell." },
+        { "title": "Pricing and AI credits", "body": "The monthly credits on each plan." }
+      ],
+      "faq": [
+        {
+          "q": "Does AI build my whole store?",
+          "a": "Today AI writes your products: the name, description and search fields in both languages. You start the store's design from a ready-made template and edit it by drag and drop."
+        },
+        { "q": "How often can I use AI?", "a": "Each plan has monthly credits, and Pro has more. You can buy extra credits in your dashboard, where you see their cost before you buy." },
+        { "q": "Does AI set the product's price?", "a": "No. You always type the price, stock and SKU; AI writes only the copy." },
+        { "q": "Which language does it write in?", "a": "It writes every product in Arabic and English, even if you describe it in one language." },
+        { "q": "Can I add many products at once?", "a": "Yes. Upload an Excel, CSV or PDF file on the add products page, AI writes their copy, and you review it before publishing." },
+        {
+          "q": "Can I manage my products from Claude or ChatGPT?",
+          "a": "Yes. Connect your store from your dashboard, then ask the assistant to add, edit or search your products. Orders and settings stay in your dashboard."
+        }
+      ],
+      "closingTitle": "Let AI write your products",
+      "mock": {
+        "title": "Add product",
+        "path": "Products › Add product",
+        "inputTitle": "Product photos or a short description",
+        "inputHint": "Up to 4 photos or a PDF",
+        "write": "Write with AI",
+        "photos": "3 photos",
+        "fieldsTitle": "Product name",
+        "review": "Review before saving",
+        "sampleAr": "شنطة يد جلد طبيعي بني",
+        "sampleEn": "Brown genuine leather handbag",
+        "tags": ["Description", "Search title", "Keywords"],
+        "aiNote": "An illustration. You type the price and stock.",
+        "priceLabel": "Price (EGP)",
+        "stockLabel": "Stock"
+      }
+    },
+    "fake-order-protection": {
+      "crumbHub": "Features",
+      "crumb": "Fake-order protection",
+      "title": "More real orders, fewer returns",
+      "lead": "Block problem numbers, spot a risky order before you ship it, and confirm cash on delivery orders on WhatsApp in one tap.",
+      "whatTitle": "What are fake orders, and how does Tallaby help?",
+      "what": [
+        "Fake orders are cash on delivery orders the customer refuses at the door or never answers the rider about, so you pay shipping both ways and sell nothing. Tallaby gives you tools in your dashboard to cut these orders before you ship them.",
+        "Each order shows a badge when the customer's number refused earlier orders in your store, or when the same number ordered again within minutes. You can block a number so it can't order from your store again, and send a ready confirmation message on WhatsApp before you ship.",
+        "The platform also limits repeat orders from the same number, account or internet connection within a short time, automatically."
+      ],
+      "usesTitle": "Protection tools in your store",
+      "uses": [
+        { "title": "Number blocking", "body": "Block a number from the order or the customer's page, and checkout refuses their next order." },
+        { "title": "A risk badge on each order", "body": "\"Refused earlier orders\" and \"Possible duplicate\" on the order card, so you decide before shipping." },
+        { "title": "WhatsApp confirmation", "body": "A button that opens WhatsApp with the order number, items and address, then you mark it confirmed." },
+        { "title": "A limit on repeat orders", "body": "A small number of orders per number, account and internet connection in a short time, automatically." }
+      ],
+      "stepsTitle": "How to protect your store from fake orders",
+      "steps": [
+        { "title": "Block problem numbers", "body": "In Store settings › Order protection, or with \"Block this customer\" on the order." },
+        { "title": "Watch for the risk badge", "body": "It shows when the number has refused orders in your store, or ordered twice within minutes." },
+        { "title": "Send the confirmation message", "body": "Press \"Ask to confirm\" to open WhatsApp with a ready message you can edit for each store." },
+        { "title": "Mark it confirmed, then ship", "body": "When the customer replies, press \"Confirm order\". Orders still unconfirmed after 24 hours are highlighted." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Cash on delivery store", "body": "Cash on delivery ready from day one." },
+        { "title": "Unfinished checkouts", "body": "Reach people who started an order." },
+        { "title": "Shipping in Egypt", "body": "Shipping zones, Bosta and your riders." },
+        { "title": "Bosta integration", "body": "Send the confirmed order to Bosta." }
+      ],
+      "faq": [
+        {
+          "q": "How can I tell an order is fake?",
+          "a": "There's no sure way, but the badges help: a number that refused earlier orders in your store, or a repeat order from the same number within minutes. Confirm those orders before you ship."
+        },
+        {
+          "q": "Can I block a phone number?",
+          "a": "Yes. Add the number to your blocklist and any new order from it is refused in your store. It matches however the customer types it, such as 010 or +2010."
+        },
+        { "q": "Does Tallaby send the confirmation message automatically?", "a": "No. You press \"Ask to confirm\" and WhatsApp opens on your phone with the message ready; you send it." },
+        { "q": "Does a blocked customer see that they're blocked?", "a": "They see a general message that the order didn't go through, with no mention of the block." },
+        { "q": "Is protection on the Free plan?", "a": "Yes. Every protection tool is on both plans at no extra cost." },
+        {
+          "q": "Can I ask customers for a verification code?",
+          "a": "Not yet. SMS verification isn't available today; what you have is blocking, the risk badge, WhatsApp confirmation and the repeat-order limit."
+        }
+      ],
+      "closingTitle": "Start your store with protection from day one",
+      "mock": {
+        "title": "Orders",
+        "path": "Orders › All orders",
+        "head": ["Order", "Governorate", "Total", "Alert"],
+        "rows": [["#4102", "Giza", "390 EGP"], ["#4101", "Giza", "390 EGP"], ["#4100", "Monufia", "540 EGP"]],
+        "refused": "Refused 2 orders",
+        "duplicate": "Possible duplicate",
+        "confirmed": "Confirmed",
+        "pending": "Awaiting confirmation",
+        "panelTitle": "Order #4102",
+        "panelHint": "This number refused 2 earlier orders in your store",
+        "ask": "Ask to confirm",
+        "confirm": "Confirm order",
+        "block": "Block",
+        "blockTitle": "Order protection › Blocked numbers",
+        "message": "Hi Mona, confirming your order #4102: brown handbag, total EGP 390. Shall we send it to your saved address?"
+      }
+    },
+    "abandoned-checkouts": {
+      "crumbHub": "Features",
+      "crumb": "Unfinished checkouts",
+      "title": "Don't lose a customer who started an order",
+      "lead": "When a customer adds their address at checkout and leaves, they show up under Not completed with their number and items, so you can reach them.",
+      "whatTitle": "What are abandoned checkouts?",
+      "what": [
+        "An abandoned checkout is an order the customer started and didn't finish: they added products and typed their address, then closed the page. It happens a lot with cash on delivery, and many of those customers order if you reach them quickly.",
+        "On Tallaby, an unfinished order is saved when the customer picks or adds a shipping address at checkout, and shows in Orders › Not completed with the name, phone, items and total with shipping. When the customer places the order, it leaves the list by itself.",
+        "From each row you message them on WhatsApp with a ready message or call them, then mark the row as contacted. If the customer has an account on your store, they also get a reminder email under your store's name."
+      ],
+      "benefits": [
+        { "title": "The number and items in front of you", "body": "Name, phone, items and total with shipping on every row." },
+        { "title": "WhatsApp or a call in one tap", "body": "A ready message you can edit for each store, or a direct call from your phone." },
+        { "title": "A list that stays clean", "body": "Anyone who orders leaves the list, and old rows are removed after 30 days." }
+      ],
+      "stepsTitle": "How to win back unfinished checkouts",
+      "steps": [
+        { "title": "The customer adds an address and leaves", "body": "The unfinished order is saved when they pick or add a shipping address, and checkout tells them you may get in touch." },
+        { "title": "It shows in Orders › Not completed", "body": "With the name, phone, items and total, filtered by date and by contact status." },
+        { "title": "Message them on WhatsApp", "body": "Press WhatsApp to open a ready message with the customer's name, items and total." },
+        { "title": "Mark who you reached", "body": "Press \"Mark contacted\" so your team knows who's left; if the customer orders, the row goes away." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Fake-order protection", "body": "Number blocking and WhatsApp confirmation." },
+        { "title": "Cash on delivery store", "body": "Cash on delivery ready from day one." },
+        { "title": "Meta Pixel", "body": "Retarget visitors who didn't order." },
+        { "title": "Pricing", "body": "Plans and fees in detail." }
+      ],
+      "faq": [
+        {
+          "q": "When does an order show as not completed?",
+          "a": "When the customer picks or adds a shipping address at checkout, then leaves without ordering. Customers who only added items, with no address, show under Pending carts."
+        },
+        {
+          "q": "Does Tallaby send WhatsApp messages automatically?",
+          "a": "No. You press WhatsApp, it opens on your phone with a ready message, and you send it. Automatic messages aren't available today."
+        },
+        { "q": "Does the customer get a reminder email?", "a": "Yes, if they have an account on your store: they get a cart reminder under your store's name, and the row shows it was sent." },
+        { "q": "How long do unfinished checkouts stay?", "a": "30 days, then they're removed automatically. Anyone who places the order leaves the list right away." },
+        { "q": "Does the customer know I may contact them?", "a": "Yes. Checkout shows a short line saying the store may get in touch about the order." },
+        { "q": "Is it on the Free plan?", "a": "Yes. Unfinished checkouts are on both plans at no extra cost." }
+      ],
+      "closingTitle": "Win back the orders you almost lost",
+      "mock": {
+        "title": "Not completed",
+        "path": "Orders › Not completed",
+        "rows": [["Sara", "2 items: handbag, wallet", "610 EGP", "Left 20 minutes ago"], ["Youssef", "1 item: wristwatch", "450 EGP", "Left 2 hours ago"]],
+        "whatsapp": "WhatsApp",
+        "call": "Call",
+        "emailSent": "Reminder email sent",
+        "contacted": "Contacted",
+        "markContacted": "Mark contacted",
+        "message": "Hi Sara, we noticed you didn't finish your order (handbag and wallet, EGP 610). Can we help you complete it?",
+        "ask": "WhatsApp",
+        "formTitle": "Checkout › Shipping address",
+        "addressLabel": "Address"
+      }
+    },
+    "shipping": {
+      "crumbHub": "Features",
+      "crumb": "Shipping",
+      "title": "Ship to every governorate, your way",
+      "lead": "Set a shipping price for each governorate or area, then ship with Bosta from your dashboard, with your own riders, or with a Wassalha sheet for Egypt Post.",
+      "whatTitle": "How does shipping work for online stores in Egypt?",
+      "what": [
+        "Shipping orders in Egypt comes down to two questions: what the customer pays for shipping, and who delivers. On Tallaby you answer the first with shipping zones: a price for each governorate, area or district, free shipping over an amount you choose, and an optional surcharge by weight.",
+        "You answer the second your way: connect your Bosta account and send orders from your dashboard, add your own riders and assign orders to them, or download a ready sheet and upload it to your Wassalha account for Egypt Post.",
+        "Tallaby doesn't deliver orders itself and doesn't set carrier prices. Your Bosta price is your own account's price."
+      ],
+      "usesTitle": "Ways to ship from your store",
+      "uses": [
+        { "title": "Bosta", "body": "Send the order to your Bosta account, print the waybill and follow its status from your dashboard." },
+        { "title": "Wassalha for Egypt Post", "body": "Download the ready orders sheet and upload it to your Wassalha account." },
+        { "title": "Your own riders", "body": "Add your riders and assign orders to them from your dashboard." },
+        { "title": "Zones and prices", "body": "A price per governorate or area, free shipping over an amount, and cash on delivery per zone." }
+      ],
+      "stepsTitle": "How to set up shipping in your store",
+      "steps": [
+        { "title": "Create your shipping zones", "body": "In Shipping and delivery, choose the governorates or areas, each one's price and the delivery time." },
+        { "title": "Set free shipping", "body": "Type the amount above which shipping is free, for each zone." },
+        { "title": "Choose how you deliver", "body": "Connect your Bosta account, add your riders, or set up Wassalha." },
+        { "title": "Follow every shipment", "body": "With Bosta, the order's status updates in your dashboard whenever Bosta updates it." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Bosta integration", "body": "Send orders and print waybills." },
+        { "title": "An online store in Egypt", "body": "Payments and shipping with local tools." },
+        { "title": "Cash on delivery store", "body": "Cash on delivery per zone." },
+        { "title": "Profit margin calculator", "body": "Work out your profit after shipping." }
+      ],
+      "faq": [
+        { "q": "Does Tallaby deliver orders?", "a": "No. Tallaby doesn't deliver orders itself. You ship with your own Bosta account, your riders, or a Wassalha sheet for Egypt Post." },
+        {
+          "q": "Which shipping companies can I use?",
+          "a": "Bosta connects directly from your dashboard. Wassalha for Egypt Post works through a sheet you download and upload yourself. Others, such as Aramex, J&T and Mylerz, aren't connected yet."
+        },
+        { "q": "What does shipping with Bosta cost?", "a": "Bosta sets the price for your account with them. Tallaby adds nothing to the shipping price." },
+        {
+          "q": "Can I set a different price for each governorate?",
+          "a": "Yes. Create a zone for a governorate, a group of governorates or even a single district, each with its own price and delivery time."
+        },
+        { "q": "Can I offer free shipping?", "a": "Yes. Set an amount above which shipping is free, for each zone." },
+        { "q": "Can I turn off cash on delivery for a far zone?", "a": "Yes. Each shipping zone has its own cash on delivery switch." }
+      ],
+      "closingTitle": "Set up shipping for your store in minutes",
+      "mock": {
+        "title": "Shipping and delivery",
+        "path": "Shipping and delivery › Shipping zones",
+        "zonesTitle": "Shipping zones",
+        "zonesHint": "Customers see the price before ordering",
+        "zonesHead": ["Zone", "Price", "Free over", "COD"],
+        "zones": [["Cairo and Giza", "50 EGP", "1,000 EGP", "on"], ["Alexandria", "60 EGP", "1,200 EGP", "on"], ["South Sinai", "120 EGP", "2,000 EGP", "off"]],
+        "bosta": "Bosta",
+        "rider": "Your riders",
+        "wassalha": "Wassalha",
+        "freeOverLabel": "Free shipping on orders over",
+        "freeOverValue": "1,000 EGP",
+        "states": ["Out for delivery", "Delivered"]
+      }
     }
+  },
+  "featuresHub": {
+    "crumb": "Features",
+    "eyebrow": "Tallaby features",
+    "title": "Everything your store needs, <em>in one dashboard</em>",
+    "lead": "Tallaby's online store features, each on its own page explaining what it does and how to turn it on.",
+    "search": "Search",
+    "searchPlaceholder": "Search for a feature, e.g. shipping",
+    "categoriesLabel": "Features",
+    "categories": { "all": "All", "ai": "AI", "orders": "Orders", "shipping": "Shipping", "website": "Website" },
+    "soon": "Soon",
+    "featured": "Most visited",
+    "featuredCta": "See the feature",
+    "count": "{count} features",
+    "noneTitle": "No results",
+    "noneBody": "Try another word or pick a different category.",
+    "items": {
+      "ai-online-store": "Name, description and search fields for every product, in Arabic and English.",
+      "fake-order-protection": "Number blocking, a risk badge on orders and WhatsApp confirmation.",
+      "abandoned-checkouts": "People who added an address but didn't order, to call or message.",
+      "shipping": "Shipping zones by governorate, plus Bosta, your riders and Wassalha.",
+      "custom-domain": "Connect your own domain so your store carries your brand."
+    },
+    "explainerTitle": "Which features does your online store need?",
+    "explainer": "An online store in Egypt needs more than product pages: cash on delivery with protection from refused orders, shipping for each governorate, follow-up for people who didn't finish ordering, and clear product copy in both languages. Every one of these features is on both plans, and each page here explains what the feature does today, with no promises about what isn't built yet. Shipping, payment and tracking integrations have their own page.",
+    "closingTitle": "Try every feature in your store",
+    "closingBody": "Every feature is on the Free plan, with no monthly fee."
   }
 }

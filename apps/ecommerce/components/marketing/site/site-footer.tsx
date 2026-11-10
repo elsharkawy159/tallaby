@@ -41,7 +41,11 @@ export async function SiteFooter() {
     // Built from the page lists, so a new solution, industry, feature or tool page appears here by itself.
     {
       title: t("solutions"),
-      links: footerSolutionLinks().map((page) => ({ href: page.href, label: tm(`${page.metaKey}.title`) })),
+      links: [
+        ...footerSolutionLinks().map((page) => ({ href: page.href, label: tm(`${page.metaKey}.title`) })),
+        { href: "/solutions", label: t("allSolutions") },
+        { href: "/features", label: t("allFeatures") },
+      ],
     },
     {
       title: t("company"),

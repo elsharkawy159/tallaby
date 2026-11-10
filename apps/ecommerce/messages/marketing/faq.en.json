@@ -179,5 +179,8 @@
     "noResults": "No results",
     "stillTitle": "Still stuck?",
     "whatsapp": "WhatsApp Us"
+  },
+  "meta": {
+    "faq": { "title": "FAQ: your store, pricing, payments and shipping", "description": "Answers about setting up your online store, selling, payments and shipping on Tallaby." }
   }
 }
