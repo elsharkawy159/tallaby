@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareRobots, comparisonTable, COMPARE_PUBLIC, COMPETITORS, findCompetitorBySlug, MIN_VERIFIED_FACTS, publishableCompetitors, type Competitor } from "./compare.lib";
+import { publicCompetitors } from "./compare.lib";
 import { contentPagePaths, footerSolutionLinks } from "./content-routes.lib";
 import { loadAllMessages } from "@/i18n/messages";
 import { filterHubItems, hubCategoryCounts } from "./hub.lib";
@@ -17,36 +17,14 @@ describe("contentPagePaths", () => {
     const open = contentPagePaths(true);
     expect(open).toContain("/compare");
     expect(open).toContain("/compare/tallaby-vs-shopify");
+    expect(open).toContain("/alternatives/shopify");
+    // Only released competitors: a built comparison with publish off stays out.
+    for (const competitor of publicCompetitors(true)) expect(open).toContain(`/compare/tallaby-vs-${competitor.id}`);
+    expect(open.filter((path) => path.startsWith("/compare/"))).toHaveLength(publicCompetitors(true).length);
   });
 });
 
-describe("compare switch", () => {
-  it("is noindex while the switch is off", () => {
-    expect(compareRobots()).toEqual(COMPARE_PUBLIC ? undefined : { index: false, follow: false });
-  });
-});
-
-describe("competitor pages", () => {
-  const thin: Competitor = { id: "x", category: "eg", latin: "X", factsCheckedOn: "2026-01-01", cells: { freePlan: "y" }, sources: [] };
-
-  it("gives a competitor with too few verified facts no page", () => {
-    expect(publishableCompetitors([thin])).toEqual([]);
-    expect(findCompetitorBySlug("tallaby-vs-salla")).toBeUndefined();
-    for (const competitor of publishableCompetitors()) {
-      expect(Object.keys(competitor.cells).length).toBeGreaterThanOrEqual(MIN_VERIFIED_FACTS);
-    }
-  });
-
-  it("shows only rows with a verified value, and no empty group", () => {
-    const groups = comparisonTable(thin);
-    expect(groups).toHaveLength(1);
-    expect(groups[0]!.rows.map((row) => row.id)).toEqual(["freePlan"]);
-  });
-
-  it("records a source for every competitor", () => {
-    for (const competitor of COMPETITORS) expect(competitor.sources.length).toBeGreaterThan(0);
-  });
-});
+// The compare data, gating and tables are tested in compare.lib.test.ts.
 
 describe("integrations hub", () => {
   it("links only to detail pages that exist", () => {

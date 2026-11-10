@@ -19,6 +19,7 @@ export const MARKETING_SEGMENTS: ReadonlySet<string> = new Set([
   "affiliates",
   "blog",
   "careers",
+  "alternatives",
   "compare",
   "contact",
   "faq",

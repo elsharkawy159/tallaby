@@ -93,7 +93,7 @@ export function formatLocalApprox(usdCents: number, currency: string, rate: numb
 
 /** Every price token in one currency. */
 export function localPriceVars(currency: string, rate: number, locale: string, label: string): MarketingPriceVars {
-  return priceVarsWith((cents) => formatLocalApprox(cents, currency, rate, locale, label));
+  return priceVarsWith((cents) => formatLocalApprox(cents, currency, rate, locale, label), locale);
 }
 
 /** The rate in the footnote: 53.9, 3.75, 0.3071. */

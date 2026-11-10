@@ -18,8 +18,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const competitor = findCompetitorBySlug(slug);
   if (!competitor) return {};
   const t = await getTranslations({ locale, namespace: `competitors.${competitor.id}` });
-  const meta = await pageMetadata({ locale, page: "compare-entry", path: `/compare/${slug}`, values: { name: t("name") } });
-  const robots = compareRobots();
+  // Each comparison has its own title and description (`meta.compare-<id>`).
+  const meta = await pageMetadata({ locale, page: `compare-${competitor.id}`, path: `/compare/${slug}`, values: { name: t("name") } });
+  const robots = compareRobots(competitor);
   return robots ? { ...meta, robots } : meta;
 }
 

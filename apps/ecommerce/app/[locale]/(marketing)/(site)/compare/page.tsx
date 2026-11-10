@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { HubListing, type HubCardItem } from "@/components/marketing/hub/hub-listing.client";
 import { HubPageFrame } from "@/components/marketing/hub/hub-page";
-import { COMPARE_CATEGORIES, compareRobots, compareSlug, publishableCompetitors } from "@/lib/marketing/compare.lib";
+import { COMPARE_CATEGORIES, compareLinkTargets, compareRobots, compareSlug } from "@/lib/marketing/compare.lib";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -15,7 +15,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function CompareHubPage() {
   const t = await getTranslations("compareHub");
   const page = await getTranslations("comparePage");
-  const competitors = publishableCompetitors();
+  // Public: only released comparisons; in preview, every built one.
+  const competitors = compareLinkTargets();
 
   const items: HubCardItem[] = await Promise.all(
     competitors.map(async (competitor) => {
@@ -27,7 +28,7 @@ export default async function CompareHubPage() {
         description: t("cardBody", { name }),
         category: competitor.category,
         categoryLabel: t(`categories.${competitor.category}`),
-        keywords: competitor.latin,
+        keywords: [competitor.latin, ...competitor.arabicNames].join(" "),
         featured: competitor.featured,
         href: `/compare/${compareSlug(competitor)}`,
         mark: (

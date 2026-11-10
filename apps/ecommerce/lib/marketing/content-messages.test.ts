@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { COMPARE_GROUPS, COMPETITORS } from "./compare.lib";
+import { alternativeCompetitors, COMPARE_GROUPS, COMPETITORS, publishableCompetitors } from "./compare.lib";
 import { FEATURE_PAGES, INTEGRATION_PAGES } from "./detail-pages.lib";
 import { INDUSTRIES } from "./industries.lib";
 import { INTEGRATION_ITEMS } from "./integrations-hub.lib";
@@ -59,7 +59,17 @@ describe.each(["ar", "en"])("content page messages (%s)", (locale) => {
     }
     for (const competitor of COMPETITORS) {
       const words = m.competitors![competitor.id] as Record<string, Record<string, string>>;
-      expect(Object.keys(words.cells!).sort(), competitor.id).toEqual(Object.keys(competitor.cells).sort());
+      expect(Object.keys(words.cells!).sort(), competitor.id).toEqual(Object.keys(competitor.facts).sort());
+    }
+    // A built comparison has its own title and description; an alternatives page too.
+    for (const competitor of publishableCompetitors()) {
+      expect(m.meta![`compare-${competitor.id}`], competitor.id).toBeTruthy();
+      const words = m.competitors![competitor.id] as Record<string, unknown>;
+      for (const key of ["intro", "priceNote", "verdictTallaby", "verdict", "strengths", "shortlist"]) expect(words[key], `${competitor.id}.${key}`).toBeTruthy();
+    }
+    for (const competitor of alternativeCompetitors()) {
+      expect(m.meta![`alternatives-${competitor.id}`], competitor.id).toBeTruthy();
+      expect((m.competitors![competitor.id] as Record<string, unknown>).alternatives, competitor.id).toBeTruthy();
     }
   });
 

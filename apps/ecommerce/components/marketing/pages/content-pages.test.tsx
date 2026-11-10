@@ -7,13 +7,14 @@ import IntegrationsPage from "@/app/[locale]/(marketing)/(site)/integrations/pag
 import CompareHub from "@/app/[locale]/(marketing)/(site)/compare/page";
 import IndustriesHub from "@/app/[locale]/(marketing)/(site)/industries/page";
 import { ComparePageView } from "@/components/marketing/compare/compare-page";
+import { AlternativesPageView } from "@/components/marketing/compare/alternatives-page";
 import { MarginToolPage } from "@/components/marketing/tools/margin-tool-page";
 import { IndustryPageView } from "@/components/marketing/industries/industry-page";
 import { SolutionPageView } from "@/components/marketing/solutions/solution-page";
 import { RankingArticleView } from "@/components/marketing/blog-ranking/ranking-article";
 import { Breadcrumb } from "@/components/marketing/site/breadcrumb";
 import { loadAllMessages } from "@/i18n/messages";
-import { publishableCompetitors } from "@/lib/marketing/compare.lib";
+import { alternativeCompetitors, alternativesShortlist, competitorSources, publishableCompetitors } from "@/lib/marketing/compare.lib";
 import { FEATURE_PAGES, INTEGRATION_PAGES } from "@/lib/marketing/detail-pages.lib";
 import { INDUSTRIES } from "@/lib/marketing/industries.lib";
 import { SOLUTIONS } from "@/lib/marketing/solutions.lib";
@@ -119,7 +120,24 @@ describe.each(["ar", "en"])("content pages render (%s)", (locale) => {
 
   it("the compare hub and every comparison, without unverified rows", async () => {
     check(await html(await CompareHub()));
-    for (const competitor of publishableCompetitors()) check(await html(<ComparePageView competitor={competitor} />));
+    for (const competitor of publishableCompetitors()) {
+      const out = await html(<ComparePageView competitor={competitor} />);
+      check(out);
+      // A real table with a caption, row headers and a visible, linked sources list.
+      expect(out).toContain("<caption");
+      expect(out).toContain('scope="row"');
+      expect(out).toContain('id="sources"');
+      for (const source of competitorSources(competitor)) expect(out, competitor.id).toContain(`href="${source.url.replace(/&/g, "&amp;")}"`);
+    }
+  });
+
+  it("the alternatives pages, with Tallaby first and only options that work in Egypt", async () => {
+    for (const competitor of alternativeCompetitors()) {
+      const out = await html(<AlternativesPageView competitor={competitor} />);
+      check(out);
+      expect(out).not.toContain("tallaby-vs-salla");
+      for (const other of alternativesShortlist(competitor)) expect(out).toContain(`href="/compare/tallaby-vs-${other.id}"`);
+    }
   });
 
   it("the tool page, with its fee from the current price", async () => {

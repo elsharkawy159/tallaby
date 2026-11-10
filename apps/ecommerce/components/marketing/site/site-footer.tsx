@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
 import { CookieSettingsButton } from "@/components/layout/tracking-consent-banner.client";
-import { COMPARE_PUBLIC } from "@/lib/marketing/compare.lib";
+import { isCompareHubPublic } from "@/lib/marketing/compare.lib";
 import { footerSolutionLinks } from "@/lib/marketing/content-routes.lib";
 import { CONTACT, DASHBOARD_URL, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
@@ -31,7 +31,7 @@ export async function SiteFooter() {
         { href: "/pricing", label: t("pricing") },
         { href: "/integrations", label: t("integrations") },
         // Off until the owner decides about naming competitors (lib/marketing/compare.lib.ts).
-        ...(COMPARE_PUBLIC ? [{ href: "/compare", label: t("compare") }] : []),
+        ...(isCompareHubPublic() ? [{ href: "/compare", label: t("compare") }] : []),
         // The AI Store Builder's entry (F-54): signup, then the chat. Hidden behind its switch.
         ...(storeBuilderEnabled() ? [{ href: `${DASHBOARD_URL}signup?next=/ai-builder`, label: t("aiBuilder"), external: true }] : []),
         { href: "/affiliates", label: t("affiliates") },

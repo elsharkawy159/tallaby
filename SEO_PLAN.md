@@ -1,6 +1,6 @@
 # SEO_PLAN.md: tallaby.com (طلبي) SEO and page plan
 
-**Written:** 2026-11-09 on `main` @ `8ca4dab0`. **Status:** plan only. Nothing in this file is built. Every "Build" below is a proposal for the owner to approve, and it follows `CLAUDE.md`, `docs/marketing-site-rules.md` and `ROADMAP.md` (seller features; tallaby.com SEO is F-53 and F-70e).
+**Written:** 2026-11-09 on `main` @ `8ca4dab0`. **Status:** mostly a plan. **Built 2026-11-10 (gated, not public):** Phase 3's compare data model v2 and pages for EasyOrders, Shopify, WooCommerce, ExpandCart, Salla and Zid, plus `/alternatives/easyorders` and `/alternatives/shopify` (§15 Phase 3). Everything else below is not built. Every "Build" below is a proposal for the owner to approve, and it follows `CLAUDE.md`, `docs/marketing-site-rules.md` and `ROADMAP.md` (seller features; tallaby.com SEO is F-53 and F-70e).
 
 **Inputs:** the codebase audit (`docs/seo-research/01-audit.md`, re-checked in code for this plan), the global competitor file (12 platforms, `02-global-competitors.md`) and the MENA competitor file (10 platforms, `03-mena-competitors.md`), all researched 2026-11-09. Keyword research was run for this plan on 2026-11-09 (method and limits in §6.1).
 
@@ -356,6 +356,19 @@ These matter for the "best platforms" article (B1) and the Shopify alternatives 
 | Shopware | Rise from €600; CE free | GMV-based | CE free | Yes | **No** Arabic pack, no RTL | None | None | Copilot add-on | Not suitable | [pricing](https://www.shopware.com/en/pricing/) |
 | Square Online | Plus $49 | 3.3% + 30¢ (Free) | US only | No (T) | No (U) | **Not available in Egypt** | None | U | Not available | [plans](https://squareup.com/us/en/online-store/plans) |
 
+### 3.2b Refresh for the compare pages (2026-11-10)
+
+All six compare competitors were re-read on official pages on 2026-11-10; raw notes with quotes and every URL are in `docs/seo-research/04-compare-2026-11-10.md`, and each shown fact is in `compare.lib.ts` with its URL and date. What changed or got settled since the 2026-11-09 tables above:
+
+| Competitor | Refreshed facts (V unless noted) |
+|---|---|
+| EasyOrders | Still **$0.04 per order** (Regular) and **$100 a month** (Professional), plus a **$5 top-up to activate** ([pricing.md](https://www.easyorders.eg/pricing.md), [AI page](https://www.easyorders.eg/create-ecommerce-store-with-ai.md)). Charging for cancelled, fake or returned orders: **still U** (no terms, FAQ or help page; all 404). Its public roadmap ([roadmap.easyorders.ai](https://roadmap.easyorders.ai/ar)) lists a two-language storefront, abandoned-cart reminders, Fawry and Excel export as **merchant requests, not built**, so Fawry is not credited despite its blog. Kashier and Paymob guides and "Bosta connects" are blog-only (V-blog). |
+| Shopify | Monthly billing from Egypt: Basic **$27**, Grow **$72**, Advanced **$399** ([eg/pricing](https://www.shopify.com/eg/pricing)); the yearly prices differed by location (**$24/$65/$359** from an Egyptian IP vs $19/$54/$299), so pages quote monthly only. Third-party fee **2% on Basic** still applies to every card order in Egypt. New: an AI store generator ([website/builder](https://www.shopify.com/website/builder)), 10,000 free emails a month, Kashier app 3.0★ (2 reviews), Bosta app 3.9★ (24 reviews). Paymob's Shopify apps appear only in Paymob's docs (V-dev). |
+| WooCommerce | Sources filled: free plugin, Woo's own estimates **hosting $25–$350/month, extensions $29–$299/year** ([pricing](https://woocommerce.com/pricing/)); WooPayments not in Egypt; official Paymob plugin with installments; Bosta plugin 2.4★ from 8 ratings; Egypt's governorates built into shipping zones; AI product tool in public beta (Woo developer blog). |
+| ExpandCart | Unchanged prices: Standard **599 جنيه/mo**, Professional 1,199, Ultimate **4,599** ([الاسعار](https://expandcart.com/ar/الاسعار/)); pricing pages last modified 2023-12-11; help centre fails TLS. Trial 14 vs 15 days (pages disagree). COD, AI and fake-order tools: U. |
+| Salla | Monthly prices now confirmed: Plus **SAR 99**, Pro **SAR 299** ([help.salla.sa](https://help.salla.sa/article/أسعار-باقات-سلة-على-أجهزة-الهاتف/c4t9zj8cnotfaa1a2opd8n0f)). Its plans FAQ says it serves **KSA and the UAE**; a store needs a Saudi CR or freelance document, a Saudi mobile and a Saudi bank account ([plans](https://salla.com/plans)). |
+| Zid | Egypt: Rise **1,128.60 جنيه/mo**, Growth **3,408.60 جنيه/mo** ([zid.eg pricing](https://zid.eg/ar/pricing/)); online card payments start on Rise. Drag and drop confirmed; new "ذكاء زد" AI assistant (beta) and an AI section generator ([help.zid.sa](https://help.zid.sa/ar/getting-started/ai-assistant)). Egyptian partners are logos only. |
+
 ### 3.3 What the research means for Tallaby's pages
 
 1. **The Egyptian set (EasyOrders, Wuilt, Qumra, Shanta, HalaOrders, ExpandCart, Zid via zid.eg) is the real competition.** Global platforms appear only on Shopify and WooCommerce pages.
@@ -403,7 +416,11 @@ These matter for the "best platforms" article (B1) and the Shopify alternatives 
 | ★egpPricing | p (USD, shown ≈ EGP) | n (USD) | n (USD) | n/a | y | y | y | n | y (/egpricing) | y | y | y | n (SAR) | ? |
 | ★availableInEgypt | y | y | y | y | y | y | y | p (no local payouts) | y | y | y | y | **n** (Saudi CR) | y |
 
-### 4.2 Data model (proposed `compare.lib.ts` v2)
+### 4.2 Data model (`compare.lib.ts` v2, built 2026-11-10)
+
+> **Built (2026-11-10):** as sketched below, with these differences. `FactMark` adds `descriptive` (what a thing plainly is, e.g. a Facebook page has no domain; shown, not counted). `cards`/`carriers` became `egyptGateways`/`egyptCarriers`, and an `ai` group holds `aiProductCopy`/`aiStoreBuilder`. Each competitor has `publish` (per-competitor release under `COMPARE_PUBLIC`; EasyOrders and Shopify are `true`), `prices` (the token keys it uses) and `alternative`. `COMPETITOR_PRICES` entries are `{ minor, currency: "USD" | "EGP" | "SAR" | "percent", per, source, checkedOn }`: USD and SAR (peg 3.75) go through the ≈ EGP / visitor-currency formatter, EGP and percentages show as published. The page date is the **oldest** `checkedOn` among shown facts and prices. Tests: `compare.lib.test.ts` (sources, dates, gating, literal-price guard), `compare-facts-age.test.ts` (90 days), and the render tests in `content-pages.test.tsx`.
+
+#### The original sketch (2026-11-09)
 
 Today `Competitor.cells` is a bare status map, and sources are free text. v2 ties **each fact** to an official URL and a date, so `MIN_VERIFIED_FACTS` counts only facts a reviewer can re-open.
 
@@ -2664,6 +2681,8 @@ S4 cash-on-delivery-store, F4 fake-order-protection, F5 abandoned-checkouts, F6 
 
 ### Phase 3: compare and alternatives (gated) · 9–11 dev-days + research
 `compare.lib.ts` v2 (§4.2) with a migration of the 4 existing entries; facts for Wuilt, Zid, ExpandCart, YouCan, Lightfunnels, Qumra, Shanta, HalaOrders, Salla and Wix from §3 (each with official URLs); `/alternatives` segment + hub + A1 EasyOrders + A2 Shopify (then A3–A5); `CompareTable` on shadcn `Table`; B1 ranking route; T4 platform-fee calculator (competitor presets gated); blog B8, B9; facts-age test. **Depends on:** owner S-06 (recommendation: approve EasyOrders and Shopify first). **Research needed:** re-read every competitor price within 7 days before publishing (EasyOrders' blog proves prices move), fill the WooCommerce sources (today it cites only MARKETING_PROJECT.md), confirm EasyOrders' fee on cancelled orders. **Acceptance:** §16.2 and §16.3; flipping `COMPARE_PUBLIC` adds them to the sitemap and footer with no other change.
+
+**Progress (2026-11-10, gated, `COMPARE_PUBLIC = false`):** done: `compare.lib.ts` v2 with the 4 old entries migrated; research for EasyOrders, Shopify, WooCommerce, ExpandCart, Salla and Zid (`docs/seo-research/04-compare-2026-11-10.md`, WooCommerce sources filled, EasyOrders' cancelled-order fee still U); `/compare/tallaby-vs-<id>` for all six with the Compare.html design ported (verdict, price note, shadcn `Table` with caption, row headers, sticky label column and a footnote per competitor cell, strengths, how to move, FAQ, visible sources list, per-competitor meta from §6 C1–C13); `/alternatives/easyorders` and `/alternatives/shopify` (A1, A2: why sellers look, a shortlist of options that work in Egypt with Tallaby first labelled "منصتنا", no scores, Salla excluded); per-competitor `publish` flags (EasyOrders and Shopify on); the facts-age test. Official facts per competitor: EasyOrders 27, Shopify 28 (+1 third-party), WooCommerce 29, ExpandCart 20, Salla 25, Zid 27, all ≥ `MIN_VERIFIED_FACTS` (4); "Facebook page only" has 1 (no page). **Left:** owner S-06, the 7-day price re-read before publishing, `/alternatives` hub, A3–A5, B1 route, T4 presets, B8/B9, per-page OG images (no pipeline yet), the remaining §3 competitors, a browser check at 360/1440 px.
 
 ### Phase 4: industries and long tail · 10–12 dev-days
 Industries N2–N11 (product-only photos needed for each), features F2, F3 copy, F7–F14, integrations I4 (after verifying F-21p), I5–I9, tools T3 (no AI calls), T5, T6 (legal review of template text), S5, blog B3, B4, B6, B7 and the bodies for the B10–B14 stubs (Admin), template detail intros + industry links. **Acceptance:** §16.5–16.6; each industry page has ≥ 3 templates in its category.

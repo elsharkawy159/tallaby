@@ -4,9 +4,37 @@
       "title": "Tallaby compared with other platforms",
       "description": "Fair comparisons between Tallaby and other online store platforms on pricing, payments, shipping and support."
     },
-    "compare-entry": {
-      "title": "Tallaby vs {name}",
-      "description": "A fair comparison of Tallaby and {name} on pricing, payments, shipping, templates and support, so you can pick what suits your store."
+    "compare-easyorders": {
+      "title": "Tallaby vs EasyOrders: a comparison for Egypt",
+      "description": "Tallaby and EasyOrders side by side, with sources and dates: price and fees, cash on delivery, shipping, payments in Egypt, language."
+    },
+    "compare-shopify": {
+      "title": "Tallaby vs Shopify: a comparison for Egypt",
+      "description": "Tallaby and Shopify side by side, with sources and dates: price and fees, cash on delivery, shipping, payments in Egypt, language."
+    },
+    "compare-woocommerce": {
+      "title": "Tallaby vs WooCommerce: a comparison for Egypt",
+      "description": "Tallaby and WooCommerce side by side, with sources and dates: price and fees, cash on delivery, shipping, payments in Egypt, language."
+    },
+    "compare-expandcart": {
+      "title": "Tallaby vs ExpandCart: a comparison for Egypt",
+      "description": "Tallaby and ExpandCart side by side, with sources and dates: price and fees, cash on delivery, shipping, payments in Egypt, language."
+    },
+    "compare-salla": {
+      "title": "Tallaby vs Salla: a comparison for Egypt",
+      "description": "Tallaby and Salla side by side, with sources and dates: price and fees, cash on delivery, shipping, payments in Egypt, language."
+    },
+    "compare-zid": {
+      "title": "Tallaby vs Zid: a comparison for Egypt",
+      "description": "Tallaby and Zid side by side, with sources and dates: price and fees, cash on delivery, shipping, payments in Egypt, language."
+    },
+    "alternatives-easyorders": {
+      "title": "EasyOrders alternatives for sellers in Egypt",
+      "description": "Looking for an EasyOrders alternative? Compare the options in Egypt on fees, shipping and cash on delivery, with sources, and see how to move."
+    },
+    "alternatives-shopify": {
+      "title": "Shopify alternatives for sellers in Egypt",
+      "description": "Looking for a Shopify alternative? Compare the options in Egypt on fees, shipping and cash on delivery, with sources, and see how to move."
     }
   },
   "compareHub": {
@@ -38,20 +66,19 @@
     "crumb": "Compare",
     "vs": "vs",
     "vsLabel": "Tallaby vs {name}",
-    "title": "Tallaby or {name}: which suits your store?",
-    "checkedOn": "We last checked the other platform's details on {date}",
+    "title": "Tallaby or {name}?",
+    "checkedOn": "Facts checked on {date}",
     "byTeam": "By the Tallaby team",
     "verdictTitle": "The short version",
     "chooseTallaby": "Choose Tallaby if...",
     "chooseCompetitor": "Choose {name} if...",
-    "verdictTallaby": [
-      "You sell in Egypt and need cash on delivery, Bosta and Paymob or Kashier in one dashboard.",
-      "You want to start with no monthly subscription and pay {orderFee} per order.",
-      "You want a store under your own name, with ready-made Arabic and English templates and no code."
-    ],
     "tableTitle": "Tallaby and {name} in detail",
     "tableNote": "We only show what we could verify about {name}. Its numbers and plans can change, so check its own pages before you decide.",
-    "legend": { "y": "Available", "p": "Partly available", "n": "Not available" },
+    "legend": {
+      "y": "Available",
+      "p": "Partly available",
+      "n": "Not available"
+    },
     "groups": {
       "pricing": "Pricing and fees",
       "setup": "Setting up your store",
@@ -59,127 +86,815 @@
       "payments": "Payment methods",
       "shipping": "Shipping",
       "marketing": "Marketing and integrations",
+      "ai": "AI",
       "support": "Support",
       "language": "Language and currency"
     },
     "rows": {
-      "freePlan": { "label": "Free plan", "tallaby": "No monthly subscription, and {orderFee} per order. Orders from day one; a first top-up from {topUpMin} within {days} days or at your first order, whichever comes first, keeps new orders visible." },
-      "monthly": { "label": "Monthly subscription", "tallaby": "Pro at {pro} a month, with no order fee" },
-      "salesShare": { "label": "Share of sales", "tallaby": "We take no share of the order value" },
-      "limits": { "label": "Product and order limits", "tallaby": "No limit on either plan, and up to 3 stores" },
-      "signup": { "label": "Sign-up", "tallaby": "With email or a Google account" },
-      "noCode": { "label": "No code", "tallaby": "Every step is visual, from design to publishing" },
-      "import": { "label": "Product import", "tallaby": "From Excel, a product link or Shopify" },
-      "domain": { "label": "Address and custom domain", "tallaby": "A free address, and free connection of your own domain on your main store" },
-      "templates": { "label": "Ready-made templates", "tallaby": "Templates for each category, each in Arabic and English" },
-      "changeTemplate": { "label": "Changing template after publishing", "tallaby": "Any time, without losing products or orders" },
-      "bilingual": { "label": "Arabic and English", "tallaby": "Templates work in both directions" },
-      "cod": { "label": "Cash on delivery", "tallaby": "On for every store from the start" },
-      "cards": { "label": "Cards and wallets", "tallaby": "Through your own Paymob or Kashier account, with fees charged by the provider" },
-      "transfer": { "label": "InstaPay and transfers", "tallaby": "The customer transfers to your account and uploads a screenshot" },
-      "installments": { "label": "Installments", "tallaby": "Not available yet" },
-      "carriers": { "label": "Shipping company connections", "tallaby": "Bosta with waybills from the dashboard, and a ready-made sheet for Wassalha" },
-      "riders": { "label": "Your own riders", "tallaby": "Manage riders and assign orders" },
-      "zones": { "label": "Shipping rates by area", "tallaby": "You set them for each area" },
-      "email": { "label": "Email campaigns", "tallaby": "500 emails a month on Free, 10,000 on Pro" },
-      "feeds": { "label": "Catalog product feed", "tallaby": "One link for Meta, Google Merchant Center and TikTok" },
-      "apps": { "label": "Third-party app store", "tallaby": "No. Integrations are ready to connect from the Apps page" },
-      "support": { "label": "Support channels", "tallaby": "WhatsApp and email" },
-      "language": { "label": "Store language", "tallaby": "Arabic and English" },
-      "currencies": { "label": "International selling and currencies", "tallaby": "One currency per store, Egyptian pounds by default" }
+      "freePlan": {
+        "label": "Free plan",
+        "tallaby": "No monthly subscription: you pay only per order, with no limit on products or orders."
+      },
+      "monthly": {
+        "label": "Monthly subscription",
+        "tallaby": "Pro at {pro} a month, with no order fee"
+      },
+      "orderFee": {
+        "label": "Fee per order",
+        "tallaby": "{orderFee} per order on Free, none on Pro"
+      },
+      "salesShare": {
+        "label": "Share of sales",
+        "tallaby": "We take no share of the order value"
+      },
+      "activation": {
+        "label": "Activation",
+        "tallaby": "Orders from day one. A first top-up from {topUpMin} within {days} days, or at your first order, whichever comes first, keeps new orders visible"
+      },
+      "limits": {
+        "label": "Product and order limits",
+        "tallaby": "No limit on either plan, and up to 3 stores"
+      },
+      "signup": {
+        "label": "Sign-up",
+        "tallaby": "With email or a Google account"
+      },
+      "noCode": {
+        "label": "No code",
+        "tallaby": "Every step is visual, from design to publishing"
+      },
+      "dragDrop": {
+        "label": "Drag-and-drop editing",
+        "tallaby": "Select, style and move any section or element in the builder"
+      },
+      "import": {
+        "label": "Product import",
+        "tallaby": "From Excel, a product link or Shopify"
+      },
+      "domain": {
+        "label": "Address and custom domain",
+        "tallaby": "A free address, and free connection of your own domain on your main store"
+      },
+      "arabicAdmin": {
+        "label": "Arabic dashboard",
+        "tallaby": "The dashboard is in Arabic by default, and in English too"
+      },
+      "templates": {
+        "label": "Ready-made templates",
+        "tallaby": "Templates for each category, each in Arabic and English"
+      },
+      "changeTemplate": {
+        "label": "Changing template after publishing",
+        "tallaby": "Any time, without losing products or orders"
+      },
+      "bilingual": {
+        "label": "Arabic and English",
+        "tallaby": "Templates work in both directions"
+      },
+      "cod": {
+        "label": "Cash on delivery",
+        "tallaby": "On for every store from the start"
+      },
+      "fakeOrders": {
+        "label": "Fake-order protection",
+        "tallaby": "Block phone numbers from ordering, and ask a customer to confirm on WhatsApp in one tap"
+      },
+      "egyptGateways": {
+        "label": "Egyptian payment gateways",
+        "tallaby": "Your own Paymob or Kashier account, with the provider's own fees"
+      },
+      "transfer": {
+        "label": "InstaPay and transfers",
+        "tallaby": "The customer transfers to your account and uploads a screenshot"
+      },
+      "installments": {
+        "label": "Installments",
+        "tallaby": "Not available yet"
+      },
+      "egyptCarriers": {
+        "label": "Egyptian shipping companies",
+        "tallaby": "Bosta with waybills from the dashboard, and a ready-made sheet for Wassalha"
+      },
+      "riders": {
+        "label": "Your own riders",
+        "tallaby": "Manage riders and assign orders"
+      },
+      "zones": {
+        "label": "Shipping rates by area",
+        "tallaby": "You set them for each area"
+      },
+      "abandoned": {
+        "label": "Abandoned checkouts",
+        "tallaby": "A list of checkouts left after the customer typed a phone number, with WhatsApp and call buttons"
+      },
+      "email": {
+        "label": "Email campaigns",
+        "tallaby": "500 emails a month on Free, 10,000 on Pro"
+      },
+      "feeds": {
+        "label": "Catalog product feed",
+        "tallaby": "One link for Meta, Google Merchant Center and TikTok"
+      },
+      "landingPages": {
+        "label": "Product landing pages and funnels",
+        "tallaby": "Not available yet. Each product has its own page"
+      },
+      "apps": {
+        "label": "Third-party app store",
+        "tallaby": "No. Integrations are ready to connect from the Apps page"
+      },
+      "aiProductCopy": {
+        "label": "AI product writing",
+        "tallaby": "AI writes product titles and descriptions in Arabic and English: 100 credits a month on Free, 2,000 on Pro"
+      },
+      "aiStoreBuilder": {
+        "label": "AI builds the whole store",
+        "tallaby": "Not available yet"
+      },
+      "support": {
+        "label": "Support channels",
+        "tallaby": "WhatsApp and email"
+      },
+      "language": {
+        "label": "Store language",
+        "tallaby": "Arabic and English"
+      },
+      "currencies": {
+        "label": "International selling and currencies",
+        "tallaby": "One currency per store, Egyptian pounds by default"
+      },
+      "egpPricing": {
+        "label": "Priced in Egyptian pounds",
+        "tallaby": "Plans are priced in US dollars and shown in approximate pounds; you top up in pounds"
+      },
+      "availableInEgypt": {
+        "label": "Selling from Egypt",
+        "tallaby": "Built for sellers in Egypt"
+      }
     },
     "strengthsTitle": "What each platform does well",
     "strengthsOfTallaby": "What Tallaby does well",
     "strengthsOfCompetitor": "What {name} does well",
     "strengthsTallaby": [
-      { "title": "Start without a subscription", "body": "The Free plan has no monthly fee. You pay {orderFee} per order, with no share of your sales." },
-      { "title": "Built for selling in Egypt", "body": "Cash on delivery, Paymob, Kashier and InstaPay, with Bosta and your own riders in one dashboard." },
-      { "title": "A store under your name", "body": "Ready-made templates and your own domain, and you can change template any time without losing your products." },
-      { "title": "Support close to you", "body": "Reach the support team on WhatsApp and by email." }
+      {
+        "title": "Start without a subscription",
+        "body": "The Free plan has no monthly fee. You pay {orderFee} per order, with no share of your sales."
+      },
+      {
+        "title": "Built for selling in Egypt",
+        "body": "Cash on delivery, Paymob, Kashier and InstaPay, with Bosta and your own riders in one dashboard."
+      },
+      {
+        "title": "A store under your name",
+        "body": "Ready-made templates and your own domain, and you can change template any time without losing your products."
+      },
+      {
+        "title": "Support close to you",
+        "body": "Reach the support team on WhatsApp and by email."
+      }
     ],
-    "moveTitle": "How to move to Tallaby",
+    "moveTitle": "How to move from {name} to Tallaby",
     "moveProducts": "Move your products from {name}",
     "steps": [
-      { "title": "Create your store", "body": "You don't need to stop your current store while you set up on Tallaby.", "link": "Start now" },
-      { "title": "Move your products", "body": "Export your products to Excel and import them, add them by product link, or import directly from Shopify.", "link": "Ask us about moving" },
-      { "title": "Connect payments and shipping, then publish", "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta, then connect your domain and publish.", "link": "How do I connect my domain?" }
+      {
+        "title": "Create your store",
+        "body": "You don't need to stop your current store while you set up on Tallaby.",
+        "link": "Start now"
+      },
+      {
+        "title": "Move your products",
+        "body": "Export your products to Excel and import them, add them by product link, or import directly from Shopify.",
+        "link": "Ask us about moving"
+      },
+      {
+        "title": "Connect payments and shipping, then publish",
+        "body": "Cash on delivery is on, and you can connect Paymob or Kashier and Bosta, then connect your domain and publish.",
+        "link": "How do I connect my domain?"
+      }
     ],
     "faq": {
-      "price": { "q": "Is Tallaby cheaper than {name}?", "a": "On Tallaby you start on the Free plan with no monthly subscription and pay {orderFee} per order, or choose Pro at {pro} a month with no order fee." },
-      "move": { "q": "Can I move my products from {name} to Tallaby?", "a": "Yes. You can import from an Excel file or a product link, and Shopify stores have a direct import." },
-      "domain": { "q": "Will I lose my domain if I move?", "a": "No. You can connect a domain you own to your main Tallaby store and update its DNS records. The domain stays yours." },
-      "try": { "q": "Can I try Tallaby before closing my current store?", "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders." },
-      "methods": { "q": "What payment and shipping options does Tallaby have?", "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account. For shipping, connect your Bosta account, download the Wassalha sheet or use your own riders." },
-      "how": { "q": "How did you put this comparison together?", "a": "We used information published up to the date shown, and we only show what we could verify. If you find something wrong about {name}, email {email} and we'll correct it." }
+      "price": {
+        "q": "Is Tallaby cheaper than {name}?",
+        "a": "On Tallaby you start on the Free plan with no monthly subscription and pay {orderFee} per order, or choose Pro at {pro} a month with no order fee."
+      },
+      "move": {
+        "q": "Can I move my products from {name} to Tallaby?",
+        "a": "Yes. You can import from an Excel file or a product link, and Shopify stores have a direct import."
+      },
+      "domain": {
+        "q": "Will I lose my domain if I move?",
+        "a": "No. You can connect a domain you own to your main Tallaby store and update its DNS records. The domain stays yours."
+      },
+      "try": {
+        "q": "Can I try Tallaby before closing my current store?",
+        "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders."
+      },
+      "methods": {
+        "q": "What payment and shipping options does Tallaby have?",
+        "a": "Cash on delivery is on from the start. You can connect Paymob or Kashier for cards and wallets, and take InstaPay and wallet transfers straight to your account. For shipping, connect your Bosta account, download the Wassalha sheet or use your own riders."
+      },
+      "how": {
+        "q": "How did you put this comparison together?",
+        "a": "We used information published up to the date shown, and we only show what we could verify. If you find something wrong about {name}, email {email} and we'll correct it."
+      }
     },
     "othersTitle": "Other comparisons",
+    "closingTitle": "Try Tallaby alongside your current store",
+    "closingBody": "Start with no monthly subscription, and move your products when you're ready.",
+    "tableCaption": "Tallaby and {name} side by side. Each {name} fact links to the page we read it on.",
+    "rowsHeader": "Feature",
+    "sourceN": "Source {n}",
+    "sourcesTitle": "Sources",
+    "sourcesLead": "Every fact and price about {name} on this page comes from its own pages, read on the dates below. Plans change, so check them before you decide.",
+    "sourceRead": "Read on {date}",
+    "priceNoteTitle": "On price:",
+    "moveBodyShopify": "Import your products straight from your Shopify store, or use an Excel file or a product link.",
+    "moveBodyExcel": "Export your products from {name} to Excel and import them, or add them by product link. The support team can help.",
+    "moveLinkShopify": "See the integrations",
+    "alternativesLink": "{name} alternatives in Egypt",
+    "pricingLink": "Tallaby pricing",
+    "pricingLinkBody": "Free at {orderFee} per order, or Pro at {pro} a month."
+  },
+  "alternativesPage": {
+    "crumb": "Compare",
+    "crumbEntry": "{name} alternatives",
+    "title": "{name} alternatives for sellers in Egypt",
+    "checkedOn": "Facts checked on {date}",
+    "byTeam": "By the Tallaby team",
+    "whyTitle": "Why sellers look for a {name} alternative",
+    "listTitle": "{name} alternatives that work in Egypt",
+    "listLead": "Each option below works for a seller in Egypt. We list what each suits, its price as published and its trade-offs. We don't give scores.",
+    "listNote": "Tallaby is our platform, so we list it first. Check each platform's own pages before you decide.",
+    "ours": "Our platform",
+    "tallabyName": "Tallaby",
+    "tallabyPrice": "Free plan at {orderFee} per order with no monthly fee, or Pro at {pro} a month with no order fee.",
+    "tallabyPick": {
+      "bestFor": "Sellers in Egypt who want cash on delivery, Bosta and their own Paymob or Kashier account in one dashboard, without a monthly fee.",
+      "pros": [
+        "No monthly subscription on Free, and no share of your sales",
+        "Fake-order protection and abandoned checkouts built in",
+        "AI writes product copy in Arabic and English"
+      ],
+      "cons": [
+        "No landing-page funnels or installments yet",
+        "Plans are priced in US dollars (shown in approximate pounds)",
+        "A first wallet top-up is needed to keep seeing new orders"
+      ]
+    },
+    "bestFor": "Best for:",
+    "pros": "What it does well",
+    "cons": "What to weigh",
+    "compareLink": "Tallaby vs {name}",
+    "tableTitle": "Tallaby and {name} side by side",
+    "fullCompare": "Read the full Tallaby vs {name} comparison",
+    "moveTitle": "How to move from {name}",
+    "faq": {
+      "free": {
+        "q": "Can I start on Tallaby without a monthly fee?",
+        "a": "Yes. The Free plan has no monthly subscription: you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or at your first order, whichever comes first, to keep seeing new orders."
+      },
+      "how": {
+        "q": "How did you put this list together?",
+        "a": "We read each platform's own pricing and help pages on the date shown, and list only what we could verify. If something about {name} is wrong, email {email} and we'll correct it."
+      }
+    },
     "closingTitle": "Try Tallaby alongside your current store",
     "closingBody": "Start with no monthly subscription, and move your products when you're ready."
   },
   "competitors": {
     "easyorders": {
       "name": "EasyOrders",
-      "priceNote": "When we checked, EasyOrders advertised a free plan at {eoOrderFee} per order and a Pro plan at {eoPro} a month (priced in dollars, converted at today's rate). Compare the cost for your monthly order count.",
+      "intro": "EasyOrders and Tallaby both charge per order instead of a monthly fee, and both are built for cash on delivery in Egypt. Here is how they differ on fees, payments, shipping and tools, with a source for every EasyOrders fact.",
+      "priceNote": "EasyOrders charges {eoOrderFee} per order on its Regular plan, or {eoPro} a month on Professional with no order fee, after a {eoActivation} wallet top-up to activate. It prices in US dollars, converted here at today's rate. Its pages don't say whether cancelled or fake orders are charged.",
+      "verdictTallaby": [
+        "You want a lower fee per order: Tallaby's Free plan is {orderFee} per order.",
+        "You want your store in Arabic and English, and a list of abandoned checkouts to follow up on WhatsApp.",
+        "You want your own Paymob or Kashier account and Bosta waybills in one dashboard."
+      ],
       "verdict": [
-        "You need many shipping companies: it advertises more than 100.",
-        "You sell outside Egypt: it advertises more than 10 countries.",
+        "You run ads to landing pages and funnels: EasyOrders has them ready, with an AI landing page from one line.",
+        "You need many shipping companies or sell outside Egypt: it advertises more than 100 carriers and sites for 10 countries.",
         "Your store runs well there and you don't need anything it lacks. Moving takes time, so don't move without a clear reason."
       ],
       "strengths": [
-        { "title": "A wide shipping and payment network", "body": "It advertises more than 100 shipping companies and more than 15 payment gateways." },
-        { "title": "Offers inside the order", "body": "Upsell and quantity offers are a core part of the platform." },
-        { "title": "Selling in several countries", "body": "It advertises support for more than 10 countries." }
+        {
+          "title": "Landing pages and funnels",
+          "body": "Ready landing pages and funnels for cash-on-delivery ads, and an AI landing page written from one line."
+        },
+        {
+          "title": "A wide network",
+          "body": "It advertises more than 100 shipping companies and more than 15 payment gateways."
+        },
+        {
+          "title": "Support around the clock",
+          "body": "Arabic and English support at any hour by phone, live chat and video."
+        }
       ],
       "cells": {
-        "freePlan": "A free plan at {eoOrderFee} per order",
-        "monthly": "A Pro plan at {eoPro} a month",
-        "noCode": "Advertises a store in under 10 minutes, with no code",
-        "cards": "Advertises more than 15 payment gateways",
-        "carriers": "Advertises more than 100 shipping companies",
-        "feeds": "Meta catalog and Google Shopping",
-        "currencies": "Advertises selling in more than 10 countries"
+        "freePlan": "No subscription on Regular, but each order is charged and a top-up is needed to activate",
+        "monthly": "Professional at {eoPro} a month, with no order fee",
+        "orderFee": "{eoOrderFee} per order on Regular",
+        "salesShare": "No percentage of sales, only the fee per order",
+        "activation": "A {eoActivation} wallet top-up activates the account and stays as balance",
+        "limits": "Unlimited products, orders and visits",
+        "noCode": "No code needed",
+        "dragDrop": "Drag-and-drop editing",
+        "domain": "You buy a domain elsewhere and connect it; it doesn't sell one",
+        "arabicAdmin": "An Arabic dashboard",
+        "templates": "More than 100 themes",
+        "bilingual": "A storefront in two languages is listed as a merchant request on its public roadmap",
+        "cod": "Cash on delivery",
+        "fakeOrders": "A fake-order blocker that flags orders before confirmation",
+        "egyptGateways": "Advertises more than 15 gateways without naming them; its blog has guides for Kashier and Paymob",
+        "egyptCarriers": "Advertises more than 100 carriers without naming them; its blog says Bosta connects",
+        "zones": "Shipping areas and delivery zones",
+        "abandoned": "Abandoned-cart reminders are listed as a merchant request on its public roadmap",
+        "feeds": "Google Shopping, and a Meta catalog for Facebook, Instagram and TikTok",
+        "landingPages": "Ready landing pages and funnels, and an AI landing page from one line",
+        "apps": "No app store yet; its roadmap says a developer platform is in progress",
+        "aiProductCopy": "AI writes product titles and descriptions; usage limits aren't published",
+        "aiStoreBuilder": "Says AI helps build the store; its tools cover products, landing pages, images and a chatbot",
+        "support": "Arabic and English, around the clock, by phone, live chat and video",
+        "currencies": "Sites for 10 countries, and it says you can sell in any country",
+        "egpPricing": "Priced in US dollars",
+        "availableInEgypt": "Egypt first, with sites for 10 countries"
+      },
+      "faq": [
+        {
+          "q": "Does EasyOrders charge for cancelled or fake orders?",
+          "a": "Its pricing page says only that there are no hidden fees, and we found no page that says whether cancelled, fake or returned orders are charged, so ask EasyOrders directly. On Tallaby, Free charges {orderFee} per order and you can block numbers that send fake orders."
+        }
+      ],
+      "shortlist": {
+        "bestFor": "Cash-on-delivery sellers who run ads to landing pages and funnels and want many carriers.",
+        "pros": [
+          "Landing pages, funnels and a fake-order blocker",
+          "More than 100 themes",
+          "Support at any hour by phone, chat and video"
+        ],
+        "cons": [
+          "Priced in US dollars, with a top-up to activate",
+          "No storefront in two languages yet (on its roadmap)",
+          "Carriers and gateways aren't named on its product pages"
+        ]
+      },
+      "alternatives": {
+        "intro": "Looking for an EasyOrders alternative? These options work for sellers in Egypt. We compare fees, cash on delivery, shipping and payments, with a source for every fact.",
+        "why": [
+          {
+            "title": "The fee per order",
+            "body": "EasyOrders charges {eoOrderFee} per order on Regular, priced in US dollars. Its own blog still quotes its older, lower prices."
+          },
+          {
+            "title": "Two languages and abandoned carts",
+            "body": "A storefront in two languages and abandoned-cart reminders are still listed as merchant requests on its public roadmap."
+          },
+          {
+            "title": "Named partners",
+            "body": "Its product pages advertise more than 100 carriers and 15 gateways without naming them, so check that yours is there."
+          }
+        ],
+        "steps": [
+          {
+            "title": "Create your store on Tallaby",
+            "body": "Keep your EasyOrders store running while you set up."
+          },
+          {
+            "title": "Move your products",
+            "body": "Add them from an Excel file or by product link. The support team can help on WhatsApp."
+          },
+          {
+            "title": "Connect payments and shipping, then publish",
+            "body": "Cash on delivery is on. Connect Paymob or Kashier and Bosta, then connect your domain."
+          }
+        ],
+        "faq": [
+          {
+            "q": "Is there a platform like EasyOrders with a lower fee per order?",
+            "a": "Tallaby's Free plan has no monthly fee and charges {orderFee} per order, against {eoOrderFee} on EasyOrders' Regular plan when we checked. Both need a first top-up."
+          }
+        ]
       }
     },
     "shopify": {
       "name": "Shopify",
-      "priceNote": "When we checked, Shopify's plans ran from {shopifyMin} to {shopifyMax} a month (priced in dollars, converted at today's rate), and transaction fees and paid apps can come on top. Compare the cost for your monthly order count.",
+      "intro": "Shopify is the biggest global store platform, and it works in Egypt with an Arabic dashboard. But Shopify Payments isn't offered in Egypt, so every card order carries an extra fee. Here is how it compares with Tallaby, with a source for every Shopify fact.",
+      "priceNote": "Shopify's Basic plan is {shopifyBasic} a month on monthly billing (Grow {shopifyGrow}, Advanced {shopifyAdvanced}), priced in US dollars and converted here at today's rate. Because Shopify Payments isn't available in Egypt, Basic adds {shopifyGatewayFee} to every order paid through another provider such as Paymob or Kashier. Paid apps can come on top.",
+      "verdictTallaby": [
+        "You sell in Egypt and want Paymob or Kashier with no extra platform fee on card orders.",
+        "You want cash on delivery, fake-order protection and Bosta built in, without paid apps.",
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+      ],
       "verdict": [
-        "You sell in more than one market and need more than one currency.",
-        "You need many apps from a large app store.",
+        "You sell in many countries and languages and need the largest app store.",
+        "You want AI to generate a store design from a description of your business.",
         "Your store runs well there and you don't need anything it lacks. Moving takes time, so don't move without a clear reason."
       ],
       "strengths": [
-        { "title": "A large app store", "body": "You can add a lot through apps, some of them paid." },
-        { "title": "Selling across markets", "body": "Its Markets feature lets you sell in more than one country and currency." },
-        { "title": "Email campaigns and catalogs", "body": "Email and product feeds are available on the platform." }
+        {
+          "title": "The biggest ecosystem",
+          "body": "More than 21,000 apps and over 1,300 themes, with official Google and Meta catalog apps."
+        },
+        {
+          "title": "Tools on every plan",
+          "body": "Abandoned-checkout emails, email campaigns, chat support at any hour and the Sidekick AI assistant."
+        },
+        {
+          "title": "Room to grow abroad",
+          "body": "Up to 20 storefront languages and plans that scale to very large stores."
+        }
       ],
       "cells": {
-        "monthly": "Plans from {shopifyMin} to {shopifyMax} a month",
-        "salesShare": "Transaction fees can apply, depending on the plan",
-        "email": "Available",
-        "feeds": "Available",
-        "apps": "A large app store, with some paid apps",
-        "currencies": "Available through Markets"
+        "freePlan": "No free plan: a short free trial, then a discounted start",
+        "monthly": "Basic {shopifyBasic}, Grow {shopifyGrow}, Advanced {shopifyAdvanced} a month on monthly billing",
+        "orderFee": "No flat fee per order",
+        "salesShare": "{shopifyGatewayFee} on Basic for each order paid through another provider, which is every card order in Egypt; none on cash on delivery",
+        "limits": "Unlimited products",
+        "noCode": "No code needed",
+        "dragDrop": "Drag-and-drop sections in the theme editor",
+        "import": "Product import from a CSV file",
+        "domain": "Connect a custom domain on every plan",
+        "arabicAdmin": "An Arabic dashboard",
+        "templates": "24 free themes and more than 1,300 paid ones",
+        "bilingual": "Up to 20 storefront languages; right-to-left is guaranteed only on its newest themes",
+        "cod": "Cash on delivery as a manual method, marked paid by hand",
+        "fakeOrders": "Fraud checks cover card orders only; checks for cash-on-delivery orders need apps",
+        "egyptGateways": "Shopify Payments isn't offered in Egypt; Paymob and Kashier connect through apps",
+        "transfer": "Bank transfer as a manual method; no InstaPay flow",
+        "installments": "Through Egyptian gateway apps, such as Paymob's valU app",
+        "egyptCarriers": "A Bosta app in the Shopify App Store",
+        "zones": "Shipping zones by country and region",
+        "abandoned": "Abandoned-checkout emails on every plan",
+        "email": "10,000 free emails a month, then paid",
+        "feeds": "Official Google and Meta catalog apps",
+        "landingPages": "Extra pages built from theme sections; funnels need apps",
+        "apps": "More than 21,000 apps",
+        "aiProductCopy": "The Sidekick AI assistant writes product copy, with limits by plan",
+        "aiStoreBuilder": "Generates a store design from a description of your business",
+        "support": "Live chat at any hour",
+        "egpPricing": "Priced in US dollars",
+        "availableInEgypt": "Works in Egypt, with an Arabic site, but without Shopify Payments"
+      },
+      "faq": [
+        {
+          "q": "Does Shopify work in Egypt?",
+          "a": "Yes. You can open a Shopify store from Egypt and use its Arabic dashboard, but Shopify Payments isn't available there. Card payments go through apps such as Paymob or Kashier, and Shopify then adds {shopifyGatewayFee} per order on Basic."
+        },
+        {
+          "q": "Can I move my Shopify store to Tallaby?",
+          "a": "Yes. Tallaby imports your products straight from your Shopify store, and you can connect your own domain when you're ready."
+        }
+      ],
+      "shortlist": {
+        "bestFor": "Brands that sell in many countries and need a large app store.",
+        "pros": [
+          "More than 21,000 apps and 1,300+ themes",
+          "Abandoned checkouts and email on every plan",
+          "AI store design and the Sidekick assistant"
+        ],
+        "cons": [
+          "An extra fee on every card order in Egypt",
+          "Priced in US dollars, plus paid apps",
+          "Cash-on-delivery checks and Bosta come through apps"
+        ]
+      },
+      "alternatives": {
+        "intro": "Looking for a Shopify alternative in Egypt? These options work for sellers here. We compare fees, cash on delivery, shipping and payments, with a source for every fact.",
+        "why": [
+          {
+            "title": "The fee on card orders",
+            "body": "Shopify Payments isn't offered in Egypt, so Basic adds {shopifyGatewayFee} to every order paid through Paymob, Kashier or another provider."
+          },
+          {
+            "title": "Dollar billing and paid apps",
+            "body": "Plans start at {shopifyBasic} a month on monthly billing, in US dollars, and cash-on-delivery checks or funnels often need paid apps."
+          },
+          {
+            "title": "Local partners through apps",
+            "body": "Bosta, Paymob and Kashier connect through apps, each with its own setup and reviews."
+          }
+        ],
+        "steps": [
+          {
+            "title": "Create your store on Tallaby",
+            "body": "Keep your Shopify store open while you set up."
+          },
+          {
+            "title": "Import from Shopify",
+            "body": "Bring your products straight from your Shopify store, or use an Excel file."
+          },
+          {
+            "title": "Connect payments and shipping, then your domain",
+            "body": "Cash on delivery is on. Connect Paymob or Kashier and Bosta, then point your domain to Tallaby."
+          }
+        ],
+        "faq": [
+          {
+            "q": "Is there a free Shopify alternative in Egypt?",
+            "a": "Tallaby's Free plan has no monthly fee: you pay {orderFee} per order and no share of your sales. Shopify has no free plan, only a short trial."
+          }
+        ]
       }
     },
     "woocommerce": {
       "name": "WooCommerce",
-      "priceNote": "The WooCommerce plugin itself is free, but you pay for hosting, a domain, a theme, plugins and maintenance. Compare the cost for what you need.",
+      "intro": "WooCommerce is a free, open-source plugin that turns a WordPress site into a store, and it has good Egyptian payment plugins. You run the hosting, updates and plugins yourself. Here is how it compares with Tallaby, with a source for every WooCommerce fact.",
+      "priceNote": "The WooCommerce plugin is free, but WooCommerce itself estimates hosting at {wooHostingMin} to {wooHostingMax} a month and paid extensions at {wooExtMin} to {wooExtMax} a year each (US dollars, converted here at today's rate). You also pay for a domain and your payment provider's fees.",
+      "verdictTallaby": [
+        "You want a store that's hosted, secured and updated for you, with no plugins to maintain.",
+        "You want Bosta waybills, fake-order protection and abandoned checkouts built in.",
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+      ],
       "verdict": [
-        "You want full control of your site and hosting, and have someone to run it.",
+        "You want full control of your code, hosting and data, and have someone to run it.",
         "You already have a WordPress site and want to add a store to it.",
         "Your store runs well there and you don't need anything it lacks. Moving takes time, so don't move without a clear reason."
       ],
       "strengths": [
-        { "title": "An open-source plugin", "body": "It runs on WordPress, and a developer can change it as needed." },
-        { "title": "Full control", "body": "You choose your own hosting, theme and plugins." },
-        { "title": "Many plugins", "body": "You can extend your store with plugins, some of them paid." }
+        {
+          "title": "Free and open source",
+          "body": "No licence fee and no platform share of sales; a developer can change anything."
+        },
+        {
+          "title": "Egyptian payment plugins",
+          "body": "An official Paymob plugin with cards, wallets and installment providers, plus Kashier and Geidea."
+        },
+        {
+          "title": "Full ownership",
+          "body": "Your own hosting and data, unlimited products, and thousands of free WordPress themes."
+        }
       ],
       "cells": {
-        "freePlan": "The plugin is free, and you pay for hosting, a domain, a theme and plugins",
-        "noCode": "Needs WordPress setup, hosting and maintenance, and often a developer",
-        "domain": "You buy your own domain and hosting",
-        "apps": "Many plugins, some of them paid"
+        "freePlan": "The plugin is free; you pay for hosting, a domain and any paid extensions",
+        "monthly": "No subscription; WooCommerce estimates hosting at {wooHostingMin} to {wooHostingMax} a month",
+        "orderFee": "No fee per order",
+        "salesShare": "No platform share; you pay only your payment provider",
+        "limits": "Unlimited products and orders",
+        "noCode": "Block themes need no code, but hosting, updates and plugins are technical",
+        "dragDrop": "The WordPress Site Editor, with block themes only",
+        "import": "Product import and export by CSV, built in",
+        "domain": "No domain included; you buy your own",
+        "arabicAdmin": "Fully translated into Arabic",
+        "templates": "More than 3,000 free WordPress themes tagged e-commerce",
+        "bilingual": "Right-to-left depends on the theme; a second language needs a plugin such as Polylang",
+        "cod": "Cash on delivery and bank transfer in the core plugin",
+        "fakeOrders": "Nothing built in for cash-on-delivery orders",
+        "egyptGateways": "An official Paymob plugin, and Kashier and Geidea plugins; WooPayments isn't offered in Egypt",
+        "transfer": "Bank transfer in the core plugin; InstaPay through Paymob is listed as coming soon",
+        "installments": "Through the Paymob plugin, with valU, Souhoola, SYMPL and others",
+        "egyptCarriers": "A Bosta plugin on WordPress.org, rated 2.4 of 5 from 8 reviews when we checked",
+        "zones": "Shipping zones by country, governorate or postcode, with Egypt's governorates built in",
+        "abandoned": "Through extensions such as AutomateWoo (paid)",
+        "email": "Through plugins such as MailPoet",
+        "feeds": "Official Google and Meta plugins",
+        "apps": "The WooCommerce Marketplace and thousands of WordPress plugins",
+        "landingPages": "Any WordPress page, built with blocks",
+        "aiProductCopy": "An experimental AI tool for product listings, in public beta",
+        "aiStoreBuilder": "Not in WooCommerce itself; WordPress.com's paid plans offer an AI site builder",
+        "support": "Community forums for the free plugin; chat or email for paid extensions",
+        "egpPricing": "Extensions are priced in US dollars",
+        "availableInEgypt": "Works in Egypt; WooPayments isn't offered there"
+      },
+      "faq": [
+        {
+          "q": "Is WooCommerce really free?",
+          "a": "The plugin is free, but you pay for hosting, a domain, any paid extensions and your time or a developer's to keep it updated. WooCommerce's own estimate for hosting is {wooHostingMin} to {wooHostingMax} a month."
+        }
+      ],
+      "shortlist": {
+        "bestFor": "Sellers with a developer who want full control of their site and hosting.",
+        "pros": [
+          "Free, open source, with no share of sales",
+          "Official Paymob plugin with installments",
+          "Egypt's governorates built into shipping zones"
+        ],
+        "cons": [
+          "Hosting, security and updates are your job",
+          "Bosta plugin with mixed reviews",
+          "Fake-order checks and abandoned carts need plugins"
+        ]
+      }
+    },
+    "expandcart": {
+      "name": "ExpandCart",
+      "intro": "ExpandCart sells monthly plans priced in Egyptian pounds and unlocks features by plan. Tallaby starts with no monthly fee, with the same tools on both plans. Here is how they compare, with a source for every ExpandCart fact.",
+      "priceNote": "ExpandCart's plans run from {ecStandard} a month (Standard: up to 100 products and 1 template) to {ecUltimate} a month (Ultimate), as listed on its pricing page, with a yearly discount and no sales commission.",
+      "verdictTallaby": [
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order.",
+        "You want abandoned checkouts, email campaigns and every template on the plan you start with.",
+        "You want cash on delivery, fake-order protection and AI product writing from day one."
+      ],
+      "verdict": [
+        "You want a fixed monthly price in Egyptian pounds and no fee per order.",
+        "You need an app marketplace or mature extras such as point of sale and loyalty.",
+        "Your store runs well there and you don't need anything it lacks. Moving takes time, so don't move without a clear reason."
+      ],
+      "strengths": [
+        {
+          "title": "Priced in pounds",
+          "body": "Its plans are priced in Egyptian pounds, with no sales commission."
+        },
+        {
+          "title": "An app marketplace",
+          "body": "You can add features from its app marketplace."
+        },
+        {
+          "title": "Help to set up",
+          "body": "Higher yearly plans include a free domain, and it sells a service that launches the store for you."
+        }
+      ],
+      "cells": {
+        "freePlan": "A free trial of 14 or 15 days (its pages differ); the price cards list no free plan",
+        "monthly": "From {ecStandard} to {ecUltimate} a month, less on yearly billing",
+        "orderFee": "No fee per order",
+        "salesShare": "0% sales commission on every plan",
+        "limits": "100 products on Standard, 1,000 on Professional, unlimited on Ultimate",
+        "noCode": "No technical experience needed",
+        "import": "CSV or Excel import, from Professional up in its plan table",
+        "domain": "Connect your own; a free domain from Professional up, on yearly billing only",
+        "templates": "1 template on Standard, 4 on Professional, all on Ultimate",
+        "bilingual": "A store in several languages on every plan",
+        "egyptGateways": "Names 2checkout, PayPal, PayTabs, CashU and Fawaterak; Paymob and Fawry appear only on an older Egypt page",
+        "egyptCarriers": "Advertises more than 50 carriers and names Aramex; Bosta and Mylerz appear only on an older Egypt page",
+        "abandoned": "Only on Ultimate and Business",
+        "email": "Email campaigns from Professional up",
+        "feeds": "Facebook and Instagram on every plan; Google Shopping on Business",
+        "landingPages": "Web pages and a blog from Professional up; no funnels mentioned",
+        "apps": "An app marketplace",
+        "support": "Chat, tickets, phone and email; its table shows no chat on Standard",
+        "egpPricing": "Priced in Egyptian pounds",
+        "availableInEgypt": "Prices in pounds and an Egypt page"
+      },
+      "faq": [
+        {
+          "q": "Does ExpandCart have a free plan?",
+          "a": "When we checked, its price cards listed paid plans only, with a free trial of 14 or 15 days (its pages differ). Tallaby's Free plan has no monthly fee and charges {orderFee} per order."
+        }
+      ],
+      "shortlist": {
+        "bestFor": "Sellers who want a fixed monthly price in Egyptian pounds and an app marketplace.",
+        "pros": [
+          "Priced in pounds, with no sales commission",
+          "An app marketplace and many extras",
+          "A store in several languages on every plan"
+        ],
+        "cons": [
+          "Products and templates are capped on Standard",
+          "Abandoned carts only on Ultimate and Business",
+          "Some Egyptian partner logos come from an older page"
+        ]
+      }
+    },
+    "salla": {
+      "name": "Salla",
+      "intro": "Salla is a leading Saudi store platform with a real free plan. When we checked, it served Saudi Arabia and the UAE, and opening a store needed Saudi documents. Here is how it compares with Tallaby for a seller in Egypt, with a source for every Salla fact.",
+      "priceNote": "Salla's Basic plan is free; Plus is {sallaPlus} a month and Pro {sallaPro} a month, priced in Saudi riyals and converted here at today's rate. A Salla store needs a Saudi commercial registration or freelance document, a Saudi mobile number and a Saudi bank account.",
+      "verdictTallaby": [
+        "You sell from Egypt: Tallaby works with Egyptian documents, Paymob, Kashier and Bosta.",
+        "You want cash on delivery with fake-order protection and Egyptian shipping zones.",
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+      ],
+      "verdict": [
+        "You sell in Saudi Arabia or the UAE and can register a Saudi business.",
+        "You need Gulf payment methods such as mada, Apple Pay, Tabby and Tamara.",
+        "You want a very large app store and mature marketing tools for the Gulf."
+      ],
+      "strengths": [
+        {
+          "title": "A real free plan",
+          "body": "Basic is free with no time limit and no commission, with unlimited products and orders."
+        },
+        {
+          "title": "Gulf payments and shipping",
+          "body": "mada, Apple Pay, STC Pay, Tabby and Tamara, with many Gulf carriers."
+        },
+        {
+          "title": "A big ecosystem",
+          "body": "More than 800 apps, landing pages, abandoned-cart discounts and email integrations."
+        }
+      ],
+      "cells": {
+        "freePlan": "Basic is free with no time limit",
+        "monthly": "Plus {sallaPlus} a month, Pro {sallaPro} a month",
+        "orderFee": "No fee per order or sales commission",
+        "salesShare": "No commission; card fees are shown in its dashboard, not published",
+        "limits": "Unlimited products and orders, Basic included",
+        "noCode": "No programming experience needed",
+        "import": "Import from Zid, Shopify, WooCommerce, Magento or Excel",
+        "domain": "A custom domain on Plus and up",
+        "arabicAdmin": "Arabic first, with Arabic and English support",
+        "templates": "Free and paid themes; no count published",
+        "bilingual": "A store in several languages, with instant translation",
+        "cod": "Cash on delivery, Basic included",
+        "fakeOrders": "Hides payment methods from customers it judges not serious, and screens payments for fraud",
+        "egyptGateways": "Gulf methods only, such as mada, STC Pay, Tabby and Tamara",
+        "transfer": "Bank transfer on Basic; no InstaPay",
+        "installments": "Tabby and Tamara, in the Gulf",
+        "abandoned": "Automatic reminders, with a discount or free shipping",
+        "email": "Email campaigns, with Mailchimp and Klaviyo",
+        "feeds": "Instagram, Google and Snapchat catalogs",
+        "landingPages": "Landing pages",
+        "apps": "More than 800 apps",
+        "aiProductCopy": "Connect ChatGPT or Claude on a paid plan; no built-in product writer",
+        "support": "Chat and email at any hour",
+        "egpPricing": "Priced in Saudi riyals",
+        "availableInEgypt": "Serves Saudi Arabia and the UAE; a store needs Saudi documents, a Saudi mobile number and a Saudi bank account"
+      },
+      "faq": [
+        {
+          "q": "Can I open a Salla store from Egypt?",
+          "a": "When we checked, Salla said it serves Saudi Arabia and the UAE, and opening a store needed a Saudi commercial registration or freelance document, a Saudi mobile number and a Saudi bank account. Tallaby is built for sellers in Egypt."
+        }
+      ],
+      "shortlist": {
+        "bestFor": "Sellers in Saudi Arabia or the UAE.",
+        "pros": [
+          "A free plan with no commission",
+          "Gulf payments and carriers",
+          "More than 800 apps"
+        ],
+        "cons": [
+          "Needs Saudi documents to open a store",
+          "No Egyptian gateways or carriers",
+          "Priced in Saudi riyals"
+        ]
+      }
+    },
+    "zid": {
+      "name": "Zid",
+      "intro": "Zid is a Saudi store platform with an Egyptian site, prices in Egyptian pounds and a free Starter plan. Its Egyptian payment and shipping partners appear as logos on that site. Here is how it compares with Tallaby, with a source for every Zid fact.",
+      "priceNote": "Zid's Starter plan is free. In Egypt, Rise is {zidRise} a month and Growth {zidGrowth} a month on monthly billing, as listed on zid.eg, with a discount for yearly billing. Online card payments start on Rise.",
+      "verdictTallaby": [
+        "You want card payments from the start: on Tallaby you connect your own Paymob or Kashier account on either plan.",
+        "You want fake-order protection, Bosta waybills and email campaigns without a paid plan.",
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+      ],
+      "verdict": [
+        "You want a free plan with no fee per order and can live without online payments at first.",
+        "You sell in Egypt and the Gulf and want one platform for both.",
+        "You need a big app store, point of sale or Amazon and Trendyol sales channels."
+      ],
+      "strengths": [
+        {
+          "title": "A free plan in Egypt",
+          "body": "Starter is free with unlimited products and orders, cash on delivery and bank transfer."
+        },
+        {
+          "title": "Egypt and the Gulf",
+          "body": "One platform for selling in Egypt and Saudi Arabia, with prices in pounds on its Egyptian site."
+        },
+        {
+          "title": "AI and apps",
+          "body": "An AI assistant in beta, content and image generation, and more than 400 apps."
+        }
+      ],
+      "cells": {
+        "freePlan": "Starter is free with no time limit",
+        "monthly": "Rise {zidRise}, Growth {zidGrowth} a month in Egypt, less on yearly billing",
+        "orderFee": "No fee per order",
+        "salesShare": "No commission on paid plans; its pages don't say for Starter",
+        "limits": "Unlimited products and orders; team seats by plan",
+        "noCode": "No technical experience needed",
+        "dragDrop": "Drag sections to reorder them in the theme editor",
+        "import": "Guides to move from other platforms, and catalog import",
+        "domain": "A free zid.store address; your own domain depends on the plan",
+        "arabicAdmin": "An Arabic dashboard and help center",
+        "templates": "More than 50 themes",
+        "bilingual": "Arabic always on, English optional",
+        "cod": "Cash on delivery, Starter included",
+        "egyptGateways": "Paymob, valU and Sympl appear as partner logos; online payment starts on Rise",
+        "transfer": "Bank transfer on Starter; no InstaPay or wallets named",
+        "installments": "valU and Sympl logos; buy now, pay later from Growth",
+        "egyptCarriers": "Bosta, Aramex, Mylerz and others appear as partner logos; its shipping page is written for Saudi Arabia",
+        "abandoned": "SMS, WhatsApp and email reminders on plans that include them",
+        "email": "Automatic emails; its campaigns are SMS and WhatsApp",
+        "feeds": "Ad and catalog connections through its app store",
+        "landingPages": "On its higher plan only",
+        "apps": "More than 400 apps",
+        "aiProductCopy": "An AI assistant in beta, with content and image generation",
+        "aiStoreBuilder": "Builds one section from a description, not a whole store",
+        "support": "Its home page says support is always on; another page lists office hours",
+        "egpPricing": "Priced in Egyptian pounds on zid.eg",
+        "availableInEgypt": "An Egyptian site for sellers in Egypt"
+      },
+      "faq": [
+        {
+          "q": "Does Zid work in Egypt?",
+          "a": "Yes. Zid has an Egyptian site with prices in pounds and a free Starter plan. When we checked, its Egyptian payment and shipping partners were shown as logos, and online payment started on the Rise plan at {zidRise} a month."
+        }
+      ],
+      "shortlist": {
+        "bestFor": "Sellers who want a free plan and sell in Egypt and the Gulf.",
+        "pros": [
+          "A free Starter plan with cash on delivery",
+          "Prices in pounds on its Egyptian site",
+          "AI assistant and more than 400 apps"
+        ],
+        "cons": [
+          "Online card payments start on a paid plan",
+          "Egyptian partners shown as logos; some pages are written for Saudi Arabia",
+          "Paid plans from {zidRise} a month"
+        ]
       }
     },
     "facebook-only": {
@@ -190,15 +905,24 @@
         "All your customers are on Facebook and you don't need your own store link yet."
       ],
       "strengths": [
-        { "title": "No setup", "body": "Create the page and start posting straight away." },
-        { "title": "An audience already there", "body": "Your customers are already browsing Facebook." },
-        { "title": "Free", "body": "Creating the page costs nothing." }
+        {
+          "title": "No setup",
+          "body": "Create the page and start posting straight away."
+        },
+        {
+          "title": "An audience already there",
+          "body": "Your customers are already browsing Facebook."
+        },
+        {
+          "title": "Free",
+          "body": "Creating the page costs nothing."
+        }
       ],
       "cells": {
         "freePlan": "The page itself is free",
         "domain": "No store link of your own",
         "templates": "One page layout, set by Facebook",
-        "carriers": "No shipping company connections",
+        "egyptCarriers": "No shipping company connections",
         "zones": "You agree shipping with each customer in messages"
       }
     }
