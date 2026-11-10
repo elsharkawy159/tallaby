@@ -72,12 +72,11 @@ function visitorCountry(): Promise<string | null> {
 }
 
 /**
- * The currency to show: the page's default on the server render and until the
- * country is known (EGP on Arabic pages, USD on English ones; what crawlers
- * index), then the visitor's country's currency if `available(code)` (we have
- * a rate), else USD. If the country can't be read, the default stays.
+ * The visitor's country: null on the server render and until it is known,
+ * and null for good if it can't be read. Shared by the prices and the wallet
+ * top-up copy (`top-up-copy.lib.ts`), so a page asks once.
  */
-export function useVisitorCurrency(locale: string, available: (code: string) => boolean): string {
+export function useVisitorCountry(): string | null {
   const [country, setCountry] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
@@ -90,5 +89,15 @@ export function useVisitorCurrency(locale: string, available: (code: string) => 
       live = false;
     };
   }, []);
-  return visitorCurrency(country, locale, available);
+  return country;
+}
+
+/**
+ * The currency to show: the page's default on the server render and until the
+ * country is known (EGP on Arabic pages, USD on English ones; what crawlers
+ * index), then the visitor's country's currency if `available(code)` (we have
+ * a rate), else USD. If the country can't be read, the default stays.
+ */
+export function useVisitorCurrency(locale: string, available: (code: string) => boolean): string {
+  return visitorCurrency(useVisitorCountry(), locale, available);
 }

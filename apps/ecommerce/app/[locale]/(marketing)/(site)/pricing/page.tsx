@@ -7,6 +7,7 @@ import { JsonLd, ProductJsonLd } from "@/components/marketing/site/json-ld";
 import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
+import { TopUpCopy } from "@/components/marketing/site/top-up-copy.client";
 import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { FeeEstimator } from "@/components/marketing/pricing/fee-calculators.client";
@@ -42,7 +43,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
     { icon: Percent, label: t("hero.noPercent") },
   ];
   const extras = [
-    { icon: Wallet, title: t("extras.topUpTitle"), body: withPrices(t("extras.topUpBody", prices)) },
+    { icon: Wallet, title: t("extras.topUpTitle"), body: <TopUpCopy egp={withPrices(t("extras.topUpBody", prices))} usdCard={withPrices(t("extras.topUpBodyOutsideEgypt", prices))} /> },
     { icon: Blocks, title: t("extras.appsTitle"), body: t("extras.appsBody") },
     { icon: Mail, title: t("extras.emailsTitle"), body: t("extras.emailsBody", prices) },
     { icon: Sparkles, title: t("extras.creditsTitle"), body: t("extras.creditsBody", prices) },
@@ -91,7 +92,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
       <Section id="extras" className="pt-0 min-[861px]:pt-0">
         <Container>
           <Reveal>
-            <SectionHeading kicker={t("extras.kicker")} title={t("extras.title")} description={t("extras.desc")} centered />
+            <SectionHeading kicker={t("extras.kicker")} title={t("extras.title")} description={<TopUpCopy egp={t("extras.desc")} usdCard={t("extras.descOutsideEgypt")} />} centered />
           </Reveal>
           <div className="grid gap-4 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-4">
             {extras.map((item) => (

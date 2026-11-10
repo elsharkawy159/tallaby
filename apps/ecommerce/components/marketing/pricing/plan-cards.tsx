@@ -2,6 +2,7 @@ import { Check, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { Reveal } from "@/components/marketing/site/reveal.client";
+import { TopUpCopy } from "@/components/marketing/site/top-up-copy.client";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { PLAN_PRICES, PRICE_TOKENS, formatNumber } from "@/lib/marketing/pricing.lib";
 import { PlanPrice } from "./plan-price.client";
@@ -109,7 +110,9 @@ export async function PlanCards() {
           </Reveal>
         ))}
       </div>
-      <p className="mx-auto mt-6 max-w-[720px] text-center text-xs text-pretty text-ink-400">{t("fx")}</p>
+      <p className="mx-auto mt-6 max-w-[720px] text-center text-xs text-pretty text-ink-400">
+        <TopUpCopy egp={t("fx")} usdCard={t("fxOutsideEgypt")} />
+      </p>
     </>
   );
 }

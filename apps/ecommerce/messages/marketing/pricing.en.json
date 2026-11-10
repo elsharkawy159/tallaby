@@ -37,6 +37,7 @@
       "featureOrderEmail": "Order confirmation email to every customer, under your store name",
       "featureNoFee": "Zero platform fee on orders",
       "fx": "Amounts are approximate, converted at today's exchange rate, and may move slightly with it. You top up your wallet in Egyptian pounds.",
+      "fxOutsideEgypt": "Amounts are approximate, converted at today's exchange rate, and may move slightly with it. You top up your wallet by card in US dollars.",
       "currency": {
         "EGP": "EGP",
         "USD": "USD",
@@ -79,8 +80,10 @@
       "kicker": "Other costs",
       "title": "Everything you might pay, plainly",
       "desc": "These come out of your store wallet, which you top up in Egyptian pounds.",
+      "descOutsideEgypt": "These come out of your store wallet, which you top up by card in US dollars.",
       "topUpTitle": "Wallet top-ups",
       "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the Free plan, make your first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns.",
+      "topUpBodyOutsideEgypt": "From {topUpMin} to {topUpMax}, paid by card in USD. On the Free plan, make your first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns.",
       "appsTitle": "Apps",
       "appsBody": "Some apps have a small cost, shown in your dashboard before you turn them on. One is Order Notifications, which sends customer order emails. It's optional and set per store.",
       "emailsTitle": "Extra campaign emails",

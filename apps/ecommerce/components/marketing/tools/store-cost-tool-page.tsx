@@ -34,7 +34,10 @@ export async function StoreCostToolPage() {
     breakEven: money(example.breakEvenOrders),
     ...prices,
   };
-  const faq: FaqItem[] = FAQ_KEYS.map((key) => ({ q: t(`faq.${key}.q`), a: t.raw(`faq.${key}.a`) as string }));
+  const faq: FaqItem[] = FAQ_KEYS.map((key) => {
+    const outside = t.has(`faq.${key}.aOutsideEgypt`) ? (t.raw(`faq.${key}.aOutsideEgypt`) as string) : undefined;
+    return { q: t(`faq.${key}.q`), a: t.raw(`faq.${key}.a`) as string, ...(outside && { aOutsideEgypt: outside }) };
+  });
   const costs = t.raw("costs.items") as { title: string; body: string }[];
   const unit = t("calculator.currency");
   const rows = [

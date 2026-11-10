@@ -201,7 +201,7 @@
           "q": "What's the difference between Free and Pro?",
           "a": "On Free you pay {orderFee} per order and no monthly fee. On Pro you pay {pro} a month and no order fees, with more AI credits and campaign emails. Which costs less depends on how many orders you get."
         },
-        { "q": "Do I need a credit card to sign up?", "a": "No. Sign up with email or a Google account, and top up your wallet later in EGP." },
+        { "q": "Do I need a credit card to sign up?", "a": "No. Sign up with email or a Google account, and top up your wallet later in EGP.", "aOutsideEgypt": "No. Sign up with email or a Google account, and top up your wallet later by card in USD." },
         {
           "q": "Can I open a free online store in Egypt and sell with cash on delivery?",
           "a": "Yes. Cash on delivery is on in every store from the start, you set shipping prices by governorate or area, and you can connect your Bosta account whenever you like."

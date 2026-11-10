@@ -203,7 +203,8 @@
         },
         "topUp": {
           "q": "How do I pay Tallaby's fees?",
-          "a": "Fees come out of your store wallet, which you top up in EGP from {topUpMin}. You need a first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders."
+          "a": "Fees come out of your store wallet, which you top up in EGP from {topUpMin}. You need a first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders.",
+          "aOutsideEgypt": "Fees come out of your store wallet, which you top up by card in USD from {topUpMin}. You need a first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders."
         }
       },
       "relatedTitle": "Related pages",

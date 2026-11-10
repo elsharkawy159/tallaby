@@ -1748,6 +1748,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 - **Tests:** `product-in-store.test.ts`, `store-scope.test.ts`, `product-store.server.test.ts` (unit); `store-separation.integration.test.ts` cross-seller, forged-store and split-on cases (DB, not run here: no `TEST_DATABASE_URL`).
 - **Deferred:** reads (slice 2), per-store cache tags (slice 4), store read-only (`forWrite`) for archived stores (slice 2); **0163 must not assume `products.store_id` is NULL** (create now writes the selected store).
 
+### 2026-11-10 — tallaby.com top-up text for sellers outside Egypt, built but OFF (owner; no migration)
+
+- Owner: sellers outside Egypt top up by card in USD. The wallet top-up sentences (pricing card footnote, Other costs intro and top-up card, help-centre answer, store-cost calculator FAQ, free-store FAQ) have an "by card in US dollars" variant for a known IP country other than EG, in Arabic and English; Egypt, unknown country and the server render keep the EGP text. Client switch (`useVisitorCountry` + `TopUpCopy`), pages stay static.
+- **Off** (`USD_CARD_TOP_UP_COPY_LIVE = false` in `apps/ecommerce/lib/marketing/top-up-copy.lib.ts`): the code can't take it yet. Card top-ups are disabled (`CARD_TOP_UPS_ENABLED = false`), Kashier sessions and the webhook accept EGP only, and the working methods (Vodafone Cash, InstaPay) are Egyptian, so a seller outside Egypt can't top up today. Turn the copy on in the same change that makes USD card top-ups work (money change, needs an approved task, rule 4).
+
 ### 2026-11-10 — tallaby.com visitors from abroad: language and currency by country (owner; no migration)
 
 - **Language by IP country** (`x-vercel-ip-country`, `wantsEnglish` in `locale-landing.lib.ts`): the 22 Arab League countries (Egypt and the Gulf included) keep Arabic even with an English browser; every other country lands on `/en` unless the browser's top language is Arabic; with no country, the old Accept-Language rule. Cookie, bot, prefetch and same-site exclusions unchanged; Arabic stays the SEO default.

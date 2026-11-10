@@ -8,6 +8,8 @@ import { FaqAccordion } from "@/components/marketing/site/faq-accordion";
 import { useScrollSpy } from "@/components/marketing/site/use-scroll-spy.client";
 import { useVisitorPrices } from "@/components/marketing/pricing/visitor-prices.client";
 import { fillPriceTokens } from "@/lib/marketing/pricing.lib";
+import { topUpCopyVariant } from "@/lib/marketing/top-up-copy.lib";
+import { useVisitorCountry } from "@/lib/marketing/visitor-currency.client";
 
 const GROUPS = [
   { id: "start", icon: Rocket },
@@ -19,7 +21,8 @@ const GROUPS = [
 ] as const;
 
 type GroupId = (typeof GROUPS)[number]["id"];
-type QA = { q: string; a: string };
+/** `aOutsideEgypt`: the wallet top-up answer for visitors outside Egypt (owner, 2026-11-10). */
+type QA = { q: string; a: string; aOutsideEgypt?: string };
 
 function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -115,12 +118,13 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
   const t = useTranslations("faq");
   // `{orderFee}`-style tokens in the answers, in the visitor's currency.
   const prices = useVisitorPrices()?.vars ?? {};
+  const outsideEgypt = topUpCopyVariant(useVisitorCountry()) === "usdCard";
   const { query, group, setGroup } = React.useContext(HelpQuery);
   const q = query.trim();
   const active = useScrollSpy(GROUPS.map((g) => g.id), 120);
 
   const groups = GROUPS.filter((g) => !group || g.id === group).map((g) => {
-    const items = (t.raw(`groups.${g.id}.items`) as QA[]).map((x) => ({ ...x, a: fillPriceTokens(x.a, prices) })).filter(
+    const items = (t.raw(`groups.${g.id}.items`) as QA[]).map((x) => ({ q: x.q, a: fillPriceTokens(outsideEgypt && x.aOutsideEgypt ? x.aOutsideEgypt : x.a, prices) })).filter(
       (x) => !q || `${x.q} ${x.a}`.toLowerCase().includes(q.toLowerCase()),
     );
     return { ...g, items };

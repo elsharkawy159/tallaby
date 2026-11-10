@@ -39,7 +39,8 @@
           },
           {
             "q": "How do wallet top-ups work?",
-            "a": "Top up your Tallaby wallet with {topUpMin} to {topUpMax}, paid in Egyptian pounds. You see the exact amount and the total before you pay. Pay by Vodafone Cash or InstaPay and upload the receipt, and we credit the wallet once we confirm the transfer. Wallet money is for Tallaby services only and can't be withdrawn."
+            "a": "Top up your Tallaby wallet with {topUpMin} to {topUpMax}, paid in Egyptian pounds. You see the exact amount and the total before you pay. Pay by Vodafone Cash or InstaPay and upload the receipt, and we credit the wallet once we confirm the transfer. Wallet money is for Tallaby services only and can't be withdrawn.",
+            "aOutsideEgypt": "Top up your Tallaby wallet with {topUpMin} to {topUpMax}, paid by card in US dollars. You see the exact amount and the total before you pay. Pay with your card on the secure payment page, and we credit the wallet once the payment is confirmed. Wallet money is for Tallaby services only and can't be withdrawn."
           },
           {
             "q": "Does the fee change with order value?",
