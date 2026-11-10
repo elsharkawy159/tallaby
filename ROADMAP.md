@@ -1692,6 +1692,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-10 — F-87 DB integration tests run on staging (owner-approved; staging only)
+
+- Run against staging (`cxqjrw…`; guarded by URL check and `connection-guard.ts`). **store-separation 27/27**, products-list 11, product-slug 9, social-proof 7, AI builder 3, ecommerce store-product-slug / cart-activity / order-cancel-currency / store-offers-summary 26, intake 4, place-order-currency 17, and every order, cart and checkout integration suite pass. Full runs: dashboard 1,199 pass, ecommerce 730 pass, lib 1,722 pass and 41 fail.
+- Fixed (test bugs only, no product code): the product-slug mock lacked F-87d's `assertProductTaxonomyInStore`; place-order-currency still expected InstaPay and Vodafone Cash refused abroad (allowed since 41cdcef7, owner 2026-11-07); hook timeouts in product-slug and intake.
+- **Not fixed (money tests, need an approved task):** the 41 lib failures are stale EGP-era expectations since staging went USD (2026-11-04): place-order-fee, store-offers, billing-switch, email-packs, app-billing, billing-admin, top-up, manual-top-up, referrals, welcome-gift, ensure-seller-account.
+- Switches stayed off before and after every run; leftover-row counts back to baseline. Older leftovers from 2026-10-21 (8 `Iso iso-*` sellers, 12 stores, 4 `qa-*` auth users) not touched.
+
 ### 2026-11-10 — F-87m: 0163 catalog split written and tested locally (NOT applied)
 
 - `packages/db/migrations/0163_store_catalog_split.sql` (one transaction, about 1,300 lines): guards (no-op if already split; aborts unless every seller has exactly one live primary store), snapshot, kept store per product (its own `store_id` if that store shows it, else the primary, else the oldest showing store; orphans to the primary as drafts), per-store categories and brands, product copies with variants, translations, digital rows, quantity offers, category positions and `'copy'` stock movements, remapped cross-sells, discount rules, coupons, open carts, back-in-stock alerts, campaigns and builder documents (live sites get a new revision), copied approved reviews and questions, per-store SKU and taxonomy keys, the F-87d triggers, 15 invariants (any mismatch rolls back; 9.13: no money moved), and the switch on as the last statement.

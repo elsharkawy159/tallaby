@@ -22,6 +22,8 @@ vi.mock("@/lib/auth/seller-access", () => ({ getSellerAccess: async () => ({ all
 vi.mock("@/lib/products/product-store.server", () => ({
   requireProductStore: async () => ({ store: { id: null } }),
   requireStoreProduct: async () => ({}),
+  // F-87d: these payloads carry no seller category or brand, so the store check has nothing to refuse.
+  assertProductTaxonomyInStore: async () => {},
 }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {}, revalidateTag: () => {}, unstable_cache: (fn: unknown) => fn }));
 vi.mock("@workspace/cache", async (importOriginal) => ({
@@ -102,13 +104,14 @@ describe.skipIf(!isStaging)("product slugs per seller (integration)", { timeout:
     );
     const [category] = await db.select({ id: categories.id }).from(categories).limit(1);
     categoryId = category!.id;
-  });
+    // The first lazy import of @/actions/products takes longer than the 10 s default hook timeout.
+  }, 120_000);
 
   // Deleting the auth rows (auth-users.ts) cascades these products; this is the safety net for that.
   afterAll(async () => {
     const { db, inArray, products } = await load();
     await db.delete(products).where(inArray(products.sellerId, [sellerA, sellerB]));
-  });
+  }, 60_000);
 
   it("gives the same seller's second product -2 and the third -3, in both languages", async () => {
     const slug = `same-title-${run}`;

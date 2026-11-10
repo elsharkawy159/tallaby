@@ -217,7 +217,8 @@ describe.skipIf(!TEST_DATABASE_URL)('order currency follows the store (integrati
     expect(Number(order!.shippingCost)).toBeGreaterThan(0)
   })
 
-  it.each(['wallet', 'wallet_instapay', 'online_payment', 'instapay', 'vodafone_cash'])(
+  // InstaPay and the mobile wallets stay allowed abroad (owner, 2026-11-07; ANY_CURRENCY_TRANSFERS, 41cdcef7).
+  it.each(['wallet', 'wallet_instapay', 'online_payment'])(
     'refuses %s on a SAR store',
     async (method) => {
       const result = await place(await cart(sarStore), riyadhAddress, method)

@@ -42,7 +42,8 @@ function fakeStorage(): IntakeStorage & { files: Map<string, Uint8Array> } {
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2]);
 
-describe.skipIf(!TEST_DATABASE_URL)("store build intake (integration)", () => {
+// Each case makes several round trips (11 intakes in one); the 5 s default is too short over the pooler.
+describe.skipIf(!TEST_DATABASE_URL)("store build intake (integration)", { timeout: 60_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
   const db = drizzle(client, { schema: s });
   const ipHash = `test-${randomUUID()}`;
@@ -50,7 +51,8 @@ describe.skipIf(!TEST_DATABASE_URL)("store build intake (integration)", () => {
 
   beforeAll(async () => {
     w = await createIsolationWorld(db);
-  });
+    // Two sellers, three stores and two publishes: more than the 10 s default on the staging pooler.
+  }, 60_000);
 
   afterAll(async () => {
     await db.delete(s.storeBuildIntakes).where(eq(s.storeBuildIntakes.ipHash, ipHash));
