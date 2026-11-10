@@ -9,6 +9,10 @@
  *   seller. Never trust a client store id without it.
  * - `productInStore`: the one SQL condition "this product belongs to this
  *   store", for list reads and bulk writes (F-87c).
+ * - `productShownInStore` / `StoreCatalogScope`: its storefront form (scope
+ *   `shown`), for every store-host catalog read (F-87c slice 4);
+ *   `productInStoreOf` takes the store id from a column, for one query over
+ *   many stores (the back-in-stock cron).
  * - `storeHasProduct` / `assertStoreProduct`: the same condition for one pair.
  *   Callers check `storeOwnedBy` (or `requireStore`) first; these only check
  *   the pair.
@@ -87,9 +91,22 @@ export type ProductInStoreOptions = {
  * A malformed store id matches nothing (no query error). It never checks the
  * store against the session: callers run `requireStore`/`storeOwnedBy` first.
  */
-export function productInStore(storeId: string, { catalogSplit, scope = "shown" }: ProductInStoreOptions): SQL {
+export function productInStore(storeId: string, options: ProductInStoreOptions): SQL {
   if (typeof storeId !== "string" || !UUID_RE.test(storeId)) return sql`false`;
-  const store = sql`scope_store.id = ${storeId} AND scope_store.deleted_at IS NULL AND scope_store.seller_id = ${products.sellerId}`;
+  return productInStoreSql(sql`${storeId}`, options);
+}
+
+/**
+ * `productInStore` with the store id taken from a column of the outer query
+ * (for example `a.store_id`), for one query over rows of many stores. Same
+ * rule, same SQL; the caller writes the column, never a client value.
+ */
+export function productInStoreOf(storeIdColumn: SQL, options: ProductInStoreOptions): SQL {
+  return productInStoreSql(storeIdColumn, options);
+}
+
+function productInStoreSql(storeId: SQL, { catalogSplit, scope = "shown" }: ProductInStoreOptions): SQL {
+  const store =sql`scope_store.id = ${storeId} AND scope_store.deleted_at IS NULL AND scope_store.seller_id = ${products.sellerId}`;
   if (catalogSplit) {
     return sql`(${products.storeId} = ${storeId} AND EXISTS (SELECT 1 FROM ${stores} scope_store WHERE ${store}))`;
   }
@@ -99,6 +116,29 @@ export function productInStore(storeId: string, { catalogSplit, scope = "shown" 
   return sql`EXISTS (SELECT 1 FROM ${stores} scope_store WHERE ${store} AND (scope_store.catalog_mode = 'all' OR EXISTS (
     SELECT 1 FROM ${storeProducts} scope_sp WHERE scope_sp.store_id = scope_store.id AND scope_sp.product_id = ${products.id}
   )))`;
+}
+
+/**
+ * The catalog of one store host: which store, and whether the catalog split has
+ * run. Storefront reads take it (never a client value: the store comes from the
+ * request host, the switch from `isSwitchOn` outside any cached function), and
+ * a cached read puts both in its key, so an entry never mixes stores or modes.
+ */
+export type StoreCatalogScope = { storeId: string; catalogSplit: boolean };
+
+/** `productInStore(storeId, { catalogSplit, scope: 'shown' })`: what the store's storefront shows. */
+export function productShownInStore({ storeId, catalogSplit }: StoreCatalogScope): SQL {
+  return productInStore(storeId, { catalogSplit, scope: "shown" });
+}
+
+/**
+ * The same condition for raw SQL that aliases `products` (`FROM products p`):
+ * an EXISTS on the bare table, so the shared condition's column names resolve.
+ * `alias` is a plain identifier the caller writes.
+ */
+export function aliasedProductShownInStore(alias: string, scope: StoreCatalogScope): SQL {
+  if (!/^[a-z_][a-z0-9_]*$/.test(alias)) throw new Error("aliasedProductShownInStore: bad alias");
+  return sql`EXISTS (SELECT 1 FROM ${products} WHERE ${products.id} = ${sql.raw(alias)}.id AND ${productShownInStore(scope)})`;
 }
 
 export type StoreProductOptions = {

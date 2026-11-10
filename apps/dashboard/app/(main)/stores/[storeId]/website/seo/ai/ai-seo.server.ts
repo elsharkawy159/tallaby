@@ -9,6 +9,7 @@ import { storeCategoryFor } from "@workspace/lib/stores";
 import { getStore } from "@workspace/lib/stores/server";
 import { storeCategoryGroups } from "@workspace/lib/store-sites/catalog-data";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { AI_SEO_FEATURE, AI_SEO_LIMITS, aiSeoOutputSchema, type AiSeoErrorCode, type AiSeoResult, type AiSeoTarget } from "./ai-seo.dto";
 import { AI_SEO_SYSTEM_RULES, aiSeoRequestText, capAiSeoInput, cleanAiSeoOutput, pageTextExcerpt } from "./ai-seo.lib";
@@ -83,7 +84,7 @@ export async function writeSeoWithAi(storeId: string, target: AiSeoTarget): Prom
 
   // The code picks a few of the store's own categories: never a catalog list (docs/ai.md rule 2).
   const language = store.defaultLocale === "en" ? "en" : "ar";
-  const groups = await storeCategoryGroups(sellerId, store.catalogMode === "selected" ? store.id : undefined).catch(() => []);
+  const groups = await storeCategoryGroups(sellerId, { storeId: store.id, catalogSplit: await isSwitchOn("stores_catalog_split") }).catch(() => []);
   const categories = [...groups]
     .sort((a, b) => b.productCount - a.productCount)
     .slice(0, AI_SEO_LIMITS.categories)

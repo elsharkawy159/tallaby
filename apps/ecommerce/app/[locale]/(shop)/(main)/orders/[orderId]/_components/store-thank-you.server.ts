@@ -3,7 +3,6 @@ import { thankYouWhatsAppUrl, type StoreThankYou } from "@workspace/lib/stores/c
 import { resolveStoreCatalog } from "@/lib/store-site/catalog.server";
 import { getStorefrontThankYou } from "@/lib/storefront-checkout-form.server";
 import {
-  catalogStoreId,
   getRequestStoreSubdomain,
   getStorefrontBySubdomain,
   type Storefront,
@@ -62,7 +61,6 @@ export async function getStoreThankYouView(input: {
       const catalog = await resolveStoreCatalog(
         store.id,
         store.storeId,
-        catalogStoreId(store),
         { best: { kind: "products", source: "best-sellers", limit }, newest: { kind: "products", source: "newest", limit } },
         input.locale,
       );

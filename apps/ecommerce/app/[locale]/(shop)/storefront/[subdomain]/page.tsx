@@ -3,7 +3,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { JsonLd } from "@/components/seo/json-ld";
 import { storeHomeMetadata, storeStructuredData } from "@/lib/store-seo/store-seo.lib";
 import type { StoreQuery } from "@/components/store-page/store-products";
-import { catalogStoreId, getStorefrontCategories, resolveStorefront, storeCategoryLabel } from "@/lib/storefront.server";
+import { getStorefrontCategories, resolveStorefront, storeCategoryLabel } from "@/lib/storefront.server";
 import { StorefrontHero } from "./_components/storefront-hero";
 import { CategoryCircles } from "./_components/category-circles";
 import { StorefrontCatalog } from "./_components/storefront-catalog";
@@ -36,7 +36,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
   const store = await resolveStorefront(subdomain);
   // Website offline: the layout shows the offline page instead.
   if (await isStoreOfflineForRequest(store)) return null;
-  const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
+  const categories = await getStorefrontCategories(store.id, store.storeId);
 
   const query: StoreQuery = {
     category: categories.some((c) => c.key === one(sp.category)) ? one(sp.category) : undefined,
@@ -67,7 +67,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
         <CategoryCircles categories={categories} query={query} />
         <StorefrontCatalog
           sellerId={store.id}
-          catalogStoreId={catalogStoreId(store)}
+          storeId={store.storeId}
           locale={locale}
           categories={categories}
           query={query}

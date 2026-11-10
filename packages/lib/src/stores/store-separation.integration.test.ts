@@ -7,10 +7,14 @@ import * as s from "@workspace/db/schema";
 import { createIsolationWorld, type IsolationWorld } from "./isolation.fixtures";
 import { setStoreCatalog } from "./catalog.server";
 import { isSwitchOn } from "./platform-switches.server";
+import { storeHasVisibleProducts } from "./server";
+import { storeCategoryGroups } from "../store-sites/catalog-data.server";
+import { subscribeToStockAlert } from "../stock-alerts/stock-alerts.server";
 import {
   assertStoreProduct,
   primaryStoreId,
   productInStore,
+  productShownInStore,
   storeHasProduct,
   storeOwnedBy,
   type ProductStoreScope,
@@ -430,6 +434,125 @@ describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", 
       await cleanupFeatures();
       await db.update(s.products).set({ storeId: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
     }
+  });
+
+  // ── F-87c slice 4: storefront reads ─────────────────────────────────────
+  // Every store-host read (apps/ecommerce getProducts for grids, search and
+  // builder lists, getProductBySlug + getProductIdBySlug for the product page,
+  // storeCategoryGroups for category pages, storeHasVisibleProducts, reviews,
+  // back-in-stock) adds productShownInStore({ storeId, catalogSplit }) next to
+  // "this seller, active". These run the same conditions on real rows.
+
+  const slug = `sep-slug-${randomUUID().slice(0, 8)}`;
+
+  /** What a store host lists: its catalog grid, or with `search` the header search (title ILIKE). */
+  async function storefrontIds(storeId: string, catalogSplit: boolean, search?: string) {
+    const rows = await db
+      .select({ id: s.products.id })
+      .from(s.products)
+      .where(
+        and(
+          eq(s.products.sellerId, ids.s1),
+          eq(s.products.status, "active"),
+          productShownInStore({ storeId, catalogSplit }),
+          search
+            ? sql`EXISTS (SELECT 1 FROM product_translations pt WHERE pt.product_id = ${s.products.id} AND pt.title ILIKE ${`%${search}%`})`
+            : undefined,
+        ),
+      );
+    return rows.map((r) => r.id).sort();
+  }
+
+  /** The product page: the slug lookup (per seller before the split, per store after) and the product read inside the store. */
+  async function openBySlug(storeId: string, catalogSplit: boolean): Promise<string | null> {
+    const shown = productShownInStore({ storeId, catalogSplit });
+    const [hit] = await db
+      .select({ id: s.productTranslations.productId })
+      .from(s.productTranslations)
+      .innerJoin(s.products, eq(s.products.id, s.productTranslations.productId))
+      .where(
+        and(
+          eq(s.productTranslations.slug, slug),
+          eq(s.productTranslations.locale, "en"),
+          eq(s.products.status, "active"),
+          eq(s.products.sellerId, ids.s1),
+          catalogSplit ? shown : undefined,
+        ),
+      )
+      .orderBy(s.products.createdAt, s.products.id)
+      .limit(1);
+    if (!hit) return null;
+    const [row] = await db
+      .select({ id: s.products.id })
+      .from(s.products)
+      .where(and(eq(s.products.id, hit.id), eq(s.products.sellerId, ids.s1), eq(s.products.status, "active"), shown))
+      .limit(1);
+    return row?.id ?? null;
+  }
+
+  async function withStorefrontRows(run: () => Promise<void>) {
+    // Both S1 products carry the same slug and a searchable title (a copy keeps its slug); s1a is the older one.
+    await db.update(s.products).set({ createdAt: "2020-01-01T00:00:00Z" }).where(eq(s.products.id, p.s1a));
+    await db.update(s.products).set({ createdAt: "2020-02-01T00:00:00Z" }).where(eq(s.products.id, p.s1b));
+    await db.insert(s.productTranslations).values([
+      { productId: p.s1a, locale: "en", title: `${slug} lamp`, slug },
+      { productId: p.s1b, locale: "en", title: `${slug} lamp`, slug },
+    ]);
+    try {
+      await run();
+    } finally {
+      await db.delete(s.productTranslations).where(inArray(s.productTranslations.productId, [p.s1a, p.s1b]));
+      await db.update(s.products).set({ storeId: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
+    }
+  }
+
+  it("slice 4, switch off: the storefront keeps today's catalog (store A all, store B only its pick)", async () => {
+    await withStorefrontRows(async () => {
+      expect(await storefrontIds(ids.storeA, false)).toEqual([p.s1a, p.s1b].sort());
+      expect(await storefrontIds(ids.storeB, false)).toEqual([p.s1b]);
+      expect(await storefrontIds(ids.storeB, false, slug)).toEqual([p.s1b]);
+      expect(await storefrontIds(ids.storeS2, false)).toEqual([]);
+      // Product page: the per-seller lookup finds the older s1a; store B doesn't show it, so the page opens nothing (as today).
+      expect(await openBySlug(ids.storeA, false)).toBe(p.s1a);
+      expect(await openBySlug(ids.storeB, false)).toBeNull();
+      // Category page and the "has products" check, through the shared condition on the aliased SQL.
+      const groupsB = await storeCategoryGroups(ids.s1, { storeId: ids.storeB, catalogSplit: false }, db);
+      expect(groupsB.flatMap((g) => g.productIds)).toEqual([p.s1b]);
+      const groupsA = await storeCategoryGroups(ids.s1, { storeId: ids.storeA, catalogSplit: false }, db);
+      expect(groupsA.flatMap((g) => g.productIds).sort()).toEqual([p.s1a, p.s1b].sort());
+      expect(await storeHasVisibleProducts(ids.s1, ids.storeB, { catalogSplit: false, q: db })).toBe(true);
+      expect(await storeHasVisibleProducts(ids.s2, ids.storeB, { catalogSplit: false, q: db })).toBe(false);
+      // Back-in-stock (reads the switch, off here): store B can't follow s1a; s1b is found (and in stock).
+      const alert = { sellerId: ids.s1, variantId: null, email: "sep@example.test", locale: "en" };
+      expect(await subscribeToStockAlert({ ...alert, storeId: ids.storeB, productId: p.s1a }, db)).toEqual({ ok: false, error: "notFound" });
+      expect(await subscribeToStockAlert({ ...alert, storeId: ids.storeB, productId: p.s1b }, db)).toEqual({ ok: false, error: "inStock" });
+      expect(await subscribeToStockAlert({ ...alert, storeId: ids.storeS2, productId: p.s1b }, db)).toEqual({ ok: false, error: "notFound" });
+    });
+  });
+
+  it("slice 4, switch on: store B's catalog, product page, category page and search never return store A's product", async () => {
+    await withStorefrontRows(async () => {
+      await db.update(s.products).set({ storeId: ids.storeA }).where(eq(s.products.id, p.s1a));
+      await db.update(s.products).set({ storeId: ids.storeB }).where(eq(s.products.id, p.s1b));
+      // Store B in selected mode with its own product; store A in 'all' mode: the mode no longer matters.
+      expect(await storefrontIds(ids.storeB, true)).toEqual([p.s1b]);
+      expect(await storefrontIds(ids.storeA, true)).toEqual([p.s1a]);
+      expect(await storefrontIds(ids.storeB, true, slug)).toEqual([p.s1b]);
+      expect(await storefrontIds(ids.storeA, true, slug)).toEqual([p.s1a]);
+      // The shared slug opens each store's own copy (store A's older product never shadows B's).
+      expect(await openBySlug(ids.storeB, true)).toBe(p.s1b);
+      expect(await openBySlug(ids.storeA, true)).toBe(p.s1a);
+      expect(await openBySlug(ids.storeS2, true)).toBeNull();
+      const groupsB = await storeCategoryGroups(ids.s1, { storeId: ids.storeB, catalogSplit: true }, db);
+      expect(groupsB.flatMap((g) => g.productIds)).toEqual([p.s1b]);
+      const groupsA = await storeCategoryGroups(ids.s1, { storeId: ids.storeA, catalogSplit: true }, db);
+      expect(groupsA.flatMap((g) => g.productIds)).toEqual([p.s1a]);
+      // A store whose products all moved away has nothing to show.
+      await db.update(s.products).set({ storeId: ids.storeA }).where(eq(s.products.id, p.s1b));
+      expect(await storeHasVisibleProducts(ids.s1, ids.storeB, { catalogSplit: true, q: db })).toBe(false);
+      expect(await storefrontIds(ids.storeB, true)).toEqual([]);
+      expect(await openBySlug(ids.storeB, true)).toBeNull();
+    });
   });
 
   it("both switches are off (or the table is not there yet)", async () => {

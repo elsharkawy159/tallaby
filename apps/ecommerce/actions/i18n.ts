@@ -6,6 +6,7 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations";
 import { getRequestStoreSubdomain, getStorefrontBySubdomain } from "@/lib/storefront.server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
 
 /**
  * Resolves the equivalent product slug in another locale, for the language
@@ -14,8 +15,8 @@ import { getRequestStoreSubdomain, getStorefrontBySubdomain } from "@/lib/storef
  * product has no real translation in the target locale — callers should
  * fall back to a locale-appropriate listing page in that case.
  *
- * On a store host the slug is looked up among that store's seller only, and the
- * store comes from the request host, never from the client.
+ * On a store host the slug is looked up in that store (its seller before the
+ * catalog split), and the store comes from the request host, never from the client.
  */
 export async function resolveProductSlugForLocale(
   slug: string,
@@ -26,9 +27,11 @@ export async function resolveProductSlugForLocale(
   const subdomain = await getRequestStoreSubdomain();
   const store = subdomain ? await getStorefrontBySubdomain(subdomain) : null;
   if (subdomain && !store) return null;
-  const sellerId = store?.id;
+  const scope = store
+    ? { sellerId: store.id, storeId: store.storeId, catalogSplit: await isSwitchOn("stores_catalog_split") }
+    : undefined;
 
-  const productId = await getProductIdBySlug(slug, currentLocale, sellerId);
+  const productId = await getProductIdBySlug(slug, currentLocale, scope);
   if (!productId) return null;
 
   const targetSlug = await getProductSlugForLocaleStrict(productId, targetLocale);
@@ -36,6 +39,6 @@ export async function resolveProductSlugForLocale(
 
   // Slugs aren't unique: if another product owns targetSlug in that locale,
   // the link would open that product instead — fall back to the listing.
-  const owner = await getProductIdBySlug(targetSlug, targetLocale, sellerId);
+  const owner = await getProductIdBySlug(targetSlug, targetLocale, scope);
   return owner === productId ? targetSlug : null;
 }

@@ -32,6 +32,12 @@ export type ProductStatus = "draft" | "pending" | "active" | "rejected";
 export interface ProductCacheSnapshot {
   id: string;
   sellerId: string;
+  /**
+   * The store the product belongs to (`products.store_id`, ROADMAP.md F-87c),
+   * or null/absent when none is written yet. Adds `productTags.store`; the
+   * seller tag is always purged too while a product can show in several stores.
+   */
+  storeId?: string | null;
   categoryId: string | null;
   brandId: string | null;
   /** One entry per locale translation row that carries a slug. */
@@ -104,6 +110,7 @@ export function invalidateProduct(
   for (const snap of [before, after]) {
     if (!snap) continue;
     tags.add(productTags.seller(snap.sellerId));
+    if (snap.storeId) tags.add(productTags.store(snap.sellerId, snap.storeId));
     for (const { locale, slug } of snap.slugs) {
       if (slug) tags.add(productTags.slug(locale, slug));
     }
@@ -192,7 +199,7 @@ export function invalidateProductInventory(
   items: readonly {
     snapshot: Pick<
       ProductCacheSnapshot,
-      "id" | "sellerId" | "categoryId" | "brandId"
+      "id" | "sellerId" | "storeId" | "categoryId" | "brandId"
     >;
     stockBoundaryCrossed: boolean;
   }[]
@@ -205,6 +212,7 @@ export function invalidateProductInventory(
       tags.add(productTags.listing());
       // Storefront listings are tagged by seller, not listing() (docs/egress-audit.md §6).
       tags.add(productTags.seller(snapshot.sellerId));
+      if (snapshot.storeId) tags.add(productTags.store(snapshot.sellerId, snapshot.storeId));
       if (snapshot.categoryId) tags.add(productTags.category(snapshot.categoryId));
       if (snapshot.brandId) tags.add(productTags.brand(snapshot.brandId));
     }
@@ -214,6 +222,17 @@ export function invalidateProductInventory(
 
 export function invalidateSellerProducts(sellerId: string): CacheInvalidation {
   return inv([productTags.seller(sellerId), sellerTags.storefront(sellerId)]);
+}
+
+/**
+ * Something every product list of one store depends on changed (its category
+ * product order, F-24d): that store's catalog tag, plus the seller-wide tags
+ * while a product can still show in several stores of the seller (F-87c; the
+ * seller part can go once `stores_catalog_split` is on, see
+ * docs/plans/stores-separation-f87c-slices.md §6).
+ */
+export function invalidateStoreProducts(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([productTags.store(sellerId, storeId), productTags.seller(sellerId), sellerTags.storefront(sellerId)]);
 }
 
 export function invalidateCategory(id: string, slug?: string): CacheInvalidation {

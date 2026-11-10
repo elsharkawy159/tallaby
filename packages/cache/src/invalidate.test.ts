@@ -15,6 +15,8 @@ import {
   invalidateStoreCms,
   invalidateStoreIntegrations,
   invalidateStoreSite,
+  invalidateSellerProducts,
+  invalidateStoreProducts,
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "./invalidate";
@@ -304,6 +306,51 @@ describe("invalidateProductInventory", () => {
     const { tags } = invalidateProductInventory([
       { snapshot: { id: "prod-1", sellerId: "seller-1", categoryId: "cat-1", brandId: "brand-1" }, stockBoundaryCrossed: true },
     ]);
+    assertNoForbiddenTags(tags);
+  });
+});
+
+describe("store tags (F-87c)", () => {
+  it("productTags.store carries the seller and the store", () => {
+    expect(productTags.store("seller-1", "store-a")).toBe("product:store:seller-1:store-a");
+    expect(productTags.store("seller-1", "store-a")).not.toBe(productTags.store("seller-1", "store-b"));
+    expect(productTags.store("seller-1", "store-a")).not.toBe(productTags.store("seller-2", "store-a"));
+  });
+
+  it("a product write purges its own store and still the whole seller", () => {
+    const { tags } = invalidateProduct(snapshot({ storeId: "store-a" }), snapshot({ storeId: "store-a", priceKey: "x" }));
+    expect(tags).toContain(productTags.store("seller-1", "store-a"));
+    expect(tags).toContain(productTags.seller("seller-1"));
+    expect(tags).not.toContain(productTags.store("seller-1", "store-b"));
+  });
+
+  it("a product without a store id purges no store tag (the seller tag covers it)", () => {
+    for (const storeId of [undefined, null]) {
+      const { tags } = invalidateProduct(null, snapshot({ storeId }));
+      expect(tags.some((t) => t.startsWith("product:store:"))).toBe(false);
+      expect(tags).toContain(productTags.seller("seller-1"));
+    }
+  });
+
+  it("a product moved between stores purges both", () => {
+    const { tags } = invalidateProduct(snapshot({ storeId: "store-a" }), snapshot({ storeId: "store-b" }));
+    expect(tags).toEqual(expect.arrayContaining([productTags.store("seller-1", "store-a"), productTags.store("seller-1", "store-b")]));
+  });
+
+  it("a stock boundary crossing purges the product's store; a plain stock change does not", () => {
+    const item = { id: "prod-1", sellerId: "seller-1", storeId: "store-a", categoryId: null, brandId: null };
+    expect(invalidateProductInventory([{ snapshot: item, stockBoundaryCrossed: true }]).tags).toEqual(
+      expect.arrayContaining([productTags.store("seller-1", "store-a"), productTags.seller("seller-1")]),
+    );
+    expect(invalidateProductInventory([{ snapshot: item, stockBoundaryCrossed: false }]).tags).not.toContain(
+      productTags.store("seller-1", "store-a"),
+    );
+  });
+
+  it("invalidateStoreProducts purges that store and the seller, never a sibling store", () => {
+    const { tags } = invalidateStoreProducts("seller-1", "store-a");
+    expect(tags).toEqual(expect.arrayContaining([productTags.store("seller-1", "store-a"), ...invalidateSellerProducts("seller-1").tags]));
+    expect(tags).not.toContain(productTags.store("seller-1", "store-b"));
     assertNoForbiddenTags(tags);
   });
 });

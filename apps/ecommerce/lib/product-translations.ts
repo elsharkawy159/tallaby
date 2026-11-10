@@ -1,5 +1,6 @@
 import { and, asc, db, eq } from "@workspace/db";
 import { products, productTranslations } from "@workspace/db/schema";
+import { productShownInStore } from "@workspace/lib/stores/scope/server";
 import { isRichTextEmpty, hasRichTextMedia, mergeRichTextMediaFallback, sanitizeRichTextHtml } from "@workspace/tiptap";
 import { plainTextToRichText, richTextToPlainText } from "@workspace/tiptap/plain-text";
 
@@ -51,23 +52,31 @@ export interface ProductTranslationRow {
  * Searches in the requested locale first, then falls back to the other locale.
  * For ar: tries AR slug first, then EN. For en: tries EN first, then AR.
  *
- * Slugs repeat across sellers, so a store passes its seller (from the store the
+ * Slugs repeat across sellers, so a store passes its scope (the store the
  * request host resolved, never a client value) and only sees that seller's
  * products. Without one it looks across every seller: tallaby.com only.
  */
 export async function getProductIdBySlug(
   slug: string,
   locale: ProductLocale = "en",
-  sellerId?: string
+  scope?: ProductSlugScope
 ): Promise<string | null> {
   const firstLocale = locale
   const fallbackLocale = locale === "ar" ? "en" : "ar"
 
-  const first = await findActiveProductIdBySlug(slug, firstLocale, sellerId)
+  const first = await findActiveProductIdBySlug(slug, firstLocale, scope)
   if (first) return first
 
-  return findActiveProductIdBySlug(slug, fallbackLocale, sellerId)
+  return findActiveProductIdBySlug(slug, fallbackLocale, scope)
 }
+
+/**
+ * The store a slug is looked up in (F-87c). Before the catalog split slugs are
+ * per seller, as before (the product page then checks that the store shows the
+ * product); after it each store has its own products, and copies keep their
+ * slug, so the lookup is per store (`productInStore`, scope `shown`).
+ */
+export type ProductSlugScope = { sellerId: string; storeId: string; catalogSplit: boolean }
 
 /**
  * Slugs aren't unique in the DB, so several products can share one. Only
@@ -79,7 +88,7 @@ export async function getProductIdBySlug(
 async function findActiveProductIdBySlug(
   slug: string,
   locale: ProductLocale,
-  sellerId?: string
+  scope?: ProductSlugScope
 ): Promise<string | null> {
   const [row] = await db
     .select({ productId: productTranslations.productId })
@@ -90,7 +99,8 @@ async function findActiveProductIdBySlug(
         eq(productTranslations.slug, slug),
         eq(productTranslations.locale, locale),
         eq(products.status, "active"),
-        sellerId ? eq(products.sellerId, sellerId) : undefined
+        scope ? eq(products.sellerId, scope.sellerId) : undefined,
+        scope?.catalogSplit ? productShownInStore(scope) : undefined
       )
     )
     .orderBy(asc(products.createdAt), asc(products.id))

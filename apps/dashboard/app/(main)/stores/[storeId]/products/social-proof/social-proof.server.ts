@@ -23,7 +23,7 @@ import { productSocialProofSchema, type SocialProofResult } from "./social-proof
 async function productPageInvalidation(productId: string, sellerId: string): Promise<CacheInvalidation> {
   const row = await db.query.products.findFirst({
     where: and(eq(products.id, productId), eq(products.sellerId, sellerId)),
-    columns: { id: true, sellerId: true, categoryId: true, brandId: true, status: true },
+    columns: { id: true, sellerId: true, storeId: true, categoryId: true, brandId: true, status: true },
     with: { productTranslations: { columns: { locale: true, slug: true } } },
   });
   const reviewsInvalidation = { tags: [reviewTags.seller(sellerId), reviewTags.product(productId)], paths: [] };
@@ -31,6 +31,7 @@ async function productPageInvalidation(productId: string, sellerId: string): Pro
   const snapshot: ProductCacheSnapshot = {
     id: row.id,
     sellerId: row.sellerId,
+    storeId: row.storeId,
     categoryId: row.categoryId,
     brandId: row.brandId,
     slugs: row.productTranslations.map((t) => ({ locale: t.locale, slug: t.slug })),

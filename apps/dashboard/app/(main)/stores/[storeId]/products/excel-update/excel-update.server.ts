@@ -58,6 +58,8 @@ type Queryable = Tx | typeof db;
 
 type LoadedProduct = CatalogProduct & {
   sellerId: string;
+  /** `products.store_id`: the store whose catalog cache a change purges (F-87c). */
+  storeId: string | null;
   categoryId: string;
   brandId: string | null;
   isFeatured: boolean | null;
@@ -89,6 +91,7 @@ async function loadProducts(q: Queryable, sellerId: string, inStore: SQL, match:
     .select({
       id: products.id,
       sellerId: products.sellerId,
+      storeId: products.storeId,
       categoryId: products.categoryId,
       brandId: products.brandId,
       sku: products.sku,
@@ -242,6 +245,7 @@ function snapshot(row: LoadedProduct, values: ProductWrite = {}): ProductCacheSn
   return {
     id: row.id,
     sellerId: row.sellerId,
+    storeId: row.storeId,
     categoryId: row.categoryId,
     brandId: row.brandId,
     slugs: row.slugs,

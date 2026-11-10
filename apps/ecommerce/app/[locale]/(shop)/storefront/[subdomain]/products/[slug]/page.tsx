@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { cacheProfiles, createCachedQuery, productTags } from "@workspace/cache";
+import { cacheProfiles, createCachedQuery, productTags, storeTags } from "@workspace/cache";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
@@ -9,7 +9,8 @@ import { socialShareImage } from "@/lib/metadata";
 import { getProductBySlug } from "@/actions/products";
 import { Link } from "@/i18n/navigation";
 import { getProductIdBySlug, getProductSlugForLocaleStrict, type ProductLocale } from "@/lib/product-translations";
-import { resolveStorefront, storeShowsProduct } from "@/lib/storefront.server";
+import { resolveStorefront } from "@/lib/storefront.server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { storePageMetadata } from "@/lib/store-seo/store-seo.lib";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
@@ -36,43 +37,50 @@ type StorefrontProductPageProps = {
  * language's slug names the real one as canonical, so a product has one URL per language.
  */
 /**
- * Cached per seller (every product write bumps `productTags.seller`): it runs
- * in the metadata of every product page view and is up to six slug queries.
+ * Cached per seller and store (every product write bumps `productTags.seller`
+ * and the product's `productTags.store`), with the catalog-split switch in the
+ * key (F-87c): it runs in the metadata of every product page view and is up to
+ * six slug queries.
  */
 const storeProductPaths = createCachedQuery({
-  name: "storefront:product-paths:v1",
+  name: "storefront:product-paths:v2",
   ttl: cacheProfiles.detail,
-  tags: (sellerId: string, _productId: string, _slug: string, _locale: string) => [productTags.seller(sellerId)],
+  tags: (sellerId: string, storeId: string, _productId: string, _slug: string, _locale: string, _catalogSplit: boolean) => [
+    productTags.seller(sellerId),
+    productTags.store(sellerId, storeId),
+    storeTags.catalog(sellerId, storeId),
+  ],
   query: loadStoreProductPaths,
 });
 
-async function loadStoreProductPaths(sellerId: string, productId: string, slug: string, locale: string) {
+async function loadStoreProductPaths(sellerId: string, storeId: string, productId: string, slug: string, locale: string, catalogSplit: boolean) {
   const paths: Partial<Record<ProductLocale, string>> = {};
+  const scope = { sellerId, storeId, catalogSplit };
   await Promise.all(
     (["ar", "en"] as const).map(async (l) => {
       const own = await getProductSlugForLocaleStrict(productId, l);
-      if (own && (await getProductIdBySlug(own, l, sellerId)) === productId) paths[l] = `/products/${encodeURIComponent(own)}`;
+      if (own && (await getProductIdBySlug(own, l, scope)) === productId) paths[l] = `/products/${encodeURIComponent(own)}`;
     }),
   );
   return Object.keys(paths).length ? paths : { [locale === "en" ? "en" : "ar"]: `/products/${slug}` };
 }
 
 /**
- * Only this seller's products open inside their storefront: the slug is looked
- * up among the products of the seller behind this store (the subdomain proxy.ts
- * took from the request host), as slugs repeat across sellers. A slug this seller
- * doesn't have (an old link, another seller's product) sends the shopper to the
- * store's home, never to tallaby.com (owner, 2026-11-03).
+ * Only this store's products open inside its storefront: the slug is looked up
+ * in the store behind this host (the subdomain proxy.ts took from the request
+ * host), as slugs repeat across sellers, and `getProductBySlug` returns only a
+ * product the store shows (`productInStore`, scope `shown`: its picks in
+ * selected catalog mode (D24), its own products after the catalog split). A slug
+ * the store doesn't show (an old link, another seller's or store's product)
+ * sends the shopper to the store's home, never to tallaby.com (owner, 2026-11-03).
  */
 async function resolveStoreProduct(locale: string, subdomain: string, slug: string) {
   const store = await resolveStorefront(subdomain);
-  const result = await getProductBySlug(store.id, slug, locale as ProductLocale);
+  const result = await getProductBySlug(store.id, store.storeId, slug, locale as ProductLocale);
   const product = result.success ? (result.data as Product | undefined) : undefined;
 
   if (!product) redirect(locale === "ar" ? "/" : `/${locale}`);
   if (product.sellerId !== store.id) redirect(locale === "ar" ? "/" : `/${locale}`);
-  // A store with a selected catalog (D24) only opens its picks.
-  if (!(await storeShowsProduct(store, product.id))) redirect(locale === "ar" ? "/" : `/${locale}`);
   return { store, product };
 }
 
@@ -90,7 +98,7 @@ export async function generateMetadata({
   return {
     // The store's own page is the real copy: there are no marketplace product pages.
     ...storePageMetadata(store, locale, {
-      paths: await storeProductPaths(store.id, product.id, slug, locale),
+      paths: await storeProductPaths(store.id, store.storeId, product.id, slug, locale, await isSwitchOn("stores_catalog_split")),
       title: seo?.metaTitle?.trim() || product.title,
       description: seo?.metaDescription?.trim() || product.description,
       // The first product photo, cropped to the 1200×630 share card; else the store's share image.

@@ -18,7 +18,6 @@ import {
   sellers,
   sellerSubdomainRedirects,
   sellerCustomDomains,
-  storeProducts,
   stores,
   eq,
   and,
@@ -38,6 +37,8 @@ import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
+import type { StoreCatalogScope } from "@workspace/lib/stores/scope/server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
 import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
@@ -363,42 +364,44 @@ export function storeCategoryFilter(category: StorefrontCategory): StoreCategory
 /**
  * The store id to narrow product lists by: set only when the store shows a
  * selected catalog (D24, `store_products`), else undefined (all the seller's
- * active products, today's behaviour).
+ * active products). Only the feed and sitemap still use it (F-87c slice 6);
+ * every other storefront read takes `storefrontCatalog(store)`.
  */
 export function catalogStoreId(store: Pick<Storefront, "storeId" | "catalogMode">): string | undefined {
   return store.catalogMode === "selected" ? store.storeId : undefined;
 }
 
-/** Whether the store shows this product of its seller: always in "all" mode, else only its picks. */
-export function storeShowsProduct(
-  store: Pick<Storefront, "id" | "storeId" | "catalogMode">,
-  productId: string,
-): Promise<boolean> {
-  if (store.catalogMode !== "selected") return Promise.resolve(true);
-  return unstable_cache(
-    async () => {
-      const [row] = await db
-        .select({ productId: storeProducts.productId })
-        .from(storeProducts)
-        .where(and(eq(storeProducts.storeId, store.storeId), eq(storeProducts.productId, productId)))
-        .limit(1);
-      return Boolean(row);
-    },
-    [`storefront-catalog-has-${store.storeId}-${productId}`],
-    { tags: [storeTags.catalog(store.id, store.storeId)], revalidate: 3600 },
-  )();
+/**
+ * The catalog scope of a store host (F-87c): its store and the
+ * `stores_catalog_split` switch, read once per request and never inside a
+ * cached function. A cached read takes both as key parts, so an entry never
+ * mixes stores or catalog modes. Only a store resolved from the request host
+ * goes in, never a client value (CLAUDE.md rule 5).
+ */
+export async function storefrontCatalog(store: Pick<Storefront, "storeId">): Promise<StoreCatalogScope> {
+  return { storeId: store.storeId, catalogSplit: await isSwitchOn("stores_catalog_split") };
+}
+
+/** Key part for a catalog mode: the cache key of every store catalog read carries it. */
+const splitKey = (catalogSplit: boolean) => (catalogSplit ? "split" : "shared");
+
+/** The tags of a store catalog read: the seller (until the split), the store's products and its catalog picks. */
+export function storefrontCatalogTags(sellerId: string, storeId: string): string[] {
+  return [productTags.seller(sellerId), productTags.store(sellerId, storeId), storeTags.catalog(sellerId, storeId)];
 }
 
 /**
- * Whether the store shows at least one product (its catalog rules applied).
- * A store without one is kept out of search: noindex and an empty sitemap
- * (PLAN.md §10.3, P5-04). Cached with the store's catalog tags.
+ * Whether the store shows at least one product (`productInStore`, scope
+ * `shown`). A store without one is kept out of search: noindex and an empty
+ * sitemap (PLAN.md §10.3, P5-04). Cached per store and catalog mode, with the
+ * store's catalog tags.
  */
-export function storeHasProducts(store: Pick<Storefront, "id" | "storeId">): Promise<boolean> {
+export async function storeHasProducts(store: Pick<Storefront, "id" | "storeId">): Promise<boolean> {
+  const { catalogSplit } = await storefrontCatalog(store);
   return unstable_cache(
-    () => storeHasVisibleProducts(store.id, store.storeId),
-    [`storefront-has-products-${store.id}-${store.storeId}`],
-    { tags: [productTags.seller(store.id), storeTags.catalog(store.id, store.storeId)], revalidate: 3600 },
+    () => storeHasVisibleProducts(store.id, store.storeId, { catalogSplit }),
+    [`storefront-has-products-v2-${store.id}-${store.storeId}-${splitKey(catalogSplit)}`],
+    { tags: storefrontCatalogTags(store.id, store.storeId), revalidate: 3600 },
   )();
 }
 
@@ -414,15 +417,18 @@ export async function isStorefrontIndexable(
 }
 
 /**
- * One seller's store categories (`storeCategoryGroups`: their own categories,
- * else Tallaby roots), each with its photo. With `storeId` (a store in
- * selected mode) only that store's picks count.
+ * One store's categories (`storeCategoryGroups`: the seller's own categories,
+ * else Tallaby roots), each with its photo; only the products the store shows
+ * count (`productInStore`, scope `shown`). `storeId` is the store host's store.
+ * Cached per seller, store and catalog mode (the switch is read here, outside
+ * the cached function).
  */
-export function getStorefrontCategories(sellerId: string, storeId?: string) {
+export async function getStorefrontCategories(sellerId: string, storeId: string) {
+  const { catalogSplit } = await storefrontCatalog({ storeId });
   return unstable_cache(
     async () => {
       try {
-        const groups = await storeCategoryGroups(sellerId, storeId);
+        const groups = await storeCategoryGroups(sellerId, { storeId, catalogSplit });
         return groups.map(({ ownImage, productImage: cover, productIds: _productIds, ...rest }): StorefrontCategory => {
           // Image entries are either a storage path or { url }.
           const productImage = typeof cover === "string" ? cover : ((cover as { url?: string } | null)?.url ?? null);
@@ -435,10 +441,10 @@ export function getStorefrontCategories(sellerId: string, storeId?: string) {
         return [] as StorefrontCategory[];
       }
     },
-    // v2: seller categories (storeCategoryGroups); never read a cached root-only list.
-    storeId ? [`storefront-categories-v2-${sellerId}-${storeId}`] : [`storefront-categories-v2-${sellerId}`],
+    // v3: always per store and catalog mode (F-87c). v2: seller categories (storeCategoryGroups); never read a cached root-only list.
+    [`storefront-categories-v3-${sellerId}-${storeId}-${splitKey(catalogSplit)}`],
     {
-      tags: [productTags.seller(sellerId), categoryTags.all(), ...(storeId ? [storeTags.catalog(sellerId, storeId)] : [])],
+      tags: [...storefrontCatalogTags(sellerId, storeId), categoryTags.all()],
       revalidate: 3600,
     },
   )();

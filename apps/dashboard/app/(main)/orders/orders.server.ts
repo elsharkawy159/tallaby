@@ -105,7 +105,7 @@ async function loadOrder(orderId: string, sellerId: string) {
           quantity: true,
           fulfillmentType: true,
         },
-        with: { product: { columns: { categoryId: true, brandId: true } } },
+        with: { product: { columns: { storeId: true, categoryId: true, brandId: true } } },
       },
     },
   });
@@ -239,6 +239,8 @@ async function invalidateOrderStock(order: LoadedOrder["order"], stockResults: S
           snapshot: {
             id: item.productId,
             sellerId: item.sellerId,
+            // The product's own store (F-87c); the seller tag still covers every store until the split.
+            storeId: item.product?.storeId ?? null,
             categoryId: item.product?.categoryId ?? null,
             brandId: item.product?.brandId ?? null,
           },

@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { productCatalogSection } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
 import { storeQueryHref, type StoreQuery } from "@/components/store-page/store-products";
-import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
+import { getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { isStoreOfflineForRequest, isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { storeCatalogSeo, storePageMetadata } from "@/lib/store-seo/store-seo.lib";
@@ -25,7 +25,7 @@ export async function generateMetadata({ params, searchParams }: StoreProductsPa
   if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const sp = await searchParams;
   const [store, t] = await Promise.all([resolveStorefront(subdomain), getTranslations({ locale, namespace: "storefront" })]);
-  const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
+  const categories = await getStorefrontCategories(store.id, store.storeId);
   const active = categories.find((c) => c.key === one(sp.category));
   const categoryName = active ? (locale === "ar" ? active.nameAr || active.name : active.name || active.nameAr) : null;
   const { path, noindex } = storeCatalogSeo({
@@ -58,7 +58,7 @@ export default async function StoreProductsPage({ params, searchParams }: StoreP
   const store = await resolveStorefront(subdomain);
   // Website offline: the layout shows the offline page instead.
   if (await isStoreOfflineForRequest(store)) return null;
-  const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
+  const categories = await getStorefrontCategories(store.id, store.storeId);
 
   const query: StoreQuery = {
     category: categories.some((c) => c.key === one(sp.category)) ? one(sp.category) : undefined,
@@ -80,7 +80,7 @@ export default async function StoreProductsPage({ params, searchParams }: StoreP
       <CategoryCircles categories={categories} query={query} basePath="/products" />
       <StorefrontCatalog
         sellerId={store.id}
-        catalogStoreId={catalogStoreId(store)}
+        storeId={store.storeId}
         locale={locale}
         categories={categories}
         query={query}

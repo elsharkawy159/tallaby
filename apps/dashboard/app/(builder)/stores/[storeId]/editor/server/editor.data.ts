@@ -1,4 +1,6 @@
-import { and, db, desc, eq, productTranslations, products, sql, storeProducts } from "@workspace/db";
+import { and, db, desc, eq, productTranslations, products, sql } from "@workspace/db";
+import { productShownInStore, type StoreCatalogScope } from "@workspace/lib/stores/scope/server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { parsePriceJson } from "@workspace/lib";
 import { BLOG_FIELDS, cmsItemPath, cmsItemSummaryFields } from "@workspace/lib/cms";
 import { listCmsCollections, listCmsItems } from "@workspace/lib/cms/server";
@@ -76,23 +78,27 @@ export async function loadEditorPosts(sellerId: string, storeId: string): Promis
   });
 }
 
-/** One load of the store data for the editor; `catalogMode` is the store's catalog mode (D24). */
-export async function loadEditorSnapshot(sellerId: string, storeId: string, catalogMode: string | null | undefined): Promise<EditorCatalogSnapshot> {
-  const catalogStoreId = catalogMode === "selected" ? storeId : undefined;
+/**
+ * One load of the store data for the editor: the products, categories and
+ * reviews this store shows (`productInStore`, scope `shown`), as its storefront
+ * would (F-87c). The store must already be checked against the session.
+ */
+export async function loadEditorSnapshot(sellerId: string, storeId: string): Promise<EditorCatalogSnapshot> {
+  const catalog: StoreCatalogScope = { storeId, catalogSplit: await isSwitchOn("stores_catalog_split") };
   const postsFailed: EditorStoreData["failed"] = [];
-  const [catalog, forms, extra, posts] = await Promise.all([
-    loadEditorCatalog(sellerId, catalogStoreId, { salesStoreId: storeId }),
+  const [products, forms, extra, posts] = await Promise.all([
+    loadEditorCatalog(sellerId, catalog, { salesStoreId: storeId }),
     loadEditorForms(sellerId, storeId),
-    loadEditorStoreData(sellerId, catalogStoreId),
+    loadEditorStoreData(sellerId, catalog),
     attempt("posts", postsFailed, () => loadEditorPosts(sellerId, storeId)),
   ]);
   return {
-    products: catalog.products,
-    categories: catalog.categories,
+    products: products.products,
+    categories: products.categories,
     forms,
     posts,
     ...extra,
-    failed: [...extra.failed, ...postsFailed, ...(catalog.salesFailed ? (["sales"] as const) : [])],
+    failed: [...extra.failed, ...postsFailed, ...(products.salesFailed ? (["sales"] as const) : [])],
   };
 }
 
@@ -109,14 +115,14 @@ async function attempt<T, K extends string>(key: K, failed: K[], load: () => Pro
 
 /**
  * Brands, reviews and coupons for the canvas, all for the session seller
- * (reviews only for this store's products in selected catalog mode).
+ * (reviews only for the products the store shows, with `catalog`; null is the account).
  */
-export async function loadEditorStoreData(sellerId: string, catalogStoreId?: string): Promise<EditorStoreData> {
+export async function loadEditorStoreData(sellerId: string, catalog: StoreCatalogScope | null): Promise<EditorStoreData> {
   const failed: EditorStoreData["failed"] = [];
   const [brandRows, reviewRows, reviewStats, coupons] = await Promise.all([
     attempt("brands", failed, () => sellerBrandList(sellerId)),
-    attempt("reviews", failed, () => storeReviews(sellerId, catalogStoreId, { limit: 24 })),
-    attempt("reviews", failed, () => storeReviewStats(sellerId, catalogStoreId)),
+    attempt("reviews", failed, () => storeReviews(sellerId, catalog, { limit: 24 })),
+    attempt("reviews", failed, () => storeReviewStats(sellerId, catalog)),
     attempt("coupons", failed, () => sellerCoupons(sellerId)),
   ]);
   return {
@@ -140,12 +146,13 @@ export async function loadEditorStoreData(sellerId: string, catalogStoreId?: str
 }
 
 /**
- * `catalogStoreId` is set for a store in selected catalog mode (D24): only its picks are listed.
+ * With `catalog`, only the products that store shows are listed (`productInStore`, scope
+ * `shown`: its picks in selected catalog mode (D24), its own products after the split); null is the account.
  * With `salesStoreId`, units sold in that store's orders are loaded too (best sellers, trending).
  */
 export async function loadEditorCatalog(
   sellerId: string,
-  catalogStoreId?: string,
+  catalog: StoreCatalogScope | null,
   options: { salesStoreId?: string } = {},
 ): Promise<{ products: EditorProduct[]; categories: EditorCategory[]; salesFailed: boolean }> {
   const salesFailed: "sales"[] = [];
@@ -180,7 +187,7 @@ export async function loadEditorCatalog(
       and(
         eq(products.sellerId, sellerId),
         eq(products.status, "active"),
-        catalogStoreId ? sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${catalogStoreId} AND sp.product_id = ${products.id})` : undefined,
+        catalog ? productShownInStore(catalog) : undefined,
       ),
     )
     .orderBy(desc(products.createdAt))
@@ -211,7 +218,7 @@ export async function loadEditorCatalog(
   });
 
   // The store's categories as the storefront shows them (seller categories, else Tallaby roots), in its order.
-  const groups = await storeCategoryGroups(sellerId, catalogStoreId);
+  const groups = await storeCategoryGroups(sellerId, catalog);
   const groupOf = new Map(groups.flatMap((g) => g.productIds.map((id) => [id, g.key] as const)));
   for (const product of list) {
     product.relatedCategoryId = product.categoryId;

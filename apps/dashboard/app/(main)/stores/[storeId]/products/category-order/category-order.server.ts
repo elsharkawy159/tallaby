@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
-import { applyInvalidation, invalidateSellerProducts } from "@workspace/cache";
+import { applyInvalidation, invalidateStoreProducts } from "@workspace/cache";
 import {
   and,
   db,
@@ -132,16 +132,16 @@ export async function loadCategoryProductOrder(storeId: string, categoryId: unkn
   }
 }
 
-async function afterChange(sellerId: string) {
-  // Every storefront grid of this seller is tagged by the seller products tag.
-  await applyInvalidation(invalidateSellerProducts(sellerId), { from: "dashboard", mode: "action" });
+async function afterChange(sellerId: string, storeId: string) {
+  // This store's grids (productTags.store), and still every grid of the seller until the catalog split (F-87c).
+  await applyInvalidation(invalidateStoreProducts(sellerId, storeId), { from: "dashboard", mode: "action" });
   revalidatePath(`${STORE_PRODUCTS_PATTERN}/categories`, "page");
 }
 
 /** Saves the order: the listed products get positions 0..n-1, the rest of the category follows newest first. */
 export async function saveCategoryProductOrder(storeId: string, input: unknown): Promise<CategoryOrderSaveResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId);
+    const { seller, store, inStore } = await requireProductStore(storeId);
     const parsed = saveCategoryOrderSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const category = await ownedCategory(seller.sellerId, parsed.data.categoryId);
@@ -176,7 +176,7 @@ export async function saveCategoryProductOrder(storeId: string, input: unknown):
         );
       }
     });
-    await afterChange(seller.sellerId);
+    await afterChange(seller.sellerId, store.id);
     return { success: true };
   } catch (error) {
     return failure(error, "save");
@@ -186,7 +186,7 @@ export async function saveCategoryProductOrder(storeId: string, input: unknown):
 /** Forgets the manual order: the category goes back to newest first. */
 export async function resetCategoryProductOrder(storeId: string, categoryId: unknown): Promise<CategoryOrderSaveResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId);
+    const { seller, store, inStore } = await requireProductStore(storeId);
     if (!isUuid(categoryId)) return { success: false, error: "invalidInput" };
     const category = await ownedCategory(seller.sellerId, categoryId);
     if (!category) return { success: false, error: "notFound" };
@@ -199,7 +199,7 @@ export async function resetCategoryProductOrder(storeId: string, categoryId: unk
           storePositions(inStore),
         ),
       );
-    await afterChange(seller.sellerId);
+    await afterChange(seller.sellerId, store.id);
     return { success: true };
   } catch (error) {
     return failure(error, "reset");

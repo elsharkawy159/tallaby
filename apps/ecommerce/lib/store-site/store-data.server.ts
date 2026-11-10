@@ -1,6 +1,7 @@
 import { cacheProfiles, couponTags, createCachedQuery, productTags, reviewTags, storeTags } from "@workspace/cache";
 import { sellerBrandList, sellerCoupons, sellerPopupCoupons, storeProductSales, storeReviewStats, storeReviews } from "@workspace/lib/store-sites/catalog-data";
 import { BEST_SELLER_DAYS, TRENDING_DAYS } from "@workspace/lib/store-sites/catalog-data.lib";
+import { storefrontCatalogTags } from "@/lib/storefront.server";
 
 /**
  * Store data for builder sections on a store host (P4B-05), cached per
@@ -19,27 +20,39 @@ export const getCachedStoreSales = createCachedQuery({
 
 export const SALES_DAYS = { "best-sellers": BEST_SELLER_DAYS, trending: TRENDING_DAYS } as const;
 
+/**
+ * The seller's brand list. Brands are still per seller (per store with F-87d),
+ * but the entry is already keyed and tagged per store (F-87c), so that move
+ * needs no cache change.
+ */
 export const getCachedSellerBrands = createCachedQuery({
-  name: "storefront:seller-brands:v1",
+  name: "storefront:seller-brands:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string) => [productTags.seller(sellerId)],
-  query: (sellerId: string) => sellerBrandList(sellerId),
+  tags: (sellerId: string, storeId: string) => [productTags.seller(sellerId), productTags.store(sellerId, storeId)],
+  query: (sellerId: string, _storeId: string) => sellerBrandList(sellerId),
 });
 
-/** `catalogStoreId`: the store in selected catalog mode, else "" (cache keys need a value). */
+/**
+ * Approved reviews of the products this store shows (`productInStore`, scope
+ * `shown`), per store and catalog mode: `catalogSplit` is read by the caller,
+ * outside the cached function (F-87c).
+ */
 export const getCachedStoreReviews = createCachedQuery({
-  name: "storefront:store-reviews:v1",
+  name: "storefront:store-reviews:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, _catalogStoreId: string, _limit: number, _minRating: number) => [reviewTags.seller(sellerId), productTags.seller(sellerId)],
-  query: (sellerId: string, catalogStoreId: string, limit: number, minRating: number) =>
-    storeReviews(sellerId, catalogStoreId || undefined, { limit, minRating: minRating || undefined }),
+  tags: (sellerId: string, storeId: string, _limit: number, _minRating: number, _catalogSplit: boolean) => [
+    reviewTags.seller(sellerId),
+    ...storefrontCatalogTags(sellerId, storeId),
+  ],
+  query: (sellerId: string, storeId: string, limit: number, minRating: number, catalogSplit: boolean) =>
+    storeReviews(sellerId, { storeId, catalogSplit }, { limit, minRating: minRating || undefined }),
 });
 
 export const getCachedStoreReviewStats = createCachedQuery({
-  name: "storefront:store-review-stats:v1",
+  name: "storefront:store-review-stats:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, _catalogStoreId: string) => [reviewTags.seller(sellerId), productTags.seller(sellerId)],
-  query: (sellerId: string, catalogStoreId: string) => storeReviewStats(sellerId, catalogStoreId || undefined),
+  tags: (sellerId: string, storeId: string, _catalogSplit: boolean) => [reviewTags.seller(sellerId), ...storefrontCatalogTags(sellerId, storeId)],
+  query: (sellerId: string, storeId: string, catalogSplit: boolean) => storeReviewStats(sellerId, { storeId, catalogSplit }),
 });
 
 /** Coupon rows only; whether one is live is decided per request (start/end dates). */

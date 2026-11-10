@@ -1,7 +1,9 @@
 import { and, cartItems, carts, db, eq, inArray, orderItems, orders, products, productVariants, sql } from "@workspace/db";
 import { isUuid } from "@workspace/lib/catalog-share";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { productShownInStore } from "@workspace/lib/stores/scope/server";
 import { activeCartWhere, getCartScope, isRequestStoreOffline, type CartScope } from "@/lib/storefront.server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
 import { buildReorderLines, reorderCartKey, type ReorderPlan, type ReorderProduct } from "./reorder.lib";
 
 /**
@@ -35,6 +37,7 @@ export async function planReorder(orderId: string, { userId, scope }: Owned): Pr
     .where(and(eq(orderItems.orderId, orderId), eq(orderItems.sellerId, scope.sellerId)));
   const ids = [...new Set(items.map((item) => item.productId))];
   if (!ids.length) return { lines: [], skipped: [], capped: 0 };
+  const catalogSplit = await isSwitchOn("stores_catalog_split");
 
   const [rows, variants, cart] = await Promise.all([
     db
@@ -45,11 +48,10 @@ export async function planReorder(orderId: string, { userId, scope }: Owned): Pr
         deletedAt: products.deletedAt,
         quantity: products.quantity,
         trackStock: products.trackStock,
-        // The store's catalog: every product in "all" mode, its picks in "selected" mode.
-        inCatalog: sql<boolean>`(
-          EXISTS (SELECT 1 FROM stores s WHERE s.id = ${scope.storeId} AND s.seller_id = ${scope.sellerId} AND s.catalog_mode = 'all')
-          OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${scope.storeId} AND sp.product_id = ${products.id})
-        )`,
+        // What the store shows (productInStore, scope shown): every product in "all" mode, its picks in
+        // "selected" mode, its own products after the catalog split. Nested, so this no-join select keeps
+        // the table name on the outer columns (packages/db/src/drizzle/outer-column.test.ts).
+        inCatalog: sql<boolean>`${productShownInStore({ storeId: scope.storeId, catalogSplit })}`,
       })
       .from(products)
       .where(and(inArray(products.id, ids), eq(products.sellerId, scope.sellerId))),

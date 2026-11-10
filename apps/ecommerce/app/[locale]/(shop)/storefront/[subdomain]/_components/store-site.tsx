@@ -28,7 +28,7 @@ import { getCachedPublicStoreForms } from "@/lib/store-forms/public-forms.server
 import { resolveStoreCatalog, toProductSummaries, type ResolvedCatalog } from "@/lib/store-site/catalog.server";
 import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { siteNavPages } from "@/lib/store-site/site-nav.lib";
-import { catalogStoreId, type Storefront } from "@/lib/storefront.server";
+import type { Storefront } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
 import { StoreCardAddToCart } from "./store-card-add-to-cart.client";
 import { StoreCartBadge } from "./store-cart-badge.client";
@@ -122,7 +122,7 @@ async function buildContext(
   const contentQueries = collectContentQueries(sections, storeSectionRegistry);
   const [catalog, forms, content] = await Promise.all([
     Object.keys(queries).length
-      ? resolveStoreCatalog(store.id, store.storeId, catalogStoreId(store), queries, locale)
+      ? resolveStoreCatalog(store.id, store.storeId, queries, locale)
       : ({ products: {}, categories: [], withVariants: new Set<string>() } as ResolvedCatalog),
     // Forms of THIS host's store only (P4-10); another store's form id resolves to nothing.
     formIds.length ? getCachedPublicStoreForms(store.id, store.storeId, store.subdomain, [...new Set(formIds)].sort()) : {},

@@ -98,7 +98,8 @@ export async function getStoreSitemapDataset(subdomain: string): Promise<StoreSi
     getCachedPublishedSite(store.id, store.storeId, store.subdomain),
     fetchActiveProductTranslations({ sellerId: store.id, selectedStoreId: catalogStoreId(store) }),
     extraUrls(scope),
-    getStorefrontCategories(store.id, catalogStoreId(store)),
+    // Categories are per store already (F-87c slice 4); product URLs move with the feed in slice 6.
+    getStorefrontCategories(store.id, store.storeId),
   ]);
   const withProducts = categories.filter((category) => category.productCount > 0);
 

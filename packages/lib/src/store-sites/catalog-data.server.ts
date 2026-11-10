@@ -8,10 +8,11 @@
  * Every function takes the seller id from the session or the store host and
  * scopes by it; store-scoped reads also check that the store is the seller's.
  */
-import { and, coupons, db, desc, eq, gte, inArray, orderItems, orders, productTranslations, products, reviews, sellerProductBrands, sql, storeProducts, stores, users } from "@workspace/db";
+import { and, coupons, db, desc, eq, gte, inArray, orderItems, orders, productTranslations, products, reviews, sellerProductBrands, sql, stores, users } from "@workspace/db";
 import { isNotNull } from "drizzle-orm";
 import { isCouponPopupTrigger, type StoreCouponOfferCandidate } from "../orders/coupon-popup.lib";
 import { getCouponChannels, getCouponProductIds } from "../orders/coupon-scope.lib";
+import { aliasedProductShownInStore, productShownInStore, type StoreCatalogScope } from "../stores/store-scope.server";
 import { BEST_SELLER_DAYS, SOLD_ORDER_STATUSES, UNSOLD_ITEM_STATUSES, couponDiscountType, isCouponLive, type CouponDiscountType, ratingStats, reviewAuthorName, type RatingStats } from "./catalog-data.lib";
 
 /** Units sold per product in this store's orders over the last `days` days. */
@@ -76,16 +77,16 @@ export type StoreCategoryGroup = {
  * category picked from its Tallaby category; anything else (products made
  * before 0068) to its Tallaby root category. Only categories with active
  * products, the seller's own first in their order, then the roots by size.
- * With `catalogStoreId` (a store in selected mode) only that store's picks count.
+ * With `catalog` only the products that store shows count (`productInStore`,
+ * scope `shown`: before the split its picks in selected mode, after it its own
+ * products); null is the seller's whole account catalog.
  */
 export async function storeCategoryGroups(
   sellerId: string,
-  catalogStoreId?: string,
+  catalog: StoreCatalogScope | null,
   q: Pick<typeof db, "execute"> = db,
 ): Promise<StoreCategoryGroup[]> {
-  const selected = catalogStoreId
-    ? sql`AND EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${catalogStoreId} AND sp.product_id = p.id)`
-    : sql``;
+  const selected = catalog ? sql`AND ${aliasedProductShownInStore("p", catalog)}` : sql``;
   const rows = await q.execute(sql`
     WITH RECURSIVE ancestry AS (
       SELECT id, id AS root_id, parent_id FROM categories
@@ -140,21 +141,19 @@ export type StoreReviewRow = {
   createdAt: string | null;
 };
 
-/** Approved reviews of the seller's active products (only the store's picks in selected catalog mode). */
-function reviewScope(sellerId: string, catalogStoreId: string | undefined) {
+/** Approved reviews of the seller's active products that the store shows (null: the whole account). */
+function reviewScope(sellerId: string, catalog: StoreCatalogScope | null) {
   return and(
     eq(reviews.status, "approved"),
     eq(products.sellerId, sellerId),
     eq(products.status, "active"),
-    catalogStoreId
-      ? sql`EXISTS (SELECT 1 FROM ${storeProducts} sp JOIN ${stores} s ON s.id = sp.store_id WHERE sp.store_id = ${catalogStoreId} AND s.seller_id = ${sellerId} AND sp.product_id = ${products.id})`
-      : undefined,
+    catalog ? productShownInStore(catalog) : undefined,
   );
 }
 
 export async function storeReviews(
   sellerId: string,
-  catalogStoreId: string | undefined,
+  catalog: StoreCatalogScope | null,
   options: { limit: number; minRating?: number },
 ): Promise<StoreReviewRow[]> {
   const rows = await db
@@ -176,7 +175,7 @@ export async function storeReviews(
     .from(reviews)
     .innerJoin(products, eq(products.id, reviews.productId))
     .leftJoin(users, eq(users.id, reviews.userId))
-    .where(and(reviewScope(sellerId, catalogStoreId), options.minRating ? gte(reviews.rating, options.minRating) : undefined))
+    .where(and(reviewScope(sellerId, catalog), options.minRating ? gte(reviews.rating, options.minRating) : undefined))
     .orderBy(desc(reviews.createdAt))
     .limit(Math.min(Math.max(options.limit, 1), 24));
   return rows.map((r) => ({
@@ -194,12 +193,12 @@ export async function storeReviews(
 }
 
 /** Average, count and stars of the same approved reviews. */
-export async function storeReviewStats(sellerId: string, catalogStoreId: string | undefined): Promise<RatingStats> {
+export async function storeReviewStats(sellerId: string, catalog: StoreCatalogScope | null): Promise<RatingStats> {
   const rows = await db
     .select({ rating: reviews.rating, count: sql<string>`count(*)` })
     .from(reviews)
     .innerJoin(products, eq(products.id, reviews.productId))
-    .where(reviewScope(sellerId, catalogStoreId))
+    .where(reviewScope(sellerId, catalog))
     .groupBy(reviews.rating);
   return ratingStats(rows.flatMap((r) => Array.from({ length: Number(r.count) || 0 }, () => r.rating)));
 }

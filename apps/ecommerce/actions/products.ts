@@ -11,7 +11,6 @@ import {
   productQuestions,
   categories,
   brands,
-  storeProducts,
   sellerCategoryProductPositions,
   eq,
   and,
@@ -25,6 +24,8 @@ import {
   inArray,
 } from "@workspace/db"
 import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data"
+import { productShownInStore } from "@workspace/lib/stores/scope/server"
+import { isSwitchOn } from "@/lib/platform-switches.server"
 import {
   getProductIdBySlug,
   getProductTranslationWithFallback,
@@ -36,7 +37,7 @@ import { getUser } from "./auth";
 import { unstable_cache } from "next/cache";
 import { brandTags, cacheProfiles, categoryTags, createCachedQuery, productTags, storeTags } from "@workspace/cache";
 
-interface ProductFilters {
+export interface ProductFilters {
   categoryId?: string;
   /** Any of these categories, e.g. every leaf under one root. */
   categoryIds?: string[];
@@ -56,8 +57,14 @@ interface ProductFilters {
   sellerId?: string;
   /** Only these products (store builder sections that list picked products). */
   productIds?: string[];
-  /** Only the products this store selected (a store in `selected` catalog mode, D24). Use with sellerId. */
-  catalogStoreId?: string;
+  /**
+   * The store host's store (from the request host, never a client value): only
+   * the products it shows (`productInStore`, scope `shown`: before the catalog
+   * split every product of the seller in "all" mode and its picks in "selected"
+   * mode (D24); after it the store's own). Use with sellerId. Every storefront
+   * read passes it, so its cache entry and tags are per store (F-87c).
+   */
+  storeId?: string;
   isFeatured?: boolean;
   isTrending?: boolean;
   isSeasonal?: boolean;
@@ -76,7 +83,17 @@ interface ProductFilters {
   locale?: ProductLocale;
 }
 
-export const getProducts = createCachedQuery({
+/**
+ * Product lists. A store read (`storeId` set) reads `stores_catalog_split`
+ * first, outside the cached function, and the value is the second key part:
+ * an entry never mixes the catalog modes (F-87c).
+ */
+export async function getProducts(filters: ProductFilters = {}) {
+  const catalogSplit = filters.storeId ? await isSwitchOn("stores_catalog_split") : false
+  return listProducts(filters, catalogSplit)
+}
+
+const listProducts = createCachedQuery({
   name: "ecommerce:products:list",
   ttl: cacheProfiles.listing,
   // categoryName/brandName resolve to an id inside the query, so a
@@ -84,23 +101,27 @@ export const getProducts = createCachedQuery({
   // it still gets purged by any structural product change (see
   // invalidateProduct in packages/cache/src/invalidate.ts), just not by a
   // change scoped to a single OTHER category/brand.
-  // A seller-scoped call (every storefront grid) is tagged by seller only:
-  // every product write and stock-boundary change bumps productTags.seller,
-  // and listing() would refill every store whenever any seller changed a
-  // product (docs/egress-audit.md §6).
-  tags: (filters: ProductFilters) => {
+  // A seller-scoped call (every storefront grid) is tagged by seller, never
+  // listing(): every product write and stock-boundary change bumps
+  // productTags.seller, and listing() would refill every store whenever any
+  // seller changed a product (docs/egress-audit.md §6). A store read also
+  // carries its store's product and catalog tags (F-87c): the seller tag can
+  // go once every product belongs to one store (stores_catalog_split on).
+  tags: (filters: ProductFilters, _catalogSplit: boolean) => {
     const tags = filters.sellerId ? [] : [productTags.listing()];
     if (filters.categoryId) tags.push(productTags.category(filters.categoryId));
     if (filters.brandId) tags.push(productTags.brand(filters.brandId));
     if (filters.sellerId) tags.push(productTags.seller(filters.sellerId));
-    if (filters.sellerId && filters.catalogStoreId) tags.push(storeTags.catalog(filters.sellerId, filters.catalogStoreId));
+    if (filters.sellerId && filters.storeId) {
+      tags.push(productTags.store(filters.sellerId, filters.storeId), storeTags.catalog(filters.sellerId, filters.storeId));
+    }
     if (filters.isFeatured) tags.push(productTags.featured());
     if (filters.isTrending) tags.push(productTags.trending());
     if (filters.isSeasonal) tags.push(productTags.seasonal());
     if (filters.isSponsored) tags.push(productTags.sponsored());
     return tags;
   },
-  query: async (filters: ProductFilters = {}) => {
+  query: async (filters: ProductFilters, catalogSplit: boolean) => {
     try {
       const locale = (filters.locale ?? "en") as ProductLocale
       // Storefront visibility: an admin-approved product the seller has left on.
@@ -135,10 +156,8 @@ export const getProducts = createCachedQuery({
         conditions.push(inArray(products.id, filters.productIds.length ? filters.productIds : ["00000000-0000-0000-0000-000000000000"]));
       }
 
-      if (filters.catalogStoreId) {
-        conditions.push(
-          sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${filters.catalogStoreId} AND sp.product_id = ${products.id})`
-        );
+      if (filters.storeId) {
+        conditions.push(productShownInStore({ storeId: filters.storeId, catalogSplit }));
       }
 
       const categoryNames = [
@@ -320,18 +339,37 @@ export const getProducts = createCachedQuery({
   },
 });
 
-export const getProductBySlug = createCachedQuery({
-  name: "ecommerce:products:by-slug",
+/**
+ * One store's product page by slug. `sellerId` and `storeId` are the store
+ * the request host resolved, never a client value. The catalog-split switch is
+ * read here, outside the cached function, and is part of its key (F-87c).
+ */
+export async function getProductBySlug(sellerId: string, storeId: string, slug: string, locale: ProductLocale = "en") {
+  const catalogSplit = await isSwitchOn("stores_catalog_split")
+  return loadProductBySlug(sellerId, storeId, slug, locale, catalogSplit)
+}
+
+const loadProductBySlug = createCachedQuery({
+  name: "ecommerce:products:by-slug:v2",
   ttl: cacheProfiles.detail,
-  // One store's product: `sellerId` is the store the request host resolved,
-  // and slugs repeat across sellers, so it is in the key and in every condition.
-  // The product id isn't known until the slug lookup runs, so this is tagged by
-  // seller: invalidateProduct() always includes that tag (old and new slug alike,
-  // every create/update/delete/price/visibility change), and it only clears this seller.
-  tags: (sellerId: string, _slug: string, _locale: ProductLocale = "en") => [productTags.seller(sellerId)],
-  query: async (sellerId: string, slug: string, locale: ProductLocale = "en") => {
+  // One store's product: slugs repeat across sellers (and, after the catalog
+  // split, across a seller's stores), so the store is in the key and in every
+  // condition: the product and its related products are ones this store shows
+  // (`productInStore`, scope `shown`). The product id isn't known until the slug
+  // lookup runs, so this is tagged by seller and store: invalidateProduct()
+  // always includes the seller tag (old and new slug alike, every
+  // create/update/delete/price/visibility change) and the product's store tag;
+  // the store's catalog tag covers a change of its picks.
+  tags: (sellerId: string, storeId: string, _slug: string, _locale: ProductLocale, _catalogSplit: boolean) => [
+    productTags.seller(sellerId),
+    productTags.store(sellerId, storeId),
+    storeTags.catalog(sellerId, storeId),
+  ],
+  query: async (sellerId: string, storeId: string, slug: string, locale: ProductLocale, catalogSplit: boolean) => {
       try {
-        const productId = await getProductIdBySlug(slug, locale, sellerId)
+        const shown = productShownInStore({ storeId, catalogSplit })
+        // Before the split the slug is looked up per seller, as before; after it per store.
+        const productId = await getProductIdBySlug(slug, locale, { sellerId, storeId, catalogSplit })
         if (!productId) {
           return { success: false, error: "Product not found" }
         }
@@ -341,6 +379,8 @@ export const getProductBySlug = createCachedQuery({
             eq(products.id, productId),
             eq(products.sellerId, sellerId),
             eq(products.status, "active"),
+            // A slug of a product this store doesn't show opens nothing (the page sends the shopper home).
+            shown,
           ),
           with: {
             brand: true,
@@ -410,6 +450,8 @@ export const getProductBySlug = createCachedQuery({
             eq(products.categoryId, product.categoryId),
             eq(products.sellerId, sellerId),
             eq(products.status, "active"),
+            // Only what this store shows (this used to list every product of the seller).
+            shown,
             sql`${products.id} != ${product.id}`
           ),
           with: {

@@ -6,11 +6,12 @@ import { and, cartItems, carts, db, eq, inArray, isNull, or, productCrossSells, 
 import { getPriceFinal } from "@workspace/lib";
 import { crossSellUnitDiscountPiastres } from "@workspace/lib/orders/cross-sell";
 import { findStoreOffer } from "@workspace/lib/orders/cross-sell/server";
-import { storeSellsProduct } from "@workspace/lib/stores/server";
 import { getLocale } from "next-intl/server";
 import { addToCart } from "@/actions/cart";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { getCartScope } from "@/lib/storefront.server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
+import { productShownInStore } from "@workspace/lib/stores/scope/server";
 
 export type CrossSellCard = {
   offerId: string;
@@ -28,17 +29,21 @@ export type CrossSellCard = {
 
 /**
  * Offers on these main products for one store: only active and in-stock products
- * this store sells. Cached per seller and store; the price and stock tags keep it
- * right. The checkout recomputes the discount from the database, never from this.
+ * this store shows (`productInStore`, scope `shown`). Cached per seller, store and
+ * catalog mode (the switch is read by the caller, F-87c); the price, stock and
+ * store catalog tags keep it right. The checkout recomputes the discount from the
+ * database, never from this.
  */
 const loadOffers = createCachedQuery({
-  name: "storefront:cross-sell:v1",
+  name: "storefront:cross-sell:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, storeId: string, mainProductIds: string[], _locale: string) => [
+  tags: (sellerId: string, storeId: string, mainProductIds: string[], _locale: string, _catalogSplit: boolean) => [
     storeTags.crossSells(sellerId, storeId),
+    storeTags.catalog(sellerId, storeId),
+    productTags.store(sellerId, storeId),
     ...mainProductIds.map((id) => productTags.detail(id)),
   ],
-  query: async (sellerId: string, storeId: string, mainProductIds: string[], locale: string): Promise<CrossSellCard[]> => {
+  query: async (sellerId: string, storeId: string, mainProductIds: string[], locale: string, catalogSplit: boolean): Promise<CrossSellCard[]> => {
     const [store] = await db.select({ enabled: stores.crossSellEnabled }).from(stores).where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId))).limit(1);
     if (!store?.enabled || mainProductIds.length === 0) return [];
     const rows = await db
@@ -56,14 +61,26 @@ const loadOffers = createCachedQuery({
     const ids = [...new Set(rows.map((row) => row.offerProductId))];
     if (ids.length === 0) return [];
     const [items, titles, variants] = await Promise.all([
-      db.select().from(products).where(and(inArray(products.id, ids), eq(products.status, "active"), isNull(products.deletedAt))),
+      // Only what this store shows (the same rule as storeSellsProduct before the split).
+      db
+        .select()
+        .from(products)
+        .where(
+          and(
+            inArray(products.id, ids),
+            eq(products.sellerId, sellerId),
+            eq(products.status, "active"),
+            isNull(products.deletedAt),
+            productShownInStore({ storeId, catalogSplit }),
+          ),
+        ),
       db.select().from(productTranslations).where(inArray(productTranslations.productId, ids)),
       db.select().from(productVariants).where(inArray(productVariants.productId, ids)),
     ]);
     const cards: CrossSellCard[] = [];
     for (const row of rows) {
       const product = items.find((item) => item.id === row.offerProductId);
-      if (!product || !(await storeSellsProduct(storeId, product.id))) continue;
+      if (!product) continue;
       const type = row.discountType === "fixed" ? "fixed" : "percent";
       const value = Number(row.discountValue);
       const tracked = product.trackStock !== false;
@@ -114,7 +131,7 @@ export async function getCrossSellOffers(mainProductIds: string[]): Promise<Cros
     const store = await hostStore();
     if (!store || !Array.isArray(mainProductIds)) return [];
     const ids = [...new Set(mainProductIds.filter((id) => typeof id === "string"))].sort().slice(0, 30);
-    return await loadOffers(store.sellerId, store.id, ids, await getLocale());
+    return await loadOffers(store.sellerId, store.id, ids, await getLocale(), await isSwitchOn("stores_catalog_split"));
   } catch (error) {
     console.error("[cross-sell] offers failed", (error as Error)?.name);
     return [];

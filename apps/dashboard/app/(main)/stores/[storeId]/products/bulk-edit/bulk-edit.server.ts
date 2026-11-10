@@ -53,6 +53,8 @@ type Queryable = Tx | typeof db;
 type LoadedRow = BulkProductRow & {
   title: string;
   sellerId: string;
+  /** `products.store_id`: the store whose catalog cache a change purges (F-87c). */
+  storeId: string | null;
   categoryId: string;
   brandId: string | null;
   isFeatured: boolean | null;
@@ -86,6 +88,7 @@ async function loadRows(
     .select({
       id: products.id,
       sellerId: products.sellerId,
+      storeId: products.storeId,
       categoryId: products.categoryId,
       brandId: products.brandId,
       status: products.status,
@@ -160,6 +163,7 @@ function snapshot(row: LoadedRow, values: ProductValues = {}): ProductCacheSnaps
   return {
     id: row.id,
     sellerId: row.sellerId,
+    storeId: row.storeId,
     categoryId: row.categoryId,
     brandId: row.brandId,
     slugs: row.slugs,

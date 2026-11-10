@@ -44,7 +44,7 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
   const [editor, status, catalog, gallery, presets, customDomain] = await Promise.all([
     getStoreForEditor(ref.sellerId, store.id),
     getStoreSiteStatus(ref.sellerId, store.id),
-    loadEditorSnapshot(ref.sellerId, store.id, store.catalogMode),
+    loadEditorSnapshot(ref.sellerId, store.id),
     listStoreTemplates(ref.sellerId, store.id, undefined, loadCachedTemplateCards),
     loadLibraryPresets(),
     findActiveCustomDomainForSubdomain(store.subdomain),

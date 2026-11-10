@@ -2,11 +2,13 @@
  * The product the builder's product page canvas shows (template product page
  * spec §5.5). Store-scoped and never cached (rule 8: builder data): the
  * store must be the session seller's (rule 5), and the product must be one
- * this store shows, as the storefront decides (`storeShowsProduct`): an
- * active product of the seller, and in selected catalog mode (D24) one of
- * the store's picks.
+ * this store shows, as the storefront decides (`productInStore`, scope
+ * `shown`): an active product of the seller, in selected catalog mode (D24)
+ * one of the store's picks, and after the catalog split one of its own.
  */
-import { and, asc, brands, categories, db, desc, eq, isNull, productTranslations, productVariants, products, sellers, sql, storeProducts, stores } from "@workspace/db";
+import { and, asc, brands, categories, db, desc, eq, isNull, productTranslations, productVariants, products, sellers, stores } from "@workspace/db";
+import { isSwitchOn } from "../stores/platform-switches.server";
+import { productShownInStore } from "../stores/store-scope.server";
 import type { ProductDetail } from "@workspace/store-sections/render";
 import { toPreviewProductDetail, type PreviewLocale } from "./preview-product.lib";
 
@@ -32,11 +34,12 @@ export async function getStorePreviewProduct(
   if (productId !== undefined && !UUID_RE.test(productId)) return null;
 
   const [store] = await q
-    .select({ catalogMode: stores.catalogMode })
+    .select({ id: stores.id })
     .from(stores)
     .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)))
     .limit(1);
   if (!store) return null;
+  const catalogSplit = await isSwitchOn("stores_catalog_split", q);
 
   const [row] = await q
     .select({
@@ -69,9 +72,7 @@ export async function getStorePreviewProduct(
         eq(products.sellerId, sellerId),
         eq(products.status, "active"),
         productId ? eq(products.id, productId) : undefined,
-        store.catalogMode === "selected"
-          ? sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${storeId} AND sp.product_id = ${products.id})`
-          : undefined,
+        productShownInStore({ storeId, catalogSplit }),
       ),
     )
     .orderBy(desc(products.createdAt))

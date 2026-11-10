@@ -1,6 +1,6 @@
 "use server";
 
-import { cacheProfiles, createCachedQuery, productTags } from "@workspace/cache";
+import { cacheProfiles, createCachedQuery, productTags, storeTags } from "@workspace/cache";
 import { and, asc, cartItems, couponUsage, coupons, db, eq, inArray, isNull, productQuantityOffers, products, productTranslations, productVariants, sql } from "@workspace/db";
 import { giftRuleReached, isRuleLive } from "@workspace/lib/orders/automatic-discounts";
 import { isCouponAllowedOnChannel, isLineEligibleForCoupon } from "@workspace/lib/orders/coupon-scope";
@@ -14,6 +14,8 @@ import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 import { touchCartActivity } from "@/lib/cart-activity.server";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { activeCartWhere, getCartScope } from "@/lib/storefront.server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
+import { productShownInStore } from "@workspace/lib/stores/scope/server";
 
 export type QuantityTierCard = {
   minQuantity: number;
@@ -21,16 +23,32 @@ export type QuantityTierCard = {
   discountValue: number;
 };
 
-/** The active tiers a product page shows. A preview: the checkout reads them fresh. */
+/**
+ * The active tiers a product page shows, only for a product this store shows
+ * (`productInStore`, scope `shown`). Per store and catalog mode (F-87c). A
+ * preview: the checkout reads them fresh.
+ */
 const loadTiers = createCachedQuery({
-  name: "storefront:quantity-offers:v1",
+  name: "storefront:quantity-offers:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, productId: string) => [productTags.quantityOffers(sellerId, productId)],
-  query: async (sellerId: string, productId: string): Promise<QuantityTierCard[]> => {
+  tags: (sellerId: string, storeId: string, productId: string, _catalogSplit: boolean) => [
+    productTags.quantityOffers(sellerId, productId),
+    productTags.detail(productId),
+    storeTags.catalog(sellerId, storeId),
+  ],
+  query: async (sellerId: string, storeId: string, productId: string, catalogSplit: boolean): Promise<QuantityTierCard[]> => {
     const rows = await db
-      .select()
+      .select({ minQuantity: productQuantityOffers.minQuantity, discountType: productQuantityOffers.discountType, discountValue: productQuantityOffers.discountValue })
       .from(productQuantityOffers)
-      .where(and(eq(productQuantityOffers.sellerId, sellerId), eq(productQuantityOffers.productId, productId), eq(productQuantityOffers.isActive, true)))
+      .innerJoin(products, eq(products.id, productQuantityOffers.productId))
+      .where(
+        and(
+          eq(productQuantityOffers.sellerId, sellerId),
+          eq(productQuantityOffers.productId, productId),
+          eq(productQuantityOffers.isActive, true),
+          productShownInStore({ storeId, catalogSplit }),
+        ),
+      )
       .orderBy(asc(productQuantityOffers.minQuantity));
     return rows.map((row) => ({
       minQuantity: row.minQuantity,
@@ -45,7 +63,7 @@ export async function getQuantityTiers(productId: string): Promise<QuantityTierC
   try {
     const scope = await getCartScope();
     if (!scope?.sellerId || typeof productId !== "string") return [];
-    return await loadTiers(scope.sellerId, productId);
+    return await loadTiers(scope.sellerId, scope.storeId, productId, await isSwitchOn("stores_catalog_split"));
   } catch (error) {
     console.error("[quantity-offers] tiers failed", (error as Error)?.name);
     return [];

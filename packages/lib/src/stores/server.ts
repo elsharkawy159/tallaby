@@ -15,6 +15,7 @@ import {
   eq,
   isNull,
   ne,
+  products,
   sellerSubdomainRedirects,
   sellers,
   storeDesignSystems,
@@ -38,6 +39,8 @@ import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { seedStarterSite } from "./starter-site.server";
 import { toShippingZone, type StoreShippingZone } from "./shipping-context.server";
 import { canCreateStore } from "../plans";
+import { isSwitchOn } from "./platform-switches.server";
+import { productShownInStore } from "./store-scope.server";
 import { z } from "zod";
 import {
   MAX_ZONES_PER_STORE,
@@ -553,24 +556,25 @@ export async function updateStoreFacebookDomainVerification(
 
 /**
  * Whether the store shows at least one product: an active product of its
- * seller, and in "selected" mode one of its picks (D24). Stores without one
- * are kept out of search (noindex, no sitemap; PLAN.md §10.3).
+ * seller that the store shows (`productInStore`, scope `shown`: before the
+ * split every one in "all" mode, its picks in "selected" mode (D24); after it,
+ * its own products). Stores without one are kept out of search (noindex, no
+ * sitemap; PLAN.md §10.3). `catalogSplit` is read from the switch when omitted.
  */
 export async function storeHasVisibleProducts(
   sellerId: string,
   storeId: string,
-  q: Queryable = db,
+  options: { catalogSplit?: boolean; q?: Queryable } = {},
 ): Promise<boolean> {
-  if (!UUID_RE.test(storeId)) return false;
-  const rows = await q.execute(sql`
-    SELECT 1 FROM stores st
-    JOIN products p ON p.seller_id = st.seller_id AND p.status = 'active'
-    WHERE st.id = ${storeId} AND st.seller_id = ${sellerId}
-      AND (st.catalog_mode <> 'selected'
-           OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = st.id AND sp.product_id = p.id))
-    LIMIT 1
-  `);
-  return [...rows].length > 0;
+  if (!UUID_RE.test(storeId) || !UUID_RE.test(sellerId)) return false;
+  const q = options.q ?? db;
+  const catalogSplit = options.catalogSplit ?? (await isSwitchOn("stores_catalog_split", q));
+  const [row] = await q
+    .select({ ok: sql<boolean>`true` })
+    .from(products)
+    .where(and(eq(products.sellerId, sellerId), eq(products.status, "active"), productShownInStore({ storeId, catalogSplit })))
+    .limit(1);
+  return Boolean(row);
 }
 
 export type StorePaymentsError = StoreWriteError | MethodChangeError;

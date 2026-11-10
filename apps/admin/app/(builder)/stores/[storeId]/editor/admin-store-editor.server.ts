@@ -292,7 +292,7 @@ export async function refreshEditorData(storeId: string) {
     if (!readLimiter.check(`admin-editor-read:${actorId}`)) return fail("rateLimited");
     const catalog = await getStoreCatalog(ref.sellerId, ref.storeId);
     if (!catalog) return fail("notFound");
-    return { success: true, data: await loadEditorSnapshot(ref.sellerId, ref.storeId, catalog.mode) };
+    return { success: true, data: await loadEditorSnapshot(ref.sellerId, ref.storeId) };
   });
 }
 

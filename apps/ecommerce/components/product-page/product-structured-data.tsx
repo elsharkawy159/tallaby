@@ -5,7 +5,7 @@ import { offerShippingDetails } from "@/lib/store-seo/offer-shipping.lib";
 import { storeShippingForJsonLd } from "@/lib/store-seo/offer-shipping.server";
 import { productBreadcrumb, productJsonLdInput, productOfferPrice } from "@/lib/store-seo/product-jsonld.lib";
 import { storeCategoryOf } from "@/lib/store-site/product-detail.lib";
-import { catalogStoreId, getStorefrontCategories, type Storefront } from "@/lib/storefront.server";
+import { getStorefrontCategories, type Storefront } from "@/lib/storefront.server";
 import type { ProductLocale } from "@/lib/product-translations";
 import type { Product } from "./product-page.types";
 
@@ -34,7 +34,7 @@ export async function ProductStructuredData({ product, locale, homeLabel, store 
       return null;
     }),
     product.category
-      ? getStorefrontCategories(store.id, catalogStoreId(store)).catch(() => [])
+      ? getStorefrontCategories(store.id, store.storeId).catch(() => [])
       : Promise.resolve([]),
   ]);
 

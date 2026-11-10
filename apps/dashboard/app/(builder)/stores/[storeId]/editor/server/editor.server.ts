@@ -125,7 +125,7 @@ export async function refreshEditorData(storeId: string) {
     if (!refreshLimiter.check(`${seller.sellerId}:${store.id}`)) return fail("rateLimited");
     const catalog = await getStoreCatalog(seller.sellerId, store.id);
     if (!catalog) return fail("notFound");
-    return { success: true, data: await loadEditorSnapshot(seller.sellerId, store.id, catalog.mode) };
+    return { success: true, data: await loadEditorSnapshot(seller.sellerId, store.id) };
   });
 }
 

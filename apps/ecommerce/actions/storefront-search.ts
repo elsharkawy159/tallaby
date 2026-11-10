@@ -3,7 +3,7 @@
 import { getProducts } from "@/actions/products";
 import type { ProductCardProps } from "@/components/product";
 import type { ProductLocale } from "@/lib/product-translations";
-import { catalogStoreId, getRequestStoreSubdomain, getStorefrontBySubdomain } from "@/lib/storefront.server";
+import { getRequestStoreSubdomain, getStorefrontBySubdomain } from "@/lib/storefront.server";
 import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
 import { resolvePrice, resolvePrimaryImage } from "@/lib/utils";
 
@@ -18,8 +18,9 @@ export type StorefrontSearchResult = {
 const LIMIT = 6;
 
 /**
- * Live search of the header search box on a store website: this store's
- * active products only, its catalog rules applied (D24). The store comes
+ * Live search of the header search box on a store website: the active
+ * products this store shows only (`productInStore`, scope `shown`: its picks
+ * in selected catalog mode (D24), its own products after the catalog split). The store comes
  * from the request host, never from the client (CLAUDE.md rule 5), so the
  * marketplace and an offline store get nothing.
  */
@@ -36,7 +37,7 @@ export async function searchStorefrontProducts(
 
   const result = await getProducts({
     sellerId: store.id,
-    catalogStoreId: catalogStoreId(store),
+    storeId: store.storeId,
     searchQuery: search,
     sortBy: "popular",
     limit: LIMIT,

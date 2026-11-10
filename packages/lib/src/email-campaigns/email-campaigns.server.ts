@@ -10,7 +10,7 @@
  */
 import { randomUUID } from "node:crypto";
 import { logServerError } from "@workspace/db/log";
-import { and, db, desc, eq, isNull, sellerEmailCredits, sellers, sql, storeEmailCampaigns, stores } from "@workspace/db";
+import { and, db, desc, eq, isNull, products, sellerEmailCredits, sellers, sql, storeEmailCampaigns, stores } from "@workspace/db";
 import { postStoreWalletEntry, STORE_WALLET_REFERENCE_TYPES, StoreWalletLimitError } from "@workspace/db/wallet";
 import { getBillingState } from "../billing/billing.server";
 import { EMAIL_PACK_EMAILS, EMAIL_PACK_USD_CENTS, isProActive, minorToAmount } from "../billing/billing.lib";
@@ -20,6 +20,8 @@ import { listStoreCustomers } from "../customers/customers.server";
 import { listAllStoreSubscribers } from "../store-forms/subscribers.server";
 import { blockedPhoneCustomerKey } from "../stores/blocked-phones.lib";
 import { listStoreBlockedPhones } from "../stores/blocked-phones.server";
+import { isSwitchOn } from "../stores/platform-switches.server";
+import { aliasedProductShownInStore, productInStore } from "../stores/store-scope.server";
 import {
   buildRecipientList,
   campaignLocale,
@@ -166,8 +168,8 @@ export async function saveCampaignDraft(
   q: Queryable = db,
 ): Promise<boolean> {
   if (!isUuid(sellerId) || !isUuid(storeId) || !isUuid(campaignId)) return false;
-  // Featured products: only the seller's own live products are kept.
-  const productIds = await filterOwnProducts(sellerId, content.productIds, q);
+  // Featured products: only the store's own live products are kept (before the split: the seller's).
+  const productIds = await filterOwnProducts(sellerId, storeId, content.productIds, q);
   const rows = rowsOf<{ id: string }>(
     await q.execute(sql`
       UPDATE store_email_campaigns c
@@ -225,14 +227,21 @@ export async function cancelCampaign(sellerId: string, storeId: string, campaign
 const uuidArray = (ids: readonly string[]) =>
   ids.length ? sql`ARRAY[${sql.join(ids.map((id) => sql`${id}::uuid`), sql`, `)}]::uuid[]` : sql`'{}'::uuid[]`;
 
-/** The ids that are this seller's active, non-trashed products, in the given order. */
-async function filterOwnProducts(sellerId: string, ids: readonly string[], q: Queryable): Promise<string[]> {
+/**
+ * The ids that are this store's active, non-trashed products, in the given
+ * order: `productInStore` with scope `managed`, so before the catalog split
+ * it is every product of the seller (as before), after it the store's own.
+ */
+async function filterOwnProducts(sellerId: string, storeId: string, ids: readonly string[], q: Queryable): Promise<string[]> {
   const wanted = ids.filter(isUuid);
   if (!wanted.length) return [];
+  const catalogSplit = await isSwitchOn("stores_catalog_split", q);
+  const inStore = productInStore(storeId, { catalogSplit, scope: "managed" });
   const rows = rowsOf<{ id: string }>(
     await q.execute(sql`
-      SELECT id FROM products
+      SELECT id FROM ${products}
        WHERE seller_id = ${sellerId} AND id = ANY(${uuidArray(wanted)}) AND status = 'active' AND deleted_at IS NULL
+         AND ${inStore}
     `),
   );
   const own = new Set(rows.map((r) => String(r.id)));
@@ -249,6 +258,8 @@ export async function listCampaignProductOptions(
   q: Queryable = db,
 ): Promise<CampaignProductOption[]> {
   if (!isUuid(sellerId) || !isUuid(storeId)) return [];
+  // What the store shows (productInStore, scope shown), on the bare products table as the query aliases it.
+  const shown = aliasedProductShownInStore("p", { storeId, catalogSplit: await isSwitchOn("stores_catalog_split", q) });
   const rows = rowsOf<{ id: string; title: string | null; images: unknown }>(
     await q.execute(sql`
       SELECT p.id, p.images,
@@ -260,8 +271,7 @@ export async function listCampaignProductOptions(
         FROM products p
         JOIN stores st ON st.id = ${storeId} AND st.seller_id = ${sellerId} AND st.deleted_at IS NULL
        WHERE p.seller_id = ${sellerId} AND p.status = 'active' AND p.deleted_at IS NULL
-         AND (st.catalog_mode <> 'selected'
-              OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = st.id AND sp.product_id = p.id))
+         AND ${shown}
        ORDER BY p.created_at DESC NULLS LAST
        LIMIT 200
     `),

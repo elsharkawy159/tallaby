@@ -65,6 +65,7 @@ export type TrashedProduct = {
 const snapshotColumns = {
   id: true,
   sellerId: true,
+  storeId: true,
   categoryId: true,
   brandId: true,
   status: true,
@@ -80,6 +81,8 @@ const snapshotColumns = {
 type SnapshotRow = {
   id: string;
   sellerId: string;
+  /** `products.store_id`: the store whose catalog cache the change purges (F-87c). */
+  storeId: string | null;
   categoryId: string;
   brandId: string | null;
   status: ProductStatusValue | null;
@@ -97,6 +100,7 @@ function toSnapshot(row: SnapshotRow, status = row.status): ProductCacheSnapshot
   return {
     id: row.id,
     sellerId: row.sellerId,
+    storeId: row.storeId,
     categoryId: row.categoryId,
     brandId: row.brandId,
     slugs: row.productTranslations.map((t) => ({ locale: t.locale, slug: t.slug })),

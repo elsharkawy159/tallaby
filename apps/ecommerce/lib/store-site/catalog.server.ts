@@ -14,16 +14,17 @@ import { lowStockLeft } from "@workspace/store-sections/low-stock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getProducts } from "@/actions/products";
 import type { ProductLocale } from "@/lib/product-translations";
-import { getStorefrontCategories, storeCategoryFilter, type StorefrontCategory } from "@/lib/storefront.server";
+import { getStorefrontCategories, storeCategoryFilter, storefrontCatalog, type StorefrontCategory } from "@/lib/storefront.server";
 import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { builderCategorySortBy } from "./featured-sort.lib";
 import { SALES_DAYS, getCachedSellerBrands, getCachedSellerCoupons, getCachedStoreReviewStats, getCachedStoreReviews, getCachedStoreSales } from "./store-data.server";
 
 /**
- * Catalog for builder sections on a store host (PLAN.md P5-02). Only this
- * store's seller's active products (and only the store's picks in selected
- * catalog mode), whatever ids a stored section asks for: a picked product of
- * another seller, or one the store does not show, is simply not returned.
+ * Catalog for builder sections on a store host (PLAN.md P5-02). Only the active
+ * products this store shows (`productInStore`, scope `shown`: the seller's
+ * products, only the store's picks in selected catalog mode, only its own after
+ * the catalog split), whatever ids a stored section asks for: a picked product
+ * of another seller or store, or one the store does not show, is simply not returned.
  */
 
 type RawProduct = Record<string, unknown> & {
@@ -131,27 +132,27 @@ function sortSummaries(list: ProductSummary[], sort: ProductSort | undefined): P
 }
 
 /**
- * `storeId` is the host's store (its orders rank best sellers); `catalogStoreId`
- * is set for a store in selected catalog mode (D24): only its picks are returned.
+ * `storeId` is the host's store (never a client value): its orders rank best
+ * sellers, and every list, category, review and brand read is that store's,
+ * cached per store and catalog mode (F-87c).
  */
 export async function resolveStoreCatalog(
   sellerId: string,
   storeId: string,
-  catalogStoreId: string | undefined,
   queries: Record<string, CatalogQuery>,
   locale: string,
 ): Promise<ResolvedCatalog> {
   const entries = Object.entries(queries);
   const withVariants = new Set<string>();
   const needsCategories = entries.some(([, q]) => q.kind === "categories" || (q.kind === "products" && q.source === "category"));
-  const storeCategories = needsCategories ? await getStorefrontCategories(sellerId, catalogStoreId) : [];
+  const storeCategories = needsCategories ? await getStorefrontCategories(sellerId, storeId) : [];
 
   const products: Record<string, ProductSummary[]> = {};
   const productPages: Record<string, { page: number; totalPages: number }> = {};
   const fetchPage = async (filters: Partial<Parameters<typeof getProducts>[0]>, limit: number) => {
     const result = await getProducts({
       sellerId,
-      catalogStoreId,
+      storeId,
       locale: locale as ProductLocale,
       limit: Math.min(limit, 48),
       sortBy: "newest",
@@ -243,7 +244,7 @@ export async function resolveStoreCatalog(
     }),
   );
 
-  const extra = await resolveStoreExtras(sellerId, catalogStoreId, entries, locale);
+  const extra = await resolveStoreExtras(sellerId, storeId, entries, locale);
   const categoryLimit = Math.max(0, ...entries.map(([, q]) => (q.kind === "categories" ? q.limit : 0)));
   return {
     products,
@@ -261,7 +262,7 @@ export async function resolveStoreCatalog(
  */
 async function resolveStoreExtras(
   sellerId: string,
-  catalogStoreId: string | undefined,
+  storeId: string,
   entries: [string, CatalogQuery][],
   locale: string,
 ): Promise<Pick<ResolvedCatalog, "brands" | "reviews" | "reviewStats" | "coupons">> {
@@ -276,13 +277,16 @@ async function resolveStoreExtras(
   const brandLimit = Math.max(0, ...entries.map(([, q]) => (q.kind === "brands" ? q.limit : 0)));
   const reviewQueries = entries.filter((e): e is [string, Extract<CatalogQuery, { kind: "reviews" }>] => e[1].kind === "reviews");
   const couponIds = [...new Set(entries.flatMap(([, q]) => (q.kind === "coupon" ? [q.couponId] : [])))].sort();
-  const scope = catalogStoreId ?? "";
+  const { catalogSplit } = reviewQueries.length ? await storefrontCatalog({ storeId }) : { catalogSplit: false };
   const [brandRows, reviewLists, reviewStats, couponRows] = await Promise.all([
-    brandLimit ? safe("brands", () => getCachedSellerBrands(sellerId)) : null,
+    brandLimit ? safe("brands", () => getCachedSellerBrands(sellerId, storeId)) : null,
     Promise.all(
-      reviewQueries.map(async ([instanceId, q]) => [instanceId, await safe("reviews", () => getCachedStoreReviews(sellerId, scope, q.limit, q.minRating ?? 0))] as const),
+      reviewQueries.map(
+        async ([instanceId, q]) =>
+          [instanceId, await safe("reviews", () => getCachedStoreReviews(sellerId, storeId, q.limit, q.minRating ?? 0, catalogSplit))] as const,
+      ),
     ),
-    reviewQueries.length ? safe("review stats", () => getCachedStoreReviewStats(sellerId, scope)) : null,
+    reviewQueries.length ? safe("review stats", () => getCachedStoreReviewStats(sellerId, storeId, catalogSplit)) : null,
     couponIds.length ? safe("coupons", () => getCachedSellerCoupons(sellerId, couponIds.join(","))) : null,
   ]);
 

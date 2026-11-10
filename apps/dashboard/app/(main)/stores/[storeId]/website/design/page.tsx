@@ -12,6 +12,7 @@ import { getDesign } from "@workspace/store-sections/render";
 import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { loadEditorCatalog } from "@/app/(builder)/stores/[storeId]/editor/server/editor.data";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import { storeFontVariables } from "../_components/store-fonts";
 import { DesignSystemEditor } from "./design.client";
@@ -37,7 +38,8 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
   const store = await loadWebsiteStorePage(storeId);
   const [editor, catalog] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
-    loadEditorCatalog(store.sellerId, store.catalogMode === "selected" ? store.id : undefined),
+    // What the storefront shows (productInStore, scope shown), as the editor canvas does.
+    loadEditorCatalog(store.sellerId, { storeId: store.id, catalogSplit: await isSwitchOn("stores_catalog_split") }),
   ]);
   if (!editor) notFound();
 

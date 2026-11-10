@@ -1,5 +1,7 @@
 import { randomBytes } from "node:crypto";
-import { and, db, eq, isNull, productVariants, products, sql, storeProducts, stores, storeStockSubscriptions } from "@workspace/db";
+import { and, db, eq, isNull, productVariants, products, sql, stores, storeStockSubscriptions } from "@workspace/db";
+import { isSwitchOn } from "../stores/platform-switches.server";
+import { productInStoreOf, productShownInStore } from "../stores/store-scope.server";
 import {
   alertLocale,
   alertTargetInStock,
@@ -49,8 +51,11 @@ export async function subscribeToStockAlert(
   const variantId = input.variantId == null || input.variantId === "" ? null : input.variantId;
   if (variantId !== null && !isUuid(variantId)) return { ok: false, error: "invalid" };
 
+  if (!isUuid(input.storeId) || !isUuid(input.sellerId)) return { ok: false, error: "notFound" };
+  const catalogSplit = await isSwitchOn("stores_catalog_split", q);
+  // The store shows it (productInStore, scope shown): its picks in selected mode, its own products after the split.
   const [product] = await q
-    .select({ id: products.id, quantity: products.quantity, trackStock: products.trackStock, catalogMode: stores.catalogMode })
+    .select({ id: products.id, quantity: products.quantity, trackStock: products.trackStock })
     .from(products)
     .innerJoin(stores, and(eq(stores.id, input.storeId), eq(stores.sellerId, input.sellerId)))
     .where(
@@ -60,19 +65,11 @@ export async function subscribeToStockAlert(
         eq(products.status, "active"),
         isNull(products.deletedAt),
         isNull(stores.deletedAt),
+        productShownInStore({ storeId: input.storeId, catalogSplit }),
       ),
     )
     .limit(1);
   if (!product) return { ok: false, error: "notFound" };
-
-  if (product.catalogMode === "selected") {
-    const [picked] = await q
-      .select({ productId: storeProducts.productId })
-      .from(storeProducts)
-      .where(and(eq(storeProducts.storeId, input.storeId), eq(storeProducts.productId, productId)))
-      .limit(1);
-    if (!picked) return { ok: false, error: "notFound" };
-  }
 
   const variants = await q
     .select({ id: productVariants.id, stock: productVariants.stock })
@@ -126,6 +123,9 @@ export async function subscribeToStockAlert(
  */
 export async function claimStockAlerts({ limit = STOCK_ALERT_BATCH }: { limit?: number } = {}, q: Queryable = db): Promise<string[]> {
   const n = Math.max(1, Math.min(500, Math.floor(limit)));
+  const catalogSplit = await isSwitchOn("stores_catalog_split", q);
+  // Still in the alert's store (productInStore, scope shown, with the store from each row), on the bare products table.
+  const inStore = sql`EXISTS (SELECT 1 FROM ${products} WHERE ${products.id} = p.id AND ${productInStoreOf(sql`a.store_id`, { catalogSplit })})`;
   const rows = rowsOf<{ id: string }>(
     await q.execute(sql`
       UPDATE store_stock_subscriptions s
@@ -141,8 +141,7 @@ export async function claimStockAlerts({ limit = STOCK_ALERT_BATCH }: { limit?: 
           AND a.created_at > now() - make_interval(days => ${STOCK_ALERT_MAX_AGE_DAYS})
           AND p.status = 'active' AND p.deleted_at IS NULL
           AND st.deleted_at IS NULL AND st.status = 'active' AND st.site_status = 'published'
-          AND (st.catalog_mode <> 'selected'
-               OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = a.store_id AND sp.product_id = a.product_id))
+          AND ${inStore}
           AND (p.track_stock = false OR CASE
                 WHEN a.variant_id IS NOT NULL THEN coalesce(v.stock, 0) > 0
                 ELSE p.quantity > 0

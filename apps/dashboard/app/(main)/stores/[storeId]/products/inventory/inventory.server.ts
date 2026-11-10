@@ -37,7 +37,7 @@ export async function restockAction(storeId: string, input: unknown): Promise<Re
 
     const outcome = await db.transaction(async (tx) => {
       const [product] = await tx
-        .select({ id: products.id, sellerId: products.sellerId, categoryId: products.categoryId, brandId: products.brandId })
+        .select({ id: products.id, sellerId: products.sellerId, storeId: products.storeId, categoryId: products.categoryId, brandId: products.brandId })
         .from(products)
         .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), isNull(products.deletedAt), isNull(products.purgedAt), eq(products.trackStock, true), inStore))
         .limit(1);
@@ -77,6 +77,7 @@ export async function restockAction(storeId: string, input: unknown): Promise<Re
           snapshot: {
             id: outcome.product.id,
             sellerId: outcome.product.sellerId,
+            storeId: outcome.product.storeId,
             categoryId: outcome.product.categoryId,
             brandId: outcome.product.brandId,
           },

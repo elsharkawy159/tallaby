@@ -1675,7 +1675,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
-- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–3 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
+- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–4 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
@@ -1691,6 +1691,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87c slice 4: storefront reads and caches per store (dark; no migration)
+
+- Every store-host product, category, brand and review read goes through `productShownInStore` (= `productInStore(store, shown)`): catalog grids, builder-bound lists, search, product page and related products (a selected-mode leak closed), slug lookup (per seller while the switch is off, per store after), category pages, reviews, has-products, cross-sell and quantity-offer display, back-in-stock (subscribe and cron), reorder, campaign products, the editor canvas.
+- Caches: the switch is read once per request outside every cached function and is a key part; new `productTags.store(seller, store)`; product writes that know `products.store_id` purge it (dashboard, bulk edit, Excel update, social proof, restock, orders stock, category order, trash, agent products, admin). The seller tag stays on every write until the split, 0163 and F-87d (rule in the slice plan §6).
+- With the switch off the storefront shows the same products, except related products, the editor canvas and quantity tiers now follow selected-mode picks (production has 0 selected-mode stores).
+- Deferred: feeds and sitemap product rows (slice 6), cart and checkout (slice 5), `getProducts` still a server-action export (returns only publicly shown products).
+- Manager review: typecheck clean in ecommerce (bar the 16 known profile.chunks errors), dashboard, admin and lib; tests pass: ecommerce 694, dashboard 1,131, lib 1,294, cache 50.
 
 ### 2026-11-10 — F-87c slice 3: secondary product features per store (dark; no migration, no behaviour change with the switch off)
 

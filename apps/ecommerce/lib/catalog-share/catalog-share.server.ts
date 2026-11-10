@@ -10,7 +10,6 @@ import { getProducts } from "@/actions/products";
 import type { ProductLocale } from "@/lib/product-translations";
 import { toProductSummaries } from "@/lib/store-site/catalog.server";
 import {
-  catalogStoreId,
   getStorefrontCategories,
   storeCategoryFilter,
   type Storefront,
@@ -20,9 +19,9 @@ import {
  * A shared catalog link on a store host (ROADMAP.md F-11c). The store is the
  * one the request HOST serves (the caller resolves it); the token must be
  * signed for that store's seller AND name that store, else it is no catalog.
- * Products come from `getProducts` (cached per seller, with the store's
- * catalog tags): only this seller's active products, only the store's picks
- * in selected catalog mode. Trashed products are drafts (0123), so they never
+ * Products come from `getProducts` (cached per store and catalog mode, with
+ * the store's catalog tags): only the active products this store shows (its
+ * picks in selected catalog mode, its own products after the catalog split). Trashed products are drafts (0123), so they never
  * show. Nothing here is written; the token is the whole catalog.
  */
 
@@ -48,8 +47,7 @@ export async function resolveSharedCatalog(store: Storefront, token: string, loc
   const payload = verifyCatalogShare(token, store.id, key);
   if (!payload || payload.storeId !== store.storeId.toLowerCase()) return null;
 
-  const selected = catalogStoreId(store);
-  const base = { sellerId: store.id, catalogStoreId: selected, locale: locale as ProductLocale, limit: CATALOG_SHARE_MAX_PRODUCTS };
+  const base = { sellerId: store.id, storeId: store.storeId, locale: locale as ProductLocale, limit: CATALOG_SHARE_MAX_PRODUCTS };
   let categoryName: string | null = null;
   let rows: unknown[] = [];
 
@@ -59,7 +57,7 @@ export async function resolveSharedCatalog(store: Storefront, token: string, loc
     rows = orderCatalogRows(found, payload.source.productIds);
   } else if (payload.source.kind === "category") {
     const key = payload.source.categoryKey;
-    const category = (await getStorefrontCategories(store.id, selected)).find((c) => c.key === key);
+    const category = (await getStorefrontCategories(store.id, store.storeId)).find((c) => c.key === key);
     if (category) {
       categoryName = (locale === "ar" ? category.nameAr || category.name : category.name || category.nameAr) ?? null;
       const result = await getProducts({ ...base, storeCategory: storeCategoryFilter(category), sortBy: "newest" });

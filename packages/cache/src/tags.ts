@@ -26,6 +26,14 @@ export const productTags = {
   category: (categoryId: string) => `product:category:${categoryId}`,
   brand: (brandId: string) => `product:brand:${brandId}`,
   seller: (sellerId: string) => `product:seller:${sellerId}`,
+  /**
+   * One store's storefront catalog (ROADMAP.md F-87c): every product, category
+   * and brand read a store host makes is tagged with it, and every product write
+   * purges the product's own store (`products.store_id`). Carries the seller id
+   * too (CLAUDE.md rule 8). Until the catalog split a product shows in several
+   * stores of its seller, so writes keep purging `seller` as well.
+   */
+  store: (sellerId: string, storeId: string) => `product:store:${sellerId}:${storeId}`,
   featured: () => "product:featured",
   trending: () => "product:trending",
   seasonal: () => "product:seasonal",

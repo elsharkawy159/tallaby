@@ -1,6 +1,7 @@
+import { sql as raw } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
-import { productInStore } from "./store-scope.server";
+import { aliasedProductShownInStore, productInStore, productInStoreOf, productShownInStore } from "./store-scope.server";
 
 /**
  * The shared store-scope condition (ROADMAP.md F-87c). Rendered with the
@@ -49,6 +50,31 @@ describe("productInStore", () => {
     expect(sql).not.toContain("store_products");
     expect(sql).not.toContain(`"products"."store_id"`);
     expect(params).toEqual([STORE]);
+  });
+
+  it("productShownInStore is the shown scope, in both modes", () => {
+    for (const catalogSplit of [false, true]) {
+      expect(render(productShownInStore({ storeId: STORE, catalogSplit }))).toEqual(
+        render(productInStore(STORE, { catalogSplit, scope: "shown" })),
+      );
+    }
+  });
+
+  it("productInStoreOf renders the same rule with the store taken from a column", () => {
+    for (const catalogSplit of [false, true]) {
+      const { sql: text, params } = render(productInStoreOf(raw`a.store_id`, { catalogSplit }));
+      const expected = render(productInStore(STORE, { catalogSplit })).sql.replace(/\$\d+/g, "a.store_id");
+      expect(text).toBe(expected);
+      expect(params).toEqual([]);
+    }
+  });
+
+  it("aliasedProductShownInStore checks the aliased row on the bare products table", () => {
+    const { sql: text, params } = render(aliasedProductShownInStore("p", { storeId: STORE, catalogSplit: true }));
+    expect(text).toContain(`EXISTS (SELECT 1 FROM "products" WHERE "products"."id" = p.id AND`);
+    expect(text).toContain(`"products"."store_id" = $1`);
+    expect(params).toEqual([STORE, STORE]);
+    expect(() => aliasedProductShownInStore("p; drop", { storeId: STORE, catalogSplit: false })).toThrow();
   });
 
   it("a malformed or missing store id matches nothing and binds nothing", () => {

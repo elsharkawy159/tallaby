@@ -92,10 +92,19 @@ describe.skipIf(!isStaging)("store product slugs (integration)", { timeout: 120_
     ...(await import("@workspace/cache")),
   });
 
+  const subOf = (sellerId: string) => (sellerId === sellerA ? subA : sellerId === sellerB ? subB : subC);
+  /** The seller's store (the one its subdomain resolves to), as a store page sees it. */
+  const storeOf = async (sellerId: string) => {
+    const { getStorefrontBySubdomain } = await load();
+    const store = await getStorefrontBySubdomain(subOf(sellerId));
+    if (!store) throw new Error(`no store for ${sellerId}`);
+    return store;
+  };
   /** The product id a store's page would get from the cached query. */
   const open = async (sellerId: string, slug: string, locale: "ar" | "en" = "en") => {
     const { getProductBySlug } = await load();
-    const result = await getProductBySlug(sellerId, slug, locale);
+    const store = await storeOf(sellerId);
+    const result = await getProductBySlug(store.id, store.storeId, slug, locale);
     return result.success ? (result.data as { id: string }).id : null;
   };
 
@@ -171,8 +180,9 @@ describe.skipIf(!isStaging)("store product slugs (integration)", { timeout: 120_
 
   it("the id lookup is scoped, and only the unscoped one still crosses sellers", async () => {
     const { getProductIdBySlug } = await load();
-    expect(await getProductIdBySlug(shared, "en", sellerB)).toBe(productB);
-    expect(await getProductIdBySlug(shared, "en", sellerC)).toBeNull();
+    const scope = async (sellerId: string) => ({ sellerId, storeId: (await storeOf(sellerId)).storeId, catalogSplit: false });
+    expect(await getProductIdBySlug(shared, "en", await scope(sellerB))).toBe(productB);
+    expect(await getProductIdBySlug(shared, "en", await scope(sellerC))).toBeNull();
     expect(await getProductIdBySlug(shared, "en")).toBe(productA);
   });
 
@@ -192,9 +202,10 @@ describe.skipIf(!isStaging)("store product slugs (integration)", { timeout: 120_
     expect(await open(sellerB, dup)).toBe(dupOlder);
   });
 
-  it("the cache key and tags carry the seller, and a product change clears that seller only", async () => {
-    const { db, productTranslations, productTags, invalidateProduct, eq, and } = await load();
+  it("the cache key and tags carry the seller and store, and a product change clears that seller only", async () => {
+    const { db, productTranslations, productTags, storeTags, invalidateProduct, eq, and } = await load();
     cache.entries.clear();
+    const stores = { [sellerA]: (await storeOf(sellerA)).storeId, [sellerB]: (await storeOf(sellerB)).storeId };
     expect(await open(sellerA, shared)).toBe(productA);
     expect(await open(sellerB, shared)).toBe(productB);
 
@@ -203,7 +214,8 @@ describe.skipIf(!isStaging)("store product slugs (integration)", { timeout: 120_
     for (const seller of [sellerA, sellerB]) {
       const entry = bySlug.find(([key]) => key.includes(seller));
       expect(entry).toBeDefined();
-      expect(entry![1].tags).toEqual([productTags.seller(seller)]);
+      expect(entry![0]).toContain(stores[seller]!);
+      expect(entry![1].tags).toEqual([productTags.seller(seller), productTags.store(seller, stores[seller]!), storeTags.catalog(seller, stores[seller]!)]);
     }
 
     // Seller B renames the slug: the old link stops opening, the new one opens, A is untouched.

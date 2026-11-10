@@ -59,7 +59,7 @@ export async function listCatalogShareCategoriesAction(storeId: string): Promise
       .limit(1);
     if (!store) return [];
     const locale = await getLocale();
-    const groups = await storeCategoryGroups(sellerId, store.catalogMode === "selected" ? store.id : undefined);
+    const groups = await storeCategoryGroups(sellerId, { storeId: store.id, catalogSplit: await isSwitchOn("stores_catalog_split") });
     return groups.map((group) => ({
       key: group.key,
       name: (locale === "ar" ? group.nameAr || group.name : group.name || group.nameAr) ?? group.key,
@@ -119,7 +119,7 @@ export async function createCatalogLinkAction(input: unknown): Promise<CatalogLi
       skipped = requested.length - kept.length;
       signedSource = { kind: "products", productIds: kept };
     } else if (source.kind === "category") {
-      const groups = await storeCategoryGroups(sellerId, store.catalogMode === "selected" ? store.id : undefined);
+      const groups = await storeCategoryGroups(sellerId, { storeId: store.id, catalogSplit: await isSwitchOn("stores_catalog_split") });
       const group = groups.find((g) => g.key === source.categoryKey);
       if (!group) return { success: false, error: "noProducts" };
       count = Math.min(group.productCount, CATALOG_SHARE_MAX_PRODUCTS);

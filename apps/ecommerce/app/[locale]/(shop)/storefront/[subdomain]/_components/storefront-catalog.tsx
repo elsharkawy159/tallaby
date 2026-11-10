@@ -23,7 +23,7 @@ import s from "../storefront.module.css";
 
 export async function StorefrontCatalog({
   sellerId,
-  catalogStoreId,
+  storeId,
   locale,
   categories,
   query,
@@ -31,8 +31,8 @@ export async function StorefrontCatalog({
   renderProducts,
 }: {
   sellerId: string;
-  /** Set when the store shows a selected catalog (D24). */
-  catalogStoreId?: string;
+  /** The store host's store: only the products it shows are listed (F-87c). */
+  storeId: string;
   locale: string;
   categories: StorefrontCategory[];
   query: StoreQuery;
@@ -88,7 +88,7 @@ export async function StorefrontCatalog({
       <Suspense key={JSON.stringify(query)} fallback={<ProductsGridSkeleton />}>
         <CatalogGrid
           sellerId={sellerId}
-          catalogStoreId={catalogStoreId}
+          storeId={storeId}
           locale={locale}
           storeCategory={active ? storeCategoryFilter(active) : undefined}
           query={query}
@@ -102,7 +102,7 @@ export async function StorefrontCatalog({
 
 async function CatalogGrid({
   sellerId,
-  catalogStoreId,
+  storeId,
   locale,
   storeCategory,
   query,
@@ -110,7 +110,7 @@ async function CatalogGrid({
   renderProducts,
 }: {
   sellerId: string;
-  catalogStoreId?: string;
+  storeId: string;
   locale: string;
   storeCategory?: StoreCategoryFilter;
   query: StoreQuery;
@@ -120,7 +120,7 @@ async function CatalogGrid({
   const tStores = await getTranslations("pages.stores");
   const result = await getProducts({
     sellerId,
-    catalogStoreId,
+    storeId,
     storeCategory,
     searchQuery: query.search,
     // A seller category opens on its manual order (F-24d, 0128).

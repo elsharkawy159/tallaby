@@ -2,6 +2,7 @@ import { parseStoreSeo, storeSeoDefaults, suggestStoreKeywords } from "@workspac
 import { storeHasVisibleProducts, type StoreRow } from "@workspace/lib/stores/server";
 import { storeCategoryGroups } from "@workspace/lib/store-sites/catalog-data";
 import { storeUrl } from "@workspace/lib/storefront";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { loadWebsitePages } from "../website.data";
 import type { WebsitePageRow } from "../website.types";
 
@@ -25,7 +26,7 @@ export type CrawlStatus = {
  * store is indexed when indexing is on and it shows at least one product.
  */
 export async function loadCrawlStatus(store: StoreRow, liveDomain: string | null): Promise<CrawlStatus> {
-  const hasProducts = await storeHasVisibleProducts(store.sellerId, store.id);
+  const hasProducts = await storeHasVisibleProducts(store.sellerId, store.id, { catalogSplit: await isSwitchOn("stores_catalog_split") });
   const baseUrl = storeUrl(store.subdomain, liveDomain);
   const reasons: NoindexReason[] = [];
   if (store.status !== "active") reasons.push("storeInactive");
@@ -52,7 +53,7 @@ export async function loadSeoDefaults(store: StoreRow): Promise<StoreSeoDefaults
   const locale = store.defaultLocale === "en" ? "en" : "ar";
   const source = { name: store.name, description: store.description, storeCategory: store.storeCategory, storeCategoryAr: store.storeCategoryAr };
   // The categories shoppers see, biggest first; a failed read only means fewer suggestions.
-  const groups = await storeCategoryGroups(store.sellerId, store.catalogMode === "selected" ? store.id : undefined).catch(() => []);
+  const groups = await storeCategoryGroups(store.sellerId, { storeId: store.id, catalogSplit: await isSwitchOn("stores_catalog_split") }).catch(() => []);
   const categories = [...groups].sort((a, b) => b.productCount - a.productCount).slice(0, CATEGORY_SUGGESTIONS);
   // Defaults that ignore what is saved: the form shows them for empty fields.
   const defaults = storeSeoDefaults(source, {}, locale);

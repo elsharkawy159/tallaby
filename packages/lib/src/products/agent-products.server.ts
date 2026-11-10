@@ -152,6 +152,7 @@ function snapshotOf(row: NonNullable<Awaited<ReturnType<typeof loadSnapshot>>>):
   return {
     id: row.id,
     sellerId: row.sellerId,
+    storeId: row.storeId,
     categoryId: row.categoryId,
     brandId: row.brandId,
     slugs: row.productTranslations.map((t) => ({ locale: t.locale, slug: t.slug })),

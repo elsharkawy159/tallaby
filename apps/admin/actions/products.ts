@@ -44,6 +44,7 @@ async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | nul
   return {
     id: product.id,
     sellerId: product.sellerId,
+    storeId: product.storeId,
     categoryId: product.categoryId,
     brandId: product.brandId,
     slugs: product.productTranslations.map((t) => ({ locale: t.locale, slug: t.slug })),
@@ -736,6 +737,7 @@ export async function approveAllPendingProducts() {
       (product) => ({
         id: product.id,
         sellerId: product.sellerId,
+        storeId: product.storeId,
         categoryId: product.categoryId,
         brandId: product.brandId,
         slugs: product.productTranslations.map((t) => ({

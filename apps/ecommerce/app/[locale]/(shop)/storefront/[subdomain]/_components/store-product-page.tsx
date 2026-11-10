@@ -3,7 +3,7 @@ import { productPageOf, type SiteConfig } from "@workspace/store-sections/config
 import type { Product } from "@/components/product-page/product-page.types";
 import type { ProductLocale } from "@/lib/product-translations";
 import { storeCategoryOf, toProductDetail } from "@/lib/store-site/product-detail.lib";
-import { catalogStoreId, getStorefrontCategories, type Storefront } from "@/lib/storefront.server";
+import { getStorefrontCategories, type Storefront } from "@/lib/storefront.server";
 import { StoreSitePage } from "./store-site";
 
 /**
@@ -28,7 +28,7 @@ export async function StoreProductPage({
   if (!page) return null;
   // The breadcrumb links its category to the catalog filtered by it; a failed read only loses the link.
   const categories = product.category
-    ? await getStorefrontCategories(store.id, catalogStoreId(store)).catch((error) => {
+    ? await getStorefrontCategories(store.id, store.storeId).catch((error) => {
         console.error("Store categories failed to load for the product page:", error);
         return [];
       })
