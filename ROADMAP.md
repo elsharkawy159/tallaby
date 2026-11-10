@@ -1675,7 +1675,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
-- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–4 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
+- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–5 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
@@ -1691,6 +1691,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87c slice 5: cart and checkout per store (dark; no migration; switch off = today's rule)
+
+- Every cart and checkout product check goes through `productInStore(store, shown)`, with the store taken from the cart or host, never the client: `storeSellsProduct` (add to cart, reorder, cross-sell add, gifts, manual order), the new `productsOutsideStore`, `cartProductsOutsideStoreCatalog` (now any store mode), gift choices filtered in SQL.
+- `placeOrderFromCart` checks the kept lines against the cart's store inside its transaction, before the stock decrement (switch read with `tx`); a hit returns the existing "Product is no longer available" error. Marketplace carts skip it. Inventory invalidation now gets `orders.store_id` (storefront, manual, cancel, dashboard orders).
+- Money untouched (manager read the `place-order.ts` diff line by line): fees, `postStoreWalletEntry`, wallets, totals, coupons, shipping, payment, stock, test orders.
+- Newly refused with the switch off, neither reachable through the app: a store-cart line of another seller's product, a cart whose store is soft-deleted.
+- Deferred: open store carts need remapping by 0163; restock of pre-split orders (F-87m).
+- Manager review: typecheck clean (ecommerce bar the 16 known errors, dashboard, lib); tests pass: lib 1,303, ecommerce 694, dashboard 1,131. DB integration cases written, not run (no `TEST_DATABASE_URL`).
 
 ### 2026-11-10 — F-87c slice 4: storefront reads and caches per store (dark; no migration)
 

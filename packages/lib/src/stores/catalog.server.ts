@@ -8,6 +8,8 @@
  * it; the `store_products_same_seller` trigger (0050) is the backstop.
  */
 import { and, cartItems, carts, db, eq, inArray, isNull, notInArray, products, sql, storeProducts, stores } from "@workspace/db";
+import { isSwitchOn } from "./platform-switches.server";
+import { productInStore } from "./store-scope.server";
 import { storeCatalogInputSchema, type StoreCatalogInput, type StoreCatalogMode } from "./stores.lib";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -102,24 +104,33 @@ export async function setStoreCatalog(
   return { success: true, data: { mode, productIds } };
 }
 
+/** `stores_catalog_split`, when the caller already read it (once per request, or with its transaction). */
+export type StoreCatalogCheckOptions = { catalogSplit?: boolean };
+
 /**
- * Whether a store host may sell this product: an active product of the store's
- * seller and, in "selected" mode, one of the store's picks. Public (no
- * session): used by the storefront add-to-cart guard with the host's storeId.
+ * Whether a store host may sell this product: an active product the store
+ * shows (`productInStore`, scope `shown`: before the split, the store's
+ * seller and, in "selected" mode, one of its picks; after it,
+ * `products.store_id = store`). Public (no session): the add-to-cart, gift
+ * and manual-order guards call it with the store from the request host or the
+ * cart, never a client value. Reads the switch with `q` unless passed.
  */
-export async function storeSellsProduct(storeId: string, productId: string, q: Queryable = db): Promise<boolean> {
+export async function storeSellsProduct(
+  storeId: string,
+  productId: string,
+  q: Queryable = db,
+  options: StoreCatalogCheckOptions = {},
+): Promise<boolean> {
   if (!UUID_RE.test(storeId) || !UUID_RE.test(productId)) return false;
+  const catalogSplit = options.catalogSplit ?? (await isSwitchOn("stores_catalog_split", q));
   const [row] = await q
     .select({ ok: sql<boolean>`true` })
-    .from(stores)
-    .innerJoin(products, and(eq(products.sellerId, stores.sellerId), eq(products.id, productId), eq(products.status, "active")))
+    .from(products)
     .where(
       and(
-        eq(stores.id, storeId),
-        isNull(stores.deletedAt),
-        sql`(${stores.catalogMode} = 'all' OR EXISTS (
-          SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${stores.id} AND sp.product_id = ${products.id}
-        ))`,
+        eq(products.id, productId),
+        eq(products.status, "active"),
+        productInStore(storeId, { catalogSplit, scope: "shown" }),
       ),
     )
     .limit(1);
@@ -127,27 +138,55 @@ export async function storeSellsProduct(storeId: string, productId: string, q: Q
 }
 
 /**
- * Checkout guard for store carts: products in the cart (not saved for later)
- * that the cart's store no longer shows, because the seller took them out of
- * a selected catalog after they were added. Empty for marketplace carts and
- * stores in "all" mode.
+ * The ids in `productIds` the store does not show (`productInStore`, scope
+ * `shown`), in first-seen order, without duplicates. Status is not checked
+ * (callers refuse inactive products with their own message). A malformed
+ * store id shows nothing. `placeOrderFromCart` runs it with its transaction,
+ * so the switch read, this check and the stock decrement share it.
  */
-export async function cartProductsOutsideStoreCatalog(cartId: string, q: Queryable = db): Promise<string[]> {
+export async function productsOutsideStore(
+  storeId: string,
+  productIds: readonly string[],
+  q: Queryable = db,
+  options: StoreCatalogCheckOptions = {},
+): Promise<string[]> {
+  const ids = [...new Set(productIds)];
+  if (ids.length === 0) return [];
+  const valid = ids.filter((id) => UUID_RE.test(id));
+  if (!UUID_RE.test(storeId) || valid.length === 0) return ids;
+  const catalogSplit = options.catalogSplit ?? (await isSwitchOn("stores_catalog_split", q));
+  const rows = await q
+    .select({ id: products.id })
+    .from(products)
+    .where(and(inArray(products.id, valid), productInStore(storeId, { catalogSplit, scope: "shown" })));
+  const inside = new Set(rows.map((r) => r.id));
+  return ids.filter((id) => !inside.has(id));
+}
+
+/**
+ * Checkout guard for store carts: products in the cart (not saved for later)
+ * that the cart's own store (`carts.store_id`) does not show
+ * (`productsOutsideStore`): the seller took them out of a selected catalog
+ * after they were added, or, after the split, they belong to another store.
+ * Empty for marketplace carts.
+ */
+export async function cartProductsOutsideStoreCatalog(
+  cartId: string,
+  q: Queryable = db,
+  options: StoreCatalogCheckOptions = {},
+): Promise<string[]> {
   if (!UUID_RE.test(cartId)) return [];
+  const [cart] = await q.select({ storeId: carts.storeId }).from(carts).where(eq(carts.id, cartId)).limit(1);
+  if (!cart?.storeId) return [];
   const rows = await q
     .select({ productId: cartItems.productId })
     .from(cartItems)
-    .innerJoin(carts, eq(carts.id, cartItems.cartId))
-    .innerJoin(stores, eq(stores.id, carts.storeId))
-    .where(
-      and(
-        eq(cartItems.cartId, cartId),
-        eq(cartItems.savedForLater, false),
-        eq(stores.catalogMode, "selected"),
-        sql`NOT EXISTS (
-          SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${stores.id} AND sp.product_id = ${cartItems.productId}
-        )`,
-      ),
-    );
-  return [...new Set(rows.map((r) => r.productId))];
+    .where(and(eq(cartItems.cartId, cartId), eq(cartItems.savedForLater, false)));
+  if (rows.length === 0) return [];
+  return productsOutsideStore(
+    cart.storeId,
+    rows.map((r) => r.productId),
+    q,
+    options,
+  );
 }

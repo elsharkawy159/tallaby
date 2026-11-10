@@ -5,7 +5,7 @@ import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as s from "@workspace/db/schema";
 import { createIsolationWorld, type IsolationWorld } from "./isolation.fixtures";
-import { setStoreCatalog } from "./catalog.server";
+import { cartProductsOutsideStoreCatalog, productsOutsideStore, setStoreCatalog, storeSellsProduct } from "./catalog.server";
 import { isSwitchOn } from "./platform-switches.server";
 import { storeHasVisibleProducts } from "./server";
 import { storeCategoryGroups } from "../store-sites/catalog-data.server";
@@ -553,6 +553,68 @@ describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", 
       expect(await storefrontIds(ids.storeB, true)).toEqual([]);
       expect(await openBySlug(ids.storeB, true)).toBeNull();
     });
+  });
+
+  // ── F-87c slice 5: cart and checkout ────────────────────────────────────
+  // addToCart runs storeSellsProduct(cart's store, product); createOrder runs
+  // cartProductsOutsideStoreCatalog(cart); placeOrderFromCart runs
+  // productsOutsideStore(cart's store, lines, tx) inside its transaction, before
+  // the stock decrement. These run those checks on a real store-B cart. (The
+  // full placeOrderFromCart is not run here: it reads the shared switch row, and
+  // the suite never flips it.)
+
+  async function withStoreBCart(productIds: string[], run: (cartId: string) => Promise<void>) {
+    const [cart] = await db
+      .insert(s.carts)
+      .values({ userId: w.a.sellerId, status: "active", currency: "EGP", storeId: ids.storeB, storeSellerId: ids.s1 })
+      .returning({ id: s.carts.id });
+    try {
+      for (const productId of productIds) {
+        await db.insert(s.cartItems).values({ cartId: cart!.id, productId, sellerId: ids.s1, quantity: 1, price: "10.00" });
+      }
+      await run(cart!.id);
+    } finally {
+      await db.delete(s.cartItems).where(eq(s.cartItems.cartId, cart!.id));
+      await db.delete(s.carts).where(eq(s.carts.id, cart!.id));
+    }
+  }
+
+  /** The place-order check, in a transaction as placeOrderFromCart runs it. */
+  async function placeOrderCheck(productIds: string[], catalogSplit: boolean) {
+    return db.transaction((tx) => productsOutsideStore(ids.storeB, productIds, tx as never, { catalogSplit }));
+  }
+
+  it("slice 5, switch off: store B (selected mode) sells only its pick, at add and at checkout (today's rule)", async () => {
+    const off = { catalogSplit: false };
+    expect(await storeSellsProduct(ids.storeB, p.s1b, db as never, off)).toBe(true);
+    expect(await storeSellsProduct(ids.storeB, p.s1a, db as never, off)).toBe(false);
+    expect(await storeSellsProduct(ids.storeA, p.s1a, db as never, off)).toBe(true);
+    expect(await storeSellsProduct(ids.storeB, p.s2, db as never, off)).toBe(false);
+    await withStoreBCart([p.s1b, p.s1a], async (cartId) => {
+      expect(await cartProductsOutsideStoreCatalog(cartId, db as never, off)).toEqual([p.s1a]);
+      expect(await placeOrderCheck([p.s1b, p.s1a], false)).toEqual([p.s1a]);
+      expect(await placeOrderCheck([p.s1b], false)).toEqual([]);
+    });
+  });
+
+  it("slice 5, switch on: a store B cart holding store A's product is refused at add and at place-order", async () => {
+    await db.update(s.products).set({ storeId: ids.storeA }).where(eq(s.products.id, p.s1a));
+    await db.update(s.products).set({ storeId: ids.storeB }).where(eq(s.products.id, p.s1b));
+    try {
+      const on = { catalogSplit: true };
+      expect(await storeSellsProduct(ids.storeB, p.s1a, db as never, on)).toBe(false);
+      expect(await storeSellsProduct(ids.storeB, p.s1b, db as never, on)).toBe(true);
+      expect(await storeSellsProduct(ids.storeA, p.s1a, db as never, on)).toBe(true);
+      // Store A is in 'all' mode, but after the split it no longer sells store B's product.
+      expect(await storeSellsProduct(ids.storeA, p.s1b, db as never, on)).toBe(false);
+      await withStoreBCart([p.s1b, p.s1a], async (cartId) => {
+        expect(await cartProductsOutsideStoreCatalog(cartId, db as never, on)).toEqual([p.s1a]);
+        expect(await placeOrderCheck([p.s1b, p.s1a], true)).toEqual([p.s1a]);
+        expect(await placeOrderCheck([p.s1b], true)).toEqual([]);
+      });
+    } finally {
+      await db.update(s.products).set({ storeId: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
+    }
   });
 
   it("both switches are off (or the table is not there yet)", async () => {

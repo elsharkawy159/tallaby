@@ -80,7 +80,7 @@ export async function searchManualOrderProducts(storeId: string, query: string):
       .orderBy(desc(products.createdAt))
       .limit(PRODUCT_LIMIT);
 
-    const sold = await Promise.all(rows.map((row) => storeSellsProduct(store.id, row.id)));
+    const sold = await Promise.all(rows.map((row) => storeSellsProduct(store.id, row.id, undefined, { catalogSplit })));
     const visible = rows.filter((_, index) => sold[index]);
     const variants = visible.length
       ? await db

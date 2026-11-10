@@ -25,6 +25,7 @@ import {
 } from "@/lib/product-translations";
 import { getPriceFinal } from "@workspace/lib";
 import { storeSellsProduct } from "@workspace/lib/stores/server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
 import {
   addQuantityForMinimum,
   availableUnits,
@@ -295,8 +296,15 @@ export async function addToCart(
   if (cart.storeSellerId && product.sellerId !== cart.storeSellerId) {
     return { success: false, error: "This product isn't sold in this store" };
   }
-  // ...and, for a store with a selected catalog (D24), only its picks.
-  if (cart.storeId && !(await storeSellsProduct(cart.storeId, productId))) {
+  // ...and only what the cart's store shows (productInStore, scope `shown`):
+  // before the split a selected catalog's picks (D24), after it the store's own
+  // products (F-87c). The store is the cart's, never the client's.
+  if (
+    cart.storeId &&
+    !(await storeSellsProduct(cart.storeId, productId, undefined, {
+      catalogSplit: await isSwitchOn("stores_catalog_split"),
+    }))
+  ) {
     return { success: false, error: "This product isn't sold in this store" };
   }
 

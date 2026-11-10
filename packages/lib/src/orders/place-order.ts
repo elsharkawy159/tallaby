@@ -76,6 +76,7 @@ import {
 } from '../shipping/store-quote'
 import { getStorefrontShippingContext } from '../stores/shipping-context.server'
 import { isStorePhoneBlocked } from '../stores/blocked-phones.server'
+import { productsOutsideStore } from '../stores/catalog.server'
 import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
 import { minOrderShortfalls, shouldEnforceMinOrder, type MinOrderShortfall } from './min-order-quantity.lib'
 
@@ -101,6 +102,13 @@ export interface StoreShippingSnapshot {
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
+
+/** Internal control-flow signal: a cart line's product is not one the cart's store shows (F-87c). */
+class ProductOutsideStoreError extends Error {
+  constructor(readonly label: string) {
+    super('product_outside_store')
+  }
+}
 
 export type OrderSource = 'website' | 'external' | 'storefront' | 'manual'
 
@@ -194,6 +202,8 @@ export interface PlaceOrderInventoryItem {
   snapshot: {
     id: string
     sellerId: string
+    /** The order's store (`orders.store_id`); null for a marketplace order. */
+    storeId: string | null
     categoryId: string | null
     brandId: string | null
   }
@@ -910,6 +920,21 @@ export async function placeOrderFromCart(
 
   try {
     await db.transaction(async (tx) => {
+      // A store cart sells only what its own store shows (F-87c): the store is
+      // the cart's, the switch is read with this transaction, before any stock
+      // moves. Marketplace carts have no store and skip it.
+      if (cart.storeId) {
+        const [outside] = await productsOutsideStore(
+          cart.storeId,
+          cart.cartItems.map((item) => item.productId),
+          tx,
+        )
+        if (outside) {
+          const item = cart.cartItems.find((line) => line.productId === outside)
+          throw new ProductOutsideStoreError(item?.product.sku ?? outside)
+        }
+      }
+
       // A test order takes no stock (F-76).
       if (!testOrder) stockResults = await decrementStock(tx, stockLines, stockContext)
 
@@ -1135,6 +1160,9 @@ export async function placeOrderFromCart(
     if (err instanceof CouponClaimFailedError) {
       return { success: false, error: 'Coupon usage limit reached' }
     }
+    if (err instanceof ProductOutsideStoreError) {
+      return { success: false, error: `Product is no longer available: ${err.label}` }
+    }
     if (err instanceof InsufficientWalletBalanceError) {
       return { success: false, error: 'Insufficient wallet balance' }
     }
@@ -1174,6 +1202,8 @@ export async function placeOrderFromCart(
       snapshot: {
         id: item.productId,
         sellerId: item.sellerId,
+        // The order's store (orders.store_id, copied from the cart), for its product tag (F-87c).
+        storeId: newOrder!.storeId ?? null,
         categoryId: item.product.categoryId,
         brandId: item.product.brandId,
       },

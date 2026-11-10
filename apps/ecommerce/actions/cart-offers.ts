@@ -7,7 +7,6 @@ import { isCouponAllowedOnChannel, isLineEligibleForCoupon } from "@workspace/li
 import { giftUnitAvailable, removeInvalidCartGifts, storeCartDiscounts } from "@workspace/lib/orders/line-discounts/server";
 import type { LineOfferKind } from "@workspace/lib/orders/line-discounts";
 import type { QuantityOfferType } from "@workspace/lib/orders/quantity-offers";
-import { storeSellsProduct } from "@workspace/lib/stores/server";
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
@@ -227,14 +226,25 @@ async function loadGiftChoices(
 
   const ids = [...new Set(reached.flatMap((rule) => rule.giftProductIds))];
   const locale = await getLocale();
+  // Only gifts this store shows (productInStore, scope `shown`; was storeSellsProduct per row).
+  const catalogSplit = await isSwitchOn("stores_catalog_split");
   const [rows, titles, variants] = await Promise.all([
-    db.select().from(products).where(and(inArray(products.id, ids), eq(products.status, "active"), isNull(products.deletedAt))),
+    db
+      .select()
+      .from(products)
+      .where(
+        and(
+          inArray(products.id, ids),
+          eq(products.status, "active"),
+          isNull(products.deletedAt),
+          productShownInStore({ storeId, catalogSplit }),
+        ),
+      ),
     db.select().from(productTranslations).where(inArray(productTranslations.productId, ids)),
     db.select().from(productVariants).where(inArray(productVariants.productId, ids)),
   ]);
   const choices = await Promise.all(
     rows.map(async (product) => {
-      if (!(await storeSellsProduct(storeId, product.id))) return null;
       const tracked = product.trackStock !== false;
       const own = variants.filter((variant) => variant.productId === product.id);
       const inStock = own.filter((variant) => !tracked || Number(variant.stock ?? 0) > 0);

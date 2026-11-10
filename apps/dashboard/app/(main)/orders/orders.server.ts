@@ -239,8 +239,8 @@ async function invalidateOrderStock(order: LoadedOrder["order"], stockResults: S
           snapshot: {
             id: item.productId,
             sellerId: item.sellerId,
-            // The product's own store (F-87c); the seller tag still covers every store until the split.
-            storeId: item.product?.storeId ?? null,
+            // The product's own store, else the order's (F-87c); the seller tag still covers every store until the split.
+            storeId: item.product?.storeId ?? order.storeId ?? null,
             categoryId: item.product?.categoryId ?? null,
             brandId: item.product?.brandId ?? null,
           },

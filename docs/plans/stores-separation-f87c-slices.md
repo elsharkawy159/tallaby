@@ -2,7 +2,7 @@
 
 > Part of [`stores-separation.md`](stores-separation.md) §4 Phase B (ROADMAP.md F-87c). Written 2026-11-10.
 > **Rule for every slice:** it can be committed on its own with **both switches off and no behaviour change** for a single-store seller or a multi-store seller in `catalog_mode = 'all'`. Each slice reads the `stores_catalog_split` switch and branches through the one shared condition `productInStore` (`packages/lib/src/stores/store-scope.server.ts`). No migration in F-87c.
-> **Status:** slice 1 committed (31b21e5f); slice 2 committed (79b24d1d); slice 3 committed (73d9421f); slice 4 built 2026-11-10 (uncommitted, §6). Slices 5–6 planned.
+> **Status:** slice 1 committed (31b21e5f); slice 2 committed (79b24d1d); slice 3 committed (73d9421f); slice 4 committed (af6750b3); slice 5 built 2026-11-10 (uncommitted, §7). Slice 6 planned.
 
 Abbreviations: D = `apps/dashboard`, E = `apps/ecommerce`, L = `packages/lib/src`, B = `apps/backend/src`. Scope today: **S** = `seller_id`, **CM** = `stores.catalog_mode`, **SP** = `store_products`, **N** = none (id or status only). Line numbers are from the 2026-11-10 working tree, after slice 1.
 
@@ -25,7 +25,7 @@ Abbreviations: D = `apps/dashboard`, E = `apps/ecommerce`, L = `packages/lib/src
 | 2 | **Dashboard product pages + route move** | `/stores/[storeId]/products/*` (list, add, edit, trash, inventory, bulk edit, categories-brands, category order, excel update, from-file), redirects from `/products/*` to the selected store; the layout provider replaced by the `[storeId]` param; list/count/export/trash reads (`products-list.query.ts`, `listTrashedProducts`, `countTrashedProducts`, `getProduct`) filter with `productInStore(managed)`; sidebar count and dashboard search; `forWrite` (store read-only) decision for archived/suspended stores. | Built 2026-11-10 (79b24d1d). |
 | 3 | **Dashboard secondary product features** | inventory restock, Excel update (SKU match per store), quantity offers, cross-sells (same store, not same seller), category order, social proof, reviews/questions answers, `createProductVariant`, AI source mark, manual order product search, coupons product search, ads product, reports, home queries, catalog share. | Built 2026-11-10 (§5). |
 | 4 ✔ | **Storefront reads and caches** | `E/lib/storefront.server.ts` (`storeShowsProduct`, `storeHasProducts`, `getStorefrontCategories`), `E/actions/products.ts` (`getProducts`, `getProductBySlug` + related-products leak, slug lookup per store), store-site catalog/data, search, reviews/brands, reorder, back-in-stock, preview product, campaign product options; cache keys and tags gain `storeId` (new `productTags.store`; `ProductCacheSnapshot.storeId`; `invalidateProductInventory`). | With the switch on (test DB) store A never returns B's product. |
-| 5 | **Cart and checkout** | `addToCart` / `storeSellsProduct`, `cartProductsOutsideStoreCatalog`, `place-order.ts` own `product.store_id = cart.store_id` check, line-discount gifts, cross-sell and quantity offers on the cart. | Checkout tests pass both ways. |
+| 5 ✔ | **Cart and checkout** | `addToCart` / `storeSellsProduct`, `cartProductsOutsideStoreCatalog`, `place-order.ts` own `product.store_id = cart.store_id` check, line-discount gifts, cross-sell and quantity offers on the cart. | Checkout tests pass both ways. |
 | 6 | **MCP, agent, AI builder, feeds, sitemap** | `agent-products.server.ts` (create in store, `skuTaken`/`uniqueSlug` per store, trash/restore pass `inStore`), MCP instruction text, `list_stores` count, AI builder `applyCatalog`/`activateProducts`, product feed, sitemaps, Meta catalog route, marketplace leftovers (`NOT EXISTS copy` rule, delete `E/actions/search.ts`). Overlaps F-87e: the agent part may be done there instead. | A grant limited to store A cannot read or write B. |
 
 Order follows the plan: writes first (they carry the store id), then the reads that depend on the URL, then the shopper side. Slices 4 and 5 can run in parallel with 3.
@@ -264,3 +264,32 @@ Dropping it any earlier would serve stale grids.
 - **`getProducts` is a "use server" export**, so a client can call it with any `storeId`/`sellerId`. It only returns what that store's storefront already shows publicly, and the switch is never client-supplied. Moving it out of the actions file is a slice 6 marketplace cleanup.
 - **Cart-side reads** (`storeSellsProduct`, gift choices in `cart-offers.ts`, `cartProductsOutsideStoreCatalog`, `place-order.ts`) are untouched: slice 5.
 - **Deliberate behaviour changes with the switch off:** the related products on the product page and the dashboard/admin editor canvas now follow the selected-mode picks (they used to list every seller product), and quantity tiers show only for a product the host store shows. Production had 0 selected-mode stores at the dry run, so nobody sees a difference today.
+
+## 7. Slice 5 — what was built
+
+The store of every check is the cart's own (`carts.store_id`, set from the request host when the cart is made) or, for a manual order, the store the dashboard guard checked; never a client value. Every product check now runs the shared `productInStore(store, { catalogSplit, scope: 'shown' })`; the home-grown `catalog_mode` / `store_products` SQL in `L/stores/catalog.server.ts` is gone. With the switch off this is today's rule (store not deleted, same seller, `catalog_mode = 'all'` or a pick).
+
+| Path | Files | Before → now |
+|---|---|---|
+| `storeSellsProduct` | `L/stores/catalog.server.ts` | its own `stores ⋈ products` join with `catalog_mode`/`store_products` → `products.id = ? AND status = 'active' AND productInStore(shown)`. New 4th argument `{ catalogSplit? }`; read with `q` when omitted. Every caller (add to cart, reorder, cross-sell add, gift choice `chooseFreeGift` via `giftUnitAvailable`, checkout gift validity in `storeCartDiscounts`, manual order lines and picker) follows it. |
+| `productsOutsideStore` (new) | `L/stores/catalog.server.ts` | ids of a list the store doesn't show (dedup, first-seen order; malformed store id = all outside, no query). |
+| `cartProductsOutsideStoreCatalog` | same | "selected-mode store and no `store_products` row" → the cart's lines through `productsOutsideStore` (any store mode); new 3rd argument `{ catalogSplit? }`. |
+| Add to cart | `E/actions/cart.ts` | `storeSellsProduct(cart.storeId, …)` now gets the request's cached switch. The seller check before it is kept. Update quantity has no product check (the line is already in the cart); guest-cart merge folds into the same-store cart only (unchanged); both are covered by the checkout checks. |
+| Checkout pre-check | `E/actions/order.ts` `createOrder` | same call, with the cached switch. |
+| Order transaction | `L/orders/place-order.ts` | **new** check at the top of the transaction, before `decrementStock`: for a store cart, `productsOutsideStore(cart.storeId, lines, tx)` (switch read with `tx`); a hit throws and returns `Product is no longer available: <sku or id>` (the existing message). Marketplace and admin external carts (no store) skip it. Kept lines only, so a gift the order already drops is not checked. |
+| Gift choices | `E/actions/cart-offers.ts` `loadGiftChoices` | `storeSellsProduct` per row → `productShownInStore` in the product SELECT (one switch read). |
+| Manual order | `L/orders/manual-order.server.ts`, `D/app/(main)/orders/new/manual-order.server.ts` | unchanged code; `storeSellsProduct` follows the switch; the picker passes its switch; the order is checked again in the transaction. |
+| Admin external orders | `apps/admin/actions/external-orders.ts` | unchanged: marketplace cart, no store, no store check (as today). |
+
+**Inventory invalidation.** `PlaceOrderInventoryItem.snapshot.storeId` = `orders.store_id` (copied from the cart by `orders_fill_store_id`), so `invalidateProductInventory` purges `productTags.store` for storefront and manual orders (admin external: null, no store tag). Customer cancel (`E/actions/order.ts` `cancelOrder`) passes `order.storeId`. Dashboard order stock changes keep the product's `store_id` and fall back to `order.storeId`. Condition 2 of §6 ("remaining inventory paths pass `storeId`") is met.
+
+**Unchanged on purpose:** fees (`chargeOrderPlacementFee`, `postOrderFees`), `postStoreWalletEntry`, customer wallet (`postWalletTransaction`), totals, coupon math (`claimCouponUsage`, scope), shipping, payment methods, `decrementStock` / `restoreStock`, `is_test`, order lock.
+
+**Tests.** `L/stores/catalog-check.test.ts` (no DB, fake handle): SQL per mode, switch read with the same handle, malformed ids, dedup/order, marketplace cart skipped. `L/stores/store-separation.integration.test.ts` slice 5: switch off, store B (selected) sells only its pick at add, at the checkout pre-check and in the place-order check (run in a transaction); switch on, a store B cart holding store A's product is refused at add and at place-order, and store A ('all' mode) no longer sells B's product. The full `placeOrderFromCart` is not run with the switch on (it reads the shared switch row, which the suite never flips). DB tests not run here (no `TEST_DATABASE_URL`).
+
+### Deferred or uncertain (from slice 5)
+
+- **Edge cases now refused with the switch off** (none reachable through the app): a store cart line whose product belongs to another seller, or a cart whose store is soft-deleted, is now "outside the store" at the checkout pre-check and in the order transaction (before, `cartProductsOutsideStoreCatalog` only looked at selected-mode picks; add to cart already refused other sellers).
+- **Restock on cancel/return of a pre-split order** still targets `order_items.product_id` (the kept row): F-87m (split map).
+- **Cart remap at the split** (open store carts pointing at the kept row) is 0163's job (§2.1.4); until then a store B cart holding a kept row of store A is refused at checkout once the switch is on.
+- **`cancelOrder`'s stock context** has no `storeId` for `stock_movements` (history only, unchanged).

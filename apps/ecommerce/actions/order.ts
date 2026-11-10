@@ -35,6 +35,7 @@ import {
 } from "@workspace/db/wallet";
 import { placeOrderFromCart, sendOrderEventEmail, sendRefundIssuedEmail } from "@workspace/lib/orders";
 import { cartProductsOutsideStoreCatalog } from "@workspace/lib/stores/server";
+import { isSwitchOn } from "@/lib/platform-switches.server";
 import {
   applyInvalidation,
   invalidateProductInventory,
@@ -120,9 +121,13 @@ export async function createOrder(data: {
       return { success: false, error: "This store is temporarily unavailable" };
     }
 
-    // A store with a selected catalog (D24) may have dropped a product after it
-    // was added to this cart; refuse like an unavailable product.
-    const [unsold] = await cartProductsOutsideStoreCatalog(data.cartId);
+    // The cart's store may no longer show a product added to it (a selected
+    // catalog dropped it, D24; after the split, another store's product, F-87c);
+    // refuse like an unavailable product. placeOrderFromCart checks it again
+    // inside its transaction.
+    const [unsold] = await cartProductsOutsideStoreCatalog(data.cartId, undefined, {
+      catalogSplit: await isSwitchOn("stores_catalog_split"),
+    });
     if (unsold) {
       return { success: false, error: `Product is no longer available: ${unsold}` };
     }
@@ -812,6 +817,8 @@ export async function cancelOrder(orderId: string, reason?: string, accessToken?
         snapshot: {
           id: item.productId,
           sellerId: item.sellerId,
+          // The order's store, for its product tag (F-87c).
+          storeId: order.storeId ?? null,
           categoryId: item.product?.categoryId ?? null,
           brandId: item.product?.brandId ?? null,
         },
