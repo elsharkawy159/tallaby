@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ArrowUpLeft, ChevronDown, LogOut, PanelRightClose, PanelRightOpen, UserIcon, X } from "lucide-react";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -20,6 +20,7 @@ import type { SidebarCounts } from "./sidebar.types";
 import {
   SIDEBAR_CONFIG,
   findActiveHref,
+  isGroupActive,
   resolveSidebar,
   type NavFeature,
   type ResolvedEntry,
@@ -51,8 +52,6 @@ const NAV_ITEM_ACTIVE =
   "bg-primary font-bold text-primary-foreground shadow-(--s-shadow-nav) hover:bg-primary hover:text-primary-foreground";
 const NAV_ICON = "size-[18px] shrink-0 text-(--s-subtle)";
 
-const groupActive = (activeHref: string | null, group: ResolvedGroup) =>
-  group.items.some((item) => item.href === activeHref);
 
 export const Sidebar = ({
   ordersLocked,
@@ -67,9 +66,15 @@ export const Sidebar = ({
   const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } = useSidebarStore();
   const pathname = usePathname();
   const closeMobile = () => setMobileOpen(false);
+  // Set when a group label navigates, so the drawer stays open on the expanded group.
+  const keepMobileOpenRef = useRef(false);
 
-  // Close the mobile drawer after navigating, and on Escape.
+  // Close the mobile drawer after navigating (except through a group label).
   useEffect(() => {
+    if (keepMobileOpenRef.current) {
+      keepMobileOpenRef.current = false;
+      return;
+    }
     setMobileOpen(false);
   }, [pathname, setMobileOpen]);
 
@@ -143,7 +148,14 @@ export const Sidebar = ({
             <X />
           </IconButton>
         </div>
-        <SidebarContent {...content} isCollapsed={false} showTools />
+        <SidebarContent
+          {...content}
+          isCollapsed={false}
+          showTools
+          onGroupNavigate={(href) => {
+            if (href !== pathname) keepMobileOpenRef.current = true;
+          }}
+        />
       </aside>
     </MinTopUpContext.Provider>
   );
@@ -188,6 +200,8 @@ interface SidebarContentProps {
   isCollapsed: boolean;
   /** The drawer also holds what the top bar drops at 600px and below. */
   showTools?: boolean;
+  /** Called when a group label is clicked to open its landing page (the drawer uses it to stay open). */
+  onGroupNavigate?: (href: string) => void;
 }
 
 const SidebarContent = ({
@@ -199,18 +213,22 @@ const SidebarContent = ({
   maxStores,
   isCollapsed,
   showTools = false,
+  onGroupNavigate,
 }: SidebarContentProps) => {
   const pathname = usePathname();
   const t = useTranslations();
   const format = useFormatter();
   const activeHref = findActiveHref(entries, pathname);
   const activeGroupKey =
-    entries.find((e): e is ResolvedGroup => e.kind === "group" && groupActive(activeHref, e))?.key ?? null;
+    entries.find((e): e is ResolvedGroup => e.kind === "group" && isGroupActive(e, activeHref))?.key ?? null;
   // Accordion: one group open at a time; the current page's group opens on navigation.
   const [openGroupKey, setOpenGroupKey] = useState<string | null>(activeGroupKey);
-  useEffect(() => {
+  // Adjusted while rendering (not in an effect) when the current page moves to another group.
+  const [seenActiveGroupKey, setSeenActiveGroupKey] = useState(activeGroupKey);
+  if (activeGroupKey !== seenActiveGroupKey) {
+    setSeenActiveGroupKey(activeGroupKey);
     if (activeGroupKey) setOpenGroupKey(activeGroupKey);
-  }, [activeGroupKey]);
+  }
 
   const renderTopLink = (link: ResolvedLink) => {
     const isActive = link.href === activeHref;
@@ -239,22 +257,25 @@ const SidebarContent = ({
   };
 
   const renderGroup = (group: ResolvedGroup) => {
-    const active = groupActive(activeHref, group);
+    const active = isGroupActive(group, activeHref);
     const label = t(`nav.${group.key}`);
-    // The design badges the Orders group itself; other groups' numbers are totals, shown inside.
-    const groupCount = group.key === "ordersGroup" ? counts.orders : 0;
+    // The group label carries its landing page's number (Orders amber, Products a quiet total).
+    const groupCount = group.countKey ? counts[group.countKey] : 0;
+    const strongCount = group.key === "ordersGroup";
     if (isCollapsed) {
       return (
         <li key={group.key}>
           <CollapsedTip label={label}>
             <Link
-              href={group.items.find((i) => !i.disabled)?.href ?? "#"}
+              href={group.href ?? "#"}
               aria-label={label}
+              aria-current={group.ownHref && group.href === activeHref ? "page" : undefined}
               className={cn(NAV_ITEM, active && NAV_ITEM_ACTIVE, "relative justify-center px-0")}
             >
               <group.icon className={cn(NAV_ICON, active && "text-current")} />
               {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
-              {groupCount > 0 && (
+              {/* Only the amber (to-do) number fits on an icon. */}
+              {strongCount && groupCount > 0 && (
                 <StrongCount
                   value={format.number(groupCount)}
                   className="absolute end-[3px] top-[3px] h-[18px] min-w-[18px] px-1 text-[9.5px]"
@@ -274,9 +295,14 @@ const SidebarContent = ({
         activeHref={activeHref}
         counts={counts}
         groupCount={groupCount}
+        strongCount={strongCount}
         ordersLocked={ordersLocked}
         open={openGroupKey === group.key}
         onOpenChange={(open) => setOpenGroupKey(open ? group.key : null)}
+        onNavigate={(href) => {
+          setOpenGroupKey(group.key);
+          onGroupNavigate?.(href);
+        }}
       />
     );
   };
@@ -467,9 +493,11 @@ function SidebarGroup({
   activeHref,
   counts,
   groupCount,
+  strongCount,
   ordersLocked,
   open,
   onOpenChange,
+  onNavigate,
 }: {
   group: ResolvedGroup;
   label: string;
@@ -477,32 +505,72 @@ function SidebarGroup({
   activeHref: string | null;
   counts: SidebarCounts;
   groupCount: number;
+  strongCount: boolean;
   ordersLocked: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** The label was clicked: it opens the group and goes to its landing page. */
+  onNavigate: (href: string) => void;
 }) {
   const t = useTranslations("nav");
   const format = useFormatter();
+  // The label itself is the current page (the group's own landing page, e.g. All products).
+  const current = group.ownHref && group.href !== null && group.href === activeHref;
+  const subId = useId();
+  const labelContent = (
+    <>
+      <group.icon className={cn(NAV_ICON, current ? "text-current" : active && "text-(--s-primary)")} />
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
+      {groupCount > 0 &&
+        (strongCount ? <StrongCount value={format.number(groupCount)} /> : <CountBadge count={groupCount} strong={false} />)}
+    </>
+  );
 
   return (
     <li>
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => onOpenChange(!open)}
-        className={cn(NAV_ITEM, active && "font-bold text-(--s-ink)")}
-      >
-        <group.icon className={cn(NAV_ICON, active && "text-(--s-primary)")} />
-        <span className="min-w-0 flex-1 truncate">{label}</span>
-        {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
-        {groupCount > 0 && <StrongCount value={format.number(groupCount)} />}
-        <ChevronDown
-          aria-hidden
-          className={cn("size-[15px] shrink-0 text-(--s-subtle) transition-transform duration-[250ms]", open && "rotate-180")}
-        />
-      </button>
+      {/* The label goes to the group's page and opens it; the chevron only opens or closes it. */}
+      <div className="relative">
+        {group.href ? (
+          <Link
+            href={group.href}
+            aria-current={current ? "page" : undefined}
+            onClick={() => onNavigate(group.href!)}
+            className={cn(NAV_ITEM, "pe-10", active && "font-bold text-(--s-ink)", current && NAV_ITEM_ACTIVE)}
+          >
+            {labelContent}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onOpenChange(!open)}
+            className={cn(NAV_ITEM, "pe-10", active && "font-bold text-(--s-ink)")}
+          >
+            {labelContent}
+          </button>
+        )}
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={subId}
+          aria-label={t("toggleGroup", { name: label })}
+          onClick={() => onOpenChange(!open)}
+          className={cn(
+            "absolute inset-y-1 end-1 grid w-8 cursor-pointer place-items-center rounded-lg transition-colors duration-150",
+            current ? "text-primary-foreground hover:bg-white/15" : "text-(--s-subtle) hover:bg-(--s-hover) hover:text-(--s-ink)",
+          )}
+        >
+          <ChevronDown
+            aria-hidden
+            className={cn("size-[15px] shrink-0 transition-transform duration-[250ms]", open && "rotate-180")}
+          />
+        </button>
+      </div>
       {open && (
-        <ul className="relative mb-1.5 mt-0.5 flex flex-col gap-px ps-9 before:absolute before:inset-y-1 before:start-[20.5px] before:w-[1.5px] before:rounded-sm before:bg-(--s-field)">
+        <ul
+          id={subId}
+          className="relative mb-1.5 mt-0.5 flex flex-col gap-px ps-9 before:absolute before:inset-y-1 before:start-[20.5px] before:w-[1.5px] before:rounded-sm before:bg-(--s-field)"
+        >
           {group.items.map((item) => {
             const isActive = item.href === activeHref;
             return (

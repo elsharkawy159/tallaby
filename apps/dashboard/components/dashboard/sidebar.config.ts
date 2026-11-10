@@ -49,6 +49,15 @@ export type NavGroupConfig = {
   key: NavKey;
   icon: LucideIcon;
   feature?: NavFeature;
+  /**
+   * The group's own landing page (its "overview"), opened by clicking the group
+   * label and not repeated in `items`. Without it the label opens the first item.
+   */
+  href?: string;
+  /** With `href`: active only on that exact path. */
+  exact?: boolean;
+  /** With `href`: the number shown on the group label. */
+  countKey?: keyof SidebarCounts;
   items: NavLinkConfig[];
 };
 
@@ -65,8 +74,11 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     kind: "group",
     key: "products",
     icon: Package,
+    // The group label opens All products; it is no longer an item (owner, 2026-11-10).
+    href: "/products",
+    exact: true,
+    countKey: "products",
     items: [
-      { key: "manageProducts", href: "/products", countKey: "products", status: "live", exact: true },
       { key: "addProducts", href: "/products/add", status: "live" },
       // The seller's own category list (0068). Which products a store shows is in Store settings › General.
       { key: "sellerCategories", href: "/products/categories", status: "live" },
@@ -81,8 +93,10 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     kind: "group",
     key: "ordersGroup",
     icon: ShoppingBag,
+    href: "/orders",
+    exact: true,
+    countKey: "orders",
     items: [
-      { key: "orders", href: "/orders", countKey: "orders", status: "live", exact: true },
       // Missed orders: store checkouts with an address but no order (F-03).
       { key: "missedOrders", href: "/orders/missed", status: "live" },
       // Customers with items in a store's cart who haven't ordered (F-67).
@@ -131,8 +145,9 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "websiteContent",
     icon: Globe,
     feature: "storeBuilder",
+    href: "/stores/[storeId]/website",
+    exact: true,
     items: [
-      { key: "websiteOverview", href: "/stores/[storeId]/website", status: "live", exact: true },
       { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "live" },
       { key: "templates", href: "/stores/[storeId]/website/templates", status: "live" },
       { key: "designSystem", href: "/stores/[storeId]/website/design", status: "live" },
@@ -171,8 +186,9 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     kind: "group",
     key: "settingsGroup",
     icon: Settings,
+    href: "/stores/[storeId]/settings",
+    exact: true,
     items: [
-      { key: "general", href: "/stores/[storeId]/settings", status: "live", exact: true },
       { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "live" },
       // Extra checkout fields + thank-you page (ROADMAP.md F-25).
       { key: "checkoutForm", href: "/stores/[storeId]/settings/checkout", status: "live" },
@@ -212,7 +228,18 @@ export type ResolvedLink = {
   exact: boolean;
 };
 
-export type ResolvedGroup = { kind: "group"; key: NavKey; icon: LucideIcon; items: ResolvedLink[] };
+export type ResolvedGroup = {
+  kind: "group";
+  key: NavKey;
+  icon: LucideIcon;
+  /** Where the group label goes: its own landing page, else its first enabled item. Null when neither. */
+  href: string | null;
+  /** `href` is the group's own page (not one of `items`), so the label itself lights up there. */
+  ownHref: boolean;
+  exact: boolean;
+  countKey?: keyof SidebarCounts;
+  items: ResolvedLink[];
+};
 export type ResolvedEntry = ResolvedLink | ResolvedGroup | NavDivider;
 
 export type SidebarContext = {
@@ -220,15 +247,21 @@ export type SidebarContext = {
   features: Partial<Record<NavFeature, boolean>>;
 };
 
+/** Fills in `[storeId]`; null when the href is store-scoped and no store is selected. */
+function resolveHref(href: string, ctx: SidebarContext): string | null {
+  if (!href.includes("[storeId]")) return href;
+  return ctx.storeId ? href.replaceAll("[storeId]", ctx.storeId) : null;
+}
+
 function resolveLink(link: NavLinkConfig, ctx: SidebarContext): ResolvedLink | null {
   if (link.status === "planned") return null;
   if (link.feature && !ctx.features[link.feature]) return null;
-  const scoped = link.href.includes("[storeId]");
-  if (scoped && !ctx.storeId) return null;
+  const href = resolveHref(link.href, ctx);
+  if (!href) return null;
   return {
     kind: "link",
     key: link.key,
-    href: scoped ? link.href.replaceAll("[storeId]", ctx.storeId!) : link.href,
+    href,
     icon: link.icon,
     countKey: link.countKey,
     disabled: link.status === "soon",
@@ -252,7 +285,19 @@ export function resolveSidebar(config: NavEntry[], ctx: SidebarContext): Resolve
     }
     if (entry.feature && !ctx.features[entry.feature]) continue;
     const items = entry.items.map((item) => resolveLink(item, ctx)).filter((l): l is ResolvedLink => l !== null);
-    if (items.length) out.push({ kind: "group", key: entry.key, icon: entry.icon, items });
+    if (!items.length) continue;
+    // A store-scoped landing page with no store falls back to the first item, like before.
+    const ownHref = entry.href ? resolveHref(entry.href, ctx) : null;
+    out.push({
+      kind: "group",
+      key: entry.key,
+      icon: entry.icon,
+      href: ownHref ?? items.find((i) => !i.disabled)?.href ?? null,
+      ownHref: ownHref !== null,
+      exact: ownHref !== null && (entry.exact ?? false),
+      countKey: ownHref !== null ? entry.countKey : undefined,
+      items,
+    });
   }
   if (out.at(-1)?.kind === "divider") out.pop();
   return out;
@@ -264,14 +309,31 @@ export function isActiveHref(pathname: string, href: string, options: { exact?: 
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** Every place the sidebar links to: top links, groups' own landing pages and group items. */
+function navTargets(entries: ResolvedEntry[]): { href: string; exact: boolean; disabled: boolean }[] {
+  return entries.flatMap((e) => {
+    if (e.kind === "link") return [e];
+    if (e.kind !== "group") return [];
+    const own = e.ownHref && e.href ? [{ href: e.href, exact: e.exact, disabled: false }] : [];
+    return [...own, ...e.items];
+  });
+}
+
+/** Whether a group holds the current page: its own landing page or one of its items. */
+export function isGroupActive(group: ResolvedGroup, activeHref: string | null): boolean {
+  if (!activeHref) return false;
+  return (group.ownHref && group.href === activeHref) || group.items.some((item) => item.href === activeHref);
+}
+
 /**
  * The one sidebar link for the current page: the most specific link that
  * matches, so /settings/plan picks Plan & usage rather than Settings, and only
- * one group opens. Null when no link matches.
+ * one group opens. Groups' own landing pages count as links. Null when no link
+ * matches.
  */
 export function findActiveHref(entries: ResolvedEntry[], pathname: string): string | null {
   let best: string | null = null;
-  for (const link of entries.flatMap((e) => (e.kind === "group" ? e.items : e.kind === "link" ? [e] : []))) {
+  for (const link of navTargets(entries)) {
     if (link.disabled || !isActiveHref(pathname, link.href, { exact: link.exact })) continue;
     if (!best || link.href.length > best.length) best = link.href;
   }

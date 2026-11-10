@@ -1168,8 +1168,18 @@
           "cta": "Add product"
         },
         "shipping": {
-          "title": "Set up product shipping",
-          "description": "You can set this up later, before your first delivery",
+          "title": "Set up shipping",
+          "description": "Your delivery areas and shipping prices.",
+          "cta": "Set up"
+        },
+        "design": {
+          "title": "Choose your store design",
+          "description": "Pick a template, then add your logo, colours and fonts.",
+          "cta": "Choose design"
+        },
+        "payments": {
+          "title": "Set up payments",
+          "description": "Choose how customers pay you: cash on delivery, wallets or InstaPay.",
           "cta": "Set up"
         }
       },
@@ -1198,6 +1208,11 @@
       },
       "stepDone": "Done",
       "later": "Later"
+    },
+    "setupHome": {
+      "title": "Let’s set up your store",
+      "description": "Four quick steps and your store is ready for its first order.",
+      "edit": "Edit"
     },
     "kpis": {
       "currency": "EGP",

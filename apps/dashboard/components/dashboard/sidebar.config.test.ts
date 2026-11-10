@@ -6,9 +6,11 @@ import {
   SIDEBAR_CONFIG,
   findActiveHref,
   isActiveHref,
+  isGroupActive,
   resolveSidebar,
   storeBuilderEnabled,
   type NavEntry,
+  type ResolvedGroup,
 } from "./sidebar.config";
 
 const STORE = "33333333-3333-4333-8333-333333333333";
@@ -29,10 +31,18 @@ describe("storeBuilderEnabled", () => {
 });
 
 type AnyLink = { href: string; key: string; status?: string };
+type AnyGroup = { key: string; href?: string | null; ownHref?: boolean; items: AnyLink[] };
+/** A group's own landing page: `href` in the config, `href` + `ownHref` once resolved. */
+const groupOwnHref = (g: AnyGroup) => (g.href && g.ownHref !== false ? g.href : null);
+/** Every link in the sidebar, groups' own landing pages included (they count as live). */
 const allLinks = (entries: readonly { kind: string }[]): AnyLink[] =>
-  entries.flatMap((e) =>
-    e.kind === "group" ? (e as unknown as { items: AnyLink[] }).items : e.kind === "link" ? [e as unknown as AnyLink] : [],
-  );
+  entries.flatMap((e) => {
+    if (e.kind === "link") return [e as unknown as AnyLink];
+    if (e.kind !== "group") return [];
+    const g = e as unknown as AnyGroup;
+    const own = groupOwnHref(g);
+    return [...(own ? [{ href: own, key: g.key, status: "live" }] : []), ...g.items];
+  });
 
 /** Top-level keys, with dividers shown as "|". */
 const topLevel = (entries: { kind: string; key?: string }[]) => entries.map((e) => (e.kind === "divider" ? "|" : e.key));
@@ -128,10 +138,28 @@ describe("SIDEBAR_CONFIG", () => {
   it("files each page under the same section in the sidebar and the header", () => {
     for (const group of SIDEBAR_CONFIG) {
       if (group.kind !== "group") continue;
-      for (const item of group.items) {
-        const route = DASHBOARD_ROUTES.find((r) => r.href === item.href);
-        expect(route?.parent, item.href).toBe(group.key);
+      for (const href of [...(group.href ? [group.href] : []), ...group.items.map((i) => i.href)]) {
+        const route = DASHBOARD_ROUTES.find((r) => r.href === href);
+        expect(route?.parent, href).toBe(group.key);
       }
+    }
+  });
+
+  it("opens the overview pages from the group label, not a repeated first item (owner, 2026-11-10)", () => {
+    const group = (key: string) => SIDEBAR_CONFIG.find((e) => e.kind === "group" && e.key === key) as AnyGroup;
+    const landing: Record<string, string> = {
+      products: "/products",
+      ordersGroup: "/orders",
+      websiteContent: "/stores/[storeId]/website",
+      settingsGroup: "/stores/[storeId]/settings",
+    };
+    for (const [key, href] of Object.entries(landing)) {
+      expect(group(key).href, key).toBe(href);
+      expect(group(key).items.map((i) => i.href), key).not.toContain(href);
+    }
+    // The other groups have no overview page: the label opens their first item, which stays listed.
+    for (const key of ["fulfillmentShipping", "finance", "marketing", "accountHelp"]) {
+      expect(group(key).href, key).toBeUndefined();
     }
   });
 });
@@ -243,6 +271,41 @@ describe("resolveSidebar", () => {
     expect(resolved).toEqual([]);
   });
 
+  it("gives each group a label link: its own page, else its first enabled item", () => {
+    const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } });
+    const group = (key: string) => entries.find((e) => e.kind === "group" && e.key === key) as ResolvedGroup;
+    expect(group("products")).toMatchObject({ href: "/products", ownHref: true, exact: true, countKey: "products" });
+    expect(group("ordersGroup")).toMatchObject({ href: "/orders", ownHref: true, countKey: "orders" });
+    expect(group("websiteContent")).toMatchObject({ href: `/stores/${STORE}/website`, ownHref: true });
+    expect(group("settingsGroup")).toMatchObject({ href: `/stores/${STORE}/settings`, ownHref: true });
+    expect(group("fulfillmentShipping")).toMatchObject({ href: "/orders/delivery", ownHref: false, countKey: undefined });
+    expect(group("finance")).toMatchObject({ href: "/wallet", ownHref: false });
+    expect(group("marketing")).toMatchObject({ href: "/coupons", ownHref: false });
+    expect(group("accountHelp")).toMatchObject({ href: "/stores", ownHref: false });
+  });
+
+  it("falls back to the first item when a store-scoped landing page has no store", () => {
+    const config: NavEntry[] = [
+      {
+        kind: "group",
+        key: "settingsGroup",
+        icon: undefined as never,
+        href: "/stores/[storeId]/settings",
+        exact: true,
+        items: [
+          { key: "paymentMethods", href: "/soon", status: "soon" },
+          { key: "help", href: "/help", status: "live" },
+        ],
+      },
+    ];
+    expect(resolveSidebar(config, { storeId: null, features: {} })).toEqual([
+      expect.objectContaining({ href: "/help", ownHref: false, exact: false }),
+    ]);
+    expect(resolveSidebar(config, { storeId: STORE, features: {} })).toEqual([
+      expect.objectContaining({ href: `/stores/${STORE}/settings`, ownHref: true, exact: true }),
+    ]);
+  });
+
   it("shows feature-gated items only when the feature is on", () => {
     const config: NavEntry[] = [
       { kind: "link", key: "websiteBuilder", href: "/e", status: "live", feature: "storeBuilder" },
@@ -291,6 +354,23 @@ describe("findActiveHref", () => {
   it("lights only Categories on its page, not Manage products", () => {
     expect(active("/products/categories")).toBe("/products/categories");
     expect(active("/products")).toBe("/products");
+  });
+
+  it("lights the group label on its own page and the child on a child page", () => {
+    const group = (key: string) => entries.find((e) => e.kind === "group" && e.key === key) as ResolvedGroup;
+    const products = group("products");
+    // /products: only the label (it is no longer an item).
+    expect(products.items.some((i) => i.href === active("/products"))).toBe(false);
+    expect(isGroupActive(products, active("/products"))).toBe(true);
+    // /products/add: the Add products item; the group stays open.
+    expect(active("/products/add")).toBe("/products/add");
+    expect(isGroupActive(products, active("/products/add"))).toBe(true);
+    expect(isGroupActive(group("ordersGroup"), active("/products/add"))).toBe(false);
+    expect(active(`/stores/${STORE}/website`)).toBe(`/stores/${STORE}/website`);
+    expect(isGroupActive(group("websiteContent"), active(`/stores/${STORE}/website`))).toBe(true);
+    expect(active(`/stores/${STORE}/settings`)).toBe(`/stores/${STORE}/settings`);
+    expect(active(`/stores/${STORE}/settings/payments`)).toBe(`/stores/${STORE}/settings/payments`);
+    expect(isGroupActive(group("settingsGroup"), null)).toBe(false);
   });
 });
 
