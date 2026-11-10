@@ -2,6 +2,9 @@ import { getLocale } from "next-intl/server";
 import { parsePriceJson } from "@workspace/lib";
 import { getAdWallet, getSellerAdRequests } from "@/actions/ads";
 import { requireSeller } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
+import { getSellerStores } from "@/lib/stores/current-store.server";
+import { ProductStoreProvider } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 import { listSellerProductOptions } from "@/app/(main)/stores/[storeId]/products/_components/products-list.query";
 import { AdvertiseProducts } from "./advertise-products.client";
 import type { AdProductOption } from "./product-picker";
@@ -10,9 +13,12 @@ import type { AdProductOption } from "./product-picker";
 const OPEN_STATUSES = new Set(["pending", "approved", "active"]);
 
 export async function AdvertiseData() {
-  const [seller, locale] = await Promise.all([requireSeller(), getLocale()]);
+  const [seller, locale, { selected }] = await Promise.all([requireSeller(), getLocale(), getSellerStores()]);
+  // /marketing has no store in its URL: the picker offers the selected store's products (F-87c; none = the
+  // account, as before) and createAdRequest checks the product against the same store again.
+  const scope = selected ? await requireProductStore(selected.id, { read: true }) : null;
   const [productRows, requests, wallet] = await Promise.all([
-    listSellerProductOptions(seller.sellerId, locale),
+    listSellerProductOptions(seller.sellerId, locale, scope?.inStore),
     getSellerAdRequests(),
     getAdWallet(),
   ]);
@@ -30,5 +36,9 @@ export async function AdvertiseData() {
     hasOpenRequest: openProductIds.has(p.id),
   }));
 
-  return <AdvertiseProducts products={products} requests={requests} wallet={wallet} />;
+  return (
+    <ProductStoreProvider storeId={scope?.store.id ?? ""}>
+      <AdvertiseProducts products={products} requests={requests} wallet={wallet} />
+    </ProductStoreProvider>
+  );
 }

@@ -16,7 +16,8 @@ import type { SQL } from "drizzle-orm";
 import { and, db, eq, inArray, isNull, or, productTranslations, productVariants, products, sql } from "@workspace/db";
 import { syncCategoryProductCountForProductChange } from "@workspace/db/categories";
 import { setStockContext } from "@workspace/db/inventory";
-import { isAccessError, requireSeller, type SellerContext } from "@/lib/auth/require-seller.server";
+import { isAccessError, type SellerContext } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import type { ProductStatus } from "@/lib/products/product-status.lib";
 import { canonicalTime } from "../bulk-edit/bulk-edit.lib";
 import {
@@ -43,8 +44,10 @@ import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
 
 /**
  * Update products from Excel (ROADMAP.md F-24c). The seller comes from the
- * session; the client sends only the file (preview and apply each parse it
- * again). Every read and write is scoped by seller_id, trashed products are
+ * session; the client sends the page's store and the file (preview and apply
+ * each parse it again). The store must be the seller's (F-87c), and every read
+ * and write is scoped by seller_id and `productInStore` (scope `managed`), so a
+ * product id, SKU or variant from another store matches nothing; trashed products are
  * never written, and apply re-plans from rows locked FOR UPDATE inside one
  * transaction, so the preview is advisory and the write is authoritative.
  * Stock changes are logged as 'import' movements (0125, F-10).
@@ -68,7 +71,10 @@ type LoadedProduct = CatalogProduct & {
 };
 
 function failure(error: unknown, label: string): { success: false; error: ExcelActionError } {
-  if (isAccessError(error)) return { success: false, error: error.code === "seller_blocked" ? "readOnly" : "unauthorized" };
+  if (isAccessError(error)) {
+    const readOnly = error.code === "seller_blocked" || error.code === "store_read_only";
+    return { success: false, error: readOnly ? "readOnly" : "unauthorized" };
+  }
   console.error(`[excel-update] ${label} failed`, error);
   return { success: false, error: "generic" };
 }
@@ -78,7 +84,7 @@ const canPublishFor = (seller: SellerContext) => seller.status === "approved";
 
 const isUuid = (value: unknown): value is string => typeof value === "string" && z.uuid().safeParse(value).success;
 
-async function loadProducts(q: Queryable, sellerId: string, match: SQL, lock: boolean, locale: string): Promise<LoadedProduct[]> {
+async function loadProducts(q: Queryable, sellerId: string, inStore: SQL, match: SQL, lock: boolean, locale: string): Promise<LoadedProduct[]> {
   const base = q
     .select({
       id: products.id,
@@ -102,7 +108,7 @@ async function loadProducts(q: Queryable, sellerId: string, match: SQL, lock: bo
       createdAt: products.createdAt,
     })
     .from(products)
-    .where(and(eq(products.sellerId, sellerId), match));
+    .where(and(eq(products.sellerId, sellerId), inStore, match));
   const rows = lock ? await base.for("update") : await base;
   if (!rows.length) return [];
   const ids = rows.map((r) => r.id);
@@ -156,7 +162,7 @@ async function loadProducts(q: Queryable, sellerId: string, match: SQL, lock: bo
 }
 
 /**
- * The seller's products a sheet can touch: by product id, by SKU (any case),
+ * The store's products a sheet can touch: by product id, by SKU (any case),
  * or holding a listed variant id or variant SKU. Trashed and purged ones are
  * loaded too, so their rows say why they are skipped and their SKUs count as
  * taken.
@@ -213,19 +219,19 @@ async function readSheet(formData: unknown): Promise<SheetRead> {
   return { ok: true, rows };
 }
 
-async function planFor(q: Queryable, seller: SellerContext, rows: ParsedSheetRow[], lock: boolean, locale: string) {
+async function planFor(q: Queryable, seller: SellerContext, inStore: SQL, rows: ParsedSheetRow[], lock: boolean, locale: string) {
   const match = sheetMatch(rows);
-  const catalog = match ? await loadProducts(q, seller.sellerId, match, lock, locale) : [];
+  const catalog = match ? await loadProducts(q, seller.sellerId, inStore, match, lock, locale) : [];
   return { catalog, plan: planExcelUpdate(rows, catalog, { canPublish: canPublishFor(seller) }) };
 }
 
 /** Before → after for every row of the uploaded sheet; writes nothing. */
-export async function previewExcelUpdateAction(formData: FormData): Promise<ExcelPreviewResult> {
+export async function previewExcelUpdateAction(storeId: string, formData: FormData): Promise<ExcelPreviewResult> {
   try {
-    const seller = await requireSeller();
+    const { seller, inStore } = await requireProductStore(storeId, { read: true });
     const sheet = await readSheet(formData);
     if (!sheet.ok) return { success: false, error: sheet.error };
-    const { plan } = await planFor(db, seller, sheet.rows, false, await getLocale());
+    const { plan } = await planFor(db, seller, inStore, sheet.rows, false, await getLocale());
     return { success: true, ...previewFromPlan(plan) };
   } catch (error) {
     return failure(error, "preview");
@@ -250,8 +256,8 @@ function snapshot(row: LoadedProduct, values: ProductWrite = {}): ProductCacheSn
   };
 }
 
-/** Writes one product's planned values inside `tx`, scoped by seller and never to a trashed product. */
-async function writeEdit(tx: Tx, sellerId: string, edit: ProductEdit, now: string): Promise<boolean> {
+/** Writes one product's planned values inside `tx`, scoped by seller and store and never to a trashed product. */
+async function writeEdit(tx: Tx, sellerId: string, inStore: SQL, edit: ProductEdit, now: string): Promise<boolean> {
   const { after } = edit;
   const set: Partial<typeof products.$inferInsert> = { updatedAt: now };
   if ("price" in after) set.price = after.price as typeof products.$inferInsert.price;
@@ -261,7 +267,7 @@ async function writeEdit(tx: Tx, sellerId: string, edit: ProductEdit, now: strin
   const updated = await tx
     .update(products)
     .set(set)
-    .where(and(eq(products.id, edit.product.id), eq(products.sellerId, sellerId), isNull(products.deletedAt)))
+    .where(and(eq(products.id, edit.product.id), eq(products.sellerId, sellerId), isNull(products.deletedAt), inStore))
     .returning({ id: products.id });
   if (!updated.length) return false;
 
@@ -271,7 +277,7 @@ async function writeEdit(tx: Tx, sellerId: string, edit: ProductEdit, now: strin
     if ("stock" in v) vset.stock = Math.max(0, v.stock ?? 0);
     if ("discountEndsAt" in v) vset.discountEndsAt = v.discountEndsAt ?? null;
     if (v.sku) vset.sku = v.sku;
-    // The product row above is already checked to be this seller's.
+    // The product row above is already checked to be this store's.
     await tx
       .update(productVariants)
       .set(vset)
@@ -307,9 +313,9 @@ async function afterWrite(edits: { row: LoadedProduct; before: ProductWrite; aft
 }
 
 /** Applies the sheet in one transaction (rows locked, re-planned) and clears caches. */
-export async function applyExcelUpdateAction(formData: FormData): Promise<ExcelApplyResult> {
+export async function applyExcelUpdateAction(storeId: string, formData: FormData): Promise<ExcelApplyResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const { seller, inStore } = await requireProductStore(storeId);
     const sheet = await readSheet(formData);
     if (!sheet.ok) return { success: false, error: sheet.error };
     const locale = await getLocale();
@@ -317,14 +323,14 @@ export async function applyExcelUpdateAction(formData: FormData): Promise<ExcelA
 
     const result = await db.transaction(async (tx) => {
       await setStockContext(tx, { reason: "import", actorId: seller.userId });
-      const { catalog, plan } = await planFor(tx, seller, sheet.rows, true, locale);
+      const { catalog, plan } = await planFor(tx, seller, inStore, sheet.rows, true, locale);
       const byId = new Map(catalog.map((p) => [p.id, p]));
       const done: { row: LoadedProduct; before: ProductWrite; after: ProductWrite }[] = [];
       let changedRows = 0;
       for (const edit of plan.edits) {
         const row = byId.get(edit.product.id);
         if (!row) continue;
-        if (await writeEdit(tx, seller.sellerId, edit, now)) {
+        if (await writeEdit(tx, seller.sellerId, inStore, edit, now)) {
           done.push({ row, before: edit.before, after: edit.after });
           changedRows += edit.rows.length;
         }
@@ -350,18 +356,18 @@ const exportIdsSchema = z.array(z.uuid()).max(EXCEL_UPDATE_MAX_ROWS);
 
 /**
  * The update sheet for the given products (the list the seller is looking
- * at), or every live product when no ids are sent. Seller-scoped; trashed
+ * at), or every live product of the store when no ids are sent. Store-scoped; trashed
  * products are left out.
  */
-export async function exportExcelUpdateSheetAction(ids: unknown): Promise<ExcelExportResult> {
+export async function exportExcelUpdateSheetAction(storeId: string, ids: unknown): Promise<ExcelExportResult> {
   try {
-    const seller = await requireSeller();
+    const { seller, inStore } = await requireProductStore(storeId, { read: true });
     const parsed = exportIdsSchema.safeParse(ids ?? []);
     if (!parsed.success) return { success: false, error: "generic" };
     const wanted = [...new Set(parsed.data)];
     const locale = (await getLocale()) === "en" ? "en" : "ar";
     const match = wanted.length ? inArray(products.id, wanted) : sql`true`;
-    const loaded = await loadProducts(db, seller.sellerId, and(match, isNull(products.deletedAt), isNull(products.purgedAt))!, false, locale);
+    const loaded = await loadProducts(db, seller.sellerId, inStore, and(match, isNull(products.deletedAt), isNull(products.purgedAt))!, false, locale);
     const order = new Map(wanted.map((id, i) => [id, i]));
     loaded.sort((a, b) =>
       wanted.length

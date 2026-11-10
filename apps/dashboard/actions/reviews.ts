@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { reviews, reviewComments, products } from "@workspace/db";
 import { eq, and, desc, sql, gte } from "drizzle-orm";
 import { getUser } from "./auth";
+import { requireStoreProduct } from "@/lib/products/product-store.server";
 
 export async function getSellerReviews(params?: {
   rating?: number;
@@ -88,18 +89,21 @@ export async function getSellerReviews(params?: {
   }
 }
 
-export async function getProductReviews(productId: string) {
+/** One product's reviews: the store must be the session seller's and the product in it (F-87c). */
+export async function getProductReviews(storeId: string, productId: string) {
   try {
     const session = await getUser();
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
 
-    // Verify product ownership
+    // Verify product ownership: in the named store, checked against the session.
+    const { inStore } = await requireStoreProduct(storeId, productId, { read: true });
     const product = await db.query.products.findFirst({
       where: and(
         eq(products.id, productId),
-        eq(products.sellerId, session.user.id)
+        eq(products.sellerId, session.user.id),
+        inStore
       ),
     });
 

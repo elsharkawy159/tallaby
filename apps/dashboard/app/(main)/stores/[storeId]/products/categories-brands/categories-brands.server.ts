@@ -20,6 +20,7 @@ import {
   sql,
 } from "@workspace/db";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import {
   SELLER_TAXONOMY_MAX_ITEMS,
   addTaxonomyItemSchema,
@@ -53,7 +54,8 @@ const SUGGESTION_LIMIT = 12;
 
 function failure(error: unknown, scope: string): { success: false; error: TaxonomyErrorKey } {
   if (isAccessError(error)) {
-    return { success: false, error: error.code === "seller_blocked" ? "readOnly" : "notFound" };
+    const readOnly = error.code === "seller_blocked" || error.code === "store_read_only";
+    return { success: false, error: readOnly ? "readOnly" : "notFound" };
   }
   if (isUniqueViolation(error)) return { success: false, error: "duplicate" };
   console.error(`[categories-brands] ${scope} failed`, error);
@@ -326,12 +328,14 @@ export async function reorderTaxonomyItems(kind: TaxonomyKind, ids: unknown): Pr
 
 /**
  * Set a product's own category and brand (the product form calls this after
- * create/update, so actions/products.ts stays untouched). The product and both
- * items must belong to the session's seller; the 0068 trigger checks it again.
+ * create/update, so actions/products.ts stays untouched). Both items must
+ * belong to the session's seller (the 0068 trigger checks it again; per-store
+ * lists are F-87d), and the product must be in the page's store (F-87c:
+ * `productInStore`, scope `managed`, in the UPDATE), else `notFound`.
  */
-export async function setProductSellerTaxonomy(productId: string, input: unknown): Promise<TaxonomyResult> {
+export async function setProductSellerTaxonomy(storeId: string, productId: string, input: unknown): Promise<TaxonomyResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const { seller, inStore } = await requireProductStore(storeId);
     const parsed = productTaxonomySchema.safeParse(input);
     if (!parsed.success || typeof productId !== "string") return { success: false, error: "invalidInput" };
     const { sellerCategoryId, sellerBrandId } = parsed.data;
@@ -357,7 +361,7 @@ export async function setProductSellerTaxonomy(productId: string, input: unknown
     const updated = await db
       .update(products)
       .set({ sellerCategoryId, sellerBrandId })
-      .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId)))
+      .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), inStore))
       .returning({ id: products.id });
     if (!updated.length) return { success: false, error: "notFound" };
     revalidatePath(TAXONOMY_PAGE_HREF.category, "page");

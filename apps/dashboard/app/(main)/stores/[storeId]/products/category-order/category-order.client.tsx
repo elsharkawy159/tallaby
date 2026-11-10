@@ -32,6 +32,7 @@ import { cn, getPublicUrl } from "@/lib/utils";
 import { CATEGORY_ORDER_MAX_PRODUCTS, type CategoryOrderError, type CategoryOrderProduct } from "./category-order.dto";
 import { moveItem } from "./category-order.lib";
 import { loadCategoryProductOrder, resetCategoryProductOrder, saveCategoryProductOrder } from "./category-order.server";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 
 /**
  * Products › Categories › "Arrange products" (ROADMAP.md F-24d): drag one
@@ -47,6 +48,7 @@ export function CategoryOrderDialog({
   onClose: () => void;
 }) {
   const t = useTranslations("categoryOrder");
+  const productStoreId = useProductStoreId();
   const [items, setItems] = useState<CategoryOrderProduct[] | null>(null);
   const [truncated, setTruncated] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -62,7 +64,7 @@ export function CategoryOrderDialog({
     let live = true;
     setItems(null);
     setDirty(false);
-    loadCategoryProductOrder(categoryId).then((result) => {
+    loadCategoryProductOrder(productStoreId, categoryId).then((result) => {
       if (!live) return;
       if (!result.success) {
         showError(result.error);
@@ -100,7 +102,7 @@ export function CategoryOrderDialog({
   const save = () => {
     if (!categoryId || !items) return;
     startSaving(async () => {
-      const result = await saveCategoryProductOrder({ categoryId, productIds: items.map((i) => i.id) });
+      const result = await saveCategoryProductOrder(productStoreId, { categoryId, productIds: items.map((i) => i.id) });
       if (!result.success) {
         showError(result.error);
         return;
@@ -113,7 +115,7 @@ export function CategoryOrderDialog({
   const reset = () => {
     if (!categoryId) return;
     startSaving(async () => {
-      const result = await resetCategoryProductOrder(categoryId);
+      const result = await resetCategoryProductOrder(productStoreId, categoryId);
       if (!result.success) {
         showError(result.error);
         return;

@@ -13,6 +13,8 @@ import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { getUser } from "./auth";
+import { isAccessError } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import {
   EGYPT_MOBILE_REGEX,
   getAdPackage,
@@ -148,6 +150,13 @@ export async function getSellerAdRequests(): Promise<AdRequestRow[]> {
 }
 
 export async function createAdRequest(input: {
+  /**
+   * The store the picker listed products from (the selected store; F-87c). The
+   * store is checked against the session and the product against the store;
+   * otherwise `product_not_found`. Only the authorization changed: the
+   * request, price and wallet charge are as before.
+   */
+  storeId: string;
   paymentMethod?: AdPaymentMethod;
   packageKey: string;
   productId: string;
@@ -167,8 +176,15 @@ export async function createAdRequest(input: {
     const pkg = getAdPackage(packageKey);
     if (!pkg) return { success: false, error: "invalid_package" };
 
+    let inStore;
+    try {
+      ({ inStore } = await requireProductStore(input?.storeId));
+    } catch (error) {
+      if (isAccessError(error)) return { success: false, error: "product_not_found" };
+      throw error;
+    }
     const product = await db.query.products.findFirst({
-      where: and(eq(products.id, productId), eq(products.sellerId, session.user.id)),
+      where: and(eq(products.id, productId), eq(products.sellerId, session.user.id), inStore),
       columns: { id: true, status: true },
     });
     if (!product) return { success: false, error: "product_not_found" };

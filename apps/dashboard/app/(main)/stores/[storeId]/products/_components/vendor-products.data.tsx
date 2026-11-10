@@ -43,7 +43,7 @@ export async function VendorProductsData({
   ]);
 
   // Not awaited: GA4 views stream into the table cells (F-15b); never rejects.
-  const viewStats = loadProductViewStats(list.products.map((p) => p.id));
+  const viewStats = loadProductViewStats(scope.storeId, list.products.map((p) => p.id));
   const storeLinks = await loadProductStoreLinks(
     list.products.map((p) => ({ id: p.id, slug: p.slug ?? null })),
     scope.storeId,

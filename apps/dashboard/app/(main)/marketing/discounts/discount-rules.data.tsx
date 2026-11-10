@@ -5,6 +5,7 @@ import { asc, db, eq, sellerProductCategories } from "@workspace/db";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { PageHeader } from "@/components/seller-ui";
+import { ProductStoreProvider } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 import { DiscountRulesView } from "./discount-rules.client";
 import { listDiscountRules } from "./discount-rules.server";
 
@@ -33,14 +34,17 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
   return (
     <>
       <PageHeader title={t("title")} description={t("description")} />
-      <DiscountRulesView
-        key={store?.id ?? "none"}
-        stores={stores.map((s) => ({ id: s.id, name: s.name }))}
-        storeId={store?.id ?? null}
-        money={parseStoreCurrency(storeRow?.settings)}
-        initial={rules}
-        categories={categories.map((c) => ({ id: c.id, name: (locale === "ar" ? c.nameAr : c.name) || c.name || c.nameAr || "" }))}
-      />
+      {/* The gift product picker lists this store's products (F-87c); the save checks them again. */}
+      <ProductStoreProvider storeId={store?.id ?? ""}>
+        <DiscountRulesView
+          key={store?.id ?? "none"}
+          stores={stores.map((s) => ({ id: s.id, name: s.name }))}
+          storeId={store?.id ?? null}
+          money={parseStoreCurrency(storeRow?.settings)}
+          initial={rules}
+          categories={categories.map((c) => ({ id: c.id, name: (locale === "ar" ? c.nameAr : c.name) || c.name || c.nameAr || "" }))}
+        />
+      </ProductStoreProvider>
     </>
   );
 }

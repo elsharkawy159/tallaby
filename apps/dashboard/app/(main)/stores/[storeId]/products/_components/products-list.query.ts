@@ -276,7 +276,8 @@ export async function loadOwnProductStatuses(sellerId: string, ids: string[], in
 }
 
 /** Light product options for the ad picker: no variants or descriptions. */
-export async function listSellerProductOptions(sellerId: string, locale: string) {
+/** `inStore`: the checked store's `productInStore` condition (F-87c); omitted = the account, as before. */
+export async function listSellerProductOptions(sellerId: string, locale: string, inStore?: SQL) {
   // One title (this language, then English, then any) and one photo: all the picker shows.
   // Nested SQL: in a one-table select drizzle strips the table name from a field's
   // top-level columns, and a bare "id" would mean the translation's id in there.
@@ -294,6 +295,6 @@ export async function listSellerProductOptions(sellerId: string, locale: string)
       )`}`,
     })
     .from(products)
-    .where(and(...baseConditions(sellerId)))
+    .where(and(...baseConditions(sellerId, inStore)))
     .orderBy(desc(products.createdAt));
 }

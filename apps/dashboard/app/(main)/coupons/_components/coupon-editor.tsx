@@ -22,6 +22,7 @@ import { CurrencyInput } from "@/components/form/currency-input";
 import { toAsciiDigits } from "@/components/form/form-ui";
 import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
 import { Field, FieldRow, OptionCard, OptionCards, Segmented, SellerButton, TextInput, Toggle } from "@/components/seller-ui";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 import { CouponProductPicker } from "./coupon-product-picker";
 import { CouponTicketStub } from "./coupon-ticket";
 import {
@@ -50,6 +51,7 @@ type Props = {
 export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
   const { unit } = useAccountMoney();
   const t = useTranslations("coupons.form");
+  const storeId = useProductStoreId();
   const tErrors = useTranslations("coupons.errors");
   const tRow = useTranslations("coupons.row");
   const locale = useLocale();
@@ -79,7 +81,7 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
     if (!input) return;
 
     startSaving(async () => {
-      const result = await saveSellerCoupon(input, coupon?.id);
+      const result = await saveSellerCoupon(storeId, input, coupon?.id);
       if (result.success) {
         toast.success(coupon ? t("updated") : t("created"));
         onSaved();

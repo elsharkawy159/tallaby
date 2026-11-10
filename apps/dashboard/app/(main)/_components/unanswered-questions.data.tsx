@@ -30,7 +30,8 @@ export async function UnansweredQuestionsData() {
         description={t("description")}
         action={<HeaderLink href="/reviews">{t("viewAll")}</HeaderLink>}
       />
-      <UnansweredQuestionsClient questions={questions} />
+      {/* The store the list is read from (the selected store, F-87c); the answer action checks it again. */}
+      <UnansweredQuestionsClient questions={questions} storeId={snapshot?.setupStoreId ?? null} />
     </SellerCard>
   );
 }

@@ -277,10 +277,16 @@ async function uploadImages(
   return { paths, skipped };
 }
 
-/** Inserts one mapped product (draft) with its variants and AR/EN translations. */
+/**
+ * Inserts one mapped product (draft) with its variants and AR/EN translations.
+ * `products.store_id` is the store the import runs for (already checked
+ * against the seller; F-87c), as createProduct writes it; nothing reads it
+ * before the catalog split. SKUs stay unique per seller (the index).
+ */
 async function insertDraftProduct(
   q: Queryable,
   sellerId: string,
+  storeId: string,
   mapped: MappedProduct,
   images: string[],
   variantImage: (url: string | null) => string | null,
@@ -293,6 +299,7 @@ async function insertDraftProduct(
       .insert(products)
       .values({
         sellerId,
+        storeId,
         categoryId: mapped.categoryId,
         sku: mapped.sku,
         status: "draft",
@@ -403,7 +410,7 @@ export async function importShopifyChunk(
       const warnings = [...mapped.warnings];
       if (skipped) warnings.push("image_skipped");
       const images = mapped.imageUrls.map((u) => paths.get(u)).filter((p): p is string => Boolean(p));
-      const productId = await insertDraftProduct(q, sellerId, mapped, images, (url) => (url ? (paths.get(url) ?? null) : null));
+      const productId = await insertDraftProduct(q, sellerId, storeId, mapped, images, (url) => (url ? (paths.get(url) ?? null) : null));
       if (!productId) {
         items.push({ ...base, status: "skipped", error: "already_imported" });
         continue;

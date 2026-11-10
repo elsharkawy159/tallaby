@@ -14,6 +14,7 @@ import { formatWalletMoney, walletMoneyDir } from "@/lib/i18n/format";
 import { useEgpRate } from "@/components/egp-rate.client";
 import { adWalletAmount, EGYPT_MOBILE_REGEX, VODAFONE_CASH_NUMBER, type AdPackage } from "@/lib/ad-packages";
 import { toAsciiDigits } from "@/components/form/form-ui";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 
 /** Vodafone's brand red, used only to mark this as the Vodafone Cash step. */
 const VODAFONE_RED = "#E60000";
@@ -39,6 +40,7 @@ export function usePaymentForm({
   onSubmitted: (method: AdPaymentMethod) => void;
 }) {
   const tErrors = useTranslations("advertise.errors");
+  const storeId = useProductStoreId();
   const [payerPhone, setPayerPhone] = useState("");
   const [reference, setReference] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -64,8 +66,9 @@ export function usePaymentForm({
     startTransition(async () => {
       const result = await createAdRequest(
         method === "wallet"
-          ? { paymentMethod: "wallet", packageKey: pkg.key, productId }
+          ? { storeId, paymentMethod: "wallet", packageKey: pkg.key, productId }
           : {
+              storeId,
               paymentMethod: "vodafone_cash",
               packageKey: pkg.key,
               productId,

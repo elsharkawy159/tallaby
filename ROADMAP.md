@@ -1675,7 +1675,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
-- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–2 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
+- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–3 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
@@ -1691,6 +1691,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87c slice 3: secondary product features per store (dark; no migration, no behaviour change with the switch off)
+
+- Every secondary product feature takes an explicit `storeId` (`requireProductStore`) and checks products with `requireStoreProduct` or `productInStore` in the same WHERE: quantity offers, cross-sells (both products in the store; toggle/remove now tied to the product), restock, Excel update, category order (per-store positions), social proof and seller reviews, AI mark, taxonomy link, product views, Q&A answers, coupon and discount-gift product targets, paid-ads product, manual-order picker, catalog share, report worst-sellers, home attention counts. Scope `shown` for the manual-order picker, catalog share and report worst-sellers; `managed` elsewhere. Shopify import writes `products.store_id`.
+- Pages with no store in the URL (`/coupons`, `/marketing` ads, `/reviews` Q&A, home) send the selected store, checked again on the server. Prices, totals, fees and `place-order.ts` untouched (ads and manual orders reviewed by the manager).
+- Sellers with no store can no longer answer questions or set coupon product targets: production has 0 such sellers (checked 2026-11-10).
+- Deferred: per-store SKUs (the unique index is per seller, needs a migration), reviews list/replies, ad-request history, coupon and cross-sell rows (F-87k). Plan: `docs/plans/stores-separation-f87c-slices.md` §5.
+- Manager review: dashboard typecheck clean, 1,131 dashboard tests, lib 224 (stores, integrations) pass; 16 new unit tests; new integration cases need `TEST_DATABASE_URL`.
 
 ### 2026-11-10 — F-87c slice 2: Products pages under the store, product reads per store (dark; no migration, no behaviour change with the switch off)
 

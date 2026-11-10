@@ -1,14 +1,16 @@
 "use server";
 
-import { and, asc, db, desc, eq, inArray, isNull, sql } from "@workspace/db";
+import { and, asc, db, desc, eq, inArray, isNull } from "@workspace/db";
 import { products, stores } from "@workspace/db/schema";
 import { CATALOG_SHARE_MAX_PRODUCTS, catalogShareUrls, normalizeCatalogTitle, signCatalogShare } from "@workspace/lib/catalog-share";
 import { catalogShareKey } from "@workspace/lib/catalog-share/server";
 import { storeCategoryGroups } from "@workspace/lib/store-sites/catalog-data";
+import { productInStore } from "@workspace/lib/stores/scope/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { getLocale } from "next-intl/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import {
   catalogLinkInputSchema,
   type CatalogLinkResult,
@@ -93,9 +95,11 @@ export async function createCatalogLinkAction(input: unknown): Promise<CatalogLi
     let skipped = 0;
     let signedSource = source;
     if (source.kind === "products") {
-      // Only the seller's active, non-trashed products this store shows; the
-      // store page checks again on every view.
+      // Only the seller's active, non-trashed products this store shows (the
+      // shopper's rule: `productInStore`, scope `shown`, F-87c); the store page
+      // checks again on every view.
       const requested = [...new Set(source.productIds.map((id) => id.toLowerCase()))];
+      const catalogSplit = await isSwitchOn("stores_catalog_split");
       const rows = await db
         .select({ id: products.id })
         .from(products)
@@ -105,9 +109,7 @@ export async function createCatalogLinkAction(input: unknown): Promise<CatalogLi
             eq(products.sellerId, sellerId),
             eq(products.status, "active"),
             isNull(products.deletedAt),
-            store.catalogMode === "selected"
-              ? sql`EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${store.id} AND sp.product_id = ${products.id})`
-              : undefined,
+            productInStore(store.id, { catalogSplit, scope: "shown" }),
           ),
         );
       const ok = new Set(rows.map((row) => row.id.toLowerCase()));

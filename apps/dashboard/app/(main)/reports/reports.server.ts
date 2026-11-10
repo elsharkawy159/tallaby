@@ -1,6 +1,8 @@
 import { createCachedQuery, storeTags } from "@workspace/cache";
-import { db } from "@workspace/db";
+import { db, products } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { productInStore } from "@workspace/lib/stores/scope/server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { productImageUrl } from "../_components/home.queries";
 import {
   REPORT_PRODUCTS_MAX,
@@ -169,8 +171,11 @@ async function bestProducts(sellerId: string, storeId: string, start: string, lo
   return rowsOf(result).map(toProduct);
 }
 
-async function worstCandidates(sellerId: string, storeId: string, start: string, locale: string, currency: string): Promise<ReportProduct[]> {
-  // Active, not trashed products this store shows (catalog 'all' or its selection), fewest sales first.
+async function worstCandidates(sellerId: string, storeId: string, start: string, locale: string, currency: string, catalogSplit: boolean): Promise<ReportProduct[]> {
+  // Active, not trashed products this store shows, fewest sales first. "Shows" is the shared
+  // `productInStore` rule, scope `shown` (F-87c): before the split catalog 'all' or its selection,
+  // after it the store's own products. On the bare products table, as the query aliases it `p`.
+  const shown = productInStore(storeId, { catalogSplit, scope: "shown" });
   const result = await db.execute(sql`
     WITH ${soldCte(sellerId, storeId, start, currency)}
     SELECT p.id, ${productTitle(locale)} AS title, p.images->>0 AS image,
@@ -181,21 +186,27 @@ async function worstCandidates(sellerId: string, storeId: string, start: string,
      WHERE p.seller_id = ${sellerId}
        AND p.status = 'active'
        AND p.deleted_at IS NULL
-       AND (st.catalog_mode = 'all'
-            OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = st.id AND sp.product_id = p.id))
+       AND EXISTS (SELECT 1 FROM ${products} WHERE ${products.id} = p.id AND ${shown})
      ORDER BY coalesce(s.units, 0) ASC, coalesce(s.piastres, 0) ASC, p.created_at ASC
      LIMIT ${REPORT_PRODUCTS_MAX * 2}
   `);
   return rowsOf(result).map(toProduct);
 }
 
-async function loadStoreReport(sellerId: string, storeId: string, start: string, locale: string, currency: string): Promise<StoreReportData> {
+async function loadStoreReport(
+  sellerId: string,
+  storeId: string,
+  start: string,
+  locale: string,
+  currency: string,
+  catalogSplit: boolean,
+): Promise<StoreReportData> {
   const [govs, srcs, abandoned, best, worst] = await Promise.all([
     governorates(sellerId, storeId, start),
     sources(sellerId, storeId, start, currency),
     abandonedCheckouts(sellerId, storeId, start),
     bestProducts(sellerId, storeId, start, locale, currency),
-    worstCandidates(sellerId, storeId, start, locale, currency),
+    worstCandidates(sellerId, storeId, start, locale, currency, catalogSplit),
   ]);
   return { governorates: govs, sources: srcs, abandonedCheckouts: abandoned, best, worstCandidates: worst };
 }
@@ -203,7 +214,10 @@ async function loadStoreReport(sellerId: string, storeId: string, start: string,
 const getCachedStoreReport = createCachedQuery({
   name: "dashboard:store-report:v2",
   ttl: REPORT_TTL_SECONDS,
-  tags: (sellerId: string, storeId: string, _start: string, _locale: string, _currency: string) => [storeTags.reports(sellerId, storeId)],
+  // The switch is part of the key: flipping it never serves a report built on the other rule.
+  tags: (sellerId: string, storeId: string, _start: string, _locale: string, _currency: string, _catalogSplit: boolean) => [
+    storeTags.reports(sellerId, storeId),
+  ],
   query: loadStoreReport,
 });
 
@@ -220,5 +234,6 @@ export async function getStoreReport(
   currency: string,
 ): Promise<StoreReportData | null> {
   if (!UUID_RE.test(sellerId) || !UUID_RE.test(storeId) || Number.isNaN(Date.parse(start))) return null;
-  return getCachedStoreReport(sellerId, storeId, start, locale.startsWith("ar") ? "ar" : "en", currency);
+  const catalogSplit = await isSwitchOn("stores_catalog_split");
+  return getCachedStoreReport(sellerId, storeId, start, locale.startsWith("ar") ? "ar" : "en", currency, catalogSplit);
 }

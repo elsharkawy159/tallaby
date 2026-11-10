@@ -10,15 +10,20 @@ import { listStoreCustomersPage } from "@workspace/lib/customers/server";
 import { buildOrderPageUrl } from "@workspace/lib/orders";
 import { manualOrderInputSchema, type ManualOrderErrorKey, type ManualOrderTotals } from "@workspace/lib/orders/manual";
 import { createManualOrder, previewManualOrder } from "@workspace/lib/orders/manual/server";
+import { productInStore } from "@workspace/lib/stores/scope/server";
 import { storeSellsProduct } from "@workspace/lib/stores/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 
 /**
  * Orders › Create order (ROADMAP.md F-05). storeId is explicit and checked on
  * every action; products and customers come from this store only, and prices
- * from the database, never the client.
+ * from the database, never the client. The product picker filters in SQL with
+ * the shared `productInStore` condition, scope `shown` (what this store sells,
+ * as checkout sees it; F-87c), so the limit counts only sellable products; the
+ * order itself is checked again in lib/orders/manual (slice 5).
  */
 
 export type ManualProductOption = {
@@ -38,7 +43,7 @@ const PRODUCT_LIMIT = 15;
 export async function searchManualOrderProducts(storeId: string, query: string): Promise<ManualProductOption[]> {
   try {
     const { seller, store } = await requireOrdersStore(String(storeId));
-    const locale = await getLocale();
+    const [locale, catalogSplit] = await Promise.all([getLocale(), isSwitchOn("stores_catalog_split")]);
     const text = String(query ?? "").trim().slice(0, 100);
     const pattern = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
     const rows = await db
@@ -58,6 +63,7 @@ export async function searchManualOrderProducts(storeId: string, query: string):
           eq(products.sellerId, seller.sellerId),
           eq(products.status, "active"),
           isNull(products.deletedAt),
+          productInStore(store.id, { catalogSplit, scope: "shown" }),
           text
             ? or(
                 ilike(products.sku, pattern),

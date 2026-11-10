@@ -16,7 +16,9 @@ import {
   sellerProductCategories,
   sql,
 } from "@workspace/db";
-import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import type { SQL } from "drizzle-orm";
+import { isAccessError } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import { priceDisplay } from "../bulk-edit/bulk-edit.lib";
 import {
   CATEGORY_ORDER_MAX_PRODUCTS,
@@ -32,7 +34,10 @@ import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
 /**
  * Products › Categories › "Arrange products" (ROADMAP.md F-24d, 0128). The
  * seller comes from the session; a category is used only together with its
- * seller_id, and only that seller's products in it can be placed. The
+ * seller_id (categories stay per seller until F-87d), and only the products of
+ * the page's store in it can be placed or cleared (F-87c: the store must be the
+ * seller's, products filtered with `productInStore`, scope `managed`; before
+ * the split that is every product of the seller, as before). The
  * products are the ones the store's category page shows: linked to the
  * category, plus unlinked ones of the Tallaby category it was picked from
  * (same rule as `storeCategoryGroups`). Saving clears the seller's storefront
@@ -40,7 +45,10 @@ import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
  */
 
 function failure(error: unknown, label: string): { success: false; error: CategoryOrderError } {
-  if (isAccessError(error)) return { success: false, error: error.code === "seller_blocked" ? "readOnly" : "notFound" };
+  if (isAccessError(error)) {
+    const readOnly = error.code === "seller_blocked" || error.code === "store_read_only";
+    return { success: false, error: readOnly ? "readOnly" : "notFound" };
+  }
   console.error(`[category-order] ${label} failed`, error);
   return { success: false, error: "generic" };
 }
@@ -54,9 +62,10 @@ async function ownedCategory(sellerId: string, categoryId: string) {
   return row ?? null;
 }
 
-function inCategory(sellerId: string, category: { id: string; sourceId: string | null }) {
+function inCategory(sellerId: string, inStore: SQL, category: { id: string; sourceId: string | null }) {
   return and(
     eq(products.sellerId, sellerId),
+    inStore,
     isNull(products.deletedAt),
     isNull(products.purgedAt),
     or(
@@ -66,13 +75,18 @@ function inCategory(sellerId: string, category: { id: string; sourceId: string |
   );
 }
 
+/** Positions of this store's products only: saving or resetting through one store never clears another's. */
+function storePositions(inStore: SQL) {
+  return inArray(sellerCategoryProductPositions.productId, db.select({ id: products.id }).from(products).where(inStore));
+}
+
 const isUuid = (value: unknown): value is string =>
   typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 /** The category's products in their current "Featured" order. */
-export async function loadCategoryProductOrder(categoryId: unknown): Promise<CategoryOrderLoadResult> {
+export async function loadCategoryProductOrder(storeId: string, categoryId: unknown): Promise<CategoryOrderLoadResult> {
   try {
-    const seller = await requireSeller();
+    const { seller, inStore } = await requireProductStore(storeId, { read: true });
     if (!isUuid(categoryId)) return { success: false, error: "invalidInput" };
     const category = await ownedCategory(seller.sellerId, categoryId);
     if (!category) return { success: false, error: "notFound" };
@@ -88,7 +102,7 @@ export async function loadCategoryProductOrder(categoryId: unknown): Promise<Cat
         position,
       })
       .from(products)
-      .where(inCategory(seller.sellerId, category))
+      .where(inCategory(seller.sellerId, inStore, category))
       .orderBy(sql`${position} ASC NULLS LAST`, sql`${products.createdAt} DESC`, products.id)
       .limit(CATEGORY_ORDER_MAX_PRODUCTS + 1);
 
@@ -125,9 +139,9 @@ async function afterChange(sellerId: string) {
 }
 
 /** Saves the order: the listed products get positions 0..n-1, the rest of the category follows newest first. */
-export async function saveCategoryProductOrder(input: unknown): Promise<CategoryOrderSaveResult> {
+export async function saveCategoryProductOrder(storeId: string, input: unknown): Promise<CategoryOrderSaveResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const { seller, inStore } = await requireProductStore(storeId);
     const parsed = saveCategoryOrderSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const category = await ownedCategory(seller.sellerId, parsed.data.categoryId);
@@ -138,7 +152,7 @@ export async function saveCategoryProductOrder(input: unknown): Promise<Category
       ? await db
           .select({ id: products.id })
           .from(products)
-          .where(and(inCategory(seller.sellerId, category), inArray(products.id, ids)))
+          .where(and(inCategory(seller.sellerId, inStore, category), inArray(products.id, ids)))
       : [];
     const rows = positionsFor(
       ids,
@@ -153,6 +167,7 @@ export async function saveCategoryProductOrder(input: unknown): Promise<Category
           and(
             eq(sellerCategoryProductPositions.sellerCategoryId, category.id),
             eq(sellerCategoryProductPositions.sellerId, seller.sellerId),
+            storePositions(inStore),
           ),
         );
       if (rows.length) {
@@ -169,9 +184,9 @@ export async function saveCategoryProductOrder(input: unknown): Promise<Category
 }
 
 /** Forgets the manual order: the category goes back to newest first. */
-export async function resetCategoryProductOrder(categoryId: unknown): Promise<CategoryOrderSaveResult> {
+export async function resetCategoryProductOrder(storeId: string, categoryId: unknown): Promise<CategoryOrderSaveResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const { seller, inStore } = await requireProductStore(storeId);
     if (!isUuid(categoryId)) return { success: false, error: "invalidInput" };
     const category = await ownedCategory(seller.sellerId, categoryId);
     if (!category) return { success: false, error: "notFound" };
@@ -181,6 +196,7 @@ export async function resetCategoryProductOrder(categoryId: unknown): Promise<Ca
         and(
           eq(sellerCategoryProductPositions.sellerCategoryId, category.id),
           eq(sellerCategoryProductPositions.sellerId, seller.sellerId),
+          storePositions(inStore),
         ),
       );
     await afterChange(seller.sellerId);

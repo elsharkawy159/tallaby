@@ -1,6 +1,8 @@
 import { cache } from "react";
-import { db, orderItems } from "@workspace/db";
-import { desc, eq, sql } from "drizzle-orm";
+import { db, orderItems, products } from "@workspace/db";
+import { desc, eq, sql, type SQL } from "drizzle-orm";
+import { productInStore } from "@workspace/lib/stores/scope/server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { getSessionUser } from "@/lib/auth/session.server";
 import type { HomeChannel, HomeRange } from "./home.shared";
 import type { SetupFlags } from "./setup-checklist.lib";
@@ -37,9 +39,23 @@ export function productImageUrl(path: string | null | undefined): string | null 
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${path}`;
 }
 
+/**
+ * "Product `p` is in this store" for the raw SQL below (F-87c): the shared
+ * `productInStore` condition, scope `managed` (before the split: the store's
+ * seller, so the same rows as `p.seller_id = s.id`), on the bare `products`
+ * table it renders for. No store (a seller without one): no filter, the
+ * account as before. `storeId` is only ever one of the session seller's stores
+ * (getSellerStores, or a caller that checked it).
+ */
+async function productScopeSql(storeId: string | null): Promise<SQL> {
+  if (!storeId) return sql``;
+  const inStore = productInStore(storeId, { catalogSplit: await isSwitchOn("stores_catalog_split"), scope: "managed" });
+  return sql` AND EXISTS (SELECT 1 FROM ${products} WHERE ${products.id} = p.id AND ${inStore})`;
+}
+
 /** The setup flags, for `sellers s LEFT JOIN stores st` with st limited to this seller. */
-const SETUP_FLAG_COLUMNS = sql`
-      EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active') AS setup_product,
+const setupFlagColumns = (productScope: SQL) => sql`
+      EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active'${productScope}) AS setup_product,
       -- st is already limited to this seller (join below), so st.id scopes the child rows.
       -- Same rule as storeTemplateChosen (@workspace/lib): the Classic placeholder drafts are not a choice.
       coalesce(st.first_published_at IS NOT NULL OR st.site_status IN ('published', 'unpublished')
@@ -103,10 +119,11 @@ export async function getSetupPromptRow(
   sellerId: string,
   storeId: string | null,
 ): Promise<{ flags: SetupFlags; state: unknown } | null> {
+  const productScope = await productScopeSql(storeId);
   const result = await db.execute(sql`
     SELECT
       s.seller_metrics -> 'setupPrompts' AS setup_prompts,
-      ${SETUP_FLAG_COLUMNS}
+      ${setupFlagColumns(productScope)}
     FROM sellers s
     LEFT JOIN stores st ON st.id = ${storeId}::uuid AND st.seller_id = s.id
     WHERE s.id = ${sellerId}
@@ -121,6 +138,8 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
   const { selected } = await getSellerStores();
   // Only ever one of this seller's stores (getSellerStores ignores foreign ids).
   const storeId = selected?.id ?? null;
+  // Product counts (setup, low stock, questions) are the selected store's, like the Products link (F-87c).
+  const productScope = await productScopeSql(storeId);
 
   const result = await db.execute(sql`
     SELECT
@@ -134,14 +153,14 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.fee_trial_eligible,
       s.fee_trial_started_at,
       s.fee_trial_ends_at,
-      ${SETUP_FLAG_COLUMNS},
+      ${setupFlagColumns(productScope)},
       EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = s.id) AS has_orders,
       EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON o.id = oi.order_id
         WHERE oi.seller_id = s.id AND NOT o.is_test) AS has_real_orders,
       (SELECT count(*)::int FROM products p
-        WHERE p.seller_id = s.id AND p.status = 'active' AND p.track_stock AND p.quantity < ${LOW_STOCK_THRESHOLD}) AS low_stock,
+        WHERE p.seller_id = s.id AND p.status = 'active' AND p.track_stock AND p.quantity < ${LOW_STOCK_THRESHOLD}${productScope}) AS low_stock,
       (SELECT count(*)::int FROM product_questions q JOIN products p ON p.id = q.product_id
-        WHERE p.seller_id = s.id AND q.is_answered = false) AS unanswered_questions,
+        WHERE p.seller_id = s.id AND q.is_answered = false${productScope}) AS unanswered_questions,
       (SELECT count(*)::int FROM reviews r
         WHERE r.created_at >= now() - interval '7 days'
           AND (r.seller_id = s.id
@@ -421,9 +440,12 @@ export type HomeQuestion = {
   image: string | null;
 };
 
+/** The selected store's unanswered questions (F-87c; no store = the account). */
 export const getUnansweredQuestions = cache(async (locale: string): Promise<HomeQuestion[]> => {
   const sellerId = await getHomeSellerId();
   if (!sellerId) return [];
+  const { selected } = await getSellerStores();
+  const productScope = await productScopeSql(selected?.id ?? null);
 
   const result = await db.execute(sql`
     SELECT
@@ -437,7 +459,7 @@ export const getUnansweredQuestions = cache(async (locale: string): Promise<Home
         LIMIT 1) AS title
     FROM product_questions q
     JOIN products p ON p.id = q.product_id
-    WHERE p.seller_id = ${sellerId} AND q.is_answered = false
+    WHERE p.seller_id = ${sellerId} AND q.is_answered = false${productScope}
     ORDER BY q.created_at DESC
     LIMIT 5
   `);

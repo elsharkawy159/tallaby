@@ -10,6 +10,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { saveQuantityOffers, type QuantityOfferRow } from "./quantity-offers.server";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 import { toAsciiDigits } from "@/components/form/form-ui";
 
 type Draft = { key: number; minQuantity: string; discountType: "percent" | "fixed"; discountValue: string; isActive: boolean };
@@ -31,6 +32,7 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
   const { unit } = useAccountMoney();
   const locale = useLocale();
   const t = useTranslations("quantityOffers");
+  const storeId = useProductStoreId();
   const [tiers, setTiers] = useState<Draft[]>(() => toDrafts(initial));
   const [nextKey, setNextKey] = useState(initial.length);
   const [pending, startTransition] = useTransition();
@@ -56,6 +58,7 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
   const save = () =>
     startTransition(async () => {
       const result = await saveQuantityOffers({
+        storeId,
         productId,
         tiers: tiers.map((tier) => ({
           minQuantity: Number(tier.minQuantity),

@@ -249,6 +249,189 @@ describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", 
     }
   });
 
+  // ── F-87c slice 3: secondary product features ───────────────────────────
+  // Quantity offers, cross-sells, the inventory restock, seller-added reviews
+  // (social proof) and coupon product targets: each dashboard action runs
+  // requireProductStore (storeOwnedBy for the session seller) and puts the same
+  // productInStore(store, { scope: "managed" }) in the product read or write
+  // that gates it (quantity-offers.server.ts, cross-sell.server.ts,
+  // inventory.server.ts, social-proof.server.ts, actions/coupons.ts). These run
+  // those statements against real rows and check what got written.
+
+  /** The ids of `productIds` the action may touch through `storeId`, as its gating read does. */
+  async function gatedIds(sellerId: string, storeId: string, productIds: string[], catalogSplit = false): Promise<string[]> {
+    if (!(await storeOwnedBy(sellerId, storeId, db))) return [];
+    const rows = await db
+      .select({ id: s.products.id })
+      .from(s.products)
+      .where(
+        and(
+          eq(s.products.sellerId, sellerId),
+          inArray(s.products.id, productIds),
+          isNull(s.products.deletedAt),
+          productInStore(storeId, { catalogSplit, scope: "managed" }),
+        ),
+      );
+    return rows.map((r) => r.id).sort();
+  }
+
+  /** saveQuantityOffers: the product read inside the store, then the tiers. Returns whether it wrote. */
+  async function saveQuantityOffer(sellerId: string, storeId: string, productId: string, catalogSplit = false) {
+    const found = await gatedIds(sellerId, storeId, [productId], catalogSplit);
+    if (found.length !== 1) return false;
+    await db
+      .insert(s.productQuantityOffers)
+      .values({ sellerId, productId, minQuantity: 2, discountType: "percent", discountValue: "10.00" });
+    return true;
+  }
+
+  /** addCrossSell: both products inside the store (not only the same seller), then the offer. */
+  async function addCrossSellOffer(sellerId: string, storeId: string, productId: string, offerProductId: string, catalogSplit = false) {
+    const found = await gatedIds(sellerId, storeId, [productId, offerProductId], catalogSplit);
+    if (found.length !== 2) return false;
+    const rows = await db
+      .insert(s.productCrossSells)
+      .values({ sellerId, productId, offerProductId, discountType: "percent", discountValue: "10.00" })
+      .onConflictDoNothing()
+      .returning({ id: s.productCrossSells.id });
+    return rows.length === 1;
+  }
+
+  /** restockAction: one atomic `+ n` with the store condition in the same WHERE. */
+  async function restock(sellerId: string, storeId: string, productId: string, add: number, catalogSplit = false) {
+    if (!(await storeOwnedBy(sellerId, storeId, db))) return false;
+    const rows = await db
+      .update(s.products)
+      .set({ quantity: sql`${s.products.quantity} + ${add}` })
+      .where(
+        and(
+          eq(s.products.id, productId),
+          eq(s.products.sellerId, sellerId),
+          isNull(s.products.deletedAt),
+          productInStore(storeId, { catalogSplit, scope: "managed" }),
+        ),
+      )
+      .returning({ id: s.products.id });
+    return rows.length === 1;
+  }
+
+  /** saveProductSocialProof: the product UPDATE inside the store gates the seller-added review insert. */
+  async function addSellerReview(sellerId: string, storeId: string, productId: string, catalogSplit = false) {
+    if (!(await storeOwnedBy(sellerId, storeId, db))) return false;
+    const updated = await db
+      .update(s.products)
+      .set({ showLiveViews: true })
+      .where(and(eq(s.products.id, productId), eq(s.products.sellerId, sellerId), productInStore(storeId, { catalogSplit, scope: "managed" })))
+      .returning({ id: s.products.id });
+    if (!updated.length) return false;
+    await db.insert(s.reviews).values({
+      productId,
+      sellerId,
+      userId: null,
+      source: "seller",
+      status: "approved",
+      reviewType: "product",
+      rating: 5,
+      reviewerName: "QA",
+      isVerifiedPurchase: false,
+    });
+    return true;
+  }
+
+  /** saveSellerCoupon: every product target must be in the store, or the coupon is refused (invalid_products). */
+  async function couponTargetsOk(sellerId: string, storeId: string, productIds: string[], catalogSplit = false) {
+    return (await gatedIds(sellerId, storeId, productIds, catalogSplit)).length === productIds.length;
+  }
+
+  async function countFor(productIds: string[]) {
+    const [offers, crossSells, sellerReviews] = await Promise.all([
+      db.select({ n: sql<number>`count(*)::int` }).from(s.productQuantityOffers).where(inArray(s.productQuantityOffers.productId, productIds)),
+      db.select({ n: sql<number>`count(*)::int` }).from(s.productCrossSells).where(inArray(s.productCrossSells.productId, productIds)),
+      db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(s.reviews)
+        .where(and(inArray(s.reviews.productId, productIds), eq(s.reviews.source, "seller"))),
+    ]);
+    return { offers: offers[0]!.n, crossSells: crossSells[0]!.n, reviews: sellerReviews[0]!.n };
+  }
+
+  async function cleanupFeatures() {
+    const all = [p.s1a, p.s1b, p.s2];
+    await db.delete(s.productQuantityOffers).where(inArray(s.productQuantityOffers.productId, all));
+    await db.delete(s.productCrossSells).where(inArray(s.productCrossSells.productId, all));
+    await db.delete(s.reviews).where(and(inArray(s.reviews.productId, all), eq(s.reviews.source, "seller")));
+  }
+
+  async function quantityOf(productId: string) {
+    const [row] = await db.select({ q: s.products.quantity }).from(s.products).where(eq(s.products.id, productId));
+    return Number(row!.q);
+  }
+
+  it("slice 3: S1 can't add a quantity offer, cross-sell, stock, review or coupon target to S2's product, nor through S2's store", async () => {
+    try {
+      const s2Stock = await quantityOf(p.s2);
+      for (const store of [ids.storeA, ids.storeB]) {
+        expect(await saveQuantityOffer(ids.s1, store, p.s2)).toBe(false);
+        expect(await addCrossSellOffer(ids.s1, store, p.s1a, p.s2)).toBe(false);
+        expect(await restock(ids.s1, store, p.s2, 5)).toBe(false);
+        expect(await addSellerReview(ids.s1, store, p.s2)).toBe(false);
+        expect(await couponTargetsOk(ids.s1, store, [p.s1a, p.s2])).toBe(false);
+      }
+      // A forged pair: S2's store id with S1's own products is refused too.
+      expect(await saveQuantityOffer(ids.s1, ids.storeS2, p.s1a)).toBe(false);
+      expect(await addCrossSellOffer(ids.s1, ids.storeS2, p.s1a, p.s1b)).toBe(false);
+      expect(await restock(ids.s1, ids.storeS2, p.s1a, 5)).toBe(false);
+      expect(await addSellerReview(ids.s1, ids.storeS2, p.s1a)).toBe(false);
+      expect(await couponTargetsOk(ids.s1, ids.storeS2, [p.s1a])).toBe(false);
+      expect(await countFor([p.s1a, p.s1b, p.s2])).toEqual({ offers: 0, crossSells: 0, reviews: 0 });
+      expect(await quantityOf(p.s2)).toBe(s2Stock);
+    } finally {
+      await cleanupFeatures();
+    }
+  });
+
+  it("slice 3, before the split: every store of S1 manages every S1 product (today's rule)", async () => {
+    try {
+      const before = await quantityOf(p.s1a);
+      // Store B (selected mode, shows only s1b) still manages s1a in the dashboard.
+      expect(await saveQuantityOffer(ids.s1, ids.storeB, p.s1a)).toBe(true);
+      expect(await addCrossSellOffer(ids.s1, ids.storeA, p.s1a, p.s1b)).toBe(true);
+      expect(await restock(ids.s1, ids.storeB, p.s1a, 2)).toBe(true);
+      expect(await addSellerReview(ids.s1, ids.storeA, p.s1b)).toBe(true);
+      expect(await couponTargetsOk(ids.s1, ids.storeB, [p.s1a, p.s1b])).toBe(true);
+      expect(await countFor([p.s1a, p.s1b])).toEqual({ offers: 1, crossSells: 1, reviews: 1 });
+      expect(await quantityOf(p.s1a)).toBe(before + 2);
+      await db.update(s.products).set({ quantity: String(before) }).where(eq(s.products.id, p.s1a));
+    } finally {
+      await cleanupFeatures();
+    }
+  });
+
+  it("slice 3, with catalogSplit: true: a store A product gets nothing through store B, and a cross-sell can't pair two stores", async () => {
+    await db.update(s.products).set({ storeId: ids.storeA }).where(eq(s.products.id, p.s1a));
+    await db.update(s.products).set({ storeId: ids.storeB }).where(eq(s.products.id, p.s1b));
+    try {
+      const before = await quantityOf(p.s1a);
+      expect(await saveQuantityOffer(ids.s1, ids.storeB, p.s1a, true)).toBe(false);
+      expect(await addCrossSellOffer(ids.s1, ids.storeA, p.s1a, p.s1b, true)).toBe(false);
+      expect(await addCrossSellOffer(ids.s1, ids.storeB, p.s1b, p.s1a, true)).toBe(false);
+      expect(await restock(ids.s1, ids.storeB, p.s1a, 5, true)).toBe(false);
+      expect(await addSellerReview(ids.s1, ids.storeB, p.s1a, true)).toBe(false);
+      expect(await couponTargetsOk(ids.s1, ids.storeB, [p.s1b, p.s1a], true)).toBe(false);
+      expect(await countFor([p.s1a, p.s1b])).toEqual({ offers: 0, crossSells: 0, reviews: 0 });
+      expect(await quantityOf(p.s1a)).toBe(before);
+      // Through its own store each still works.
+      expect(await saveQuantityOffer(ids.s1, ids.storeA, p.s1a, true)).toBe(true);
+      expect(await restock(ids.s1, ids.storeA, p.s1a, 1, true)).toBe(true);
+      expect(await addSellerReview(ids.s1, ids.storeB, p.s1b, true)).toBe(true);
+      expect(await couponTargetsOk(ids.s1, ids.storeB, [p.s1b], true)).toBe(true);
+      await db.update(s.products).set({ quantity: String(before) }).where(eq(s.products.id, p.s1a));
+    } finally {
+      await cleanupFeatures();
+      await db.update(s.products).set({ storeId: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
+    }
+  });
+
   it("both switches are off (or the table is not there yet)", async () => {
     expect(await isSwitchOn("stores_catalog_split", db)).toBe(false);
     expect(await isSwitchOn("stores_wallet_split", db)).toBe(false);

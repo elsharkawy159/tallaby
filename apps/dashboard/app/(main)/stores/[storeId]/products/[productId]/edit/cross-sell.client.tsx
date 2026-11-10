@@ -12,12 +12,14 @@ import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { addCrossSell, removeCrossSell, setCrossSellActive, type CrossSellResult, type CrossSellRow } from "./cross-sell.server";
 import { toAsciiDigits } from "@/components/form/form-ui";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 
 /** "Frequently bought with": offers shown under this product on the seller's stores (ROADMAP.md F-32c). */
 export function CrossSellSection({ productId, initial }: { productId: string; initial: CrossSellRow[] }) {
   const { unit } = useAccountMoney();
   const locale = useLocale();
   const t = useTranslations("crossSell");
+  const storeId = useProductStoreId();
   const format = useFormatter();
   const [offers, setOffers] = useState(initial);
   const [query, setQuery] = useState("");
@@ -35,7 +37,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
     if (!searching) return;
     let stale = false;
     const timer = setTimeout(() => {
-      searchCouponProducts({ query: text }).then((rows) => {
+      searchCouponProducts({ storeId, query: text }).then((rows) => {
         if (!stale) setOptions(rows.filter((row) => row.id !== productId && row.isActive));
       });
     }, 250);
@@ -43,7 +45,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
       stale = true;
       clearTimeout(timer);
     };
-  }, [text, searching, productId]);
+  }, [text, searching, productId, storeId]);
 
   const run = (action: () => Promise<CrossSellResult>, after?: () => void) =>
     startTransition(async () => {
@@ -59,7 +61,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
   const add = () => {
     if (!chosen) return;
     run(
-      () => addCrossSell({ productId, offerProductId: chosen.id, discountType: type, discountValue: Number(value) }),
+      () => addCrossSell({ storeId, productId, offerProductId: chosen.id, discountType: type, discountValue: Number(value) }),
       () => {
         setChosen(null);
         setQuery("");
@@ -92,7 +94,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
                 aria-label={t("active")}
                 checked={offer.isActive}
                 disabled={pending}
-                onCheckedChange={(isActive) => run(() => setCrossSellActive({ id: offer.id, productId, isActive }))}
+                onCheckedChange={(isActive) => run(() => setCrossSellActive({ storeId, id: offer.id, productId, isActive }))}
               />
               <Button
                 type="button"
@@ -100,7 +102,7 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
                 size="icon"
                 aria-label={t("remove")}
                 disabled={pending}
-                onClick={() => run(() => removeCrossSell({ id: offer.id, productId }))}
+                onClick={() => run(() => removeCrossSell({ storeId, id: offer.id, productId }))}
               >
                 <Trash2 className="size-4" aria-hidden />
               </Button>

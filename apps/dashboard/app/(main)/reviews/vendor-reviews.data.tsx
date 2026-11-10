@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { getSellerReviews } from "@/actions/reviews";
 import { getSellerQuestions } from "@/actions/products";
+import { getSellerStores } from "@/lib/stores/current-store.server";
 import { PageHeader } from "@/components/seller-ui";
 import {
   VendorReviewsTabs,
@@ -46,10 +47,13 @@ function mapReviewRows(reviews: any[], t: Translate, locale: string): VendorRevi
 }
 
 export async function VendorReviewsData() {
+  // /reviews has no store in its URL: questions are the selected store's products (F-87c; none = the account).
+  const { selected } = await getSellerStores().catch(() => ({ selected: null }));
+  const questionStoreId = selected?.id ?? null;
   const [productRes, storeRes, qres, t, locale] = await Promise.all([
     getSellerReviews({ limit: 100, offset: 0, reviewType: "product" }),
     getSellerReviews({ limit: 100, offset: 0, reviewType: "store" }),
-    getSellerQuestions({ limit: 100, offset: 0 }),
+    getSellerQuestions({ storeId: questionStoreId, limit: 100, offset: 0 }),
     getTranslations("reviews"),
     getLocale(),
   ]);
@@ -72,6 +76,7 @@ export async function VendorReviewsData() {
         storeRows={mapReviewRows(storeReviews, t, locale)}
       />
       <VendorQASection
+        storeId={questionStoreId}
         questions={questionsRaw.map((q: any) => ({
           id: q.id,
           question: q.question,

@@ -256,7 +256,7 @@ export type VendorQuestionRow = {
   answers: Array<{ id: string; answer: string; createdAt?: string }>;
 };
 
-export function VendorQASection({ questions }: { questions: VendorQuestionRow[] }) {
+export function VendorQASection({ questions, storeId }: { questions: VendorQuestionRow[]; storeId: string | null }) {
   const t = useTranslations("reviews.qa");
   const locale = useLocale();
   // Sort: unanswered first then latest by createdAt desc
@@ -279,6 +279,8 @@ export function VendorQASection({ questions }: { questions: VendorQuestionRow[] 
       const existing = q.answers[0];
       const form = new FormData();
       form.set("productId", q.productId);
+      // Checked again on the server (the store against the session, the product against the store).
+      if (storeId) form.set("storeId", storeId);
       if (existing) {
         form.set("answerId", existing.id);
         form.set("answer", drafts[q.id] || "");

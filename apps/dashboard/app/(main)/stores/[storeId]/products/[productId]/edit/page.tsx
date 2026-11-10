@@ -53,7 +53,7 @@ export default async function EditProductPage({
       getSellerProfile(),
       loadSellerTaxonomyOptions(sellerId),
       loadProductLinkHost(sellerId),
-      loadProductSocialProof(sellerId, productId),
+      loadProductSocialProof(sellerId, productId, access.inStore),
       getBillingState(),
     ]);
 
@@ -88,11 +88,11 @@ export default async function EditProductPage({
   };
 
   // Not awaited: the views stat streams into the header (F-15b); never rejects.
-  const viewStats = loadProductViewStats([productId]);
+  const viewStats = loadProductViewStats(store.id, [productId]);
   const slug = defaultValues.localized?.en?.slug?.trim() || null;
   const storeLinks = await loadProductStoreLinks([{ id: productId, slug }], store.id);
 
-  const [crossSells, quantityOffers] = await Promise.all([listCrossSells(productId), listQuantityOffers(productId)]);
+  const [crossSells, quantityOffers] = await Promise.all([listCrossSells(store.id, productId), listQuantityOffers(store.id, productId)]);
 
   return (
     <EditProduct

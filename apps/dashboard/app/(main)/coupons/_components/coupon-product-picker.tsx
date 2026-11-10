@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/i18n/format";
 import { useAccountMoney } from "@/components/account-money.client";
 import { RemoteImage } from "@/components/media/remote-image";
 import { fieldClass } from "@/components/seller-ui";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 
 type Props = {
   selectedIds: string[];
@@ -21,6 +22,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
   const t = useTranslations("coupons.form");
+  const storeId = useProductStoreId();
   const locale = useLocale();
   const { unit } = useAccountMoney();
   const [query, setQuery] = useState("");
@@ -40,7 +42,7 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
     let live = true;
     const timer = setTimeout(
       () => {
-        searchCouponProducts({ query: search, selectedIds: selectedRef.current })
+        searchCouponProducts({ storeId, query: search, selectedIds: selectedRef.current })
           .then((found) => {
             if (!live) return;
             setVisible(found);
@@ -55,7 +57,7 @@ export function CouponProductPicker({ selectedIds, onChange, invalid }: Props) {
       live = false;
       clearTimeout(timer);
     };
-  }, [search]);
+  }, [search, storeId]);
 
   const toggle = (id: string) =>
     onChange(selected.has(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);

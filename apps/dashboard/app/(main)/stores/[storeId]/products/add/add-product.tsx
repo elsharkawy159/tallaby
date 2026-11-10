@@ -276,7 +276,7 @@ function AddProductForm({
     productId: string,
     data: AddProductFormData,
   ) => {
-    const saved = await saveProductSocialProof(productId, {
+    const saved = await saveProductSocialProof(productStoreId, productId, {
       showLiveViews: data.showLiveViews ?? false,
       trackStock: data.trackStock ?? true,
       showLowStockBadge: data.showLowStockBadge ?? false,
@@ -293,7 +293,7 @@ function AddProductForm({
     taxonomy: { sellerCategoryId: string | null; sellerBrandId: string | null },
   ) => {
     const sellerCategoryId = await resolveStoreCategory(data);
-    const linked = await setProductSellerTaxonomy(productId, {
+    const linked = await setProductSellerTaxonomy(productStoreId, productId, {
       ...taxonomy,
       sellerCategoryId,
     });
@@ -319,7 +319,7 @@ function AddProductForm({
             await linkStoreCategory(result.data.id, data, taxonomy);
             await saveSocialProof(result.data.id, data);
             if (aiFills.current > 0)
-              await markProductAiAssisted(result.data.id, "add");
+              await markProductAiAssisted(productStoreId, result.data.id, "add");
           }
           draft.pause();
           draft.clear();
@@ -356,7 +356,7 @@ function AddProductForm({
           await linkStoreCategory(productId, data, taxonomy);
           await saveSocialProof(productId, data);
           if (aiFills.current > 0)
-            await markProductAiAssisted(productId, "edit");
+            await markProductAiAssisted(productStoreId, productId, "edit");
           toast.success(tToast("productUpdatedSuccessfully"));
           router.push(productsHref());
         } else {

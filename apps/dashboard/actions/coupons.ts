@@ -22,7 +22,9 @@ import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { getUser } from "./auth";
-import { loadOrderLock } from "@/lib/auth/require-seller.server";
+import { isAccessError, loadOrderLock } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
+import { getSellerStores } from "@/lib/stores/current-store.server";
 
 export type SellerCouponRow = {
   id: string;
@@ -58,6 +60,12 @@ export type CouponProductOption = {
 export type SellerCouponsPage = {
   coupons: SellerCouponRow[];
   storeHost: string | null;
+  /**
+   * The store whose products the product picker offers and a product target is
+   * checked against (F-87c): the sidebar's selected store, as /coupons has no
+   * store in its URL. The server checks it again on every call.
+   */
+  productStoreId: string | null;
 };
 
 /** Error codes the client maps to `coupons.errors.*` messages. */
@@ -163,11 +171,11 @@ function toRow(
 /** Everything the coupons page needs, in one round trip. */
 export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
   const sellerId = await getSellerId();
-  if (!sellerId) return { coupons: [], storeHost: null };
+  if (!sellerId) return { coupons: [], storeHost: null, productStoreId: null };
 
   // A coupon's uses and discount follow from orders: hidden until activation (ROADMAP.md F-68).
   const { ordersLocked: locked } = await loadOrderLock(sellerId);
-  const [couponRows, discountRows, seller] = await Promise.all([
+  const [couponRows, discountRows, seller, productStoreId] = await Promise.all([
     db.query.coupons.findMany({
       where: eq(coupons.sellerId, sellerId),
       orderBy: [desc(coupons.createdAt)],
@@ -187,6 +195,10 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
       where: eq(sellers.id, sellerId),
       columns: { subdomain: true },
     }),
+    getSellerStores().then(
+      ({ selected }) => selected?.id ?? null,
+      () => null,
+    ),
   ]);
 
   const discountByCoupon = new Map(
@@ -201,6 +213,7 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
     storeHost: seller?.subdomain
       ? `${seller.subdomain}.${STORE_ROOT_DOMAIN}`
       : null,
+    productStoreId,
   };
 }
 
@@ -209,15 +222,24 @@ const COUPON_PICKER_LIMIT = 40;
 /**
  * The coupon product picker, loaded as the seller types: the newest products
  * matching a title in either language or the SKU, plus (with no search) the
- * already-chosen ones so they stay visible. Own products only; ids from the
- * client just narrow that.
+ * already-chosen ones so they stay visible. Only products of the named store
+ * (F-87c: the store must be the session seller's, products filtered with
+ * `productInStore`, scope `managed`); ids from the client just narrow that.
+ * The cross-sell form uses it too, with its page's store.
  */
 export async function searchCouponProducts(input: {
+  storeId: string;
   query?: string;
   selectedIds?: string[];
 }): Promise<CouponProductOption[]> {
-  const sellerId = await getSellerId();
-  if (!sellerId) return [];
+  let scope: Awaited<ReturnType<typeof requireProductStore>>;
+  try {
+    scope = await requireProductStore(input?.storeId, { read: true });
+  } catch (error) {
+    if (isAccessError(error)) return [];
+    throw error;
+  }
+  const { sellerId } = scope.seller;
 
   const locale = await getLocale();
   const text = String(input?.query ?? "").trim().slice(0, 100);
@@ -232,7 +254,7 @@ export async function searchCouponProducts(input: {
     // Nested: a one-table select strips the table name from a field's top-level columns.
     title: sql<string | null>`${sql`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = ${locale}) DESC LIMIT 1)`}`,
   };
-  const own = and(eq(products.sellerId, sellerId), isNull(products.deletedAt));
+  const own = and(eq(products.sellerId, sellerId), isNull(products.deletedAt), scope.inStore);
 
   const [chosen, found] = await Promise.all([
     selected.length
@@ -277,8 +299,15 @@ export async function searchCouponProducts(input: {
   });
 }
 
-/** Creates a coupon, or updates one when `couponId` is given. */
+/**
+ * Creates a coupon, or updates one when `couponId` is given. Product targets
+ * must be in `storeId` (F-87c; the coupons page sends its selected store, the
+ * server checks it against the session): a foreign or forged store, or a
+ * product outside it, is `invalid_products` (as a foreign product always
+ * was). The coupon itself stays the seller's (per-store coupons: F-87k).
+ */
 export async function saveSellerCoupon(
+  storeId: string | null,
   input: SellerCouponInput,
   couponId?: string
 ): Promise<
@@ -297,10 +326,18 @@ export async function saveSellerCoupon(
 
   const productIds = v.productIds?.length ? [...new Set(v.productIds)] : null;
   if (productIds) {
+    let inStore;
+    try {
+      ({ inStore } = await requireProductStore(storeId));
+    } catch (error) {
+      // Shown as "pick them again": the store isn't this seller's, so neither are the products.
+      if (isAccessError(error)) return { success: false, error: "invalid_products" };
+      throw error;
+    }
     const owned = await db
       .select({ id: products.id })
       .from(products)
-      .where(and(eq(products.sellerId, sellerId), inArray(products.id, productIds)));
+      .where(and(eq(products.sellerId, sellerId), inArray(products.id, productIds), inStore));
     if (owned.length !== productIds.length) {
       return { success: false, error: "invalid_products" };
     }

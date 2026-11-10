@@ -1,6 +1,7 @@
 import { and, db, eq, isNull, productTranslations, products, sql } from "@workspace/db";
 import { logServerError } from "@workspace/db/log";
 import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getProductPathViews } from "@/lib/analytics/product-views.server";
 import {
@@ -22,10 +23,21 @@ const rowsOf = <T,>(result: unknown): T[] =>
  * store-website orders containing the product, not cancelled (orders are
  * never cached, rule 8). Null when GA4 is not set up or failed, so the page
  * shows "—" and never errors. Pass `productIds` to limit the order count.
+ *
+ * `storeId` (the Products page's store, checked against the session) limits
+ * the products to that store (F-87c: `productInStore`, scope `managed`;
+ * before the split the seller's, so the same rows). Views and orders still
+ * come from every store of the seller, as a product's page can be visited on
+ * each store that shows it. `null`: the account (the old /products page).
  */
-export async function loadProductViewStats(productIds?: string[]): Promise<ProductViewStats> {
+export async function loadProductViewStats(storeId: string | null, productIds?: string[]): Promise<ProductViewStats> {
   try {
-    const [{ sellerId }, { stores }] = await Promise.all([requireSeller(), getSellerStores()]);
+    const [{ sellerId, inStore }, { stores }] = await Promise.all([
+      storeId === null
+        ? requireSeller().then((seller) => ({ sellerId: seller.sellerId, inStore: undefined }))
+        : requireProductStore(storeId, { read: true }).then((ctx) => ({ sellerId: ctx.seller.sellerId, inStore: ctx.inStore })),
+      getSellerStores(),
+    ]);
     const storeIds = stores.map((s) => s.id);
     const days = PRODUCT_VIEWS_DAYS;
     const paths = await getProductPathViews(sellerId, storeIds, days);
@@ -35,6 +47,8 @@ export async function loadProductViewStats(productIds?: string[]): Promise<Produ
     const productFilter = productIds
       ? sql`AND oi.product_id IN (${sql.join(productIds.map((id) => sql`${id}::uuid`), sql`, `)})`
       : sql``;
+    // The aliased SQL below gets the shared condition on the bare products table.
+    const storeFilter = inStore ? sql`AND EXISTS (SELECT 1 FROM ${products} WHERE ${products.id} = p.id AND ${inStore})` : sql``;
     // Orders per product wait for activation (ROADMAP.md F-68); views don't.
     const { ordersLocked: locked } = await loadOrderLock(sellerId);
     const [slugRows, orderResult] = await Promise.all([
@@ -47,7 +61,7 @@ export async function loadProductViewStats(productIds?: string[]): Promise<Produ
         })
         .from(productTranslations)
         .innerJoin(products, eq(products.id, productTranslations.productId))
-        .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt))),
+        .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt), inStore)),
       locked ? [] : db.execute(sql`
         SELECT oi.product_id::text AS product_id, count(DISTINCT oi.order_id)::int AS orders
         FROM order_items oi
@@ -60,6 +74,7 @@ export async function loadProductViewStats(productIds?: string[]): Promise<Produ
           AND oi.status <> 'cancelled'
           AND oi.created_at >= ((((now() AT TIME ZONE 'Africa/Cairo')::date - ${days - 1}::int)::timestamp) AT TIME ZONE 'Africa/Cairo')
           ${productFilter}
+          ${storeFilter}
         GROUP BY oi.product_id
       `),
     ]);

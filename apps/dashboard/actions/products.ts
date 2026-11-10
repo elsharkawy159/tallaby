@@ -1741,6 +1741,8 @@ export async function setProductPublished(storeId: string, productId: string, pu
 }
 
 export async function createProductVariant(data: {
+  /** The page's store (F-87c): checked against the session, and the product must be in it. */
+  storeId: string;
   productId: string;
   title: string;
   price: string;
@@ -1757,11 +1759,13 @@ export async function createProductVariant(data: {
       throw new Error("Unauthorized");
     }
 
-    // Verify product ownership
+    // Verify product ownership: the store is the session seller's and the product is in it.
+    const { inStore } = await requireStoreProduct(data.storeId, data.productId);
     const product = await db.query.products.findFirst({
       where: and(
         eq(products.id, data.productId),
-        eq(products.sellerId, session.user.id)
+        eq(products.sellerId, session.user.id),
+        inStore
       ),
     });
 
@@ -1802,6 +1806,8 @@ export async function createProductVariant(data: {
 }
 
 export async function answerProductQuestion(data: {
+  /** The store the page works on (F-87c; the selected store on pages without one): the question's product must be in it. */
+  storeId: string | null;
   questionId: string;
   answer: string;
 }) {
@@ -1811,7 +1817,10 @@ export async function answerProductQuestion(data: {
       throw new Error("Unauthorized");
     }
 
-    // Verify the question exists and belongs to a product owned by this seller
+    // The store must be the session seller's (a foreign or forged one is not_found).
+    const { inStore } = await requireProductStore(data.storeId);
+
+    // Verify the question exists and belongs to a product of this seller in that store
     const questionRow = await db
       .select({ productId: productQuestions.productId })
       .from(productQuestions)
@@ -1827,7 +1836,8 @@ export async function answerProductQuestion(data: {
       .where(
         and(
           eq(products.id, questionRow[0].productId as any),
-          eq(products.sellerId, session.user.id)
+          eq(products.sellerId, session.user.id),
+          inStore
         )
       );
 
@@ -1862,6 +1872,8 @@ export async function answerProductQuestion(data: {
 }
 
 export async function updateProductAnswer(data: {
+  /** As in answerProductQuestion: the answer's question must be on a product in this store. */
+  storeId: string | null;
   answerId: string;
   answer: string;
 }) {
@@ -1870,6 +1882,12 @@ export async function updateProductAnswer(data: {
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
+    const { inStore } = await requireProductStore(data.storeId);
+    const storeQuestions = db
+      .select({ id: productQuestions.id })
+      .from(productQuestions)
+      .innerJoin(products, eq(products.id, productQuestions.productId))
+      .where(and(eq(products.sellerId, session.user.id), inStore));
 
     const updated = await db
       .update(productAnswers)
@@ -1880,7 +1898,8 @@ export async function updateProductAnswer(data: {
       .where(
         and(
           eq(productAnswers.id, data.answerId),
-          eq(productAnswers.sellerId, session.user.id)
+          eq(productAnswers.sellerId, session.user.id),
+          inArray(productAnswers.questionId, storeQuestions)
         )
       )
       .returning();
@@ -1905,10 +1924,11 @@ export async function answerProductQuestionAction(formData: FormData) {
     const questionId = String(formData.get("questionId") || "");
     const answer = String(formData.get("answer") || "");
     const productId = String(formData.get("productId") || "");
+    const storeId = String(formData.get("storeId") || "");
     if (!questionId || !answer) {
       throw new Error("Missing fields");
     }
-    const res = await answerProductQuestion({ questionId, answer });
+    const res = await answerProductQuestion({ storeId, questionId, answer });
     if (productId) {
       revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
     }
@@ -1927,10 +1947,11 @@ export async function updateProductAnswerAction(formData: FormData) {
     const answerId = String(formData.get("answerId") || "");
     const answer = String(formData.get("answer") || "");
     const productId = String(formData.get("productId") || "");
+    const storeId = String(formData.get("storeId") || "");
     if (!answerId || !answer) {
       throw new Error("Missing fields");
     }
-    const res = await updateProductAnswer({ answerId, answer });
+    const res = await updateProductAnswer({ storeId, answerId, answer });
     if (productId) {
       revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
     }
@@ -1998,6 +2019,8 @@ export async function deleteProduct(storeId: string, productId: string) {
 }
 
 export async function getSellerUnansweredQuestions(params?: {
+  /** Only this store's products (F-87c, checked against the session); omitted = the whole account, as before. */
+  storeId?: string | null;
   limit?: number;
   offset?: number;
 }) {
@@ -2006,6 +2029,7 @@ export async function getSellerUnansweredQuestions(params?: {
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
+    const inStore = params?.storeId ? (await requireProductStore(params.storeId, { read: true })).inStore : undefined;
 
     const limit = params?.limit ?? 5;
     const offset = params?.offset ?? 0;
@@ -2032,7 +2056,8 @@ export async function getSellerUnansweredQuestions(params?: {
       .where(
         and(
           eq(products.sellerId, session.user.id),
-          eq(productQuestions.isAnswered, false)
+          eq(productQuestions.isAnswered, false),
+          inStore
         )
       )
       .orderBy(desc(productQuestions.createdAt))
@@ -2046,7 +2071,8 @@ export async function getSellerUnansweredQuestions(params?: {
       .where(
         and(
           eq(products.sellerId, session.user.id),
-          eq(productQuestions.isAnswered, false)
+          eq(productQuestions.isAnswered, false),
+          inStore
         )
       );
 
@@ -2065,6 +2091,8 @@ export async function getSellerUnansweredQuestions(params?: {
 }
 
 export async function getSellerQuestions(params?: {
+  /** Only this store's products (F-87c, checked against the session); omitted = the whole account, as before. */
+  storeId?: string | null;
   limit?: number;
   offset?: number;
 }) {
@@ -2073,6 +2101,7 @@ export async function getSellerQuestions(params?: {
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
+    const inStore = params?.storeId ? (await requireProductStore(params.storeId, { read: true })).inStore : undefined;
 
     const limit = params?.limit ?? 50;
     const offset = params?.offset ?? 0;
@@ -2097,7 +2126,7 @@ export async function getSellerQuestions(params?: {
           eq(productTranslations.locale, "en")
         )
       )
-      .where(eq(products.sellerId, session.user.id))
+      .where(and(eq(products.sellerId, session.user.id), inStore))
       .orderBy(
         asc(productQuestions.isAnswered),
         desc(productQuestions.createdAt)

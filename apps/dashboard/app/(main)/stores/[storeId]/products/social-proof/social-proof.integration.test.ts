@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 /**
@@ -24,6 +25,20 @@ vi.mock("@/lib/auth/require-seller.server", () => ({
   requireSeller: async () => ({ userId: session.sellerId, sellerId: session.sellerId, status: "approved", plan: "free", maxStoresOverride: null }),
   isAccessError: () => false,
 }));
+// The store guard (F-87c) is covered by product-store.server.test.ts and the store-separation integration test; here
+// it passes the session seller with no store filter, so the seller_id checks below still decide.
+const STORE_ID = "00000000-0000-4000-8000-000000000000";
+vi.mock("@/lib/products/product-store.server", async () => {
+  const { sql } = await import("drizzle-orm");
+  return {
+    requireProductStore: async () => ({
+      seller: { userId: session.sellerId, sellerId: session.sellerId, status: "approved", plan: "free", maxStoresOverride: null },
+      store: { id: STORE_ID },
+      catalogSplit: false,
+      inStore: sql`true`,
+    }),
+  };
+});
 const invalidations = vi.hoisted(() => [] as { tags: string[] }[]);
 vi.mock("@workspace/cache", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@workspace/cache")>()),
@@ -89,7 +104,7 @@ describe.skipIf(!TEST_DATABASE_URL || !SELLER_ID)("product reviews and live view
   it("adds seller reviews, turns live views on and recounts the rating", async () => {
     const { db, eq, and, products, reviews, saveProductSocialProof, loadProductSocialProof } = await load();
     session.sellerId = SELLER_ID;
-    const result = await saveProductSocialProof(productId, {
+    const result = await saveProductSocialProof(STORE_ID, productId, {
       showLiveViews: true,
       reviews: [
         { reviewerName: "  Mona A. ", rating: 5, comment: "Great quality" },
@@ -111,7 +126,7 @@ describe.skipIf(!TEST_DATABASE_URL || !SELLER_ID)("product reviews and live view
     expect(product!.reviewCount).toBe(3);
     expect(product!.averageRating).toBeCloseTo(11 / 3, 5);
 
-    const loaded = await loadProductSocialProof(SELLER_ID, productId);
+    const loaded = await loadProductSocialProof(SELLER_ID, productId, sql`true`);
     expect(loaded.showLiveViews).toBe(true);
     expect(loaded.reviews.map((r) => r.reviewerName).sort()).toEqual(["Mona A.", "أحمد"].sort());
     // The page caches by slug: the product's slug tags are purged.
@@ -132,9 +147,9 @@ describe.skipIf(!TEST_DATABASE_URL || !SELLER_ID)("product reviews and live view
 
   it("edits one review, removes another, adds one, and leaves the customer review alone", async () => {
     const { db, eq, and, products, reviews, saveProductSocialProof, loadProductSocialProof } = await load();
-    const before = await loadProductSocialProof(SELLER_ID, productId);
+    const before = await loadProductSocialProof(SELLER_ID, productId, sql`true`);
     const mona = before.reviews.find((r) => r.reviewerName === "Mona A.")!;
-    const result = await saveProductSocialProof(productId, {
+    const result = await saveProductSocialProof(STORE_ID, productId, {
       showLiveViews: true,
       reviews: [
         { id: mona.id, reviewerName: "Mona Ali", rating: 3, comment: "Good, slow delivery" },
@@ -161,7 +176,7 @@ describe.skipIf(!TEST_DATABASE_URL || !SELLER_ID)("product reviews and live view
   it("refuses another seller's product and changes nothing", async () => {
     const { db, eq, and, products, reviews, saveProductSocialProof } = await load();
     session.sellerId = randomUUID();
-    const result = await saveProductSocialProof(productId, { showLiveViews: false, reviews: [] });
+    const result = await saveProductSocialProof(STORE_ID, productId, { showLiveViews: false, reviews: [] });
     session.sellerId = SELLER_ID;
     expect(result).toEqual({ success: false, error: "notFound" });
     const [product] = await db.select().from(products).where(eq(products.id, productId));
@@ -172,25 +187,25 @@ describe.skipIf(!TEST_DATABASE_URL || !SELLER_ID)("product reviews and live view
 
   it("rejects bad input and the database refuses a nameless seller review", async () => {
     const { db, reviews, saveProductSocialProof } = await load();
-    expect(await saveProductSocialProof(productId, { showLiveViews: true, reviews: [{ reviewerName: " ", rating: 5 }] })).toEqual({ success: false, error: "invalidInput" });
-    expect(await saveProductSocialProof(productId, { showLiveViews: true, reviews: [{ reviewerName: "X", rating: 6 }] })).toEqual({ success: false, error: "invalidInput" });
+    expect(await saveProductSocialProof(STORE_ID, productId, { showLiveViews: true, reviews: [{ reviewerName: " ", rating: 5 }] })).toEqual({ success: false, error: "invalidInput" });
+    expect(await saveProductSocialProof(STORE_ID, productId, { showLiveViews: true, reviews: [{ reviewerName: "X", rating: 6 }] })).toEqual({ success: false, error: "invalidInput" });
     await expect(db.insert(reviews).values({ productId, sellerId: SELLER_ID, source: "seller", rating: 5, status: "approved" })).rejects.toThrow();
     await expect(db.insert(reviews).values({ productId, sellerId: SELLER_ID, source: "customer", rating: 5, status: "approved" })).rejects.toThrow();
   });
 
   it("saves and loads the low-stock alert, and refuses a threshold out of range (0122)", async () => {
     const { db, eq, products, saveProductSocialProof, loadProductSocialProof } = await load();
-    const current = await loadProductSocialProof(SELLER_ID, productId);
+    const current = await loadProductSocialProof(SELLER_ID, productId, sql`true`);
     const base = { showLiveViews: true, reviews: current.reviews };
-    expect(await saveProductSocialProof(productId, { ...base, showLowStockBadge: true, lowStockThreshold: 3 })).toEqual({ success: true });
-    expect(await loadProductSocialProof(SELLER_ID, productId)).toMatchObject({ showLowStockBadge: true, lowStockThreshold: 3 });
+    expect(await saveProductSocialProof(STORE_ID, productId, { ...base, showLowStockBadge: true, lowStockThreshold: 3 })).toEqual({ success: true });
+    expect(await loadProductSocialProof(SELLER_ID, productId, sql`true`)).toMatchObject({ showLowStockBadge: true, lowStockThreshold: 3 });
     for (const lowStockThreshold of [0, 100, 2.5]) {
-      expect(await saveProductSocialProof(productId, { ...base, showLowStockBadge: true, lowStockThreshold })).toEqual({ success: false, error: "invalidInput" });
+      expect(await saveProductSocialProof(STORE_ID, productId, { ...base, showLowStockBadge: true, lowStockThreshold })).toEqual({ success: false, error: "invalidInput" });
     }
     await expect(db.update(products).set({ lowStockThreshold: 0 }).where(eq(products.id, productId))).rejects.toThrow();
     // Another seller can't switch it off.
     session.sellerId = randomUUID();
-    expect(await saveProductSocialProof(productId, { ...base, showLowStockBadge: false })).toEqual({ success: false, error: "notFound" });
+    expect(await saveProductSocialProof(STORE_ID, productId, { ...base, showLowStockBadge: false })).toEqual({ success: false, error: "notFound" });
     session.sellerId = SELLER_ID;
     const [product] = await db.select().from(products).where(eq(products.id, productId));
     expect([product!.showLowStockBadge, product!.lowStockThreshold]).toEqual([true, 3]);
@@ -198,8 +213,8 @@ describe.skipIf(!TEST_DATABASE_URL || !SELLER_ID)("product reviews and live view
 
   it("keeps the final state for the storefront check", async () => {
     const { saveProductSocialProof, loadProductSocialProof } = await load();
-    const current = await loadProductSocialProof(SELLER_ID, productId);
-    const result = await saveProductSocialProof(productId, { showLiveViews: true, reviews: current.reviews });
+    const current = await loadProductSocialProof(SELLER_ID, productId, sql`true`);
+    const result = await saveProductSocialProof(STORE_ID, productId, { showLiveViews: true, reviews: current.reviews });
     expect(result).toEqual({ success: true });
   });
 });

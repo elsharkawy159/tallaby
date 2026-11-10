@@ -4,13 +4,17 @@ import { revalidatePath } from "next/cache";
 import { and, db, desc, eq, inArray, isNull, products, sellerProductCategories, storeDiscountRules } from "@workspace/db";
 import { parseDiscountRule, type DiscountRule, type DiscountRuleError } from "@workspace/lib/orders/automatic-discounts";
 import { toDiscountRule } from "@workspace/lib/orders/line-discounts/server";
+import { productInStore } from "@workspace/lib/stores/scope/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 
 /**
  * Automatic discounts (ROADMAP.md F-13a). Every action takes an explicit store id
  * and checks it belongs to the session's seller; ids from the client only narrow
- * that. Checkout reads the rules fresh, so nothing here is cached.
+ * that. Gift products must be in the rule's store (F-87c: `productInStore`,
+ * scope `managed`; before the split the seller's, as before). Categories stay
+ * per seller until F-87d. Checkout reads the rules fresh, so nothing here is cached.
  */
 
 const limiter = createRateLimiter({ limit: 60, windowMs: 10 * 60_000 });
@@ -56,10 +60,11 @@ export async function saveDiscountRule(input: { storeId: string; id?: string | n
       if (owned.length !== rule.categoryIds.length) return { success: false, error: "categories" };
     }
     if (rule.giftProductIds.length > 0) {
+      const inStore = productInStore(store.id, { catalogSplit: await isSwitchOn("stores_catalog_split"), scope: "managed" });
       const owned = await db
         .select({ id: products.id })
         .from(products)
-        .where(and(eq(products.sellerId, seller.sellerId), inArray(products.id, rule.giftProductIds), isNull(products.deletedAt)));
+        .where(and(eq(products.sellerId, seller.sellerId), inArray(products.id, rule.giftProductIds), isNull(products.deletedAt), inStore));
       if (owned.length !== rule.giftProductIds.length) return { success: false, error: "gifts" };
     }
 

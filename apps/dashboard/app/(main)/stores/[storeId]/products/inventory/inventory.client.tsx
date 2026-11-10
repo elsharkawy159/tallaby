@@ -14,7 +14,7 @@ import { MAX_RESTOCK, stockLevel } from "./inventory.lib";
 import { restockAction } from "./inventory.server";
 import type { InventoryLine, ProductInventory, StockMovementRow } from "./inventory.types";
 import { toAsciiDigits } from "@/components/form/form-ui";
-import { useProductsHref } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
+import { useProductStoreId, useProductsHref } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 
 /**
  * Products › Inventory: what is low or out of stock, a quick "+N" restock per
@@ -76,6 +76,7 @@ function StockPill({ stock, threshold }: { stock: number; threshold: number }) {
 function LineRow({ line, showHistoryLink }: { line: InventoryLine; showHistoryLink?: boolean }) {
   const t = useTranslations("products.inventory");
   const productsHref = useProductsHref();
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const router = useRouter();
   const [amount, setAmount] = useState("");
@@ -88,7 +89,7 @@ function LineRow({ line, showHistoryLink }: { line: InventoryLine; showHistoryLi
   const restock = () => {
     if (!valid) return;
     startTransition(async () => {
-      const res = await restockAction({ productId: line.productId, variantId: line.variantId, add });
+      const res = await restockAction(productStoreId, { productId: line.productId, variantId: line.variantId, add });
       if (!res.success) {
         toast.error(t(res.error === "readOnly" ? "readOnly" : res.error === "notFound" ? "notFound" : "restockFailed"));
         return;

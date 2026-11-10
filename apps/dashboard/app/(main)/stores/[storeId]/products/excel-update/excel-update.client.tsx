@@ -26,6 +26,7 @@ import {
   type ExcelPreviewResult,
 } from "./excel-update.dto";
 import { applyExcelUpdateAction, exportExcelUpdateSheetAction, previewExcelUpdateAction } from "./excel-update.server";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 
 type Preview = Extract<ExcelPreviewResult, { success: true }>;
 
@@ -44,6 +45,7 @@ export function ExcelUpdateDialog({
   productIds: string[];
 }) {
   const t = useTranslations("excelUpdate");
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const { unit } = useAccountMoney();
   const router = useRouter();
@@ -70,7 +72,7 @@ export function ExcelUpdateDialog({
 
   const download = () => {
     startTransition(async () => {
-      const result = await exportExcelUpdateSheetAction(productIds.slice(0, EXCEL_UPDATE_MAX_ROWS));
+      const result = await exportExcelUpdateSheetAction(productStoreId, productIds.slice(0, EXCEL_UPDATE_MAX_ROWS));
       if (!result.success) return showError(result.error);
       if (!result.rows.length) return void toast.error(t("nothingToExport"));
       try {
@@ -97,7 +99,7 @@ export function ExcelUpdateDialog({
     const form = new FormData();
     form.append("file", picked);
     startTransition(async () => {
-      const result = await previewExcelUpdateAction(form);
+      const result = await previewExcelUpdateAction(productStoreId, form);
       if (inputRef.current) inputRef.current.value = "";
       if (!result.success) return showError(result.error);
       setFile(picked);
@@ -110,7 +112,7 @@ export function ExcelUpdateDialog({
     const form = new FormData();
     form.append("file", file);
     startTransition(async () => {
-      const result = await applyExcelUpdateAction(form);
+      const result = await applyExcelUpdateAction(productStoreId, form);
       if (!result.success) return showError(result.error);
       if (result.changedProducts === 0) toast.info(t("nothingChanged"));
       else toast.success(t("applied", { count: result.changedProducts }));

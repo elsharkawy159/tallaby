@@ -11,7 +11,8 @@ import {
 } from "@workspace/cache";
 import { and, db, eq, inArray, notInArray, products, reviews } from "@workspace/db";
 import { syncProductRating } from "@workspace/db/reviews";
-import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { isAccessError } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import { productSocialProofSchema, type SocialProofResult } from "./social-proof.dto";
 
 /**
@@ -47,15 +48,16 @@ async function productPageInvalidation(productId: string, sellerId: string): Pro
 
 /**
  * Saves the product form's reviews, live views switch (0111) and low-stock
- * alert (0122). The product
- * must be the session seller's; only that product's seller-added reviews are
+ * alert (0122). The store must be the session seller's and the product in it
+ * (F-87c: `productInStore`, scope `managed`, in the same UPDATE), else
+ * `notFound`; only that product's seller-added reviews are
  * ever changed or removed (customer reviews are never touched). Review ids
  * from the client are matched together with the product and `source =
  * 'seller'`, so a foreign or customer review id simply matches nothing.
  */
-export async function saveProductSocialProof(productId: string, input: unknown): Promise<SocialProofResult> {
+export async function saveProductSocialProof(storeId: string, productId: string, input: unknown): Promise<SocialProofResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const { seller, inStore } = await requireProductStore(storeId);
     const parsed = productSocialProofSchema.safeParse(input);
     if (!parsed.success || typeof productId !== "string") return { success: false, error: "invalidInput" };
     const { showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, minOrderQuantity, reviews: list } = parsed.data;
@@ -64,7 +66,7 @@ export async function saveProductSocialProof(productId: string, input: unknown):
       const updated = await tx
         .update(products)
         .set({ showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, ...(minOrderQuantity !== undefined && { minOrderQuantity }) })
-        .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId)))
+        .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), inStore))
         .returning({ id: products.id });
       if (!updated.length) return false;
 
@@ -101,7 +103,10 @@ export async function saveProductSocialProof(productId: string, input: unknown):
     await applyInvalidation(await productPageInvalidation(productId, seller.sellerId), { from: "dashboard", mode: "action" });
     return { success: true };
   } catch (error) {
-    if (isAccessError(error)) return { success: false, error: error.code === "seller_blocked" ? "readOnly" : "notFound" };
+    if (isAccessError(error)) {
+      const readOnly = error.code === "seller_blocked" || error.code === "store_read_only";
+      return { success: false, error: readOnly ? "readOnly" : "notFound" };
+    }
     console.error("[social-proof] save failed", error);
     return { success: false, error: "generic" };
   }

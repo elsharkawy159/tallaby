@@ -11,7 +11,7 @@ import { ProductThumb } from "./home-ui";
 import { handleAnswerQuestion } from "./unanswered-questions.server";
 
 /** Question list with an inline reply box per row. Answered rows leave immediately. */
-export function UnansweredQuestionsClient({ questions }: { questions: HomeQuestion[] }) {
+export function UnansweredQuestionsClient({ questions, storeId }: { questions: HomeQuestion[]; storeId: string | null }) {
   const t = useTranslations("home.questions");
   const tToast = useTranslations("toast");
   const locale = useLocale();
@@ -33,7 +33,7 @@ export function UnansweredQuestionsClient({ questions }: { questions: HomeQuesti
     setPendingId(id);
     startTransition(async () => {
       removeRow(id);
-      const res = await handleAnswerQuestion({ questionId: id, answer });
+      const res = await handleAnswerQuestion({ storeId, questionId: id, answer });
       setPendingId(null);
       if (res.success) {
         toast.success(tToast("answerSubmitted"));
