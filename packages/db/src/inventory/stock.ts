@@ -1,5 +1,5 @@
-import { and, eq, gte, isNotNull, sql } from "drizzle-orm";
-import { products, productVariants } from "../drizzle/schema";
+import { and, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
+import { orders, products, productStoreSplit, productVariants } from "../drizzle/schema";
 import type { db as dbType } from "../drizzle/database";
 import { setStockContext, type StockContext } from "./stock-context";
 
@@ -76,10 +76,52 @@ async function isUntrackedLine(tx: Tx, line: StockLine): Promise<boolean> {
  * that shares some of the same rows always acquire row locks in the same
  * order, which rules out a lock-ordering deadlock between the two.
  */
-function sortedLines(lines: readonly StockLine[]): StockLine[] {
+function sortedLines<T extends StockLine>(lines: readonly T[]): T[] {
   return [...lines].sort((a, b) => {
     if (a.kind !== b.kind) return a.kind < b.kind ? -1 : 1;
     return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** A line aimed at the row its stock lives in; `sourceId` is the id the caller passed. */
+type RoutedLine = StockLine & { sourceId: string };
+
+/**
+ * Catalog split (0163, ROADMAP.md F-87m; plan §2.1.4, risk R3). An order placed
+ * before the split names the original product or variant, which may now be
+ * kept by another store. Its stock belongs to the copy in the order's own
+ * store, found in `product_store_split` (kind 'copy', store = the order's
+ * store). Lines with no copy there are unchanged, so this is a no-op before
+ * the split (the map is empty) and for orders placed after it (their lines
+ * already name their store's rows). One query, only when the context names an
+ * order. Results keep the caller's ids (`sourceId`).
+ */
+async function routeToOrderStore(tx: Tx, lines: readonly StockLine[], context: StockContext): Promise<RoutedLine[]> {
+  const routed = lines.map((line) => ({ ...line, sourceId: line.id }));
+  const orderId = context.orderId;
+  if (!orderId || !UUID_RE.test(orderId)) return routed;
+  const ids = [...new Set(lines.filter((l) => l.quantity > 0 && UUID_RE.test(l.id)).map((l) => l.id))];
+  if (ids.length === 0) return routed;
+
+  const rows = await tx
+    .select({ entity: productStoreSplit.entity, oldId: productStoreSplit.oldId, newId: productStoreSplit.newId })
+    .from(productStoreSplit)
+    .innerJoin(orders, eq(orders.storeId, productStoreSplit.storeId))
+    .where(
+      and(
+        eq(orders.id, orderId),
+        eq(productStoreSplit.kind, "copy"),
+        inArray(productStoreSplit.entity, ["product", "variant"]),
+        inArray(productStoreSplit.oldId, ids)
+      )
+    );
+  if (rows.length === 0) return routed;
+  const target = new Map(rows.map((r) => [`${r.entity}:${r.oldId}`, r.newId]));
+  return routed.map((line) => {
+    const id = target.get(`${line.kind}:${line.id}`);
+    return id ? { ...line, id } : line;
   });
 }
 
@@ -102,7 +144,7 @@ export async function decrementStock(
   const tracked = lines.some((line) => line.quantity > 0);
   if (tracked) await setStockContext(tx, context);
 
-  for (const line of sortedLines(lines)) {
+  for (const line of sortedLines(await routeToOrderStore(tx, lines, context))) {
     if (line.quantity <= 0) continue;
 
     if (line.kind === "product") {
@@ -123,12 +165,12 @@ export async function decrementStock(
 
       if (!row) {
         if (await isUntrackedLine(tx, line)) continue;
-        throw new InsufficientStockError("product", line.id);
+        throw new InsufficientStockError("product", line.sourceId);
       }
       const newQuantity = Number(row.quantity);
       results.push({
         kind: "product",
-        id: line.id,
+        id: line.sourceId,
         quantity: newQuantity,
         stockBoundaryCrossed: newQuantity === 0,
       });
@@ -151,12 +193,12 @@ export async function decrementStock(
 
       if (!row) {
         if (await isUntrackedLine(tx, line)) continue;
-        throw new InsufficientStockError("variant", line.id);
+        throw new InsufficientStockError("variant", line.sourceId);
       }
       const newQuantity = Number(row.stock);
       results.push({
         kind: "variant",
-        id: line.id,
+        id: line.sourceId,
         quantity: newQuantity,
         stockBoundaryCrossed: newQuantity === 0,
       });
@@ -188,7 +230,7 @@ export async function restoreStock(
   const tracked = lines.some((line) => line.quantity > 0);
   if (tracked) await setStockContext(tx, context);
 
-  for (const line of sortedLines(lines)) {
+  for (const line of sortedLines(await routeToOrderStore(tx, lines, context))) {
     if (line.quantity <= 0) continue;
 
     if (line.kind === "product") {
@@ -203,13 +245,13 @@ export async function restoreStock(
 
       if (!row) {
         if (await isUntrackedLine(tx, line)) continue;
-        throw new InsufficientStockError("product", line.id);
+        throw new InsufficientStockError("product", line.sourceId);
       }
       const newQuantity = Number(row.quantity);
       const previousQuantity = newQuantity - line.quantity;
       results.push({
         kind: "product",
-        id: line.id,
+        id: line.sourceId,
         quantity: newQuantity,
         stockBoundaryCrossed: previousQuantity <= 0 && newQuantity > 0,
       });
@@ -231,7 +273,7 @@ export async function restoreStock(
       const previousQuantity = newQuantity - line.quantity;
       results.push({
         kind: "variant",
-        id: line.id,
+        id: line.sourceId,
         quantity: newQuantity,
         stockBoundaryCrossed: previousQuantity <= 0 && newQuantity > 0,
       });
@@ -256,7 +298,7 @@ export async function ensureStockAtLeast(
   context: StockContext = { reason: "edit" }
 ): Promise<void> {
   const needed = new Map<string, StockLine>();
-  for (const line of lines) {
+  for (const line of await routeToOrderStore(tx, lines, context)) {
     if (line.quantity <= 0) continue;
     const key = `${line.kind}:${line.id}`;
     const quantity = (needed.get(key)?.quantity ?? 0) + line.quantity;

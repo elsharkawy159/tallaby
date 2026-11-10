@@ -1659,7 +1659,8 @@
         "edit": "Edited",
         "bulk_edit": "Bulk edit",
         "import": "Imported",
-        "other": "Other change"
+        "other": "Other change",
+        "copy": "Copied to this store"
       }
     },
     "trash": {

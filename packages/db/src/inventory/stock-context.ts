@@ -19,7 +19,8 @@ import type { db as dbType } from "../drizzle/database";
  * inside the same transaction as the stock write.
  */
 
-export const STOCK_MOVEMENT_REASONS = ["order", "cancel", "return", "edit", "bulk_edit", "import", "other"] as const;
+/** 'copy': stock a product copy starts with (0163 catalog split, F-87j "Copy to store"). */
+export const STOCK_MOVEMENT_REASONS = ["order", "cancel", "return", "edit", "bulk_edit", "import", "other", "copy"] as const;
 export type StockMovementReason = (typeof STOCK_MOVEMENT_REASONS)[number];
 
 export interface StockContext {

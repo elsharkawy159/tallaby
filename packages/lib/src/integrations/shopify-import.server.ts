@@ -307,7 +307,9 @@ async function insertDraftProduct(
         price: mapped.price,
         images: images.length ? images : null,
       })
-      .onConflictDoNothing({ target: [products.sellerId, products.sku] })
+      // No conflict target: the SKU key is (seller_id, sku) before 0163 and
+      // (store_id, sku) after it (F-87m); a named target would fail on one of them.
+      .onConflictDoNothing()
       .returning({ id: products.id });
     if (!created) return null; // imported by a concurrent run
 

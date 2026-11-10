@@ -1473,8 +1473,11 @@ export const sellerProductCategories = pgTable("seller_product_categories", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	uniqueIndex("seller_product_categories_name_key").using("btree", table.sellerId, sql`lower(btrim(${table.name}))`),
-	uniqueIndex("seller_product_categories_source_key").using("btree", table.sellerId, table.sourceCategoryId).where(sql`source_category_id IS NOT NULL`),
+	// One list per store since 0163 (were per seller: seller_product_categories_name_key / _source_key).
+	uniqueIndex("seller_product_categories_store_name_key").using("btree", table.storeId, sql`lower(btrim(${table.name}))`),
+	uniqueIndex("seller_product_categories_store_source_key").using("btree", table.storeId, table.sourceCategoryId).where(sql`source_category_id IS NOT NULL`),
+	index("seller_product_categories_store_idx").using("btree", table.storeId, table.position),
+	check("seller_product_categories_store_id_not_null", sql`store_id IS NOT NULL`),
 	index("seller_product_categories_seller_idx").using("btree", table.sellerId, table.position),
 	foreignKey({
 			columns: [table.sellerId],
@@ -1508,8 +1511,11 @@ export const sellerProductBrands = pgTable("seller_product_brands", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	uniqueIndex("seller_product_brands_name_key").using("btree", table.sellerId, sql`lower(btrim(${table.name}))`),
-	uniqueIndex("seller_product_brands_source_key").using("btree", table.sellerId, table.sourceBrandId).where(sql`source_brand_id IS NOT NULL`),
+	// One list per store since 0163 (were per seller: seller_product_brands_name_key / _source_key).
+	uniqueIndex("seller_product_brands_store_name_key").using("btree", table.storeId, sql`lower(btrim(${table.name}))`),
+	uniqueIndex("seller_product_brands_store_source_key").using("btree", table.storeId, table.sourceBrandId).where(sql`source_brand_id IS NOT NULL`),
+	index("seller_product_brands_store_idx").using("btree", table.storeId, table.position),
+	check("seller_product_brands_store_id_not_null", sql`store_id IS NOT NULL`),
 	index("seller_product_brands_seller_idx").using("btree", table.sellerId, table.position),
 	foreignKey({
 			columns: [table.sellerId],
@@ -1548,7 +1554,7 @@ export const products = pgTable("products", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	images: jsonb(),
 	sellerId: uuid("seller_id").notNull(),
-	/** The store that will own the product after the catalog split (0160, F-87); NULL until 0163, NOT NULL in 0165. Not read yet. */
+	/** The store that owns the product (0160; set on every row by 0163, F-87m; a CHECK until 0165 makes it NOT NULL). Read once `stores_catalog_split` is on. */
 	storeId: uuid("store_id"),
 	sku: text(),
 	condition: itemCondition().default('new'),
@@ -1612,7 +1618,10 @@ export const products = pgTable("products", {
 		}).onDelete("set null"),
 	index("product_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("product_sku_idx").using("btree", table.sku.asc().nullsLast().op("text_ops")),
-	uniqueIndex("unique_product_seller_sku_idx").using("btree", table.sellerId.asc().nullsLast().op("text_ops"), table.sku.asc().nullsLast().op("text_ops")),
+	// SKUs are unique per store since the catalog split (0163; was unique_product_seller_sku_idx per seller).
+	uniqueIndex("unique_product_store_sku_idx").using("btree", table.storeId, table.sku),
+	// 0163: NOT NULL as a check until 0165 (a trigger fills a missing store_id from the primary store).
+	check("products_store_id_not_null", sql`store_id IS NOT NULL`),
 	index("product_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
 	// "newest" sort.
 	index("product_created_at_idx").using("btree", table.createdAt.desc()),

@@ -28,8 +28,8 @@ describe("stockContextSettings", () => {
 });
 
 describe("isStockMovementReason", () => {
-  it("knows the seven reasons", () => {
-    for (const r of ["order", "cancel", "return", "edit", "bulk_edit", "import", "other"]) {
+  it("knows the eight reasons", () => {
+    for (const r of ["order", "cancel", "return", "edit", "bulk_edit", "import", "other", "copy"]) {
       expect(isStockMovementReason(r)).toBe(true);
     }
     expect(isStockMovementReason("restock")).toBe(false);

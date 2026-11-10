@@ -12,7 +12,7 @@ export const HISTORY_LIMIT = 100;
 /** Low-stock rows listed at most. */
 export const LOW_STOCK_LIMIT = 300;
 
-export const MOVEMENT_REASONS = ["order", "cancel", "return", "edit", "bulk_edit", "import", "other"] as const;
+export const MOVEMENT_REASONS = ["order", "cancel", "return", "edit", "bulk_edit", "import", "other", "copy"] as const;
 export type MovementReason = (typeof MOVEMENT_REASONS)[number];
 
 export function lowStockThreshold(value: number | null | undefined): number {

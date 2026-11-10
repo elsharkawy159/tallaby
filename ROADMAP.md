@@ -1692,6 +1692,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-10 — F-87m: 0163 catalog split written and tested locally (NOT applied)
+
+- `packages/db/migrations/0163_store_catalog_split.sql` (one transaction, about 1,300 lines): guards (no-op if already split; aborts unless every seller has exactly one live primary store), snapshot, kept store per product (its own `store_id` if that store shows it, else the primary, else the oldest showing store; orphans to the primary as drafts), per-store categories and brands, product copies with variants, translations, digital rows, quantity offers, category positions and `'copy'` stock movements, remapped cross-sells, discount rules, coupons, open carts, back-in-stock alerts, campaigns and builder documents (live sites get a new revision), copied approved reviews and questions, per-store SKU and taxonomy keys, the F-87d triggers, 15 invariants (any mismatch rolls back; 9.13: no money moved), and the switch on as the last statement.
+- `scripts/stores-split-rollback.sql` (refuses if a copy has orders, ad requests or new reviews, or keys would clash) and `scripts/stores-split-verify.sql` (read-only, after apply).
+- Tested only on a throwaway local PostgreSQL 18: apply, no-op re-run, verify, rollback refusal, exact rollback (12 tables identical), re-apply, a missing-primary abort, a planted invariant failure, and real `decrementStock`/`restoreStock` on a pre-split order.
+- **Code that must deploy before 0163** (committed with it): `'copy'` stock reason (+ Inventory label), restock of pre-split orders through `product_store_split` (`packages/db/src/inventory/stock.ts`; no-op while the map is empty), Shopify import `ON CONFLICT` without a target, `schema.ts` per-store keys. Manager review: db, lib, dashboard, ecommerce typecheck clean; db 21, lib 1,315, dashboard 1,147 tests pass.
+- Next: deploy this code to staging (switch off), apply 0163 on staging, verify, purge caches, E2E (`docs/plans/stores-separation.md` §3.4). Production only with owner approval.
+
 ### 2026-11-10 — F-87d seller categories and brands per store (dark; no migration)
 
 - One condition, `taxonomyInStore` (per seller with the switch off, `store_id = store` with it on), on every list, picker, write, reorder, delete and assignment: Categories & brands pages, product form, file import, AI builder, AI autofill (store's own names only; the Tallaby category still matched in code), category order, discount-rule category scope, agent categories (MCP `list_store_categories` says "this store's own"), storefront brands and category groups, both editors.
