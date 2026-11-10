@@ -52,6 +52,7 @@ import {
   type PdfProgress,
 } from "./from-file-parse.client";
 import { addBatchAction, findExistingSkusAction, getBulkStatusAction, mapColumnsAction } from "./from-file.server";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 /**
  * Add many products from a file (PLAN.md AI-3). One screen to confirm, one button
@@ -139,6 +140,7 @@ function FieldSelect({
 
 export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
   const t = useTranslations("bulkFileImport");
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const number = useCallback((value: number) => formatNumber(value, locale), [locale]);
 
@@ -291,7 +293,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
       const batch = pending.current.slice(0, BULK_LIMITS.batchSize);
       let answer;
       try {
-        answer = await addBatchAction({ fileKey: file.key, source: file.source, rows: batch });
+        answer = await addBatchAction(productStoreId, { fileKey: file.key, source: file.source, rows: batch });
       } catch {
         answer = { ok: false as const, error: "failed" as const };
       }

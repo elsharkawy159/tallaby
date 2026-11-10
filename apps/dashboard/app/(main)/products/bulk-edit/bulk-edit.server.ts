@@ -14,7 +14,9 @@ import { syncCategoryProductCountForProductChange } from "@workspace/db/categori
 import { setStockContext } from "@workspace/db/inventory";
 import { parseIntegrationKey } from "@workspace/lib/integrations/server";
 import { getLocale } from "next-intl/server";
-import { isAccessError, requireSeller, type SellerContext } from "@/lib/auth/require-seller.server";
+import type { SQL } from "drizzle-orm";
+import { isAccessError, type SellerContext } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import { hasProductImage, type ProductStatus } from "@/lib/products/product-status.lib";
 import {
   bulkEditInputSchema,
@@ -37,8 +39,9 @@ import { deriveUndoKey, signUndoToken, verifyUndoToken, type UndoEntry } from ".
 
 /**
  * Bulk product editing actions (ROADMAP.md F-24a/F-24b). The seller comes from
- * the session (requireSeller); the client sends product ids and the change
- * only. Every read and write is scoped by seller_id, skips products in Trash
+ * the session; the client sends the store id (checked against that seller by
+ * requireProductStore, F-87c), product ids and the change only. Every read and
+ * write is scoped by seller_id and by the store (`productInStore` in the WHERE), skips products in Trash
  * (0123) and recomputes the new values from the rows locked in the
  * transaction, so the preview is advisory and the write is authoritative.
  */
@@ -69,7 +72,14 @@ function failure(error: unknown, label: string): { success: false; error: BulkAc
 /** Same rule as the Publish switch and Trash restore: only approved sellers make products live. */
 const canPublishFor = (seller: SellerContext) => seller.status === "approved";
 
-async function loadRows(q: Queryable, sellerId: string, ids: string[], lock: boolean, locale: string): Promise<LoadedRow[]> {
+async function loadRows(
+  q: Queryable,
+  sellerId: string,
+  inStore: SQL,
+  ids: string[],
+  lock: boolean,
+  locale: string,
+): Promise<LoadedRow[]> {
   if (!ids.length) return [];
   const base = q
     .select({
@@ -90,7 +100,7 @@ async function loadRows(q: Queryable, sellerId: string, ids: string[], lock: boo
       sponsored: products.sponsored,
     })
     .from(products)
-    .where(and(eq(products.sellerId, sellerId), inArray(products.id, ids), isNull(products.deletedAt)));
+    .where(and(eq(products.sellerId, sellerId), inArray(products.id, ids), isNull(products.deletedAt), inStore));
   const rows = lock ? await base.for("update") : await base;
   if (!rows.length) return [];
   const found = rows.map((r) => r.id);
@@ -163,8 +173,15 @@ function snapshot(row: LoadedRow, values: ProductValues = {}): ProductCacheSnaps
   };
 }
 
-/** Writes `values` to one product and its variants inside `tx`, scoped by seller. */
-async function writeValues(tx: Tx, sellerId: string, productId: string, values: ProductValues, now: string): Promise<boolean> {
+/** Writes `values` to one product and its variants inside `tx`, scoped by seller and store. */
+async function writeValues(
+  tx: Tx,
+  sellerId: string,
+  inStore: SQL,
+  productId: string,
+  values: ProductValues,
+  now: string,
+): Promise<boolean> {
   const set: Partial<typeof products.$inferInsert> = { updatedAt: now };
   if ("price" in values) set.price = values.price as typeof products.$inferInsert.price;
   if ("quantity" in values) set.quantity = String(values.quantity ?? 0);
@@ -172,7 +189,7 @@ async function writeValues(tx: Tx, sellerId: string, productId: string, values: 
   const updated = await tx
     .update(products)
     .set(set)
-    .where(and(eq(products.id, productId), eq(products.sellerId, sellerId), isNull(products.deletedAt)))
+    .where(and(eq(products.id, productId), eq(products.sellerId, sellerId), isNull(products.deletedAt), inStore))
     .returning({ id: products.id });
   if (!updated.length) return false;
 
@@ -181,7 +198,7 @@ async function writeValues(tx: Tx, sellerId: string, productId: string, values: 
     if ("price" in v) vset.price = v.price as typeof productVariants.$inferInsert.price;
     if ("stock" in v) vset.stock = Math.max(0, v.stock ?? 0);
     if ("discountEndsAt" in v) vset.discountEndsAt = v.discountEndsAt ?? null;
-    // The product row above is already checked to be this seller's.
+    // The product row above is already checked to be this seller's and this store's.
     await tx
       .update(productVariants)
       .set(vset)
@@ -219,14 +236,14 @@ async function afterWrite(changes: { row: LoadedRow; before: ProductValues; afte
 const undoKey = () => deriveUndoKey(parseIntegrationKey());
 
 /** Before → after for every selected product; writes nothing. */
-export async function previewBulkEditAction(input: unknown): Promise<BulkPreviewResult> {
+export async function previewBulkEditAction(storeId: unknown, input: unknown): Promise<BulkPreviewResult> {
   try {
-    const seller = await requireSeller();
+    const { seller, inStore } = await requireProductStore(storeId);
     const parsed = bulkEditInputSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const ids = [...new Set(parsed.data.ids)];
     const locale = await getLocale();
-    const rows = await loadRows(db, seller.sellerId, ids, false, locale);
+    const rows = await loadRows(db, seller.sellerId, inStore, ids, false, locale);
     const plans = planBulkEdit(rows, parsed.data.change, { canPublish: canPublishFor(seller) });
     const found = new Set(rows.map((r) => r.id));
     const preview = previewRows(rows, plans, ids.filter((id) => !found.has(id)));
@@ -242,9 +259,9 @@ export async function previewBulkEditAction(input: unknown): Promise<BulkPreview
 }
 
 /** Applies the change in one transaction and returns a signed 10-minute Undo token. */
-export async function applyBulkEditAction(input: unknown): Promise<BulkApplyResult> {
+export async function applyBulkEditAction(storeId: unknown, input: unknown): Promise<BulkApplyResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const { seller, inStore } = await requireProductStore(storeId);
     const parsed = bulkEditInputSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const ids = [...new Set(parsed.data.ids)];
@@ -254,7 +271,7 @@ export async function applyBulkEditAction(input: unknown): Promise<BulkApplyResu
 
     const { changes, skipped } = await db.transaction(async (tx) => {
       await setStockContext(tx, { reason: "bulk_edit", actorId: seller.userId });
-      const rows = await loadRows(tx, seller.sellerId, ids, true, locale);
+      const rows = await loadRows(tx, seller.sellerId, inStore, ids, true, locale);
       const plans = planBulkEdit(rows, parsed.data.change, { canPublish: canPublishFor(seller) });
       const done: { row: LoadedRow; before: ProductValues; after: ProductValues }[] = [];
       let skip = ids.length - rows.length;
@@ -262,7 +279,7 @@ export async function applyBulkEditAction(input: unknown): Promise<BulkApplyResu
         const plan = plans[i]!;
         if (plan.outcome === "skip") skip += 1;
         if (plan.outcome !== "change") continue;
-        if (await writeValues(tx, seller.sellerId, plan.id, plan.after, now)) {
+        if (await writeValues(tx, seller.sellerId, inStore, plan.id, plan.after, now)) {
           done.push({ row: rows[i]!, before: plan.before, after: plan.after });
         }
       }
@@ -285,9 +302,11 @@ export async function applyBulkEditAction(input: unknown): Promise<BulkApplyResu
  * still holds exactly the values the edit wrote (else it counts as a conflict
  * and is left alone).
  */
-export async function undoBulkEditAction(token: unknown): Promise<BulkUndoResult> {
+export async function undoBulkEditAction(storeId: unknown, token: unknown): Promise<BulkUndoResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    // The token is bound to the seller; a product outside this store is never
+    // loaded (inStore), so it counts as a conflict and is left alone.
+    const { seller, inStore } = await requireProductStore(storeId);
     const payload = verifyUndoToken(token, undoKey());
     if (!payload || payload.sellerId !== seller.sellerId) return { success: false, error: "expired" };
     const ids = [...new Set(payload.entries.map((e) => e.id))].slice(0, 500);
@@ -297,7 +316,7 @@ export async function undoBulkEditAction(token: unknown): Promise<BulkUndoResult
 
     const { changes, conflicts } = await db.transaction(async (tx) => {
       await setStockContext(tx, { reason: "bulk_edit", actorId: seller.userId });
-      const rows = new Map((await loadRows(tx, seller.sellerId, ids, true, locale)).map((r) => [r.id, r]));
+      const rows = new Map((await loadRows(tx, seller.sellerId, inStore, ids, true, locale)).map((r) => [r.id, r]));
       const done: { row: LoadedRow; before: ProductValues; after: ProductValues }[] = [];
       let conflict = 0;
       for (const entry of payload.entries) {
@@ -308,7 +327,7 @@ export async function undoBulkEditAction(token: unknown): Promise<BulkUndoResult
         }
         const restore: ProductValues = { ...entry.b };
         if (restore.status) restore.status = undoStatus(restore.status, { canPublish, hasImage: hasProductImage(row.images) });
-        if (await writeValues(tx, seller.sellerId, row.id, restore, now)) {
+        if (await writeValues(tx, seller.sellerId, inStore, row.id, restore, now)) {
           done.push({ row, before: entry.a, after: restore });
         } else {
           conflict += 1;

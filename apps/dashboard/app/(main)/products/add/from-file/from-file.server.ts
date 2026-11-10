@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import {
   addBatchInputSchema,
@@ -17,8 +18,9 @@ import { findExistingSkus, loadBulkStatus, mapColumns, runBulkBatch } from "./fr
 /**
  * Server actions for "add many products from a file" (PLAN.md AI-3). The seller
  * always comes from the session; the input is parsed with zod and never trusted.
- * Products belong to the seller's account (a store shows all of them or its
- * picks), so none of this takes a store id. An action, not a route: createProduct
+ * Adding takes the page's store id (F-87c; createProduct checks it against
+ * the session and writes products.store_id); the rest is per account until the
+ * catalog split. An action, not a route: createProduct
  * refreshes caches with updateTag, which Next allows only in server actions.
  */
 
@@ -67,13 +69,14 @@ export async function findExistingSkusAction(input: unknown): Promise<{ ok: true
   }
 }
 
-export async function addBatchAction(input: unknown): Promise<AddBatchResult> {
+export async function addBatchAction(storeId: unknown, input: unknown): Promise<AddBatchResult> {
   try {
     const seller = await requireSeller({ forWrite: true });
+    const { store } = await requireProductStore(storeId);
     const parsed = addBatchInputSchema.safeParse(input);
     if (!parsed.success) return { ok: false, error: "invalid" };
     if (!batchLimiter.check(seller.sellerId)) return { ok: false, error: "rateLimited" };
-    const result = await runBulkBatch(seller.sellerId, parsed.data);
+    const result = await runBulkBatch(seller.sellerId, parsed.data, { storeId: store.id });
     // Each createProduct refreshes its own product's caches; this is the seller's list.
     revalidatePath("/products");
     return result;

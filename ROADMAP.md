@@ -1675,7 +1675,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
-- [ ] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark
+- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slice 1 of 6 built 2026-11-10, uncommitted; slices in `docs/plans/stores-separation-f87c-slices.md`)
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
@@ -1691,6 +1691,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87c slice 1: shared store-scope condition and dashboard product writes per store (dark; no migration, no behaviour change with the switch off)
+
+- **Slice plan:** `docs/plans/stores-separation-f87c-slices.md` (6 slices, inventory of every product/category/brand read and write with file:line, scope and cache tag).
+- **Primitive:** `productInStore(storeId, { catalogSplit, scope })` in `packages/lib/src/stores/store-scope.server.ts` (switch on: `products.store_id`; off: `shown` = `catalog_mode`/`store_products`, `managed` = same seller, today's account catalog); `storeHasProduct` runs it.
+- **Dashboard:** `apps/dashboard/lib/products/product-store.server.ts` (`requireProductStore`, `requireStoreProduct`: `requireStore` on the session seller, foreign/forged pair = `not_found`). Explicit `storeId` on create (writes `products.store_id`), update (client can no longer send `sellerId`/`storeId`), publish/status, delete, trash, restore, delete forever, bulk edit (preview/apply/undo), bulk publish, URL/Excel/file import (and the AI builder file batch, with the build's store). Callers get the store from a `/products` layout provider (the sidebar's selected store, checked on the server).
+- **Tests:** `product-in-store.test.ts`, `store-scope.test.ts`, `product-store.server.test.ts` (unit); `store-separation.integration.test.ts` cross-seller, forged-store and split-on cases (DB, not run here: no `TEST_DATABASE_URL`).
+- **Deferred:** reads (slice 2), per-store cache tags (slice 4), store read-only (`forWrite`) for archived stores (slice 2); **0163 must not assume `products.store_id` is NULL** (create now writes the selected store).
 
 ### 2026-11-10 — F-87a/F-87b Phase A foundations (no behaviour change; 0160 applied on staging and production)
 

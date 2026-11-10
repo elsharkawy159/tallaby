@@ -14,8 +14,15 @@ const isStaging = Boolean(TEST_DATABASE_URL?.includes(STAGING_REF));
 if (isStaging) process.env.DATABASE_URL = TEST_DATABASE_URL;
 
 const session = vi.hoisted(() => ({ sellerId: "" }));
+const NO_STORE = "";
 vi.mock("@/actions/auth", () => ({ getUser: async () => ({ user: { id: session.sellerId } }) }));
 vi.mock("@/lib/auth/seller-access", () => ({ getSellerAccess: async () => ({ allowed: true, status: "approved" }) }));
+// These sellers have no store; the store check (F-87c) is covered by
+// packages/lib/src/stores/store-separation.integration.test.ts. store_id stays NULL here.
+vi.mock("@/lib/products/product-store.server", () => ({
+  requireProductStore: async () => ({ store: { id: null } }),
+  requireStoreProduct: async () => ({}),
+}));
 vi.mock("next/cache", () => ({ revalidatePath: () => {}, revalidateTag: () => {}, unstable_cache: (fn: unknown) => fn }));
 vi.mock("@workspace/cache", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@workspace/cache")>()),
@@ -55,7 +62,7 @@ describe.skipIf(!isStaging)("product slugs per seller (integration)", { timeout:
   const create = async (sellerId: string, title: string, slug: string, ar = true) => {
     const { createProduct } = await load();
     session.sellerId = sellerId;
-    const result = await createProduct(form(title, slug, ar) as never);
+    const result = await createProduct(NO_STORE, form(title, slug, ar) as never);
     expect(result.error).toBeUndefined();
     return result.data!.id as string;
   };
@@ -63,7 +70,7 @@ describe.skipIf(!isStaging)("product slugs per seller (integration)", { timeout:
   const save = async (sellerId: string, productId: string, title: string, slug: string) => {
     const { updateProduct } = await load();
     session.sellerId = sellerId;
-    const result = await updateProduct(productId, { localized: form(title, slug).localized } as never);
+    const result = await updateProduct(NO_STORE, productId, { localized: form(title, slug).localized } as never);
     expect(result.error).toBeUndefined();
   };
 
@@ -199,7 +206,7 @@ describe.skipIf(!isStaging)("product slugs per seller (integration)", { timeout:
     const slug = `race-${run}`;
     session.sellerId = sellerB;
     const results = await Promise.all(
-      [1, 2, 3].map(() => createProduct(form("Race", slug) as never)),
+      [1, 2, 3].map(() => createProduct(NO_STORE, form("Race", slug) as never)),
     );
     const slugs = await Promise.all(results.map((result) => slugsOf(result.data!.id as string)));
     expect(slugs.map((row) => row.en).sort()).toEqual([slug, `${slug}-2`, `${slug}-3`]);
@@ -210,7 +217,7 @@ describe.skipIf(!isStaging)("product slugs per seller (integration)", { timeout:
     const slug = `foreign-${run}`;
     const owned = await create(sellerA, "Foreign", slug);
     session.sellerId = sellerB;
-    const result = await updateProduct(owned, { localized: form("Foreign", `stolen-${run}`).localized } as never);
+    const result = await updateProduct(NO_STORE, owned, { localized: form("Foreign", `stolen-${run}`).localized } as never);
     expect(result.success).toBe(false);
     expect((await slugsOf(owned)).en).toBe(slug);
   });

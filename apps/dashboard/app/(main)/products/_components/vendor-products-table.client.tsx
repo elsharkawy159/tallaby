@@ -32,6 +32,7 @@ import { ProductStatusCell } from "./product-publish-toggle.client";
 import { ProductViewsCell, useProductViewsColumnLabel } from "./product-views.client";
 import { discountPercent } from "./products-view.lib";
 import type { VendorProduct } from "./vendor-products.section";
+import { useProductStoreId } from "./product-store.client";
 
 const CopyableTitle = ({ title }: { title: string }) => {
   const [copied, setCopied] = useState(false);
@@ -85,6 +86,7 @@ export function VendorProductsTable({
   const { visibility, order, setVisibility, setOrder } =
     useProductColumnsStore();
   const t = useTranslations("products.list");
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const viewsLabel = useProductViewsColumnLabel();
   const tableLabels = useTableSectionLabels();
@@ -273,7 +275,7 @@ export function VendorProductsTable({
       buttons={(table) => <ManageColumnsDialog table={table} />}
       onDeleteSelected={async (ids) => {
         // Delete moves products to Trash (F-35); the toast offers Undo.
-        const res = await trashProductsAction(ids);
+        const res = await trashProductsAction(productStoreId, ids);
         const done = res.success ? res.count : 0;
         if (ids.length - done > 0) toast.error(t("bulkDeleteFailed", { count: ids.length - done }));
         if (res.success && done > 0) {
@@ -281,7 +283,7 @@ export function VendorProductsTable({
             action: {
               label: t("undo"),
               onClick: async () => {
-                const undone = await restoreProductsAction(res.ids);
+                const undone = await restoreProductsAction(productStoreId, res.ids);
                 if (undone.success) toast.success(t("restored", { count: undone.count }));
                 else toast.error(t("restoreFailed"));
                 router.refresh();

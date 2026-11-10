@@ -22,6 +22,7 @@ import {
   sql,
 } from "@workspace/db";
 import { syncCategoryProductCountForProductChange } from "@workspace/db/categories";
+import type { SQL } from "drizzle-orm";
 import {
   restoredStatus,
   trashIds,
@@ -40,8 +41,15 @@ import {
  *
  * Every seller function takes the session's sellerId and scopes each write by
  * it (CLAUDE.md rule 5); ids from the client are only ever matched together
- * with that seller.
+ * with that seller. The dashboard also passes `inStore` (F-87c): the
+ * `productInStore` condition for the store the request names, added to every
+ * read and write here, so a product outside that store is never touched.
  */
+
+export type TrashScope = {
+  /** `productInStore(storeId, …)` from @workspace/lib/stores/scope/server; omitted = the whole account. */
+  inStore?: SQL;
+};
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -144,12 +152,13 @@ export async function trashProducts(
   sellerId: string,
   deletedBy: string,
   ids: unknown,
+  { inStore }: TrashScope = {},
 ): Promise<{ trashed: string[]; invalidation: CacheInvalidation }> {
   const wanted = trashIds(ids);
   if (!wanted.length) return { trashed: [], invalidation: noInvalidation };
 
   const rows = await db.query.products.findMany({
-    where: and(eq(products.sellerId, sellerId), inArray(products.id, wanted), isNull(products.deletedAt)),
+    where: and(eq(products.sellerId, sellerId), inArray(products.id, wanted), isNull(products.deletedAt), inStore),
     columns: snapshotColumns,
     with: { productTranslations: { columns: { locale: true, slug: true } } },
   });
@@ -174,6 +183,7 @@ export async function trashProducts(
             rows.map((r) => r.id),
           ),
           isNull(products.deletedAt),
+          inStore,
         ),
       )
       .returning({ id: products.id });
@@ -200,7 +210,7 @@ export async function trashProducts(
 export async function restoreProducts(
   sellerId: string,
   ids: unknown,
-  { canPublish }: { canPublish: boolean },
+  { canPublish, inStore }: { canPublish: boolean } & TrashScope,
 ): Promise<{ restored: string[]; invalidation: CacheInvalidation }> {
   const wanted = trashIds(ids);
   if (!wanted.length) return { restored: [], invalidation: noInvalidation };
@@ -211,6 +221,7 @@ export async function restoreProducts(
       inArray(products.id, wanted),
       isNotNull(products.deletedAt),
       isNull(products.purgedAt),
+      inStore,
     ),
     columns: { ...snapshotColumns, images: true, trashedStatus: true },
     with: { productTranslations: { columns: { locale: true, slug: true } } },
@@ -224,7 +235,7 @@ export async function restoreProducts(
     const updated = await db
       .update(products)
       .set({ status, deletedAt: null, deletedBy: null, trashedStatus: null, updatedAt: now })
-      .where(and(eq(products.id, row.id), eq(products.sellerId, sellerId), isNotNull(products.deletedAt), isNull(products.purgedAt)))
+      .where(and(eq(products.id, row.id), eq(products.sellerId, sellerId), isNotNull(products.deletedAt), isNull(products.purgedAt), inStore))
       .returning({ id: products.id });
     if (!updated.length) continue;
     restored.push(row.id);
@@ -253,13 +264,17 @@ async function purgeOne(tx: Tx, productId: string, now: string): Promise<"delete
 }
 
 /** "Delete forever" from the seller's Trash. Only products already in Trash. */
-export async function deleteTrashedProductsForever(sellerId: string, ids: unknown): Promise<{ deleted: string[] }> {
+export async function deleteTrashedProductsForever(
+  sellerId: string,
+  ids: unknown,
+  { inStore }: TrashScope = {},
+): Promise<{ deleted: string[] }> {
   const wanted = trashIds(ids);
   if (!wanted.length) return { deleted: [] };
   const rows = await db
     .select({ id: products.id })
     .from(products)
-    .where(and(eq(products.sellerId, sellerId), inArray(products.id, wanted), isNotNull(products.deletedAt), isNull(products.purgedAt)));
+    .where(and(eq(products.sellerId, sellerId), inArray(products.id, wanted), isNotNull(products.deletedAt), isNull(products.purgedAt), inStore));
   const now = new Date().toISOString();
   const deleted: string[] = [];
   for (const row of rows) {

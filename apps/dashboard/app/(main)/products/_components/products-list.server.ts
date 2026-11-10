@@ -3,6 +3,7 @@
 import { getLocale } from "next-intl/server";
 import { setProductPublished } from "@/actions/products";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 import {
   listSellerProductIds,
   listSellerProductsForExport,
@@ -59,20 +60,22 @@ export async function listFilteredProductIdsAction(
  * as the page always did; setProductPublished keeps its own checks per product.
  */
 export async function bulkSetPublishedAction(
+  storeId: unknown,
   ids: unknown,
   published: boolean,
 ): Promise<{ success: true; done: number; failed: number } | { success: false }> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    // The store is the page's, checked against the session (F-87c); only its products are touched.
+    const { seller, store, inStore } = await requireProductStore(storeId);
     const wanted = Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string").slice(0, MAX_BULK_PUBLISH) : [];
-    const own = await loadOwnProductStatuses(seller.sellerId, wanted);
+    const own = await loadOwnProductStatuses(seller.sellerId, wanted, inStore);
     const targets = own.filter((p) => p.status !== "rejected" && (p.status === "active") !== published);
 
     let done = 0;
     let failed = 0;
     for (let i = 0; i < targets.length; i += PUBLISH_BATCH) {
       const results = await Promise.all(
-        targets.slice(i, i + PUBLISH_BATCH).map((p) => setProductPublished(p.id, published)),
+        targets.slice(i, i + PUBLISH_BATCH).map((p) => setProductPublished(store.id, p.id, published)),
       );
       for (const r of results) {
         if (r.success) done++;

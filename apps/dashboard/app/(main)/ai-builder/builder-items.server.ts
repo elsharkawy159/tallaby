@@ -151,10 +151,12 @@ async function applyFileBatch(ctx: RunContext, build: BuildRow, batch: number, i
   const fallback = (items.get("categories")?.data.fallbackName as string | null | undefined) ?? null;
   // The builder's spend stop before each batch; past it, rows that need no copy are still added.
   const spendOk = await checkBuildSpend(build);
+  // The build's own store (requireStoreOf), never one from the client (F-87c).
+  const store = await requireStoreOf(ctx, build);
   const result = await runBulkBatch(
     ctx.sellerId,
     { fileKey: state.fileKey, source: "sheet", rows: rows.map((row) => fileRowToMapped(row, fallback)) },
-    { refId: build.id, credits: state.paid, ai: spendOk, keepDraft: true, unlimitedRows: new Set(rows.filter((row) => row.unlimited).map((row) => row.row)) },
+    { storeId: store.id, refId: build.id, credits: state.paid, ai: spendOk, keepDraft: true, unlimitedRows: new Set(rows.filter((row) => row.unlimited).map((row) => row.row)) },
   );
   if (!result.ok) throw new Error(`file_${result.error}`);
 

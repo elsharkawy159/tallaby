@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { sql } from "drizzle-orm";
 
 /**
  * The server-side products list (ROADMAP.md F-43a) against the staging
@@ -134,7 +135,7 @@ describe.skipIf(!TEST_DATABASE_URL)("products list (integration)", { timeout: 60
 
   it("never returns another seller's product, even by id", async () => {
     const { loadOwnProductStatuses, listSellerProductsPage } = await load();
-    const statuses = await loadOwnProductStatuses(sellerId, [ids.a, ids.other, ids.trashed]);
+    const statuses = await loadOwnProductStatuses(sellerId, [ids.a, ids.other, ids.trashed], sql`true`);
     expect(statuses.map((s) => s.id)).toEqual([ids.a]);
     const theirs = await listSellerProductsPage(otherSellerId, filters(), "en");
     expect(theirs.products.map((p) => p.id)).toEqual([ids.other]);

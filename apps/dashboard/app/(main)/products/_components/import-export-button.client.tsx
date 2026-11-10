@@ -38,6 +38,7 @@ import {
 import { ExcelUpdateDialog } from "../excel-update/excel-update.client";
 import { exportFilteredProductsAction, listFilteredProductIdsAction } from "./products-list.server";
 import type { ProductsListFilters } from "./products-view.lib";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 const IO_CARD =
   "flex cursor-pointer flex-col items-start gap-1 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 text-start no-underline transition-[border-color,box-shadow] duration-150 hover:border-(--s-primary) hover:shadow-(--s-shadow-card-hover) [&>*:first-child]:mb-1.5";
@@ -55,6 +56,7 @@ export function ImportExportButton({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const tToast = useTranslations("toast");
+  const productStoreId = useProductStoreId();
   const t = useTranslations("products.importExport");
   const tBulk = useTranslations("bulkFileImport");
 
@@ -107,7 +109,7 @@ export function ImportExportButton({
     if (!preview) return;
     startTransition(async () => {
       try {
-        const res = await bulkInsertProductsAction(preview.valid);
+        const res = await bulkInsertProductsAction(productStoreId, preview.valid);
         if (res?.success) {
           toast.success(
             res.failed

@@ -81,6 +81,7 @@ import { AddMethodChooser } from "./add-method-chooser.client";
 import { AddMethodSkeleton } from "./add-method-skeleton";
 import { useAddMethod } from "./use-add-method";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 interface AddProductProps {
   categories: CategoryOption[];
@@ -170,6 +171,7 @@ function AddProductForm({
   const tAi = useTranslations("productForm.ai");
   const tBasic = useTranslations("productForm.sections.basic");
   const tTaxonomy = useTranslations("categoriesBrands.productForm");
+  const productStoreId = useProductStoreId();
   const tSocialProof = useTranslations("productForm.sections.socialProof");
   const tCommon = useTranslations("common");
   const resolver = useLocalizedResolver(
@@ -307,7 +309,8 @@ function AddProductForm({
       try {
         const { payload, taxonomy } = toPayload(data);
         const result = await createProduct(
-          payload as Parameters<typeof createProduct>[0],
+          productStoreId,
+          payload as Parameters<typeof createProduct>[1],
         );
 
         if (result.success) {
@@ -341,11 +344,11 @@ function AddProductForm({
     startTransition(async () => {
       try {
         const { payload, taxonomy } = toPayload(data);
-        const result = await updateProduct(productId, {
+        const result = await updateProduct(productStoreId, productId, {
           ...payload,
           quantity: String(data.quantity),
           handlingTime: String(data.handlingTime),
-        } as unknown as Parameters<typeof updateProduct>[1]);
+        } as unknown as Parameters<typeof updateProduct>[2]);
 
         if (result.success) {
           // Always sent on edit, so a changed category replaces the old link.

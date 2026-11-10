@@ -15,6 +15,7 @@ import {
 } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
 import { setProductPublished } from "@/actions/products";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 type ProductStatus = "draft" | "pending" | "active" | "rejected";
 
@@ -34,6 +35,7 @@ interface ProductStatusCellProps {
 function useProductPublish(productId: string, status: ProductStatus) {
   const router = useRouter();
   const tToast = useTranslations("toast");
+  const productStoreId = useProductStoreId();
   const [isPending, startTransition] = useTransition();
   const [currentStatus, setCurrentStatus] = useState(status);
 
@@ -51,7 +53,7 @@ function useProductPublish(productId: string, status: ProductStatus) {
     setCurrentStatus(checked ? "active" : "draft");
 
     startTransition(async () => {
-      const result = await setProductPublished(productId, checked);
+      const result = await setProductPublished(productStoreId, productId, checked);
 
       if (!result.success) {
         setCurrentStatus(previousStatus);

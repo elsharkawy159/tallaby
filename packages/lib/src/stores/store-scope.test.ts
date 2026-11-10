@@ -105,6 +105,11 @@ describe("store scope guards", () => {
     expect(passed.n).toBe(1);
   });
 
+  it("storeHasProduct passes the scope through to the one condition", async () => {
+    expect(await storeHasProduct(STORE, PRODUCT, { q: fakeQ([{ ok: true }]), catalogSplit: false, scope: "managed" })).toBe(true);
+    expect(await storeHasProduct(STORE, PRODUCT, { q: fakeQ([]), catalogSplit: true, scope: "managed" })).toBe(false);
+  });
+
   it("assertStoreProduct throws product_not_in_store", async () => {
     await expect(assertStoreProduct(STORE, PRODUCT, { q: fakeQ([]), catalogSplit: false })).rejects.toMatchObject({
       code: "product_not_in_store",

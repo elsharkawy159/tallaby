@@ -37,6 +37,7 @@ import {
 } from "./bulk-edit.dto";
 import { applyBulkEditAction, previewBulkEditAction, undoBulkEditAction } from "./bulk-edit.server";
 import { toAsciiDigits } from "@/components/form/form-ui";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 type Kind = BulkChangeInput["kind"];
 
@@ -235,6 +236,7 @@ export function BulkEditDialog({
   onApplied: (undo: BulkEditUndo | null) => void;
 }) {
   const t = useTranslations("products.bulkEdit");
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const { unit } = useAccountMoney();
   const [form, setForm] = useState<FormState>(initialForm);
@@ -260,7 +262,7 @@ export function BulkEditDialog({
   const runPreview = () => {
     if (!change || tooMany) return;
     startTransition(async () => {
-      const res = await previewBulkEditAction({ ids, change });
+      const res = await previewBulkEditAction(productStoreId, { ids, change });
       if (!res.success) {
         showError(res.error);
         return;
@@ -272,7 +274,7 @@ export function BulkEditDialog({
   const apply = () => {
     if (!change || !preview) return;
     startTransition(async () => {
-      const res = await applyBulkEditAction({ ids, change });
+      const res = await applyBulkEditAction(productStoreId, { ids, change });
       if (!res.success) {
         showError(res.error);
         return;
@@ -450,6 +452,7 @@ export function BulkEditDialog({
 /** "Undo" bar shown for 10 minutes after a bulk edit. */
 export function BulkEditUndoBar({ undo, onClear }: { undo: BulkEditUndo; onClear: () => void }) {
   const t = useTranslations("products.bulkEdit");
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const router = useRouter();
   const [now, setNow] = useState(() => Date.now());
@@ -471,7 +474,7 @@ export function BulkEditUndoBar({ undo, onClear }: { undo: BulkEditUndo; onClear
 
   const runUndo = () =>
     startTransition(async () => {
-      const res = await undoBulkEditAction(undo.token);
+      const res = await undoBulkEditAction(productStoreId, undo.token);
       if (!res.success) {
         toast.error(t(res.error === "expired" ? "undoExpired" : "errorGeneric"));
       } else {

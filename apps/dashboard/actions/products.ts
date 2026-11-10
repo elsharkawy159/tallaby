@@ -32,6 +32,7 @@ import { setStockContext } from "@workspace/db/inventory";
 import { normalizePrice } from "@workspace/lib";
 import { resolveProductSlug } from "@workspace/lib/products/slug/server";
 import { getSellerAccess } from "@/lib/auth/seller-access";
+import { requireProductStore, requireStoreProduct } from "@/lib/products/product-store.server";
 import {
   hasProductImage,
   nextProductStatus,
@@ -753,7 +754,7 @@ export async function bulkUploadProductsAction(formData: FormData) {
 }
 
 // Confirm: take parsed records and insert into DB (includes variants and Q&A)
-export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
+export async function bulkInsertProductsAction(storeId: string, records: ParsedBulkRow[]) {
   try {
     const session = await getUser();
     if (!session?.user?.id) {
@@ -772,7 +773,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
 
     for (const rec of records) {
       try {
-        const res = await createProduct({
+        const res = await createProduct(storeId, {
           title: rec.product.title,
           slug: rec.product.slug,
           description: rec.product.description,
@@ -872,6 +873,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
 
 /** Bulk-create products from add-product form payloads (URL bulk import). */
 export async function bulkCreateProductsAction(
+  storeId: string,
   products: Array<Record<string, unknown>>
 ) {
   try {
@@ -895,7 +897,7 @@ export async function bulkCreateProductsAction(
       if (!product) continue;
 
       try {
-        const res = await createProduct(product as any, { stockReason: "import" });
+        const res = await createProduct(storeId, product as any, { stockReason: "import" });
         if (!res.success || !res.data?.id) {
           results.failed++;
           results.errors.push({
@@ -1105,6 +1107,8 @@ function hasLocalized(
 }
 
 export async function createProduct(
+  /** The store the product is added to (F-87c): checked against the session, written to products.store_id. */
+  storeId: string,
   data: CreateProductLegacy | CreateProductNew,
   /** Stock history label (0125): the bulk imports below pass "import". */
   options?: { stockReason?: "import" }
@@ -1114,6 +1118,7 @@ export async function createProduct(
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
+    const { store } = await requireProductStore(storeId);
 
     const { productUrl: _productUrl, ...rest } = data as CreateProductLegacy & {
       productUrl?: string;
@@ -1153,6 +1158,9 @@ export async function createProduct(
       ...sharedOnly,
       sku,
       sellerId: session.user.id,
+      // Set after the spread, so the client never picks the store (rule 5). No
+      // store_products row: today a new product shows in "all" stores only.
+      storeId: store.id,
       status: nextProductStatus({
         previous: null,
         hasImage: hasProductImage((sharedOnly as { images?: unknown }).images),
@@ -1341,6 +1349,7 @@ export async function createProduct(
 }
 
 export async function updateProduct(
+  storeId: string,
   productId: string,
   data: Partial<typeof products.$inferInsert> & {
     variants?: Array<{
@@ -1390,6 +1399,7 @@ export async function updateProduct(
       throw new Error("Unauthorized");
     }
 
+    await requireStoreProduct(storeId, productId);
     const before = await toSnapshot(productId);
     if (!before || before.sellerId !== session.user.id) {
       throw new Error("Product not found or unauthorized");
@@ -1420,6 +1430,9 @@ export async function updateProduct(
       locale: _locale,
       productUrl: _productUrl,
       notes: _notes,
+      // Never from the client: the owner and the store stay as they are (rule 5).
+      sellerId: _sellerId,
+      storeId: _storeId,
       ...productData
     } = data as typeof data & FormOnly;
 
@@ -1615,10 +1628,15 @@ export async function updateProduct(
   }
 }
 
-export async function toggleProductStatus(productId: string) {
+export async function toggleProductStatus(storeId: string, productId: string) {
   const session = await getUser();
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
+  }
+  try {
+    await requireStoreProduct(storeId, productId);
+  } catch {
+    return { success: false, error: "not_found" };
   }
 
   const product = await db.query.products.findFirst({
@@ -1635,15 +1653,16 @@ export async function toggleProductStatus(productId: string) {
     return { success: false, error: "Product not found" };
   }
 
-  return setProductPublished(productId, product.status !== "active");
+  return setProductPublished(storeId, productId, product.status !== "active");
 }
 
-export async function setProductPublished(productId: string, published: boolean) {
+export async function setProductPublished(storeId: string, productId: string, published: boolean) {
   try {
     const session = await getUser();
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
+    await requireStoreProduct(storeId, productId);
 
     const product = await db.query.products.findFirst({
       where: and(
@@ -1925,12 +1944,13 @@ export async function updateProductAnswerAction(formData: FormData) {
   }
 }
 
-export async function deleteProduct(productId: string) {
+export async function deleteProduct(storeId: string, productId: string) {
   try {
     const session = await getUser();
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
+    await requireStoreProduct(storeId, productId);
 
     const product = await db.query.products.findFirst({
       where: and(

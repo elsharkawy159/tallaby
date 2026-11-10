@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { EyeOff, ExternalLink, LoaderCircle, Rocket } from "lucide-react";
 import { SellerButton } from "@/components/seller-ui";
 import { setProductPublished } from "@/actions/products";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 export type EditProductStatus = "draft" | "pending" | "active" | "rejected";
 
@@ -29,6 +30,7 @@ export function EditProductActions({
   const t = useTranslations("productForm.page");
   const tPublish = useTranslations("products.publish");
   const tToast = useTranslations("toast");
+  const productStoreId = useProductStoreId();
   const [current, setCurrent] = useState(status);
   const [isPending, startTransition] = useTransition();
 
@@ -41,7 +43,7 @@ export function EditProductActions({
     if (!canToggle || isPending) return;
     const next = !published;
     startTransition(async () => {
-      const result = await setProductPublished(productId, next);
+      const result = await setProductPublished(productStoreId, productId, next);
       if (!result.success) {
         toast.error(result.error || tToast("failedToUpdateProductStatus"));
         return;

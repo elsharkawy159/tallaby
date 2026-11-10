@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { validateImage } from "@/lib/utils";
 import { uploadProductImage } from "@/components/inputs/use-seller-upload";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 interface ProductImageUploadProps {
   productId: string;
@@ -24,6 +25,7 @@ export function ProductImageUpload({
 }: ProductImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const tToast = useTranslations("toast");
+  const productStoreId = useProductStoreId();
   const t = useTranslations("products.imageUpload");
 
   const handleFileUpload = useCallback(
@@ -65,7 +67,7 @@ export function ProductImageUpload({
 
         if (successfulUploads.length > 0) {
           const newImages = [...images, ...successfulUploads];
-          const result = await updateProduct(productId, { images: newImages });
+          const result = await updateProduct(productStoreId, productId, { images: newImages });
 
           if (result.success) {
             toast.success(
@@ -86,7 +88,7 @@ export function ProductImageUpload({
         setIsUploading(false);
       }
     },
-    [images, handleFileUpload, productId, tToast]
+    [images, handleFileUpload, productId, productStoreId, tToast]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

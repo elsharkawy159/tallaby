@@ -262,12 +262,13 @@ export async function listSellerProductCategories(sellerId: string, locale: stri
 }
 
 /** Id and status of the seller's own products among these ids. Others are dropped. */
-export async function loadOwnProductStatuses(sellerId: string, ids: string[]) {
+/** The statuses of the given ids that are the seller's, not in Trash, and in the store (`inStore`, F-87c). */
+export async function loadOwnProductStatuses(sellerId: string, ids: string[], inStore: SQL) {
   if (ids.length === 0) return [];
   return db
     .select({ id: products.id, status: products.status })
     .from(products)
-    .where(and(inArray(products.id, ids), ...baseConditions(sellerId)));
+    .where(and(inArray(products.id, ids), ...baseConditions(sellerId), inStore));
 }
 
 /** Light product options for the ad picker: no variants or descriptions. */

@@ -15,6 +15,7 @@ import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.c
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { deleteProductsForeverAction, restoreProductsAction } from "./trash.server";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 /**
  * Products in Trash: each waits 30 days, then the daily job deletes it. The
@@ -22,6 +23,7 @@ import { deleteProductsForeverAction, restoreProductsAction } from "./trash.serv
  */
 export function ProductTrash({ items }: { items: TrashedProduct[] }) {
   const t = useTranslations("products.trash");
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -40,7 +42,7 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
 
   const restore = (ids: string[]) =>
     startTransition(async () => {
-      const res = await restoreProductsAction(ids);
+      const res = await restoreProductsAction(productStoreId, ids);
       if (!res.success) {
         toast.error(t("restoreFailed"));
         return;
@@ -52,7 +54,7 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
 
   const deleteForever = (ids: string[]) =>
     startTransition(async () => {
-      const res = await deleteProductsForeverAction(ids);
+      const res = await deleteProductsForeverAction(productStoreId, ids);
       if (!res.success) {
         toast.error(t("deleteFailed"));
         return;

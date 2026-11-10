@@ -411,9 +411,11 @@ export type BulkBatchOptions = {
   keepDraft?: boolean;
   /** Sheet rows the seller marked as always in stock: saved without stock tracking. */
   unlimitedRows?: ReadonlySet<number>;
+  /** The store the products are added to (F-87c). createProduct checks it against the session again. */
+  storeId: string;
 };
 
-export async function runBulkBatch(sellerId: string, input: AddBatchInput, options: BulkBatchOptions = {}): Promise<AddBatchResult> {
+export async function runBulkBatch(sellerId: string, input: AddBatchInput, options: BulkBatchOptions): Promise<AddBatchResult> {
   const results: BulkRowResult[] = [];
 
   // Every row is checked again here: the browser's confirm screen proves nothing.
@@ -579,7 +581,8 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput, optio
       try {
         const payload = buildProductPayload(row, copy, { sku, categoryId, sellerCategoryId, sellerBrandId, imagePaths: photos.paths, aiWritten: Boolean(ai), now });
         const created = await createProduct(
-          (unlimited ? { ...payload, trackStock: false } : payload) as unknown as Parameters<typeof createProduct>[0],
+          options.storeId,
+          (unlimited ? { ...payload, trackStock: false } : payload) as unknown as Parameters<typeof createProduct>[1],
           { stockReason: "import" },
         );
         if (!created.success || !created.data) {
@@ -598,7 +601,7 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput, optio
         const holdBack = options.keepDraft === true || (row.stock === null && !unlimited) || !strongCategory || nameInDoubt;
         let status = created.data.status;
         if (status === "active" && holdBack) {
-          const hidden = await setProductPublished(created.data.id, false);
+          const hidden = await setProductPublished(options.storeId, created.data.id, false);
           if (hidden.success) status = "draft";
         }
         const live = status === "active";

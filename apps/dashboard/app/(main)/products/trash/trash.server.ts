@@ -3,12 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { applyInvalidation } from "@workspace/cache";
 import { deleteTrashedProductsForever, restoreProducts, trashProducts } from "@workspace/lib/products/trash/server";
-import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
+import { isAccessError } from "@/lib/auth/require-seller.server";
+import { requireProductStore } from "@/lib/products/product-store.server";
 
 /**
  * Product Trash actions (0123, ROADMAP.md F-35). The seller comes from the
- * session; product ids from the client are only matched together with it
- * (in @workspace/lib/products/trash/server).
+ * session; the store is the explicit `storeId` the page sends, checked
+ * against that seller (F-87c), and product ids from the client are only
+ * matched together with both (in @workspace/lib/products/trash/server).
+ * A foreign or forged store is "unauthorized" (not_found), and products
+ * outside the store are skipped, as products of another seller always were.
+ * No `forWrite` on the store: an archived or suspended store doesn't block
+ * product writes yet (slice 2 decides that with the route move).
  */
 
 export type TrashActionResult =
@@ -22,10 +28,10 @@ function failure(error: unknown, label: string): TrashActionResult {
 }
 
 /** Delete → Trash (row action and bulk delete on Products). */
-export async function trashProductsAction(ids: unknown): Promise<TrashActionResult> {
+export async function trashProductsAction(storeId: unknown, ids: unknown): Promise<TrashActionResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
-    const { trashed, invalidation } = await trashProducts(seller.sellerId, seller.userId, ids);
+    const { seller, inStore } = await requireProductStore(storeId);
+    const { trashed, invalidation } = await trashProducts(seller.sellerId, seller.userId, ids, { inStore });
     await applyInvalidation(invalidation, { from: "dashboard", mode: "action" });
     revalidatePath("/products", "layout");
     return { success: true, count: trashed.length, ids: trashed };
@@ -34,11 +40,11 @@ export async function trashProductsAction(ids: unknown): Promise<TrashActionResu
   }
 }
 
-export async function restoreProductsAction(ids: unknown): Promise<TrashActionResult> {
+export async function restoreProductsAction(storeId: unknown, ids: unknown): Promise<TrashActionResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
+    const { seller, inStore } = await requireProductStore(storeId);
     // Same rule as the Publish switch: only approved sellers make products live.
-    const { restored, invalidation } = await restoreProducts(seller.sellerId, ids, { canPublish: seller.status === "approved" });
+    const { restored, invalidation } = await restoreProducts(seller.sellerId, ids, { canPublish: seller.status === "approved", inStore });
     await applyInvalidation(invalidation, { from: "dashboard", mode: "action" });
     revalidatePath("/products", "layout");
     return { success: true, count: restored.length, ids: restored };
@@ -47,10 +53,10 @@ export async function restoreProductsAction(ids: unknown): Promise<TrashActionRe
   }
 }
 
-export async function deleteProductsForeverAction(ids: unknown): Promise<TrashActionResult> {
+export async function deleteProductsForeverAction(storeId: unknown, ids: unknown): Promise<TrashActionResult> {
   try {
-    const seller = await requireSeller({ forWrite: true });
-    const { deleted } = await deleteTrashedProductsForever(seller.sellerId, ids);
+    const { seller, inStore } = await requireProductStore(storeId);
+    const { deleted } = await deleteTrashedProductsForever(seller.sellerId, ids, { inStore });
     revalidatePath("/products", "layout");
     return { success: true, count: deleted.length, ids: deleted };
   } catch (error) {

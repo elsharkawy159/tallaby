@@ -38,6 +38,7 @@ import {
   type BulkProductItem,
 } from "./bulk-url-import.lib"
 import { RemoteImage } from "@/components/media/remote-image";
+import { useProductStoreId } from "@/app/(main)/products/_components/product-store.client";
 
 interface BulkUrlImportProps {
   urls: string[]
@@ -162,6 +163,7 @@ export function BulkUrlImport ({
   const router = useRouter()
   const isSidebarCollapsed = useSidebarStore((state) => state.isCollapsed)
   const t = useTranslations("productForm.bulk")
+  const productStoreId = useProductStoreId();
   const errorText = (message: string | undefined) =>
     message && t.has(`errors.${message}`) ? t(`errors.${message}`) : message
   const [isPending, startTransition] = useTransition()
@@ -308,7 +310,7 @@ export function BulkUrlImport ({
         return
       }
 
-      const result = await bulkCreateProductsAction(validPayloads as any)
+      const result = await bulkCreateProductsAction(productStoreId, validPayloads as any)
 
       if (!result.success && result.inserted === 0) {
         toast.error(result.errors[0]?.message || t("createManyFailed"))

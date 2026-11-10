@@ -53,6 +53,7 @@ import {
   type ProductsTab,
   type ProductsViewMode,
 } from "./products-view.lib";
+import { useProductStoreId } from "./product-store.client";
 
 export type VendorProduct = {
   id: string;
@@ -121,6 +122,7 @@ export function VendorProductsSection({
   pages: number;
 }) {
   const t = useTranslations("products.list");
+  const productStoreId = useProductStoreId();
   const locale = useLocale();
   const router = useRouter();
 
@@ -224,7 +226,7 @@ export function VendorProductsSection({
 
   const bulkPublish = (published: boolean) => {
     startTransition(async () => {
-      const res = await bulkSetPublishedAction([...selected], published);
+      const res = await bulkSetPublishedAction(productStoreId, [...selected], published);
       if (!res.success) {
         toast.error(t("bulkPublishFailed", { count: selected.size }));
         return;
@@ -240,7 +242,7 @@ export function VendorProductsSection({
   const undoTrash = (ids: string[]) => ({
     label: t("undo"),
     onClick: async () => {
-      const res = await restoreProductsAction(ids);
+      const res = await restoreProductsAction(productStoreId, ids);
       if (res.success) toast.success(t("restored", { count: res.count }));
       else toast.error(t("restoreFailed"));
       router.refresh();
@@ -251,7 +253,7 @@ export function VendorProductsSection({
     if (bulkDeleting) {
       const ids = [...selected];
       startTransition(async () => {
-        const res = await trashProductsAction(ids);
+        const res = await trashProductsAction(productStoreId, ids);
         const done = res.success ? res.count : 0;
         const failed = ids.length - done;
         if (failed > 0) toast.error(t("bulkDeleteFailed", { count: failed }));
@@ -265,7 +267,7 @@ export function VendorProductsSection({
     }
     if (!deleting) return;
     startTransition(async () => {
-      const res = await trashProductsAction([deleting.id]);
+      const res = await trashProductsAction(productStoreId, [deleting.id]);
       if (!res.success || res.count === 0) {
         toast.error(t("deleteFailed"));
         return;
