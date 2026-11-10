@@ -3,31 +3,22 @@ import { getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
-import { getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
-import { LOCAL_CURRENCIES, formatLocalAmount } from "@/lib/marketing/local-currency.lib";
-import { FALLBACK_EGP_PER_USD, PLAN_PRICES, PRICE_TOKENS, formatNumber } from "@/lib/marketing/pricing.lib";
-import { PlanPrice, type CardPrice } from "./plan-price.client";
+import { PLAN_PRICES, PRICE_TOKENS, formatNumber } from "@/lib/marketing/pricing.lib";
+import { PlanPrice } from "./plan-price.client";
 import { withPrices } from "./with-prices";
 
 /**
  * The Free and Pro cards, on the home page and /pricing. Every number comes
  * from the code (`@workspace/lib/plans`, `@workspace/lib/billing`). Prices
- * show with "≈" in the visitor's currency (owner, 2026-11-09; no "$" amount):
- * EGP on the server render, at the dashboard wallet's live rate and rounding,
- * then the visitor's own currency when we have a rate for it. The pages stay static.
+ * show in the visitor's currency (owner, 2026-11-09; no "$" amount), formatted
+ * by `PlanPrice` from `VisitorPricesProvider`'s rates: EGP on the Arabic
+ * server render (the dashboard wallet's live rate and rounding), USD on the
+ * English one, then the visitor's own currency when we have a rate for it.
+ * The pages stay static.
  */
 export async function PlanCards() {
-  const [t, rates] = await Promise.all([getTranslations("pricing.plans"), getMarketingUsdRates()]);
+  const t = await getTranslations("pricing.plans");
   const { free, pro } = PLAN_PRICES;
-  /** One plan's price in every currency we have a rate for, EGP always. */
-  const pricesFor = (planCents: number) => {
-    const prices: Record<string, CardPrice> = {};
-    for (const code of LOCAL_CURRENCIES) {
-      const rate = code === "EGP" ? (rates.EGP ?? FALLBACK_EGP_PER_USD) : rates[code];
-      if (rate) prices[code] = { amount: formatLocalAmount(planCents, code, rate), label: t(`currency.${code}` as "currency.EGP") };
-    }
-    return prices;
-  };
 
   // F-84: stores take orders from day one; the first top-up keeps new orders
   // visible after the grace window and unlocks campaigns. EGP at the live rate.
@@ -40,7 +31,7 @@ export async function PlanCards() {
       name: t("freeName"),
       latinName: false,
       tagline: t("freeTagline"),
-      prices: pricesFor(free.orderFeeCents),
+      cents: free.orderFeeCents,
       per: t("perOrder"),
       note: t("freeNote"),
       activation,
@@ -61,7 +52,7 @@ export async function PlanCards() {
       name: "Pro",
       latinName: true,
       tagline: t("proTagline"),
-      prices: pricesFor(pro.monthlyCents),
+      cents: pro.monthlyCents,
       per: t("perMonth"),
       note: t("proNote"),
       activation: null,
@@ -97,7 +88,7 @@ export async function PlanCards() {
               <h3 className={cn("text-[22px] font-bold text-teal-900", card.latinName && "font-latin")}>{card.name}</h3>
               <p className="text-sm text-ink-500">{card.tagline}</p>
             </div>
-            <PlanPrice prices={card.prices} per={card.per} note={card.note} />
+            <PlanPrice cents={card.cents} per={card.per} note={card.note} />
             {card.activation ? (
               <p className="m-0 flex items-start gap-1.5 text-[12.5px] leading-relaxed text-pretty text-ink-500">
                 <Info className="mt-0.5 size-3.5 flex-none" aria-hidden />

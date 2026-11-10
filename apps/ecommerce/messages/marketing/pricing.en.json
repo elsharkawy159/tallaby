@@ -39,6 +39,7 @@
       "fx": "Amounts are approximate, converted at today's exchange rate, and may move slightly with it. You top up your wallet in Egyptian pounds.",
       "currency": {
         "EGP": "EGP",
+        "USD": "USD",
         "SAR": "SAR",
         "AED": "AED",
         "KWD": "KWD",

@@ -11,6 +11,7 @@ import { STORE_PREVIEW_COOKIE } from "@workspace/lib/store-sites/preview";
 import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@workspace/lib/referrals";
 import { LOCALE_COOKIE, routing } from "@/i18n/routing";
 import { englishLandingRedirect, LOCALE_LANDING_REDIRECT_HEADERS } from "@/lib/marketing/locale-landing.lib";
+import { geoServerTiming, requestCountry } from "@/lib/marketing/visitor-country.lib";
 import {
   isCrawlFilePath,
   isInternalStorefrontPath,
@@ -76,11 +77,21 @@ export async function proxy(request: NextRequest) {
   }
 
   // tallaby.com only (never a storefront host, even when a storefront path
-  // falls through to here): a browser that doesn't prefer Arabic, landing on an
+  // falls through to here): a visitor outside the Arab world (by IP country)
+  // or, with no country, a browser that doesn't prefer Arabic, landing on an
   // Arabic marketing page with no language chosen yet, gets the English page.
   // The full rule and its exclusions are in locale-landing.lib.ts.
-  if (isMarketplaceHost(host)) {
+  const marketplace = isMarketplaceHost(host);
+  const country = marketplace
+    ? requestCountry({
+        header: request.headers.get("x-vercel-ip-country"),
+        override: request.nextUrl.searchParams.get("country"),
+        production: process.env.NODE_ENV === "production",
+      })
+    : null;
+  if (marketplace) {
     const english = englishLandingRedirect({
+      country,
       method: request.method,
       pathname: request.nextUrl.pathname,
       search: request.nextUrl.search,
@@ -99,7 +110,13 @@ export async function proxy(request: NextRequest) {
   // Affiliate link on tallaby.com (F-37): remember ?ref= for 60 days; the first link wins.
   const referral = referralCookieToSet(request.nextUrl.searchParams.get("ref"), request.cookies.get(REFERRAL_COOKIE)?.value);
   if (referral) response.cookies.set(REFERRAL_COOKIE, referral, referralCookieOptions(process.env.REFERRAL_COOKIE_DOMAIN));
-  return updateSession(request, response);
+  const final = await updateSession(request, response);
+  // The visitor's country for tallaby.com's prices, read by the page from its
+  // navigation entry (visitor-currency.client.ts), so the right currency shows
+  // at hydration with no /api/geo round trip. A response header added here
+  // per request: the page itself stays static and cached.
+  if (country) final.headers.append("Server-Timing", geoServerTiming(country));
+  return final;
 }
 
 export const config = {

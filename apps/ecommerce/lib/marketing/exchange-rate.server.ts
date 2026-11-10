@@ -3,7 +3,7 @@ import { billingTags, createCachedQuery } from "@workspace/cache";
 import { exchangeRateSource, usdRatesFromResponse } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { getTranslations } from "next-intl/server";
-import { FEED_CURRENCIES, LOCAL_CURRENCIES, localPriceVars } from "./local-currency.lib";
+import { FEED_CURRENCIES, type MarketingPriceTable, USD } from "./local-currency.lib";
 import { FALLBACK_EGP_PER_USD, type MarketingPriceVars, marketingPriceVars } from "./pricing.lib";
 
 /** The rate is optional on the page: past this, it shows the fallback rather than wait for the database. */
@@ -48,16 +48,18 @@ export const getMarketingEgpPerUsd = cache(async (): Promise<number> => {
   }
 });
 
-/** The feed is slower than the database; past this the cards show EGP and USD only. */
+/** The feed is slower than the database; past this the prices show in EGP and USD only. */
 const FEED_TIMEOUT_MS = 10_000;
 
 /**
- * USD→X rates of the currencies the plan cards can show besides EGP, from the
- * same feed as the billing cron. Cached 3 hours and cleared with the billing
- * rate; a failed fetch throws inside, so it is never cached.
+ * USD→X rates of every country currency (`FEED_CURRENCIES`, ~160 numbers),
+ * from the same feed as the billing cron; a currency the feed lacks or gives an
+ * implausible rate for is left out, so its visitors see USD. Cached 3 hours and
+ * cleared with the billing rate; a failed fetch throws inside, so it is never
+ * cached. v2: every country (v1 held 17 currencies).
  */
 const getCachedFeedRates = createCachedQuery({
-  name: "marketing:usd-local-rates:v1",
+  name: "marketing:usd-local-rates:v2",
   ttl: 3 * 60 * 60,
   tags: () => [billingTags.rate()],
   query: async () => {
@@ -72,9 +74,9 @@ const getCachedFeedRates = createCachedQuery({
 });
 
 /**
- * USD→X rates for the plan cards' local prices: EGP is always the billing rate
- * (so "1.62" matches /wallet), the others the feed's, or missing when the feed
- * fails (those visitors see USD only). Never throws.
+ * USD→X rates for tallaby.com's local prices: EGP is always the billing rate
+ * (so "1.62" matches /wallet), USD always 1, the others the feed's, or missing
+ * when the feed fails (those visitors see USD). Never throws.
  */
 export const getMarketingUsdRates = cache(async (): Promise<Record<string, number>> => {
   const [egp, feed] = await Promise.all([
@@ -84,7 +86,7 @@ export const getMarketingUsdRates = cache(async (): Promise<Record<string, numbe
       return {} as Record<string, number>;
     }),
   ]);
-  return { ...feed, EGP: egp };
+  return { ...feed, EGP: egp, [USD]: 1 };
 });
 
 /** `{orderFee}`, `{pro}`, `{topUpMin}`, … as "≈ … جنيه" / "≈ EGP …" at the live rate (owner, 2026-11-09). */
@@ -92,17 +94,8 @@ export async function getMarketingPriceVars(locale: string, options?: { isolate?
   return marketingPriceVars(await getMarketingEgpPerUsd(), locale, options);
 }
 
-/**
- * Every price token in each currency tallaby.com can show (EGP always, the
- * others when the feed has a rate), for `VisitorPricesProvider`: the server
- * HTML shows EGP and the browser swaps to the visitor's currency.
- */
-export async function getMarketingPriceTable(locale: string): Promise<Record<string, MarketingPriceVars>> {
-  const [rates, t] = await Promise.all([getMarketingUsdRates(), getTranslations({ locale, namespace: "pricing.plans.currency" })]);
-  const table: Record<string, MarketingPriceVars> = {};
-  for (const code of LOCAL_CURRENCIES) {
-    const rate = code === "EGP" ? (rates.EGP ?? FALLBACK_EGP_PER_USD) : rates[code];
-    if (rate) table[code] = localPriceVars(code, rate, locale, t(code as "EGP"));
-  }
-  return table;
+/** The price table for `VisitorPricesProvider` (the (site) layout): EGP on Arabic pages and USD on English ones until the visitor's country is known. */
+export async function getMarketingPriceTable(locale: string): Promise<MarketingPriceTable> {
+  const [rates, t] = await Promise.all([getMarketingUsdRates(), getTranslations({ locale, namespace: "pricing.plans" })]);
+  return { locale, rates, labels: t.raw("currency") as Record<string, string> };
 }

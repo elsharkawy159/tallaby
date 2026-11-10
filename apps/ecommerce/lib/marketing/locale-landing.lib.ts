@@ -1,8 +1,11 @@
 /**
- * tallaby.com language landing (owner, 2026-11-09): a visitor whose browser
- * doesn't prefer Arabic, landing on an Arabic (unprefixed) marketing page, is
- * sent to the same page under /en. Arabic stays the URL default, the SEO
- * default and hreflang x-default: crawlers, prefetches and anyone who has
+ * tallaby.com language landing (owner, 2026-11-09; by country 2026-11-10): a
+ * visitor landing on an Arabic (unprefixed) marketing page is sent to the same
+ * page under /en when they are outside the Arab world (IP country) and their
+ * browser's top language isn't Arabic; with no country known, when their
+ * browser doesn't prefer Arabic. Visitors in an Arab country stay in Arabic.
+ * Arabic stays the URL default, the SEO default and hreflang x-default:
+ * crawlers, prefetches and anyone who has
  * already chosen a language (the locale cookie) are never redirected.
  *
  * Pure functions only; `proxy.ts` calls `englishLandingRedirect`.
@@ -64,8 +67,30 @@ export function isBotUserAgent(userAgent: string | null | undefined): boolean {
  * Null when the header is missing or has no usable language (only `*`, q=0, junk).
  */
 export function preferredLanguage(acceptLanguage: string | null | undefined): "ar" | "en" | null {
-  if (!acceptLanguage) return null;
-  const ranked = acceptLanguage
+  const ranked = rankedLanguages(acceptLanguage);
+  if (ranked.length === 0) return null;
+  for (const tag of ranked) {
+    const primary = tag.split("-")[0];
+    if (primary === "ar") return "ar";
+    if (primary === "en") return "en";
+  }
+  return "en";
+}
+
+/**
+ * The primary subtag of the browser's top-ranked language (`sv` for
+ * `sv-SE,en;q=0.8`), by q-value then header order; null when the header is
+ * missing or has no usable language (only `*`, q=0, junk).
+ */
+export function topLanguage(acceptLanguage: string | null | undefined): string | null {
+  const [top] = rankedLanguages(acceptLanguage);
+  return top ? (top.split("-")[0] ?? null) : null;
+}
+
+/** The header's language tags in lower case, best first (q-value, then header order), without `*`, q=0 or junk. */
+function rankedLanguages(acceptLanguage: string | null | undefined): string[] {
+  if (!acceptLanguage) return [];
+  return acceptLanguage
     .split(",")
     .map((part, index) => {
       const [rawTag = "", ...params] = part.trim().split(";");
@@ -81,14 +106,34 @@ export function preferredLanguage(acceptLanguage: string | null | undefined): "a
       return { tag, q, index };
     })
     .filter(({ tag, q }) => q > 0 && /^[a-z]{1,8}(?:-[a-z0-9]{1,8})*$/.test(tag))
-    .sort((a, b) => b.q - a.q || a.index - b.index);
-  if (ranked.length === 0) return null;
-  for (const { tag } of ranked) {
-    const primary = tag.split("-")[0];
-    if (primary === "ar") return "ar";
-    if (primary === "en") return "en";
+    .sort((a, b) => b.q - a.q || a.index - b.index)
+    .map(({ tag }) => tag);
+}
+
+/**
+ * Egypt, the Gulf and the rest of the Arab League: visitors here keep the
+ * Arabic page, even with an English browser.
+ */
+export const ARAB_COUNTRIES: ReadonlySet<string> = new Set([
+  "EG",
+  "SA", "AE", "KW", "QA", "BH", "OM",
+  "JO", "LB", "SY", "IQ", "PS", "YE", "SD", "LY", "TN", "DZ", "MA", "MR", "SO", "DJ", "KM",
+]);
+
+/**
+ * Whether a visitor who chose no language should get English:
+ * - in an Arab country (`ARAB_COUNTRIES`): never;
+ * - in any other country: yes, unless the browser's top-ranked language is Arabic;
+ * - country unknown (no header, local development): when the browser prefers
+ *   English over Arabic (`preferredLanguage`), the rule from before countries.
+ */
+export function wantsEnglish(country: string | null | undefined, acceptLanguage: string | null | undefined): boolean {
+  const code = country ? country.toUpperCase() : null;
+  if (code) {
+    if (ARAB_COUNTRIES.has(code)) return false;
+    return topLanguage(acceptLanguage) !== "ar";
   }
-  return "en";
+  return preferredLanguage(acceptLanguage) === "en";
 }
 
 export interface LocaleLandingRequest {
@@ -101,6 +146,8 @@ export interface LocaleLandingRequest {
   headers: { get(name: string): string | null };
   /** The NEXT_LOCALE cookie's value, or null. "ar" (chosen Arabic) never redirects; "en" always does. */
   localeCookie: string | null;
+  /** The visitor's ISO country (Vercel's IP header, `requestCountry`), or null when unknown. */
+  country?: string | null;
 }
 
 function isPrefetch(headers: LocaleLandingRequest["headers"]): boolean {
@@ -122,7 +169,7 @@ function isSameSiteReferer(referer: string | null, host: string | null): boolean
  * Where to send this request, or null to serve it as is. Redirects only a
  * person's browser loading an Arabic marketing page as a document (a landing,
  * not a click inside the site), when the visitor chose English before (cookie
- * "en"), or chose nothing and their browser doesn't prefer Arabic.
+ * "en"), or chose nothing and `wantsEnglish` (by country, then browser language).
  */
 export function englishLandingRedirect(request: LocaleLandingRequest): string | null {
   const { headers } = request;
@@ -141,7 +188,7 @@ export function englishLandingRedirect(request: LocaleLandingRequest): string | 
   // new tab, or with cookies blocked) is the visitor's own choice.
   if (isSameSiteReferer(headers.get("referer"), request.host)) return null;
   if (isBotUserAgent(headers.get("user-agent"))) return null;
-  if (request.localeCookie !== "en" && preferredLanguage(headers.get("accept-language")) !== "en") return null;
+  if (request.localeCookie !== "en" && !wantsEnglish(request.country, headers.get("accept-language"))) return null;
   const path = request.pathname === "/" ? "/en" : `/en${request.pathname}`;
   return `${path}${request.search}`;
 }

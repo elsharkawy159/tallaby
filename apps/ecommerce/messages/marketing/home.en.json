@@ -324,7 +324,6 @@
         "egp": "EGP",
         "title": "Dashboard",
         "walletLabel": "Wallet balance",
-        "walletApprox": "≈ {amount} EGP",
         "greeting": "Good morning, Nour",
         "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
         "latest": "Latest orders",

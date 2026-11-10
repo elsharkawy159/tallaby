@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Bell, ShoppingBag, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
+import { Money } from "@/components/marketing/pricing/visitor-prices.client";
+import { HERO_DEMO_WALLET_USD_CENTS } from "./home-demo.lib";
 
 type Order = { customer: string; product: string; when: string; total: number; status: "pending" | "shipped" | "delivered" };
 
@@ -19,10 +21,10 @@ const money = (n: number) => n.toLocaleString("en-US");
 
 /**
  * The hero's stage, a still frame: an order placed on the store's phone page
- * has just landed in the seller's dashboard. Sample data; `walletEgp` is the
- * wallet in pounds at the live rate (owner, 2026-11-09).
+ * has just landed in the seller's dashboard. Sample data; the wallet shows in
+ * the visitor's currency like every tallaby.com price (owner, 2026-11-10).
  */
-export async function HeroDemo({ walletEgp }: { walletEgp: string }) {
+export async function HeroDemo() {
   const t = await getTranslations("home.demo.hero");
   const egp = t("egp");
   const productName = (t.raw("products") as string[])[0] ?? "";
@@ -44,7 +46,7 @@ export async function HeroDemo({ walletEgp }: { walletEgp: string }) {
           <span className="flex h-[30px] items-center gap-1.5 rounded-full border border-[#e7e9e8] px-2.5 text-[11.5px] whitespace-nowrap text-[#5f6b6e]">
             <Wallet className="size-3.5" />
             <span className="hidden min-[641px]:inline">{t("walletLabel")}</span>
-            <b className="text-[12px] text-[#171717]">{t("walletApprox", { amount: walletEgp })}</b>
+            <b className="text-[12px] text-[#171717]"><Money cents={HERO_DEMO_WALLET_USD_CENTS} /></b>
           </span>
           <span className="relative grid size-[30px] place-items-center text-[#808080]">
             <Bell className="size-4" />

@@ -2,11 +2,14 @@ import { readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  ARAB_COUNTRIES,
   englishLandingRedirect,
   isArabicMarketingPath,
   isBotUserAgent,
   MARKETING_SEGMENTS,
   preferredLanguage,
+  topLanguage,
+  wantsEnglish,
   type LocaleLandingRequest,
 } from "./locale-landing.lib";
 
@@ -199,5 +202,84 @@ describe("englishLandingRedirect", () => {
     for (const pathname of ["/en", "/en/pricing", "/cart", "/auth/login", "/api/x", "/robots.txt", "/sitemap.xml", "/sitemap.xsl"]) {
       expect(request({ pathname })).toBeNull();
     }
+  });
+});
+
+describe("topLanguage", () => {
+  it.each([
+    ["sv-SE,sv;q=0.9,en;q=0.8", "sv"],
+    ["en-US,en;q=0.9", "en"],
+    ["ar-EG,en;q=0.9", "ar"],
+    ["de;q=0.5,ar", "ar"], // q-values, not order
+    ["fr;q=0.8,ar;q=0.8", "fr"], // a tie keeps the header order
+    ["*", null],
+    ["", null],
+  ])("%s -> %s", (header, expected) => {
+    expect(topLanguage(header)).toBe(expected);
+  });
+
+  it("is null without a header", () => {
+    expect(topLanguage(null)).toBeNull();
+  });
+});
+
+describe("wantsEnglish (by country, owner 2026-11-10)", () => {
+  it("keeps every Arab country in Arabic, English browser or not", () => {
+    for (const country of ["EG", "SA", "AE", "KW", "QA", "BH", "OM", "JO", "MA", "KM"]) {
+      expect(wantsEnglish(country, "en-US,en;q=0.9")).toBe(false);
+      expect(wantsEnglish(country, "ar-EG")).toBe(false);
+    }
+    expect(ARAB_COUNTRIES.size).toBe(22);
+  });
+
+  it("sends every other country to English unless the browser's top language is Arabic", () => {
+    expect(wantsEnglish("SE", "sv-SE,sv;q=0.9")).toBe(true);
+    expect(wantsEnglish("US", "en-US")).toBe(true);
+    expect(wantsEnglish("DE", "de-DE,de;q=0.9,ar;q=0.5")).toBe(true); // Arabic, but not first
+    expect(wantsEnglish("CN", "zh-CN")).toBe(true);
+    expect(wantsEnglish("US", "ar-EG,ar;q=0.9,en;q=0.8")).toBe(false); // an Arab abroad
+    expect(wantsEnglish("se", "sv")).toBe(true); // case-insensitive country
+  });
+
+  it("keeps the Accept-Language rule when the country is unknown", () => {
+    expect(wantsEnglish(null, "en-US")).toBe(true);
+    expect(wantsEnglish(null, "fr-FR")).toBe(true);
+    expect(wantsEnglish(null, "fr,ar;q=0.9")).toBe(false);
+    expect(wantsEnglish(null, "ar-EG")).toBe(false);
+    expect(wantsEnglish(null, null)).toBe(false);
+  });
+});
+
+describe("englishLandingRedirect with a country", () => {
+  it("keeps Egypt and Saudi Arabia in Arabic, even with an English browser", () => {
+    expect(request({ country: "EG" })).toBeNull();
+    expect(request({ country: "SA", headers: { "accept-language": "en-GB" } })).toBeNull();
+  });
+
+  it("sends Sweden, Ireland, China and the US to /en", () => {
+    expect(request({ country: "SE", headers: { "accept-language": "sv-SE,sv;q=0.9" } })).toBe("/en");
+    expect(request({ country: "IE", pathname: "/pricing" })).toBe("/en/pricing");
+    expect(request({ country: "CN", headers: { "accept-language": "zh-CN,zh;q=0.9" } })).toBe("/en");
+    expect(request({ country: "US" })).toBe("/en");
+  });
+
+  it("keeps an Arabic browser in the US on Arabic", () => {
+    expect(request({ country: "US", headers: { "accept-language": "ar-EG,ar;q=0.9,en;q=0.8" } })).toBeNull();
+  });
+
+  it("keeps every exclusion: cookie, bots, prefetch, other paths, same-site clicks", () => {
+    expect(request({ country: "SE", localeCookie: "ar" })).toBeNull();
+    expect(request({ country: "SE", headers: { "user-agent": "Mozilla/5.0 (compatible; Googlebot/2.1)" } })).toBeNull();
+    expect(request({ country: "SE", headers: { "next-router-prefetch": "1" } })).toBeNull();
+    expect(request({ country: "SE", headers: { "sec-fetch-dest": "empty" } })).toBeNull();
+    expect(request({ country: "SE", headers: { referer: "https://tallaby.com/pricing" } })).toBeNull();
+    expect(request({ country: "SE", pathname: "/cart" })).toBeNull();
+    expect(request({ country: "SE", pathname: "/en" })).toBeNull();
+    expect(request({ country: "SE", pathname: "/blog/cover.png" })).toBeNull();
+    expect(request({ country: "SE", method: "POST" })).toBeNull();
+  });
+
+  it("lets a chosen English win in an Arab country", () => {
+    expect(request({ country: "EG", localeCookie: "en" })).toBe("/en");
   });
 });

@@ -12,8 +12,7 @@ import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/sign
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
-import { getMarketingEgpPerUsd } from "@/lib/marketing/exchange-rate.server";
-import { COPY_VARS, PRICE_TOKENS, formatEgp, usdCentsToEgp } from "@/lib/marketing/pricing.lib";
+import { COPY_VARS, PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { getRecentStores } from "@/lib/marketing/stores.server";
@@ -23,20 +22,10 @@ import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
 import { AiDemo } from "./ai-demo";
 import { BuilderDemo } from "./builder-demo";
 import { HeroDemo } from "./hero-demo";
-import { HERO_DEMO_WALLET_USD_CENTS } from "./home-demo.lib";
 import { LiveStoreLine } from "./live-store-line.client";
 import { MarketingTools } from "./marketing-tools.client";
 import { McpChatDemo } from "./mcp-chat-demo";
 import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos";
-
-/**
- * The hero demo's wallet in pounds at the dashboard wallet's live rate, as the
- * dashboard shows it (the dashboard stays EGP). Prices in the home copy are
- * `{orderFee}`-style tokens that `withPrices` shows in the visitor's currency.
- */
-async function heroWalletEgp() {
-  return formatEgp(usdCentsToEgp(HERO_DEMO_WALLET_USD_CENTS, await getMarketingEgpPerUsd()));
-}
 
 /** A small text link from a home section to its deeper page. */
 function SectionLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
@@ -61,7 +50,8 @@ function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string;
 }
 
 export async function HomeHero() {
-  const [t, locale, recent, walletEgp] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores(), heroWalletEgp()]);
+  // Prices in the home copy (and the hero demo's wallet) are `{orderFee}`-style tokens or `Money`, shown in the visitor's currency.
+  const [t, locale, recent] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores()]);
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
@@ -123,7 +113,7 @@ export async function HomeHero() {
       </div>
 
       <Container>
-        <HeroDemo walletEgp={walletEgp} />
+        <HeroDemo />
         <p className="mt-[76px] text-center text-xs text-ink-400 min-[641px]:mt-16">{t("sample")}</p>
       </Container>
     </section>

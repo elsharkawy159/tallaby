@@ -5,7 +5,7 @@ import { Info } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Slider } from "@workspace/ui/components/slider";
 import { cn } from "@workspace/ui/lib/utils";
-import { formatLocalAmount, formatLocalApprox } from "@/lib/marketing/local-currency.lib";
+import { formatLocalAmount, formatLocalApprox, isApproxCurrency } from "@/lib/marketing/local-currency.lib";
 import { FALLBACK_EGP_PER_USD, PLAN_PRICES, estimatePlans, formatNumber, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
 import { useVisitorPrices } from "./visitor-prices.client";
 
@@ -19,23 +19,24 @@ const lightSlider =
 /**
  * "What would a month cost you?": orders a month only (owner, 2026-11-06),
  * with Free and Pro side by side on wide screens and stacked on phones.
- * Amounts show with "≈" in the visitor's currency like the plan cards (owner,
- * 2026-11-09: no "$" amount): EGP on the server render and for Egypt, at the
- * wallet's rate and rounding, else the visitor's own currency. `rates` are
- * USD→X by ISO code from the server, EGP always among them.
+ * Amounts show in the visitor's currency like the plan cards (owner,
+ * 2026-11-09: no "$" amount; `VisitorPricesProvider`): EGP on the Arabic
+ * server render and for Egypt, at the wallet's rate and rounding, USD on the
+ * English one, else the visitor's own currency. `rates` (USD→X by ISO code,
+ * EGP always among them) only stand in outside the provider.
  */
 export function FeeEstimator({ rates }: { rates: Record<string, number> }) {
   const t = useTranslations("pricing.estimate");
   const tc = useTranslations("pricing.plans.currency");
   const locale = useLocale();
-  const egpRate = rates.EGP ?? FALLBACK_EGP_PER_USD;
   const [orders, setOrders] = React.useState(300);
   const estimate = estimatePlans({ orders });
 
-  const visitor = useVisitorPrices()?.currency ?? "EGP";
-  const currency = visitor !== "EGP" && rates[visitor] ? visitor : "EGP";
-  const rate = currency === "EGP" ? egpRate : rates[currency]!;
-  const label = tc(currency as "EGP");
+  const visitor = useVisitorPrices();
+  const currency = visitor?.currency ?? "EGP";
+  const rate = visitor?.rate ?? rates.EGP ?? FALLBACK_EGP_PER_USD;
+  const label = visitor?.label ?? tc("EGP");
+  const approx = isApproxCurrency(currency);
   const money = (cents: number) => formatLocalApprox(cents, currency, rate, locale, label);
   const plans = [
     { id: "free" as const, name: t("free"), cents: estimate.freeCents, detail: t("perOrder", { fee: money(PLAN_PRICES.free.orderFeeCents) }) },
@@ -107,7 +108,7 @@ export function FeeEstimator({ rates }: { rates: Record<string, number> }) {
                   </span>
                   <span className="flex flex-col items-end gap-1">
                     <span className="flex items-baseline gap-1.5">
-                      <span className="text-[18px] leading-none font-bold text-teal-900">≈</span>
+                      {approx ? <span className="text-[18px] leading-none font-bold text-teal-900">≈</span> : null}
                       <b dir="ltr" className="font-latin text-[28px] leading-none font-extrabold text-teal-900 tabular-nums">
                         {formatLocalAmount(plan.cents, currency, rate)}
                       </b>
