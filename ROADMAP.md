@@ -1685,12 +1685,21 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-87j "Copy to store" (single + bulk)
 - [ ] F-87k Coupons, policies and custom domain per store
 - [ ] F-87l Fulfillment profile per store (owner)
-- [ ] F-87m 0163 catalog split (staging, E2E, production)
+- [x] F-87m 0163 catalog split (staging 2026-11-10, production 2026-11-11; manual E2E checklist in docs/plans/stores-separation.md §3.4 still to walk through by hand)
 - [ ] F-87n 0165 cleanup and docs
 
 ---
 
 ## 7. Log
+
+### 2026-11-11 — Merge and deploy: `main` 9e2ae0ee live; 0163 applied on staging and production (owner: "merge everything to live in one deployment and update supabase")
+
+- **Deploy:** `main` pushed (25 commits, 09632d8f..9e2ae0ee) and `stage` fast-forwarded to it; Vercel admin, backend, dashboard and ecommerce all succeeded. Before the push: `pnpm turbo run test --concurrency=1` 13/13 packages pass; typecheck passes except the 16 old ecommerce `profile.chunks.tsx` errors (there before this work; ecommerce builds with `ignoreBuildErrors`).
+- **0163 on staging** (2026-11-10 23:12Z): 43 product copies, 67 variant copies, 4 category/brand copies; `stores-split-verify.sql` all checks 0.
+- **0163 on production**, after the deploy: rehearsed first with the final COMMIT replaced by ROLLBACK (every invariant passed, nothing kept), then applied: 60 product copies (dry run said 59; one product added since), 73 variant copies, 14 category/brand copies, 0 cross-sell copies, 17 review copies, 0 question copies, 0 open cart lines remapped; verify all checks 0; 122 `copy` stock movements. `stores_catalog_split` is ON. No money moved (invariant 9.13).
+- **Caches:** the verify script's 86 tags purged on www.tallaby.com and dashboard.tallaby.com (`/api/revalidate`, ok).
+- **Smoke check:** tallaby.com, /compare, dashboard login and api.tallaby.com 200; store-346a68 (43 copies), madar and niemand storefronts 200, and copied product pages render their own copy (title, Product JSON-LD, SKU).
+- **Left:** the manual E2E checklist (plan §3.4) by hand; rollback stays possible until 0165 (`scripts/stores-split-rollback.sql`, it refuses once an order uses a copy); wallet split F-87f/g/h (0161, 0164) still to build.
 
 ### 2026-11-10 — F-87 DB integration tests run on staging (owner-approved; staging only)
 
