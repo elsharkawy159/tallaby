@@ -11,7 +11,7 @@ import {
 } from "@workspace/ui/components/select";
 import { formatNumber } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
-import { pageList } from "../products/_components/products-view.lib";
+import { pageList } from "@/app/(main)/stores/[storeId]/products/_components/products-view.lib";
 
 const PAGE_BUTTON =
   "grid h-10 min-w-10 cursor-pointer place-items-center rounded-xl border border-(--s-field) bg-(--s-surface) px-2.5 font-montserrat text-[13px] font-bold tabular-nums text-(--s-body) transition-colors duration-150 hover:border-(--s-outline-hover) disabled:cursor-not-allowed disabled:opacity-40";

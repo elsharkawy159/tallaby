@@ -1,0 +1,562 @@
+"use client"
+
+import { useCallback, useEffect, useRef, useState, useTransition } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useTranslations } from "next-intl"
+import { useLocalizedResolver } from "@/lib/i18n/localized-resolver"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { LoaderCircle, RefreshCw, Trash2, X } from "lucide-react"
+import { Button } from "@workspace/ui/components/button"
+import { Form } from "@workspace/ui/components/form"
+import { Separator } from "@workspace/ui/components/separator"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@workspace/ui/components/accordion"
+import { cn, getPublicUrl } from "@/lib/utils"
+import { useSidebarStore } from "@/stores"
+import { bulkCreateProductsAction } from "@/actions/products"
+import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
+import {
+  addProductFormSchema,
+  defaultValues,
+  type AddProductFormData,
+  type CategoryOption,
+  type SupportedLocale,
+} from "./add-product.schema"
+import { BasicInformationStep } from "./steps/basic-information-step"
+import { PriceStockStep } from "./steps/price-stock-step"
+import { SeoStep } from "./steps/seo-step"
+import {
+  createPendingBulkItems,
+  retryBulkItem,
+  scrapeBulkUrls,
+  type BulkProductItem,
+} from "./bulk-url-import.lib"
+import { RemoteImage } from "@/components/media/remote-image";
+import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
+
+interface BulkUrlImportProps {
+  urls: string[]
+  categories: CategoryOption[]
+  sellerPricing: SellerPricingSettings
+  onExit: () => void
+}
+
+const LOCALE_LABELS: Record<SupportedLocale, string> = {
+  en: "English",
+  ar: "العربية",
+}
+
+const BULK_STATUSES = ["pending", "fetching", "ready", "error", "saving", "saved"]
+
+function statusLabel (
+  status: BulkProductItem["status"],
+  t: (key: string) => string
+): string {
+  return BULK_STATUSES.includes(status) ? t(`status.${status}`) : status
+}
+
+function statusClassName (status: BulkProductItem["status"]): string {
+  switch (status) {
+    case "ready":
+    case "saved":
+      return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60"
+    case "error":
+      return "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900/60"
+    case "fetching":
+    case "saving":
+      return "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900/60"
+    default:
+      return "bg-muted/50 text-muted-foreground border-border"
+  }
+}
+
+function thumbnailSrc (pathOrUrl: string | undefined): string | undefined {
+  if (!pathOrUrl) return undefined
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl
+  return getPublicUrl(pathOrUrl, "products")
+}
+
+interface BulkItemFormProps {
+  item: BulkProductItem
+  categories: CategoryOption[]
+  sellerPricing: SellerPricingSettings
+  activeLocale: SupportedLocale
+  onValuesChange: (id: string, values: AddProductFormData) => void
+  registerForm: (
+    id: string,
+    api: { trigger: () => Promise<boolean>; getValues: () => AddProductFormData }
+  ) => void
+  unregisterForm: (id: string) => void
+}
+
+function BulkItemForm ({
+  item,
+  categories,
+  sellerPricing,
+  activeLocale,
+  onValuesChange,
+  registerForm,
+  unregisterForm,
+}: BulkItemFormProps) {
+  const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
+  const form = useForm<AddProductFormData>({
+    resolver: resolver as any,
+    defaultValues: (item.values ?? defaultValues) as any,
+    mode: "onChange",
+    shouldUnregister: false,
+  })
+
+  useEffect(() => {
+    if (item.values) {
+      form.reset(item.values)
+    }
+  }, [item.id]) // eslint-disable-line react-hooks/exhaustive-deps -- reset only when item identity changes after scrape
+
+  useEffect(() => {
+    registerForm(item.id, {
+      trigger: () => form.trigger(),
+      getValues: () => form.getValues(),
+    })
+    return () => unregisterForm(item.id)
+  }, [form, item.id, registerForm, unregisterForm])
+
+  useEffect(() => {
+    const sub = form.watch((values) => {
+      onValuesChange(item.id, values as AddProductFormData)
+    })
+    return () => sub.unsubscribe()
+  }, [form, item.id, onValuesChange])
+
+  return (
+    <Form {...form}>
+      <div className="space-y-6 pt-2">
+        <BasicInformationStep
+          categories={categories}
+          sellerPricing={sellerPricing}
+          activeLocale={activeLocale}
+          hideImport
+        />
+        <Separator />
+        <PriceStockStep
+          sellerPricing={sellerPricing}
+          activeLocale={activeLocale}
+        />
+        <Separator />
+        <SeoStep activeLocale={activeLocale} />
+      </div>
+    </Form>
+  )
+}
+
+export function BulkUrlImport ({
+  urls,
+  categories,
+  sellerPricing,
+  onExit,
+}: BulkUrlImportProps) {
+  const router = useRouter()
+  const isSidebarCollapsed = useSidebarStore((state) => state.isCollapsed)
+  const t = useTranslations("productForm.bulk")
+  const productStoreId = useProductStoreId();
+  const errorText = (message: string | undefined) =>
+    message && t.has(`errors.${message}`) ? t(`errors.${message}`) : message
+  const [isPending, startTransition] = useTransition()
+  const [activeLocale, setActiveLocale] = useState<SupportedLocale>("ar")
+  const [items, setItems] = useState<BulkProductItem[]>([])
+  const [openIds, setOpenIds] = useState<string[]>([])
+  const [isFetching, setIsFetching] = useState(true)
+  const formsRef = useRef(
+    new Map<
+      string,
+      { trigger: () => Promise<boolean>; getValues: () => AddProductFormData }
+    >()
+  )
+
+  const updateItem = useCallback((next: BulkProductItem) => {
+    setItems((prev) => prev.map((item) => (item.id === next.id ? next : item)))
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    const pending = createPendingBulkItems(urls)
+    setItems(pending)
+    setIsFetching(true)
+
+    scrapeBulkUrls(
+      pending,
+      { sellerPricing, categories },
+      (item) => {
+        if (!cancelled) updateItem(item)
+      }
+    ).finally(() => {
+      if (!cancelled) setIsFetching(false)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [urls, sellerPricing, categories, updateItem])
+
+  const fetchedCount = items.filter(
+    (i) => i.status === "ready" || i.status === "error" || i.status === "saved"
+  ).length
+  const readyCount = items.filter((i) => i.status === "ready").length
+  const errorCount = items.filter((i) => i.status === "error").length
+
+  const registerForm = useCallback(
+    (
+      id: string,
+      api: {
+        trigger: () => Promise<boolean>
+        getValues: () => AddProductFormData
+      }
+    ) => {
+      formsRef.current.set(id, api)
+    },
+    []
+  )
+
+  const unregisterForm = useCallback((id: string) => {
+    formsRef.current.delete(id)
+  }, [])
+
+  const handleValuesChange = useCallback(
+    (id: string, values: AddProductFormData) => {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                values,
+                title: values.localized?.en?.title || item.title,
+                thumbnail: values.images?.[0] || item.thumbnail,
+              }
+            : item
+        )
+      )
+    },
+    []
+  )
+
+  const handleRemove = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id))
+    setOpenIds((prev) => prev.filter((openId) => openId !== id))
+    formsRef.current.delete(id)
+  }
+
+  const handleRetry = async (id: string) => {
+    const item = items.find((i) => i.id === id)
+    if (!item) return
+
+    updateItem({ ...item, status: "fetching", error: undefined })
+    const result = await retryBulkItem(item, { sellerPricing, categories })
+    updateItem(result)
+    if (result.status === "ready") {
+      toast.success(t("fetched"))
+    } else {
+      toast.error(errorText(result.error) || t("errors.fetchFailed"))
+    }
+  }
+
+  const handleSaveAll = () => {
+    const readyItems = items.filter((i) => i.status === "ready")
+    if (readyItems.length === 0) {
+      toast.error(t("noneReady"))
+      return
+    }
+
+    startTransition(async () => {
+      const validPayloads: AddProductFormData[] = []
+      const validIds: string[] = []
+      const invalidIds: string[] = []
+
+      for (const item of readyItems) {
+        const api = formsRef.current.get(item.id)
+        const rawValues = api?.getValues() ?? item.values
+        if (!rawValues) {
+          invalidIds.push(item.id)
+          continue
+        }
+
+        if (api) {
+          await api.trigger()
+        }
+
+        const parsed = addProductFormSchema.safeParse(
+          api?.getValues() ?? rawValues
+        )
+        if (!parsed.success) {
+          invalidIds.push(item.id)
+          continue
+        }
+
+        validPayloads.push(parsed.data)
+        validIds.push(item.id)
+        updateItem({ ...item, status: "saving", values: parsed.data })
+      }
+
+      if (invalidIds.length > 0) {
+        setOpenIds((prev) => Array.from(new Set([...prev, ...invalidIds])))
+        toast.error(t("needFixes", { count: invalidIds.length }))
+      }
+
+      if (validPayloads.length === 0) {
+        return
+      }
+
+      const result = await bulkCreateProductsAction(productStoreId, validPayloads as any)
+
+      if (!result.success && result.inserted === 0) {
+        toast.error(result.errors[0]?.message || t("createManyFailed"))
+        setItems((prev) =>
+          prev.map((item) =>
+            item.status === "saving" ? { ...item, status: "ready" } : item
+          )
+        )
+        return
+      }
+
+      setItems((prev) =>
+        prev.map((item) => {
+          const saveIndex = validIds.indexOf(item.id)
+          if (saveIndex < 0) {
+            return item.status === "saving" ? { ...item, status: "ready" } : item
+          }
+          const failed = result.errors.some((e) => e.index === saveIndex)
+          if (failed) {
+            return {
+              ...item,
+              status: "error",
+              error:
+                result.errors.find((e) => e.index === saveIndex)?.message ||
+                t("createFailed"),
+            }
+          }
+          return { ...item, status: "saved" }
+        })
+      )
+
+      const totalAttempted = validPayloads.length
+      toast.success(
+        t("created", { inserted: result.inserted, total: totalAttempted })
+      )
+
+      if (
+        result.inserted > 0 &&
+        result.failed === 0 &&
+        invalidIds.length === 0
+      ) {
+        // router.push("/products")
+      }
+    })
+  }
+
+  const hostname = (url: string) => {
+    try {
+      return new URL(url).hostname
+    } catch {
+      return url
+    }
+  }
+
+  return (
+    <div className="pb-36 sm:pb-24">
+      <div className="sticky top-[68px] z-20 border-b border-(--s-line) bg-(--s-glass) backdrop-blur-md max-[600px]:top-[60px]">
+        <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-3 px-7 py-4 max-[1020px]:px-4 max-[600px]:px-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-[20px] font-bold text-(--s-ink)">
+              {t("title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {isFetching
+                ? t("fetchingProgress", { done: fetchedCount, total: items.length })
+                : t("summary", { ready: readyCount, failed: errorCount, total: items.length })}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              {(["en", "ar"] as const).map((loc) => (
+                <Button
+                  key={loc}
+                  type="button"
+                  variant={activeLocale === loc ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveLocale(loc)}
+                  className="min-w-[4rem]"
+                >
+                  {LOCALE_LABELS[loc]}
+                </Button>
+              ))}
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={onExit}>
+              <X className="size-4 me-1" />
+              {t("back")}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="container py-6 space-y-3">
+        {items.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+            {t("emptyList")}
+          </div>
+        ) : (
+          <Accordion
+            type="multiple"
+            value={openIds}
+            onValueChange={setOpenIds}
+            className="space-y-3"
+          >
+            {items.map((item, index) => {
+              const thumb = thumbnailSrc(item.thumbnail)
+              const label =
+                item.title ||
+                hostname(item.url) ||
+                t("productN", { n: index + 1 })
+
+              return (
+                <AccordionItem
+                  key={item.id}
+                  value={item.id}
+                  className="border border-border rounded-lg bg-card px-4 shadow-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <AccordionTrigger className="flex-1 hover:no-underline py-3">
+                      <div className="flex items-center gap-3 text-start min-w-0">
+                        <div className="relative size-12 rounded-md border border-border bg-muted/50 overflow-hidden shrink-0">
+                          {thumb ? (
+                            <RemoteImage src={thumb} alt="" fill sizes="48px" className="object-cover" />
+                          ) : (
+                            <div className="size-full flex items-center justify-center text-[10px] text-muted-foreground">
+                              {item.status === "fetching" ? "…" : t("noImage")}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {label}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate" dir="ltr">
+                            {item.url}
+                          </p>
+                          {item.error && (
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">
+                              {errorText(item.error)}
+                            </p>
+                          )}
+                        </div>
+                        <span
+                          className={cn(
+                            "ms-auto shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                            statusClassName(item.status)
+                          )}
+                        >
+                          {item.status === "fetching" ||
+                          item.status === "saving" ? (
+                            <span className="inline-flex items-center gap-1">
+                              <LoaderCircle className="size-3 animate-spin" />
+                              {statusLabel(item.status, t)}
+                            </span>
+                          ) : (
+                            statusLabel(item.status, t)
+                          )}
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {item.status === "error" && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          onClick={() => handleRetry(item.id)}
+                          aria-label={t("retry")}
+                        >
+                          <RefreshCw className="size-4" />
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-red-600 dark:text-red-400"
+                        onClick={() => handleRemove(item.id)}
+                        aria-label={t("remove")}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <AccordionContent>
+                    {item.status === "ready" ||
+                    item.status === "saving" ||
+                    item.status === "saved" ? (
+                      item.values ? (
+                        <BulkItemForm
+                          item={item}
+                          categories={categories}
+                                          sellerPricing={sellerPricing}
+                          activeLocale={activeLocale}
+                          onValuesChange={handleValuesChange}
+                          registerForm={registerForm}
+                          unregisterForm={unregisterForm}
+                        />
+                      ) : null
+                    ) : item.status === "error" ? (
+                      <div className="py-4 text-sm text-red-600 dark:text-red-400">
+                        {errorText(item.error) || t("errors.urlFailed")}{" "}
+                        {t("retryOrRemove")}
+                      </div>
+                    ) : (
+                      <div className="py-4 text-sm text-muted-foreground flex items-center gap-2">
+                        <LoaderCircle className="size-4 animate-spin" />
+                        {t("fetchingDetails")}
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              )
+            })}
+          </Accordion>
+        )}
+      </div>
+
+      {/* Starts after the desktop sidebar, like MainContentWrapper. */}
+      <div
+        className={cn(
+          "fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-[inset-inline-start] duration-300 ease-in-out",
+          isSidebarCollapsed ? "lg:start-20" : "lg:start-[280px]"
+        )}
+      >
+        <div className="container px-4 py-3 sm:px-6 sm:py-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <p className="min-w-0 flex-1 text-sm text-muted-foreground max-sm:basis-full">
+            {t("footerHint")}
+          </p>
+          <Button
+            type="button"
+            onClick={handleSaveAll}
+            disabled={isPending || isFetching || readyCount === 0}
+            className="max-sm:w-full"
+          >
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <LoaderCircle className="size-4 animate-spin" />
+                {t("saving")}
+              </span>
+            ) : (
+              t("saveAll", { count: readyCount })
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}

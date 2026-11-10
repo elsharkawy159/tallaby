@@ -452,9 +452,9 @@ export function reviewIssues(snapshot: ReviewSnapshot): BuilderIssue[] {
   const store = `/stores/${storeId}`;
 
   const notBuilt = state.products.filter((product) => items.get(`product:${product.id}`)?.status !== "done");
-  for (const product of notBuilt) issues.push({ code: "productNotBuilt", params: { name: product.name }, href: "/products/add" });
+  for (const product of notBuilt) issues.push({ code: "productNotBuilt", params: { name: product.name }, href: `${store}/products/add` });
   const noPhoto = products.filter((product) => !product.hasPhoto).length;
-  if (noPhoto) issues.push({ code: "productsWithoutPhoto", params: { count: noPhoto }, href: "/products" });
+  if (noPhoto) issues.push({ code: "productsWithoutPhoto", params: { count: noPhoto }, href: `${store}/products` });
 
   const siteCopy = items.get("site_copy")?.status;
   if (siteCopy !== "done") issues.push({ code: "siteCopyMissing", href: `${store}/editor` });
@@ -501,17 +501,17 @@ export function reviewIssuesV2(snapshot: ReviewSnapshotV2): BuilderIssue[] {
   if (!snapshot.published) issues.push({ code: "publishFailed", href: `${store}/website` });
 
   const noPrice = state.fileRows.filter((row) => row.price === null).length;
-  if (!built.length && !noPrice) issues.push({ code: "addFirstProduct", href: "/products/add" });
-  if (noPrice) issues.push({ code: "fileRowsNoPrice", params: { count: noPrice }, href: "/products/add" });
-  if (snapshot.fileNotAdded) issues.push({ code: "fileProductsNotAdded", params: { count: snapshot.fileNotAdded }, href: "/products/add/from-file" });
+  if (!built.length && !noPrice) issues.push({ code: "addFirstProduct", href: `${store}/products/add` });
+  if (noPrice) issues.push({ code: "fileRowsNoPrice", params: { count: noPrice }, href: `${store}/products/add` });
+  if (snapshot.fileNotAdded) issues.push({ code: "fileProductsNotAdded", params: { count: snapshot.fileNotAdded }, href: `${store}/products/add/from-file` });
   for (const product of state.products) {
-    if (items.get(`product:${product.id}`)?.status !== "done") issues.push({ code: "productNotBuilt", params: { name: product.name }, href: "/products/add" });
+    if (items.get(`product:${product.id}`)?.status !== "done") issues.push({ code: "productNotBuilt", params: { name: product.name }, href: `${store}/products/add` });
   }
   const drafts = built.filter((product) => !product.live);
   const count = (reason: DraftReason) => drafts.filter((product) => product.missing.includes(reason)).length;
-  if (count("photo")) issues.push({ code: "productsWithoutPhoto", params: { count: count("photo") }, href: "/products" });
-  if (count("stock")) issues.push({ code: "productsWithoutStock", params: { count: count("stock") }, href: "/products" });
-  if (count("name")) issues.push({ code: "productsToCheck", params: { count: count("name") }, href: "/products" });
+  if (count("photo")) issues.push({ code: "productsWithoutPhoto", params: { count: count("photo") }, href: `${store}/products` });
+  if (count("stock")) issues.push({ code: "productsWithoutStock", params: { count: count("stock") }, href: `${store}/products` });
+  if (count("name")) issues.push({ code: "productsToCheck", params: { count: count("name") }, href: `${store}/products` });
 
   if (items.get("site_copy")?.status !== "done") issues.push({ code: "siteCopyMissing", href: `${store}/editor` });
   if (snapshot.invalidPages) issues.push({ code: "pagesInvalid", params: { count: snapshot.invalidPages }, href: `${store}/editor` });

@@ -59,7 +59,7 @@ vi.mock("@workspace/ai", async (original) => ({
 vi.mock("@workspace/cache", async (original) => ({ ...(await original<typeof import("@workspace/cache")>()), applyInvalidation: vi.fn(async () => {}) }));
 vi.mock("@workspace/lib/orders", () => ({ sendStoreCreatedEmail: vi.fn(async () => {}) }));
 vi.mock("next-intl/server", () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
-vi.mock("@/app/(main)/products/add/ai/ai-autofill.server", () => ({ autofillProduct: vi.fn(async () => ({ output: autofill, cached: false })) }));
+vi.mock("@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.server", () => ({ autofillProduct: vi.fn(async () => ({ output: autofill, cached: false })) }));
 vi.mock("@/actions/categories", async () => {
   const { db, categories } = await import("@workspace/db");
   const rows = await db.select({ id: categories.id, name: categories.name, nameAr: categories.nameAr, slug: categories.slug, level: categories.level }).from(categories).limit(50);

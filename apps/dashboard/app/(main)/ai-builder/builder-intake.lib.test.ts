@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyMapping, buildSheetModel, validateRow } from "@/app/(main)/products/add/from-file/from-file.lib";
+import { applyMapping, buildSheetModel, validateRow } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file.lib";
 import { parseBuilderState, type BuilderEditOutput, type BuilderIntakeOutput, type BuilderState } from "./builder.dto";
 import { applyEditReading, applyIntakeReading, cleanIntakeReading, colorFromText, fileRowToMapped, mergeModelMapping, patchFileRow, readFileColumns, stylesOf, toFileRows } from "./builder-intake.lib";
 

@@ -94,6 +94,8 @@ describe("sellerNotificationHref", () => {
   it("opens a low-stock alert on the product's inventory history", () => {
     expect(sellerNotificationHref({ type: "low_stock", data: { productId: ID } })).toBe(`/products/inventory?product=${ID}`);
     expect(sellerNotificationHref({ type: "low_stock", data: {} })).toBe("/products/inventory");
+    // F-87c: a row that names its store opens that store's Products pages.
+    expect(sellerNotificationHref({ type: "low_stock", data: { productId: ID, storeId: ID } })).toBe(`/stores/${ID}/products/inventory?product=${ID}`);
   });
 });
 

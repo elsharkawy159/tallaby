@@ -1,7 +1,7 @@
 import type {
   SupportedLocale,
   VariantOptionKind,
-} from "@/app/(main)/products/add/add-product.schema";
+} from "@/app/(main)/stores/[storeId]/products/add/add-product.schema";
 
 export const VARIANT_LOCALES: SupportedLocale[] = ["en", "ar"];
 

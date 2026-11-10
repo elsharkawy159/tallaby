@@ -8,6 +8,8 @@ import type { SkillId } from "./types";
 
 /** Dashboard path patterns → skill. `[id]` matches one path segment. Most specific first. */
 const PAGE_SKILLS: Array<[pattern: string, skill: SkillId]> = [
+  // Products live under their store since F-87c; the old /products paths still redirect there.
+  ["/stores/[id]/products", "products"],
   ["/stores/[id]/shipping", "shipping"],
   ["/stores/[id]/editor", "design"],
   ["/stores/[id]/website/design", "design"],

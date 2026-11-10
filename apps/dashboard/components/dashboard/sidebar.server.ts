@@ -13,6 +13,9 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { countNewFormSubmissions } from "@workspace/lib/store-forms/server";
 import { getUser } from "@/actions/auth";
 import { loadOrderLock } from "@/lib/auth/require-seller.server";
+import { productInStore } from "@workspace/lib/stores/scope/server";
+import { getSellerStores } from "@/lib/stores/current-store.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import {
   EMPTY_SIDEBAR_COUNTS,
   type SidebarCounts,
@@ -29,6 +32,9 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
     // A seller who isn't activated gets no count that follows from orders (ROADMAP.md F-68).
     const locked = (await loadOrderLock(sellerId)).ordersLocked;
     const hidden = [{ count: 0 }];
+    // Products: the selected store's (the store the Products link opens, F-87c); no store = the account, as before.
+    const [{ selected }, catalogSplit] = await Promise.all([getSellerStores(), isSwitchOn("stores_catalog_split")]);
+    const productsInStore = selected ? productInStore(selected.id, { catalogSplit, scope: "managed" }) : undefined;
 
     const [
       orderCountResult,
@@ -48,7 +54,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       db
         .select({ count: sql<number>`count(*)` })
         .from(products)
-        .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt))),
+        .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt), productsInStore)),
       db
         .select({ count: sql<number>`count(*)` })
         .from(reviews)

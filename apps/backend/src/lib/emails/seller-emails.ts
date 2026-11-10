@@ -222,7 +222,8 @@ export async function sendSellerLowStock(orderId: string): Promise<Sent> {
           const line = lineItem(ctx, item);
           return { name: line.name, variant: line.variant, sku: line.sku, imageUrl: line.imageUrl, remaining };
         }),
-        links: { products: joinUrl(DASHBOARD_URL, "/products") },
+        // The order's store's Products pages (F-87c); a marketplace order (no store) keeps the old path, which redirects.
+        links: { products: joinUrl(DASHBOARD_URL, ctx.order.storeId ? `/stores/${ctx.order.storeId}/products` : "/products") },
       }),
       metadata: { orderId, sellerId, products: low.map(({ item }) => item.productId) },
     });
@@ -311,7 +312,7 @@ export async function sendSellerStoreCreated(storeId: string): Promise<SendOnceR
       storeUrl: storeUrl(store.subdomain, customDomain),
       storeHost: storeHostname(store.subdomain, customDomain),
       links: {
-        addProduct: joinUrl(DASHBOARD_URL, "/products/add"),
+        addProduct: joinUrl(DASHBOARD_URL, `/stores/${store.id}/products/add`),
         design: joinUrl(DASHBOARD_URL, `/stores/${store.id}/website/design`),
         help: joinUrl(SITE_URL, "/faq"),
       },

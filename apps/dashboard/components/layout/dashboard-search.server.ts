@@ -11,20 +11,29 @@ import {
 import { and, desc, eq, ilike, isNull, or } from "drizzle-orm";
 import { getLocale } from "next-intl/server";
 import { getUser } from "@/actions/auth";
+import { productInStore } from "@workspace/lib/stores/scope/server";
+import { getSellerStores } from "@/lib/stores/current-store.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 
 export interface DashboardSearchResults {
+  /** The store the products were searched in (the sidebar's selected one, F-87c); their links go there. Null: no store. */
+  storeId: string | null;
   products: { id: string; title: string; sku: string | null }[];
   orders: { id: string; orderNumber: string; productName: string }[];
 }
 
-const EMPTY: DashboardSearchResults = { products: [], orders: [] };
+const EMPTY: DashboardSearchResults = { storeId: null, products: [], orders: [] };
 const RESULT_LIMIT = 5;
 
 /** Escape LIKE wildcards so a seller typing "%" or "_" matches it literally. */
 const likePattern = (query: string) =>
   `%${query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 
-/** Header search: the signed-in seller's products (title/SKU) and orders (number). */
+/**
+ * Header search: the signed-in seller's products (title/SKU) in the selected
+ * store (F-87c slice 2: `productInStore(…, managed)`; with no store, the
+ * account catalog as before) and orders (number).
+ */
 export async function searchDashboard(
   query: string
 ): Promise<DashboardSearchResults> {
@@ -39,6 +48,10 @@ export async function searchDashboard(
     const pattern = likePattern(trimmed);
     const locale = await getLocale();
     const ordersLocked = (await getOrderLock(sellerId)).ordersLocked;
+    // getSellerStores only ever picks one of this seller's own stores.
+    const [{ selected }, catalogSplit] = await Promise.all([getSellerStores(), isSwitchOn("stores_catalog_split")]);
+    const storeId = selected?.id ?? null;
+    const inStore = storeId ? productInStore(storeId, { catalogSplit, scope: "managed" }) : undefined;
 
     const [productRows, orderRows] = await Promise.all([
       // One row per translation, so over-fetch and collapse to one per product.
@@ -58,6 +71,7 @@ export async function searchDashboard(
           and(
             eq(products.sellerId, sellerId),
             isNull(products.deletedAt),
+            inStore,
             or(
               ilike(productTranslations.title, pattern),
               ilike(products.sku, pattern)
@@ -102,6 +116,7 @@ export async function searchDashboard(
     }
 
     return {
+      storeId,
       products: [...productMap.values()].slice(0, RESULT_LIMIT),
       orders: [...orderMap.values()].slice(0, RESULT_LIMIT),
     };

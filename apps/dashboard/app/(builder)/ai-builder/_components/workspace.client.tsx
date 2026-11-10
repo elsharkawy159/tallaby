@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@workspace/ui
 import { SellerButton, TextAction } from "@/components/seller-ui";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { readLogoColors } from "@/lib/brand/logo-colors.client";
-import { checkPickedFile, readSheetFile } from "@/app/(main)/products/add/from-file/from-file-parse.client";
+import { checkPickedFile, readSheetFile } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file-parse.client";
 import { ProductsEditor, post, postJson, shrinkImage } from "@/app/(main)/ai-builder/builder.client";
 import { builderPreviewLink, intakeFileLink, skipIntakeFile, updateBuildFileRow, type BuilderPreviewResult } from "@/app/(main)/ai-builder/builder.actions";
 import { buildItemKeys } from "@/app/(main)/ai-builder/builder.lib";

@@ -13,7 +13,8 @@ import {
   CommandList,
 } from "@workspace/ui/components/command";
 import { useSupportWhatsAppUrl } from "@/components/dashboard/support-chat-link.client";
-import { COMMAND_PALETTE_ROUTES } from "./dashboard-routes.lib";
+import { storeProductsHref } from "@/lib/products/product-routes.lib";
+import { COMMAND_PALETTE_ROUTES, fillStoreHref } from "./dashboard-routes.lib";
 import {
   searchDashboard,
   type DashboardSearchResults,
@@ -22,12 +23,14 @@ import {
 interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** The sidebar's selected store: where Products links go (F-87c). Null when the seller has none. */
+  storeId: string | null;
 }
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MIN_QUERY_LENGTH = 2;
 
-export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+export function CommandPalette({ open, onOpenChange, storeId }: CommandPaletteProps) {
   const t = useTranslations("header");
   const tNav = useTranslations("nav");
   const router = useRouter();
@@ -124,7 +127,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 value={`product-${product.id}`}
                 forceMount
                 onSelect={() =>
-                  run(() => router.push(`/products/${product.id}/edit`))
+                  run(() => router.push(storeProductsHref(results.storeId, `/${product.id}/edit`)))
                 }
               >
                 <Package />
@@ -142,7 +145,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         <CommandGroup heading={t("quickActions")}>
           <CommandItem
             value={tNav("addProducts")}
-            onSelect={() => run(() => router.push("/products/add"))}
+            onSelect={() => run(() => router.push(storeProductsHref(storeId, "/add")))}
           >
             <PackagePlus />
             {tNav("addProducts")}
@@ -160,7 +163,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         </CommandGroup>
 
         <CommandGroup heading={t("pages")}>
-          {COMMAND_PALETTE_ROUTES.map((route) => (
+          {COMMAND_PALETTE_ROUTES.flatMap((route) => {
+            const href = fillStoreHref(route.href, storeId);
+            return href ? [{ ...route, href }] : [];
+          }).map((route) => (
             <CommandItem
               key={route.href}
               value={route.parent ? `${tNav(route.parent)} ${tNav(route.title)}` : tNav(route.title)}

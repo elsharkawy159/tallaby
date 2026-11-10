@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import ar from "../../messages/ar.json";
 import en from "../../messages/en.json";
-import { COMMAND_PALETTE_ROUTES, DASHBOARD_ROUTES, resolveDashboardRoute } from "../layout/dashboard-routes.lib";
+import { COMMAND_PALETTE_ROUTES, DASHBOARD_ROUTES, fillStoreHref, resolveDashboardRoute } from "../layout/dashboard-routes.lib";
 import {
   SIDEBAR_CONFIG,
   findActiveHref,
@@ -14,6 +14,8 @@ import {
 } from "./sidebar.config";
 
 const STORE = "33333333-3333-4333-8333-333333333333";
+/** The Products pages of STORE (under their store since F-87c). */
+const P = `/stores/${STORE}/products`;
 
 describe("storeBuilderEnabled", () => {
   const SELLER = "11111111-1111-4111-8111-111111111111";
@@ -68,7 +70,7 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", P, `${P}/add`, `${P}/categories`, "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });
@@ -148,7 +150,7 @@ describe("SIDEBAR_CONFIG", () => {
   it("opens the overview pages from the group label, not a repeated first item (owner, 2026-11-10)", () => {
     const group = (key: string) => SIDEBAR_CONFIG.find((e) => e.kind === "group" && e.key === key) as AnyGroup;
     const landing: Record<string, string> = {
-      products: "/products",
+      products: "/stores/[storeId]/products",
       ordersGroup: "/orders",
       websiteContent: "/stores/[storeId]/website",
       settingsGroup: "/stores/[storeId]/settings",
@@ -274,7 +276,7 @@ describe("resolveSidebar", () => {
   it("gives each group a label link: its own page, else its first enabled item", () => {
     const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } });
     const group = (key: string) => entries.find((e) => e.kind === "group" && e.key === key) as ResolvedGroup;
-    expect(group("products")).toMatchObject({ href: "/products", ownHref: true, exact: true, countKey: "products" });
+    expect(group("products")).toMatchObject({ href: P, ownHref: true, exact: true, countKey: "products" });
     expect(group("ordersGroup")).toMatchObject({ href: "/orders", ownHref: true, countKey: "orders" });
     expect(group("websiteContent")).toMatchObject({ href: `/stores/${STORE}/website`, ownHref: true });
     expect(group("settingsGroup")).toMatchObject({ href: `/stores/${STORE}/settings`, ownHref: true });
@@ -328,7 +330,7 @@ describe("isActiveHref", () => {
   });
 
   it("does not light up a parent for a sibling route that has its own link", () => {
-    expect(isActiveHref("/products/add", "/products", { exact: true })).toBe(false);
+    expect(isActiveHref(`${P}/add`, P, { exact: true })).toBe(false);
   });
 });
 
@@ -348,24 +350,24 @@ describe("findActiveHref", () => {
   it("does not light up My stores or Settings for pages under them", () => {
     expect(active(`/stores/${STORE}/shipping`)).toBe(`/stores/${STORE}/shipping`);
     expect(active("/stores")).toBe("/stores");
-    expect(active("/products/abc/edit")).toBeNull();
+    expect(active(`${P}/abc/edit`)).toBeNull();
   });
 
   it("lights only Categories on its page, not Manage products", () => {
-    expect(active("/products/categories")).toBe("/products/categories");
-    expect(active("/products")).toBe("/products");
+    expect(active(`${P}/categories`)).toBe(`${P}/categories`);
+    expect(active(P)).toBe(P);
   });
 
   it("lights the group label on its own page and the child on a child page", () => {
     const group = (key: string) => entries.find((e) => e.kind === "group" && e.key === key) as ResolvedGroup;
     const products = group("products");
     // /products: only the label (it is no longer an item).
-    expect(products.items.some((i) => i.href === active("/products"))).toBe(false);
-    expect(isGroupActive(products, active("/products"))).toBe(true);
+    expect(products.items.some((i) => i.href === active(P))).toBe(false);
+    expect(isGroupActive(products, active(P))).toBe(true);
     // /products/add: the Add products item; the group stays open.
-    expect(active("/products/add")).toBe("/products/add");
-    expect(isGroupActive(products, active("/products/add"))).toBe(true);
-    expect(isGroupActive(group("ordersGroup"), active("/products/add"))).toBe(false);
+    expect(active(`${P}/add`)).toBe(`${P}/add`);
+    expect(isGroupActive(products, active(`${P}/add`))).toBe(true);
+    expect(isGroupActive(group("ordersGroup"), active(`${P}/add`))).toBe(false);
     expect(active(`/stores/${STORE}/website`)).toBe(`/stores/${STORE}/website`);
     expect(isGroupActive(group("websiteContent"), active(`/stores/${STORE}/website`))).toBe(true);
     expect(active(`/stores/${STORE}/settings`)).toBe(`/stores/${STORE}/settings`);
@@ -390,5 +392,31 @@ describe("resolveDashboardRoute", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
     expect(hrefs).not.toContain("/settings/fulfillment");
     expect(DASHBOARD_ROUTES.some((r) => r.href === "/settings/fulfillment")).toBe(false);
+  });
+});
+
+describe("Products under their store (F-87c slice 2)", () => {
+  it("titles the store's Products pages and links the header back to that store's list", () => {
+    expect(resolveDashboardRoute(P)).toMatchObject({ title: "manageProducts", parentHref: P });
+    expect(resolveDashboardRoute(`${P}/add`)).toMatchObject({ title: "addProducts", parentHref: P });
+    expect(resolveDashboardRoute(`${P}/inventory`)).toMatchObject({ title: "inventory", parentHref: P });
+    expect(resolveDashboardRoute(`${P}/abc/edit`)).toMatchObject({ title: "editProduct", parentHref: P });
+    // The old list a seller with no store still sees.
+    expect(resolveDashboardRoute("/products")).toMatchObject({ title: "manageProducts", parentHref: "/products" });
+  });
+
+  it("keeps the Products pages in the command palette, filled with the selected store", () => {
+    const products = COMMAND_PALETTE_ROUTES.filter((r) => r.href.startsWith("/stores/[storeId]/products"));
+    expect(products.map((r) => fillStoreHref(r.href, STORE))).toEqual([P, `${P}/add`, `${P}/categories`, `${P}/inventory`, `${P}/trash`]);
+    expect(products.map((r) => fillStoreHref(r.href, null))).toEqual([null, null, null, null, null]);
+    // Other store-scoped pages stay out of the palette, as before.
+    expect(COMMAND_PALETTE_ROUTES.some((r) => r.href.startsWith("/stores/[storeId]/settings"))).toBe(false);
+  });
+
+  it("keeps the Products label for a seller with no store (the old list), without the store-only items", () => {
+    const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: null, features: {} });
+    const products = entries.find((e) => e.kind === "group" && e.key === "products") as ResolvedGroup;
+    expect(products).toMatchObject({ href: "/products", ownHref: true });
+    expect(products.items.map((i) => i.href)).toEqual(["/reviews"]);
   });
 });

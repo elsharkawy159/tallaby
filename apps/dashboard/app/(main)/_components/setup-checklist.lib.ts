@@ -13,6 +13,8 @@
  * progress keeps its meaning.
  */
 
+import { storeProductsHref } from "@/lib/products/product-routes.lib";
+
 export type SetupFlags = {
   /**
    * The seller chose a template for the selected store: an install not
@@ -50,7 +52,7 @@ export type HomeStep = { key: HomeStepKey; href: string; done: boolean };
 const HOME_STORE_STEPS = new Set<HomeStepKey>(["design", "payments", "shipping"]);
 
 const HOME_STEPS: { key: HomeStepKey; done: (f: SetupFlags) => boolean; href: (storeId: string, f: SetupFlags) => string }[] = [
-  { key: "product", done: (f) => f.product, href: () => "/products/add" },
+  { key: "product", done: (f) => f.product, href: (id) => storeProductsHref(id || null, "/add") },
   {
     key: "design",
     done: (f) => f.template && f.brand,
@@ -99,7 +101,7 @@ const OPTIONAL_STEPS = new Set<SetupKey>(["shipping"]);
 const STEPS: { key: SetupKey; href: (storeId: string) => string }[] = [
   { key: "template", href: (id) => `/stores/${id}/website/templates` },
   { key: "brand", href: (id) => `/stores/${id}/website/design` },
-  { key: "product", href: () => "/products/add" },
+  { key: "product", href: (id) => storeProductsHref(id || null, "/add") },
   { key: "shipping", href: (id) => `/stores/${id}/shipping` },
 ];
 

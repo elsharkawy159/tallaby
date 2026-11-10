@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Note, PageHeader, SectionCard, SellerButton, StatusBadge, TextAction } from "@/components/seller-ui";
 import type { BuilderErrorCode, BuilderReview } from "./builder.dto";
+import { storeProductsHref } from "@/lib/products/product-routes.lib";
 
 /**
  * The end of the AI Store Builder (ROADMAP.md F-54d): what was built, what's
@@ -86,7 +87,7 @@ export function BuilderReviewPanel({
           <ul className="flex flex-col gap-1.5 text-[13.5px]">
             {review.products.map((product) => (
               <li key={product.id} className="flex min-h-10 items-center justify-between gap-2">
-                <Link href={`/products/${product.id}/edit`} className="truncate font-semibold text-(--s-text) underline-offset-2 hover:underline">
+                <Link href={storeProductsHref(review.storeId, `/${product.id}/edit`)} className="truncate font-semibold text-(--s-text) underline-offset-2 hover:underline">
                   {product.title}
                 </Link>
                 <StatusBadge tone={product.status === "active" ? "success" : "muted"}>{product.status === "active" ? t("review.live") : t("review.draft")}</StatusBadge>

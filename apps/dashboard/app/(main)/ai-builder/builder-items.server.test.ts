@@ -49,8 +49,8 @@ vi.mock("@workspace/lib/store-sites/server", () => ({
 vi.mock("@workspace/lib/store-wallet/server", () => ({ grantWelcomeGiftSafely: vi.fn() }));
 vi.mock("@workspace/lib/stores/server", () => ({ getStore: vi.fn(), getStoreShipping: vi.fn(), listStores: vi.fn() }));
 vi.mock("@workspace/store-sections/config", async () => vi.importActual("@workspace/store-sections/config"));
-vi.mock("@/app/(main)/products/add/from-file/from-file-run.server", () => ({ runBulkBatch: mocks.runBulkBatch }));
-vi.mock("@/app/(main)/products/categories-brands/categories-brands.server", () => ({ ensureTaxonomyItem: vi.fn(async () => ({ success: true })) }));
+vi.mock("@/app/(main)/stores/[storeId]/products/add/from-file/from-file-run.server", () => ({ runBulkBatch: mocks.runBulkBatch }));
+vi.mock("@/app/(main)/stores/[storeId]/products/categories-brands/categories-brands.server", () => ({ ensureTaxonomyItem: vi.fn(async () => ({ success: true })) }));
 vi.mock("@/lib/stock-photos/pexels.server", () => ({ pexelsConfigured: () => false, searchPexels: vi.fn() }));
 vi.mock("./builder-run.server", () => ({
   ALLOWED: undefined,

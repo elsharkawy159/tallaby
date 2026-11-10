@@ -131,6 +131,10 @@ describe("isPromptBlockedRoute", () => {
     expect(isPromptBlockedRoute("/products/abc/edit", product)).toBe(true);
     expect(isPromptBlockedRoute("/products", product)).toBe(false);
     expect(isPromptBlockedRoute("/products/add", publish)).toBe(false);
+    // Under the store since F-87c.
+    expect(isPromptBlockedRoute(`/stores/${STORE}/products/add`, product)).toBe(true);
+    expect(isPromptBlockedRoute(`/stores/${STORE}/products/abc/edit`, product)).toBe(true);
+    expect(isPromptBlockedRoute(`/stores/${STORE}/products`, product)).toBe(false);
   });
 
   it("blocks a step's own page and its sub-pages", () => {

@@ -2,15 +2,17 @@ import { Package } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { EmptyState, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { formatNumber } from "@/lib/i18n/format";
+import { selectedStoreProductsHref } from "@/lib/products/product-routes.server";
 import { getTopProducts } from "./home.queries";
 import type { HomeChannel, HomeRange } from "./home.shared";
 import { HeaderLink, ProductThumb } from "./home-ui";
 
 export async function TopProductsData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
   const locale = await getLocale();
-  const [products, t] = await Promise.all([
+  const [products, t, productsHref] = await Promise.all([
     getTopProducts(range, locale, channel),
     getTranslations("home.topProducts"),
+    selectedStoreProductsHref(),
   ]);
   const max = products[0]?.revenue || 1;
 
@@ -20,7 +22,7 @@ export async function TopProductsData({ range, channel = "all" }: { range: HomeR
         id="top-title"
         title={t("title")}
         description={t("description")}
-        action={<HeaderLink href="/products">{t("viewAll")}</HeaderLink>}
+        action={<HeaderLink href={productsHref}>{t("viewAll")}</HeaderLink>}
       />
       {products.length === 0 ? (
         <EmptyState

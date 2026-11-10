@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { AUTOFILL_PDF_TYPE, countPdfPages } from "@/app/(main)/products/add/ai/ai-autofill.dto";
-import { BULK_LIMITS, type BulkErrorCode, type PdfChunkResponse } from "@/app/(main)/products/add/from-file/from-file.dto";
-import { extractPdfRows } from "@/app/(main)/products/add/from-file/from-file-run.server";
+import { AUTOFILL_PDF_TYPE, countPdfPages } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.dto";
+import { BULK_LIMITS, type BulkErrorCode, type PdfChunkResponse } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file.dto";
+import { extractPdfRows } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file-run.server";
 
 /**
  * One batch of a PDF catalogue (PLAN.md AI-3): a few pages in, rows out. The

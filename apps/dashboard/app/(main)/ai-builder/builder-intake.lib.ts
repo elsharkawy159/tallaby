@@ -1,5 +1,5 @@
-import { cleanCell, cleanMapping, emptyMapping, guessMapping, mappingIsConfident, parsePriceToPiastres, templateMapping, validateRow, type SheetModel } from "@/app/(main)/products/add/from-file/from-file.lib";
-import { BULK_LIMITS, type ColumnMapping, type MappedRow, type MappingSource } from "@/app/(main)/products/add/from-file/from-file.dto";
+import { cleanCell, cleanMapping, emptyMapping, guessMapping, mappingIsConfident, parsePriceToPiastres, templateMapping, validateRow, type SheetModel } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file.lib";
+import { BULK_LIMITS, type ColumnMapping, type MappedRow, type MappingSource } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file.dto";
 import {
   BUILDER_LIMITS,
   type BuilderEditOutput,

@@ -26,12 +26,15 @@ export function DashboardHeader({
   walletCurrency,
   storeLink,
   siteLive,
+  storeId,
 }: {
   walletBalance: number | null;
   walletCurrency: string;
   storeLink: { url: string; host: string; href: string } | null;
   /** The selected store's site is published. */
   siteLive: boolean;
+  /** The selected store (navigation only): where the palette's Products links go (F-87c). */
+  storeId: string | null;
 }) {
   const t = useTranslations("header");
   const locale = useLocale();
@@ -157,7 +160,7 @@ export function DashboardHeader({
         </div>
       </div>
 
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} storeId={storeId} />
     </header>
   );
 }

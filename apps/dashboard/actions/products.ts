@@ -12,7 +12,7 @@ import { eq, and, desc, asc, sql, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import slugify from "slugify";
-import { cleanKeywords } from "@/app/(main)/products/add/meta-keywords.lib";
+import { cleanKeywords } from "@/app/(main)/stores/[storeId]/products/add/meta-keywords.lib";
 import {
   isRichTextEmpty,
   sanitizeRichTextHtml,
@@ -57,6 +57,7 @@ import {
   normalizeHeaderKey,
   PRODUCT_IMPORT_HEADER_MAP,
 } from "@/lib/product-import-headers";
+import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
 // tables imported above via @workspace/db default export; no need for direct table imports here
 
 /** Builds the cache-invalidation snapshot for a product from its current DB state. */
@@ -853,7 +854,7 @@ export async function bulkInsertProductsAction(storeId: string, records: ParsedB
 
     // Each createProduct() call above already invalidates and broadcasts
     // its own product's caches; only the local (uncached) dashboard list needs a nudge.
-    revalidatePath("/products");
+    revalidatePath(STORE_PRODUCTS_PATTERN, "page");
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -916,7 +917,7 @@ export async function bulkCreateProductsAction(
       }
     }
 
-    revalidatePath("/products");
+    revalidatePath(STORE_PRODUCTS_PATTERN, "page");
     return { success: true as const, ...results };
   } catch (error) {
     console.error("bulkCreateProductsAction error:", error);
@@ -934,17 +935,16 @@ export async function bulkCreateProductsAction(
   }
 }
 
-export async function getProduct(productId: string) {
+/** One product of the store `storeId` (checked against the session, F-87c slice 2); outside it: "Product not found". */
+export async function getProduct(storeId: string, productId: string) {
   try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
+    const { seller, inStore } = await requireProductStore(storeId, { read: true });
 
     const product = await db.query.products.findFirst({
       where: and(
         eq(products.id, productId),
-        eq(products.sellerId, session.user.id)
+        eq(products.sellerId, seller.sellerId),
+        inStore
       ),
       // The edit form reads the product, its variants and translations only.
       with: {
@@ -1601,8 +1601,8 @@ export async function updateProduct(
       return updated;
     });
 
-    revalidatePath("/products");
-    revalidatePath(`/products/${productId}`);
+    revalidatePath(STORE_PRODUCTS_PATTERN, "page");
+    revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
 
     const after = await toSnapshot(productId);
     if (before.categoryId && after?.categoryId) {
@@ -1910,7 +1910,7 @@ export async function answerProductQuestionAction(formData: FormData) {
     }
     const res = await answerProductQuestion({ questionId, answer });
     if (productId) {
-      revalidatePath(`/products/${productId}`);
+      revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
     }
     return res;
   } catch (error) {
@@ -1932,7 +1932,7 @@ export async function updateProductAnswerAction(formData: FormData) {
     }
     const res = await updateProductAnswer({ answerId, answer });
     if (productId) {
-      revalidatePath(`/products/${productId}`);
+      revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
     }
     return res;
   } catch (error) {

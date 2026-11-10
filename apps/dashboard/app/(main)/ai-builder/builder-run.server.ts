@@ -27,11 +27,11 @@ import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sect
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getAllCategories } from "@/actions/categories";
-import { autofillProduct } from "@/app/(main)/products/add/ai/ai-autofill.server";
-import { contentBlocksToHtml, pickAutofillCategory } from "@/app/(main)/products/add/ai/ai-autofill.lib";
-import type { ProductAutofillOutput } from "@/app/(main)/products/add/ai/ai-autofill.dto";
-import type { CategoryOption } from "@/app/(main)/products/add/add-product.schema";
-import { suggestCategories } from "@/app/(main)/products/add/add-product.lib";
+import { autofillProduct } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.server";
+import { contentBlocksToHtml, pickAutofillCategory } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.lib";
+import type { ProductAutofillOutput } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.dto";
+import type { CategoryOption } from "@/app/(main)/stores/[storeId]/products/add/add-product.schema";
+import { suggestCategories } from "@/app/(main)/stores/[storeId]/products/add/add-product.lib";
 import { proposeZones } from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.server";
 import type { ProposedZone } from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.dto";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";

@@ -6,8 +6,8 @@ import { publishStoreSite, saveStoreDesignSystem, saveStorePageDraft } from "@wo
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
 import { getStore, getStoreShipping, listStores } from "@workspace/lib/stores/server";
 import { designSystemSchema, validatePageContent } from "@workspace/store-sections/config";
-import { runBulkBatch } from "@/app/(main)/products/add/from-file/from-file-run.server";
-import { ensureTaxonomyItem } from "@/app/(main)/products/categories-brands/categories-brands.server";
+import { runBulkBatch } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file-run.server";
+import { ensureTaxonomyItem } from "@/app/(main)/stores/[storeId]/products/categories-brands/categories-brands.server";
 import { pexelsConfigured, searchPexels } from "@/lib/stock-photos/pexels.server";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { BUILDER_FEATURES, BUILDER_LIMITS, builderReviewOutputSchema, type BuilderReview, type BuilderState } from "./builder.dto";

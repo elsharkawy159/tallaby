@@ -97,7 +97,8 @@ export function decideSetupPrompt(
 }
 
 const BUILDER_ROUTE = /^\/stores\/[^/]+\/editor(\/|$)/;
-const PRODUCT_FORM_ROUTE = /^\/products\/(add|[^/]+\/edit)(\/|$)/;
+// The product form, under its store since F-87c (the old /products paths only redirect).
+const PRODUCT_FORM_ROUTE = /^(\/stores\/[^/]+)?\/products\/(add|[^/]+\/edit)(\/|$)/;
 
 /** Prompts stay out of the builder and off the page where the seller is doing that very step. */
 export function isPromptBlockedRoute(pathname: string, step: { key: SetupKey; href: string }): boolean {

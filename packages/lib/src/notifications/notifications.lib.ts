@@ -185,8 +185,12 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     case "referral_payout_rejected":
       return "/earn";
     case "low_stock": {
+      // Products live under their store (F-87c). A row that names no store (every row today: the
+      // 0125 trigger writes none) keeps the old path, which the dashboard sends to the selected store.
       const productId = dataString(n.data, "productId");
-      return productId ? `/products/inventory?product=${encodeURIComponent(productId)}` : "/products/inventory";
+      const storeId = dataString(n.data, "storeId");
+      const base = storeId ? `/stores/${encodeURIComponent(storeId)}/products` : "/products";
+      return productId ? `${base}/inventory?product=${encodeURIComponent(productId)}` : `${base}/inventory`;
     }
     case "theme_request_updated":
       return themeRequestsPath(dataString(n.data, "storeId"));

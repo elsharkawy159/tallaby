@@ -1675,7 +1675,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
-- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slice 1 of 6 built and committed 2026-11-10, 31b21e5f; slices in `docs/plans/stores-separation-f87c-slices.md`)
+- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–2 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
@@ -1691,6 +1691,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87c slice 2: Products pages under the store, product reads per store (dark; no migration, no behaviour change with the switch off)
+
+- `/products/*` moved to `/stores/[storeId]/products/*`; `app/(main)/products/[[...path]]` redirects (307) old URLs to the same page and query under the selected store (a seller with no store keeps the account list on `/products`; sub-pages go to `/stores`). A forged or foreign store id is a 404.
+- Reads scoped with `productInStore(managed)`: edit loader, list, tab counts, category filter, export and select-all ids, Trash, inventory low stock and history, sidebar count, header search. Store read-only (`forWrite`) applies to product writes only once `stores_catalog_split` is on, so a suspended primary store can't lock the account catalog before the split.
+- About 75 links moved (sidebar, routes, palette, home, reports, AI builder, help, agent router, store-editor, seller emails, `low_stock` bell). Left on the old path on purpose (the redirect handles them): stored bell rows (0125 writes no store id), the push fallback, the ads product picker, admin links.
+- Manager review 2026-11-10: dashboard typecheck clean, 1,115 dashboard tests, lib (132), agent (64), store-editor and backend tsc pass. Read-isolation DB tests added (need `TEST_DATABASE_URL`). Not checked in a browser (no local sign-in).
 
 ### 2026-11-10 — F-87c slice 1: shared store-scope condition and dashboard product writes per store (dark; no migration, no behaviour change with the switch off)
 

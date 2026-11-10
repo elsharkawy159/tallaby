@@ -18,11 +18,11 @@ export function dataAction(need: DataNeed, store: { id: string; catalogMode: str
   switch (need) {
     case "products":
       // A store showing selected products needs its picks, not new products.
-      return { kind: "link", href: store.catalogMode === "selected" ? `/stores/${id}/settings#catalog-mode` : "/products/add" };
+      return { kind: "link", href: store.catalogMode === "selected" ? `/stores/${id}/settings#catalog-mode` : `/stores/${id}/products/add` };
     case "categories":
-      return { kind: "link", href: "/products/categories" };
+      return { kind: "link", href: `/stores/${id}/products/categories` };
     case "brands":
-      return { kind: "link", href: "/products/brands" };
+      return { kind: "link", href: `/stores/${id}/products/brands` };
     case "reviews":
       return { kind: "link", href: "/reviews" };
     case "promotions":

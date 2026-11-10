@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { STORE_PRODUCTS_PATTERN as PRODUCTS } from "@/lib/products/product-routes.lib";
 import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import {
   AppWindow,
@@ -144,11 +145,12 @@ export interface DashboardRoute {
  */
 export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/", title: "dashboard", icon: LayoutDashboard },
-  { href: "/products", title: "manageProducts", parent: "products", parentHref: "/products", icon: Package },
-  { href: "/products/add", title: "addProducts", parent: "products", parentHref: "/products", icon: PackagePlus },
-  { href: "/products/categories", title: "sellerCategories", parent: "products", parentHref: "/products", icon: FolderTree },
-  { href: "/products/inventory", title: "inventory", parent: "products", parentHref: "/products", icon: Boxes },
-  { href: "/products/trash", title: "productTrash", parent: "products", parentHref: "/products", icon: Trash2 },
+  // Under their store since F-87c; the old /products URLs redirect there.
+  { href: PRODUCTS, title: "manageProducts", parent: "products", parentHref: PRODUCTS, icon: Package },
+  { href: `${PRODUCTS}/add`, title: "addProducts", parent: "products", parentHref: PRODUCTS, icon: PackagePlus },
+  { href: `${PRODUCTS}/categories`, title: "sellerCategories", parent: "products", parentHref: PRODUCTS, icon: FolderTree },
+  { href: `${PRODUCTS}/inventory`, title: "inventory", parent: "products", parentHref: PRODUCTS, icon: Boxes },
+  { href: `${PRODUCTS}/trash`, title: "productTrash", parent: "products", parentHref: PRODUCTS, icon: Trash2 },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
   { href: "/orders/missed", title: "missedOrders", parent: "ordersGroup", icon: PhoneMissed },
@@ -202,14 +204,19 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
 ];
 
 const EDIT_PRODUCT: DashboardRoute = {
-  href: "/products",
+  href: `${PRODUCTS}/[productId]/edit`,
   title: "editProduct",
   parent: "products",
-  parentHref: "/products",
+  parentHref: PRODUCTS,
   icon: Package,
+  hiddenFromPalette: true,
 };
 
+const LIST_PRODUCTS = DASHBOARD_ROUTES.find((route) => route.href === PRODUCTS)!;
+
 const UUID = "[0-9a-fA-F-]{36}";
+const STORE_IN_PATH = new RegExp(`^/stores/(${UUID})(?=/|$)`);
+const EDIT_PRODUCT_PATH = new RegExp(`^/stores/${UUID}/products/[^/]+/edit/?$`);
 
 function routeRegex(href: string, prefix: boolean): RegExp {
   const escaped = href
@@ -222,14 +229,39 @@ function routeRegex(href: string, prefix: boolean): RegExp {
 /** True for store-scoped route patterns such as `/stores/[storeId]/settings`. */
 export const isStoreScopedHref = (href: string) => href.includes("[storeId]");
 
-/** The pages the command palette lists. */
+/** Fills `[storeId]` in a route pattern; null when it needs a store and there is none. */
+export function fillStoreHref(href: string, storeId: string | null | undefined): string | null {
+  if (!isStoreScopedHref(href)) return href;
+  return storeId ? href.replaceAll("[storeId]", storeId) : null;
+}
+
+/**
+ * The Products pages moved under their store in F-87c but were account-wide
+ * pages before, so they stay in the palette, filled with the selected store.
+ * Other store-scoped pages are still left out.
+ */
+const keepsPaletteSpot = (href: string) => href === PRODUCTS || href.startsWith(`${PRODUCTS}/`);
+
+/** The pages the command palette lists (fill store-scoped ones with `fillStoreHref`). */
 export const COMMAND_PALETTE_ROUTES = DASHBOARD_ROUTES.filter(
-  (route) => !isStoreScopedHref(route.href) && !route.hiddenFromPalette,
+  (route) => (!isStoreScopedHref(route.href) || keepsPaletteSpot(route.href)) && !route.hiddenFromPalette,
 );
 
-/** Resolve the header title for a pathname; falls back to the closest section. */
+/**
+ * Resolve the header title for a pathname; falls back to the closest section.
+ * A store-scoped `parentHref` gets the pathname's store.
+ */
 export function resolveDashboardRoute(pathname: string): DashboardRoute {
-  if (/^\/products\/[^/]+\/edit\/?$/.test(pathname)) return EDIT_PRODUCT;
+  const route = matchDashboardRoute(pathname);
+  if (!route.parentHref || !isStoreScopedHref(route.parentHref)) return route;
+  const parentHref = fillStoreHref(route.parentHref, STORE_IN_PATH.exec(pathname)?.[1]);
+  return { ...route, parentHref: parentHref ?? undefined };
+}
+
+function matchDashboardRoute(pathname: string): DashboardRoute {
+  if (EDIT_PRODUCT_PATH.test(pathname)) return EDIT_PRODUCT;
+  // The old list, still shown to a seller with no store (app/(main)/products).
+  if (pathname === "/products" || pathname === "/products/") return { ...LIST_PRODUCTS, href: "/products", parentHref: "/products" };
 
   const exact = DASHBOARD_ROUTES.find((route) => routeRegex(route.href, false).test(pathname));
   if (exact) return exact;

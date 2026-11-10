@@ -27,6 +27,7 @@ import {
   type ReportRange,
 } from "./reports.lib";
 import { FunnelChart, GovernorateChart, SourcesChart } from "./reports.client";
+import { storeProductsHref } from "@/lib/products/product-routes.lib";
 
 /** Governorates drawn in the chart; the table below lists them all. */
 const CHART_GOVERNORATES = 8;
@@ -155,6 +156,7 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
           money={money}
           unit={unit}
           t={t}
+          storeId={storeId}
         />
         <ProductsCard
           id="worst-title"
@@ -166,6 +168,7 @@ export async function StoreReportData({ storeId, range }: { storeId: string; ran
           money={money}
           unit={unit}
           t={t}
+          storeId={storeId}
         />
       </div>
     </div>
@@ -178,6 +181,7 @@ function Note({ children }: { children: React.ReactNode }) {
 
 function ProductsCard({
   id,
+  storeId,
   title,
   description,
   icon,
@@ -188,6 +192,8 @@ function ProductsCard({
   t,
 }: {
   id: string;
+  /** The report's store: product links open its Products pages (F-87c). */
+  storeId: string;
   title: string;
   description: string;
   icon: LucideIcon;
@@ -206,7 +212,7 @@ function ProductsCard({
         <ul className="flex flex-col gap-1.5 px-3 pb-3 pt-2">
           {products.map((p) => (
             <li key={p.productId}>
-              <Link href={`/products/${p.productId}/edit`} className="flex min-h-14 items-center gap-3 rounded-2xl px-2 py-1.5 transition-colors duration-150 hover:bg-(--s-tint)">
+              <Link href={storeProductsHref(storeId, `/${p.productId}/edit`)} className="flex min-h-14 items-center gap-3 rounded-2xl px-2 py-1.5 transition-colors duration-150 hover:bg-(--s-tint)">
                 <ProductThumb src={p.image} />
                 <b className="min-w-0 flex-1 truncate text-[13px] font-semibold text-(--s-text)">{p.title || "—"}</b>
                 <span className="whitespace-nowrap text-end text-xs text-(--s-subtle)">

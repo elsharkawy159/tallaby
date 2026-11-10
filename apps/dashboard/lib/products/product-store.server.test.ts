@@ -11,7 +11,15 @@ const mocks = vi.hoisted(() => ({
   isSwitchOn: vi.fn(async () => false),
   storeHasProduct: vi.fn(async () => true),
   productInStore: vi.fn(() => "IN_STORE"),
+  notFound: vi.fn(() => {
+    throw new Error("NEXT_NOT_FOUND");
+  }),
+  redirect: vi.fn((to: string) => {
+    throw new Error(`NEXT_REDIRECT ${to}`);
+  }),
 }));
+
+vi.mock("next/navigation", () => ({ notFound: mocks.notFound, redirect: mocks.redirect }));
 
 vi.mock("@/lib/auth/require-seller.server", async () => {
   class AccessError extends Error {
@@ -19,7 +27,11 @@ vi.mock("@/lib/auth/require-seller.server", async () => {
       super(code);
     }
   }
-  return { AccessError, requireStore: mocks.requireStore };
+  return {
+    AccessError,
+    requireStore: mocks.requireStore,
+    isAccessError: (error: unknown) => error instanceof AccessError,
+  };
 });
 vi.mock("@/lib/stores/platform-switches.server", () => ({ isSwitchOn: mocks.isSwitchOn }));
 vi.mock("@workspace/lib/stores/scope/server", () => ({
@@ -27,7 +39,10 @@ vi.mock("@workspace/lib/stores/scope/server", () => ({
   productInStore: mocks.productInStore,
 }));
 
-const { requireProductStore, requireStoreProduct } = await import("./product-store.server");
+const { AccessError } = (await import("@/lib/auth/require-seller.server")) as unknown as {
+  AccessError: new (code: string) => Error & { code: string };
+};
+const { loadProductStorePage, requireProductStore, requireStoreProduct } = await import("./product-store.server");
 
 const STORE = "22222222-2222-4222-8222-222222222222";
 const PRODUCT = "33333333-3333-4333-8333-333333333333";
@@ -79,5 +94,50 @@ describe("requireStoreProduct", () => {
   it("refuses a product id that is not a string without a query", async () => {
     await expect(requireStoreProduct(STORE, 42)).rejects.toMatchObject({ code: "not_found" });
     expect(mocks.storeHasProduct).not.toHaveBeenCalled();
+  });
+});
+
+describe("archived or suspended stores (slice 2)", () => {
+  it("does not ask for an active store before the split: products are still the account's", async () => {
+    await requireProductStore(STORE);
+    expect(mocks.requireStore).toHaveBeenCalledWith(STORE, {});
+  });
+
+  it("asks for an active store (forWrite) on writes once the split is on", async () => {
+    mocks.isSwitchOn.mockResolvedValueOnce(true);
+    await requireProductStore(STORE);
+    expect(mocks.requireStore).toHaveBeenCalledWith(STORE, { forWrite: true });
+  });
+
+  it("never asks it on reads, even after the split", async () => {
+    mocks.isSwitchOn.mockResolvedValueOnce(true);
+    await requireProductStore(STORE, { read: true });
+    expect(mocks.requireStore).toHaveBeenCalledWith(STORE, {});
+  });
+});
+
+describe("loadProductStorePage (the /stores/[storeId]/products pages)", () => {
+  it("returns the store context for the session's own store", async () => {
+    await expect(loadProductStorePage(STORE)).resolves.toMatchObject({ store: { id: STORE }, inStore: "IN_STORE" });
+    expect(mocks.requireStore).toHaveBeenCalledWith(STORE, {});
+  });
+
+  it("is a 404 for a forged, foreign or deleted storeId segment", async () => {
+    mocks.requireStore.mockRejectedValueOnce(new AccessError("not_found"));
+    await expect(loadProductStorePage("not-a-store")).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(mocks.notFound).toHaveBeenCalled();
+  });
+
+  it("sends a signed-out visitor to login and a non-seller to signup", async () => {
+    mocks.requireStore.mockRejectedValueOnce(new AccessError("unauthorized"));
+    await expect(loadProductStorePage(STORE)).rejects.toThrow("NEXT_REDIRECT /login");
+    mocks.requireStore.mockRejectedValueOnce(new AccessError("no_seller"));
+    await expect(loadProductStorePage(STORE)).rejects.toThrow("NEXT_REDIRECT /signup");
+  });
+
+  it("lets other errors through", async () => {
+    mocks.requireStore.mockRejectedValueOnce(new Error("db down"));
+    await expect(loadProductStorePage(STORE)).rejects.toThrow("db down");
+    expect(mocks.notFound).not.toHaveBeenCalled();
   });
 });

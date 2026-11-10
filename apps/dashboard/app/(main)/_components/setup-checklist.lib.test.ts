@@ -18,7 +18,7 @@ describe("buildHomeSteps", () => {
 
   it("links store steps to the selected store", () => {
     const hrefs = Object.fromEntries(buildHomeSteps(none, STORE).map((s) => [s.key, s.href]));
-    expect(hrefs.product).toBe("/products/add");
+    expect(hrefs.product).toBe(`/stores/${STORE}/products/add`);
     expect(hrefs.design).toBe(`/stores/${STORE}/website/templates`);
     expect(hrefs.payments).toBe(`/stores/${STORE}/settings/payments`);
     expect(hrefs.shipping).toBe(`/stores/${STORE}/shipping`);

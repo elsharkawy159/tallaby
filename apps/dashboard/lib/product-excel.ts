@@ -1,4 +1,4 @@
-import type { VendorProduct } from "@/app/(main)/products/_components/vendor-products.section";
+import type { VendorProduct } from "@/app/(main)/stores/[storeId]/products/_components/vendor-products.section";
 
 /**
  * The vendor product sheet contract, shared by Export and Download Template.

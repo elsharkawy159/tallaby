@@ -193,6 +193,62 @@ describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", 
     await db.update(s.products).set({ storeId: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
   });
 
+  // ── F-87c slice 2: dashboard product reads ──────────────────────────────
+  // The /stores/[storeId]/products pages (list, tab counts, export, ids, search,
+  // sidebar count, inventory, trash) put the same `inStore` next to the
+  // seller's own conditions (products-list.query.ts baseConditions,
+  // trash.server.ts listTrashedProducts). This runs that WHERE.
+
+  /** The ids a store's Products list (or its Trash) shows, as the dashboard reads them. */
+  async function listedIds(sellerId: string, storeId: string, { catalogSplit = false, trash = false } = {}) {
+    if (!(await storeOwnedBy(sellerId, storeId, db))) return [];
+    const rows = await db
+      .select({ id: s.products.id })
+      .from(s.products)
+      .where(
+        and(
+          eq(s.products.sellerId, sellerId),
+          trash ? isNotNull(s.products.deletedAt) : isNull(s.products.deletedAt),
+          productInStore(storeId, { catalogSplit, scope: "managed" }),
+        ),
+      );
+    return rows.map((r) => r.id).sort();
+  }
+
+  it("before the split, every store of S1 lists the whole account catalog (today's list), never S2's", async () => {
+    const mine = [p.s1a, p.s1b].sort();
+    expect(await listedIds(ids.s1, ids.storeA)).toEqual(mine);
+    expect(await listedIds(ids.s1, ids.storeB)).toEqual(mine);
+    expect(await listedIds(ids.s1, ids.storeS2)).toEqual([]);
+    expect(await listedIds(ids.s2, ids.storeA)).toEqual([]);
+  });
+
+  it("with the switch on (catalogSplit: true), store B's list, counts and Trash never contain a store A product", async () => {
+    await db.update(s.products).set({ storeId: ids.storeA }).where(eq(s.products.id, p.s1a));
+    await db.update(s.products).set({ storeId: ids.storeB }).where(eq(s.products.id, p.s1b));
+    try {
+      const split = { catalogSplit: true };
+      expect(await listedIds(ids.s1, ids.storeB, split)).toEqual([p.s1b]);
+      expect(await listedIds(ids.s1, ids.storeA, split)).toEqual([p.s1a]);
+      // The tab count reads the same WHERE.
+      const [count] = await db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(s.products)
+        .where(and(eq(s.products.sellerId, ids.s1), isNull(s.products.deletedAt), productInStore(ids.storeB, { catalogSplit: true, scope: "managed" })));
+      expect(count!.n).toBe(1);
+      // The edit page loader: a store A product through store B is not found.
+      expect(await storeHasProduct(ids.storeB, p.s1a, { q: db, catalogSplit: true, scope: "managed" })).toBe(false);
+      // Trash: store A's trashed product is not in store B's Trash.
+      await db.update(s.products).set({ deletedAt: new Date().toISOString() }).where(eq(s.products.id, p.s1a));
+      expect(await listedIds(ids.s1, ids.storeB, { ...split, trash: true })).toEqual([]);
+      expect(await listedIds(ids.s1, ids.storeA, { ...split, trash: true })).toEqual([p.s1a]);
+      // A forged store (S2's) lists nothing for S1.
+      expect(await listedIds(ids.s1, ids.storeS2, split)).toEqual([]);
+    } finally {
+      await db.update(s.products).set({ storeId: null, deletedAt: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
+    }
+  });
+
   it("both switches are off (or the table is not there yet)", async () => {
     expect(await isSwitchOn("stores_catalog_split", db)).toBe(false);
     expect(await isSwitchOn("stores_wallet_split", db)).toBe(false);

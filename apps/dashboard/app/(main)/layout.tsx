@@ -82,6 +82,7 @@ export default async function DashboardLayout({
             walletCurrency={wallet?.currency ?? "EGP"}
             storeLink={storeLink}
             siteLive={selected?.siteStatus === "published"}
+            storeId={selected?.id ?? null}
           />
           {access.status === "restricted" && (
             <div className="border-b border-(--s-line) bg-accent-soft px-7 py-3 text-sm text-accent-ink max-[1020px]:px-4">

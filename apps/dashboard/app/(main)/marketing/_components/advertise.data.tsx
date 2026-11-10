@@ -2,7 +2,7 @@ import { getLocale } from "next-intl/server";
 import { parsePriceJson } from "@workspace/lib";
 import { getAdWallet, getSellerAdRequests } from "@/actions/ads";
 import { requireSeller } from "@/lib/auth/require-seller.server";
-import { listSellerProductOptions } from "../../products/_components/products-list.query";
+import { listSellerProductOptions } from "@/app/(main)/stores/[storeId]/products/_components/products-list.query";
 import { AdvertiseProducts } from "./advertise-products.client";
 import type { AdProductOption } from "./product-picker";
 

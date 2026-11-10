@@ -6,6 +6,7 @@ import { IconTile, Note, SellerCard, SellerCardHeader, type Tone } from "@/compo
 import { cn } from "@workspace/ui/lib/utils";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { formatNumber } from "@/lib/i18n/format";
+import { selectedStoreProductsHref } from "@/lib/products/product-routes.server";
 import { getHomeSnapshot, getPendingOrdersCount, LOW_STOCK_THRESHOLD } from "./home.queries";
 import type { HomeChannel } from "./home.shared";
 
@@ -18,7 +19,8 @@ type Item = {
 
 const ITEMS: Item[] = [
   { key: "pendingOrders", icon: PackageOpen, tone: "accent", href: "/orders" },
-  { key: "lowStock", icon: PackageX, tone: "danger", href: "/products" },
+  // The selected store's Products page, filled in below (F-87c).
+  { key: "lowStock", icon: PackageX, tone: "danger", href: "" },
   { key: "unansweredQuestions", icon: MessageCircleQuestion, tone: "info", href: "#questions" },
   { key: "newReviews", icon: Star, tone: "success", href: "/reviews" },
 ];
@@ -27,11 +29,12 @@ const ITEMS: Item[] = [
 export async function AttentionData({ channel }: { channel: HomeChannel }) {
   // A seller who isn't activated doesn't see the orders line (ROADMAP.md F-68).
   const { ordersLocked: locked } = await currentOrderLock();
-  const [snapshot, pendingOrders, t, locale] = await Promise.all([
+  const [snapshot, pendingOrders, t, locale, productsHref] = await Promise.all([
     getHomeSnapshot(),
     locked ? 0 : getPendingOrdersCount(channel),
     getTranslations("home.attention"),
     getLocale(),
+    selectedStoreProductsHref(),
   ]);
   const counts = snapshot ? { ...snapshot.attention, pendingOrders } : null;
   const allClear = !counts || Object.values(counts).every((n) => n === 0);
@@ -45,7 +48,7 @@ export async function AttentionData({ channel }: { channel: HomeChannel }) {
         {ITEMS.filter((item) => !locked || item.key !== "pendingOrders").map((item) => {
           const count = counts?.[item.key] ?? 0;
           // Nothing to answer means no questions card to jump to.
-          const href = item.key === "pendingOrders" ? ordersHref : item.key === "unansweredQuestions" && !count ? "/reviews" : item.href;
+          const href = item.key === "pendingOrders" ? ordersHref : item.key === "unansweredQuestions" && !count ? "/reviews" : item.key === "lowStock" ? productsHref : item.href;
           return (
             <li key={item.key}>
               <Link

@@ -20,8 +20,8 @@ export type HelpTopic = { key: string; faqs: HelpFaq[] };
 const L = {
   stores: { nav: "myStores", href: "/stores" },
   plan: { nav: "planUsage", href: "/settings/plan" },
-  addProduct: { nav: "addProducts", href: "/products/add" },
-  categories: { nav: "sellerCategories", href: "/products/categories" },
+  addProduct: { nav: "addProducts", href: "/stores/[storeId]/products/add" },
+  categories: { nav: "sellerCategories", href: "/stores/[storeId]/products/categories" },
   orders: { nav: "orders", href: "/orders" },
   delivery: { nav: "deliveryTracking", href: "/orders/delivery" },
   shipping: { nav: "shippingSettings", href: "/stores/[storeId]/shipping" },

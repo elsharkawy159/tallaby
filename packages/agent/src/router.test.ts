@@ -7,6 +7,7 @@ describe("pickSkill", () => {
     expect(skillForPage("/ar/stores/8f0c/shipping?tab=zones")).toBe("shipping");
     expect(skillForPage("/stores/8f0c/editor/home")).toBe("design");
     expect(skillForPage("/products/123/edit")).toBe("products");
+    expect(skillForPage("/stores/22222222-2222-4222-8222-222222222222/products/123/edit")).toBe("products");
     expect(skillForPage("/settings")).toBe("settings");
     expect(skillForPage("/orders")).toBeNull();
     expect(pickSkill("/stores/1/shipping", "غير لون المتجر")).toBe("shipping");

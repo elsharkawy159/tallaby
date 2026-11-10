@@ -7,9 +7,9 @@ import { INTAKE_LIMITS, STORE_BUILD_INTAKE_BUCKET, intakeTypeFromName, isIntakeF
 import { scoreTemplates, nextTemplates } from "@workspace/store-editor/lib/template-shortlist.lib";
 import { formatPhone } from "@workspace/store-sections/social";
 import { TEMPLATE_STYLES, type TemplateStyle } from "@workspace/store-sections/templates";
-import { mapColumns } from "@/app/(main)/products/add/from-file/from-file-run.server";
-import { applyMapping, buildSheetModel, columnSamples, type SheetModel } from "@/app/(main)/products/add/from-file/from-file.lib";
-import type { ColumnMapping, MappingSource } from "@/app/(main)/products/add/from-file/from-file.dto";
+import { mapColumns } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file-run.server";
+import { applyMapping, buildSheetModel, columnSamples, type SheetModel } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file.lib";
+import type { ColumnMapping, MappingSource } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file.dto";
 import {
   BUILDER_FEATURES,
   BUILDER_LIMITS,

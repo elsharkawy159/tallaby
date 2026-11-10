@@ -1,6 +1,6 @@
 import { and, asc, db, desc, eq, ilike, inArray, isNull, or, orderItems, orders, shipments, sql, users, userAddresses } from "@workspace/db";
 import type { SQL } from "drizzle-orm";
-import { likePattern } from "../products/_components/products-view.lib";
+import { likePattern } from "@/app/(main)/stores/[storeId]/products/_components/products-view.lib";
 import { AWAITING_PREP_ORDER_STATUSES, AWAITING_PREP_STAGES, type SellerOrderStage } from "./order-flow.lib";
 import {
   ORDERS_TABS,

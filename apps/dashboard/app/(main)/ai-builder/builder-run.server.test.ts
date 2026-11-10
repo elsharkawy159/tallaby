@@ -72,7 +72,7 @@ vi.mock("@workspace/store-sections/config", () => ({ pageContentSchema: { safePa
 vi.mock("@workspace/store-sections/render", () => ({ contentOverrideKeys: () => ({}), storeSectionRegistry: { allowedSections: () => ({}) } }));
 vi.mock("next-intl/server", () => ({ getTranslations: vi.fn() }));
 vi.mock("@/actions/categories", () => ({ getAllCategories: async () => ({ data: [{ id: "22222222-2222-4222-8222-222222222222", name: "Candles", nameAr: "شموع", slug: "candles", level: 1 }] }) }));
-vi.mock("@/app/(main)/products/add/ai/ai-autofill.server", () => ({ autofillProduct: mocks.autofillProduct }));
+vi.mock("@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.server", () => ({ autofillProduct: mocks.autofillProduct }));
 vi.mock("@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.server", () => ({ proposeZones: vi.fn() }));
 vi.mock("./builder.store.server", () => ({
   buildSpendMicroUsd: async () => 0,

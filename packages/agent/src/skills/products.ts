@@ -164,7 +164,7 @@ export function productsSkill(deps: ProductsSkillDeps = {}): Skill {
 
   return {
     id: "products",
-    pages: ["/products", "/products/add", "/products/[productId]"],
+    pages: ["/stores/[storeId]/products", "/stores/[storeId]/products/add", "/stores/[storeId]/products/[productId]", "/products", "/products/add", "/products/[productId]"],
     rules: PRODUCTS_RULES,
     tools: [searchProducts, searchCategories, createProduct, updateCopy, setStatus],
   };

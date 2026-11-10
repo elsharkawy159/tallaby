@@ -118,10 +118,14 @@ function hasImage(images: unknown): boolean {
 
 const noInvalidation: CacheInvalidation = { tags: [], paths: [] };
 
-/** The seller's products in Trash (not yet deleted for good), newest first. */
-export async function listTrashedProducts(sellerId: string, locale: "ar" | "en"): Promise<TrashedProduct[]> {
+/** The seller's products in Trash (not yet deleted for good), newest first; with `inStore`, that store's only (F-87c). */
+export async function listTrashedProducts(
+  sellerId: string,
+  locale: "ar" | "en",
+  { inStore }: TrashScope = {},
+): Promise<TrashedProduct[]> {
   const rows = await db.query.products.findMany({
-    where: and(eq(products.sellerId, sellerId), isNotNull(products.deletedAt), isNull(products.purgedAt)),
+    where: and(eq(products.sellerId, sellerId), isNotNull(products.deletedAt), isNull(products.purgedAt), inStore),
     columns: { id: true, images: true, deletedAt: true, trashedStatus: true },
     with: { productTranslations: { columns: { locale: true, title: true } } },
     orderBy: [desc(products.deletedAt)],
@@ -138,12 +142,12 @@ export async function listTrashedProducts(sellerId: string, locale: "ar" | "en")
   });
 }
 
-/** How many products the seller has in Trash (for the sidebar/tab count). */
-export async function countTrashedProducts(sellerId: string): Promise<number> {
+/** How many products the seller has in Trash (for the sidebar/tab count); with `inStore`, that store's only. */
+export async function countTrashedProducts(sellerId: string, { inStore }: TrashScope = {}): Promise<number> {
   const [row] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(products)
-    .where(and(eq(products.sellerId, sellerId), isNotNull(products.deletedAt), isNull(products.purgedAt)));
+    .where(and(eq(products.sellerId, sellerId), isNotNull(products.deletedAt), isNull(products.purgedAt), inStore));
   return row?.n ?? 0;
 }
 

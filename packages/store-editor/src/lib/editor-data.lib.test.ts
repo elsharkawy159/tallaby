@@ -6,9 +6,9 @@ const store = { id: "fb7bbe96-9838-4a52-952a-42691fde3287", catalogMode: "all" }
 
 describe("dataAction", () => {
   it("sends each need to its management page", () => {
-    expect(dataAction("products", store)).toEqual({ kind: "link", href: "/products/add" });
-    expect(dataAction("categories", store)).toEqual({ kind: "link", href: "/products/categories" });
-    expect(dataAction("brands", store)).toEqual({ kind: "link", href: "/products/brands" });
+    expect(dataAction("products", store)).toEqual({ kind: "link", href: `/stores/${store.id}/products/add` });
+    expect(dataAction("categories", store)).toEqual({ kind: "link", href: `/stores/${store.id}/products/categories` });
+    expect(dataAction("brands", store)).toEqual({ kind: "link", href: `/stores/${store.id}/products/brands` });
     expect(dataAction("reviews", store)).toEqual({ kind: "link", href: "/reviews" });
     expect(dataAction("promotions", store)).toEqual({ kind: "link", href: "/coupons" });
     expect(dataAction("articles", store)).toEqual({ kind: "link", href: `/stores/${store.id}/website/blog/new` });

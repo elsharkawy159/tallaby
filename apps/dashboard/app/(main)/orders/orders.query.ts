@@ -17,7 +17,7 @@ import { loadStoreOrderRisks } from "@workspace/lib/customers/server";
 import { normalizeBlockedPhone } from "@workspace/lib/stores/blocked-phones";
 import { storeUrl } from "@workspace/lib/storefront";
 import { getStorefrontProductUrl } from "@/lib/constants";
-import { loadProductStoreLinks } from "../products/_components/product-store-links.data";
+import { loadProductStoreLinks } from "@/app/(main)/stores/[storeId]/products/_components/product-store-links.data";
 import { isSellerHandledLine, resolveSellerOrderFlow } from "./order-flow.lib";
 import { canRestockReturn } from "./order-stock.lib";
 import {

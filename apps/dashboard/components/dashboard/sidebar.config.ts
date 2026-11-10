@@ -40,7 +40,7 @@ export type NavLinkConfig = {
   countKey?: keyof SidebarCounts;
   status: NavStatus;
   feature?: NavFeature;
-  /** Active only on this exact path (for parents of sibling links, e.g. /products vs /products/add). */
+  /** Active only on this exact path (for parents of sibling links, e.g. …/products vs …/products/add). */
   exact?: boolean;
 };
 
@@ -54,6 +54,8 @@ export type NavGroupConfig = {
    * label and not repeated in `items`. Without it the label opens the first item.
    */
   href?: string;
+  /** With a store-scoped `href`: the landing page when the seller has no store (else the group falls back to its first item). */
+  noStoreHref?: string;
   /** With `href`: active only on that exact path. */
   exact?: boolean;
   /** With `href`: the number shown on the group label. */
@@ -75,17 +77,19 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "products",
     icon: Package,
     // The group label opens All products; it is no longer an item (owner, 2026-11-10).
-    href: "/products",
+    // Products live under their store (F-87c); with no store the old list still opens.
+    href: "/stores/[storeId]/products",
+    noStoreHref: "/products",
     exact: true,
     countKey: "products",
     items: [
-      { key: "addProducts", href: "/products/add", status: "live" },
+      { key: "addProducts", href: "/stores/[storeId]/products/add", status: "live" },
       // The seller's own category list (0068). Which products a store shows is in Store settings › General.
-      { key: "sellerCategories", href: "/products/categories", status: "live" },
+      { key: "sellerCategories", href: "/stores/[storeId]/products/categories", status: "live" },
       // Low stock, quick restock and stock history (0125, F-10).
-      { key: "inventory", href: "/products/inventory", status: "live" },
+      { key: "inventory", href: "/stores/[storeId]/products/inventory", status: "live" },
       // Deleted products wait here 30 days (0123, F-35).
-      { key: "productTrash", href: "/products/trash", status: "live" },
+      { key: "productTrash", href: "/stores/[storeId]/products/trash", status: "live" },
       { key: "reviews", href: "/reviews", countKey: "reviews", status: "live" },
     ],
   },
@@ -287,7 +291,7 @@ export function resolveSidebar(config: NavEntry[], ctx: SidebarContext): Resolve
     const items = entry.items.map((item) => resolveLink(item, ctx)).filter((l): l is ResolvedLink => l !== null);
     if (!items.length) continue;
     // A store-scoped landing page with no store falls back to the first item, like before.
-    const ownHref = entry.href ? resolveHref(entry.href, ctx) : null;
+    const ownHref = entry.href ? (resolveHref(entry.href, ctx) ?? entry.noStoreHref ?? null) : null;
     out.push({
       kind: "group",
       key: entry.key,

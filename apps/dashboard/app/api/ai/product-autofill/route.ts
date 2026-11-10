@@ -6,7 +6,7 @@ import { claimAiCredit, getAiCreditStatus, refundAiCredit } from "@workspace/lib
 import { getBillingState } from "@workspace/lib/billing/server"
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server"
 import { createRateLimiter } from "@/lib/rate-limit.lib"
-import { autofillProduct } from "@/app/(main)/products/add/ai/ai-autofill.server"
+import { autofillProduct } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.server"
 import {
   AUTOFILL_FEATURE,
   AUTOFILL_LIMITS,
@@ -14,7 +14,7 @@ import {
   type AutofillErrorCode,
   type AutofillFile,
   type ProductAutofillResponse,
-} from "@/app/(main)/products/add/ai/ai-autofill.dto"
+} from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.dto"
 
 /** AI product autofill (PLAN.md AI-1): photos, a PDF and/or text → form values. Never saves. */
 
