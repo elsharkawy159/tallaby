@@ -4,24 +4,29 @@
  *
  * Tenant rules (CLAUDE.md rule 5): the store comes from the request host
  * only (never a query value); every product query is filtered by that
- * store's seller, and by the store's own picks in "selected" catalog mode.
- * Caching (rule 8): `createCachedQuery`, keys and tags carry the seller id
- * and store id; product edits purge `productTags.seller`, catalog picks
- * `storeTags.catalog`. Pages of PAGE_SIZE products keep every cache entry
- * well under the Data Cache's 2 MB limit (a whole feed would not fit).
+ * store's seller and by what the store shows (`productShownInStore`: before
+ * the catalog split its mode and picks, after it its own products; F-87c
+ * slice 6). The switch is read once per request, outside the cache.
+ * Caching (rule 8): `createCachedQuery`, keys carry the seller id, store id
+ * and the switch; tags are the store catalog tags (`productTags.seller`,
+ * `productTags.store`, `storeTags.catalog`). Pages of PAGE_SIZE products keep
+ * every cache entry well under the Data Cache's 2 MB limit (a whole feed
+ * would not fit).
  */
 import { and, asc, db, desc, eq, inArray, isNull, sql } from "@workspace/db";
 import { categories, products, productTranslations, productVariants, brands, sellerProductBrands, sellerProductCategories, stores } from "@workspace/db/schema";
-import { cacheProfiles, categoryTags, createCachedQuery, productTags, sellerTags, storeTags } from "@workspace/cache";
+import { cacheProfiles, categoryTags, createCachedQuery, sellerTags, storeTags } from "@workspace/cache";
 import { parseStoreCurrency } from "@workspace/lib";
+import { productShownInStore, type StoreCatalogScope } from "@workspace/lib/stores/scope/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { richTextToPlainText } from "@workspace/tiptap/plain-text";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
-  catalogStoreId,
   getRequestStoreSubdomain,
   getStorefrontBySubdomain,
   isStorefrontOffline,
+  storefrontCatalog,
+  storefrontCatalogTags,
   type Storefront,
 } from "@/lib/storefront.server";
 import { googleCategoryFor, type FeedCategoryNode } from "./google-category.lib";
@@ -122,9 +127,9 @@ type PageRaw = Omit<FeedProductRow, "googleCategory" | "productType"> & {
 
 /**
  * One page of the store's active products, newest first. Read only through
- * the cached wrapper below; the seller (and the store's picks) bound every row.
+ * the cached wrapper below; the seller and what the store shows bound every row.
  */
-export async function loadFeedPage(sellerId: string, selectedStoreId: string | null, page: number): Promise<PageRaw[]> {
+export async function loadFeedPage(sellerId: string, catalog: StoreCatalogScope, page: number): Promise<PageRaw[]> {
   const rows = await db
     .select({
       id: products.id,
@@ -150,9 +155,7 @@ export async function loadFeedPage(sellerId: string, selectedStoreId: string | n
         eq(products.status, "active"),
         // Trashed products are drafts already (0123, F-35); this keeps them out regardless.
         isNull(products.deletedAt),
-        selectedStoreId
-          ? sql`EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${selectedStoreId} AND sp.product_id = ${products.id})`
-          : undefined,
+        productShownInStore(catalog),
       ),
     )
     .orderBy(sql`${products.createdAt} DESC NULLS LAST`, desc(products.id))
@@ -241,15 +244,12 @@ export async function loadFeedPage(sellerId: string, selectedStoreId: string | n
   });
 }
 
-const getCachedFeedPage = createCachedQuery({
-  name: "store-feed:page:v2",
+/** Keyed by seller, store, switch and page, so an entry never mixes stores or catalog modes. */
+export const getCachedFeedPage = createCachedQuery({
+  name: "store-feed:page:v3",
   ttl: cacheProfiles.seller,
-  tags: (sellerId: string, storeId: string, _selectedStoreId: string | null, _page: number) => [
-    productTags.seller(sellerId),
-    storeTags.catalog(sellerId, storeId),
-  ],
-  // `storeId` is in the key and tags only; the products are the seller's (narrowed by `selectedStoreId`).
-  query: (sellerId: string, _storeId: string, selectedStoreId: string | null, page: number) => loadFeedPage(sellerId, selectedStoreId, page),
+  tags: (sellerId: string, storeId: string, _catalogSplit: boolean, _page: number) => storefrontCatalogTags(sellerId, storeId),
+  query: (sellerId: string, storeId: string, catalogSplit: boolean, page: number) => loadFeedPage(sellerId, { storeId, catalogSplit }, page),
 });
 
 /**
@@ -259,9 +259,9 @@ const getCachedFeedPage = createCachedQuery({
  */
 export async function* feedProductPages(store: Storefront): AsyncGenerator<FeedProductRow[]> {
   const categoryMap = await loadFeedCategoryMap();
-  const selected = catalogStoreId(store) ?? null;
+  const { catalogSplit } = await storefrontCatalog(store);
   for (let page = 0; page < FEED_MAX_PAGES; page += 1) {
-    const rows = await getCachedFeedPage(store.id, store.storeId, selected, page);
+    const rows = await getCachedFeedPage(store.id, store.storeId, catalogSplit, page);
     if (rows.length) {
       yield rows.map(({ categoryId, sellerCategory, ...row }): FeedProductRow => {
         const category = categoryMap.get(categoryId);

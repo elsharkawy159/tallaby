@@ -6,7 +6,7 @@ import {
   type CatalogShareSource,
 } from "@workspace/lib/catalog-share";
 import { catalogShareKey } from "@workspace/lib/catalog-share/server";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import type { ProductLocale } from "@/lib/product-translations";
 import { toProductSummaries } from "@/lib/store-site/catalog.server";
 import {

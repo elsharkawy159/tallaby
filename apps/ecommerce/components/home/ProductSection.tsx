@@ -9,7 +9,7 @@ import {
   CarouselNext,
 } from "@workspace/ui/components/carousel";
 import { Link } from "@/i18n/navigation";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import { ProductCardProps } from "../product";
 import { getLocale } from "next-intl/server";
 

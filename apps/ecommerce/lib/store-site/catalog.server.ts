@@ -12,7 +12,7 @@ import type {
 import { normalizeMinOrderQuantity } from "@workspace/lib/orders/min-order-quantity";
 import { lowStockLeft } from "@workspace/store-sections/low-stock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import type { ProductLocale } from "@/lib/product-translations";
 import { getStorefrontCategories, storeCategoryFilter, storefrontCatalog, type StorefrontCategory } from "@/lib/storefront.server";
 import type { StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";

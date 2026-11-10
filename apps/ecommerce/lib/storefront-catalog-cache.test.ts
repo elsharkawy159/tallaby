@@ -57,7 +57,7 @@ beforeEach(() => {
 
 describe("getProducts on a store host", { timeout: 30_000 }, () => {
   it("puts the switch in the key, read outside the cached function", async () => {
-    const { getProducts } = await import("@/actions/products");
+    const { getProducts } = await import("@/lib/products/product-list.server");
     await getProducts({ sellerId: SELLER, storeId: STORE_A, limit: 4 });
     recorded.switchOn = true;
     await getProducts({ sellerId: SELLER, storeId: STORE_A, limit: 4 });
@@ -68,7 +68,7 @@ describe("getProducts on a store host", { timeout: 30_000 }, () => {
   });
 
   it("tags a store read with the seller, the store's products and its catalog, never another store", async () => {
-    const { getProducts } = await import("@/actions/products");
+    const { getProducts } = await import("@/lib/products/product-list.server");
     await getProducts({ sellerId: SELLER, storeId: STORE_B });
     const { tags } = recorded.queries[0]!;
     expect(tags).toEqual(
@@ -79,7 +79,7 @@ describe("getProducts on a store host", { timeout: 30_000 }, () => {
   });
 
   it("a read without a store (tallaby.com leftovers) doesn't read the switch", async () => {
-    const { getProducts } = await import("@/actions/products");
+    const { getProducts } = await import("@/lib/products/product-list.server");
     await getProducts({ limit: 2 });
     expect(recorded.switchReads).toBe(0);
     expect(recorded.queries[0]!.args[1]).toBe(false);

@@ -7,7 +7,7 @@ import { Input } from "@workspace/ui/components/input";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useDebounce } from "@/hooks/use-debounce";
-import { getProducts } from "@/actions/products";
+import { searchProductsByText } from "@/actions/products";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@workspace/lib";
 import Image from "next/image";
@@ -56,11 +56,7 @@ export const SearchBar = ({
       if (!debouncedSearchQuery.trim() || debouncedSearchQuery.length < 1) {
         return { success: true, data: [] };
       }
-      return getProducts({
-        searchQuery: debouncedSearchQuery.trim(),
-        limit: 5,
-        locale: locale as "en" | "ar",
-      });
+      return searchProductsByText(debouncedSearchQuery.trim(), locale as "en" | "ar");
     },
     enabled: debouncedSearchQuery.length >= 1,
     staleTime: 1000 * 60 * 5, // 5 minutes

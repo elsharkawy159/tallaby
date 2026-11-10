@@ -1,4 +1,4 @@
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import { getLocale } from "next-intl/server";
 import ProductCard from "@/components/product-page/ProductCard";
 import type { ProductCardProps } from "@/components/product";

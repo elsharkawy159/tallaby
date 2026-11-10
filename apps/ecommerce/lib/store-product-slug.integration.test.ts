@@ -83,6 +83,7 @@ describe.skipIf(!isStaging)("store product slugs (integration)", { timeout: 120_
   const load = async () => ({
     ...(await import("@workspace/db")),
     ...(await import("@/actions/products")),
+    ...(await import("@/lib/products/product-list.server")),
     ...(await import("@/actions/i18n")),
     ...(await import("@/lib/product-translations")),
     ...(await import("@/lib/sitemap/sitemap.server")),
@@ -257,7 +258,7 @@ describe.skipIf(!isStaging)("store product slugs (integration)", { timeout: 120_
 
   it("the store sitemap lists a product another seller's older product shares a slug with", async () => {
     const { fetchActiveProductTranslations, buildStoreSitemapEntries } = await load();
-    const rows = await fetchActiveProductTranslations({ sellerId: sellerB });
+    const rows = await fetchActiveProductTranslations({ sellerId: sellerB, catalog: { storeId: (await storeOf(sellerB)).storeId, catalogSplit: false } });
     expect(rows.some((r) => r.productId === productB && r.slug === shared)).toBe(true);
     expect(rows.every((r) => r.productId !== productA)).toBe(true);
 

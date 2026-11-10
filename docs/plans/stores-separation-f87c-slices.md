@@ -2,7 +2,7 @@
 
 > Part of [`stores-separation.md`](stores-separation.md) §4 Phase B (ROADMAP.md F-87c). Written 2026-11-10.
 > **Rule for every slice:** it can be committed on its own with **both switches off and no behaviour change** for a single-store seller or a multi-store seller in `catalog_mode = 'all'`. Each slice reads the `stores_catalog_split` switch and branches through the one shared condition `productInStore` (`packages/lib/src/stores/store-scope.server.ts`). No migration in F-87c.
-> **Status:** slice 1 committed (31b21e5f); slice 2 committed (79b24d1d); slice 3 committed (73d9421f); slice 4 committed (af6750b3); slice 5 built 2026-11-10 (uncommitted, §7). Slice 6 planned.
+> **Status: F-87c complete (2026-11-10).** Slice 1 committed (31b21e5f); slice 2 (79b24d1d); slice 3 (73d9421f); slice 4 (af6750b3); slice 5 (b56edce7); slice 6 built 2026-11-10 (uncommitted, §8). Next: F-87d, F-87e leftovers, F-87m (§9).
 
 Abbreviations: D = `apps/dashboard`, E = `apps/ecommerce`, L = `packages/lib/src`, B = `apps/backend/src`. Scope today: **S** = `seller_id`, **CM** = `stores.catalog_mode`, **SP** = `store_products`, **N** = none (id or status only). Line numbers are from the 2026-11-10 working tree, after slice 1.
 
@@ -26,7 +26,7 @@ Abbreviations: D = `apps/dashboard`, E = `apps/ecommerce`, L = `packages/lib/src
 | 3 | **Dashboard secondary product features** | inventory restock, Excel update (SKU match per store), quantity offers, cross-sells (same store, not same seller), category order, social proof, reviews/questions answers, `createProductVariant`, AI source mark, manual order product search, coupons product search, ads product, reports, home queries, catalog share. | Built 2026-11-10 (§5). |
 | 4 ✔ | **Storefront reads and caches** | `E/lib/storefront.server.ts` (`storeShowsProduct`, `storeHasProducts`, `getStorefrontCategories`), `E/actions/products.ts` (`getProducts`, `getProductBySlug` + related-products leak, slug lookup per store), store-site catalog/data, search, reviews/brands, reorder, back-in-stock, preview product, campaign product options; cache keys and tags gain `storeId` (new `productTags.store`; `ProductCacheSnapshot.storeId`; `invalidateProductInventory`). | With the switch on (test DB) store A never returns B's product. |
 | 5 ✔ | **Cart and checkout** | `addToCart` / `storeSellsProduct`, `cartProductsOutsideStoreCatalog`, `place-order.ts` own `product.store_id = cart.store_id` check, line-discount gifts, cross-sell and quantity offers on the cart. | Checkout tests pass both ways. |
-| 6 | **MCP, agent, AI builder, feeds, sitemap** | `agent-products.server.ts` (create in store, `skuTaken`/`uniqueSlug` per store, trash/restore pass `inStore`), MCP instruction text, `list_stores` count, AI builder `applyCatalog`/`activateProducts`, product feed, sitemaps, Meta catalog route, marketplace leftovers (`NOT EXISTS copy` rule, delete `E/actions/search.ts`). Overlaps F-87e: the agent part may be done there instead. | A grant limited to store A cannot read or write B. |
+| 6 ✔ | **MCP, agent, AI builder, feeds, sitemap** | `agent-products.server.ts` (create in store, `skuTaken`/`uniqueSlug` per store, trash/restore pass `inStore`), MCP instruction text, `list_stores` count, AI builder `applyCatalog`/`activateProducts`, product feed, sitemaps, Meta catalog route, marketplace leftovers (`NOT EXISTS copy` rule, delete `E/actions/search.ts`). Overlaps F-87e: the agent part may be done there instead. | A grant limited to store A cannot read or write B. |
 
 Order follows the plan: writes first (they carry the store id), then the reads that depend on the URL, then the shopper side. Slices 4 and 5 can run in parallel with 3.
 
@@ -109,14 +109,14 @@ R = read, W = write. "Tag" = cache key/tag used (`createCachedQuery`/invalidatio
 | `E/lib/catalog-share/catalog-share.server.ts:51-69` | R | S + SP | via `getProducts` | 4 |
 | `store-thank-you.server.ts:65` | R | CM | — | 4 |
 | `E/lib/reorder/reorder.server.ts:50-58` | R | S + CM/SP | — | 5 |
-| `E/actions/seller.ts:89,137` (no callers) | R | S | `seller-store-categories-{seller}` | 6 (delete) |
+| `E/actions/seller.ts:89,137` (no callers) | R | S | `seller-store-categories-{seller}` | 6 ✔ (deleted) |
 | `E/actions/cart.ts:290,299,308,327,487` | R | S + `storeSellsProduct` | — (never cached) | 5 |
 | `E/actions/order.ts:125,272,821` | R/W | CM/SP | `invalidateProductInventory` | 5 |
 | `E/actions/cart-offers.ts:25,213,275` | R | N + `storeSellsProduct` | `storefront:quantity-offers:v1`, `productTags.quantityOffers(seller, product)` | 5 |
 | `E/actions/cross-sell.ts:34-66` | R | N + `storeSellsProduct` | `storefront:cross-sell:v1`, `storeTags.crossSells`, `productTags.detail` | 5 |
 | `E/actions/wishlist.ts`, `analytics.ts`, `recommendations.ts`, `search.ts`, `brands.ts`, `categories.ts`, `app/api/meta/catalog/route.ts:31`, `lib/meta/meta.product.ts` | R | N | various | 6 |
-| `E/lib/product-feed/product-feed.server.ts:68-262` | R | S + SP | `store-feed:currency:v2`, `store-feed:page:v2` (`productTags.seller`, `storeTags.catalog`) | 6 |
-| `E/lib/sitemap/sitemap.server.ts:30-113`, `store-sitemap.server.ts:99` | R | S + SP | sitemap tags | 6 |
+| `E/lib/product-feed/product-feed.server.ts:68-262` | R | S + SP | `store-feed:currency:v2`, `store-feed:page:v2` (`productTags.seller`, `storeTags.catalog`) | 6 ✔ (`store-feed:page:v3`) |
+| `E/lib/sitemap/sitemap.server.ts:30-113`, `store-sitemap.server.ts:99` | R | S + SP | sitemap tags | 6 ✔ (`store-sitemap:products:v1`) |
 
 ### 2.3 packages/lib
 
@@ -293,3 +293,52 @@ The store of every check is the cart's own (`carts.store_id`, set from the reque
 - **Restock on cancel/return of a pre-split order** still targets `order_items.product_id` (the kept row): F-87m (split map).
 - **Cart remap at the split** (open store carts pointing at the kept row) is 0163's job (§2.1.4); until then a store B cart holding a kept row of store A is refused at checkout once the switch is on.
 - **`cancelOrder`'s stock context** has no `storeId` for `stock_movements` (history only, unchanged).
+
+## 8. Slice 6 — what was built
+
+The store of every check is the verified MCP token's (the wrapper `registerTool` refuses a store outside the grant with `agentCanUseStore`, then each command loads the store for the **token's** seller, never from the tool input alone), the AI builder's own store (`requireStoreOf`), or the request host's (feed, sitemap). Every product condition is the shared `productInStore` / `productShownInStore`; the home-grown `catalog_mode` / `store_products` SQL in these files is gone. With the switch off this is today's rule.
+
+| Path | Files | Now |
+|---|---|---|
+| Agent product commands (MCP, in-app agent F-83, AI builder F-82) | `L/products/agent-products.server.ts` | `loadStore` (store of the token's seller, not deleted; `forWrite` needs `active`) also reads `stores_catalog_split` once per call (never cached). `storeShowsProduct` = seller + not purged + `productInStore(store, { catalogSplit, scope: 'shown' })`, used by get, search, `requireProduct`, the trash/restore id filter, **and now in the UPDATE WHERE** of `agentUpdateProduct` and `agentSetProductStatus` (status now throws `not_found` when the guarded UPDATE matches nothing), and passed as `inStore` to `trashProducts` / `restoreProducts`. Create writes `products.store_id` = the loaded store; the `store_products` pick is written only before the split, for a "selected" store. `agentListStoreCategories` counts only the store's products after the split (the list stays per seller: F-87d). **Scope stays `shown`** (§0: the agent meaning, as today). |
+| In-app agent | `packages/agent/src/skills/products.ts` | unchanged: wraps the commands above with `ctx.storeId` after `requireOwnedStore` (seller + store). |
+| MCP `list_stores` | `B/mcp/tools/account.ts` | product count through `productInStoreOf(stores.id, shown)` with the switch; "catalog" reads "its own products" after the split. |
+| MCP instructions | `B/mcp/server.ts`, `B/mcp/http.ts` | `mcpInstructions(catalogSplit)`: today's account line before the split, "Products belong to one store…" after it; the switch is read per request in the `/mcp` handler. |
+| AI builder catalog step | `D/app/(main)/ai-builder/builder-run.server.ts` `applyCatalog` | after the split returns `{ mode: 'store' }` and never calls `setStoreCatalog` (the products already carry `store_id`); before it, unchanged. |
+| AI builder file batch, checks, review | `D/app/(main)/ai-builder/builder-items.server.ts` | the batch's SKU lookup adds `productInStore(build store, managed)`; `visibleProducts` after the split counts the store's own live products (`shown`); the review's "other stores show all" goes through `otherStoresShowingAll` (0 after the split). `activateProducts` / `applyPublish` go through `agentSetProductStatus` (above). |
+| Product feeds (Google, Meta, TikTok) | `E/lib/product-feed/product-feed.server.ts` | `loadFeedPage(seller, catalog, page)` filters `productShownInStore`; `feedProductPages` reads the switch through `storefrontCatalog(store)`, outside the cache. |
+| Store sitemap | `E/lib/sitemap/sitemap.server.ts`, `store-sitemap.server.ts` | `ProductScope = { sellerId, catalog }` → `productShownInStore`; new `fetchStoreProductTranslations(seller, catalog)` reads cached keyset pages. |
+| tallaby.com cross-seller lists | `E/lib/products/product-list.server.ts` (`notAStoreCopy`), the tallaby.com sitemap (`fetchActiveProductTranslations()` without a scope), `E/app/api/meta/catalog/route.ts` | §2.1.5 rule: no `product_store_split` row with `kind = 'copy'` for the product. 0160 is on production and the map has no rows before 0163, so nothing changes today. |
+| `getProducts` | moved from `E/actions/products.ts` ("use server") to `E/lib/products/product-list.server.ts` (a plain server module, not callable from a browser) | every caller imports it from there. The tallaby.com header search (`components/layout/search-bar.tsx`, a client component) calls `searchProductsByText(query, locale)`, a narrow action that takes only the words (capped at 100 characters) and the locale: same query as before (5 rows, no seller or store). |
+
+**Cache changes.** `store-feed:page:v2` → `store-feed:page:v3`: key `(seller, store, catalogSplit, page)` (was `(seller, store, selectedStoreId, page)`), tags `storefrontCatalogTags` = `productTags.seller` + `productTags.store` + `storeTags.catalog` (`productTags.store` is new). New `store-sitemap:products:v1`: key `(seller, store, catalogSplit, cursor)`, pages of 2,000 translation rows (under the 2 MB entry limit), the same three tags; before this the store sitemap's product rows had no data cache (route ISR only). `ecommerce:products:list` keeps its key (the copy rule doesn't depend on the switch).
+
+**Removed** (proof: `grep -rw <name>` over `apps/` and `packages/` in `.ts/.tsx/.js/.mjs` finds nothing outside the defining file; ecommerce typecheck shows only the 16 known `profile.chunks.tsx` errors):
+- `E/actions/search.ts`, the whole file (`searchProducts`, `logProductClick`, `searchSuggestions`, `getTrendingSearches`, `getRecentSearches`, `clearSearchHistory`, `globalSearch`): nothing imports `@/actions/search`; the same names elsewhere are unrelated local functions.
+- `E/actions/seller.ts`: `getSellerCategoryMix` with type `SellerCategoryMix`, and `getSellerStoreCategories` (a "use server" per-seller product read). Type `SellerStoreCategory` is kept (`store-products.tsx` imports it).
+- `E/actions/products.ts`: `getProductVariants`, `getFeaturedProducts`, `getBestSellingProducts`, `getTrendingMerchandisedProducts`, `getSeasonalProducts`, `getNewArrivals`, `getDeals`, `getProductsByCategory`, `getProductsByBrand`, `getProductsBySeller`, `getAllProductSlugs`, `getAllProductTranslationSlugs` (all cross-seller "use server" reads).
+- `E/lib/storefront.server.ts`: `catalogStoreId` (its last callers were the feed and the sitemap).
+
+**Left on purpose** (unreferenced, but a wider UI deletion than this slice): `E/components/home/*` except `products-grid.skeleton.tsx` (no route imports the folder), and `E/components/products-list/{ProductsList,Pagination,ProductsFilterWrapper,ProductsFilter,products-list.skeleton}.tsx`, with `getFilterOptions` (used only by `ProductsFilterWrapper`). They now import `getProducts` from the server module. Delete them in F-87n, or earlier with the owner's yes.
+
+**Tests.**
+- `L/stores/store-separation.integration.test.ts`, slice 6, runs the real agent commands (`DATABASE_URL` points at the test DB in `vi.hoisted`; the switch is forced per case through a mock of `./platform-switches.server`, and the row is never flipped): a grant limited to A can't name B (`agentCanUseStore`); switch on, update, status, get, trash and restore through B refuse A's product (the row is unchanged) and each store's search lists only its own product; a forged store (S1 with S2's store, S2 with S1's store B) is refused in both modes before any read or write; switch off, store B (selected) reaches only its pick and store A ('all') every S1 product. Not run here (no `TEST_DATABASE_URL`).
+- `E/lib/feed-sitemap-cache.test.ts` (no DB): feed pages are keyed by seller, store, switch and page, the switch is read once outside the cache, and pages are tagged per store; store sitemap pages are keyed by seller, store, switch and cursor, follow the cursor, never share an entry across stores or modes, and are tagged per store.
+- `D/app/(main)/ai-builder`: `builder-run.server.test.ts` (catalog step: picks before the split, no `setStoreCatalog` after it), `builder-items.server.test.ts` (the SKU lookup gets `productInStore(build store, managed)` with the switch).
+- `E/lib/storefront-catalog-cache.test.ts` imports `getProducts` from the new module.
+
+### Deferred or uncertain (from slice 6)
+
+- **The slice-6 brief asked for scope `managed` on agent writes and lists; this slice keeps `shown`.** `managed` would let an agent in a "selected" store change products that store doesn't show, a behaviour change with the switch off (production has 0 such stores). After the split both scopes are the same SQL. Switch to `managed` if the owner wants the dashboard rule for agents.
+- **SKU and slug uniqueness are not per store yet.** `skuTaken` stays per seller (the DB index is `[seller_id, sku]` until a migration); `uniqueSlug` stays global (stricter than per store, so safe both ways). Per-store SKUs need 0163 or later.
+- **`getProductBySlug` is still a "use server" export.** It returns only what that store's product page shows publicly; move it with the remaining marketplace cleanup (F-87n).
+- **The agent's store categories** (`resolveCategories`, `findOrAddStoreCategory`, the `agentListStoreCategories` list) stay per seller: F-87d.
+- **apps/backend and packages/lib have no ESLint config**; their files were typechecked, not linted.
+
+## 9. Next steps (in order)
+
+1. **Commit slice 6** (with the owner's go) and deploy dark: the switch stays off.
+2. **F-87d — taxonomy per store:** `seller_product_categories`, `seller_product_brands` and `seller_categories` lists by `store_id` (nullable columns since 0160), the pickers and the product form, AI autofill category matching, the agent's `resolveCategories` / `findOrAddStoreCategory` / `agentListStoreCategories`, `ensureTaxonomyItem` in the AI builder, discount-rule category scope, category positions (`category-order`), `getCachedSellerBrands` (already keyed per store); the `products_taxonomy_same_store` trigger replaces 0068's same-seller one (in 0163). Drops the remaining seller-only invalidations (`categories-brands.server.ts`). Tests: a product in A cannot use B's category (trigger + action).
+3. **F-87e — what is left after slice 6** (the commands, MCP instructions, `list_stores`, builder `applyCatalog` / `activateProducts` are done here): decide `shown` vs `managed` for agents; MCP tool descriptions about "the seller's own product categories" (with F-87d); the per-store SKU check once the index is per store; one end-to-end MCP call on staging with a grant limited to one store.
+4. **F-87m — `0163_store_catalog_split.sql`** (+ rollback) on staging, then production with owner approval: copies per store (§2.1.2–2.1.4); overwrite `products.store_id` from its own rule (rows created since slice 1 already name a store, §3); open store carts remapped; split-map restock for pre-split orders; per-store SKU index; review and question copies; builder-tree id remap; ending with `stores_catalog_split = true`. Then the full manual E2E (PLAN.md §23).
+5. **After 0163 with the switch on everywhere:** drop the seller tag from product writes and store reads (§6 conditions 1–3), then F-87n (0165: `catalog_mode`, `store_products`, the switch branches, and the unreferenced marketplace components listed in §8).

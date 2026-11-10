@@ -4,12 +4,14 @@ import { and, count, db, eq, gte, inArray, isNull, notInArray, products, storeDe
 import { AgentProductError, agentSetProductStatus, type AgentProductContext } from "@workspace/lib/products/agent/server";
 import { publishStoreSite, saveStoreDesignSystem, saveStorePageDraft } from "@workspace/lib/store-sites/server";
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
-import { getStore, getStoreShipping, listStores } from "@workspace/lib/stores/server";
+import { productInStore, productShownInStore } from "@workspace/lib/stores/scope/server";
+import { getStore, getStoreShipping } from "@workspace/lib/stores/server";
 import { designSystemSchema, validatePageContent } from "@workspace/store-sections/config";
 import { runBulkBatch } from "@/app/(main)/stores/[storeId]/products/add/from-file/from-file-run.server";
 import { ensureTaxonomyItem } from "@/app/(main)/stores/[storeId]/products/categories-brands/categories-brands.server";
 import { pexelsConfigured, searchPexels } from "@/lib/stock-photos/pexels.server";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { BUILDER_FEATURES, BUILDER_LIMITS, builderReviewOutputSchema, type BuilderReview, type BuilderState } from "./builder.dto";
 import { fileBatchRows, fileRowsToAdd, reviewIssuesV2, type BuildItem, type DraftReason } from "./builder.lib";
 import { assignStockPhotos, brandColors, hideEmptyDataSections, isPeopleFree, leftoverTemplateText } from "./builder-checks.lib";
@@ -22,6 +24,7 @@ import {
   currentPolicy,
   draftPages,
   draftRows,
+  otherStoresShowingAll,
   requireStoreOf,
   storeLocale,
   type RunContext,
@@ -168,12 +171,22 @@ async function applyFileBatch(ctx: RunContext, build: BuildRow, batch: number, i
 
   // Ids by SKU: rows added now, and rows an earlier attempt of this step added ("already").
   // Only products made since the build started: a SKU the seller already used elsewhere is never taken over.
+  // And only products of the build's store (F-87c; before the split `managed` = the seller's).
   const skus = result.results.flatMap((r) => (r.sku && (r.outcome === "live" || r.outcome === "draft" || r.outcome === "already") ? [r.sku] : []));
+  const catalogSplit = skus.length ? await isSwitchOn("stores_catalog_split") : false;
   const found = skus.length
     ? await db
         .select({ id: products.id, sku: products.sku, images: products.images })
         .from(products)
-        .where(and(eq(products.sellerId, ctx.sellerId), inArray(products.sku, skus), isNull(products.deletedAt), gte(products.createdAt, build.createdAt)))
+        .where(
+          and(
+            eq(products.sellerId, ctx.sellerId),
+            inArray(products.sku, skus),
+            isNull(products.deletedAt),
+            gte(products.createdAt, build.createdAt),
+            productInStore(store.id, { catalogSplit, scope: "managed" }),
+          ),
+        )
     : [];
   const bySku = new Map(found.map((row) => [row.sku, row]));
   const byRow = new Map(rows.map((row) => [row.row, row]));
@@ -208,15 +221,28 @@ export function builtProducts(items: ReadonlyMap<string, BuildItem>): BuiltProdu
 
 // ── Checks (spec §8) ────────────────────────────────────────────────────────
 
-/** Live products this store will show: the build's complete ones, plus the account's others when the store shows all products. */
-async function visibleProducts(sellerId: string, items: ReadonlyMap<string, BuildItem>): Promise<number> {
+/**
+ * Live products this store will show: the build's complete ones, plus, before
+ * the catalog split, the account's others when the store shows all products;
+ * after it, the store's own others (F-87c).
+ */
+async function visibleProducts(sellerId: string, storeId: string, items: ReadonlyMap<string, BuildItem>): Promise<number> {
   const complete = builtProducts(items).filter((product) => !product.missing.length).length;
-  if (items.get("catalog")?.data.mode === "selected") return complete;
+  const catalogSplit = await isSwitchOn("stores_catalog_split");
+  if (!catalogSplit && items.get("catalog")?.data.mode === "selected") return complete;
   const ids = builtProductIds(items);
   const [row] = await db
     .select({ value: count() })
     .from(products)
-    .where(and(eq(products.sellerId, sellerId), eq(products.status, "active"), isNull(products.deletedAt), ...(ids.length ? [notInArray(products.id, ids)] : [])));
+    .where(
+      and(
+        eq(products.sellerId, sellerId),
+        eq(products.status, "active"),
+        isNull(products.deletedAt),
+        ...(ids.length ? [notInArray(products.id, ids)] : []),
+        ...(catalogSplit ? [productShownInStore({ storeId, catalogSplit })] : []),
+      ),
+    );
   return complete + (row?.value ?? 0);
 }
 
@@ -229,7 +255,7 @@ async function applyChecks(ctx: RunContext, build: BuildRow, items: ReadonlyMap<
   const originals = (items.get("site_copy")?.data.originals as string[] | undefined) ?? [];
   const leftover = originals.length ? leftoverTemplateText(pages, originals, locale) : 0;
 
-  const liveProducts = await visibleProducts(ctx.sellerId, items);
+  const liveProducts = await visibleProducts(ctx.sellerId, store.id, items);
   const categories = ((items.get("categories")?.data.names as string[] | undefined) ?? []).length;
   const { pages: toHide, hidden } = hideEmptyDataSections(pages, { liveProducts, categories });
   for (const page of toHide) {
@@ -374,13 +400,7 @@ export async function loadReviewV2(ctx: RunContext, build: BuildRow): Promise<Bu
   const invalidPages = pages.filter((row) => !validatePageContent(row.draftContent, { allowedSections: ALLOWED }).success).length;
   const shipping = store ? await getStoreShipping(ctx.sellerId, store.id) : null;
   const policy = await currentPolicy(ctx.sellerId);
-  const others = store ? (await listStores(ctx.sellerId)).filter((row) => row.id !== store.id) : [];
-  const allMode = others.length
-    ? await db
-        .select({ id: stores.id })
-        .from(stores)
-        .where(and(eq(stores.sellerId, ctx.sellerId), inArray(stores.id, others.map((row) => row.id)), eq(stores.catalogMode, "all"), isNull(stores.deletedAt)))
-    : [];
+  const allMode = await otherStoresShowingAll(ctx.sellerId, store?.id ?? null);
   const publishItem = items.get("publish");
   const checks = items.get("checks");
   const flags = ((checks?.data.flags as { code: string; count: number }[] | undefined) ?? []).filter((flag) => typeof flag?.code === "string" && typeof flag.count === "number");
@@ -413,7 +433,7 @@ export async function loadReviewV2(ctx: RunContext, build: BuildRow): Promise<Bu
     products: list,
     draftProducts: list.filter((row) => row.status === "draft" && row.hasPhoto).length,
     regenerationsLeft: Math.max(0, 1 + BUILDER_LIMITS.siteCopyRegenerations - build.siteCopyRuns),
-    otherStoresShowAll: allMode.length,
+    otherStoresShowAll: allMode,
     spentMicroUsd: await buildSpendMicroUsd(ctx.sellerId, build),
     published,
     viewUrl: store ? `/api/stores/${store.id}/view` : null,

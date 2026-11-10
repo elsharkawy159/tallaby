@@ -3,12 +3,17 @@
  * Server only, no `next/*` imports: apps/backend calls these and broadcasts
  * the returned cache invalidation itself.
  *
- * Tenancy (CLAUDE.md rule 5): products belong to the seller account, and a
- * store shows all of them (catalog_mode 'all') or its picks ('selected'). Every
- * function takes the seller and store from the verified token (never from tool
- * input), re-checks in SQL that the store is the seller's, and only touches a
- * product of that seller that the store shows. A store in "selected" mode gets
- * a new product added to its picks.
+ * Tenancy (CLAUDE.md rule 5; F-87c slice 6): every function takes the seller
+ * and store from the verified token or the checked builder store (never from
+ * tool input alone: the MCP wrapper also refuses a store outside the grant),
+ * re-checks in SQL that the store is the seller's, and only touches a product
+ * that passes the shared `productInStore(store, { catalogSplit, scope: 'shown' })`
+ * condition, in the read and again in the write's WHERE. Before the catalog
+ * split (`stores_catalog_split` off) that is today's rule: the seller's
+ * product that the store shows (catalog_mode 'all', or its picks), and a store
+ * in "selected" mode gets a new product added to its picks. After the split it
+ * is `products.store_id = store`. A new product always gets `store_id` = the
+ * store, so it belongs to that store once the split runs.
  *
  * Side effects match the dashboard's createProduct/updateProduct: the status
  * rule, price normalization, sanitized rich text, both translations, variants
@@ -49,6 +54,8 @@ import {
 import { syncCategoryProductCountForProductChange, syncCategoryProductCountForProductMutation } from "@workspace/db/categories";
 import { setStockContext } from "@workspace/db/inventory";
 import { syncProductVariants } from "@workspace/db/products";
+import { aliasedProductShownInStore, productInStore } from "../stores/store-scope.server";
+import { isSwitchOn } from "../stores/platform-switches.server";
 import { isRichTextEmpty, sanitizeRichTextHtml } from "@workspace/tiptap/sanitize";
 import type { AgentCreateProductInput, AgentSearchProductsInput, AgentUpdateProductInput } from "./agent-products.dto";
 import {
@@ -116,27 +123,38 @@ const supabaseUrl = () => process.env.NEXT_PUBLIC_SUPABASE_URL ?? null;
 
 // ── Store and product access ────────────────────────────────────────────────
 
-type AgentStore = { id: string; status: string; catalogMode: string; subdomain: string };
+type AgentStore = {
+  id: string;
+  status: string;
+  catalogMode: string;
+  subdomain: string;
+  /** `stores_catalog_split`, read once per call (never cached, never from the client). */
+  catalogSplit: boolean;
+};
 
 async function loadStore(ctx: AgentProductContext, forWrite: boolean): Promise<AgentStore> {
-  const [store] = await db
+  const [row] = await db
     .select({ id: stores.id, status: stores.status, catalogMode: stores.catalogMode, subdomain: stores.subdomain })
     .from(stores)
     .where(and(eq(stores.id, ctx.storeId), eq(stores.sellerId, ctx.sellerId), isNull(stores.deletedAt)))
     .limit(1);
-  if (!store) throw new AgentProductError("not_found", "Store not found.");
+  if (!row) throw new AgentProductError("not_found", "Store not found.");
+  const store: AgentStore = { ...row, catalogSplit: await isSwitchOn("stores_catalog_split") };
   if (forWrite && store.status !== "active") throw new AgentProductError("store_read_only", "This store is archived or suspended; products can't be changed from it.");
   return store;
 }
 
-/** The seller's product that this store shows (any status, Trash included). */
+/**
+ * The seller's product that this store shows (any status, Trash included, not
+ * purged). Scope `shown`, as the agent has always worked: before the split a
+ * store in "selected" mode only reaches its picks; after it, both scopes are
+ * `products.store_id = store`.
+ */
 function storeShowsProduct(store: AgentStore, sellerId: string) {
   return and(
     eq(products.sellerId, sellerId),
     isNull(products.purgedAt),
-    store.catalogMode === "selected"
-      ? sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${store.id} AND sp.product_id = ${products.id})`
-      : undefined,
+    productInStore(store.id, { catalogSplit: store.catalogSplit, scope: "shown" }),
   );
 }
 
@@ -411,6 +429,7 @@ export async function agentCreateProduct(
   });
   const discountEndsAt = input.discountEndsAt ?? null;
   const quantity = input.quantity ?? (variants.length ? variantStockTotal(variants) : 0);
+  const pickNeeded = !store.catalogSplit && store.catalogMode === "selected";
 
   const created = await db.transaction(async (tx) => {
     await setStockContext(tx, { reason: "edit", actorId: ctx.userId, storeId: store.id });
@@ -418,6 +437,8 @@ export async function agentCreateProduct(
       .insert(products)
       .values({
         sellerId: ctx.sellerId,
+        // The checked store, never a client value (F-87c): the product belongs to it after the split.
+        storeId: store.id,
         categoryId: taxonomy.categoryId!,
         sellerCategoryId: taxonomy.sellerCategoryId ?? null,
         sku,
@@ -457,7 +478,8 @@ export async function agentCreateProduct(
       await tx.insert(productVariants).values(rows.map(({ id: _id, ...v }) => ({ ...v, productId })));
     }
 
-    if (store.catalogMode === "selected") {
+    // Before the split, a "selected" store shows only its picks; after it, store_id is enough (never store_products).
+    if (pickNeeded) {
       await tx
         .insert(storeProducts)
         .values({
@@ -475,7 +497,7 @@ export async function agentCreateProduct(
   const invalidation = mergeInvalidations(
     invalidateProduct(null, after ? snapshotOf(after) : null),
     ...(taxonomy.taxonomyChanged ? [invalidateSellerProducts(ctx.sellerId)] : []),
-    ...(store.catalogMode === "selected" ? [invalidateStoreCatalog(ctx.sellerId, store.id, store.subdomain)] : []),
+    ...(pickNeeded ? [invalidateStoreCatalog(ctx.sellerId, store.id, store.subdomain)] : []),
   );
   return { productId: created.productId, status, slug: created.slug, invalidation };
 }
@@ -548,7 +570,7 @@ export async function agentUpdateProduct(
     const updated = await tx
       .update(products)
       .set(patch)
-      .where(and(eq(products.id, input.productId), eq(products.sellerId, ctx.sellerId), isNull(products.deletedAt)))
+      .where(and(eq(products.id, input.productId), storeShowsProduct(store, ctx.sellerId), isNull(products.deletedAt)))
       .returning({ id: products.id, sku: products.sku });
     if (!updated.length) throw new AgentProductError("not_found", "Product not found in this store.");
 
@@ -624,10 +646,12 @@ export async function agentSetProductStatus(
   if (wanted === "active" && ctx.sellerStatus !== "approved") throw new AgentProductError("cannot_publish", "This account can't publish products right now.");
 
   const before = await loadSnapshot(db, ctx.sellerId, productId);
-  await db
+  const updated = await db
     .update(products)
     .set({ status: wanted, updatedAt: new Date().toISOString() })
-    .where(and(eq(products.id, productId), eq(products.sellerId, ctx.sellerId), isNull(products.deletedAt)));
+    .where(and(eq(products.id, productId), storeShowsProduct(store, ctx.sellerId), isNull(products.deletedAt)))
+    .returning({ id: products.id });
+  if (!updated.length) throw new AgentProductError("not_found", "Product not found in this store.");
   if (before) await syncCategoryProductCountForProductChange({ categoryId: before.categoryId, previousStatus: before.status, nextStatus: wanted });
   const after = await loadSnapshot(db, ctx.sellerId, productId);
   return { status: wanted, changed: true, invalidation: invalidateProduct(before ? snapshotOf(before) : null, after ? snapshotOf(after) : null) };
@@ -637,13 +661,13 @@ export async function agentSetProductStatus(
 export async function agentTrashProducts(ctx: AgentProductContext, productIds: string[]) {
   const store = await loadStore(ctx, true);
   const visible = await visibleIds(store, ctx.sellerId, productIds);
-  return trashProducts(ctx.sellerId, ctx.userId, visible);
+  return trashProducts(ctx.sellerId, ctx.userId, visible, { inStore: storeShowsProduct(store, ctx.sellerId) });
 }
 
 export async function agentRestoreProducts(ctx: AgentProductContext, productIds: string[]) {
   const store = await loadStore(ctx, true);
   const visible = await visibleIds(store, ctx.sellerId, productIds);
-  return restoreProducts(ctx.sellerId, visible, { canPublish: ctx.sellerStatus === "approved" });
+  return restoreProducts(ctx.sellerId, visible, { canPublish: ctx.sellerStatus === "approved", inStore: storeShowsProduct(store, ctx.sellerId) });
 }
 
 async function visibleIds(store: AgentStore, sellerId: string, ids: string[]): Promise<string[]> {
@@ -816,7 +840,11 @@ export async function agentGetProduct(ctx: AgentProductContext, productId: strin
 }
 
 export async function agentListStoreCategories(ctx: AgentProductContext) {
-  await loadStore(ctx, false);
+  const store = await loadStore(ctx, false);
+  // The list is still per seller (taxonomy per store: F-87d). After the split the count is this store's products only.
+  const inThisStore = store.catalogSplit
+    ? sql` AND ${aliasedProductShownInStore("p", { storeId: store.id, catalogSplit: true })}`
+    : sql``;
   const rows = await db
     .select({
       id: sellerProductCategories.id,
@@ -824,7 +852,7 @@ export async function agentListStoreCategories(ctx: AgentProductContext) {
       nameAr: sellerProductCategories.nameAr,
       tallabyCategoryId: sellerProductCategories.sourceCategoryId,
       // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
-      products: sql<number>`${sql`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.deleted_at IS NULL)`}`,
+      products: sql<number>`${sql`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.deleted_at IS NULL${inThisStore})`}`,
     })
     .from(sellerProductCategories)
     .where(eq(sellerProductCategories.sellerId, ctx.sellerId))

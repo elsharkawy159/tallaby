@@ -10,6 +10,7 @@ import {
   META_CATALOG_CSV_HEADERS,
   resolvePrimaryImagePath,
 } from '@/lib/meta/meta.catalog'
+import { notAStoreCopy } from '@/lib/products/product-list.server'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 1800
@@ -33,6 +34,8 @@ export async function GET () {
       where: and(
         eq(products.status, 'active'),
         sql`NOT EXISTS (SELECT 1 FROM stores st WHERE st.seller_id = ${products.sellerId} AND st.deleted_at IS NULL AND coalesce(st.settings->>'currency', 'EGP') <> 'EGP')`,
+        // Cross-seller: a store copy (catalog split, "Copy to store") is never listed twice (F-87c, stores-separation.md §2.1.5).
+        notAStoreCopy(),
       ),
       columns: {
         id: true,

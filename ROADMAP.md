@@ -1675,7 +1675,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
 - [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
 - [x] F-87b 0160 + dry-run report for the owner (2026-11-10; 0160 applied on staging and production 2026-11-10, owner-approved; dry-run totals in §7)
-- [~] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (slices 1–5 of 6 built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`)
+- [x] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark (all 6 slices built and committed 2026-11-10; slices in `docs/plans/stores-separation-f87c-slices.md`; switch still off)
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
 - [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
@@ -1691,6 +1691,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87c slice 6: agents, AI builder, feeds and sitemap per store; F-87c complete (dark; no migration)
+
+- Agent product commands (MCP, in-app agent, AI builder) check `productInStore(store, shown)` in every read and write WHERE and write `products.store_id` on create; the store is loaded for the token's seller (writes need an active store). Scope `shown`, not `managed` (plan §0; keeps today's behaviour for selected-mode stores; same SQL after the split). MCP `list_stores` counts and instructions follow the switch. The AI builder skips `store_products` after the split.
+- Product feeds (`store-feed:page:v3`) and the store sitemap (new `store-sitemap:products:v1`, 2,000-row pages) are keyed by seller, store and switch and tagged per store. tallaby.com cross-seller lists skip store copies (`product_store_split` kind `copy`; empty until 0163).
+- `getProducts` moved to `apps/ecommerce/lib/products/product-list.server.ts` (no longer callable from a browser); the header search uses the narrow `searchProductsByText` (100 characters, 5 results). Removed unreferenced code: `actions/search.ts`, two `seller.ts` reads, twelve product actions, `catalogStoreId`. Unreferenced marketplace components left for F-87n.
+- Manager review: typecheck clean (ecommerce bar the 16 known errors, dashboard, admin, backend, agent, lib); tests pass: lib 1,303, agent 64, ecommerce 698, dashboard 1,134. Integration cases written, not run (no `TEST_DATABASE_URL`).
+- **Next:** F-87d (categories and brands per store), F-87e leftovers (per-store SKU, one real MCP call on staging), F-87m (0163 catalog split, rollback script, staging then production with owner approval, full E2E), then drop the seller cache tag and F-87n.
 
 ### 2026-11-10 — F-87c slice 5: cart and checkout per store (dark; no migration; switch off = today's rule)
 

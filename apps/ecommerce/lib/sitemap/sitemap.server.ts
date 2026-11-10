@@ -1,5 +1,9 @@
 import { and, asc, db, eq, gt, isNotNull, sql } from "@workspace/db";
 import { products, productTranslations } from "@workspace/db/schema";
+import { cacheProfiles, createCachedQuery } from "@workspace/cache";
+import { productShownInStore, type StoreCatalogScope } from "@workspace/lib/stores/scope/server";
+import { storefrontCatalogTags } from "@/lib/storefront.server";
+import { notAStoreCopy } from "@/lib/products/product-list.server";
 import { SITEMAP_BASE_URL } from "@/lib/constants";
 import {
   buildProductEntries,
@@ -18,39 +22,31 @@ const PRODUCT_BATCH_SIZE = 5_000;
 const ISO_SECONDS = 'YYYY-MM-DD"T"HH24:MI:SS"Z"';
 const ISO_MICROS = 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"';
 
-/** One store's catalog (P5-04): its seller's products, narrowed to its picks in "selected" mode. */
+/**
+ * One store's catalog (P5-04, F-87c slice 6): its seller's products that the
+ * store shows (`productShownInStore`: before the catalog split its mode and
+ * picks, after it its own products). The store comes from the request host.
+ */
 export interface ProductScope {
   sellerId: string;
-  /** Set only for a store in "selected" catalog mode (catalogStoreId). */
-  selectedStoreId?: string;
+  catalog: StoreCatalogScope;
 }
 
 /**
- * Store scope: the store's own products. The store host looks a slug up among
- * its seller's products only, so another seller's use of a slug changes nothing here.
+ * Store scope: what the store shows, of its seller only, so another seller's
+ * use of a slug changes nothing here. Without a scope (tallaby.com) a store
+ * copy is left out, so one product is listed once (stores-separation.md §2.1.5).
  */
 function productScopeFilter(scope: ProductScope | undefined) {
-  if (!scope) return undefined;
-  return and(
-    eq(products.sellerId, scope.sellerId),
-    scope.selectedStoreId
-      ? sql`EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${scope.selectedStoreId} AND sp.product_id = ${products.id})`
-      : undefined,
-  );
+  if (!scope) return notAStoreCopy();
+  return and(eq(products.sellerId, scope.sellerId), productShownInStore(scope.catalog));
 }
 
-/**
- * Every translation row of every storefront-visible product, paged by
- * translation id so no query is unbounded and nothing is skipped or
- * repeated between pages (ids are unique and the cursor is strict).
- * Without `scope` (the marketplace) the query is exactly the original one.
- */
-export async function fetchActiveProductTranslations(scope?: ProductScope): Promise<ProductTranslationRow[]> {
-  const rows: ProductTranslationRow[] = [];
-  let cursor: string | null = null;
+type TranslationPage = { rows: ProductTranslationRow[]; next: string | null };
 
-  for (;;) {
-    const page: Array<ProductTranslationRow & { id: string }> = await db
+/** One keyset page (translation ids after `cursor`). */
+async function loadTranslationPage(scope: ProductScope | undefined, cursor: string | null, size: number): Promise<TranslationPage> {
+  const page: Array<ProductTranslationRow & { id: string }> = await db
       .select({
         id: productTranslations.id,
         productId: productTranslations.productId,
@@ -71,14 +67,59 @@ export async function fetchActiveProductTranslations(scope?: ProductScope): Prom
         )
       )
       .orderBy(asc(productTranslations.id))
-      .limit(PRODUCT_BATCH_SIZE);
+      .limit(size);
 
-    for (const { id: _id, ...row } of page) rows.push(row);
-    if (page.length < PRODUCT_BATCH_SIZE) break;
-    cursor = page[page.length - 1]!.id;
+  return {
+    rows: page.map(({ id: _id, ...row }) => row),
+    next: page.length < size ? null : page[page.length - 1]!.id,
+  };
+}
+
+/**
+ * Every translation row of every storefront-visible product, paged by
+ * translation id so no query is unbounded and nothing is skipped or
+ * repeated between pages (ids are unique and the cursor is strict).
+ * Without `scope` (tallaby.com) it is the original query, less store copies.
+ */
+export async function fetchActiveProductTranslations(scope?: ProductScope): Promise<ProductTranslationRow[]> {
+  const rows: ProductTranslationRow[] = [];
+  let cursor: string | null = null;
+  for (;;) {
+    const page = await loadTranslationPage(scope, cursor, PRODUCT_BATCH_SIZE);
+    rows.push(...page.rows);
+    if (!page.next) return rows;
+    cursor = page.next;
   }
+}
 
-  return rows;
+/** Rows per cached page of a store sitemap: small enough for the Data Cache's 2 MB entry limit. */
+const STORE_PAGE_SIZE = 2_000;
+
+/**
+ * One cached page of a store's sitemap product rows (rule 8): keyed by
+ * seller, store, the catalog-split switch and the page cursor, so an entry
+ * never mixes stores or catalog modes; tagged with the store's catalog tags
+ * (`productTags.seller`, `productTags.store`, `storeTags.catalog`), so a
+ * product edit or a change of picks refreshes it.
+ */
+export const getCachedStoreTranslationPage = createCachedQuery({
+  name: "store-sitemap:products:v1",
+  ttl: cacheProfiles.seller,
+  tags: (sellerId: string, storeId: string, _catalogSplit: boolean, _cursor: string | null) => storefrontCatalogTags(sellerId, storeId),
+  query: (sellerId: string, storeId: string, catalogSplit: boolean, cursor: string | null) =>
+    loadTranslationPage({ sellerId, catalog: { storeId, catalogSplit } }, cursor, STORE_PAGE_SIZE),
+});
+
+/** The store sitemap's product rows: every cached page in order. `catalog` comes from the request host (`storefrontCatalog`). */
+export async function fetchStoreProductTranslations(sellerId: string, catalog: StoreCatalogScope): Promise<ProductTranslationRow[]> {
+  const rows: ProductTranslationRow[] = [];
+  let cursor: string | null = null;
+  for (;;) {
+    const page = await getCachedStoreTranslationPage(sellerId, catalog.storeId, catalog.catalogSplit, cursor);
+    rows.push(...page.rows);
+    if (!page.next) return rows;
+    cursor = page.next;
+  }
 }
 
 /**

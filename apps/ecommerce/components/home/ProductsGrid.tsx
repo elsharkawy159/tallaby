@@ -2,7 +2,7 @@ import ProductCard from "@/components/product-page/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import { ProductCardProps } from "../product";
 import { getLocale, getTranslations } from "next-intl/server";
 

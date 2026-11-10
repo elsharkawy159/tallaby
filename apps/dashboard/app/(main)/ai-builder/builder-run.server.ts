@@ -28,6 +28,7 @@ import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getAllCategories } from "@/actions/categories";
 import { autofillProduct } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { contentBlocksToHtml, pickAutofillCategory } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.lib";
 import type { ProductAutofillOutput } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.dto";
 import type { CategoryOption } from "@/app/(main)/stores/[storeId]/products/add/add-product.schema";
@@ -362,9 +363,15 @@ export function builtProductIds(items: ReadonlyMap<string, BuildItem>): string[]
   return [...new Set(ids)];
 }
 
-/** Products belong to the account. A further store shows only what this build made, not the seller's other products. */
+/**
+ * Before the catalog split products belong to the account: a further store
+ * shows only what this build made, not the seller's other products. After it
+ * (F-87c/F-87e) the build's products already belong to its store
+ * (`products.store_id`, set on create), so `store_products` is never written.
+ */
 async function applyCatalog(ctx: RunContext, build: BuildRow, items: ReadonlyMap<string, BuildItem>) {
   const store = await requireStoreOf(ctx, build);
+  if (await isSwitchOn("stores_catalog_split")) return { data: { mode: "store" } };
   const others = (await listStores(ctx.sellerId)).filter((row) => row.id !== store.id);
   if (!others.length) return { data: { mode: "all" } };
   const productIds = builtProductIds(items);
@@ -613,13 +620,7 @@ export async function loadReview(ctx: RunContext, build: BuildRow): Promise<Buil
   const invalidPages = pages.filter((row) => !validatePageContent(row.draftContent, { allowedSections: ALLOWED }).success).length;
   const shipping = store ? await getStoreShipping(ctx.sellerId, store.id) : null;
   const policy = await currentPolicy(ctx.sellerId);
-  const others = store ? (await listStores(ctx.sellerId)).filter((row) => row.id !== store.id) : [];
-  const allMode = others.length
-    ? await db
-        .select({ id: stores.id })
-        .from(stores)
-        .where(and(eq(stores.sellerId, ctx.sellerId), inArray(stores.id, others.map((row) => row.id)), eq(stores.catalogMode, "all"), isNull(stores.deletedAt)))
-    : [];
+  const allMode = await otherStoresShowingAll(ctx.sellerId, store?.id ?? null);
 
   return {
     flow: "v1",
@@ -642,9 +643,26 @@ export async function loadReview(ctx: RunContext, build: BuildRow): Promise<Buil
     products: list,
     draftProducts: list.filter((row) => row.status === "draft" && row.hasPhoto).length,
     regenerationsLeft: Math.max(0, 1 + BUILDER_LIMITS.siteCopyRegenerations - build.siteCopyRuns),
-    otherStoresShowAll: allMode.length,
+    otherStoresShowAll: allMode,
     spentMicroUsd: await buildSpendMicroUsd(ctx.sellerId, build),
   };
+}
+
+/**
+ * How many of the seller's other stores show all products, so also this
+ * build's (review note). After the catalog split a store shows only its own
+ * products, so none does.
+ */
+export async function otherStoresShowingAll(sellerId: string, storeId: string | null): Promise<number> {
+  if (!storeId) return 0;
+  if (await isSwitchOn("stores_catalog_split")) return 0;
+  const others = (await listStores(sellerId)).filter((row) => row.id !== storeId);
+  if (!others.length) return 0;
+  const rows = await db
+    .select({ id: stores.id })
+    .from(stores)
+    .where(and(eq(stores.sellerId, sellerId), inArray(stores.id, others.map((row) => row.id)), eq(stores.catalogMode, "all"), isNull(stores.deletedAt)));
+  return rows.length;
 }
 
 export const draftRows = (storeId: string) =>

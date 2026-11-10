@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@workspace/ui/components/button";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import { contentParams } from "@/lib/content-params";
 import { cn, resolvePrimaryImage, PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
 import type { ProductCardProps } from "@/components/product";

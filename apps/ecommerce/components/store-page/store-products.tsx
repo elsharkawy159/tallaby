@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import type { SellerStoreCategory } from "@/actions/seller";
 import ProductCard from "@/components/product-page/ProductCard";
 import ProductsSorting from "@/components/products-list/ProductsSorting";

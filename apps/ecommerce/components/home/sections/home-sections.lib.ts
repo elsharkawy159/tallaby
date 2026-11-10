@@ -1,4 +1,4 @@
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import type { ProductCardProps } from "@/components/product";
 import { PRODUCT_IMAGE_FALLBACK, resolvePrimaryImage } from "@/lib/utils";
 

@@ -4,7 +4,7 @@ import { PackageSearch, Search } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Link } from "@/i18n/navigation";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import ProductCard from "@/components/product-page/ProductCard";
 import ProductsSorting from "@/components/products-list/ProductsSorting";
 import {

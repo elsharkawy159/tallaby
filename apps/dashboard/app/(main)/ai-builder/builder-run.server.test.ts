@@ -17,7 +17,10 @@ const mocks = vi.hoisted(() => ({
   listStores: vi.fn(),
   createStore: vi.fn(),
   setStoreCatalog: vi.fn(),
+  catalogSplit: false,
 }));
+
+vi.mock("@/lib/stores/platform-switches.server", () => ({ isSwitchOn: async () => mocks.catalogSplit }));
 
 vi.mock("@workspace/ai", () => ({ generateStructured: vi.fn() }));
 vi.mock("@workspace/cache", () => ({ applyInvalidation: vi.fn(), invalidateStorefront: vi.fn(() => ({ tags: [], paths: [] })) }));
@@ -226,6 +229,32 @@ describe("the end of a build", () => {
     const result = await runBuildStep(CTX, { ...build(), storeId: null });
     expect(result.finished).toBe(true);
     expect(result.build).toMatchObject({ status: "review", stopReason: "store_limit" });
+  });
+});
+
+describe("the catalog step (F-87c slice 6)", () => {
+  const atCatalogStep = () => {
+    mocks.items = new Map(
+      [...doneBefore, "product:abc123"].map((key) => [key, { key, status: "done", attempts: 0, data: {}, productId: key === "product:abc123" ? "p1" : null }]),
+    );
+    mocks.listStores.mockResolvedValue([{ id: STORE }, { id: "77777777-7777-4777-8777-777777777777" }]);
+    mocks.setStoreCatalog.mockResolvedValue({ success: true });
+  };
+
+  it("before the split, a further store shows only the build's products (store_products picks)", async () => {
+    atCatalogStep();
+    mocks.catalogSplit = false;
+    await runBuildStep(CTX, build());
+    expect(mocks.setStoreCatalog).toHaveBeenCalledWith(CTX.sellerId, STORE, { mode: "selected", productIds: ["p1"] });
+  });
+
+  it("after the split, never writes store_products: the products already belong to the store", async () => {
+    atCatalogStep();
+    mocks.catalogSplit = true;
+    await runBuildStep(CTX, build());
+    expect(mocks.setStoreCatalog).not.toHaveBeenCalled();
+    expect(mocks.items.get("catalog")).toMatchObject({ status: "done", data: { mode: "store" } });
+    mocks.catalogSplit = false;
   });
 });
 

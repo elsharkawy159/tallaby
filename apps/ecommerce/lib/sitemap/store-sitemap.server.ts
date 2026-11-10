@@ -3,14 +3,14 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { storeIndexLocales } from "@/lib/store-seo/store-seo.lib";
 import { getCachedPublishedSite } from "@/lib/store-site/published-site.server";
 import {
-  catalogStoreId,
   getRenamedStoreSubdomain,
   getStorefrontCategories,
   getStorefrontBySubdomain,
   isStorefrontIndexable,
+  storefrontCatalog,
   type Storefront,
 } from "@/lib/storefront.server";
-import { fetchActiveProductTranslations } from "./sitemap.server";
+import { fetchStoreProductTranslations } from "./sitemap.server";
 import { buildStoreSitemapEntries, type StoreSitemapUrl } from "./store-sitemap.lib";
 import type { SitemapEntry } from "./sitemap.lib";
 
@@ -94,11 +94,12 @@ export async function getStoreSitemapDataset(subdomain: string): Promise<StoreSi
   if (!indexable) return { baseUrl, indexable, entries: [] };
 
   const scope: StoreSitemapStore = { sellerId: store.id, storeId: store.storeId, subdomain: store.subdomain };
+  // The host's store and the switch (read once, outside every cache): products and categories are what this store shows.
+  const catalog = await storefrontCatalog(store);
   const [site, products, extra, categories] = await Promise.all([
     getCachedPublishedSite(store.id, store.storeId, store.subdomain),
-    fetchActiveProductTranslations({ sellerId: store.id, selectedStoreId: catalogStoreId(store) }),
+    fetchStoreProductTranslations(store.id, catalog),
     extraUrls(scope),
-    // Categories are per store already (F-87c slice 4); product URLs move with the feed in slice 6.
     getStorefrontCategories(store.id, store.storeId),
   ]);
   const withProducts = categories.filter((category) => category.productCount > 0);

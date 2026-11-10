@@ -1,5 +1,5 @@
 import { Link } from "@/i18n/navigation";
-import { getProducts } from "@/actions/products";
+import { getProducts } from "@/lib/products/product-list.server";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProductCard from "@/components/product-page/ProductCard";
 import { Button } from "@workspace/ui/components/button";

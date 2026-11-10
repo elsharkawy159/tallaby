@@ -362,16 +362,6 @@ export function storeCategoryFilter(category: StorefrontCategory): StoreCategory
 }
 
 /**
- * The store id to narrow product lists by: set only when the store shows a
- * selected catalog (D24, `store_products`), else undefined (all the seller's
- * active products). Only the feed and sitemap still use it (F-87c slice 6);
- * every other storefront read takes `storefrontCatalog(store)`.
- */
-export function catalogStoreId(store: Pick<Storefront, "storeId" | "catalogMode">): string | undefined {
-  return store.catalogMode === "selected" ? store.storeId : undefined;
-}
-
-/**
  * The catalog scope of a store host (F-87c): its store and the
  * `stores_catalog_split` switch, read once per request and never inside a
  * cached function. A cached read takes both as key parts, so an entry never

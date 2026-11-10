@@ -2,8 +2,19 @@ import { randomUUID } from "node:crypto";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as s from "@workspace/db/schema";
+import { agentCanUseStore } from "../agents/actor.lib";
+import {
+  AgentProductError,
+  agentGetProduct,
+  agentRestoreProducts,
+  agentSearchProducts,
+  agentSetProductStatus,
+  agentTrashProducts,
+  agentUpdateProduct,
+  type AgentProductContext,
+} from "../products/agent-products.server";
 import { createIsolationWorld, type IsolationWorld } from "./isolation.fixtures";
 import { cartProductsOutsideStoreCatalog, productsOutsideStore, setStoreCatalog, storeSellsProduct } from "./catalog.server";
 import { isSwitchOn } from "./platform-switches.server";
@@ -29,6 +40,25 @@ import {
  * Skipped without TEST_DATABASE_URL.
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
+
+/**
+ * The agent product commands (slice 6) use the shared `db` and read the switch
+ * themselves, so this suite points `DATABASE_URL` at the test database before
+ * any import, and can force `stores_catalog_split` for those calls only (the
+ * real row is never flipped; `null` reads it).
+ */
+const forced = vi.hoisted(() => {
+  if (process.env.TEST_DATABASE_URL) process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+  return { catalogSplit: null as boolean | null };
+});
+vi.mock("./platform-switches.server", async (original) => {
+  const actual = await original<typeof import("./platform-switches.server")>();
+  return {
+    ...actual,
+    isSwitchOn: (key: Parameters<typeof actual.isSwitchOn>[0], q?: Parameters<typeof actual.isSwitchOn>[1]) =>
+      key === "stores_catalog_split" && forced.catalogSplit !== null ? Promise.resolve(forced.catalogSplit) : actual.isSwitchOn(key, q),
+  };
+});
 
 describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
@@ -615,6 +645,82 @@ describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", 
     } finally {
       await db.update(s.products).set({ storeId: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
     }
+  });
+
+  // ── F-87c slice 6: MCP and in-app agent product commands ────────────────
+  // The MCP wrapper refuses a store outside the grant (agentCanUseStore); then
+  // every command (agent-products.server.ts) loads the store for the token's
+  // seller and puts productInStore(store, { scope: "shown" }) in its read and
+  // its write. These call the real commands.
+
+  const noUpload = async () => ({ ok: false as const, reason: "no uploads in tests" });
+  const agentCtx = (sellerId: string, storeId: string): AgentProductContext => ({ sellerId, userId: sellerId, sellerStatus: "approved", storeId });
+  const refusedWith = (code: string) => expect.objectContaining({ name: "AgentProductError", code });
+
+  async function withAgentSwitch(catalogSplit: boolean, run: () => Promise<void>) {
+    forced.catalogSplit = catalogSplit;
+    try {
+      await run();
+    } finally {
+      forced.catalogSplit = null;
+      await db.update(s.products).set({ storeId: null }).where(inArray(s.products.id, [p.s1a, p.s1b]));
+    }
+  }
+
+  it("slice 6: a grant limited to store A can't name store B (the MCP wrapper's check)", () => {
+    const grant = { storeIds: [ids.storeA] };
+    expect(agentCanUseStore(grant, ids.storeA)).toBe(true);
+    expect(agentCanUseStore(grant, ids.storeB)).toBe(false);
+    expect(agentCanUseStore(grant, ids.storeS2)).toBe(false);
+  });
+
+  it("slice 6, switch on: an agent update, status or trash through store B refuses store A's product", async () => {
+    await withAgentSwitch(true, async () => {
+      await db.update(s.products).set({ storeId: ids.storeA }).where(eq(s.products.id, p.s1a));
+      await db.update(s.products).set({ storeId: ids.storeB }).where(eq(s.products.id, p.s1b));
+      const [before] = await db.select({ quantity: s.products.quantity, status: s.products.status }).from(s.products).where(eq(s.products.id, p.s1a));
+      const throughB = agentCtx(ids.s1, ids.storeB);
+
+      await expect(agentUpdateProduct(throughB, { storeId: ids.storeB, productId: p.s1a, quantity: 99 }, noUpload)).rejects.toEqual(refusedWith("not_found"));
+      await expect(agentSetProductStatus(throughB, p.s1a, "draft")).rejects.toEqual(refusedWith("not_found"));
+      await expect(agentGetProduct(throughB, p.s1a)).rejects.toBeInstanceOf(AgentProductError);
+      expect((await agentTrashProducts(throughB, [p.s1a])).trashed).toEqual([]);
+      expect((await agentRestoreProducts(throughB, [p.s1a])).restored).toEqual([]);
+      // Store A is in 'all' mode, but after the split its search lists only its own product.
+      expect((await agentSearchProducts(agentCtx(ids.s1, ids.storeA), { storeId: ids.storeA, limit: 50, cursor: 0 })).items.map((r) => r.id)).toEqual([p.s1a]);
+      expect((await agentSearchProducts(throughB, { storeId: ids.storeB, limit: 50, cursor: 0 })).items.map((r) => r.id)).toEqual([p.s1b]);
+      // Store B still reads its own product.
+      expect((await agentGetProduct(throughB, p.s1b)).id).toBe(p.s1b);
+
+      const [after] = await db.select({ quantity: s.products.quantity, status: s.products.status }).from(s.products).where(eq(s.products.id, p.s1a));
+      expect(after).toEqual(before);
+    });
+  });
+
+  it("slice 6: a forged store id (another seller's store, or S1's store under S2) is refused before any read or write", async () => {
+    for (const catalogSplit of [false, true]) {
+      await withAgentSwitch(catalogSplit, async () => {
+        const forgedStore = agentCtx(ids.s1, ids.storeS2);
+        const forgedSeller = agentCtx(ids.s2, ids.storeB);
+        await expect(agentUpdateProduct(forgedStore, { storeId: ids.storeS2, productId: p.s2, quantity: 99 }, noUpload)).rejects.toEqual(refusedWith("not_found"));
+        await expect(agentUpdateProduct(forgedSeller, { storeId: ids.storeB, productId: p.s1b, quantity: 99 }, noUpload)).rejects.toEqual(refusedWith("not_found"));
+        await expect(agentSetProductStatus(forgedSeller, p.s1b, "draft")).rejects.toEqual(refusedWith("not_found"));
+        await expect(agentTrashProducts(forgedStore, [p.s2])).rejects.toEqual(refusedWith("not_found"));
+        await expect(agentSearchProducts(forgedSeller, { storeId: ids.storeB, limit: 50, cursor: 0 })).rejects.toEqual(refusedWith("not_found"));
+      });
+    }
+    const [row] = await db.select({ quantity: s.products.quantity, status: s.products.status, deletedAt: s.products.deletedAt }).from(s.products).where(eq(s.products.id, p.s2));
+    expect(row).toMatchObject({ status: "active", deletedAt: null });
+  });
+
+  it("slice 6, switch off: the agent keeps today's rule (store B in selected mode reaches only its pick)", async () => {
+    await withAgentSwitch(false, async () => {
+      const throughB = agentCtx(ids.s1, ids.storeB);
+      await expect(agentSetProductStatus(throughB, p.s1a, "draft")).rejects.toEqual(refusedWith("not_found"));
+      expect((await agentSearchProducts(throughB, { storeId: ids.storeB, limit: 50, cursor: 0 })).items.map((r) => r.id)).toEqual([p.s1b]);
+      const all = (await agentSearchProducts(agentCtx(ids.s1, ids.storeA), { storeId: ids.storeA, limit: 50, cursor: 0 })).items.map((r) => r.id).sort();
+      expect(all).toEqual([p.s1a, p.s1b].sort());
+    });
   });
 
   it("both switches are off (or the table is not there yet)", async () => {

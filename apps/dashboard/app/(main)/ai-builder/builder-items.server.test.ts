@@ -13,6 +13,8 @@ const mocks = vi.hoisted(() => ({
   checkBuildSpend: vi.fn(),
   checkModelCall: vi.fn(),
   dbRows: [] as unknown[],
+  catalogSplit: false,
+  productInStore: vi.fn((storeId: string, options: { catalogSplit: boolean; scope?: string }) => ({ inStore: storeId, ...options })),
 }));
 
 const chain = () => {
@@ -41,6 +43,11 @@ vi.mock("@workspace/db", () => ({
   db: { select: () => chain(), update: () => ({ set: () => ({ where: async () => [] }) }) },
 }));
 vi.mock("@workspace/lib/products/agent/server", () => ({ AgentProductError: class extends Error {}, agentSetProductStatus: mocks.agentSetProductStatus }));
+vi.mock("@workspace/lib/stores/scope/server", () => ({
+  productInStore: mocks.productInStore,
+  productShownInStore: (scope: { storeId: string; catalogSplit: boolean }) => mocks.productInStore(scope.storeId, { ...scope, scope: "shown" }),
+}));
+vi.mock("@/lib/stores/platform-switches.server", () => ({ isSwitchOn: async () => mocks.catalogSplit }));
 vi.mock("@workspace/lib/store-sites/server", () => ({
   publishStoreSite: mocks.publishStoreSite,
   saveStoreDesignSystem: mocks.saveStoreDesignSystem,
@@ -112,6 +119,7 @@ const run = async (key: string, b = build(), items = new Map<string, BuildItem>(
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.dbRows = [];
+  mocks.catalogSplit = false;
   mocks.boundStore.mockResolvedValue("ok");
   mocks.publishStoreSite.mockResolvedValue({ success: true, data: { revisionId: "r", revisionNumber: 1 } });
   mocks.agentSetProductStatus.mockResolvedValue({ status: "active", changed: true, invalidation: { tags: [], paths: [] } });
@@ -183,6 +191,14 @@ describe("products from the file (F-82f)", () => {
     const outcome = await run("products_file:0", build({ fileKey: "a".repeat(32), fileRows: [row(2)], paid: true }));
     expect(mocks.runBulkBatch.mock.calls[0]![2]).toMatchObject({ credits: true });
     expect(outcome.data).toMatchObject({ products: [{ id: "p2", missing: [] }], notAdded: 0 });
+  });
+
+  it("looks the SKUs up only among the build store's products, with the switch (F-87c)", async () => {
+    mocks.runBulkBatch.mockResolvedValue({ ok: true, results: [{ row: 2, outcome: "already", sku: "IMP-1-2" }], creditsUsed: 0, stop: null, retryable: false });
+    mocks.dbRows = [{ id: "p2", sku: "IMP-1-2", images: ["x.jpg"] }];
+    mocks.catalogSplit = true;
+    await run("products_file:0", build({ fileKey: "a".repeat(32), fileRows: [row(2)] }));
+    expect(mocks.productInStore).toHaveBeenCalledWith(STORE, { catalogSplit: true, scope: "managed" });
   });
 
   it("past the spend stop, adds the rows that need no copy and records the stop", async () => {

@@ -4,6 +4,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { AGENT_SCOPES, bearerToken, normalizeIssuer, parseResourceList } from "@workspace/lib/agents";
 import { resolveAgentActor } from "@workspace/lib/agents/server";
 import { logServerError } from "@workspace/db/log";
+import { isSwitchOn } from "@workspace/lib/stores/switches/server";
 import { createTallabyMcpServer } from "./server";
 
 /**
@@ -75,7 +76,8 @@ mcpApp.all("/mcp", async (c) => {
     return c.json({ jsonrpc: "2.0", error: { code: -32000, message: "Method not allowed." }, id: null }, 405, { allow: "POST" });
   }
 
-  const server = createTallabyMcpServer(actor);
+  // Read per request, never cached (CLAUDE.md rule 8): it picks the instruction text only; every tool checks the switch itself.
+  const server = createTallabyMcpServer(actor, { catalogSplit: await isSwitchOn("stores_catalog_split") });
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   try {
     await server.connect(transport);
