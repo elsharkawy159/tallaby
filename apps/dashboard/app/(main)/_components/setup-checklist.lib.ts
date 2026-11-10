@@ -1,11 +1,16 @@
 /**
- * The home "get your store ready" checklist (PLAN.md §6.6, P3-04), computed
- * from data, never stored. Ordered so a new seller finishes the store in
- * minutes (owner, 2026-11-01): choose a template, set the brand identity
- * (logo, colours, fonts), then add a product. Choosing a template publishes a
- * never-published store (owner, 2026-11-07), so there is no "Publish your
- * store" step. Shipping comes last and is optional ("later"): it never counts
- * toward setup being done. Store steps belong to the store selected in the sidebar.
+ * The home "get your store ready" setup (PLAN.md §6.6, P3-04; ROADMAP.md F-86),
+ * computed from data, never stored. Four steps, all required (owner,
+ * 2026-11-10): add a product, choose the store design (template and brand
+ * together), set up payments, set up shipping. Store steps belong to the store
+ * selected in the sidebar.
+ *
+ * Until those are done and the seller has no real order yet, the home shows
+ * only the setup cards, no metrics (`showSetupOnlyHome`).
+ *
+ * The guided prompts (setup-prompts.lib.ts) still walk the older, finer step
+ * list (`buildSetupTasks`: template, brand, product, shipping), so their saved
+ * progress keeps its meaning.
  */
 
 export type SetupFlags = {
@@ -27,15 +32,68 @@ export type SetupFlags = {
   publish: boolean;
   /** The selected store saved its shipping settings or has a delivery zone. */
   shipping: boolean;
+  /**
+   * The selected store saved its payment methods (`settings.payments`, written
+   * only by a seller's save) or has a connected card gateway (Paymob, Kashier).
+   */
+  payments: boolean;
 };
 
-export type SetupKey = keyof SetupFlags;
+// ---------------------------------------------------------------------------
+// Home setup steps (the setup-only home and the checklist card).
+// ---------------------------------------------------------------------------
+
+export type HomeStepKey = "product" | "design" | "payments" | "shipping";
+
+export type HomeStep = { key: HomeStepKey; href: string; done: boolean };
+
+const HOME_STORE_STEPS = new Set<HomeStepKey>(["design", "payments", "shipping"]);
+
+const HOME_STEPS: { key: HomeStepKey; done: (f: SetupFlags) => boolean; href: (storeId: string, f: SetupFlags) => string }[] = [
+  { key: "product", done: (f) => f.product, href: () => "/products/add" },
+  {
+    key: "design",
+    done: (f) => f.template && f.brand,
+    // No template yet: the gallery first; then the brand (logo, colours, fonts).
+    href: (id, f) => (f.template ? `/stores/${id}/website/design` : `/stores/${id}/website/templates`),
+  },
+  { key: "payments", done: (f) => f.payments, href: (id) => `/stores/${id}/settings/payments` },
+  { key: "shipping", done: (f) => f.shipping, href: (id) => `/stores/${id}/shipping` },
+];
+
+export function buildHomeSteps(flags: SetupFlags, storeId: string | null): HomeStep[] {
+  return HOME_STEPS.filter((step) => storeId || !HOME_STORE_STEPS.has(step.key)).map((step) => ({
+    key: step.key,
+    href: step.href(storeId ?? "", flags),
+    done: step.done(flags),
+  }));
+}
+
+/** Every step is done: the store is ready for its first order, and the guide can go away. */
+export function isSetupDone(flags: SetupFlags, storeId: string | null): boolean {
+  return buildHomeSteps(flags, storeId).every((step) => step.done);
+}
+
+/**
+ * The home shows only the setup cards: setup isn't done and the seller has no
+ * real order yet (test orders don't count). A seller with orders always keeps
+ * the metrics, even with a step missing.
+ */
+export function showSetupOnlyHome(input: { flags: SetupFlags; storeId: string | null; hasRealOrders: boolean }): boolean {
+  return !input.hasRealOrders && !isSetupDone(input.flags, input.storeId);
+}
+
+// ---------------------------------------------------------------------------
+// Prompt steps (setup-prompts.lib.ts). Unchanged order and keys.
+// ---------------------------------------------------------------------------
+
+export type SetupKey = "template" | "brand" | "product" | "publish" | "shipping";
 
 export type SetupTask = { key: SetupKey; href: string; done: boolean; optional: boolean };
 
 const STORE_STEPS = new Set<SetupKey>(["template", "brand", "shipping"]);
 
-/** Steps that can wait: shown last, never block setup being done. */
+/** Steps that can wait: shown last. */
 const OPTIONAL_STEPS = new Set<SetupKey>(["shipping"]);
 
 const STEPS: { key: SetupKey; href: (storeId: string) => string }[] = [
@@ -52,14 +110,4 @@ export function buildSetupTasks(flags: SetupFlags, storeId: string | null): Setu
     done: flags[step.key],
     optional: OPTIONAL_STEPS.has(step.key),
   }));
-}
-
-/** The required steps are done: the store is ready for its first order. */
-export function isSetupDone(flags: SetupFlags, storeId: string | null): boolean {
-  return buildSetupTasks(flags, storeId).every((task) => task.done || task.optional);
-}
-
-/** Every step, the later ones too, is done: the guide can go away. */
-export function isGuideDone(flags: SetupFlags, storeId: string | null): boolean {
-  return buildSetupTasks(flags, storeId).every((task) => task.done);
 }

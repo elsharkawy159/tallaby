@@ -15,6 +15,7 @@ import {
   ChartSkeleton,
   HomeLayout,
   HomeLockedLayout,
+  HomeSetupLayout,
   KpisSkeleton,
   MetricsSkeleton,
   ListCardSkeleton,
@@ -28,6 +29,9 @@ import { TrialBannerData } from "./_components/trial-banner.data";
 import { UnansweredQuestionsData } from "./_components/unanswered-questions.data";
 import { WelcomeBanner } from "./_components/welcome-banner.client";
 import { SignupPixelData } from "./_components/signup-pixel.data";
+import { getHomeSnapshot } from "./_components/home.queries";
+import { showSetupOnlyHome } from "./_components/setup-checklist.lib";
+import { SetupHomeData } from "./_components/setup-home.data";
 
 // Per-seller data read from the session cookie.
 export const dynamic = "force-dynamic";
@@ -41,10 +45,12 @@ export default async function VendorDashboardPage({
 }: {
   searchParams: Promise<{ range?: string | string[]; channel?: string | string[]; welcome?: string | string[]; signup?: string | string[] }>;
 }) {
-  const [{ range: rawRange, channel: rawChannel, welcome, signup }, { stores }, orderLock] = await Promise.all([
+  const [{ range: rawRange, channel: rawChannel, welcome, signup }, { stores }, orderLock, snapshot] = await Promise.all([
     searchParams,
     getSellerStores(),
     currentOrderLock(),
+    // Cached per request; the sections below read the same snapshot.
+    getHomeSnapshot(),
   ]);
   const range = parseHomeRange(rawRange);
   // A store channel must be one of the seller's own stores (never trust the URL).
@@ -53,27 +59,21 @@ export default async function VendorDashboardPage({
     stores.map((store) => store.id),
   );
 
-  const header = (
-    <HomeHeaderView
-      title={
-        <Suspense fallback={<Skeleton className="h-8 w-48" />}>
-          <HomeGreeting />
-        </Suspense>
-      }
-      subtitle={
-        <Suspense fallback={<Skeleton className="mt-2 h-4 w-64" />}>
-          <HomeSubtitle channel={channel} />
-        </Suspense>
-      }
-      rangeControl={
-        <>
-          <RangeSelect />
-          <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
-        </>
-      }
-    />
+  const setupOnly =
+    snapshot !== null &&
+    showSetupOnlyHome({ flags: snapshot.setup, storeId: snapshot.setupStoreId, hasRealOrders: snapshot.hasRealOrders });
+
+  const title = (
+    <Suspense fallback={<Skeleton className="h-8 w-48" />}>
+      <HomeGreeting />
+    </Suspense>
   );
-  const setup = (
+  const subtitle = (
+    <Suspense fallback={<Skeleton className="mt-2 h-4 w-64" />}>
+      <HomeSubtitle channel={channel} />
+    </Suspense>
+  );
+  const notices = (
     <>
       <OrdersLockedNotice lock={orderLock} />
       <OrdersGraceNotice lock={orderLock} />
@@ -86,6 +86,37 @@ export default async function VendorDashboardPage({
       <Suspense fallback={null}>
         <TrialBannerData />
       </Suspense>
+    </>
+  );
+
+  // New seller, setup open, no real order yet: only the four setup steps, so no metrics query runs
+  // (ROADMAP.md F-86). The dismiss cookie never hides this; it only hides the checklist card below.
+  if (setupOnly) {
+    return (
+      <HomeSetupLayout
+        header={<HomeHeaderView title={title} subtitle={subtitle} rangeControl={null} />}
+        notices={notices}
+        steps={<SetupHomeData snapshot={snapshot} />}
+        community={<CommunityCard />}
+      />
+    );
+  }
+
+  const header = (
+    <HomeHeaderView
+      title={title}
+      subtitle={subtitle}
+      rangeControl={
+        <>
+          <RangeSelect />
+          <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
+        </>
+      }
+    />
+  );
+  const setup = (
+    <>
+      {notices}
       <Suspense fallback={null}>
         <SetupChecklistData />
       </Suspense>

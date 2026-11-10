@@ -162,6 +162,23 @@ export function HomeLockedLayout(slots: {
   );
 }
 
+/** Setup-only home (ROADMAP.md F-86): no metrics until the store is set up or has an order. */
+export function HomeSetupLayout(slots: {
+  header: React.ReactNode;
+  notices: React.ReactNode;
+  steps: React.ReactNode;
+  community: React.ReactNode;
+}) {
+  return (
+    <PageContainer>
+      <div className="sui-rise">{slots.header}</div>
+      {slots.notices}
+      {slots.steps}
+      <div className="sui-rise [animation-delay:.18s]">{slots.community}</div>
+    </PageContainer>
+  );
+}
+
 /** Grid shared by the page and its skeleton (Seller Home v3). */
 export function HomeLayout(slots: {
   header: React.ReactNode;

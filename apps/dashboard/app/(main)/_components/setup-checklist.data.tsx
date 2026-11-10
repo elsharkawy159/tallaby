@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { ArrowLeft, Check, FileText, LayoutTemplate, Package, Palette, Truck } from "lucide-react";
+import { ArrowLeft, Check, CreditCard, FileText, Package, Palette, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SellerButton } from "@/components/seller-ui";
@@ -10,12 +10,12 @@ import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { SetupDismissible } from "./setup-dismiss.client";
 import { SetupStepsToggle } from "./setup-steps-toggle.client";
 
-import { buildSetupTasks, isGuideDone, isSetupDone, type SetupKey } from "./setup-checklist.lib";
+import { buildHomeSteps, isSetupDone, type HomeStepKey } from "./setup-checklist.lib";
 
-const ICONS: Record<Exclude<SetupKey, "publish">, LucideIcon> = {
-  template: LayoutTemplate,
-  brand: Palette,
+export const HOME_STEP_ICONS: Record<HomeStepKey, LucideIcon> = {
   product: Package,
+  design: Palette,
+  payments: CreditCard,
   shipping: Truck,
 };
 
@@ -27,10 +27,12 @@ export function isSetupComplete(snapshot: HomeSnapshot) {
 }
 
 /**
- * "Get your store ready" guide (`.setup`): a dark card with a progress ring and
- * step cards. Progress counts the required steps; shipping is an optional card
- * that keeps the guide on the home page after publishing until it is set up or
- * dismissed. On a phone only the next step shows until the seller asks for the rest.
+ * "Get your store ready" guide (`.setup`) on the normal home (a seller with
+ * orders but a step still open): a dark card with a progress ring and the four
+ * step cards (setup-checklist.lib.ts). Hidden when every step is done or the
+ * seller dismissed it. A seller with no real order and setup open gets the
+ * setup-only home instead (setup-home.data.tsx), which can't be dismissed.
+ * On a phone only the next step shows until the seller asks for the rest.
  */
 export async function SetupChecklistData() {
   const [snapshot, cookieStore, t] = await Promise.all([
@@ -39,18 +41,17 @@ export async function SetupChecklistData() {
     getTranslations("home.setup"),
   ]);
 
-  if (!snapshot || isGuideDone(snapshot.setup, snapshot.setupStoreId)) return null;
+  if (!snapshot || isSetupDone(snapshot.setup, snapshot.setupStoreId)) return null;
   if (cookieStore.get(SETUP_DISMISS_COOKIE)?.value === "1") return null;
 
-  const TASKS = buildSetupTasks(snapshot.setup, snapshot.setupStoreId).map((task) => ({
+  const TASKS = buildHomeSteps(snapshot.setup, snapshot.setupStoreId).map((task) => ({
     ...task,
-    icon: ICONS[task.key as Exclude<SetupKey, "publish">],
+    icon: HOME_STEP_ICONS[task.key],
   }));
-  const required = TASKS.filter((task) => !task.optional);
+  const required = TASKS;
   const doneCount = required.filter((task) => task.done).length;
-  // The first open step in the recommended order is the one to do next
-  // (the optional one only once every required step is done).
-  const nextKey = (required.find((task) => !task.done) ?? TASKS.find((task) => !task.done))?.key;
+  // The first open step in the recommended order is the one to do next.
+  const nextKey = TASKS.find((task) => !task.done)?.key;
 
   return (
     <SetupDismissible>
@@ -108,7 +109,7 @@ export async function SetupChecklistData() {
             </p>
           </div>
 
-          <ol id="setup-steps" className="relative grid grid-cols-5 gap-2.5 max-[1180px]:grid-cols-3 max-[720px]:grid-cols-2 max-[600px]:grid-cols-1">
+          <ol id="setup-steps" className="relative grid grid-cols-4 gap-2.5 max-[1180px]:grid-cols-2 max-[600px]:grid-cols-1">
             {TASKS.map((task, i) => {
               const done = task.done;
               const next = task.key === nextKey;
@@ -124,7 +125,7 @@ export async function SetupChecklistData() {
                   )}
                 >
                   {next && (
-                    // On the card's edge: a five-column row is too narrow to share a line with the icon.
+                    // On the card's edge: a four-column row is too narrow to share a line with the icon.
                     <span className="absolute -top-2.5 start-3.5 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-(--tallaby-teal-900)">
                       {t("nextStep")}
                     </span>
@@ -139,11 +140,7 @@ export async function SetupChecklistData() {
                     >
                       <task.icon aria-hidden />
                     </span>
-                    {next ? null : task.optional && !done ? (
-                      <span className="whitespace-nowrap rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-[#c6d8dc]">
-                        {t("later")}
-                      </span>
-                    ) : (
+                    {next ? null : (
                       <span
                         className={cn(
                           "grid size-6 place-items-center rounded-full border-[1.5px] border-white/25 font-montserrat text-[11px] font-bold text-[#c6d8dc]",

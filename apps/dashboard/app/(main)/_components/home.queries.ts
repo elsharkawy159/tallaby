@@ -52,6 +52,11 @@ const SETUP_FLAG_COLUMNS = sql`
             WHERE ti.store_id = st.id AND ti.undone_at IS NULL)), false) AS setup_brand,
       coalesce(st.settings ? 'shipping'
         OR EXISTS (SELECT 1 FROM store_shipping_zones z WHERE z.store_id = st.id), false) AS setup_shipping,
+      -- settings.payments is written only by the seller's own save (Store settings › Payment methods);
+      -- a new store has none and checkout falls back to the defaults. A connected card gateway counts too.
+      coalesce(st.settings ? 'payments'
+        OR EXISTS (SELECT 1 FROM store_integrations si WHERE si.store_id = st.id AND si.seller_id = s.id
+          AND si.provider IN ('paymob', 'kashier') AND si.status = 'connected'), false) AS setup_payments,
       coalesce(st.site_status = 'published', false) AS setup_publish
 `;
 
@@ -61,6 +66,7 @@ const toSetupFlags = (row: Record<string, unknown>): SetupFlags => ({
   product: Boolean(row.setup_product),
   publish: Boolean(row.setup_publish),
   shipping: Boolean(row.setup_shipping),
+  payments: Boolean(row.setup_payments),
 });
 
 // ---------------------------------------------------------------------------
@@ -83,6 +89,8 @@ export type HomeSnapshot = {
   /** Platform fee trial (0059), for the trial banner. */
   feeTrial: FeeTrialFields;
   hasOrders: boolean;
+  /** Any order that isn't a store-owner test order (0155), across every store: the home keeps its metrics. */
+  hasRealOrders: boolean;
   attention: {
     lowStock: number;
     unansweredQuestions: number;
@@ -128,6 +136,8 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.fee_trial_ends_at,
       ${SETUP_FLAG_COLUMNS},
       EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = s.id) AS has_orders,
+      EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON o.id = oi.order_id
+        WHERE oi.seller_id = s.id AND NOT o.is_test) AS has_real_orders,
       (SELECT count(*)::int FROM products p
         WHERE p.seller_id = s.id AND p.status = 'active' AND p.track_stock AND p.quantity < ${LOW_STOCK_THRESHOLD}) AS low_stock,
       (SELECT count(*)::int FROM product_questions q JOIN products p ON p.id = q.product_id
@@ -161,6 +171,7 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       feeTrialEndsAt: row.fee_trial_ends_at ?? null,
     },
     hasOrders: Boolean(row.has_orders),
+    hasRealOrders: Boolean(row.has_real_orders),
     attention: {
       lowStock: Number(row.low_stock),
       unansweredQuestions: Number(row.unanswered_questions),
