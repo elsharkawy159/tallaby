@@ -1,4 +1,3 @@
-import { storeBuilderEnabled } from "@/lib/store-build/intake-request.server";
 import * as React from "react";
 import { BellRing, Bike, BookOpen, Check, ChartNoAxesCombined, FileUp, ShieldCheck, Sparkles, Star, Store, Timer, Palette, Rocket, Truck, Users, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -21,15 +20,14 @@ import { getRecentStores } from "@/lib/marketing/stores.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import type { GalleryEntry } from "@/lib/marketing/templates.lib";
 import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
-import { AiDemo } from "./ai-demo.client";
-import { BuilderDemo } from "./builder-demo.client";
-import { HeroComposer } from "./hero-composer.client";
-import { HeroDemo } from "./hero-demo.client";
+import { AiDemo } from "./ai-demo";
+import { BuilderDemo } from "./builder-demo";
+import { HeroDemo } from "./hero-demo";
 import { HERO_DEMO_WALLET_USD_CENTS } from "./home-demo.lib";
 import { LiveStoreLine } from "./live-store-line.client";
 import { MarketingTools } from "./marketing-tools.client";
-import { McpChatDemo } from "./mcp-chat-demo.client";
-import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos.client";
+import { McpChatDemo } from "./mcp-chat-demo";
+import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos";
 
 /**
  * The hero demo's wallet in pounds at the dashboard wallet's live rate, as the
@@ -67,8 +65,6 @@ export async function HomeHero() {
   const features = t.raw("marquee") as string[];
   const checks = [t("check1"), t("check2"), t("check3")];
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
-  // The hero composer replaces the signup button while the AI Store Builder is on (F-82d, D9; on by default).
-  const composer = storeBuilderEnabled();
 
   return (
     <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
@@ -87,11 +83,8 @@ export async function HomeHero() {
           {t.rich("title", richTags)}
         </h1>
         <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500 min-[641px]:mt-5 min-[641px]:mb-8">{t("lead")}</p>
-        {composer ? (
-          <HeroComposer className="max-w-[720px]" />
-        ) : (
-          <SignupTrigger className="h-[58px] px-10 text-[17px]">{t("cta")}</SignupTrigger>
-        )}
+        {/* A plain signup button; the AI composer that stood here is no longer shown (owner, 2026-11-10). */}
+        <SignupTrigger className="h-[58px] max-w-full px-6 text-[17px] min-[400px]:px-10">{t("cta")}</SignupTrigger>
         <ul className="m-0 mt-7 flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-ink-500 min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
           {checks.map((check) => (
             <li key={check} className="flex items-center gap-1.5">

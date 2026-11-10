@@ -9,7 +9,7 @@
     "hero": {
       "title": "Create your online store <em>in minutes.</em> Free.",
       "lead": "Create your online store in minutes, and run payments, shipping, stock and marketing from one dashboard with ease.",
-      "cta": "Create your store now",
+      "cta": "Create your store in under 10 minutes",
       "check1": "Free plan, no card",
       "check2": "Signup in under a minute",
       "check3": "Cash on delivery built in",
@@ -201,14 +201,11 @@
         "badge": "Sent",
         "toLabel": "To",
         "to": "Customers and subscribers",
-        "subjectLabel": "Subject",
-        "subject": "20% off for our valued customers",
         "heading": "Thank you for shopping with us",
         "body": "Use code VIP20 for 20% off until the end of the week.",
         "button": "Shop now",
         "sent": "Sent",
-        "left": "Left this month",
-        "unsubscribed": "Unsubscribed"
+        "left": "Left this month"
       },
       "whatsapp": {
         "title": "Order confirmation message",
@@ -237,10 +234,6 @@
         "badge": "Active",
         "codeLabel": "Code",
         "offer": "15% off the first order",
-        "minimum": "Minimum",
-        "minimumValue": "500 EGP",
-        "uses": "Uses",
-        "ends": "Ends in",
         "popupTitle": "A gift for your first visit",
         "popupBody": "15% off, ends in",
         "popupButton": "Copy code"
@@ -248,7 +241,6 @@
       "pixel": {
         "title": "Tracking and ads",
         "badge": "4 connected",
-        "connected": "Connected",
         "sent": "sent to 4 tools"
       }
     },
@@ -333,52 +325,19 @@
         "title": "Dashboard",
         "walletLabel": "Wallet balance",
         "walletApprox": "≈ {amount} EGP",
-        "last7": "Last 7 days",
-        "addProduct": "Add product",
         "greeting": "Good morning, Nour",
         "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
-        "search": "Search orders, products or customers",
         "latest": "Latest orders",
-        "lastFive": "Last 5 orders",
-        "viewAll": "View all orders",
         "newOrder": "New order",
-        "addToCart": "Add to cart",
-        "summary": "Order summary",
-        "shipping": "Shipping",
-        "total": "Total",
         "cod": "Cash on delivery",
         "placeOrder": "Place order",
-        "received": "Order received",
-        "willCall": "We will call you to confirm",
-        "nav": {
-          "home": "Dashboard",
-          "groupSell": "Sell",
-          "products": "Products",
-          "orders": "Orders",
-          "shipping": "Shipping & delivery",
-          "wallet": "Wallet",
-          "groupStore": "Store",
-          "onlineStore": "Online store",
-          "offers": "Offers & discounts",
-          "apps": "Apps & integrations",
-          "settings": "Store settings"
-        },
         "kpi": {
           "sales": "Sales",
           "orders": "Orders",
           "ordersUnit": "orders",
           "visits": "Store visits",
           "visitsUnit": "visits",
-          "conversion": "Conversion",
-          "previous": "vs last week"
-        },
-        "col": {
-          "order": "Order",
-          "customer": "Customer",
-          "product": "Product",
-          "date": "Date",
-          "total": "Total",
-          "status": "Status"
+          "conversion": "Conversion"
         },
         "status": {
           "pending": "Pending",
@@ -387,21 +346,16 @@
         },
         "when": {
           "justNow": "just now",
-          "minuteAgo": "1 min ago",
           "min6": "6 min ago",
           "min18": "18 min ago",
-          "hr1": "1 hr ago",
-          "hr2": "2 hrs ago",
-          "hr3": "3 hrs ago"
+          "hr1": "1 hr ago"
         },
         "customers": ["Mariam Ahmed", "Youssef Khaled", "Hana Samy", "Omar Tarek"],
         "products": ["Red leather handbag", "Pink tote bag", "Printed barrel bag"],
         "orders": [
           { "customer": "Youssef Khaled", "product": "Men's leather wallet", "when": "min6", "total": 500, "status": "pending" },
           { "customer": "Hana Samy", "product": "Pink tote bag", "when": "min18", "total": 1340, "status": "pending" },
-          { "customer": "Omar Tarek", "product": "Red leather handbag", "when": "hr1", "total": 1500, "status": "shipped" },
-          { "customer": "Mariam Ahmed", "product": "Printed barrel bag", "when": "hr2", "total": 1030, "status": "delivered" },
-          { "customer": "Salma Adel", "product": "Leather backpack", "when": "hr3", "total": 1250, "status": "delivered" }
+          { "customer": "Omar Tarek", "product": "Red leather handbag", "when": "hr1", "total": 1500, "status": "shipped" }
         ]
       },
       "mcp": {
@@ -413,12 +367,10 @@
       },
       "ai": {
         "title": "New product",
-        "creditsUnit": "credits",
         "credits": "100 AI credits a month on the free plan, 2,000 on Pro.",
         "generate": "Generate",
         "input": "Brown leather crossbody bag, 890 EGP",
         "egp": "EGP",
-        "imageAlt": "Photo of a brown leather crossbody bag",
         "nameArLabel": "Name (Arabic)",
         "nameEnLabel": "Name (English)",
         "nameAr": "شنطة كروس جلد طبيعي بني",
@@ -433,25 +385,11 @@
       },
       "builder": {
         "home": "Home",
-        "saving": "Saving…",
         "saved": "Saved",
         "publish": "Publish",
-        "published": "Published",
-        "searchSections": "Search sections",
         "rail": {
-          "add": "Add",
-          "layers": "Layers",
-          "pages": "Pages",
-          "media": "Media",
-          "brand": "Brand",
-          "shortcuts": "Keys"
+          "add": "Add"
         },
-        "empty": {
-          "title": "Click any element on the page",
-          "body": "One click selects it, two clicks edit the text in place. Drag & Drop sections in from Add.",
-          "add": "Add a section"
-        },
-        "tabs": { "sections": "Sections", "elements": "Elements", "templates": "Templates" },
         "library": {
           "hero": "Hero banner",
           "announcement": "Announcement",
@@ -461,63 +399,24 @@
           "faq": "FAQ"
         },
         "props": {
-          "content": "Content",
-          "style": "Style",
-          "page": "Home page",
           "heading": "Heading",
           "button": "Button",
-          "buttonColor": "Button color",
-          "layout": "Layout",
-          "split": "Split",
-          "image": "Image",
-          "center": "Center"
+          "buttonColor": "Button color"
         },
         "store": {
           "name": "DAR",
-          "heroAlt": "Banner photo of a furniture and home decor store",
           "announcement": "Free delivery across Egypt on orders over 1,500 EGP",
-          "nav": {
-            "living": "Living",
-            "lighting": "Lighting",
-            "decor": "Decor"
-          },
           "bag": "Bag · 2",
-          "kicker": "New season · Made in Egypt",
           "heading": "Made for living rooms",
-          "typedHeading": "Calm corners for home",
           "body": "Lamps, chairs and handmade pieces for a calmer home.",
           "shop": "Shop the collection",
-          "story": "Our story",
-          "rooms": "Shop by room",
           "arrivals": "New arrivals",
-          "viewAll": "View all →",
-          "badge": "−12%",
           "price": "{amount} EGP",
           "products": {
             "lamp": "Brass table lamp",
             "vases": "Sand jug vases",
             "armchair": "Walnut armchair",
             "table": "Oak coffee table"
-          },
-          "reviews": {
-            "r1": {
-              "text": "The lamp light is so warm, just like the photos.",
-              "name": "Mona"
-            },
-            "r2": {
-              "text": "Arrived in two days to Alex, packed with care.",
-              "name": "Karim"
-            },
-            "r3": {
-              "text": "The vases look even better in person.",
-              "name": "Salma"
-            }
-          },
-          "room": {
-            "living": "Living",
-            "lighting": "Lighting",
-            "chairs": "Chairs",
-            "decor": "Decor"
           }
         }
       },
@@ -526,8 +425,7 @@
         "shipWith": "Ship with",
         "tracking": "Tracking number",
         "label": "Print label",
-        "status": { "ready": "Ready to ship", "shipped": "Shipped", "delivered": "Delivered" },
-        "stage": { "picked": "Picked up", "onTheWay": "On the way", "delivered": "Delivered" },
+        "status": { "shipped": "Shipped" },
         "options": [
           { "name": "Bosta", "body": "Through your Bosta account", "price": "55 EGP", "latin": true },
           { "name": "Your riders", "body": "Ahmed Samir · available", "price": "40 EGP" },
@@ -539,7 +437,6 @@
         "egp": "EGP",
         "method": "Payment method",
         "place": "Place order",
-        "secure": "Secure payment",
         "methods": [
           { "name": "Cash on delivery" },
           { "name": "Bank card", "note": "VISA · MC" },
