@@ -1235,6 +1235,27 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-86a · P1 · deps: —** Four home steps, `payments` flag and `hasRealOrders` in the home snapshot, `showSetupOnlyHome` rule with unit tests.
 - **F-86b · P1 · deps: F-86a** Setup-only home layout and step cards (ar + en); checklist card on the four steps.
 
+### F-87 Fully separate stores (own products, categories, wallet, activation) — P1 · owner request · Money and data migration
+
+**Why:** Each of a seller's stores should be a fully separate store, with nothing shared between them except the account (owner, 2026-11-10).
+**What:** Products, variants, translations, stock, seller categories and brands, coupons, policies and the custom domain belong to one store (`products.store_id`; `catalog_mode`/`store_products` retired). Every product shown in N stores today becomes N independent copies, and history stays on the original row id (map: `product_store_split`). "Copy to store" (single and bulk) on Products for sellers with 2+ stores, with the same stock. Each store has its own wallet (`seller_wallet.store_id`, `wallet_transactions.wallet_id`): order fees and top-ups go to their store, while Pro, AI packs and email packs are paid from the primary store. Today's balance becomes the primary store's wallet and other stores start at 0. Activation and the grace window are per store. Pro, AI credits and the store limit stay per account. Design, shipping, payments, apps, currency, settings, campaigns and integrations are already per store (checked in code).
+**Status:** Planned (plan: `docs/plans/stores-separation.md`, 2026-11-10). Migrations 0160/0161 (additive, before the dark deploy), 0163 catalog split and 0164 wallet split (after it, owner approval on production), 0165 cleanup. Six owner questions open (plan §6).
+
+- **F-87a · P1 · deps: —** Switches (`platform_switches`), `primaryStoreId`, store guards, tenant-isolation test suite.
+- **F-87b · P1 · deps: F-87a** 0160 + drizzle; read-only dry-run report on staging and production for the owner.
+- **F-87c · P1 · deps: F-87b** Products under `/stores/[storeId]/products`; every catalog read and write per store (storefront, dashboard, caches, checkout), dark behind the switch.
+- **F-87d · P1 · deps: F-87c** Seller categories and brands per store.
+- **F-87e · P1 · deps: F-87c** MCP tools and AI Store Builder per store.
+- **F-87f · P1 · deps: F-87a** `postStoreWalletEntry` per store wallet; every caller routed (store or primary).
+- **F-87g · P1 · deps: F-87f** Top-ups per store; activation and grace per store.
+- **F-87h · P1 · deps: F-87g** 0161 + 0164; Admin wallet tools per store.
+- **F-87i · P1 · deps: F-87c, F-87g** Dashboard UX: switcher scope, wallet page, banners, empty states.
+- **F-87j · P1 · deps: F-87m** "Copy to store" (single + bulk).
+- **F-87k · P2 · deps: F-87c** Coupons, policies (F-46) and custom domain per store.
+- **F-87l · P2 · deps: owner** Fulfillment profile per store (optional).
+- **F-87m · P1 · deps: F-87c** 0163 catalog split on staging, E2E, then production.
+- **F-87n · P2 · deps: F-87m, F-87h** 0165 cleanup, docs and rules wording.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1243,6 +1264,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-10 | Make each of a seller's stores a fully separate store: own products, theme, design, shipping, domain/subdomain, payment methods, installed apps, currency, settings, and its own wallet balance. Existing products: each store keeps what it shows today (copies, history on the original); "Copy to store" on /products with the same stock; per-store activation, seller categories and brands; Pro, AI credits and store limit stay per account, and account charges are paid from the primary store; today's balance moves to the primary store | F-87 | Planned (plan: `docs/plans/stores-separation.md`) |
 | 2026-11-10 | Comparison pages for EasyOrders, Shopify, WooCommerce, ExpandCart, Salla and Zid vs Tallaby, with fresh research, using Shopify's comparison pages as the content reference and the Claude Design "Compare.html" design; alternatives pages for EasyOrders and Shopify if time allows; keep them gated | F-53 follow-up (F-53d, SEO_PLAN.md Phase 3) | Built, gated (owner decides S-06) |
 | 2026-11-10 | "Ecommerce by Industry" pages on tallaby.com, with Shopify's industry pages as the content reference: an `/industries` hub (Claude Design "Hub Page") listing every industry, each industry page on the "Industry Page" design, and the SEO_PLAN.md industries N1–N11 that aren't built yet | F-53 follow-up (F-53c): `/industries` hub + 11 industry pages, built 2026-11-10 (§7) |
 | 2026-11-10 | tallaby.com home: few sellers create their store through the AI input in the hero, so replace it with a plain button "انشئ متجرك في أقل من 10 دقايق"; make the marquee row under the hero slower; simplify the home page mockups for clarity and performance | Marketing site (no feature ID) | Done (§7 2026-11-10) |
@@ -1649,10 +1671,31 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-85f Custom domain DNS step: TTL, copy buttons, per-registrar steps (2026-11-10; not seen in a browser)
 - [x] F-86a Four home setup steps, payments flag, real-orders rule, tests (2026-11-10)
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
+- [ ] F-87a Switches, primary-store helper, store guards, tenant-isolation suite
+- [ ] F-87b 0160 + dry-run report for the owner
+- [ ] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark
+- [ ] F-87d Seller categories and brands per store
+- [ ] F-87e MCP tools and AI Store Builder per store
+- [ ] F-87f Store wallet per store (`postStoreWalletEntry` + callers)
+- [ ] F-87g Top-ups and activation per store
+- [ ] F-87h 0161 + 0164, Admin wallet tools per store
+- [ ] F-87i Dashboard UX for separate stores
+- [ ] F-87j "Copy to store" (single + bulk)
+- [ ] F-87k Coupons, policies and custom domain per store
+- [ ] F-87l Fulfillment profile per store (owner)
+- [ ] F-87m 0163 catalog split (staging, E2E, production)
+- [ ] F-87n 0165 cleanup and docs
 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87 Fully separate stores: plan written (owner; planning only, no code, no migration run)
+
+- **Plan:** `docs/plans/stores-separation.md`: inventory with file:line evidence, target model (`products.store_id`, `product_store_split` map, taxonomy and coupons per store, `seller_wallet.store_id` + `wallet_transactions.wallet_id`, `seller_wallet_top_ups.store_id`, `stores.activated_at`), two dark switches (`platform_switches`: `stores_catalog_split`, `stores_wallet_split`), tasks F-87a…n with tests, UX, risks and effort (≈ 16–20 days).
+- **Migrations planned (none written yet):** 0160 additive columns and map (before the deploy); 0161 wallet columns + safe backfill + compat trigger (before the deploy); 0163 catalog split with invariants, ending with its switch (after the dark deploy, owner approval on production); 0164 wallet constraints + per-store 0159 trigger, ending with its switch (after the deploy); 0165 cleanup (two weeks later). 0162 left free. A read-only dry-run report comes first.
+- **Found:** coupons, policies (`sellers.*_policy`) and the custom domain (unique per seller) are still account-level; `/products` has no store in its URL; related products on the storefront already ignore `selected` mode; `unique (seller_id, sku)` and per-seller slugs block copies; builder trees hold product and category ids, which the split must remap.
+- **Owner questions (plan §6):** existing stores of activated sellers count as activated; copy status (draft when the currency differs); ad charges from the product's store; reviews copied only at the split; fulfillment profile stays per account; no deleting a store with a non-zero balance.
 
 ### 2026-11-10 — F-53d compare and alternatives pages, gated (owner; no migration)
 
