@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm/relations";
 import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuilds, storeBuildItems, storeBuildClaims, storeBuildIntakes } from "./schema";
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows, agentPendingActions, agentReadCounts } from "./schema";
+import { productStoreSplit } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends, storeAppRequests, storeAppInstalls, themeRequests } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
@@ -208,6 +209,10 @@ export const couponsRelations = relations(coupons, ({one, many}) => ({
 		fields: [coupons.sellerId],
 		references: [sellers.id]
 	}),
+	store: one(stores, {
+		fields: [coupons.storeId],
+		references: [stores.id]
+	}),
 	couponUsages: many(couponUsage),
 }));
 
@@ -292,6 +297,10 @@ export const productsRelations = relations(products, ({one, many}) => ({
 		fields: [products.sellerId],
 		references: [sellers.id]
 	}),
+	store: one(stores, {
+		fields: [products.storeId],
+		references: [stores.id]
+	}),
 	sellerCategory: one(sellerProductCategories, {
 		fields: [products.sellerCategoryId],
 		references: [sellerProductCategories.id]
@@ -308,6 +317,10 @@ export const sellerProductCategoriesRelations = relations(sellerProductCategorie
 		fields: [sellerProductCategories.sellerId],
 		references: [sellers.id]
 	}),
+	store: one(stores, {
+		fields: [sellerProductCategories.storeId],
+		references: [stores.id]
+	}),
 	sourceCategory: one(categories, {
 		fields: [sellerProductCategories.sourceCategoryId],
 		references: [categories.id]
@@ -319,6 +332,10 @@ export const sellerProductBrandsRelations = relations(sellerProductBrands, ({one
 	seller: one(sellers, {
 		fields: [sellerProductBrands.sellerId],
 		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [sellerProductBrands.storeId],
+		references: [stores.id]
 	}),
 	sourceBrand: one(brands, {
 		fields: [sellerProductBrands.sourceBrandId],
@@ -705,6 +722,10 @@ export const sellerCategoriesRelations = relations(sellerCategories, ({one}) => 
 		fields: [sellerCategories.categoryId],
 		references: [categories.id]
 	}),
+	store: one(stores, {
+		fields: [sellerCategories.storeId],
+		references: [stores.id]
+	}),
 }));
 
 export const sellerWalletRelations = relations(sellerWallet, ({one}) => ({
@@ -865,6 +886,21 @@ export const storesRelations = relations(stores, ({one, many}) => ({
 	savedBlocks: many(savedBlocks),
 	adminAuditLog: many(adminAuditLog),
 	blockedPhones: many(storeBlockedPhones),
+	// 0160 (F-87): rows that will belong to this store after the split.
+	products: many(products),
+	sellerProductCategories: many(sellerProductCategories),
+	sellerProductBrands: many(sellerProductBrands),
+	sellerCategories: many(sellerCategories),
+	coupons: many(coupons),
+	walletTopUps: many(sellerWalletTopUps),
+	productSplits: many(productStoreSplit),
+}));
+
+export const productStoreSplitRelations = relations(productStoreSplit, ({one}) => ({
+	store: one(stores, {
+		fields: [productStoreSplit.storeId],
+		references: [stores.id]
+	}),
 }));
 
 export const storeProductsRelations = relations(storeProducts, ({one}) => ({
@@ -1073,6 +1109,10 @@ export const sellerWalletTopUpsRelations = relations(sellerWalletTopUps, ({one})
 	seller: one(sellers, {
 		fields: [sellerWalletTopUps.sellerId],
 		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [sellerWalletTopUps.storeId],
+		references: [stores.id]
 	}),
 	transaction: one(walletTransactions, {
 		fields: [sellerWalletTopUps.transactionId],

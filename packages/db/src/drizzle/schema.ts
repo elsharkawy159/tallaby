@@ -239,6 +239,8 @@ export const coupons = pgTable("coupons", {
 	popupDurationMinutes: integer("popup_duration_minutes"),
 	// 0149: the seller chose to list this coupon in the store's cart.
 	showInCart: boolean("show_in_cart").default(false).notNull(),
+	/** The coupon's store (0160, F-87); NULL = every store of the seller (legacy). Not read yet. */
+	storeId: uuid("store_id"),
 	startsAt: timestamp("starts_at", { withTimezone: true, mode: 'string' }).notNull(),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -252,6 +254,11 @@ export const coupons = pgTable("coupons", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "coupons_seller_id_sellers_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "coupons_store_id_fkey"
 		}).onDelete("cascade"),
 	unique("coupons_code_unique").on(table.code),
 ]);
@@ -1455,6 +1462,8 @@ export const users = pgTable("users", {
 export const sellerProductCategories = pgTable("seller_product_categories", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
+	/** The store that will own it after the catalog split (0160, F-87); NULL until 0163. Not read yet. */
+	storeId: uuid("store_id"),
 	name: text().notNull(),
 	nameAr: text("name_ar"),
 	/** The pack item it was picked from; null for the seller's own. */
@@ -1473,6 +1482,11 @@ export const sellerProductCategories = pgTable("seller_product_categories", {
 			name: "seller_product_categories_seller_id_fkey"
 		}).onDelete("cascade"),
 	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "seller_product_categories_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
 			columns: [table.sourceCategoryId],
 			foreignColumns: [categories.id],
 			name: "seller_product_categories_source_category_id_fkey"
@@ -1484,6 +1498,8 @@ export const sellerProductCategories = pgTable("seller_product_categories", {
 export const sellerProductBrands = pgTable("seller_product_brands", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
+	/** The store that will own it after the catalog split (0160, F-87); NULL until 0163. Not read yet. */
+	storeId: uuid("store_id"),
 	name: text().notNull(),
 	nameAr: text("name_ar"),
 	sourceBrandId: uuid("source_brand_id"),
@@ -1499,6 +1515,11 @@ export const sellerProductBrands = pgTable("seller_product_brands", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "seller_product_brands_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "seller_product_brands_store_id_fkey"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.sourceBrandId],
@@ -1527,6 +1548,8 @@ export const products = pgTable("products", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	images: jsonb(),
 	sellerId: uuid("seller_id").notNull(),
+	/** The store that will own the product after the catalog split (0160, F-87); NULL until 0163, NOT NULL in 0165. Not read yet. */
+	storeId: uuid("store_id"),
 	sku: text(),
 	condition: itemCondition().default('new'),
 	conditionDescription: text("condition_description"),
@@ -1570,6 +1593,9 @@ export const products = pgTable("products", {
 	index("product_seller_category_id_idx").using("btree", table.sellerCategoryId).where(sql`seller_category_id IS NOT NULL`),
 	index("product_seller_brand_id_idx").using("btree", table.sellerBrandId).where(sql`seller_brand_id IS NOT NULL`),
 	index("product_ai_source_idx").using("btree", table.aiSource).where(sql`ai_source IS NOT NULL`),
+	index("products_store_status_idx").using("btree", table.storeId, table.status).where(sql`deleted_at IS NULL`),
+	index("products_store_created_idx").using("btree", table.storeId, table.createdAt.desc()),
+	index("products_store_trashed_idx").using("btree", table.storeId, table.deletedAt).where(sql`(deleted_at IS NOT NULL AND purged_at IS NULL)`),
 	index("products_trashed_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.deletedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(deleted_at IS NOT NULL AND purged_at IS NULL)`),
 	check("products_low_stock_threshold_check", sql`low_stock_threshold IS NULL OR low_stock_threshold BETWEEN 1 AND 99`),
 	check("products_min_order_quantity_check", sql`min_order_quantity BETWEEN 1 AND 10000`),
@@ -1608,6 +1634,11 @@ export const products = pgTable("products", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "products_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "products_store_id_fkey"
 		}).onDelete("cascade"),
 	// 0049: insert / "Public full access" policies dropped and writes revoked from anon/authenticated.
 	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"] }),
@@ -1959,6 +1990,8 @@ export const digitalAccessLogs = pgTable("digital_access_logs", {
 export const sellerCategories = pgTable("seller_categories", {
 	sellerId: uuid("seller_id").notNull(),
 	categoryId: uuid("category_id").notNull(),
+	/** The store this pick will belong to after the catalog split (0160, F-87); NULL until 0163. Not read yet. */
+	storeId: uuid("store_id"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	primaryKey({ columns: [table.sellerId, table.categoryId] }),
@@ -1971,6 +2004,11 @@ export const sellerCategories = pgTable("seller_categories", {
 		columns: [table.categoryId],
 		foreignColumns: [categories.id],
 		name: "seller_categories_category_id_categories_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.storeId],
+		foreignColumns: [stores.id],
+		name: "seller_categories_store_id_fkey"
 	}).onDelete("cascade"),
 ]);
 
@@ -2652,6 +2690,8 @@ export const stores = pgTable("stores", {
 	sharedFooter: jsonb("shared_footer"),
 	/** The store's brand memory for the agent system (0157, F-83): voice, audience, style words, tagline, photo keywords. */
 	agentProfile: jsonb("agent_profile"),
+	/** When this store was activated (0160, F-87): set once by a top-up or a balance above 0 in its own wallet. Not read yet; backfilled in 0164. */
+	activatedAt: timestamp("activated_at", { withTimezone: true, mode: 'string' }),
 	/** Optimistic-concurrency counter for shared_header/shared_footer (0085). */
 	chromeVersion: integer("chrome_version").default(1).notNull(),
 	/** Set when an admin saves this store's site drafts (0085). */
@@ -3280,6 +3320,45 @@ export const billingSettings = pgTable("billing_settings", {
 	updatedBy: uuid("updated_by"),
 });
 
+/**
+ * One-way platform switches (0160, F-87): `stores_catalog_split` and
+ * `stores_wallet_split`. Read fresh per request, never cached across requests
+ * (packages/lib/src/stores/platform-switches.server.ts). Server-only: RLS on, no policies.
+ */
+export const platformSwitches = pgTable("platform_switches", {
+	key: text().primaryKey().notNull(),
+	enabled: boolean().default(false).notNull(),
+	changedAt: timestamp("changed_at", { withTimezone: true, mode: 'string' }),
+	changedBy: uuid("changed_by"),
+});
+
+/**
+ * The catalog split map (0160, F-87; plan §2.1.2): old id → the id it has in
+ * each store. 'kept' = the store that kept the original row (old_id = new_id),
+ * 'copy' = a new row for another store, 'orphan' = kept by the primary store as
+ * a draft (prev_status = its status before). Written by 0163 and "Copy to
+ * store". Server-only: RLS on, no policies.
+ */
+export const productStoreSplit = pgTable("product_store_split", {
+	entity: text().notNull(),
+	oldId: uuid("old_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	newId: uuid("new_id").notNull(),
+	kind: text().notNull(),
+	prevStatus: text("prev_status"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.entity, table.oldId, table.storeId], name: "product_store_split_pkey" }),
+	uniqueIndex("product_store_split_new_key").using("btree", table.entity, table.newId),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "product_store_split_store_id_fkey"
+		}).onDelete("cascade"),
+	check("product_store_split_entity_check", sql`entity IN ('product', 'variant', 'seller_category', 'seller_brand', 'cross_sell', 'quantity_offer', 'coupon', 'review', 'question')`),
+	check("product_store_split_kind_check", sql`kind IN ('kept', 'copy', 'orphan')`),
+]);
+
 /** Daily EGP-per-USD market rates (0136). Server-only: RLS on, no policies. */
 export const exchangeRates = pgTable("exchange_rates", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
@@ -3293,6 +3372,8 @@ export const exchangeRates = pgTable("exchange_rates", {
 export const sellerWalletTopUps = pgTable("seller_wallet_top_ups", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
+	/** The store whose wallet this top-up credits (0160, F-87); NULL until 0161 backfills it. Not read yet. */
+	storeId: uuid("store_id"),
 	/** The EGP paid. What the wallet receives is credit_amount when set (0136). */
 	amount: numeric({ precision: 10, scale: 2 }).notNull(),
 	creditAmount: numeric("credit_amount", { precision: 10, scale: 2 }),
@@ -3320,6 +3401,12 @@ export const sellerWalletTopUps = pgTable("seller_wallet_top_ups", {
 			foreignColumns: [sellers.id],
 			name: "seller_wallet_top_ups_seller_id_fkey"
 		}).onDelete("cascade"),
+	// NO ACTION: a store with top-up history is never hard-deleted on its own (0160).
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "seller_wallet_top_ups_store_id_fkey"
+		}),
 	foreignKey({
 			columns: [table.transactionId],
 			foreignColumns: [walletTransactions.id],
@@ -3885,7 +3972,7 @@ export const stockMovements = pgTable("stock_movements", {
 	variantId: uuid("variant_id"),
 	delta: integer().notNull(),
 	stockAfter: integer("stock_after").notNull(),
-	/** 'order' | 'cancel' | 'return' | 'edit' | 'bulk_edit' | 'import' | 'other' */
+	/** 'order' | 'cancel' | 'return' | 'edit' | 'bulk_edit' | 'import' | 'other' | 'copy' (0160, F-87 catalog split) */
 	reason: text().notNull(),
 	orderId: uuid("order_id"),
 	actorUserId: uuid("actor_user_id"),
@@ -3899,7 +3986,7 @@ export const stockMovements = pgTable("stock_movements", {
 	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "stock_movements_store_id_fkey" }).onDelete("set null"),
 	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "stock_movements_product_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.orderId], foreignColumns: [orders.id], name: "stock_movements_order_id_fkey" }).onDelete("set null"),
-	check("stock_movements_reason_check", sql`reason IN ('order', 'cancel', 'return', 'edit', 'bulk_edit', 'import', 'other')`),
+	check("stock_movements_reason_check", sql`reason IN ('order', 'cancel', 'return', 'edit', 'bulk_edit', 'import', 'other', 'copy')`),
 	check("stock_movements_delta_check", sql`delta <> 0`),
 ]);
 

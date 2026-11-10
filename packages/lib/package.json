@@ -382,6 +382,18 @@
       "types": "./src/stores/server.ts",
       "default": "./src/stores/server.ts"
     },
+    "./stores/switches": {
+      "types": "./src/stores/platform-switches.lib.ts",
+      "default": "./src/stores/platform-switches.lib.ts"
+    },
+    "./stores/switches/server": {
+      "types": "./src/stores/platform-switches.server.ts",
+      "default": "./src/stores/platform-switches.server.ts"
+    },
+    "./stores/scope/server": {
+      "types": "./src/stores/store-scope.server.ts",
+      "default": "./src/stores/store-scope.server.ts"
+    },
     "./media": {
       "types": "./src/media/media.lib.ts",
       "default": "./src/media/media.lib.ts"

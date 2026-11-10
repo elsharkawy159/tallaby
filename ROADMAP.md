@@ -1673,8 +1673,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-85f Custom domain DNS step: TTL, copy buttons, per-registrar steps (2026-11-10; not seen in a browser)
 - [x] F-86a Four home setup steps, payments flag, real-orders rule, tests (2026-11-10)
 - [x] F-86b Setup-only home and four-step checklist card (2026-11-10; not seen in a browser)
-- [ ] F-87a Switches, primary-store helper, store guards, tenant-isolation suite
-- [ ] F-87b 0160 + dry-run report for the owner
+- [x] F-87a Switches, primary-store helper, store guards, tenant-isolation suite (2026-11-10; uncommitted; DB suite written, not run: no `TEST_DATABASE_URL`)
+- [~] F-87b 0160 + dry-run report for the owner (2026-11-10; `0160` + drizzle mirror and `stores-split-dry-run.sql` written; 0160 **not applied** anywhere, dry run **not run**: both wait for owner approval on staging and production)
 - [ ] F-87c Products per store (route move, storefront, dashboard, caches, checkout), dark
 - [ ] F-87d Seller categories and brands per store
 - [ ] F-87e MCP tools and AI Store Builder per store
@@ -1691,6 +1691,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-10 — F-87a/F-87b Phase A foundations written (no behaviour change; 0160 written, NOT applied; dry run NOT run)
+
+- **F-87a:** `isSwitchOn(key, q?)` (`packages/lib/src/stores/platform-switches.server.ts`; fresh read, never in `@workspace/cache`; missing table or row = off, other DB errors throw), React `cache` wrappers `apps/dashboard/lib/stores/platform-switches.server.ts` and `apps/ecommerce/lib/platform-switches.server.ts`; `primaryStoreId(q, sellerId)`, `storeOwnedBy`, `storeHasProduct` / `assertStoreProduct` (before the split: same seller and `catalog_mode` / `store_products`; after: `products.store_id`) in `packages/lib/src/stores/store-scope.server.ts`. Exports `@workspace/lib/stores/switches`, `…/switches/server`, `…/scope/server`. Nothing calls them yet. Tests: `store-scope.test.ts` (unit) and `store-separation.integration.test.ts` (S1 with stores A and B, S2; skipped without `TEST_DATABASE_URL`).
+- **F-87b:** `packages/db/migrations/0160_store_separation_columns.sql` (additive, idempotent): `platform_switches` (RLS on, no policies; `stores_catalog_split`, `stores_wallet_split` off), `products.store_id` (FK CASCADE) + 3 indexes, `product_store_split` (RLS on, no policies), nullable `store_id` on `seller_product_categories`, `seller_product_brands`, `seller_categories`, `coupons` (CASCADE) and `seller_wallet_top_ups` (NO ACTION), `stores.activated_at`, `stock_movements_reason_check` + `'copy'` (widened from the live definition). Mirrored in `schema.ts` / `relations.ts`. **Apply on staging, then production, BEFORE deploying any code from `main` after it** (Drizzle selects and inserts list every column). `packages/db/scripts/stores-split-dry-run.sql`: read-only (`BEGIN READ ONLY … ROLLBACK`), seven result sets, runs without 0160. Not run anywhere yet; its totals go here once the owner approves a run.
+- **Found:** `record_stock_movement` (0125) turns any reason not in its own list into `'other'`, so 0163 must also add `'copy'` there (and to `STOCK_MOVEMENT_REASONS`) or its copy rows are logged as `'other'`.
 
 ### 2026-11-10 — F-87 Fully separate stores: plan written (owner; planning only, no code, no migration run)
 
