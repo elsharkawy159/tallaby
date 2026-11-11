@@ -10,12 +10,19 @@
  * and hangers, folded knits, a suit jacket on a wall hook, a shirt shelf and
  * a leather work bag. No people, no hands, no mannequins and no logos (the
  * design's photos of models were all replaced).
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Zay Men itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays 3.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const ZAY_KEY = "zay";
 
@@ -43,96 +50,208 @@ const PHOTOS = {
 
 const NAME = L("زي مِن", "Zay Men");
 
-const header = lib("header-chips", {
-  text: {
-    "م": L("ز", "Z"),
-    "اسم متجرك": NAME,
-    "ابحث عن منتج…": L("ابحث عن تيشيرت، قميص، تريكو…", "Search tees, shirts, knitwear…"),
+/**
+ * Zay Men's own content: what the look is built with when no edition is
+ * applied (the template `zay` has always meant). The store name and
+ * description and the category photos come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header's search placeholder.
+  labels: { search: L("ابحث عن تيشيرت، قميص، تريكو…", "Search tees, shirts, knitwear…") },
+  // The footer's large sign-off line: two to four words.
+  footer: { line: L("البس ببساطة", "Dress simple") },
+  // The collage hero has no single photo: its three photos and their captions are `hero-piece-1..3` below.
+  hero: {
+    eyebrow: L("طقم الأسبوع", "The weekday kit"),
+    title: L("٣ قطع تكفي أسبوعك", "Three pieces, your whole week"),
+    line: L("قطن مصري تقيل وقصّات مظبوطة، كل قطعة بتتلبس مع التانية.", "Heavy Egyptian cotton and fits that work: every piece goes with the others."),
+    // The button goes to the newest products.
+    cta: L("تسوق الأساسيات", "Shop the basics"),
   },
-});
-
-const footer = lib("footer-signoff", {
-  text: {
-    "شكرًا إنك عدّيت علينا": L("البس ببساطة", "Dress simple"),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-    "من نحن": L("عن زي", "About Zay"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ زي مِن. كل الحقوق محفوظة.", "© 2026 Zay Men. All rights reserved."),
+  // The shelf's title, over its tabs (new, best sellers, top rated).
+  products: { primary: { title: L("الأسبوع ده", "This week") } },
+  // The carousel of best sellers: its title.
+  rows: [{ title: L("بيرجعوا يطلبوه", "The ones they reorder") }],
+  // Three WhatsApp-style messages from buyers, each with a name; the store answers the first one (`custom.reviews-reply`).
+  reviews: {
+    title: L("من واتساب", "From WhatsApp"),
+    items: [
+      {
+        quote: L(
+          "التيشيرت التقيل ده أحسن حاجة اشتريتها السنة دي. اتغسل عشر مرات ولسه زي ما هو.",
+          "This heavy tee is the best thing I bought this year. Ten washes and it still holds its shape.",
+        ),
+        name: L("أحمد س.", "Ahmed S."),
+      },
+      {
+        quote: L("طلبت الفيت السليم وطلع ضيق، بدّلته بالريجيولار ببلاش في يومين.", "Ordered the slim fit and it was tight; swapped it for regular for free in two days."),
+        name: L("مصطفى ع.", "Mostafa A."),
+      },
+      { quote: L("خدت طقم الشغل كله، والأوفرشيرت شكله غالي جداً.", "Took the whole weekday kit; the overshirt looks expensive."), name: L("كريم ن.", "Karim N.") },
+    ],
   },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-collage", {
-    photo: [pexels(18199559, 1200), PHOTOS.foldedKnits, pexels(5424909, 1400)],
-    text: {
-      "حكاية الموسم": L("طقم الأسبوع", "The weekday kit"),
-      "٣ قطع تكفي أسبوعًا كاملًا": L("٣ قطع تكفي أسبوعك", "Three pieces, your whole week"),
-      "نسّقها معًا أو مع ما تملكه بالفعل، وكل قطعة متاحة بأكثر من لون.": L(
-        "قطن مصري تقيل وقصّات مظبوطة، كل قطعة بتتلبس مع التانية.",
-        "Heavy Egyptian cotton and fits that work: every piece goes with the others.",
-      ),
-      "تسوّق اللوك": L("تسوق الأساسيات", "Shop the basics"),
-      "القطعة الأولى": L("تيشيرت تقيل", "Heavy tee"),
-      "القطعة الثانية": L("تريكو", "Knitwear"),
-      "القطعة الثالثة": L("أوفرشيرت", "Overshirt"),
-    },
-    links: { "/products": NEW },
-  }),
-  lib("categories-big-type"),
-  lib("products-shelf", {
-    text: {
-      "تسوّق حسب مزاجك": L("الأسبوع ده", "This week"),
-      "عليه خصم": L("الأعلى تقييماً", "Top rated"),
-    },
-    links: { "/products": [NEW, BEST, RATED, SHOP] },
-  }),
-  lib("features-compare", {
-    text: {
-      "إحنا ولا غيرنا؟": L("ليه زي؟", "Why Zay?"),
-      "متجرنا": L("زي", "Zay"),
-      "منتجات أصلية بفاتورة": L("قطن مصري ٢٤٠ جرام", "Egyptian cotton, 240 g"),
-      "ضمان محلي": L("تبديل مقاس ببلاش", "Free size exchange"),
-      "استرجاع خلال ١٤ يوم": L("٣ قصّات في كل مقاس", "Three fits in every size"),
-    },
-  }),
-  lib("products-carousel", {
-    text: { "الأكثر مبيعاً": L("بيرجعوا يطلبوه", "The ones they reorder") },
-    links: { "/products": BEST },
-  }),
-  lib("testimonials-chat", {
-    text: {
-      "من الواتساب": L("الآراء", "Reviews"),
-      "رسايل بتفرّحنا": L("من واتساب", "From WhatsApp"),
-      "مريم أ.": L("أحمد س.", "Ahmed S."),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "التيشيرت التقيل ده أحسن حاجة اشتريتها السنة دي. اتغسل عشر مرات ولسه زي ما هو.",
-        "This heavy tee is the best thing I bought this year. Ten washes and it still holds its shape.",
-      ),
-      "ده يسعدنا جدًا، شكرًا ليكي!": L("ده يسعدنا جداً، شكراً يا أحمد!", "So happy to hear that, thanks Ahmed!"),
-      "عمر ك.": L("مصطفى ع.", "Mostafa A."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "طلبت الفيت السليم وطلع ضيق، بدّلته بالريجيولار ببلاش في يومين.",
-        "Ordered the slim fit and it was tight; swapped it for regular for free in two days.",
-      ),
-      "يوسف م.": L("كريم ن.", "Karim N."),
-      "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L("خدت طقم الشغل كله، والأوفرشيرت شكله غالي جداً.", "Took the whole weekday kit; the overshirt looks expensive."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن زي", "About Zay"), L("زي مِن أساسيات رجالي مظبوطة، بـ٣ قصّات.", "Zay Men makes men’s basics that fit, in three cuts.")),
-  aboutStory(lib, {
-    photo: PHOTOS.shirtShelf,
+  about: {
+    line: L("زي مِن أساسيات رجالي مظبوطة، بـ٣ قصّات.", "Zay Men makes men’s basics that fit, in three cuts."),
     alt: L("قمصان متطبقة على رفوف خشب", "Folded shirts on wooden shelves"),
     eyebrow: L("من ٢٠٢١", "Since 2021"),
     title: L("أساسيات، بس مظبوطة", "Basics, done properly"),
     text: L("كل قطعة بـ٣ قصّات: سليم وريجيولار وواسع، عشان تلاقي مقاسك من أول مرة.", "Every piece comes in three fits, slim, regular and relaxed, so you find your size first time."),
     more: L("قطن مصري ٢٤٠ جرام، متقصوص ومتخيط في المحلة.", "240 g Egyptian cotton, cut and sewn in El Mahalla."),
-    button: L("تسوق الأساسيات", "Shop the basics"),
-    href: SHOP,
-  }),
-];
+    // The button goes to the whole catalog.
+    cta: L("تسوق الأساسيات", "Shop the basics"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("كل يوم من ١٢ الضهر لـ ١٠ بالليل، على الإيميل أو واتساب.", "Every day, 12 pm to 10 pm, by email or WhatsApp."),
+    heading: L("اسأل عن مقاس أو قصّة", "Ask about a size or fit"),
+  },
+  faq: {
+    line: L("القصّات والمقاسات والتوصيل.", "Fits, sizes and delivery."),
+    question: L("أختار أنهي قصّة؟", "Which fit should I pick?"),
+    answer: L("السليم على الجسم، والريجيولار مريح، والواسع أوفر سايز. جدول المقاسات في صفحة كل منتج.", "Slim sits close, regular is easy and relaxed is oversized. Each product page has the size chart."),
+  },
+  custom: {
+    // The store's short name, as it reads inside a sentence: "About Zay", "Why Zay?", and the store's column in the comparison.
+    "store-short": L("زي", "Zay"),
+    // The hero's three captions, numbered 01 to 03 under the photos `hero-piece-1..3`: a product type each, one or two words.
+    "hero-piece-1": L("تيشيرت تقيل", "Heavy tee"),
+    "hero-piece-2": L("تريكو", "Knitwear"),
+    "hero-piece-3": L("أوفرشيرت", "Overshirt"),
+    // The first three of the comparison's five rows (the last two are the library's: cash on delivery, WhatsApp reply in minutes).
+    // Rows 1 and 3 are ticked for the store only: what other shops do not offer. Row 2 is ticked for both.
+    "compare-row-1": L("قطن مصري ٢٤٠ جرام", "Egyptian cotton, 240 g"),
+    "compare-row-2": L("تبديل مقاس ببلاش", "Free size exchange"),
+    "compare-row-3": L("٣ قصّات في كل مقاس", "Three fits in every size"),
+    // The store's short answer under the first buyer message.
+    "reviews-reply": L("ده يسعدنا جداً، شكراً يا أحمد!", "So happy to hear that, thanks Ahmed!"),
+  },
+  photos: {
+    // The about page's photo (the look has no story block on its home page).
+    story: PHOTOS.shirtShelf,
+    // The hero's collage: three different products, one per caption. 1: portrait 4:5 (the largest); 2: square; 3: landscape 4:3.
+    custom: {
+      "hero-piece-1": pexels(18199559, 1200),
+      "hero-piece-2": PHOTOS.foldedKnits,
+      "hero-piece-3": pexels(5424909, 1400),
+    },
+  },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade or the demo store is a slot of `c`;
+ * generic shop labels (Top rated, Reviews) and the layout stay here.
+ */
+function look(c: LookContent, _journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+  const short = x["store-short"]!;
+  const aboutName = L(`عن ${short.ar}`, `About ${short.en}`);
+  const review = c.reviews.items;
+
+  const header = lib("header-chips", {
+    text: {
+      "م": initialOf(name),
+      "اسم متجرك": name,
+      "ابحث عن منتج…": c.labels.search,
+    },
+  });
+
+  const footer = lib("footer-signoff", {
+    text: {
+      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+      "من نحن": aboutName,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  const home: Design[] = [
+    lib("hero-collage", {
+      photo: [c.photos.custom["hero-piece-1"]!, c.photos.custom["hero-piece-2"]!, c.photos.custom["hero-piece-3"]!],
+      text: {
+        "حكاية الموسم": c.hero.eyebrow,
+        "٣ قطع تكفي أسبوعًا كاملًا": c.hero.title,
+        "نسّقها معًا أو مع ما تملكه بالفعل، وكل قطعة متاحة بأكثر من لون.": c.hero.line,
+        "تسوّق اللوك": c.hero.cta,
+        "القطعة الأولى": x["hero-piece-1"]!,
+        "القطعة الثانية": x["hero-piece-2"]!,
+        "القطعة الثالثة": x["hero-piece-3"]!,
+      },
+      links: { "/products": NEW },
+    }),
+    lib("categories-big-type"),
+    lib("products-shelf", {
+      text: {
+        "تسوّق حسب مزاجك": c.products.primary.title,
+        "عليه خصم": L("الأعلى تقييماً", "Top rated"),
+      },
+      links: { "/products": [NEW, BEST, RATED, SHOP] },
+    }),
+    lib("features-compare", {
+      text: {
+        "إحنا ولا غيرنا؟": L(`ليه ${short.ar}؟`, `Why ${short.en}?`),
+        "متجرنا": short,
+        "منتجات أصلية بفاتورة": x["compare-row-1"]!,
+        "ضمان محلي": x["compare-row-2"]!,
+        "استرجاع خلال ١٤ يوم": x["compare-row-3"]!,
+      },
+    }),
+    lib("products-carousel", {
+      text: { "الأكثر مبيعاً": c.rows[0]!.title },
+      links: { "/products": BEST },
+    }),
+    lib("testimonials-chat", {
+      text: {
+        "من الواتساب": L("الآراء", "Reviews"),
+        "رسايل بتفرّحنا": c.reviews.title,
+        "مريم أ.": review[0]!.name,
+        "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": review[0]!.quote,
+        "ده يسعدنا جدًا، شكرًا ليكي!": x["reviews-reply"]!,
+        "عمر ك.": review[1]!.name,
+        "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": review[1]!.quote,
+        "يوسف م.": review[2]!.name,
+        "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": review[2]!.quote,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: SHOP,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -161,7 +280,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const ZAY = libraryTemplate({
+export const ZAY = editionTemplate({
   key: ZAY_KEY,
   version: 3,
   changelog: "Zay v3: new hero, categories, section order",
@@ -186,31 +305,40 @@ export const ZAY = libraryTemplate({
   },
   fonts: { heading: "Readex Pro", body: "Readex Pro" },
   radius: 4,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن زي", "About"), seo: { title: L("عن زي", "About Zay") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("كل يوم من ١٢ الضهر لـ ١٠ بالليل، على الإيميل أو واتساب.", "Every day, 12 pm to 10 pm, by email or WhatsApp."),
-        heading: L("اسأل عن مقاس أو قصّة", "Ask about a size or fit"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("القصّات والمقاسات والتوصيل.", "Fits, sizes and delivery."),
-        question: L("أختار أنهي قصّة؟", "Which fit should I pick?"),
-        answer: L("السليم على الجسم، والريجيولار مريح، والواسع أوفر سايز. جدول المقاسات في صفحة كل منتج.", "Slim sits close, regular is easy and relaxed is oversized. Each product page has the size chart."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "labels.search",
+    "footer.line",
+    "custom.store-short",
+    "hero.eyebrow",
+    "hero.title",
+    "hero.line",
+    "hero.cta",
+    "custom.hero-piece-1",
+    "custom.hero-piece-2",
+    "custom.hero-piece-3",
+    "photos.custom.hero-piece-1",
+    "photos.custom.hero-piece-2",
+    "photos.custom.hero-piece-3",
+    "products.primary.title",
+    "custom.compare-row-1",
+    "custom.compare-row-2",
+    "custom.compare-row-3",
+    "rows.0.title",
+    "reviews.title",
+    "reviews.items.0",
+    "reviews.items.1",
+    "reviews.items.2",
+    "custom.reviews-reply",
+    "about",
+    "contact",
+    "faq",
+    "photos.story",
   ],
+  // The shelf has its own tabs (new, best sellers, top rated), so `primary` is not read; the look has no category rows.
+  journey: { primary: "newest", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

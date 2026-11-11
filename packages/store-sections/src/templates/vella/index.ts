@@ -16,12 +16,19 @@
  * 14641427, tiles 17076381, 7417471, 31961166, 3927384; products as listed in
  * `DEMO`. Pexels has few clean sweatpants and sports packshots without a
  * body, so those two categories hold four products each.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Vella itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays 1.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, handle, libraryTemplate, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
+import { copyrightLine, editionTemplate, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, handle, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
 
 export const VELLA_KEY = "vella";
 
@@ -45,87 +52,41 @@ const PHOTOS = {
 
 const NAME = L("فيلا", "Vella");
 
-const header = lib("header-announcement-strip", {
-  text: {
-    "اسم متجرك": NAME,
-    "أهلًا بيك في متجرنا": L("أهلًا بيك في فيلا", "Welcome to Vella"),
-    "شحن مجاني للطلبات الكبيرة": L("شحن مجاني للطلبات فوق ٧٥٠٠ جنيه", "Free shipping above 7,500 EGP"),
-    "تفاصيل بتفرق": L("تفاصيل بتفرق", "Details that make a difference"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("الأكثر طلبًا", "Best sellers"),
+/**
+ * Vella's own content: what the look is built with when no edition is applied
+ * (the template `vella` has always meant). The store name and description and
+ * the category photos come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The black strip's three sliding messages, two to five words each.
+  announcement: [
+    L("أهلًا بيك في فيلا", "Welcome to Vella"),
+    L("شحن مجاني للطلبات فوق ٧٥٠٠ جنيه", "Free shipping above 7,500 EGP"),
+    L("تفاصيل بتفرق", "Details that make a difference"),
+  ],
+  footer: { line: L("فيلا: أزياء نسائية عصرية، صُممت عشانك.", "Vella: contemporary women's fashion, designed for you.") },
+  hero: {
+    alt: L("شماعة عليها قطع شتوية بنقوش", "A rail of patterned winter pieces"),
+    eyebrow: L("مجموعة الشتاء", "Winter collection"),
+    title: L("أناقة معمولة ليكِ", "Elegance made for you"),
+    line: L("تفاصيل بتفرق، وستايل يبدأ من هنا.", "Details that make a difference. Your look starts here."),
+    cta: L("تسوّقي الآن", "Shop now"),
   },
-  links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
-});
-
-const footer = lib("footer-classic", {
-  text: {
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ فيلا. كل الحقوق محفوظة.", "© 2026 Vella. All rights reserved."),
-    "أساسيات كل يوم، مختارة بعناية.": L("فيلا: أزياء نسائية عصرية، صُممت عشانك.", "Vella: contemporary women's fashion, designed for you."),
-    "٠١٠٠ ١٢٣ ٤٥٦٧": L("٠١٢٣ ٤٥٦ ٧٨٩٠", "+20 123 456 7890"),
-    "‏hello@store.com": L("‏vella@vella.eg", "vella@vella.eg"),
-    "١٢ شارع النيل، الزمالك، القاهرة": L("القاهرة، مصر", "Cairo, Egypt"),
-    "السبت إلى الخميس، ١٠ ص – ١٠ م": L("كل يوم، ١٠ ص – ١٠ م", "Every day, 10am to 10pm"),
+  categories: { title: L("المجموعات", "Collections") },
+  // The full-width band between the first and second category rows. Its button goes to the newest products.
+  story: {
+    alt: L("شماعة صغيرة عليها ثلاث قطع على حيطة رمادي فاتح", "A small rail with three pieces on a pale grey wall"),
+    eyebrow: L("انضمي لينا", "Join us"),
+    title: L("كوني من اللي بيعرفوا يلبسوا", "Be one of the women who wear it well"),
+    text: L("اكتشفي قطعتك المفضلة الجاية، من تشكيلة مختارة بعناية كل أسبوع.", "Discover your next favorite piece, from a range chosen with care every week."),
+    cta: L("تسوّقي الجديد", "Shop new in"),
   },
-});
-
-/** One product row per category place (hoodies, dresses, sweatpants, sports), tall photos. */
-const ROW_LIMITS = [4, 8, 4, 4];
-const rows = ROW_LIMITS.map((limit, i) =>
-  lib("products-category-carousel", {
-    as: `category-row-${i + 1}`,
-    text: { "عرض الكل": L("عرض الكل", "View all") },
-    lists: [{ offset: i }, { categoryIndex: i + 1, limit }],
-    nodes: { "صورة البطاقة": { style: { aspectRatio: "portrait" } } },
-  }),
-);
-
-const home: Design[] = [
-  lib("hero-video", {
-    photo: [PHOTOS.heroPoster],
-    nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 30 } } },
-    text: {
-      "فيديو الواجهة": L("شماعة عليها قطع شتوية بنقوش", "A rail of patterned winter pieces"),
-      "المجموعة الجديدة": L("مجموعة الشتاء", "Winter collection"),
-      "مساحتك، بطريقتك": L("أناقة معمولة ليكِ", "Elegance made for you"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L("تفاصيل بتفرق، وستايل يبدأ من هنا.", "Details that make a difference. Your look starts here."),
-      "تسوّق الآن": L("تسوّقي الآن", "Shop now"),
-      "شوف الجديد": L("وصل حديثًا", "New in"),
-    },
-    links: { "/products": SHOP, "/products?sort=newest": NEW },
-  }),
-  lib("categories-portrait-labels", {
-    text: { "المجموعات": L("المجموعات", "Collections"), "تسوّق الآن": L("تسوّقي الآن", "Shop now") },
-  }),
-  lib("text-big-marquee"),
-  rows[0]!,
-  lib("about-fullbleed", {
-    photo: [undefined, undefined, PHOTOS.banner],
-    text: {
-      "صورة القصة": L("شماعة صغيرة عليها ثلاث قطع على حيطة رمادي فاتح", "A small rail with three pieces on a pale grey wall"),
-      "حكايتنا": L("انضمي لينا", "Join us"),
-      "تفاصيل صغيرة تصنع الفرق": L("كوني من اللي بيعرفوا يلبسوا", "Be one of the women who wear it well"),
-      "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.": L(
-        "اكتشفي قطعتك المفضلة الجاية، من تشكيلة مختارة بعناية كل أسبوع.",
-        "Discover your next favorite piece, from a range chosen with care every week.",
-      ),
-      "اعرف أكثر": L("تسوّقي الجديد", "Shop new in"),
-    },
-    links: { "/about": NEW },
-  }),
-  ...rows.slice(1),
-  lib("newsletter-centered", {
-    text: {
-      "خد ١٠٪ خصم على أول طلب": L("اشتركي في نشرتنا", "Subscribe to our newsletter"),
-      "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": L("تابعي جديد القطع وتحديثات المخزون وأكتر.", "Follow for tailored new arrivals, stock updates and more."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن فيلا", "About Vella"), L("أزياء نسائية عصرية، صُممت عشانك.", "Contemporary women's fashion, designed for you.")),
-  aboutStory(lib, {
-    photo: PHOTOS.about,
+  newsletter: {
+    title: L("اشتركي في نشرتنا", "Subscribe to our newsletter"),
+    line: L("تابعي جديد القطع وتحديثات المخزون وأكتر.", "Follow for tailored new arrivals, stock updates and more."),
+  },
+  about: {
+    line: L("أزياء نسائية عصرية، صُممت عشانك.", "Contemporary women's fashion, designed for you."),
     alt: L("تريكو بألوان الكريمي والتوبي بإضاءة ناعمة", "Cream and taupe knits in soft light"),
     eyebrow: L("حكايتنا", "Our story"),
     title: L("الموضة تعبير عن نفسك", "Fashion is how you express yourself"),
@@ -134,10 +95,162 @@ const about: Design[] = [
       "Vella began with a passion for modern style. We choose every piece to mix the latest trends with comfort that lasts.",
     ),
     more: L("وأي قطعة مش مظبوطة عليكي، بنبدلها خلال ١٤ يوم.", "And if a piece does not suit you, we exchange it within 14 days."),
-    button: L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    // The button goes to the best sellers.
+    cta: L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
+  },
+  contact: {
+    title: L("كلمينا", "Talk to us"),
+    line: L(`القاهرة، مصر، ${phone("٠١٢٣ ٤٥٦ ٧٨٩٠")}، ${handle("vella@vella.eg")}`, "Cairo, Egypt | +20 123 456 7890 | vella@vella.eg"),
+    heading: L("محتاجة مساعدة في المقاس؟ اسألينا", "Need help with sizing? Ask us"),
+  },
+  faq: {
+    line: L("المقاسات والشحن والاستبدال.", "Sizing, shipping and exchanges."),
+    question: L("إزاي أعرف مقاسي؟", "How do I find my size?"),
+    answer: L(
+      "جدول المقاسات موجود في كل صفحة منتج بالسنتيمتر. ولو بين مقاسين، اختاري الأكبر لقصة مريحة أكتر.",
+      "A size guide in centimetres is on every product page. If you are between sizes, size up for a more relaxed fit.",
+    ),
+  },
+  // The footer's contact column, one short line each: the store's phone, email, address and opening hours.
+  custom: {
+    "contact-phone": L("٠١٢٣ ٤٥٦ ٧٨٩٠", "+20 123 456 7890"),
+    "contact-email": L("\u200fvella@vella.eg", "vella@vella.eg"),
+    "contact-address": L("القاهرة، مصر", "Cairo, Egypt"),
+    "contact-hours": L("كل يوم، ١٠ ص – ١٠ م", "Every day, 10am to 10pm"),
+  },
+  photos: {
+    // The poster is drawn first; the video plays over it (Vella's is a portrait video, cropped to the screen).
+    hero: { wide: PHOTOS.heroPoster, video: PHOTOS.heroVideo },
+    // The full-width story band: a wide photo with a calm area for the white copy over it.
+    banner: PHOTOS.banner,
+    // The about page's photo.
+    story: PHOTOS.about,
+  },
+};
+
+/** How many products each category row shows, by the row's position on the page. */
+const ROW_LIMITS = [4, 8, 4, 4];
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade or the demo store is a slot of `c`;
+ * generic shop labels (New in, Best sellers, Shop now, View all), the
+ * library's scrolling words ("Your style, your way") and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-announcement-strip", {
+    text: {
+      "اسم متجرك": name,
+      "أهلًا بيك في متجرنا": c.announcement[0]!,
+      "شحن مجاني للطلبات الكبيرة": c.announcement[1]!,
+      "تفاصيل بتفرق": c.announcement[2]!,
+      "العروض": L("وصل حديثًا", "New in"),
+      "المدونة": L("الأكثر طلبًا", "Best sellers"),
+    },
+    links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
+  });
+
+  const footer = lib("footer-classic", {
+    text: {
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "أساسيات كل يوم، مختارة بعناية.": c.footer.line,
+      "٠١٠٠ ١٢٣ ٤٥٦٧": c.custom["contact-phone"]!,
+      "\u200fhello@store.com": c.custom["contact-email"]!,
+      "١٢ شارع النيل، الزمالك، القاهرة": c.custom["contact-address"]!,
+      "السبت إلى الخميس، ١٠ ص – ١٠ م": c.custom["contact-hours"]!,
+    },
+  });
+
+  /** One product row per category place in `journey.rows`, tall photos. */
+  const rows = journey.rows.map((place, i) =>
+    lib("products-category-carousel", {
+      as: `category-row-${place}`,
+      text: { "عرض الكل": L("عرض الكل", "View all") },
+      lists: [{ offset: place - 1 }, { categoryIndex: place, limit: ROW_LIMITS[i] }],
+      nodes: { "صورة البطاقة": { style: { aspectRatio: "portrait" } } },
+    }),
+  );
+
+  const video = c.photos.hero.video;
+  const home: Design[] = [
+    lib("hero-video", {
+      photo: [c.photos.hero.wide],
+      // Without a video the design shows its poster alone.
+      nodes: { ...(video && { "الفيديو": { props: { url: video } } }), "التعتيم": { style: { opacity: 30 } } },
+      text: {
+        "فيديو الواجهة": c.hero.alt,
+        "المجموعة الجديدة": c.hero.eyebrow,
+        "مساحتك، بطريقتك": c.hero.title,
+        "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تسوّق الآن": c.hero.cta,
+        "شوف الجديد": L("وصل حديثًا", "New in"),
+      },
+      links: { "/products": SHOP, "/products?sort=newest": NEW },
+    }),
+    lib("categories-portrait-labels", {
+      text: { "المجموعات": c.categories.title, "تسوّق الآن": L("تسوّقي الآن", "Shop now") },
+    }),
+    lib("text-big-marquee"),
+    rows[0]!,
+    lib("about-fullbleed", {
+      photo: [undefined, undefined, c.photos.banner],
+      text: {
+        "صورة القصة": c.story.alt,
+        "حكايتنا": c.story.eyebrow,
+        "تفاصيل صغيرة تصنع الفرق": c.story.title,
+        "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.": c.story.text,
+        "اعرف أكثر": c.story.cta,
+      },
+      links: { "/about": NEW },
+    }),
+    ...rows.slice(1),
+    lib("newsletter-centered", {
+      text: {
+        "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
+        "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": c.newsletter.line,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -178,7 +291,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const VELLA = libraryTemplate({
+export const VELLA = editionTemplate({
   key: VELLA_KEY,
   version: 1,
   name: NAME,
@@ -202,35 +315,34 @@ export const VELLA = libraryTemplate({
   fonts: { heading: "Rubik", body: "Rubik" },
   radius: 0,
   containerMaxWidth: 1400,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن فيلا", "About"), seo: { title: L("عن فيلا", "About Vella") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("كلمينا", "Talk to us"),
-        text: L(`القاهرة، مصر، ${phone("٠١٢٣ ٤٥٦ ٧٨٩٠")}، ${handle("vella@vella.eg")}`, "Cairo, Egypt | +20 123 456 7890 | vella@vella.eg"),
-        heading: L("محتاجة مساعدة في المقاس؟ اسألينا", "Need help with sizing? Ask us"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("المقاسات والشحن والاستبدال.", "Sizing, shipping and exchanges."),
-        question: L("إزاي أعرف مقاسي؟", "How do I find my size?"),
-        answer: L(
-          "جدول المقاسات موجود في كل صفحة منتج بالسنتيمتر. ولو بين مقاسين، اختاري الأكبر لقصة مريحة أكتر.",
-          "A size guide in centimetres is on every product page. If you are between sizes, size up for a more relaxed fit.",
-        ),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "announcement.2",
+    "footer.line",
+    "custom.contact-phone",
+    "custom.contact-email",
+    "custom.contact-address",
+    "custom.contact-hours",
+    "hero",
+    "categories.title",
+    "story",
+    "newsletter.title",
+    "newsletter.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.banner",
+    "photos.story",
   ],
+  optional: ["photos.hero.video"],
+  // No main product section: the home page is one row per category (`primary` is not read). The rows hold 4, 8, 4 and 4 products.
+  journey: { primary: "newest", rows: [1, 2, 3, 4] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {
     thumbs: "bottom",

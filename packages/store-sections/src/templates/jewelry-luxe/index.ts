@@ -25,13 +25,20 @@
  * 40179571, 14466162 and 12194367; bags 22432991 and 22432985 (embossed
  * logo) for 12640675; sunglasses 29538716 and 27353350 (model numbers on
  * the arms) for 18092127; necklace 860009 (earbuds beside it) for 17833829.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Masa itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays 1.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { categoryRows } from "../_category-rows";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, handle, libraryTemplate, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
+import { copyrightLine, editionTemplate, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, handle, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
 
 export const JEWELRY_LUXE_KEY = "jewelry-luxe";
 
@@ -60,104 +67,68 @@ const PHOTOS = {
 
 const NAME = L("ماسة", "Masa");
 
-const header = lib("header-topbar", {
-  text: {
-    "توصيل سريع لكل محافظات مصر": L("توصيل مؤمَّن لكل محافظات مصر", "Insured delivery across Egypt"),
-    "الدفع عند الاستلام": L("شهادة ضمان مع كل قطعة", "A certificate with every piece"),
-    "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل القطع", "Shop all"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("الأكثر طلبًا", "Best sellers"),
-    "من نحن": L("الأتيليه", "Atelier"),
-  },
-  links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
-});
-
-const footer = lib("footer-centered-light", {
-  text: {
-    "اسم متجرك": NAME,
-    "قطع مختارة بعناية، بتوصل لحد باب البيت.": L(
-      `دهب وألماس بتصميم هادي، متشطب في أتيليه الزمالك. ٩ شارع حسن صبري، الزمالك، القاهرة · ${phone("٠١٢٧ ٤٠٨ ٥٥١٣")} · ${handle("hello@masa.eg")}`,
-      "Quiet gold and diamonds, finished in our Zamalek atelier. 9 Hassan Sabry St, Zamalek, Cairo · +20 127 408 5513 · hello@masa.eg",
+/**
+ * Masa's own content: what the look is built with when no edition is applied
+ * (the template `jewelry-luxe` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The top bar shows two lines (the third place is "Track your order").
+  announcement: [L("توصيل مؤمَّن لكل محافظات مصر", "Insured delivery across Egypt"), L("شهادة ضمان مع كل قطعة", "A certificate with every piece")],
+  labels: { about: L("الأتيليه", "Atelier") },
+  hero: {
+    alt: L("سلك دهب مجدول على خلفية سودا", "Woven gold wire on black"),
+    eyebrow: L("مجموعة الشتا ٢٠٢٦", "The Winter 2026 collection"),
+    title: L("دهب يتلبس كل يوم، ويفضل العمر كله", "Gold for every day, kept for a lifetime"),
+    line: L(
+      "دهب عيار ١٨ وألماس طبيعي، كل قطعة متشطبة بالإيد في أتيليه الزمالك ومعاها شهادة ضمان.",
+      "18-karat gold and natural diamonds, each piece hand-finished in our Zamalek atelier and sent with a certificate.",
     ),
-    "المتجر": L("كل القطع", "Shop all"),
-    "من نحن": L("عن ماسة", "About Masa"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ ماسة. كل الحقوق محفوظة.", "© 2026 Masa. All rights reserved."),
+    cta: L("اكتشفي المجموعة", "Explore the collection"),
   },
-  links: { "https://wa.me/": "https://wa.me/201274085513" },
-});
-
-const home: Design[] = [
-  lib("hero-video", {
-    photo: [PHOTOS.heroPoster],
-    nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 35 } } },
-    text: {
-      "فيديو الواجهة": L("سلك دهب مجدول على خلفية سودا", "Woven gold wire on black"),
-      "المجموعة الجديدة": L("مجموعة الشتا ٢٠٢٦", "The Winter 2026 collection"),
-      "مساحتك، بطريقتك": L("دهب يتلبس كل يوم، ويفضل العمر كله", "Gold for every day, kept for a lifetime"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "دهب عيار ١٨ وألماس طبيعي، كل قطعة متشطبة بالإيد في أتيليه الزمالك ومعاها شهادة ضمان.",
-        "18-karat gold and natural diamonds, each piece hand-finished in our Zamalek atelier and sent with a certificate.",
-      ),
-      "تسوّق الآن": L("اكتشفي المجموعة", "Explore the collection"),
-      "شوف الجديد": L("وصل حديثًا", "New in"),
-    },
-    links: { "/products": SHOP, "/products?sort=newest": NEW },
-  }),
-  lib("categories-photo-tiles", {
-    text: { "تسوّق حسب القسم": L("تسوّقي حسب القطعة", "Shop by piece") },
-  }),
-  lib("products-spotlight", {
-    photo: [undefined, undefined, PHOTOS.spotlight],
-    // Phones: the copy sits over the light photo, so the shade darkens all of it.
-    nodes: { "التظليل": { mobile: { background: "black", opacity: 60 } } },
-    text: {
-      "صورة المجموعة": L("خاتم روز جولد بقلب ألماس على خلفية بيضا", "A rose gold ring with a pavé disc on white"),
-      "مجموعة": L("اختيارات الأتيليه", "Atelier picks"),
-      "مجموعة الموسم": L("القطع اللي بتتطلب هدية", "The pieces chosen as gifts"),
-      "قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.": L(
+  categories: { title: L("تسوّقي حسب القطعة", "Shop by piece") },
+  products: {
+    // The spotlight: a tall photo with this copy over it, beside the store's three featured products.
+    primary: {
+      alt: L("خاتم روز جولد بقلب ألماس على خلفية بيضا", "A rose gold ring with a pavé disc on white"),
+      eyebrow: L("اختيارات الأتيليه", "Atelier picks"),
+      title: L("القطع اللي بتتطلب هدية", "The pieces chosen as gifts"),
+      line: L(
         "التلات قطع اللي عميلاتنا بيرجعوا يطلبوها لأمهاتهم وبناتهم وصحباتهم.",
         "The three pieces our clients keep ordering for their mothers, daughters and friends.",
       ),
-      "تسوّق المجموعة": L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
-      "من المجموعة": L("من الاختيارات", "From the picks"),
-      "عرض الكل": L("كل القطع", "Shop all"),
+      // The button goes to the best sellers.
+      cta: L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
     },
-    links: { "/products": [BEST, SHOP] },
-    lists: [{ source: "featured" }],
-  }),
-  lib("about-inset", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.story],
-    text: {
-      "إزاي بنشتغل": L("من الأتيليه", "From the atelier"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("كل قطعة بتتوزن وتتدمغ قبل ما تتغلف", "Every piece is weighed and hallmarked before it is wrapped"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": L(
-        "من ٢٠٠٤ وإحنا بنصيغ في ورشة صغيرة في الزمالك. الدهب مدموغ من مصلحة الدمغة، والألماس معاه شهادة، وبنلمّع أي قطعة من عندنا ببلاش طول العمر.",
-        "We have been setting stones in a small Zamalek workshop since 2004. Our gold carries the official hallmark, every diamond comes with a certificate, and we polish any Masa piece free for life.",
-      ),
-      "اعرف أكتر": L("اعرفي حكايتنا", "Our story"),
-      "صورة المتجر": L("خواتم وسلسلة دهب في طبق رخام أبيض", "Gold rings and a chain in a white marble dish"),
-    },
-  }),
-  ...categoryRows(lib, { viewAll: L("عرض الكل", "View all"), muted: [2, 4] }),
-  lib("newsletter-centered", {
-    text: {
-      "النشرة": L("رسالة ماسة", "The Masa letter"),
-      "خد ١٠٪ خصم على أول طلب": L("شوفي المجموعة الجديدة قبل الكل", "See each new collection first"),
-      "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": L(
-        "رسالة واحدة في الشهر: قطع جديدة من الأتيليه، طرق تنسيق الدهب ونصايح تحافظي بيها على لمعته.",
-        "One letter a month: new pieces from the atelier, ways to layer gold and tips to keep it shining.",
-      ),
-      "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": L("بدون رسائل مزعجة. تقدري تلغي في أي وقت.", "No spam. Unsubscribe any time."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن ماسة", "About Masa"), L("دهب وألماس بتصميم هادي، من الزمالك من ٢٠٠٤.", "Quiet gold and diamonds, from Zamalek since 2004.")),
-  aboutStory(lib, {
-    photo: PHOTOS.aboutPage,
+  },
+  story: {
+    eyebrow: L("من الأتيليه", "From the atelier"),
+    title: L("كل قطعة بتتوزن وتتدمغ قبل ما تتغلف", "Every piece is weighed and hallmarked before it is wrapped"),
+    text: L(
+      "من ٢٠٠٤ وإحنا بنصيغ في ورشة صغيرة في الزمالك. الدهب مدموغ من مصلحة الدمغة، والألماس معاه شهادة، وبنلمّع أي قطعة من عندنا ببلاش طول العمر.",
+      "We have been setting stones in a small Zamalek workshop since 2004. Our gold carries the official hallmark, every diamond comes with a certificate, and we polish any Masa piece free for life.",
+    ),
+    cta: L("اعرفي حكايتنا", "Our story"),
+    alt: L("خواتم وسلسلة دهب في طبق رخام أبيض", "Gold rings and a chain in a white marble dish"),
+  },
+  newsletter: {
+    title: L("شوفي المجموعة الجديدة قبل الكل", "See each new collection first"),
+    line: L(
+      "رسالة واحدة في الشهر: قطع جديدة من الأتيليه، طرق تنسيق الدهب ونصايح تحافظي بيها على لمعته.",
+      "One letter a month: new pieces from the atelier, ways to layer gold and tips to keep it shining.",
+    ),
+    // Optional: the line under the form. Without it the design's own "No spam" line stays.
+    note: L("بدون رسائل مزعجة. تقدري تلغي في أي وقت.", "No spam. Unsubscribe any time."),
+  },
+  // Under the footer's logo: what the store is, then its address, phone and email.
+  footer: {
+    line: L(
+      `دهب وألماس بتصميم هادي، متشطب في أتيليه الزمالك. ٩ شارع حسن صبري، الزمالك، القاهرة · ${phone("٠١٢٧ ٤٠٨ ٥٥١٣")} · ${handle("hello@masa.eg")}`,
+      "Quiet gold and diamonds, finished in our Zamalek atelier. 9 Hassan Sabry St, Zamalek, Cairo · +20 127 408 5513 · hello@masa.eg",
+    ),
+  },
+  about: {
+    line: L("دهب وألماس بتصميم هادي، من الزمالك من ٢٠٠٤.", "Quiet gold and diamonds, from Zamalek since 2004."),
     alt: L("عقد وحلق وخاتم على قماش دانتيل أبيض", "A necklace, earrings and a ring on white lace"),
     eyebrow: L("من ٢٠٠٤", "Since 2004"),
     title: L("ورشة صغيرة، وإيد واحدة على كل قطعة", "A small workshop, one pair of hands per piece"),
@@ -166,10 +137,161 @@ const about: Design[] = [
       "Our grandfather was a goldsmith in Khan El Khalili; we moved the craft to a quiet atelier in Zamalek. Every ring is still cast and polished by one goldsmith from start to finish.",
     ),
     more: L("وأي قطعة من عندنا بنلمّعها ونظبط مقاسها ببلاش، مهما كان عمرها.", "We polish and resize any Masa piece free, however old it is."),
-    button: L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    // The button goes to the best sellers.
+    cta: L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
+  },
+  contact: {
+    title: L("زوري الأتيليه", "Visit the atelier"),
+    line: L("٩ شارع حسن صبري، الزمالك، القاهرة. بالمعاد، من السبت للخميس.", "9 Hassan Sabry St, Zamalek, Cairo. By appointment, Saturday to Thursday."),
+    heading: L("احجزي معاد لقياس الخاتم", "Book a ring fitting"),
+  },
+  faq: {
+    line: L("المقاسات والدمغة والتوصيل.", "Sizing, hallmarks and delivery."),
+    question: L("لو المقاس طلع مش مظبوط؟", "What if the ring doesn't fit?"),
+    answer: L(
+      "ابعتيه لنا خلال ٣٠ يوم ونظبط المقاس ببلاش. وكل الدهب مدموغ ومعاه فاتورة بالوزن والعيار.",
+      "Send it back within 30 days and we resize it free. All our gold is hallmarked and comes with an invoice stating weight and karat.",
+    ),
+  },
+  photos: {
+    // The poster is drawn first; the video plays over it.
+    hero: { wide: PHOTOS.heroPoster, video: PHOTOS.heroVideo },
+    // The inset photo of the home story: 4:5 (landscape on phones).
+    story: PHOTOS.story,
+    // The about page's photo, landscape. Optional: without it the page shows `story`.
+    about: PHOTOS.aboutPage,
+    // The spotlight's tall photo, 4:5 with a dark fade and white copy over its lower half (a wide crop on tablets and phones): one hero piece, centred.
+    custom: { "spot-photo": PHOTOS.spotlight },
+  },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Shop all, New in, Best sellers, Track your order) and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-topbar", {
+    text: {
+      "توصيل سريع لكل محافظات مصر": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
+      "اسم متجرك": name,
+      "المتجر": L("كل القطع", "Shop all"),
+      "العروض": L("وصل حديثًا", "New in"),
+      "المدونة": L("الأكثر طلبًا", "Best sellers"),
+      "من نحن": c.labels.about,
+    },
+    links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
+  });
+
+  const footer = lib("footer-centered-light", {
+    text: {
+      "اسم متجرك": name,
+      "قطع مختارة بعناية، بتوصل لحد باب البيت.": c.footer.line,
+      "المتجر": L("كل القطع", "Shop all"),
+      "من نحن": aboutName,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "https://wa.me/": "https://wa.me/201274085513" },
+  });
+
+  const video = c.photos.hero.video;
+  const note = c.newsletter.note;
+  const home: Design[] = [
+    lib("hero-video", {
+      photo: [c.photos.hero.wide],
+      // Without a video the design shows its poster alone.
+      nodes: { ...(video && { "الفيديو": { props: { url: video } } }), "التعتيم": { style: { opacity: 35 } } },
+      text: {
+        "فيديو الواجهة": c.hero.alt,
+        "المجموعة الجديدة": c.hero.eyebrow,
+        "مساحتك، بطريقتك": c.hero.title,
+        "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تسوّق الآن": c.hero.cta,
+        "شوف الجديد": L("وصل حديثًا", "New in"),
+      },
+      links: { "/products": SHOP, "/products?sort=newest": NEW },
+    }),
+    lib("categories-photo-tiles", {
+      text: { "تسوّق حسب القسم": c.categories.title },
+    }),
+    lib("products-spotlight", {
+      photo: [undefined, undefined, c.photos.custom["spot-photo"]!],
+      // Phones: the copy sits over the light photo, so the shade darkens all of it.
+      nodes: { "التظليل": { mobile: { background: "black", opacity: 60 } } },
+      text: {
+        "صورة المجموعة": c.products.primary.alt,
+        "مجموعة": c.products.primary.eyebrow,
+        "مجموعة الموسم": c.products.primary.title,
+        "قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.": c.products.primary.line,
+        "تسوّق المجموعة": c.products.primary.cta,
+        "من المجموعة": L("من الاختيارات", "From the picks"),
+        "عرض الكل": L("كل القطع", "Shop all"),
+      },
+      links: { "/products": [BEST, SHOP] },
+      lists: [{ source: journey.primary }],
+    }),
+    lib("about-inset", {
+      photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, c.photos.story],
+      text: {
+        "إزاي بنشتغل": c.story.eyebrow,
+        "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
+        "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": c.story.text,
+        "اعرف أكتر": c.story.cta,
+        "صورة المتجر": c.story.alt,
+      },
+    }),
+    // The store's first four categories, in order (`journey.rows` is not read: `categoryRows` makes places 1 to 4).
+    ...categoryRows(lib, { viewAll: L("عرض الكل", "View all"), muted: [2, 4] }),
+    lib("newsletter-centered", {
+      text: {
+        "النشرة": L(`رسالة ${name.ar}`, `The ${name.en} letter`),
+        "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
+        "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": c.newsletter.line,
+        ...(note && { "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": note }),
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -238,7 +360,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const JEWELRY_LUXE = libraryTemplate({
+export const JEWELRY_LUXE = editionTemplate({
   key: JEWELRY_LUXE_KEY,
   version: 1,
   name: L("ماسة", "Masa"),
@@ -262,35 +384,35 @@ export const JEWELRY_LUXE = libraryTemplate({
   fonts: { heading: "Amiri", body: "Readex Pro" },
   radius: 2,
   containerMaxWidth: 1440,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن ماسة", "About"), seo: { title: L("عن ماسة", "About Masa") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("زوري الأتيليه", "Visit the atelier"),
-        text: L("٩ شارع حسن صبري، الزمالك، القاهرة. بالمعاد، من السبت للخميس.", "9 Hassan Sabry St, Zamalek, Cairo. By appointment, Saturday to Thursday."),
-        heading: L("احجزي معاد لقياس الخاتم", "Book a ring fitting"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("المقاسات والدمغة والتوصيل.", "Sizing, hallmarks and delivery."),
-        question: L("لو المقاس طلع مش مظبوط؟", "What if the ring doesn't fit?"),
-        answer: L(
-          "ابعتيه لنا خلال ٣٠ يوم ونظبط المقاس ببلاش. وكل الدهب مدموغ ومعاه فاتورة بالوزن والعيار.",
-          "Send it back within 30 days and we resize it free. All our gold is hallmarked and comes with an invoice stating weight and karat.",
-        ),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "labels.about",
+    "hero",
+    "categories.title",
+    "products.primary.title",
+    "products.primary.line",
+    "products.primary.eyebrow",
+    "products.primary.cta",
+    "products.primary.alt",
+    "story",
+    "newsletter.title",
+    "newsletter.line",
+    "footer.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
+    "photos.custom.spot-photo",
   ],
+  optional: ["photos.hero.video", "photos.about", "newsletter.note"],
+  // The spotlight shows the featured products (three), then the store's first four categories as rows.
+  journey: { primary: "featured", rows: [1, 2, 3, 4] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {
     thumbs: "bottom",

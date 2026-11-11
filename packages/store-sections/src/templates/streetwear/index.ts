@@ -8,11 +8,19 @@
  * Photos: Pexels, each checked by eye (2026-10-20): hoodies and tees on
  * rails, folded joggers, sneakers, a streetwear shop and graffiti walls. No
  * people, bodies or mannequins (owner rule), and no third-party logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Hara Supply itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays 4.
  */
+import type { Localized } from "../../core/types";
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
-import { demoStore, handle, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, handle, pexels } from "../library-template";
 
 export const STREETWEAR_KEY = "streetwear";
 
@@ -39,142 +47,273 @@ const PHOTOS = {
 
 const NAME = L("حارة سبلاي", "Hara Supply");
 
-const header = lib("header-brand-bar", {
-  text: { "م": L("ح", "H"), "اسم متجرك": NAME, "ابحث في المتجر": L("دوّر في الدروب", "Search the drop") },
-});
+/** A text that reads the same in both languages (a social handle) is patched as one string. */
+const oneString = (text: Localized): Localized | string => (text.ar === text.en ? text.en : text);
 
-const footer = lib("footer-signoff", {
-  text: {
-    "شكرًا إنك عدّيت علينا": L("نتقابل في الدروب الجاي", "See you at the next drop"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ حارة سبلاي. كل الحقوق محفوظة.", "© 2026 Hara Supply. All rights reserved."),
-    "وصل حديثًا": L("دروب ٠٧", "Drop 07"),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-    "من نحن": L("عن حارة", "About Hara"),
-  },
-  links: { "/products": [undefined, NEW, BEST, "/products?sort=rating"] },
-});
-
-const home: Design[] = [
-  lib("hero-poster", {
-    photo: [undefined, undefined, PHOTOS.alley],
-    text: {
-      "مجموعة الموسم": L("دروب ٠٧", "Drop 07"),
-      "من ١ إلى ٣٠ نوفمبر": L("متاح دلوقتي · لحد ما الكمية تخلص", "Live now · while stock lasts"),
-      "صورة الحملة": L("شارع جانبي مليان جرافيتي", "A side street covered in graffiti"),
-      "خصم": L("بس", "Only"),
-      "٣٠٪": L("١٢٠", "120"),
-      "لفترة محدودة": L("قطعة", "pieces"),
-      "الموسم الجديد وصل": L("معمول في شارعنا", "Made on our street"),
-      "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
-        "هوديز وتيشيرتات قطن تقيل، مطبوعة باليد في شبرا بكميات ١٢٠ قطعة.",
-        "Heavy cotton hoodies and tees, printed by hand in Shubra in runs of 120.",
-      ),
-      "اكتشف المجموعة": L("تسوق الدروب", "Shop the drop"),
-    },
-    links: { "/products": NEW },
-  }),
-  lib("categories-chips", {
-    text: { "إيه اللي في بالك؟": L("اختار ستايلك", "Pick your fit") },
-  }),
-  lib("products-rail", {
-    as: "drop-rail",
-    text: { "بيحبوها": L("دروب ٠٧", "Drop 07"), "الأكثر مبيعًا": L("كل حاجة في الدروب", "Everything in the drop") },
-    links: { "/products": NEW },
-    lists: [{ source: "newest" }],
-  }),
-  lib("page-image", {
-    as: "hoodies-banner",
-    name: L("بانر قسم الهوديز", "Hoodies banner"),
-    photo: [PHOTOS.pastelHoodies],
-    text: {
-      "صورة البانر": L("هوديز بألوان هادية على الشماعة", "Soft-coloured hoodies on a rail"),
-      "اسم القسم": L("هوديز", "Hoodies"),
-      "تشكيلة مختارة لهذا الموسم": L("قطن مشطوف ٤٥٠ جرام بقصّة واسعة.", "450 gsm brushed cotton, boxy cut."),
-    },
-  }),
-  lib("products-bento", {
-    text: { "الكل بيسأل عليهم": L("بيخلص بسرعة", "Going fast") },
-    links: { "/products": BEST },
-  }),
-  lib("text-statement", {
-    text: {
-      "كل سنة وانتم طيبين. الطلبات شغالة طول أيام العيد.": L("مفيش ريستوك. الدروب لما يخلص، يخلص.", "No restocks. When a drop is gone, it is gone."),
-      "— فريق المتجر": L("— فريق حارة", "— The Hara team"),
-      "مواعيد التوصيل": L("كل الدروب", "Shop the drop"),
-    },
-    links: { "/shipping": NEW },
-  }),
-  lib("gallery-bento", {
-    photo: [PHOTOS.passage, PHOTOS.hoodiePair, PHOTOS.shirtRack, PHOTOS.blackHoodieRack, PHOTOS.printTees],
-    text: {
-      "صورة إنستجرام": L("صورة من إنستجرام حارة", "A photo from Hara's Instagram"),
-      "@اسم_متجرك": handle("@harasupply"),
-      "صور جديدة كل أسبوع": L("٣٨ ألف متابع", "38K followers"),
-    },
-  }),
-];
-
-const pageHeader = (as: string, title: ReturnType<typeof L>, text: ReturnType<typeof L>) =>
+const pageHeader = (as: string, title: Localized, text: Localized) =>
   lib("page-header", { as, text: { "من نحن": title, "فريق صغير يختار منتجات نشتريها نحن أنفسنا.": text } });
 
-const about: Design[] = [
-  pageHeader("about-header", L("عن حارة", "About Hara"), L("صاحبين وترابيزة طباعة وشارع في شبرا.", "Two friends, one print table and a street in Shubra.")),
-  lib("about-classic", {
-    person: [undefined, undefined, PHOTOS.shop],
-    text: {
-      "صورة المتجر": L("محل لبس ستريت مليان رفوف", "A streetwear shop full of rails"),
-      "حكايتنا": L("من ٢٠٢٠", "Since 2020"),
-      "بدأنا بسؤال واحد: هل سيدوم؟": L("كل دروب ١٢٠ قطعة بس", "Every drop is 120 pieces"),
-      "فتحنا متجرنا بعد أن تعبنا من منتجات لا تعيش. كل ما نبيعه نجربه نحن أولًا.": L(
-        "بنطبع كل تصميم بإيدينا على قطن تقيل، وبنصوّر الدروب في شارعنا بعد ما المحلات تقفل.",
-        "We print every design by hand on heavy cotton and shoot each drop on our street after the shops close.",
-      ),
-      "اليوم نشحن لكل المحافظات ونرد على كل رسالة بأنفسنا.": L("ولما الدروب يخلص، مش بيرجع تاني.", "And when a drop sells out, it never comes back."),
-      "تعرّف علينا": L("تسوق الدروب", "Shop the drop"),
+/**
+ * Hara Supply's own content: what the look is built with when no edition is
+ * applied (the template `streetwear` has always meant). The store name and
+ * description and the category photos come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header's search placeholder.
+  labels: { search: L("دوّر في الدروب", "Search the drop") },
+  // The footer's large sign-off line: three to five words.
+  footer: { line: L("نتقابل في الدروب الجاي", "See you at the next drop") },
+  hero: {
+    eyebrow: L("دروب ٠٧", "Drop 07"),
+    alt: L("شارع جانبي مليان جرافيتي", "A side street covered in graffiti"),
+    title: L("معمول في شارعنا", "Made on our street"),
+    line: L("هوديز وتيشيرتات قطن تقيل، مطبوعة باليد في شبرا بكميات ١٢٠ قطعة.", "Heavy cotton hoodies and tees, printed by hand in Shubra in runs of 120."),
+    // The button goes to the newest products.
+    cta: L("تسوق الدروب", "Shop the drop"),
+  },
+  categories: { title: L("اختار ستايلك", "Pick your fit") },
+  products: {
+    // The rail of the newest products. Its eyebrow is the current collection's name: it is also the footer's link to the newest products.
+    primary: { eyebrow: L("دروب ٠٧", "Drop 07"), title: L("كل حاجة في الدروب", "Everything in the drop") },
+  },
+  // The bento of best sellers: its title, two or three words.
+  rows: [{ title: L("بيخلص بسرعة", "Going fast") }],
+  // Three quotes on the about page. Each card shows the first letter of the name.
+  reviews: {
+    title: L("من عملائنا", "From our customers"),
+    items: [
+      {
+        quote: L("أتقل هودي عندي. اتغسل عشر مرات والطباعة لسه زي ما هي.", "Heaviest hoodie I own. Washed it ten times and the print is still sharp."),
+        name: L("يوسف ع.", "Youssef A."),
+      },
+      {
+        quote: L("لحقت الدروب بعد خمس دقايق من نزوله. يستاهل السهر.", "Got the drop five minutes after it went live. Worth staying up for."),
+        name: L("ملك ر.", "Malak R."),
+      },
+      { quote: L("المقاسات واسعة، انزل مقاس لو عايز قصّة عادية.", "Runs big, size down if you want a normal fit."), name: L("زياد ح.", "Ziad H.") },
+    ],
+  },
+  about: {
+    // Also the about page's SEO description.
+    line: L("صاحبين وترابيزة طباعة وشارع في شبرا.", "Two friends, one print table and a street in Shubra."),
+    alt: L("محل لبس ستريت مليان رفوف", "A streetwear shop full of rails"),
+    eyebrow: L("من ٢٠٢٠", "Since 2020"),
+    title: L("كل دروب ١٢٠ قطعة بس", "Every drop is 120 pieces"),
+    text: L(
+      "بنطبع كل تصميم بإيدينا على قطن تقيل، وبنصوّر الدروب في شارعنا بعد ما المحلات تقفل.",
+      "We print every design by hand on heavy cotton and shoot each drop on our street after the shops close.",
+    ),
+    more: L("ولما الدروب يخلص، مش بيرجع تاني.", "And when a drop sells out, it never comes back."),
+    // The button goes to the newest products.
+    cta: L("تسوق الدروب", "Shop the drop"),
+  },
+  contact: {
+    title: L("كلمنا", "Talk to us"),
+    line: L("عن مقاس أو طلب أو الدروب الجاي.", "About a size, an order or the next drop."),
+    heading: L("ابعتلنا وهنرد عليك", "Send us a message"),
+  },
+  faq: {
+    line: L("المقاسات والدروبات والتوصيل.", "Sizes, drops and delivery."),
+    question: L("هل في ريستوك؟", "Do you restock?"),
+    answer: L(
+      "لأ. كل دروب ١٢٠ قطعة ولما يخلص مش بيرجع. الاستبدال متاح خلال ١٤ يوم لو المقاس مش مظبوط.",
+      "No. Each drop is 120 pieces and never comes back. Size exchanges are open for 14 days.",
+    ),
+  },
+  custom: {
+    // The store's short name, as it reads inside a sentence: "About Hara", "— The Hara team", "A photo from Hara's Instagram".
+    "store-short": L("حارة", "Hara"),
+    // The hero's small line beside its eyebrow (a season, a date, how long it lasts).
+    "hero-note": L("متاح دلوقتي · لحد ما الكمية تخلص", "Live now · while stock lasts"),
+    // The hero's round sticker, three short lines: a word, one big figure (at most 4 characters), a word.
+    "hero-sticker-1": L("بس", "Only"),
+    "hero-sticker-2": L("١٢٠", "120"),
+    "hero-sticker-3": L("قطعة", "pieces"),
+    // The wide photo band after the rail: a product type as its big title (one or two words; in Arabic without "ال"), and one line of facts under it.
+    "banner-alt": L("هوديز بألوان هادية على الشماعة", "Soft-coloured hoodies on a rail"),
+    "banner-title": L("هوديز", "Hoodies"),
+    "banner-line": L("قطن مشطوف ٤٥٠ جرام بقصّة واسعة.", "450 gsm brushed cotton, boxy cut."),
+    // The big statement: one or two short sentences in the store's voice, signed by its team; then its link to the newest products.
+    "craft-statement": L("مفيش ريستوك. الدروب لما يخلص، يخلص.", "No restocks. When a drop is gone, it is gone."),
+    "craft-statement-cta": L("كل الدروب", "Shop the drop"),
+    // The Instagram bento's brand tile: the store's handle, then one short line under it.
+    "lookbook-handle": L(handle("@harasupply"), handle("@harasupply")),
+    "lookbook-line": L("٣٨ ألف متابع", "38K followers"),
+  },
+  photos: {
+    // The poster's photo, 16:9, with the copy over a dark fade.
+    hero: { wide: PHOTOS.alley },
+    // The wide photo band, with `banner-title` over it.
+    banner: PHOTOS.pastelHoodies,
+    // The about page's photo (the look has no story block on its home page).
+    story: PHOTOS.shop,
+    // The Instagram bento, square: one large photo, then four small ones (styled shots, not packshots).
+    custom: {
+      "lookbook-1": PHOTOS.passage,
+      "lookbook-2": PHOTOS.hoodiePair,
+      "lookbook-3": PHOTOS.shirtRack,
+      "lookbook-4": PHOTOS.blackHoodieRack,
+      "lookbook-5": PHOTOS.printTees,
     },
-    links: { "/about": NEW },
-  }),
-  lib("testimonials-classic", {
-    text: {
-      "آراء العملاء": L("من عملائنا", "From our customers"),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "أتقل هودي عندي. اتغسل عشر مرات والطباعة لسه زي ما هي.",
-        "Heaviest hoodie I own. Washed it ten times and the print is still sharp.",
-      ),
-      "م": L("ي", "Y"),
-      "مريم أ.": L("يوسف ع.", "Youssef A."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "لحقت الدروب بعد خمس دقايق من نزوله. يستاهل السهر.",
-        "Got the drop five minutes after it went live. Worth staying up for.",
-      ),
-      "ع": L("م", "M"),
-      "عمر ك.": L("ملك ر.", "Malak R."),
-      "الإسكندرية": L("الجيزة", "Giza"),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("المقاسات واسعة، انزل مقاس لو عايز قصّة عادية.", "Runs big, size down if you want a normal fit."),
-      "ن": L("ز", "Z"),
-      "نور ح.": L("زياد ح.", "Ziad H."),
-      "الجيزة": L("الإسكندرية", "Alexandria"),
-    },
-  }),
-];
+  },
+};
 
-const contact: Design[] = [
-  pageHeader("contact-header", L("كلمنا", "Talk to us"), L("عن مقاس أو طلب أو الدروب الجاي.", "About a size, an order or the next drop.")),
-  lib("contact-form", { text: { "راسلنا": L("راسلنا", "Write to us"), "ابعتلنا وهنرجعلك": L("ابعتلنا وهنرد عليك", "Send us a message") } }),
-];
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade or the demo store is a slot of `c`;
+ * generic shop labels (Top rated, Write to us, the reviewers' cities) and
+ * the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+  const short = x["store-short"]!;
+  const aboutName = L(`عن ${short.ar}`, `About ${short.en}`);
+  const review = c.reviews.items;
+  const bannerTitle = x["banner-title"]!;
 
-const faq: Design[] = [
-  pageHeader("faq-header", L("الأسئلة الشائعة", "FAQ"), L("المقاسات والدروبات والتوصيل.", "Sizes, drops and delivery.")),
-  lib("faq-columns", {
+  const header = lib("header-brand-bar", {
+    text: { "م": initialOf(name), "اسم متجرك": name, "ابحث في المتجر": c.labels.search },
+  });
+
+  const footer = lib("footer-signoff", {
     text: {
-      "ما سياسة الاسترجاع؟": L("هل في ريستوك؟", "Do you restock?"),
-      "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": L(
-        "لأ. كل دروب ١٢٠ قطعة ولما يخلص مش بيرجع. الاستبدال متاح خلال ١٤ يوم لو المقاس مش مظبوط.",
-        "No. Each drop is 120 pieces and never comes back. Size exchanges are open for 14 days.",
-      ),
+      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "وصل حديثًا": c.products.primary.eyebrow,
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+      "من نحن": aboutName,
     },
-  }),
-];
+    links: { "/products": [undefined, NEW, BEST, "/products?sort=rating"] },
+  });
+
+  const home: Design[] = [
+    lib("hero-poster", {
+      photo: [undefined, undefined, c.photos.hero.wide],
+      text: {
+        "مجموعة الموسم": c.hero.eyebrow,
+        "من ١ إلى ٣٠ نوفمبر": x["hero-note"]!,
+        "صورة الحملة": c.hero.alt,
+        "خصم": x["hero-sticker-1"]!,
+        "٣٠٪": x["hero-sticker-2"]!,
+        "لفترة محدودة": x["hero-sticker-3"]!,
+        "الموسم الجديد وصل": c.hero.title,
+        "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": c.hero.line,
+        "اكتشف المجموعة": c.hero.cta,
+      },
+      links: { "/products": NEW },
+    }),
+    lib("categories-chips", {
+      text: { "إيه اللي في بالك؟": c.categories.title },
+    }),
+    lib("products-rail", {
+      as: "drop-rail",
+      text: { "بيحبوها": c.products.primary.eyebrow, "الأكثر مبيعًا": c.products.primary.title },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary }],
+    }),
+    lib("page-image", {
+      as: "hoodies-banner",
+      // The section's name in the builder: "<product type> banner".
+      name: L(`بانر قسم ${bannerTitle.ar.startsWith("ال") ? "" : "ال"}${bannerTitle.ar}`, `${bannerTitle.en} banner`),
+      photo: [c.photos.banner],
+      text: {
+        "صورة البانر": x["banner-alt"]!,
+        "اسم القسم": bannerTitle,
+        "تشكيلة مختارة لهذا الموسم": x["banner-line"]!,
+      },
+    }),
+    lib("products-bento", {
+      text: { "الكل بيسأل عليهم": c.rows[0]!.title },
+      links: { "/products": BEST },
+    }),
+    lib("text-statement", {
+      text: {
+        "كل سنة وانتم طيبين. الطلبات شغالة طول أيام العيد.": x["craft-statement"]!,
+        "— فريق المتجر": L(`— فريق ${short.ar}`, `— The ${short.en} team`),
+        "مواعيد التوصيل": x["craft-statement-cta"]!,
+      },
+      links: { "/shipping": NEW },
+    }),
+    lib("gallery-bento", {
+      photo: [
+        c.photos.custom["lookbook-1"]!,
+        c.photos.custom["lookbook-2"]!,
+        c.photos.custom["lookbook-3"]!,
+        c.photos.custom["lookbook-4"]!,
+        c.photos.custom["lookbook-5"]!,
+      ],
+      text: {
+        "صورة إنستجرام": L(`صورة من إنستجرام ${short.ar}`, `A photo from ${short.en}'s Instagram`),
+        "@اسم_متجرك": oneString(x["lookbook-handle"]!),
+        "صور جديدة كل أسبوع": x["lookbook-line"]!,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader("about-header", aboutName, c.about.line),
+    lib("about-classic", {
+      person: [undefined, undefined, c.photos.story],
+      text: {
+        "صورة المتجر": c.about.alt,
+        "حكايتنا": c.about.eyebrow,
+        "بدأنا بسؤال واحد: هل سيدوم؟": c.about.title,
+        "فتحنا متجرنا بعد أن تعبنا من منتجات لا تعيش. كل ما نبيعه نجربه نحن أولًا.": c.about.text,
+        "اليوم نشحن لكل المحافظات ونرد على كل رسالة بأنفسنا.": c.about.more,
+        "تعرّف علينا": c.about.cta,
+      },
+      links: { "/about": NEW },
+    }),
+    lib("testimonials-classic", {
+      text: {
+        "آراء العملاء": c.reviews.title,
+        "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": review[0]!.quote,
+        "م": initialOf(review[0]!.name),
+        "مريم أ.": review[0]!.name,
+        "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": review[1]!.quote,
+        "ع": initialOf(review[1]!.name),
+        "عمر ك.": review[1]!.name,
+        "الإسكندرية": L("الجيزة", "Giza"),
+        "أسعار معقولة وجودة أفضل مما توقعت.": review[2]!.quote,
+        "ن": initialOf(review[2]!.name),
+        "نور ح.": review[2]!.name,
+        "الجيزة": L("الإسكندرية", "Alexandria"),
+      },
+    }),
+  ];
+
+  const contact: Design[] = [
+    pageHeader("contact-header", c.contact.title, c.contact.line),
+    lib("contact-form", { text: { "راسلنا": L("راسلنا", "Write to us"), "ابعتلنا وهنرجعلك": c.contact.heading } }),
+  ];
+
+  const faq: Design[] = [
+    pageHeader("faq-header", L("الأسئلة الشائعة", "FAQ"), c.faq.line),
+    lib("faq-columns", {
+      text: {
+        "ما سياسة الاسترجاع؟": c.faq.question,
+        "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": c.faq.answer,
+      },
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      {
+        slug: "about",
+        name: L(aboutName.ar, "About"),
+        seo: { title: aboutName, description: c.about.line },
+        sections: about,
+      },
+      { slug: "contact", name: L("تواصل", "Contact"), seo: { title: c.contact.title }, sections: contact },
+      { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -204,7 +343,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const STREETWEAR = libraryTemplate({
+export const STREETWEAR = editionTemplate({
   key: STREETWEAR_KEY,
   version: 4,
   changelog: "Streetwear v4: categories, section order",
@@ -228,19 +367,48 @@ export const STREETWEAR = libraryTemplate({
   },
   fonts: { heading: "Rubik", body: "Rubik" },
   radius: 0,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    {
-      slug: "about",
-      name: L("عن حارة", "About"),
-      seo: { title: L("عن حارة", "About Hara"), description: L("صاحبين وترابيزة طباعة وشارع في شبرا.", "Two friends, one print table and a street in Shubra.") },
-      sections: about,
-    },
-    { slug: "contact", name: L("تواصل", "Contact"), seo: { title: L("كلمنا", "Talk to us") }, sections: contact },
-    { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "labels.search",
+    "footer.line",
+    "custom.store-short",
+    "hero",
+    "custom.hero-note",
+    "custom.hero-sticker-1",
+    "custom.hero-sticker-2",
+    "custom.hero-sticker-3",
+    "categories.title",
+    "products.primary.eyebrow",
+    "products.primary.title",
+    "custom.banner-alt",
+    "custom.banner-title",
+    "custom.banner-line",
+    "rows.0.title",
+    "custom.craft-statement",
+    "custom.craft-statement-cta",
+    "custom.lookbook-handle",
+    "custom.lookbook-line",
+    "photos.custom.lookbook-1",
+    "photos.custom.lookbook-2",
+    "photos.custom.lookbook-3",
+    "photos.custom.lookbook-4",
+    "photos.custom.lookbook-5",
+    "reviews.title",
+    "reviews.items.0",
+    "reviews.items.1",
+    "reviews.items.2",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.banner",
+    "photos.story",
   ],
+  // The rail shows the newest products; the look has no category rows.
+  journey: { primary: "newest", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { reviews: L("الشارع بيقول إيه", "What the street says"), related: L("كمّل اللوك", "Run the full fit") } },
 });
