@@ -45,3 +45,6 @@ Marketing Videos/.supabase-s3.env
 # motion perf scratch
 scripts/perf-work/
 scripts/perf/
+
+# Downloaded demo photos waiting to be processed (niche editions, F-90)
+.editions-inbox/
