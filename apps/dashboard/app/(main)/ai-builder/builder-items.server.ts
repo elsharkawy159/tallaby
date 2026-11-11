@@ -69,7 +69,8 @@ async function applyBrand(ctx: RunContext, build: BuildRow): Promise<StepOutcome
   const store = await requireStoreOf(ctx, build);
   const [row] = await db.select().from(storeDesignSystems).where(eq(storeDesignSystems.storeId, store.id)).limit(1);
   if (!row) return { data: { kept: "no_design_system" } };
-  const parsed = designSystemSchema.safeParse({ colors: row.colors, typography: row.typography, spacing: row.spacing });
+  // Motion (0162) is carried along: saveStoreDesignSystem replaces the whole design system.
+  const parsed = designSystemSchema.safeParse({ colors: row.colors, typography: row.typography, spacing: row.spacing, ...(row.motion != null && { motion: row.motion }) });
   if (!parsed.success) return { data: { kept: "invalid_design_system" } };
   const branded = brandColors(parsed.data.colors, build.state.primaryColor);
   // No colour: the template's own palette stays (the seller chose it).

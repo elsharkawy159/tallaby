@@ -45,7 +45,7 @@ beforeEach(() => {
       },
     ],
     sellers: [{ id: SELLER, status: "approved", returnPolicy: "Old policy", subdomain: "shop" }],
-    storeDesignSystems: [{ storeId: STORE, colors: { background: "#ffffff", primary: "#000000" }, typography: { headingFont: "Cairo" }, spacing: { borderRadius: 8 }, version: 4 }],
+    storeDesignSystems: [{ storeId: STORE, colors: { background: "#ffffff", primary: "#000000" }, typography: { headingFont: "Cairo" }, spacing: { borderRadius: 8 }, motion: { reveal: false }, version: 4 }],
   });
 });
 
@@ -63,7 +63,7 @@ describe("design", () => {
     expect(proposal.card.lines.map((l) => l.key)).toContain("agent.card.design.draftOnly");
     const [sellerId, storeId, saved, version] = vi.mocked(saveStoreDesignSystem).mock.calls[0]!;
     expect([sellerId, storeId, version]).toEqual([SELLER, STORE, 4]);
-    expect(saved).toMatchObject({ colors: { background: "#ffffff" }, typography: { headingFont: "Cairo" }, spacing: { borderRadius: 8 } });
+    expect(saved).toMatchObject({ colors: { background: "#ffffff" }, typography: { headingFont: "Cairo" }, spacing: { borderRadius: 8 }, motion: { reveal: false } });
     expect((saved as { colors: { primary: string } }).colors.primary).toMatch(/^#[0-9a-f]{6}$/);
   });
 

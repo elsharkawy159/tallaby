@@ -39,7 +39,7 @@ export type SeoValues = {
 };
 
 /** The design-system tokens the Brand tab edits. Saved to the drafts. */
-export type DesignValues = Pick<DesignSystem, "colors" | "typography" | "spacing">;
+export type DesignValues = Pick<DesignSystem, "colors" | "typography" | "spacing" | "motion">;
 
 export type SiteSettingsInitial = {
   details: DetailsValues;

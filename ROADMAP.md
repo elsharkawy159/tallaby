@@ -1693,6 +1693,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-11 — F-88 bug: Theme › Motion was never saved; 0162 written (NOT applied)
+
+- **Bug:** `designSystem.motion` (reveal, hoverZoom, default, speed) was dropped on every write: `store_design_systems` had only colors/typography/spacing and Drizzle silently ignores unknown keys, so a template's or a seller's motion settings were lost on save, template apply/undo, revision restore, the starter site and publish.
+- **0162** (`0162_store_design_motion.sql`): adds nullable `store_design_systems.motion` jsonb, no default; NULL = defaults. Additive, idempotent. **Not applied on staging or production**; apply on staging, then production, BEFORE deploying this code (the design-system queries select the column).
+- **Code:** `packages/lib/src/store-sites/design-system.lib.ts` (`withStoredMotion` on read: a null motion is left out, so every existing store's config is unchanged; `designSystemColumns` on write: whole design system, empty motion stores null). Used by the editor load, draft config build (publish), `saveStoreDesignSystem`, revision restore, template apply and undo, and the starter site. Partial writers now carry motion along: the agent design skill, the AI builder brand step and Admin › Website settings › Brand.
+- **Schema:** `designSystem.motion.intensity` (`subtle | normal | expressive`, `MOTION_INTENSITIES`; unknown values dropped).
+- Tests: `design-system.lib.test.ts` (7), agent design skill keeps motion, `builder.integration.test.ts` motion round-trip (runs only with `TEST_DATABASE_URL`, not run).
+
 ### 2026-11-11 — Merge and deploy: `main` 9e2ae0ee live; 0163 applied on staging and production (owner: "merge everything to live in one deployment and update supabase")
 
 - **Deploy:** `main` pushed (25 commits, 09632d8f..9e2ae0ee) and `stage` fast-forwarded to it; Vercel admin, backend, dashboard and ecommerce all succeeded. Before the push: `pnpm turbo run test --concurrency=1` 13/13 packages pass; typecheck passes except the 16 old ecommerce `profile.chunks.tsx` errors (there before this work; ecommerce builds with `ignoreBuildErrors`).

@@ -28,6 +28,7 @@
 import { logServerError } from "@workspace/db/log";
 import { and, eq, isNull, sql, storeDesignSystems, storePages, stores, type db } from "@workspace/db";
 import { validateSiteConfig, type SiteConfig } from "@workspace/store-sections";
+import { designSystemColumns } from "../store-sites/design-system.lib";
 import { DEFAULT_TEMPLATE, prepareTemplateForStore, templateFormNeeds, templateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
 import { loadDefaultTemplate } from "../store-sites/template-rows.server";
 import { createStoreForm } from "../store-forms/server";
@@ -86,7 +87,7 @@ export async function seedStarterSite(q: Queryable, store: StarterStore, withDes
   if (withDesignSystem) {
     await q
       .update(storeDesignSystems)
-      .set({ ...site.designSystem, version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
+      .set({ ...designSystemColumns(site.designSystem), version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
       .where(eq(storeDesignSystems.storeId, store.id));
   }
   // A header or footer the store already has stays.

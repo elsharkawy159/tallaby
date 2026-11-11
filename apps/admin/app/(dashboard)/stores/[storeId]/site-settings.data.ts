@@ -19,6 +19,7 @@ export async function loadSiteSettings(sellerId: string, storeId: string): Promi
         colors: storeDesignSystems.colors,
         typography: storeDesignSystems.typography,
         spacing: storeDesignSystems.spacing,
+        motion: storeDesignSystems.motion,
         version: storeDesignSystems.version,
       })
       .from(storeDesignSystems)
@@ -44,7 +45,10 @@ export async function loadSiteSettings(sellerId: string, storeId: string): Promi
   ];
 
   const seo = parseStoreSeo(store.seo);
-  const parsed = designSystemSchema.safeParse(design ?? {});
+  // A null motion (0162: defaults) is left out, as in packages/lib store-sites.
+  const parsed = designSystemSchema.safeParse(
+    design ? { colors: design.colors, typography: design.typography, spacing: design.spacing, ...(design.motion != null && { motion: design.motion }) } : {},
+  );
   const ds = parsed.success ? parsed.data : { colors: {}, typography: {}, spacing: {} };
 
   return {
@@ -72,6 +76,7 @@ export async function loadSiteSettings(sellerId: string, storeId: string): Promi
       indexing: seo.indexing,
       googleSiteVerification: seo.googleSiteVerification ?? "",
     },
-    design: { value: { colors: ds.colors, typography: ds.typography, spacing: ds.spacing }, version: design?.version ?? 0 },
+    // Motion rides along untouched (saveStoreDesignSystem replaces the whole design system).
+    design: { value: { colors: ds.colors, typography: ds.typography, spacing: ds.spacing, ...(ds.motion && { motion: ds.motion }) }, version: design?.version ?? 0 },
   };
 }

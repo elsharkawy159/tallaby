@@ -40,6 +40,7 @@ import {
 } from "@workspace/store-sections";
 import { ensureStoreSiteScaffold } from "../stores/server";
 import { startFeeTrialIfNeeded } from "../sellers/fee-trial.server";
+import { designSystemColumns, withStoredMotion } from "./design-system.lib";
 import { updateTouchesLockedProductFields } from "./product-page-guard.lib";
 import { storeDraftKey } from "./preview-token";
 import { storeTemplateChosen } from "./template-choice.server";
@@ -107,6 +108,7 @@ export async function getStoreForEditor(sellerId: string, storeId: string, q: Qu
       colors: storeDesignSystems.colors,
       typography: storeDesignSystems.typography,
       spacing: storeDesignSystems.spacing,
+      motion: storeDesignSystems.motion,
       version: storeDesignSystems.version,
     })
     .from(storeDesignSystems)
@@ -132,7 +134,7 @@ export async function getStoreForEditor(sellerId: string, storeId: string, q: Qu
   const { sellerStatus: _sellerStatus, ...rest } = store;
   return {
     store: rest,
-    designSystem: designSystem ?? { colors: {}, typography: {}, spacing: {}, version: 0 },
+    designSystem: designSystem ? withStoredMotion(designSystem) : { colors: {}, typography: {}, spacing: {}, version: 0 },
     pages: pages.map(({ kind, ...page }) => ({ ...page, ...(kind === "product" && { kind: "product" as const }) })),
   };
 }
@@ -190,7 +192,7 @@ async function buildDraftSiteConfig(
   store: Pick<OwnStore, "id" | "defaultLocale" | "supportedLocales" | "sharedHeader" | "sharedFooter">,
 ) {
   const [designSystem] = await q
-    .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing })
+    .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing, motion: storeDesignSystems.motion })
     .from(storeDesignSystems)
     .where(eq(storeDesignSystems.storeId, store.id));
   const pages = await q
@@ -201,7 +203,7 @@ async function buildDraftSiteConfig(
 
   return {
     schemaVersion: CURRENT_SITE_CONFIG_VERSION,
-    designSystem: designSystem ?? {},
+    designSystem: designSystem ? withStoredMotion(designSystem) : {},
     header: store.sharedHeader ?? null,
     footer: store.sharedFooter ?? null,
     settings: { defaultLocale: store.defaultLocale, locales: store.supportedLocales },
@@ -344,7 +346,7 @@ export async function restoreRevisionToDraft(
 
       await tx
         .update(storeDesignSystems)
-        .set({ ...config.designSystem, version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
+        .set({ ...designSystemColumns(config.designSystem), version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
         .where(eq(storeDesignSystems.storeId, storeId));
       await tx
         .update(stores)
@@ -529,7 +531,7 @@ export async function saveStoreDesignSystem(
   await ensureStoreSiteScaffold(q, storeId);
   const [row] = await q
     .update(storeDesignSystems)
-    .set({ ...parsed.data, version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
+    .set({ ...designSystemColumns(parsed.data), version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
     .where(and(eq(storeDesignSystems.storeId, storeId), eq(storeDesignSystems.version, clientVersion)))
     .returning({ version: storeDesignSystems.version });
   return row ? { success: true, data: { version: row.version } } : { success: false, error: "version_conflict" };

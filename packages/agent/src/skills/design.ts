@@ -32,6 +32,8 @@ type DesignRow = {
   colors: DesignSystemColors;
   typography: Record<string, unknown>;
   spacing: Record<string, unknown>;
+  /** Theme motion settings (0162); null = defaults. Kept as is on every save. */
+  motion: Record<string, unknown> | null;
   version: number;
 };
 
@@ -42,6 +44,7 @@ async function loadDesign(ctx: AgentContext, forWrite: boolean): Promise<DesignR
       colors: storeDesignSystems.colors,
       typography: storeDesignSystems.typography,
       spacing: storeDesignSystems.spacing,
+      motion: storeDesignSystems.motion,
       version: storeDesignSystems.version,
     })
     .from(storeDesignSystems)
@@ -51,6 +54,7 @@ async function loadDesign(ctx: AgentContext, forWrite: boolean): Promise<DesignR
     colors: (row?.colors ?? {}) as DesignSystemColors,
     typography: (row?.typography ?? {}) as Record<string, unknown>,
     spacing: (row?.spacing ?? {}) as Record<string, unknown>,
+    motion: (row?.motion ?? null) as Record<string, unknown> | null,
     version: row?.version ?? 0,
   };
 }
@@ -67,6 +71,7 @@ async function save(ctx: AgentContext, current: DesignRow, patch: Partial<Pick<D
     colors: patch.colors ?? current.colors,
     typography: patch.typography ?? current.typography,
     spacing: current.spacing,
+    ...(current.motion && { motion: current.motion }),
   };
   const result = await saveStoreDesignSystem(ctx.sellerId, ctx.storeId, next, current.version);
   if (!result.success) {

@@ -59,6 +59,22 @@ describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60
     expect(await saveStoreDesignSystem(w.b.sellerId, w.a.a2, theme, version + 1, db)).toMatchObject({ error: "not_found" });
   });
 
+  it("saves and reads back Theme › Motion (0162); none stores null and reads without motion", async () => {
+    const version = (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.designSystem.version;
+    const motion = { reveal: false, speed: "fast", intensity: "subtle" };
+    const theme = { colors: { primary: "#ff3366" }, typography: {}, spacing: {}, motion };
+    expect(await saveStoreDesignSystem(w.a.sellerId, w.a.a2, theme, version, db)).toEqual({ success: true, data: { version: version + 1 } });
+    const [row] = await db.select({ motion: s.storeDesignSystems.motion }).from(s.storeDesignSystems).where(eq(s.storeDesignSystems.storeId, w.a.a2));
+    expect(row!.motion).toEqual(motion);
+    expect((await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.designSystem).toMatchObject({ motion });
+
+    const { motion: _m, ...noMotion } = theme;
+    expect(await saveStoreDesignSystem(w.a.sellerId, w.a.a2, noMotion, version + 1, db)).toEqual({ success: true, data: { version: version + 2 } });
+    const [cleared] = await db.select({ motion: s.storeDesignSystems.motion }).from(s.storeDesignSystems).where(eq(s.storeDesignSystems.storeId, w.a.a2));
+    expect(cleared!.motion).toBeNull();
+    expect("motion" in (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.designSystem).toBe(false);
+  });
+
   it("saves the header and footer from the section library only", async () => {
     const header = { id: "hdr", sectionId: "custom-section", version: 1, props: { announcement: "شحن مجاني" } };
     const v0 = (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.store.chromeVersion;

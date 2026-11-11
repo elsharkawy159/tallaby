@@ -61,6 +61,7 @@ import { getCodeTemplate, templateMeta, type TemplateMeta } from "@workspace/sto
 import { createStoreForm } from "../store-forms/server";
 import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
+import { designSystemColumns, withStoredMotion } from "./design-system.lib";
 import { codeTemplateConfig, getPublicTemplate, offeredTemplates } from "./template-rows.server";
 import { storeTemplateChosen } from "./template-choice.server";
 
@@ -348,7 +349,7 @@ export async function applyStoreTemplate(
       const fitted = prepareTemplateForStore(essentials, { defaultLocale: locale, storeName: store.name, formIds });
       const pageNames = templateMeta(template).pageNames;
       const [ds] = await tx
-        .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing })
+        .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing, motion: storeDesignSystems.motion })
         .from(storeDesignSystems)
         .where(eq(storeDesignSystems.storeId, storeId));
       const pages = await tx
@@ -357,7 +358,7 @@ export async function applyStoreTemplate(
         .where(eq(storePages.storeId, storeId))
         .orderBy(asc(storePages.orderIndex), asc(storePages.createdAt));
 
-      const designSystem = designSystemSchema.safeParse(ds ?? {});
+      const designSystem = designSystemSchema.safeParse(ds ? withStoredMotion(ds) : {});
       const current = {
         designSystem: designSystem.success ? designSystem.data : { colors: {}, typography: {}, spacing: {} },
         header: asInstance(store.sharedHeader),
@@ -371,7 +372,7 @@ export async function applyStoreTemplate(
 
       await tx
         .update(storeDesignSystems)
-        .set({ ...merged.designSystem, version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
+        .set({ ...designSystemColumns(merged.designSystem), version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
         .where(eq(storeDesignSystems.storeId, storeId));
       await tx
         .update(stores)
@@ -505,7 +506,7 @@ export async function undoStoreTemplate(
 
       await tx
         .update(storeDesignSystems)
-        .set({ ...saved.designSystem, version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
+        .set({ ...designSystemColumns(saved.designSystem), version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
         .where(eq(storeDesignSystems.storeId, storeId));
       await tx
         .update(stores)

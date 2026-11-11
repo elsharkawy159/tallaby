@@ -2756,6 +2756,8 @@ export const storeDesignSystems = pgTable("store_design_systems", {
 	colors: jsonb().default({}).notNull(),
 	typography: jsonb().default({}).notNull(),
 	spacing: jsonb().default({}).notNull(),
+	/** Theme motion settings (0162); null = defaults, left out of the design system. */
+	motion: jsonb(),
 	version: integer().default(0).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [

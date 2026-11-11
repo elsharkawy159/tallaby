@@ -271,6 +271,10 @@ export const sitePageSchema = z.object({
 });
 export type SitePage = z.output<typeof sitePageSchema>;
 
+/** Theme › Motion intensity (motion v2); unset means `normal`. */
+export const MOTION_INTENSITIES = ["subtle", "normal", "expressive"] as const;
+export type MotionIntensity = (typeof MOTION_INTENSITIES)[number];
+
 /** Theme tokens. Seller custom CSS is intentionally not part of the schema (stripped). */
 export const designSystemSchema = z.object({
   colors: z
@@ -314,6 +318,8 @@ export const designSystemSchema = z.object({
       hoverZoom: z.boolean().optional(),
       default: animationDefaultSchema.optional().catch(undefined),
       speed: animationSpeedSchema.optional().catch(undefined),
+      /** Motion v2 (docs/motion-v2-plan.md): normal when unset (the editor stores nothing for normal). */
+      intensity: z.enum(MOTION_INTENSITIES).optional().catch(undefined),
     })
     .optional(),
 });
