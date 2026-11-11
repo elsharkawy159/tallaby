@@ -7,8 +7,16 @@
  * and initials can be stamped on a wallet or card holder on request. Data
  * only. No React here.
  *
- * Shipped on zay only: shanta, the niche's other planned look, is not
- * edition-ready yet.
+ * The niche's template is jewelry-warm (Tibr; one template per niche,
+ * docs/systems/one-template-per-niche.md): the copy and photos are written
+ * for it first. zay still draws the pack, with the same copy, until the
+ * accessories switch takes it off (its collage and comparison read the zay
+ * keys at the end of `custom`).
+ *
+ * On jewelry-warm: the hero 6653239 is cropped tall on phones with the copy
+ * on it; the workshop band (`about-overlap`) is the banner 4452611; the care
+ * block shows the story photo 4452395 beside four care steps
+ * (`custom.care-*`), and the about page shows it too.
  *
  * Material, kept the same everywhere: every piece is genuine leather (the
  * packshots show smooth or lightly grained hide, a woven strap on the braided
@@ -63,7 +71,7 @@
  * No buyer quotes (`reviews`): a pack holds no invented reviews, so zay's
  * home ends on its best-seller carousel.
  *
- * No hero video: zay's collage hero has none.
+ * No hero video: neither look plays one.
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, handle, pexels, phone } from "../../../library-template";
@@ -82,7 +90,7 @@ const EMAIL = "hello@seer.example";
 
 export const BELTS_WALLETS: Edition = {
   niche: NICHE,
-  looks: ["zay"],
+  looks: ["jewelry-warm", "zay"],
   priceBand: { min: 150, max: 1500 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -204,6 +212,15 @@ export const BELTS_WALLETS: Edition = {
       ),
     },
     custom: {
+      // jewelry-warm: the workshop band's wide photo (`photos.banner`), its alt text.
+      "banner-alt": L("عِدّة شغل الجلد وبكرة خيط مشمّع وقطع جلد على مفرش القص", "Leather tools, waxed thread and cut pieces on a cutting mat"),
+      // jewelry-warm's care block, beside the story photo: a title, one line and four short care steps.
+      "care-title": L("اعتني بيه، يعيش أكتر", "Look after it, it lasts"),
+      "care-text": L("الجلد الطبيعي محتاج حاجات بسيطة عشان يفضل طري ولونه يحلو مع الوقت.", "Genuine leather needs a few simple habits to stay supple and age well."),
+      "care-point-1": L("لو اتبل، نشّفه بقماشة وسيبه في الهوا", "If it gets wet, blot it and let it air-dry"),
+      "care-point-2": L("ادهنه بكريم جلد كل كام شهر", "Condition it every few months"),
+      "care-point-3": L("خليه بعيد عن الشمس والحرارة", "Keep it away from sun and heat"),
+      "care-point-4": L("خزّن الحزام ملفوف، مش متعلّق من الإبزيم", "Store a belt rolled, not hung by its buckle"),
       // Zay: the store's short name inside a sentence ("Why Seer?", "About Seer").
       "store-short": L("سَيْر", "Seer"),
       // Zay's hero captions, numbered under the collage photos: leather rolls, the thread and awl, the stitch holes.

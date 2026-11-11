@@ -55,7 +55,7 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
   { niche: "watches", template: "saat", edition: "watches", status: "pending" },
   { niche: "fashion-jewelry", template: "zahra", edition: "fashion-jewelry", status: "ready" },
   { niche: "hair-accessories", template: "kholkhal", edition: "hair-accessories", status: "pending" },
-  { niche: "belts-wallets", template: "jewelry-warm", edition: "belts-wallets", status: "pending" },
+  { niche: "belts-wallets", template: "jewelry-warm", edition: "belts-wallets", status: "ready" },
   { niche: "silver-jewelry", template: "fadda", status: "ready" }, // native, then a new pack
   // ── mobile accessories ──
   { niche: "phone-cases", template: "volt", edition: "phone-cases", status: "ready" },

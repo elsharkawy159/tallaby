@@ -1,55 +1,84 @@
 /**
- * Jewelry Warm (2026-10-28, jewelry niche, warm / editorial): sand paper,
- * espresso ink and a bronze brand with a honey-gold accent, Noto Naskh
- * Arabic headings over IBM Plex Sans Arabic, soft 10px corners and a 1360px
- * container. A slow, handmade-feeling home: the announcement header, a split
- * hero beside a gold-and-greenery flat lay, the first category as a big
- * photo with the rest in a ruled list, a shelf of favourites, the family
- * story beside a wooden tray of gold, four category rows with portrait
- * photos on wood, linen and satin, a personal letter newsletter and the
- * classic footer. Built from section library designs (`fromLibrary`).
+ * Tibr (accessories, warm / workshop): white paper for the product stage, a
+ * cordovan brown for actions and bands, a cool canvas grey for tinted rows
+ * and a brass accent; Aref Ruqaa headings (a hand-lettered maker's mark) over
+ * IBM Plex Sans Arabic, crisp 6px corners and a 1280px container. Built from
+ * section library designs (`fromLibrary`).
  *
- * Photos: Pexels, each checked by eye at full size (2026-10-28, again at
- * 2000px after browser QA): jewelry, brooches, hair accessories, sunglasses
- * and bags on wood, linen and warm light, no people or figures, no readable
- * brand or model lettering, none used twice. Hero 4155255; about 4155252,
- * about page 4155250 (one shoot, on different pages); tiles 12290110,
- * 13292955, 5830200, 37560446, 6160287, 29538707, 28387111; products as
- * listed in `DEMO`.
- * Swapped before QA: ring 17261921 (a library stock photo); earrings
- * 15799478 (lettered plaque); bracelets 38909337 (same bracelet as
- * 38909356), 37129473 (cartoon beads); bracelets tile 18039203 (lettered
- * tags); watch 26626530 (tiny dial text); bags 27046143 (brand plate),
- * 23223849 (a hand), 10919291 and 9327162 (used by older templates).
- * Swapped after QA: watches (brand lettering on the tile and dials) became
- * brooches and hair accessories; ring 13524236 (a blurred person behind)
- * for 29624003; necklaces 29736434 and 29736433 (zodiac water-bearer
- * figure, one shoot) for 6858599 and 10897849; sunglasses tile 11882776 (a
- * person reflected in the lens) for 29538707, product 26050118 (temple
- * text) dropped; bag 27046146 (embossed patch) dropped; bracelets 10887448
- * and 11635474 (same mookaite shoot as 11051718) for 11178580 and 31005906.
+ * v2 (one template per niche, 2026-11-11, ROADMAP F-90,
+ * docs/systems/one-template-per-niche.md §3): the belts-and-wallets niche
+ * template, rebuilt look-first around a small workshop. Home, nine sections:
+ *   1. `hero-fullbleed`              the workbench, copy on the photo; the
+ *                                    page's one moment (`fade-exit`, the
+ *                                    photo's parallax)
+ *   2. `categories-captioned`        four portrait tiles with piece counts
+ *   3. `products-grid`               eight best sellers on the product stage
+ *   4. `about-overlap`               the workshop story on a wide photo
+ *   5. `products-category-carousel`  the store's 1st category
+ *   6. `features-checklist`          caring for the piece (the trade's own
+ *                                    block: a photo and four care steps)
+ *   7. `products-category-carousel`  the store's 2nd category
+ *   8. `features-trust-band`         four promises on the canvas band
+ *   9. `newsletter-strip`            one row on the cordovan
+ * Chrome: `header-announcement` and `footer-line` (paper, so the cordovan
+ * newsletter closes the page on its own).
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`; `DEFAULT_CONTENT` with `DEMO` is Tibr's
+ * own gold workshop. v1 (the 2026-10-28 layout) was captured before the
+ * redesign; v2 is a deliberate version bump with its own fixture.
+ *
+ * Photos: Pexels, checked by eye (2026-10-28, again 2026-11-11). Hero
+ * 4155255; workshop band 4155252; care block and about page 4155250 (one
+ * shoot, different sections); tiles 12290110, 13292955, 5830200, 37560446,
+ * 6160287, 29538707; products as listed in `DEMO`. v2 dropped the leather
+ * bags category (three products, fewer than a row of four).
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
-import { categoryRows } from "../_category-rows";
+import type { ElementIconName } from "../../elements/registry";
+import type { NodeTemplate } from "../../elements/tree";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, handle, libraryTemplate, pexels, phone } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, handle, pexels, phone } from "../library-template";
 
 export const JEWELRY_WARM_KEY = "jewelry-warm";
 
-const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(JEWELRY_WARM_KEY, getDesign(id)!, { corners: 10, ...patch });
+const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(JEWELRY_WARM_KEY, getDesign(id)!, { corners: 6, ...patch });
+
+/**
+ * A library design with its nodes of one type changed in tree order, for
+ * nodes a `nodes` patch cannot reach (no layer label: the hero's eyebrow, the
+ * promise icons). The tree keeps its shape, only props and styles change.
+ */
+function retouch(design: Design, type: string, change: (node: NodeTemplate, index: number) => NodeTemplate): Design {
+  return {
+    ...design,
+    tree: (t) => {
+      let index = 0;
+      const visit = (node: NodeTemplate): NodeTemplate => {
+        const next = node.type === type ? change(node, index++) : node;
+        return next.children ? { ...next, children: next.children.map(visit) } : next;
+      };
+      return visit(design.tree(t));
+    },
+  };
+}
 
 const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
-const RATED = "/products?sort=rating";
+
+/** The four promises' icons, in the order a pack writes them: wrapping, a personal touch, sizing help, payment. */
+const TRUST_ICONS: readonly ElementIconName[] = ["gift", "sparkles", "chat", "credit-card"];
 
 const P = (id: number) => pexels(id, 800);
 const PHOTOS = {
   hero: pexels(4155255, 1920),
-  story: pexels(4155252, 1200),
-  aboutPage: pexels(4155250, 1200),
+  workshop: pexels(4155252, 1600),
+  care: pexels(4155250, 1200),
   // Category photos.
   catRings: pexels(12290110, 1200),
   catNecklaces: pexels(13292955, 1200),
@@ -57,121 +86,57 @@ const PHOTOS = {
   catBracelets: pexels(37560446, 1200),
   catBrooches: pexels(6160287, 1200),
   catSunglasses: pexels(29538707, 1200),
-  catBags: pexels(28387111, 1200),
 };
 
 const NAME = L("تِبر", "Tibr");
 
-const header = lib("header-announcement", {
-  text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("أهلًا بيكي في تِبر · توصيل لكل محافظات مصر", "Welcome to Tibr · Delivery across Egypt"),
-    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
-    "م": L("ت", "T"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل القطع", "Shop all"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("تتبّعي طلبك", "Track order"),
-    "من نحن": L("حكايتنا", "Our story"),
+/**
+ * Tibr's own content: what the look is built with when no edition is applied.
+ * The store name and description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  announcement: [L("توصيل لكل محافظات مصر", "Delivery across Egypt"), L("الدفع عند الاستلام", "Cash on delivery"), L("تلميع ببلاش لأي قطعة من عندنا", "Free polishing for any Tibr piece")],
+  labels: { about: L("حكايتنا", "Our story") },
+  hero: {
+    alt: L("سلاسل وأساور دهب على سطح أبيض جنب ورق شجر ودانتيل", "Gold chains and bangles on a white surface with leaves and lace"),
+    eyebrow: L("من ورشتنا في المعادي", "From our Maadi workshop"),
+    title: L("دهب دافي يتلبس كل يوم", "Warm gold for every day"),
+    line: L(
+      "سلاسل رفيعة وغوايش وخواتم بلمسة يدوية، معمولة على مهل عشان تعيش معاكي سنين.",
+      "Fine chains, bangles and rings with a handmade touch, made slowly to stay with you for years.",
+    ),
+    cta: L("شوفي الجديد", "See what is new"),
   },
-  links: { "/products": [undefined, NEW, undefined, undefined, NEW], "/blog": "/profile/orders" },
-});
-
-const footer = lib("footer-classic", {
-  text: {
-    "اسم متجرك": NAME,
-    "أساسيات كل يوم، مختارة بعناية.": L("دهب وفضة وخرز معمولين على مهل، لكل يوم.", "Gold, silver and beads made slowly, for every day."),
-    "تسوّق": L("تسوّق", "Shop"),
-    "كل المنتجات": L("كل القطع", "All pieces"),
-    "العروض": L("الأعلى تقييمًا", "Top rated"),
-    "المساعدة": L("المساعدة", "Help"),
-    "الاسترجاع والاستبدال": L("الاستبدال والتلميع", "Exchanges & polishing"),
-    "من نحن": L("حكايتنا", "Our story"),
-    "تواصل معنا": L("تواصل معنا", "Contact"),
-    "٠١٠٠ ١٢٣ ٤٥٦٧": L(phone("٠١١٢ ٦٥٣ ٠٨٧٤"), "+20 112 653 0874"),
-    "١٢ شارع النيل، الزمالك، القاهرة": L(`١٤ شارع ٢٥٠، المعادي، القاهرة · ${handle("hello@tibr.eg")}`, "14 Road 250, Maadi, Cairo · hello@tibr.eg"),
-    "السبت إلى الخميس، ١٠ ص – ١٠ م": L("كل يوم من ١١ الصبح لـ ١٠ بالليل", "Daily, 11am to 10pm"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ تِبر. كل الحقوق محفوظة.", "© 2026 Tibr. All rights reserved."),
+  categories: { title: L("في الصندوق بتاعنا", "Inside our jewelry box") },
+  products: {
+    primary: {
+      title: L("المفضّل عند عميلاتنا", "Our clients' favourites"),
+      line: L("القطع اللي بتتطلب تاني وتالت.", "The pieces that are ordered again and again."),
+    },
   },
-  links: { "https://wa.me/": "https://wa.me/201126530874", "/products": [SHOP, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.hero],
-    text: {
-      "كوليكشن الموسم": L("مجموعة الخريف", "The autumn edit"),
-      "صوت أنقى، كل يوم": L("دهب دافي يتلبس كل يوم", "Warm gold for every day"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "سلاسل رفيعة وغوايش وخواتم بلمسة يدوية، معمولة في ورشتنا بالمعادي عشان تعيش معاكي سنين.",
-        "Fine chains, bangles and rings with a handmade touch, made in our Maadi workshop to stay with you for years.",
-      ),
-      "تسوق الآن": L("تسوّقي المجموعة", "Shop the edit"),
-      "العروض": L("وصل حديثًا", "New in"),
-      "صورة الحملة": L("سلاسل وأساور دهب على سطح أبيض جنب ورق شجر ودانتيل", "Gold chains and bangles on a white surface with leaves and lace"),
-    },
-    links: { "/products": [SHOP, NEW] },
-  }),
-  lib("categories-feature-list", {
-    text: {
-      "الأقسام": L("في الصندوق بتاعنا", "Inside our jewelry box"),
-      "كل الأقسام": L("الكل", "All"),
-      "منتج": L("قطعة", "pieces"),
-    },
-    lists: [undefined, { limit: 6 }],
-  }),
-  lib("products-shelf", {
-    text: {
-      "تسوّق حسب مزاجك": L("المفضّل عند عميلاتنا", "Our customers' favourites"),
-      "وصل جديد": L("الأكثر طلبًا", "Best sellers"),
-      "الأكثر مبيعًا": L("وصل حديثًا", "New in"),
-      "عليه خصم": L("الأعلى تقييمًا", "Top rated"),
-      "كل المنتجات": L("كل القطع", "View all pieces"),
-    },
-    links: { "/products": [BEST, NEW, RATED, SHOP] },
-    lists: [{ source: "best-sellers" }],
-  }),
-  lib("about-split-story", {
-    photo: [undefined, undefined, PHOTOS.story],
-    text: {
-      "صورة القصة": L("خواتم وغوايش دهب جنب صينية خشب", "Gold rings and bangles beside a wooden tray"),
-      "من ورشتنا": L("من ورشتنا", "From our workshop"),
-      "متصمم عشانك ومعمول في القاهرة": L("معمول بالإيد، عشان يتورث", "Made by hand, made to be passed on"),
-      "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": L(
-        "بنشتغل دهب عيار ٢١ وفضة ٩٢٥ وأحجار طبيعية، وبنعمل كميات صغيرة عشان كل قطعة تخلص على إيد صايغ واحد.",
-        "We work in 21-karat gold, 925 silver and natural stones, in small batches, so each piece is finished by one goldsmith.",
-      ),
-      "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": L(
-        "+١٥٠٠٠ عميلة في مصر عندها قطعة من تِبر، وتقييمنا ٤٫٩ من ٥.",
-        "15,000+ women across Egypt own a Tibr piece, rated 4.9 out of 5.",
-      ),
-      "حكايتنا": L("اقري حكايتنا", "Read our story"),
-    },
-  }),
-  ...categoryRows(lib, {
-    viewAll: L("كل القطع", "Shop all"),
-    muted: [1, 4],
-    nodes: { "صورة البطاقة": { style: { aspectRatio: "portrait" } } },
-  }),
-  lib("newsletter-letter", {
-    text: {
-      "رسالة كل أسبوع": L("رسالة من الورشة", "A letter from the workshop"),
-      "أهلًا،": L("أهلًا بيكي،", "Hello, friend,"),
-      "كل خميس بكتب رسالة قصيرة فيها أحسن حاجة جربناها الأسبوع ده، وعرض للمشتركين بس.": L(
-        "كل أول شهر بنكتبلك رسالة قصيرة فيها قطعة جديدة طلعت من الورشة، وحكاية عميلة لبست دهبنا في يوم مهم، ونصيحة تحافظي بيها على اللمعة.",
-        "On the first of every month we write a short note with a new piece from the workshop, the story of a client who wore our gold on a big day and a tip to keep it shining.",
-      ),
-      "أ": L("ت", "T"),
-      "أحمد": L("فريق تِبر", "The Tibr team"),
-      "صاحب المتجر": L("ورشة المعادي", "Our Maadi workshop"),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("حكايتنا", "Our story"), L("دهب وفضة معمولين على مهل في المعادي.", "Gold and silver made slowly in Maadi.")),
-  aboutStory(lib, {
-    photo: PHOTOS.aboutPage,
+  story: {
     alt: L("غويشة وسلسلة دهب في صينية خشب", "A gold bangle and chain in a wooden tray"),
+    eyebrow: L("من ورشتنا", "From our workshop"),
+    title: L("معمول بالإيد، عشان يتورث", "Made by hand, made to be passed on"),
+    text: L(
+      "بنشتغل دهب عيار ٢١ وفضة ٩٢٥ وأحجار طبيعية، بكميات صغيرة، وكل قطعة بتخلص على إيد صايغ واحد.",
+      "We work in 21-karat gold, 925 silver and natural stones, in small batches, and each piece is finished by one goldsmith.",
+    ),
+    cta: L("اقري حكايتنا", "Read our story"),
+  },
+  trust: [
+    { title: L("علبة هدية", "A gift box"), line: L("كل قطعة بتوصل متغلّفة", "Every piece arrives wrapped") },
+    { title: L("حفر الأسامي", "Name engraving"), line: L("على الدلايات والدبل لو طلبتي", "On pendants and bands on request") },
+    { title: L("مقاس الخاتم", "Ring size"), line: L("ابعتيلنا على واتساب ونساعدك", "Ask us on WhatsApp and we help") },
+    { title: L("ادفعي عند الاستلام", "Pay on delivery"), line: L("كاش مع المندوب", "Cash to the courier") },
+  ],
+  newsletter: {
+    title: L("رسالة من الورشة", "A letter from the workshop"),
+    line: L("قطعة جديدة ونصيحة للمعة، مرة في الشهر.", "A new piece and a shine tip, once a month."),
+  },
+  about: {
+    line: L("دهب وفضة معمولين على مهل في المعادي.", "Gold and silver made slowly in Maadi."),
+    alt: L("خواتم وغوايش دهب جنب صينية خشب", "Gold rings and bangles beside a wooden tray"),
     eyebrow: L("من ٢٠١٩", "Since 2019"),
     title: L("ورشة صغيرة في المعادي", "A small workshop in Maadi"),
     text: L(
@@ -179,10 +144,205 @@ const about: Design[] = [
       "Tibr began with my grandmother's jewelry pouch. Every piece in it had a story, and I wanted to make pieces that still tell stories like hers.",
     ),
     more: L("ولسه كل قطعة بتتشطب بالإيد، وبنلمّع أي قطعة من عندنا ببلاش مهما كان عمرها.", "Every piece is still hand-finished, and we polish any Tibr piece free, whatever its age."),
-    button: L("تسوّقي المفضّل", "Shop favourites"),
-    href: BEST,
-  }),
-];
+    cta: L("تسوّقي المفضّل", "Shop favourites"),
+  },
+  contact: {
+    title: L("تعالي زورينا", "Come and visit"),
+    line: L(
+      `١٤ شارع ٢٥٠، المعادي، القاهرة، ${phone("٠١١٢ ٦٥٣ ٠٨٧٤")}، ${handle("hello@tibr.eg")}`,
+      "14 Road 250, Maadi, Cairo | +20 112 653 0874 | hello@tibr.eg",
+    ),
+    heading: L("اسألينا عن أي قطعة", "Ask us about any piece"),
+  },
+  faq: {
+    line: L("الخامات والمقاسات والعناية.", "Materials, sizing and care."),
+    question: L("إزاي أحافظ على لمعة الدهب؟", "How do I keep my gold shining?"),
+    answer: L(
+      "امسحيه بقماشة ناعمة بعد كل لبسة، وشيليه قبل الشاور والبرفان. ومرة في السنة هاتيه الورشة ونلمّعه ببلاش.",
+      "Wipe it with a soft cloth after each wear and take it off before showering or perfume. Once a year, bring it to the workshop and we polish it free.",
+    ),
+  },
+  custom: {
+    // The workshop band's wide photo (`photos.banner`), its alt text.
+    "banner-alt": L("خواتم وغوايش دهب جنب صينية خشب", "Gold rings and bangles beside a wooden tray"),
+    // The care block beside `photos.story`: a title (≤ 6 words), one line, then four short care steps (≤ 7 words each).
+    "care-title": L("عشان اللمعة تفضل", "To keep the shine"),
+    "care-text": L("الدهب والفضة محتاجين حاجات بسيطة عشان يفضلوا زي يوم ما وصلوكي.", "Gold and silver need a few simple habits to stay as they arrived."),
+    "care-point-1": L("امسحي القطعة بقماشة ناعمة بعد اللبس", "Wipe each piece with a soft cloth"),
+    "care-point-2": L("شيليها قبل الشاور والبرفان", "Take it off before showers and perfume"),
+    "care-point-3": L("خزّني كل قطعة في كيسها لوحدها", "Keep each piece in its own pouch"),
+    "care-point-4": L("هاتيها الورشة مرة في السنة نلمّعها", "Bring it in once a year to polish"),
+  },
+  photos: {
+    hero: { wide: PHOTOS.hero },
+    banner: PHOTOS.workshop,
+    story: PHOTOS.care,
+  },
+};
+
+/** One row of four of a category's products, by the category's place in the store. */
+const categoryRow = (place: number, n: number): Design =>
+  lib("products-category-carousel", {
+    as: `category-row-${n}`,
+    text: { "عرض الكل": L("عرض الكل", "View all") },
+    lists: [{ offset: place - 1 }, { categoryIndex: place, limit: 4 }],
+  });
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (New in, Best sellers, Track order, View all) and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+
+  const header = lib("header-announcement", {
+    text: {
+      "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      م: initialOf(name),
+      "اسم متجرك": name,
+      المتجر: L("كل القطع", "Shop all"),
+      العروض: L("وصل حديثًا", "New in"),
+      المدونة: L("تتبّع طلبك", "Track order"),
+      "من نحن": c.labels.about,
+    },
+    links: { "/products": [undefined, NEW, undefined, undefined, NEW], "/blog": "/profile/orders" },
+  });
+
+  const footer = lib("footer-line", {
+    text: {
+      م: initialOf(name),
+      "اسم متجرك": name,
+      "الشحن والتوصيل": L("الشحن والتوصيل", "Shipping"),
+      "الاسترجاع والاستبدال": L("الاستبدال", "Exchanges"),
+      "الأسئلة الشائعة": L("الأسئلة الشائعة", "FAQ"),
+      "من نحن": c.labels.about,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+  });
+
+  // The hero's eyebrow is a quiet sentence-case line here, not tracked capitals.
+  const hero = retouch(
+    lib("hero-fullbleed", {
+      photo: [c.photos.hero.wide],
+      text: {
+        "صورة الواجهة": c.hero.alt,
+        "المجموعة الجديدة": c.hero.eyebrow,
+        "صُنعت لتدوم معك": c.hero.title,
+        "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تسوّق الآن": c.hero.cta,
+        "شوف الجديد": L("كل القطع", "Shop all"),
+      },
+      links: { "/products": NEW, "/products?sort=newest": SHOP },
+    }),
+    "text",
+    (node, index) => (index === 0 ? { ...node, style: { ...node.style, textTransform: "none", letterSpacing: "normal", fontSize: "md" } } : node),
+  );
+
+  const home: Design[] = [
+    hero,
+    lib("categories-captioned", {
+      text: { "اكتشف الأقسام": c.categories.title, "كل الأقسام": L("كل القطع", "Shop all"), منتج: L("قطعة", "pieces") },
+      lists: [{ limit: 4 }],
+      // Four across: a pack holds four to eight categories, the first four lead.
+      nodes: { الأقسام: { style: { columns: 4 } } },
+    }),
+    lib("products-grid", {
+      text: { "وصل حديثًا": c.products.primary.title, "أحدث المنتجات اللي نزلت المتجر.": c.products.primary.line },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary }],
+      nodes: { المنتجات: { tablet: { columns: 4 } } },
+    }),
+    lib("about-overlap", {
+      person: [undefined, undefined, undefined, undefined, c.photos.banner],
+      text: {
+        "صورة المتجر": x["banner-alt"]!,
+        "من داخل المتجر": c.story.eyebrow,
+        "بدأنا من محل صغير": c.story.title,
+        "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.": c.story.text,
+        "اعرف أكثر": c.story.cta,
+      },
+    }),
+    categoryRow(journey.rows[0]!, 1),
+    // The care block: its chip is hidden (the title says it), the steps are the pack's.
+    retouch(
+      lib("features-checklist", {
+        person: [undefined, undefined, undefined, undefined, undefined, c.photos.story],
+        text: {
+          "فريق يجهز الطلبات": c.story.alt,
+          "كيف نعمل": L("العناية", "Care"),
+          "كل طلب يُراجع مرتين": x["care-title"]!,
+          "قبل أن يخرج من المخزن نراجع المنتج والتغليف والفاتورة.": x["care-text"]!,
+          "كل منتج يُفحص قبل الشحن": x["care-point-1"]!,
+          "تغليف محكم ومبطّن": x["care-point-2"]!,
+          "فاتورة وضمان داخل العلبة": x["care-point-3"]!,
+          "رقم تتبع على واتساب": x["care-point-4"]!,
+          "اعرف أكثر": L("أسئلة العناية والمقاسات", "Care and sizing questions"),
+        },
+        links: { "/about": "/faq" },
+      }),
+      "badge",
+      (node) => ({ ...node, style: { ...node.style, hidden: true }, breakpointStyles: { ...node.breakpointStyles, tablet: { ...node.breakpointStyles?.tablet, hidden: true }, mobile: { ...node.breakpointStyles?.mobile, hidden: true } } }),
+    ),
+    categoryRow(journey.rows[1]!, 2),
+    retouch(
+      lib("features-trust-band", {
+        text: {
+          "توصيل سريع": c.trust[0]!.title,
+          "من ٢ لـ ٤ أيام لكل المحافظات": c.trust[0]!.line,
+          "الدفع عند الاستلام": c.trust[1]!.title,
+          "أو ادفع بالمحافظ وإنستاباي": c.trust[1]!.line,
+          "استبدال سهل": c.trust[2]!.title,
+          "خلال ١٤ يوم": c.trust[2]!.line,
+          "مساعدة على واتساب": c.trust[3]!.title,
+          "كل يوم من ١٠ ص لـ ١٠ م": c.trust[3]!.line,
+        },
+      }),
+      "icon",
+      (node, index) => ({ ...node, props: { ...node.props, name: TRUST_ICONS[index] ?? node.props.name } }),
+    ),
+    lib("newsletter-strip", {
+      text: { "اعرف الجديد الأول": c.newsletter.title, "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": c.newsletter.line },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", c.labels.about, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: c.labels.about, seo: { title: c.labels.about }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -194,7 +354,6 @@ const DEMO = demoStore({
     ["bracelets", "الأساور والخرز", "Bracelets & beads", PHOTOS.catBracelets],
     ["brooches", "البروشات والشعر", "Brooches & hair", PHOTOS.catBrooches],
     ["sunglasses", "النضارات الشمس", "Sunglasses", PHOTOS.catSunglasses],
-    ["bags", "الشنط الجلد", "Leather bags", PHOTOS.catBags],
   ],
   products: [
     // Rings & bands
@@ -245,71 +404,83 @@ const DEMO = demoStore({
     ["round-wire-sunglasses", "sunglasses", "نضارة مدورة سلك", "Round Wire Sunglasses", P(3030690), 1250, { rating: 4.6, sold90: 26 }],
     ["white-cat-eye", "sunglasses", "نضارة كات آي بيضا", "White Cat-Eye", P(27347004), 1350, { rating: 4.5, sold90: 21 }],
     ["burgundy-round-sunglasses", "sunglasses", "نضارة مدورة نبيتي", "Burgundy Round", P(40474279), 1750, { rating: 4.7, sold90: 15 }],
-    // Leather bags
-    ["tan-buckle-crossbody", "bags", "شنطة كروس عسلي", "Tan Buckle Crossbody", P(8502477), 3200, { isFeatured: true, rating: 4.7, sold90: 27 }],
-    ["ostrich-shoulder-bag", "bags", "شنطة جلد نعام", "Ostrich Shoulder Bag", P(30975807), 6800, { rating: 4.9, sold90: 12 }],
-    ["patchwork-leather-clutch", "bags", "كلاتش جلد باتشورك", "Patchwork Clutch", P(15568699), 2900, { rating: 4.6, sold90: 18 }],
   ],
 });
 
-export const JEWELRY_WARM = libraryTemplate({
+export const JEWELRY_WARM = editionTemplate({
   key: JEWELRY_WARM_KEY,
-  version: 1,
+  version: 2,
   name: L("تِبر", "Tibr"),
   description: L(
-    "مجوهرات دافية بروح مجلة: صورة دهب على خشب، أقسام بعدد القطع وحكاية الورشة. للمتاجر الهاند ميد والدهب اليومي.",
-    "Warm, editorial jewelry: gold on wood, categories with piece counts and the workshop story. For handmade and everyday-gold stores.",
+    "ورشة صغيرة بروح دافية: صورة الورشة بعرض الشاشة، أقسام بصور طولية، حكاية الصنعة وركن للعناية بالقطعة. للجلديات والقطع المعمولة باليد.",
+    "A small workshop with a warm voice: the workbench full width, portrait category tiles, the craft story and a care corner. For leather goods and handmade pieces.",
   ),
   category: "jewelry",
   style: ["warm"],
   sortOrder: 1430,
-  palette: ["#f6efe4", "#ece1d0", "#8a5a2b", "#c99a4b"],
+  palette: ["#ffffff", "#e3e6e0", "#5b2a22", "#a87b2f"],
   colors: {
-    primary: "#8a5a2b",
-    secondary: "#ece1d0",
+    primary: "#5b2a22",
+    secondary: "#e3e6e0",
     background: "#ffffff",
-    foreground: "#2d241b",
-    muted: "#6f6152",
-    border: "#dccdb7",
-    accent: "#c99a4b",
+    foreground: "#2a1d17",
+    muted: "#695e57",
+    border: "#d8d5ce",
+    accent: "#a87b2f",
   },
-  fonts: { heading: "Noto Naskh Arabic", body: "IBM Plex Sans Arabic" },
-  radius: 10,
-  containerMaxWidth: 1360,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("حكايتنا", "Our story"), seo: { title: L("حكايتنا", "Our story") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تعالي زورينا", "Come and visit"),
-        text: L("١٤ شارع ٢٥٠، المعادي، القاهرة. مفتوح كل يوم من ١١ الصبح لـ ١٠ بالليل.", "14 Road 250, Maadi, Cairo. Open daily from 11am to 10pm."),
-        heading: L("اسألينا عن أي قطعة", "Ask us about any piece"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("الخامات والمقاسات والعناية.", "Materials, sizing and care."),
-        question: L("إزاي أحافظ على لمعة الدهب؟", "How do I keep my gold shining?"),
-        answer: L(
-          "امسحيه بقماشة ناعمة بعد كل لبسة، وشيليه قبل الشاور والبرفان. ومرة في السنة هاتيه الورشة ونلمّعه ببلاش.",
-          "Wipe it with a soft cloth after each wear and take it off before showering or perfume. Once a year, bring it to the workshop and we polish it free.",
-        ),
-      }),
-    },
+  fonts: { heading: "Aref Ruqaa", body: "IBM Plex Sans Arabic" },
+  radius: 6,
+  containerMaxWidth: 1280,
+  productStage: { ratio: "1:1", fit: "cover" },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "labels.about",
+    "hero.alt",
+    "hero.eyebrow",
+    "hero.title",
+    "hero.line",
+    "hero.cta",
+    "categories.title",
+    "products.primary.title",
+    "products.primary.line",
+    "story",
+    "trust.0",
+    "trust.1",
+    "trust.2",
+    "trust.3",
+    "newsletter.title",
+    "newsletter.line",
+    "about",
+    "contact",
+    "faq",
+    "custom.banner-alt",
+    "custom.care-title",
+    "custom.care-text",
+    "custom.care-point-1",
+    "custom.care-point-2",
+    "custom.care-point-3",
+    "custom.care-point-4",
+    // 16:9, cropped tall on phones with the copy on it.
+    "photos.hero.wide",
+    // 21:9: the workshop band (`about-overlap`).
+    "photos.banner",
+    // 4:5: the care block, and the about page when there is no `photos.about`.
+    "photos.story",
   ],
+  // `photos.about`: the about page's photo (default: `photos.story`).
+  optional: ["photos.about"],
+  // The eight best sellers, then the store's 1st and 2nd categories as rows.
+  journey: { primary: "best-sellers", rows: [1, 2] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {
     thumbs: "bottom",
     band: "shelf",
     extras: ["product-perks"],
-    copy: { reviews: L("من عميلاتنا", "From our clients"), related: L("قطع تليق معاها", "Pieces that suit it") },
+    copy: { reviews: L("من عملائنا", "From our clients"), related: L("قطع تليق معاها", "Pieces that suit it") },
   },
 });

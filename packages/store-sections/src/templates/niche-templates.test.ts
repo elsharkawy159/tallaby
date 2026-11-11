@@ -40,7 +40,7 @@ const libraryIdOf = (template: TemplateDefinition, sectionId: string) => {
 };
 const SLOTS = ["hero", "categories", "products", "image-text", "products", "products", "products", "products", "newsletter"];
 /** Rebuilt in the look-first pilot: their home follows the look-first rhythm, not the 12 slots. */
-const LOOK_FIRST = new Set(["fashion-luxe", "perfumes-bold"]);
+const LOOK_FIRST = new Set(["fashion-luxe", "perfumes-bold", "jewelry-warm"]);
 
 describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
   const templates = keys.map((key) => byKey.get(key)!);
