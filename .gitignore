@@ -41,3 +41,7 @@ npm-debug.log*
 
 brag-output*
 Marketing Videos/.supabase-s3.env
+
+# motion perf scratch
+scripts/perf-work/
+scripts/perf/
