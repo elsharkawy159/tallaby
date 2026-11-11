@@ -38,6 +38,7 @@ export * from "./types";
 export * from "./niches";
 export * from "./match";
 export { editionForLook } from "./per-look";
+export * from "./niche-templates";
 export { applyEdition, copyrightLine, editionTemplate, initialOf, isEditionReady, lookJourney, lookSlots, missingSlots, primaryHref, type EditionLookSpec, type LookParts } from "./apply";
 
 /**

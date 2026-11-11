@@ -184,8 +184,12 @@ export function TemplateGallery({
   };
 
   // A niche tab shows (and installs) that niche's edition on every card; elsewhere a card shows its own content.
-  const editionOf = (template: TemplateCardView) => cardEdition(template, niche);
+  // In a niche-only industry (ROADMAP F-90) every card is its niche's card, on every tab (`nicheCards`).
+  const nicheCardOf = (template: TemplateCardView) => data?.nicheCards?.[template.key] ?? null;
+  const editionOf = (template: TemplateCardView) => cardEdition(template, niche, nicheCardOf(template));
   const editionName = (template: TemplateCardView, edition: string | null) => {
+    const card = nicheCardOf(template);
+    if (card) return text(card.name);
     const found = edition ? template.editions?.find((option) => option.id === edition) : undefined;
     return found ? text(found.name) : "";
   };
@@ -405,6 +409,7 @@ export function TemplateGallery({
               const current = template.key === currentKey;
               const name = text(template.name);
               const edition = editionOf(template);
+              const nicheTag = editionName(template, edition);
               return (
                 <li key={template.key} className="group flex min-w-0 flex-col gap-3">
                   {/* Gallery tile: the preview fills the tile; Use / Preview buttons sit below it, always visible (owner, 2026-11-07). */}
@@ -439,8 +444,8 @@ export function TemplateGallery({
                     <div className="min-w-0">
                       <h3 className="flex flex-wrap items-center gap-1.5 text-[15.5px] font-bold text-(--s-ink)">
                         <span className="min-w-0 truncate">{name}</span>
-                        {template.isDefault && !current && !edition && <Tag>{t("default")}</Tag>}
-                        {edition && <Tag tone="info">{editionName(template, edition)}</Tag>}
+                        {template.isDefault && !current && !nicheTag && <Tag>{t("default")}</Tag>}
+                        {nicheTag && <Tag tone="info">{nicheTag}</Tag>}
                       </h3>
                       <p className="text-[12.5px] text-(--s-subtle)">
                         {categoryName(template.category)} · {t("pagesCount", { count: template.pages.length })}

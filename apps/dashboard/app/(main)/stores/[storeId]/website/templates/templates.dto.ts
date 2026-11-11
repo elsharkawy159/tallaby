@@ -21,6 +21,13 @@ export type TemplatesPageQuery = {
 /** A niche as a filter tab or a card tag. */
 export type NicheOptionView = { id: string; name: { ar: string; en: string } };
 
+/**
+ * A niche card of a niche-only industry (ROADMAP F-90): the niche it is made
+ * for (its name is the card's tag) and the edition it shows and installs
+ * (null: the template's own content is already the niche).
+ */
+export type NicheCardView = { niche: string; name: { ar: string; en: string }; edition: string | null };
+
 /** One page of the gallery (`listTemplatesPage`). */
 export type TemplatesPageView = {
   items: TemplateCardView[];
@@ -38,6 +45,8 @@ export type TemplatesPageView = {
   niches: NicheOptionView[];
   /** The niche tab served (only its looks are listed, each with its edition), or null for all. */
   niche: string | null;
+  /** The page's niche cards by template key (switched industries only; empty otherwise). */
+  nicheCards: Record<string, NicheCardView>;
   currentKey: string;
   /** The current template's name (it may be on another page). */
   currentName: Localized | null;

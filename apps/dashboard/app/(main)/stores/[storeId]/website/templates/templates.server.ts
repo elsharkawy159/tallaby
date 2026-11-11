@@ -16,7 +16,6 @@ import {
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
 import { getStore } from "@workspace/lib/stores/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
-import { editionsForNiche, offeredNiches } from "@workspace/store-sections/templates";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -30,7 +29,10 @@ import {
   type TemplatesPageView,
 } from "./templates.dto";
 import {
+  galleryNiches,
+  galleryTemplates,
   matchesTemplateSearch,
+  nicheCards,
   pageTemplates,
   parseTemplatesCategory,
   parseTemplatesNiche,
@@ -138,27 +140,31 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
     if (!row || !gallery) return { success: false, error: "notFound" };
 
     const industry = findIndustry({ en: row.storeCategory, ar: row.storeCategoryAr });
+    // A niche-only industry (ROADMAP F-90) leaves out its templates that serve no niche (none until one switches).
+    const templates = galleryTemplates(gallery.templates);
     // A search looks through every category; the tabs always list the whole gallery.
     const q = typeof query?.q === "string" ? query.q.trim().slice(0, 60) : "";
     const requestedCategory = q ? "all" : query?.category == null ? null : parseTemplatesCategory(query.category);
     // The niche filter belongs to a category tab: its niches that have an edition (none today for most tabs, so no filter).
-    const tab = servedCategory([...new Set(gallery.templates.map((tpl) => tpl.category))], requestedCategory, industry?.id);
+    const tab = servedCategory([...new Set(templates.map((tpl) => tpl.category))], requestedCategory, industry?.id);
     // A niche tab filters like a category (owner, 2026-11-11), so only niches with a look in this gallery get one.
-    const keys = new Set(gallery.templates.map((tpl) => tpl.key));
-    const niches = tab === "all" ? [] : offeredNiches(tab).filter((option) => editionsForNiche(option.id).some((entry) => keys.has(entry.look)));
+    // A switched industry has one niche tab per niche template, each listing that one card.
+    const filter = galleryNiches(tab, new Set(templates.map((tpl) => tpl.key)));
+    const niches = filter.niches;
     const niche = resolveNicheFilter(niches, query?.niche == null ? null : parseTemplatesNiche(query.niche), {
       category: { en: row.storeCategory, ar: row.storeCategoryAr },
       name: row.name,
       industryId: industry?.id,
     });
-    const paged = pageTemplates(q ? gallery.templates.filter((tpl) => matchesTemplateSearch(tpl, q)) : gallery.templates, {
+    const paged = pageTemplates(q ? templates.filter((tpl) => matchesTemplateSearch(tpl, q)) : templates, {
       page: parseTemplatesPage(query?.page),
       category: requestedCategory,
       industryId: industry?.id,
       seed: store.id,
-      nicheLooks: niche ? editionsForNiche(niche).map((entry) => entry.look) : [],
+      nicheLooks: filter.looksOf(niche),
+      tabLooks: q ? null : filter.tabLooks,
     });
-    const categories = q ? pageTemplates(gallery.templates, { page: 1, category: "all", industryId: industry?.id, seed: store.id }).categories : paged.categories;
+    const categories = q ? pageTemplates(templates, { page: 1, category: "all", industryId: industry?.id, seed: store.id }).categories : paged.categories;
     const currentKey = gallery.templateChosen ? gallery.currentKey : "";
     const install = gallery.lastInstall;
     return {
@@ -173,6 +179,7 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
         category: paged.category,
         niches,
         niche,
+        nicheCards: nicheCards(paged.items.map((tpl) => tpl.key)),
         // A new store's placeholder Tallaby Classic drafts are not the seller's
         // choice (owner 2026-10-27): no "current" template until one is picked.
         currentKey,

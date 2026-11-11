@@ -2,7 +2,19 @@ import { cache } from "react";
 import { cacheProfiles, createCachedQuery, templateTags } from "@workspace/cache";
 import { codeTemplateConfig, getPublicTemplate, offeredTemplates, templateEditionId } from "@workspace/lib/store-sites/server";
 import { siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
-import { NICHES, editionOptions, editionsForNiche, resolveTemplateMeta, templateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
+import {
+  NICHES,
+  editionOptions,
+  editionsForNiche,
+  isIndustrySwitched,
+  isRetiredTemplate,
+  nicheTemplateFirst,
+  readyNicheTemplate,
+  resolveTemplateMeta,
+  templateMeta,
+  templateOutline,
+  type TemplateMeta,
+} from "@workspace/store-sections/templates";
 import { buildGallery, buildNicheTabs, type CatalogNiche, type CatalogTemplate, type GalleryEntry, type GalleryNicheTab } from "./templates.lib";
 
 /**
@@ -54,7 +66,8 @@ export const getTemplateGallery = cache(async (locale: string): Promise<GalleryE
   } catch (error) {
     console.error("[marketing] template catalog failed", error);
   }
-  return buildGallery(rows, locale);
+  // A niche-only industry (ROADMAP F-90) leaves out its templates that serve no niche.
+  return buildGallery(rows, locale, (row) => isRetiredTemplate(row));
 });
 
 /**
@@ -63,8 +76,14 @@ export const getTemplateGallery = cache(async (locale: string): Promise<GalleryE
  * the dashboard gallery offers them. Code only, so nothing more to cache.
  */
 export const getTemplateNicheTabs = cache(async (locale: string): Promise<GalleryNicheTab[]> => {
-  const niches: CatalogNiche[] = NICHES.flatMap((niche) => {
-    const looks = editionsForNiche(niche.id).map((entry) => entry.look);
+  const niches: CatalogNiche[] = NICHES.flatMap((niche): CatalogNiche[] => {
+    // A niche-only industry (ROADMAP F-90): the niche's one template, with its edition (none when native).
+    if (isIndustrySwitched(niche.industry)) {
+      const row = readyNicheTemplate(niche.id);
+      return row ? [{ id: niche.id, industry: niche.industry, name: niche.name, looks: [row.template], switched: true, edition: row.edition ?? null }] : [];
+    }
+    // Elsewhere the niche's looks, its own niche template first when it is ready.
+    const looks = nicheTemplateFirst(niche.id, editionsForNiche(niche.id).map((entry) => entry.look));
     return looks.length ? [{ id: niche.id, industry: niche.industry, name: niche.name, looks }] : [];
   });
   return buildNicheTabs(niches, (await getTemplateGallery(locale)).map((entry) => entry.id), locale);

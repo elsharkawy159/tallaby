@@ -16,8 +16,24 @@
  * `nicheEdition` points and its suggestion carries `editionId`, so it is
  * previewed and installed with the edition. With no pack registered nothing
  * changes.
+ *
+ * One template per niche (ROADMAP F-90, docs/systems/one-template-per-niche.md
+ * §1): the niche's own template (`NICHE_TEMPLATES`), when its row is ready
+ * and it is allowed, is ranked first whatever its score, so it is always the
+ * first suggestion. The rest keep their order.
  */
-import { CODE_TEMPLATES, colorContrastRatio, editionOnLook, templateTraits, TEMPLATE_STYLES, type Edition, type TemplateStyle, type TemplateTraits } from "@workspace/store-sections/templates";
+import {
+  CODE_TEMPLATES,
+  colorContrastRatio,
+  editionOnLook,
+  readyNicheTemplate,
+  templateTraits,
+  TEMPLATE_STYLES,
+  type Edition,
+  type NicheTemplate,
+  type TemplateStyle,
+  type TemplateTraits,
+} from "@workspace/store-sections/templates";
 import { RELATED_INDUSTRIES } from "./industries.lib";
 
 export type ShortlistTemplate = Pick<TemplateTraits, "key" | "category" | "style" | "needs"> & Partial<Pick<TemplateTraits, "tone" | "background">>;
@@ -44,6 +60,8 @@ export type TemplateShortlistInput = {
   nicheId?: string | null;
   /** The packs to look in. Tests only: callers leave it out (the registered packs). */
   editions?: readonly Edition[];
+  /** The niche template rows. Tests only: callers leave it out (`NICHE_TEMPLATES`). */
+  nicheTemplates?: readonly NicheTemplate[];
 };
 
 export type ScoredTemplate = {
@@ -193,7 +211,7 @@ export function rankTemplates(input: TemplateShortlistInput): ScoredTemplate[] {
 function rank(input: TemplateShortlistInput): Ranked[] {
   const wanted = [...new Set([...(input.styles ?? []), ...stylesFromWords(input.styleWords)])];
   const excluded = new Set(input.exclude ?? []);
-  return (input.templates ?? defaultTemplates())
+  const ranked = (input.templates ?? defaultTemplates())
     .filter((template) => !excluded.has(template.key) && template.style.length > 0)
     .map((template): Ranked => {
       // Only a pack approved on this template counts (an unknown niche id finds none).
@@ -215,6 +233,14 @@ function rank(input: TemplateShortlistInput): Ranked[] {
       };
     })
     .sort((a, b) => b.score - a.score || a.order - b.order || (a.key < b.key ? -1 : 1));
+  return nicheTemplateLeads(ranked, input);
+}
+
+/** The store niche's ready niche template first (when it is in the list); the others in their order. */
+function nicheTemplateLeads(ranked: Ranked[], input: TemplateShortlistInput): Ranked[] {
+  const lead = readyNicheTemplate(input.nicheId, input.nicheTemplates)?.template;
+  const index = lead ? ranked.findIndex((entry) => entry.key === lead) : -1;
+  return index > 0 ? [ranked[index]!, ...ranked.slice(0, index), ...ranked.slice(index + 1)] : ranked;
 }
 
 /**

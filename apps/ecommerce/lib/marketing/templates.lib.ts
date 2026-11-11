@@ -104,8 +104,15 @@ export function templateFrameSrc(locale: string, key: string, slug?: string, thu
   return query ? `${path}?${query}` : path;
 }
 
-export function buildGallery(rows: readonly CatalogTemplate[], locale: string): GalleryEntry[] {
+/**
+ * The gallery entries for a locale. A niche-only industry (ROADMAP F-90)
+ * leaves out its templates that serve no niche (none until one switches):
+ * the server passes `isRetiredTemplate` as `retired`. This file is also
+ * loaded by the gallery client, so it does not import the template catalog.
+ */
+export function buildGallery(rows: readonly CatalogTemplate[], locale: string, retired: (row: CatalogTemplate) => boolean = () => false): GalleryEntry[] {
   return rows
+    .filter((row) => !retired(row))
     .map((row, index) => ({ row, index }))
     .sort((a, b) => Number(b.row.isDefault) - Number(a.row.isDefault) || a.row.sortOrder - b.row.sortOrder || a.index - b.index)
     .map(({ row }) => ({
@@ -130,11 +137,21 @@ export function buildGallery(rows: readonly CatalogTemplate[], locale: string): 
  * categories (owner request 2026-11-11). Under its category code, it lists
  * only `looks` (the templates made for that niche, best first), each drawn
  * with the niche's edition.
+ *
+ * `switched` (one template per niche, ROADMAP F-90): the niche of an
+ * industry whose gallery is niche-only. Its `looks` is its one template, its
+ * card shows `edition` (null: the template's own content is the niche) on
+ * every tab, and "All <category>" lists the switched niches' cards first.
  */
-export type GalleryNicheTab = { id: string; category: Exclude<TemplateCategory, "all">; name: string; looks: string[] };
+export type GalleryNicheTab = { id: string; category: Exclude<TemplateCategory, "all">; name: string; looks: string[]; switched?: true; edition?: string | null };
 
-/** A niche with an edition, as the catalog gives it (`offeredNiches` + `editionsForNiche`). */
-export type CatalogNiche = { id: string; industry: string; name: { ar: string; en: string }; looks: readonly string[] };
+/** A niche with an edition, as the catalog gives it (`offeredNiches` + `editionsForNiche`), or a switched niche's one template. */
+export type CatalogNiche = { id: string; industry: string; name: { ar: string; en: string }; looks: readonly string[]; switched?: true; edition?: string | null };
+
+/** The edition a niche tab's cards show: the niche's own, or a switched niche's (maybe none). */
+export function tabEdition(tab: Pick<GalleryNicheTab, "id" | "switched" | "edition">): string | null {
+  return tab.switched ? (tab.edition ?? null) : tab.id;
+}
 
 /**
  * The niche tabs for a locale: each niche under its industry's category
@@ -145,7 +162,9 @@ export function buildNicheTabs(niches: readonly CatalogNiche[], entryIds: Iterab
   const listed = new Set(entryIds);
   return niches.flatMap((niche) => {
     const looks = [...new Set(niche.looks)].filter((look) => listed.has(look));
-    return looks.length ? [{ id: niche.id, category: categoryCode(niche.industry), name: localized(niche.name, locale) ?? niche.id, looks }] : [];
+    if (!looks.length) return [];
+    const tab: GalleryNicheTab = { id: niche.id, category: categoryCode(niche.industry), name: localized(niche.name, locale) ?? niche.id, looks };
+    return [niche.switched ? { ...tab, switched: true as const, edition: niche.edition ?? null } : tab];
   });
 }
 
@@ -153,6 +172,28 @@ export function buildNicheTabs(niches: readonly CatalogNiche[], entryIds: Iterab
 export function nicheEntries<T extends { id: string }>(entries: readonly T[], tab: Pick<GalleryNicheTab, "looks"> | null | undefined): T[] {
   if (!tab) return [...entries];
   return tab.looks.flatMap((look) => entries.filter((entry) => entry.id === look));
+}
+
+/** A gallery card: the template, the edition it is drawn and linked with, and its niche tag (null: its category). */
+export type GalleryCard<T> = { entry: T; edition: string | null; tag: string | null };
+
+/**
+ * The cards a tab lists, in order. A niche tab: its looks with its edition.
+ * A category tab: the switched niches' cards of that category first (niche
+ * order), then the category's other templates. "all": every entry. On every
+ * tab a switched niche's template shows its niche (tag and edition).
+ */
+export function galleryCards<T extends { id: string; category: string }>(entries: readonly T[], tabs: readonly GalleryNicheTab[], category: string, nicheId: string | null): GalleryCard<T>[] {
+  const switchedOf = new Map<string, GalleryNicheTab>();
+  for (const tab of tabs) if (tab.switched) for (const look of tab.looks) if (!switchedOf.has(look)) switchedOf.set(look, tab);
+  const card = (entry: T, tab: GalleryNicheTab | undefined): GalleryCard<T> => (tab ? { entry, edition: tabEdition(tab), tag: tab.name } : { entry, edition: null, tag: null });
+  const own = (entry: T) => card(entry, switchedOf.get(entry.id));
+  if (category === "all") return entries.map(own);
+  const niche = tabs.find((tab) => tab.category === category && tab.id === nicheId);
+  if (niche) return nicheEntries(entries, niche).map((entry) => card(entry, niche));
+  const leadLooks = [...new Set(tabs.filter((tab) => tab.category === category && tab.switched).flatMap((tab) => tab.looks))];
+  const lead = nicheEntries(entries, { looks: leadLooks });
+  return [...lead, ...entries.filter((entry) => entry.category === category && !lead.includes(entry))].map(own);
 }
 
 /** `?edition=` on a template page → one of its niche editions, else null (the template's own content). */

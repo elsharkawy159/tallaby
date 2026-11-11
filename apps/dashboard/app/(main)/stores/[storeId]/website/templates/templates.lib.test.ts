@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   cardEdition,
   categoryOrder,
+  galleryNiches,
+  galleryTemplates,
+  nicheCards,
   pageTemplates,
   parseTemplatesCategory,
   parseTemplatesNiche,
@@ -186,6 +189,63 @@ describe("cardEdition", () => {
     expect(cardEdition(card, "dresses")).toBe("dresses");
     expect(cardEdition(card, "mobiles")).toBeNull();
     expect(cardEdition(card, null)).toBeNull();
+  });
+});
+
+describe("one template per niche (ROADMAP F-90)", () => {
+  // The real switched set is empty; these pass one. Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
+  const SWITCHED = new Set(["mobile-accessories"]);
+  const gallery = [
+    { key: "volt", category: "mobile-accessories", sortOrder: 60 },
+    { key: "kabl", category: "mobile-accessories", sortOrder: 70 },
+    { key: "wasla", category: "mobile-accessories", sortOrder: 80 },
+    { key: "zaki", category: "electronics", sortOrder: 50 },
+    { key: "arena", category: "electronics", sortOrder: 40 },
+    { key: "nour", category: "home", sortOrder: 30 },
+    { key: "tallaby-classic", category: "general", sortOrder: 1 },
+  ];
+  const keys = new Set(gallery.map((tpl) => tpl.key));
+
+  it("a switched industry lists one card per ready niche, in niche order, and hides its other templates", () => {
+    const visible = galleryTemplates(gallery, SWITCHED);
+    expect(visible.map((tpl) => tpl.key)).toEqual(["volt", "kabl", "zaki", "arena", "nour", "tallaby-classic"]);
+    const filter = galleryNiches("mobile-accessories", keys, SWITCHED);
+    expect(filter.switched).toBe(true);
+    expect(filter.niches.map((n) => n.id)).toEqual(["phone-cases", "chargers-cables"]);
+    expect(filter.tabLooks).toEqual(["volt", "kabl"]);
+    // "All <industry>": every niche card, in niche order (not newest first).
+    const all = pageTemplates(visible, { page: 1, category: "mobile-accessories", nicheLooks: filter.looksOf(null), tabLooks: filter.tabLooks });
+    expect(all.items.map((tpl) => tpl.key)).toEqual(["volt", "kabl"]);
+    // A niche tab: its one card.
+    const one = pageTemplates(visible, { page: 1, category: "mobile-accessories", nicheLooks: filter.looksOf("chargers-cables"), tabLooks: filter.tabLooks });
+    expect(one.items.map((tpl) => tpl.key)).toEqual(["kabl"]);
+    expect(one.total).toBe(1);
+  });
+
+  it("a switched industry's cards carry their niche and edition on every tab", () => {
+    expect(nicheCards(["volt", "kabl", "zaki"], SWITCHED)).toEqual({
+      volt: { niche: "phone-cases", name: expect.objectContaining({ en: expect.any(String) }), edition: "phone-cases" },
+      kabl: { niche: "chargers-cables", name: expect.objectContaining({ en: expect.any(String) }), edition: "chargers-cables" },
+    });
+    const card = nicheCards(["volt"], SWITCHED).volt!;
+    expect(cardEdition({ editions: [{ id: "phone-cases" }, { id: "pc-gaming" }] }, "pc-gaming", card)).toBe("phone-cases");
+    // A native card (no pack) shows the template's own content.
+    expect(cardEdition({ editions: [{ id: "x" }] }, "x", { niche: "wearables", name: { ar: "", en: "" }, edition: null })).toBeNull();
+  });
+
+  it("an unswitched industry behaves as before, with the ready niche template first on its niche tab", () => {
+    expect(galleryTemplates(gallery).map((tpl) => tpl.key)).toEqual(gallery.map((tpl) => tpl.key));
+    expect(nicheCards(["volt", "kabl"])).toEqual({});
+    const filter = galleryNiches("electronics", keys);
+    expect(filter.switched).toBe(false);
+    expect(filter.tabLooks).toBeNull();
+    expect(filter.niches.map((n) => n.id)).toEqual(expect.arrayContaining(["pc-gaming", "lighting-smart-home"]));
+    // lighting-smart-home: the pack lists nour first; its niche template (zaki, ready) leads.
+    expect(filter.looksOf("lighting-smart-home")).toEqual(["zaki", "nour"]);
+    expect(filter.looksOf(null)).toEqual([]);
+    expect(galleryNiches("all", keys).niches).toEqual([]);
+    // The same tab, switched: its ready niche cards in the gallery, in niche order (pc-gaming, then lighting).
+    expect(galleryNiches("electronics", keys, new Set(["electronics"])).tabLooks).toEqual(["arena", "zaki"]);
   });
 });
 

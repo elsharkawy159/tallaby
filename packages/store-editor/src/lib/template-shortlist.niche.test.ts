@@ -35,6 +35,8 @@ const base = (over: Partial<TemplateShortlistInput> = {}): TemplateShortlistInpu
   categoryCount: 6,
   seed: "seller-1",
   templates: POOL,
+  // The niche template rows come in as a parameter too (none here, so no niche template leads).
+  nicheTemplates: [],
   ...over,
 });
 
@@ -120,5 +122,33 @@ describe("with nothing to add", () => {
     if (!niche) return;
     expect(strip(rankTemplates(base({ nicheId: niche })))).toEqual(plain);
     expect(scoreTemplates(base({ nicheId: niche }))).toEqual(scoreTemplates(base()));
+  });
+});
+
+describe("the niche template (one template per niche, ROADMAP F-90)", () => {
+  const ROWS = [
+    { niche: "dresses", template: "f-minimal", status: "ready" as const },
+    { niche: "tshirts", template: "shoes-luxe", status: "pending" as const },
+  ];
+
+  // The list with the same niche and no rows: the niche template is the only change.
+  const plainFor = (nicheId: string) => rankTemplates(base({ nicheId })).map((entry) => entry.key);
+
+  it("ranks the niche's ready template first and keeps the others in order", () => {
+    const plain = plainFor("dresses");
+    const ranked = rankTemplates(base({ nicheId: "dresses", nicheTemplates: ROWS })).map((entry) => entry.key);
+    expect(ranked).toEqual(["f-minimal", ...plain.filter((key) => key !== "f-minimal")]);
+    expect(scoreTemplates(base({ nicheId: "dresses", nicheTemplates: ROWS }))[0]!.key).toBe("f-minimal");
+  });
+
+  it("changes nothing for a pending row, another niche, or an excluded template", () => {
+    expect(rankTemplates(base({ nicheId: "tshirts", nicheTemplates: ROWS })).map((entry) => entry.key)).toEqual(plainFor("tshirts"));
+    expect(rankTemplates(base({ nicheId: "menswear", nicheTemplates: ROWS })).map((entry) => entry.key)).toEqual(plainFor("menswear"));
+    expect(rankTemplates(base({ nicheId: "dresses", nicheTemplates: ROWS, exclude: ["f-minimal"] })).map((entry) => entry.key)).toEqual(plainFor("dresses").filter((key) => key !== "f-minimal"));
+  });
+
+  it("uses the real rows when none are passed (dresses → fashion-luxe)", () => {
+    const { nicheTemplates: _rows, ...rest } = base({ nicheId: "dresses", styleWords: ["warm"] });
+    expect(rankTemplates(rest)[0]!.key).toBe("fashion-luxe");
   });
 });

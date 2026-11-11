@@ -10,7 +10,7 @@ import { ForwardArrow } from "@/components/marketing/site/direction-icons";
 import { IconTile } from "@/components/marketing/site/site-card";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { TEMPLATE_CATEGORIES, type TemplateCategory } from "@/lib/marketing/templates.data";
-import { nicheEntries, templateFrameSrc, type GalleryEntry, type GalleryNicheTab } from "@/lib/marketing/templates.lib";
+import { galleryCards, templateFrameSrc, type GalleryEntry, type GalleryNicheTab } from "@/lib/marketing/templates.lib";
 import { TemplateLiveThumb } from "./template-live-thumb.client";
 
 /**
@@ -63,9 +63,12 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
 
   const tabs = category === "all" ? [] : niches.filter((tab) => tab.category === category);
   const niche = tabs.find((tab) => tab.id === nicheId) ?? null;
-  const matching = niche ? nicheEntries(entries, niche) : entries.filter((tpl) => category === "all" || tpl.category === category);
-  // A niche tab lists its looks in its own order; the other cards stay in the HTML, hidden.
-  const ordered = niche ? [...matching, ...entries.filter((tpl) => !matching.includes(tpl))] : entries;
+  // A niche tab lists its looks in its own order; a niche-only industry (ROADMAP F-90) its niche cards first.
+  const cards = galleryCards(entries, niches, category, niche?.id ?? null);
+  const matching = cards.map((card) => card.entry);
+  const cardOf = new Map(cards.map((card) => [card.entry.id, card]));
+  // The other cards stay in the HTML, hidden.
+  const ordered = [...matching, ...entries.filter((tpl) => !cardOf.has(tpl.id))];
   // A page at a time: over 100 templates made the phone page tens of thousands of px tall.
   // Every card is still in the server HTML (a plain link to /templates/<id>), so all of
   // them can be crawled; the rest are hidden. A hidden card has no width, so its live
@@ -112,8 +115,9 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
 
       <div className="grid gap-5 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-3">
         {ordered.map((tpl) => {
-          // On a niche tab every listed card is that niche's edition.
-          const edition = niche && visibleIds.has(tpl.id) ? niche.id : null;
+          // On a niche tab every listed card is that niche's edition; a niche-only industry's card is its niche's.
+          const card = visibleIds.has(tpl.id) ? cardOf.get(tpl.id) : undefined;
+          const edition = card?.edition ?? null;
           const href = edition ? `/templates/${tpl.id}?edition=${encodeURIComponent(edition)}` : `/templates/${tpl.id}`;
           return (
             <article
@@ -127,7 +131,7 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
                   <small className="line-clamp-1 text-[12.5px] text-ink-500">{tpl.description ?? ""}</small>
                 </div>
                 <span className="flex-none rounded-full bg-teal-50 px-2.5 py-0.5 text-[11.5px] font-bold whitespace-nowrap text-teal-700">
-                  {edition ? niche!.name : t(`categories.${tpl.category}`)}
+                  {card?.tag ?? t(`categories.${tpl.category}`)}
                 </span>
               </div>
               <Link

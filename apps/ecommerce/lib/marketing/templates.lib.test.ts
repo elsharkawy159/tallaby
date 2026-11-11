@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildGallery, buildNicheTabs, categoryCode, localized, nicheEntries, pickEdition, templateFrameSrc, type CatalogTemplate } from "./templates.lib";
+import { isRetiredTemplate } from "@workspace/store-sections/templates";
+import { buildGallery, buildNicheTabs, categoryCode, galleryCards, localized, nicheEntries, pickEdition, tabEdition, templateFrameSrc, type CatalogTemplate, type GalleryNicheTab } from "./templates.lib";
 
 const row = (over: Partial<CatalogTemplate>): CatalogTemplate => ({
   key: "x",
@@ -119,5 +120,79 @@ describe("niche tabs", () => {
     expect(pickEdition(editions, "dresses")).toBe("dresses");
     for (const value of [null, "", "tshirts", "<script>"]) expect(pickEdition(editions, value)).toBeNull();
     expect(pickEdition([], "dresses")).toBeNull();
+  });
+});
+
+describe("one template per niche (ROADMAP F-90)", () => {
+  // The real switched set is empty; these pass one. Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
+  const SWITCHED = new Set(["mobile-accessories"]);
+
+  it("leaves out a switched industry's templates that serve no niche; nothing when none is switched", () => {
+    const rows = [row({ key: "volt", category: "mobile-accessories" }), row({ key: "wasla", category: "mobile-accessories" }), row({ key: "zaki", category: "electronics" })];
+    expect(buildGallery(rows, "en", (r) => isRetiredTemplate(r, SWITCHED)).map((e) => e.id)).toEqual(["volt", "zaki"]);
+    expect(buildGallery(rows, "en", (r) => isRetiredTemplate(r)).map((e) => e.id)).toEqual(["volt", "wasla", "zaki"]);
+    expect(buildGallery(rows, "en").map((e) => e.id)).toEqual(["volt", "wasla", "zaki"]);
+  });
+
+  it("files a switched niche with its one template and its edition", () => {
+    const tabs = buildNicheTabs(
+      [
+        { id: "phone-cases", industry: "mobile-accessories", name: { ar: "جرابات", en: "Cases" }, looks: ["volt"], switched: true, edition: "phone-cases" },
+        { id: "wearables", industry: "mobile-accessories", name: { ar: "ساعات", en: "Watches" }, looks: ["saa"], switched: true, edition: null },
+      ],
+      ["volt", "saa"],
+      "en",
+    );
+    expect(tabs).toEqual([
+      { id: "phone-cases", category: "ac", name: "Cases", looks: ["volt"], switched: true, edition: "phone-cases" },
+      { id: "wearables", category: "ac", name: "Watches", looks: ["saa"], switched: true, edition: null },
+    ]);
+    expect(tabs.map(tabEdition)).toEqual(["phone-cases", null]);
+    expect(tabEdition({ id: "dresses" })).toBe("dresses");
+  });
+
+  const entries = [
+    { id: "kabl", category: "ac" },
+    { id: "glow", category: "ac" },
+    { id: "volt", category: "ac" },
+    { id: "kasr", category: "fa" },
+    { id: "vella", category: "fa" },
+  ];
+  const switchedTabs: GalleryNicheTab[] = [
+    { id: "phone-cases", category: "ac", name: "Cases", looks: ["volt"], switched: true, edition: "phone-cases" },
+    { id: "chargers-cables", category: "ac", name: "Chargers", looks: ["kabl"], switched: true, edition: "chargers-cables" },
+  ];
+  const dresses: GalleryNicheTab = { id: "dresses", category: "fa", name: "Dresses", looks: ["vella", "kasr"] };
+  const tabs = [...switchedTabs, dresses];
+  const ids = (cards: { entry: { id: string } }[]) => cards.map((c) => c.entry.id);
+
+  it("a switched category lists its niche cards first, in niche order, each with its niche", () => {
+    const all = galleryCards(entries, tabs, "ac", null);
+    expect(ids(all)).toEqual(["volt", "kabl", "glow"]);
+    expect(all.map((c) => [c.edition, c.tag])).toEqual([
+      ["phone-cases", "Cases"],
+      ["chargers-cables", "Chargers"],
+      [null, null],
+    ]);
+    const one = galleryCards(entries, tabs, "ac", "chargers-cables");
+    expect(one).toEqual([{ entry: entries[0], edition: "chargers-cables", tag: "Chargers" }]);
+    // The "all" tab keeps its order; a switched niche's template still shows its niche.
+    const everything = galleryCards(entries, tabs, "all", null);
+    expect(ids(everything)).toEqual(entries.map((e) => e.id));
+    expect(everything.find((c) => c.entry.id === "volt")).toMatchObject({ edition: "phone-cases", tag: "Cases" });
+  });
+
+  it("an unswitched category behaves as before", () => {
+    expect(galleryCards(entries, tabs, "fa", null).map((c) => [c.entry.id, c.edition, c.tag])).toEqual([
+      ["kasr", null, null],
+      ["vella", null, null],
+    ]);
+    expect(galleryCards(entries, tabs, "fa", "dresses").map((c) => [c.entry.id, c.edition, c.tag])).toEqual([
+      ["vella", "dresses", "Dresses"],
+      ["kasr", "dresses", "Dresses"],
+    ]);
+    // Without switched tabs nothing changes anywhere.
+    expect(ids(galleryCards(entries, [dresses], "ac", null))).toEqual(["kabl", "glow", "volt"]);
+    expect(galleryCards(entries, [dresses], "all", null).every((c) => c.edition === null && c.tag === null)).toBe(true);
   });
 });

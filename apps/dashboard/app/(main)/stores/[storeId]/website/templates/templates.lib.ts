@@ -5,10 +5,24 @@
  */
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
-import { defaultNiche, getTemplateDesign, type MatchNicheInput, type NicheOption } from "@workspace/store-sections/templates";
+import {
+  SWITCHED_INDUSTRIES,
+  defaultNiche,
+  editionsForNiche,
+  getNiche,
+  getTemplateDesign,
+  isIndustrySwitched,
+  isRetiredTemplate,
+  nicheTemplateFirst,
+  offeredNiches,
+  switchedNicheCard,
+  switchedNicheTemplates,
+  type MatchNicheInput,
+  type NicheOption,
+} from "@workspace/store-sections/templates";
 import { RELATED_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
 import { templatePreviewSrc } from "@/app/(builder)/ai-builder/_components/workspace.lib";
-import type { TemplateCardView } from "./templates.dto";
+import type { NicheCardView, TemplateCardView } from "./templates.dto";
 
 /** A section's name: its design (tree sections, `source`) or its registry entry. */
 function sectionName(id: string) {
@@ -162,7 +176,9 @@ export function resolveNicheFilter(offered: readonly NicheOption[], requested: s
  * own content). A niche tab lists only templates with its edition, so every
  * card there shows it; there is no per-card choice (owner, 2026-11-11).
  */
-export function cardEdition(template: { editions?: readonly { id: string }[] }, niche: string | null): string | null {
+export function cardEdition(template: { editions?: readonly { id: string }[] }, niche: string | null, card?: NicheCardView | null): string | null {
+  // A niche card of a switched industry always shows its own niche (its edition, or none when native).
+  if (card) return card.edition;
   return niche && (template.editions ?? []).some((edition) => edition.id === niche) ? niche : null;
 }
 
@@ -202,7 +218,9 @@ export function sortRelevantNewest<T extends { category: string; sortOrder?: num
  * is the tab served. A niche tab filters like a category tab (owner request
  * 2026-11-11): with `nicheLooks` (a chosen niche's looks, best first) a
  * category tab lists only those looks, in that order, whatever their own
- * category; "All" ignores them.
+ * category; "All" ignores them. `tabLooks` (a switched industry's niche
+ * templates, in niche order; ROADMAP F-90) replaces a category tab's own
+ * list the same way.
  */
 export function pageTemplates<T extends { category: string; sortOrder?: number; key?: string }>(
   templates: T[],
@@ -213,14 +231,17 @@ export function pageTemplates<T extends { category: string; sortOrder?: number; 
     seed,
     pageSize = TEMPLATES_PAGE_SIZE,
     nicheLooks = [],
-  }: { page: number; category: string | null; industryId?: string | null; seed?: string; pageSize?: number; nicheLooks?: readonly string[] },
+    tabLooks = null,
+  }: { page: number; category: string | null; industryId?: string | null; seed?: string; pageSize?: number; nicheLooks?: readonly string[]; tabLooks?: readonly string[] | null },
 ): { items: T[]; page: number; pageCount: number; total: number; categories: string[]; category: string } {
   // The tabs keep the store's industry first; the cards in every tab are newest first.
   const categories = [...new Set(sortByIndustry(templates, industryId, seed).map((tpl) => tpl.category))];
   const category = servedCategory(categories, requested, industryId);
-  const inTab = category === "all" ? sortRelevantNewest(templates, industryId) : sortNewest(templates.filter((tpl) => tpl.category === category));
+  const byKeys = (keys: readonly string[]) => [...new Set(keys)].flatMap((key) => templates.filter((tpl) => tpl.key === key));
+  const inTab =
+    category === "all" ? sortRelevantNewest(templates, industryId) : tabLooks ? byKeys(tabLooks) : sortNewest(templates.filter((tpl) => tpl.category === category));
   const byNiche = category !== "all" && nicheLooks.length > 0;
-  const filtered = byNiche ? [...new Set(nicheLooks)].flatMap((key) => templates.filter((tpl) => tpl.key === key)) : inTab;
+  const filtered = byNiche ? byKeys(nicheLooks) : inTab;
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(Math.max(1, page), pageCount);
   return {
@@ -231,6 +252,58 @@ export function pageTemplates<T extends { category: string; sortOrder?: number; 
     categories,
     category,
   };
+}
+
+// ── One template per niche (ROADMAP F-90, docs/systems/one-template-per-niche.md §1) ──
+// `switched` is a parameter only so tests can pass a set; callers leave it out.
+
+/** The gallery without the templates a niche-only industry leaves out (none until an industry switches). */
+export function galleryTemplates<T extends { key: string; category: string }>(templates: readonly T[], switched: ReadonlySet<string> = SWITCHED_INDUSTRIES): T[] {
+  return templates.filter((tpl) => !isRetiredTemplate(tpl, switched));
+}
+
+/**
+ * A category tab's niche filter. A switched industry (niche-only): one tab
+ * per ready niche row whose template is in the gallery, in niche order; a
+ * niche tab lists that one template, and the category tab lists them all
+ * (`tabLooks`). Any other tab: the niches with an edition on a listed look
+ * (as before), a niche tab listing its looks with its niche template first.
+ */
+export function galleryNiches(
+  tab: string,
+  keys: ReadonlySet<string>,
+  switched: ReadonlySet<string> = SWITCHED_INDUSTRIES,
+): { switched: boolean; niches: NicheOption[]; tabLooks: string[] | null; looksOf: (niche: string | null) => string[] } {
+  if (tab !== "all" && isIndustrySwitched(tab, switched)) {
+    const rows = switchedNicheTemplates(tab, switched).filter((row) => keys.has(row.template));
+    return {
+      switched: true,
+      niches: rows.flatMap((row) => {
+        const niche = getNiche(row.niche);
+        return niche ? [{ id: niche.id, name: niche.name }] : [];
+      }),
+      tabLooks: rows.map((row) => row.template),
+      looksOf: (niche) => rows.filter((row) => row.niche === niche).map((row) => row.template),
+    };
+  }
+  const niches = tab === "all" ? [] : offeredNiches(tab).filter((option) => editionsForNiche(option.id).some((entry) => keys.has(entry.look)));
+  return {
+    switched: false,
+    niches,
+    tabLooks: null,
+    looksOf: (niche) => (niche ? nicheTemplateFirst(niche, editionsForNiche(niche).map((entry) => entry.look)) : []),
+  };
+}
+
+/** The niche cards among these templates (switched industries only): key → its niche, name and edition. */
+export function nicheCards(keys: readonly string[], switched: ReadonlySet<string> = SWITCHED_INDUSTRIES): Record<string, NicheCardView> {
+  const cards: Record<string, NicheCardView> = {};
+  for (const key of keys) {
+    const row = switchedNicheCard(key, switched);
+    const niche = row && getNiche(row.niche);
+    if (row && niche) cards[key] = { niche: niche.id, name: niche.name, edition: row.edition ?? null };
+  }
+  return cards;
 }
 
 /** tallaby.com, where the full-page template preview lives (`/template-preview/<key>`). */
