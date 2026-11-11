@@ -35,7 +35,8 @@ export const aboutSplitStory = defineDesign({
                     motion: { reveal: "wipe-start", scrollEffect: "zoom" },
                   }),
                 ],
-                { label: L("إطار الصورة", "Photo frame"), role: "frame", style: { overflow: "hidden", radius: 16 } },
+                // The frame does not reveal as a grid item, so the photo plays its own wipe.
+                { label: L("إطار الصورة", "Photo frame"), role: "frame", style: { overflow: "hidden", radius: 16 }, motion: { reveal: "none" } },
               ),
               t.stack(
                 [

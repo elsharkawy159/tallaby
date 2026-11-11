@@ -51,7 +51,10 @@ type HeadOptions = {
   /** Title colour and paragraph colour for dark panels. */
   tone?: "default" | "brand";
   size?: "display-sm" | "display-md" | "3xl";
-  /** Motion v2: the title's own Reveal (e.g. `words`). */
+  /**
+   * Motion v2: the title's own Reveal (e.g. `words`). The heading block then
+   * stops revealing as one (Reveal None), so its parts play their own.
+   */
   titleMotion?: NodeMotion;
 };
 
@@ -76,7 +79,7 @@ export function sectionHead(t: TreeBuilder, o: HeadOptions): NodeTemplate {
           ]
         : []),
     ],
-    { label: L("العنوان", "Heading"), role: "intro", style: { gap: 10, ...(center && { alignItems: "center" }) } },
+    { label: L("العنوان", "Heading"), role: "intro", style: { gap: 10, ...(center && { alignItems: "center" }) }, ...(o.titleMotion && { motion: { reveal: "none" } }) },
   );
   if (!o.link) return copy;
   return t.row([copy, arrowLink(t, o.link.text ?? SHOP_ALL, o.link.href)], {
