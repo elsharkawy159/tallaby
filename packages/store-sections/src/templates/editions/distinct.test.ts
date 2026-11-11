@@ -28,6 +28,8 @@ const PENDING = new Set<string>([
   "womens-shoes",
   // shanta is the niche's template and shows the pack itself; fashion-luxe draws it (its own shop the look only) until the shoes-and-bags switch takes it off.
   "handbags",
+  // saat is the niche's template and shows the pack itself; jewelry-luxe draws it until the accessories switch takes it off.
+  "watches",
 ]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */

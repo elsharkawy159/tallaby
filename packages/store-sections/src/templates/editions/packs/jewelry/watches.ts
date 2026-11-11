@@ -15,15 +15,17 @@
  * bench; no people, hands, wrists or other body parts, no brand names or
  * logos on dials, none used by a template or another pack, none twice.
  * Hero 190819 (wide: a steel chronograph on dark wood, no maker's name) and
- * 437037 (tall: a black smartwatch with a plain analogue face on pale grey).
+ * 8327595 (tall, shown by no look: tweezers and a case knife on a white
+ * bench, an open pocket watch out of focus).
  * Tiles: men's 34069486 (a steel watch with a speckled navy dial on a block
  * stand, window shadows on wood), women's 34833638 (a small rose-gold square
  * watch on a pearl bracelet among white petals), smart and sport 13610157 (a
  * rose-gold smartwatch with a sand strap, screen off, on a quilted cream
- * bag), classic and dress 1228514 (a rose-gold watch on a blush leather
- * strap on a lined notebook). Banner 1228517 (the same watch and two sprigs
- * on white, from the same shoot). Story 8327595 (tweezers and a case knife
- * on a white bench, an open pocket watch out of focus). About 8327579 (a
+ * bag), classic and dress 5058216 (a white-dial watch on a brown leather
+ * strap on an oak bench). Banner 437037 (a black smartwatch with a plain
+ * analogue face on pale grey). Story 8327593 (an open pocket watch movement,
+ * a case knife, a crystal and a spring-bar tool on a white bench; a stamp on
+ * the knife is too small to read). About 8327579 (a
  * staking set and its punches on a worn wooden bench). `jewelry-luxe`
  * spotlight 31839434 (an open pocket watch beside dried flowers on white,
  * window light). Known and accepted: 31839434's dial reads "QUARTZ", a
@@ -46,12 +48,24 @@
  * 3646165, 26626530, 30094119. Close to `saat`'s own box shoot (15019856),
  * so not used: 15019857, 15019859.
  *
- * Looks: `jewelry-luxe` (`saat` is written for but held back, see `looks`). Four products per category, so each
- * `jewelry-luxe` category row is one full row of four. `saat` compares the
- * best seller (the navy steel watch, most sold) with the newest product
- * (the black smartwatch, first in the list), so both stay where they are.
- * No `reviews`: a pack holds no invented buyer quotes, and without them
- * `saat` leaves its closing quote out.
+ * Looks: `saat`, the niche's template (one template per niche, ROADMAP
+ * F-90): its default content and demo are this pack, so the template and the
+ * edition are one shop. `jewelry-luxe` still draws the pack until the
+ * accessories switch takes it off (`distinct.test.ts` lists the niche as
+ * pending). Four products per category, so every category row (`saat`'s
+ * two, `jewelry-luxe`'s four) is one full row of four; the six-category
+ * plan for `saat` v3 was dropped with its v4 redesign. No `reviews`: a pack
+ * holds no invented buyer quotes.
+ *
+ * Saat v4 photos (2026-11-12, checked by eye): classic and dress tile
+ * 5058216 (a white-dial watch on a brown strap on an oak bench, in place of
+ * 1228514, a pink flat lay that fought the midnight and steel palette);
+ * story 8327593 (an open pocket watch movement, a case knife, a crystal and
+ * a spring-bar tool on the white bench, in place of 8327595, which moves to
+ * the unused phone hero slot); campaign 437037 (the black smartwatch with an
+ * analogue face, moved from the phone hero slot to `banner`). 5058216 and
+ * 8327593 were saat v3's own photos and are used nowhere else now. Left
+ * out: 1228517 (the blush banner, same reason as 1228514).
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, pexels } from "../../../library-template";
@@ -66,15 +80,13 @@ const TILES = [
   pexels(34069486, 1200), // a steel watch with a speckled navy dial on a block stand, window shadows on wood
   pexels(34833638, 1200), // a small rose-gold square watch on a pearl bracelet among white petals
   pexels(13610157, 1200), // a rose-gold smartwatch with a sand strap on a quilted cream bag
-  pexels(1228514, 1200), // a rose-gold watch on a blush leather strap on a lined notebook
+  pexels(5058216, 1200), // a white-dial watch with rose-gold hands on a brown leather strap, on an oak bench
 ];
 
 export const WATCHES: Edition = {
   niche: "watches",
-  // `saat` is held back: its categories grid shows up to six in rows of three, so a pack needs 3 or 6 categories there
-  // (4 leaves a broken row), and six categories need at least 18 products (22 with `jewelry-luxe`'s rows of four).
-  // The `saat` copy below is complete: add "saat" first here once the pack has six categories.
-  looks: ["jewelry-luxe"],
+  // `saat` first: the niche's template, built with this pack as its own content.
+  looks: ["saat", "jewelry-luxe"],
   priceBand: { min: 600, max: 4500 },
   // Square packshots on pure white: a square white stage shows each watch whole, and every one reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -90,8 +102,7 @@ export const WATCHES: Edition = {
       ["smart-sport", "سمارت ورياضية", "Smart and sport", TILES[2]!],
       ["classic-dress", "كلاسيك وسهرة", "Classic and dress", TILES[3]!],
     ],
-    // Newest first: the black smartwatch is `saat`'s "newest" side of the comparison, so it stays first.
-    // The navy steel watch sells most (`saat`'s best-seller side). The three featured watches fill `jewelry-luxe`'s spotlight.
+    // The navy steel watch sells most (it leads `saat`'s best sellers). The three featured watches fill `jewelry-luxe`'s spotlight.
     products: [
       ["black-smartwatch-silicone-strap", "smart-sport", "ساعة سمارت سودا بأستيك سيليكون", "Black Smartwatch with Silicone Strap", shot("black-smartwatch-silicone-strap"), 1900, { rating: 4.6, sold90: 233 }],
       ["navy-dial-steel-watch", "mens", "ساعة ستيل بوش كحلي", "Navy Dial Steel Watch", shot("navy-dial-steel-watch"), 1850, { isFeatured: true, rating: 4.8, sold90: 286 }],
@@ -112,13 +123,14 @@ export const WATCHES: Edition = {
     ],
   }),
   photos: {
-    // `saat` and `jewelry-luxe` show the wide one: the chronograph sits near the middle, so a square crop on phones keeps it.
-    hero: { wide: pexels(190819, 1920), tall: pexels(437037, 1200) },
+    // `saat` and `jewelry-luxe` show the wide one: the chronograph sits near the middle, so square and 4:5 crops keep it.
+    // Neither look shows `tall` (tweezers and a case knife on a white bench, an open pocket watch out of focus).
+    hero: { wide: pexels(190819, 1920), tall: pexels(8327595, 1200) },
     tiles: TILES,
-    // The blush watch on white with two sprigs, the right two thirds left calm for copy.
-    banner: pexels(1228517, 1920),
-    // Tweezers and a case knife on a white bench, an open pocket watch out of focus (`saat`'s about page, `jewelry-luxe`'s story block).
-    story: pexels(8327595, 1200),
+    // `saat`'s smartwatch campaign: a black smartwatch with an analogue face on pale grey (wide on desktop, tall on phones; centred).
+    banner: pexels(437037, 1920),
+    // An open pocket watch movement and the bench tools on white (`saat`'s wide story photo, `jewelry-luxe`'s story block).
+    story: pexels(8327593, 1600),
     // A staking set on a worn wooden bench (`jewelry-luxe`'s about page).
     about: pexels(8327579, 1200),
     custom: {
@@ -163,7 +175,7 @@ export const WATCHES: Edition = {
       },
     },
     story: {
-      alt: L("ملقاط وسكينة فتح ضهر الساعة على ترابيزة بيضا، وساعة جيب مفتوحة ورا", "Tweezers and a case knife on a white bench, an open pocket watch behind"),
+      alt: L("ماكينة ساعة جيب مفتوحة وأدوات الصيانة على ترابيزة بيضا", "An open pocket watch movement and repair tools on a white bench"),
       eyebrow: L("قبل ما تتشحن", "Before it ships"),
       title: L("كل ساعة بتتراجع وتتظبط", "Every watch is checked and set"),
       text: L(
@@ -225,35 +237,32 @@ export const WATCHES: Edition = {
       "shop-all": L("كل الساعات", "All watches"),
       // `saat`: the hero's second button, to the contact page.
       "hero-cta-2": L("اسأل عن المقاس", "Ask about sizing"),
-      // `saat`: the small word over the categories title.
-      "categories-eyebrow": L("التشكيلة", "The range"),
-      // `saat` head to head: A is the best seller (the navy steel watch), B the newest (the black smartwatch).
-      // Row 1 keeps the library's "Battery" label; row 2 keeps its "Yes" and "No".
-      "versus-title": L("عقارب ولا سمارت؟", "Hands or smart?"),
-      "versus-1-a": L("سنتين", "2 years"),
-      "versus-1-b": L("٥ أيام", "5 days"),
-      "versus-2-label": L("شيك مع البدلة", "Goes with a suit"),
-      "versus-3-label": L("الإشعارات", "Notifications"),
-      "versus-3-a": L("مفيش", "None"),
-      "versus-3-b": L("على الشاشة", "On screen"),
-      "versus-4-label": L("عداد الخطوات", "Step counter"),
-      "versus-4-a": L("مفيش", "None"),
-      "versus-4-b": L("موجود", "Built in"),
-      // `saat` instalments: the small line over the product, and the promise under "12 months".
-      "pay-eyebrow": L("قسّط ساعتك", "Spread the cost"),
-      "pay-line": L("من غير مقدم مع شركات التقسيط، ونفس الضمان زي الكاش.", "No down payment with instalment partners, and the same warranty as cash."),
-      // `saat`: three pickup points where you can see the watches before you buy.
-      "branches-eyebrow": L("شوفها بنفسك", "See it in person"),
-      "branches-title": L("نقط الاستلام والعرض", "Pickup and showrooms"),
-      "branches-1-name": L("المهندسين", "Mohandessin"),
-      "branches-1-address": L("شارع جامعة الدول العربية، المهندسين", "Gameat El Dewal St, Mohandessin"),
-      "branches-1-hours": L("يوميًا من ١٢ الضهر لـ ١٠ م", "Daily, 12 pm to 10 pm"),
-      "branches-2-name": L("مدينة نصر", "Nasr City"),
-      "branches-2-address": L("شارع عباس العقاد، مدينة نصر", "Abbas El Akkad St, Nasr City"),
-      "branches-2-hours": L("يوميًا من ١٢ الضهر لـ ١٠ م", "Daily, 12 pm to 10 pm"),
-      "branches-3-name": L("الإسكندرية", "Alexandria"),
-      "branches-3-address": L("شارع فوزي معاذ، سموحة", "Fawzy Moaz St, Smouha"),
-      "branches-3-hours": L("السبت للخميس، من ١ الضهر لـ ٩ م", "Sat to Thu, 1 pm to 9 pm"),
+      // `saat` price menu: a title and one line, then three groups (a title, then rows of a service and its price: 3, 2 and 2 rows).
+      "service-title": L("أسعار الصيانة", "Service prices"),
+      "service-line": L("لأي ساعة، مش بس اللي اشتريتها مننا. اسألنا على واتساب قبل ما تبعتها.", "For any watch, not only ours. Ask us on WhatsApp before you send it in."),
+      "service-1-title": L("البطارية والضبط", "Battery and setting"),
+      "service-1-1-name": L("تغيير بطارية", "Battery change"),
+      "service-1-1-price": L("١٠٠ جنيه", "EGP 100"),
+      "service-1-2-name": L("ضبط الوقت والتاريخ", "Time and date setting"),
+      "service-1-2-price": L("ببلاش", "Free"),
+      "service-1-3-name": L("اختبار ضد المية", "Water resistance test"),
+      "service-1-3-price": L("١٥٠ جنيه", "EGP 150"),
+      "service-2-title": L("الأستيك", "Straps"),
+      "service-2-1-name": L("شيل حلقات الأستيك الستيل", "Steel bracelet link removal"),
+      "service-2-1-price": L("ببلاش", "Free"),
+      "service-2-2-name": L("تركيب أستيك جلد أو سيليكون", "Leather or silicone strap fitting"),
+      "service-2-2-price": L("٥٠ جنيه", "EGP 50"),
+      "service-3-title": L("الصيانة", "Servicing"),
+      "service-3-1-name": L("تغيير زجاج مينرال", "Mineral glass replacement"),
+      "service-3-1-price": L("٢٥٠ جنيه", "EGP 250"),
+      "service-3-2-name": L("صيانة ماكينة كوارتز", "Quartz movement service"),
+      "service-3-2-price": L("٣٥٠ جنيه", "EGP 350"),
+      // `saat`: the campaign beside the smart and sport row, on `photos.banner`; its button goes to `nav.1` (the smartwatches).
+      "banner-alt": L("ساعة سمارت سودا شاشتها عليها وش بعقارب، على سطح رمادي فاتح", "A black smartwatch showing a face with hands, on pale grey"),
+      "banner-eyebrow": L("عقارب ولا سمارت؟", "Hands or smart?"),
+      "banner-title": L("سمارت وشكلها ساعة", "Smart, and still a watch"),
+      "banner-line": L("وشها بعقارب لو حبيت، بتعد خطواتك، وبطاريتها بتكفي ٥ أيام.", "A face with hands if you like, a step counter, and a battery that lasts five days."),
+      "banner-cta": L("تسوّق السمارت", "Shop smartwatches"),
     },
   },
   productPage: { copy: { reviews: L("رأي اللي لبسوها", "From people who wear it"), related: L("ساعات تانية هتعجبك", "More watches you may like") } },

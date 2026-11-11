@@ -172,12 +172,11 @@ No look requires `reviews`: a pack must not invent buyer quotes. Without them th
 |---|---|---|---|
 | `karat` | home, `testimonials-photos` | `reviews` (4 items) and `photos.custom.reviews-1..4` | the shelf is followed by the Instagram bento |
 | `zay` | home, `testimonials-chat` | `reviews` (3 items) and `custom.reviews-reply` | the home ends on the best-seller carousel |
-| `saat` | home, `testimonials-quote` | `reviews` (1 item) | the home ends on the branches |
 | `streetwear` | about page, `testimonials-classic` | `reviews` (3 items) | the page is its header and the story |
 | `volt` | home, `testimonials-chat` | `reviews` (3 items) and `custom.reviews-reply` | as before |
 | `kabl`, `nour` | home | `reviews` (3 items) | as before |
 
-In none of them does dropping the section leave two product sections touching. `fashion-luxe`, `vella`, `jewelry-luxe`, `zaki` and `arena` have no reviews section.
+In none of them does dropping the section leave two product sections touching. `fashion-luxe`, `vella`, `jewelry-luxe`, `saat` (v4), `zaki` and `arena` have no reviews section.
 
 ### Labels a pack may replace
 

@@ -215,8 +215,6 @@ describe("a look builds without reviews", () => {
     expect(home("karat")).toEqual(["hero-poster", "categories-stories", "products-shelf", "gallery-bento"]);
     // zay: the home page ends on the best-seller carousel, with the comparison between it and the shelf.
     expect(home("zay")).toEqual(["hero-collage", "categories-big-type", "products-shelf", "features-compare", "products-carousel"]);
-    // saat: the home page ends on the branches.
-    expect(home("saat").slice(-2)).toEqual(["pay-installments", "team-branches"]);
     // streetwear: the about page is its header and the story.
     const about = build("streetwear").pages.find((p) => p.slug === "about")!.content.sections.map((s) => s.id);
     expect(about).toEqual(["streetwear-about-header", "streetwear-about-classic"]);
@@ -225,7 +223,6 @@ describe("a look builds without reviews", () => {
   it.each([
     ["karat", "karat-testimonials-photos"],
     ["zay", "zay-testimonials-chat"],
-    ["saat", "saat-testimonials-quote"],
     ["streetwear", "streetwear-testimonials-classic"],
     ["kabl", "kabl-testimonials-classic"],
     ["volt", "volt-testimonials-chat"],

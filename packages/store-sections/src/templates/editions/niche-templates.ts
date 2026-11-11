@@ -52,7 +52,7 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
   // ── accessories (industry "jewelry") ──
   { niche: "gold-jewelry", template: "jewelry-luxe", edition: "gold-jewelry", status: "ready" },
   { niche: "glasses", template: "karat", edition: "glasses", status: "ready" },
-  { niche: "watches", template: "saat", edition: "watches", status: "pending" },
+  { niche: "watches", template: "saat", edition: "watches", status: "ready" },
   { niche: "fashion-jewelry", template: "zahra", edition: "fashion-jewelry", status: "ready" },
   { niche: "hair-accessories", template: "kholkhal", edition: "hair-accessories", status: "ready" },
   { niche: "belts-wallets", template: "jewelry-warm", edition: "belts-wallets", status: "ready" },

@@ -1,269 +1,370 @@
 /**
- * Saat (template 84, classic watches; Claude Design "Storefront
- * Templates"): stone paper, a deep racing green for actions and a brass
- * highlight, Noto Naskh Arabic headings over Noto Sans Arabic and tight 6px
- * corners. A Downtown watch corner: watches with hands, analogue or smart,
- * best sellers, instalments, the shops and a regular's word. Built from
- * section library designs (`fromLibrary`).
+ * Saat (accessories, the watches niche template; one template per niche,
+ * ROADMAP F-90, `docs/systems/one-template-per-niche.md`): an everyday watch
+ * shop. The palette is read off a field watch: a midnight-blue dial for the
+ * hero half and every action, brushed steel for the bands and rings, a
+ * seconds-hand red kept for the small marks (the hero's dot, sale chips),
+ * white for the product stage. Reem Kufi headings (geometric, set like the
+ * indices on a dial) over Noto Sans Arabic; crisp 4px corners, the way a
+ * case and its box are cut. Built from section library designs
+ * (`fromLibrary`).
  *
- * Photos: Pexels, each checked by eye (2026-10-21): watches on wood,
- * leather and in boxes, two smartwatches with blank screens, a leather
- * strap and a watchmaker's bench. No wrists, hands or people, and no
- * brand names on the dials (branded dials were left out).
+ * v4 (2026-11-12): rebuilt look-first around the watch. Home, nine sections:
+ *   1. `hero-halves`                the midnight half with the promise beside
+ *                                   a steel chronograph on dark wood; the
+ *                                   page's one moment is that photo growing
+ *                                   slowly inside its frame as the page
+ *                                   scrolls (`scrollEffect: zoom`, transform
+ *                                   only, still with reduced motion)
+ *   2. `categories-circles`         the categories in round bezel rings,
+ *                                   four across (a swipe row on phones)
+ *   3. `products-boxed`             eight best sellers, white cards on the
+ *                                   steel band (the product stage)
+ *   4. `about-wide`                 the editorial break: an open movement and
+ *                                   the bench tools, "every watch is checked
+ *                                   and set"
+ *   5. `products-category-carousel` the store's 1st category (men's)
+ *   6. `service-price-menu`         the trade's own section: battery, strap
+ *                                   and service prices, ruled like a menu
+ *   7. `products-campaign`          the store's 3rd category (smart and
+ *                                   sport) beside a smartwatch photo: the
+ *                                   photo-led product row
+ *   8. `features-icon-cards`        four promises on steel tiles
+ *   9. `newsletter-ruled`           one row between two hairlines
+ * Chrome: `header-ruled` and `footer-ruled` (hairline cells, like a watch
+ * box's lid and base). Eyebrows are set in sentence case, never capitals.
  *
- * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
- * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
- * Saat Corner itself. The output is unchanged from before the conversion
- * (`../editions/look-guard.test.ts`), so the version stays 3.
+ * v3's analogue-or-smart comparison, instalments, branches and closing quote
+ * are gone: a nine-section look-first home keeps the service prices (what a
+ * watch shop does that others don't) and lets the smartwatch campaign carry
+ * "analogue or smart". Its six-category grid is gone too, so the watches pack
+ * fits as it is (four categories of four).
+ *
+ * Content: the `watches` pack is Saat's own shop ("Daqiqa"): the look's
+ * default content and demo are the pack's, so the template and the niche's
+ * edition are one store.
+ *
+ * Guard: `saat.v3.json` was the v3 look (Saat Corner, converted unchanged).
+ * v4 is a deliberate redesign, so its fixture is a new capture
+ * (`saat.v4.json`) and the v3 one is deleted (`../editions/look-guard.test.ts`).
+ *
+ * Photos: the pack's (see its header): hero 190819, tiles 34069486,
+ * 34833638, 13610157, 5058216, story 8327593, campaign 437037, about page
+ * 8327579; products are the pack's white packshots. No people, wrists,
+ * hands, logos or brand names on dials.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
-import { fromLibrary, type LibraryPatch, type ListPatch } from "../_library";
+import type { ElementIconName } from "../../elements/registry";
+import type { NodeTemplate } from "../../elements/tree";
+import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import {
+  copyrightLine,
+  editionTemplate,
+  initialOf,
+  primaryHref,
+  type LookParts,
+} from "../editions/apply";
+import { WATCHES } from "../editions/packs/jewelry/watches";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
-import { demoStore, pexels } from "../library-template";
 
 export const SAAT_KEY = "saat";
 
-const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(SAAT_KEY, getDesign(id)!, { corners: 6, ...patch });
+const lib = (id: string, patch: LibraryPatch = {}): Design =>
+  fromLibrary(SAAT_KEY, getDesign(id)!, { corners: 4, ...patch });
+
+/**
+ * A library design with its nodes changed in tree order (all nodes, or those
+ * of one type), for what a `nodes` patch cannot reach: nodes with no layer
+ * label (eyebrows, icons, the hero photo) or a list's columns. The tree keeps
+ * its shape, only props and styles change.
+ */
+function retouch(
+  design: Design,
+  type: string | undefined,
+  change: (node: NodeTemplate, index: number) => NodeTemplate,
+): Design {
+  return {
+    ...design,
+    tree: (t) => {
+      let index = 0;
+      const visit = (node: NodeTemplate): NodeTemplate => {
+        const next =
+          type === undefined || node.type === type
+            ? change(node, index++)
+            : node;
+        return next.children
+          ? { ...next, children: next.children.map(visit) }
+          : next;
+      };
+      return visit(design.tree(t));
+    },
+  };
+}
+
+/** Eyebrows in sentence case: the library sets some eyebrows in tracked capitals. */
+const calm = (design: Design): Design =>
+  retouch(design, undefined, (node) =>
+    node.props?.role === "eyebrow"
+      ? {
+          ...node,
+          style: {
+            ...node.style,
+            textTransform: "none",
+            letterSpacing: "normal",
+          },
+        }
+      : node,
+  );
+
+/** Swaps the ink and paper colours in a subtree: the hero's main button reads white on the midnight half (the library's ink button disappears on it). */
+const onPaper = (node: NodeTemplate): NodeTemplate => {
+  const swap = (value: unknown) =>
+    value === "foreground"
+      ? "background"
+      : value === "background"
+        ? "foreground"
+        : value;
+  const style = node.style && {
+    ...node.style,
+    ...(node.style.color !== undefined && { color: swap(node.style.color) }),
+    ...(node.style.background !== undefined && {
+      background: swap(node.style.background),
+    }),
+  };
+  return {
+    ...node,
+    ...(style && { style: style as NodeTemplate["style"] }),
+    ...(node.children && { children: node.children.map(onPaper) }),
+  };
+};
 
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
-const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
-const MAPS = "https://maps.google.com/";
 
-const PHOTOS = {
-  slimWide: pexels(5058216),
-  slim: pexels(5058216, 900),
-  dateWatch: pexels(14525782, 900),
-  smartBlack: pexels(11700618, 900),
-  smartWhite: pexels(31406903, 900),
-  pocketBox: pexels(17069426, 900),
-  chrono: pexels(15019856, 900),
-  strap: pexels(35136298, 900),
-  bench: pexels(8327593),
-  vintageWall: pexels(39081213, 900),
-};
+const VIEW_ALL = L("عرض الكل", "View all");
 
-const NAME = L("ركن الساعات", "Saat Corner");
+/** The four promises' icons, in the order a pack writes them: delivery, cash on delivery, warranty, exchange. */
+const TRUST_ICONS: readonly ElementIconName[] = [
+  "truck",
+  "credit-card",
+  "shield",
+  "rotate",
+];
 
-/**
- * Saat Corner's own content: what the look is built with when no edition is
- * applied (the template `saat` has always meant). The store name and
- * description and the category photos come from `DEMO`.
- */
+/** Saat's own content is the watches pack's shop (Daqiqa): one source for the template and its edition. */
 const DEFAULT_CONTENT: LookDefaults = {
-  // The header's two catalog links. The first is also where the hero's button and the about page's button go, so it is the trade's main product type.
-  nav: [
-    { label: L("ساعات", "Watches"), href: search("ساعة") },
-    { label: L("سمارت", "Smart"), href: search("سمارت") },
-  ],
-  footer: { line: L("ساعات عقارب بضمان سنتين، وتركيب أسورة ببلاش.", "Analogue watches with a two-year warranty and free strap fitting.") },
-  hero: {
-    eyebrow: L("ضمان سنتين", "Two-year warranty"),
-    title: L("ساعات بعقارب", "Watches with hands"),
-    line: L("ساعات فيلد وكلاسيك وغطس بنصونها في محلنا في وسط البلد.", "Field, dress and dive watches serviced in our Downtown shop."),
-    // The button goes to the first header link (`nav.0`), so it names that product type.
-    cta: L("تسوق الساعات", "Shop watches"),
-    alt: L("ساعة كلاسيك بأسورة جلد على خشب", "A dress watch with a leather strap on wood"),
-  },
-  categories: { title: L("اختار ساعتك", "Choose your watch") },
-  products: {
-    primary: {
-      title: L("الأكثر مبيعاً", "Best sellers"),
-      line: L("الساعات اللي بتخرج من الكورنر كل أسبوع.", "The watches that leave the corner every week."),
-    },
-  },
-  // Optional. One large quote: the eyebrow over it, then the quote (inside «») and who said it.
-  reviews: {
-    title: L("من زباين الكورنر", "From the corner's regulars"),
-    items: [
-      {
-        quote: L(
-          "«اشتريت الكلاسيك بالتاريخ بالتقسيط، ولما احتاجت ظبط رجعتها المحل وخلصت في ربع ساعة.»",
-          "«I bought the Classic Date on instalments, and when it needed adjusting the shop sorted it in fifteen minutes.»",
-        ),
-        name: L("أحمد ن.", "Ahmed N."),
-      },
-    ],
-  },
-  about: {
-    line: L("محل ساعات ومكتب صيانة في وسط البلد.", "A watch shop and service desk in Downtown Cairo."),
-    alt: L("ساعة جيب مفتوحة وأدوات تصليح على ترابيزة الصيانة", "An open pocket watch and tools on the repair bench"),
-    eyebrow: L("وسط البلد", "Downtown"),
-    title: L("ساعات بنصلحها بإيدينا", "Watches we service ourselves"),
-    text: L("بنبيع الساعة ونصونها في نفس المحل: بطارية، أسورة، أو صيانة كاملة.", "We sell the watch and service it in the same shop: a battery, a strap or a full service."),
-    more: L("وكل ساعة عليها ضمان سنتين.", "And every watch carries a two-year warranty."),
-    // The button goes to the first header link (`nav.0`).
-    cta: L("تسوق الساعات", "Shop watches"),
-  },
-  contact: {
-    title: L("تواصل", "Contact"),
-    line: L("شارع طلعت حرب، وسط البلد.", "Talaat Harb St, Downtown."),
-    heading: L("اسأل عن ساعة أو صيانة", "Ask about a watch or a repair"),
-  },
-  faq: {
-    line: L("الضمان والصيانة والتوصيل.", "Warranty, servicing and delivery."),
-    question: L("الضمان بيغطي إيه؟", "What does the warranty cover?"),
-    answer: L("الماكينة سنتين من يوم الشراء، والصيانة في محلنا في وسط البلد.", "The movement for two years from purchase, serviced in our Downtown shop."),
-  },
-  custom: {
-    // The hero's second (outline) button. It goes to the contact page.
-    "hero-cta-2": L("مكتب الصيانة", "Service desk"),
-    // The small word over the categories title.
-    "categories-eyebrow": L("الكورنر", "The corner"),
-    // Head to head: two of the store's products side by side (A: the list's first product, B: the newest), with four rows of
-    // label, A's value, B's value. The title is the question the two sides answer; each value is one to three words.
-    // Optional: `versus-1-label` (the library's "Battery"), `versus-2-a` and `versus-2-b` (the library's "Yes" and "No").
-    "versus-title": L("عقارب ولا سمارت؟", "Analogue or smart?"),
-    "versus-1-a": L("٣ سنين", "3 years"),
-    "versus-1-b": L("٧ أيام", "7 days"),
-    "versus-2-label": L("تتصلح في المحل", "Serviced in store"),
-    "versus-3-label": L("الإشعارات", "Notifications"),
-    "versus-3-a": L("مفيش", "None"),
-    "versus-3-b": L("على الشاشة", "On screen"),
-    "versus-4-label": L("ضد المية", "Water resistance"),
-    "versus-4-a": L("٥٠ متر", "50 m"),
-    "versus-4-b": L("١٠٠ متر", "100 m"),
-    // Instalments (terms of 3, 6, 9 and 12 months, set in the look): the small line over the product, and the promise under "12 months".
-    "pay-eyebrow": L("قسّط ساعتك", "Spread the cost"),
-    "pay-line": L("من غير فوايد ولا مقدم، والضمان سنتين زي الكاش.", "No interest, no down payment, and the same two-year warranty."),
-    // Three shop cards: the small word and the title over them, then each shop's name, address and opening hours.
-    // Optional: `branches-2-hours` and `branches-3-hours` (the library's "Daily, 10 am – 10 pm" and "Sat – Thu, 12 – 10 pm").
-    "branches-eyebrow": L("المحل", "Shop"),
-    "branches-title": L("زور مكتب الصيانة", "Visit the service desk"),
-    "branches-1-name": L("وسط البلد", "Downtown"),
-    "branches-1-address": L("شارع طلعت حرب، وسط البلد", "Talaat Harb St, Downtown"),
-    "branches-1-hours": L("يوميًا من ١١ ص لـ ١٠ م", "Daily, 11 am to 10 pm"),
-    "branches-2-name": L("مصر الجديدة", "Heliopolis"),
-    "branches-2-address": L("شارع الكوربة، مصر الجديدة", "El Korba St, Heliopolis"),
-    "branches-3-name": L("الإسكندرية", "Alexandria"),
-    "branches-3-address": L("شارع فؤاد، محطة الرمل", "Fouad St, Raml Station"),
-  },
+  ...WATCHES.copy,
   photos: {
-    // The hero's half: one product on a plain surface, 16:9 (cropped to a square on phones, so keep the subject centred).
-    hero: { wide: PHOTOS.slimWide },
-    // The about page's photo (the look has no story block on its home page).
-    story: PHOTOS.bench,
+    hero: WATCHES.photos.hero,
+    banner: WATCHES.photos.banner,
+    story: WATCHES.photos.story,
+    ...(WATCHES.photos.about && { about: WATCHES.photos.about }),
+    ...(WATCHES.photos.custom && { custom: WATCHES.photos.custom }),
   },
 };
 
 /**
  * The look: every section from a content object (`DEFAULT_CONTENT`, or an
- * edition's). What names the trade or the demo store is a slot of `c`;
- * generic shop labels (Top rated, About, the instalment terms, the
- * reviewer's place) and the layout stay here.
+ * edition's). Generic shop labels (Best sellers, View all, Top rated) and the
+ * layout stay here; what names the trade is a slot of `c`.
  */
 function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
   const main = c.nav[0]!;
   const x = c.custom;
-  // Optional: a pack without a buyer quote gets the home page without the quote section (it then ends on the branches).
-  const reviews: LookContent["reviews"] | undefined = c.reviews;
 
   const header = lib("header-ruled", {
-    text: { "م": initialOf(name), "اسم متجرك": name, "المتجر": main.label, "العروض": c.nav[1]!.label },
+    text: {
+      م: initialOf(name),
+      "اسم متجرك": name,
+      المتجر: main.label,
+      العروض: c.nav[1]!.label,
+    },
     links: { "/products": [main.href, c.nav[1]!.href, undefined, undefined] },
   });
 
   const footer = lib("footer-ruled", {
     text: {
-      "م": initialOf(name),
+      م: initialOf(name),
       "اسم متجرك": name,
       "منتجات أصلية بضمان، توصلك لحد البيت.": c.footer.line,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
-      "العروض": L("الأعلى تقييماً", "Top rated"),
+      العروض: L("الأعلى تقييماً", "Top rated"),
     },
     links: { "/products": [undefined, NEW, BEST, RATED] },
   });
 
   const home: Design[] = [
-    lib("hero-halves", {
-      photo: [undefined, c.photos.hero.wide],
+    // Phones: the photo first and tall (4:5), the midnight half under it.
+    // The page's one moment: the watch grows slowly inside its frame as the page scrolls (transform only; the photo is never hidden).
+    retouch(
+      retouch(
+        calm(
+          lib("hero-halves", {
+            photo: [undefined, c.photos.hero.wide],
+            text: {
+              "كوليكشن الموسم": c.hero.eyebrow,
+              "صوت أنقى، كل يوم": c.hero.title,
+              "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+              "تسوق الآن": c.hero.cta,
+              العروض: x["hero-cta-2"]!,
+              "صورة الحملة": c.hero.alt,
+            },
+            links: { "/products": [main.href, "/contact"] },
+          }),
+        ),
+        "linkBlock",
+        // The first of the two buttons is the main one.
+        (node, index) => (index === 0 ? onPaper(node) : node),
+      ),
+      "image",
+      (node) => ({
+        ...node,
+        props: { ...node.props, scrollEffect: "zoom" },
+        breakpointStyles: {
+          ...node.breakpointStyles,
+          mobile: { ...node.breakpointStyles?.mobile, aspectRatio: "portrait" },
+        },
+      }),
+    ),
+    // Round bezel rings, four across: the library's six-column row would leave two empty places for a four-category shop.
+    retouch(
+      lib("categories-circles", {
+        text: { "بتدوّر على إيه؟": c.categories.title, "عرض الكل": VIEW_ALL },
+        nodes: { الحلقة: { style: { maxWidth: "240px" } } },
+        lists: [{ limit: 4 }],
+      }),
+      "categoryList",
+      (node) => ({
+        ...node,
+        style: { ...node.style, columns: 4 },
+        breakpointStyles: {
+          ...node.breakpointStyles,
+          tablet: { ...node.breakpointStyles?.tablet, columns: 4 },
+        },
+      }),
+    ),
+    lib("products-boxed", {
       text: {
-        "كوليكشن الموسم": c.hero.eyebrow,
-        "صوت أنقى، كل يوم": c.hero.title,
-        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
-        "تسوق الآن": c.hero.cta,
-        "العروض": x["hero-cta-2"]!,
-        "صورة الحملة": c.hero.alt,
-      },
-      links: { "/products": [main.href, "/contact"] },
-    }),
-    lib("categories-ruled", { text: { "الأقسام": x["categories-eyebrow"]!, "تسوق بالقسم": c.categories.title } }),
-    lib("products-grid", {
-      text: {
-        "وصل حديثًا": c.products.primary.title,
-        "أحدث المنتجات اللي نزلت المتجر.": c.products.primary.line,
+        "أساسيات كل يوم": c.products.primary.title,
+        "عرض الكل": VIEW_ALL,
       },
       links: { "/products": primaryHref(journey.primary) },
-      lists: [{ source: journey.primary, limit: 4 }],
+      lists: [{ source: journey.primary }],
     }),
-    lib("finder-versus", {
+    lib("about-wide", {
+      photo: [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        c.photos.story,
+      ],
       text: {
-        "تختار مين؟": x["versus-title"]!,
-        ...(x["versus-1-label"] && { "البطارية": x["versus-1-label"] }),
-        "٣٠ ساعة": x["versus-1-a"]!,
-        "٢٤ ساعة": x["versus-1-b"]!,
-        "عزل الضوضاء": x["versus-2-label"]!,
-        ...(x["versus-2-a"] && { "أيوه": x["versus-2-a"] }),
-        ...(x["versus-2-b"] && { "لأ": x["versus-2-b"] }),
-        "٥٫٢ جم": x["versus-3-a"]!,
-        "الوزن": x["versus-3-label"]!,
-        "٤٫٨ جم": x["versus-3-b"]!,
-        "IPX٤": x["versus-4-a"]!,
-        "مقاومة المية": x["versus-4-label"]!,
-        "IPX٥": x["versus-4-b"]!,
-      },
-      // The second side drops the library offset (a store with one best seller would hide the section) and shows the newest watch instead.
-      lists: [undefined, { source: "newest", offset: null } as ListPatch],
-    }),
-    lib("pay-installments", {
-      text: {
-        "قسّطها": x["pay-eyebrow"]!,
-        "١٢": L("٩", "9"),
-        "٢٤": L("١٢", "12"),
-        "٢٤ شهر": L("١٢ شهر", "12 months"),
-        "من غير فوايد ولا مقدم مع شركات التقسيط.": x["pay-line"]!,
+        "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
+        "صورة المتجر": c.story.alt,
+        "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف، عشان تفتح العلبة وانت مطمن.":
+          c.story.text,
+        "شوف إزاي بنشتغل": c.story.cta,
       },
     }),
-    lib("team-branches", {
-      text: {
-        "الفروع": x["branches-eyebrow"]!,
-        "زورنا": x["branches-title"]!,
-        "فرع الدقي": x["branches-1-name"]!,
-        "٢٤ شارع التحرير، الدقي": x["branches-1-address"]!,
-        "يوميًا من ١٢ الضهر لـ ١١ م": x["branches-1-hours"]!,
-        "فرع مدينة نصر": x["branches-2-name"]!,
-        "سيتي ستارز، الدور الأول": x["branches-2-address"]!,
-        ...(x["branches-2-hours"] && { "يوميًا من ١٠ ص لـ ١٠ م": x["branches-2-hours"] }),
-        "فرع المعادي": x["branches-3-name"]!,
-        "شارع ٩، المعادي": x["branches-3-address"]!,
-        ...(x["branches-3-hours"] && { "السبت – الخميس، ١٢ – ١٠ م": x["branches-3-hours"] }),
-      },
-      links: { "https://maps.google.com": MAPS },
+    lib("products-category-carousel", {
+      as: "category-row-1",
+      text: { "عرض الكل": VIEW_ALL },
+      lists: [
+        { offset: journey.rows[0]! - 1 },
+        { categoryIndex: journey.rows[0]!, limit: 4 },
+      ],
     }),
-    ...(reviews
-      ? [
-          lib("testimonials-quote", {
-            text: {
-              "آراء العملاء": reviews.title,
-              "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": reviews.items[0]!.quote,
-              "مريم أ.": reviews.items[0]!.name,
-              "القاهرة": L("وسط البلد", "Downtown"),
-            },
-          }),
-        ]
-      : []),
+    // The group headings are small (sm): set in the body face, where the kufi display letters would crowd.
+    retouch(
+      lib("service-price-menu", {
+        text: {
+          "أسعار الخدمات": x["service-title"]!,
+          "الأسعار شاملة قطع الغيار الأصلية والضمان.": x["service-line"]!,
+          الموبايل: x["service-1-title"]!,
+          "تغيير بطارية": x["service-1-1-name"]!,
+          "٦٥٠ ج.م": x["service-1-1-price"]!,
+          "تغيير شاشة": x["service-1-2-name"]!,
+          "٢٤٠٠ ج.م": x["service-1-2-price"]!,
+          "سوكت الشحن": x["service-1-3-name"]!,
+          "٤٥٠ ج.م": x["service-1-3-price"]!,
+          "الشاشات والبيت": x["service-2-title"]!,
+          "تركيب حائط": x["service-2-1-name"]!,
+          "٣٥٠ ج.م": x["service-2-1-price"]!,
+          "ضبط رسيفر": x["service-2-2-name"]!,
+          "١٥٠ ج.م": x["service-2-2-price"]!,
+          السماعات: x["service-3-title"]!,
+          "تغيير وسايد": x["service-3-1-name"]!,
+          "١٢٠ ج.م": x["service-3-1-price"]!,
+          "تنظيف وفحص": x["service-3-2-name"]!,
+          "٨٠ ج.م": x["service-3-2-price"]!,
+        },
+      }),
+      "heading",
+      (node) =>
+        node.props?.level === "h3"
+          ? { ...node, style: { ...node.style, fontFamily: "body" } }
+          : node,
+    ),
+    calm(
+      lib("products-campaign", {
+        as: "category-row-2",
+        photo: [undefined, undefined, undefined, c.photos.banner],
+        text: {
+          "صورة الحملة": x["banner-alt"]!,
+          "الخط الجديد": x["banner-eyebrow"]!,
+          "اختارناها لك بعناية": x["banner-title"]!,
+          "قطع جديدة من خطنا الجديد، معمولة عشان تعيش معاك.": x["banner-line"]!,
+          "تسوّق المجموعة": x["banner-cta"]!,
+        },
+        links: { "/products": c.nav[1]!.href },
+        lists: [
+          { source: "category", categoryIndex: journey.rows[1]!, limit: 4 },
+        ],
+      }),
+    ),
+    retouch(
+      calm(
+        lib("features-icon-cards", {
+          text: {
+            "لماذا تشتري منا": L("وعدنا ليك", "Our promise"),
+            "تسوّق وأنت مطمئن": L("اشتري وانت مطمن", "Buy with confidence"),
+            "توصيل سريع": c.trust[0]!.title,
+            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "الدفع عند الاستلام": c.trust[1]!.title,
+            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
+            "استرجاع سهل": c.trust[2]!.title,
+            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+            "دعم على واتساب": c.trust[3]!.title,
+            "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+          },
+        }),
+      ),
+      "icon",
+      (node, index) => ({
+        ...node,
+        props: { ...node.props, name: TRUST_ICONS[index] ?? node.props.name },
+      }),
+    ),
+    lib("newsletter-ruled", {
+      text: {
+        "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
+        "عروض للمشتركين بس، مرة في الأسبوع.": c.newsletter.line,
+      },
+    }),
   ];
 
   const about: Design[] = [
     pageHeader(lib, "about-header", aboutName, c.about.line),
     aboutStory(lib, {
-      photo: c.photos.story,
+      photo: c.photos.about ?? c.photos.story,
       alt: c.about.alt,
       eyebrow: c.about.eyebrow,
       title: c.about.title,
@@ -279,73 +380,72 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     footer,
     pages: [
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "about",
+        name: L("عننا", "About"),
+        seo: { title: aboutName },
+        sections: about,
+      },
       {
         slug: "contact",
         name: L("تواصل", "Contact"),
         seo: { title: L("تواصل", "Contact") },
-        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+        sections: contactPage(lib, {
+          title: c.contact.title,
+          text: c.contact.line,
+          heading: c.contact.heading,
+        }),
       },
       {
         slug: "faq",
         name: L("الأسئلة الشائعة", "FAQ"),
         seo: { title: L("الأسئلة الشائعة", "FAQ") },
-        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+        sections: faqPage(lib, {
+          text: c.faq.line,
+          question: c.faq.question,
+          answer: c.faq.answer,
+        }),
       },
     ],
   };
 }
 
-const DEMO = demoStore({
-  name: NAME,
-  description: L("ساعات عقارب بضمان سنتين.", "Analogue watches with a two-year warranty."),
-  categories: [
-    ["watches", "ساعات", "Watches", PHOTOS.dateWatch],
-    ["smart", "سمارت", "Smart", PHOTOS.smartBlack],
-    ["straps", "أساور", "Straps", PHOTOS.strap],
-    ["dress", "ساعات سهرة", "Dress watches", PHOTOS.slim],
-    ["chrono", "كرونوغراف", "Chronographs", PHOTOS.chrono],
-    ["pocket", "ساعات جيب", "Pocket watches", PHOTOS.pocketBox],
-    ["vintage", "فينتدج", "Vintage", PHOTOS.vintageWall],
-    ["sport", "رياضي", "Sport", PHOTOS.smartBlack],
-  ],
-  products: [
-    ["classic-date-watch", "watches", "ساعة كلاسيك بالتاريخ", "Classic Date Watch", PHOTOS.dateWatch, 2400, { isFeatured: true, rating: 4.8, sold90: 120 }],
-    ["ultra-smartwatch", "sport", "ساعة سمارت ألترا", "Ultra Smartwatch", PHOTOS.smartBlack, 1450, { sold90: 96 }],
-    ["slim-dress-watch", "dress", "ساعة رفيعة جلد", "Slim Dress Watch", PHOTOS.slim, 3200, { compareAtPrice: 3600, sold90: 44 }],
-    ["pocket-watch", "pocket", "ساعة جيب بالعلبة", "Pocket Watch in a Box", PHOTOS.pocketBox, 2900, { sold90: 18 }],
-    ["black-chronograph", "chrono", "ساعة كرونو سودا", "Black Chronograph", PHOTOS.chrono, 4200, { isFeatured: true, rating: 4.9, sold90: 30 }],
-    ["white-smartwatch", "smart", "ساعة سمارت بيضا", "White Smartwatch", PHOTOS.smartWhite, 1250, { compareAtPrice: 1450, sold90: 70 }],
-    ["restored-vintage-watch", "vintage", "ساعة فينتدج متجددة", "Restored Vintage Watch", PHOTOS.vintageWall, 1850, { rating: 4.6, sold90: 26 }],
-    ["leather-strap", "straps", "أسورة جلد سودا", "Black Leather Strap", PHOTOS.strap, 390, { sold90: 140 }],
-  ],
-});
-
 export const SAAT = editionTemplate({
   key: SAAT_KEY,
-  version: 3,
-  changelog: "Saat v3: categories, best sellers, section order",
-  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي أصحاب الساعات", "From watch owners"), related: L("ساعات تانية للمقارنة", "More watches to compare") } },
+  version: 4,
+  changelog: "Saat v4: the watches template, rebuilt look-first",
+  productPage: {
+    surface: "flat",
+    thumbs: "side",
+    button: "outline",
+    band: "paper",
+    extras: ["product-perks"],
+    copy: {
+      reviews: L("رأي اللي لبسوها", "From people who wear it"),
+      related: L("ساعات تانية هتعجبك", "More watches you may like"),
+    },
+  },
   name: L("ساعات", "Saat"),
   description: L(
-    "ساعات كلاسيك: هيرو نصين، عقارب ولا سمارت، التقسيط، أسعار الصيانة والفروع. أربع صفحات جاهزة.",
-    "Classic watches: a split hero, analogue or smart, instalments, service prices and the shops. Four ready pages.",
+    "ساعات: نص بلون ميناء الساعة جنب صورة ساعة، أقسام في حلقات زي الإطار، ساعات على خلفية بيضا، أسعار البطارية والأستيك والصيانة، وحملة للسمارت واتش. لمحلات الساعات العقارب والسمارت.",
+    "Watches: a dial-blue half beside a watch photo, categories in bezel rings, watches on a white stage, battery, strap and service prices, and a smartwatch campaign. For analogue and smartwatch shops.",
   ),
   category: "jewelry",
   style: ["classic", "luxe"],
   sortOrder: 840,
-  palette: ["#f6f5f2", "#e9e6df", "#d9b56c", "#14532d"],
+  palette: ["#ffffff", "#e8ebef", "#c2362b", "#16264a"],
   colors: {
-    primary: "#14532d",
-    secondary: "#e9e6df",
+    primary: "#16264a",
+    secondary: "#e8ebef",
     background: "#ffffff",
-    foreground: "#1a1a1a",
-    muted: "#5c5a55",
-    border: "#dad5cb",
-    accent: "#d9b56c",
+    foreground: "#141c2e",
+    muted: "#566072",
+    border: "#d6dbe2",
+    accent: "#c2362b",
   },
-  fonts: { heading: "Noto Naskh Arabic", body: "Noto Sans Arabic" },
-  radius: 6,
+  fonts: { heading: "Reem Kufi", body: "Noto Sans Arabic" },
+  radius: 4,
+  productStage: WATCHES.productStage,
   lib,
   look,
   // Every slot `look` reads; an edition must hold them all.
@@ -354,43 +454,54 @@ export const SAAT = editionTemplate({
     "nav.1",
     "footer.line",
     "hero",
-    "custom.hero-cta-2",
-    "custom.categories-eyebrow",
     "categories.title",
     "products.primary.title",
-    "products.primary.line",
-    "custom.versus-title",
-    "custom.versus-1-a",
-    "custom.versus-1-b",
-    "custom.versus-2-label",
-    "custom.versus-3-label",
-    "custom.versus-3-a",
-    "custom.versus-3-b",
-    "custom.versus-4-label",
-    "custom.versus-4-a",
-    "custom.versus-4-b",
-    "custom.pay-eyebrow",
-    "custom.pay-line",
-    "custom.branches-eyebrow",
-    "custom.branches-title",
-    "custom.branches-1-name",
-    "custom.branches-1-address",
-    "custom.branches-1-hours",
-    "custom.branches-2-name",
-    "custom.branches-2-address",
-    "custom.branches-3-name",
-    "custom.branches-3-address",
+    "story.alt",
+    "story.title",
+    "story.text",
+    "story.cta",
+    "trust",
+    "newsletter.title",
+    "newsletter.line",
     "about",
     "contact",
     "faq",
     "photos.hero.wide",
+    "photos.banner",
     "photos.story",
+    // The hero's second button, to the contact page.
+    "custom.hero-cta-2",
+    // The price menu: a title and one line, then three groups (a title and rows of name and price; 3, 2 and 2 rows).
+    "custom.service-title",
+    "custom.service-line",
+    "custom.service-1-title",
+    "custom.service-1-1-name",
+    "custom.service-1-1-price",
+    "custom.service-1-2-name",
+    "custom.service-1-2-price",
+    "custom.service-1-3-name",
+    "custom.service-1-3-price",
+    "custom.service-2-title",
+    "custom.service-2-1-name",
+    "custom.service-2-1-price",
+    "custom.service-2-2-name",
+    "custom.service-2-2-price",
+    "custom.service-3-title",
+    "custom.service-3-1-name",
+    "custom.service-3-1-price",
+    "custom.service-3-2-name",
+    "custom.service-3-2-price",
+    // The campaign beside the 2nd category row, on `photos.banner`; its button goes to `nav.1`.
+    "custom.banner-alt",
+    "custom.banner-eyebrow",
+    "custom.banner-title",
+    "custom.banner-line",
+    "custom.banner-cta",
   ],
-  // Without one of these the section keeps the library's own wording (see `DEFAULT_CONTENT`).
-  // Without `reviews` the closing quote section is not built.
-  optional: ["custom.versus-1-label", "custom.versus-2-a", "custom.versus-2-b", "custom.branches-2-hours", "custom.branches-3-hours", "reviews"],
-  // Four best sellers; the look has no category rows.
-  journey: { primary: "best-sellers", rows: [] },
+  // `photos.about`: the about page's photo (falls back to the story's).
+  optional: ["photos.about"],
+  // Eight best sellers, then the store's 1st category as a row and its 3rd (smart and sport) beside the campaign photo.
+  journey: { primary: "best-sellers", rows: [1, 3] },
   defaultContent: DEFAULT_CONTENT,
-  demo: DEMO,
+  demo: WATCHES.demo,
 });
