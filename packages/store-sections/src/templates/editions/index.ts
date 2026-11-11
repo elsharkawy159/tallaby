@@ -12,6 +12,7 @@ import { applyEdition, isEditionReady } from "./apply";
 import { matchNiche, type MatchNicheInput } from "./match";
 import { getNiche, nichesOfIndustry, type Niche } from "./niches";
 import { LIGHTING_SMART_HOME } from "./packs/electronics/lighting-smart-home";
+import { PC_GAMING } from "./packs/electronics/pc-gaming";
 import { DRESSES } from "./packs/fashion/dresses";
 import { PANTS_JEANS } from "./packs/fashion/pants-jeans";
 import { TSHIRTS } from "./packs/fashion/tshirts";
@@ -28,7 +29,7 @@ export { applyEdition, copyrightLine, editionTemplate, initialOf, isEditionReady
  *   import { DRESSES } from "./packs/fashion/dresses";
  * and add `DRESSES` here.
  */
-export const EDITIONS: readonly Edition[] = [DRESSES, GLASSES, TSHIRTS, LIGHTING_SMART_HOME, PANTS_JEANS];
+export const EDITIONS: readonly Edition[] = [DRESSES, GLASSES, TSHIRTS, LIGHTING_SMART_HOME, PANTS_JEANS, PC_GAMING];
 
 /** The pack of a niche. */
 export function getEdition(nicheId: string | null | undefined): Edition | undefined {
