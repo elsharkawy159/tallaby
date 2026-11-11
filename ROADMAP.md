@@ -1696,6 +1696,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-11 — F-90 niche editions: Phase 1 built, Phase 2 pilot started (branch `feat/section-system`, local commits, not pushed)
+
+- **Phase 1** (`a8265741` … `3097c50d`): the edition system (82 niches, `matchNiche`, `Edition` type, `validateEdition`, `applyEdition`), all twelve pilot looks edition-ready with byte-for-byte look-guard fixtures (default output unchanged), custom slots, preview `?edition=`, the dashboard and tallaby.com niche row and edition chips, `applyStoreTemplate` with a server-checked `editionId` (the demo catalog never enters a store), and the AI builder shortlist using the store's niche. Generated packshots live in the public `library-media` bucket under `editions/<niche>/`.
+- **No migration.** `0166` (decision 5) is not written; editions are code-only.
+- **Phase 2 pilot** (`b7b302c3`): `dresses` (fashion-luxe, vella), `tshirts` (streetwear, fashion-luxe) and `glasses` (jewelry-luxe, karat) packs registered, with screenshots in `docs/systems/editions-pilot/` (glasses on karat not yet captured). The validator now counts a category list that shows every category as full.
+- **Photos:** uploaded for pants-jeans, lighting-smart-home, pc-gaming (16 each) and watches (9, short of a 12-product pack); none yet for `fashion-jewelry` and `chargers-cables`.
+- **Tests:** store-sections 10,179 pass, typecheck clean.
+
 ### 2026-11-11 — F-90 niche editions: plan for approval (branch `feat/section-system`, not pushed)
 
 - **Plan only, no code:** `docs/systems/niche-editions-plan.md`. A two-level taxonomy (17 industries, 82 niches), two or three existing looks per niche (197 editions), the photo count (about 255 for the pilot, about 2,400 in all) and sources, the edition data format, and the pilot (9 niches × 2 looks).

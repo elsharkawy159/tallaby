@@ -159,7 +159,7 @@ function shortLists(template: TemplateDefinition, config: SiteConfig): { lists: 
   const product = templateDemoProduct(template.demo, { locale: "en" });
   const problems: string[] = [];
   const rows: string[] = [];
-  const check = (sections: readonly SectionInstance[], withProduct: boolean) => {
+  const check = (sections: readonly SectionInstance[], withProduct: boolean, chrome = false) => {
     const queries = collectCatalogQueries(sections, storeSectionRegistry, withProduct ? { product } : undefined);
     const ctx = { catalog: resolveDemoCatalog(queries, template.demo, "en"), mode: "view" } as unknown as RenderContext;
     for (const section of sections) {
@@ -175,14 +175,19 @@ function shortLists(template: TemplateDefinition, config: SiteConfig): { lists: 
         }
         const shown = listRecords(node, ctx).length;
         // A category list that shows every category is full; a product list must reach its limit.
-        const target = node.type === "categoryList" ? Math.min(limit, template.demo?.categories.length ?? limit) : limit;
-        if (shown < target || (columns > 1 && shown % columns !== 0)) problems.push(`${section.id} > ${node.type}: ${shown}/${limit} (${columns} columns)`);
+        const offset = typeof node.props?.offset === "number" ? node.props.offset : 0;
+        const target =
+          node.type === "categoryList" ? Math.min(limit, Math.max(0, (template.demo?.categories.length ?? limit + offset) - offset)) : limit;
+        // A header or footer category row is a strip of chips or links, not a grid: it needs no full rows.
+        const grid = !(chrome && node.type === "categoryList");
+        if (shown < target || (grid && columns > 1 && shown % columns !== 0)) problems.push(`${section.id} > ${node.type}: ${shown}/${limit} (${columns} columns)`);
       }
     }
   };
   check(
     [config.header, config.footer].filter((section): section is SectionInstance => section != null),
     false,
+    true,
   );
   for (const page of config.pages) check(page.content.sections, page.kind === "product");
   return { lists: problems, rows };
