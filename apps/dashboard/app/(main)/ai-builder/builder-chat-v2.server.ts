@@ -22,6 +22,7 @@ import {
   type BuilderState,
 } from "./builder.dto";
 import { withSellerMessage } from "./builder.lib";
+import { builderNiche } from "./builder-niche.lib";
 import { applyEditReading, applyIntakeReading, cleanIntakeReading, intakeWithoutModel, mergeModelMapping, readFileColumns, toFileRows } from "./builder-intake.lib";
 import { MAX_TEMPLATES_SHOWN, answerSummary, applyCardAnswers, currentRound, withCard } from "./builder-questions.lib";
 import { EDIT_SYSTEM_RULES, INTAKE_SYSTEM_RULES, chatRequestText, intakeRequestText } from "./builder-prompts.lib";
@@ -68,6 +69,8 @@ const STYLES = new Set<string>(TEMPLATE_STYLES);
 
 function shortlistInput(state: BuilderState, seed: string) {
   return {
+    // The store's niche, matched in code from what the seller gave (F-90); null changes nothing.
+    nicheId: builderNiche(state),
     industryId: state.industryId,
     styleWords: state.brief?.styleWords ?? [],
     styles: state.styles.filter((style): style is TemplateStyle => STYLES.has(style)),
@@ -81,17 +84,20 @@ function shortlistInput(state: BuilderState, seed: string) {
 /** The 3 templates, scored in code (no catalog in any prompt), once the design round comes. */
 export function withShortlistV2(state: BuilderState, seed: string): BuilderState {
   if (currentRound(state) !== "design" || state.shortlist.length) return state;
-  const keys = scoreTemplates(shortlistInput(state, seed)).map((template) => template.key);
-  return { ...state, shortlist: keys, templatesShown: [...new Set([...state.templatesShown, ...keys])] };
+  const input = shortlistInput(state, seed);
+  const keys = scoreTemplates(input).map((template) => template.key);
+  // The niche is saved with the list it ranked: the suggestions' editions are read from it (`suggestionEdition`).
+  return { ...state, shortlist: keys, nicheId: input.nicheId, templatesShown: [...new Set([...state.templatesShown, ...keys])] };
 }
 
 /** "Show 3 more": the next 3 by score, never one shown already. Free. */
 export async function moreTemplates(ctx: ChatContext, build: BuildRow): Promise<ChatResult> {
   const state = build.state;
   if (currentRound(state) !== "design" || state.templatesShown.length >= MAX_TEMPLATES_SHOWN) return { view: toView(build), error: "invalidAnswer" };
-  const keys = nextTemplates(shortlistInput(state, build.id), state.templatesShown).map((template) => template.key);
+  const input = shortlistInput(state, build.id);
+  const keys = nextTemplates(input, state.templatesShown).map((template) => template.key);
   if (!keys.length) return { view: toView(build), error: "invalidAnswer" };
-  const next = withCard({ ...state, shortlist: keys, templatesShown: [...state.templatesShown, ...keys] });
+  const next = withCard({ ...state, shortlist: keys, nicheId: input.nicheId, templatesShown: [...state.templatesShown, ...keys] });
   await saveBuild(ctx.sellerId, build.id, { state: next });
   return { view: toView({ ...build, state: next }) };
 }

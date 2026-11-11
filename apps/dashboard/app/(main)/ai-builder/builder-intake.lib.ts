@@ -276,6 +276,8 @@ export function applyIntakeReading(state: BuilderState, reading: IntakeReading):
     styles,
     styleDone: state.styleDone || styles.length > 0,
     photoKeywordsEn: reading.photoKeywordsEn,
+    // Kept for the niche match in code (builder-niche.lib.ts); the reading already returned it.
+    tradeHint: reading.industryHint ?? state.tradeHint,
     intakeDone: true,
   };
 }
@@ -354,6 +356,8 @@ export function applyEditReading(state: BuilderState, output: BuilderEditOutput,
   const styles = stylesOf(output.styleWords);
   if (styles.length) next = { ...next, styles: styles.slice(0, 2), styleDone: true };
   const ranked = rankIndustries(`${output.industryHint ?? ""}`);
-  if (industryIsConfident(ranked) && ranked[0]!.id !== next.industryId && !next.templateKey) next = { ...next, industryId: ranked[0]!.id, shortlist: [] };
+  // A new industry: the shortlist is made again, and with it the niche (from the new hint).
+  if (industryIsConfident(ranked) && ranked[0]!.id !== next.industryId && !next.templateKey)
+    next = { ...next, industryId: ranked[0]!.id, shortlist: [], tradeHint: line(output.industryHint, 40) || next.tradeHint };
   return next;
 }

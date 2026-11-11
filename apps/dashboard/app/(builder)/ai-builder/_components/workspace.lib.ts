@@ -237,10 +237,15 @@ export function deviceScale(device: PreviewDevice, paneWidth: number): number {
   return Math.min(1, paneWidth / width);
 }
 
-/** A template preview frame on tallaby.com: Arabic (the default locale) has no prefix. */
-export function templatePreviewSrc(origin: string, locale: string, key: string, thumb = false): string {
+/**
+ * A template preview frame on tallaby.com: Arabic (the default locale) has no
+ * prefix. `edition` is the niche edition the suggestion carries (F-90); the
+ * preview route checks it and falls back to the template's own content.
+ */
+export function templatePreviewSrc(origin: string, locale: string, key: string, thumb = false, edition?: string | null): string {
   const prefix = locale === "en" ? "/en" : "";
-  return `${origin}${prefix}/template-preview/${encodeURIComponent(key)}${thumb ? "?thumb=1" : ""}`;
+  const query = [...(edition ? [`edition=${encodeURIComponent(edition)}`] : []), ...(thumb ? ["thumb=1"] : [])].join("&");
+  return `${origin}${prefix}/template-preview/${encodeURIComponent(key)}${query ? `?${query}` : ""}`;
 }
 
 /** WhatsApp share link for the store's address. */

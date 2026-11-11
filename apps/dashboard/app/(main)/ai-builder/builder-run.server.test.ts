@@ -316,3 +316,49 @@ describe("site copy", () => {
     expect(mocks.items.get("site_copy")).toMatchObject({ status: "done" });
   });
 });
+
+// Niche editions (ROADMAP F-90): the registry is mocked with the fixture pack (t-shirts on `fashion-luxe`), since the shipped one may be empty.
+vi.mock("@workspace/store-sections/templates", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@workspace/store-sections/templates")>();
+  const { TSHIRTS } = await import("../../../../../packages/store-sections/src/templates/editions/tshirts.fixture");
+  return { ...actual, editionOnLook: (key: string, niche: unknown) => actual.editionOnLook(key, niche, [TSHIRTS]) };
+});
+
+describe("the template step and niche editions", () => {
+  const install = async (state: Record<string, unknown>) => {
+    mocks.items = new Map(["store", "settings"].map((key) => [key, { key, status: "done", attempts: 0, data: {}, productId: null }]));
+    const { applyStoreTemplate } = await import("@workspace/lib/store-sites/server");
+    vi.mocked(applyStoreTemplate).mockResolvedValue({ success: true, data: { installId: "i", templateKey: "t", pagesUpdated: 1, pagesCreated: 0 } });
+    const b = build();
+    await runBuildStep(CTX, { ...b, state: { ...b.state, products: [], ...state } });
+    expect(applyStoreTemplate).toHaveBeenCalledTimes(1);
+    const [sellerId, storeId, templateKey, , options] = vi.mocked(applyStoreTemplate).mock.calls[0]!;
+    expect([sellerId, storeId]).toEqual([CTX.sellerId, STORE]);
+    return { templateKey, options: options as Record<string, unknown> };
+  };
+
+  it("installs the chosen template with the niche's edition when the template has it", async () => {
+    const { templateKey, options } = await install({ templateKey: "fashion-luxe", nicheId: "tshirts" });
+    expect(templateKey).toBe("fashion-luxe");
+    expect(options.editionId).toBe("tshirts");
+  });
+
+  it("never hands over an edition the template does not have: unknown, not approved on it, junk, or none", async () => {
+    const cases = [
+      { templateKey: "fashion-luxe", nicheId: "dresses" },
+      { templateKey: "fashion-luxe", nicheId: "no-such-niche" },
+      { templateKey: "fashion-luxe", nicheId: "tshirts'; --" },
+      { templateKey: "fashion-luxe", nicheId: null },
+      { templateKey: "fashion-luxe" },
+      { templateKey: "kabl", nicheId: "tshirts" },
+      { templateKey: "tallaby-classic", nicheId: "tshirts" },
+    ];
+    for (const state of cases) {
+      vi.clearAllMocks();
+      mocks.getStore.mockResolvedValue({ id: STORE, name: "Noor", subdomain: "noor", defaultLocale: "ar" });
+      const { templateKey, options } = await install(state);
+      expect(templateKey).toBe(state.templateKey);
+      expect("editionId" in options, JSON.stringify(state)).toBe(false);
+    }
+  });
+});

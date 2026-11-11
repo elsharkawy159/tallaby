@@ -4297,7 +4297,8 @@
         "pickColor": "اختار لون",
         "hex": "كود اللون",
         "preview": "شوفه",
-        "previewTemplate": "شوف تصميم {name}"
+        "previewTemplate": "شوف تصميم {name}",
+        "editionPicked": "اخترتلك نسخة {niche}"
       },
       "fix": {
         "pricePlaceholder": "جنيه",

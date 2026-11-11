@@ -15,6 +15,7 @@ import {
   type BuilderView,
 } from "./builder.dto";
 import { applyAnswer, currentStep, mergeReading, shortlistTemplates, withNextQuestion, withSellerMessage } from "./builder.lib";
+import { suggestionEditionChoice } from "./builder-niche.lib";
 import { MAX_TEMPLATES_SHOWN, fileProblems, nextCard } from "./builder-questions.lib";
 import { BRIEF_SYSTEM_RULES, CHAT_SYSTEM_RULES, briefRequestText, chatRequestText } from "./builder-prompts.lib";
 import { checkModelCall, claimFreeBuild, giveCreditBack, saveBuild, type BuildRow, type ModelGate } from "./builder.store.server";
@@ -45,7 +46,10 @@ export function toView(build: BuildRow, notice: BuilderErrorCode | null = null):
 
   const templates: BuilderTemplateChoice[] = build.state.shortlist.flatMap((key) => {
     const template = getCodeTemplate(key);
-    return template ? [{ key, name: template.name, description: template.description, palette: templateMeta(template).palette }] : [];
+    if (!template) return [];
+    // The niche's edition when this template has it (F-90); checked here, never taken from the saved state as it is.
+    const edition = build.state.nicheId ? suggestionEditionChoice(key, build.state.nicheId) : null;
+    return [{ key, name: template.name, description: template.description, palette: templateMeta(template).palette, edition }];
   });
   return {
     id: build.id,

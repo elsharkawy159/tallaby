@@ -326,7 +326,8 @@ export function rankIndustries(value: string): { id: string; score: number }[] {
   const scored: { id: string; score: number; index: number }[] = [];
   STORE_INDUSTRIES.forEach((industry, index) => {
     const score =
-      tokens(`${industry.en} ${industry.ar}`).filter((word) => words.has(word)).length * 3 +
+      // Earlier names count too ("مجوهرات" alone must still find Accessories & Jewelry); a word in both counts once.
+      [...new Set(tokens(`${industry.en} ${industry.ar} ${(industry.aliases ?? []).join(" ")}`))].filter((word) => words.has(word)).length * 3 +
       tokens(industry.queries.join(" ")).filter((word) => words.has(word)).length;
     if (score > 0) scored.push({ id: industry.id, score, index });
   });

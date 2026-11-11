@@ -36,6 +36,7 @@ import { suggestCategories } from "@/app/(main)/stores/[storeId]/products/add/ad
 import { proposeZones } from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.server";
 import type { ProposedZone } from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.dto";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { installEdition } from "./builder-niche.lib";
 import {
   BUILDER_FEATURES,
   BUILDER_LIMITS,
@@ -196,6 +197,8 @@ async function applyTemplate(ctx: RunContext, build: BuildRow) {
     allowedSections: ALLOWED,
     overrideKeys: OVERRIDE_KEYS,
     formInput: templateFormInput,
+    // The niche's edition, when the chosen template still has it (F-90): re-checked here, and again by the server.
+    ...installEdition(build.state),
   });
   if (!result.success) throw new Error(`template_${result.error}`);
   return {};

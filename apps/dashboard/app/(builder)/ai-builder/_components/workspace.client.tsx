@@ -454,6 +454,7 @@ export function BuilderWorkspace({
         name: templateName(template.key),
         recommended: index === 0,
         palette: template.palette,
+        edition: template.edition?.id ?? null,
       })),
     [view?.templates, templateName],
   );

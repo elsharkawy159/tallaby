@@ -4297,7 +4297,8 @@
         "pickColor": "Pick a colour",
         "hex": "Colour code",
         "preview": "Preview",
-        "previewTemplate": "Preview the {name} design"
+        "previewTemplate": "Preview the {name} design",
+        "editionPicked": "I picked the {niche} version for you"
       },
       "fix": {
         "pricePlaceholder": "EGP",

@@ -15,7 +15,8 @@ import { DEVICE_WIDTH, deviceScale, templatePreviewSrc, type PreviewDevice } fro
  * fills the pane with that template and "Choose this design".
  */
 
-export type PaneTemplate = { key: string; name: string; recommended: boolean; palette: string[] };
+/** `edition`: the niche edition the suggestion is drawn with (F-90); the preview route checks it. */
+export type PaneTemplate = { key: string; name: string; recommended: boolean; palette: string[]; edition?: string | null };
 
 export type PaneContent =
   | { kind: "empty"; building: boolean }
@@ -118,7 +119,7 @@ export function PreviewPane({
   const [localReload, setLocalReload] = useState(0);
 
   const src =
-    content.kind === "store" ? content.src : content.kind === "template" ? templatePreviewSrc(siteOrigin, locale, content.template.key) : null;
+    content.kind === "store" ? content.src : content.kind === "template" ? templatePreviewSrc(siteOrigin, locale, content.template.key, false, content.template.edition) : null;
   const frameKey = `${src}:${reloadKey}:${localReload}`;
   const shownAddress =
     content.kind === "store" ? address : content.kind === "template" ? `${siteOrigin.replace(/^https?:\/\//, "")}/template-preview/${content.template.key}` : (address ?? null);
@@ -193,7 +194,7 @@ export function PreviewPane({
                     >
                       <div className="relative min-h-0 flex-1">
                         <ScaledFrame
-                          src={templatePreviewSrc(siteOrigin, locale, template.key, true)}
+                          src={templatePreviewSrc(siteOrigin, locale, template.key, true, template.edition)}
                           width={THUMB_WIDTH}
                           title={t("templateLabel", { name: template.name })}
                           interactive={false}

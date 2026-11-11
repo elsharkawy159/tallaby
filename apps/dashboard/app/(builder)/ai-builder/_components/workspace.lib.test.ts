@@ -211,4 +211,11 @@ describe("preview", () => {
     expect(templatePreviewSrc("https://tallaby.com", "ar", "sage", true)).toBe("https://tallaby.com/template-preview/sage?thumb=1");
     expect(templatePreviewSrc("https://tallaby.com", "en", "sage")).toBe("https://tallaby.com/en/template-preview/sage");
   });
+
+  it("adds the niche edition a suggestion carries, and nothing without one", () => {
+    expect(templatePreviewSrc("https://tallaby.com", "ar", "fashion-luxe", false, "tshirts")).toBe("https://tallaby.com/template-preview/fashion-luxe?edition=tshirts");
+    expect(templatePreviewSrc("https://tallaby.com", "en", "fashion-luxe", true, "tshirts")).toBe("https://tallaby.com/en/template-preview/fashion-luxe?edition=tshirts&thumb=1");
+    expect(templatePreviewSrc("https://tallaby.com", "ar", "sage", true, null)).toBe("https://tallaby.com/template-preview/sage?thumb=1");
+    expect(templatePreviewSrc("https://tallaby.com", "ar", "sage", false, "")).toBe("https://tallaby.com/template-preview/sage");
+  });
 });

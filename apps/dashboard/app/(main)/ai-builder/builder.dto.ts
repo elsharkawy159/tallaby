@@ -287,6 +287,21 @@ export const builderStateSchema = z.object({
   pendingQuestions: questionCardSchema.nullable().default(null),
   /** Every template key shown so far ("show 3 more" never repeats one). */
   templatesShown: z.array(z.string()).default([]),
+
+  // ── Niche editions (ROADMAP F-90, plan §4.5) ───────────────────────────────
+  /**
+   * What the store sells in a few English words: the intake reading's
+   * `industryHint`, kept (it was read for the industry and then dropped). The
+   * code passes it to `matchNiche` as its hint; no field was added to any
+   * model output for it.
+   */
+  tradeHint: z.string().max(40).nullable().default(null),
+  /**
+   * The store's niche when the shortlist was last made (`builderNiche`, code
+   * only). A shortlisted template that has this niche's edition is previewed
+   * and installed with it; it is checked again whenever it is used.
+   */
+  nicheId: z.string().max(63).nullable().default(null),
 });
 export type BuilderState = z.output<typeof builderStateSchema>;
 
@@ -446,6 +461,8 @@ export type BuilderTemplateChoice = {
   name: { ar?: string; en?: string };
   description: { ar?: string; en?: string };
   palette: string[];
+  /** The niche edition this suggestion is previewed (`?edition=`) and installed with; null: the template's own content. */
+  edition: { id: string; name: { ar: string; en: string } } | null;
 };
 
 /** A product photo or logo the client may show. */

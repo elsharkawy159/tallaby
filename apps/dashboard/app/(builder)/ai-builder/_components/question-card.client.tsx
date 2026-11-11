@@ -185,6 +185,11 @@ function QuestionField({
                       {option.recommended && <Tag tone="warning">{t("recommended")}</Tag>}
                     </span>
                     {template && <span className="line-clamp-1 text-[12px] font-normal text-(--s-subtle)">{(locale === "en" ? template.description.en : template.description.ar) ?? ""}</span>}
+                    {template?.edition && (
+                      <span className="line-clamp-1 text-[12px] font-bold text-(--s-primary)">
+                        {t("ws.card.editionPicked", { niche: locale === "en" ? template.edition.name.en : template.edition.name.ar })}
+                      </span>
+                    )}
                   </span>
                 </button>
                 <button
