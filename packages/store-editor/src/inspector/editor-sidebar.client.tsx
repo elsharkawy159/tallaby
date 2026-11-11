@@ -20,6 +20,7 @@ import type { EditorStore } from "../state/editor.store";
 import { StylePanel } from "./style-panel.client";
 import { readShell, setShell } from "../lib/editor-library.lib";
 import { hasCarousel } from "../lib/section-settings.lib";
+import { sectionScrollTargets } from "../lib/editor-motion.lib";
 import { isProductPage } from "@workspace/store-sections";
 import { nameOf } from "../panels/pages-panel.client";
 
@@ -295,6 +296,8 @@ export function EditorSidebar({
                     onChange: (patch) => state.editSection(ref, (i) => setShell(i, patch), `shell:${selectionKey}:${Object.keys(patch).join(",")}`),
                     readOnly,
                     defaultWidth: hasCarousel(instance.componentTree ?? []) ? "full" : "contained",
+                    // Only what does something here: a movable photo or a background photo; fade-exit on the page's first section.
+                    scrollEffects: sectionScrollTargets(instance, page.content.sections[0]?.id === instance.id).effects,
                   }
                 : undefined
             }

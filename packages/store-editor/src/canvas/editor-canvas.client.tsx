@@ -23,8 +23,8 @@ import {
   type BottomNavPage,
   type RenderContext,
 } from "@workspace/store-sections/render";
-import { replayReveal } from "@workspace/store-sections/client";
-import { motionSnapshot, replayTargets, type MotionSnapshot } from "../lib/editor-motion.lib";
+import { replayReveal, replayScrollEffect } from "@workspace/store-sections/client";
+import { motionSnapshot, replayTargets, scrollReplays, type MotionSnapshot } from "../lib/editor-motion.lib";
 import { cn } from "@workspace/ui/lib/utils";
 import { gapLines, type SelectionHandles } from "./canvas-handles.lib";
 import { EditorOverlay, elementDragKey, type CanvasBox, type CanvasBoxes } from "./editor-overlay.client";
@@ -211,14 +211,18 @@ export function EditorCanvas({
   useEffect(() => {
     const next = motionSnapshot(previewMotion, designSystem, sections);
     const targets = replayTargets(lastMotion.current, next);
+    const scrolls = scrollReplays(lastMotion.current, next);
     lastMotion.current = next;
     const main = doc?.querySelector("main");
-    if (!main || !targets.length) return;
+    if (!main) return;
+    const sectionsOf = (id: string) => Array.from(main.querySelectorAll<HTMLElement>(`[data-section-id="${esc(id)}"]`));
     const roots =
       targets === "all"
         ? Array.from(main.querySelectorAll<HTMLElement>("[data-section-id]")).filter((el) => !el.parentElement?.closest("[data-section-id]"))
-        : targets.flatMap((id) => Array.from(main.querySelectorAll<HTMLElement>(`[data-section-id="${esc(id)}"]`)));
+        : targets.flatMap(sectionsOf);
     for (const root of roots) replayReveal(root);
+    // Scroll effects never run in the canvas: a changed one plays a one-shot demo (docs/motion-v2-plan.md §5.8).
+    for (const { sectionId, effect, targetId } of scrolls) for (const el of sectionsOf(sectionId)) replayScrollEffect(el, effect, targetId);
   }, [doc, previewMotion, designSystem, sections]);
   const [hover, setHover] = useState<NonNullable<Selection> | null>(null);
   // The page section whose toolbar shows (the one under the pointer, kept while the pointer is on its toolbar).

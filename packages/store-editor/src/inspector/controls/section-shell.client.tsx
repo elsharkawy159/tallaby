@@ -11,6 +11,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "../../media/media-picker.client";
 import { ControlRow, NumberControl, Segmented } from "./style-controls.client";
 
+type ScrollEffectChoice = NonNullable<SectionShellStyle["scrollEffect"]>;
+
 const SCHEME_SWATCH: Record<(typeof SHELL_SCHEMES)[number], string> = {
   default: "var(--sf-paper)",
   muted: "var(--sf-shelf)",
@@ -28,15 +30,20 @@ export function SectionShellControls({
   onChange,
   readOnly,
   defaultWidth = "contained",
+  scrollEffects = [],
 }: {
   value: SectionShellStyle;
   onChange: (patch: Partial<SectionShellStyle>) => void;
   readOnly: boolean;
   /** The width with nothing chosen: full for a section with a carousel, else contained. */
   defaultWidth?: (typeof SHELL_WIDTHS)[number];
+  /** The Scroll effects this section supports (`scrollEffectTargets`); the control shows only when there is one. */
+  scrollEffects?: readonly ScrollEffectChoice[];
 }) {
   const t = useTranslations("storeEditor.style.shell");
   const anchor = value.anchor ?? "";
+  // A stored effect stays listed (so it can be cleared) even when the section no longer supports it.
+  const effects = value.scrollEffect && !scrollEffects.includes(value.scrollEffect) ? [...scrollEffects, value.scrollEffect] : scrollEffects;
   return (
     <div className="space-y-3">
       <ControlRow label={t("scheme")}>
@@ -126,6 +133,31 @@ export function SectionShellControls({
         </Select>
         <p className="text-xs text-muted-foreground">{t("animateHint")}</p>
       </div>
+      {/* Motion v2 Scroll effect (docs/motion-v2-plan.md §5.7): None stores nothing. */}
+      {effects.length > 0 && (
+        <div className="space-y-1">
+          <Label htmlFor="shell-scroll-effect" className="text-xs font-medium">
+            {t("scrollEffect")}
+          </Label>
+          <Select
+            value={value.scrollEffect ?? "none"}
+            disabled={readOnly}
+            onValueChange={(next) => onChange({ scrollEffect: next === "none" ? undefined : (next as ScrollEffectChoice) })}
+          >
+            <SelectTrigger id="shell-scroll-effect" size="sm" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(["none", ...effects] as const).map((effect) => (
+                <SelectItem key={effect} value={effect}>
+                  {t(`scrollEffects.${effect}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">{t("scrollEffectHint")}</p>
+        </div>
+      )}
       <div className="space-y-1">
         <label htmlFor="shell-anchor" className="text-xs font-medium">
           {t("anchor")}

@@ -75,6 +75,8 @@ export function StylePanel({
     onChange: (patch: Partial<SectionShellStyle>) => void;
     readOnly: boolean;
     defaultWidth?: SectionShellStyle["width"];
+    /** The Scroll effects this section supports (`scrollEffectTargets`). */
+    scrollEffects?: readonly NonNullable<SectionShellStyle["scrollEffect"]>[];
   };
 }) {
   const t = useTranslations("storeEditor.style");
@@ -111,7 +113,7 @@ export function StylePanel({
 
       {shell && (
         <Group title={t("groups.section")}>
-          <SectionShellControls value={shell.value} onChange={shell.onChange} readOnly={shell.readOnly} defaultWidth={shell.defaultWidth} />
+          <SectionShellControls value={shell.value} onChange={shell.onChange} readOnly={shell.readOnly} defaultWidth={shell.defaultWidth} scrollEffects={shell.scrollEffects} />
           {device !== "desktop" && <p className="mt-2 text-xs text-muted-foreground">{t("shell.allDevices")}</p>}
         </Group>
       )}
