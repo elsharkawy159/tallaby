@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ShoppingCart } from "lucide-react";
 import { formatPricePlain } from "@workspace/lib";
 import { isProductPage, type SiteConfig } from "@workspace/store-sections";
 import {
@@ -141,6 +142,13 @@ function buildContext(
     renderCartButton: () => (
       <span aria-hidden className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">
         🛒
+      </span>
+    ),
+    // A still copy of the storefront's card button (store-card-add-to-cart.client.tsx), so a preview shows the card as a store draws it.
+    renderAddToCart: () => (
+      <span aria-hidden className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-(--sf-brand) px-3 text-sm font-medium whitespace-nowrap text-(--sf-brand-ink)">
+        <ShoppingCart className="size-3.5 shrink-0 md:size-4" />
+        <span>{locale === "ar" ? "أضف للسلة" : "Add to cart"}</span>
       </span>
     ),
     renderWishlistButton: () => (
