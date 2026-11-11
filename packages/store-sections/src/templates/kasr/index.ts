@@ -1,327 +1,416 @@
 /**
- * Kasr (template 04, editorial fashion; Claude Design "Storefront
- * Templates"): bone paper, oxblood actions and a warm sand highlight,
- * Amiri display type over Noto Sans Arabic and square corners. Built from
- * section library designs (`fromLibrary`), so every element is a tree node
- * the seller can select, restyle and move.
+ * Kasr (shoes & bags, the womens-shoes niche template; one template per
+ * niche, ROADMAP F-90, `docs/systems/one-template-per-niche.md`): a women's
+ * shoe shop set like a quiet gallery, each pair on its own plinth. White
+ * paper for the product stage, a cool porcelain tint, a bordeaux patent for
+ * actions and panels and a powder blue for the sign-up band; Amiri headings
+ * (a high-contrast naskh, like the lettering on a shoe-box lid) over Tajawal
+ * (light and plain, for sizes in centimetres); square corners. Built from
+ * section library designs (`fromLibrary`).
  *
- * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
- * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
- * Kasr itself. The output is unchanged from before the conversion
- * (`../editions/look-guard.test.ts`, `kasr.v4.json`), so the version stays 4.
+ * v5 (2026-11-12): rebuilt look-first around the pairs. Home, nine sections:
+ *   1. `hero-ticket`                 one pair on a floating shelf with a
+ *                                    label card at its top corner, like the
+ *                                    end of a shoe box (the size range, the
+ *                                    headline, one button), and two side
+ *                                    campaigns on plinths (boots, heels); the
+ *                                    page's one moment: the headline rises
+ *                                    word by word
+ *   2. `categories-feature-list`     the 1st category as a large photo, the
+ *                                    others in a ruled list with photos
+ *   3. `products-boxed`              eight best sellers on the white stage,
+ *                                    on the porcelain band
+ *   4. `about-wide`                  the fit story: a headline, one wide
+ *                                    photo and its caption
+ *   5. `products-category-carousel`  heels (the store's 1st category)
+ *   6. `service-price-menu`          the size guide: EU size to foot length
+ *                                    in centimetres, and "between two sizes?
+ *                                    go up in heels" (the trade's own section)
+ *   7. `products-campaign`           sandals (the store's 3rd category) beside
+ *                                    a campaign photo: the photo-led row
+ *   8. `features-bento`              three promises beside the bordeaux tile
+ *   9. `newsletter-big`              one row on the powder-blue panel
+ * Chrome: `header-departments` (heels, flats, boots as the segments) and
+ * `footer-ruled`. Eyebrows are set in sentence case and headings at the
+ * face's own spacing (`calm`), never capitals or tightened Arabic.
  *
- * Photos: Pexels, each checked by eye (2026-10-20): coats, jackets and
- * linen on rails, flat lays, leather bags and fabric. No people, bodies or
- * mannequins (owner rule).
+ * Content: the `womens-shoes` pack is Kasr's own shop ("Hanem"): the look's
+ * default content and demo are the pack's, so the template and the niche's
+ * edition are one store.
+ *
+ * Guard: `kasr.v4.json` was captured from the v4 look (an editorial
+ * clothing studio) before any edit, and the edition-ready v4 matched it byte
+ * for byte (commit 9e44ca80). v5 is the deliberate redesign, so its fixture
+ * is a new capture (`kasr.v5.json`) and the v4 one is deleted
+ * (`../editions/look-guard.test.ts`).
+ *
+ * Photos: the pack's (see its header): hero 14928875, side campaigns
+ * 27274309 and 15792209, tiles 13788573, 37853534, 38583189, 5863649, story
+ * 40773101, campaign 16217395; products are the pack's white packshots. No
+ * people, feet, legs, logos or lettering.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
+import type { ElementIconName } from "../../elements/registry";
+import type { NodeTemplate } from "../../elements/tree";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import {
+  copyrightLine,
+  editionTemplate,
+  initialOf,
+  primaryHref,
+  type LookParts,
+} from "../editions/apply";
+import { WOMENS_SHOES } from "../editions/packs/shoes-bags/womens-shoes";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
-import { demoStore, pexels } from "../library-template";
 
 export const KASR_KEY = "kasr";
 
-const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(KASR_KEY, getDesign(id)!, { corners: 0, ...patch });
+const lib = (id: string, patch: LibraryPatch = {}): Design =>
+  fromLibrary(KASR_KEY, getDesign(id)!, { corners: 0, ...patch });
+
+/**
+ * A library design with its nodes changed in tree order (all nodes, or those
+ * of one type), for what a `nodes` patch cannot reach: nodes with no layer
+ * label (eyebrows, headings, icons) or a node's motion. The tree keeps its
+ * shape, only props, styles and motion change.
+ */
+function retouch(
+  design: Design,
+  type: string | undefined,
+  change: (node: NodeTemplate, index: number) => NodeTemplate,
+): Design {
+  return {
+    ...design,
+    tree: (t) => {
+      let index = 0;
+      const visit = (node: NodeTemplate): NodeTemplate => {
+        const next =
+          type === undefined || node.type === type
+            ? change(node, index++)
+            : node;
+        return next.children
+          ? { ...next, children: next.children.map(visit) }
+          : next;
+      };
+      return visit(design.tree(t));
+    },
+  };
+}
+
+/**
+ * Eyebrows in sentence case, and headings at Amiri's own spacing: the
+ * library sets some eyebrows in spaced capitals and tightens display
+ * headings, which crowds a naskh face.
+ */
+const calm = (design: Design): Design =>
+  retouch(design, undefined, (node) => {
+    if (node.props?.role === "eyebrow")
+      return {
+        ...node,
+        style: {
+          ...node.style,
+          textTransform: "none",
+          letterSpacing: "normal",
+        },
+      };
+    if (node.type === "heading" && node.style?.letterSpacing)
+      return { ...node, style: { ...node.style, letterSpacing: "normal" } };
+    return node;
+  });
 
 const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
 
-const PHOTOS = {
-  camelCoat: pexels(36180262),
-  neutralRack: pexels(5706273),
-  teddyCoat: pexels(16008693, 900),
-  jackets: pexels(6051248, 900),
-  shirts: pexels(7671168, 900),
-  corduroy: pexels(12956068, 900),
-  leatherJacket: pexels(8113002, 900),
-  flatLay: pexels(8408556, 900),
-  bagShelf: pexels(9327162, 900),
-  cardigan: pexels(31078828, 900),
-  fabricStack: pexels(6766360),
-  blazer: pexels(7671167, 900),
-  floralDress: pexels(8536187, 900),
-  sweatshirts: pexels(9594422, 900),
-  terracottaTote: pexels(5706278, 900),
-  crocBags: pexels(22434771, 900),
-  fabricRolls: pexels(4614236),
-  heroCoat: pexels(36180262, 1600),
-  heroRack: pexels(5706273, 1600),
-  heroCloset: pexels(6461398, 1600),
-};
+const VIEW_ALL = L("عرض الكل", "View all");
 
-const NAME = L("قصر ستوديو", "Kasr Studio");
+/** The three promises' icons, in the pack's order: delivery, size exchange, help with sizing. */
+const PROMISE_ICONS: readonly ElementIconName[] = ["truck", "rotate", "chat"];
 
-/** Kasr's own content: every string and photo that names the trade or the demo store. */
+/** Kasr's own content is the womens-shoes pack's shop (Hanem): one source for the template and its edition. */
 const DEFAULT_CONTENT: LookDefaults = {
-  labels: { about: L("الاستوديو", "The studio") },
-  // Header links a trade names (the header keeps its own routes).
-  nav: [
-    { label: L("حريمي", "Women"), href: SHOP },
-    { label: L("رجالي", "Men"), href: SHOP },
-    { label: L("المجلة", "Journal"), href: "/blog" },
-    { label: L("فساتين", "Dresses"), href: NEW },
-    { label: L("جواكت", "Jackets"), href: SHOP },
-  ],
-  hero: {
-    alt: L("بالطو جملي وكوفية صوف من حملة الخريف", "Camel coat and wool scarf from the autumn campaign"),
-    eyebrow: L("حملة الخريف", "The autumn campaign"),
-    title: L("الخريف، متفصّل في القاهرة", "Autumn, cut in Cairo"),
-    line: L("بالطو وكوفية صوف وطبقات هادية، ٥٠ قطعة من كل موديل.", "Coats, wool scarves and quiet layers, fifty pieces of each style."),
-    cta: L("تسوق الجديد", "Shop new in"),
-  },
-  products: {
-    primary: {
-      eyebrow: L("وصل جديد", "New in"),
-      title: L("وصل الأسبوع ده", "This week’s arrivals"),
-      line: L("كميات صغيرة متفصلة في استوديو الزمالك.", "Small runs, cut in our Zamalek studio."),
-    },
-  },
-  look: { eyebrow: L("تسوق المجموعة", "Shop the edit"), title: L("لوك لكل يوم", "A look for every day") },
-  trust: [
-    { title: L("توصيل لكل المحافظات", "Delivery across Egypt") },
-    { title: L("تبديل مقاس ببلاش", "Free size exchange") },
-    { title: L("متفصل في القاهرة", "Cut in Cairo") },
-    { title: L("ادفع عند الاستلام", "Pay on delivery") },
-  ],
-  about: {
-    line: L("استوديو تصميم صغير في الزمالك بيفصّل كميات ٥٠ قطعة.", "A small design studio in Zamalek cutting clothes in runs of fifty."),
-    alt: L("لفات قماش على ترابيزة الورشة", "Fabric rolls on the workshop table"),
-    eyebrow: L("من الزمالك", "From Zamalek"),
-    title: L("هدوم متفصلة في القاهرة لكل يوم", "Clothes cut in Cairo, styled for every day"),
-    text: L(
-      "بنختار القماش بنفسنا ونفصّل كل موديل ٥٠ قطعة بس، عشان كل قطعة تفضل مميزة.",
-      "We pick every fabric ourselves and cut each style in runs of fifty, so every piece stays special.",
-    ),
-    more: L("وتبديل المقاس عندنا ببلاش، دايماً.", "And size exchanges are always free."),
-    cta: L("تسوق الجديد", "Shop new in"),
-  },
-  contact: {
-    title: L("تواصل", "Contact"),
-    line: L("٥ شارع البرازيل، الزمالك، القاهرة.", "5 Brazil St, Zamalek, Cairo."),
-    heading: L("عن مقاس أو طلب أو قطعة", "About a size, an order or a piece"),
-  },
-  faq: {
-    line: L("المقاسات والتوصيل والتبديل.", "Sizes, delivery and exchanges."),
-    question: L("إزاي أبدّل المقاس؟", "How do I exchange a size?"),
-    answer: L("تبديل المقاس ببلاش خلال ١٤ يوم لأي قطعة بالتيكت بتاعها.", "Size exchanges are free within 14 days for any piece with its tags on."),
-  },
-  reviews: {
-    title: L("اتلبست واتقيّمت", "Worn and reviewed"),
-    items: [
-      { quote: L("البليزر لابساني كأنه متفصل عليا. لبسته في ٣ أفراح لحد دلوقتي.", "The blazer fits like it was made for me. I have worn it to three weddings already."), name: L("نور ع.", "Nour A.") },
-      { quote: L("القماش استحمل الغسالة ولسه زي الجديد.", "The fabric survived the washing machine and still looks new."), name: L("هنا م.", "Hana M.") },
-      { quote: L("أوفر شيرت حلو، الكم طويل شوية.", "Great overshirt, sleeves are a little long."), name: L("عمر ف.", "Omar F.") },
-      { quote: L("أحسن سويت شيرت عندي. اشتريته بلونين.", "Best sweatshirt I own. I bought it in two colours."), name: L("يارا س.", "Yara S.") },
-    ],
-  },
-  custom: {
-    // The hero carousel's second and third slides (the first is `hero`).
-    "slide-2-eyebrow": L("الأكثر طلباً", "Most wanted"),
-    "slide-2-title": L("القطع اللي بترجعوا لها", "The pieces you come back for"),
-    "slide-2-line": L("بليزر رملي، فستان زيتي وسويت شيرت باستيل.", "A sand blazer, an olive dress and a pastel sweatshirt."),
-    "slide-2-cta": L("شوف الأكثر طلباً", "See the favourites"),
-    "slide-2-alt": L("هدوم بألوان ترابية على راك", "Earth-toned clothes on a rail"),
-    "slide-3-eyebrow": L("الأساسيات", "The basics"),
-    "slide-3-title": L("طبقات لكل يوم", "Layers for every day"),
-    "slide-3-line": L("قطع بتتنسّق مع بعض من الصبح لبالليل.", "Pieces that work together from morning to night."),
-    "slide-3-cta": L("تسوق الأساسيات", "Shop the basics"),
-    "slide-3-alt": L("جواكت وقمصان متعلقة في دولاب خشب", "Jackets and shirts hanging in a wooden closet"),
-    // The lookbook's six captions: a title, and a line under the first four.
-    "gallery-1-title": L("المكتب", "The office"),
-    "gallery-1-line": L("بدل وأطقم", "Suits & sets"),
-    "gallery-2-title": L("الويك إند", "The weekend"),
-    "gallery-2-line": L("فساتين", "Dresses"),
-    "gallery-3-title": L("المشوار", "The commute"),
-    "gallery-3-line": L("جواكت", "Jackets"),
-    "gallery-4-title": L("كل يوم", "Every day"),
-    "gallery-4-line": L("أساسيات", "Basics"),
-    "gallery-5-title": L("السهرة", "Evenings"),
-    "gallery-6-title": L("طبقات", "Layers"),
-    // The styling video: its title and its label.
-    "video-title": L("بدلة واحدة بخمس طرق", "One suit, five ways"),
-    "video-alt": L("فيديو: بدلة واحدة بخمس طرق", "Video: one suit, five ways"),
-    // The reviewed pieces (one per quote) and the buyers' cities (the third has none).
-    "reviews-piece-1": L("بليزر رملي مفصّل", "Sand Tailored Blazer"),
-    "reviews-piece-2": L("فستان زيتي مشجّر", "Olive Floral Dress"),
-    "reviews-piece-3": L("أوفر شيرت لونين", "Two-Tone Overshirt"),
-    "reviews-piece-4": L("سويت شيرت باستيل", "Pastel Crew Sweatshirt"),
-    "reviews-city-1": L("الزمالك", "Zamalek"),
-    "reviews-city-2": L("المعادي", "Maadi"),
-    "reviews-city-4": L("القاهرة", "Cairo"),
-  },
+  ...WOMENS_SHOES.copy,
   photos: {
-    hero: { wide: PHOTOS.heroCoat },
-    about: PHOTOS.fabricRolls,
-    custom: {
-      "slide-2": PHOTOS.heroRack,
-      "slide-3": PHOTOS.heroCloset,
-      "gallery-1": PHOTOS.shirts,
-      "gallery-2": PHOTOS.corduroy,
-      "gallery-3": PHOTOS.leatherJacket,
-      "gallery-4": PHOTOS.flatLay,
-      "gallery-5": PHOTOS.bagShelf,
-      "gallery-6": PHOTOS.cardigan,
-      "video-poster": PHOTOS.fabricStack,
-      "reviews-1": PHOTOS.blazer,
-      "reviews-2": PHOTOS.floralDress,
-      "reviews-3": PHOTOS.shirts,
-      "reviews-4": PHOTOS.sweatshirts,
-    },
+    hero: WOMENS_SHOES.photos.hero,
+    banner: WOMENS_SHOES.photos.banner,
+    story: WOMENS_SHOES.photos.story,
+    ...(WOMENS_SHOES.photos.about && { about: WOMENS_SHOES.photos.about }),
+    ...(WOMENS_SHOES.photos.custom && { custom: WOMENS_SHOES.photos.custom }),
   },
 };
+
+/** One row of four of a category's products, by the category's place in the store. */
+const categoryRow = (place: number, n: number): Design =>
+  calm(
+    lib("products-category-carousel", {
+      as: `category-row-${n}`,
+      text: { "عرض الكل": VIEW_ALL },
+      lists: [{ offset: place - 1 }, { categoryIndex: place, limit: 4 }],
+    }),
+  );
 
 /**
  * The look: every section from a content object (`DEFAULT_CONTENT`, or an
- * edition's). Generic shop labels and the layout stay here.
+ * edition's). Generic shop labels (New in, Best sellers, Shipping) and the
+ * layout stay here; what names the trade is a slot of `c`.
  */
 function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const x = c.custom;
-  const p = c.photos.custom;
-  // Buyer quotes are optional (a pack holds no invented reviews): without them the section is not built.
-  const r = c.reviews?.items;
+  const size = (n: number, part: "name" | "value") =>
+    x[`size-row-${n}-${part}`]!;
 
+  // Heels, flats and boots as the segments; the row under them: new in, sandals, best sellers, the story, top rated.
   const header = lib("header-departments", {
     text: {
-      "م": initialOf(name),
+      م: initialOf(name),
       "اسم متجرك": name,
-      "نساء": c.nav[0]!.label,
-      "رجال": c.nav[1]!.label,
-      "أطفال": c.nav[2]!.label,
-      "ملابس": c.nav[3]!.label,
-      "أحذية": c.nav[4]!.label,
-      "العروض": L("الأعلى تقييماً", "Top rated"),
+      نساء: c.nav[1]!.label,
+      رجال: c.nav[3]!.label,
+      أطفال: c.nav[0]!.label,
+      ملابس: c.nav[2]!.label,
+      أحذية: L("الأكثر طلبًا", "Best sellers"),
+      شنط: c.labels.about,
+      العروض: L("الأعلى تقييمًا", "Top rated"),
     },
-    links: { "/products": [SHOP, SHOP, "/blog", undefined, NEW, SHOP, SHOP, SHOP, RATED] },
+    links: {
+      "/products": [
+        c.nav[1]!.href,
+        c.nav[3]!.href,
+        c.nav[0]!.href,
+        undefined,
+        NEW,
+        c.nav[2]!.href,
+        BEST,
+        "/about",
+        RATED,
+      ],
+    },
   });
 
-  const footer = lib("footer-links", {
+  const footer = lib("footer-ruled", {
     text: {
-      "م": initialOf(name),
+      م: initialOf(name),
       "اسم متجرك": name,
-      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "منتجات أصلية بضمان، توصلك لحد البيت.": c.footer.line,
+      "كل المنتجات": x["shop-all"]!,
+      العروض: L("الأعلى تقييمًا", "Top rated"),
       "من نحن": c.labels.about,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
     },
-    links: { "/products": [undefined, NEW, BEST] },
+    links: { "/products": [SHOP, NEW, BEST, RATED] },
   });
 
-  /**
-   * Home (v4, template-rules §2a): the autumn campaign as a three-slide hero,
-   * the categories in big type, then the fashion journey: new in, the looks,
-   * the styling video, the studio's promises and worn-and-reviewed to close.
-   */
   const home: Design[] = [
-    lib("hero-carousel", {
-      photo: [c.photos.hero.wide, p["slide-2"]!, p["slide-3"]!],
-      text: {
-        "وصل حديثًا": c.hero.eyebrow,
-        "الموسم الجديد وصل": c.hero.title,
-        "قطع مختارة بعناية، وتوصيل لحد باب البيت.": c.hero.line,
-        "تسوّق الجديد": c.hero.cta,
-        "صورة الحملة الأولى": c.hero.alt,
-        "الأكثر مبيعًا": x["slide-2-eyebrow"]!,
-        "المفضّلة عند عملائنا": x["slide-2-title"]!,
-        "القطع اللي بترجع لها كل مرة.": x["slide-2-line"]!,
-        "شوف الأكثر مبيعًا": x["slide-2-cta"]!,
-        "صورة الحملة الثانية": x["slide-2-alt"]!,
-        "عروض الأسبوع": x["slide-3-eyebrow"]!,
-        "خصومات لفترة محدودة": x["slide-3-title"]!,
-        "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": x["slide-3-line"]!,
-        "تسوّق العروض": x["slide-3-cta"]!,
-        "صورة الحملة الثالثة": x["slide-3-alt"]!,
+    // The page's one moment: the shelf photo drifts as the page scrolls (still with reduced motion); the headline never animates (it is the h1).
+    retouch(
+      // The headline on one line on desktop, so the card ends well above the pair.
+      retouch(
+        calm(
+          lib("hero-ticket", {
+            photo: [
+              c.photos.hero.wide,
+              c.photos.custom["hero-side-1"]!,
+              c.photos.custom["hero-side-2"]!,
+            ],
+            text: {
+              "صورة الحملة": c.hero.alt,
+              "٠١": x["hero-label"]!,
+              "مجموعة الخريف": c.hero.eyebrow,
+              "ألوان هادئة لأيام أطول": c.hero.title,
+              "تسوّق المجموعة": c.hero.cta,
+              "٠٢": x["hero-side-1-tag"]!,
+              "عروض الأسبوع": x["hero-side-1-title"]!,
+              "٠٣": x["hero-side-2-tag"]!,
+              "هدايا مختارة": x["hero-side-2-title"]!,
+            },
+            links: { "/products": [SHOP, c.nav[0]!.href, c.nav[1]!.href] },
+            // The label card sits at the top corner, over the empty wall: the pair stays clear below it.
+            nodes: {
+              التذكرة: {
+                style: {
+                  insetTop: "24px",
+                  insetBottom: "auto",
+                  maxWidth: "460px",
+                },
+                mobile: { insetTop: "12px", insetBottom: "auto" },
+              },
+            },
+          }),
+        ),
+        "heading",
+        (node) =>
+          node.props?.role === "title"
+            ? { ...node, style: { ...node.style, fontSize: "4xl" } }
+            : node,
+      ),
+      "image",
+      // The shelf photo (the first one) drifts as the page scrolls.
+      (node, index) =>
+        index === 0
+          ? { ...node, props: { ...node.props, scrollEffect: "parallax" } }
+          : node,
+    ),
+    // The 1st category large, the others as ruled rows with a portrait photo each (the library's 56px thumbs read as icons).
+    retouch(
+      calm(
+        lib("categories-feature-list", {
+          text: { الأقسام: c.categories.title, منتج: x["products-noun"]! },
+          // The other categories: three rows beside the large one (one full column in the demo).
+          lists: [undefined, { limit: 3 }],
+          nodes: {
+            قسم: { style: { paddingTop: 14, paddingBottom: 14 } },
+            السطر: { style: { alignItems: "center" } },
+          },
+        }),
+      ),
+      undefined,
+      (node, index) => {
+        // The design writes its eyebrow and its title with the same Arabic word, so the text patch cannot tell them apart.
+        if (node.props?.role === "eyebrow") {
+          const line = x["categories-eyebrow"]!;
+          const translations = node.props.translations as
+            { en?: Record<string, string> } | undefined;
+          return {
+            ...node,
+            props: {
+              ...node.props,
+              text: line.ar,
+              translations: {
+                ...translations,
+                en: { ...translations?.en, text: line.en },
+              },
+            },
+          };
+        }
+        if (node.type === "image" && node.style?.width === "56px")
+          return {
+            ...node,
+            style: { ...node.style, width: "96px", aspectRatio: "portrait" },
+          };
+        void index;
+        return node;
       },
-      links: { "/products": [NEW, BEST, SHOP] },
-    }),
-    lib("categories-big-type", {}),
-    lib("products-panel-rail", {
-      text: {
-        "هدايا": c.products.primary.eyebrow,
-        "هدايا تحت ١٠٠٠ جنيه": c.products.primary.title,
-        "اختيارات مضمونة لأي مناسبة.": c.products.primary.line,
-      },
-      links: { "/products": primaryHref(journey.primary) },
-      lists: [{ source: journey.primary }],
-    }),
-    lib("gallery-captioned", {
-      photo: [p["gallery-1"]!, p["gallery-2"]!, p["gallery-3"]!, p["gallery-4"]!, p["gallery-5"]!, p["gallery-6"]!],
-      text: {
-        "لوك بوك": c.look.eyebrow,
-        "كل يوم بشكل": c.look.title,
-        "إطلالة الشغل": x["gallery-1-title"]!,
-        "٣ منتجات": x["gallery-1-line"]!,
-        "المشوار": x["gallery-2-title"]!,
-        "٤ منتجات": x["gallery-2-line"]!,
-        "الويكند": x["gallery-3-title"]!,
-        "٢ منتج": x["gallery-3-line"]!,
-        "السفر": x["gallery-4-title"]!,
-        "٥ منتجات": x["gallery-4-line"]!,
-        "الجيم": x["gallery-5-title"]!,
-        "السهرة": x["gallery-6-title"]!,
-      },
-      links: { "/products": [SHOP, SHOP, SHOP, SHOP, SHOP, BEST] },
-    }),
-    lib("video-shop", {
-      photo: [undefined, p["video-poster"]!],
-      text: {
-        "كل اللي في الفيديو": x["video-title"]!,
-        "فيديو المنتجات": x["video-alt"]!,
-      },
-    }),
-    lib("features-ticker", {
-      text: {
-        "توصيل سريع": c.trust[0]!.title,
-        "استرجاع سهل": c.trust[1]!.title,
-        "دعم على واتساب": c.trust[2]!.title,
-        "الدفع عند الاستلام": c.trust[3]!.title,
-      },
-    }),
+    ),
+    calm(
+      lib("products-boxed", {
+        text: { "أساسيات كل يوم": c.products.primary.title },
+        links: { "/products": primaryHref(journey.primary) },
+        lists: [{ source: journey.primary }],
+      }),
+    ),
+    calm(
+      lib("about-wide", {
+        photo: [
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          c.photos.story,
+        ],
+        text: {
+          "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
+          "صورة المتجر": c.story.alt,
+          "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف، عشان تفتح العلبة وانت مطمن.":
+            c.story.text,
+          "شوف إزاي بنشتغل": c.story.cta,
+        },
+        links: { "/about": NEW },
+      }),
+    ),
+    categoryRow(journey.rows[0]!, 1),
+    // The trade's own section: EU size to foot length, set like a menu on the porcelain band.
+    calm(
+      lib("service-price-menu", {
+        text: {
+          "أسعار الخدمات": x["size-title"]!,
+          "الأسعار شاملة قطع الغيار الأصلية والضمان.": x["size-line"]!,
+          الموبايل: x["size-group-1"]!,
+          "تغيير بطارية": size(1, "name"),
+          "٦٥٠ ج.م": size(1, "value"),
+          "تغيير شاشة": size(2, "name"),
+          "٢٤٠٠ ج.م": size(2, "value"),
+          "سوكت الشحن": size(3, "name"),
+          "٤٥٠ ج.م": size(3, "value"),
+          "الشاشات والبيت": x["size-group-2"]!,
+          "تركيب حائط": size(4, "name"),
+          "٣٥٠ ج.م": size(4, "value"),
+          "ضبط رسيفر": size(5, "name"),
+          "١٥٠ ج.م": size(5, "value"),
+          السماعات: x["size-group-3"]!,
+          "تغيير وسايد": size(6, "name"),
+          "١٢٠ ج.م": size(6, "value"),
+          "تنظيف وفحص": size(7, "name"),
+          "٨٠ ج.م": size(7, "value"),
+        },
+        nodes: { "قايمة الأسعار": { style: { background: "secondary" } } },
+      }),
+    ),
+    calm(
+      lib("products-campaign", {
+        as: "category-row-2",
+        photo: [undefined, undefined, undefined, c.photos.banner],
+        text: {
+          "صورة الحملة": x["banner-alt"]!,
+          "الخط الجديد": x["banner-eyebrow"]!,
+          "اختارناها لك بعناية": x["banner-title"]!,
+          "قطع جديدة من خطنا الجديد، معمولة عشان تعيش معاك.": x["banner-line"]!,
+          "تسوّق المجموعة": c.nav[2]!.label,
+        },
+        links: { "/products": c.nav[2]!.href },
+        lists: [
+          { source: "category", categoryIndex: journey.rows[1]!, limit: 4 },
+        ],
+      }),
+    ),
+    retouch(
+      calm(
+        lib("features-bento", {
+          text: {
+            "وعدنا ليك": L("وعدنا ليكي", "Our promise"),
+            "نشتري لك كأننا بنشتري لنفسنا": x["promises-title"]!,
+            "اعرف أكتر": c.labels.about,
+            "توصيل سريع": c.trust[0]!.title,
+            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "الدفع عند الاستلام": c.trust[1]!.title,
+            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
+            "استرجاع سهل": c.trust[2]!.title,
+            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+          },
+        }),
+      ),
+      "icon",
+      (node, index) => ({
+        ...node,
+        props: { ...node.props, name: PROMISE_ICONS[index] ?? node.props.name },
+      }),
+    ),
+    calm(
+      lib("newsletter-big", {
+        text: {
+          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
+          "عروض للمشتركين بس، مرة في الأسبوع.": c.newsletter.line,
+        },
+      }),
+    ),
   ];
-  if (r) {
-    home.push(lib("testimonials-products", {
-      photo: [p["reviews-1"]!, p["reviews-2"]!, p["reviews-3"]!, p["reviews-4"]!],
-      text: {
-        "تقييمات": L("التقييمات", "Reviews"),
-        "تقييمات على منتجات حقيقية": c.reviews.title,
-        "الطقم الكلاسيك": x["reviews-piece-1"]!,
-        "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": r[0]!.quote,
-        "م": initialOf(r[0]!.name),
-        "مريم أ.": r[0]!.name,
-        "القاهرة": x["reviews-city-1"]!,
-        "الحقيبة اليومية": x["reviews-piece-2"]!,
-        "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": r[1]!.quote,
-        "ع": initialOf(r[1]!.name),
-        "عمر ك.": r[1]!.name,
-        "الإسكندرية": x["reviews-city-2"]!,
-        "العلبة الهدية": x["reviews-piece-3"]!,
-        "أسعار معقولة وجودة أفضل مما توقعت.": r[2]!.quote,
-        "ن": initialOf(r[2]!.name),
-        "نور ح.": r[2]!.name,
-        "الإصدار الجديد": x["reviews-piece-4"]!,
-        "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": r[3]!.quote,
-        "ي": initialOf(r[3]!.name),
-        "يوسف م.": r[3]!.name,
-        "المنصورة": x["reviews-city-4"]!,
-      },
-      links: { "/products": [SHOP, SHOP, SHOP, SHOP, SHOP] },
-    }));
-  }
 
   const about: Design[] = [
     pageHeader(lib, "about-header", c.labels.about, c.about.line),
     aboutStory(lib, {
-      photo: c.photos.about,
+      photo: c.photos.about ?? c.photos.story,
       alt: c.about.alt,
       eyebrow: c.about.eyebrow,
       title: c.about.title,
       text: c.about.text,
       more: c.about.more,
       button: c.about.cta,
-      href: NEW,
+      href: BEST,
     }),
   ];
 
@@ -332,153 +421,143 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
       {
         slug: "about",
-        name: L("الاستوديو", "Studio"),
-        seo: { title: c.labels.about, description: L("استوديو تصميم صغير في الزمالك.", "A small design studio in Zamalek.") },
+        name: c.labels.about,
+        seo: { title: c.labels.about, description: c.about.line },
         sections: about,
       },
       {
         slug: "contact",
         name: L("تواصل", "Contact"),
         seo: { title: L("تواصل", "Contact") },
-        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+        sections: contactPage(lib, {
+          title: c.contact.title,
+          text: c.contact.line,
+          heading: c.contact.heading,
+        }),
       },
       {
         slug: "faq",
         name: L("الأسئلة الشائعة", "FAQ"),
         seo: { title: L("الأسئلة الشائعة", "FAQ") },
-        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+        sections: faqPage(lib, {
+          text: c.faq.line,
+          question: c.faq.question,
+          answer: c.faq.answer,
+        }),
       },
     ],
   };
 }
 
-const DEMO = demoStore({
-  name: NAME,
-  description: L("هدوم متفصلة في القاهرة لكل يوم.", "Clothes cut in Cairo, styled for every day."),
-  categories: [
-    ["sets", "بدل وأطقم", "Suits & sets", PHOTOS.neutralRack],
-    ["dresses", "فساتين", "Dresses", PHOTOS.floralDress],
-    ["jackets", "جواكت", "Jackets", PHOTOS.jackets],
-    ["basics", "أساسيات", "Basics", PHOTOS.flatLay],
-    ["bags", "شنط", "Bags", PHOTOS.bagShelf],
-    ["coats", "بالطوهات", "Coats", PHOTOS.camelCoat],
-  ],
-  products: [
-    ["sand-tailored-blazer", "sets", "بليزر رملي مفصّل", "Sand Tailored Blazer", PHOTOS.blazer, 3450, { isFeatured: true, rating: 4.9, sold90: 74 }],
-    ["olive-floral-dress", "dresses", "فستان زيتي مشجّر", "Olive Floral Dress", PHOTOS.floralDress, 2250, { isFeatured: true, rating: 4.8, sold90: 58 }],
-    ["two-tone-overshirt", "jackets", "أوفر شيرت لونين", "Two-Tone Overshirt", PHOTOS.shirts, 2650, { sold90: 31 }],
-    ["teddy-coat", "coats", "بالطو تيدي", "Teddy Coat", PHOTOS.teddyCoat, 3900, { isFeatured: true, sold90: 22 }],
-    ["shearling-leather-jacket", "jackets", "جاكت جلد بفرو", "Shearling Leather Jacket", PHOTOS.leatherJacket, 4800, { compareAtPrice: 5600, sold90: 12 }],
-    ["pastel-crew-sweatshirt", "basics", "سويت شيرت باستيل", "Pastel Crew Sweatshirt", PHOTOS.sweatshirts, 590, { rating: 4.7, sold90: 210 }],
-    ["corduroy-overshirt", "basics", "قميص قطيفة", "Corduroy Overshirt", PHOTOS.corduroy, 1450, { sold90: 27 }],
-    ["chunky-knit-cardigan", "basics", "كارديجان تريكو تقيل", "Chunky Knit Cardigan", PHOTOS.cardigan, 890, { compareAtPrice: 1090, sold90: 27 }],
-    ["terracotta-mini-tote", "bags", "شنطة توت طوبي صغيرة", "Terracotta Mini Tote", PHOTOS.terracottaTote, 1950, { isFeatured: true, sold90: 44 }],
-    ["croc-shoulder-bag", "bags", "شنطة كتف كروكو", "Croc-Effect Shoulder Bag", PHOTOS.crocBags, 1700, { compareAtPrice: 1990, sold90: 36 }],
-  ],
-});
-
 export const KASR = editionTemplate({
   key: KASR_KEY,
-  version: 4,
-  changelog: "Kasr v4: hero, categories, section order",
+  version: 5,
+  changelog: "Kasr v5: the womens-shoes template, rebuilt look-first",
   name: L("قصر", "Kasr"),
   description: L(
-    "موضة تحريرية: حملة بالشرائح، لوك بوك وفيديو وتقييمات على المنتجات، بخط كلاسيكي وزوايا حادة. أربع صفحات جاهزة.",
-    "Editorial fashion: a campaign slideshow, a lookbook, a video and product reviews, with classic type and square corners. Four ready pages.",
+    "أحذية حريمي: كل جوز على قاعدة زي الجاليري، أقسام بصور، الأكثر طلبًا على خلفية بيضا، دليل مقاسات بالسنتيمتر، وحملة للصنادل. لمحلات الكعب والفلات والصنادل والبوتات.",
+    "Women's shoes: each pair on its own plinth like a gallery, photo categories, best sellers on a white stage, a size guide in centimetres and a sandals campaign. For heel, flat, sandal and boot shops.",
   ),
   category: "fashion",
   style: ["luxe", "classic"],
   sortOrder: 40,
-  palette: ["#f4f1ec", "#e8e2d8", "#a3472b", "#1c1b19"],
+  palette: ["#ffffff", "#eef0f4", "#c9d6e6", "#6e1834"],
   colors: {
-    primary: "#a3472b",
-    secondary: "#e8e2d8",
+    primary: "#6e1834",
+    secondary: "#eef0f4",
     background: "#ffffff",
-    foreground: "#1c1b19",
-    muted: "#615c54",
-    border: "#dcd5c9",
-    accent: "#e8c9a8",
+    foreground: "#241619",
+    muted: "#665b60",
+    border: "#dcdee5",
+    accent: "#c9d6e6",
   },
-  fonts: { heading: "Amiri", body: "Noto Sans Arabic" },
+  fonts: { heading: "Amiri", body: "Tajawal" },
   radius: 0,
+  productStage: WOMENS_SHOES.productStage,
   lib,
   look,
+  // Every slot `look` reads; an edition must hold them all.
   slots: [
     "labels.about",
     "nav.0",
     "nav.1",
     "nav.2",
     "nav.3",
-    "nav.4",
     "hero.alt",
     "hero.eyebrow",
     "hero.title",
-    "hero.line",
     "hero.cta",
-    "products.primary.eyebrow",
+    "categories.title",
     "products.primary.title",
-    "products.primary.line",
-    "look.eyebrow",
-    "look.title",
-    "trust.0.title",
-    "trust.1.title",
-    "trust.2.title",
-    "trust.3.title",
+    "story.alt",
+    "story.title",
+    "story.text",
+    "story.cta",
+    "trust.0",
+    "trust.1",
+    "trust.2",
+    "newsletter.title",
+    "newsletter.line",
+    "footer.line",
     "about",
     "contact",
     "faq",
     "photos.hero.wide",
-    "photos.about",
-    "custom.slide-2-eyebrow",
-    "custom.slide-2-title",
-    "custom.slide-2-line",
-    "custom.slide-2-cta",
-    "custom.slide-2-alt",
-    "custom.slide-3-eyebrow",
-    "custom.slide-3-title",
-    "custom.slide-3-line",
-    "custom.slide-3-cta",
-    "custom.slide-3-alt",
-    "custom.gallery-1-title",
-    "custom.gallery-1-line",
-    "custom.gallery-2-title",
-    "custom.gallery-2-line",
-    "custom.gallery-3-title",
-    "custom.gallery-3-line",
-    "custom.gallery-4-title",
-    "custom.gallery-4-line",
-    "custom.gallery-5-title",
-    "custom.gallery-6-title",
-    "custom.video-title",
-    "custom.video-alt",
-    "photos.custom.slide-2",
-    "photos.custom.slide-3",
-    "photos.custom.gallery-1",
-    "photos.custom.gallery-2",
-    "photos.custom.gallery-3",
-    "photos.custom.gallery-4",
-    "photos.custom.gallery-5",
-    "photos.custom.gallery-6",
-    "photos.custom.video-poster",
+    "photos.banner",
+    "photos.story",
+    // The hero: the label card's size range, then two side campaigns (a 4:3 photo, a tag and a title each).
+    "custom.hero-label",
+    "photos.custom.hero-side-1",
+    "photos.custom.hero-side-2",
+    "custom.hero-side-1-tag",
+    "custom.hero-side-1-title",
+    "custom.hero-side-2-tag",
+    "custom.hero-side-2-title",
+    // The categories: the small line over the title, and the noun after a category's count.
+    "custom.categories-eyebrow",
+    "custom.products-noun",
+    // The size guide: a title, a line, three group titles and seven rows (a name and a value each; groups of 3, 2, 2).
+    "custom.size-title",
+    "custom.size-line",
+    "custom.size-group-1",
+    "custom.size-group-2",
+    "custom.size-group-3",
+    "custom.size-row-1-name",
+    "custom.size-row-1-value",
+    "custom.size-row-2-name",
+    "custom.size-row-2-value",
+    "custom.size-row-3-name",
+    "custom.size-row-3-value",
+    "custom.size-row-4-name",
+    "custom.size-row-4-value",
+    "custom.size-row-5-name",
+    "custom.size-row-5-value",
+    "custom.size-row-6-name",
+    "custom.size-row-6-value",
+    "custom.size-row-7-name",
+    "custom.size-row-7-value",
+    // The campaign beside the 2nd category row, on `photos.banner`; its button is `nav.2`.
+    "custom.banner-alt",
+    "custom.banner-eyebrow",
+    "custom.banner-title",
+    "custom.banner-line",
+    // The title on the bordeaux promise tile.
+    "custom.promises-title",
+    // The footer's link to the whole catalog.
+    "custom.shop-all",
   ],
-  // Buyer quotes and their pieces, cities and photos: the reviews section is built only with them.
-  optional: [
-    "reviews",
-    "custom.reviews-piece-1",
-    "custom.reviews-piece-2",
-    "custom.reviews-piece-3",
-    "custom.reviews-piece-4",
-    "custom.reviews-city-1",
-    "custom.reviews-city-2",
-    "custom.reviews-city-4",
-    "photos.custom.reviews-1",
-    "photos.custom.reviews-2",
-    "photos.custom.reviews-3",
-    "photos.custom.reviews-4",
-  ],
-  // New in as the main rail; no category rows.
-  journey: { primary: "newest", rows: [] },
+  // `photos.about`: the about page's photo (falls back to the story's).
+  optional: ["photos.about"],
+  // Eight best sellers, then the store's 1st category as a row and its 3rd beside the campaign photo.
+  journey: { primary: "best-sellers", rows: [1, 3] },
   defaultContent: DEFAULT_CONTENT,
-  demo: DEMO,
-  productPage: { thumbs: "side", band: "paper", copy: { reviews: L("كلمة من جرّبوها", "A word from those who wear it"), related: L("قطع تُلبَس معها", "Pieces to wear with it") } },
+  demo: WOMENS_SHOES.demo,
+  productPage: {
+    thumbs: "side",
+    band: "paper",
+    copy: WOMENS_SHOES.productPage?.copy ?? {
+      reviews: L("آراء عميلاتنا", "What our customers say"),
+      related: L("أحذية ممكن تعجبك", "Shoes you may like"),
+    },
+  },
 });

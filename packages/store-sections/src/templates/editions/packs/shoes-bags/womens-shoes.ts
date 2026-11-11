@@ -42,7 +42,17 @@
  * hands), 14783240 (sneakers, not this trade), 15106682 (sport sandals, not
  * this trade).
  *
- * No buyer quotes (`reviews`): a pack holds no invented reviews (neither look
+ * Looks: `kasr` (the niche's template, one template per niche; it shows the
+ * pack itself, Hanem), then `fashion-luxe` and `vella` until the shoes-and-bags
+ * switch takes them off. For Kasr (checked by eye 2026-11-12 at 1400px or
+ * more, no people, feet or lettering, used nowhere else): the hero's two side
+ * campaigns, 27274309 (a black block-heel ankle boot on a white plinth) and
+ * 15792209 (a coral strappy heel on a wooden block). Rejected: 13035176 (a
+ * scuffed sole), 26965810, 30826570, 4109843, 10528003, 9327154 (insole
+ * lettering or marks), 3782768 (lettering on the strap), 6046186, 6639326
+ * (brand logos), 31450714, 1335450 (legs), 6371793 (peach, off the palette).
+ *
+ * No buyer quotes (`reviews`): a pack holds no invented reviews (no look
  * shows a reviews section).
  *
  * No hero video: none found without people or feet.
@@ -64,7 +74,7 @@ const EMAIL = "hello@hanem.example";
 
 export const WOMENS_SHOES: Edition = {
   niche: NICHE,
-  looks: ["fashion-luxe", "vella"],
+  looks: ["kasr", "fashion-luxe", "vella"],
   priceBand: { min: 500, max: 4000 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -118,6 +128,11 @@ export const WOMENS_SHOES: Edition = {
         { x: 62, y: 78 },
       ],
     },
+    // `kasr`: the hero's two side campaigns, 4:3 (boots for winter, heels for evenings).
+    custom: {
+      "hero-side-1": pexels(27274309, 1200),
+      "hero-side-2": pexels(15792209, 1200),
+    },
   },
   copy: {
     announcement: [
@@ -126,6 +141,13 @@ export const WOMENS_SHOES: Edition = {
       L("استبدال المقاس خلال ١٤ يوم", "Size exchange within 14 days"),
     ],
     labels: { about: L("حكايتنا", "Our story") },
+    // Kasr's header and hero links, each to a search that finds that kind of pair.
+    nav: [
+      { label: L("بوتات", "Boots"), href: `/products?search=${encodeURIComponent("بوت")}` },
+      { label: L("كعب", "Heels"), href: `/products?search=${encodeURIComponent("كعب")}` },
+      { label: L("صنادل", "Sandals"), href: `/products?search=${encodeURIComponent("صندل")}` },
+      { label: L("فلات", "Flats"), href: `/products?search=${encodeURIComponent("فلات")}` },
+    ],
     hero: {
       alt: L("صندل كعب دهبي على رف أبيض فاضي", "Gold block-heel sandals on an empty white shelf"),
       eyebrow: L("تشكيلة الموسم", "This season's pairs"),
@@ -206,6 +228,44 @@ export const WOMENS_SHOES: Edition = {
       // fashion-luxe: the link to the whole catalog, and the noun after a category tile's count.
       "shop-all": L("كل الأحذية", "All shoes"),
       "products-noun": L("موديلات", "styles"),
+      // Kasr's hero: the label on the ticket (like the end of a shoe box), then the two side campaigns (a tag and a title each; the title is also the photo's alt).
+      "hero-label": L("مقاسات من ٣٦ لـ ٤١", "Sizes 36 to 41"),
+      "hero-side-1-tag": L("للشتا", "For winter"),
+      "hero-side-1-title": L("بوت بكعب عريض ثابت", "Boots on a steady block heel"),
+      "hero-side-2-tag": L("للسهرة", "For evenings"),
+      "hero-side-2-title": L("كعب رفيع بسيور", "Strappy high heels"),
+      // Kasr's categories: the small line over their title.
+      "categories-eyebrow": L("على حسب النوع", "By type"),
+      // Kasr's size guide (the trade's own section): a title and a line, then three groups of rows (a size and its foot length).
+      "size-title": L("مقاسك بالسنتيمتر", "Your size in centimetres"),
+      "size-line": L(
+        "قيسي رجلك من الكعب لأطول صباع. ولو بين مقاسين، خدي الأكبر في الكعب والبوز المدبّب.",
+        "Measure from your heel to your longest toe. Between two sizes? Go up in heels and pointed toes.",
+      ),
+      "size-group-1": L("مقاس ٣٦ لـ ٣٨", "Sizes 36 to 38"),
+      "size-group-2": L("مقاس ٣٩ و٤٠", "Sizes 39 and 40"),
+      "size-group-3": L("مقاس ٤١، وبين مقاسين", "Size 41, and in between"),
+      "size-row-1-name": L("مقاس ٣٦", "Size 36"),
+      "size-row-1-value": L("٢٣ سم", "23 cm"),
+      "size-row-2-name": L("مقاس ٣٧", "Size 37"),
+      "size-row-2-value": L("٢٣٫٥ سم", "23.5 cm"),
+      "size-row-3-name": L("مقاس ٣٨", "Size 38"),
+      "size-row-3-value": L("٢٤ سم", "24 cm"),
+      "size-row-4-name": L("مقاس ٣٩", "Size 39"),
+      "size-row-4-value": L("٢٥ سم", "25 cm"),
+      "size-row-5-name": L("مقاس ٤٠", "Size 40"),
+      "size-row-5-value": L("٢٥٫٥ سم", "25.5 cm"),
+      "size-row-6-name": L("مقاس ٤١", "Size 41"),
+      "size-row-6-value": L("٢٦ سم", "26 cm"),
+      "size-row-7-name": L("بين مقاسين؟", "Between two sizes?"),
+      "size-row-7-value": L("خدي الأكبر في الكعب", "Go up in heels"),
+      // Kasr's campaign beside the sandals row, on `photos.banner`; its button is `nav.2`.
+      "banner-alt": L("صندل شامواه برتقاني بكعب عريض على أرضية أسمنت فاتحة", "Orange suede block-heel sandals on pale concrete"),
+      "banner-eyebrow": L("للصيف", "For summer"),
+      "banner-title": L("صنادل تكمّل بيها المشوار", "Sandals for the long walk"),
+      "banner-line": L("كعب عريض ثابت وسيور ناعمة، من الفلات للويدج.", "Steady block heels and soft straps, from flats to wedges."),
+      // Kasr's promises: the title on the bordeaux tile beside the first three promises.
+      "promises-title": L("كل جوز بيتقاس قبل ما يتعرض", "Every pair is measured before it is listed"),
     },
   },
   productPage: { copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("أحذية ممكن تعجبك", "Shoes you may like") } },
