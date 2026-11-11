@@ -44,7 +44,9 @@ Limits:
 - **At most 10 sections** between header and footer (the standard ones plus at most two visual breaks). Most templates should use 7 to 9.
 - **Rhythm**: two product sections never sit next to each other without a visual break or a change of section scheme between them; the section schemes alternate (`default`, `muted`, `default`…) and never three `dark` sections in a row.
 - Product rails show **4 products on desktop, 2 on mobile** (a grid or a swipeable rail), never more than 8.
-- Do **not** add these to a template home page: before/after sliders, video playlists, popups, loyalty, product finders, long text blocks. They stay in the section library so a seller can add them. (Tabbed product lists may replace the best-sellers or new-arrivals rail; bento layouts are allowed inside a banner grid or hero.)
+- Do **not** add these to a template home page: video playlists, popups, loyalty, product finders, long text blocks. They stay in the section library so a seller can add them. (Tabbed product lists may replace the best-sellers or new-arrivals rail; bento layouts are allowed inside a banner grid or hero.)
+- **One photo-tool section is allowed as a visual break** (look-first pilot, 2026-11-11; the owner left the choice to us): a photo with dots (`gallery-shop-look`, `about-product-anatomy`) or the before/after slider (`about-before-after`), at most one per home page, and only with the template's own photo and real copy.
+- **Look-first home** (`fashion-luxe` v3, `perfumes-bold` v2, `tallaby-classic` v8; `docs/systems/plan.md` §10): hero, categories, then at most nine sections in all, a photo-led break between any two product sections, the newsletter last, a product stage so every product photo shares one frame, and demo products only from clean studio packshots (a category without them leaves the demo). `niche-templates.test.ts` checks this rhythm for the rebuilt niche templates in place of the fixed 12-slot home.
 - A template can change the **look** of each standard section (layout, cards, colours, corners, fonts), but not the order or the purpose.
 
 ## 2a. Section order (every template, owner 2026-10-27)

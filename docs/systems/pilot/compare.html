@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Look-first pilot: before and after</title>
+    <style>
+      :root {
+        --bg: #f6f5f2;
+        --panel: #ffffff;
+        --ink: #17181a;
+        --muted: #63666b;
+        --line: #dedcd6;
+        --accent: #17181a;
+        --accent-ink: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #131416;
+          --panel: #1c1e21;
+          --ink: #f1f0ec;
+          --muted: #a4a7ad;
+          --line: #2e3136;
+          --accent: #f1f0ec;
+          --accent-ink: #131416;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 15px/1.5 system-ui, "Segoe UI", sans-serif;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+        padding: 14px 16px;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      header p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      button {
+        font: inherit;
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      button[aria-pressed="true"] {
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
+      }
+      main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 16px;
+        align-items: start;
+      }
+      main.phone {
+        max-width: 880px;
+        margin-inline: auto;
+      }
+      figure {
+        margin: 0;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      figcaption {
+        padding: 10px 14px;
+        font-weight: 600;
+        border-bottom: 1px solid var(--line);
+      }
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      @media (max-width: 640px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Look-first pilot: before and after</h1>
+      <p>
+        Three templates rebuilt on the upgraded sections (2026-11-11). Before shots show the scroll position of a single capture, so the story photo is blank there; that was a real bug and
+        is fixed. To try the live result, run the storefront and open <code>/template-preview/&lt;template&gt;</code>.
+      </p>
+      <div class="controls">
+        <div class="group" data-group="template">
+          <button data-value="fashion-luxe">Hareer (fashion)</button>
+          <button data-value="perfumes-bold">Perfumes</button>
+          <button data-value="tallaby-classic">Tallaby Classic</button>
+        </div>
+        <div class="group" data-group="width">
+          <button data-value="1280">Desktop</button>
+          <button data-value="390">Phone</button>
+        </div>
+        <div class="group" data-group="locale">
+          <button data-value="ar">Arabic</button>
+          <button data-value="en">English</button>
+        </div>
+        <div class="group" data-group="shot">
+          <button data-value="full">Whole page</button>
+          <button data-value="fold">First screen</button>
+        </div>
+      </div>
+    </header>
+    <main>
+      <figure>
+        <figcaption>Before</figcaption>
+        <img id="before" alt="The template before the pilot" />
+      </figure>
+      <figure>
+        <figcaption>After</figcaption>
+        <img id="after" alt="The template after the pilot" />
+      </figure>
+    </main>
+    <script>
+      const state = { template: "fashion-luxe", width: "1280", locale: "ar", shot: "full" };
+      const draw = () => {
+        const name = `${state.template}-${state.width}-${state.locale}-${state.shot}.png`;
+        document.getElementById("before").src = `before/${name}`;
+        document.getElementById("after").src = `after/${name}`;
+        document.querySelector("main").classList.toggle("phone", state.width === "390");
+        for (const group of document.querySelectorAll("[data-group]")) {
+          for (const button of group.querySelectorAll("button")) button.setAttribute("aria-pressed", String(button.dataset.value === state[group.dataset.group]));
+        }
+      };
+      document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-group] button");
+        if (!button) return;
+        state[button.parentElement.dataset.group] = button.dataset.value;
+        draw();
+      });
+      draw();
+    </script>
+  </body>
+</html>
