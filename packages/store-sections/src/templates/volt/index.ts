@@ -9,12 +9,19 @@
  * Photos: Pexels, each checked by eye (2026-10-20): chargers, cables, power
  * banks, earbuds and watches on plain backgrounds. No people and no visible
  * brand logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Shahn Mobile itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const VOLT_KEY = "volt";
 
@@ -43,77 +50,167 @@ const PHOTOS = {
 
 const NAME = L("شحن موبايل", "Shahn Mobile");
 
-const header = lib("header-chips", {
-  text: { "م": L("ش", "S"), "اسم متجرك": NAME, "ابحث عن منتج…": L("ابحث عن شاحن، كابل، سماعة…", "Search chargers, cables, earbuds…") },
-});
-
-const footer = lib("footer-help", {
-  text: {
-    "م": L("ش", "S"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ شحن موبايل. كل الحقوق محفوظة.", "© 2026 Shahn Mobile. All rights reserved."),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
+/**
+ * Shahn Mobile's own content: what the look is built with when no edition is
+ * applied (the template `volt` has always meant). The store name and
+ * description and the category chips come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header search placeholder: three things a buyer types.
+  labels: { search: L("ابحث عن شاحن، كابل، سماعة…", "Search chargers, cables, earbuds…") },
+  categories: { title: L("بتدور على إيه؟", "What are you after?") },
+  // Compact quick-buy rows of what `journey.primary` shows.
+  products: { primary: { title: L("إكسسوارات بأسعار عادلة", "Accessories at fair prices") } },
+  // Optional, with `custom.reviews-reply`: three WhatsApp-style messages from buyers, each with a name.
+  reviews: {
+    title: L("رسايل من عملائنا", "Messages from our customers"),
+    items: [
+      {
+        quote: L("الباور بانك وصل تاني يوم الصبح وبيشحن بالسرعة الكاملة فعلاً.", "The power bank arrived the next morning and it really charges at full speed."),
+        name: L("أحمد س.", "Ahmed S."),
+      },
+      {
+        quote: L("السماعة كان فيها تشويش، بدّلوها في يومين من غير نقاش.", "The earbuds had a crackle; they swapped them in two days without arguing."),
+        name: L("منى ك.", "Mona K."),
+      },
+      {
+        quote: L("حامل العربية كويس. الشفاط ماسك حتى والتابلوه سخن.", "Good car mount. The suction holds on a hot dashboard too."),
+        name: L("عمر ف.", "Omar F."),
+      },
+    ],
   },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-big-word", { text: { "جديد": L("طاقة", "POWER") } }),
-  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("بتدور على إيه؟", "What are you after?") } }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("إكسسوارات بأسعار عادلة", "Accessories at fair prices") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers" }],
-  }),
-  lib("features-compare", {
-    text: {
-      "إحنا ولا غيرنا؟": L("ليه تشتري مننا؟", "Why buy from us?"),
-      "متجرنا": NAME,
-      "غيرنا": L("محلات تانية", "Other shops"),
-      "ضمان محلي": L("ضمان استبدال سنة", "1-year replacement warranty"),
-    },
-  }),
-  lib("testimonials-chat", {
-    text: {
-      "رسايل بتفرّحنا": L("رسايل من عملائنا", "Messages from our customers"),
-      "مريم أ.": L("أحمد س.", "Ahmed S."),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "الباور بانك وصل تاني يوم الصبح وبيشحن بالسرعة الكاملة فعلاً.",
-        "The power bank arrived the next morning and it really charges at full speed.",
-      ),
-      "ده يسعدنا جدًا، شكرًا ليكي!": L("مبسوطين إنه وصلك بسرعة، استمتع بيه.", "Glad it reached you fast, enjoy it."),
-      "عمر ك.": L("منى ك.", "Mona K."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "السماعة كان فيها تشويش، بدّلوها في يومين من غير نقاش.",
-        "The earbuds had a crackle; they swapped them in two days without arguing.",
-      ),
-      "يوسف م.": L("عمر ف.", "Omar F."),
-      "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L(
-        "حامل العربية كويس. الشفاط ماسك حتى والتابلوه سخن.",
-        "Good car mount. The suction holds on a hot dashboard too.",
-      ),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(
-    lib,
-    "about-header",
-    L("عن شحن موبايل", "About Shahn Mobile"),
-    L("محل إكسسوارات صغير في مدينة نصر بيجرّب كل حاجة بيبيعها.", "A small accessories shop in Nasr City that tests everything it sells."),
-  ),
-  aboutStory(lib, {
-    photo: PHOTOS.charger,
+  about: {
+    line: L("محل إكسسوارات صغير في مدينة نصر بيجرّب كل حاجة بيبيعها.", "A small accessories shop in Nasr City that tests everything it sells."),
     alt: L("شاحن وكابل على رخامة", "A charger and cable on marble"),
     eyebrow: L("مدينة نصر", "Nasr City"),
     title: L("بنجرّب كل شاحن قبل ما نبيعه", "We test every charger before we sell it"),
     text: L("بنقيس سرعة الشحن الحقيقية لكل باور بانك وكابل، ومش بنبيع حاجة مش بتوصل للرقم اللي مكتوب عليها.", "We measure the real charging speed of every power bank and cable, and never sell anything that misses its label."),
     more: L("وضمان الاستبدال سنة كاملة على كل حاجة.", "And every item has a full 1-year replacement warranty."),
-    button: L("تسوّق الأكثر مبيعاً", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    // Goes to the best sellers.
+    cta: L("تسوّق الأكثر مبيعاً", "Shop best sellers"),
+  },
+  contact: {
+    title: L("الدعم", "Support"),
+    line: L("اسألنا أنهي كابل أو شاحن يناسب موبايلك.", "Ask us which cable or charger fits your phone."),
+    heading: L("ابعتلنا موديل موبايلك", "Send us your phone model"),
+  },
+  faq: {
+    line: L("الضمان والتوصيل والاستبدال.", "Warranty, delivery and replacements."),
+    question: L("إيه ضمان الاستبدال؟", "What is the replacement warranty?"),
+    answer: L(
+      "أي منتج فيه عيب صناعة خلال سنة بنبدّله بجديد. ابعتلنا رقم الطلب وصورة للمشكلة.",
+      "Any item with a manufacturing fault within a year is replaced with a new one. Send us the order number and a photo of the problem.",
+    ),
+  },
+  custom: {
+    // The hero's giant word behind the store's first featured product: ONE short word (Latin capitals in English), never a phrase.
+    "hero-word": L("طاقة", "POWER"),
+    // The second of the comparison's five rows, ticked for the store AND for other shops: a promise other shops make too. The other four rows are the library's (genuine with an invoice, 14-day returns, cash on delivery, WhatsApp reply in minutes).
+    "compare-row-2": L("ضمان استبدال سنة", "1-year replacement warranty"),
+    // Optional, with `reviews`: the store's short answer under the first message.
+    "reviews-reply": L("مبسوطين إنه وصلك بسرعة، استمتع بيه.", "Glad it reached you fast, enjoy it."),
+  },
+  // The look's only photo block is the about page's (4:5). The hero shows the first featured product's own photo.
+  photos: { story: PHOTOS.charger },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Top rated, Why buy from us?, Other shops, Support) and the layout stay
+ * here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const initial = initialOf(name);
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-chips", {
+    text: { "م": initial, "اسم متجرك": name, "ابحث عن منتج…": c.labels.search },
+  });
+
+  const footer = lib("footer-help", {
+    text: {
+      "م": initial,
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  // Absent in an edition without buyer messages: the section is left out (it needs the quotes and the store's reply).
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
+  const reply: LookContent["custom"][string] | undefined = c.custom["reviews-reply"];
+  const home: Design[] = [
+    lib("hero-big-word", { text: { "جديد": c.custom["hero-word"]! } }),
+    lib("categories-chips", { text: { "إيه اللي في بالك؟": c.categories.title } }),
+    lib("products-rows", {
+      text: { "إكسسوارات بسعر حلو": c.products.primary.title },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary }],
+    }),
+    lib("features-compare", {
+      text: {
+        "إحنا ولا غيرنا؟": L("ليه تشتري مننا؟", "Why buy from us?"),
+        "متجرنا": name,
+        "غيرنا": L("محلات تانية", "Other shops"),
+        "ضمان محلي": c.custom["compare-row-2"]!,
+      },
+    }),
+    ...(reviews && reply
+      ? [
+          lib("testimonials-chat", {
+            text: {
+              "رسايل بتفرّحنا": reviews.title,
+              "مريم أ.": reviews.items[0]!.name,
+              "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
+              "ده يسعدنا جدًا، شكرًا ليكي!": reply,
+              "عمر ك.": reviews.items[1]!.name,
+              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "يوسف م.": reviews.items[2]!.name,
+              "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[2]!.quote,
+            },
+          }),
+        ]
+      : []),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("الدعم", "Support"),
+        seo: { title: L("الدعم", "Support") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -145,7 +242,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const VOLT = libraryTemplate({
+export const VOLT = editionTemplate({
   key: VOLT_KEY,
   version: 4,
   changelog: "Volt v4: wide hero photo",
@@ -169,35 +266,25 @@ export const VOLT = libraryTemplate({
   },
   fonts: { heading: "Alexandria", body: "Alexandria" },
   radius: 14,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عننا", "About"), seo: { title: L("عن شحن موبايل", "About Shahn Mobile") }, sections: about },
-    {
-      slug: "contact",
-      name: L("الدعم", "Support"),
-      seo: { title: L("الدعم", "Support") },
-      sections: contactPage(lib, {
-        title: L("الدعم", "Support"),
-        text: L("اسألنا أنهي كابل أو شاحن يناسب موبايلك.", "Ask us which cable or charger fits your phone."),
-        heading: L("ابعتلنا موديل موبايلك", "Send us your phone model"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("الضمان والتوصيل والاستبدال.", "Warranty, delivery and replacements."),
-        question: L("إيه ضمان الاستبدال؟", "What is the replacement warranty?"),
-        answer: L(
-          "أي منتج فيه عيب صناعة خلال سنة بنبدّله بجديد. ابعتلنا رقم الطلب وصورة للمشكلة.",
-          "Any item with a manufacturing fault within a year is replaced with a new one. Send us the order number and a photo of the problem.",
-        ),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "labels.search",
+    "categories.title",
+    "products.primary.title",
+    "about",
+    "contact",
+    "faq",
+    "custom.hero-word",
+    "custom.compare-row-2",
+    "photos.story",
   ],
+  // Buyer messages are demo claims: a pack writes real ones (with the store's reply) or leaves both out, and the section is then not built.
+  optional: ["reviews", "custom.reviews-reply"],
+  // Best sellers in compact rows; no category rows.
+  journey: { primary: "best-sellers", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء الزباين", "What buyers say"), related: L("اشتريها معاها", "Grab it with") } },
 });
