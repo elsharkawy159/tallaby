@@ -50,7 +50,7 @@ export function isLightHex(value: string): boolean | null {
   return (r * 299 + g * 587 + b * 114) / 1000 > 160;
 }
 
-export type ThemeInput = Pick<DesignSystem, "colors" | "spacing"> & { typography?: DesignSystem["typography"]; productStage?: DesignSystem["productStage"] };
+export type ThemeInput = Pick<DesignSystem, "colors" | "spacing"> & { typography?: DesignSystem["typography"] };
 
 const STAGE_RATIO: Record<string, string> = { "1:1": "1 / 1", "4:5": "4 / 5", "3:4": "3 / 4" };
 
@@ -80,7 +80,7 @@ export function designSystemToTokens(ds: ThemeInput | null | undefined): Record<
   const padding = ds.spacing?.sectionPaddingY;
   if (typeof padding === "number") out["--sf-section-y"] = `${padding}px`;
   // Product stage: read by the product photo rules (`elements/style.ts`), which fall back to the design's own frame.
-  const stage = ds.productStage;
+  const stage = ds.spacing?.productStage;
   if (stage) {
     const fit = stage.fit ?? "contain";
     out["--sf-stage-ratio"] = STAGE_RATIO[stage.ratio ?? "1:1"]!;

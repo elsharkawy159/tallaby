@@ -307,6 +307,25 @@ export const designSystemSchema = z.object({
       containerMaxWidth: z.number().int().min(320).max(2560).optional(),
       sectionPaddingY: z.number().min(0).max(400).optional(),
       borderRadius: z.number().min(0).max(64).optional(),
+      /**
+       * Product stage (docs/systems/plan.md §4.5): one frame for every product
+       * photo in a product list, so photos with any background and shape look
+       * uniform. Unset = each design keeps its own frame (every site saved
+       * before 2026-11-11). A value that is not known is dropped, never an
+       * error. It lives under `spacing` because that is a stored column of
+       * `store_design_systems`: a new top-level key is dropped on every save
+       * until it gets a column of its own (what happened to `motion`, 0162).
+       */
+      productStage: z
+        .object({
+          ratio: z.enum(PRODUCT_STAGE_RATIOS).optional().catch(undefined),
+          fit: z.enum(["contain", "cover"]).optional().catch(undefined),
+          background: colorSchema.optional().catch(undefined),
+          /** Space between the frame and the photo, in px (contain only). */
+          padding: z.number().int().min(0).max(48).optional().catch(undefined),
+        })
+        .optional()
+        .catch(undefined),
     })
     .default({}),
   /**
@@ -326,22 +345,6 @@ export const designSystemSchema = z.object({
       intensity: z.enum(MOTION_INTENSITIES).optional().catch(undefined),
     })
     .optional(),
-  /**
-   * Product stage (docs/systems/plan.md §4.5): one frame for every product
-   * photo in a product list, so photos with any background and shape look
-   * uniform. Unset = each design keeps its own frame (every site saved before
-   * 2026-11-11). A value that is not known is dropped, never an error.
-   */
-  productStage: z
-    .object({
-      ratio: z.enum(PRODUCT_STAGE_RATIOS).optional().catch(undefined),
-      fit: z.enum(["contain", "cover"]).optional().catch(undefined),
-      background: colorSchema.optional().catch(undefined),
-      /** Space between the frame and the photo, in px (contain only). */
-      padding: z.number().int().min(0).max(48).optional().catch(undefined),
-    })
-    .optional()
-    .catch(undefined),
 });
 export type DesignSystem = z.output<typeof designSystemSchema>;
 

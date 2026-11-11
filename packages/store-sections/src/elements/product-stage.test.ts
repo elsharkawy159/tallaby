@@ -44,13 +44,13 @@ describe("product stage", () => {
   });
 
   it("the stage defaults to a white 1:1 frame that contains the photo", () => {
-    expect(designSystemToTokens({ colors: {}, spacing: {}, productStage: {} })).toMatchObject({
+    expect(designSystemToTokens({ colors: {}, spacing: { productStage: {} } })).toMatchObject({
       "--sf-stage-ratio": "1 / 1",
       "--sf-stage-fit": "contain",
       "--sf-stage-bg": "#ffffff",
       "--sf-stage-pad": "12px",
     });
-    expect(designSystemToTokens({ colors: {}, spacing: {}, productStage: { ratio: "4:5", fit: "cover", background: "#f4f1ec" } })).toMatchObject({
+    expect(designSystemToTokens({ colors: {}, spacing: { productStage: { ratio: "4:5", fit: "cover", background: "#f4f1ec" } } })).toMatchObject({
       "--sf-stage-ratio": "4 / 5",
       "--sf-stage-fit": "cover",
       "--sf-stage-bg": "#f4f1ec",
@@ -59,8 +59,10 @@ describe("product stage", () => {
   });
 
   it("the schema drops an unknown stage value and never fails", () => {
-    const parsed = designSystemSchema.parse({ productStage: { ratio: "7:3", fit: "stretch", background: "url(x)", padding: 900 } });
-    expect(parsed.productStage).toEqual({});
-    expect(designSystemSchema.parse({}).productStage).toBeUndefined();
+    const parsed = designSystemSchema.parse({ spacing: { productStage: { ratio: "7:3", fit: "stretch", background: "url(x)", padding: 900 } } });
+    expect(parsed.spacing.productStage).toEqual({});
+    expect(designSystemSchema.parse({}).spacing.productStage).toBeUndefined();
+    // Stored with the spacing column, so it survives a save (`designSystemColumns` writes spacing whole).
+    expect(designSystemSchema.parse({ spacing: { borderRadius: 8, productStage: { ratio: "4:5" } } }).spacing).toEqual({ borderRadius: 8, productStage: { ratio: "4:5" } });
   });
 });
