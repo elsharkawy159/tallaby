@@ -24,7 +24,7 @@ const EXPECTED = [
   ...["features-classic", "features-icon-cards", "features-checklist", "features-steps", "features-ruled", "features-bento", "features-side-title", "features-ticker", "features-compare", "features-orbit", "features-trust-band", "features-columns"],
   ...["pay-methods", "pay-installments", "pay-zones", "pay-promise", "pay-open-box", "pay-pickup", "pay-secure", "pay-installment-table", "pay-days", "pay-receipt", "pay-faq"],
   ...["stats-classic", "stats-big-numbers", "stats-photo", "stats-progress", "stats-strip", "stats-ruled", "stats-band", "stats-sentence", "stats-rating", "stats-milestones"],
-  ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values", "about-list", "about-wide", "about-inset", "about-stories", "about-circle", "about-fullbleed", "about-split-story", "about-before-after", "about-shop-look"],
+  ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values", "about-list", "about-wide", "about-inset", "about-stories", "about-circle", "about-fullbleed", "about-split-story", "about-before-after", "about-shop-look", "image-text-steps"],
   ...["video-wide", "video-split", "video-cinema", "video-playlist", "video-reels", "video-vertical", "video-grid", "video-chapters", "video-film", "video-shop"],
   ...["gallery-feed", "gallery-mosaic", "gallery-polaroids", "gallery-shoppable", "gallery-strip", "gallery-captioned", "gallery-slider", "gallery-prints", "gallery-bento", "gallery-side", "gallery-social-strip"],
   ...["brands-row", "brands-wall", "brands-tiles", "brands-press", "brands-featured", "brands-ruled", "brands-cards", "brands-az", "brands-quotes", "brands-bubbles"],
