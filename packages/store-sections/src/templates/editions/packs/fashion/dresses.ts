@@ -171,4 +171,96 @@ export const DRESSES: Edition = {
     },
   },
   productPage: { copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("فساتين ممكن تعجبك", "Dresses you may like") } },
+  // Vella's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Karaz", bold colour,
+  // new styles every week, nights out first. Same dresses and prices; its own copy, photos and row order.
+  perLook: {
+    vella: {
+      store: {
+        name: L("كرز", "Karaz"),
+        description: L("فساتين بألوان جريئة للخروجات والسهرات وكل يوم.", "Bold dresses for nights out, evenings and every day."),
+      },
+      copy: {
+        announcement: [
+          L("موديلات جديدة كل خميس", "New styles every Thursday"),
+          L("التوصيل لكل مصر", "Delivery across Egypt"),
+          L("المقاس مش مظبوط؟ نبدّله", "Wrong size? We swap it"),
+        ],
+        hero: {
+          alt: L("شماعة عليها فساتين منقّطة وحمرا وسودا ومشجّرة", "A rail of polka-dot, red, black and floral dresses"),
+          eyebrow: L("وصل الخميس", "Landed Thursday"),
+          title: L("فستان يلفت النظر", "Dresses that turn heads"),
+          line: L("ألوان واضحة وقصّات بسيطة، من فستان النهار لفستان السهرة.", "Clear colours and simple cuts, from day dresses to evening ones."),
+          cta: L("شوفي الفساتين", "See the dresses"),
+        },
+        categories: { title: L("هتلبسي إيه النهارده؟", "What are you wearing today?") },
+        products: {
+          primary: {
+            title: L("اللي بيخلص بسرعة", "The ones that sell out"),
+            line: L("الفساتين اللي بنعيد طلبها كل أسبوع.", "The dresses we restock every week."),
+          },
+        },
+        // The band over the banner (a white and a black slip dress); its button goes to the newest dresses.
+        story: {
+          alt: L("فستان أبيض وفستان أسود بحمالات رفيعة على شماعات", "A white and a black slip dress on hangers"),
+          eyebrow: L("أبيض وأسود", "Black and white"),
+          title: L("فستانين يكفّوا الأسبوع", "Two dresses, a whole week"),
+          text: L(
+            "فستان بسيط تلبسيه مع كوتشي الصبح ومع كعب بالليل. اختاري لون واحد وغيّري الإكسسوار.",
+            "One simple dress with sneakers in the morning and heels at night. Pick one colour and change the accessories.",
+          ),
+          cta: L("تسوّقي الجديد", "Shop new in"),
+        },
+        trust: [
+          { title: L("جديد كل خميس", "New every Thursday"), line: L("موديلات بتنزل كل أسبوع", "Fresh styles every week") },
+          { title: L("تبديل المقاس", "Size swaps"), line: L("خلال ١٤ يوم من الاستلام", "Within 14 days of delivery") },
+          { title: L("ألوان زي الصورة", "True-to-photo colour"), line: L("بنصوّر في نور النهار", "Shot in daylight") },
+          { title: L("ادفعي عند الاستلام", "Pay on delivery"), line: L("كاش مع المندوب", "Cash to the courier") },
+        ],
+        newsletter: {
+          title: L("الخميس الجاي فيه جديد", "New styles land next Thursday"),
+          line: L("سيبي إيميلك ونقولك أول ما الموديلات تنزل.", "Leave your email and we tell you as soon as they arrive."),
+        },
+        footer: { line: L("كرز: فساتين بألوان جريئة، بتنزل كل خميس.", "Karaz: bold dresses, new every Thursday.") },
+        about: {
+          line: L("فساتين بألوان جريئة للخروجات وكل يوم.", "Bold dresses for nights out and every day."),
+          alt: L("فستان ترتر لامع على شماعة", "A sequin dress on a hanger"),
+          eyebrow: L("عننا", "About us"),
+          title: L("اللون مش بيخوّفنا", "We are not afraid of colour"),
+          text: L(
+            "كرز بدأت بشماعة فساتين حمرا ومنقّطة في أوضة صغيرة. لحد النهارده بنختار الفستان اللي يبان من بعيد، وبنكتب خامته ومقاساته بالسنتيمتر في صفحته.",
+            "Karaz began with one rail of red and polka-dot dresses in a small room. We still choose the dress you notice from across the street, and list its fabric and measurements in centimetres on its page.",
+          ),
+          more: L("ولو المقاس مش مظبوط، ابعتيلنا خلال ١٤ يوم ونبدّله.", "And if the size is wrong, write to us within 14 days and we exchange it."),
+          cta: L("الأكثر طلبًا عندنا", "Our best sellers"),
+        },
+        contact: {
+          title: L("ابعتيلنا", "Write to us"),
+          line: L(`الإسكندرية، مصر، ${PHONE_AR}، ${handle("hello@karaz.example")}`, `Alexandria, Egypt | ${PHONE_EN} | hello@karaz.example`),
+          heading: L("محتارة بين مقاسين؟ اسألينا", "Between two sizes? Ask us"),
+        },
+        faq: {
+          line: L("المقاسات والتوصيل والتبديل.", "Sizes, delivery and swaps."),
+          question: L("الألوان في الصور زي الحقيقة؟", "Are the colours true to the photos?"),
+          answer: L(
+            "بنصوّر كل فستان في نور النهار عشان اللون يبان زي ما هو. ولو وصلك بلون مختلف، بنبدّله خلال ١٤ يوم.",
+            "We photograph every dress in daylight so the colour shows as it is. If it arrives looking different, we exchange it within 14 days.",
+          ),
+        },
+        custom: {
+          "contact-email": L(`البريد: ${handle("hello@karaz.example")}`, "hello@karaz.example"),
+          "contact-address": L("الإسكندرية، مصر", "Alexandria, Egypt"),
+          "contact-hours": L("كل يوم، ١٢ ظ – ١٢ ص", "Every day, noon to midnight"),
+        },
+      },
+      // Pexels, checked by eye 2026-11-11 (no people, no lettering): bold red, black and white.
+      photos: {
+        hero: { wide: pexels(37557292, 1920), tall: pexels(5507238, 1200) },
+        tiles: [pexels(18984601, 1200), pexels(15591289, 1200), pexels(38547149, 1200), pexels(14581468, 1200)],
+        banner: pexels(8997984, 2000),
+        story: pexels(10330191, 1200),
+      },
+      // Evening dresses first, then summer, casual and modest.
+      journey: { rows: [2, 3, 1, 4] },
+    },
+  },
 };

@@ -31,9 +31,14 @@ export function editionForLook(edition: Edition, lookKey: string): Edition {
     ...lightPatch,
     ...(darkPatch || base.photos.dark ? { dark: { ...base.photos.dark, ...darkPatch } } : {}),
   };
+  // New tiles are the categories' images too: a category image that was the pack's tile follows the look's own tile.
+  const tiles = lightPatch.tiles;
+  const categories = tiles
+    ? base.demo.categories.map((category, i) => (category.image && category.image === base.photos.tiles[i] ? { ...category, image: tiles[i] ?? null } : category))
+    : base.demo.categories;
   return {
     ...base,
-    demo: o.store ? { ...base.demo, store: { ...base.demo.store, ...o.store } } : base.demo,
+    demo: { ...base.demo, ...(o.store && { store: { ...base.demo.store, ...o.store } }), ...(tiles && { categories }) },
     copy: deepMerge(base.copy, o.copy),
     photos,
     ...(o.journey && { journey: { ...base.journey, ...o.journey } }),

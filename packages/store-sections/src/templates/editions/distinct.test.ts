@@ -16,7 +16,6 @@ import type { Edition } from "./types";
  * when its `perLook` entry is written; the list must end empty.
  */
 const PENDING = new Set<string>([
-  "dresses",
   "glasses",
   "tshirts",
   "lighting-smart-home",
