@@ -204,4 +204,101 @@ export const TSHIRTS: Edition = {
   // Both looks show the newest products in their main section (one title for both).
   journey: { primary: "newest" },
   productPage: { copy: { reviews: L("آراء اللي لبسوه", "From people who wear it"), related: L("تيشيرتات ممكن تعجبك", "Tees you may like") } },
+  // Fashion-luxe's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Kheit", quiet
+  // colours and the right cut, best sellers first. Same tees and prices; its own copy, photos and journey. The
+  // shop-the-look photo (polos, dots on the three newest) stays the pack's: only this look shows it.
+  perLook: {
+    "fashion-luxe": {
+      store: {
+        name: L("خيط", "Kheit"),
+        description: L("تيشيرتات قطن بألوان هادية وقصّات مظبوطة.", "Cotton tees in quiet colours and well-judged cuts."),
+      },
+      copy: {
+        announcement: [
+          L("ألوان هادية تتنسّق مع بعض", "Quiet colours that go together"),
+          L("التوصيل لكل محافظات مصر", "Delivery to every governorate"),
+          L("تبديل المقاس خلال ١٤ يوم", "Size swaps within 14 days"),
+        ],
+        labels: { about: L("عن خيط", "About Kheit") },
+        hero: {
+          alt: L("تيشيرتات أبيض وبيج ولبني ورمادي على شماعات خشب", "White, beige, pale blue and grey tees on wooden hangers"),
+          eyebrow: L("الأساسيات", "The essentials"),
+          title: L("تيشيرت هادي، قصّة مظبوطة", "Quiet tees, the right cut"),
+          line: L(
+            "بيسك وأوفر سايز ومقلّم وبولو، بألوان تتلبس مع بعض من غير تفكير.",
+            "Basics, oversized, stripes and polos, in colours that go together without a second thought.",
+          ),
+          cta: L("شوف التشكيلة", "See the range"),
+        },
+        categories: { title: L("أربع قصّات، دولاب كامل", "Four cuts, one wardrobe") },
+        products: {
+          primary: {
+            title: L("اللي بيرجعوا يطلبوه", "The ones people reorder"),
+            line: L("التيشيرتات اللي عملاءنا بيطلبوها تاني بلون مختلف.", "The tees our customers come back for in another colour."),
+          },
+        },
+        // The two-tone band (a long rail of tees); its button goes to the about page.
+        story: {
+          alt: L("رف طويل عليه تيشيرتات أبيض وأسود ومقلّم على شماعات خشب", "A long rail of white, black and striped tees on wooden hangers"),
+          eyebrow: L("قليل بس مظبوط", "Fewer, better"),
+          title: L("تيشيرت تلبسه سنين", "A tee you wear for years"),
+          text: L(
+            "بنختار قطن ما يتمطّش من أول غسلة، وبنكتب مقاسات كل تيشيرت بالسنتيمتر في صفحته.",
+            "We choose cotton that keeps its shape after the first wash, and list every tee's measurements in centimetres on its page.",
+          ),
+          cta: L("اعرف أكتر عننا", "More about us"),
+        },
+        look: {
+          eyebrow: L("ركن البولو", "The polo rail"),
+          title: L("بولو لكل يوم في الأسبوع", "A polo for every day of the week"),
+          text: L("دوس على أي نقطة وشوف البولو اللي يشبهها من التشكيلة.", "Tap a dot to see the polo from the range that matches it."),
+        },
+        trust: [
+          { title: L("مقاسات بالسنتيمتر", "Measured in centimetres"), line: L("كل تيشيرت ومقاساته في صفحته", "Every tee lists its measurements") },
+          { title: L("تبديل المقاس", "Size swaps"), line: L("خلال ١٤ يوم من الاستلام", "Within 14 days of delivery") },
+          { title: L("نساعدك تختار القصّة", "Help choosing a cut"), line: L("ابعت طولك ووزنك على واتساب", "Send your height and weight on WhatsApp") },
+          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("كاش مع المندوب", "Cash to the courier") },
+        ],
+        newsletter: {
+          title: L("لون جديد؟ هتعرف الأول", "A new colour? You hear first"),
+          line: L("رسالة لما ينزل لون أو قصّة جديدة، بس كده.", "One letter when a new colour or cut arrives, that is all."),
+        },
+        footer: { line: L("خيط: تيشيرتات قطن بألوان هادية.", "Kheit: cotton tees in quiet colours.") },
+        about: {
+          line: L("تيشيرتات قطن بألوان هادية وقصّات مظبوطة.", "Cotton tees in quiet colours and well-judged cuts."),
+          alt: L("رف أخضر عليه تيشيرتات وقمصان وجنبه سلّم خشب", "A green rack of tees and shirts beside a wooden ladder"),
+          eyebrow: L("عن خيط", "About Kheit"),
+          title: L("التيشيرت أساس اللبس", "The tee holds the outfit together"),
+          text: L(
+            "خيط بدأ من درج مليان تيشيرتات مش بنلبسها. فقرّرنا نبيع ألوان قليلة هادية تتنسّق مع بعض، وقصّات اتجرّبت على أطوال وأوزان مختلفة قبل ما تنزل.",
+            "Kheit began with a drawer full of tees we never wore. So we sell a few quiet colours that go together, in cuts tried on different heights and builds before they are listed.",
+          ),
+          more: L("ولو المقاس مش مظبوط عليك، بنبدّله خلال ١٤ يوم.", "And if the size is not right, we exchange it within 14 days."),
+          cta: L("شوف التشكيلة", "See the range"),
+        },
+        contact: {
+          title: L("كلّمنا", "Talk to us"),
+          line: L(`الجيزة، مصر، ${PHONE_AR}، ${handle("hello@kheit.example")}`, `Giza, Egypt | ${PHONE_EN} | hello@kheit.example`),
+          heading: L("مش متأكد من القصّة؟ اسألنا", "Not sure which cut? Ask us"),
+        },
+        faq: {
+          line: L("القصّات والمقاسات والتوصيل.", "Cuts, sizes and delivery."),
+          question: L("إيه الفرق بين البيسك والأوفر سايز؟", "What is the difference between basic and oversized?"),
+          answer: L(
+            "البيسك على مقاسك بالظبط، والأوفر سايز أعرض في الصدر وكتفه نازل. خد مقاسك العادي لو عايزه واسع، أو مقاس أصغر لو عايزه أقرب للجسم.",
+            "A basic follows your size; an oversized tee is wider in the chest with a dropped shoulder. Take your usual size for a loose fit, or one size down for a closer one.",
+          ),
+        },
+      },
+      // Pexels, checked by eye 2026-11-11 (no people, no readable labels): neutral rails, sand, rose and stripes.
+      photos: {
+        hero: { wide: pexels(3735641, 1920), tall: pexels(6347890, 1200) },
+        tiles: [pexels(11671275, 1200), pexels(9558761, 1200), pexels(40239456, 1200), pexels(6461395, 1200)],
+        banner: pexels(5864266, 2000),
+        story: pexels(10557056, 1200),
+      },
+      // Best sellers in the grid (streetwear shows the newest), then basics and oversized as rows.
+      journey: { primary: "best-sellers", rows: [1, 2] },
+    },
+  },
 };

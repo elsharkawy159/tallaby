@@ -17,15 +17,12 @@ import type { Edition } from "./types";
  */
 const PENDING = new Set<string>([
   "glasses",
-  "tshirts",
   "lighting-smart-home",
   "pants-jeans",
   "pc-gaming",
   "fashion-jewelry",
   "chargers-cables",
   "slippers-clogs",
-  "menswear",
-  "womens-shoes",
 ]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */

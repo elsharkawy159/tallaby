@@ -209,4 +209,96 @@ export const WOMENS_SHOES: Edition = {
     },
   },
   productPage: { copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("أحذية ممكن تعجبك", "Shoes you may like") } },
+  // Vella's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Mishya", shoes made
+  // for walking all day, winter boots first. Same pairs and prices; its own copy, photos and row order.
+  perLook: {
+    vella: {
+      store: {
+        name: L("مِشية", "Mishya"),
+        description: L("جزم وبوتات وصنادل حريمي تمشي بيها اليوم كله.", "Women's shoes, boots and sandals made for walking all day."),
+      },
+      copy: {
+        announcement: [
+          L("البوتات الشتوي وصلت", "Winter boots are in"),
+          L("التوصيل لكل مصر", "Delivery across Egypt"),
+          L("مقاسات من ٣٦ لـ ٤١", "Sizes 36 to 41"),
+        ],
+        hero: {
+          alt: L("جزمة كعب قطيفة حمرا على سلالم خشب في جنينة", "Red velvet pumps on wooden garden steps"),
+          eyebrow: L("موسم الخروج", "Out and about"),
+          title: L("امشي بثقة طول اليوم", "Walk tall all day"),
+          line: L("بوتات للشتا، كعب للسهرة، فلات للشغل وصنادل للصيف.", "Boots for winter, heels for evenings, flats for work and sandals for summer."),
+          cta: L("اختاري جوزك", "Find your pair"),
+        },
+        categories: { title: L("على حسب المشوار", "Shop by where you are going") },
+        products: {
+          primary: {
+            title: L("الجزم اللي بتخلص بسرعة", "The pairs that sell out"),
+            line: L("الموديلات اللي بنرجّع مقاساتها كل أسبوع.", "The styles we restock every week."),
+          },
+        },
+        // The band over the banner (silver heels against white blinds); its button goes to the newest pairs.
+        story: {
+          alt: L("صندل كعب فضي قدام شيش أبيض", "Silver strappy heels against white blinds"),
+          eyebrow: L("سهرة الويك إند", "The weekend plan"),
+          title: L("كعب يستحمل السهرة كلها", "Heels that last the whole night"),
+          text: L(
+            "بنختار كعب ثابت ونعل مبطّن، وبنكتب طول الكعب بالسنتيمتر في صفحة كل جوز.",
+            "We choose steady heels and padded insoles, and list the heel height in centimetres on each pair's page.",
+          ),
+          cta: L("تسوّقي الجديد", "Shop new in"),
+        },
+        trust: [
+          { title: L("اتجربت في مشوار", "Walk-tested"), line: L("كل موديل اتلبس قبل ما ينزل", "Every style is worn before it is listed") },
+          { title: L("تبديل المقاس", "Size swaps"), line: L("خلال ١٤ يوم من الاستلام", "Within 14 days of delivery") },
+          { title: L("طول الكعب مكتوب", "Heel height listed"), line: L("بالسنتيمتر في كل صفحة", "In centimetres on every page") },
+          { title: L("ادفعي عند الاستلام", "Pay on delivery"), line: L("كاش مع المندوب", "Cash to the courier") },
+        ],
+        newsletter: {
+          title: L("البوتات الجديدة أول بأول", "New boots as they land"),
+          line: L("رسالة لما ينزل موديل جديد أو يرجع مقاس خلص.", "A letter when a new style lands or a sold-out size returns."),
+        },
+        footer: { line: L("مِشية: جزم حريمي تمشي بيها اليوم كله.", "Mishya: women's shoes for walking all day.") },
+        about: {
+          line: L("جزم حريمي معمولة للمشي، مش للصورة بس.", "Women's shoes made for walking, not just for photos."),
+          alt: L("جزمة كعب سودا على كرسي أبيض", "Black heels on a white chair"),
+          eyebrow: L("عننا", "About us"),
+          title: L("الجزمة الحلوة لازم تتمشي", "A good pair has to walk"),
+          text: L(
+            "مِشية بدأت من كعب جميل وجعنا بعد ساعة. من ساعتها بنلبس كل موديل في مشوار حقيقي قبل ما ينزل، ونكتب نوع النعل وطول الكعب بالظبط.",
+            "Mishya began with a beautiful heel that hurt after an hour. Since then we wear every style on a real errand before it is listed, and note the sole and the exact heel height.",
+          ),
+          more: L("ولو المقاس مش مريح، بنبدّله خلال ١٤ يوم.", "And if the size is not comfortable, we exchange it within 14 days."),
+          cta: L("الأكثر طلبًا عندنا", "Our best sellers"),
+        },
+        contact: {
+          title: L("اسألينا", "Ask us"),
+          line: L(`المنصورة، مصر، ${PHONE_AR}، ${handle("hello@mishya.example")}`, `Mansoura, Egypt | ${PHONE_EN} | hello@mishya.example`),
+          heading: L("مش عارفة مقاسك في الموديل ده؟ اسألينا", "Not sure of your size in this style? Ask us"),
+        },
+        faq: {
+          line: L("المقاسات والتوصيل والتبديل.", "Sizes, delivery and swaps."),
+          question: L("البوت بييجي على المقاس ولا آخد أكبر؟", "Do the boots run true to size?"),
+          answer: L(
+            "أغلب البوتات على المقاس العادي، ولو بتلبسي شراب تقيل خدي نمرة أكبر. صفحة كل موديل بتقول لو قالبه ضيق أو واسع.",
+            "Most boots run true to size; if you wear thick socks, take one size up. Each style's page says if it runs small or large.",
+          ),
+        },
+        custom: {
+          "contact-email": L(`البريد: ${handle("hello@mishya.example")}`, "hello@mishya.example"),
+          "contact-address": L("المنصورة، مصر", "Mansoura, Egypt"),
+          "contact-hours": L("السبت للخميس، ١٠ ص – ١٠ م", "Saturday to Thursday, 10am to 10pm"),
+        },
+      },
+      // Pexels, checked by eye 2026-11-11 (no people, feet or readable lettering): red, white and black.
+      photos: {
+        hero: { wide: pexels(14943486, 1920), tall: pexels(5713781, 1200) },
+        tiles: [pexels(4374434, 1200), pexels(5168562, 1200), pexels(23692992, 1200), pexels(38356064, 1200)],
+        banner: pexels(34538740, 2000),
+        story: pexels(3782771, 1200),
+      },
+      // Boots first (the season), then heels, flats and sandals.
+      journey: { rows: [4, 1, 2, 3] },
+    },
+  },
 };
