@@ -10,6 +10,8 @@ import {
   MOTION_CSS,
   MOTION_CSS_V1,
   MOTION_CSS_V2,
+  MOTION_CSS_POLISH,
+  MOTION_CSS_SCROLL,
   REVEAL_CHOICES,
   intensityFactor,
   isMotionV2,
@@ -112,7 +114,7 @@ describe("the motion v2 marker", () => {
 
 describe("motion v2 CSS", () => {
   it("leaves v1 untouched and appends v2 after it", () => {
-    expect(MOTION_CSS).toBe(MOTION_CSS_V1 + MOTION_CSS_V2);
+    expect(MOTION_CSS).toBe(MOTION_CSS_V1 + MOTION_CSS_V2 + MOTION_CSS_SCROLL + MOTION_CSS_POLISH);
     expect(MOTION_CSS_V1).not.toContain("data-sf-mv");
     expect(MOTION_CSS_V1).not.toContain("wipe");
   });

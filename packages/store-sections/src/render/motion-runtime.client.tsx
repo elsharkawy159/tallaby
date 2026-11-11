@@ -17,12 +17,16 @@ import { MOTION_V2_TRIGGER, staggerDelay } from "@workspace/motion/tokens";
 import { SITE_ROOT_CLASS } from "../core/site-root";
 import { countdownParts, formatCountdownUnit } from "../elements/countdown";
 import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_SPEED_FACTOR } from "../elements/motion-flags";
+import { startScrollEngine } from "./scroll-engine.client";
+import { watchMounts } from "./watch-mounts.client";
 
 const SELECTOR = "[data-reveal]:not(.is-inview)";
 /** A section inserted with motion v2 (`defineDesign` marks it): its reveals use the v2 trigger and eased batch stagger. */
 const V2_SECTION = `[${MOTION_V2_ATTR}="${MOTION_V2_MARK}"]`;
 /** A list drawn as a sideways row (`rail`, `mobileRail`): its cards reveal together, when the row enters view. */
 const RAIL = "[data-sf-rail]";
+const SWAP_PHOTO = "[data-sf-swap]>img";
+const SECOND_PHOTO = "[data-sf-swap]>img:nth-child(2)";
 
 export function MotionRuntime({ doc }: { doc?: Document | null } = {}) {
   // Countdowns (`elements/countdown.tsx`) tick every second, with or without motion: the
@@ -53,6 +57,8 @@ export function MotionRuntime({ doc }: { doc?: Document | null } = {}) {
   }, [doc]);
 
   useEffect(() => startReveals(doc ?? globalThis.document), [doc]);
+  // Motion v2: scroll effects, steps and count-up numbers (scroll-engine.client.ts).
+  useEffect(() => startScrollEngine(doc ?? globalThis.document), [doc]);
   return null;
 }
 
@@ -88,7 +94,13 @@ export function startReveals(document: Document): (() => void) | undefined {
     el.removeAttribute("data-reveal-step");
     if (el.style.getPropertyValue("--sf-delay")) el.style.removeProperty("--sf-delay");
   };
+  // A hover swap's second photo (motion v2, `data-sf-swap`) is decoded as its card appears, so the first hover never flashes blank.
+  const decode = (el: HTMLElement) => {
+    const photos = el.matches(SWAP_PHOTO) ? [el.parentElement?.children[1]] : el.querySelectorAll(SECOND_PHOTO);
+    for (const img of photos) if (img instanceof window.HTMLImageElement && typeof img.decode === "function") img.decode().catch(() => {});
+  };
   const show = (el: HTMLElement) => {
+    decode(el);
     el.addEventListener("transitionend", done);
     el.classList.add("is-inview");
     // A cancelled transition fires no transitionend: clean up anyway once the longest reveal is over
@@ -136,6 +148,7 @@ export function startReveals(document: Document): (() => void) | undefined {
   /** A row that really scrolls sideways now (a phone-only row is a grid on wider screens). */
   const sideways = (rail: HTMLElement) => /^(auto|scroll)$/.test(window.getComputedStyle(rail).overflowX);
   const strip = (el: HTMLElement) => {
+    decode(el);
     el.removeAttribute("data-reveal");
     el.removeAttribute("data-reveal-step");
   };
@@ -162,31 +175,18 @@ export function startReveals(document: Document): (() => void) | undefined {
     }
   };
 
-  const active = roots();
-  for (const root of active) {
-    watch(root, true);
-    root.classList.add("sf-motion");
-  }
-
-  let frame = 0;
-  const mutations = new window.MutationObserver(() => {
-    if (frame) return;
-    frame = window.requestAnimationFrame(() => {
-      frame = 0;
-      for (const root of roots()) {
-        const first = !root.classList.contains("sf-motion");
-        watch(root, first);
-        root.classList.add("sf-motion");
-      }
-    });
+  // A root seen for the first time (no `sf-motion` yet) shows what is already on screen as it is.
+  const stopWatching = watchMounts(document, () => {
+    for (const root of roots()) {
+      watch(root, !root.classList.contains("sf-motion"));
+      root.classList.add("sf-motion");
+    }
   });
-  mutations.observe(document.body, { childList: true, subtree: true });
 
   return () => {
-    mutations.disconnect();
+    stopWatching();
     observer.disconnect();
     observerV2.disconnect();
-    if (frame) window.cancelAnimationFrame(frame);
     for (const root of roots()) root.classList.remove("sf-motion");
   };
 }

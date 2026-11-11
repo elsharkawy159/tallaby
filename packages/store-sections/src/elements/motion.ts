@@ -7,9 +7,10 @@
  * `opacity` and `transform` move, and nothing moves with reduced motion.
  */
 import { ANIMATION_SPEEDS, animationDefaultSchema } from "@workspace/motion/presets";
-import { INTENSITY_FACTOR, MOTION_V2, MOTION_V2_EASE, wordStep } from "@workspace/motion/tokens";
+import { INTENSITY_FACTOR, MOTION_V2, MOTION_V2_EASE, MOTION_V2_SCROLL, wordStep } from "@workspace/motion/tokens";
 import { SITE_ROOT_CLASS } from "../core/theme";
 import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_SPEED_FACTOR } from "./motion-flags";
+import { STEPS_MAX } from "./scroll-progress.lib";
 
 /** The reveals every store has had since before motion v2 (their v1 look is frozen). */
 export const REVEAL_VARIANTS = ["fade-up", "fade", "zoom-in", "slide-start", "slide-end"] as const;
@@ -274,6 +275,110 @@ const words = `[data-reveal="words"][data-reveal]`;
 const WIPE_SIDE = "calc(50% - 50% / var(--sf-zoom))";
 const { fadeUp, fade, zoomIn, slide } = MOTION_V2;
 
+// ---------------------------------------------------------------------------
+// Motion v2 scroll effects and steps (docs/motion-v2-plan.md §5.4-§5.5). Opt-in
+// markup only (`elements/scroll-plan.ts`): nothing here matches a node without
+// `data-sf-scroll`, `data-sf-steps` or `data-sf-frame`, which the editor canvas
+// never draws.
+// ---------------------------------------------------------------------------
+
+/** A site root with Theme › Animations on. */
+const on = `${root}:not([data-sf-motion="off"])`;
+const { parallaxRange, zoomScale, fadeExitOpacity, fadeExitRise, stepFade, stepDim } = MOTION_V2_SCROLL;
+const stepIndexes = Array.from({ length: STEPS_MAX }, (_, k) => k);
+/** A step's text block that is not waiting for its own reveal (a reveal owns its opacity until it ends). */
+const stepItem = (k?: number) => `[data-sf-step-item${k === undefined ? "" : `="${k}"`}]:not([data-reveal])`;
+
+export const MOTION_CSS_SCROLL = [
+  // A photo's frame clips it, so a moving photo never shows an edge.
+  "[data-sf-frame]{overflow:clip}",
+  // Steps: the media column shows only where it can follow the text (wide screens, motion on);
+  // elsewhere each step shows its own photo, stacked as on phones.
+  "@media (max-width:767.98px),print,(prefers-reduced-motion:reduce){[data-sf-steps-media]{display:none}}",
+  `${root}[data-sf-motion="off"] [data-sf-steps-media]{display:none}`,
+  "@media screen and (min-width:768px) and (prefers-reduced-motion:no-preference){",
+  `${on} [data-sf-steps-media]{position:sticky;top:var(--sf-steps-top,12vh);align-self:start;display:grid}`,
+  `${on} [data-sf-step-media]{grid-area:1/1}`,
+  `${on} [data-sf-step-own]{display:none}`,
+  // Without the engine: every text in full and the first photo.
+  `${on} [data-sf-steps]:not([data-sf-step]) [data-sf-step-media]:not([data-sf-step-media="0"]){opacity:0}`,
+  `${on} [data-sf-step] [data-sf-step-media]{opacity:0;transition:opacity ${ms(stepFade)} ${MOTION_V2_EASE}}`,
+  ...stepIndexes.map((k) => `${on} [data-sf-step="${k}"] [data-sf-step-media="${k}"]{opacity:1}`),
+  `${on} [data-sf-step] ${stepItem()}{opacity:${stepDim};transition:opacity ${ms(stepFade)} ${MOTION_V2_EASE}}`,
+  ...stepIndexes.map((k) => `${on} [data-sf-step="${k}"] ${stepItem(k)}{opacity:1}`),
+  "}",
+  "@media screen and (prefers-reduced-motion:no-preference){",
+  // How far a parallax photo drifts each way, as a fraction of its height.
+  `${on} [data-sf-scroll]{--sf-r:calc(${parallaxRange / 100} * var(--sf-intensity,1))}`,
+  // Progress bars grow from the reading start (the right in Arabic), a vertical one from the top.
+  `${on} [data-sf-scroll="progress"]{transform-origin:left center}`,
+  `:is([dir="rtl"] ${on},${on}[dir="rtl"]) [data-sf-scroll="progress"]{transform-origin:right center}`,
+  `${on} [data-sf-scroll="progress"][data-sf-axis="y"]{transform-origin:center top}`,
+  // CSS scroll timelines: no script runs for these (the engine skips them).
+  "@supports (animation-timeline:view()){",
+  `${on} [data-sf-frame]{view-timeline:--sf-frame block}`,
+  `${on} [data-sf-track]{view-timeline:--sf-track block}`,
+  `${on} [data-sf-steps]{view-timeline:--sf-steps block}`,
+  `${on} [data-sf-scroll="parallax"]{animation:sf-parallax linear both;animation-timeline:--sf-frame;animation-range:cover 0% cover 100%}`,
+  `${on} [data-sf-scroll="zoom"]{animation:sf-scroll-zoom linear both;animation-timeline:--sf-frame;animation-range:cover 0% cover 100%}`,
+  // The hero copy fades as its section leaves the top of the screen (exit-crossing: the engine's exit).
+  `${on} [data-sf-scroll="fade-exit"]{animation:sf-fade-exit linear both;animation-timeline:--sf-track;animation-range:exit-crossing 0% exit-crossing 100%}`,
+  `${on} [data-sf-scroll="progress"]{animation:sf-progress linear both;animation-timeline:--sf-track;animation-range:cover 0% cover 100%}`,
+  // In a steps block a bar follows the middle of the screen through the steps (the engine's centre progress).
+  `${on} [data-sf-steps] [data-sf-scroll="progress"]{animation-timeline:--sf-steps;animation-range:cover 50vh cover calc(100% - 50vh)}`,
+  `${on} [data-sf-scroll="progress"][data-sf-axis="y"]{animation-name:sf-progress-y}`,
+  "}",
+  // The engine (Firefox, older Safari): `--sf-progress` / `--sf-exit`, once it drives an element (`data-sf-live`).
+  "@supports not (animation-timeline:view()){",
+  `${on} [data-sf-scroll="parallax"][data-sf-live]{translate:0 calc((1 - 2 * var(--sf-progress,.5)) * var(--sf-r) * 100%);scale:calc(1 + 2 * var(--sf-r));transition:translate .1s linear,scale .6s ${MOTION_V2_EASE}}`,
+  `${on} [data-sf-scroll="zoom"][data-sf-live]{scale:calc(1 + ${zoomScale} * var(--sf-intensity,1) * var(--sf-progress,0));transition:scale .1s linear}`,
+  `${on} [data-sf-scroll="fade-exit"][data-sf-live]{opacity:calc(1 - ${Math.round((1 - fadeExitOpacity) * 100) / 100} * var(--sf-exit,0));translate:0 calc(-${fadeExitRise}px * var(--sf-intensity,1) * var(--sf-exit,0))}`,
+  `${on} [data-sf-scroll="progress"][data-sf-live]{scale:var(--sf-progress,0) 1;transition:scale .1s linear}`,
+  `${on} [data-sf-scroll="progress"][data-sf-axis="y"][data-sf-live]{scale:1 var(--sf-progress,0)}`,
+  "}",
+  // A parallax photo is scaled so its drift never shows an edge (1 + 2 × range).
+  "@keyframes sf-parallax{from{translate:0 calc(var(--sf-r) * 100%);scale:calc(1 + 2 * var(--sf-r))}to{translate:0 calc(var(--sf-r) * -100%);scale:calc(1 + 2 * var(--sf-r))}}",
+  `@keyframes sf-scroll-zoom{from{scale:1}to{scale:calc(1 + ${zoomScale} * var(--sf-intensity,1))}}`,
+  `@keyframes sf-fade-exit{from{opacity:1;translate:none}to{opacity:${fadeExitOpacity};translate:0 calc(-${fadeExitRise}px * var(--sf-intensity,1))}}`,
+  "@keyframes sf-progress{from{scale:0 1}to{scale:1 1}}",
+  "@keyframes sf-progress-y{from{scale:1 0}to{scale:1 1}}",
+  "}",
+].join("");
+
+/** A motion v2 section, at zero specificity (a seller's own Hover style still wins). */
+const v2Hover = `:where(${root}:not([data-sf-hover="none"]) [${MOTION_V2_ATTR}="${MOTION_V2_MARK}"])`;
+const linkText = `:is([data-node-type="text"],[data-node-type="paragraph"],[data-node-type="heading"])`;
+/** A live carousel's track inside a motion v2 section. */
+const liveTrackV2 = `${root}:not([data-sf-motion="off"]) [${MOTION_V2_ATTR}="${MOTION_V2_MARK}"] [data-carousel]>[data-carousel-track]`;
+
+/**
+ * Motion v2 interaction polish (§5.6), only inside marked sections; unmarked
+ * sections keep today's hover exactly. With a fine pointer: the second photo
+ * crossfades in 300 ms and settles from 1.04, a text link's underline draws
+ * from the reading start and its icon nudges 3 px toward the reading end,
+ * buttons lift and press a little quicker. A carousel slide's copy eases out
+ * as it leaves (`data-sf-leaving`, set by the carousel runtime).
+ */
+export const MOTION_CSS_POLISH = [
+  "@media (hover:hover) and (prefers-reduced-motion:no-preference){",
+  `${v2Hover} [data-sf-swap]>img:first-child{transition:opacity .3s ${MOTION_V2_EASE}}`,
+  `${v2Hover} [data-sf-swap]>img+img{scale:1.04;transition:scale .7s ${MOTION_V2_EASE}}`,
+  `${v2Hover} [data-sf-swap]:hover>img+img{scale:1}`,
+  `${v2Hover} [data-sf-link] ${linkText}{background-image:linear-gradient(currentColor,currentColor);background-repeat:no-repeat;background-position:left bottom;background-size:0% 1px;transition:background-size .25s ${MOTION_V2_EASE}}`,
+  `[dir="rtl"] ${v2Hover} [data-sf-link] ${linkText}{background-position:right bottom}`,
+  `${v2Hover} [data-sf-link]:is(:hover,:focus-visible) ${linkText}{background-size:100% 1px}`,
+  `${v2Hover} [data-sf-link] [data-node-type="icon"]{transition:translate .2s ${MOTION_V2_EASE}}`,
+  `${v2Hover} [data-sf-link]:is(:hover,:focus-visible) [data-node-type="icon"]{translate:3px 0}`,
+  `[dir="rtl"] ${v2Hover} [data-sf-link]:is(:hover,:focus-visible) [data-node-type="icon"]{translate:-3px 0}`,
+  `${v2Hover} :where([data-node-type="button"],[data-node-type="addToCart"] button){transition:translate .2s ${MOTION_V2_EASE},scale .15s ${MOTION_V2_EASE},box-shadow .25s ${MOTION_V2_EASE},background-color .2s ease,color .2s ease,border-color .2s ease}`,
+  `${v2Hover} :where([data-node-type="button"],[data-node-type="addToCart"] button):active{transition-duration:.15s}`,
+  "}",
+  "@media (prefers-reduced-motion:no-preference){",
+  `${liveTrackV2}>[data-sf-leaving] :is([data-node-type="heading"],[data-node-type="paragraph"],[data-node-type="text"],[data-node-type="button"]){animation:sf-leave .25s ${EXIT_EASE} both}`,
+  "@keyframes sf-leave{to{opacity:0;transform:translate3d(0,-8px,0)}}",
+  "}",
+].join("");
+
 /** Motion v2 CSS: sections marked `data-sf-mv="2"` and the v2-only variants. Nothing here matches a v1 section's v1 reveals. */
 export const MOTION_CSS_V2 = [
   // Words stay inline boxes in every state (no-JS and reduced motion too), so the line never reflows when the reveal ends.
@@ -309,8 +414,8 @@ export const MOTION_CSS_V2 = [
   "}",
 ].join("");
 
-/** Fixed platform CSS, the same on every site (no seller input): v1 exactly as it was, then motion v2. */
-export const MOTION_CSS = MOTION_CSS_V1 + MOTION_CSS_V2;
+/** Fixed platform CSS, the same on every site (no seller input): v1 exactly as it was, then motion v2 (reveals, scroll effects and steps, interaction polish). */
+export const MOTION_CSS = MOTION_CSS_V1 + MOTION_CSS_V2 + MOTION_CSS_SCROLL + MOTION_CSS_POLISH;
 
 /** A `words` reveal's pieces: each word with its step (`--i`), and the real whitespace between them. */
 export type WordPiece = string | { word: string; step: number };

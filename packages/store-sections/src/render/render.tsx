@@ -44,13 +44,18 @@ export function SectionRenderer({
   const preset = ctx.reveal ? resolveAnimation(shellStyle?.animation, { animationDefault: ctx.revealDefault }) : null;
   const revealCtx: RenderContext = !ctx.reveal ? ctx : preset ? { ...ctx, revealPreset: preset } : { ...ctx, reveal: false };
   // The first section never hides behind a reveal (opacity 0 until the motion script runs).
-  const sectionCtx: RenderContext = aboveFold
+  const firstCtx: RenderContext = aboveFold
     ? { ...revealCtx, aboveFold: true, reveal: false }
     : revealCtx.aboveFold
       ? { ...revealCtx, aboveFold: false }
       : revealCtx;
-  const content = <Component instance={localizedInstance} props={props} ctx={sectionCtx} />;
   const shell = shellLayout(shellStyle, (src) => ctx.imageUrl(src));
+  // Motion v2 Scroll effect (public pages only; fade-exit only on the page's first section): a
+  // background photo takes parallax and zoom itself, else the tree's main photo does (scroll-plan.ts).
+  const scrollEffect = ctx.mode === "edit" || (shellStyle?.scrollEffect === "fade-exit" && !aboveFold) ? undefined : shellStyle?.scrollEffect;
+  const backgroundScroll = shell?.bgImage && (scrollEffect === "parallax" || scrollEffect === "zoom") ? scrollEffect : undefined;
+  const sectionCtx: RenderContext = scrollEffect && !backgroundScroll ? { ...firstCtx, sectionScroll: scrollEffect } : firstCtx;
+  const content = <Component instance={localizedInstance} props={props} ctx={sectionCtx} />;
   // No shell: the wrapper renders exactly as before the shell existed (P4B-05).
   if (!shell) {
     return (
@@ -60,11 +65,11 @@ export function SectionRenderer({
     );
   }
   return (
-    <div data-section-id={instance.id} data-section-type={instance.sectionId} {...shell.outer}>
+    <div data-section-id={instance.id} data-section-type={instance.sectionId} {...shell.outer} {...(backgroundScroll && { "data-sf-frame": "" })}>
       {shell.bgImage && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here */}
-          <img {...imageSource(ctx, shell.bgImage, IMAGE_SIZES.full)} alt="" aria-hidden className="pointer-events-none absolute inset-0 -z-10 size-full object-cover" {...imageLoading(aboveFold)} decoding="async" />
+          <img {...imageSource(ctx, shell.bgImage, IMAGE_SIZES.full)} {...(backgroundScroll && { "data-sf-scroll": backgroundScroll })} alt="" aria-hidden className="pointer-events-none absolute inset-0 -z-10 size-full object-cover" {...imageLoading(aboveFold)} decoding="async" />
           {shell.overlay > 0 && <div aria-hidden className="absolute inset-0 -z-10" style={{ background: `rgb(0 0 0 / ${shell.overlay}%)` }} />}
         </>
       )}

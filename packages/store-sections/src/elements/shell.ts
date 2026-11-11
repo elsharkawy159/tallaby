@@ -12,6 +12,7 @@
 import type { CSSProperties } from "react";
 import { ANIMATION_PRESETS, parseAnimationSetting, type AnimationSetting } from "@workspace/motion/presets";
 import { hasDangerousScheme } from "../config/url";
+import { SHELL_SCROLL_EFFECTS, type ShellScrollEffect } from "./scroll-progress.lib";
 
 export const SHELL_SCHEMES = ["default", "muted", "primary", "dark"] as const;
 export const SHELL_PADDINGS = ["none", "sm", "md", "lg", "xl"] as const;
@@ -30,7 +31,16 @@ export type SectionShellStyle = {
   /** `id` of the section, for in-page links (`/#about`). */
   anchor?: string;
   animation?: Exclude<AnimationSetting, "inherit">;
+  /**
+   * Motion v2 Scroll effect (docs/motion-v2-plan.md §5.5): `parallax` or `zoom`
+   * on the section's main photo (`scroll-plan.ts` `scrollEffectTargets`) or its
+   * background photo, `fade-exit` on the copy of the page's first section.
+   * None is stored as nothing; anything unknown is dropped.
+   */
+  scrollEffect?: ShellScrollEffect;
 };
+
+export { SHELL_SCROLL_EFFECTS };
 
 export const ANCHOR_RE = /^[a-z][a-z0-9-]{0,39}$/;
 
@@ -72,6 +82,8 @@ export function normalizeShell(input: unknown): SectionShellStyle | undefined {
   // section's own. The old "rise" (it only meant on) and anything unknown become Inherit.
   const animation = raw.animation === "rise" ? "inherit" : parseAnimationSetting(raw.animation);
   if (animation !== "inherit") out.animation = animation;
+  const scrollEffect = oneOf(SHELL_SCROLL_EFFECTS, raw.scrollEffect);
+  if (scrollEffect && scrollEffect !== "none") out.scrollEffect = scrollEffect;
   return Object.keys(out).length ? out : undefined;
 }
 

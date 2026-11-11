@@ -13,7 +13,7 @@
  * replay with the v2 tokens: an item's stagger step picks its delay from the
  * eased table, Intensity scales distances and zooms.
  */
-import { MOTION_V2, MOTION_V2_EASE, staggerDelay } from "@workspace/motion/tokens";
+import { MOTION_V2, MOTION_V2_EASE, MOTION_V2_SCROLL, staggerDelay } from "@workspace/motion/tokens";
 import { SITE_ROOT_CLASS } from "../core/site-root";
 import {
   MOTION_EASE,
@@ -90,4 +90,49 @@ export function replayReveal(root: HTMLElement) {
     });
     animation.id = REPLAY_ID;
   }
+}
+
+/** How long a scroll effect's demo plays in the editor (ms, normal speed). */
+export const SCROLL_DEMO_MS = 900;
+
+/**
+ * Plays a one-shot demo of a Scroll effect in the editor canvas (docs/motion-v2-plan.md
+ * §5.8), which draws no scroll effect itself: call it when a section's Scroll
+ * effect (`style.shell.scrollEffect`) or an image's own (`props.scrollEffect`)
+ * changes. `section`: the section's element in the canvas (its
+ * `[data-section-id]` wrapper). `targetId`: the node the effect moves, from
+ * `scrollEffectTargets` (`imageId` for parallax and zoom, `contentId` for
+ * fade-exit) or the image's own id; without it, parallax and zoom play on the
+ * section's background photo. Parallax drifts from `+range` to rest, zoom
+ * settles from 1.12, fade-exit fades in from 0.2, each over 900 ms with
+ * `fill: backwards`, so the canvas is static and fully visible when it ends.
+ * Off with reduced motion and Theme › Animations off. Count-ups need no demo:
+ * the canvas shows the final number.
+ */
+export function replayScrollEffect(section: HTMLElement, effect: string | null | undefined, targetId?: string | null) {
+  if (effect !== "parallax" && effect !== "zoom" && effect !== "fade-exit") return;
+  const win = section.ownerDocument.defaultView;
+  if (!win || win.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const site = section.closest<HTMLElement>(`.${SITE_ROOT_CLASS}`);
+  if (site?.dataset.sfMotion === "off") return;
+  const speed = REVEAL_SPEED_FACTOR[site?.dataset.sfSpeed as keyof typeof REVEAL_SPEED_FACTOR] ?? 1;
+  const intensity = intensityFactor(site?.dataset.sfIntensity);
+  // Node ids are plain (`[A-Za-z0-9_:-]`, the tree schema); anything else is not looked up.
+  const target = targetId && /^[\w:-]{1,64}$/.test(targetId)
+    ? section.querySelector<HTMLElement>(`[data-node-id="${targetId}"]`)
+    : targetId || effect === "fade-exit"
+      ? null
+      : section.querySelector<HTMLElement>(":scope > img");
+  if (!target || typeof target.animate !== "function") return;
+  cancel(target);
+  const range = (MOTION_V2_SCROLL.parallaxRange * intensity) / 100;
+  const from =
+    effect === "parallax"
+      ? { transform: `translate3d(0,${range * 100}%,0) scale(${1 + 2 * range})` }
+      : effect === "zoom"
+        ? { transform: `scale(${1 + MOTION_V2_SCROLL.zoomScale * intensity})` }
+        : { opacity: MOTION_V2_SCROLL.fadeExitOpacity, transform: `translate3d(0,${-MOTION_V2_SCROLL.fadeExitRise * intensity}px,0)` };
+  const to = effect === "fade-exit" ? { opacity: 1, transform: "none" } : { transform: "none" };
+  const animation = target.animate([from, to], { duration: SCROLL_DEMO_MS * speed, easing: MOTION_V2_EASE, fill: "backwards" });
+  animation.id = REPLAY_ID;
 }

@@ -44,7 +44,7 @@ export function splitCount(text: string): CountParts | null {
   const digits = match[0].replace(/[,٬]+$/, "");
   const end = match.index + digits.length;
   if (/^[.٫][\d٠-٩]/.test(text.slice(end))) return null;
-  const parsed = parseCount(digits);
-  if (!parsed || parsed.value <= 0) return null;
-  return { prefix: text.slice(0, match.index), suffix: text.slice(end), ...parsed };
+  const value = Number(digits.replace(/[,٬]/g, "").replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660)));
+  if (!(value > 0)) return null;
+  return { prefix: text.slice(0, match.index), suffix: text.slice(end), value, arabicDigits: /[٠-٩]/.test(digits), grouped: /[,٬]/.test(digits) };
 }

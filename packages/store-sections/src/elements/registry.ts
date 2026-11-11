@@ -9,6 +9,7 @@ import { MARQUEE_SPEED, REVEAL_CHOICES, REVEAL_V2_VARIANTS, type RevealChoice } 
 import type { StyleBreakpoint, StyleValues } from "./style";
 import type { NodeTemplate } from "./tree";
 import { VIDEO_CAPABILITIES, parseVideoUrl } from "./video";
+import { IMAGE_SCROLL_EFFECTS } from "./scroll-progress.lib";
 
 export const ELEMENT_GROUPS = ["layout", "text", "basic", "data", "product"] as const;
 export type ElementGroup = (typeof ELEMENT_GROUPS)[number];
@@ -153,6 +154,28 @@ const textField = (key: string, label: Localized, max: number, type: "text" | "t
   translatable: true,
 });
 const L = (ar: string, en: string): Localized => ({ ar, en });
+
+/** Motion v2 (advanced): a photo drifts (parallax) or grows (zoom) as the page scrolls, inside its own frame (`scroll-plan.ts`). */
+const SCROLL_EFFECT_LABELS: Record<(typeof IMAGE_SCROLL_EFFECTS)[number], Localized> = {
+  none: L("بدون", "None"),
+  parallax: L("حركة عمق مع التمرير", "Parallax"),
+  zoom: L("تكبير مع التمرير", "Zoom on scroll"),
+};
+const scrollEffectField: PropDefinition = {
+  key: "scrollEffect",
+  label: L("الحركة مع التمرير", "Scroll effect"),
+  type: "select",
+  group: "advanced",
+  options: IMAGE_SCROLL_EFFECTS.map((value) => ({ value, label: SCROLL_EFFECT_LABELS[value] })),
+};
+/** Motion v2 (advanced): a stat (`role: "value"`, statistics designs) counts up to its number once it scrolls into view. */
+const countUpField: PropDefinition = {
+  key: "countUp",
+  label: L("عدّ الرقم عند الظهور", "Count up when shown"),
+  type: "switch",
+  group: "advanced",
+  showWhen: { key: "role", equals: ["value"] },
+};
 
 const linkField: PropDefinition = { key: "href", label: L("الرابط", "Link"), type: "url" };
 
@@ -483,7 +506,7 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     container: false,
     textProp: "text",
     defaultProps: { text: "نص قصير" },
-    fields: [textField("text", L("النص", "Text"), 300)],
+    fields: [textField("text", L("النص", "Text"), 300), countUpField],
   },
   {
     type: "blockQuote",
@@ -527,7 +550,7 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     container: false,
     defaultProps: { src: "", alt: "" },
     defaultStyle: { radius: 12, aspectRatio: "landscape", objectFit: "cover" },
-    fields: [{ key: "src", label: L("الصورة", "Image"), type: "image" }, textField("alt", L("وصف الصورة", "Alt text"), 160)],
+    fields: [{ key: "src", label: L("الصورة", "Image"), type: "image" }, textField("alt", L("وصف الصورة", "Alt text"), 160), scrollEffectField],
   },
   {
     type: "video",

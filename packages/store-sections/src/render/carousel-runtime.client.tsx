@@ -25,6 +25,7 @@ import { useEffect } from "react";
 import { CAROUSEL_COPY } from "../core/copy-carousel";
 import { MenuSheetRuntime } from "./menu-sheet-runtime.client";
 import { BottomNavRuntime } from "./bottom-nav-runtime.client";
+import { watchMounts } from "./watch-mounts.client";
 
 type State = { index: number; elapsed: number; user: boolean; focus: boolean; moving: boolean; timer?: ReturnType<typeof setTimeout>; dot?: string };
 
@@ -99,7 +100,10 @@ export function startCarousels(document: Document): (() => void) | undefined {
       s.elapsed = 0;
       showDots(root, index);
     }
-    slides(root).forEach((slide, i) => slide.toggleAttribute("inert", i !== index));
+    slides(root).forEach((slide, i) => {
+      slide.toggleAttribute("inert", i !== index);
+      slide.removeAttribute("data-sf-leaving");
+    });
     kick();
   };
 
@@ -111,6 +115,8 @@ export function startCarousels(document: Document): (() => void) | undefined {
     const index = ((to % count) + count) % count;
     const glide = smooth && !reduce && Math.abs(index - s.index) <= 1;
     const rtl = window.getComputedStyle(el).direction === "rtl";
+    // The slide gliding away: in a motion v2 section its copy eases out (MOTION_CSS); cleared once it settles.
+    if (glide && index !== s.index) slides(root)[s.index]?.setAttribute("data-sf-leaving", "");
     s.index = index;
     s.elapsed = 0;
     s.moving = true;
@@ -241,16 +247,6 @@ export function startCarousels(document: Document): (() => void) | undefined {
   }
   const onVisibility = () => kick();
 
-  // Carousels that mount later (client navigation, a preview's new page).
-  let pendingScan = 0;
-  const mutations = new window.MutationObserver(() => {
-    if (pendingScan) return;
-    pendingScan = window.requestAnimationFrame(() => {
-      pendingScan = 0;
-      scan();
-    });
-  });
-
   document.addEventListener("scroll", onScroll, true);
   document.addEventListener("scrollend", onScroll, true);
   document.addEventListener("click", onClick);
@@ -258,14 +254,13 @@ export function startCarousels(document: Document): (() => void) | undefined {
   document.addEventListener("focusout", onFocusOut);
   document.addEventListener("visibilitychange", onVisibility);
   window.addEventListener("resize", onResize);
-  if (document.body) mutations.observe(document.body, { childList: true, subtree: true });
-  scan();
+  // Carousels that mount later (client navigation, a preview's new page) are picked up too.
+  const stopWatching = watchMounts(document, scan);
   return () => {
     if (frame) window.cancelAnimationFrame(frame);
-    if (pendingScan) window.cancelAnimationFrame(pendingScan);
     frame = 1; // nothing restarts after clean-up
     io?.disconnect();
-    mutations.disconnect();
+    stopWatching();
     document.removeEventListener("scroll", onScroll, true);
     document.removeEventListener("scrollend", onScroll, true);
     document.removeEventListener("click", onClick);

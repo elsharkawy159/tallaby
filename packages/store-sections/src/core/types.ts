@@ -15,6 +15,8 @@ import type { AnimationDefault } from "@workspace/motion/presets";
 import type { SectionInstance, SiteLocale } from "../config/schema";
 import type { LowStockSetting } from "./low-stock";
 import type { SlotDefinition } from "./slots";
+import type { ScrollPlan } from "../elements/scroll-plan";
+import type { ShellScrollEffect } from "../elements/scroll-progress.lib";
 
 export type Localized = { ar: string; en: string };
 
@@ -398,6 +400,19 @@ export interface RenderContext {
    * plays it (`stagger`: rising items one after another).
    */
   revealPreset?: AnimationDefault;
+  /**
+   * The section's Scroll effect for its tree (`style.shell.scrollEffect`), when
+   * its background photo does not take it. Set by the section renderer, never
+   * by a caller.
+   */
+  sectionScroll?: ShellScrollEffect;
+  /**
+   * The scroll effects of the section being drawn (`elements/scroll-plan.ts`).
+   * Set by the element renderer at the section root, on public pages only.
+   */
+  scrollPlan?: ScrollPlan;
+  /** The section being drawn carries the motion v2 marker (`data-sf-mv="2"`). Set by the element renderer at the section root. */
+  motionV2?: boolean;
   /**
    * The section is the page's first one (the hero, LCP): its images load at
    * once with high priority and nothing in it waits for a reveal. Set by the

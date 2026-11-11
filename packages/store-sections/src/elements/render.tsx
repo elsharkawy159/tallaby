@@ -72,6 +72,8 @@ import { PaymentLogo, storePayments } from "./store-payments";
 import { isBannerPhoto, normalizeStyle } from "./style";
 import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_CHOICES, REVEAL_MAX_STEP, isMotionV2, marqueeSeconds, splitWords, type RevealChoice, type RevealVariant } from "./motion";
 import { CountdownElement } from "./countdown";
+import { splitCount } from "@workspace/motion/count";
+import { planScroll } from "./scroll-plan";
 
 const ICONS: Record<ElementIconName, LucideIcon> = {
   star: Star,
@@ -407,6 +409,8 @@ const REVEAL_ITEMS = new Set(["grid", "productList", "categoryList", "postList"]
 
 function revealOf(node: ComponentNode, props: Record<string, unknown>, ctx: RenderContext, input: RevealIn): { attrs: Record<string, string>; children: RevealOut } {
   if (!ctx.reveal || input === null || REVEAL_SKIP.has(node.type)) return { attrs: {}, children: null };
+  // A steps photo is stacked under the others and only crossfades (scroll-plan.ts).
+  if (ctx.scrollPlan?.stepMedia.has(node.id)) return { attrs: {}, children: null };
   const choice = REVEAL_CHOICES.find((c) => c === props.reveal) ?? "auto";
   // The section's Animation: a preset replaces the variant each element would pick (an element's own
   // Reveal still wins); items stagger only with Auto and Stagger, else a list's items play together.
@@ -520,9 +524,77 @@ function iconOnly(node: ComponentNode): boolean {
   return node.children.length === 1 && node.children[0]!.type === "icon";
 }
 
+/**
+ * A link that reads as text: one to three texts and icons (or a single row
+ * holding them), no photo, no nested boxes, so a logo or a card never counts.
+ * In a motion v2 section its text underlines from the start and its icon
+ * nudges on hover (`data-sf-link`, MOTION_CSS).
+ */
+const LINK_TEXT_TYPES: ReadonlySet<string> = new Set(["text", "paragraph", "heading", "icon"]);
+function textLink(node: ComponentNode): boolean {
+  const only = node.children.length === 1 ? node.children[0]! : null;
+  const parts = only && (only.type === "hFlex" || only.type === "vFlex" || only.type === "div") ? only.children : node.children;
+  return parts.length > 0 && parts.length <= 3 && parts.every((child) => LINK_TEXT_TYPES.has(child.type)) && parts.some((child) => child.type !== "icon");
+}
+
 /** A link whose photo is the record's image (a product card's photo link). */
 function holdsBoundImage(node: ComponentNode): boolean {
   return node.children.some((child) => child.type === "image" && child.props?.bind === "image");
+}
+
+/**
+ * The context inside a section root: the motion v2 marker (hover polish) and,
+ * on public pages, the section's scroll plan (`scroll-plan.ts`). The editor
+ * canvas gets no plan, so it never draws a scroll effect or steps.
+ */
+function sectionRootCtx(node: ComponentNode, props: Record<string, unknown>, ctx: RenderContext): RenderContext {
+  const motionV2 = isMotionV2(props);
+  const plan = ctx.mode === "edit" ? null : planScroll(node, ctx.sectionScroll, { isFirstSection: ctx.aboveFold === true });
+  if (!plan && !motionV2 && !ctx.scrollPlan && !ctx.motionV2) return ctx;
+  return { ...ctx, scrollPlan: plan ?? undefined, motionV2: motionV2 || undefined };
+}
+
+/** A node's scroll attributes from its section's plan (enum values and indexes only). */
+function scrollAttrs(node: ComponentNode, props: Record<string, unknown>, ctx: RenderContext): Record<string, string> | null {
+  const plan = ctx.scrollPlan;
+  if (!plan) return null;
+  const out: Record<string, string> = {};
+  const effect = plan.effects.get(node.id);
+  if (effect) out["data-sf-scroll"] = effect;
+  if (effect === "progress" && props.axis === "vertical") out["data-sf-axis"] = "y";
+  if (plan.frames.has(node.id)) out["data-sf-frame"] = "";
+  if (plan.track && node.type === "section") out["data-sf-track"] = "";
+  const steps = plan.steps.get(node.id);
+  if (steps) out["data-sf-steps"] = String(steps);
+  const item = plan.stepItems.get(node.id);
+  if (item !== undefined) out["data-sf-step-item"] = String(item);
+  const media = plan.stepMedia.get(node.id);
+  if (media !== undefined) out["data-sf-step-media"] = String(media);
+  if (plan.stepsMedia.has(node.id)) out["data-sf-steps-media"] = "";
+  if (plan.stepOwn.has(node.id)) out["data-sf-step-own"] = "";
+  return out;
+}
+
+/**
+ * A stat that counts up (`role: "value"`, `props.countUp`; public pages only):
+ * the final text for search, screen readers and no-JS, and an inline grid
+ * that keeps its width (the hidden final text) under the live number the
+ * motion runtime counts (`render/count-up.client.ts`). `null` when the text
+ * has no whole number to count.
+ */
+function countUpText(text: string, ctx: RenderContext): ReactNode | null {
+  if (ctx.mode === "edit" || !splitCount(text)) return null;
+  return (
+    <span data-sf-count="">
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true" style={{ display: "inline-grid", fontVariantNumeric: "tabular-nums" }}>
+        <span style={{ gridArea: "1/1", visibility: "hidden" }}>{text}</span>
+        <span data-sf-count-live="" style={{ gridArea: "1/1" }}>
+          {text}
+        </span>
+      </span>
+    </span>
+  );
 }
 
 function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scope?: DataRecord, revealIn: RevealIn = "auto"): ReactNode {
@@ -532,8 +604,10 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
   // Demo phone / email / WhatsApp values become the store's own (store-contact.ts).
   const props = bound && withStoreContact(node, bound, ctx);
   if (!props || contactRowGone(node, ctx)) return null;
+  // A tree section's root: its motion v2 marker and scroll effects hold for everything inside.
+  if (definition.type === "section") ctx = sectionRootCtx(node, props, ctx);
   const reveal = revealOf(node, props, ctx, revealIn);
-  const attrs = { "data-node-id": node.id, "data-node-type": node.type, ...reveal.attrs };
+  const attrs = { "data-node-id": node.id, "data-node-type": node.type, ...reveal.attrs, ...scrollAttrs(node, props, ctx) };
   if (props.role === "social") {
     const row = renderSocialRow(node, ctx, attrs);
     if (row !== undefined) return row;
@@ -662,7 +736,9 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       // The price before a discount is always struck through (owner, 2026-10-29).
       return (
         <p {...attrs} className={cn("text-sm", props.bind === "compareAtPrice" && "line-through")}>
-          {(props.priceNode as ReactNode) ?? revealText(reveal.attrs, str(props.text, 300), ctx)}
+          {(props.priceNode as ReactNode) ??
+            (props.role === "value" && props.countUp === true ? countUpText(str(props.text, 300), ctx) : null) ??
+            revealText(reveal.attrs, str(props.text, 300), ctx)}
         </p>
       );
     case "blockQuote":
@@ -702,11 +778,12 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         // Both photos overlap; hovering the card fades the first one out to show the second.
         // `isolate` keeps the first photo's z-index inside this swap, so a sale badge placed over the photo stays on top.
         return (
-          <span className="group/pc relative isolate block w-full">
+          // Motion v2 (`data-sf-swap`, MOTION_CSS): a quicker crossfade with the second photo settling from a slight zoom.
+          <span className="group/pc relative isolate block w-full" {...(ctx.motionV2 && { "data-sf-swap": "" })}>
             {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage */}
             <img {...attrs} {...imageSource(ctx, url, sizes)} alt={str(props.alt, 160)} className="relative z-[1] block w-full transition-opacity duration-500 ease-in-out group-hover/pc:opacity-0 motion-reduce:transition-none" {...loading} decoding="async" />
             {/* eslint-disable-next-line @next/next/no-img-element -- same as above */}
-            <img {...attrs} {...imageSource(ctx, secondUrl, sizes)} alt="" aria-hidden className="absolute! inset-0 block size-full! object-cover" loading="lazy" decoding="async" />
+            <img {...attrs} {...imageSource(ctx, secondUrl, sizes)} alt="" aria-hidden className="absolute! inset-0 block size-full! object-cover" loading="lazy" decoding="async" {...(ctx.motionV2 && { fetchPriority: "low" as const })} />
           </span>
         );
       }
@@ -845,6 +922,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         <SmartLink ctx={ctx} href={href} className="block min-w-0" label={iconOnly(node) ? str(props.label, 60) || undefined : undefined}>
           <span
             {...attrs}
+            {...(ctx.motionV2 && textLink(node) && { "data-sf-link": "" })}
             className={cn(iconOnly(node) ? "grid place-items-center" : "block", (badge != null || flags) && "relative", zoomsPhoto(node) && "sf-zoom")}
           >
             {kids()}
