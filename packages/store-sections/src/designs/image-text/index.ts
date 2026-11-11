@@ -13,8 +13,9 @@ import { aboutBeforeAfter } from "./about-before-after";
 import { aboutProductAnatomy } from "./about-product-anatomy";
 import { aboutShopLook } from "./about-shop-look";
 import { aboutSplitStory } from "./about-split-story";
+import { aboutTwoTone } from "./about-two-tone";
 import { aboutWide } from "./about-wide";
 import { imageTextSteps } from "./image-text-steps";
 
 /** First is the default for new stores (the Classic template's About story). */
-export const IMAGE_TEXT_DESIGNS: readonly Design[] = [aboutClassic, aboutPanel, aboutOverlap, aboutRows, aboutValues, aboutList, aboutWide, aboutInset, aboutStories, aboutCircle, aboutFullbleed, aboutSplitStory, aboutBeforeAfter, aboutShopLook, imageTextSteps, aboutProductAnatomy];
+export const IMAGE_TEXT_DESIGNS: readonly Design[] = [aboutClassic, aboutPanel, aboutOverlap, aboutRows, aboutValues, aboutList, aboutWide, aboutInset, aboutStories, aboutCircle, aboutFullbleed, aboutSplitStory, aboutBeforeAfter, aboutShopLook, imageTextSteps, aboutProductAnatomy, aboutTwoTone];

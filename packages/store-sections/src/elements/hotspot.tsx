@@ -60,7 +60,7 @@ function ProductCard({ product, ctx }: { product: ProductSummary; ctx: RenderCon
     <>
       <SmartLink ctx={ctx} href={product.href} className="flex min-w-0 items-center gap-3">
         {url && (
-          <span className="block size-14 shrink-0 overflow-hidden rounded-lg bg-(--sf-shelf)">
+          <span className="block size-14 shrink-0 overflow-hidden rounded-[min(var(--sf-radius,8px),8px)] bg-(--sf-shelf)">
             {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage */}
             <img {...imageSource(ctx, url, IMAGE_SIZES.logo)} alt="" className="block size-full object-cover" loading="lazy" decoding="async" />
           </span>

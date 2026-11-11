@@ -8,9 +8,16 @@
  * describes (position fields) and rewrites the notes. The notes are plain
  * seller text, not store data, so the section shows on any store. On phones
  * the photo is square, so the notes still fit inside it.
+ *
+ * v2 (pilot L7, 2026-11-11): the calm heading of the editorial sections (a
+ * quiet eyebrow instead of a chip, the smaller title rising word by word),
+ * more air, a 16px corner and a photo that wipes in. Same nodes and field
+ * names as v1.
  */
 import { defineDesign } from "../builder";
-import { L, sectionHead } from "../_kit";
+import { editorialHead } from "../_editorial";
+import { L } from "../_kit";
+import { PRODUCTS_SECTION } from "../products/_shared";
 
 /** Percent from the photo's left and top, with the note each dot opens. */
 const NOTES = [
@@ -22,7 +29,7 @@ const NOTES = [
 
 export const aboutProductAnatomy = defineDesign({
   id: "about-product-anatomy",
-  version: 1,
+  version: 2,
   category: "image-text",
   subcategory: "story",
   name: L("تفاصيل المنتج على الصورة", "Product anatomy"),
@@ -32,12 +39,12 @@ export const aboutProductAnatomy = defineDesign({
   ),
   keywords: ["product anatomy", "details", "features", "hotspots", "dots", "image with text", "تفاصيل المنتج", "مميزات", "نقط", "صورة ونص"],
   tree: (t) =>
-    t.section({ label: L("تفاصيل المنتج على الصورة", "Product anatomy") }, [
+    t.section({ label: L("تفاصيل المنتج على الصورة", "Product anatomy"), ...PRODUCTS_SECTION }, [
       t.container(
         [
           t.stack(
             [
-              sectionHead(t, {
+              editorialHead(t, {
                 eyebrow: L("التفاصيل", "The details"),
                 title: L("اللي بيفرق في كل جزء", "What matters in every part"),
                 subtitle: L("دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.", "Tap any dot on the photo to read about that part."),
@@ -49,13 +56,20 @@ export const aboutProductAnatomy = defineDesign({
                     role: "image",
                     style: { objectFit: "cover", width: "100%", aspectRatio: "wide", radius: 0 },
                     mobile: { aspectRatio: "square" },
+                    motion: { reveal: "wipe-up" },
                   }),
                   ...NOTES.map((note) => t.hotspot({ x: note.x, y: note.y }, { kind: "text", title: note.title, body: note.body }, { label: L("نقطة ملحوظة", "Note dot") })),
                 ],
-                { label: L("الصورة", "Photo"), style: { position: "relative", overflow: "hidden", radius: 24, background: "secondary" }, mobile: { radius: 16 } },
+                {
+                  label: L("الصورة", "Photo"),
+                  style: { position: "relative", overflow: "hidden", radius: 16, background: "secondary", width: "100%", maxWidth: "1040px" },
+                  mobile: { radius: 12 },
+                  // The frame does not reveal as one, so the photo plays its own wipe.
+                  motion: { reveal: "none" },
+                },
               ),
             ],
-            { label: L("المحتوى", "Content"), style: { gap: 40 }, mobile: { gap: 24 } },
+            { label: L("المحتوى", "Content"), style: { gap: 40, alignItems: "center" }, mobile: { gap: 24 } },
           ),
         ],
         { label: L("الحاوية", "Container") },

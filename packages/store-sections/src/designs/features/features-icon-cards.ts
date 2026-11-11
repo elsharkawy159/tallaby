@@ -1,24 +1,33 @@
 /**
- * Icon cards (library F-c): a centred heading over four cards; each card has
- * an accent circle icon breaking out of its top edge, a title and two lines.
+ * Icon cards (library F-c): a centred heading over four cards, each with an
+ * icon, a short title and one line.
+ *
+ * v2 (look-first pilot L7, 2026-11-11): quiet cards. The accent circle that
+ * broke out of each card's top edge is gone: the cards are flat tinted tiles
+ * with no border, a thin icon on top, a small title and one muted line, under
+ * the calm heading of the product sections. Four across on desktop, 2×2 on
+ * tablets and phones (v1 stacked them on phones). Same nodes and field names
+ * as v1.
  */
 import { defineDesign } from "../builder";
-import { L, sectionHead } from "../_kit";
+import { editorialHead } from "../_editorial";
+import { L } from "../_kit";
+import { PRODUCTS_SECTION } from "../products/_shared";
 import { PROMISES } from "./_shared";
 
 export const featuresIconCards = defineDesign({
   id: "features-icon-cards",
-  version: 1,
+  version: 2,
   category: "features",
   subcategory: "icon-grid",
   name: L("بطاقات بأيقونات", "Icon cards"),
-  description: L("عنوان في المنتصف وأربع بطاقات بأيقونة دائرية بارزة.", "A centred heading over four cards with a round icon on top."),
-  keywords: ["features", "icons", "why us", "مميزات", "أيقونات", "لماذا نحن"],
+  description: L("عنوان في المنتصف وأربع بطاقات هادية بأيقونة وعنوان وسطر.", "A centred heading over four quiet cards with an icon, a title and a line."),
+  keywords: ["features", "icons", "why us", "store features", "مميزات", "أيقونات", "لماذا نحن"],
   tree: (t) =>
-    t.section({ label: L("لماذا نحن", "Why us") }, [
+    t.section({ label: L("لماذا نحن", "Why us"), ...PRODUCTS_SECTION }, [
       t.container(
         [
-          sectionHead(t, {
+          editorialHead(t, {
             eyebrow: L("لماذا تشتري منا", "Why shop with us"),
             title: L("تسوّق وأنت مطمئن", "Shop with peace of mind"),
             align: "center",
@@ -29,49 +38,35 @@ export const featuresIconCards = defineDesign({
                 [
                   t.stack(
                     [
-                      t.box(
-                        [
-                          t.icon(p.icon, {
-                            style: { fontSize: "2xl", color: "foreground" },
-                          }),
-                        ],
-                        {
-                          label: L("الأيقونة", "Icon"),
-                          style: {
-                            background: "accent",
-                            radius: 999,
-                            width: "64px",
-                            paddingTop: 18,
-                            paddingBottom: 14,
-                            textAlign: "center",
-                            marginTop: -56,
-                            borderWidth: 6,
-                            borderColor: "background",
-                          },
-                        },
-                      ),
+                      t.box([t.icon(p.icon, { style: { fontSize: "2xl", color: "foreground" } })], {
+                        label: L("الأيقونة", "Icon"),
+                        style: { textAlign: "center", marginBottom: 6 },
+                      }),
                       t.heading(p.title, "h3", {
-                        style: { fontSize: "lg", textAlign: "center" },
+                        style: { fontSize: "md", fontWeight: "semibold", fontFamily: "body", textAlign: "center", lineHeight: "snug" },
+                        mobile: { fontSize: "sm" },
                       }),
                       t.paragraph(p.text, {
-                        style: { textAlign: "center", fontSize: "sm" },
+                        style: { textAlign: "center", fontSize: "sm", lineHeight: "snug" },
+                        mobile: { fontSize: "xs" },
                       }),
                     ],
-                    {
-                      label: L("المحتوى", "Content"),
-                      style: { alignItems: "center", gap: 10 },
-                    },
+                    { label: L("المحتوى", "Content"), style: { alignItems: "center", gap: 6 } },
                   ),
                 ],
-                { label: L("بطاقة", "Card"), style: { paddingTop: 32 } },
+                {
+                  label: L("بطاقة", "Card"),
+                  style: { background: "secondary", borderWidth: 0, shadow: "none", radius: 16, paddingTop: 32, paddingBottom: 32, paddingStart: 20, paddingEnd: 20 },
+                  mobile: { paddingTop: 22, paddingBottom: 22, paddingStart: 12, paddingEnd: 12 },
+                },
               ),
             ),
             {
               label: L("البطاقات", "Cards"),
               role: "items",
-              columns: { desktop: 4, tablet: 2, mobile: 1 },
-              style: { gap: 20, marginTop: 56 },
-              mobile: { gap: 44, marginTop: 44 },
+              columns: { desktop: 4, tablet: 2, mobile: 2 },
+              style: { gap: 16, marginTop: 40 },
+              mobile: { gap: 10, marginTop: 24 },
             },
           ),
         ],
