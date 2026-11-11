@@ -2,6 +2,9 @@
  * Number band (Modular set): a full-width brand band with the figures in one
  * line, each value large with its label beneath, separated by sun dots. A bold
  * proof strip between home page sections; 2×2 on mobile.
+ *
+ * v2 (motion v2, 2026-11-11): each figure counts up to its number once it
+ * scrolls into view (the final number is in the HTML for search and no-JS).
  */
 import { defineDesign } from "../builder";
 import { L, ON_BRAND, ON_BRAND_BODY } from "../_kit";
@@ -10,7 +13,7 @@ import { FIGURES } from "./_shared";
 
 export const statsBand = defineDesign({
   id: "stats-band",
-  version: 1,
+  version: 2,
   category: "statistics",
   subcategory: "trust-badges",
   name: L("شريط أرقام", "Number band"),
@@ -52,6 +55,7 @@ export const statsBand = defineDesign({
                         ...ON_BRAND,
                       },
                       mobile: { fontSize: "4xl" },
+                      motion: { countUp: true },
                     }),
                     t.text(f.label, {
                       style: {

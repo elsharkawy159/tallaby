@@ -4,6 +4,12 @@
  * buttons sitting on it at the start side, inside the page width. Tall on
  * phones (portrait photo) so the copy never crowds it. The heading is the
  * page's `h1` and the photo is never hidden by the reveal (LCP).
+ *
+ * v2 (motion v2, 2026-11-11, docs/motion-v2-plan.md §6): the photo drifts
+ * with the scroll (`parallax`, transform only, so LCP is unaffected), the
+ * copy fades out as the visitor scrolls on (the section's `fade-exit`, only
+ * as the page's first section), and the eyebrow rises word by word when the
+ * hero sits lower on a page. The `h1` never reveals.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -12,7 +18,7 @@ const FILL = { position: "absolute", insetTop: "0px", insetBottom: "0px", insetS
 
 export const heroFullbleed = defineDesign({
   id: "hero-fullbleed",
-  version: 1,
+  version: 2,
   category: "hero",
   subcategory: "full-width",
   name: L("صورة بعرض الشاشة", "Full-bleed photo"),
@@ -20,7 +26,8 @@ export const heroFullbleed = defineDesign({
     "صورة كبيرة من طرف الشاشة للطرف، وعليها العنوان وسطر وزرين.",
     "One big photo from edge to edge, with the headline, a line and two buttons on it.",
   ),
-  keywords: ["hero", "full width", "banner", "premium", "photo", "واجهة", "بانر", "صورة كبيرة"],
+  keywords: ["hero", "full width", "banner", "premium", "photo", "parallax", "واجهة", "بانر", "صورة كبيرة"],
+  scrollEffect: "fade-exit",
   tree: (t) =>
     t.section({ label: L("الواجهة", "Hero"), style: { paddingTop: 0, paddingBottom: 0 }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.box(
@@ -30,13 +37,14 @@ export const heroFullbleed = defineDesign({
             style: { aspectRatio: "banner", objectFit: "cover", width: "100%", radius: 0 },
             tablet: { aspectRatio: "wide" },
             mobile: { aspectRatio: "story" },
+            motion: { scrollEffect: "parallax" },
           }),
           t.box([], { label: L("التظليل", "Shade"), style: { ...FILL, gradient: "ink-fade" } }),
           t.container(
             [
               t.stack(
                 [
-                  t.text(L("المجموعة الجديدة", "The new collection"), { role: "eyebrow", style: { color: "white", fontWeight: "semibold", opacity: 90 } }),
+                  t.text(L("المجموعة الجديدة", "The new collection"), { role: "eyebrow", style: { color: "white", fontWeight: "semibold", opacity: 90 }, motion: { reveal: "words" } }),
                   t.heading(L("صُنعت لتدوم معك", "Made to stay with you"), "h1", {
                     role: "title",
                     style: { color: "white", fontSize: "display-lg", fontWeight: "bold", lineHeight: "tight" },

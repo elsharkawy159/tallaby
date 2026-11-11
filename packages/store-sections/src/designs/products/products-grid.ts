@@ -1,6 +1,9 @@
 /**
  * Clean grid (library P-a): heading, a short line and "view all" on one row,
  * then an even grid of square cards without borders, 4 across and 2 on mobile.
+ *
+ * v2 (motion v2, 2026-11-11): the heading rises word by word; the cards keep
+ * the v2 row-by-row stagger and the eased second-photo swap.
  */
 import { defineDesign } from "../builder";
 import { L, sectionHead } from "../_kit";
@@ -8,7 +11,7 @@ import { SHOP_LINK, productCard } from "./_shared";
 
 export const productsGrid = defineDesign({
   id: "products-grid",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "featured",
   name: L("شبكة نظيفة", "Clean grid"),
@@ -22,6 +25,7 @@ export const productsGrid = defineDesign({
             title: L("وصل حديثًا", "Just landed"),
             subtitle: L("أحدث المنتجات اللي نزلت المتجر.", "The newest products in the store."),
             link: { href: SHOP_LINK },
+            titleMotion: { reveal: "words" },
           }),
           t.productList([productCard(t, { bordered: false })], {
             label: L("المنتجات", "Products"),

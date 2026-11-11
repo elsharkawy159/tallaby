@@ -3,13 +3,16 @@
  * photo and the text side by side inside the page width, with an eyebrow,
  * the heading, two short paragraphs and one button. The brand story, a
  * material or how the product is made. On phones the photo comes first.
+ *
+ * v2 (motion v2, 2026-11-11): the photo sits in its own clipped frame; it
+ * wipes in from the reading start and zooms in slowly as the page scrolls.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
 
 export const aboutSplitStory = defineDesign({
   id: "about-split-story",
-  version: 1,
+  version: 2,
   category: "image-text",
   subcategory: "story",
   name: L("قصة بصورة جانبية", "Split story"),
@@ -24,10 +27,16 @@ export const aboutSplitStory = defineDesign({
         [
           t.grid(
             [
-              t.photo(2, L("صورة القصة", "Story photo"), {
-                role: "image",
-                style: { aspectRatio: "portrait", objectFit: "cover", width: "100%", radius: 16 },
-              }),
+              t.box(
+                [
+                  t.photo(2, L("صورة القصة", "Story photo"), {
+                    role: "image",
+                    style: { aspectRatio: "portrait", objectFit: "cover", width: "100%", radius: 16 },
+                    motion: { reveal: "wipe-start", scrollEffect: "zoom" },
+                  }),
+                ],
+                { label: L("إطار الصورة", "Photo frame"), role: "frame", style: { overflow: "hidden", radius: 16 } },
+              ),
               t.stack(
                 [
                   t.text(L("من ورشتنا", "From our workshop"), {

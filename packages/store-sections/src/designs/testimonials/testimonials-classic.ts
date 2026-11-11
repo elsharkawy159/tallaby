@@ -2,6 +2,9 @@
  * Classic testimonials (library T-a, Classic template): a full-width white
  * band with a heading, then three equal quote cards with stars, the review
  * and a round initial with name and city.
+ *
+ * v2 (motion v2, 2026-11-11): the heading rises word by word, then the cards
+ * follow with the v2 eased stagger.
  */
 import { defineDesign } from "../builder";
 import { L, person, sectionHead, stars } from "../_kit";
@@ -9,7 +12,7 @@ import { REVIEWS } from "./_shared";
 
 export const testimonialsClassic = defineDesign({
   id: "testimonials-classic",
-  version: 1,
+  version: 2,
   category: "testimonials",
   subcategory: "review-grid",
   name: L("آراء كلاسيك", "Classic testimonials"),
@@ -19,7 +22,7 @@ export const testimonialsClassic = defineDesign({
     t.section({ label: L("آراء العملاء", "Testimonials"), style: { background: "secondary" } }, [
       t.container(
         [
-          sectionHead(t, { title: L("آراء العملاء", "What customers say") }),
+          sectionHead(t, { title: L("آراء العملاء", "What customers say"), titleMotion: { reveal: "words" } }),
           t.grid(
             REVIEWS.slice(0, 3).map((r) =>
               t.card(

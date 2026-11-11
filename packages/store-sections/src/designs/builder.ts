@@ -12,6 +12,8 @@ import type { ComponentNode, LibraryRef, SectionInstance, SiteLocale } from "../
 import type { Localized } from "../core/types";
 import type { LibraryCategoryId } from "../library/types";
 import { MOTION_V2_MARK, MOTION_V2_PROP } from "../elements/motion-flags";
+import type { RevealChoice } from "../elements/motion";
+import type { ImageScrollEffect, ShellScrollEffect } from "../elements/scroll-progress.lib";
 import { getElementDefinition, type ElementIconName, type ElementType, type PatternVariant } from "../elements/registry";
 import type { StyleBreakpoint, StyleValues } from "../elements/style";
 import { fromTemplate, type MakeId, type NodeTemplate } from "../elements/tree";
@@ -31,7 +33,16 @@ export type NodeOptions = {
   style?: StyleValues;
   tablet?: StyleValues;
   mobile?: StyleValues;
+  /**
+   * Motion v2 props (docs/motion-v2-plan.md §5.7): the element's own Reveal
+   * (`words` on h2–h4 and short text, `wipe-*` on photos), a photo's Scroll
+   * effect, a stat's count-up. Never a reveal on the hero `h1`.
+   */
+  motion?: NodeMotion;
 };
+
+/** A node's motion v2 props, as its element fields store them (`elements/registry.ts`). */
+export type NodeMotion = { reveal?: RevealChoice; scrollEffect?: ImageScrollEffect; countUp?: boolean };
 
 export type GridOptions = NodeOptions & { columns: { desktop: number; tablet?: number; mobile?: number } };
 
@@ -60,6 +71,12 @@ export type Design = {
   libraryId?: string;
   /** A template's copy of a library design: the library key and the template's patch, as a template stores it (`templates/library-ref.ts`). */
   libraryRef?: LibraryRef;
+  /**
+   * The section's Scroll effect (`style.shell.scrollEffect`) a new instance
+   * starts with, e.g. a hero's copy fading out as the page scrolls
+   * (`fade-exit`, which plays only on the page's first section).
+   */
+  scrollEffect?: ShellScrollEffect;
 };
 
 const DESIGN_ID_RE = /^[a-z0-9-]+$/;
@@ -112,9 +129,10 @@ function make(type: ElementType, props: Record<string, DesignText | boolean | nu
   const breakpointStyles: Partial<Record<StyleBreakpoint, StyleValues>> = {};
   if (opts.tablet) breakpointStyles.tablet = opts.tablet;
   if (opts.mobile) breakpointStyles.mobile = opts.mobile;
+  const motion = opts.motion && Object.fromEntries(Object.entries(opts.motion).filter(([, value]) => value !== undefined));
   return {
     type: type as ComponentNode["type"],
-    props: { ...plain, ...(opts.role && { role: opts.role }), ...(opts.bind && { bind: opts.bind }), ...localize(text) },
+    props: { ...plain, ...(opts.role && { role: opts.role }), ...(opts.bind && { bind: opts.bind }), ...motion, ...localize(text) },
     children,
     ...(opts.style && { style: { ...opts.style } }),
     ...(Object.keys(breakpointStyles).length && { breakpointStyles }),
@@ -352,7 +370,7 @@ function swapToEnglish(node: NodeTemplate): NodeTemplate {
  */
 export function instantiateTemplate(
   tree: NodeTemplate,
-  opts: { id: string; source?: string; defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string; keepSlots?: boolean },
+  opts: { id: string; source?: string; defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string; keepSlots?: boolean; scrollEffect?: ShellScrollEffect },
 ): SectionInstance {
   let counter = 0;
   const makeId = opts.makeId ?? (() => `${opts.id}-n${++counter}`);
@@ -364,6 +382,7 @@ export function instantiateTemplate(
     version: 1,
     props: {},
     ...(opts.source !== undefined && { source: opts.source }),
+    ...(opts.scrollEffect && { style: { shell: { scrollEffect: opts.scrollEffect } } }),
     componentTree: [fromTemplate(localized, makeId)],
   };
 }
@@ -374,5 +393,5 @@ export function instantiateTemplate(
  */
 export function instantiateDesign(design: Design, opts: { id: string; defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string }): SectionInstance {
   const template = design.tree(opts.industry ? createTreeBuilder(opts.industry) : treeBuilder);
-  return instantiateTemplate(template, { ...opts, source: `${design.id}@${design.version}` });
+  return instantiateTemplate(template, { ...opts, source: `${design.id}@${design.version}`, ...(design.scrollEffect && { scrollEffect: design.scrollEffect }) });
 }

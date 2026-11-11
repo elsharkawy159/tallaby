@@ -3,6 +3,9 @@
  * inside the store container with one short heading, a line and one button
  * centred on a dark fade at its foot. A visual break between shopping
  * sections.
+ *
+ * v3 (motion v2, 2026-11-11): the banner photo drifts with the scroll
+ * (`parallax`) inside its clipped frame.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -11,7 +14,7 @@ const FILL = { position: "absolute", insetTop: "0px", insetBottom: "0px", insetS
 
 export const promoBannerFullbleed = defineDesign({
   id: "promo-banner-fullbleed",
-  version: 2,
+  version: 3,
   category: "promotions",
   subcategory: "full-width",
   name: L("بانر بعرض الشاشة", "Full-bleed banner"),
@@ -27,6 +30,7 @@ export const promoBannerFullbleed = defineDesign({
                 role: "image",
                 style: { aspectRatio: "banner", objectFit: "cover", width: "100%", radius: 0 },
                 mobile: { aspectRatio: "portrait" },
+                motion: { scrollEffect: "parallax" },
               }),
               t.box([], { label: L("التظليل", "Shade"), style: { ...FILL, gradient: "ink-fade" } }),
               t.container(

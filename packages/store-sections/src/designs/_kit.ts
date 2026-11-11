@@ -7,7 +7,7 @@
 import type { ElementIconName } from "../elements/registry";
 import type { StyleValues } from "../elements/style";
 import type { NodeTemplate } from "../elements/tree";
-import type { DesignText, NodeOptions, TreeBuilder } from "./builder";
+import type { DesignText, NodeMotion, NodeOptions, TreeBuilder } from "./builder";
 
 export const L = (ar: string, en: string) => ({ ar, en });
 
@@ -51,6 +51,8 @@ type HeadOptions = {
   /** Title colour and paragraph colour for dark panels. */
   tone?: "default" | "brand";
   size?: "display-sm" | "display-md" | "3xl";
+  /** Motion v2: the title's own Reveal (e.g. `words`). */
+  titleMotion?: NodeMotion;
 };
 
 /** The section heading: eyebrow, title and subtitle, with an optional link at the end. */
@@ -63,6 +65,7 @@ export function sectionHead(t: TreeBuilder, o: HeadOptions): NodeTemplate {
       t.heading(o.title, "h2", {
         role: "title",
         style: { fontSize: o.size ?? "display-sm", ...(center && { textAlign: "center" }), ...(onBrand && ON_BRAND) },
+        ...(o.titleMotion && { motion: o.titleMotion }),
       }),
       ...(o.subtitle
         ? [

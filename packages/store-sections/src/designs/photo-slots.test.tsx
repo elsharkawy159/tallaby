@@ -43,7 +43,7 @@ describe("photo slots", () => {
       const slots = designSlotTree(d);
       for (const industry of INDUSTRIES) {
         for (const defaultLocale of ["ar", "en"] as const) {
-          const viaTemplate = { ...instantiateTemplate(slots, { id: "x", industry, defaultLocale }), source: `${d.id}@${d.version}` };
+          const viaTemplate = { ...instantiateTemplate(slots, { id: "x", industry, defaultLocale, scrollEffect: d.scrollEffect }), source: `${d.id}@${d.version}` };
           expect(viaTemplate, `${d.id} ${industry} ${defaultLocale}`).toEqual(instantiateDesign(d, { id: "x", industry, defaultLocale }));
         }
       }
