@@ -19,6 +19,10 @@
       "types": "./src/tokens.ts",
       "default": "./src/tokens.ts"
     },
+    "./count": {
+      "types": "./src/count.ts",
+      "default": "./src/count.ts"
+    },
     "./init-script": {
       "types": "./src/init-script.ts",
       "default": "./src/init-script.ts"

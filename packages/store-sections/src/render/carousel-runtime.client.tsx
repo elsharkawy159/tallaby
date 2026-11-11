@@ -22,14 +22,14 @@
  * active dot's progress (`--p`), and only when it changed.
  */
 import { useEffect } from "react";
-import { SECTION_COPY } from "../core/copy";
+import { CAROUSEL_COPY } from "../core/copy-carousel";
 import { MenuSheetRuntime } from "./menu-sheet-runtime.client";
 import { BottomNavRuntime } from "./bottom-nav-runtime.client";
 
 type State = { index: number; elapsed: number; user: boolean; focus: boolean; moving: boolean; timer?: ReturnType<typeof setTimeout>; dot?: string };
 
-const copy = (key: keyof typeof SECTION_COPY, el: Element) => {
-  const text = SECTION_COPY[key];
+const copy = (key: keyof typeof CAROUSEL_COPY, el: Element) => {
+  const text = CAROUSEL_COPY[key];
   return (el.closest("[lang]")?.getAttribute("lang") ?? "ar").startsWith("en") ? text.en : text.ar;
 };
 

@@ -14,7 +14,7 @@
  */
 import { useEffect } from "react";
 import { MOTION_V2_TRIGGER, staggerDelay } from "@workspace/motion/tokens";
-import { SITE_ROOT_CLASS } from "../core/theme";
+import { SITE_ROOT_CLASS } from "../core/site-root";
 import { countdownParts, formatCountdownUnit } from "../elements/countdown";
 import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_SPEED_FACTOR } from "../elements/motion-flags";
 

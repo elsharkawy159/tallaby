@@ -112,28 +112,4 @@ export function parseNumber(raw: string | null | undefined, fallback: number, mi
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
 
-/** An ease-out curve for count-ups: fast start, gentle settle. `t` in 0…1. */
-export function easeOutQuad(t: number): number {
-  const c = Math.min(1, Math.max(0, t));
-  return 1 - (1 - c) * (1 - c);
-}
-
-/**
- * The number a count-up ends on, read from its rendered text ("5", "1,080",
- * "٣٩"), with how to write it back. `null` when the text holds no number.
- */
-export function parseCount(text: string): { value: number; arabicDigits: boolean; grouped: boolean } | null {
-  const arabicDigits = /[٠-٩]/.test(text);
-  const western = text.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660)).replace(/٬/g, ",");
-  const match = western.match(/\d[\d,]*/);
-  if (!match) return null;
-  const value = Number(match[0].replace(/,/g, ""));
-  return Number.isFinite(value) ? { value, arabicDigits, grouped: match[0].includes(",") } : null;
-}
-
-/** Writes a count back in the digits and grouping it was rendered with. */
-export function formatCount(value: number, { arabicDigits, grouped }: { arabicDigits: boolean; grouped: boolean }): string {
-  const n = Math.round(value);
-  const s = grouped ? n.toLocaleString("en-US") : String(n);
-  return arabicDigits ? s.replace(/\d/g, (d) => String.fromCharCode(0x0660 + Number(d))).replace(/,/g, "٬") : s;
-}
+export { easeOutQuad, formatCount, parseCount, splitCount, type CountParts } from "./count";

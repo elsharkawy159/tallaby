@@ -4,6 +4,15 @@
  */
 import type { SiteLocale } from "../config/schema";
 import type { Localized } from "./types";
+import {
+  COPY_CAROUSEL,
+  COPY_CAROUSEL_NEXT,
+  COPY_CAROUSEL_PAUSE,
+  COPY_CAROUSEL_PLAY,
+  COPY_CAROUSEL_PREVIOUS,
+  COPY_CAROUSEL_SLIDE,
+  COPY_CAROUSEL_SLIDE_OF,
+} from "./copy-carousel";
 
 export const SECTION_COPY = {
   viewAll: { ar: "عرض الكل", en: "View all" },
@@ -27,14 +36,14 @@ export const SECTION_COPY = {
   pickProduct: { ar: "اختر منتجًا لعرضه هنا.", en: "Choose a product to show here." },
   pickForm: { ar: "اختر نموذجًا لعرضه هنا.", en: "Choose a form to show here." },
   emptyCustom: { ar: "قسم فارغ. أضف عناصر من لوحة الإضافة.", en: "Empty section. Add elements from the Add panel." },
-  carousel: { ar: "عروض مميزة", en: "Featured" },
-  carouselSlide: { ar: "الشريحة {n}", en: "Slide {n}" },
-  carouselSlideOf: { ar: "{n} من {total}", en: "{n} of {total}" },
-  carouselPause: { ar: "إيقاف العرض", en: "Pause slideshow" },
-  carouselPlay: { ar: "تشغيل العرض", en: "Play slideshow" },
+  carousel: COPY_CAROUSEL,
+  carouselSlide: COPY_CAROUSEL_SLIDE,
+  carouselSlideOf: COPY_CAROUSEL_SLIDE_OF,
+  carouselPause: COPY_CAROUSEL_PAUSE,
+  carouselPlay: COPY_CAROUSEL_PLAY,
   searchSubmit: { ar: "ابحث", en: "Search" },
-  carouselPrevious: { ar: "السابق", en: "Previous" },
-  carouselNext: { ar: "التالي", en: "Next" },
+  carouselPrevious: COPY_CAROUSEL_PREVIOUS,
+  carouselNext: COPY_CAROUSEL_NEXT,
   videoEmpty: { ar: "الصق رابط الفيديو في تبويب المحتوى", en: "Paste a video link in the Content tab" },
   emptyPlaylist: { ar: "لا توجد فيديوهات. كرّر فيديو أو أضف واحدًا من تبويب المحتوى.", en: "No videos yet. Add one from the Content tab." },
   videoTitle: { ar: "فيديو", en: "Video" },

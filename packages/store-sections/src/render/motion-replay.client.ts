@@ -14,7 +14,7 @@
  * eased table, Intensity scales distances and zooms.
  */
 import { MOTION_V2, MOTION_V2_EASE, staggerDelay } from "@workspace/motion/tokens";
-import { SITE_ROOT_CLASS } from "../core/theme";
+import { SITE_ROOT_CLASS } from "../core/site-root";
 import {
   MOTION_EASE,
   MOTION_V2_ATTR,

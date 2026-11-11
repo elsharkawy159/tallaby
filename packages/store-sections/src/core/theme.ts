@@ -8,9 +8,10 @@
  */
 import type { DesignSystem } from "../config/schema";
 import { storeFontFamily } from "./fonts";
+import { SITE_ROOT_CLASS } from "./site-root";
 
 /** Class on the site root; the theme CSS is scoped to it. */
-export const SITE_ROOT_CLASS = "sf-site";
+export { SITE_ROOT_CLASS };
 
 /**
  * Tallaby Classic defaults (apps/ecommerce storefront.module.css `.tokens`),

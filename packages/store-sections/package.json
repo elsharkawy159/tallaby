@@ -99,7 +99,9 @@
     "@types/react": "19.2.18",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "@types/react-dom": "19.2.5"
+    "@types/react-dom": "19.2.5",
+    "esbuild": "^0.25.9",
+    "jsdom": "28.1.0"
   },
   "peerDependencies": {
     "react": "^19.0.0"
