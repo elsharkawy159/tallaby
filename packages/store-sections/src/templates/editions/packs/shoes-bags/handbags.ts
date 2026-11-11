@@ -25,7 +25,7 @@
  * flowers behind), shoulder bags 4830929 (a teal and a cognac top-handle bag
  * among plants; plain clasps). Banner 5698420 (a round straw bag and a felt
  * hat on a grey peg rail). Story / about 12105084 (dark leather, cream
- * double stitching and a steel D-ring, up close). Shop the look 9595079:
+ * double stitching and a steel D-ring, up close). Shop the look (`fashion-luxe`, through `perLook`) 9595079:
  * three small bags stacked on a grey mesh cabinet, a cognac barrel bag on a
  * cream square pouch on an olive zip case (a blind, unreadable deboss on the
  * olive lid, checked at 3000px); the dots are the demo's three newest
@@ -46,6 +46,17 @@
  *
  * No hero video: none found without people or hands, so fashion-luxe shows
  * the poster.
+ *
+ * Looks: `shanta` (the niche's template, one template per niche; it shows
+ * the pack itself and is its own content), then `fashion-luxe` until the
+ * shoes-and-bags switch takes it off. On `shanta`, `photos.look` and
+ * `look` are the anatomy (one bag with four note dots, its notes
+ * `custom.anatomy-N-*`): 22434764, a burgundy dome bag with gold rings and
+ * feet on a pale backdrop (checked at 3000px, no lettering; freed from
+ * shanta v3's demo, used nowhere else); 22434766 was left out (a blind
+ * deboss on the front). `fashion-luxe` keeps its shop the look (9595079 and
+ * its dots) through `perLook`. The hero on `shanta` is the tall photo
+ * (5706272) beside the copy; the story is the leather-and-D-ring close-up.
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, handle, pexels, phone } from "../../../library-template";
@@ -64,7 +75,7 @@ const EMAIL = "hello@lamaa.example";
 
 export const HANDBAGS: Edition = {
   niche: NICHE,
-  looks: ["fashion-luxe"],
+  looks: ["shanta", "fashion-luxe"],
   priceBand: { min: 450, max: 3500 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -106,13 +117,14 @@ export const HANDBAGS: Edition = {
     tiles: TILES,
     banner: pexels(5698420, 2000),
     story: pexels(12105084, 1200),
-    // The dots, in percent from the photo's left and top: the cognac barrel bag (camel crossbody), the cream pouch (white mini crossbody), the olive case (olive saddle bag).
+    // `shanta`: one bag with four note dots (not shop the look), in percent from the photo's left and top on its 4:5 crop: the handles, the zip and pockets, the hardware, the size.
     look: {
-      src: pexels(9595079, 1400),
+      src: pexels(22434764, 1400),
       dots: [
-        { x: 57, y: 42 },
-        { x: 52, y: 55 },
-        { x: 40, y: 69 },
+        { x: 63, y: 31 },
+        { x: 75, y: 47 },
+        { x: 71, y: 74 },
+        { x: 42, y: 66 },
       ],
     },
   },
@@ -122,9 +134,9 @@ export const HANDBAGS: Edition = {
       L("ادفعي عند الاستلام", "Pay on delivery"),
       L("استبدال خلال ١٤ يوم", "Exchange within 14 days"),
     ],
-    labels: { about: L("حكايتنا", "Our story") },
+    labels: { about: L("حكايتنا", "Our story"), search: L("ابحثي عن شنطة", "Search bags") },
     hero: {
-      alt: L("شنطتين جلد هافان بإيد قصيرة على قاعدة بيضا جنب سعف نخل ناشف في فازة بيج", "Two cognac top-handle bags on a white plinth beside dried palm leaves in a beige vase"),
+      alt: L("شنطة جلد هافان بإيد قصيرة على قاعدة بيضا جنب سعف نخل ناشف في فازة بيج", "A cognac top-handle bag on a white plinth beside dried palm leaves in a beige vase"),
       eyebrow: L("من الصبح لآخر الليل", "From morning to late night"),
       title: L("شنطة لكل ساعة في يومك", "A bag for every hour"),
       line: L(
@@ -150,11 +162,12 @@ export const HANDBAGS: Edition = {
       ),
       cta: L("شوفي الجديد", "See what is new"),
     },
+    // `shanta`: the heading over the anatomy photo (its notes are `custom.anatomy-N-*`).
     look: {
-      alt: L("تلات شنط صغيرة فوق بعض على دولاب معدن: هافان وكريمي وزيتي", "Three small bags stacked on a metal cabinet: cognac, cream and olive"),
-      eyebrow: L("ألوان الخريف", "Autumn colours"),
-      title: L("هافان وكريمي وزيتي", "Cognac, cream and olive"),
-      text: L("دوسي على أي نقطة في الصورة وشوفي أقرب شنطة ليها من تشكيلتنا.", "Tap a dot on the photo to see the closest bag from our range."),
+      alt: L("شنطة يد نبيتي بإيدين وحلقات ورجول دهبي على خلفية فاتحة", "A burgundy top-handle bag with gold rings and feet on a pale backdrop"),
+      eyebrow: L("قبل ما تختاري", "Before you choose"),
+      title: L("اعرفي الشنطة من جوه وبره", "Know the bag inside and out"),
+      text: L("دوسي على أي نقطة في الصورة وشوفي تفصيلة الجزء ده.", "Tap a dot on the photo to see that part up close."),
     },
     trust: [
       { title: L("توصيل لحد الباب", "Delivered to your door"), line: L("بنوصّل لكل محافظات مصر", "We deliver to every governorate") },
@@ -166,6 +179,7 @@ export const HANDBAGS: Edition = {
       title: L("اعرفي الموديلات الجديدة أول واحدة", "Hear about new styles first"),
       line: L("رسالة لما ينزل موديل جديد، مش أكتر.", "One letter when a new style arrives, nothing more."),
     },
+    footer: { line: L("من الشغل الصبح لحد السهرة", "From work to a night out") },
     about: {
       line: L("شنط لكل ساعة في اليوم.", "Bags for every hour of the day."),
       alt: L("جلد غامق بخياطة مزدوجة كريمي وحلقة معدن، قريب أوي", "Dark leather with cream double stitching and a steel ring, up close"),
@@ -195,7 +209,36 @@ export const HANDBAGS: Edition = {
       // fashion-luxe: the link to the whole catalog, and the noun after a category tile's count.
       "shop-all": L("كل الشنط", "All bags"),
       "products-noun": L("شنط", "bags"),
+      // `shanta`: the story's second paragraph, and the promises' heading.
+      "story-more": L("ولو محتارة في المقاس، ابعتيلنا ونقولك الشنطة تساع إيه بالظبط.", "Unsure about the size? Message us and we will tell you exactly what the bag holds."),
+      "trust-title": L("قبل ما تطلبي", "Before you order"),
+      // `shanta`: the four anatomy notes, in the order of `photos.look.dots` (a title of one or two words, one line each).
+      "anatomy-1-title": L("الإيدين", "The handles"),
+      "anatomy-1-line": L("إيدين مزدوجين ارتفاعهم ١٢ سم: تتشال في الإيد أو على الدراع.", "Two handles with a 12 cm drop, for the hand or the crook of the arm."),
+      "anatomy-2-title": L("السوستة والجيوب", "Zip and pockets"),
+      "anatomy-2-line": L("سوستة على الوش كله، وجوه جيب بسوستة وجيبين للموبايل والكروت.", "A zip all round the top; inside, one zip pocket and two slip pockets for a phone and cards."),
+      "anatomy-3-title": L("المعادن", "The hardware"),
+      "anatomy-3-line": L("حلقات دهبي للإيدين، ورجول معدن بتحمي القاعدة من الأرض.", "Gold-tone rings for the handles, and metal feet that keep the base off the floor."),
+      "anatomy-4-title": L("المقاس", "The size"),
+      "anatomy-4-line": L("٣٠ × ٢٣ × ١٢ سم: تساع موبايل كبير ومحفظة ونضارة.", "30 × 23 × 12 cm: takes a large phone, a wallet and sunglasses."),
     },
   },
   productPage: { copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("شنط ممكن تعجبك", "Bags you may like") } },
+  perLook: {
+    // fashion-luxe keeps its wide hero and its shop the look until the shoes-and-bags switch takes it off: the dots are the
+    // demo's three newest products (the camel crossbody on the cognac barrel bag, the white mini crossbody on the cream pouch,
+    // the olive saddle bag on the olive case).
+    "fashion-luxe": {
+      photos: { look: { src: pexels(9595079, 1400), dots: [{ x: 57, y: 42 }, { x: 52, y: 55 }, { x: 40, y: 69 }] } },
+      copy: {
+        hero: { alt: L("شنطتين جلد هافان بإيد قصيرة على قاعدة بيضا جنب سعف نخل ناشف في فازة بيج", "Two cognac top-handle bags on a white plinth beside dried palm leaves in a beige vase") },
+        look: {
+          alt: L("تلات شنط صغيرة فوق بعض على دولاب معدن: هافان وكريمي وزيتي", "Three small bags stacked on a metal cabinet: cognac, cream and olive"),
+          eyebrow: L("ألوان الخريف", "Autumn colours"),
+          title: L("هافان وكريمي وزيتي", "Cognac, cream and olive"),
+          text: L("دوسي على أي نقطة في الصورة وشوفي أقرب شنطة ليها من تشكيلتنا.", "Tap a dot on the photo to see the closest bag from our range."),
+        },
+      },
+    },
+  },
 };

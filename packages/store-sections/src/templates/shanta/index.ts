@@ -1,226 +1,465 @@
 /**
- * Shanta (template 52, leather bags; Claude Design "Storefront Templates"):
- * warm parchment paper, espresso ink, a saddle brown for actions and an
- * apricot highlight, Readex Pro throughout and round 16px corners. A leather
- * workshop's shop (v3, section order): a bento hero, the departments,
- * fresh from the workshop, the founder's note, carried most and questions. Built
- * from section library designs (`fromLibrary`).
+ * Shanta (shoes & bags, the handbags niche template; one template per niche,
+ * ROADMAP F-90, `docs/systems/one-template-per-niche.md`): a women's handbag
+ * boutique. White paper and a pale mineral grey, a bottle green for actions
+ * and a camel accent (the colour of the bags themselves); El Messiri headings
+ * (the curve of a handle) over Almarai; 4px corners, tailored like a
+ * structured bag. Built from section library designs (`fromLibrary`).
  *
- * Photos: Pexels, each checked by eye (2026-10-21): leather handbags and
- * totes on plain backdrops, card holders and wallets, a market wall of bags
- * and the workbench with tools. No people, no hands and no logos (the
- * design's photos of models were all replaced; bags with an embossed maker
- * name were left out).
+ * v4 (2026-11-12): rebuilt look-first around the bag. Home, nine sections:
+ *   1. `hero-split`                  a structured bag on a white plinth, the
+ *                                    copy in the mineral panel beside it (a
+ *                                    light photo: copy on it would cover the
+ *                                    bag). The page's one motion: the photo
+ *                                    zooms slowly as the page scrolls
+ *   2. `categories-photo-tiles`      four portrait tiles by bag type
+ *   3. `products-minimal`            ten best sellers on the white stage, with
+ *                                    sort links
+ *   4. `about-split-story`           the stitching story (leather, stitches and
+ *                                    a D-ring up close)
+ *   5. `products-category-carousel`  totes (the store's 1st category)
+ *   6. `about-product-anatomy`       one bag with four note dots: the handles,
+ *                                    the zip and pockets, the hardware, the
+ *                                    size (the trade's own section, and the
+ *                                    photo break)
+ *   7. `products-category-carousel`  clutches and evening (the 3rd category)
+ *   8. `features-icon-cards`         four promises on quiet tiles
+ *   9. `newsletter-classic`          one row on the mineral panel
+ * Chrome: `header-classic` (its announcement line in the bottle green) and
+ * `footer-signoff` (the store's line and WhatsApp). Eyebrows are set in
+ * sentence case (`calm`), never capitals.
+ *
+ * Content: the `handbags` pack is Shanta's own shop ("Lamaa"): the look's
+ * default content and demo are the pack's, so the template and the niche's
+ * edition are one store. `photos.look` and `look` are the anatomy photo, its
+ * four dots and its heading; the notes are `custom.anatomy-N-title` / `-line`.
+ *
+ * Guard: `shanta.v3.json` was captured from the v3 template before any edit.
+ * v4 is the deliberate redesign, so its fixture is a new capture
+ * (`shanta.v4.json`) and the v3 one is deleted
+ * (`../editions/look-guard.test.ts`).
+ *
+ * Photos: the pack's (see its header).
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
+import type { NodeTemplate } from "../../elements/tree";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import { HANDBAGS } from "../editions/packs/shoes-bags/handbags";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 
 export const SHANTA_KEY = "shanta";
 
-const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(SHANTA_KEY, getDesign(id)!, { corners: 16, ...patch });
+const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(SHANTA_KEY, getDesign(id)!, { corners: 4, ...patch });
+
+/**
+ * A library design with props and styles changed node by node (what a
+ * `nodes` patch cannot reach: nodes with no label, or several sharing one).
+ * The tree keeps its shape, so the section still stores as a library ref.
+ * `index` counts the nodes of `type` (every node when undefined) in tree
+ * order, per build.
+ */
+function retouch(design: Design, type: string | undefined, change: (node: NodeTemplate, index: number) => NodeTemplate): Design {
+  return {
+    ...design,
+    tree: (t) => {
+      let index = 0;
+      const visit = (node: NodeTemplate): NodeTemplate => {
+        const next = type === undefined || node.type === type ? change(node, index++) : node;
+        return next.children ? { ...next, children: next.children.map(visit) } : next;
+      };
+      return visit(design.tree(t));
+    },
+  };
+}
+
+/** Eyebrows in sentence case: the library sets some in spaced capitals. */
+const calm = (design: Design): Design =>
+  retouch(design, undefined, (node) =>
+    node.props?.role === "eyebrow"
+      ? {
+          ...node,
+          style: {
+            ...node.style,
+            textTransform: "none",
+            letterSpacing: "normal",
+          },
+        }
+      : node,
+  );
 
 const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
 
-const PHOTOS = {
-  bagWall: pexels(31661556),
-  petalBag: pexels(4830926, 900),
-  flapBag: pexels(4830928, 900),
-  cardHolder: pexels(37326694, 900),
-  tallTote: pexels(27046147, 900),
-  barrelBag: pexels(22434773, 900),
-  cocoaSatchel: pexels(22434766, 900),
-  domeBag: pexels(22434764, 900),
-  envelope: pexels(28028348, 900),
-  bifolds: pexels(28028234, 900),
-  wallet: pexels(915917, 900),
-  workbench: pexels(4452603),
+const VIEW_ALL = L("عرض الكل", "View all");
+
+/** Shanta's own content is the handbags pack's shop (Lamaa): one source for the template and its edition. */
+const DEFAULT_CONTENT: LookDefaults = {
+  ...HANDBAGS.copy,
+  photos: {
+    hero: HANDBAGS.photos.hero,
+    story: HANDBAGS.photos.story,
+    ...(HANDBAGS.photos.about && { about: HANDBAGS.photos.about }),
+    ...(HANDBAGS.photos.look && { look: HANDBAGS.photos.look }),
+  },
 };
 
-const NAME = L("شنطة ليذر", "Shanta Leather");
+/** One row of four of a category's products, by the category's place in the store. */
+const categoryRow = (place: number, n: number): Design =>
+  lib("products-category-carousel", {
+    as: `category-row-${n}`,
+    text: { "عرض الكل": VIEW_ALL },
+    lists: [{ offset: place - 1 }, { categoryIndex: place, limit: 4 }],
+  });
 
-const header = lib("header-pill", {
-  text: {
-    "اسم متجرك": NAME,
-    "المتجر": L("الشنط", "Bags"),
-    "العروض": L("الأكثر مبيعاً", "Best sellers"),
-    "المدونة": L("الورشة", "Workshop"),
-  },
-  links: { "/products": [undefined, BEST], "/blog": "/about" },
-});
-
-const footer = lib("footer-wordmark", {
-  text: {
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-    "من نحن": L("الورشة", "The workshop"),
-    "٠١٠٠ ١٢٣ ٤٥٦٧": L("٠١٠٠ ٢٤٥ ٨٨٢٠", "+20 100 245 8820"),
-    "‏hello@store.com": L("‏shanta@shantaleather.eg", "shanta@shantaleather.eg"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ شنطة ليذر. كل الحقوق محفوظة.", "© 2026 Shanta Leather. All rights reserved."),
-  },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const QUESTIONS = {
-  "كيف أعرف أن طلبي وصل إليكم؟": L("الجلد طبيعي فعلاً؟", "Is the leather really natural?"),
-  "ستظهر لك صفحة تأكيد وتصلك رسالة، ونتصل بك لتأكيد طلبات الدفع عند الاستلام.": L(
-    "أيوه، جلد بقري مدبوغ نباتي، ولونه بيغمق ويحلى مع الاستعمال.",
-    "Yes, vegetable-tanned cowhide that darkens and gets better with use.",
-  ),
-  "هل يمكنني تعديل طلبي أو إلغاؤه؟": L("ينفع تكتبوا حروف اسمي؟", "Can you add my initials?"),
-  "نعم، حتى يتم شحنه. تواصل معنا بأسرع وقت.": L("أيوه، ببلاش على أي شنطة. اكتبها في الملاحظات وإنت بتطلب.", "Yes, free on any bag. Add them in the order notes."),
-  "كم يستغرق التوصيل؟": L("الطلب بياخد قد إيه؟", "How long does an order take?"),
-  "القاهرة والجيزة من يوم إلى يومين، وباقي المحافظات من ٢ إلى ٦ أيام.": L(
-    "الشنط الجاهزة من ٢ لـ ٤ أيام، واللي عليها حروف بتزيد يومين.",
-    "Ready bags take 2 to 4 days; initials add two days.",
-  ),
-  "هل التوصيل متاح لكل المحافظات؟": L("أنضف الشنطة إزاي؟", "How do I care for the bag?"),
-  "نعم، نوصل لكل محافظات مصر.": L("امسحها بقماشة ناشفة، وادهنها بكريم جلد مرة كل كام شهر.", "Wipe it with a dry cloth and use leather cream every few months."),
-  "ما طرق الدفع المتاحة؟": L("فيه ضمان على الخياطة؟", "Is the stitching guaranteed?"),
-  "الدفع عند الاستلام، والبطاقات، والمحافظ الإلكترونية، وإنستاباي.": L("سنة كاملة. لو فكّت غرزة بنصلحها في الورشة ببلاش.", "For a full year. If a stitch comes loose we fix it at the workshop for free."),
-  "ما سياسة الاسترجاع؟": L("ينفع أرجّع الشنطة؟", "Can I return a bag?"),
-  "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": L(
-    "خلال ١٤ يوم لو مش مستعملة، ما عدا الشنط اللي عليها حروف.",
-    "Within 14 days if unused, except bags with initials.",
-  ),
-} as const;
-
-const home: Design[] = [
-  lib("hero-bento", {
-    photo: [PHOTOS.bagWall],
+/** The hero: the bag on its plinth beside the copy; the photo zooms slowly with the scroll (transform only, so LCP is unaffected). */
+function hero(c: LookContent): Design {
+  const split = lib("hero-split", {
+    photo: [c.photos.hero.tall],
     text: {
-      "وصل جديد": L("صنع في القاهرة", "Made in Cairo"),
-      "صوت أنقى، كل يوم": L("شنطة لكل يوم في الأسبوع", "A bag for every day of the week"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "جلد متقصوص باليد ومتخيط عند عيلتين في باب الشعرية.",
-        "Leather cut by hand, stitched by two families in Bab El Shaariya.",
+      "صورة الواجهة": c.hero.alt,
+      "المجموعة الجديدة": c.hero.eyebrow,
+      "معمول بكميات صغيرة": c.hero.title,
+      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": c.hero.line,
+      "تسوّق المجموعة": c.hero.cta,
+      حكايتنا: c.labels.about,
+    },
+    // The panel sits above the photo, so the zoomed photo never covers its edge.
+    nodes: { اللوح: { style: { position: "relative", zIndex: 1 } } },
+  });
+  return calm(retouch(split, "image", (node, index) => (index === 0 ? { ...node, props: { ...node.props, scrollEffect: "zoom" } } : node)));
+}
+
+/** The anatomy: one bag on a 4:5 photo (phones too, so the dots stay put) with a note per dot. */
+function anatomy(c: LookContent): Design {
+  const notes = [1, 2, 3, 4].map((n) => ({
+    title: c.custom[`anatomy-${n}-title`]!,
+    line: c.custom[`anatomy-${n}-line`]!,
+  }));
+  const portrait = (node: NodeTemplate): NodeTemplate => ({
+    ...node,
+    style: { ...node.style, aspectRatio: "portrait" },
+    breakpointStyles: {
+      ...node.breakpointStyles,
+      mobile: { ...node.breakpointStyles?.mobile, aspectRatio: "portrait" },
+    },
+  });
+  const placed = retouch(
+    lib("about-product-anatomy", {
+      photo: [undefined, c.photos.look.src],
+      text: {
+        التفاصيل: c.look.eyebrow,
+        "اللي بيفرق في كل جزء": c.look.title,
+        "دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.": c.look.text,
+        "صورة المنتج": c.look.alt,
+        الخامة: notes[0]!.title,
+        "خامة متينة تستحمل الاستخدام اليومي.": notes[0]!.line,
+        التشطيب: notes[1]!.title,
+        "تشطيب نضيف في كل تفصيلة، من أول نظرة.": notes[1]!.line,
+        المقاس: notes[2]!.title,
+        "مقاس عملي يناسب أغلب الاستخدامات.": notes[2]!.line,
+        العناية: notes[3]!.title,
+        "سهل التنضيف، ويفضل زي ما هو مع الوقت.": notes[3]!.line,
+      },
+      nodes: { الصورة: { style: { maxWidth: "480px" } } },
+    }),
+    "hotspot",
+    (node, index) => ({
+      ...node,
+      props: { ...node.props, ...c.photos.look.dots[index] },
+    }),
+  );
+  return calm(retouch(placed, "image", (node, index) => (index === 0 ? portrait(node) : node)));
+}
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). Generic shop labels (New in, Best sellers, Shipping) and the
+ * layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  const shopAll = c.custom?.["shop-all"];
+  const noun = c.custom?.["products-noun"];
+
+  const header = retouch(
+    lib("header-classic", {
+      text: {
+        "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+        م: initialOf(name),
+        "اسم متجرك": name,
+        الرئيسية: L("الرئيسية", "Home"),
+        المتجر: shopAll ?? L("كل المنتجات", "Shop all"),
+        العروض: L("وصل حديثًا", "New in"),
+        المدونة: L("الأكثر طلبًا", "Best sellers"),
+        "من نحن": c.labels.about,
+        "تواصل معنا": L("تواصل", "Contact"),
+        "ابحث عن منتج": c.labels.search,
+      },
+      links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
+      nodes: { القائمة: { style: { gap: 4 } } },
+    }),
+    undefined,
+    (node) => (node.props?.role === "announcement" ? { ...node, style: { ...node.style, background: "primary" } } : node),
+  );
+
+  const footer = lib("footer-signoff", {
+    text: {
+      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "كل المنتجات": shopAll ?? L("كل المنتجات", "All products"),
+      العروض: L("الأعلى تقييمًا", "Top rated"),
+      "من نحن": aboutName,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  const home: Design[] = [
+    hero(c),
+    lib("categories-photo-tiles", {
+      text: {
+        "تسوّق حسب القسم": c.categories.title,
+        منتج: noun ?? L("منتج", "products"),
+      },
+    }),
+    // Eight best sellers, four across from tablets up (two rows), two on phones.
+    retouch(
+      lib("products-minimal", {
+        text: {
+          "الأكثر طلباً": c.products.primary.title,
+          "الأكثر مبيعاً": L("الأكثر طلبًا", "Best sellers"),
+          الجديد: L("وصل حديثًا", "New in"),
+          "الأعلى تقييمًا": L("الأعلى تقييمًا", "Top rated"),
+          "عرض الكل": VIEW_ALL,
+        },
+        links: { "/products": primaryHref(journey.primary) },
+        lists: [{ source: journey.primary, limit: 8 }],
+      }),
+      "productList",
+      (node) => ({
+        ...node,
+        style: { ...node.style, columns: 4 },
+        breakpointStyles: { ...node.breakpointStyles, tablet: { ...node.breakpointStyles?.tablet, columns: 4 } },
+      }),
+    ),
+    calm(
+      lib("about-split-story", {
+        photo: [undefined, undefined, c.photos.story],
+        text: {
+          "صورة القصة": c.story.alt,
+          "من ورشتنا": c.story.eyebrow,
+          "متصمم عشانك ومعمول في القاهرة": c.story.title,
+          "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": c.story.text,
+          "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": c.custom["story-more"]!,
+          حكايتنا: c.story.cta,
+        },
+        links: { "/about": NEW },
+      }),
+    ),
+    categoryRow(journey.rows[0]!, 1),
+    anatomy(c),
+    categoryRow(journey.rows[1]!, 2),
+    retouch(
+      retouch(
+        lib("features-icon-cards", {
+          text: {
+            "تسوّق وأنت مطمئن": c.custom["trust-title"]!,
+            "توصيل سريع": c.trust[0]!.title,
+            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "الدفع عند الاستلام": c.trust[1]!.title,
+            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
+            "استرجاع سهل": c.trust[2]!.title,
+            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+            "دعم على واتساب": c.trust[3]!.title,
+            "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+          },
+        }),
+        undefined,
+        (node) => {
+          // The heading alone: no label over it.
+          if (node.props?.role === "eyebrow") {
+            return {
+              ...node,
+              style: { ...node.style, hidden: true },
+              breakpointStyles: {
+                ...node.breakpointStyles,
+                tablet: { ...node.breakpointStyles?.tablet, hidden: true },
+                mobile: { ...node.breakpointStyles?.mobile, hidden: true },
+              },
+            };
+          }
+          return node;
+        },
       ),
-      "تسوق الآن": L("تسوق الشنط", "Shop bags"),
-      "صورة الحملة": L("حيطة شنط جلد بألوان ونقوش مختلفة", "A wall of leather bags in many colours and patterns"),
-      "٤٫٨": L("٤٫٩", "4.9"),
-      "من ١٢ ألف تقييم": L("من أكتر من ٥٠٠ تقييم", "from 500+ reviews"),
-    },
-  }),
-  lib("categories-ruled", { text: { "الأقسام": L("الورشة", "The workshop"), "تسوق بالقسم": L("شنطة لكل مشوار", "A bag for every errand") } }),
-  lib("products-grid", {
-    text: {
-      "وصل حديثًا": L("طالع من الورشة", "Fresh from the workshop"),
-      "أحدث المنتجات اللي نزلت المتجر.": L("آخر شنط وجزادين اتخيطت الشهر ده.", "The latest bags and wallets stitched this month."),
-    },
-    links: { "/products": NEW },
-  }),
-  lib("team-founder", {
-    text: {
-      "عايزين كل حد يشتري من عندنا مرة يرجع تاني من غير ما نفكره.": L(
-        "بنعمل شنط أقل عشان نعملها صح. كل شنطة عليها اسم اللي خيطها.",
-        "We make fewer bags so we can make them properly. Every one carries the name of the person who stitched it.",
-      ),
-      "م": L("ر", "R"),
-      "منى عادل": L("رنا فؤاد", "Rana Fouad"),
-    },
-  }),
-  lib("products-bento", {
-    text: { "الأكثر طلبًا": L("الأكتر طلباً", "Most wanted"), "الكل بيسأل عليهم": L("الأكتر شيلاً", "Carried most") },
-    links: { "/products": BEST },
-  }),
-  lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("أسئلة", "Questions"), ...QUESTIONS } }),
-];
+      "icon",
+      // The promises' own icons: delivery, exchange, real photos and sizes, pay on delivery.
+      (node, index) => ({
+        ...node,
+        props: {
+          ...node.props,
+          name: ["truck", "rotate", "image", "package"][index] ?? node.props?.name,
+        },
+      }),
+    ),
+    // On the mineral panel (the footer under it is the bottle green), so its copy is set in the page's ink.
+    retouch(
+      lib("newsletter-classic", {
+        text: {
+          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
+          "اشترك وأول ما يوصل جديد أو عرض للمشتركين هتعرف.": c.newsletter.line,
+        },
+        nodes: {
+          اللوحة: { style: { background: "secondary", color: "foreground" } },
+        },
+      }),
+      undefined,
+      (node) =>
+        node.props?.role === "title" ? { ...node, style: { ...node.style, color: "foreground" } } : node.props?.role === "subtitle" ? { ...node, style: { ...node.style, color: "muted" } } : node,
+    ),
+  ];
 
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("الورشة", "The workshop"), L("ورشة جلد صغيرة في باب الشعرية من ٢٠١٦.", "A small leather workshop in Bab El Shaariya since 2016.")),
-  aboutStory(lib, {
-    photo: PHOTOS.workbench,
-    alt: L("أدوات تقطيع وخياطة الجلد على ترابيزة الورشة", "Leather cutting and stitching tools on the workbench"),
-    eyebrow: L("باب الشعرية", "Bab El Shaariya"),
-    title: L("عيلتين وترابيزة واحدة", "Two families, one workbench"),
-    text: L("كل شنطة بتتقص باليد وبتتخيط غرزة غرزة، وبنكتب جوّاها اسم اللي عملها.", "Every bag is cut by hand and stitched one stitch at a time, with the maker's name written inside."),
-    more: L("وبنصلّح أي غرزة تفك خلال سنة ببلاش.", "And we mend any loose stitch for free within a year."),
-    button: L("تسوق الشنط", "Shop bags"),
-    href: SHOP,
-  }),
-];
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
 
-const DEMO = demoStore({
-  name: NAME,
-  description: L("شنط جلد متقصوصة ومتخيطة في القاهرة.", "Leather bags cut and stitched in Cairo."),
-  categories: [
-    ["shoulder", "شنط كتف ويد", "Shoulder & top-handle", PHOTOS.flapBag],
-    ["totes", "توت", "Totes", PHOTOS.tallTote],
-    ["small", "جلديات صغيرة", "Small leather", PHOTOS.envelope],
-    ["top-handle", "شنط بإيد", "Top-handle bags", PHOTOS.petalBag],
-    ["crossbody", "كروس بادي", "Crossbody", PHOTOS.barrelBag],
-    ["satchels", "ساتشل", "Satchels", PHOTOS.cocoaSatchel],
-    ["wallets", "محافظ", "Wallets", PHOTOS.bifolds],
-    ["cards", "حافظات كروت", "Card holders", PHOTOS.cardHolder],
-  ],
-  products: [
-    ["petal-top-handle-bag", "top-handle", "شنطة بيتال بإيد", "Petal Top-Handle Bag", PHOTOS.petalBag, 1850, { isFeatured: true, rating: 4.9, sold90: 210 }],
-    ["card-holder", "cards", "حافظة كروت", "Card Holder", PHOTOS.cardHolder, 350, { sold90: 140 }],
-    ["tall-zip-tote", "totes", "توت جلد بسوستة", "Tall Zip Tote", PHOTOS.tallTote, 2600, { compareAtPrice: 2950, sold90: 31 }],
-    ["mini-barrel-crossbody", "crossbody", "كروس بادي ميني", "Mini Barrel Crossbody", PHOTOS.barrelBag, 1290, { sold90: 44 }],
-    ["cocoa-satchel", "satchels", "شنطة ساتشل بني غامق", "Cocoa Satchel", PHOTOS.cocoaSatchel, 2100, { rating: 4.8, sold90: 96 }],
-    ["burgundy-dome-bag", "shoulder", "شنطة نبيتي", "Burgundy Dome Bag", PHOTOS.domeBag, 1950, { sold90: 58 }],
-    ["envelope-pouch", "small", "بوك جلد ظرف", "Envelope Pouch", PHOTOS.envelope, 690, { rating: 4.8, sold90: 72 }],
-    ["bifold-wallet", "wallets", "محفظة بطبقتين", "Bifold Wallet", PHOTOS.bifolds, 550, { sold90: 88 }],
-    ["distressed-wallet", "wallets", "محفظة جلد معتّق", "Distressed Leather Wallet", PHOTOS.wallet, 490, { inStock: false, sold90: 26 }],
-  ],
-});
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      {
+        slug: "about",
+        name: L(aboutName.ar, "About"),
+        seo: { title: aboutName },
+        sections: about,
+      },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, {
+          title: c.contact.title,
+          text: c.contact.line,
+          heading: c.contact.heading,
+        }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, {
+          text: c.faq.line,
+          question: c.faq.question,
+          answer: c.faq.answer,
+        }),
+      },
+    ],
+  };
+}
 
-export const SHANTA = libraryTemplate({
+export const SHANTA = editionTemplate({
   key: SHANTA_KEY,
-  version: 3,
-  changelog: "Shanta v3: categories, new from the workshop, section order",
-  productPage: { gallery: "end", thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رأي اللي شالوها", "From those who carry it"), related: L("يمشي معاها", "Carried together") } },
+  version: 4,
+  changelog: "Shanta v4: the handbags template, rebuilt look-first",
+  productPage: {
+    gallery: "end",
+    thumbs: "side",
+    band: "shelf",
+    extras: ["product-shipping"],
+    copy: {
+      reviews: L("رأي اللي شالوها", "From those who carry it"),
+      related: L("تمشي معاها", "Carried together"),
+    },
+  },
   name: L("شنطة", "Shanta"),
   description: L(
-    "شنط جلد: هيرو بنتو، الأكتر شيلاً، طقم شنطة وحافظة، أحسن ٥ هدايا، كلمة المؤسسة والأسئلة. أربع صفحات جاهزة.",
-    "Leather bags: a bento hero, carried most, a bag-and-wallet set, top five gifts, the founder's note and questions. Four ready pages.",
+    "شنط يد حريمي: شنطة على قاعدة جنب الكلام، أقسام بصور طولية، شنطة تتعرفي عليها بالنقط وصفوف منتجات على خلفية بيضا. لمحلات الشنط.",
+    "Women's handbags: a bag on a plinth beside the copy, portrait category tiles, one bag explained by its dots and product rows on a white stage. For handbag shops.",
   ),
   category: "shoes-bags",
-  style: ["warm"],
+  style: ["luxe"],
   sortOrder: 520,
-  palette: ["#f6f1ea", "#eadfce", "#f0c9a0", "#8a4b24"],
+  palette: ["#ffffff", "#e4e7e1", "#b8875a", "#1f3a2e"],
   colors: {
-    primary: "#8a4b24",
-    secondary: "#eadfce",
+    primary: "#1f3a2e",
+    secondary: "#e4e7e1",
     background: "#ffffff",
-    foreground: "#2a1f17",
-    muted: "#6e5f50",
-    border: "#dccdb6",
-    accent: "#f0c9a0",
+    foreground: "#18201b",
+    muted: "#59635c",
+    border: "#d4d9d2",
+    accent: "#b8875a",
   },
-  fonts: { heading: "Readex Pro", body: "Readex Pro" },
-  radius: 16,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("الورشة", "Workshop"), seo: { title: L("الورشة", "The workshop") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("الورشة مفتوحة من السبت للخميس، ١١ الصبح لـ ٧ بالليل.", "The workshop is open Saturday to Thursday, 11 am to 7 pm."),
-        heading: L("اسأل عن شنطة أو حروف", "Ask about a bag or initials"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("الجلد والحروف والتوصيل.", "Leather, initials and delivery."),
-        question: L("ينفع أرجّع الشنطة؟", "Can I return a bag?"),
-        answer: L("خلال ١٤ يوم لو مش مستعملة، ما عدا الشنط اللي عليها حروف.", "Within 14 days if unused, except bags with initials."),
-      }),
-    },
+  fonts: { heading: "El Messiri", body: "Almarai" },
+  radius: 4,
+  productStage: HANDBAGS.productStage,
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "labels.about",
+    "labels.search",
+    "hero.alt",
+    "hero.eyebrow",
+    "hero.title",
+    "hero.line",
+    "hero.cta",
+    "categories.title",
+    "products.primary.title",
+    "story",
+    "look",
+    "trust.0",
+    "trust.1",
+    "trust.2",
+    "trust.3",
+    "newsletter.title",
+    "newsletter.line",
+    "footer.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.tall",
+    "photos.story",
+    "photos.look.src",
+    // One dot per hotspot of `about-product-anatomy`, in its notes' order.
+    "photos.look.dots.0",
+    "photos.look.dots.1",
+    "photos.look.dots.2",
+    "photos.look.dots.3",
+    // The four notes the dots open.
+    "custom.anatomy-1-title",
+    "custom.anatomy-1-line",
+    "custom.anatomy-2-title",
+    "custom.anatomy-2-line",
+    "custom.anatomy-3-title",
+    "custom.anatomy-3-line",
+    "custom.anatomy-4-title",
+    "custom.anatomy-4-line",
+    // The story's second paragraph (one sentence), and the promises' heading (a few words).
+    "custom.story-more",
+    "custom.trust-title",
   ],
-  demo: DEMO,
+  // `photos.about`: the about page's photo (falls back to the story's).
+  // `custom.shop-all`: the link to the whole catalog, header and footer (default "كل المنتجات / Shop all").
+  // `custom.products-noun`: the noun after a category tile's product count (default "منتج / products").
+  optional: ["photos.about", "custom.shop-all", "custom.products-noun"],
+  // The ten best sellers, then the store's 1st and 3rd categories (totes, clutches) as rows: the day bag and the evening bag.
+  journey: { primary: "best-sellers", rows: [1, 3] },
+  defaultContent: DEFAULT_CONTENT,
+  demo: HANDBAGS.demo,
 });
