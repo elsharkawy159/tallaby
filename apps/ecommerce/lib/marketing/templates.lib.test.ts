@@ -30,6 +30,13 @@ describe("template gallery", () => {
     expect(buildGallery([], "ar")).toEqual([]);
   });
 
+  it("lists a template's niche editions in the page's language, and none by default", () => {
+    const editions = [{ id: "tshirts", name: { ar: "تيشيرتات", en: "T-shirts" } }];
+    expect(buildGallery([row({ editions })], "en")[0]!.editions).toEqual([{ id: "tshirts", name: "T-shirts" }]);
+    expect(buildGallery([row({ editions })], "ar")[0]!.editions).toEqual([{ id: "tshirts", name: "تيشيرتات" }]);
+    expect(buildGallery([row({})], "ar")[0]!.editions).toEqual([]);
+  });
+
   it("maps a row to a card: localized copy, category code, premium price", () => {
     const [entry] = buildGallery(
       [row({ key: "bazaar", category: "home", thumbnailUrl: "https://x.supabase.co/t.png", isPremium: true, price: "250.00", palette: ["#000"] })],
@@ -67,6 +74,10 @@ describe("template gallery", () => {
   it("builds preview frame URLs", () => {
     expect(templateFrameSrc("ar", "atelier")).toBe("/template-preview/atelier");
     expect(templateFrameSrc("en", "atelier", "about", true)).toBe("/en/template-preview/atelier/about?thumb=1");
+    // A niche edition (ROADMAP F-90) rides as ?edition=.
+    expect(templateFrameSrc("ar", "kasr", undefined, false, "dresses")).toBe("/template-preview/kasr?edition=dresses");
+    expect(templateFrameSrc("en", "kasr", "about", true, "pants-jeans")).toBe("/en/template-preview/kasr/about?thumb=1&edition=pants-jeans");
+    expect(templateFrameSrc("ar", "kasr", undefined, false, null)).toBe("/template-preview/kasr");
   });
 
   it("localizes JSON names with a fallback", () => {

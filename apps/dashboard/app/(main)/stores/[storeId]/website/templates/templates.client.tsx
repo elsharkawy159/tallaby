@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, CircleCheck, ChevronLeft, ChevronRight, Eye, Info, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Search, Sparkles } from "lucide-react";
+import { Check, CircleCheck, ChevronLeft, ChevronRight, CornerDownLeft, Eye, Info, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Search, Sparkles } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,22 +21,24 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Chip, EmptyState, Modal, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { RemoteImage } from "@/components/media/remote-image";
+import { EditionChips } from "./edition-chips.client";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, listTemplatesPage, undoTemplate } from "./templates.server";
 import type { TemplateCardView, TemplatesPageView } from "./templates.dto";
-import { parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PAGE_SIZE } from "./templates.lib";
+import { cardEdition, parseTemplatesCategory, parseTemplatesNiche, parseTemplatesPage, TEMPLATES_PAGE_SIZE } from "./templates.lib";
 
 type Localized = { ar?: string; en?: string };
 
 /**
  * Query key of one gallery page; `["store-templates", storeId]` matches every
- * page of the store. A `null` category is the store's default tab (its industry).
+ * page of the store. A `null` category is the store's default tab (its industry),
+ * a `null` niche the store's own niche when that tab offers it.
  */
-const templatesKey = (storeId: string, page?: number, category?: string | null, q = "") =>
-  page === undefined ? ["store-templates", storeId] : ["store-templates", storeId, page, { category, q }];
+const templatesKey = (storeId: string, page?: number, category?: string | null, q = "", niche: string | null = null) =>
+  page === undefined ? ["store-templates", storeId] : ["store-templates", storeId, page, { category, q, niche }];
 
-async function fetchTemplatesPage(storeId: string, page: number, category: string | null, q: string): Promise<TemplatesPageView> {
-  const result = await listTemplatesPage(storeId, { page, ...(category !== null && { category }), ...(q && { q }) });
+async function fetchTemplatesPage(storeId: string, page: number, category: string | null, q: string, niche: string | null): Promise<TemplatesPageView> {
+  const result = await listTemplatesPage(storeId, { page, ...(category !== null && { category }), ...(q && { q }), ...(niche !== null && { niche }) });
   if (!result.success) throw new Error(result.error);
   return result.data;
 }
@@ -49,6 +51,12 @@ async function fetchTemplatesPage(storeId: string, page: number, category: strin
  * changes the drafts: the live site changes on Publish. Templates load one page
  * at a time (`listTemplatesPage`, React Query); the page and category live in
  * the URL (`?page=2&category=fashion`), and the next page is prefetched.
+ *
+ * Niche editions (ROADMAP F-90): a category tab whose niches have editions
+ * gets a second row of chips (`?niche=`); the chosen niche's looks come first,
+ * shown with its edition. A card with editions lists them as chips, and the
+ * one picked is what its tile, its preview and "Use template" use. With no
+ * edition registered neither row exists.
  */
 export function TemplateGallery({
   storeId,
@@ -75,11 +83,16 @@ export function TemplateGallery({
   // No `?category=`: the server picks the store's industry tab (owner request 2026-10-28).
   const categoryParam = searchParams.get("category");
   const requestedCategory = categoryParam === null ? null : parseTemplatesCategory(categoryParam);
+  // No `?niche=`: the server picks the store's own niche when the tab offers it.
+  const nicheParam = searchParams.get("niche");
+  const requestedNiche = nicheParam === null ? null : parseTemplatesNiche(nicheParam);
   const listRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
-  const [confirming, setConfirming] = useState<TemplateCardView | null>(null);
+  const [confirming, setConfirming] = useState<{ template: TemplateCardView; edition: string | null } | null>(null);
   const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
+  // The edition picked on a card (null: the template's own content); a card not in here follows the niche filter.
+  const [picked, setPicked] = useState<Record<string, string | null>>({});
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -90,8 +103,8 @@ export function TemplateGallery({
   }, [search]);
 
   const query = useQuery({
-    queryKey: templatesKey(storeId, page, requestedCategory, q),
-    queryFn: () => fetchTemplatesPage(storeId, page, requestedCategory, q),
+    queryKey: templatesKey(storeId, page, requestedCategory, q, requestedNiche),
+    queryFn: () => fetchTemplatesPage(storeId, page, requestedCategory, q, requestedNiche),
     placeholderData: keepPreviousData,
     // One retry, then the error state with its own retry button.
     retry: 1,
@@ -102,6 +115,9 @@ export function TemplateGallery({
   const currentKey = data?.currentKey ?? "";
   const lastInstall = data?.lastInstall ?? null;
   const categories = data?.categories ?? [];
+  // The served tab's niches that have an edition, and the one served (none: no niche row).
+  const niches = data?.niches ?? [];
+  const niche = data?.niche ?? null;
   const shown = data?.items ?? [];
   // The requested page while it loads (placeholder data), else the page the server served (clamped).
   const currentPage = query.isPlaceholderData ? page : (data?.page ?? page);
@@ -114,21 +130,24 @@ export function TemplateGallery({
     if (!data || query.isPlaceholderData || data.page >= data.pageCount) return;
     const next = data.page + 1;
     void queryClient.prefetchQuery({
-      queryKey: templatesKey(storeId, next, requestedCategory, q),
-      queryFn: () => fetchTemplatesPage(storeId, next, requestedCategory, q),
+      queryKey: templatesKey(storeId, next, requestedCategory, q, requestedNiche),
+      queryFn: () => fetchTemplatesPage(storeId, next, requestedCategory, q, requestedNiche),
     });
-  }, [data, query.isPlaceholderData, queryClient, storeId, requestedCategory, q]);
+  }, [data, query.isPlaceholderData, queryClient, storeId, requestedCategory, q, requestedNiche]);
 
   /**
    * Writes the filters to the URL (client-side only: no server round trip, the
    * back button works). The category is always written, `all` too, since no
-   * `?category=` means the store's industry tab.
+   * `?category=` means the store's industry tab. `niche`: an id or `all` is
+   * written, `null` clears it (the tab's default), left out keeps it.
    */
-  const setFilters = (next: { page: number; category: string }) => {
+  const setFilters = (next: { page: number; category: string; niche?: string | null }) => {
     const params = new URLSearchParams(searchParams.toString());
     if (next.page > 1) params.set("page", String(next.page));
     else params.delete("page");
     params.set("category", next.category);
+    if (next.niche === null) params.delete("niche");
+    else if (next.niche !== undefined) params.set("niche", next.niche);
     const qs = params.toString();
     window.history.pushState(null, "", qs ? `${pathname}?${qs}` : pathname);
   };
@@ -137,14 +156,14 @@ export function TemplateGallery({
   useEffect(() => {
     if (data && !query.isPlaceholderData && data.page !== page) {
       // Seed the clamped page's key so the URL change doesn't fetch it again.
-      queryClient.setQueryData(templatesKey(storeId, data.page, requestedCategory, q), data);
+      queryClient.setQueryData(templatesKey(storeId, data.page, requestedCategory, q, requestedNiche), data);
       const params = new URLSearchParams(searchParams.toString());
       if (data.page > 1) params.set("page", String(data.page));
       else params.delete("page");
       const qs = params.toString();
       window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
     }
-  }, [data, query.isPlaceholderData, page, pathname, searchParams, queryClient, storeId, requestedCategory, q]);
+  }, [data, query.isPlaceholderData, page, pathname, searchParams, queryClient, storeId, requestedCategory, q, requestedNiche]);
 
   const goToPage = (next: number) => {
     setFilters({ page: next, category });
@@ -166,9 +185,16 @@ export function TemplateGallery({
     router.refresh();
   };
 
-  const onApply = (template: TemplateCardView) =>
+  const editionOf = (template: TemplateCardView) => cardEdition(template, picked, niche);
+  const pickEdition = (template: TemplateCardView, edition: string | null) => setPicked((current) => ({ ...current, [template.key]: edition }));
+  const editionName = (template: TemplateCardView, edition: string | null) => {
+    const found = edition ? template.editions?.find((option) => option.id === edition) : undefined;
+    return found ? text(found.name) : "";
+  };
+
+  const onApply = (template: TemplateCardView, edition: string | null) =>
     startTransition(async () => {
-      const result = await applyTemplate(storeId, template.key);
+      const result = await applyTemplate(storeId, template.key, edition);
       setConfirming(null);
       if (!result.success) {
         toast.error(t(`errors.${result.error}`));
@@ -293,7 +319,8 @@ export function TemplateGallery({
                   onClick={() => {
                     setSearch("");
                     setQ("");
-                    setFilters({ page: 1, category: value });
+                    // Another tab starts from its own default niche.
+                    setFilters({ page: 1, category: value, niche: null });
                   }}
                 >
                   {categoryName(value)}
@@ -312,6 +339,33 @@ export function TemplateGallery({
           />
         </label>
       </div>
+
+      {/* The tab's trades that have their own edition of a template; a search looks everywhere, so it hides them. */}
+      {niches.length > 0 && !q && (
+        <div className="-mt-1 flex items-center gap-1.5 ps-1">
+          <CornerDownLeft className="size-4 shrink-0 text-(--s-faint) ltr:-scale-x-100" aria-hidden />
+          <div
+            role="group"
+            aria-label={t("niches.label", { category: categoryName(category) })}
+            className="-mx-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {[{ id: "all", name: null }, ...niches].map((option) => (
+              <Chip
+                key={option.id}
+                className="h-8 shrink-0 px-3 text-[12.5px]"
+                pressed={(niche ?? "all") === option.id}
+                onClick={() => {
+                  // The cards follow the filter again.
+                  setPicked({});
+                  setFilters({ page: 1, category, niche: option.id });
+                }}
+              >
+                {option.name ? text(option.name) : t("niches.all")}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!data && query.isPending && <TemplateGridSkeleton label={t("loading")} />}
 
@@ -342,7 +396,7 @@ export function TemplateGallery({
                 onClick={() => {
                   setSearch("");
                   setQ("");
-                  setFilters({ page: 1, category: "all" });
+                  setFilters({ page: 1, category: "all", niche: null });
                 }}
               >
                 {tw("showAll")}
@@ -356,6 +410,7 @@ export function TemplateGallery({
             {shown.map((template) => {
               const current = template.key === currentKey;
               const name = text(template.name);
+              const edition = editionOf(template);
               return (
                 <li key={template.key} className="group flex min-w-0 flex-col gap-3">
                   {/* Gallery tile: the preview fills the tile; Use / Preview buttons sit below it, always visible (owner, 2026-11-07). */}
@@ -366,7 +421,7 @@ export function TemplateGallery({
                           <RemoteImage src={template.thumbnailUrl} alt="" fill sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw" className="object-cover object-top" />
                         </span>
                       ) : (
-                        <TemplateLiveThumbnail storeId={storeId} templateKey={template.key} fontClassName={fontClassName} fallback={<ThumbnailFallback />} tall />
+                        <TemplateLiveThumbnail storeId={storeId} templateKey={template.key} editionId={edition} fontClassName={fontClassName} fallback={<ThumbnailFallback />} tall />
                       )}
                     </button>
                     {(current || template.isPremium) && (
@@ -398,12 +453,13 @@ export function TemplateGallery({
                     </div>
                     <Swatches colors={template.palette} />
                   </div>
+                  <EditionChips editions={template.editions ?? []} value={edition} onChange={(next) => pickEdition(template, next)} locale={locale} templateName={name} />
                   <div className="grid grid-cols-2 gap-2">
                     <SellerButton
                       size="sm"
                       className="whitespace-normal"
                       disabled={readOnly || isPending || template.isPremium}
-                      onClick={() => setConfirming(template)}
+                      onClick={() => setConfirming({ template, edition })}
                     >
                       {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
                       {current ? tw("reapplyShort") : t("use")}
@@ -446,9 +502,11 @@ export function TemplateGallery({
         uiLocale={locale}
         fontClassName={fontClassName}
         categoryName={previewing ? categoryName(previewing.category) : ""}
+        editionId={previewing ? editionOf(previewing) : null}
+        onEditionChange={(edition) => previewing && pickEdition(previewing, edition)}
         onUse={(template) => {
           setPreviewing(null);
-          setConfirming(template);
+          setConfirming({ template, edition: editionOf(template) });
         }}
         onOpenChange={(open) => !open && setPreviewing(null)}
       />
@@ -456,14 +514,14 @@ export function TemplateGallery({
       <Modal
         open={confirming !== null}
         onOpenChange={(open) => !open && !isPending && setConfirming(null)}
-        title={t("confirm.title", { name: text(confirming?.name ?? {}) })}
+        title={t("confirm.title", { name: text(confirming?.template.name ?? {}) })}
         description={t("confirm.description")}
         footer={
           <>
             <SellerButton variant="outline" disabled={isPending} onClick={() => setConfirming(null)}>
               {t("cancel")}
             </SellerButton>
-            <SellerButton disabled={isPending} onClick={() => confirming && onApply(confirming)}>
+            <SellerButton disabled={isPending} onClick={() => confirming && onApply(confirming.template, confirming.edition)}>
               {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Sparkles aria-hidden />}
               {t("confirm.action")}
             </SellerButton>
@@ -472,17 +530,23 @@ export function TemplateGallery({
       >
         {confirming && (
           <div className="h-[200px] overflow-hidden rounded-2xl border border-(--s-line)">
-            {confirming.thumbnailUrl ? (
+            {confirming.template.thumbnailUrl ? (
               <span className="relative block h-full w-full">
-                <RemoteImage src={confirming.thumbnailUrl} alt="" fill sizes="460px" className="object-cover object-top" />
+                <RemoteImage src={confirming.template.thumbnailUrl} alt="" fill sizes="460px" className="object-cover object-top" />
               </span>
             ) : (
-              <TemplateLiveThumbnail storeId={storeId} templateKey={confirming.key} fontClassName={fontClassName} fallback={<ThumbnailFallback />} />
+              <TemplateLiveThumbnail storeId={storeId} templateKey={confirming.template.key} editionId={confirming.edition} fontClassName={fontClassName} fallback={<ThumbnailFallback />} />
             )}
           </div>
         )}
         <ul className="flex flex-col gap-1.5 text-[13px] text-(--s-muted)">
-          {[t("confirm.keeps"), t("confirm.untouched"), ...((confirming?.formKinds.length ?? 0) > 0 ? [t("confirm.forms")] : [])].map((line) => (
+          {[
+            // What the edition brings, and that its sample products stay out of the store.
+            ...(confirming?.edition ? [t("editions.confirm", { niche: editionName(confirming.template, confirming.edition) })] : []),
+            t("confirm.keeps"),
+            t("confirm.untouched"),
+            ...((confirming?.template.formKinds.length ?? 0) > 0 ? [t("confirm.forms")] : []),
+          ].map((line) => (
             <li key={line} className="flex items-start gap-2">
               <Check className="mt-1 size-3.5 shrink-0 text-success" aria-hidden />
               {line}

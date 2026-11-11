@@ -24,6 +24,8 @@ export type CatalogTemplate = {
   /** Colour swatches (code templates only). */
   palette: readonly string[];
   pages: CatalogPage[];
+  /** Niche editions the template can be shown with (niche id and name); left out or empty for a template with none. */
+  editions?: readonly { id: string; name: { ar: string; en: string } }[];
 };
 
 export type GalleryPage = { slug: string; isHome: boolean; name: string };
@@ -41,6 +43,8 @@ export type GalleryEntry = {
   palette: string[];
   /** Home page first. */
   pages: GalleryPage[];
+  /** Niche editions the live demo can be shown with (`?edition=<id>` on the preview frame); empty for most templates. */
+  editions: { id: string; name: string }[];
   /** The code catalog's order: a higher number is a newer template. */
   sortOrder: number;
 };
@@ -89,11 +93,15 @@ function priceOf(row: CatalogTemplate): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-/** The preview frame of a template page (app/[locale]/(template-preview)/template-preview). */
-export function templateFrameSrc(locale: string, key: string, slug?: string, thumb = false): string {
+/**
+ * The preview frame of a template page (app/[locale]/(template-preview)/template-preview).
+ * `edition` is a niche id: the template drawn with that niche's edition (`?edition=`).
+ */
+export function templateFrameSrc(locale: string, key: string, slug?: string, thumb = false, edition?: string | null): string {
   const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
   const path = `${prefix}/template-preview/${encodeURIComponent(key)}${slug ? `/${encodeURIComponent(slug)}` : ""}`;
-  return thumb ? `${path}?thumb=1` : path;
+  const query = [...(thumb ? ["thumb=1"] : []), ...(edition ? [`edition=${encodeURIComponent(edition)}`] : [])].join("&");
+  return query ? `${path}?${query}` : path;
 }
 
 export function buildGallery(rows: readonly CatalogTemplate[], locale: string): GalleryEntry[] {
@@ -112,6 +120,7 @@ export function buildGallery(rows: readonly CatalogTemplate[], locale: string): 
       pages: [...row.pages]
         .sort((a, b) => Number(b.isHome) - Number(a.isHome))
         .map((page) => ({ slug: page.slug, isHome: page.isHome, name: localized(page.names, locale) ?? page.name })),
+      editions: (row.editions ?? []).map((edition) => ({ id: edition.id, name: localized(edition.name, locale) ?? edition.id })),
       sortOrder: row.sortOrder,
     }));
 }

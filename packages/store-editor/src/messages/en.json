@@ -1157,6 +1157,15 @@
       "loading": "Loading the preview",
       "failed": "The preview could not be loaded. Close it and try again.",
       "demoNote": "Shown with demo products from {store}. Your store keeps its own products."
+    },
+    "niches": {
+      "label": "Trades in {category}",
+      "all": "All trades"
+    },
+    "editions": {
+      "label": "Show {name} made for",
+      "original": "Original",
+      "confirm": "Comes set up for {niche}: its sections, photos and text. The sample products you saw are not added to your store."
     }
   },
   "storeForms": {

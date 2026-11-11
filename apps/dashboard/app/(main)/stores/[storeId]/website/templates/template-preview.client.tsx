@@ -11,19 +11,23 @@ import { Segmented, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
 import { SitePreview, type PreviewDevice } from "../_components/site-preview.client";
 import { TemplateLiveThumbnail as SharedTemplateLiveThumbnail, demoCatalog } from "@workspace/store-editor/preview/template-live-thumbnail.client";
+import { EditionChips } from "./edition-chips.client";
 import { templatePreview } from "./templates.server";
 import type { TemplateCardView, TemplatePreviewView } from "./templates.dto";
 
 type Localized = { ar?: string; en?: string };
 
-/** Loaded previews by store and template, shared by the cards and the dialog. */
+/** Loaded previews by store, template and niche edition, shared by the cards and the dialog. */
 const PREVIEWS = new Map<string, Promise<TemplatePreviewView | null>>();
 
-function loadPreview(storeId: string, key: string): Promise<TemplatePreviewView | null> {
-  const id = `${storeId}:${key}`;
+/** A template with a niche edition, as one key: `kasr`, `kasr@dresses`. */
+const previewId = (key: string, editionId?: string | null) => (editionId ? `${key}@${editionId}` : key);
+
+function loadPreview(storeId: string, key: string, editionId?: string | null): Promise<TemplatePreviewView | null> {
+  const id = `${storeId}:${previewId(key, editionId)}`;
   let pending = PREVIEWS.get(id);
   if (!pending) {
-    pending = templatePreview(storeId, key).then((result) => (result.success ? result.data : null));
+    pending = templatePreview(storeId, key, editionId ?? null).then((result) => (result.success ? result.data : null));
     // A failed load is retried next time.
     void pending.then((data) => data ?? PREVIEWS.delete(id));
     PREVIEWS.set(id, pending);
@@ -31,18 +35,19 @@ function loadPreview(storeId: string, key: string): Promise<TemplatePreviewView 
   return pending;
 }
 
-/** A template's pages and look; `failed` when it could not be loaded. */
-function useTemplatePreview(storeId: string, key: string | undefined, enabled = true) {
-  const [state, setState] = useState<{ key?: string; data: TemplatePreviewView | null; failed: boolean }>({ data: null, failed: false });
+/** A template's pages and look (with a niche edition when given); `failed` when it could not be loaded. */
+function useTemplatePreview(storeId: string, key: string | undefined, enabled = true, editionId: string | null = null) {
+  const [state, setState] = useState<{ id?: string; data: TemplatePreviewView | null; failed: boolean }>({ data: null, failed: false });
+  const id = key ? previewId(key, editionId) : undefined;
   useEffect(() => {
-    if (!key || !enabled) return;
+    if (!key || !id || !enabled) return;
     let live = true;
-    void loadPreview(storeId, key).then((data) => live && setState({ key, data, failed: !data }));
+    void loadPreview(storeId, key, editionId).then((data) => live && setState({ id, data, failed: !data }));
     return () => {
       live = false;
     };
-  }, [storeId, key, enabled]);
-  return state.key === key ? state : { data: null, failed: false };
+  }, [storeId, key, id, editionId, enabled]);
+  return state.id === id ? state : { data: null, failed: false };
 }
 
 /**
@@ -59,6 +64,8 @@ export function TemplatePreview({
   uiLocale,
   fontClassName,
   categoryName,
+  editionId = null,
+  onEditionChange,
   onUse,
   onOpenChange,
 }: {
@@ -69,6 +76,9 @@ export function TemplatePreview({
   uiLocale: string;
   fontClassName: string;
   categoryName: string;
+  /** The niche edition shown (the card's pick), or null for the template's own content. */
+  editionId?: string | null;
+  onEditionChange?: (editionId: string | null) => void;
   onUse: (template: TemplateCardView) => void;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -77,7 +87,7 @@ export function TemplatePreview({
   const [pageSlug, setPageSlug] = useState<string | null>(null);
   const [device, setDevice] = useState<PreviewDevice>("desktop");
   const [locale, setLocale] = useState<SiteLocale>("ar");
-  const { data: preview, failed } = useTemplatePreview(storeId, template?.key);
+  const { data: preview, failed } = useTemplatePreview(storeId, template?.key, true, editionId);
 
   const text = (value: Localized) => (uiLocale === "en" ? value.en || value.ar : value.ar || value.en) || "";
   const page = preview ? (preview.pages.find((p) => p.slug === pageSlug) ?? preview.pages.find((p) => p.isHome) ?? preview.pages[0]) : undefined;
@@ -132,7 +142,7 @@ export function TemplatePreview({
               <div className="min-h-0 flex-1">
                 {preview && page ? (
                   <SitePreview
-                    key={`${template.key}:${page.slug}`}
+                    key={`${previewId(template.key, editionId)}:${page.slug}`}
                     className="h-full"
                     store={{
                       name: demo ? (demo.store.name[locale] ?? demo.store.name.ar ?? "") : text(template.name),
@@ -166,6 +176,16 @@ export function TemplatePreview({
                 <DialogTitle className="truncate text-xl font-bold text-(--s-ink) max-[900px]:text-base">{text(template.name)}</DialogTitle>
                 <DialogDescription className="text-[13px] leading-[1.8] text-(--s-muted) max-[900px]:sr-only">{text(template.description)}</DialogDescription>
               </div>
+              {onEditionChange && (
+                <EditionChips
+                  editions={template.editions ?? []}
+                  value={editionId}
+                  onChange={onEditionChange}
+                  locale={uiLocale === "en" ? "en" : "ar"}
+                  templateName={text(template.name)}
+                  className="max-[900px]:order-last max-[900px]:basis-full"
+                />
+              )}
               {template.palette.length > 0 && (
                 <span aria-hidden className="flex max-[900px]:hidden">
                   {template.palette.slice(0, 4).map((color, index) => (
@@ -224,26 +244,42 @@ const TILE_HEIGHT = Math.round((TILE_WIDTH * 398) / 380);
 export function TemplateLiveThumbnail({
   storeId,
   templateKey,
+  editionId = null,
   fontClassName,
   fallback,
   tall = false,
 }: {
   storeId: string;
   templateKey: string;
+  /** A niche edition to draw the template with, or null for its own content. */
+  editionId?: string | null;
   fontClassName: string;
   fallback: ReactNode;
   tall?: boolean;
 }) {
-  const load = useCallback((key: string) => loadPreview(storeId, key), [storeId]);
-  if (tall) return <TileThumbnail storeId={storeId} templateKey={templateKey} fontClassName={fontClassName} fallback={fallback} />;
-  return <SharedTemplateLiveThumbnail templateKey={templateKey} load={load} fontClassName={fontClassName} fallback={fallback} />;
+  const load = useCallback((key: string) => loadPreview(storeId, key, editionId), [storeId, editionId]);
+  if (tall) return <TileThumbnail storeId={storeId} templateKey={templateKey} editionId={editionId} fontClassName={fontClassName} fallback={fallback} />;
+  // Keyed by the edition: the shared thumbnail loads once per mount.
+  return <SharedTemplateLiveThumbnail key={previewId(templateKey, editionId)} templateKey={templateKey} load={load} fontClassName={fontClassName} fallback={fallback} />;
 }
 
-function TileThumbnail({ storeId, templateKey, fontClassName, fallback }: { storeId: string; templateKey: string; fontClassName: string; fallback: ReactNode }) {
+function TileThumbnail({
+  storeId,
+  templateKey,
+  editionId,
+  fontClassName,
+  fallback,
+}: {
+  storeId: string;
+  templateKey: string;
+  editionId: string | null;
+  fontClassName: string;
+  fallback: ReactNode;
+}) {
   const box = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(false);
   const [scale, setScale] = useState(0.2);
-  const { data, failed } = useTemplatePreview(storeId, templateKey, visible);
+  const { data, failed } = useTemplatePreview(storeId, templateKey, visible, editionId);
 
   useEffect(() => {
     const element = box.current;

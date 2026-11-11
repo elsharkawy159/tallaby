@@ -28,7 +28,7 @@ import { FrameGuard } from "./frame-guard.client";
 
 type Props = {
   params: Promise<{ locale: string; key: string; page?: string[] }>;
-  searchParams: Promise<{ thumb?: string }>;
+  searchParams: Promise<{ thumb?: string; edition?: string | string[] }>;
 };
 
 /**
@@ -37,13 +37,20 @@ type Props = {
  * page) and the template page's stage. Read-only; the config and meta (demo
  * store, page names) are global admin-authored data from the database,
  * never a seller's.
+ *
+ * `?edition=<nicheId>` draws the template with that niche's edition (niche
+ * editions, ROADMAP F-90): its catalog, photos, copy, product stage and
+ * product page. An unknown niche, a pack not approved on this template and a
+ * template that takes no editions all draw the template as it is, silently
+ * (`getTemplatePreview`). Never indexed (the layout's robots).
  */
 export default async function TemplatePreviewFrame({ params, searchParams }: Props) {
-  const [{ locale: routeLocale, key, page: pageParam }, { thumb }] = await Promise.all([params, searchParams]);
+  const [{ locale: routeLocale, key, page: pageParam }, { thumb, edition: editionParam }] = await Promise.all([params, searchParams]);
   if ((pageParam?.length ?? 0) > 1) notFound();
-  const preview = await getTemplatePreview(key);
+  const preview = await getTemplatePreview(key, typeof editionParam === "string" ? editionParam : null);
   if (!preview) notFound();
-  const { config: stored, meta } = preview;
+  // `edition` is what was drawn (null after a fallback), so the page's own links never carry a bad value.
+  const { config: stored, meta, edition } = preview;
   // Its ready-made forms (newsletter, contact) bound as "Use template" binds them, so
   // sections holding one show here too (a section with an unbound form is hidden).
   const formIds = Object.fromEntries(templateFormNeeds(stored).map((kind) => [kind, `preview-${kind}`]));
@@ -61,7 +68,7 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
   const footer = isThumb ? null : (drawChrome(site.footer, "footer", chrome) ?? null);
   const all = [...(header ? [header] : []), ...sections, ...(footer ? [footer] : [])];
   // The product page is drawn with the demo product, as a store's product page shows a real one.
-  const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds, isProductPage(page) ? templateDemoProduct(meta.demo, { locale }) : undefined);
+  const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds, edition, isProductPage(page) ? templateDemoProduct(meta.demo, { locale }) : undefined);
   // Page sections reveal on scroll like a live store; the header and footer don't.
   const chromeCtx = { ...ctx, reveal: false };
 
@@ -95,15 +102,17 @@ function buildContext(
   sections: SiteConfig["pages"][number]["content"]["sections"],
   /** Form id per ready-made form kind the template binds. */
   formIds: Record<string, string>,
+  /** The niche edition drawn, kept on the preview's own links. */
+  edition: string | null,
   product?: ProductDetail,
 ): RenderContext {
   const demo = meta.demo;
   const slugs = new Set(site.pages.filter((p) => !p.isHome).map((p) => p.slug));
   // Page links point at the preview's own pages, so a preview opened in its own tab can be browsed.
   const previewHref = (href: string) => {
-    if (href === "/") return templateFrameSrc(routeLocale, key);
+    if (href === "/") return templateFrameSrc(routeLocale, key, undefined, false, edition);
     const slug = href.startsWith("/") ? href.slice(1) : null;
-    return slug && slugs.has(slug) ? templateFrameSrc(routeLocale, key, slug) : href;
+    return slug && slugs.has(slug) ? templateFrameSrc(routeLocale, key, slug, false, edition) : href;
   };
   return {
     mode: "public",

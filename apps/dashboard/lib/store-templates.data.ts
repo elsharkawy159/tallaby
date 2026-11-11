@@ -24,6 +24,7 @@ export const loadCachedTemplateConfig: TemplateConfigLoader = createCachedQuery(
   ttl: cacheProfiles.taxonomy,
   // Templates and sections are code: a deploy brings new trees.
   perDeploy: true,
-  tags: (_key: string) => [templateTags.catalog()],
-  query: (key: string) => loadOfferedTemplateConfig(key),
+  // The niche edition (a checked niche id, or left out) is an argument, so it is part of the cache key.
+  tags: (_key: string, _editionId?: string) => [templateTags.catalog()],
+  query: (key: string, editionId?: string) => loadOfferedTemplateConfig(key, undefined, editionId),
 });

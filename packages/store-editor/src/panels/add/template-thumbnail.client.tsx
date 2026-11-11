@@ -21,14 +21,14 @@ const previews = new Map<string, Promise<TemplatePreviewView | null>>();
 /**
  * One template's content, loaded once per editor session and shared by the
  * cards and the preview dialogs. A failed load is forgotten so it can be
- * tried again.
+ * tried again. `editionId` asks for the template with a niche edition.
  */
-export function loadTemplatePreview(templates: EditorAdapter["templates"], storeId: string, key: string): Promise<TemplatePreviewView | null> {
+export function loadTemplatePreview(templates: EditorAdapter["templates"], storeId: string, key: string, editionId?: string | null): Promise<TemplatePreviewView | null> {
   if (!templates) return Promise.resolve(null);
-  const cacheKey = `${storeId}:${key}`;
+  const cacheKey = `${storeId}:${key}${editionId ? `@${editionId}` : ""}`;
   let pending = previews.get(cacheKey);
   if (!pending) {
-    pending = templates.preview(key).then(
+    pending = (editionId ? templates.preview(key, editionId) : templates.preview(key)).then(
       (result) => (result.success ? result.data : null),
       () => null,
     );

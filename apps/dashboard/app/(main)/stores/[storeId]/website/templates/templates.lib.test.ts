@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { categoryOrder, pageTemplates, parseTemplatesCategory, parseTemplatesPage, sortByIndustry } from "./templates.lib";
+import {
+  cardEdition,
+  categoryOrder,
+  pageTemplates,
+  parseTemplatesCategory,
+  parseTemplatesNiche,
+  parseTemplatesPage,
+  resolveNicheFilter,
+  servedCategory,
+  sortByIndustry,
+} from "./templates.lib";
 
 // `sortOrder`: a higher one is a newer template.
 const rows = [
@@ -96,5 +106,85 @@ describe("sortByIndustry with a store seed", () => {
   it("pages without repeats", () => {
     const seen = [1, 2, 3, 4].flatMap((page) => pageTemplates(many, { page, category: "all", industryId: "fashion", seed: "s", pageSize: 4 }).items.map((r) => r.key));
     expect(new Set(seen).size).toBe(many.length);
+  });
+});
+
+// Niche editions (ROADMAP F-90): industry → niche → looks.
+describe("the niche filter", () => {
+  const tshirts = { id: "tshirts", name: { ar: "تيشيرتات", en: "T-shirts" } };
+  const dresses = { id: "dresses", name: { ar: "فساتين", en: "Dresses" } };
+  const teeShop = { category: { en: "T-shirts", ar: "تيشيرتات" }, name: "Qotna tees", industryId: "fashion" };
+
+  it("serves the tab asked for, else the store's industry when it has templates, else all", () => {
+    expect(servedCategory(["fashion", "electronics"], null, "fashion")).toBe("fashion");
+    expect(servedCategory(["fashion", "electronics"], null, "pets")).toBe("all");
+    expect(servedCategory(["fashion", "electronics"], null, null)).toBe("all");
+    expect(servedCategory(["fashion", "electronics"], "electronics", "fashion")).toBe("electronics");
+  });
+
+  it("offers no niche when the tab has no edition: no filter, whatever is asked", () => {
+    expect(resolveNicheFilter([], null, teeShop)).toBeNull();
+    expect(resolveNicheFilter([], "tshirts", teeShop)).toBeNull();
+  });
+
+  it("defaults to the store's own niche when the tab offers it", () => {
+    expect(resolveNicheFilter([dresses, tshirts], null, teeShop)).toBe("tshirts");
+    // The store's niche has no edition yet: all.
+    expect(resolveNicheFilter([dresses], null, teeShop)).toBeNull();
+    // The words say nothing: all.
+    expect(resolveNicheFilter([dresses, tshirts], null, { category: { en: "Fashion", ar: "أزياء وملابس" }, name: "Nour" })).toBeNull();
+  });
+
+  it("keeps a niche the seller chose, and treats all, an unknown id and another tab's niche as no filter", () => {
+    expect(resolveNicheFilter([dresses, tshirts], "dresses", teeShop)).toBe("dresses");
+    expect(resolveNicheFilter([dresses, tshirts], "all", teeShop)).toBeNull();
+    expect(resolveNicheFilter([dresses, tshirts], "mobiles", teeShop)).toBeNull();
+    expect(resolveNicheFilter([dresses, tshirts], "no-such-niche", teeShop)).toBeNull();
+  });
+
+  it("reads ?niche= as an id or all", () => {
+    expect(parseTemplatesNiche("pants-jeans")).toBe("pants-jeans");
+    for (const value of [null, "", "<script>", "T-Shirts", "-x", "a".repeat(64)]) expect(parseTemplatesNiche(value)).toBe("all");
+  });
+
+  it("puts the niche's looks first on a category tab, best look first, then the rest of the tab", () => {
+    const withNiche = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["mode", "kasr"] });
+    expect(withNiche.items.map((r) => r.key)).toEqual(["mode", "kasr"]);
+    // A look filed under another industry still leads its niche.
+    const across = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["volt", "mode"] });
+    expect(across.items.map((r) => r.key)).toEqual(["volt", "mode", "kasr"]);
+    expect(across.total).toBe(3);
+    // Looks that are not in the gallery are skipped; no repeats across pages.
+    const paged = [1, 2].flatMap((page) => pageTemplates(rows, { page, category: "fashion", nicheLooks: ["gone", "mode"], pageSize: 1 }).items.map((r) => r.key));
+    expect(paged).toEqual(["mode", "kasr"]);
+  });
+
+  it("leaves the list as it is with no niche, and on All", () => {
+    expect(pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: [] }).items.map((r) => r.key)).toEqual(["kasr", "mode"]);
+    expect(pageTemplates(rows, { page: 1, category: "all", nicheLooks: ["mode"] }).items.map((r) => r.key)).toEqual(
+      pageTemplates(rows, { page: 1, category: "all" }).items.map((r) => r.key),
+    );
+  });
+});
+
+describe("cardEdition", () => {
+  const card = { key: "kasr", editions: [{ id: "dresses" }, { id: "tshirts" }] };
+
+  it("is none for a template with no editions, whatever the filter or a stale pick says", () => {
+    expect(cardEdition({ key: "mode" }, {}, "tshirts")).toBeNull();
+    expect(cardEdition({ key: "mode", editions: [] }, { mode: "tshirts" }, "tshirts")).toBeNull();
+  });
+
+  it("follows the niche filter when the card has that edition", () => {
+    expect(cardEdition(card, {}, "tshirts")).toBe("tshirts");
+    expect(cardEdition(card, {}, "mobiles")).toBeNull();
+    expect(cardEdition(card, {}, null)).toBeNull();
+  });
+
+  it("lets the seller's pick on the card win, the original included", () => {
+    expect(cardEdition(card, { kasr: "dresses" }, "tshirts")).toBe("dresses");
+    expect(cardEdition(card, { kasr: null }, "tshirts")).toBeNull();
+    expect(cardEdition(card, { kasr: "mobiles" }, "tshirts")).toBeNull();
+    expect(cardEdition(card, { other: "dresses" }, "tshirts")).toBe("tshirts");
   });
 });

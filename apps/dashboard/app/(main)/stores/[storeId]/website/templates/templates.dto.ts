@@ -9,7 +9,17 @@ export type TemplateInstallView = { templateKey: string; installedAt: string; ca
 
 /** Gallery filters, mirrored in the URL (`?page=`, `?category=`). */
 /** `category` left out: the store's industry tab when it has templates, else `all`. */
-export type TemplatesPageQuery = { page: number; category: string; /** Search over every template's name and description; it looks in all categories. */ q: string };
+export type TemplatesPageQuery = {
+  page: number;
+  category: string;
+  /** Search over every template's name and description; it looks in all categories. */
+  q: string;
+  /** A niche id, or `all`. Left out: the store's own niche when the tab offers it. */
+  niche: string;
+};
+
+/** A niche as a filter option or an edition chip. */
+export type NicheOptionView = { id: string; name: { ar: string; en: string } };
 
 /** One page of the gallery (`listTemplatesPage`). */
 export type TemplatesPageView = {
@@ -24,6 +34,10 @@ export type TemplatesPageView = {
   categories: string[];
   /** The category tab served (the store's industry by default). */
   category: string;
+  /** The served tab's niches that have an edition, for the niche filter (empty: no filter shown). */
+  niches: NicheOptionView[];
+  /** The niche served (its looks lead the list, previewed with its edition), or null for all. */
+  niche: string | null;
   currentKey: string;
   /** The current template's name (it may be on another page). */
   currentName: Localized | null;
@@ -36,6 +50,8 @@ export const TEMPLATE_ERRORS: Record<string, TemplateErrorKey> = {
   not_found: "notFound",
   store_read_only: "readOnly",
   template_not_found: "templateNotFound",
+  // A niche edition the template does not offer (a stale page): the same message as a template that is gone.
+  edition_not_found: "templateNotFound",
   premium_template: "premiumTemplate",
   invalid_template: "invalidTemplate",
   too_many_pages: "tooManyPages",

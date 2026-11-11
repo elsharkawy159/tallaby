@@ -57,15 +57,15 @@ import {
   type SectionInstance,
   type SiteConfig,
 } from "@workspace/store-sections";
-import { getCodeTemplate, templateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
+import { editionOptions, getCodeTemplate, templateMeta, type NicheOption, type TemplateMeta } from "@workspace/store-sections/templates";
 import { createStoreForm } from "../store-forms/server";
 import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
 import { designSystemColumns, withStoredMotion } from "./design-system.lib";
-import { codeTemplateConfig, getPublicTemplate, offeredTemplates } from "./template-rows.server";
+import { codeTemplateConfig, getPublicTemplate, offeredTemplates, templateEditionId } from "./template-rows.server";
 import { storeTemplateChosen } from "./template-choice.server";
 
-export { getPublicTemplate, getTemplateMeta, loadDefaultTemplate, type DbTemplate } from "./template-rows.server";
+export { getPublicTemplate, getTemplateMeta, loadDefaultTemplate, templateEditionId, type DbTemplate } from "./template-rows.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -86,6 +86,15 @@ export type TemplateOptions = {
    * form section unset (hidden on the storefront until the seller picks one).
    */
   formInput?: (kind: string, locale: "ar" | "en") => FormInput | undefined | Promise<FormInput | undefined>;
+  /**
+   * A niche id (niche editions, ROADMAP F-90): `applyStoreTemplate` installs
+   * the template built with that niche's edition (its sections, photos, copy
+   * and design system). Checked on the server, never trusted: an unknown
+   * niche or a pack not approved on the template fails with
+   * `edition_not_found`. The edition's demo catalog is preview data and is
+   * never written to the store.
+   */
+  editionId?: string | null;
 };
 
 class TemplateError extends Error {
@@ -148,6 +157,8 @@ export type StoreTemplateCard = {
   formKinds: string[];
   /** Section ids per page, for the card's outline preview. */
   outline: { slug: string; isHome: boolean; name: string; sections: string[] }[];
+  /** The niche editions the template can be previewed and installed with (empty for a template with none). */
+  editions: NicheOption[];
 };
 
 export type StoreTemplateInstall = {
@@ -169,8 +180,12 @@ export type StoreTemplateGallery = {
 
 /** Loads the offered template cards; apps pass a cached one (`templateTags.catalog()`). */
 export type TemplateCardsLoader = () => Promise<StoreTemplateCard[]>;
-/** Loads an offered template's current config by key; apps pass a cached one (`templateTags.catalog()`). */
-export type TemplateConfigLoader = (templateKey: string) => Promise<SiteConfig | null>;
+/**
+ * Loads an offered template's current config by key; apps pass a cached one
+ * (`templateTags.catalog()`). `editionId` is left out or a niche id already
+ * checked by `templateEditionId`; a cached loader makes it part of its key.
+ */
+export type TemplateConfigLoader = (templateKey: string, editionId?: string) => Promise<SiteConfig | null>;
 
 /**
  * Every offered template as a gallery card, from the code catalog. Each card
@@ -197,6 +212,7 @@ export async function listTemplateCards(_q?: Queryable): Promise<StoreTemplateCa
       pageNames: meta.pageNames,
       formKinds: [...templateFormNeeds(config)],
       outline: templateOutline(config),
+      editions: editionOptions(template.key),
     });
   }
   return cards;
@@ -239,26 +255,38 @@ export async function listStoreTemplates(
 /**
  * One active template's current config, for the editor's preview dialog
  * (owner request 2026-10-18). Null for a foreign store, an unknown or
- * inactive key, or a broken version (the gallery hides those too).
+ * inactive key, or a broken version (the gallery hides those too). With
+ * `editionId` it is the look with that niche's edition; an edition the
+ * template does not offer, or one that does not build, gives the template's
+ * own content.
  */
 export async function getStoreTemplateConfig(
   sellerId: string,
   storeId: string,
   templateKey: string,
   q: Queryable = db,
-  loadConfig: TemplateConfigLoader = (key) => loadOfferedTemplateConfig(key, q),
+  loadConfig: TemplateConfigLoader = (key, edition) => loadOfferedTemplateConfig(key, q, edition),
+  editionId?: string | null,
 ): Promise<SiteConfig | null> {
   if (!TEMPLATE_KEY_RE.test(templateKey)) return null;
   const store = await ownStore(q, sellerId, storeId);
   if (!store) return null;
+  // Only a checked niche id reaches the loader (and its cache key).
+  const edition = templateEditionId(templateKey, editionId);
   // Re-parsed: a cached loader hands back plain JSON.
+  const withEdition = edition ? siteConfigSchema.safeParse(await loadConfig(templateKey, edition)) : null;
+  if (withEdition?.success) return withEdition.data;
   const config = siteConfigSchema.safeParse(await loadConfig(templateKey));
   return config.success ? config.data : null;
 }
 
-/** An offered template's config by key (code catalog), with no store involved. Null for an unknown key or a broken config. */
-export async function loadOfferedTemplateConfig(templateKey: string, _q?: Queryable): Promise<SiteConfig | null> {
-  return codeTemplateConfig(templateKey);
+/**
+ * An offered template's config by key (code catalog), with no store involved.
+ * Null for an unknown key or a broken config, and for an edition the template
+ * does not offer.
+ */
+export async function loadOfferedTemplateConfig(templateKey: string, _q?: Queryable, editionId?: string | null): Promise<SiteConfig | null> {
+  return codeTemplateConfig(templateKey, editionId);
 }
 
 /**
@@ -305,7 +333,14 @@ const previousDraftSchema = z.object({
 });
 type PreviousDraft = z.output<typeof previousDraftSchema>;
 
-export type ApplyTemplateError = "not_found" | "store_read_only" | "template_not_found" | "premium_template" | "invalid_template" | "too_many_pages";
+export type ApplyTemplateError =
+  | "not_found"
+  | "store_read_only"
+  | "template_not_found"
+  | "edition_not_found"
+  | "premium_template"
+  | "invalid_template"
+  | "too_many_pages";
 
 export type ApplyTemplateResult = { installId: string; templateKey: string; pagesUpdated: number; pagesCreated: number };
 
@@ -327,6 +362,10 @@ export async function applyStoreTemplate(
   q: Queryable = db,
 ): Promise<TemplateResult<ApplyTemplateResult, ApplyTemplateError>> {
   if (typeof templateKey !== "string" || !TEMPLATE_KEY_RE.test(templateKey)) return { success: false, error: "template_not_found" };
+  // An edition asked for must be one the template offers: an install never falls back to another content silently.
+  const wantsEdition = options.editionId !== undefined && options.editionId !== null && options.editionId !== "";
+  const editionId = wantsEdition ? templateEditionId(templateKey, options.editionId) : null;
+  if (wantsEdition && !editionId) return { success: false, error: getCodeTemplate(templateKey) ? "edition_not_found" : "template_not_found" };
   try {
     const data = await q.transaction(async (tx) => {
       const store = await ownStore(tx, sellerId, storeId, true);
@@ -335,7 +374,8 @@ export async function applyStoreTemplate(
 
       // Templates come from the code catalog; the theme store (paid templates, §8.1) is not built yet.
       const template = getCodeTemplate(templateKey);
-      const code = template && codeTemplateConfig(template.key);
+      // With an edition: the look built with it (sections, photos, copy, design system). Its demo catalog is not part of a config.
+      const code = template && codeTemplateConfig(template.key, editionId);
       if (!template) throw new TemplateError("template_not_found");
       if (!code) throw new TemplateError("invalid_template");
       const config = validateSiteConfig(code, { allowedSections: options.allowedSections });
@@ -431,6 +471,7 @@ export async function applyStoreTemplate(
       };
       const [install] = await tx
         .insert(templateInstalls)
+        // The edition is not recorded yet: `template_installs.edition_id` (plan §4.5, decision 5) would be written here, from `editionId`.
         .values({ templateKey: template.key, templateVersion: template.version, storeId, installedBy, previousDraft: previous })
         .returning({ id: templateInstalls.id });
 

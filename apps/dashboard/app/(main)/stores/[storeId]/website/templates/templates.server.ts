@@ -10,11 +10,13 @@ import {
   getTemplateMeta,
   listStoreTemplates,
   publishStoreSite,
+  templateEditionId,
   undoStoreTemplate,
 } from "@workspace/lib/store-sites/server";
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
 import { getStore } from "@workspace/lib/stores/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
+import { editionsForNiche, offeredNiches } from "@workspace/store-sections/templates";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -27,7 +29,17 @@ import {
   type TemplatesPageQuery,
   type TemplatesPageView,
 } from "./templates.dto";
-import { pageTemplates, parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PAGE_SIZE, toTemplateCardView, matchesTemplateSearch } from "./templates.lib";
+import {
+  matchesTemplateSearch,
+  pageTemplates,
+  parseTemplatesCategory,
+  parseTemplatesNiche,
+  parseTemplatesPage,
+  resolveNicheFilter,
+  servedCategory,
+  TEMPLATES_PAGE_SIZE,
+  toTemplateCardView,
+} from "./templates.lib";
 
 /**
  * Website › Templates actions (PLAN.md §8.1, P4-05). Applying also creates the
@@ -35,7 +47,9 @@ import { pageTemplates, parseTemplatesCategory, parseTemplatesPage, TEMPLATES_PA
  * language, or reuses the store's forms of the same name. The store id is explicit
  * and re-checked with requireStore; the template is chosen by key and must be
  * active. Applying writes drafts only, so the storefront is not invalidated:
- * the live site changes on the next Publish.
+ * the live site changes on the next Publish. A niche edition (ROADMAP F-90) is
+ * chosen by niche id and checked on the server (`templateEditionId`); its demo
+ * catalog is preview data and is never written to the store.
  */
 
 const ALLOWED = storeSectionRegistry.allowedSections();
@@ -69,12 +83,14 @@ async function withStore<T>(storeId: string, run: (access: Access) => Promise<Te
   }
 }
 
-export async function applyTemplate(storeId: string, templateKey: string) {
+export async function applyTemplate(storeId: string, templateKey: string, editionId?: string | null) {
   return withStore<{ pagesUpdated: number; pagesCreated: number; published: boolean }>(storeId, async ({ seller, store }) => {
     const result = await applyStoreTemplate(seller.sellerId, store.id, String(templateKey), seller.userId, {
       allowedSections: ALLOWED,
       overrideKeys: OVERRIDE_KEYS,
       formInput: templateFormInput,
+      // Checked by applyStoreTemplate: an edition the template does not offer fails the apply.
+      ...(editionId != null && editionId !== "" && { editionId: String(editionId) }),
     });
     if (!result.success) return { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
     const published = await publishNewStoreSafely(seller.sellerId, store.id, store.subdomain, seller.userId);
@@ -124,11 +140,21 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
     const industry = findIndustry({ en: row.storeCategory, ar: row.storeCategoryAr });
     // A search looks through every category; the tabs always list the whole gallery.
     const q = typeof query?.q === "string" ? query.q.trim().slice(0, 60) : "";
+    const requestedCategory = q ? "all" : query?.category == null ? null : parseTemplatesCategory(query.category);
+    // The niche filter belongs to a category tab: its niches that have an edition (none today for most tabs, so no filter).
+    const tab = servedCategory([...new Set(gallery.templates.map((tpl) => tpl.category))], requestedCategory, industry?.id);
+    const niches = tab === "all" ? [] : offeredNiches(tab);
+    const niche = resolveNicheFilter(niches, query?.niche == null ? null : parseTemplatesNiche(query.niche), {
+      category: { en: row.storeCategory, ar: row.storeCategoryAr },
+      name: row.name,
+      industryId: industry?.id,
+    });
     const paged = pageTemplates(q ? gallery.templates.filter((tpl) => matchesTemplateSearch(tpl, q)) : gallery.templates, {
       page: parseTemplatesPage(query?.page),
-      category: q ? "all" : query?.category == null ? null : parseTemplatesCategory(query.category),
+      category: requestedCategory,
       industryId: industry?.id,
       seed: store.id,
+      nicheLooks: niche ? editionsForNiche(niche).map((entry) => entry.look) : [],
     });
     const categories = q ? pageTemplates(gallery.templates, { page: 1, category: "all", industryId: industry?.id, seed: store.id }).categories : paged.categories;
     const currentKey = gallery.templateChosen ? gallery.currentKey : "";
@@ -143,6 +169,8 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
         total: paged.total,
         categories,
         category: paged.category,
+        niches,
+        niche,
         // A new store's placeholder Tallaby Classic drafts are not the seller's
         // choice (owner 2026-10-27): no "current" template until one is picked.
         currentKey,
@@ -165,10 +193,12 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
 }
 
 /** Read-only: the template's pages and look for the preview dialog (not rate-limited, no write access needed). */
-export async function templatePreview(storeId: string, templateKey: string): Promise<TemplateActionResult<TemplatePreviewView>> {
+export async function templatePreview(storeId: string, templateKey: string, editionId?: string | null): Promise<TemplateActionResult<TemplatePreviewView>> {
   try {
     const { seller, store } = await requireStore(String(storeId));
-    const config = await getStoreTemplateConfig(seller.sellerId, store.id, String(templateKey), undefined, loadCachedTemplateConfig);
+    // A niche edition the template offers, else null: the preview then shows the template's own content.
+    const edition = templateEditionId(String(templateKey), editionId);
+    const config = await getStoreTemplateConfig(seller.sellerId, store.id, String(templateKey), undefined, loadCachedTemplateConfig, edition);
     if (!config) return { success: false, error: "templateNotFound" };
     return {
       success: true,
@@ -178,7 +208,8 @@ export async function templatePreview(storeId: string, templateKey: string): Pro
         footer: config.footer,
         pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, kind: page.kind, name: page.name, sections: page.content.sections, content: page.content })),
         // Code templates bring a demo store, so the preview looks like the template's kind of shop.
-        demo: (await getTemplateMeta(String(templateKey)))?.demo ?? null,
+        // With an edition, the edition's demo store (preview only: "Use template" never writes it).
+        demo: (await getTemplateMeta(String(templateKey), undefined, edition))?.demo ?? null,
       },
     };
   } catch (error) {

@@ -36,6 +36,8 @@ export type TemplatePreviewHost = {
  * live with this store's products, its details, pages and sections, and
  * "Use template". Applying saves the editor first (the merge reads the saved
  * drafts), writes drafts only, then reloads the editor on the new drafts.
+ * A template with niche editions (ROADMAP F-90) lists them as chips: the one
+ * picked is what the preview shows and what "Use template" installs.
  */
 export function TemplatePreviewDialog({
   template,
@@ -60,14 +62,22 @@ export function TemplatePreviewDialog({
   const [locale, setLocale] = useState<SiteLocale>(host.defaultLocale);
   const [applying, startApplying] = useTransition();
   const key = template?.key;
+  // The niche edition picked, kept with the template it was picked on (another template starts from its own content).
+  const [pick, setPick] = useState<{ key: string; edition: string } | null>(null);
+  const editions = template?.editions ?? [];
+  const edition = pick && pick.key === key && editions.some((option) => option.id === pick.edition) ? pick.edition : null;
 
   useEffect(() => {
     if (!key) return;
     setPageSlug(null);
+  }, [key]);
+
+  useEffect(() => {
+    if (!key) return;
     setFailed(false);
     setPreview(null);
     let live = true;
-    void loadTemplatePreview(templatesApi, host.storeId, key).then((data) => {
+    void loadTemplatePreview(templatesApi, host.storeId, key, edition).then((data) => {
       if (!live) return;
       if (data) setPreview(data);
       else setFailed(true);
@@ -75,7 +85,7 @@ export function TemplatePreviewDialog({
     return () => {
       live = false;
     };
-  }, [key, templatesApi, host.storeId]);
+  }, [key, edition, templatesApi, host.storeId]);
 
   const text = (value: Localized) => (uiLocale === "en" ? value.en || value.ar : value.ar || value.en) || "";
   const page = preview ? (preview.pages.find((p) => p.slug === pageSlug) ?? preview.pages.find((p) => p.isHome) ?? preview.pages[0]) : undefined;
@@ -89,7 +99,7 @@ export function TemplatePreviewDialog({
         toast.error(t("saveFirst"));
         return;
       }
-      const result = await templatesApi.apply(template.key);
+      const result = edition ? await templatesApi.apply(template.key, edition) : await templatesApi.apply(template.key);
       if (!result.success) {
         toast.error(tw(`errors.${result.error}`));
         return;
@@ -139,7 +149,7 @@ export function TemplatePreviewDialog({
               <div className="min-h-0 flex-1 p-2">
                 {preview && page ? (
                   <SitePreview
-                    key={`${template.key}:${page.slug}`}
+                    key={`${template.key}:${edition ?? ""}:${page.slug}`}
                     className="h-full"
                     store={host.store}
                     // A store with no products yet sees the template with its demo store.
@@ -182,6 +192,25 @@ export function TemplatePreviewDialog({
                   <DialogTitle className="text-lg">{text(template.name)}</DialogTitle>
                   <DialogDescription>{text(template.description) || tw("description")}</DialogDescription>
                 </div>
+
+                {editions.length > 0 && (
+                  <div role="group" aria-label={tw("editions.label", { name: text(template.name) })} className="flex flex-wrap gap-1.5">
+                    {[{ id: null, name: null }, ...editions].map((option) => (
+                      <Button
+                        key={option.id ?? "original"}
+                        type="button"
+                        size="sm"
+                        variant={edition === option.id ? "default" : "outline"}
+                        aria-pressed={edition === option.id}
+                        className="h-7 rounded-full px-2.5 text-xs"
+                        disabled={applying}
+                        onClick={() => setPick(option.id ? { key: template.key, edition: option.id } : null)}
+                      >
+                        {option.name ? text(option.name) : tw("editions.original")}
+                      </Button>
+                    ))}
+                  </div>
+                )}
 
                 <dl className="grid grid-cols-3 gap-2 text-center">
                   {[
@@ -238,6 +267,7 @@ export function TemplatePreviewDialog({
                 </div>
 
                 <ul className="list-disc space-y-1 ps-4 text-xs text-muted-foreground">
+                  {edition && <li>{tw("editions.confirm", { niche: text(editions.find((option) => option.id === edition)?.name ?? {}) })}</li>}
                   <li>{tw("confirm.keeps")}</li>
                   <li>{tw("confirm.draft")}</li>
                   <li>{tw("confirm.untouched")}</li>

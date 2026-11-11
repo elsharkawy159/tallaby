@@ -98,7 +98,7 @@ export default async function TemplatePage({ params }: Props) {
       </div>
 
       <Container id="stage" className="relative -mt-[90px] scroll-mt-24">
-        <TemplateStage templateKey={entry.id} pages={entry.pages} />
+        <TemplateStage templateKey={entry.id} pages={entry.pages} editions={entry.editions} />
       </Container>
 
       <Container>

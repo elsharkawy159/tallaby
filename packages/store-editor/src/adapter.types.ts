@@ -104,8 +104,9 @@ export type EditorAdapter = {
   >;
   previewLink?(): Promise<EditorResult<{ url: string; expiresAt: number }>>;
   templates?: {
-    apply(key: string): Promise<TemplateActionResult<{ pagesUpdated: number; pagesCreated: number }>>;
-    preview(key: string): Promise<TemplateActionResult<TemplatePreviewView>>;
+    /** `editionId`: a niche id from the card's `editions` (the template built with that niche's edition); the host checks it. */
+    apply(key: string, editionId?: string | null): Promise<TemplateActionResult<{ pagesUpdated: number; pagesCreated: number }>>;
+    preview(key: string, editionId?: string | null): Promise<TemplateActionResult<TemplatePreviewView>>;
     undo(): Promise<TemplateActionResult<{ templateKey: string }>>;
   };
   forms?: {

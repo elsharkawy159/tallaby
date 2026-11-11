@@ -5,7 +5,7 @@
  */
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
-import { getTemplateDesign } from "@workspace/store-sections/templates";
+import { defaultNiche, getTemplateDesign, type MatchNicheInput, type NicheOption } from "@workspace/store-sections/templates";
 import { RELATED_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
 import type { TemplateCardView } from "./templates.dto";
 
@@ -95,6 +95,7 @@ export function toTemplateCardView(template: StoreTemplateCard): TemplateCardVie
     palette: template.palette,
     formKinds: template.formKinds,
     pageNames: template.pageNames,
+    editions: template.editions ?? [],
     pages: template.outline.map((page) => ({
       slug: page.slug,
       isHome: page.isHome,
@@ -135,6 +136,46 @@ export function parseTemplatesCategory(value: unknown): string {
   return typeof value === "string" && /^[a-z0-9_-]{1,64}$/i.test(value) ? value : "all";
 }
 
+/** `?niche=` → a niche id, or `all`. */
+export function parseTemplatesNiche(value: unknown): string {
+  return typeof value === "string" && /^[a-z0-9][a-z0-9-]{0,62}$/.test(value) ? value : "all";
+}
+
+/**
+ * The niche filter of a category tab (niche editions, ROADMAP F-90).
+ * `offered` is the tab's niches that have an edition (`offeredNiches`; none
+ * for "All" and during a search). With no niche asked for (`null`) it is the
+ * store's own niche when the tab offers it (`matchNiche` of the store's
+ * category and name); `all`, an unknown id and a niche the tab does not
+ * offer are no filter.
+ */
+export function resolveNicheFilter(offered: readonly NicheOption[], requested: string | null | undefined, store: MatchNicheInput): string | null {
+  if (!offered.length) return null;
+  if (requested == null) return defaultNiche(store, offered);
+  return offered.some((niche) => niche.id === requested) ? requested : null;
+}
+
+/**
+ * The edition a card shows and installs: the seller's pick on that card
+ * (`null` is the template's own content), else the niche filter's when the
+ * template has that edition, else none. Always one of the card's editions.
+ */
+export function cardEdition(
+  template: { key: string; editions?: readonly { id: string }[] },
+  picked: Readonly<Record<string, string | null>>,
+  niche: string | null,
+): string | null {
+  const editions = template.editions ?? [];
+  if (editions.length === 0) return null;
+  const chosen = Object.hasOwn(picked, template.key) ? picked[template.key] : niche;
+  return chosen && editions.some((edition) => edition.id === chosen) ? chosen : null;
+}
+
+/** The category tab served: the one asked for, else the store's industry when it has templates, else `all`. */
+export function servedCategory(categories: readonly string[], requested: string | null, industryId: string | null | undefined): string {
+  return requested ?? (industryId && categories.includes(industryId) ? industryId : "all");
+}
+
 /** Newest first (owner request 2026-10-28): a higher `sortOrder` is a newer template; ties keep their order. */
 export function sortNewest<T extends { sortOrder?: number }>(templates: T[]): T[] {
   return [...templates].sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
@@ -163,9 +204,10 @@ export function sortRelevantNewest<T extends { category: string; sortOrder?: num
  * every category of the whole gallery, in gallery order (for the tabs). With
  * no category asked for (`null`), the store's industry is the default tab
  * when it has templates, else `all` (owner request 2026-10-28); `category`
- * is the tab served.
+ * is the tab served. `nicheLooks` (a chosen niche's looks, best first) lead a
+ * category tab, in that order, whatever their own category; "All" ignores them.
  */
-export function pageTemplates<T extends { category: string; sortOrder?: number }>(
+export function pageTemplates<T extends { category: string; sortOrder?: number; key?: string }>(
   templates: T[],
   {
     page,
@@ -173,12 +215,15 @@ export function pageTemplates<T extends { category: string; sortOrder?: number }
     industryId,
     seed,
     pageSize = TEMPLATES_PAGE_SIZE,
-  }: { page: number; category: string | null; industryId?: string | null; seed?: string; pageSize?: number },
+    nicheLooks = [],
+  }: { page: number; category: string | null; industryId?: string | null; seed?: string; pageSize?: number; nicheLooks?: readonly string[] },
 ): { items: T[]; page: number; pageCount: number; total: number; categories: string[]; category: string } {
   // The tabs keep the store's industry first; the cards in every tab are newest first.
   const categories = [...new Set(sortByIndustry(templates, industryId, seed).map((tpl) => tpl.category))];
-  const category = requested ?? (industryId && categories.includes(industryId) ? industryId : "all");
-  const filtered = category === "all" ? sortRelevantNewest(templates, industryId) : sortNewest(templates.filter((tpl) => tpl.category === category));
+  const category = servedCategory(categories, requested, industryId);
+  const inTab = category === "all" ? sortRelevantNewest(templates, industryId) : sortNewest(templates.filter((tpl) => tpl.category === category));
+  const lead = category === "all" ? [] : nicheLooks.flatMap((key) => templates.filter((tpl) => tpl.key === key));
+  const filtered = lead.length ? [...lead, ...inTab.filter((tpl) => !lead.includes(tpl))] : inTab;
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(Math.max(1, page), pageCount);
   return {

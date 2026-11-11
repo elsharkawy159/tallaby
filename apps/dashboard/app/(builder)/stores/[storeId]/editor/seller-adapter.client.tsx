@@ -91,8 +91,8 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       siteStatus: () => siteStatus(storeId),
       previewLink: () => previewLink(storeId),
       templates: {
-        apply: (key) => applyTemplate(storeId, key),
-        preview: (key) => templatePreview(storeId, key),
+        apply: (key, editionId) => applyTemplate(storeId, key, editionId),
+        preview: (key, editionId) => templatePreview(storeId, key, editionId),
         undo: () => undoTemplate(storeId),
       },
       forms: {

@@ -103,7 +103,9 @@
       "free": "Free",
       "more": "More templates",
       "pageCount": "Pages",
-      "colors": "Colors"
+      "colors": "Colors",
+      "editions": "Show this template as a store for",
+      "original": "Original"
     }
   }
 }

@@ -19,6 +19,8 @@ export type TemplateCardView = {
   formKinds: readonly string[];
   /** Page names in both languages by slug (code templates). */
   pageNames?: Readonly<Record<string, Localized>>;
+  /** Niche editions the template can be previewed and installed with (niche id and name); none for most templates. */
+  editions?: readonly { id: string; name: { ar: string; en: string } }[];
   /** Pages with their section names (resolved on the server from the section library). */
   pages: { slug: string; isHome: boolean; name: string; sections: Localized[] }[];
 };

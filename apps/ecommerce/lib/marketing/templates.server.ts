@@ -1,8 +1,8 @@
 import { cache } from "react";
 import { cacheProfiles, createCachedQuery, templateTags } from "@workspace/cache";
-import { codeTemplateConfig, getPublicTemplate, offeredTemplates } from "@workspace/lib/store-sites/server";
+import { codeTemplateConfig, getPublicTemplate, offeredTemplates, templateEditionId } from "@workspace/lib/store-sites/server";
 import { siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
-import { resolveTemplateMeta, templateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
+import { editionOptions, resolveTemplateMeta, templateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
 import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templates.lib";
 
 /**
@@ -11,7 +11,7 @@ import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templat
  * because each entry is built from a ~95 KB config; a deploy brings changes.
  */
 const getCachedCatalog = createCachedQuery({
-  name: "marketing:template-catalog:v3",
+  name: "marketing:template-catalog:v4",
   ttl: cacheProfiles.taxonomy,
   // Templates and sections are code: a deploy brings new trees.
   perDeploy: true,
@@ -40,6 +40,7 @@ const getCachedCatalog = createCachedQuery({
             name: page.name,
             ...(meta.pageNames[page.slug] && { names: meta.pageNames[page.slug] }),
           })),
+          editions: editionOptions(template.key),
         },
       ];
     }),
@@ -61,26 +62,43 @@ export async function findGalleryEntry(locale: string, id: string): Promise<Gall
 }
 
 const getCachedTemplatePreview = createCachedQuery({
-  name: "marketing:template-preview:v3",
+  name: "marketing:template-preview:v4",
   ttl: cacheProfiles.taxonomy,
   // Templates and sections are code: a deploy brings new trees.
   perDeploy: true,
-  tags: (_key: string) => [templateTags.catalog()],
-  query: (key: string) => getPublicTemplate(key),
+  // The niche edition (a checked niche id, or null) is an argument, so it is part of the cache key.
+  tags: (_key: string, _edition: string | null) => [templateTags.catalog()],
+  query: (key: string, edition: string | null) => getPublicTemplate(key, undefined, edition),
 });
 
-export type TemplatePreview = { config: SiteConfig; meta: TemplateMeta };
+export type TemplatePreview = {
+  config: SiteConfig;
+  meta: TemplateMeta;
+  /** The niche edition the config and demo store were built with, or null for the template's own content. */
+  edition: string | null;
+};
 
 /**
  * An active template's current site config and meta (demo store, page names)
  * for the preview frame; null when unknown, deleted or unreachable.
+ *
+ * `editionId` (`?edition=<nicheId>`, niche editions, ROADMAP F-90) asks for
+ * the look built with that niche's edition. It is a visitor's value, so it is
+ * checked before anything is cached: an unknown niche, a pack not approved on
+ * the template and a template that is not edition-ready all become `null`,
+ * which is the template's own content and its usual cache entry. So the cache
+ * holds at most one entry per template and one per real (template, edition)
+ * pair, whatever a URL says. An edition that fails to build falls back to the
+ * template's own content too (`edition` is then null).
  */
-export const getTemplatePreview = cache(async (key: string): Promise<TemplatePreview | null> => {
+export const getTemplatePreview = cache(async (key: string, editionId?: string | null): Promise<TemplatePreview | null> => {
   try {
-    const stored = await getCachedTemplatePreview(key);
+    const stored = await getCachedTemplatePreview(key, templateEditionId(key, editionId));
     // Re-parsed: the cache hands back plain JSON.
     const parsed = siteConfigSchema.safeParse(stored?.config);
-    return stored && parsed.success ? { config: parsed.data, meta: resolveTemplateMeta(stored.meta, key) } : null;
+    if (!stored || !parsed.success) return null;
+    // With an edition, the demo store is the edition's; the code template's is only the fallback of a malformed one.
+    return { config: parsed.data, meta: resolveTemplateMeta(stored.meta, key), edition: stored.edition ?? null };
   } catch (error) {
     console.error("[marketing] template config failed", error);
     return null;

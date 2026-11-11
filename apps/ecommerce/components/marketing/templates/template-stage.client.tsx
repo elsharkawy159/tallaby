@@ -10,15 +10,18 @@ import { templateFrameSrc, type GalleryPage } from "@/lib/marketing/templates.li
 
 /**
  * The template page's stage: every page of the real template with its demo
- * store (the /template-preview frame), on a desktop or a phone.
+ * store (the /template-preview frame), on a desktop or a phone. A template
+ * with niche editions (ROADMAP F-90) gets a row of chips: the demo is drawn
+ * with the trade picked (`?edition=`).
  */
-export function TemplateStage({ templateKey, pages }: { templateKey: string; pages: GalleryPage[] }) {
+export function TemplateStage({ templateKey, pages, editions = [] }: { templateKey: string; pages: GalleryPage[]; editions?: { id: string; name: string }[] }) {
   const t = useTranslations("templates.detail");
   const locale = useLocale();
   const [slug, setSlug] = React.useState(pages[0]?.slug);
   const [device, setDevice] = React.useState<"desktop" | "mobile">("desktop");
   const [loaded, setLoaded] = React.useState<string | null>(null);
-  const src = templateFrameSrc(locale, templateKey, slug);
+  const [edition, setEdition] = React.useState<string | null>(null);
+  const src = templateFrameSrc(locale, templateKey, slug, false, edition);
   const mobile = device === "mobile";
 
   return (
@@ -65,6 +68,24 @@ export function TemplateStage({ templateKey, pages }: { templateKey: string; pag
           <span className="flex-1" />
         )}
         <SignupTrigger size="sm" className="max-[600px]:w-full">{t("startWith")}</SignupTrigger>
+        {editions.length > 0 ? (
+          <div role="group" aria-label={t("editions")} className="no-scrollbar flex min-w-0 basis-full gap-1.5 overflow-x-auto border-t border-line pt-3">
+            {[{ id: null, name: t("original") }, ...editions].map((option) => (
+              <button
+                key={option.id ?? "original"}
+                type="button"
+                aria-pressed={edition === option.id}
+                onClick={() => setEdition(option.id)}
+                className={cn(
+                  "h-[34px] flex-none rounded-full border px-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
+                  edition === option.id ? "border-teal-900 bg-teal-900 text-white" : "border-line bg-white text-ink-600 hover:border-teal-900/40",
+                )}
+              >
+                {option.name}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
       <div className="grid place-items-center rounded-b-card border border-line bg-[#eef3f4] p-3.5 shadow-[0_30px_70px_rgba(13,55,67,0.1)] min-[901px]:p-7">
         <div className={cn("w-full overflow-hidden bg-white shadow-raise transition-[max-width] duration-300", mobile ? "max-w-[360px] rounded-[32px] border-8 border-[#0b0f10]" : "max-w-[1040px] rounded-xl")}>
