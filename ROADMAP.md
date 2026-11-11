@@ -1706,6 +1706,18 @@ Add each new request here first, with the date and the owner's words, then turn 
 - **Tests:** store-sections 9,906 pass, store-editor 203 pass, typecheck clean for store-sections, store-editor and dashboard. `apps/ecommerce` typecheck fails only in `profile.chunks.tsx` (address form types, not part of this work).
 - **Left:** the one product card (L2b), style tokens (L3), white-background photo sets (L4), the three template rebuilds (L7), after screenshots (L8).
 
+### 2026-11-11 — F-89 look-first pilot: section upgrades (branch `feat/section-system`, local commits, not pushed)
+
+- **Bug fixed** (`7ed2c061`, F-88): a `wipe-*` reveal never played in Chromium, so the split story photo stayed hidden on Classic v7 and Hareer v2. The photo's frame is now watched instead of the fully clipped photo. Checked in a headless browser on both templates.
+- **Product card** (`23d7952e`): `premiumCard` and one heading in `designs/products/_shared.ts`; `products-grid` v3, `products-rail` v2, `products-category-carousel` v2, `products-feature` v2, `products-spotlight` v2; `libraryTemplate({ productStage })`. The stage reaches product photos in product lists only (not the product page gallery, cross-sell or hotspot popovers). Quick add is a button under the price, not a hover overlay.
+- **Hero and categories** (`63288b75`): `hero-fullbleed` v3, `hero-video` v2, `hero-split` v3, `hero-carousel` v2; `categories-photo-tiles` v2, `categories-circles` v2, `categories-ruled` v2. **Owner decision needed:** phones now crop the hero photo tall with the copy on it, which reverses the 2026-11-04 rule (banner kept whole, copy underneath) for `hero-fullbleed` and `hero-carousel`.
+- **Editorial** (`45175d39`): new `about-two-tone` (`reveal-scrub`); `gallery-shop-look` v2, `about-product-anatomy` v2, `about-before-after` v3, `features-icon-cards` v2, `features-classic` v2, `faq-side` v2, `faq-columns` v2.
+- **Chrome** (`b5b30797`): `header-centered-ticker`, `header-announcement`, `footer-links`, `footer-signoff`, `footer-classic`, `newsletter-ruled`, `newsletter-big` at v2; `storeForm` gains `layout: inline`. The live form (`store-form.client.tsx`) was not seen in a browser.
+- **L3 style tokens were not built as a separate layer**; the shared helpers above carry the common type, spacing and card rules.
+- **L4 photos:** curated Pexels sets for the three templates. Free stock has no clean packshots for dresses, speakers, cables and mabkhara burners, so those categories leave the demos.
+- **No migration.** Existing stores keep their own copies.
+- **Tests:** store-sections 9,924 pass, store-editor 203 pass, typecheck clean except the old `profile.chunks.tsx` errors in `apps/ecommerce`.
+
 ### 2026-11-11 — F-88 motion v2: pilot templates and template rules (branch `feat/motion-v2`, local commits, not pushed)
 
 - **Templates** (code-only, no migration): Tallaby Classic v7 (owner-approved, no steps): the split story (wipe-in photo, zoom on scroll) between the product rows and a count-up stats band before the perks. Hareer (`fashion-luxe`) v2: best sellers in `products-grid` (words heading), the atelier story as the split story. Nafha (`perfumes-luxe`) v2: `hero-fullbleed` (photo parallax, copy fade-exit) in place of the split hero; the niche 12-slot home is unchanged, so no stats or steps there.
