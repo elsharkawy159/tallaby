@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils";
 import { SITE_ROOT_CLASS, SiteTheme, bottomNavOn, chromeHasThemeToggle, designSystemToCss, siteMotionAttrs } from "@workspace/store-sections/render";
-import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
+import { CarouselRuntime, MotionRuntime, PhotoToolsRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
 import type { Storefront } from "@/lib/storefront.server";
@@ -104,6 +104,7 @@ export async function StorefrontShell({
         {!shared && <StoreCartSheet storeName={store.displayName} minOrder={store.minOrder} fontClassName={cn(storefrontFont.variable, site && [SITE_ROOT_CLASS, storeFontVariables])} />}
         <AuthDialogProvider />
         {site && <CarouselRuntime />}
+        {site && <PhotoToolsRuntime />}
         {site && <MotionRuntime />}
         {!shared && <StorefrontTracking store={store} />}
         {/* First-touch UTM cookie for the Campaigns report (ROADMAP.md F-26a); client-only, pages stay cached. */}

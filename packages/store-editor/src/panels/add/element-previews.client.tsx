@@ -266,6 +266,20 @@ const ELEMENT_PREVIEWS: Record<ElementType, () => ReactNode> = {
       ))}
     </Row>
   ),
+  beforeAfter: () => (
+    <span className="relative block h-8 w-3/4 overflow-hidden rounded-sm bg-muted-foreground/20">
+      <span className="absolute inset-y-0 start-0 w-1/2 bg-muted-foreground/30" />
+      <span className="absolute inset-y-0 start-1/2 w-px bg-background" />
+      <span className="absolute start-1/2 top-1/2 size-2.5 -translate-y-1/2 rounded-full bg-background shadow-sm ltr:-translate-x-1/2 rtl:translate-x-1/2" />
+    </span>
+  ),
+  hotspot: () => (
+    <span className="relative block h-8 w-3/4">
+      <Photo className="size-full" />
+      <span className="absolute start-1/3 top-1/3 size-2 rounded-full bg-background ring-2 ring-primary/70" />
+      <span className="absolute end-1 top-1/2 h-2.5 w-5 rounded-sm bg-background shadow-sm" />
+    </span>
+  ),
   languageSwitcher: () => (
     <Row className="rounded-md border p-0.5 text-[8px] font-semibold leading-none">
       <span className="rounded-sm bg-primary/70 px-1 py-0.5 text-primary-foreground">ع</span>

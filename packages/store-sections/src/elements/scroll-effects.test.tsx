@@ -65,10 +65,14 @@ const hero = () => {
 };
 
 describe("section Scroll effect setting", () => {
-  it("keeps the three effects, drops none and junk", () => {
+  it("keeps the five effects, drops none and junk", () => {
     expect(normalizeShell({ scrollEffect: "parallax" })).toEqual({ scrollEffect: "parallax" });
     expect(normalizeShell({ scrollEffect: "zoom" })).toEqual({ scrollEffect: "zoom" });
     expect(normalizeShell({ scrollEffect: "fade-exit" })).toEqual({ scrollEffect: "fade-exit" });
+    expect(normalizeShell({ scrollEffect: "reveal-scrub" })).toEqual({ scrollEffect: "reveal-scrub" });
+    expect(normalizeShell({ scrollEffect: "horizontal" })).toEqual({ scrollEffect: "horizontal" });
+    // The markup names of the scrub's two parts are not a setting.
+    expect(normalizeShell({ scrollEffect: "scrub-photo" })).toBeUndefined();
     expect(normalizeShell({ scrollEffect: "none" })).toBeUndefined();
     expect(normalizeShell({ scrollEffect: "spin" })).toBeUndefined();
     expect(normalizeShell({ scrollEffect: 3, paddingY: "md" })).toEqual({ paddingY: "md" });
@@ -79,24 +83,34 @@ describe("section Scroll effect setting", () => {
 describe("scrollEffectTargets", () => {
   it("finds the main photo, and the title's box on the first section only", () => {
     const { tree, photo, copy } = hero();
-    expect(scrollEffectTargets(tree)).toEqual({ effects: ["parallax", "zoom"], imageId: photo.id, contentId: null });
-    expect(scrollEffectTargets(tree, { isFirstSection: true })).toEqual({ effects: ["parallax", "zoom", "fade-exit"], imageId: photo.id, contentId: copy.id });
+    // Any other section: reveal-scrub moves the same photo and the title's box.
+    expect(scrollEffectTargets(tree)).toEqual({ effects: ["parallax", "zoom", "reveal-scrub"], imageId: photo.id, contentId: null, scrubId: copy.id, rowId: null });
+    expect(scrollEffectTargets(tree, { isFirstSection: true })).toEqual({
+      effects: ["parallax", "zoom", "fade-exit"],
+      imageId: photo.id,
+      contentId: copy.id,
+      scrubId: null,
+      rowId: null,
+    });
   });
 
   it("offers nothing for a photo outside its own frame or inside a data list", () => {
     const loose = [node("section", {}, [node("div", {}, [node("image", { src: "a.jpg", role: "image" }), node("paragraph", { text: "x" })])])];
     expect(scrollEffectTargets(loose).effects).toEqual([]);
     const listed = [node("section", {}, [node("productList", {}, [node("div", {}, [node("image", { bind: "image", role: "image" })])])])];
-    expect(scrollEffectTargets(listed).effects).toEqual([]);
+    // The list itself is a row `horizontal` can slide; its photo still takes nothing.
+    expect(scrollEffectTargets(listed)).toMatchObject({ effects: ["horizontal"], imageId: null, rowId: listed[0]!.children[0]!.id });
     // A background photo is enough for parallax and zoom.
-    expect(scrollEffectTargets(loose, { backgroundImage: true })).toEqual({ effects: ["parallax", "zoom"], imageId: null, contentId: null });
+    expect(scrollEffectTargets(loose, { backgroundImage: true })).toEqual({ effects: ["parallax", "zoom"], imageId: null, contentId: null, scrubId: null, rowId: null });
+    // A background photo's wrapper clips, so nothing could be pinned: no horizontal there.
+    expect(scrollEffectTargets(listed, { backgroundImage: true }).effects).toEqual(["parallax", "zoom"]);
   });
 
   it("takes a banner photo alone in its box, and never fades a box holding the photo", () => {
     const banner = node("image", { src: "b.jpg" }, [], { aspectRatio: "banner" });
     const title = node("heading", { text: "T", level: "h2" });
     const tree = [node("section", {}, [node("div", {}, [banner]), node("div", {}, [title, node("image", { src: "c.jpg" })])])];
-    expect(scrollEffectTargets(tree, { isFirstSection: true })).toEqual({ effects: ["parallax", "zoom"], imageId: banner.id, contentId: null });
+    expect(scrollEffectTargets(tree, { isFirstSection: true })).toEqual({ effects: ["parallax", "zoom"], imageId: banner.id, contentId: null, scrubId: null, rowId: null });
   });
 
   it("finds the targets in the hero-fullbleed design", () => {
@@ -202,6 +216,58 @@ describe("scroll effect markup", () => {
     expect(planScroll(nine[0]!, undefined)).toBeNull();
   });
 
+  it("draws reveal-scrub on the photo and the copy of any section but the first", () => {
+    const { tree, photo, copy, frame } = hero();
+    const html = render(custom(tree, shell("reveal-scrub")));
+    expect(html).toMatch(new RegExp(`<img data-node-id="${photo.id}" data-node-type="image"[^>]*data-sf-scroll="scrub-photo"`));
+    expect(html).toMatch(new RegExp(`data-node-id="${copy.id}" data-node-type="vFlex"[^>]*data-sf-scroll="scrub-copy"`));
+    expect(html).toMatch(new RegExp(`<div data-node-id="${frame.id}" data-node-type="div"[^>]*data-sf-frame=""`));
+    expect(html).toMatch(/<section [^>]*data-sf-track=""/);
+    expect(html).toMatch(/<section [^>]*data-sf-scrub=""/);
+    // Nothing is hidden inline: without scroll timelines the ordinary reveal still plays.
+    expect(html).not.toMatch(/opacity:\s*0|visibility:\s*hidden/);
+    // The page's first section and the editor canvas: nothing.
+    expect(render(custom(tree, shell("reveal-scrub")), {}, true)).not.toMatch(/data-sf-(scroll|scrub)/);
+    expect(render(custom(tree, shell("reveal-scrub")), { mode: "edit", reveal: false })).not.toMatch(/data-sf-(scroll|scrub|track)/);
+    // A photo's own effect wins over the section's scrub.
+    const own = hero();
+    own.photo.props.scrollEffect = "zoom";
+    expect(render(custom(own.tree, shell("reveal-scrub")))).toMatch(new RegExp(`data-node-id="${own.photo.id}"[^>]*data-sf-scroll="zoom"`));
+  });
+
+  it("draws horizontal on a row of 4 to 12 cards: the pinned section, its sticky part and the row", () => {
+    const cards = (count: number) => Array.from({ length: count }, (_, i) => node("div", {}, [node("paragraph", { text: `Card ${i}` })]));
+    const row = node("grid", {}, cards(5));
+    const pin = node("vFlex", {}, [node("heading", { text: "T", level: "h2" }), row]);
+    const tree = [node("section", {}, [pin])];
+    const html = render(custom(tree, shell("horizontal")));
+    expect(html).toMatch(/<section [^>]*data-sf-h="5"/);
+    expect(html).toMatch(/<section [^>]*data-sf-track=""/);
+    expect(html).toMatch(new RegExp(`data-node-id="${pin.id}" data-node-type="vFlex"[^>]*data-sf-h-pin=""`));
+    expect(html).toMatch(new RegExp(`data-node-id="${row.id}" data-node-type="grid"[^>]*data-sf-scroll="horizontal"`));
+    // The editor canvas, a background photo, and a row of 3 or 13 cards: the row stays as it is.
+    expect(render(custom(tree, shell("horizontal")), { mode: "edit", reveal: false })).not.toMatch(/data-sf-(h|scroll|track)/);
+    expect(render(custom(tree, shell("horizontal", { bgImage: "bg.jpg" })))).not.toMatch(/data-sf-(h=|h-pin|scroll="horizontal")/);
+    for (const count of [3, 13]) {
+      const small = [node("section", {}, [node("vFlex", {}, [node("grid", {}, cards(count))])])];
+      expect(planScroll(small[0]!, "horizontal")).toBeNull();
+    }
+  });
+
+  it("counts the cards a data list draws for horizontal", () => {
+    const list = node("productList", { source: "newest" }, [node("div", {}, [node("text", { bind: "title" })])]);
+    const tree = [node("section", {}, [node("div", {}, [list])])];
+    const products = (count: number) => Array.from({ length: count }, (_, i) => ({ id: `p${i}`, title: `P${i}`, href: `/p${i}`, image: null, price: 1 }));
+    const withProducts = (count: number) => render(custom(tree, shell("horizontal")), { catalog: { products: { [list.id]: products(count) }, categories: [] } });
+    expect(withProducts(6)).toMatch(/<section [^>]*data-sf-h="6"/);
+    expect(withProducts(6)).toMatch(new RegExp(`data-node-id="${list.id}"[^>]*data-sf-scroll="horizontal"`));
+    // Too few products to slide: an ordinary list.
+    expect(withProducts(2)).not.toMatch(/data-sf-(h=|scroll="horizontal")/);
+    // A swipe row moves on its own: never pinned.
+    list.props.rail = true;
+    expect(planScroll(tree[0]!, "horizontal")).toBeNull();
+  });
+
   it("leaves a section with no effect exactly as it was", () => {
     const { tree } = hero();
     expect(render(custom(tree))).not.toMatch(/data-sf-(scroll|frame|track|steps)/);
@@ -288,10 +354,10 @@ describe("scroll effect CSS", () => {
     for (const [prelude, body] of blocks(MOTION_CSS_SCROLL)) {
       const moving = /animation|translate|scale|transition|position:sticky/.test(body);
       if (!moving) continue;
-      expect(prelude, prelude).toMatch(/^@media screen and (\(min-width:768px\) and )?\(prefers-reduced-motion:no-preference\)$/);
+      expect(prelude, prelude).toMatch(/^@media screen and (\(min-width:768px\) and (\(min-height:600px\) and )?)?\(prefers-reduced-motion:no-preference\)$/);
       for (const [selector, rule] of blocks(body)) {
         if (selector.startsWith("@keyframes") || selector.startsWith("@supports")) {
-          for (const [inner] of blocks(rule)) if (!/^(from|to)$/.test(inner)) expect(inner, inner).toContain(':not([data-sf-motion="off"])');
+          for (const [inner] of blocks(rule)) if (!/^(from|to|\d+%)$/.test(inner)) expect(inner, inner).toContain(':not([data-sf-motion="off"])');
           continue;
         }
         expect(selector, selector).toContain(':not([data-sf-motion="off"])');

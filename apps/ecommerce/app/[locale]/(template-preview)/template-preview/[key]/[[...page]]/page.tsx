@@ -14,7 +14,7 @@ import {
   type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
-import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
+import { CarouselRuntime, MotionRuntime, PhotoToolsRuntime } from "@workspace/store-sections/client";
 import { prepareTemplateForStore, resolveDemoCatalog, templateDemoProduct, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
 import { starterPreviewForm } from "@workspace/lib/store-forms/starter";
 import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
@@ -68,6 +68,7 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
     <div className={cn(storefrontFont.variable, s.root, SITE_ROOT_CLASS, storeFontVariables)} dir={ctx.dir} lang={locale}>
       <FrameGuard allowPrefix={templateFrameSrc(routeLocale, key)} />
       <CarouselRuntime />
+      <PhotoToolsRuntime />
       <MotionRuntime />
       <SiteTheme designSystem={site.designSystem} />
       <PageStyles sections={all} />

@@ -9,7 +9,7 @@ import type { ComponentNode } from "@workspace/store-sections";
 import { cloneWithNewIds, createNode, isDataList, type ElementType } from "@workspace/store-sections/render";
 
 /** Elements whose fields are settings rather than text typed on the page. */
-export const SETTINGS_TYPES: readonly ElementType[] = ["carousel", "video", "videoPlaylist", "productList", "categoryList", "postList", "storeForm", "marquee", "countdown"];
+export const SETTINGS_TYPES: readonly ElementType[] = ["carousel", "video", "videoPlaylist", "productList", "categoryList", "postList", "storeForm", "marquee", "countdown", "beforeAfter", "hotspot"];
 
 /**
  * The elements with settings, in reading order. A data list's card template
@@ -33,7 +33,7 @@ export function hasCarousel(nodes: readonly ComponentNode[]): boolean {
   return nodes.some((node) => node.type === "carousel" || hasCarousel(node.children));
 }
 
-/** The images of a slide (usually one), in reading order. */
+/** The images of a slide, or of a before/after layer (usually one), in reading order. */
 export function slideImages(slide: ComponentNode): ComponentNode[] {
   const found: ComponentNode[] = [];
   const walk = (list: readonly ComponentNode[]) => {

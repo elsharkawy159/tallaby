@@ -27,6 +27,7 @@ import {
   revealFrom,
   revealFromV2,
 } from "../elements/motion";
+import { scrubStyle } from "../elements/scroll-progress.lib";
 
 const REPLAY_ID = "sf-reveal-replay";
 const V2_SECTION = `[${MOTION_V2_ATTR}="${MOTION_V2_MARK}"]`;
@@ -94,6 +95,8 @@ export function replayReveal(root: HTMLElement) {
 
 /** How long a scroll effect's demo plays in the editor (ms, normal speed). */
 export const SCROLL_DEMO_MS = 900;
+/** How far a horizontal row's demo slides in (percent of the row's width). */
+const HORIZONTAL_DEMO = 12;
 
 /**
  * Plays a one-shot demo of a Scroll effect in the editor canvas (docs/motion-v2-plan.md
@@ -102,15 +105,17 @@ export const SCROLL_DEMO_MS = 900;
  * changes. `section`: the section's element in the canvas (its
  * `[data-section-id]` wrapper). `targetId`: the node the effect moves, from
  * `scrollEffectTargets` (`imageId` for parallax and zoom, `contentId` for
- * fade-exit) or the image's own id; without it, parallax and zoom play on the
- * section's background photo. Parallax drifts from `+range` to rest, zoom
- * settles from 1.12, fade-exit fades in from 0.2, each over 900 ms with
+ * fade-exit, `imageId` then `scrubId` for reveal-scrub, one call each, `rowId`
+ * for horizontal) or the image's own id; without it, parallax and zoom play on
+ * the section's background photo. Parallax drifts from `+range` to rest, zoom
+ * settles from 1.12, fade-exit fades in from 0.2, reveal-scrub plays its way
+ * in, a horizontal row slides in sideways, each over 900 ms with
  * `fill: backwards`, so the canvas is static and fully visible when it ends.
  * Off with reduced motion and Theme › Animations off. Count-ups need no demo:
  * the canvas shows the final number.
  */
 export function replayScrollEffect(section: HTMLElement, effect: string | null | undefined, targetId?: string | null) {
-  if (effect !== "parallax" && effect !== "zoom" && effect !== "fade-exit") return;
+  if (effect !== "parallax" && effect !== "zoom" && effect !== "fade-exit" && effect !== "reveal-scrub" && effect !== "horizontal") return;
   const win = section.ownerDocument.defaultView;
   if (!win || win.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const site = section.closest<HTMLElement>(`.${SITE_ROOT_CLASS}`);
@@ -120,19 +125,26 @@ export function replayScrollEffect(section: HTMLElement, effect: string | null |
   // Node ids are plain (`[A-Za-z0-9_:-]`, the tree schema); anything else is not looked up.
   const target = targetId && /^[\w:-]{1,64}$/.test(targetId)
     ? section.querySelector<HTMLElement>(`[data-node-id="${targetId}"]`)
-    : targetId || effect === "fade-exit"
+    : targetId || (effect !== "parallax" && effect !== "zoom")
       ? null
       : section.querySelector<HTMLElement>(":scope > img");
   if (!target || typeof target.animate !== "function") return;
   cancel(target);
   const range = (MOTION_V2_SCROLL.parallaxRange * intensity) / 100;
-  const from =
-    effect === "parallax"
-      ? { transform: `translate3d(0,${range * 100}%,0) scale(${1 + 2 * range})` }
-      : effect === "zoom"
-        ? { transform: `scale(${1 + MOTION_V2_SCROLL.zoomScale * intensity})` }
-        : { opacity: MOTION_V2_SCROLL.fadeExitOpacity, transform: `translate3d(0,${-MOTION_V2_SCROLL.fadeExitRise * intensity}px,0)` };
-  const to = effect === "fade-exit" ? { opacity: 1, transform: "none" } : { transform: "none" };
+  // reveal-scrub plays its way in on each target (the photo settles, the copy rises); a horizontal
+  // row slides in from the reading end (the left in Arabic), by part of a card.
+  const scrub = effect === "reveal-scrub" ? scrubStyle(0, target.dataset.nodeType === "image" ? "photo" : "copy", intensity) : null;
+  const rtl = section.closest("[dir]")?.getAttribute("dir") === "rtl";
+  const from = scrub
+    ? { opacity: scrub.opacity, transform: `translate3d(0,${scrub.rise}px,0) scale(${scrub.scale})` }
+    : effect === "horizontal"
+      ? { transform: `translate3d(${rtl ? -HORIZONTAL_DEMO : HORIZONTAL_DEMO}%,0,0)` }
+      : effect === "parallax"
+        ? { transform: `translate3d(0,${range * 100}%,0) scale(${1 + 2 * range})` }
+        : effect === "zoom"
+          ? { transform: `scale(${1 + MOTION_V2_SCROLL.zoomScale * intensity})` }
+          : { opacity: MOTION_V2_SCROLL.fadeExitOpacity, transform: `translate3d(0,${-MOTION_V2_SCROLL.fadeExitRise * intensity}px,0)` };
+  const to = scrub || effect === "fade-exit" ? { opacity: 1, transform: "none" } : { transform: "none" };
   const animation = target.animate([from, to], { duration: SCROLL_DEMO_MS * speed, easing: MOTION_V2_EASE, fill: "backwards" });
   animation.id = REPLAY_ID;
 }

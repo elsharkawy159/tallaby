@@ -27,6 +27,7 @@ import {
   type ProductSummary,
   type RenderContext,
 } from "../core/types";
+import { hotspotKind, hotspotProductIndex } from "./hotspot.lib";
 
 export const DATA_LIST_TYPES = ["productList", "categoryList", "postList"] as const;
 export type DataListType = (typeof DATA_LIST_TYPES)[number];
@@ -107,6 +108,14 @@ export function nodeCatalogQuery(node: ComponentNode, opts?: { product?: Product
     }
     return { kind: "products", source, sort, limit, ...extra };
   }
+  if (node.type === "hotspot") {
+    // A product dot (`hotspot.tsx`): the product the seller picked, else the store's Nth newest product.
+    if (hotspotKind(props.kind) !== "product") return null;
+    const productId = idOf(props.productId);
+    if (productId) return { kind: "products", source: "selected", productIds: [productId], sort: "default", limit: 1 };
+    const index = hotspotProductIndex(props.productIndex);
+    return index ? { kind: "products", source: "newest", sort: "default", limit: index } : null;
+  }
   if (node.type === "categoryList") {
     // Picked categories may sit anywhere in the store's list: load them all.
     return { kind: "categories", limit: idsOf(props.categoryIds).length ? 200 : clampLimit(props.limit, 8) + offsetOf(props.offset) };
@@ -182,11 +191,29 @@ export function productCatalogSection(pages: readonly SitePage[]): SectionInstan
   };
 }
 
+/** A dot that shows a store product (`hotspot` with kind `product`). */
+export function isProductHotspot(node: ComponentNode): boolean {
+  return node.type === "hotspot" && hotspotKind(node.props?.kind) === "product";
+}
+
+/**
+ * The product a product dot shows: the picked one, else the store's Nth
+ * newest. Null when it is not set up, not resolved, or no longer in the store.
+ */
+export function hotspotProduct(node: ComponentNode, ctx: RenderContext): ProductSummary | null {
+  if (!isProductHotspot(node) || !nodeCatalogQuery(node)) return null;
+  const records = ctx.catalog.products[node.id] ?? [];
+  const productId = idOf(node.props?.productId);
+  if (productId) return records.find((record) => record.id === productId) ?? records[0] ?? null;
+  const index = hotspotProductIndex(node.props?.productIndex);
+  return index ? (records[index - 1] ?? null) : null;
+}
+
 /** The store data a tree draws (for presets and empty-state chips). */
 export function treeDataNeeds(nodes: readonly ComponentNode[] | undefined): DataNeed[] {
   const out = new Set<DataNeed>();
   walkNodes(nodes, (node) => {
-    const need = DATA_NODE_NEEDS[node.type];
+    const need = isProductHotspot(node) ? "products" : DATA_NODE_NEEDS[node.type];
     if (need) out.add(need);
   });
   return [...out];

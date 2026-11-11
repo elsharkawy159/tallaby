@@ -4,3 +4,4 @@ export { MotionRuntime } from "./motion-runtime.client";
 export { replayReveal, replayScrollEffect } from "./motion-replay.client";
 export { MenuSheetRuntime } from "./menu-sheet-runtime.client";
 export { BottomNavRuntime } from "./bottom-nav-runtime.client";
+export { PhotoToolsRuntime } from "./photo-tools-runtime.client";

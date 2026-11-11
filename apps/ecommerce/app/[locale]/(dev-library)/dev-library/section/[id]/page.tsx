@@ -15,7 +15,7 @@ import {
   storeSectionRegistry,
   type RenderContext,
 } from "@workspace/store-sections/render";
-import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
+import { CarouselRuntime, MotionRuntime, PhotoToolsRuntime } from "@workspace/store-sections/client";
 import {
   DEFAULT_TEMPLATE,
   getCodeTemplate,
@@ -78,6 +78,7 @@ export default async function DevSectionFrame({ params, searchParams }: Props) {
   return (
     <div className={cn(storefrontFont.variable, s.root, SITE_ROOT_CLASS, storeFontVariables, "min-h-0!")} dir={ctx.dir} lang={locale}>
       <CarouselRuntime />
+      <PhotoToolsRuntime />
       {reveal && <MotionRuntime />}
       <SiteTheme designSystem={site.designSystem} />
       <PageStyles sections={all} />

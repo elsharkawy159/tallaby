@@ -64,6 +64,8 @@ export const ALLOWED_NODE_TYPES = [
   "productCrossSell",
   // Scrolling marquee and live countdown (Claude Design premium sections, 2026-10-27); additive.
   "marquee", "countdown",
+  // Before/after slider and photo dots (look-first pilot L5, 2026-11-11); additive.
+  "beforeAfter", "hotspot",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 

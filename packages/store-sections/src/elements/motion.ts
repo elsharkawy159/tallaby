@@ -10,7 +10,7 @@ import { ANIMATION_SPEEDS, animationDefaultSchema } from "@workspace/motion/pres
 import { INTENSITY_FACTOR, MOTION_V2, MOTION_V2_EASE, MOTION_V2_SCROLL, wordStep } from "@workspace/motion/tokens";
 import { SITE_ROOT_CLASS } from "../core/theme";
 import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_SPEED_FACTOR } from "./motion-flags";
-import { STEPS_MAX } from "./scroll-progress.lib";
+import { HORIZONTAL, SCRUB, STEPS_MAX } from "./scroll-progress.lib";
 
 /** The reveals every store has had since before motion v2 (their v1 look is frozen). */
 export const REVEAL_VARIANTS = ["fade-up", "fade", "zoom-in", "slide-start", "slide-end"] as const;
@@ -289,6 +289,24 @@ const stepIndexes = Array.from({ length: STEPS_MAX }, (_, k) => k);
 /** A step's text block that is not waiting for its own reveal (a reveal owns its opacity until it ends). */
 const stepItem = (k?: number) => `[data-sf-step-item${k === undefined ? "" : `="${k}"`}]:not([data-reveal])`;
 
+/** `reveal-scrub`: both parts follow the section root through `SCRUB.span` of its entry. */
+const scrubRange = `animation-timeline:--sf-track;animation-range:entry 0% entry ${Math.round(SCRUB.span * 100)}%`;
+/**
+ * Switches the play-once reveals inside `scope` off: a waiting reveal looks
+ * exactly like a played one, so nothing is hidden and nothing transitions
+ * when the runtime marks it in view. The attribute is repeated so the rule
+ * outranks every reveal's own hidden state (v1, v2 and their RTL forms).
+ */
+const noReveal = (scope: string) => {
+  const waiting = `${scope} [data-reveal][data-reveal][data-reveal]:not(.is-inview)`;
+  return `${waiting},${waiting} :is([data-w],[data-countdown-unit]){opacity:1;transform:none;clip-path:none}`;
+};
+/** A `horizontal` section and its row. */
+const horizontalSection = `${on} [data-sf-h]`;
+const horizontalRow = `${horizontalSection} [data-sf-scroll="horizontal"]`;
+/** How far a `horizontal` row slides in all: one card and its gap per card past the visible ones (`--sf-hn`), toward the reading start. */
+const horizontalTravel = `calc(var(--sf-h-dir) * var(--sf-hn,1) * (100% + var(--sf-h-gap)) / ${HORIZONTAL.visible})`;
+
 export const MOTION_CSS_SCROLL = [
   // A photo's frame clips it, so a moving photo never shows an edge.
   "[data-sf-frame]{overflow:clip}",
@@ -327,6 +345,12 @@ export const MOTION_CSS_SCROLL = [
   // In a steps block a bar follows the middle of the screen through the steps (the engine's centre progress).
   `${on} [data-sf-steps] [data-sf-scroll="progress"]{animation-timeline:--sf-steps;animation-range:cover 50vh cover calc(100% - 50vh)}`,
   `${on} [data-sf-scroll="progress"][data-sf-axis="y"]{animation-name:sf-progress-y}`,
+  // reveal-scrub (docs/systems/plan.md §10, L6; CSS scroll timelines only, the engine never drives it): the copy
+  // and the photo move into place as their section enters, and back out on the way up. It replaces the section's
+  // play-once reveals, which are switched off here and nowhere else: a browser without scroll timelines keeps them.
+  `${on} [data-sf-scroll="scrub-copy"]{animation:sf-scrub-copy linear both;${scrubRange}}`,
+  `${on} [data-sf-scroll="scrub-photo"]{animation:sf-scrub-photo linear both;${scrubRange}}`,
+  noReveal(`${on} [data-sf-scrub]`),
   "}",
   // The engine (Firefox, older Safari): `--sf-progress` / `--sf-exit`, once it drives an element (`data-sf-live`).
   "@supports not (animation-timeline:view()){",
@@ -342,6 +366,29 @@ export const MOTION_CSS_SCROLL = [
   `@keyframes sf-fade-exit{from{opacity:1;translate:none}to{opacity:${fadeExitOpacity};translate:0 calc(-${fadeExitRise}px * var(--sf-intensity,1))}}`,
   "@keyframes sf-progress{from{scale:0 1}to{scale:1 1}}",
   "@keyframes sf-progress-y{from{scale:1 0}to{scale:1 1}}",
+  `@keyframes sf-scrub-copy{from{opacity:0;translate:0 calc(${SCRUB.rise}px * var(--sf-intensity,1))}${Math.round(SCRUB.fade * 100)}%{opacity:1}to{opacity:1;translate:none}}`,
+  `@keyframes sf-scrub-photo{from{opacity:${SCRUB.photoOpacity};scale:calc(1 + ${SCRUB.zoom} * var(--sf-intensity,1))}to{opacity:1;scale:1}}`,
+  "}",
+  // horizontal (docs/systems/plan.md §10, L6): from tablets up, on screens tall enough to hold the pinned part.
+  // Smaller screens, reduced motion, Animations off, print and browsers without CSS scroll timelines (nothing
+  // would slide the row there; the engine never drives it): the row keeps its ordinary layout, a grid or a swipe row.
+  `@media screen and (min-width:${HORIZONTAL.minWidth}px) and (min-height:${HORIZONTAL.minHeight}px) and (prefers-reduced-motion:no-preference){`,
+  "@supports (animation-timeline:view()){",
+  `${horizontalSection}{--sf-h-gap:${HORIZONTAL.gap}px;--sf-h-dir:-1}`,
+  `:is([dir="rtl"] ${on},${on}[dir="rtl"]) [data-sf-h]{--sf-h-dir:1}`,
+  ...Array.from({ length: HORIZONTAL.max - HORIZONTAL.min + 1 }, (_, i) => `${on} [data-sf-h="${HORIZONTAL.min + i}"]{--sf-hn:${HORIZONTAL.min + i - HORIZONTAL.visible}}`),
+  // The section grows by the pinned length (`stepVw` per card past the visible ones), and its part holding the row stays on screen meanwhile.
+  `${horizontalSection}::after{content:"";display:block;height:min(calc(var(--sf-hn,1) * ${HORIZONTAL.stepVw}vw),${HORIZONTAL.maxVh}vh)}`,
+  `${horizontalSection} [data-sf-h-pin]{position:sticky;top:0}`,
+  // One row, `visible` cards in view; the section root clips it sideways (`overflow-x-clip`), so the page never scrolls sideways.
+  `${horizontalRow}{display:flex!important;flex-wrap:nowrap!important;gap:var(--sf-h-gap)!important;overflow:visible!important}`,
+  `${horizontalRow}>*{flex:0 0 calc((100% - ${HORIZONTAL.visible - 1} * var(--sf-h-gap)) / ${HORIZONTAL.visible})!important;min-width:0;max-width:none}`,
+  // Its cards never wait for a play-once reveal: one off to the side would stay hidden until it slid in.
+  noReveal(horizontalRow),
+  // The row slides while its section covers the screen (`contain`), toward the reading start.
+  `${horizontalRow}{animation:sf-horizontal linear both;animation-timeline:--sf-track;animation-range:contain 0% contain 100%}`,
+  "}",
+  `@keyframes sf-horizontal{from{translate:0 0}to{translate:${horizontalTravel} 0}}`,
   "}",
 ].join("");
 

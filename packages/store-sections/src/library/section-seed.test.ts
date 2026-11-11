@@ -64,6 +64,8 @@ describe("library sections seed", () => {
     ...["product-cross-sell"],
     // Motion v2 (F-88, 2026-11-11): the sticky steps design and Classic v7's two new sections.
     ...["image-text-steps", "tallaby-classic-about-split-story", "tallaby-classic-stats-band"],
+    // Look-first pilot L5 (F-89, 2026-11-11): photo dots.
+    ...["about-product-anatomy", "gallery-shop-look"],
   ]);
 
   it("every design from before 0109 was seeded by some migration", () => {

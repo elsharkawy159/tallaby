@@ -61,7 +61,7 @@ import { CarouselElement, SlideElement } from "./render-carousel";
 import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
 import { resolvePhotoSlot } from "../designs/photo-slots";
 import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
-import { DATA_NODE_NEEDS, boundValue, isDataList, isPaginated, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
+import { DATA_NODE_NEEDS, boundValue, hotspotProduct, isDataList, isPaginated, isProductHotspot, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
 import { VideoElement, VideoPlaylist } from "./render-video";
 import { productSectionEmpty, renderProductElement } from "./product-elements";
@@ -72,6 +72,8 @@ import { PaymentLogo, storePayments } from "./store-payments";
 import { isBannerPhoto, normalizeStyle } from "./style";
 import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_CHOICES, REVEAL_MAX_STEP, isMotionV2, marqueeSeconds, splitWords, type RevealChoice, type RevealVariant } from "./motion";
 import { CountdownElement } from "./countdown";
+import { BeforeAfterElement } from "./before-after";
+import { HotspotElement } from "./hotspot";
 import { splitCount } from "@workspace/motion/count";
 import { planScroll } from "./scroll-plan";
 
@@ -182,6 +184,8 @@ function missingData(node: ComponentNode, ctx: RenderContext): boolean {
   let formMissing = false;
   walkNodes([node], (child) => {
     if (isDataList(child.type)) lists.push({ empty: listRecords(child, ctx).length === 0, optional: child.props?.optional === true });
+    // Product dots count together: a dot may miss its product, but a photo whose every dot (and list) is empty is hidden.
+    if (isProductHotspot(child)) lists.push({ empty: !hotspotProduct(child, ctx), optional: true });
     if (child.type === "storeForm") {
       const formId = nodeFormId(child);
       if (!formId || !ctx.forms?.[formId]) formMissing = true;
@@ -401,9 +405,11 @@ const REVEAL_SKIP = new Set([
   "productSeller",
   "productReviews",
   "productCrossSell",
+  // A dot is placed over a photo and opens on its own.
+  "hotspot",
 ]);
 /** Revealed whole with `fade-up` (when not inside a revealed node). */
-const REVEAL_FADE_UP = new Set(["paragraph", "button", "badge", "blockQuote", "accordion", "linkBlock", "list", "countdown"]);
+const REVEAL_FADE_UP = new Set(["paragraph", "button", "badge", "blockQuote", "accordion", "linkBlock", "list", "countdown", "beforeAfter"]);
 /** Their children are items: each one fades up in turn. */
 const REVEAL_ITEMS = new Set(["grid", "productList", "categoryList", "postList"]);
 
@@ -549,7 +555,10 @@ function holdsBoundImage(node: ComponentNode): boolean {
  */
 function sectionRootCtx(node: ComponentNode, props: Record<string, unknown>, ctx: RenderContext): RenderContext {
   const motionV2 = isMotionV2(props);
-  const plan = ctx.mode === "edit" ? null : planScroll(node, ctx.sectionScroll, { isFirstSection: ctx.aboveFold === true });
+  const plan =
+    ctx.mode === "edit"
+      ? null
+      : planScroll(node, ctx.sectionScroll, { isFirstSection: ctx.aboveFold === true, countOf: (list) => listRecords(list, ctx).length * list.children.length });
   if (!plan && !motionV2 && !ctx.scrollPlan && !ctx.motionV2) return ctx;
   return { ...ctx, scrollPlan: plan ?? undefined, motionV2: motionV2 || undefined };
 }
@@ -572,6 +581,18 @@ function scrollAttrs(node: ComponentNode, props: Record<string, unknown>, ctx: R
   if (media !== undefined) out["data-sf-step-media"] = String(media);
   if (plan.stepsMedia.has(node.id)) out["data-sf-steps-media"] = "";
   if (plan.stepOwn.has(node.id)) out["data-sf-step-own"] = "";
+  // `reveal-scrub`: where it runs, the CSS switches the section's play-once reveals off (MOTION_CSS_SCROLL).
+  if (plan.scrub && node.type === "section") out["data-sf-scrub"] = "";
+  // `horizontal`: the pinned section (its card count), the sticky part and the row that slides.
+  const row = plan.horizontal;
+  if (row?.count) {
+    if (node.type === "section") {
+      out["data-sf-h"] = String(row.count);
+      out["data-sf-track"] = "";
+    }
+    if (node.id === row.pinId) out["data-sf-h-pin"] = "";
+    if (node.id === row.rowId) out["data-sf-scroll"] = "horizontal";
+  }
   return out;
 }
 
@@ -713,7 +734,8 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     case "div":
       return (
-        <div {...attrs} className={cn("min-w-0", iconOnly(node) && "grid place-items-center")}>
+        // A box holding photo dots is what they are placed in (`hotspot.tsx`).
+        <div {...attrs} className={cn("min-w-0", iconOnly(node) && "grid place-items-center", node.children.some((child) => child.type === "hotspot") && "relative")}>
           {kids()}
         </div>
       );
@@ -834,6 +856,13 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     }
     case "countdown":
       return <CountdownElement attrs={attrs} props={props} ctx={ctx} />;
+    case "beforeAfter": {
+      // The first two boxes are the Before and After layers; anything after them is not drawn.
+      const layers = node.children.slice(0, 2).map((child) => <ElementFragment key={child.id} node={child} ctx={ctx} depth={depth + 1} scope={scope} reveal={reveal.children === "items" ? "auto" : reveal.children} />);
+      return <BeforeAfterElement attrs={attrs} props={props} ctx={ctx} layers={layers} />;
+    }
+    case "hotspot":
+      return <HotspotElement attrs={attrs} node={node} props={props} ctx={ctx} />;
     case "divider":
       return <hr {...attrs} className="border-(--sf-line)" />;
     case "spacer":

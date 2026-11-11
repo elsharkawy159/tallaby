@@ -7,6 +7,10 @@
  * - Browsers with CSS scroll timelines (`animation-timeline: view()`) run
  *   parallax, zoom, fade-exit and progress in CSS alone (`MOTION_CSS`); the
  *   engine skips them there. Steps always need it (an attribute changes).
+ *   `scrub-photo`, `scrub-copy` and `horizontal` (docs/systems/plan.md §10, L6)
+ *   run on CSS scroll timelines only: the engine never drives them, and a
+ *   browser without the timelines keeps the play-once reveal and the ordinary
+ *   row (the motion JS budget has no room for a fallback; `motion-size.test.ts`).
  * - One IntersectionObserver (`rootMargin: 50% 0px`) keeps the set of effects
  *   near the screen. Their geometry (page top and height of the element they
  *   follow, its "track") is read when one enters, on resize and from a

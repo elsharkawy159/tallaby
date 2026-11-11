@@ -117,6 +117,20 @@ export function SectionSettings({
                 </Button>
               </div>
             )}
+            {node.type === "beforeAfter" && (
+              // The two layers' photos, so both can be set without finding them on the page.
+              <div className="space-y-2">
+                {node.children.slice(0, 2).map((layer, index) => {
+                  const images = slideImages(layer);
+                  return (
+                    <div key={layer.id} className="space-y-2 rounded-md border p-2">
+                      <span className="text-xs text-muted-foreground">{t(index === 0 ? "beforePhoto" : "afterPhoto")}</span>
+                      {images.length ? images.map(inspector) : <p className="text-xs text-muted-foreground">{t("noLayerImage")}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </fieldset>
         );
       })}

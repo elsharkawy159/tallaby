@@ -54,7 +54,8 @@ describe("intensity", () => {
 
 describe("sectionScrollTargets", () => {
   it("offers parallax and zoom on a photo section, fade-exit only on the page's first section", () => {
-    expect(sectionScrollTargets(photoSection("a"), false).effects).toEqual(["parallax", "zoom"]);
+    // Any section but the first also offers reveal-scrub (docs/systems/plan.md §10, L6).
+    expect(sectionScrollTargets(photoSection("a"), false).effects).toEqual(["parallax", "zoom", "reveal-scrub"]);
     expect(sectionScrollTargets(photoSection("a"), true).effects).toEqual(["parallax", "zoom", "fade-exit"]);
   });
 

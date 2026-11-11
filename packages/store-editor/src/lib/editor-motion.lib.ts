@@ -24,13 +24,15 @@ type SectionScroll = {
   effect: string;
   /** The node it moves; null = the section's background photo. */
   target: string | null;
+  /** A second node it moves (reveal-scrub: the title's box, beside the photo). */
+  also?: string;
   /** Image node id → its own Scroll effect ("" = none). */
   images: Record<string, string>;
 };
 
 export type ScrollReplay = { sectionId: string; effect: string; targetId: string | null };
 
-/** Where a section's Scroll effect can play (`isFirstSection`: the page's first section, the only one with fade-exit). */
+/** Where a section's Scroll effect can play (`isFirstSection`: the page's first section, the only one with fade-exit and the one without reveal-scrub). */
 export function sectionScrollTargets(instance: SectionInstance, isFirstSection: boolean): ScrollTargets {
   const shell = normalizeShell((instance.style as { shell?: unknown } | undefined)?.shell);
   return scrollEffectTargets(instance.componentTree ?? [], { isFirstSection, backgroundImage: Boolean(shell?.bgImage) });
@@ -69,6 +71,12 @@ function sectionScroll(instance: SectionInstance, isFirstSection: boolean): Sect
   // As the renderer: fade-exit fades the first section's title box; a background photo takes parallax and zoom, else the main photo does.
   const targets = sectionScrollTargets(instance, isFirstSection);
   if (chosen === "fade-exit") return targets.contentId ? { effect: chosen, target: targets.contentId, images } : { effect: "", target: null, images };
+  // reveal-scrub moves the main photo and the title's box (never on the first section); horizontal slides the row of cards.
+  if (chosen === "reveal-scrub") {
+    const [target, also] = isFirstSection ? [] : [targets.imageId, targets.scrubId].filter((id): id is string => id != null);
+    return target ? { effect: chosen, target, ...(also && { also }), images } : { effect: "", target: null, images };
+  }
+  if (chosen === "horizontal") return targets.rowId ? { effect: chosen, target: targets.rowId, images } : { effect: "", target: null, images };
   if (shell?.bgImage) return { effect: chosen, target: null, images };
   return targets.imageId ? { effect: chosen, target: targets.imageId, images } : { effect: "", target: null, images };
 }
@@ -95,6 +103,7 @@ export function scrollReplays(prev: MotionSnapshot | null, next: MotionSnapshot)
     if (!before) continue;
     if (now.effect && (all || before.effect !== now.effect)) {
       out.push({ sectionId, effect: now.effect, targetId: now.target });
+      if (now.also) out.push({ sectionId, effect: now.effect, targetId: now.also });
     }
     for (const [imageId, effect] of Object.entries(now.images)) {
       if (effect && imageId in before.images && (all || before.images[imageId] !== effect)) out.push({ sectionId, effect, targetId: imageId });

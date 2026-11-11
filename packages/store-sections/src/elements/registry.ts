@@ -10,6 +10,7 @@ import type { StyleBreakpoint, StyleValues } from "./style";
 import type { NodeTemplate } from "./tree";
 import { VIDEO_CAPABILITIES, parseVideoUrl } from "./video";
 import { IMAGE_SCROLL_EFFECTS } from "./scroll-progress.lib";
+import { BEFORE_AFTER } from "./before-after.lib";
 
 export const ELEMENT_GROUPS = ["layout", "text", "basic", "data", "product"] as const;
 export type ElementGroup = (typeof ELEMENT_GROUPS)[number];
@@ -117,7 +118,9 @@ export type ElementType =
   | "productReviews"
   | "productCrossSell"
   | "marquee"
-  | "countdown";
+  | "countdown"
+  | "beforeAfter"
+  | "hotspot";
 
 export interface ElementDefinition {
   type: ElementType;
@@ -241,6 +244,9 @@ export const LINK_TYPES: readonly ElementType[] = [
   "productContent",
   "productReviews",
   "productCrossSell",
+  // A slider handle, and a dot whose popover holds a product link and the cart button.
+  "beforeAfter",
+  "hotspot",
 ];
 
 const SOURCE_LABELS: Record<(typeof PRODUCT_SOURCES)[number], Localized> = {
@@ -730,6 +736,102 @@ const DEFINITIONS: readonly ElementDefinition[] = [
         type: "datetime",
         hint: L("يختفي العداد من المتجر بعد هذا الوقت أو لو فاضي.", "The countdown hides on the store after this time, or while it is empty."),
       },
+    ],
+  },
+  // Before and after (look-first pilot L5, 2026-11-11; docs/systems/plan.md §10.1): two boxes in one frame,
+  // the first (Before) over the second (After), cut at a handle the visitor drags. Each box holds its photo
+  // and, if wanted, a label, so both stay ordinary elements. Without script the frame is split at `start`.
+  {
+    type: "beforeAfter",
+    group: "basic",
+    label: L("قبل وبعد", "Before and after"),
+    keywords: ["before", "after", "compare", "comparison", "slider", "result", "قبل", "بعد", "مقارنة", "نتيجة"],
+    container: true,
+    childTypes: ["div"],
+    defaultProps: { start: BEFORE_AFTER.fallback },
+    defaultStyle: { radius: 16, overflow: "hidden" },
+    defaultChildren: () =>
+      (
+        [
+          ["قبل", "Before", "insetStart"],
+          ["بعد", "After", "insetEnd"],
+        ] as const
+      ).map(([ar, en, side]) => ({
+        type: "div",
+        props: named(ar, en),
+        style: { position: "relative", overflow: "hidden", background: "secondary" },
+        children: [
+          { type: "image", props: { src: "", alt: ar, translations: { en: { alt: en } } }, style: { aspectRatio: "landscape", objectFit: "cover", width: "100%", radius: 0 }, children: [] },
+          {
+            type: "badge",
+            props: { text: ar, translations: { en: { text: en } } },
+            style: { position: "absolute", insetTop: "12px", [side]: "12px", background: "foreground", color: "background", radius: 999 },
+            children: [],
+          },
+        ],
+      })),
+    fields: [
+      {
+        key: "start",
+        label: L("مكان الفاصل في البداية (٪)", "Handle start position (%)"),
+        type: "number",
+        min: BEFORE_AFTER.min,
+        max: BEFORE_AFTER.max,
+        hint: L(
+          "٥٠ = النص. رقم أكبر يُظهر أكثر من صورة «قبل». الصندوق الأول هو «قبل» والثاني «بعد».",
+          "50 = the middle. A bigger number shows more of the Before photo. The first box is Before, the second is After.",
+        ),
+      },
+    ],
+  },
+  // A dot on a photo (look-first pilot L5, 2026-11-11; docs/systems/plan.md §10.1): it sits inside a Box that
+  // holds the photo, placed by percent, and opens a popover with a store product or the seller's own note.
+  {
+    type: "hotspot",
+    group: "basic",
+    label: L("نقطة على صورة", "Photo dot"),
+    keywords: ["hotspot", "dot", "pin", "shop the look", "lookbook", "tooltip", "anatomy", "نقطة", "علامة", "تسوق اللوك", "تفاصيل"],
+    container: false,
+    defaultProps: {
+      kind: "text",
+      x: 50,
+      y: 50,
+      title: "ميزة في المنتج",
+      body: "اكتب هنا سطرًا يشرح هذا الجزء.",
+      translations: { en: { title: "A product feature", body: "Write a line that explains this part." } },
+    },
+    fields: [
+      {
+        key: "kind",
+        label: L("ماذا تعرض النقطة", "What the dot shows"),
+        type: "select",
+        options: [
+          { value: "product", label: L("منتج من المتجر", "A store product") },
+          { value: "text", label: L("نص من عندي", "My own text") },
+        ],
+      },
+      { key: "productId", label: L("المنتج", "Product"), type: "product", group: "data", showWhen: { key: "kind", equals: ["product"] } },
+      {
+        key: "productIndex",
+        label: L("أو: ترتيب المنتج في متجرك", "Or: the product by its place in your store"),
+        type: "number",
+        group: "data",
+        min: 1,
+        max: 8,
+        showWhen: { key: "kind", equals: ["product"] },
+        hint: L("بدون منتج مختار: ١ = أحدث منتج في متجرك، ٢ = اللي قبله، وهكذا.", "With no product picked: 1 = your newest product, 2 = the one before it, and so on."),
+      },
+      { ...textField("title", L("العنوان", "Title"), 80), showWhen: { key: "kind", equals: ["text"] } },
+      { ...textField("body", L("النص", "Text"), 400, "textarea"), showWhen: { key: "kind", equals: ["text"] } },
+      {
+        key: "x",
+        label: L("المكان من يسار الصورة (٪)", "Position from the photo's left (%)"),
+        type: "number",
+        min: 0,
+        max: 100,
+        hint: L("٠ = أقصى اليسار، ١٠٠ = أقصى اليمين. الصورة لا تنعكس في العربية، فالنقطة تبقى على نفس الجزء.", "0 = the left edge, 100 = the right edge. A photo is not mirrored in Arabic, so the dot stays on the same part."),
+      },
+      { key: "y", label: L("المكان من أعلى الصورة (٪)", "Position from the photo's top (%)"), type: "number", min: 0, max: 100 },
     ],
   },
   {

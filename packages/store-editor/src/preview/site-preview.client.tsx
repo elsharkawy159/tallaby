@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-import { CarouselRuntime, MotionRuntime } from "@workspace/store-sections/client";
+import { CarouselRuntime, MotionRuntime, PhotoToolsRuntime } from "@workspace/store-sections/client";
 import { useTranslations } from "next-intl";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
@@ -192,6 +192,7 @@ export function SitePreview({
         style={{ width: device === "mobile" ? "390px" : "100%", maxWidth: "100%" }}
       />
       {body && <CarouselRuntime doc={body.ownerDocument} />}
+      {body && <PhotoToolsRuntime doc={body.ownerDocument} />}
       {body && <MotionRuntime doc={body.ownerDocument} />}
       {body &&
         createPortal(

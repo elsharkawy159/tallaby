@@ -31,11 +31,30 @@
  *   not: phones, reduced motion and Theme › Animations off. The engine sets
  *   `data-sf-step="k"` on the steps block; without it every text shows in full
  *   with the first photo.
+ * - **`reveal-scrub`** (docs/systems/plan.md §10, L6). Never on the page's
+ *   first section. The section's main photo (as for `parallax`) gets
+ *   `data-sf-scroll="scrub-photo"` in its frame, and the box holding its title
+ *   (as for `fade-exit`, on any section) gets `data-sf-scroll="scrub-copy"`;
+ *   both follow the section root (`data-sf-track`) as it enters the screen.
+ *   The root also gets `data-sf-scrub` (`plan.scrub`): the scrub replaces the
+ *   section's play-once reveal, so where the scrub runs (CSS scroll timelines,
+ *   motion on) the CSS makes every waiting `data-reveal` in that section look
+ *   played, and the two never fight. The markup keeps its `data-reveal`, so a
+ *   browser without scroll timelines still plays the ordinary reveal once.
+ * - **`horizontal`** (L6). The section's row of cards (`scrollEffectTargets`
+ *   `rowId`: a node with `role: "h-row"`, else a product, category or post
+ *   list that is not a carousel row or paginated, else a `grid` of 4 to 12
+ *   boxes) gets `data-sf-scroll="horizontal"` when it draws 4 to 12 cards. The
+ *   section root gets `data-sf-h="n"` (it grows by the pinned length) and
+ *   `data-sf-track`; its direct child holding the row gets `data-sf-h-pin`
+ *   (sticky). Fewer or more cards: nothing is drawn, the row stays as it is.
+ *   The pinned layout is CSS only, from 768 × 600 px screens with scroll
+ *   timelines and motion on; everywhere else the row keeps its own layout.
  */
 import type { ComponentNode } from "../config/schema";
-import { isDataList } from "./data";
+import { isDataList, isPaginated } from "./data";
 import { isBannerPhoto, normalizeStyle } from "./style";
-import { STEPS_MAX, STEPS_MIN, type ImageScrollEffect, type ScrollEffect, type ShellScrollEffect } from "./scroll-progress.lib";
+import { STEPS_MAX, STEPS_MIN, horizontalCount, type ImageScrollEffect, type ScrollEffect, type ShellScrollEffect } from "./scroll-progress.lib";
 
 export type ScrollPlan = {
   /** Node id → its `data-sf-scroll`. */
@@ -54,6 +73,14 @@ export type ScrollPlan = {
   stepsMedia: Set<string>;
   /** Photos inside a step, for phones (`data-sf-step-own`). */
   stepOwn: Set<string>;
+  /** `reveal-scrub` plays in this section (`data-sf-scrub` on its root: the CSS switches its play-once reveals off there). */
+  scrub: boolean;
+  /**
+   * `horizontal`: the row that slides, the section's direct child that is
+   * pinned, and how many cards the row draws (`null`: a data list whose
+   * records were not counted; the renderer always counts them).
+   */
+  horizontal: { rowId: string; pinId: string; count: number | null } | null;
 };
 
 export type ScrollTargets = {
@@ -63,6 +90,10 @@ export type ScrollTargets = {
   imageId: string | null;
   /** The box `fade-exit` fades (null unless it is the page's first section). */
   contentId: string | null;
+  /** The box `reveal-scrub` moves with the photo (null on the page's first section, or with no title box). */
+  scrubId: string | null;
+  /** The row of cards `horizontal` slides (null: none, or the section has a background photo). */
+  rowId: string | null;
 };
 
 const imageEffectOf = (value: unknown): ImageScrollEffect | null => (value === "parallax" || value === "zoom" ? value : null);
@@ -88,12 +119,44 @@ function hasImage(node: ComponentNode): boolean {
   return node.type === "image" || (node.children ?? []).some(hasImage);
 }
 
+/** Nothing inside these is a `horizontal` row: they move or fold on their own. */
+const NO_ROW_INSIDE: ReadonlySet<string> = new Set(["carousel", "slide", "marquee", "accordion"]);
+
+/** A row `horizontal` can slide: marked `role: "h-row"`, a plain data list, or a grid of 4 to 12 boxes. */
+function isRow(node: ComponentNode): boolean {
+  if (node.props?.role === "h-row") return (node.children ?? []).length > 0;
+  if (isDataList(node.type)) return node.props?.rail !== true && !isPaginated(node) && (node.children ?? []).length > 0;
+  return node.type === "grid" && horizontalCount(node.children.length) != null && node.children.every((child) => (child.children ?? []).length > 0);
+}
+
+/** The section's `horizontal` row and the root's direct child that holds it (the part that is pinned). */
+function findRow(root: ComponentNode): { row: ComponentNode; pin: ComponentNode } | null {
+  const search = (node: ComponentNode): ComponentNode | null => {
+    if (NO_ROW_INSIDE.has(node.type)) return null;
+    if (isRow(node)) return node;
+    if (isDataList(node.type)) return null;
+    for (const child of node.children ?? []) {
+      const row = search(child);
+      if (row) return row;
+    }
+    return null;
+  };
+  for (const pin of root.children ?? []) {
+    const row = search(pin);
+    if (row) return { row, pin };
+  }
+  return null;
+}
+
 /**
  * Where a section's Scroll effect would play (for the editor, which shows
  * the control only where it does something, and for the renderer): the first
  * movable photo with `role: "image"` or a banner photo; on the page's first
  * section, the box holding its title. `backgroundImage`: the section has a
- * background photo, which `parallax` and `zoom` move instead.
+ * background photo, which `parallax` and `zoom` move instead. `reveal-scrub`
+ * moves the photo and the title's box of any section but the first;
+ * `horizontal` slides the section's row of cards (not with a background
+ * photo: its wrapper clips, so nothing could be pinned).
  */
 export function scrollEffectTargets(tree: readonly ComponentNode[], { isFirstSection = false, backgroundImage = false }: { isFirstSection?: boolean; backgroundImage?: boolean } = {}): ScrollTargets {
   const found: { image: string | null; title: { parent: ComponentNode | null; role: boolean } | null } = { image: null, title: null };
@@ -106,19 +169,30 @@ export function scrollEffectTargets(tree: readonly ComponentNode[], { isFirstSec
   });
   const imageId = found.image;
   const box = found.title?.parent;
-  const contentId = isFirstSection && box && box.type !== "section" && !hasImage(box) ? box.id : null;
+  const boxId = box && box.type !== "section" && !hasImage(box) ? box.id : null;
+  const contentId = isFirstSection ? boxId : null;
+  const scrubId = isFirstSection ? null : boxId;
+  const root = tree.find((node) => node.type === "section");
+  const rowId = (!backgroundImage && root && findRow(root)?.row.id) || null;
   const effects: ShellScrollEffect[] = [];
   if (imageId || backgroundImage) effects.push("parallax", "zoom");
   if (contentId) effects.push("fade-exit");
-  return { effects, imageId, contentId };
+  if (!isFirstSection && (imageId || scrubId)) effects.push("reveal-scrub");
+  if (rowId) effects.push("horizontal");
+  return { effects, imageId, contentId, scrubId, rowId };
 }
 
 /**
  * The scroll plan of a section root (`null` when nothing in it scrolls).
  * `sectionEffect`: the section's Scroll effect, when its background photo
- * does not take it.
+ * does not take it. `countOf`: how many cards a data list draws (the renderer
+ * passes it; without it a list's `horizontal` count stays unknown).
  */
-export function planScroll(root: ComponentNode, sectionEffect: ShellScrollEffect | undefined, { isFirstSection = false }: { isFirstSection?: boolean } = {}): ScrollPlan | null {
+export function planScroll(
+  root: ComponentNode,
+  sectionEffect: ShellScrollEffect | undefined,
+  { isFirstSection = false, countOf }: { isFirstSection?: boolean; countOf?: (list: ComponentNode) => number } = {},
+): ScrollPlan | null {
   const plan: ScrollPlan = {
     effects: new Map(),
     frames: new Set(),
@@ -128,6 +202,8 @@ export function planScroll(root: ComponentNode, sectionEffect: ShellScrollEffect
     stepMedia: new Map(),
     stepsMedia: new Set(),
     stepOwn: new Set(),
+    scrub: false,
+    horizontal: null,
   };
   const tree = [root];
   const photo = (node: ComponentNode, parent: ComponentNode, effect: ImageScrollEffect) => {
@@ -143,12 +219,28 @@ export function planScroll(root: ComponentNode, sectionEffect: ShellScrollEffect
     }
   }
   const sectionPhoto = sectionEffect === "parallax" || sectionEffect === "zoom" ? scrollEffectTargets(tree).imageId : null;
+  // reveal-scrub: the title's box here, the main photo in the walk below (a photo's own effect wins).
+  const scrub = sectionEffect === "reveal-scrub" && !isFirstSection ? scrollEffectTargets(tree) : null;
+  if (scrub?.scrubId) {
+    plan.effects.set(scrub.scrubId, "scrub-copy");
+    plan.scrub = plan.track = true;
+  }
+  if (sectionEffect === "horizontal") {
+    const found = findRow(root);
+    const count = !found ? 0 : isDataList(found.row.type) ? (countOf ? countOf(found.row) : null) : found.row.children.length;
+    if (found && (count === null || horizontalCount(count))) plan.horizontal = { rowId: found.row.id, pinId: found.pin.id, count };
+  }
 
   walk(tree, null, false, (node, parent, inList) => {
     if (node.type === "image" && parent && movable(node, parent, inList) && !plan.stepMedia.has(node.id)) {
       const own = imageEffectOf(node.props?.scrollEffect);
       const effect = own ?? (node.id === sectionPhoto ? (sectionEffect as ImageScrollEffect) : null);
       if (effect) photo(node, parent, effect);
+      else if (node.id === scrub?.imageId) {
+        plan.effects.set(node.id, "scrub-photo");
+        plan.frames.add(parent.id);
+        plan.scrub = plan.track = true;
+      }
     }
     if (node.props?.role === "steps" && !inList) planSteps(node, plan);
   });
@@ -158,7 +250,7 @@ export function planScroll(root: ComponentNode, sectionEffect: ShellScrollEffect
     if (!insideSteps(tree, node.id, plan)) plan.track = true;
   });
 
-  const empty = !plan.effects.size && !plan.steps.size;
+  const empty = !plan.effects.size && !plan.steps.size && !plan.horizontal;
   return empty ? null : plan;
 }
 

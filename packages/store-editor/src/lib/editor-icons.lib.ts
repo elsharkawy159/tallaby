@@ -73,6 +73,8 @@ import {
   ListCollapse,
   MoveHorizontal,
   Timer,
+  SquareSplitHorizontal,
+  CircleDot,
   Signpost,
 } from "lucide-react";
 import type { ElementType, SectionCategory } from "@workspace/store-sections/render";
@@ -116,6 +118,8 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   wishlistButton: Heart,
   marquee: MoveHorizontal,
   countdown: Timer,
+  beforeAfter: SquareSplitHorizontal,
+  hotspot: CircleDot,
   languageSwitcher: Languages,
   storeLogo: BadgeCheck,
   themeToggle: SunMoon,

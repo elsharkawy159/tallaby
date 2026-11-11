@@ -317,6 +317,29 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
       const { caption, ...rest } = opts ?? {};
       return make("countdown", { endsAt: "", caption }, rest);
     },
+    /**
+     * Two boxes in one frame with a handle the visitor drags to compare them:
+     * `before` lies over `after` and is cut at the handle, which starts at
+     * `start` percent from the start side (50 unless set).
+     */
+    beforeAfter: (before: NodeTemplate, after: NodeTemplate, opts?: NodeOptions & { start?: number }) => {
+      const { start = 50, ...rest } = opts ?? {};
+      return make("beforeAfter", { start }, rest, [before, after]);
+    },
+    /**
+     * A dot on the photo of the box it sits in, `x` percent from the photo's
+     * left and `y` from its top. It opens a store product (the seller picks
+     * it; until then the store's `productIndex`-th newest product) or a note
+     * (`title` and `body`).
+     */
+    hotspot: (
+      at: { x: number; y: number },
+      content: { kind: "product"; productIndex?: number } | { kind: "text"; title: DesignText; body: DesignText },
+      opts?: NodeOptions,
+    ) =>
+      content.kind === "product"
+        ? make("hotspot", { kind: "product", x: at.x, y: at.y, productIndex: content.productIndex ?? 1 }, opts)
+        : make("hotspot", { kind: "text", x: at.x, y: at.y, title: content.title, body: content.body }, opts),
     /** One carousel slide (a column: position its photo and copy inside). */
     slide: (children: NodeTemplate[], opts?: NodeOptions) => make("slide", {}, withDefaults("slide", opts), children),
     quote: (text: DesignText, opts?: NodeOptions) => make("blockQuote", { text }, opts),

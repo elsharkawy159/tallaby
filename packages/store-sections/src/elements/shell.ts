@@ -34,7 +34,9 @@ export type SectionShellStyle = {
   /**
    * Motion v2 Scroll effect (docs/motion-v2-plan.md §5.5): `parallax` or `zoom`
    * on the section's main photo (`scroll-plan.ts` `scrollEffectTargets`) or its
-   * background photo, `fade-exit` on the copy of the page's first section.
+   * background photo, `fade-exit` on the copy of the page's first section,
+   * `reveal-scrub` on the photo and copy of any other section (in place of
+   * its play-once reveal), `horizontal` on its row of 4 to 12 cards.
    * None is stored as nothing; anything unknown is dropped.
    */
   scrollEffect?: ShellScrollEffect;

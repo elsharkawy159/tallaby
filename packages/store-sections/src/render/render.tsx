@@ -52,7 +52,11 @@ export function SectionRenderer({
   const shell = shellLayout(shellStyle, (src) => ctx.imageUrl(src));
   // Motion v2 Scroll effect (public pages only; fade-exit only on the page's first section): a
   // background photo takes parallax and zoom itself, else the tree's main photo does (scroll-plan.ts).
-  const scrollEffect = ctx.mode === "edit" || (shellStyle?.scrollEffect === "fade-exit" && !aboveFold) ? undefined : shellStyle?.scrollEffect;
+  // `horizontal` pins the section, which a background photo's wrapper (it clips) would stop: not drawn there.
+  const scrollEffect =
+    ctx.mode === "edit" || (shellStyle?.scrollEffect === "fade-exit" && !aboveFold) || (shellStyle?.scrollEffect === "horizontal" && shell?.bgImage)
+      ? undefined
+      : shellStyle?.scrollEffect;
   const backgroundScroll = shell?.bgImage && (scrollEffect === "parallax" || scrollEffect === "zoom") ? scrollEffect : undefined;
   const sectionCtx: RenderContext = scrollEffect && !backgroundScroll ? { ...firstCtx, sectionScroll: scrollEffect } : firstCtx;
   const content = <Component instance={localizedInstance} props={props} ctx={sectionCtx} />;

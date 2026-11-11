@@ -111,6 +111,12 @@ export const SECTION_COPY = {
   countdownHours: { ar: "ساعة", en: "Hrs" },
   countdownMinutes: { ar: "دقيقة", en: "Min" },
   countdownSeconds: { ar: "ثانية", en: "Sec" },
+  // Before/after slider and photo dots (docs/systems/plan.md §10.1).
+  beforeAfterHandle: { ar: "حرّك الفاصل للمقارنة بين قبل وبعد", en: "Move the handle to compare before and after" },
+  beforeAfterEmpty: { ar: "أضف صندوقين هنا: الأول «قبل» والثاني «بعد»", en: "Add two boxes here: the first is Before, the second is After" },
+  hotspotShow: { ar: "اعرض التفاصيل", en: "Show details" },
+  hotspotProduct: { ar: "اعرض المنتج: {name}", en: "Show product: {name}" },
+  hotspotEmpty: { ar: "اكتب عنوان ونص النقطة من تبويب المحتوى", en: "Write this dot's title and text in the Content tab" },
   offerEnds: { ar: "ينتهي العرض {date}", en: "Offer ends {date}" },
   quantity: { ar: "الكمية", en: "Quantity" },
   quantityLess: { ar: "تقليل الكمية", en: "Decrease quantity" },

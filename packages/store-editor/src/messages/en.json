@@ -330,7 +330,10 @@
         "slide": "Slide {number}",
         "addSlide": "Add slide",
         "removeSlide": "Remove slide {number}",
-        "noImage": "This slide has no photo. Select it on the page to add one."
+        "noImage": "This slide has no photo. Select it on the page to add one.",
+        "beforePhoto": "Before photo",
+        "afterPhoto": "After photo",
+        "noLayerImage": "This side has no photo. Add an Image element to its box on the page."
       },
       "chrome": {
         "header": "Header options",
@@ -560,12 +563,14 @@
           "wipe": "Image wipe"
         },
         "scrollEffect": "Scroll effect",
-        "scrollEffectHint": "A light movement as visitors scroll: the section photo drifts or zooms, and the text of the page’s first section fades as it leaves. It plays on the live site; the editor shows it once when you pick it.",
+        "scrollEffectHint": "A light movement as visitors scroll: the section photo drifts or zooms, and the text of the page’s first section fades as it leaves. “Reveal with scroll” moves the photo and text into place as the section comes into view, and back when scrolling up, in place of the section’s animation. “Slide cards sideways” holds the section while a row of 4 to 12 cards slides across, on tablets and computers. It plays on the live site; the editor shows it once when you pick it.",
         "scrollEffects": {
           "none": "None",
           "parallax": "Parallax",
           "zoom": "Zoom on scroll",
-          "fade-exit": "Fade on exit"
+          "fade-exit": "Fade on exit",
+          "reveal-scrub": "Reveal with scroll",
+          "horizontal": "Slide cards sideways"
         },
         "anchor": "Link name",
         "anchorHint": "Lowercase letters, numbers and dashes. Lets buttons link to this section.",

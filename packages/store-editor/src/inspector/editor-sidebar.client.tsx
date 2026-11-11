@@ -211,8 +211,8 @@ export function EditorSidebar({
           />
         )}
         {tab === "content" ? (
-          node?.type === "carousel" ? (
-            // A selected carousel also lists its slides' photos (the section's options show the same).
+          node?.type === "carousel" || node?.type === "beforeAfter" ? (
+            // A selected carousel also lists its slides' photos, and a before/after its two photos (the section's options show the same).
             <SectionSettings key={node.id} tree={[node]} {...settingsProps} />
           ) : node ? (
             <ElementInspector
