@@ -5,12 +5,12 @@
  * visible layout; `AnimationObserver` only hides what is still below the fold.
  */
 import * as React from "react";
-import { normalizePreset, type AnimationPreset } from "./presets";
+import { normalizePreset, type MarketingPreset } from "./presets";
 
 type PolyProps<T extends React.ElementType, P> = P & { as?: T } & Omit<React.ComponentPropsWithoutRef<T>, keyof P | "as">;
 
 /** A preset name, or an old one from the first pilot (`scale-in` is now `zoom-in`, `fade-in` is `fade`). */
-export type RevealVariant = Exclude<AnimationPreset, "stagger"> | "scale-in" | "fade-in" | "none";
+export type RevealVariant = Exclude<MarketingPreset, "stagger"> | "scale-in" | "fade-in" | "none";
 
 function withVars(style: unknown, vars: Record<string, string | undefined>): React.CSSProperties | undefined {
   const set = Object.entries(vars).filter((entry): entry is [string, string] => entry[1] != null);

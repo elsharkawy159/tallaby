@@ -8,7 +8,9 @@ export {
   animationDefaultSchema,
   animationPresetSchema,
   animationSpeedSchema,
+  MARKETING_PRESETS,
   MOTION,
+  motionIntensitySchema,
   parseAnimationSetting,
   resolveAnimation,
   siteAnimationSchema,
@@ -16,5 +18,18 @@ export {
   type AnimationPreset,
   type AnimationSetting,
   type AnimationSpeed,
+  type MarketingPreset,
   type SiteAnimation,
 } from "./presets";
+export {
+  batchDelays,
+  INTENSITY_FACTOR,
+  MOTION_INTENSITIES,
+  MOTION_V2,
+  MOTION_V2_EASE,
+  MOTION_V2_STAGGER,
+  MOTION_V2_TRIGGER,
+  staggerDelay,
+  wordStep,
+  type MotionIntensity,
+} from "./tokens";

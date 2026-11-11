@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   ANIMATION_PRESETS,
+  animationDefaultSchema,
   animationPresetSchema,
+  MARKETING_PRESETS,
+  motionIntensitySchema,
   formatCount,
   normalizePreset,
   parseAnimationSetting,
@@ -47,6 +50,34 @@ describe("settings schemas", () => {
     expect(parseAnimationSetting("fade-in")).toBe("fade");
     expect(parseAnimationSetting(" Slide-End ")).toBe("slide-end");
   });
+  it("accepts the motion v2 store presets and keeps every old value as before", () => {
+    expect(parseAnimationSetting("words")).toBe("words");
+    expect(parseAnimationSetting("wipe")).toBe("wipe");
+    expect(parseAnimationSetting(" WIPE ")).toBe("wipe");
+    // Old values parse exactly as before motion v2.
+    const before: Record<string, AnimationSetting> = {
+      inherit: "inherit",
+      none: "none",
+      fade: "fade",
+      "fade-up": "fade-up",
+      "slide-start": "slide-start",
+      "slide-end": "slide-end",
+      "zoom-in": "zoom-in",
+      stagger: "stagger",
+      "scale-in": "zoom-in",
+      "fade-in": "fade",
+      rise: "inherit",
+      auto: "inherit",
+      "wipe-start": "inherit",
+      spin: "inherit",
+      "": "inherit",
+    };
+    for (const [raw, parsed] of Object.entries(before)) expect(parseAnimationSetting(raw), raw).toBe(parsed);
+    expect(parseAnimationSetting(42)).toBe("inherit");
+    expect(animationDefaultSchema.safeParse("words").success).toBe(true);
+    expect(animationDefaultSchema.safeParse("wipe-start").success).toBe(false);
+    expect(motionIntensitySchema.options).toEqual(["subtle", "normal", "expressive"]);
+  });
   it("defaults an old site to animations on, auto, normal speed", () => {
     expect(siteAnimationSchema.parse({})).toEqual({ animationsEnabled: true, animationDefault: "auto", animationSpeed: "normal" });
   });
@@ -63,6 +94,11 @@ describe("normalizePreset", () => {
     expect(normalizePreset("none")).toBeNull();
     expect(normalizePreset("spin")).toBeNull();
     expect(normalizePreset(undefined)).toBeNull();
+  });
+  it("never plays the store-only presets on tallaby.com", () => {
+    expect(normalizePreset("words")).toBeNull();
+    expect(normalizePreset("wipe")).toBeNull();
+    expect(MARKETING_PRESETS).not.toContain("words");
   });
 });
 

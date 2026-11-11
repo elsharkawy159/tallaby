@@ -9,9 +9,21 @@
  * `elements/motion.ts`.
  */
 import { z } from "zod";
+import { MOTION_INTENSITIES } from "./tokens";
 
-/** What a `data-animate` element can play. Directions are logical: `slide-start` comes from the reading start (the right in Arabic). */
-export const ANIMATION_PRESETS = ["fade", "fade-up", "slide-start", "slide-end", "zoom-in", "stagger"] as const;
+export * from "./tokens";
+
+/** What a `data-animate` element can play on tallaby.com. Directions are logical: `slide-start` comes from the reading start (the right in Arabic). */
+export const MARKETING_PRESETS = ["fade", "fade-up", "slide-start", "slide-end", "zoom-in", "stagger"] as const;
+export type MarketingPreset = (typeof MARKETING_PRESETS)[number];
+
+/**
+ * A section's (or the site's) animation on store sites: the tallaby.com
+ * presets plus motion v2's `words` (text rises word by word) and `wipe`
+ * (photos unmask from the start edge, the rest fades up). tallaby.com's
+ * `data-animate` never plays the two store-only ones (`normalizePreset`).
+ */
+export const ANIMATION_PRESETS = [...MARKETING_PRESETS, "words", "wipe"] as const;
 export type AnimationPreset = (typeof ANIMATION_PRESETS)[number];
 
 /** A section's Animation setting: `inherit` takes the site default, `none` turns it off. */
@@ -64,6 +76,9 @@ export function resolveAnimation(
   return setting;
 }
 
+/** Theme › Motion › Intensity (motion v2): `normal` is the default and is stored as nothing. */
+export const motionIntensitySchema = z.enum(MOTION_INTENSITIES);
+
 /** How much longer (or shorter) every animation runs at each speed. */
 export const SPEED_FACTOR: Record<AnimationSpeed, number> = { slow: 1.6, normal: 1, fast: 0.6 };
 
@@ -83,12 +98,12 @@ export const MOTION = {
 } as const;
 
 /** A `data-animate` value from markup, or `null` when it names no preset (`none`, typos). */
-export function normalizePreset(raw: string | null | undefined): AnimationPreset | null {
+export function normalizePreset(raw: string | null | undefined): MarketingPreset | null {
   if (raw == null) return null;
   const v = raw.trim().toLowerCase();
   if (v === "" || v === "auto") return "fade-up";
-  if (v in ALIASES) return ALIASES[v]!;
-  return (ANIMATION_PRESETS as readonly string[]).includes(v) ? (v as AnimationPreset) : null;
+  if (v in ALIASES) return ALIASES[v] as MarketingPreset;
+  return (MARKETING_PRESETS as readonly string[]).includes(v) ? (v as MarketingPreset) : null;
 }
 
 /** A finite number from an attribute, else the fallback; clamped when bounds are given. */

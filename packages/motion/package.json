@@ -15,6 +15,10 @@
       "types": "./src/presets.ts",
       "default": "./src/presets.ts"
     },
+    "./tokens": {
+      "types": "./src/tokens.ts",
+      "default": "./src/tokens.ts"
+    },
     "./init-script": {
       "types": "./src/init-script.ts",
       "default": "./src/init-script.ts"
