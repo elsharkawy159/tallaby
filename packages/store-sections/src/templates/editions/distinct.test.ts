@@ -15,7 +15,10 @@ import type { Edition } from "./types";
  * Packs still waiting for their second look's own content. Remove a niche
  * when its `perLook` entry is written; the list must end empty.
  */
-const PENDING = new Set<string>([]);
+const PENDING = new Set<string>([
+  // zahra is the niche's template and shows the pack itself; karat and jewelry-luxe draw it until the accessories switch takes them off.
+  "fashion-jewelry",
+]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */
 function fingerprint(edition: Edition): Record<string, string> {

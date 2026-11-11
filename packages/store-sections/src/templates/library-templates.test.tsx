@@ -13,6 +13,7 @@ import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
 import { CODE_TEMPLATES, LIBRARY_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, getTemplateDesign, templateConfigJson, templatesSeedSql } from "./catalog";
 import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
+import { EDITION_MEDIA_HOST } from "./editions/media";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
 /** Each batch's generated seed migration (regenerate with `template:sql <keys> <file>`). */
@@ -175,7 +176,9 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
     expect(template.demo.products.length).toBeGreaterThanOrEqual(8);
     expect(template.demo.categories.length).toBeGreaterThanOrEqual(3);
     for (const p of template.demo.products) {
-      expect(p.image).toMatch(/^https:\/\/images\.pexels\.com\/photos\/\d+\//);
+      // Pexels, or a niche pack's white packshot in the platform media bucket (a niche template whose demo is its pack's, as `zahra`).
+      const packshot = !!p.image?.startsWith(`https://${EDITION_MEDIA_HOST}/storage/v1/object/public/library-media/editions/`);
+      if (!packshot) expect(p.image).toMatch(/^https:\/\/images\.pexels\.com\/photos\/\d+\//);
       expect(template.demo.categories.some((c) => c.id === p.categoryId), p.id).toBe(true);
     }
     for (const c of template.demo.categories) expect(c.productCount, c.id).toBeGreaterThan(0);

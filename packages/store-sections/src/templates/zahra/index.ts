@@ -1,280 +1,371 @@
 /**
- * Zahra (template 81, everyday gold-plated jewellery; Claude Design
- * "Storefront Templates"): warm ivory paper, an amber gold for actions and a
- * honey highlight, Tajawal throughout and round 20px corners. A light,
- * everyday shop: a waterproof bento hero, shop-by-type rings, a segmented
- * shelf, gifts by budget, give 10% get 10% and a wall of reviews. Built from
+ * Zahra (accessories, the fashion-jewelry niche template; one template per
+ * niche, ROADMAP F-90, `docs/systems/one-template-per-niche.md`): gold-tone
+ * and silver fashion jewelry at gift prices. White paper, a blush plaster
+ * tint, a deep petrol ink for actions and a dusty rose; Aref Ruqaa headings
+ * (the ornament in the name) over Alexandria; 14px corners. Built from
  * section library designs (`fromLibrary`).
  *
- * Photos: Pexels, each checked by eye (2026-10-21): rings, hoops, bangles,
- * necklaces and sets on dishes, trays, boxes, books and pedestals. No
- * hands, ears, necks or wrists, no people and no logos.
+ * v3 (2026-11-11): rebuilt look-first around the pieces. Home, nine sections:
+ *   1. `hero-fullbleed`              rings on blush; the page's one motion: the
+ *                                    photo drifts and the copy fades on scroll
+ *   2. `categories-captioned`        four portrait tiles with a count
+ *   3. `products-tabs-grid`          eight best sellers on the white stage
+ *   4. `about-fullbleed`             the gift-wrapping story
+ *   5. `products-category-carousel`  earrings (the store's 2nd category)
+ *   6. `about-product-anatomy`       one necklace with four note dots: the
+ *                                    plating, the chain, the stones, care (the
+ *                                    trade's own section, and the photo break)
+ *   7. `products-category-carousel`  rings (the store's 4th category)
+ *   8. `features-trust-band`         four promises, the fourth gift wrapping
+ *   9. `newsletter-strip`            one row
+ * Chrome: `header-announcement-strip` (its strip in the petrol ink) and
+ * `footer-line`. Eyebrows are set in sentence case (`calm`), never capitals.
+ *
+ * Content: the `fashion-jewelry` pack is Zahra's own shop ("Hilya"): the
+ * look's default content and demo are the pack's, so the template and the
+ * niche's edition are one store. `photos.look` and `look` are the anatomy
+ * photo, its four dots and its heading (one piece with notes, not shop the
+ * look); the notes are `custom.anatomy-N-title` / `-line`.
+ *
+ * Guard: `zahra.v2.json` was captured from the v2 look before any edit, and
+ * the edition-ready v2 matched it byte for byte (commit 483bfde2). v3 is the
+ * deliberate redesign, so its fixture is a new capture (`zahra.v3.json`) and
+ * the v2 one is deleted (`../editions/look-guard.test.ts`).
+ *
+ * Photos: the pack's (see its header), plus the anatomy necklace 27357178.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
+import type { NodeTemplate } from "../../elements/tree";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import { FASHION_JEWELRY } from "../editions/packs/jewelry/fashion-jewelry";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
-import { demoStore, pexels } from "../library-template";
 
 export const ZAHRA_KEY = "zahra";
 
-const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(ZAHRA_KEY, getDesign(id)!, { corners: 20, ...patch });
+const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(ZAHRA_KEY, getDesign(id)!, { corners: 14, ...patch });
 
-const SHOP = "/products";
-const NEW = "/products?sort=newest";
-const BEST = "/products?sort=popularity";
-const RATED = "/products?sort=rating";
-const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
-
-const PHOTOS = {
-  dish: pexels(16664386),
-  stackRings: pexels(30541169, 900),
-  hoops: pexels(20943477, 900),
-  bangles: pexels(38827895, 900),
-  promiseRing: pexels(27597577, 900),
-  ginkgoSet: pexels(29503018, 900),
-  leafSet: pexels(29502436, 900),
-  huggies: pexels(12168883, 900),
-  coinNecklace: pexels(4889719, 900),
-  hoopNecklace: pexels(19783942, 900),
-  ringTray: pexels(9590858, 900),
-  lilacHoops: pexels(12452943, 900),
-  boxHoops: pexels(7882737, 900),
-  giftBox: pexels(34399026, 900),
-  pedestal: pexels(25283502, 900),
-  twoBangles: pexels(32874211, 900),
-  plate: pexels(8105129),
-};
-
-const NAME = L("زهرة جولز", "Zahra Jewels");
-
-const DEFAULT_CONTENT: LookDefaults = {
-  hero: {
-    alt: L("خاتم وسلسلة دهبي في طبق خزف", "A gold ring and necklace on a ceramic dish"),
-    eyebrow: L("ضد المية", "Waterproof"),
-    title: L("دهب عمرك ما تقلعيه", "Gold you never take off"),
-    line: L("طلاء ١٨ قيراط على ستيل. استحمي وعومي ونامي بيه.", "18K plating over steel. Shower, swim, sleep in it."),
-    cta: L("تسوقي المجوهرات", "Shop jewellery"),
-  },
-  about: {
-    line: L("دهب مطلي يومي من ورشة صغيرة في المعادي.", "Everyday gold-plated jewellery from a small Maadi studio."),
-    alt: L("مجوهرات دهبي في طبق على قماش ساتان", "Gold jewellery on a plate over satin"),
-    eyebrow: L("المعادي", "Maadi"),
-    title: L("دهب تلبسيه وانتي بتعيشي", "Gold you live in"),
-    text: L("كنا عايزين قطع حلوة ما تتقلعش في الدش ولا البحر، فعملناها: طلاء ١٨ قيراط على ستيل.", "We wanted pretty pieces you never take off for the shower or the sea, so we made them: 18K plating over steel."),
-    more: L("وكل طلب بيوصل في علبة هدية ببلاش.", "And every order arrives in a free gift box."),
-    cta: L("تسوقي المجوهرات", "Shop jewellery"),
-  },
-  contact: {
-    title: L("تواصلي معانا", "Contact us"),
-    line: L("zahra@zahrajewels.eg، وبنرد كل يوم.", "zahra@zahrajewels.eg, and we reply every day."),
-    heading: L("عن مقاس أو هدية", "About a size or a gift"),
-  },
-  faq: {
-    line: L("الطلاء والمقاسات والتوصيل.", "Plating, sizes and delivery."),
-    question: L("الطلاء بيروح مع المية؟", "Does the plating wear off in water?"),
-    answer: L("لأ. طلاء ١٨ قيراط على ستيل ضد المية، وتقدري تستحمي وتعومي بيه.", "No. The 18K plating over steel is waterproof: shower and swim in it."),
-  },
-  photos: { hero: { wide: PHOTOS.dish }, story: PHOTOS.plate },
-};
-
-function look(c: LookContent, _journey: LookJourney): LookParts {
-const NAME = c.store.name;
-const header = lib("header-pill", {
-  text: { "اسم متجرك": NAME, "المتجر": L("وصل جديد", "New in"), "العروض": L("الأكثر مبيعاً", "Best sellers"), "المدونة": L("عننا", "About") },
-  links: { "/products": [NEW, BEST], "/blog": "/about" },
-});
-
-const footer = lib("footer-signup", {
-  text: {
-    "اشترك في النشرة": L("اشتركي في النشرة", "Join the newsletter"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("قطع جديدة وعروض، مرة في الأسبوع.", "New pieces and offers, once a week."),
-    "م": initialOf(NAME),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(NAME),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-  },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-bento", {
-    photo: [c.photos.hero.wide],
-    text: {
-      "وصل جديد": c.hero.eyebrow,
-      "صوت أنقى، كل يوم": c.hero.title,
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
-      "تسوق الآن": c.hero.cta,
-      "صورة الحملة": c.hero.alt,
-      "من ١٢ ألف تقييم": L("من أكتر من ٦٠٠ تقييم", "from 600+ reviews"),
+/**
+ * A library design with props and styles changed node by node (what a
+ * `nodes` patch cannot reach: nodes with no label, or several sharing one).
+ * The tree keeps its shape, so the section still stores as a library ref.
+ * `index` counts the nodes of `type` (every node when undefined) in tree
+ * order, per build.
+ */
+function retouch(design: Design, type: string | undefined, change: (node: NodeTemplate, index: number) => NodeTemplate): Design {
+  return {
+    ...design,
+    tree: (t) => {
+      let index = 0;
+      const visit = (node: NodeTemplate): NodeTemplate => {
+        const next = type === undefined || node.type === type ? change(node, index++) : node;
+        return next.children ? { ...next, children: next.children.map(visit) } : next;
+      };
+      return visit(design.tree(t));
     },
-  }),
-  lib("categories-stories", {
-    photo: [
-      PHOTOS.ringTray,
-      PHOTOS.lilacHoops,
-      PHOTOS.twoBangles,
-      PHOTOS.leafSet,
-      PHOTOS.hoopNecklace,
-      PHOTOS.boxHoops,
-      PHOTOS.giftBox,
-      PHOTOS.pedestal,
-    ],
-    text: {
-      "الأقسام": L("تسوقي بالنوع", "Shop by type"),
-      "وصل حديثًا": L("خواتم", "Rings"),
-      "الأكثر مبيعًا": L("حلقان", "Earrings"),
-      "العروض": L("غوايش", "Bracelets"),
-      "هدايا": L("أطقم", "Sets"),
-      "إكسسوارات": L("سلاسل", "Necklaces"),
-      "أساسيات": L("هوب", "Hoops"),
-      "مجموعات": L("هدايا", "Gifts"),
-      "الموسم الجديد": L("أساور", "Bangles"),
-    },
-    links: {
-      "/products": [
-        SHOP,
-        search("خاتم"),
-        search("حلق"),
-        search("غويشة"),
-        search("طقم"),
-        search("سلسلة"),
-        search("هوب"),
-        search("هدية"),
-        search("أسورة"),
-      ],
-    },
-  }),
-  lib("products-shelf", {
-    text: { "تسوّق حسب مزاجك": L("اختاري", "Pick"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
-    links: { "/products": [NEW, BEST, RATED, SHOP] },
-  }),
-  lib("finder-price-bands", {
-    text: {
-      "تسوق حسب ميزانيتك": L("هدايا حسب الميزانية", "Gifts by budget"),
-      "أقل من ٦٠٠": L("أقل من ٤٠٠", "Under 400"),
-      "٦٠٠ – ١٬٥٠٠": L("٤٠٠ – ٧٠٠", "400 – 700"),
-      "أكتر من ١٬٥٠٠": L("أكتر من ٧٠٠", "Over 700"),
-      "تسوق الشريحة دي": L("تسوقي الهدايا دي", "Shop these gifts"),
-    },
-  }),
-  lib("testimonials-wall", {
-    text: {
-      "ماذا يقولون عنا": L("بيتلبس كل يوم", "Worn every day"),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "بعوم بالخواتم من شهرين ولسه بتلمع زي أول يوم.",
-        "I’ve swum in the rings for two months and they still shine like day one.",
-      ),
-      "م": L("م", "M"),
-      "مريم أ.": L("مي أ.", "Mai A."),
-      "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L("الحلق خفيف جداً ومش بيعمل حساسية خالص.", "The hoops are very light and cause no irritation at all."),
-      "ي": L("ه", "H"),
-      "يوسف م.": L("هنا م.", "Hana M."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("بدّلت مقاس الخاتم في يومين من غير أي تعب.", "I swapped my ring size in two days, no hassle."),
-      "ع": L("ر", "R"),
-      "عمر ك.": L("رنا ك.", "Rana K."),
-      "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": L("وصل أسيوط في ٣ أيام وفي علبة هدية حلوة.", "It reached Assiut in three days, in a lovely gift box."),
-      "س": L("ن", "N"),
-      "سلمى ر.": L("ندى ر.", "Nada R."),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("طقم السهرة شكله غالي أكتر من سعره بكتير.", "The evening set looks far more expensive than it is."),
-      "ن": L("ج", "J"),
-      "نور ح.": L("جميلة ح.", "Jamila H."),
-      "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": L("ساعدوني أختار هدية لماما على الواتساب.", "They helped me pick a gift for my mum on WhatsApp."),
-      "ك": L("ل", "L"),
-      "كريم ع.": L("لمياء ع.", "Lamia A."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن زهرة", "About Zahra"), c.about.line),
-  aboutStory(lib, {
-    photo: c.photos.story,
-    alt: c.about.alt,
-    eyebrow: c.about.eyebrow,
-    title: c.about.title,
-    text: c.about.text,
-    more: c.about.more,
-    button: c.about.cta,
-    href: SHOP,
-  }),
-];
-
-return {
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عننا", "About"), seo: { title: L("عن زهرة", "About Zahra") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
-    },
-  ],
-};
+  };
 }
 
-const DEMO = demoStore({
-  name: L("زهرة جولز", "Zahra Jewels"),
-  description: L("قطع مطلية دهب تقدري تستحمي بيها.", "Gold-plated pieces you can wear in the shower."),
-  categories: [
-    ["rings", "خواتم", "Rings", PHOTOS.ringTray],
-    ["earrings", "حلقان", "Earrings", PHOTOS.hoops],
-    ["bracelets", "غوايش", "Bracelets", PHOTOS.bangles],
-    ["sets", "أطقم", "Sets", PHOTOS.ginkgoSet],
-  ],
-  products: [
-    ["stacking-ring-set", "rings", "طقم خواتم ستاك", "Stacking Ring Set", PHOTOS.stackRings, 578, { isFeatured: true, rating: 4.8, sold90: 160 }],
-    ["hoop-earrings", "earrings", "حلق هوب", "Hoop Earrings", PHOTOS.hoops, 347, { sold90: 120 }],
-    ["twist-bangle-trio", "bracelets", "تلات غوايش مبرومة", "Twist Bangle Trio", PHOTOS.bangles, 507, { sold90: 88 }],
-    ["huggie-earrings", "earrings", "حلق صغير لازق", "Huggie Earrings", PHOTOS.huggies, 299, { sold90: 74 }],
-    ["evening-set", "sets", "طقم سهرة", "Evening Set", PHOTOS.ginkgoSet, 1015, { compareAtPrice: 1190, isFeatured: true, sold90: 31 }],
-    ["promise-ring", "rings", "خاتم وعد", "Promise Ring", PHOTOS.promiseRing, 420, { compareAtPrice: 490, sold90: 52 }],
-    ["leaf-set", "sets", "طقم ورق الشجر", "Leaf Set", PHOTOS.leafSet, 890, { rating: 4.9, sold90: 40 }],
-    ["coin-necklace", "sets", "سلسلة بعملة", "Coin Necklace", PHOTOS.coinNecklace, 450, { sold90: 66 }],
-    ["fine-chain-necklace", "sets", "سلسلة رفيعة", "Fine Chain Necklace", PHOTOS.hoopNecklace, 390, { inStock: false, sold90: 58 }],
-  ],
-});
+/** Eyebrows in sentence case: the library sets some in spaced capitals. */
+const calm = (design: Design): Design =>
+  retouch(design, undefined, (node) =>
+    node.props?.role === "eyebrow" ? { ...node, style: { ...node.style, textTransform: "none", letterSpacing: "normal" } } : node,
+  );
+
+const NEW = "/products?sort=newest";
+const BEST = "/products?sort=popularity";
+
+const VIEW_ALL = L("عرض الكل", "View all");
+
+/** Zahra's own content is the fashion-jewelry pack's shop (Hilya): one source for the template and its edition. */
+const DEFAULT_CONTENT: LookDefaults = {
+  ...FASHION_JEWELRY.copy,
+  photos: {
+    hero: FASHION_JEWELRY.photos.hero,
+    story: FASHION_JEWELRY.photos.story,
+    ...(FASHION_JEWELRY.photos.about && { about: FASHION_JEWELRY.photos.about }),
+    ...(FASHION_JEWELRY.photos.look && { look: FASHION_JEWELRY.photos.look }),
+  },
+};
+
+/** One row of four of a category's products, by the category's place in the store. */
+const categoryRow = (place: number, n: number): Design =>
+  lib("products-category-carousel", {
+    as: `category-row-${n}`,
+    text: { "عرض الكل": VIEW_ALL },
+    lists: [{ offset: place - 1 }, { categoryIndex: place, limit: 4 }],
+  });
+
+/** The anatomy: one piece on a 4:5 photo (phones too, so the dots stay put) with a note per dot. */
+function anatomy(c: LookContent): Design {
+  const notes = [1, 2, 3, 4].map((n) => ({ title: c.custom[`anatomy-${n}-title`]!, line: c.custom[`anatomy-${n}-line`]! }));
+  const portrait = (node: NodeTemplate): NodeTemplate => ({
+    ...node,
+    style: { ...node.style, aspectRatio: "portrait" },
+    breakpointStyles: { ...node.breakpointStyles, mobile: { ...node.breakpointStyles?.mobile, aspectRatio: "portrait" } },
+  });
+  const placed = retouch(
+    lib("about-product-anatomy", {
+      photo: [undefined, c.photos.look.src],
+      text: {
+        التفاصيل: c.look.eyebrow,
+        "اللي بيفرق في كل جزء": c.look.title,
+        "دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.": c.look.text,
+        "صورة المنتج": c.look.alt,
+        الخامة: notes[0]!.title,
+        "خامة متينة تستحمل الاستخدام اليومي.": notes[0]!.line,
+        التشطيب: notes[1]!.title,
+        "تشطيب نضيف في كل تفصيلة، من أول نظرة.": notes[1]!.line,
+        المقاس: notes[2]!.title,
+        "مقاس عملي يناسب أغلب الاستخدامات.": notes[2]!.line,
+        العناية: notes[3]!.title,
+        "سهل التنضيف، ويفضل زي ما هو مع الوقت.": notes[3]!.line,
+      },
+      nodes: { الصورة: { style: { maxWidth: "480px" } } },
+    }),
+    "hotspot",
+    (node, index) => ({ ...node, props: { ...node.props, ...c.photos.look.dots[index] } }),
+  );
+  return calm(retouch(placed, "image", (node, index) => (index === 0 ? portrait(node) : node)));
+}
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). Generic shop labels (New in, Best sellers, Shipping) and the
+ * layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  const shopAll = c.custom?.["shop-all"];
+  const noun = c.custom?.["products-noun"];
+
+  const header = lib("header-announcement-strip", {
+    text: {
+      "أهلًا بيك في متجرنا": c.announcement[0]!,
+      "شحن مجاني للطلبات الكبيرة": c.announcement[1]!,
+      "تفاصيل بتفرق": c.announcement[2]!,
+      "اسم متجرك": name,
+      المتجر: shopAll ?? L("كل القطع", "Shop all"),
+      العروض: L("وصل حديثًا", "New in"),
+      المدونة: L("الأكثر طلبًا", "Best sellers"),
+      "من نحن": c.labels.about,
+      "تواصل معنا": L("تواصل", "Contact"),
+    },
+    links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
+    nodes: { "شريط الرسائل": { style: { background: "primary" } } },
+  });
+
+  const footer = lib("footer-line", {
+    text: {
+      م: initialOf(name),
+      "اسم متجرك": name,
+      "الشحن والتوصيل": L("الشحن والتوصيل", "Shipping"),
+      "الاسترجاع والاستبدال": L("الاستبدال", "Exchanges"),
+      "الأسئلة الشائعة": L("الأسئلة الشائعة", "FAQ"),
+      "من نحن": L(aboutName.ar, "About"),
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+  });
+
+  const home: Design[] = [
+    calm(
+      lib("hero-fullbleed", {
+        photo: [c.photos.hero.wide],
+        text: {
+          "صورة الواجهة": c.hero.alt,
+          "المجموعة الجديدة": c.hero.eyebrow,
+          "صُنعت لتدوم معك": c.hero.title,
+          "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
+          "تسوّق الآن": c.hero.cta,
+          "شوف الجديد": L("الأكثر طلبًا", "Best sellers"),
+        },
+        links: { "/products": NEW, "/products?sort=newest": BEST },
+      }),
+    ),
+    // One row of the first four categories, four across on desktop and tablets (the design's five leave a gap with four); phones swipe.
+    retouch(
+      lib("categories-captioned", {
+        text: {
+          "اكتشف الأقسام": c.categories.title,
+          منتج: noun ?? L("قطعة", "pieces"),
+        },
+      }),
+      "categoryList",
+      (node) => ({
+        ...node,
+        props: { ...node.props, limit: 4 },
+        style: { ...node.style, columns: 4 },
+        breakpointStyles: { ...node.breakpointStyles, tablet: { ...node.breakpointStyles?.tablet, columns: 4 } },
+      }),
+    ),
+    lib("products-tabs-grid", {
+      text: { "وصل حديثاً": c.products.primary.title },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary }],
+    }),
+    calm(
+      lib("about-fullbleed", {
+        photo: [undefined, undefined, c.photos.story],
+        text: {
+          "صورة القصة": c.story.alt,
+          حكايتنا: c.story.eyebrow,
+          "تفاصيل صغيرة تصنع الفرق": c.story.title,
+          "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.":
+            c.story.text,
+          "اعرف أكثر": c.story.cta,
+        },
+      }),
+    ),
+    categoryRow(journey.rows[0]!, 1),
+    anatomy(c),
+    categoryRow(journey.rows[1]!, 2),
+    retouch(
+      lib("features-trust-band", {
+        text: {
+          "توصيل سريع": c.trust[0]!.title,
+          "من ٢ لـ ٤ أيام لكل المحافظات": c.trust[0]!.line,
+          "الدفع عند الاستلام": c.trust[1]!.title,
+          "أو ادفع بالمحافظ وإنستاباي": c.trust[1]!.line,
+          "استبدال سهل": c.trust[2]!.title,
+          "خلال ١٤ يوم": c.trust[2]!.line,
+          "مساعدة على واتساب": c.trust[3]!.title,
+          "كل يوم من ١٠ ص لـ ١٠ م": c.trust[3]!.line,
+        },
+      }),
+      "icon",
+      // The fourth promise is gift wrapping in this trade.
+      (node, index) => (index === 3 ? { ...node, props: { ...node.props, name: "gift" } } : node),
+    ),
+    lib("newsletter-strip", {
+      text: {
+        "اعرف الجديد الأول": c.newsletter.title,
+        "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": c.newsletter.line,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: NEW,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 export const ZAHRA = editionTemplate({
   key: ZAHRA_KEY,
-  version: 2,
-  changelog: "Zahra v2: product page",
-  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("حائط التقييمات", "The review wall"), related: L("اكمّليها بقطعة", "Pair it with a piece") } },
+  version: 3,
+  changelog: "Zahra v3: the fashion-jewelry template, rebuilt look-first",
+  productPage: {
+    surface: "flat",
+    thumbs: "bottom",
+    band: "paper",
+    extras: ["product-perks"],
+    copy: { reviews: L("قالوا إيه عن القطعة دي", "What buyers say"), related: L("تتلبس معاها", "Wear it with") },
+  },
   name: L("زهرة", "Zahra"),
   description: L(
-    "مجوهرات مطلية دهب يومية: هيرو بنتو، أقسام دائرية، هدايا حسب الميزانية وآراء العميلات. أربع صفحات جاهزة.",
-    "Everyday gold-plated jewellery: a bento hero, story rings, gifts by budget and reviews. Four ready pages.",
+    "إكسسوارات مطلية دهب وفضة: صورة كبيرة للقطع، أقسام بصور طولية، قطعة تتعرفي عليها بالنقط وصفوف منتجات على خلفية بيضا. لمحلات الإكسسوارات والهدايا.",
+    "Gold-tone and silver fashion jewelry: a big photo of the pieces, portrait category tiles, one piece explained by its dots and product rows on a white stage. For accessories and gift shops.",
   ),
   category: "jewelry",
   style: ["warm"],
   sortOrder: 810,
-  palette: ["#fffaf3", "#f8ecd9", "#fbd38d", "#b7791f"],
+  palette: ["#ffffff", "#f6ebe6", "#d9a5a0", "#1f4a4f"],
   colors: {
-    primary: "#b7791f",
-    secondary: "#f8ecd9",
+    primary: "#1f4a4f",
+    secondary: "#f6ebe6",
     background: "#ffffff",
-    foreground: "#2a1d12",
-    muted: "#6b5a49",
-    border: "#efdcc0",
-    accent: "#fbd38d",
+    foreground: "#1c2526",
+    muted: "#5c6667",
+    border: "#ead8d0",
+    accent: "#d9a5a0",
   },
-  fonts: { heading: "Tajawal", body: "Tajawal" },
-  radius: 20,
+  fonts: { heading: "Aref Ruqaa", body: "Alexandria" },
+  radius: 14,
+  productStage: FASHION_JEWELRY.productStage,
   lib,
   look,
-  slots: ["hero", "about", "contact", "faq", "photos.hero.wide", "photos.story"],
-  journey: { primary: "newest", rows: [] },
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "announcement.2",
+    "labels.about",
+    "hero.alt",
+    "hero.eyebrow",
+    "hero.title",
+    "hero.line",
+    "hero.cta",
+    "categories.title",
+    "products.primary.title",
+    "story",
+    "look",
+    "trust.0",
+    "trust.1",
+    "trust.2",
+    "trust.3",
+    "newsletter.title",
+    "newsletter.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
+    "photos.look.src",
+    // One dot per hotspot of `about-product-anatomy`, in its notes' order.
+    "photos.look.dots.0",
+    "photos.look.dots.1",
+    "photos.look.dots.2",
+    "photos.look.dots.3",
+    // The four notes the dots open.
+    "custom.anatomy-1-title",
+    "custom.anatomy-1-line",
+    "custom.anatomy-2-title",
+    "custom.anatomy-2-line",
+    "custom.anatomy-3-title",
+    "custom.anatomy-3-line",
+    "custom.anatomy-4-title",
+    "custom.anatomy-4-line",
+  ],
+  // `photos.about`: the about page's photo (falls back to the story's).
+  // `custom.shop-all`: the header's link to the whole catalog (default "كل القطع / Shop all").
+  // `custom.products-noun`: the noun after a category's product count (default "قطعة / pieces").
+  optional: ["photos.about", "custom.shop-all", "custom.products-noun"],
+  // The eight best sellers, then the store's 2nd and 4th categories (earrings, rings) as rows.
+  journey: { primary: "best-sellers", rows: [2, 4] },
   defaultContent: DEFAULT_CONTENT,
-  demo: DEMO,
+  demo: FASHION_JEWELRY.demo,
 });

@@ -14,8 +14,9 @@
  * hands or other body parts, no logos or lettering, none used by a template
  * or another pack, none twice. Hero 9430992 (wide: silver rings, speckled
  * stones and dried limonium on blush) and 9430468 (tall: a silver chain
- * draped over a stone, same blush set). Tiles: necklaces 34317579 (a silver
- * heart necklace and studs beside a sprig on plaster), earrings 13081070
+ * draped over a stone, same blush set). Tiles: necklaces 4735887 (two gold
+ * coin necklaces on white marble; it replaced 34317579 on 2026-11-11, whose
+ * sprig outweighed the tiny necklace), earrings 13081070
  * (chunky gold hoops on white satin), bracelets 36823002 (a pearl bracelet
  * on a white cloud dish), rings 9714276 (rings in a pearly clay dish on white
  * sheets). Banner 11185142 (five stone-bead bracelets on white boards).
@@ -41,7 +42,14 @@
  * Close to karat's own hoop shoot (12194350, 12194361), so not used:
  * 12194345, 12194348.
  *
- * Looks: `karat`, then `jewelry-luxe`. Four products per category, so each
+ * Anatomy (`zahra`'s note dots, `photos.look`): 27357178 (a gold-tone
+ * crystal necklace on a pebble before a pink paper roll; checked by eye
+ * 2026-11-11, no people or lettering, used nowhere else). Its dots: the
+ * plating, the chain, the stones, care.
+ *
+ * Looks: `zahra` (the niche's template, one template per niche; it shows
+ * the pack itself), then `karat` and `jewelry-luxe` until the accessories
+ * switch takes them off. Four products per category, so each
  * `jewelry-luxe` category row is one full row of four. No `reviews`: a pack
  * holds no invented buyer quotes, and without them `karat` leaves its
  * reviews section out.
@@ -55,7 +63,7 @@ const shot = (slug: string) => editionPhoto("fashion-jewelry", slug);
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(34317579, 1200), // a silver heart necklace and studs beside a sprig on plaster
+  pexels(4735887, 1200), // two gold coin necklaces on white marble
   pexels(13081070, 1200), // chunky gold hoops on white satin
   pexels(36823002, 1200), // a pearl bracelet on a white cloud dish
   pexels(9714276, 1200), // rings in a pearly clay dish on white sheets
@@ -63,7 +71,7 @@ const TILES = [
 
 export const FASHION_JEWELRY: Edition = {
   niche: "fashion-jewelry",
-  looks: ["karat", "jewelry-luxe"],
+  looks: ["zahra", "karat", "jewelry-luxe"],
   priceBand: { min: 250, max: 1500 },
   // Square packshots on pure white: a square white stage shows them whole, and every piece reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -109,6 +117,16 @@ export const FASHION_JEWELRY: Edition = {
     story: pexels(4714615, 1200),
     // Silver rings and a chain around a shell on blush (landscape, the about page).
     about: pexels(9430429, 1200),
+    // `zahra`: one piece with four note dots (not shop the look), in percent from the photo's left and top on its 4:5 crop: the plating, the chain, the stones, care.
+    look: {
+      src: pexels(27357178, 1200),
+      dots: [
+        { x: 51, y: 27 },
+        { x: 35, y: 43 },
+        { x: 60, y: 66 },
+        { x: 46, y: 70 },
+      ],
+    },
     custom: {
       // `jewelry-luxe` spotlight, 4:5: a pearl set in two-tone metal on pink paper.
       "spot-photo": pexels(6716445, 1200),
@@ -165,6 +183,13 @@ export const FASHION_JEWELRY: Edition = {
         "We check every piece before it ships: the clasp, the joins and the shine. Then it goes into a velvet pouch with a small card, and if it is a gift, send us your message and we write it by hand.",
       ),
       cta: L("اعرفي حكايتنا", "Read our story"),
+    },
+    // `zahra`: the heading over the anatomy photo (its notes are `custom.anatomy-N-*`).
+    look: {
+      alt: L("سلسلة دهبي بفصوص كريستال على حجر صغير قدام لفة ورق وردي", "A gold-tone crystal necklace on a small pebble before a roll of pink paper"),
+      eyebrow: L("من قريب", "Up close"),
+      title: L("اعرفي القطعة قبل ما تلبسيها", "Know the piece before you wear it"),
+      text: L("دوسي على أي نقطة في الصورة وشوفي خامتها وطولها وإزاي تحافظي عليها.", "Tap a dot on the photo for its material, its length and how to care for it."),
     },
     trust: [
       { title: L("توصيل لحد الباب", "Delivered to your door"), line: L("لأي محافظة في مصر", "To any governorate in Egypt") },
@@ -239,6 +264,17 @@ export const FASHION_JEWELRY: Edition = {
       // `karat`: the lookbook's brand tile. No invented handle: the seller's own replaces it.
       "lookbook-handle": L("حِلية على إنستجرام", "Hilya on Instagram"),
       "lookbook-line": L("أفكار تنسيق جديدة كل أسبوع", "New styling ideas every week"),
+      // `zahra`: the noun after a category's product count.
+      "products-noun": L("قطعة", "pieces"),
+      // `zahra`: the four anatomy notes, in the order of `photos.look.dots` (a title of one or two words, one line each).
+      "anatomy-1-title": L("الطلاء", "The plating"),
+      "anatomy-1-line": L("ستانلس ستيل مطلي دهب عيار ١٨، خفيف على البشرة الحساسة.", "18K gold plating over stainless steel, gentle on sensitive skin."),
+      "anatomy-2-title": L("السلسلة", "The chain"),
+      "anatomy-2-line": L("طولها ٤٢ سم ومعاها وصلة ٥ سم، بقفل لوبستر تقفليه لوحدك.", "42 cm with a 5 cm extender and a lobster clasp you can close on your own."),
+      "anatomy-3-title": L("الفصوص", "The stones"),
+      "anatomy-3-line": L("كريستال مقصوص بيلمع، ومش بنقول عليه ألماظ.", "Cut crystal that catches the light, and we never call it diamond."),
+      "anatomy-4-title": L("العناية", "Care"),
+      "anatomy-4-line": L("اقلعيها قبل الدش والبرفان، امسحيها بقماشة ناشفة واحفظيها في كيسها.", "Take it off before showering or perfume, wipe it dry and keep it in its pouch."),
     },
   },
   productPage: { copy: { reviews: L("قالوا إيه عن القطعة دي", "What buyers say"), related: L("تتلبس معاها", "Wear it with") } },
