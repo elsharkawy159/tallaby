@@ -276,6 +276,10 @@ export const MOTION_INTENSITIES = ["subtle", "normal", "expressive"] as const;
 export type MotionIntensity = (typeof MOTION_INTENSITIES)[number];
 
 /** Theme tokens. Seller custom CSS is intentionally not part of the schema (stripped). */
+/** The product stage ratios (width:height). */
+export const PRODUCT_STAGE_RATIOS = ["1:1", "4:5", "3:4"] as const;
+export type ProductStageRatio = (typeof PRODUCT_STAGE_RATIOS)[number];
+
 export const designSystemSchema = z.object({
   colors: z
     .object({
@@ -322,6 +326,22 @@ export const designSystemSchema = z.object({
       intensity: z.enum(MOTION_INTENSITIES).optional().catch(undefined),
     })
     .optional(),
+  /**
+   * Product stage (docs/systems/plan.md §4.5): one frame for every product
+   * photo in a product list, so photos with any background and shape look
+   * uniform. Unset = each design keeps its own frame (every site saved before
+   * 2026-11-11). A value that is not known is dropped, never an error.
+   */
+  productStage: z
+    .object({
+      ratio: z.enum(PRODUCT_STAGE_RATIOS).optional().catch(undefined),
+      fit: z.enum(["contain", "cover"]).optional().catch(undefined),
+      background: colorSchema.optional().catch(undefined),
+      /** Space between the frame and the photo, in px (contain only). */
+      padding: z.number().int().min(0).max(48).optional().catch(undefined),
+    })
+    .optional()
+    .catch(undefined),
 });
 export type DesignSystem = z.output<typeof designSystemSchema>;
 

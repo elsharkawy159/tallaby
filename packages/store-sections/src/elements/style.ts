@@ -427,8 +427,9 @@ function hoverDeclarations(hover: HoverStyle): string[] {
 }
 
 /** The element's rule plus its `:hover` rule (the caller wraps both in the device media query). */
-function ruleFor(selector: string, style: StyleValues, sectionRoot = false): string {
-  const declarations = styleDeclarations(style, sectionRoot);
+function ruleFor(selector: string, style: StyleValues, sectionRoot = false, stage: "base" | "breakpoint" | false = false): string {
+  const own = styleDeclarations(style, sectionRoot);
+  const declarations = stage ? stageDeclarations(own, style, stage === "base") : own;
   let css = declarations.length ? `${selector}{${declarations.join(";")}}` : "";
   const rtlGradient = style.gradient && START_GRADIENTS_RTL[style.gradient];
   if (rtlGradient) css += `${selector}:dir(rtl){background-image:${rtlGradient}}`;
@@ -436,6 +437,27 @@ function ruleFor(selector: string, style: StyleValues, sectionRoot = false): str
   // Hover changes ease in (docs/section-rules.md §6.5): 200ms for colours, 600ms for zoom.
   if (hover.length) css += `${selector}{transition:${HOVER_TRANSITION}}${selector}:hover{${hover.join(";")}}`;
   return css;
+}
+
+/**
+ * Product stage (docs/systems/plan.md §4.5): a product photo in a product
+ * list reads its frame from the site's stage tokens (`core/theme.ts`) and
+ * falls back to the design's own value, so a site with no stage draws exactly
+ * as before.
+ */
+function stageDeclarations(declarations: string[], style: StyleValues, base: boolean): string[] {
+  const out = declarations.map((d) => {
+    if (d.startsWith("aspect-ratio:")) return `aspect-ratio:var(--sf-stage-ratio,${d.slice("aspect-ratio:".length)})`;
+    if (d.startsWith("object-fit:")) return `object-fit:var(--sf-stage-fit,${d.slice("object-fit:".length)})`;
+    return d;
+  });
+  if (!base) return out;
+  if (!style.aspectRatio) out.push("aspect-ratio:var(--sf-stage-ratio,auto)");
+  if (!style.objectFit) out.push("object-fit:var(--sf-stage-fit,fill)");
+  if (!style.background && !style.gradient) out.push("background-color:var(--sf-stage-bg,transparent)");
+  const padded = [style.paddingTop, style.paddingBottom, style.paddingStart, style.paddingEnd].some((v) => v !== undefined);
+  if (!padded) out.push("padding:var(--sf-stage-pad,0)", "box-sizing:border-box");
+  return out;
 }
 
 const HOVER_TRANSITION = `color .2s,background-color .2s,border-color .2s,box-shadow .2s,opacity .2s,transform .6s ${MOTION_EASE}`;
@@ -451,7 +473,7 @@ function hiddenRule(selector: string, mode: StyleCssMode): string {
   return mode === "edit" ? `${selector}{opacity:0.35;outline:1px dashed currentColor}` : `${selector}{display:none!important}`;
 }
 
-type Responsive = { base?: StyleValues; tablet?: StyleValues; mobile?: StyleValues; sectionRoot?: boolean; capHeight?: boolean };
+type Responsive = { base?: StyleValues; tablet?: StyleValues; mobile?: StyleValues; sectionRoot?: boolean; capHeight?: boolean; stage?: boolean };
 
 function collect(target: Map<string, Responsive>, selector: string, slot: "base" | StyleBreakpoint, style: StyleValues | undefined) {
   if (!style || !Object.keys(style).length) return;
@@ -554,7 +576,7 @@ function fallbackObjectFit(node: Pick<ComponentNode, "type">, styles: readonly (
   return styles.some((style) => style?.aspectRatio || style?.minHeight) ? "cover" : undefined;
 }
 
-function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined, depth = 0, parent?: ComponentNode) {
+function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined, depth = 0, parent?: ComponentNode, inProducts = false) {
   for (const node of nodes ?? []) {
     if (ID_RE.test(node.id)) {
       const selector = nodeSelector(sectionId, node);
@@ -573,8 +595,15 @@ function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes:
       const entry = target.get(selector);
       if (entry && depth === 0 && node.type === "section") entry.sectionRoot = true;
       if (entry && banner) entry.capHeight = true;
+      // A product photo inside a product list sits on the site's product stage (when the site has one).
+      if (inProducts && node.type === "image" && node.props?.bind === "image") {
+        const staged = target.get(selector) ?? {};
+        staged.base ??= {};
+        staged.stage = true;
+        target.set(selector, staged);
+      }
     }
-    collectNodes(target, sectionId, node.children, depth + 1, node);
+    collectNodes(target, sectionId, node.children, depth + 1, node, inProducts || node.type === "productList");
   }
 }
 
@@ -614,13 +643,13 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
   const hovered: string[] = [];
   for (const [selector, entry] of target) {
     if ([entry.base, entry.tablet, entry.mobile].some((style) => style?.hover)) hovered.push(selector);
-    if (entry.base) base.push(ruleFor(selector, entry.base, entry.sectionRoot));
+    if (entry.base) base.push(ruleFor(selector, entry.base, entry.sectionRoot, entry.stage ? "base" : false));
     if (entry.capHeight) base.push(`${selector}{${BANNER_MAX_HEIGHT}}`);
     if (entry.base?.hidden) hidden.base.push(hiddenRule(selector, mode));
     for (const bp of STYLE_BREAKPOINTS) {
       const style = entry[bp];
       if (!style) continue;
-      media[bp].push(ruleFor(selector, style, entry.sectionRoot));
+      media[bp].push(ruleFor(selector, style, entry.sectionRoot, entry.stage ? "breakpoint" : false));
       if (style.hidden) hidden[bp].push(hiddenRule(selector, mode));
     }
   }
