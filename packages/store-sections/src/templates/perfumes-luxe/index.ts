@@ -8,6 +8,10 @@
  * newsletter and the wordmark footer. Built from section library designs
  * (`fromLibrary`).
  *
+ * v2 (motion v2, 2026-11-11): the full-bleed hero in place of the split one
+ * (same photo and copy): the bottle drifts with the scroll and the copy
+ * fades out as the visitor scrolls on. The niche 12-slot home is unchanged.
+ *
  * Photos: Pexels, each checked by eye at full size (2026-10-28): bottles,
  * oils, incense and diffusers only, no people or hands, no brand names or
  * readable labels, none used twice. Hero 2221692; about 12008120 (home),
@@ -77,20 +81,19 @@ const footer = lib("footer-wordmark", {
 });
 
 const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.hero],
+  lib("hero-fullbleed", {
+    photo: [PHOTOS.hero],
     text: {
-      "كوليكشن الموسم": L("مجموعة الياسمين ٢٠٢٦", "The Jasmine 2026 edition"),
-      "صوت أنقى، كل يوم": L("عطر يفضل معاك بعد ما تمشي", "A scent that stays after you leave"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
+      "المجموعة الجديدة": L("مجموعة الياسمين ٢٠٢٦", "The Jasmine 2026 edition"),
+      "صُنعت لتدوم معك": L("عطر يفضل معاك بعد ما تمشي", "A scent that stays after you leave"),
+      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
         "بنركّب كل عطر في الأتيليه بالزمالك، بياسمين مصري من الغربية وزيوت مختارة بالقطرة.",
         "Every fragrance is blended in our Zamalek atelier with Egyptian jasmine from Gharbia and oils measured drop by drop.",
       ),
-      "تسوق الآن": L("اكتشف المجموعة", "Discover the edition"),
-      "العروض": L("وصل حديثًا", "New in"),
-      "صورة الحملة": L("زجاجة عطر كريستال جنب فرع زهر بنفسجي", "A crystal perfume bottle beside a sprig of violet flowers"),
+      "تسوّق الآن": L("اكتشف المجموعة", "Discover the edition"),
+      "شوف الجديد": L("وصل حديثًا", "New in"),
+      "صورة الواجهة": L("زجاجة عطر كريستال جنب فرع زهر بنفسجي", "A crystal perfume bottle beside a sprig of violet flowers"),
     },
-    links: { "/products": [SHOP, NEW] },
   }),
   lib("categories-chips", {
     text: { "إيه اللي في بالك؟": L("عالم نفحة", "The world of Nafha") },
@@ -213,11 +216,11 @@ const DEMO = demoStore({
 
 export const PERFUMES_LUXE = libraryTemplate({
   key: PERFUMES_LUXE_KEY,
-  version: 1,
+  version: 2,
   name: L("نفحة", "Nafha"),
   description: L(
-    "بيت عطور هادي وفخم: هيرو بصورتين، اختيار الأتيليه وأربع صفوف للأقسام. لمتاجر العطور الراقية والنيش.",
-    "A calm, luxurious perfume house: a split hero, the atelier’s pick and four category rows. For niche and premium perfume stores.",
+    "بيت عطور هادي وفخم: صورة كبيرة بعرض الشاشة، اختيار الأتيليه وأربع صفوف للأقسام. لمتاجر العطور الراقية والنيش.",
+    "A calm, luxurious perfume house: a full-bleed hero, the atelier’s pick and four category rows. For niche and premium perfume stores.",
   ),
   category: "beauty",
   style: ["luxe"],

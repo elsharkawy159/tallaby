@@ -7,7 +7,9 @@
 import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance, SiteConfig } from "../config/schema";
 import { footerCreditsTallaby } from "../config/header";
+import { planScroll } from "../elements/scroll-plan";
 import { normalizeSectionStyle } from "../elements/style";
+import { CODE_TEMPLATES } from "./catalog";
 import { CLASSIC } from "./classic";
 import type { TemplateDefinition } from "./types";
 
@@ -83,5 +85,30 @@ describe.each(RULED.map((template) => [template.key, template] as const))("templ
 
   it("§6a: motion is on by default, so no home section switches its reveal off", () => {
     for (const section of home) expect(animation(section), section.id).not.toBe("none");
+  });
+});
+
+/**
+ * Motion v2 (docs/motion-v2-plan.md §5.5, §6), for every code template: one
+ * "wow" per page, so at most two sections of a page have a scroll effect
+ * (photo parallax or zoom, fade-exit, steps or a progress bar), and the
+ * hero `h1` never reveals (LCP; the renderer also refuses it).
+ */
+describe.each(CODE_TEMPLATES.map((template) => [template.key, template] as const))("motion v2 rules: %s", (_key, template) => {
+  const config: SiteConfig = template.config();
+
+  it("at most two sections per page have a scroll effect", () => {
+    for (const page of config.pages) {
+      const moving = page.content.sections.filter((section, i) =>
+        (section.componentTree ?? []).some((root) => planScroll(root, normalizeSectionStyle(section.style).shell?.scrollEffect, { isFirstSection: i === 0 })),
+      );
+      expect(moving.length, page.slug).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("no h1 asks for a reveal", () => {
+    for (const node of config.pages.flatMap((p) => p.content.sections).flatMap(nodesOf)) {
+      if (node.type === "heading" && node.props.level === "h1") expect(node.props.reveal ?? "auto", node.id).toMatch(/^(auto|none)$/);
+    }
   });
 });
