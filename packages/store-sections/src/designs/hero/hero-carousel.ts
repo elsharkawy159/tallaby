@@ -5,39 +5,48 @@
  * `carousel` element autoplays every 5 seconds (it keeps playing under the mouse) and pauses on focus,
  * the pause button, a hidden tab or off-screen; with reduced motion it
  * starts paused. Phones swipe; the arrows are desktop only.
+ *
+ * v2 (look-first pilot, 2026-11-11, docs/systems/plan.md §10 L7): each slide
+ * speaks the full-bleed hero's language. The photo fills most of the first
+ * screen (`HERO_FRAME`: at least 680px on desktop and a tall crop on phones,
+ * where the copy now stays on the photo), the eyebrow is a small uppercase
+ * line and the headline is tighter. Slides change every 6 seconds. Node
+ * order, roles and field names are v1's.
  */
 import { defineDesign, type DesignText, type TreeBuilder } from "../builder";
 import { L } from "../_kit";
-
-const FILL = { position: "absolute", insetTop: "0px", insetBottom: "0px", insetStart: "0px", insetEnd: "0px" } as const;
+import { FILL, HERO_EYEBROW, HERO_FRAME, SOFT_DIM } from "./_shared";
 
 const slide = (t: TreeBuilder, index: number, copy: { eyebrow: DesignText; title: DesignText; text: DesignText; cta: DesignText; alt: DesignText }) =>
   t.slide(
     [
       t.photo(index, copy.alt, {
         role: "image",
-        style: { aspectRatio: "banner", objectFit: "cover" },
-        mobile: { aspectRatio: "portrait" },
+        style: { ...HERO_FRAME.style, objectFit: "cover" },
+        tablet: HERO_FRAME.tablet,
+        mobile: HERO_FRAME.mobile,
       }),
-      t.box([], { label: L("التظليل", "Shade"), style: { ...FILL, gradient: "ink-fade", opacity: 90 } }),
+      t.box([], { label: L("التظليل", "Shade"), style: { ...FILL, gradient: "ink-fade" } }),
+      t.box([], { label: L("التعتيم", "Dim"), role: "dim", style: SOFT_DIM }),
       t.container(
         [
           t.stack(
             [
-              t.text(copy.eyebrow, { role: "eyebrow", style: { color: "white", fontWeight: "semibold", opacity: 90 } }),
+              t.text(copy.eyebrow, { role: "eyebrow", style: { ...HERO_EYEBROW, color: "white", opacity: 90 } }),
               t.heading(copy.title, index === 0 ? "h1" : "h2", {
                 role: "title",
-                style: { color: "white", fontSize: "display-lg", fontWeight: "bold", lineHeight: "tight" },
+                style: { color: "white", fontSize: "display-lg", fontWeight: "bold", lineHeight: "tight", letterSpacing: "tight" },
               }),
-              t.paragraph(copy.text, { role: "subtitle", style: { color: "white", fontSize: "lg", opacity: 90 }, mobile: { fontSize: "md" } }),
-              t.button(copy.cta, "/products", "light", { role: "cta", style: { marginTop: 6 } }),
+              t.paragraph(copy.text, { role: "subtitle", style: { color: "white", fontSize: "lg", opacity: 90, maxWidth: "480px" }, mobile: { fontSize: "md" } }),
+              t.button(copy.cta, "/products", "light", { role: "cta", style: { marginTop: 12 } }),
             ],
-            { label: L("النص", "Copy"), style: { gap: 14, alignItems: "start", maxWidth: "640px" } },
+            { label: L("النص", "Copy"), style: { gap: 16, alignItems: "start", maxWidth: "720px" }, mobile: { gap: 12 } },
           ),
         ],
         {
           label: L("الحاوية", "Container"),
-          style: { position: "absolute", insetBottom: "104px", insetStart: "0px", insetEnd: "0px" },
+          // Clear of the carousel's bar (dots, pause and arrows) at the foot of the slide.
+          style: { position: "absolute", insetBottom: "112px", insetStart: "0px", insetEnd: "0px" },
           mobile: { insetBottom: "88px" },
         },
       ),
@@ -47,13 +56,13 @@ const slide = (t: TreeBuilder, index: number, copy: { eyebrow: DesignText; title
 
 export const heroCarousel = defineDesign({
   id: "hero-carousel",
-  version: 1,
+  version: 2,
   category: "hero",
   subcategory: "full-width",
   name: L("بانرات متحركة", "Banner carousel"),
   description: L(
-    "بانرات صور بعرض الصفحة تتغير وحدها، بعنوان وزر على كل صورة.",
-    "Full-width photo banners that change on their own, each with a headline and button.",
+    "بانرات صور بعرض الصفحة تملأ أول الشاشة وتتغير وحدها، بعنوان وزر على كل صورة.",
+    "Full-width photo banners that fill the first screen and change on their own, each with a headline and button.",
   ),
   keywords: ["hero", "carousel", "slider", "banner", "slides", "سلايدر", "بانر", "شرائح"],
   tree: (t) =>
@@ -82,7 +91,7 @@ export const heroCarousel = defineDesign({
             alt: L("صورة الحملة الثالثة", "Third campaign photo"),
           }),
         ],
-        { label: L("الشرائح", "Slides"), autoplay: true, interval: 5 },
+        { label: L("الشرائح", "Slides"), autoplay: true, interval: 6 },
       ),
     ]),
 });
