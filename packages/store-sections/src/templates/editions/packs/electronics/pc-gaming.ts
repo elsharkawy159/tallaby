@@ -223,4 +223,101 @@ export const PC_GAMING: Edition = {
     },
   },
   productPage: { copy: { reviews: L("رأي اللعيبة", "What players say"), related: L("تكمّل السيت أب", "To finish your setup") } },
+  // Volt's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Zorar" (Egyptian for a
+  // key or button), a bright desk-gear shop for one desk that does work by day and games by night, where arena's
+  // Klik is the dark gaming room. Same products and prices; its own copy, photos and journey.
+  perLook: {
+    volt: {
+      store: {
+        name: L("زرار", "Zorar"),
+        description: L("كيبوردات وماوسات وسماعات ودراعات لمكتب واحد: شغل بالنهار ولعب بالليل.", "Keyboards, mice, headsets and controllers for one desk: work by day, play by night."),
+      },
+      copy: {
+        announcement: [
+          L("مكتب واحد للشغل واللعب", "One desk for work and play"),
+          L("التوصيل لكل محافظات مصر", "Delivery to every governorate"),
+          L("استرجاع خلال ١٤ يوم", "Returns within 14 days"),
+        ],
+        labels: { search: L("دوّر على كيبورد هادي، ماوس وايرلس، سماعة…", "Search quiet keyboard, wireless mouse, headset…") },
+        hero: {
+          alt: L("كيبورد أبيض بزراير بنفسجي فاتح على خلفية صفرا", "A white keyboard with lilac keys on a yellow background"),
+          eyebrow: L("شغل ولعب", "Work and play"),
+          title: L("مكتب واحد لكل يومك", "One desk for your whole day"),
+          line: L(
+            "كيبوردات بألوان فاتحة وماوسات وايرلس وسماعات بمايك: تشتغل بيها الصبح وتلعب بيها بالليل.",
+            "Light-coloured keyboards, wireless mice and headsets with a mic: for work in the morning and games at night.",
+          ),
+          cta: L("جهّز مكتبك", "Set up your desk"),
+        },
+        categories: { title: L("مكتبك ناقصه إيه؟", "What is your desk missing?") },
+        products: {
+          primary: {
+            title: L("جديد على المكتب", "New on the desk"),
+            line: L("آخر الكيبوردات والماوسات والسماعات اللي وصلت.", "The latest keyboards, mice and headsets to arrive."),
+          },
+        },
+        story: {
+          alt: L("سماعة لبني جنب كيبورد أبيض على رخامة فاتحة", "Light blue headphones beside a white keyboard on pale marble"),
+          eyebrow: L("بنختار بالإيد", "Picked by hand"),
+          title: L("بنكتب على كل كيبورد قبل ما نبيعه", "We type on every keyboard before we sell it"),
+          text: L(
+            "بنجرّب صوت الزراير وإحساسها، وبطارية الماوس، ومايك السماعة في مكالمة شغل حقيقية.",
+            "We try how the keys sound and feel, the mouse battery, and the headset mic on a real work call.",
+          ),
+          cta: L("اعرف عننا", "About us"),
+        },
+        trust: [
+          { title: L("ضمان سنة", "One-year warranty"), line: L("على كل كيبورد وماوس وسماعة", "On every keyboard, mouse and headset") },
+          { title: L("استرجاع ١٤ يوم", "14-day returns"), line: L("لو الإحساس ما عجبكش", "If the feel is not for you") },
+          { title: L("التوصيل لكل مصر", "Delivery across Egypt"), line: L("لحد باب البيت", "To your front door") },
+          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما الطلب يوصلك", "Pay when your order arrives") },
+        ],
+        newsletter: {
+          title: L("أفكار لمكتبك", "Ideas for your desk"),
+          line: L("رسالة كل شهر: قطع جديدة وطرق ترتّب بيها مكتبك.", "One letter a month: new gear and ways to arrange your desk."),
+        },
+        about: {
+          line: L("أدوات مكتب ولعب بنجرّبها قبل ما نبيعها.", "Desk and gaming gear we try before we sell it."),
+          alt: L("سماعة لبني جنب كيبورد أبيض على رخامة فاتحة", "Light blue headphones beside a white keyboard on pale marble"),
+          eyebrow: L("عن زرار", "About Zorar"),
+          title: L("مكتب يريّحك في الحالتين", "A desk that works both ways"),
+          text: L(
+            "أغلبنا عنده مكتب واحد: عليه الشغل طول النهار واللعب بالليل. فبنختار كيبورد هادي يستحمل الكتابة، وماوس يمشي في الإكسل وفي الماتش، وسماعة مايكها واضح في الاجتماع وفي الجيم.",
+            "Most of us have one desk: work on it all day and games at night. So we pick keyboards quiet enough for typing, mice that handle spreadsheets and matches, and headsets whose mic is clear in meetings and in games.",
+          ),
+          more: L("قولنا بتشتغل إيه وبتلعب إيه، ونرشّح لك القطعة.", "Tell us what you work on and what you play, and we suggest the gear."),
+          cta: L("شوف الأكتر طلبًا", "See best sellers"),
+        },
+        contact: {
+          title: L("كلّمنا", "Talk to us"),
+          line: L("قولنا مكتبك شكله إيه وبتستخدمه في إيه، ونرشّح لك اللي يناسبه.", "Tell us about your desk and what you use it for, and we suggest what fits."),
+          heading: L("محتار بين كيبوردين؟ اسألنا", "Torn between two keyboards? Ask us"),
+        },
+        faq: {
+          line: L("الضمان والتوصيل والاسترجاع.", "Warranty, delivery and returns."),
+          question: L("الكيبورد صوته عالي في المكتب؟", "Is the keyboard loud in an office?"),
+          answer: L(
+            "نوع السويتش مكتوب في صفحة كل كيبورد: الأحمر والبني هاديين ومناسبين للمكتب، والأزرق صوته أعلى. ولو مش متأكد ابعت لنا ونقولك.",
+            "Each keyboard page names its switch: red and brown are quiet enough for an office, blue clicks louder. Not sure? Write to us and we tell you.",
+          ),
+        },
+        custom: {
+          "hero-word": L("مكتب", "DESK"),
+          "compare-row-2": L("استرجاع ١٤ يوم", "14-day returns"),
+        },
+      },
+      // Pexels, checked by eye at 1600px 2026-11-11 (no people, hands, brand marks or app screens; key legends
+      // aside): pastel gear on yellow and white, in volt's bright palette, apart from arena's dark rooms.
+      photos: {
+        hero: { wide: pexels(17764927, 1920), tall: pexels(7054716, 1200) },
+        // Keyboards (lilac and peach keycaps in a yellow case), mice (a white mouse on yellow), headsets (grey
+        // headphones on mustard), controllers (two white controllers on warm yellow).
+        tiles: [pexels(32764515, 1200), pexels(33475288, 1200), pexels(7241360, 1200), pexels(7862243, 1200)],
+        banner: pexels(7666254, 1920),
+        story: pexels(30345418, 1200),
+      },
+      // The newest gear in volt's quick-buy rows (arena leads with best sellers).
+      journey: { primary: "newest" },
+    },
+  },
 };

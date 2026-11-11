@@ -256,4 +256,145 @@ export const LIGHTING_SMART_HOME: Edition = {
     },
   },
   productPage: { copy: { reviews: L("من بيوت منوّرة", "From lit-up homes"), related: L("إضاءة تكمّل المكان", "Lighting to finish the room") } },
+  // Zaki's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Nawwara", a bright
+  // daylight shop for smart and LED lighting that sets it up on your phone, where nour's Dayy is warm light after
+  // dark. Same products and prices; its own copy, photos, price menu and questions.
+  perLook: {
+    zaki: {
+      store: {
+        name: L("نوّارة", "Nawwara"),
+        description: L("لمبات ذكية وليد ونجف وأباجورات، وبنظبطها على موبايلك.", "Smart and LED lighting, pendants and lamps, set up on your phone."),
+      },
+      copy: {
+        announcement: [
+          L("بنظبط اللمبات الذكية على موبايلك", "We set your smart bulbs up on your phone"),
+          L("التوصيل لكل محافظات مصر", "Delivery to every governorate"),
+          L("الدفع عند الاستلام", "Cash on delivery"),
+        ],
+        labels: { search: L("دوّر على لمبة ذكية، شريط ليد، معلّقة…", "Search smart bulbs, LED strips, pendants…") },
+        nav: [
+          { label: L("البيت الذكي", "Smart home"), href: search("ذكي") },
+          { label: L("كل الإضاءة", "All lighting"), href: "/products" },
+        ],
+        hero: {
+          alt: L("مطبخ أبيض فوق جزيرته تلات معلّقات سودا", "A white kitchen with three black pendants over the island"),
+          eyebrow: L("إضاءة بتتحكم فيها", "Light you control"),
+          title: L("نوّر بيتك من موبايلك", "Light your home from your phone"),
+          line: L(
+            "لمبات ذكية وشرايط ليد ومعلّقات، وفني بيركّبها ويربطها بموبايلك ويعمل لك مواعيد تشغيل.",
+            "Smart bulbs, LED strips and pendants, and an electrician who fits them, links them to your phone and sets on and off times.",
+          ),
+          cta: L("احجز زيارة", "Book a visit"),
+        },
+        categories: { title: L("نوّر على مزاجك", "Light it your way") },
+        products: {
+          primary: {
+            title: L("بيت ذكي جاهز", "A smart home, ready"),
+            line: L("أربع قطع تبدأ بيها: شريط ليد، أباجورة، نجفة وآرك.", "Four pieces to start with: an LED strip, a table lamp, a chandelier and an arc lamp."),
+          },
+        },
+        story: {
+          alt: L("أباجورة مكتب منوّرة جنب نبتة على ترابيزة خشب", "A lit table lamp beside a plant on a wooden desk"),
+          eyebrow: L("بنوفّر في الكهربا", "Saving on power"),
+          title: L("ليد يدفّي ويوفّر", "LED that is warm and saves power"),
+          text: L(
+            "كل لمبة عندنا ليد، ودرجة لونها مكتوبة في صفحتها: دافي للقعدة وأبيض للمطبخ والمكتب.",
+            "Every bulb we sell is LED, and its colour temperature is on its page: warm for sitting rooms, white for kitchens and desks.",
+          ),
+          cta: L("اعرف عننا", "About us"),
+        },
+        rows: [{ title: L("الأكتر تركيبًا", "Installed most"), line: L("في بيوت عملاءنا", "In our customers' homes") }],
+        trust: [
+          { title: L("ظبط على الموبايل", "Phone setup"), line: L("مع كل لمبة ذكية", "With every smart bulb") },
+          { title: L("ليد موفّر", "Energy-saving LED"), line: L("في كل منتج", "In every product") },
+          { title: L("فني تركيب", "An electrician"), line: L("في القاهرة والجيزة", "In Cairo and Giza") },
+          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما الطلب يوصلك", "Pay when your order arrives") },
+        ],
+        newsletter: {
+          title: L("أفكار للبيت الذكي", "Smart home ideas"),
+          line: L("رسالة كل شهر: لمبات جديدة ومواعيد تشغيل توفّر في الكهربا.", "One letter a month: new bulbs and schedules that save power."),
+        },
+        footer: { line: L("نوّارة: إضاءة ذكية بنظبطها على موبايلك.", "Nawwara: smart lighting set up on your phone.") },
+        about: {
+          line: L("إضاءة ذكية وموفّرة، بنركّبها ونظبطها لك.", "Smart, efficient lighting we fit and set up for you."),
+          alt: L("أباجورة مكتب منوّرة جنب نبتة على ترابيزة خشب", "A lit table lamp beside a plant on a wooden desk"),
+          eyebrow: L("عن نوّارة", "About Nawwara"),
+          title: L("النور يشتغل لوحده", "Lights that switch themselves"),
+          text: L(
+            "بدأنا لما لقينا ناس كتير اشترت لمبات ذكية وسابتها شغالة زي العادية، عشان محدش ظبطها. دلوقتي كل لمبة بنبيعها بنربطها بموبايلك ونعمل لها مواعيد، فالبيت ينوّر وإنت داخل ويطفي وإنت نايم.",
+            "We started when we saw how many people bought smart bulbs and used them like ordinary ones, because no one set them up. Now we link every bulb we sell to your phone and schedule it, so the house lights up as you come in and goes dark as you sleep.",
+          ),
+          more: L("ابعت لنا عدد الأوض ونقولك تحتاج كام لمبة.", "Tell us how many rooms you have and we tell you how many bulbs you need."),
+          cta: L("احجز فني", "Book an electrician"),
+        },
+        contact: {
+          title: L("كلّمنا", "Talk to us"),
+          line: L("قولنا عندك راوتر واي فاي إيه وعدد الأوض، ونرشّح لك اللمبات المناسبة.", "Tell us your Wi-Fi router and how many rooms, and we suggest the right bulbs."),
+          heading: L("احجز زيارة ظبط أو اسأل عن طلبك", "Book a setup visit or ask about your order"),
+        },
+        faq: {
+          line: L("البيت الذكي والتركيب والتوصيل.", "Smart home, installation and delivery."),
+          question: L("اللمبة الذكية بتشتغل من غير نت؟", "Does a smart bulb work without internet?"),
+          answer: L(
+            "أيوه، بتشتغل من المفتاح زي أي لمبة. النت محتاجه بس عشان تتحكم فيها من الموبايل أو تعمل لها مواعيد.",
+            "Yes, it works from the wall switch like any bulb. You only need internet to control it from your phone or schedule it.",
+          ),
+        },
+        custom: {
+          "store-short": L("نوّارة", "Nawwara"),
+          "hero-cta-2": L("تسوّق اللمبات الذكية", "Shop smart bulbs"),
+          "service-menu-title": L("أسعار الظبط والتركيب", "Setup and fitting prices"),
+          "service-menu-line": L("في القاهرة والجيزة، والسعر شامل زيارة الفني.", "In Cairo and Giza; the price includes the electrician's visit."),
+          "service-menu-1": L("البيت الذكي", "Smart home"),
+          "service-menu-1-1": L("ربط لمبة أو فيشة بالموبايل", "Link a bulb or plug to your phone"),
+          "service-menu-1-1-price": L("٥٠ جنيه", "EGP 50"),
+          "service-menu-1-2": L("مواعيد تشغيل للبيت كله", "Schedules for the whole home"),
+          "service-menu-1-2-price": L("٢٠٠ جنيه", "EGP 200"),
+          "service-menu-1-3": L("ربط بالمساعد الصوتي", "Voice assistant setup"),
+          "service-menu-1-3-price": L("١٥٠ جنيه", "EGP 150"),
+          "service-menu-2": L("الليد", "LED"),
+          "service-menu-2-1": L("شريط ليد لحد ٥ متر", "LED strip up to 5 m"),
+          "service-menu-2-1-price": L("٢٠٠ جنيه", "EGP 200"),
+          "service-menu-2-2": L("تغيير لمبات البيت لليد", "Switching a home to LED"),
+          "service-menu-2-2-price": L("٢٥ جنيه للمبة", "EGP 25 a bulb"),
+          "service-menu-3": L("النجف", "Ceiling"),
+          "service-menu-3-1": L("معلّقة أو أبليك", "Pendant or wall light"),
+          "service-menu-3-1-price": L("٢٠٠ جنيه", "EGP 200"),
+          "service-menu-3-2": L("نجفة لحد ٥ لمبات", "Chandelier up to 5 bulbs"),
+          "service-menu-3-2-price": L("٣٥٠ جنيه", "EGP 350"),
+          "service-plans-title": L("ضمان البيت الذكي", "Smart home cover"),
+          "service-plans-1": L("تغيير اللمبة لو عطلت", "Replace a faulty bulb"),
+          "service-plans-2": L("إعادة الظبط لو غيّرت الراوتر", "Re-setup if you change router"),
+          "service-plans-3": L("زيارة فني في البيت", "Home visit"),
+          "service-plans-4": L("تحديث المواعيد كل موسم", "Seasonal schedule update"),
+          "faq-1-question": L("محتاج جهاز تاني عشان اللمبات الذكية؟", "Do smart bulbs need a hub?"),
+          "faq-1-answer": L("لأ، بتشتغل على الواي فاي بتاع البيت ومن تطبيق واحد على موبايلك.", "No, they run on your home Wi-Fi from one app on your phone."),
+          "faq-2-question": L("أقدر أتحكم فيها وأنا برا البيت؟", "Can I control them away from home?"),
+          "faq-2-answer": L("أيوه، من أي مكان فيه نت، وتقدر تشوف هي شغالة ولا لأ.", "Yes, from anywhere with internet, and you can see whether they are on."),
+          "faq-3-question": L("الليد بيوفّر قد إيه؟", "How much does LED save?"),
+          "faq-3-answer": L(
+            "لمبة الليد بتصرف أقل بكتير من اللمبة العادية لنفس النور، والرقم بالوات مكتوب في صفحة كل منتج.",
+            "An LED bulb uses far less power than an old one for the same light; the wattage is on every product page.",
+          ),
+          "faq-4-question": L("لو الكهربا قطعت المواعيد بتضيع؟", "Do schedules survive a power cut?"),
+          "faq-4-answer": L("لأ، المواعيد محفوظة في التطبيق وبترجع تشتغل أول ما الكهربا ترجع.", "No, schedules live in the app and run again as soon as power is back."),
+          "faq-5-question": L("بدفع إمتى؟", "When do I pay?"),
+          "faq-5-answer": L(
+            "عند الاستلام كاش، أو بالكارت أو إنستاباي، والظبط والتركيب بتدفعهم للفني بعد ما يخلّص.",
+            "On delivery in cash, or by card or InstaPay; setup and fitting are paid to the electrician once he finishes.",
+          ),
+        },
+      },
+      // Pexels, checked by eye at 1600px 2026-11-11 (no people, hands, logos or lettering): bright daytime rooms
+      // and white kitchens, apart from nour's lamps after dark.
+      photos: {
+        hero: { wide: pexels(6283972, 1920), tall: pexels(6508354, 1200) },
+        // Pendants (clear glass pendants lit over a kitchen), floor lamps (a pale floor lamp by a blue panelled
+        // wall), table and desk (a wooden desk lamp in sunlit leaf shadows), smart (bulbs, a plug and a camera on white).
+        tiles: [pexels(12202390, 1200), pexels(11545385, 1200), pexels(31410610, 1200), pexels(28940512, 1200)],
+        banner: pexels(5849392, 1920),
+        story: pexels(32543097, 1200),
+      },
+    },
+  },
 };

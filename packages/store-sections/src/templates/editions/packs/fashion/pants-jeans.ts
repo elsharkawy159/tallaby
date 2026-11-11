@@ -209,4 +209,109 @@ export const PANTS_JEANS: Edition = {
     },
   },
   productPage: { copy: { reviews: L("آراء اللي لبسوه", "From people who wear it"), related: L("بناطيل ممكن تعجبك", "Trousers you may like") } },
+  // Fashion-luxe's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Darza"
+  // (Egyptian for a seam), a quiet trouser atelier that hems every pair to the buyer's length. Same pairs and
+  // prices; its own copy, photos and journey. The shop-the-look photo (dots on the three newest) stays the
+  // pack's: only this look shows it.
+  perLook: {
+    "fashion-luxe": {
+      store: {
+        name: L("درزة", "Darza"),
+        description: L("بناطيل جينز وقماش وكتان، بنقصّرها على طولك قبل ما نبعتها.", "Denim, tailored and linen trousers, hemmed to your length before they ship."),
+      },
+      copy: {
+        announcement: [
+          L("ابعت طولك ونقصّر الرجل قبل الشحن", "Send your length and we hem before shipping"),
+          L("التوصيل لكل محافظات مصر", "Delivery to every governorate"),
+          L("الدفع عند الاستلام", "Cash on delivery"),
+        ],
+        labels: { about: L("الأتيليه", "The atelier") },
+        hero: {
+          alt: L("بناطيل جينز متطبّقة فوق بعض في ضوء ناعم", "Folded jeans stacked in soft light"),
+          eyebrow: L("أتيليه بناطيل", "A trouser atelier"),
+          title: L("بنطلون متفصّل على طول رجلك", "Trousers finished to your length"),
+          line: L(
+            "اختار الموديل والمقاس، واكتب طول رجلك في الطلب: بنقصّره في الأتيليه وبنبعته جاهز تلبسه.",
+            "Pick the style and size, add your inseam to the order: we hem it in the atelier and send it ready to wear.",
+          ),
+          cta: L("تسوّق الجديد", "Shop new in"),
+        },
+        categories: { title: L("القصّات", "The cuts") },
+        products: {
+          primary: {
+            title: L("جديد الأتيليه", "New from the atelier"),
+            line: L("آخر البناطيل اللي خلصت من الماكينة.", "The latest pairs off the sewing table."),
+          },
+        },
+        // The two-tone band (waves of folded denim); its button goes to the about page.
+        story: {
+          alt: L("طبقات جينز متطبّقة بدرجات أزرق من الفاتح للغامق", "Layers of folded denim in blues from light to deep"),
+          eyebrow: L("التشطيب", "The finish"),
+          title: L("كل درزة بإيد خياط", "Every seam by a tailor's hand"),
+          text: L(
+            "بنقصّر كل بنطلون على الطول اللي تكتبه، وبنرجّع التنية الأصلية في الجينز عشان شكله يفضل زي ما هو.",
+            "We hem every pair to the length you give us, and keep the original hem on jeans so they look as they should.",
+          ),
+          cta: L("زور الأتيليه", "Visit the atelier"),
+        },
+        look: {
+          eyebrow: L("تلات غسلات", "Three washes"),
+          title: L("من الفاتح للغامق", "From light to deep"),
+          text: L("دوس على أي نقطة وشوف أقرب بنطلون ليها في التشكيلة.", "Tap a dot to see the closest pair in the range."),
+        },
+        trust: [
+          { title: L("تقصير على طولك", "Hemmed to your length"), line: L("اكتب طول رجلك وإنت بتطلب", "Add your inseam when you order") },
+          { title: L("تبديل المقاس", "Size exchange"), line: L("خلال ١٤ يوم لو مش مقصّر", "Within 14 days if not hemmed") },
+          { title: L("اسأل خياط", "Ask a tailor"), line: L("على واتساب قبل ما تطلب", "On WhatsApp before you order") },
+          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("كاش مع المندوب", "Cash to the courier") },
+        ],
+        newsletter: {
+          title: L("قصّات جديدة من الأتيليه", "New cuts from the atelier"),
+          line: L("رسالة لما ننزل قصّة أو قماشة جديدة، وبس.", "A letter when a new cut or fabric arrives, and that is all."),
+        },
+        footer: { line: L("درزة: بناطيل مقصّرة على طولك.", "Darza: trousers hemmed to your length.") },
+        about: {
+          line: L("أتيليه صغير للبناطيل، في وسط البلد.", "A small trouser atelier in downtown Cairo."),
+          alt: L("بنطلون جينز متطبّق وعليه ريشة بيضا", "Folded jeans with a white feather on top"),
+          eyebrow: L("الأتيليه", "The atelier"),
+          title: L("الطول الصح بيفرق", "The right length changes everything"),
+          text: L(
+            "درزة بدأت من ورشة خياطة كانت كل يومها تقصير بناطيل اشتروها الناس جاهزة. فقلنا نختار البنطلون ونقصّره في نفس المكان، ويوصلك على طولك من أول مرة.",
+            "Darza began in a tailoring shop whose days were spent hemming trousers people had bought ready-made. So we choose the trousers and hem them in the same place, and they reach you at your length the first time.",
+          ),
+          more: L("ولو مش متأكد من طولك، قيس بنطلون مريح عندك من الوسط لآخر الرجل وابعته لنا.", "Not sure of your length? Measure a pair you like from the crotch seam to the hem and send it to us."),
+          cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
+        },
+        contact: {
+          title: L("كلّم الأتيليه", "Talk to the atelier"),
+          line: L(`وسط البلد، القاهرة، ${PHONE_AR}، ${handle("hello@darza.example")}`, `Downtown, Cairo | ${PHONE_EN} | hello@darza.example`),
+          heading: L("مش عارف طول رجلك؟ نقولك تقيسه إزاي", "Not sure of your inseam? We show you how to measure"),
+        },
+        faq: {
+          line: L("الطول والتقصير والتبديل.", "Length, hemming and exchanges."),
+          question: L("أقيس طول رجلي إزاي؟", "How do I measure my inseam?"),
+          answer: L(
+            "افرد بنطلون طوله مظبوط عليك وقيس من الدرزة اللي في النص لحد آخر الرجل بالسنتيمتر، واكتب الرقم في ملاحظة الطلب. البنطلون المقصّر ما بيتبدلش، فلو محتار ابعت لنا قبلها.",
+            "Lay flat a pair that fits you and measure from the crotch seam to the hem in centimetres, then add the number to the order note. Hemmed pairs cannot be exchanged, so ask us first if unsure.",
+          ),
+        },
+        custom: {
+          "shop-all": L("كل القصّات", "All cuts"),
+          "products-noun": L("بنطلون", "pairs"),
+        },
+      },
+      // Pexels, checked by eye at 1600px 2026-11-11 (no people, hands, mannequins, labels or lettering):
+      // denim and tailoring in deep blues, so the cool palette sits apart from zay's rails and stools.
+      photos: {
+        hero: { wide: pexels(4109755, 1920), tall: pexels(10133274, 1200) },
+        // Jeans (folded stacks on a shop table), wide-leg (trousers hanging long from washing lines, from below),
+        // chinos and tailored (black trousers on a wooden hanger with scissors and pins), joggers (soft folded stack).
+        tiles: [pexels(32879870, 1200), pexels(19867663, 1200), pexels(2737702, 1200), pexels(35009337, 1200)],
+        banner: pexels(19903579, 2000),
+        story: pexels(6764142, 1200),
+      },
+      // The newest pairs in the grid (zay shows best sellers), then wide-leg and tailored as rows.
+      journey: { primary: "newest", rows: [2, 3] },
+    },
+  },
 };

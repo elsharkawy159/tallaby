@@ -15,13 +15,7 @@ import type { Edition } from "./types";
  * Packs still waiting for their second look's own content. Remove a niche
  * when its `perLook` entry is written; the list must end empty.
  */
-const PENDING = new Set<string>([
-  "lighting-smart-home",
-  "pants-jeans",
-  "pc-gaming",
-  "chargers-cables",
-  "slippers-clogs",
-]);
+const PENDING = new Set<string>([]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */
 function fingerprint(edition: Edition): Record<string, string> {

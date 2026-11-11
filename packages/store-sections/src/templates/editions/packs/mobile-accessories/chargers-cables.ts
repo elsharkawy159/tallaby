@@ -216,4 +216,105 @@ export const CHARGERS_CABLES: Edition = {
     },
   },
   productPage: { copy: { reviews: L("رأي اللي جرّبوه", "From people who use it"), related: L("يكمّل معاه", "Pairs well with") } },
+  // Volt's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Meya Meya" (Egyptian
+  // for "a hundred out of a hundred", and a battery at 100%), a fast-charging shop: the watts and the minutes to
+  // full, where kabl's Fisha helps you find what fits your phone. Same products and prices; its own copy, photos
+  // and journey.
+  perLook: {
+    volt: {
+      store: {
+        name: L("مية مية", "Meya Meya"),
+        description: L("شواحن سريعة وكابلات وباور بانك وشحن لاسلكي، عشان موبايلك يفضل مية مية.", "Fast chargers, cables, power banks and wireless charging, to keep your phone at 100%."),
+      },
+      copy: {
+        announcement: [
+          L("قوة كل شاحن بالوات مكتوبة في صفحته", "Every charger's watts are on its page"),
+          L("التوصيل لكل محافظات مصر", "Delivery to every governorate"),
+          L("الدفع عند الاستلام", "Cash on delivery"),
+        ],
+        labels: { search: L("دوّر على شاحن ٦٥ وات، كابل ٢ متر، ستاند لاسلكي…", "Search 65W charger, 2 m cable, wireless stand…") },
+        hero: {
+          alt: L("وصلة كابل بيضا منوّرة على خلفية زرقا", "A white cable plug lit on a blue background"),
+          eyebrow: L("شحن سريع", "Fast charging"),
+          title: L("من صفر لمية بسرعة", "From empty to full, fast"),
+          line: L(
+            "شواحن GaN وكابلات تستحمل الوات العالي وباور بانك وستاندات لاسلكي، وقوة كل قطعة مكتوبة بالوات.",
+            "GaN chargers, cables rated for high watts, power banks and wireless stands, each with its power in watts.",
+          ),
+          cta: L("تسوّق الشحن السريع", "Shop fast charging"),
+        },
+        categories: { title: L("هتشحن إيه؟", "What are you charging?") },
+        products: {
+          primary: {
+            title: L("وصل جديد", "Just in"),
+            line: L("آخر الشواحن والكابلات اللي نزلت.", "The latest chargers and cables to arrive."),
+          },
+        },
+        story: {
+          alt: L("شاحن في فيشة الحيطة وكابله الأبيض متدلّي", "A charger in a wall socket with its white cable hanging"),
+          eyebrow: L("بنقيس بنفسنا", "We measure it ourselves"),
+          title: L("بنقيس الوات قبل ما نبيع", "We measure the watts before we sell"),
+          text: L(
+            "بنوصّل كل شاحن بجهاز قياس ونكتب الوات اللي طالعة فعلًا، مش اللي مكتوبة على العلبة بس.",
+            "We plug every charger into a meter and list the watts it really delivers, not just the number on the box.",
+          ),
+          cta: L("اعرف عننا", "About us"),
+        },
+        trust: [
+          { title: L("الوات مكتوبة", "Watts listed"), line: L("في صفحة كل شاحن وكابل", "On every charger and cable page") },
+          { title: L("استبدال سهل", "Easy exchange"), line: L("لو القطعة ما اشتغلتش مع موبايلك", "If it does not work with your phone") },
+          { title: L("التوصيل لكل مصر", "Delivery across Egypt"), line: L("لحد باب البيت", "To your front door") },
+          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما الطلب يوصلك", "Pay when your order arrives") },
+        ],
+        newsletter: {
+          title: L("الشواحن الأسرع أول بأول", "The fastest chargers first"),
+          line: L("رسالة لما ينزل شاحن أسرع أو كابل أقوى، وبس.", "A letter when a faster charger or a tougher cable arrives, and that is all."),
+        },
+        footer: { line: L("مية مية: شحن سريع من غير وجع دماغ.", "Meya Meya: fast charging, no fuss.") },
+        about: {
+          line: L("محل شحن سريع بيقيس كل شاحن قبل ما يبيعه.", "A fast-charging shop that measures every charger before selling it."),
+          alt: L("شاحن في فيشة الحيطة وكابله الأبيض متدلّي", "A charger in a wall socket with its white cable hanging"),
+          eyebrow: L("عن مية مية", "About Meya Meya"),
+          title: L("موبايلك يستاهل يبقى مية مية", "Your phone deserves a full battery"),
+          text: L(
+            "بدأنا لأن الموبايلات بقت بتشحن بسرعة، والشواحن اللي معانا لأ. دلوقتي بنقيس كل شاحن وكابل وباور بانك بنفسنا، وبنكتب الوات اللي بيطلّعها فعلًا.",
+            "We started because phones learned to charge fast and our chargers did not. Now we measure every charger, cable and power bank ourselves, and list the watts it really delivers.",
+          ),
+          more: L("ابعت لنا موديل موبايلك ونقولك أسرع شاحن يناسبه.", "Send us your phone model and we tell you the fastest charger it takes."),
+          cta: L("شوف الأكتر طلبًا", "See best sellers"),
+        },
+        contact: {
+          title: L("كلّمنا", "Talk to us"),
+          line: L("قولنا موبايلك إيه، ونقولك أعلى وات يقدر يشحن بيه والكابل اللي يستحمله.", "Tell us your phone, and we tell you the most watts it can take and the cable to match."),
+          heading: L("عايز تشحن أسرع؟ اسألنا", "Want to charge faster? Ask us"),
+        },
+        faq: {
+          line: L("الوات والتوافق والاستبدال.", "Watts, compatibility and exchanges."),
+          question: L("شاحن ٦٥ وات يبوّظ موبايلي؟", "Will a 65W charger harm my phone?"),
+          answer: L(
+            "لأ، الموبايل بياخد بس الوات اللي يقدر عليه. الشاحن الأقوى بيخليك تشحن الموبايل واللابتوب من نفس الشاحن.",
+            "No, your phone only draws the watts it can take. A stronger charger lets you charge your phone and laptop from the same plug.",
+          ),
+        },
+        custom: {
+          "hero-word": L("فُل", "FULL"),
+          "compare-row-2": L("استبدال لو ما اشتغلش", "Exchange if it does not work"),
+        },
+      },
+      // Pexels, checked by eye at 1600px 2026-11-11 (no people, hands, logos or readable screens): plugs, ports
+      // and sockets in cool light, apart from kabl's beige desks. The power-bank tile, 14706040 (a phone with a
+      // blank screen beside a black power bank on pale wood), is also in the electronics-warm template: every
+      // logo-free power bank on Pexels is taken by a template or a pack, so this one is the exception.
+      photos: {
+        hero: { wide: pexels(4195332, 1920), tall: pexels(5697297, 1200) },
+        // Chargers (a white wall charger on blue), cables (a bamboo case of short cables and adapters), power banks
+        // (see above), wireless (a watch on a charging stand with its magnetic puck).
+        tiles: [pexels(4097204, 1200), pexels(39308140, 1200), pexels(14706040, 1200), pexels(36659010, 1200)],
+        banner: pexels(3921702, 1920),
+        story: pexels(36022185, 1200),
+      },
+      // The newest pieces in volt's quick-buy rows (kabl leads with best sellers).
+      journey: { primary: "newest" },
+    },
+  },
 };
