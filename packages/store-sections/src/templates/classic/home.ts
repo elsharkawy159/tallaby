@@ -13,8 +13,10 @@
  */
 import type { ElementIconName } from "../../elements/registry";
 import type { StyleValues } from "../../elements/style";
-import { defineDesign, type DesignText, type TreeBuilder } from "../../designs/builder";
+import { getDesign } from "../../designs";
+import { defineDesign, type Design, type DesignText, type TreeBuilder } from "../../designs/builder";
 import { L, ON_BRAND, ON_BRAND_BODY } from "../../designs/_kit";
+import { fromLibrary } from "../_library";
 import { CLASSIC_PHOTOS } from "./photos";
 import { CARD, FLUSH, LINKS, SECTION, pill, productGrid, sectionHead } from "./_shared";
 
@@ -434,12 +436,54 @@ export const classicNewsletter = defineDesign({
     ]),
 });
 
-/** The standard home order (template rules §2); every section but the hero rises in on scroll (§6a, on by default). */
+/**
+ * Classic v7 (motion v2, owner 2026-11-11): two visual breaks from the
+ * motion v2 pilot library sections, with Classic's corners and section
+ * rhythm. No steps section (owner).
+ */
+const classicLib = (id: string, patch: Parameters<typeof fromLibrary>[2]): Design => fromLibrary("tallaby-classic", getDesign(id)!, { corners: 16, ...patch });
+
+/** The store story between the two product rows: the photo wipes in and zooms slowly as the page scrolls. */
+export const classicStory = classicLib("about-split-story", {
+  photo: [undefined, undefined, CLASSIC_PHOTOS.shopFront],
+  text: {
+    "صورة القصة": L("واجهة متجر صغير بأبواب خشب", "A small shop front with wooden doors"),
+    "من ورشتنا": L("من متجرنا", "From our shop"),
+    "متصمم عشانك ومعمول في القاهرة": L("متجر صغير بيهتم بكل طلب", "A small shop that cares about every order"),
+    "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": L(
+      "بنختار كل منتج بعناية ونجرّبه قبل ما نعرضه عليك.",
+      "We choose every product with care and try it before we offer it to you.",
+    ),
+    "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": L("وبنرد على كل رسالة بنفسنا، قبل الطلب وبعده.", "And we answer every message ourselves, before and after you order."),
+    "حكايتنا": L("اعرف عنّا أكتر", "More about us"),
+  },
+  nodes: { "صورة ونص": { style: SECTION.style, mobile: SECTION.mobile } },
+});
+
+/** A brand band of figures that count up as it scrolls into view; plain promises the seller edits. */
+export const classicStats = classicLib("stats-band", {
+  text: {
+    "+٢٥ ألف": L("١٠٠٪", "100%"),
+    "طلب تم توصيله": L("منتجات أصلية", "Original products"),
+    "٤٫٨": L("٢٤", "24"),
+    "متوسط التقييم": L("ساعة بالكتير ونرد عليك", "Hours at most to hear back"),
+    "يومًا للاسترجاع": L("يوم للاستبدال والاسترجاع", "Days to exchange or return"),
+  },
+});
+
+/**
+ * The standard home order (template rules §2) with two visual breaks: the
+ * story between the product rows and the figures before the perks. Every
+ * section but the hero rises in on scroll (§6a, on by default); only the
+ * story has a scroll effect.
+ */
 export const CLASSIC_HOME = [
   classicHero,
   classicCategories,
   classicBestSellers,
+  classicStory,
   classicNewArrivals,
+  classicStats,
   classicPerks,
   classicNewsletter,
 ] as const;

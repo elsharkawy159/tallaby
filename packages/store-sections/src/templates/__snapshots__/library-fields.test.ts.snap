@@ -282,6 +282,8 @@ exports[`library field names > code design field names are stable 1`] = `
   "tallaby-about-visit": "section box box-2 image box-3 box-4 div eyebrow title body cta",
   "tallaby-best-sellers": "section box box-2 intro title link box-3 text icon items box-4 box-5 link-2 image badge wishlist-button box-6 link-3 text-2 box-7 text-3 text-4 add-to-cart",
   "tallaby-categories": "section box box-2 intro title link box-3 text icon items link-2 box-4 box-5 image text-2",
+  "tallaby-classic-about-split-story": "section box box-2 frame image box-3 eyebrow title box-4 body body-2 cta",
+  "tallaby-classic-stats-band": "section box items box-2 value text div box-3 value-2 text-2 div-2 box-4 value-3 text-3 div-3 box-5 value-4 text-4",
   "tallaby-contact": "section box box-2 box-3 heading form box-4 link box-5 box-6 icon box-7 text text-2 link-2 box-8 box-9 icon-2 box-10 text-3 text-4 link-3 box-11 box-12 icon-3 box-13 text-5 text-6 box-14 box-15 icon-4 box-16 text-7 text-8 box-17 box-18 icon-5 box-19 text-9 text-10 image",
   "tallaby-contact-header": "section box box-2 link text text-2 text-3 title subtitle",
   "tallaby-faq": "section box box-2 box-3 heading items faq text faq-2 text-2 box-4 heading-2 items-2 faq-3 text-3 faq-4 text-4 box-5 heading-3 items-3 faq-5 text-5 faq-6 text-6 box-6 box-7 heading-4 text-7 box-8 cta secondary-cta",

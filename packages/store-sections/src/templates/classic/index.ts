@@ -117,7 +117,7 @@ export const CLASSIC_DESIGNS: readonly Design[] = [
 
 export const CLASSIC: TemplateDefinition = {
   key: CLASSIC_KEY,
-  version: 6,
+  version: 7,
   isDefault: true,
   folder: "classic",
   name: { ar: "طلبي الكلاسيكي", en: "Tallaby Classic" },
@@ -128,7 +128,7 @@ export const CLASSIC: TemplateDefinition = {
   category: "general",
   style: ["classic", "minimal"],
   sortOrder: 0,
-  changelog: "Tallaby Classic v6: template rules (hero carousel, standard home order, rise on scroll, Powered by in the footer)",
+  changelog: "Tallaby Classic v7: motion v2 (a story with a wipe-in photo that zooms on scroll, and figures that count up, between the product rows)",
   palette: ["#f7f6f2", "#eef3f3", "#fdad28", "#145163"],
   config: classicConfig,
   pageNames: {

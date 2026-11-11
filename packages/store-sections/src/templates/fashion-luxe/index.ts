@@ -8,6 +8,10 @@
  * newsletter and the centred links footer. Built from section library
  * designs (`fromLibrary`).
  *
+ * v2 (motion v2, 2026-11-11): best sellers in the clean grid whose heading
+ * rises word by word, and the atelier story as the split story, its photo
+ * wiping in and zooming slowly with the scroll (one scroll effect).
+ *
  * Photos and video: Pexels, each checked by eye at 2000px (2026-10-28):
  * garments on hangers and rails, folded knits, shoes and bags only, no
  * people or hands, no readable labels or brand lettering, none used twice
@@ -118,29 +122,31 @@ const home: Design[] = [
     lists: [{ limit: 6 }],
     nodes: { "الأقسام": { style: { columns: 3 } } },
   }),
-  lib("products-tabs-grid", {
+  lib("products-grid", {
     text: {
-      "وصل حديثاً": L("القطع الأكثر طلبًا", "Most-loved pieces"),
-      "الجديد": L("الأكثر طلبًا", "Best sellers"),
-      "الأكثر مبيعاً": L("وصل حديثًا", "New in"),
-      "الأعلى تقييمًا": L("الأعلى تقييمًا", "Top rated"),
+      "وصل حديثًا": L("القطع الأكثر طلبًا", "Most-loved pieces"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("القطع اللي عملاءنا بيرجعولها كل موسم.", "The pieces our clients come back to every season."),
     },
-    links: { "/products?sort=newest": BEST, "/products?sort=popularity": NEW, "/products": BEST },
+    links: { "/products": BEST },
     lists: [{ source: "best-sellers" }],
     // Tablets: 4 columns, so the 8 best sellers fill two rows.
     nodes: { "المنتجات": { tablet: { columns: 4 } } },
   }),
-  lib("about-fullbleed", {
+  lib("about-split-story", {
     photo: [undefined, undefined, PHOTOS.boutique],
     text: {
       "صورة القصة": L("ركن في البوتيك بشماعات ومعطفين", "A boutique corner with a rail and two coats"),
-      "حكايتنا": L("من ٢٠٠٩", "Since 2009"),
-      "تفاصيل صغيرة تصنع الفرق": L("الخياطة هي الحكاية كلها", "It is all in the tailoring"),
-      "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.": L(
-        "بدأنا أتيليه صغير في جاردن سيتي، ولسه بنقص ونخيط كل قطعة هناك. قماش مختار من المحلة، تشطيب يدوي وكميات قليلة من كل موديل.",
-        "We began as a small Garden City atelier and still cut and sew every piece there: fabric from Mahalla, hand finishing and small runs of each style.",
+      "من ورشتنا": L("من ٢٠٠٩", "Since 2009"),
+      "متصمم عشانك ومعمول في القاهرة": L("الخياطة هي الحكاية كلها", "It is all in the tailoring"),
+      "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": L(
+        "بدأنا أتيليه صغير في جاردن سيتي، ولسه بنقص ونخيط كل قطعة هناك.",
+        "We began as a small Garden City atelier and still cut and sew every piece there.",
       ),
-      "اعرف أكثر": L("زور الأتيليه", "Visit the atelier"),
+      "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": L(
+        "قماش مختار من المحلة، تشطيب يدوي وكميات قليلة من كل موديل.",
+        "Fabric from Mahalla, hand finishing and small runs of each style.",
+      ),
+      "حكايتنا": L("زور الأتيليه", "Visit the atelier"),
     },
   }),
   ...categoryRows(lib, {
@@ -233,7 +239,7 @@ const DEMO = demoStore({
 
 export const FASHION_LUXE = libraryTemplate({
   key: FASHION_LUXE_KEY,
-  version: 1,
+  version: 2,
   name: L("حرير", "Hareer"),
   description: L(
     "أزياء راقية بهدوء: فيديو لشماعة الموسم، فهرس أقسام وأربع صفوف بصور طولية. لبوتيكات الملابس الراقية.",
