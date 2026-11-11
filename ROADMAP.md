@@ -1697,6 +1697,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-11 — `feat/section-system` merged to `main` and deployed (F-88, F-89, F-90)
+
+- **Owner (2026-11-11):** "merge everything to live". `feat/motion-v2`, `feat/gsap-homepage-motion` and `feat/template-product-page` were already inside the branch; `origin/main`'s footer commit was merged in first.
+- **0162 applied on staging and production 2026-11-11, before the push** (owner-approved): `store_design_systems.motion` is nullable `jsonb` on both (checked after applying).
+- **F-89 decisions (owner: ship as built):** Tallaby Classic v8 is every new store's starting site; on phones `hero-fullbleed` and `hero-carousel` crop the photo tall with the copy on it (replaces the 2026-11-04 rule); the Pexels packshots stay.
+- **Checks:** typecheck clean except the old `profile.chunks.tsx` errors in `apps/ecommerce`. Tests: emails 14, db 21, cache 50, agent 64, ai 25, admin 102, motion 31, dashboard 1,176, store-editor 214, lib 1,335, store-sections 10,202, ecommerce 701 pass. Seven tests timed out under full-repo load (dashboard `sales-lock`, ecommerce `client-messages`, `feed-sitemap-cache`, `storefront-catalog-cache`, store-sections `store-payments`, `boundaries`, `motion-size`); each file passes when run alone. Integration tests skipped (no `TEST_DATABASE_URL`). Lint not run (broken repo-wide).
+- **Left:** browser check of the live templates after the deploy.
+
 ### 2026-11-11 — F-90 niche editions: 21 packs (branch `feat/section-system`, local commits, not pushed)
 
 - **Packs registered** (`b7b302c3` … `9fc71b9f`), each 16 products in 4 × 4, white packshots in `library-media/editions/<niche>/`, Pexels art direction checked by eye (no people, logos or lettering), no invented reviews: dresses, tshirts, glasses, pants-jeans, lighting-smart-home, pc-gaming, fashion-jewelry, chargers-cables, watches (jewelry-luxe only; saat needs 6 categories, waiting on 6 `watches-extra` packshots), slippers-clogs (new niche, owner request: شبشب، كروكس; clogs never named after the brand), menswear, womens-shoes, handbags, mens-shoes, gold-jewelry (karat and weight in titles, prices follow the day's gold price), sneakers, lingerie-sleepwear (modest sleepwear only), sportswear, hair-accessories, belts-wallets, phone-cases.
