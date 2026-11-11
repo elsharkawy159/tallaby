@@ -90,9 +90,9 @@ Home slippers
 15. **navy-knit-home-slippers**: A pair of navy knitted closed-toe home slippers.
 16. **beige-closed-toe-slippers**: A pair of beige felt closed-toe house slippers.
 
-## watches, 6 more (so the pack also fits the saat template)
+## watches, 6 more (not needed now; optional)
 
-saat shows categories three per row, so the watches pack needs 6 categories. Same chat and watch line as above; save in `.editions-inbox/watches-extra/`.
+**No longer needed (2026-11-12):** saat v4 was redesigned to fit the pack as it is (four categories of four, category circles four across), so the six-category plan is dropped. Generate these only if the watches pack later adds sport/diver and kids' watches as categories. Same chat and watch line as above; save in `.editions-inbox/watches-extra/`.
 
 Sport & diver
 1. **green-dial-diver-watch**: A steel diver watch with a green dial and a rotating bezel, steel bracelet.
