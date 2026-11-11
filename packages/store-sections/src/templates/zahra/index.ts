@@ -14,7 +14,9 @@ import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const ZAHRA_KEY = "zahra";
 
@@ -48,6 +50,38 @@ const PHOTOS = {
 
 const NAME = L("زهرة جولز", "Zahra Jewels");
 
+const DEFAULT_CONTENT: LookDefaults = {
+  hero: {
+    alt: L("خاتم وسلسلة دهبي في طبق خزف", "A gold ring and necklace on a ceramic dish"),
+    eyebrow: L("ضد المية", "Waterproof"),
+    title: L("دهب عمرك ما تقلعيه", "Gold you never take off"),
+    line: L("طلاء ١٨ قيراط على ستيل. استحمي وعومي ونامي بيه.", "18K plating over steel. Shower, swim, sleep in it."),
+    cta: L("تسوقي المجوهرات", "Shop jewellery"),
+  },
+  about: {
+    line: L("دهب مطلي يومي من ورشة صغيرة في المعادي.", "Everyday gold-plated jewellery from a small Maadi studio."),
+    alt: L("مجوهرات دهبي في طبق على قماش ساتان", "Gold jewellery on a plate over satin"),
+    eyebrow: L("المعادي", "Maadi"),
+    title: L("دهب تلبسيه وانتي بتعيشي", "Gold you live in"),
+    text: L("كنا عايزين قطع حلوة ما تتقلعش في الدش ولا البحر، فعملناها: طلاء ١٨ قيراط على ستيل.", "We wanted pretty pieces you never take off for the shower or the sea, so we made them: 18K plating over steel."),
+    more: L("وكل طلب بيوصل في علبة هدية ببلاش.", "And every order arrives in a free gift box."),
+    cta: L("تسوقي المجوهرات", "Shop jewellery"),
+  },
+  contact: {
+    title: L("تواصلي معانا", "Contact us"),
+    line: L("zahra@zahrajewels.eg، وبنرد كل يوم.", "zahra@zahrajewels.eg, and we reply every day."),
+    heading: L("عن مقاس أو هدية", "About a size or a gift"),
+  },
+  faq: {
+    line: L("الطلاء والمقاسات والتوصيل.", "Plating, sizes and delivery."),
+    question: L("الطلاء بيروح مع المية؟", "Does the plating wear off in water?"),
+    answer: L("لأ. طلاء ١٨ قيراط على ستيل ضد المية، وتقدري تستحمي وتعومي بيه.", "No. The 18K plating over steel is waterproof: shower and swim in it."),
+  },
+  photos: { hero: { wide: PHOTOS.dish }, story: PHOTOS.plate },
+};
+
+function look(c: LookContent, _journey: LookJourney): LookParts {
+const NAME = c.store.name;
 const header = lib("header-pill", {
   text: { "اسم متجرك": NAME, "المتجر": L("وصل جديد", "New in"), "العروض": L("الأكثر مبيعاً", "Best sellers"), "المدونة": L("عننا", "About") },
   links: { "/products": [NEW, BEST], "/blog": "/about" },
@@ -57,9 +91,9 @@ const footer = lib("footer-signup", {
   text: {
     "اشترك في النشرة": L("اشتركي في النشرة", "Join the newsletter"),
     "عروض ومنتجات جديدة، مرة في الأسبوع.": L("قطع جديدة وعروض، مرة في الأسبوع.", "New pieces and offers, once a week."),
-    "م": L("ز", "Z"),
+    "م": initialOf(NAME),
     "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ زهرة جولز. كل الحقوق محفوظة.", "© 2026 Zahra Jewels. All rights reserved."),
+    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(NAME),
     "العروض": L("الأعلى تقييماً", "Top rated"),
   },
   links: { "/products": [undefined, NEW, BEST, RATED] },
@@ -67,16 +101,13 @@ const footer = lib("footer-signup", {
 
 const home: Design[] = [
   lib("hero-bento", {
-    photo: [PHOTOS.dish],
+    photo: [c.photos.hero.wide],
     text: {
-      "وصل جديد": L("ضد المية", "Waterproof"),
-      "صوت أنقى، كل يوم": L("دهب عمرك ما تقلعيه", "Gold you never take off"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "طلاء ١٨ قيراط على ستيل. استحمي وعومي ونامي بيه.",
-        "18K plating over steel. Shower, swim, sleep in it.",
-      ),
-      "تسوق الآن": L("تسوقي المجوهرات", "Shop jewellery"),
-      "صورة الحملة": L("خاتم وسلسلة دهبي في طبق خزف", "A gold ring and necklace on a ceramic dish"),
+      "وصل جديد": c.hero.eyebrow,
+      "صوت أنقى، كل يوم": c.hero.title,
+      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+      "تسوق الآن": c.hero.cta,
+      "صورة الحملة": c.hero.alt,
       "من ١٢ ألف تقييم": L("من أكتر من ٦٠٠ تقييم", "from 600+ reviews"),
     },
   }),
@@ -158,21 +189,43 @@ const home: Design[] = [
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن زهرة", "About Zahra"), L("دهب مطلي يومي من ورشة صغيرة في المعادي.", "Everyday gold-plated jewellery from a small Maadi studio.")),
+  pageHeader(lib, "about-header", L("عن زهرة", "About Zahra"), c.about.line),
   aboutStory(lib, {
-    photo: PHOTOS.plate,
-    alt: L("مجوهرات دهبي في طبق على قماش ساتان", "Gold jewellery on a plate over satin"),
-    eyebrow: L("المعادي", "Maadi"),
-    title: L("دهب تلبسيه وانتي بتعيشي", "Gold you live in"),
-    text: L("كنا عايزين قطع حلوة ما تتقلعش في الدش ولا البحر، فعملناها: طلاء ١٨ قيراط على ستيل.", "We wanted pretty pieces you never take off for the shower or the sea, so we made them: 18K plating over steel."),
-    more: L("وكل طلب بيوصل في علبة هدية ببلاش.", "And every order arrives in a free gift box."),
-    button: L("تسوقي المجوهرات", "Shop jewellery"),
+    photo: c.photos.story,
+    alt: c.about.alt,
+    eyebrow: c.about.eyebrow,
+    title: c.about.title,
+    text: c.about.text,
+    more: c.about.more,
+    button: c.about.cta,
     href: SHOP,
   }),
 ];
 
+return {
+  header,
+  footer,
+  pages: [
+    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+    { slug: "about", name: L("عننا", "About"), seo: { title: L("عن زهرة", "About Zahra") }, sections: about },
+    {
+      slug: "contact",
+      name: L("تواصل", "Contact"),
+      seo: { title: L("تواصل", "Contact") },
+      sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+    },
+    {
+      slug: "faq",
+      name: L("الأسئلة الشائعة", "FAQ"),
+      seo: { title: L("الأسئلة الشائعة", "FAQ") },
+      sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+    },
+  ],
+};
+}
+
 const DEMO = demoStore({
-  name: NAME,
+  name: L("زهرة جولز", "Zahra Jewels"),
   description: L("قطع مطلية دهب تقدري تستحمي بيها.", "Gold-plated pieces you can wear in the shower."),
   categories: [
     ["rings", "خواتم", "Rings", PHOTOS.ringTray],
@@ -193,7 +246,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const ZAHRA = libraryTemplate({
+export const ZAHRA = editionTemplate({
   key: ZAHRA_KEY,
   version: 2,
   changelog: "Zahra v2: product page",
@@ -218,31 +271,10 @@ export const ZAHRA = libraryTemplate({
   },
   fonts: { heading: "Tajawal", body: "Tajawal" },
   radius: 20,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عننا", "About"), seo: { title: L("عن زهرة", "About Zahra") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصلي معانا", "Contact us"),
-        text: L("zahra@zahrajewels.eg، وبنرد كل يوم.", "zahra@zahrajewels.eg, and we reply every day."),
-        heading: L("عن مقاس أو هدية", "About a size or a gift"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("الطلاء والمقاسات والتوصيل.", "Plating, sizes and delivery."),
-        question: L("الطلاء بيروح مع المية؟", "Does the plating wear off in water?"),
-        answer: L("لأ. طلاء ١٨ قيراط على ستيل ضد المية، وتقدري تستحمي وتعومي بيه.", "No. The 18K plating over steel is waterproof: shower and swim in it."),
-      }),
-    },
-  ],
+  lib,
+  look,
+  slots: ["hero", "about", "contact", "faq", "photos.hero.wide", "photos.story"],
+  journey: { primary: "newest", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });
