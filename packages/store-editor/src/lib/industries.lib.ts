@@ -11,6 +11,11 @@ export type StoreIndustry = {
   ar: string;
   /** English stock-photo searches, best first. */
   queries: readonly string[];
+  /**
+   * Names this industry had before (English or Arabic). A store saved with
+   * one still belongs to it; a new pick writes `en` / `ar`.
+   */
+  aliases?: readonly string[];
 };
 
 export const STORE_INDUSTRIES: readonly StoreIndustry[] = [
@@ -25,7 +30,8 @@ export const STORE_INDUSTRIES: readonly StoreIndustry[] = [
   { id: "sweets", en: "Sweets & Coffee", ar: "حلويات وقهوة", queries: ["desserts", "coffee", "chocolate", "pastry"] },
   { id: "kids", en: "Kids & Toys", ar: "أطفال وألعاب", queries: ["kids toys", "children playing", "baby products"] },
   { id: "sports", en: "Sports & Fitness", ar: "رياضة ولياقة", queries: ["fitness", "sports equipment", "gym workout", "running"] },
-  { id: "jewelry", en: "Jewelry & Watches", ar: "مجوهرات وساعات", queries: ["jewelry", "watches", "gold jewelry", "accessories"] },
+  // Renamed 2026-11-11 (ROADMAP F-90): it also takes glasses, hair accessories, belts and wallets.
+  { id: "jewelry", en: "Accessories & Jewelry", ar: "إكسسوارات ومجوهرات", queries: ["jewelry", "watches", "gold jewelry", "accessories"], aliases: ["Jewelry & Watches", "مجوهرات وساعات"] },
   { id: "books", en: "Books & Stationery", ar: "كتب وأدوات مكتبية", queries: ["books", "stationery", "reading", "notebook"] },
   { id: "health", en: "Health & Pharmacy", ar: "صحة وصيدلية", queries: ["health care", "vitamins", "pharmacy", "wellness"] },
   { id: "pets", en: "Pets", ar: "حيوانات أليفة", queries: ["pets", "dog", "cat", "pet supplies"] },
@@ -38,11 +44,17 @@ export const GENERAL_QUERIES = ["online shopping", "products flat lay", "shoppin
 
 const norm = (value: string) => value.trim().toLowerCase();
 
-/** The industry whose English or Arabic name equals the store's category, if any. */
+/** The industry whose English or Arabic name (today's or an earlier one) equals the store's category, if any. */
 export function findIndustry(category: { en?: string | null; ar?: string | null }): StoreIndustry | null {
   const en = norm(category.en ?? "");
   const ar = norm(category.ar ?? "");
-  return STORE_INDUSTRIES.find((i) => (en && norm(i.en) === en) || (ar && norm(i.ar) === ar)) ?? null;
+  const hadName = (i: StoreIndustry, value: string) => value !== "" && (i.aliases ?? []).some((name) => norm(name) === value);
+  // Today's names first, so an old name can never shadow another industry's current one.
+  return (
+    STORE_INDUSTRIES.find((i) => (en && norm(i.en) === en) || (ar && norm(i.ar) === ar)) ??
+    STORE_INDUSTRIES.find((i) => hadName(i, en) || hadName(i, ar)) ??
+    null
+  );
 }
 
 /** Suggested searches for a store: its industry's, else its English category, else general ones. */

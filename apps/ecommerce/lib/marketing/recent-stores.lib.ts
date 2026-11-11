@@ -24,7 +24,7 @@ export const STORE_INDUSTRY_NAMES = {
   sweets: { en: "Sweets & Coffee", ar: "حلويات وقهوة" },
   kids: { en: "Kids & Toys", ar: "أطفال وألعاب" },
   sports: { en: "Sports & Fitness", ar: "رياضة ولياقة" },
-  jewelry: { en: "Jewelry & Watches", ar: "مجوهرات وساعات" },
+  jewelry: { en: "Accessories & Jewelry", ar: "إكسسوارات ومجوهرات" },
   books: { en: "Books & Stationery", ar: "كتب وأدوات مكتبية" },
   health: { en: "Health & Pharmacy", ar: "صحة وصيدلية" },
   pets: { en: "Pets", ar: "حيوانات أليفة" },
@@ -34,15 +34,23 @@ export const STORE_INDUSTRY_NAMES = {
 
 export type StoreIndustryId = keyof typeof STORE_INDUSTRY_NAMES;
 
+/** Names an industry had before: a store saved with one still counts (the test keeps this equal to the `aliases` of `STORE_INDUSTRIES`). */
+export const STORE_INDUSTRY_OLD_NAMES: Partial<Record<StoreIndustryId, readonly string[]>> = {
+  jewelry: ["Jewelry & Watches", "مجوهرات وساعات"],
+};
+
 const norm = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
 
-/** The industry whose English or Arabic name equals the store's category, else null (no category, or the seller's own words). */
+/** The industry whose English or Arabic name (today's or an earlier one) equals the store's category, else null (no category, or the seller's own words). */
 export function storeIndustryId(category: { en?: string | null; ar?: string | null }): StoreIndustryId | null {
   const en = norm(category.en);
   const ar = norm(category.ar);
   if (!en && !ar) return null;
   for (const [id, names] of Object.entries(STORE_INDUSTRY_NAMES) as [StoreIndustryId, { en: string; ar: string }][]) {
     if ((en && norm(names.en) === en) || (ar && norm(names.ar) === ar)) return id;
+  }
+  for (const [id, names] of Object.entries(STORE_INDUSTRY_OLD_NAMES) as [StoreIndustryId, readonly string[]][]) {
+    if (names.some((name) => norm(name) === en || norm(name) === ar)) return id;
   }
   return null;
 }

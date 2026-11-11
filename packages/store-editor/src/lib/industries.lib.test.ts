@@ -1,11 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { GENERAL_QUERIES, findIndustry, industryQueries, templatesForIndustry } from "./industries.lib";
+import { GENERAL_QUERIES, STORE_INDUSTRIES, findIndustry, industryQueries, templatesForIndustry } from "./industries.lib";
 
 describe("store industries", () => {
   it("matches by English or Arabic name, ignoring case and spaces", () => {
     expect(findIndustry({ en: " fashion " })?.id).toBe("fashion");
     expect(findIndustry({ ar: "إكسسوارات موبايل" })?.id).toBe("mobile-accessories");
     expect(findIndustry({ en: "Garden tools" })).toBeNull();
+  });
+
+  it("keeps stores saved with an industry's earlier name (jewelry was renamed 2026-11-11)", () => {
+    const jewelry = STORE_INDUSTRIES.find((i) => i.id === "jewelry")!;
+    expect(jewelry.en).toBe("Accessories & Jewelry");
+    expect(jewelry.ar).toBe("إكسسوارات ومجوهرات");
+    expect(findIndustry({ en: "Accessories & Jewelry" })?.id).toBe("jewelry");
+    expect(findIndustry({ ar: "إكسسوارات ومجوهرات" })?.id).toBe("jewelry");
+    expect(findIndustry({ en: "Jewelry & Watches" })?.id).toBe("jewelry");
+    expect(findIndustry({ en: " jewelry & watches ", ar: null })?.id).toBe("jewelry");
+    expect(findIndustry({ ar: "مجوهرات وساعات" })?.id).toBe("jewelry");
+    expect(findIndustry({ en: "Jewelry & Watches", ar: "مجوهرات وساعات" })?.id).toBe("jewelry");
+    // The old names still give the industry's photo searches.
+    expect(industryQueries({ en: "Jewelry & Watches" })[0]).toBe("jewelry");
+    // No name, old or new, belongs to two industries.
+    const names = STORE_INDUSTRIES.flatMap((i) => [i.en, i.ar, ...(i.aliases ?? [])].map((name) => name.trim().toLowerCase()));
+    expect(new Set(names).size).toBe(names.length);
   });
 
   it("searches the industry, then the English category, then general terms", () => {

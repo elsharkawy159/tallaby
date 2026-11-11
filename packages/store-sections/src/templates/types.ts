@@ -62,4 +62,6 @@ export type TemplateDefinition = {
   designs: readonly Design[];
   /** The resolved product page spec (library-built templates only): defaults filled in, `surface` always set. */
   productPageSpec?: Readonly<ProductPageSpec>;
+  /** The niche id of the edition it was built with (`applyEdition`, `./editions`); unset for a template's own content. */
+  edition?: string;
 };

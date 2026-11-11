@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import ar from "@/messages/marketing/home.ar.json";
 import en from "@/messages/marketing/home.en.json";
 import { STORE_INDUSTRIES } from "../../../../packages/store-editor/src/lib/industries.lib";
-import { LATEST_WINDOW_MS, RECENT_WINDOW_MS, STORE_INDUSTRY_NAMES, selectStoreLine, storeAge, storeIndustryId, type RecentStore, type StoreIndustryId } from "./recent-stores.lib";
+import { LATEST_WINDOW_MS, RECENT_WINDOW_MS, STORE_INDUSTRY_NAMES, STORE_INDUSTRY_OLD_NAMES,selectStoreLine, storeAge, storeIndustryId, type RecentStore, type StoreIndustryId } from "./recent-stores.lib";
 
 const NOW = Date.parse("2026-11-04T12:00:00.000Z");
 const MINUTE = 60_000;
@@ -15,6 +15,14 @@ const store = (industry: StoreIndustryId | null, ageMs: number): RecentStore => 
 describe("storeIndustryId", () => {
   it("lists exactly the industries a seller can pick", () => {
     expect(Object.fromEntries(STORE_INDUSTRIES.map((i) => [i.id, { en: i.en, ar: i.ar }]))).toEqual(STORE_INDUSTRY_NAMES);
+    expect(Object.fromEntries(STORE_INDUSTRIES.filter((i) => i.aliases?.length).map((i) => [i.id, i.aliases]))).toEqual(STORE_INDUSTRY_OLD_NAMES);
+  });
+
+  it("keeps stores saved with an industry's earlier name", () => {
+    expect(storeIndustryId({ en: "Accessories & Jewelry", ar: "إكسسوارات ومجوهرات" })).toBe("jewelry");
+    expect(storeIndustryId({ en: "Jewelry & Watches", ar: "مجوهرات وساعات" })).toBe("jewelry");
+    expect(storeIndustryId({ en: null, ar: "مجوهرات وساعات" })).toBe("jewelry");
+    expect(storeIndustryId({ en: " jewelry & watches ", ar: null })).toBe("jewelry");
   });
 
   it("matches the English or Arabic column, ignoring case and spaces", () => {

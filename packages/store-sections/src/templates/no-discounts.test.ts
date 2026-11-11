@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance } from "../config/schema";
 import { getDesign } from "../designs";
 import { CODE_TEMPLATES } from "./catalog";
-import { isDiscountDesign } from "./no-discounts";
+import { isDiscountDesign, OFFER_COPY as OFFER } from "./no-discounts";
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
 
@@ -18,8 +18,6 @@ function visibleTexts(section: SectionInstance | null | undefined): string[] {
   return out;
 }
 
-/** An offer: a coupon, a percentage or an amount off, a sale. "No fake discounts" (a promise not to) is fine. */
-const OFFER = /كوبون|خصم|كود|تخفيض|أوكازيون|بسعر [٠-٩\d]|coupon|discount|promo code|\b\d+\s*%\s*off\b|\boff (?:your|any|orders?)\b|\bsave \d|\bsale\b|pay for \d|get \d+ free/i;
 const ALLOWED = new Set([
   "من غير خصومات وهمية",
   "No fake discounts",

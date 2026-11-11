@@ -23,3 +23,11 @@ export function isDiscountDesign(design: Design): boolean {
   const category = design.libraryId ? (getDesign(id)?.category ?? design.category) : design.category;
   return DISCOUNT_CATEGORIES.has(category) || DISCOUNT_DESIGNS.has(id);
 }
+
+/**
+ * Copy that reads as an offer: a coupon, a percentage or an amount off, a
+ * sale. Template and edition copy must not match it (`no-discounts.test.ts`,
+ * `editions/validate.ts`). "No fake discounts" (a promise not to) is listed
+ * as allowed where it is used.
+ */
+export const OFFER_COPY = /كوبون|خصم|كود|تخفيض|أوكازيون|بسعر [٠-٩\d]|coupon|discount|promo code|\b\d+\s*%\s*off\b|\boff (?:your|any|orders?)\b|\bsave \d|\bsale\b|pay for \d|get \d+ free/i;
