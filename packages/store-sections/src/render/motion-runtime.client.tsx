@@ -25,7 +25,9 @@ const SELECTOR = "[data-reveal]:not(.is-inview)";
 const V2_SECTION = `[${MOTION_V2_ATTR}="${MOTION_V2_MARK}"]`;
 /** A list drawn as a sideways row (`rail`, `mobileRail`): its cards reveal together, when the row enters view. */
 const RAIL = "[data-sf-rail]";
-const SWAP_PHOTO = "[data-sf-swap]>img";
+/** A wipe reveal (`wipe-start`, `wipe-end`, `wipe-up`). */
+const WIPE = "[data-reveal^=wi]";
+const SWAP_PHOTO ="[data-sf-swap]>img";
 const SECOND_PHOTO = "[data-sf-swap]>img:nth-child(2)";
 
 export function MotionRuntime({ doc }: { doc?: Document | null } = {}) {
@@ -110,6 +112,13 @@ export function startReveals(document: Document): (() => void) | undefined {
 
   /** A row's cards still waiting for their reveal. */
   const pending = (rail: Element) => Array.from(rail.querySelectorAll<HTMLElement>(SELECTOR));
+  // A wipe starts fully clipped (`clip-path`), and browsers count a target's own clip: watched itself it
+  // would never be "in view" and its photo would stay hidden. Its parent (the photo's frame) is watched for it.
+  // (Checked in Chromium 2026-11-11: the split story's photo never appeared.) A frame that waits for a reveal
+  // of its own is not a stand-in: keep a wipe's parent free of `data-reveal`.
+  /** What a watched element reveals: a row's cards, the wipes of a frame watched for them, else itself. */
+  const reveals = (target: Element) =>
+    target.matches(RAIL) || !target.matches(SELECTOR) ? pending(target) : [target as HTMLElement];
 
   const observer = new window.IntersectionObserver(
     (entries) => {
@@ -117,8 +126,7 @@ export function startReveals(document: Document): (() => void) | undefined {
         if (!entry.isIntersecting) continue;
         observer.unobserve(entry.target);
         // A row reveals its cards at once; each keeps its own stagger step (v1).
-        if (entry.target.matches(RAIL)) pending(entry.target).forEach(show);
-        else show(entry.target as HTMLElement);
+        reveals(entry.target).forEach(show);
       }
     },
     { threshold: 0.15 },
@@ -133,8 +141,7 @@ export function startReveals(document: Document): (() => void) | undefined {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         observerV2.unobserve(entry.target);
-        if (entry.target.matches(RAIL)) batch.push(...pending(entry.target));
-        else batch.push(entry.target as HTMLElement);
+        batch.push(...reveals(entry.target));
       }
       batch.sort((a, b) => (a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1));
       batch.forEach((el, i) => {
@@ -171,7 +178,7 @@ export function startReveals(document: Document): (() => void) | undefined {
       watched.add(el);
       // On screen before motion starts: shown as it is, no animation, and no reveal left on it.
       if (first && el.getBoundingClientRect().top < height) strip(el);
-      else observerOf(el).observe(el);
+      else observerOf(el).observe((el.matches(WIPE) && el.parentElement) || el);
     }
   };
 

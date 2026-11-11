@@ -1,6 +1,6 @@
 # Section system and template system: audit and plan (Phase 0)
 
-()=>"**Status (2026-11-11): the look-first pilot in §10 is being built on the owner\u2019s go-ahead (L1, L2, L5 and L6 done; see `ROADMAP.md` §7). Phases 1 to 4 are not started.**" Branch `feat/section-system`, cut from `feat/motion-v2` (`62bb38b4`).
+**Status (2026-11-11): the look-first pilot in §10 is being built on the owner's go-ahead (L1, L2, L5 and L6 done; see `ROADMAP.md` §7). Phases 1 to 4 are not started.** Branch `feat/section-system`, cut from `feat/motion-v2` (`62bb38b4`).
 
 The goal is a section library with no duplicates, templates composed from sections by rules, an AI store builder that picks from metadata, and section improvements that reach every template that uses the section.
 
