@@ -9,7 +9,7 @@ import { richTags } from "@/components/marketing/site/rich-text";
 import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { CONTACT } from "@/lib/marketing/site.lib";
-import type { GalleryEntry } from "@/lib/marketing/templates.lib";
+import type { GalleryEntry, GalleryNicheTab } from "@/lib/marketing/templates.lib";
 import { TemplateGallery } from "./template-gallery.client";
 import { TemplateShowcase, type ShowcaseEntry } from "./template-showcase.client";
 
@@ -28,8 +28,8 @@ export function showcasePicks(entries: readonly GalleryEntry[], leadKeys: readon
   return [...leads, ...rest].slice(0, size);
 }
 
-/** Everything on /templates. `entries` is the code catalog. */
-export async function TemplatesPageContent({ entries, leadKeys = [] }: { entries: GalleryEntry[]; leadKeys?: readonly string[] }) {
+/** Everything on /templates. `entries` is the code catalog; `niches` the niche tabs under each category. */
+export async function TemplatesPageContent({ entries, niches = [], leadKeys = [] }: { entries: GalleryEntry[]; niches?: GalleryNicheTab[]; leadKeys?: readonly string[] }) {
   const t = await getTranslations("templates");
   const picks: ShowcaseEntry[] = showcasePicks(entries, leadKeys).map((entry) => ({
     id: entry.id,
@@ -77,7 +77,7 @@ export async function TemplatesPageContent({ entries, leadKeys = [] }: { entries
           <Reveal>
             <SectionHeading id="gallery-title" kicker={t("gallery.kicker")} title={t("gallery.title")} description={t("gallery.body")} centered />
           </Reveal>
-          <TemplateGallery entries={entries} />
+          <TemplateGallery entries={entries} niches={niches} />
         </Container>
       </Section>
 

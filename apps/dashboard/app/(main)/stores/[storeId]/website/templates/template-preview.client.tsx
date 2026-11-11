@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Check, LoaderCircle, Monitor, RotateCcw, Smartphone, Sparkles } from "lucide-react";
+import { Check, ExternalLink, LoaderCircle, Monitor, RotateCcw, Smartphone, Sparkles } from "lucide-react";
 import type { SiteLocale } from "@workspace/store-sections";
 import { DEMO_PRODUCT } from "@workspace/store-sections/render";
 import { templateDemoProduct } from "@workspace/store-sections/demo-product";
@@ -11,9 +11,9 @@ import { Segmented, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
 import { SitePreview, type PreviewDevice } from "../_components/site-preview.client";
 import { TemplateLiveThumbnail as SharedTemplateLiveThumbnail, demoCatalog } from "@workspace/store-editor/preview/template-live-thumbnail.client";
-import { EditionChips } from "./edition-chips.client";
 import { templatePreview } from "./templates.server";
 import type { TemplateCardView, TemplatePreviewView } from "./templates.dto";
+import { TEMPLATE_PREVIEW_ORIGIN, templatePreviewTabUrl } from "./templates.lib";
 
 type Localized = { ar?: string; en?: string };
 
@@ -65,7 +65,6 @@ export function TemplatePreview({
   fontClassName,
   categoryName,
   editionId = null,
-  onEditionChange,
   onUse,
   onOpenChange,
 }: {
@@ -76,9 +75,8 @@ export function TemplatePreview({
   uiLocale: string;
   fontClassName: string;
   categoryName: string;
-  /** The niche edition shown (the card's pick), or null for the template's own content. */
+  /** The niche edition shown (the niche tab it was opened from), or null for the template's own content. */
   editionId?: string | null;
-  onEditionChange?: (editionId: string | null) => void;
   onUse: (template: TemplateCardView) => void;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -108,7 +106,7 @@ export function TemplatePreview({
           <>
             <div className="flex min-h-0 min-w-0 flex-col gap-3 bg-linear-[160deg,var(--s-fill),var(--s-surface-2)] p-4 pe-14 min-[901px]:pe-4 max-[600px]:p-2.5 max-[600px]:pe-12">
               <div className="flex flex-wrap items-center gap-2">
-                <div role="tablist" aria-label={t("preview.pages")} className="flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] max-[600px]:basis-full [&::-webkit-scrollbar]:hidden">
+                <div role="tablist" aria-label={t("preview.pages")} className="flex min-w-0 flex-1 flex-wrap gap-1 max-[600px]:basis-full">
                   {(preview?.pages ?? []).map((p) => (
                     <button
                       key={p.slug}
@@ -176,16 +174,6 @@ export function TemplatePreview({
                 <DialogTitle className="truncate text-xl font-bold text-(--s-ink) max-[900px]:text-base">{text(template.name)}</DialogTitle>
                 <DialogDescription className="text-[13px] leading-[1.8] text-(--s-muted) max-[900px]:sr-only">{text(template.description)}</DialogDescription>
               </div>
-              {onEditionChange && (
-                <EditionChips
-                  editions={template.editions ?? []}
-                  value={editionId}
-                  onChange={onEditionChange}
-                  locale={uiLocale === "en" ? "en" : "ar"}
-                  templateName={text(template.name)}
-                  className="max-[900px]:order-last max-[900px]:basis-full"
-                />
-              )}
               {template.palette.length > 0 && (
                 <span aria-hidden className="flex max-[900px]:hidden">
                   {template.palette.slice(0, 4).map((color, index) => (
@@ -206,10 +194,24 @@ export function TemplatePreview({
                   </li>
                 ))}
               </ul>
-              <SellerButton className="mt-auto h-12 w-full max-[900px]:mt-0 max-[900px]:h-11 max-[900px]:w-auto" disabled={disabled} onClick={() => onUse(template)}>
-                {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
-                {current ? tw("reapplyShort") : t("use")}
-              </SellerButton>
+              <div className="mt-auto flex flex-col gap-2 max-[900px]:mt-0 max-[900px]:flex-row max-[900px]:flex-wrap">
+                {/* The full-page storefront preview in a new tab, with the edition and page shown here (owner, 2026-11-11). */}
+                <SellerButton asChild variant="outline" className="h-11 w-full max-[900px]:w-auto">
+                  <a
+                    href={templatePreviewTabUrl(TEMPLATE_PREVIEW_ORIGIN, locale, template.key, page, editionId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("preview.newTabLabel", { name: text(template.name) })}
+                  >
+                    <ExternalLink aria-hidden />
+                    {t("preview.newTab")}
+                  </a>
+                </SellerButton>
+                <SellerButton className="h-12 w-full max-[900px]:h-11 max-[900px]:w-auto" disabled={disabled} onClick={() => onUse(template)}>
+                  {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
+                  {current ? tw("reapplyShort") : t("use")}
+                </SellerButton>
+              </div>
             </div>
           </>
         )}

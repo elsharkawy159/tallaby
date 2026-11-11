@@ -124,3 +124,38 @@ export function buildGallery(rows: readonly CatalogTemplate[], locale: string): 
       sortOrder: row.sortOrder,
     }));
 }
+
+/**
+ * A niche tab of the gallery (niche editions, ROADMAP F-90): niches work like
+ * categories (owner request 2026-11-11). Under its category code, it lists
+ * only `looks` (the templates made for that niche, best first), each drawn
+ * with the niche's edition.
+ */
+export type GalleryNicheTab = { id: string; category: Exclude<TemplateCategory, "all">; name: string; looks: string[] };
+
+/** A niche with an edition, as the catalog gives it (`offeredNiches` + `editionsForNiche`). */
+export type CatalogNiche = { id: string; industry: string; name: { ar: string; en: string }; looks: readonly string[] };
+
+/**
+ * The niche tabs for a locale: each niche under its industry's category
+ * code, keeping only looks the gallery lists (no repeats). A niche left with
+ * no look gets no tab, so a tab never shows an empty list.
+ */
+export function buildNicheTabs(niches: readonly CatalogNiche[], entryIds: Iterable<string>, locale: string): GalleryNicheTab[] {
+  const listed = new Set(entryIds);
+  return niches.flatMap((niche) => {
+    const looks = [...new Set(niche.looks)].filter((look) => listed.has(look));
+    return looks.length ? [{ id: niche.id, category: categoryCode(niche.industry), name: localized(niche.name, locale) ?? niche.id, looks }] : [];
+  });
+}
+
+/** The cards of a niche tab, in its order (best look first); every card of a category without a niche. */
+export function nicheEntries<T extends { id: string }>(entries: readonly T[], tab: Pick<GalleryNicheTab, "looks"> | null | undefined): T[] {
+  if (!tab) return [...entries];
+  return tab.looks.flatMap((look) => entries.filter((entry) => entry.id === look));
+}
+
+/** `?edition=` on a template page → one of its niche editions, else null (the template's own content). */
+export function pickEdition(editions: readonly { id: string }[], value: string | null | undefined): string | null {
+  return value && editions.some((edition) => edition.id === value) ? value : null;
+}

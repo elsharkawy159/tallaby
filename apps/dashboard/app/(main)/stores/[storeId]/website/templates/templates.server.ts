@@ -143,7 +143,9 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
     const requestedCategory = q ? "all" : query?.category == null ? null : parseTemplatesCategory(query.category);
     // The niche filter belongs to a category tab: its niches that have an edition (none today for most tabs, so no filter).
     const tab = servedCategory([...new Set(gallery.templates.map((tpl) => tpl.category))], requestedCategory, industry?.id);
-    const niches = tab === "all" ? [] : offeredNiches(tab);
+    // A niche tab filters like a category (owner, 2026-11-11), so only niches with a look in this gallery get one.
+    const keys = new Set(gallery.templates.map((tpl) => tpl.key));
+    const niches = tab === "all" ? [] : offeredNiches(tab).filter((option) => editionsForNiche(option.id).some((entry) => keys.has(entry.look)));
     const niche = resolveNicheFilter(niches, query?.niche == null ? null : parseTemplatesNiche(query.niche), {
       category: { en: row.storeCategory, ar: row.storeCategoryAr },
       name: row.name,

@@ -2,8 +2,8 @@ import { cache } from "react";
 import { cacheProfiles, createCachedQuery, templateTags } from "@workspace/cache";
 import { codeTemplateConfig, getPublicTemplate, offeredTemplates, templateEditionId } from "@workspace/lib/store-sites/server";
 import { siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
-import { editionOptions, resolveTemplateMeta, templateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
-import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templates.lib";
+import { NICHES, editionOptions, editionsForNiche, resolveTemplateMeta, templateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
+import { buildGallery, buildNicheTabs, type CatalogNiche, type CatalogTemplate, type GalleryEntry, type GalleryNicheTab } from "./templates.lib";
 
 /**
  * The tallaby.com gallery: every code template (templates are code-only since
@@ -55,6 +55,19 @@ export const getTemplateGallery = cache(async (locale: string): Promise<GalleryE
     console.error("[marketing] template catalog failed", error);
   }
   return buildGallery(rows, locale);
+});
+
+/**
+ * The gallery's niche tabs for a locale (niche editions, ROADMAP F-90): every
+ * niche with an edition on a listed template, in the niche list's order, as
+ * the dashboard gallery offers them. Code only, so nothing more to cache.
+ */
+export const getTemplateNicheTabs = cache(async (locale: string): Promise<GalleryNicheTab[]> => {
+  const niches: CatalogNiche[] = NICHES.flatMap((niche) => {
+    const looks = editionsForNiche(niche.id).map((entry) => entry.look);
+    return looks.length ? [{ id: niche.id, industry: niche.industry, name: niche.name, looks }] : [];
+  });
+  return buildNicheTabs(niches, (await getTemplateGallery(locale)).map((entry) => entry.id), locale);
 });
 
 export async function findGalleryEntry(locale: string, id: string): Promise<GalleryEntry | null> {

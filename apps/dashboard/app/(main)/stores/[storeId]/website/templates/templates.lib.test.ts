@@ -9,6 +9,7 @@ import {
   resolveNicheFilter,
   servedCategory,
   sortByIndustry,
+  templatePreviewTabUrl,
 } from "./templates.lib";
 
 // `sortOrder`: a higher one is a newer template.
@@ -147,15 +148,20 @@ describe("the niche filter", () => {
     for (const value of [null, "", "<script>", "T-Shirts", "-x", "a".repeat(64)]) expect(parseTemplatesNiche(value)).toBe("all");
   });
 
-  it("puts the niche's looks first on a category tab, best look first, then the rest of the tab", () => {
+  it("lists only the niche's looks on a niche tab, best look first, like a category filter", () => {
     const withNiche = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["mode", "kasr"] });
     expect(withNiche.items.map((r) => r.key)).toEqual(["mode", "kasr"]);
-    // A look filed under another industry still leads its niche.
+    // Only the niche's looks: the rest of the tab is not listed.
+    const one = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["mode"] });
+    expect(one.items.map((r) => r.key)).toEqual(["mode"]);
+    expect(one.total).toBe(1);
+    expect(one.category).toBe("fashion");
+    // A look filed under another industry is still in its niche.
     const across = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["volt", "mode"] });
-    expect(across.items.map((r) => r.key)).toEqual(["volt", "mode", "kasr"]);
-    expect(across.total).toBe(3);
+    expect(across.items.map((r) => r.key)).toEqual(["volt", "mode"]);
+    expect(across.total).toBe(2);
     // Looks that are not in the gallery are skipped; no repeats across pages.
-    const paged = [1, 2].flatMap((page) => pageTemplates(rows, { page, category: "fashion", nicheLooks: ["gone", "mode"], pageSize: 1 }).items.map((r) => r.key));
+    const paged = [1, 2].flatMap((page) => pageTemplates(rows, { page, category: "fashion", nicheLooks: ["gone", "mode", "kasr", "mode"], pageSize: 1 }).items.map((r) => r.key));
     expect(paged).toEqual(["mode", "kasr"]);
   });
 
@@ -170,21 +176,28 @@ describe("the niche filter", () => {
 describe("cardEdition", () => {
   const card = { key: "kasr", editions: [{ id: "dresses" }, { id: "tshirts" }] };
 
-  it("is none for a template with no editions, whatever the filter or a stale pick says", () => {
-    expect(cardEdition({ key: "mode" }, {}, "tshirts")).toBeNull();
-    expect(cardEdition({ key: "mode", editions: [] }, { mode: "tshirts" }, "tshirts")).toBeNull();
+  it("is none for a template with no editions, whatever the tab", () => {
+    expect(cardEdition({}, "tshirts")).toBeNull();
+    expect(cardEdition({ editions: [] }, "tshirts")).toBeNull();
   });
 
-  it("follows the niche filter when the card has that edition", () => {
-    expect(cardEdition(card, {}, "tshirts")).toBe("tshirts");
-    expect(cardEdition(card, {}, "mobiles")).toBeNull();
-    expect(cardEdition(card, {}, null)).toBeNull();
+  it("is the niche tab's edition when the card has it, else the template's own content", () => {
+    expect(cardEdition(card, "tshirts")).toBe("tshirts");
+    expect(cardEdition(card, "dresses")).toBe("dresses");
+    expect(cardEdition(card, "mobiles")).toBeNull();
+    expect(cardEdition(card, null)).toBeNull();
+  });
+});
+
+describe("templatePreviewTabUrl", () => {
+  const origin = "https://tallaby.com";
+  it("opens the full-page preview in the dialog's language, home page without a slug", () => {
+    expect(templatePreviewTabUrl(origin, "ar", "kasr", { slug: "home", isHome: true }, null)).toBe("https://tallaby.com/template-preview/kasr");
+    expect(templatePreviewTabUrl(origin, "en", "kasr", null, null)).toBe("https://tallaby.com/en/template-preview/kasr");
   });
 
-  it("lets the seller's pick on the card win, the original included", () => {
-    expect(cardEdition(card, { kasr: "dresses" }, "tshirts")).toBe("dresses");
-    expect(cardEdition(card, { kasr: null }, "tshirts")).toBeNull();
-    expect(cardEdition(card, { kasr: "mobiles" }, "tshirts")).toBeNull();
-    expect(cardEdition(card, { other: "dresses" }, "tshirts")).toBe("tshirts");
+  it("keeps the page shown and the niche edition", () => {
+    expect(templatePreviewTabUrl(origin, "ar", "vella", { slug: "about", isHome: false }, "dresses")).toBe("https://tallaby.com/template-preview/vella/about?edition=dresses");
+    expect(templatePreviewTabUrl(origin, "en", "vella", { slug: "product", isHome: false }, null)).toBe("https://tallaby.com/en/template-preview/vella/product");
   });
 });

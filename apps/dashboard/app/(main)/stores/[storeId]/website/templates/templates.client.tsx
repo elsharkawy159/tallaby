@@ -21,7 +21,6 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Chip, EmptyState, Modal, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { RemoteImage } from "@/components/media/remote-image";
-import { EditionChips } from "./edition-chips.client";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, listTemplatesPage, undoTemplate } from "./templates.server";
 import type { TemplateCardView, TemplatesPageView } from "./templates.dto";
@@ -52,11 +51,12 @@ async function fetchTemplatesPage(storeId: string, page: number, category: strin
  * at a time (`listTemplatesPage`, React Query); the page and category live in
  * the URL (`?page=2&category=fashion`), and the next page is prefetched.
  *
- * Niche editions (ROADMAP F-90): a category tab whose niches have editions
- * gets a second row of chips (`?niche=`); the chosen niche's looks come first,
- * shown with its edition. A card with editions lists them as chips, and the
- * one picked is what its tile, its preview and "Use template" use. With no
- * edition registered neither row exists.
+ * Niche editions (ROADMAP F-90): niches work like categories (owner request
+ * 2026-11-11). A category tab whose niches have editions gets a second row of
+ * tabs (`?niche=`): "All <category>", then each niche. A niche tab lists only
+ * the templates made for that niche, and its tiles, its preview and "Use
+ * template" all use that niche's edition. "All <category>" shows each
+ * template's own content. With no edition registered the row does not exist.
  */
 export function TemplateGallery({
   storeId,
@@ -91,8 +91,6 @@ export function TemplateGallery({
   const [q, setQ] = useState("");
   const [confirming, setConfirming] = useState<{ template: TemplateCardView; edition: string | null } | null>(null);
   const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
-  // The edition picked on a card (null: the template's own content); a card not in here follows the niche filter.
-  const [picked, setPicked] = useState<Record<string, string | null>>({});
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -185,8 +183,8 @@ export function TemplateGallery({
     router.refresh();
   };
 
-  const editionOf = (template: TemplateCardView) => cardEdition(template, picked, niche);
-  const pickEdition = (template: TemplateCardView, edition: string | null) => setPicked((current) => ({ ...current, [template.key]: edition }));
+  // A niche tab shows (and installs) that niche's edition on every card; elsewhere a card shows its own content.
+  const editionOf = (template: TemplateCardView) => cardEdition(template, niche);
   const editionName = (template: TemplateCardView, edition: string | null) => {
     const found = edition ? template.editions?.find((option) => option.id === edition) : undefined;
     return found ? text(found.name) : "";
@@ -306,7 +304,7 @@ export function TemplateGallery({
         <div
           role="group"
           aria-label={t("categories.label")}
-          className="-mx-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] max-[900px]:basis-full [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 flex-1 flex-wrap gap-1.5 max-[900px]:basis-full"
         >
           {!data && query.isPending
             ? Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-9 w-20 shrink-0 rounded-full" />)
@@ -340,27 +338,23 @@ export function TemplateGallery({
         </label>
       </div>
 
-      {/* The tab's trades that have their own edition of a template; a search looks everywhere, so it hides them. */}
+      {/* The tab's niches, a second row of filter tabs; a search looks everywhere, so it hides them. */}
       {niches.length > 0 && !q && (
         <div className="-mt-1 flex items-center gap-1.5 ps-1">
           <CornerDownLeft className="size-4 shrink-0 text-(--s-faint) ltr:-scale-x-100" aria-hidden />
           <div
             role="group"
             aria-label={t("niches.label", { category: categoryName(category) })}
-            className="-mx-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex min-w-0 flex-1 flex-wrap gap-1.5"
           >
             {[{ id: "all", name: null }, ...niches].map((option) => (
               <Chip
                 key={option.id}
-                className="h-8 shrink-0 px-3 text-[12.5px]"
+                className="shrink-0"
                 pressed={(niche ?? "all") === option.id}
-                onClick={() => {
-                  // The cards follow the filter again.
-                  setPicked({});
-                  setFilters({ page: 1, category, niche: option.id });
-                }}
+                onClick={() => setFilters({ page: 1, category, niche: option.id })}
               >
-                {option.name ? text(option.name) : t("niches.all")}
+                {option.name ? text(option.name) : t("niches.all", { category: categoryName(category) })}
               </Chip>
             ))}
           </div>
@@ -445,7 +439,8 @@ export function TemplateGallery({
                     <div className="min-w-0">
                       <h3 className="flex flex-wrap items-center gap-1.5 text-[15.5px] font-bold text-(--s-ink)">
                         <span className="min-w-0 truncate">{name}</span>
-                        {template.isDefault && !current && <Tag>{t("default")}</Tag>}
+                        {template.isDefault && !current && !edition && <Tag>{t("default")}</Tag>}
+                        {edition && <Tag tone="info">{editionName(template, edition)}</Tag>}
                       </h3>
                       <p className="text-[12.5px] text-(--s-subtle)">
                         {categoryName(template.category)} · {t("pagesCount", { count: template.pages.length })}
@@ -453,7 +448,6 @@ export function TemplateGallery({
                     </div>
                     <Swatches colors={template.palette} />
                   </div>
-                  <EditionChips editions={template.editions ?? []} value={edition} onChange={(next) => pickEdition(template, next)} locale={locale} templateName={name} />
                   <div className="grid grid-cols-2 gap-2">
                     <SellerButton
                       size="sm"
@@ -501,9 +495,8 @@ export function TemplateGallery({
         disabled={readOnly || isPending || Boolean(previewing?.isPremium)}
         uiLocale={locale}
         fontClassName={fontClassName}
-        categoryName={previewing ? categoryName(previewing.category) : ""}
+        categoryName={previewing ? editionName(previewing, editionOf(previewing)) || categoryName(previewing.category) : ""}
         editionId={previewing ? editionOf(previewing) : null}
-        onEditionChange={(edition) => previewing && pickEdition(previewing, edition)}
         onUse={(template) => {
           setPreviewing(null);
           setConfirming({ template, edition: editionOf(template) });

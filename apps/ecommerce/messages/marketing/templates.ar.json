@@ -79,6 +79,8 @@
     "fullPreview": "معاينة كاملة",
     "pickerLabel": "القوالب",
     "categoriesLabel": "فئات القوالب",
+    "nichesLabel": "تخصصات {category}",
+    "nicheAll": "كل {category}",
     "carouselLabel": "القوالب",
     "previous": "السابق",
     "next": "التالي",
@@ -104,8 +106,9 @@
       "more": "قوالب أخرى",
       "pageCount": "عدد الصفحات",
       "colors": "الألوان",
-      "editions": "اعرض القالب كمتجر لـ",
-      "original": "الأصلي"
+      "edition": "مجهّز لمتاجر {niche}",
+      "newTab": "معاينة",
+      "newTabLabel": "معاينة القالب في صفحة جديدة"
     }
   }
 }

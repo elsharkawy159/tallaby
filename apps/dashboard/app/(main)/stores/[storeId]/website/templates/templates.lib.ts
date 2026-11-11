@@ -7,6 +7,7 @@ import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
 import { defaultNiche, getTemplateDesign, type MatchNicheInput, type NicheOption } from "@workspace/store-sections/templates";
 import { RELATED_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
+import { templatePreviewSrc } from "@/app/(builder)/ai-builder/_components/workspace.lib";
 import type { TemplateCardView } from "./templates.dto";
 
 /** A section's name: its design (tree sections, `source`) or its registry entry. */
@@ -156,19 +157,13 @@ export function resolveNicheFilter(offered: readonly NicheOption[], requested: s
 }
 
 /**
- * The edition a card shows and installs: the seller's pick on that card
- * (`null` is the template's own content), else the niche filter's when the
- * template has that edition, else none. Always one of the card's editions.
+ * The edition a card shows and installs (niche editions, ROADMAP F-90): the
+ * niche tab's when the template has that edition, else none (the template's
+ * own content). A niche tab lists only templates with its edition, so every
+ * card there shows it; there is no per-card choice (owner, 2026-11-11).
  */
-export function cardEdition(
-  template: { key: string; editions?: readonly { id: string }[] },
-  picked: Readonly<Record<string, string | null>>,
-  niche: string | null,
-): string | null {
-  const editions = template.editions ?? [];
-  if (editions.length === 0) return null;
-  const chosen = Object.hasOwn(picked, template.key) ? picked[template.key] : niche;
-  return chosen && editions.some((edition) => edition.id === chosen) ? chosen : null;
+export function cardEdition(template: { editions?: readonly { id: string }[] }, niche: string | null): string | null {
+  return niche && (template.editions ?? []).some((edition) => edition.id === niche) ? niche : null;
 }
 
 /** The category tab served: the one asked for, else the store's industry when it has templates, else `all`. */
@@ -204,8 +199,10 @@ export function sortRelevantNewest<T extends { category: string; sortOrder?: num
  * every category of the whole gallery, in gallery order (for the tabs). With
  * no category asked for (`null`), the store's industry is the default tab
  * when it has templates, else `all` (owner request 2026-10-28); `category`
- * is the tab served. `nicheLooks` (a chosen niche's looks, best first) lead a
- * category tab, in that order, whatever their own category; "All" ignores them.
+ * is the tab served. A niche tab filters like a category tab (owner request
+ * 2026-11-11): with `nicheLooks` (a chosen niche's looks, best first) a
+ * category tab lists only those looks, in that order, whatever their own
+ * category; "All" ignores them.
  */
 export function pageTemplates<T extends { category: string; sortOrder?: number; key?: string }>(
   templates: T[],
@@ -222,8 +219,8 @@ export function pageTemplates<T extends { category: string; sortOrder?: number; 
   const categories = [...new Set(sortByIndustry(templates, industryId, seed).map((tpl) => tpl.category))];
   const category = servedCategory(categories, requested, industryId);
   const inTab = category === "all" ? sortRelevantNewest(templates, industryId) : sortNewest(templates.filter((tpl) => tpl.category === category));
-  const lead = category === "all" ? [] : nicheLooks.flatMap((key) => templates.filter((tpl) => tpl.key === key));
-  const filtered = lead.length ? [...lead, ...inTab.filter((tpl) => !lead.includes(tpl))] : inTab;
+  const byNiche = category !== "all" && nicheLooks.length > 0;
+  const filtered = byNiche ? [...new Set(nicheLooks)].flatMap((key) => templates.filter((tpl) => tpl.key === key)) : inTab;
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(Math.max(1, page), pageCount);
   return {
@@ -234,4 +231,19 @@ export function pageTemplates<T extends { category: string; sortOrder?: number; 
     categories,
     category,
   };
+}
+
+/** tallaby.com, where the full-page template preview lives (`/template-preview/<key>`). */
+export const TEMPLATE_PREVIEW_ORIGIN = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || "tallaby.com"}`;
+
+/**
+ * The preview dialog's "Preview" link (owner request 2026-11-11): the same
+ * full-page storefront preview the AI builder frames (`templatePreviewSrc`),
+ * in the dialog's language, with the niche edition shown and the page open in
+ * the dialog (none for the home page). The route checks the edition itself.
+ */
+export function templatePreviewTabUrl(origin: string, locale: string, key: string, page: { slug: string; isHome: boolean } | null | undefined, edition: string | null): string {
+  const url = new URL(templatePreviewSrc(origin, locale, key, false, edition));
+  if (page && !page.isHome && page.slug) url.pathname += `/${encodeURIComponent(page.slug)}`;
+  return url.toString();
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGallery, categoryCode, localized, templateFrameSrc, type CatalogTemplate } from "./templates.lib";
+import { buildGallery, buildNicheTabs, categoryCode, localized, nicheEntries, pickEdition, templateFrameSrc, type CatalogTemplate } from "./templates.lib";
 
 const row = (over: Partial<CatalogTemplate>): CatalogTemplate => ({
   key: "x",
@@ -86,5 +86,38 @@ describe("template gallery", () => {
     expect(localized(null, "ar")).toBeNull();
     expect(categoryCode("fashion")).toBe("fa");
     expect(categoryCode("other")).toBe("ge");
+  });
+});
+
+// Niche editions (ROADMAP F-90): niches are gallery filters, like categories (owner request 2026-11-11).
+describe("niche tabs", () => {
+  const dresses = { id: "dresses", industry: "fashion", name: { ar: "فساتين", en: "Dresses" }, looks: ["fashion-luxe", "vella", "kasr"] };
+  const sneakers = { id: "sneakers", industry: "shoes-bags", name: { ar: "سنيكرز", en: "Sneakers" }, looks: ["stride"] };
+  const watches = { id: "watches", industry: "jewelry", name: { ar: "ساعات", en: "Watches" }, looks: ["gone"] };
+
+  it("files each niche under its industry's category code, in the page's language", () => {
+    const tabs = buildNicheTabs([dresses, sneakers], ["kasr", "vella", "fashion-luxe", "stride"], "en");
+    expect(tabs).toEqual([
+      { id: "dresses", category: "fa", name: "Dresses", looks: ["fashion-luxe", "vella", "kasr"] },
+      { id: "sneakers", category: "fa", name: "Sneakers", looks: ["stride"] },
+    ]);
+    expect(buildNicheTabs([dresses], ["kasr"], "ar")[0]!.name).toBe("فساتين");
+  });
+
+  it("keeps only listed looks, and drops a niche left with none", () => {
+    expect(buildNicheTabs([dresses, watches], ["kasr", "vella"], "en")).toEqual([{ id: "dresses", category: "fa", name: "Dresses", looks: ["vella", "kasr"] }]);
+  });
+
+  it("lists only a niche tab's templates, best look first; every card without a tab", () => {
+    const entries = [{ id: "kasr" }, { id: "mode" }, { id: "vella" }];
+    expect(nicheEntries(entries, { looks: ["vella", "kasr"] }).map((e) => e.id)).toEqual(["vella", "kasr"]);
+    expect(nicheEntries(entries, null).map((e) => e.id)).toEqual(["kasr", "mode", "vella"]);
+  });
+
+  it("reads ?edition= only as one of the template's editions", () => {
+    const editions = [{ id: "dresses" }];
+    expect(pickEdition(editions, "dresses")).toBe("dresses");
+    for (const value of [null, "", "tshirts", "<script>"]) expect(pickEdition(editions, value)).toBeNull();
+    expect(pickEdition([], "dresses")).toBeNull();
   });
 });

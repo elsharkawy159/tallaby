@@ -18,7 +18,7 @@ export type TemplatesPageQuery = {
   niche: string;
 };
 
-/** A niche as a filter option or an edition chip. */
+/** A niche as a filter tab or a card tag. */
 export type NicheOptionView = { id: string; name: { ar: string; en: string } };
 
 /** One page of the gallery (`listTemplatesPage`). */
@@ -36,7 +36,7 @@ export type TemplatesPageView = {
   category: string;
   /** The served tab's niches that have an edition, for the niche filter (empty: no filter shown). */
   niches: NicheOptionView[];
-  /** The niche served (its looks lead the list, previewed with its edition), or null for all. */
+  /** The niche tab served (only its looks are listed, each with its edition), or null for all. */
   niche: string | null;
   currentKey: string;
   /** The current template's name (it may be on another page). */

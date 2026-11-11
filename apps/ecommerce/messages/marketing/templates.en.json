@@ -79,6 +79,8 @@
     "fullPreview": "Full preview",
     "pickerLabel": "Templates",
     "categoriesLabel": "Template categories",
+    "nichesLabel": "Trades in {category}",
+    "nicheAll": "All {category}",
     "carouselLabel": "Templates",
     "previous": "Previous",
     "next": "Next",
@@ -104,8 +106,9 @@
       "more": "More templates",
       "pageCount": "Pages",
       "colors": "Colors",
-      "editions": "Show this template as a store for",
-      "original": "Original"
+      "edition": "Made for {niche}",
+      "newTab": "Preview",
+      "newTabLabel": "Preview the template in a new tab"
     }
   }
 }

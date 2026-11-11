@@ -1,18 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Monitor, Smartphone } from "lucide-react";
+import { ExternalLink, Monitor, Smartphone } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { BrowserBar } from "@/components/marketing/site/browser-frame";
+import { CtaButton } from "@/components/marketing/site/cta-button";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
-import { templateFrameSrc, type GalleryPage } from "@/lib/marketing/templates.lib";
+import { pickEdition, templateFrameSrc, type GalleryPage } from "@/lib/marketing/templates.lib";
 
 /**
  * The template page's stage: every page of the real template with its demo
- * store (the /template-preview frame), on a desktop or a phone. A template
- * with niche editions (ROADMAP F-90) gets a row of chips: the demo is drawn
- * with the trade picked (`?edition=`).
+ * store (the /template-preview frame), on a desktop or a phone. Opened from a
+ * niche tab of the gallery (niche editions, ROADMAP F-90), the page carries
+ * `?edition=<niche>` and the demo is drawn with that niche's edition, named in
+ * a tag; there is no switching here, as niches are gallery filters (owner
+ * request 2026-11-11). An edition the template does not have is ignored.
  */
 export function TemplateStage({ templateKey, pages, editions = [] }: { templateKey: string; pages: GalleryPage[]; editions?: { id: string; name: string }[] }) {
   const t = useTranslations("templates.detail");
@@ -21,6 +24,11 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
   const [device, setDevice] = React.useState<"desktop" | "mobile">("desktop");
   const [loaded, setLoaded] = React.useState<string | null>(null);
   const [edition, setEdition] = React.useState<string | null>(null);
+  // Read after hydration so the page stays static (no useSearchParams bailout).
+  React.useEffect(() => {
+    setEdition(pickEdition(editions, new URLSearchParams(window.location.search).get("edition")));
+  }, [editions]);
+  const editionName = editions.find((option) => option.id === edition)?.name;
   const src = templateFrameSrc(locale, templateKey, slug, false, edition);
   const mobile = device === "mobile";
 
@@ -48,7 +56,7 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
           })}
         </div>
         {pages.length > 1 ? (
-          <div role="group" aria-label={t("pages")} className="no-scrollbar flex min-w-0 flex-1 gap-1 overflow-x-auto">
+          <div role="group" aria-label={t("pages")} className="flex min-w-0 flex-1 flex-wrap gap-1 max-[600px]:basis-full">
             {pages.map((page) => (
               <button
                 key={page.slug}
@@ -56,7 +64,7 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
                 aria-pressed={page.slug === slug}
                 onClick={() => setSlug(page.slug)}
                 className={cn(
-                  "h-[34px] flex-none rounded-full px-3 text-[13px] whitespace-nowrap transition-colors",
+                  "h-[34px] flex-none rounded-full px-3 text-[13px] whitespace-nowrap transition-colors max-[600px]:h-10",
                   page.slug === slug ? "bg-teal-50 font-bold text-teal-900" : "text-ink-600 hover:bg-neutral-100",
                 )}
               >
@@ -67,28 +75,25 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
         ) : (
           <span className="flex-1" />
         )}
-        <SignupTrigger size="sm" className="max-[600px]:w-full">{t("startWith")}</SignupTrigger>
-        {editions.length > 0 ? (
-          <div role="group" aria-label={t("editions")} className="no-scrollbar flex min-w-0 basis-full gap-1.5 overflow-x-auto border-t border-line pt-3">
-            {[{ id: null, name: t("original") }, ...editions].map((option) => (
-              <button
-                key={option.id ?? "original"}
-                type="button"
-                aria-pressed={edition === option.id}
-                onClick={() => setEdition(option.id)}
-                className={cn(
-                  "h-[34px] flex-none rounded-full border px-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors",
-                  edition === option.id ? "border-teal-900 bg-teal-900 text-white" : "border-line bg-white text-ink-600 hover:border-teal-900/40",
-                )}
-              >
-                {option.name}
-              </button>
-            ))}
-          </div>
-        ) : null}
+        {editionName ? <span className="flex-none rounded-full bg-teal-50 px-3 py-1 text-[12.5px] font-bold whitespace-nowrap text-teal-700">{t("edition", { niche: editionName })}</span> : null}
+        {/* The frame's page in a new tab, with the same page and edition (owner, 2026-11-11). */}
+        <CtaButton asChild tone="outline" size="sm" className="max-[600px]:flex-1">
+          <a href={src} target="_blank" rel="noopener noreferrer" aria-label={t("newTabLabel")}>
+            <ExternalLink className="size-4" aria-hidden />
+            {t("newTab")}
+          </a>
+        </CtaButton>
+        <SignupTrigger size="sm" className="max-[600px]:flex-1">
+          {t("startWith")}
+        </SignupTrigger>
       </div>
       <div className="grid place-items-center rounded-b-card border border-line bg-[#eef3f4] p-3.5 shadow-[0_30px_70px_rgba(13,55,67,0.1)] min-[901px]:p-7">
-        <div className={cn("w-full overflow-hidden bg-white shadow-raise transition-[max-width] duration-300", mobile ? "max-w-[360px] rounded-[32px] border-8 border-[#0b0f10]" : "max-w-[1040px] rounded-xl")}>
+        <div
+          className={cn(
+            "w-full overflow-hidden bg-white shadow-raise transition-[max-width] duration-300",
+            mobile ? "max-w-[360px] rounded-[32px] border-8 border-[#0b0f10]" : "max-w-[1040px] rounded-xl",
+          )}
+        >
           {mobile ? null : <BrowserBar url={`${templateKey}.tallaby.com`} />}
           <div className="relative h-[min(78vh,820px)] bg-white">
             <iframe

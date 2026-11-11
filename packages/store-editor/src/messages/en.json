@@ -1156,11 +1156,13 @@
       "mobile": "Phone",
       "loading": "Loading the preview",
       "failed": "The preview could not be loaded. Close it and try again.",
-      "demoNote": "Shown with demo products from {store}. Your store keeps its own products."
+      "demoNote": "Shown with demo products from {store}. Your store keeps its own products.",
+      "newTab": "Preview",
+      "newTabLabel": "Preview {name} in a new tab"
     },
     "niches": {
       "label": "Trades in {category}",
-      "all": "All trades"
+      "all": "All {category}"
     },
     "editions": {
       "label": "Show {name} made for",
