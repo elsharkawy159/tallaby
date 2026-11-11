@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Check, ExternalLink, RotateCcw } from "lucide-react";
 import { useStore } from "zustand";
 import type { DesignSystem } from "@workspace/store-sections";
+import { MOTION_INTENSITIES } from "@workspace/store-sections/config";
 import { FONT_PAIRINGS, STORE_FONTS, storeFontFamily } from "@workspace/store-sections/fonts";
 import { ANIMATION_DEFAULTS, ANIMATION_SPEEDS } from "@workspace/store-sections/render";
 import { Segmented } from "../inspector/controls/style-controls.client";
@@ -77,8 +78,8 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
       const motion = on ? rest : { ...rest, [key]: false };
       return { ...prev, motion: Object.keys(motion).length ? motion : undefined };
     });
-  // The default animation and speed: the default value (auto, normal) is stored as nothing.
-  const setMotionChoice = (key: "default" | "speed", value: string, fallback: string) =>
+  // The default animation, speed and intensity: the default value (auto, normal) is stored as nothing.
+  const setMotionChoice = (key: "default" | "speed" | "intensity", value: string, fallback: string) =>
     edit((prev) => {
       const { [key]: _old, ...rest } = prev.motion ?? {};
       const motion = value === fallback ? rest : { ...rest, [key]: value };
@@ -318,6 +319,16 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
                             onChange={(next) => setMotionChoice("speed", next ?? "normal", "normal")}
                             options={ANIMATION_SPEEDS.map((value) => ({ value, label: t(`speeds.${value}`), title: t(`speeds.${value}`) }))}
                           />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">{t("intensity")}</p>
+                          <Segmented
+                            label={t("intensity")}
+                            value={ds.motion?.intensity ?? "normal"}
+                            onChange={(next) => setMotionChoice("intensity", next ?? "normal", "normal")}
+                            options={MOTION_INTENSITIES.map((value) => ({ value, label: t(`intensities.${value}`), title: t(`intensities.${value}`) }))}
+                          />
+                          <p className="text-xs text-muted-foreground">{t("intensityHint")}</p>
                         </div>
                       </div>
                     )}

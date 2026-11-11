@@ -555,7 +555,17 @@
           "slide-start": "Slide from start",
           "slide-end": "Slide from end",
           "zoom-in": "Zoom in",
-          "stagger": "One after another"
+          "stagger": "One after another",
+          "words": "Text by word",
+          "wipe": "Image wipe"
+        },
+        "scrollEffect": "Scroll effect",
+        "scrollEffectHint": "A light movement as visitors scroll: the section photo drifts or zooms, and the text of the page’s first section fades as it leaves. It plays on the live site; the editor shows it once when you pick it.",
+        "scrollEffects": {
+          "none": "None",
+          "parallax": "Parallax",
+          "zoom": "Zoom on scroll",
+          "fade-exit": "Fade on exit"
         },
         "anchor": "Link name",
         "anchorHint": "Lowercase letters, numbers and dashes. Lets buttons link to this section.",
@@ -653,13 +663,22 @@
         "slide-start": "Slide from start",
         "slide-end": "Slide from end",
         "zoom-in": "Zoom in",
-        "stagger": "One after another"
+        "stagger": "One after another",
+        "words": "Text by word",
+        "wipe": "Image wipe"
       },
       "speed": "Animation speed",
       "speeds": {
         "slow": "Slow",
         "normal": "Normal",
         "fast": "Fast"
+      },
+      "intensity": "Intensity",
+      "intensityHint": "How far things move and zoom in the newer library sections. Normal suits most stores.",
+      "intensities": {
+        "subtle": "Subtle",
+        "normal": "Normal",
+        "expressive": "Expressive"
       },
       "hoverZoom": "Zoom photos on hover",
       "hoverZoomHint": "Product and category photos zoom in a little under the mouse."
