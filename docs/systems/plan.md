@@ -17,7 +17,7 @@ These six facts change parts of the brief. Each one has a proposal, and the ones
 
 | # | The brief says | The code says | Proposal |
 |---|---|---|---|
-| 1 | Motion v2 is merged. | It is on `feat/motion-v2`, 10 commits ahead of `main`, not merged or pushed. | This branch is cut from `feat/motion-v2`. Merge motion v2 to `main` before the Phase 1 PR, or the PR will carry both. |
+| 1 | Motion v2 is merged. | It is on `feat/motion-v2`, 20 commits ahead of `main`, not merged or pushed. | This branch is cut from `feat/motion-v2`. Merge motion v2 to `main` before the Phase 1 PR, or the PR will carry both. |
 | 2 | Compare each design with its `library_sections` row. Every design change ships with an insert-only `section:sql` migration. Templates stored in the database need a migration path. | Migration 0109 dropped `library_sections`, `templates` and `template_versions`. Sections and templates are code-only (`CLAUDE.md` rule 17). | No database comparison is possible or needed. A design change is a new `version` in code plus a deploy. The "new version + stable field names + aliases" rule stays; the migration step is dropped. |
 | 3 | Templates must reference library designs so improvements flow through. | 118 of 119 templates already do, through `fromLibrary` with a strict patch. Only Tallaby Classic owns its designs (26). | Keep `fromLibrary` as the mechanism. Phase 2 adds presets and blueprints on top of it. Classic moves to library designs in the pilot. |
 | 4 | Runs in CI. | There is no CI (`CLAUDE.md` rule 15). | Structural checks run in `pnpm test`. The screenshot check is a separate script that writes a committed hash file, and `pnpm test` compares the hashes without a browser. |
