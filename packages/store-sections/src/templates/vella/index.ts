@@ -140,6 +140,8 @@ const ROW_LIMITS = [4, 8, 4, 4];
 function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  // Optional: the footer's "العروض / Offers" link (it goes to the whole catalog) under another label. Without it the library's label stays.
+  const footerOffers = c.custom["footer-offers"];
 
   const header = lib("header-announcement-strip", {
     text: {
@@ -162,6 +164,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       "\u200fhello@store.com": c.custom["contact-email"]!,
       "١٢ شارع النيل، الزمالك، القاهرة": c.custom["contact-address"]!,
       "السبت إلى الخميس، ١٠ ص – ١٠ م": c.custom["contact-hours"]!,
+      ...(footerOffers && { "العروض": footerOffers }),
     },
   });
 
@@ -192,7 +195,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       links: { "/products": SHOP, "/products?sort=newest": NEW },
     }),
     lib("categories-portrait-labels", {
-      text: { "المجموعات": c.categories.title, "تسوّق الآن": L("تسوّقي الآن", "Shop now") },
+      text: { "المجموعات": c.categories.title, "تسوّق الآن": c.custom["categories-cta"] ?? L("تسوّقي الآن", "Shop now") },
     }),
     lib("text-big-marquee"),
     rows[0]!,
@@ -339,7 +342,9 @@ export const VELLA = editionTemplate({
     "photos.banner",
     "photos.story",
   ],
-  optional: ["photos.hero.video"],
+  // `custom.categories-cta`: the small link under each category photo (default "تسوّقي الآن / Shop now").
+  // `custom.footer-offers`: the label of the footer's "العروض / Offers" link, which goes to the whole catalog (a pack should rename it: an edition shows no offers).
+  optional: ["photos.hero.video", "custom.categories-cta", "custom.footer-offers"],
   // No main product section: the home page is one row per category (`primary` is not read). The rows hold 4, 8, 4 and 4 products.
   journey: { primary: "newest", rows: [1, 2, 3, 4] },
   defaultContent: DEFAULT_CONTENT,

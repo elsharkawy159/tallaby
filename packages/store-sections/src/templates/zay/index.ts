@@ -72,7 +72,7 @@ const DEFAULT_CONTENT: LookDefaults = {
   products: { primary: { title: L("الأسبوع ده", "This week") } },
   // The carousel of best sellers: its title.
   rows: [{ title: L("بيرجعوا يطلبوه", "The ones they reorder") }],
-  // Three WhatsApp-style messages from buyers, each with a name; the store answers the first one (`custom.reviews-reply`).
+  // Optional, with `custom.reviews-reply` (all three messages, or leave `reviews` out). Three WhatsApp-style messages from buyers, each with a name; the store answers the first one (`custom.reviews-reply`).
   reviews: {
     title: L("من واتساب", "From WhatsApp"),
     items: [
@@ -122,7 +122,7 @@ const DEFAULT_CONTENT: LookDefaults = {
     "compare-row-1": L("قطن مصري ٢٤٠ جرام", "Egyptian cotton, 240 g"),
     "compare-row-2": L("تبديل مقاس ببلاش", "Free size exchange"),
     "compare-row-3": L("٣ قصّات في كل مقاس", "Three fits in every size"),
-    // The store's short answer under the first buyer message.
+    // Optional, with `reviews`: the store's short answer under the first buyer message.
     "reviews-reply": L("ده يسعدنا جداً، شكراً يا أحمد!", "So happy to hear that, thanks Ahmed!"),
   },
   photos: {
@@ -147,7 +147,9 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const x = c.custom;
   const short = x["store-short"]!;
   const aboutName = L(`عن ${short.ar}`, `About ${short.en}`);
-  const review = c.reviews.items;
+  // Optional, together: a pack without buyer messages (or without the store's reply) gets the home page without the chat section.
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
+  const reply: LookContent["custom"][string] | undefined = x["reviews-reply"];
 
   const header = lib("header-chips", {
     text: {
@@ -202,19 +204,23 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: { "الأكثر مبيعاً": c.rows[0]!.title },
       links: { "/products": BEST },
     }),
-    lib("testimonials-chat", {
-      text: {
-        "من الواتساب": L("الآراء", "Reviews"),
-        "رسايل بتفرّحنا": c.reviews.title,
-        "مريم أ.": review[0]!.name,
-        "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": review[0]!.quote,
-        "ده يسعدنا جدًا، شكرًا ليكي!": x["reviews-reply"]!,
-        "عمر ك.": review[1]!.name,
-        "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": review[1]!.quote,
-        "يوسف م.": review[2]!.name,
-        "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": review[2]!.quote,
-      },
-    }),
+    ...(reviews && reply
+      ? [
+          lib("testimonials-chat", {
+            text: {
+              "من الواتساب": L("الآراء", "Reviews"),
+              "رسايل بتفرّحنا": reviews.title,
+              "مريم أ.": reviews.items[0]!.name,
+              "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
+              "ده يسعدنا جدًا، شكرًا ليكي!": reply,
+              "عمر ك.": reviews.items[1]!.name,
+              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "يوسف م.": reviews.items[2]!.name,
+              "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[2]!.quote,
+            },
+          }),
+        ]
+      : []),
   ];
 
   const about: Design[] = [
@@ -327,16 +333,13 @@ export const ZAY = editionTemplate({
     "custom.compare-row-2",
     "custom.compare-row-3",
     "rows.0.title",
-    "reviews.title",
-    "reviews.items.0",
-    "reviews.items.1",
-    "reviews.items.2",
-    "custom.reviews-reply",
     "about",
     "contact",
     "faq",
     "photos.story",
   ],
+  // The chat of three buyer messages and the store's reply, together: without either the section is not built (the home then ends on the carousel).
+  optional: ["reviews", "custom.reviews-reply"],
   // The shelf has its own tabs (new, best sellers, top rated), so `primary` is not read; the look has no category rows.
   journey: { primary: "newest", rows: [] },
   defaultContent: DEFAULT_CONTENT,

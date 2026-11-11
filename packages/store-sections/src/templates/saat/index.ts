@@ -76,7 +76,7 @@ const DEFAULT_CONTENT: LookDefaults = {
       line: L("الساعات اللي بتخرج من الكورنر كل أسبوع.", "The watches that leave the corner every week."),
     },
   },
-  // One large quote: the eyebrow over it, then the quote (inside «») and who said it.
+  // Optional. One large quote: the eyebrow over it, then the quote (inside «») and who said it.
   reviews: {
     title: L("من زباين الكورنر", "From the corner's regulars"),
     items: [
@@ -161,6 +161,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
   const main = c.nav[0]!;
   const x = c.custom;
+  // Optional: a pack without a buyer quote gets the home page without the quote section (it then ends on the branches).
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
 
   const header = lib("header-ruled", {
     text: { "م": initialOf(name), "اسم متجرك": name, "المتجر": main.label, "العروض": c.nav[1]!.label },
@@ -244,14 +246,18 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       },
       links: { "https://maps.google.com": MAPS },
     }),
-    lib("testimonials-quote", {
-      text: {
-        "آراء العملاء": c.reviews.title,
-        "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": c.reviews.items[0]!.quote,
-        "مريم أ.": c.reviews.items[0]!.name,
-        "القاهرة": L("وسط البلد", "Downtown"),
-      },
-    }),
+    ...(reviews
+      ? [
+          lib("testimonials-quote", {
+            text: {
+              "آراء العملاء": reviews.title,
+              "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": reviews.items[0]!.quote,
+              "مريم أ.": reviews.items[0]!.name,
+              "القاهرة": L("وسط البلد", "Downtown"),
+            },
+          }),
+        ]
+      : []),
   ];
 
   const about: Design[] = [
@@ -374,8 +380,6 @@ export const SAAT = editionTemplate({
     "custom.branches-2-address",
     "custom.branches-3-name",
     "custom.branches-3-address",
-    "reviews.title",
-    "reviews.items.0",
     "about",
     "contact",
     "faq",
@@ -383,7 +387,8 @@ export const SAAT = editionTemplate({
     "photos.story",
   ],
   // Without one of these the section keeps the library's own wording (see `DEFAULT_CONTENT`).
-  optional: ["custom.versus-1-label", "custom.versus-2-a", "custom.versus-2-b", "custom.branches-2-hours", "custom.branches-3-hours"],
+  // Without `reviews` the closing quote section is not built.
+  optional: ["custom.versus-1-label", "custom.versus-2-a", "custom.versus-2-b", "custom.branches-2-hours", "custom.branches-3-hours", "reviews"],
   // Four best sellers; the look has no category rows.
   journey: { primary: "best-sellers", rows: [] },
   defaultContent: DEFAULT_CONTENT,

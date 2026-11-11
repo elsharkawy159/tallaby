@@ -168,11 +168,14 @@ const DEFAULT_CONTENT: LookDefaults = {
 /**
  * The look: every section from a content object (`DEFAULT_CONTENT`, or an
  * edition's). What names the trade is a slot of `c`; generic shop labels
- * (Shop all, New in, Best sellers, Track your order) and the layout stay here.
+ * (New in, Best sellers, Track your order) and the layout stay here; "Shop all"
+ * is an optional custom slot.
  */
 function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  // Optional wording a trade may replace: the link to the whole catalog (header, footer and the spotlight's "view all").
+  const shopAll = c.custom?.["shop-all"] ?? L("كل القطع", "Shop all");
 
   const header = lib("header-topbar", {
     text: {
@@ -180,7 +183,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       "الدفع عند الاستلام": c.announcement[1]!,
       "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
       "اسم متجرك": name,
-      "المتجر": L("كل القطع", "Shop all"),
+      "المتجر": shopAll,
       "العروض": L("وصل حديثًا", "New in"),
       "المدونة": L("الأكثر طلبًا", "Best sellers"),
       "من نحن": c.labels.about,
@@ -192,7 +195,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     text: {
       "اسم متجرك": name,
       "قطع مختارة بعناية، بتوصل لحد باب البيت.": c.footer.line,
-      "المتجر": L("كل القطع", "Shop all"),
+      "المتجر": shopAll,
       "من نحن": aboutName,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
     },
@@ -230,7 +233,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.": c.products.primary.line,
         "تسوّق المجموعة": c.products.primary.cta,
         "من المجموعة": L("من الاختيارات", "From the picks"),
-        "عرض الكل": L("كل القطع", "Shop all"),
+        "عرض الكل": shopAll,
       },
       links: { "/products": [BEST, SHOP] },
       lists: [{ source: journey.primary }],
@@ -409,7 +412,8 @@ export const JEWELRY_LUXE = editionTemplate({
     "photos.story",
     "photos.custom.spot-photo",
   ],
-  optional: ["photos.hero.video", "photos.about", "newsletter.note"],
+  // `custom.shop-all`: the link to the whole catalog in the header, the footer and the spotlight (default "كل القطع / Shop all").
+  optional: ["photos.hero.video", "photos.about", "newsletter.note", "custom.shop-all"],
   // The spotlight shows the featured products (three), then the store's first four categories as rows.
   journey: { primary: "featured", rows: [1, 2, 3, 4] },
   defaultContent: DEFAULT_CONTENT,

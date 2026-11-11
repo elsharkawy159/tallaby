@@ -18,7 +18,7 @@ import { resolveDemoCatalog } from "../demo-catalog";
 import { templateDemoProduct } from "../demo-product";
 import { isDiscountDesign, OFFER_COPY } from "../no-discounts";
 import type { TemplateDefinition } from "../types";
-import { applyEdition, isEditionReady } from "./apply";
+import { applyEdition, categoryListFit, isEditionReady } from "./apply";
 import type { Edition, EditionPhotos } from "./types";
 
 import { EDITION_MEDIA_HOST } from "./media";
@@ -49,6 +49,25 @@ function localizedIn(value: unknown, path: string, out: [string, Localized][] = 
   else if (typeof value === "object" && value !== null) for (const [key, item] of Object.entries(value)) localizedIn(item, `${path}.${key}`, out);
   return out;
 }
+
+/** Direction marks and isolates a look wraps a phone, an email or a handle in (`phone`, `handle`, a leading RLM). */
+const BIDI_MARKS = /[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g;
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE = /^[+(]?\d[\d\s().-]{4,}\d$/;
+const HANDLE = /^@[\w.-]{2,}$/;
+
+/**
+ * True for an email address, a phone number or a social handle (direction
+ * marks aside). Such a string is the same in both languages, so its Arabic
+ * side needs no Arabic letters.
+ */
+export function isContactString(text: string): boolean {
+  const plain = text.replace(BIDI_MARKS, "").trim();
+  return EMAIL.test(plain) || PHONE.test(plain) || HANDLE.test(plain);
+}
+
+/** The same contact string on both sides (`vella@vella.eg`, `+20 123 456 7890`, `@zeina.shop`). */
+const isSharedContact = (text: Localized) => isContactString(text.ar) && text.ar.replace(BIDI_MARKS, "").trim() === text.en.replace(BIDI_MARKS, "").trim();
 
 const words = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
@@ -129,10 +148,17 @@ function deadLinks(config: SiteConfig): string[] {
   return [...dead];
 }
 
-/** Lists of the built site the pack's catalog does not fill (the rule of `demo-fill.test.ts`): `section > list: shown/limit`. */
-function shortLists(template: TemplateDefinition, config: SiteConfig): string[] {
+/**
+ * What the pack's catalog does not fill on the built site. `lists`: the rule
+ * of `demo-fill.test.ts`, as `section > list: shown/limit`. `rows`: a
+ * category row whose category has less than one full row (a category row is
+ * already limited to what its category holds, `categoryListFit`, so it is
+ * never short of its limit).
+ */
+function shortLists(template: TemplateDefinition, config: SiteConfig): { lists: string[]; rows: string[] } {
   const product = templateDemoProduct(template.demo, { locale: "en" });
   const problems: string[] = [];
+  const rows: string[] = [];
   const check = (sections: readonly SectionInstance[], withProduct: boolean) => {
     const queries = collectCatalogQueries(sections, storeSectionRegistry, withProduct ? { product } : undefined);
     const ctx = { catalog: resolveDemoCatalog(queries, template.demo, "en"), mode: "view" } as unknown as RenderContext;
@@ -142,6 +168,11 @@ function shortLists(template: TemplateDefinition, config: SiteConfig): string[] 
         if (isPaginated(node) || (Array.isArray(node.props?.categoryIds) && node.props.categoryIds.length)) continue;
         const limit = typeof node.props?.limit === "number" ? node.props.limit : 8;
         const columns = typeof (node.style as { columns?: unknown } | undefined)?.columns === "number" ? ((node.style as { columns: number }).columns) : 1;
+        const fit = categoryListFit(node, template.demo);
+        if (fit && fit.count < fit.columns) {
+          rows.push(`category ${fit.categoryId} has ${fit.count} products, and its row (${section.id}) shows ${fit.columns} across: it needs at least ${fit.columns} for one full row`);
+          continue;
+        }
         const shown = listRecords(node, ctx).length;
         if (shown < limit || (columns > 1 && shown % columns !== 0)) problems.push(`${section.id} > ${node.type}: ${shown}/${limit} (${columns} columns)`);
       }
@@ -152,7 +183,7 @@ function shortLists(template: TemplateDefinition, config: SiteConfig): string[] 
     false,
   );
   for (const page of config.pages) check(page.content.sections, page.kind === "product");
-  return problems;
+  return { lists: problems, rows };
 }
 
 /**
@@ -206,7 +237,7 @@ export function validateEdition(edition: Edition, look: TemplateDefinition, opti
   ];
   for (const [path, text] of strings) {
     if (!text.ar.trim()) problems.push(`${path}: the Arabic is empty`);
-    else if (!ARABIC.test(text.ar)) problems.push(`${path}: the Arabic side has no Arabic ("${text.ar}")`);
+    else if (!ARABIC.test(text.ar) && !isSharedContact(text)) problems.push(`${path}: the Arabic side has no Arabic ("${text.ar}")`);
     if (!text.en.trim()) problems.push(`${path}: the English is empty`);
     else if (ARABIC.test(text.en)) problems.push(`${path}: the English side has Arabic ("${text.en}")`);
     for (const side of [text.ar, text.en]) if (OFFER_COPY.test(side)) problems.push(`${path}: reads as an offer or discount ("${side}")`);
@@ -265,6 +296,8 @@ export function validateEdition(edition: Edition, look: TemplateDefinition, opti
     return [...problems, `does not build on look "${look.key}": ${error instanceof Error ? error.message : String(error)}`];
   }
   for (const link of deadLinks(config)) problems.push(`on look "${look.key}", a link goes to no page or catalog route: ${link}`);
-  for (const list of shortLists(built, config)) problems.push(`on look "${look.key}", its catalog does not fill a list: ${list}`);
+  const short = shortLists(built, config);
+  for (const row of short.rows) problems.push(`on look "${look.key}", ${row}`);
+  for (const list of short.lists) problems.push(`on look "${look.key}", its catalog does not fill a list: ${list}`);
   return problems;
 }

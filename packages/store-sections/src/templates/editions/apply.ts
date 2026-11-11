@@ -6,11 +6,16 @@
  * holds the proof), and `applyEdition` builds the same look with an
  * edition's content, catalog, photos, product stage, journey and extras.
  * Both go through the look's `lib`, so every swap is the strict
- * `fromLibrary` patch and no section design is copied. No React here.
+ * `fromLibrary` patch and no section design is copied.
+ *
+ * With an edition, a product list that shows one category (a category row)
+ * is limited to what that category of the pack holds, in full rows
+ * (`categoryListFit`); the look's own build keeps its limits. No React here.
  */
 import type { Localized } from "../../core/types";
 import { getDesign } from "../../designs";
-import type { Design } from "../../designs/builder";
+import { createTreeBuilder, defineDesign, type Design } from "../../designs/builder";
+import type { NodeTemplate } from "../../elements/tree";
 import type { Lib } from "../_pages";
 import { libraryTemplate, type LibraryTemplatePage, type LibraryTemplateSpec } from "../library-template";
 import type { TemplateDefinition, TemplateDemo } from "../types";
@@ -116,6 +121,91 @@ function guarded<T extends object>(content: T, declared: readonly string[], labe
   });
 }
 
+// ── Category rows ───────────────────────────────────────────────────────────
+
+/** A list node as the rule reads it: a tree node of a design, or of a built page. */
+type ListNode = { type: string; props?: Record<string, unknown> | null; style?: unknown };
+
+/** What a category-bound list shows of a catalog. */
+export type CategoryListFit = {
+  /** The category's id, or null when the store has no category at that place. */
+  categoryId: string | null;
+  /** Products the pack has in that category. */
+  count: number;
+  /** The look's own limit. */
+  limit: number;
+  /** The list's desktop columns (1 when it has none). */
+  columns: number;
+  /** Products to show: full rows only, at most `limit`. Less than one full row: all the category has (`validateEdition` refuses that pack). */
+  shown: number;
+};
+
+/**
+ * The row rule (README §3). A product list bound to one category by its
+ * place (`source: "category"` with `categoryIndex`) shows what that category
+ * holds, rounded down to full rows of the list's columns, and never more than
+ * the look's limit: 16 products in 4 categories give rows of 4 where the look
+ * asks for 4 or 8. Null for any other list (best sellers, newest, featured,
+ * related, a picked category): those keep their limit.
+ */
+export function categoryListFit(node: ListNode, demo: TemplateDemo): CategoryListFit | null {
+  const props = node.props ?? {};
+  if (node.type !== "productList" || props.source !== "category" || props.paginate === true) return null;
+  if (typeof props.categoryId === "string" && props.categoryId) return null;
+  const place = props.categoryIndex;
+  if (typeof place !== "number" || !Number.isInteger(place) || place < 1) return null;
+  const categoryId = demo.categories[place - 1]?.id ?? null;
+  const count = categoryId ? demo.products.filter((p) => p.categoryId === categoryId).length : 0;
+  const limit = typeof props.limit === "number" ? props.limit : 8;
+  const styleColumns = (node.style as { columns?: unknown } | null | undefined)?.columns;
+  const columns = typeof styleColumns === "number" && styleColumns > 1 ? styleColumns : 1;
+  const most = Math.min(limit, count);
+  const fullRows = Math.floor(most / columns) * columns;
+  return { categoryId, count, limit, columns, shown: Math.max(1, fullRows || most) };
+}
+
+const isList = (type: string) => type === "productList" || type === "categoryList" || type === "postList";
+
+/**
+ * A design with its category-bound lists limited to the pack's catalog
+ * (`categoryListFit`); the same design when nothing changes. The limit is
+ * set on the built tree (after the look's own retouches) and in the stored
+ * patch (`libraryRef.patch.lists`, the design's lists in tree order).
+ */
+function fitCategoryLists(design: Design, demo: TemplateDemo): Design {
+  const limits = new Map<number, number>();
+  let index = 0;
+  const find = (node: NodeTemplate): void => {
+    if (isList(node.type)) {
+      const fit = categoryListFit(node, demo);
+      if (fit && fit.shown !== fit.limit) limits.set(index, fit.shown);
+      index += 1;
+    }
+    node.children?.forEach(find);
+  };
+  find(design.tree(createTreeBuilder()));
+  if (!limits.size) return design;
+
+  const ownTree = design.tree;
+  const tree: Design["tree"] = (t) => {
+    let at = 0;
+    const visit = (node: NodeTemplate): NodeTemplate => {
+      const limit = isList(node.type) ? limits.get(at++) : undefined;
+      const next = limit === undefined ? node : { ...node, props: { ...node.props, limit } as NodeTemplate["props"] };
+      return next.children ? { ...next, children: next.children.map(visit) } : next;
+    };
+    return visit(ownTree(t));
+  };
+  const ref = design.libraryRef;
+  if (!ref?.patch) return defineDesign({ ...design, tree });
+  const lists = [...(ref.patch.lists ?? [])];
+  for (const [i, limit] of limits) {
+    while (lists.length < i) lists.push(null);
+    lists[i] = { ...lists[i], limit };
+  }
+  return defineDesign({ ...design, tree, libraryRef: { ...ref, patch: { ...ref.patch, lists } } });
+}
+
 // ── Building ────────────────────────────────────────────────────────────────
 
 type BuildOptions = {
@@ -123,6 +213,8 @@ type BuildOptions = {
   productStage?: ProductStage;
   productPage?: LibraryTemplateSpec["productPage"];
   extras?: readonly EditionExtra[];
+  /** True for an edition: category rows are limited to what the pack's categories hold (`categoryListFit`). */
+  fitCategoryRows?: boolean;
   label: string;
 };
 
@@ -155,7 +247,9 @@ function build(spec: EditionLookSpec, content: object, journey: LookJourney, o: 
 
   // The store and the tiles are in every content, so a look never declares them.
   const parts = look(guarded(content, [...slots, ...optional, "store", "photos.tiles"], `look "${spec.key}"`) as LookContent, journey);
-  const pages = o.extras?.length ? parts.pages.map((page, i) => (i === 0 ? { ...page, sections: withExtras(spec, page.sections, o.extras!, o.label) } : page)) : parts.pages;
+  const withHome = o.extras?.length ? parts.pages.map((page, i) => (i === 0 ? { ...page, sections: withExtras(spec, page.sections, o.extras!, o.label) } : page)) : parts.pages;
+  // The look's own build keeps its limits (and its bytes): only an edition's catalog is fitted.
+  const pages = o.fitCategoryRows ? withHome.map((page) => ({ ...page, sections: page.sections.map((design) => fitCategoryLists(design, o.demo)) })) : withHome;
   return libraryTemplate({
     ...base,
     ...(o.productStage && { productStage: o.productStage }),
@@ -213,6 +307,6 @@ export function applyEdition(template: TemplateDefinition, edition: Edition): Te
   const productPage = edition.productPage
     ? { ...spec.productPage, ...edition.productPage, copy: { ...spec.productPage?.copy, ...edition.productPage.copy } }
     : undefined;
-  const built = build(spec, content, journey, { demo, productStage: edition.productStage, productPage, extras: edition.extras, label });
+  const built = build(spec, content, journey, { demo, productStage: edition.productStage, productPage, extras: edition.extras, fitCategoryRows: true, label });
   return { ...built, edition: edition.niche };
 }

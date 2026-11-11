@@ -78,7 +78,7 @@ const DEFAULT_CONTENT: LookDefaults = {
   },
   // The bento of best sellers: its title, two or three words.
   rows: [{ title: L("بيخلص بسرعة", "Going fast") }],
-  // Three quotes on the about page. Each card shows the first letter of the name.
+  // Optional (all three quotes, or none). Three quotes on the about page. Each card shows the first letter of the name.
   reviews: {
     title: L("من عملائنا", "From our customers"),
     items: [
@@ -169,7 +169,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const x = c.custom;
   const short = x["store-short"]!;
   const aboutName = L(`عن ${short.ar}`, `About ${short.en}`);
-  const review = c.reviews.items;
+  // Optional: a pack without buyer quotes gets the about page without the quotes section.
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
   const bannerTitle = x["banner-title"]!;
 
   const header = lib("header-brand-bar", {
@@ -265,22 +266,26 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       },
       links: { "/about": NEW },
     }),
-    lib("testimonials-classic", {
-      text: {
-        "آراء العملاء": c.reviews.title,
-        "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": review[0]!.quote,
-        "م": initialOf(review[0]!.name),
-        "مريم أ.": review[0]!.name,
-        "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": review[1]!.quote,
-        "ع": initialOf(review[1]!.name),
-        "عمر ك.": review[1]!.name,
-        "الإسكندرية": L("الجيزة", "Giza"),
-        "أسعار معقولة وجودة أفضل مما توقعت.": review[2]!.quote,
-        "ن": initialOf(review[2]!.name),
-        "نور ح.": review[2]!.name,
-        "الجيزة": L("الإسكندرية", "Alexandria"),
-      },
-    }),
+    ...(reviews
+      ? [
+          lib("testimonials-classic", {
+            text: {
+              "آراء العملاء": reviews.title,
+              "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
+              "م": initialOf(reviews.items[0]!.name),
+              "مريم أ.": reviews.items[0]!.name,
+              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "ع": initialOf(reviews.items[1]!.name),
+              "عمر ك.": reviews.items[1]!.name,
+              "الإسكندرية": L("الجيزة", "Giza"),
+              "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[2]!.quote,
+              "ن": initialOf(reviews.items[2]!.name),
+              "نور ح.": reviews.items[2]!.name,
+              "الجيزة": L("الإسكندرية", "Alexandria"),
+            },
+          }),
+        ]
+      : []),
   ];
 
   const contact: Design[] = [
@@ -395,10 +400,6 @@ export const STREETWEAR = editionTemplate({
     "photos.custom.lookbook-3",
     "photos.custom.lookbook-4",
     "photos.custom.lookbook-5",
-    "reviews.title",
-    "reviews.items.0",
-    "reviews.items.1",
-    "reviews.items.2",
     "about",
     "contact",
     "faq",
@@ -406,6 +407,8 @@ export const STREETWEAR = editionTemplate({
     "photos.banner",
     "photos.story",
   ],
+  // The about page's three buyer quotes: without `reviews` the section is not built.
+  optional: ["reviews"],
   // The rail shows the newest products; the look has no category rows.
   journey: { primary: "newest", rows: [] },
   defaultContent: DEFAULT_CONTENT,

@@ -282,11 +282,15 @@ const categoryRow = (place: number): Design =>
 /**
  * The look: every section from a content object (`DEFAULT_CONTENT`, or an
  * edition's). What names the trade is a slot of `c`; generic shop labels
- * (New in, Best sellers, Track order, "pieces") and the layout stay here.
+ * (New in, Best sellers, Track order) and the layout stay here; "all pieces"
+ * and "pieces" are optional custom slots.
  */
 function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  // Optional wording a trade may replace: the link to the whole catalog (header and footer) and the noun after a category's product count.
+  const shopAll = c.custom?.["shop-all"];
+  const noun = c.custom?.["products-noun"];
 
   const header = lib("header-centered-ticker", {
     text: {
@@ -294,7 +298,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       "الدفع عند الاستلام": c.announcement[1]!,
       "استبدال سهل خلال ١٤ يوم": c.announcement[2]!,
       "اسم متجرك": name,
-      المتجر: L("كل القطع", "Shop all"),
+      المتجر: shopAll ?? L("كل القطع", "Shop all"),
       العروض: L("وصل حديثًا", "New in"),
       المدونة: L("الأكثر طلبًا", "Best sellers"),
       "من نحن": c.labels.about,
@@ -313,7 +317,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         م: initialOf(name),
         "اسم متجرك": name,
-        "كل المنتجات": L("كل القطع", "All pieces"),
+        "كل المنتجات": shopAll ?? L("كل القطع", "All pieces"),
         "وصل حديثًا": L("وصل حديثًا", "New in"),
         "الأكثر مبيعًا": L("الأكثر طلبًا", "Best sellers"),
         "الشحن والتوصيل": L("الشحن والتوصيل", "Shipping"),
@@ -355,7 +359,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("categories-photo-tiles", {
       text: {
         "تسوّق حسب القسم": c.categories.title,
-        منتج: L("قطع", "pieces"),
+        منتج: noun ?? L("قطع", "pieces"),
       },
     }),
     lib("products-grid", {
@@ -783,7 +787,9 @@ export const FASHION_LUXE = editionTemplate({
     "photos.look.dots.1",
     "photos.look.dots.2",
   ],
-  optional: ["photos.hero.video"],
+  // `custom.shop-all`: the link to the whole catalog in the header and the footer (default "كل القطع / Shop all", "All pieces" in the footer).
+  // `custom.products-noun`: the noun after each category tile's product count (default "قطع / pieces").
+  optional: ["photos.hero.video", "custom.shop-all", "custom.products-noun"],
   // The eight best sellers, then the store's 3rd and 4th categories as rows.
   journey: { primary: "best-sellers", rows: [3, 4] },
   defaultContent: DEFAULT_CONTENT,

@@ -76,7 +76,9 @@ const DEFAULT_CONTENT: LookDefaults = {
   categories: { title: L("تسوقي بالقسم", "Shop by category") },
   // The shelf's title, over its tabs (new, best sellers, top rated).
   products: { primary: { title: L("اختاري مزاجك", "Pick your mood") } },
-  // Four photo reviews. Each card shows the first letter of the name, and a square photo of what was bought (`photos.custom.reviews-N`).
+  // Optional, with `photos.custom.reviews-1..4` (all four, or leave `reviews` out). A pack may also set `custom.reviews-photo-alt`
+  // (the review photo's alt, default "The product she bought") and `custom.reviews-verified` (the line under each name, default
+  // "اشترت من المتجر / Verified buyer"). Four photo reviews. Each card shows the first letter of the name, and a square photo of what was bought (`photos.custom.reviews-N`).
   reviews: {
     title: L("من عميلاتنا", "From our customers"),
     items: [
@@ -169,7 +171,10 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const short = c.custom["store-short"]!;
   const aboutName = L(`عن ${short.ar}`, `About ${short.en}`);
   const tiles = c.photos.tiles;
-  const review = c.reviews.items;
+  // Optional, together: the four photo reviews and their four photos. Without any of them the section is not built (the shelf is then followed by the Instagram bento).
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
+  const reviewPhotos = [1, 2, 3, 4].map((n) => c.photos.custom?.[`reviews-${n}`] as string | undefined);
+  const withReviews = reviews !== undefined && reviewPhotos.every(Boolean);
 
   const header = lib("header-pill", {
     text: { "اسم متجرك": name, "المتجر": L("الجديد", "New"), "العروض": L("الأكثر مبيعاً", "Best sellers"), "المدونة": L("عننا", "About") },
@@ -219,29 +224,33 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: { "تسوّق حسب مزاجك": c.products.primary.title, "عليه خصم": L("الأعلى تقييماً", "Top rated") },
       links: { "/products": [NEW, BEST, RATED, SHOP] },
     }),
-    lib("testimonials-photos", {
-      photo: [undefined, undefined, c.photos.custom["reviews-1"]!, c.photos.custom["reviews-2"]!, c.photos.custom["reviews-3"]!, c.photos.custom["reviews-4"]!],
-      text: {
-        "من عملائنا": c.reviews.title,
-        "صورة العميل": L("المنتج اللي اشترته", "The product she bought"),
-        "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": review[0]!.quote,
-        "م": initialOf(review[0]!.name),
-        "مريم أ.": review[0]!.name,
-        "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": review[1]!.quote,
-        "ع": initialOf(review[1]!.name),
-        "عمر ك.": review[1]!.name,
-        "الإسكندرية": L("الجيزة", "Giza"),
-        "أسعار معقولة وجودة أفضل مما توقعت.": review[2]!.quote,
-        "ن": initialOf(review[2]!.name),
-        "نور ح.": review[2]!.name,
-        "الجيزة": L("المنصورة", "Mansoura"),
-        "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": review[3]!.quote,
-        "ي": initialOf(review[3]!.name),
-        "يوسف م.": review[3]!.name,
-        "المنصورة": L("القاهرة", "Cairo"),
-        "اشترى من المتجر": L("اشترت من المتجر", "Verified buyer"),
-      },
-    }),
+    ...(withReviews
+      ? [
+          lib("testimonials-photos", {
+            photo: [undefined, undefined, ...reviewPhotos],
+            text: {
+              "من عملائنا": reviews.title,
+              "صورة العميل": c.custom["reviews-photo-alt"] ?? L("المنتج اللي اشترته", "The product she bought"),
+              "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
+              "م": initialOf(reviews.items[0]!.name),
+              "مريم أ.": reviews.items[0]!.name,
+              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "ع": initialOf(reviews.items[1]!.name),
+              "عمر ك.": reviews.items[1]!.name,
+              "الإسكندرية": L("الجيزة", "Giza"),
+              "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[2]!.quote,
+              "ن": initialOf(reviews.items[2]!.name),
+              "نور ح.": reviews.items[2]!.name,
+              "الجيزة": L("المنصورة", "Mansoura"),
+              "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[3]!.quote,
+              "ي": initialOf(reviews.items[3]!.name),
+              "يوسف م.": reviews.items[3]!.name,
+              "المنصورة": L("القاهرة", "Cairo"),
+              "اشترى من المتجر": c.custom["reviews-verified"] ?? L("اشترت من المتجر", "Verified buyer"),
+            },
+          }),
+        ]
+      : []),
     lib("gallery-bento", {
       photo: [
         c.photos.custom["lookbook-1"]!,
@@ -354,15 +363,6 @@ export const KARAT = editionTemplate({
     "categories.title",
     ...STORIES.map((n) => `custom.stories-${n}` as const),
     "products.primary.title",
-    "reviews.title",
-    "reviews.items.0",
-    "reviews.items.1",
-    "reviews.items.2",
-    "reviews.items.3",
-    "photos.custom.reviews-1",
-    "photos.custom.reviews-2",
-    "photos.custom.reviews-3",
-    "photos.custom.reviews-4",
     "custom.store-short",
     "custom.lookbook-handle",
     "custom.lookbook-line",
@@ -377,8 +377,18 @@ export const KARAT = editionTemplate({
     "photos.hero.wide",
     "photos.story",
   ],
-  // A ring without its own photo shows a category tile.
-  optional: STORIES.map((n) => `photos.custom.stories-${n}` as const),
+  // A ring without its own photo shows a category tile. The photo reviews are built only with `reviews` (four items) and all four
+  // `photos.custom.reviews-N`; their two fixed lines (`custom.reviews-photo-alt`, `custom.reviews-verified`) default to Zeina's wording.
+  optional: [
+    ...STORIES.map((n) => `photos.custom.stories-${n}` as const),
+    "reviews",
+    "photos.custom.reviews-1",
+    "photos.custom.reviews-2",
+    "photos.custom.reviews-3",
+    "photos.custom.reviews-4",
+    "custom.reviews-photo-alt",
+    "custom.reviews-verified",
+  ],
   // The shelf has its own tabs (new, best sellers, top rated), so `primary` is not read; the look has no category rows.
   journey: { primary: "newest", rows: [] },
   defaultContent: DEFAULT_CONTENT,
