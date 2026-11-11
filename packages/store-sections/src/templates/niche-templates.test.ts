@@ -33,6 +33,9 @@ const NICHES: Record<string, readonly string[]> = {
 };
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
+/** `walk` without a steps section's photo column (`image-text-steps`): it repeats each step's own photo by design, shown in its place on phones. */
+const walkShown = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] =>
+  (nodes ?? []).flatMap((n) => (n.props.role === "steps-media" ? [] : [n, ...walkShown(n.children)]));
 const byKey = new Map(CODE_TEMPLATES.map((t) => [t.key, t]));
 const libraryIdOf = (template: TemplateDefinition, sectionId: string) => {
   const design = template.designs.find((d) => d.id === sectionId);
@@ -40,7 +43,7 @@ const libraryIdOf = (template: TemplateDefinition, sectionId: string) => {
 };
 const SLOTS = ["hero", "categories", "products", "image-text", "products", "products", "products", "products", "newsletter"];
 /** Rebuilt in the look-first pilot: their home follows the look-first rhythm, not the 12 slots. */
-const LOOK_FIRST = new Set(["fashion-luxe", "perfumes-bold", "jewelry-warm"]);
+const LOOK_FIRST = new Set(["fashion-luxe", "perfumes-bold", "jewelry-warm", "fashion-bold"]);
 
 describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
   const templates = keys.map((key) => byKey.get(key)!);
@@ -90,7 +93,7 @@ describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
       const urls = [
         ...template.demo.products.map((p) => p.image),
         ...template.demo.categories.map((c) => c.image),
-        ...[config.header, config.footer, ...home].flatMap((s) => walk(s?.componentTree)).flatMap((n) => [n.props.src, n.props.poster]),
+        ...[config.header, config.footer, ...home].flatMap((s) => walkShown(s?.componentTree)).flatMap((n) => [n.props.src, n.props.poster]),
       ].filter((u): u is string => typeof u === "string" && u.startsWith("https://"));
       const ids = urls.map((u) => u.replace(/\?.*$/, ""));
       expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);

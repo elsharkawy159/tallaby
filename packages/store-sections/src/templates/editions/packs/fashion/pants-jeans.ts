@@ -36,6 +36,19 @@
  * Already used by a template: 31961166, 31961167, 31961168, 6046228,
  * 20094389, 4210864, 6461398, 6461477, 11733651, 9594667.
  *
+ * Looks: `fashion-bold` (Alwan, the niche's template, one template per
+ * niche; it shows the pack itself, Qassa), then `zay` and `fashion-luxe`
+ * until the fashion switch takes them off. For Alwan (checked by eye
+ * 2026-11-12, no people, lettering or labels, used nowhere else): hero
+ * 19824259 (rolled jeans in rows, indigo to light; it replaced 16390580 as
+ * `hero.wide`, which moved to Alwan's second slide); the third slide is the
+ * banner; fit steps 10895045 (a yellow tape measure on blue), 30828508
+ * (denim bands, light to charcoal), 4109765 (an indigo hem with gold
+ * top-stitching). Rejected: 32641555, 7775472, 7774245 (hands), 8788779,
+ * 8788785 (a person measuring), 783590 (a machine logo), 31070328 (ruler
+ * lettering), 6461479 (a word in buttons), 18199255 (a mark on the
+ * scissors), 17265364 (waistband labels).
+ *
  * No buyer quotes (`reviews`): a pack holds no invented reviews, so zay's
  * home ends on its best-seller carousel.
  *
@@ -58,7 +71,7 @@ const EMAIL = "hello@qassa.example";
 
 export const PANTS_JEANS: Edition = {
   niche: NICHE,
-  looks: ["zay", "fashion-luxe"],
+  looks: ["fashion-bold", "zay", "fashion-luxe"],
   priceBand: { min: 300, max: 1500 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -93,7 +106,7 @@ export const PANTS_JEANS: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(16390580, 1920), tall: pexels(7764609, 1200) },
+    hero: { wide: pexels(19824259, 1920), tall: pexels(7764609, 1200) },
     tiles: TILES,
     banner: pexels(10133275, 2000),
     story: pexels(4546763, 1200),
@@ -108,6 +121,12 @@ export const PANTS_JEANS: Edition = {
     },
     // Zay's hero collage: 1 portrait 4:5, 2 square, 3 landscape 4:3, one per caption (`custom.hero-piece-1..3`).
     custom: {
+      // `fashion-bold`: the hero carousel's second slide (16:9; the third is `banner`).
+      "slide-2": pexels(16390580, 1920),
+      // `fashion-bold`: the fit steps, square: measure, pick the wash, we hem.
+      "fit-1": pexels(10895045, 1200),
+      "fit-2": pexels(30828508, 1200),
+      "fit-3": pexels(4109765, 1200),
       "hero-piece-1": pexels(4210866, 1200),
       "hero-piece-2": pexels(6461325, 900),
       "hero-piece-3": pexels(1082528, 1400),
@@ -121,7 +140,7 @@ export const PANTS_JEANS: Edition = {
     ],
     labels: { about: L("حكايتنا", "Our story"), search: L("دوّر على جينز، شينو، جوجر…", "Search jeans, chinos, joggers…") },
     hero: {
-      alt: L("بناطيل جينز على شماعات خشب، من الغامق للفاتح", "Jeans on wooden hangers, from dark to light wash"),
+      alt: L("بناطيل جينز ملفوفة جنب بعض بكل درجات الأزرق", "Rolled jeans side by side in every shade of blue"),
       eyebrow: L("تشكيلة الموسم", "This season's range"),
       title: L("البنطلون اللي على مقاسك", "Trousers cut to fit you"),
       line: L(
@@ -206,6 +225,34 @@ export const PANTS_JEANS: Edition = {
       "compare-row-1": L("طول الرجل مكتوب لكل مقاس", "Inseam listed for every size"),
       "compare-row-2": L("استبدال المقاس خلال ١٤ يوم", "Size exchange within 14 days"),
       "compare-row-3": L("كل موديل بأكتر من طول", "Every style in more than one length"),
+      // Fashion-bold's hero carousel, slides 2 (jeans on hangers, dark to light) and 3 (indigo folds, the hemming service). A title of at most six words.
+      "slide-2-alt": L("بناطيل جينز على شماعات خشب، من الغامق للفاتح", "Jeans on wooden hangers, from dark to light wash"),
+      "slide-2-eyebrow": L("من الغامق للفاتح", "Dark to light"),
+      "slide-2-title": L("غسلة لكل يوم في الأسبوع", "A wash for every day"),
+      "slide-2-line": L("إنديجو خام، أزرق متوسط، فاتح ورمادي، بقصّات مستقيمة وسليم وواسعة.", "Raw indigo, mid blue, light and grey, in straight, slim and wide cuts."),
+      "slide-2-cta": L("شوف الأكثر طلبًا", "See the most ordered"),
+      "slide-3-alt": L("طبقات قماش جينز إنديجو متطبّقة", "Layers of folded indigo denim"),
+      "slide-3-eyebrow": L("تقصير على طولك", "Hemmed to your length"),
+      "slide-3-title": L("قول طولك، ونقصّره إحنا", "Tell us your length"),
+      "slide-3-line": L("اكتب طول رجلك في ملاحظة الطلب، والبنطلون يوصلك جاهز تلبسه.", "Add your inseam to the order note and your pair arrives ready to wear."),
+      "slide-3-cta": L("تسوّق الجديد", "Shop new in"),
+      // Fashion-bold's fit steps: a heading, then three steps in order (a title of a few words, one line, the photo's alt).
+      "fit-eyebrow": L("المقاس الصح", "The right fit"),
+      "fit-title": L("مقاسك في تلات خطوات", "Your fit in three steps"),
+      "fit-1-title": L("قيس بنطلون بتحبه", "Measure a pair you love"),
+      "fit-1-line": L("افرده على سطح مستوي، وقيس الوسط من طرف لطرف وطول الرجل من الدرزة لآخر الرجل.", "Lay it flat, then measure the waist edge to edge and the inseam from the crotch seam to the hem."),
+      "fit-1-alt": L("شريط قياس أصفر على خلفية زرقا", "A yellow tape measure on a blue background"),
+      "fit-2-title": L("اختار القَصّة والغسلة", "Pick the cut and the wash"),
+      "fit-2-line": L("كل بنطلون مكتوب في صفحته الوسط وطول الرجل لكل مقاس بالسنتيمتر، فقارن بالأرقام.", "Each pair's page lists the waist and inseam of every size in centimetres, so compare the numbers."),
+      "fit-2-alt": L("درجات جينز من الفاتح للرمادي الغامق", "Denim in shades from light blue to dark grey"),
+      "fit-3-title": L("بنقصّره على طولك", "We hem it to your length"),
+      "fit-3-line": L("اكتب طول رجلك في ملاحظة الطلب ونقصّره قبل الشحن. البنطلون المقصّر ما بيتبدلش.", "Add your inseam to the order note and we hem it before it ships. Hemmed pairs cannot be exchanged."),
+      "fit-3-alt": L("طرف رجل جينز إنديجو بخياطة دهبي", "The hem of indigo jeans with gold stitching"),
+      // Fashion-bold's line under "Why Qassa?", beside the four promises.
+      "promises-line": L("أربع حاجات بنلتزم بيها مع كل بنطلون.", "Four things we stand by with every pair."),
+      // Fashion-bold's footer: the demo contact (a seller replaces both).
+      "contact-phone": L(PHONE_AR, PHONE_EN),
+      "contact-email": L(handle(EMAIL), EMAIL),
     },
   },
   productPage: { copy: { reviews: L("آراء اللي لبسوه", "From people who wear it"), related: L("بناطيل ممكن تعجبك", "Trousers you may like") } },

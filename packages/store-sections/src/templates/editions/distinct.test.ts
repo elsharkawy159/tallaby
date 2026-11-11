@@ -16,6 +16,8 @@ import type { Edition } from "./types";
  * when its `perLook` entry is written; the list must end empty.
  */
 const PENDING = new Set<string>([
+  // fashion-bold is the niche's template and shows the pack itself; zay and fashion-luxe draw it until the fashion switch takes them off.
+  "pants-jeans",
   // jewelry-warm is the niche's template (one template per niche); zay still draws the pack until the accessories switch takes it off.
   "belts-wallets",
   // zahra is the niche's template and shows the pack itself; karat and jewelry-luxe draw it until the accessories switch takes them off.

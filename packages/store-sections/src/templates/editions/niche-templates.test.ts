@@ -88,7 +88,7 @@ describe("NICHE_TEMPLATES", () => {
     expect(nicheTemplateFirst("dresses", ["vella", "fashion-luxe"])).toEqual(["fashion-luxe", "vella"]);
     expect(nicheTemplateFirst("dresses", ["vella"])).toEqual(["vella"]);
     // A pending row changes nothing.
-    expect(nicheTemplateFirst("pants-jeans", ["zay", "fashion-bold"])).toEqual(["zay", "fashion-bold"]);
+    expect(nicheTemplateFirst("sportswear", ["zay", "sports-luxe"])).toEqual(["zay", "sports-luxe"]);
     expect(nicheTemplateFirst(null, ["zay"])).toEqual(["zay"]);
   });
 });
