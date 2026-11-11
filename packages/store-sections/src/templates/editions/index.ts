@@ -25,6 +25,7 @@ import { CHARGERS_CABLES } from "./packs/mobile-accessories/chargers-cables";
 import { HANDBAGS } from "./packs/shoes-bags/handbags";
 import { MENS_SHOES } from "./packs/shoes-bags/mens-shoes";
 import { SLIPPERS_CLOGS } from "./packs/shoes-bags/slippers-clogs";
+import { SNEAKERS } from "./packs/shoes-bags/sneakers";
 import { WOMENS_SHOES } from "./packs/shoes-bags/womens-shoes";
 import type { Edition } from "./types";
 
@@ -38,7 +39,7 @@ export { applyEdition, copyrightLine, editionTemplate, initialOf, isEditionReady
  *   import { DRESSES } from "./packs/fashion/dresses";
  * and add `DRESSES` here.
  */
-export const EDITIONS: readonly Edition[] = [DRESSES, GLASSES, TSHIRTS, LIGHTING_SMART_HOME, PANTS_JEANS, PC_GAMING, FASHION_JEWELRY, WATCHES, CHARGERS_CABLES, SLIPPERS_CLOGS, MENSWEAR, WOMENS_SHOES, HANDBAGS, MENS_SHOES, GOLD_JEWELRY];
+export const EDITIONS: readonly Edition[] = [DRESSES, GLASSES, TSHIRTS, LIGHTING_SMART_HOME, PANTS_JEANS, PC_GAMING, FASHION_JEWELRY, WATCHES, CHARGERS_CABLES, SLIPPERS_CLOGS, MENSWEAR, WOMENS_SHOES, HANDBAGS, MENS_SHOES, GOLD_JEWELRY, SNEAKERS];
 
 /** The pack of a niche. */
 export function getEdition(nicheId: string | null | undefined): Edition | undefined {
