@@ -4,6 +4,7 @@
  * switch), so search and cart are links to the store's own pages.
  */
 import type { ElementIconName } from "../../elements/registry";
+import type { StyleValues } from "../../elements/style";
 import type { NodeTemplate } from "../../elements/tree";
 import type { DesignText, NodeOptions, TreeBuilder } from "../builder";
 import { L } from "../_kit";
@@ -20,7 +21,10 @@ export const MENU = [
 export const STORE_NAME = L("اسم متجرك", "Your store");
 
 /** A round brand mark with the first letter, and the store name. */
-export function logo(t: TreeBuilder, opts: { mark?: boolean; size?: "lg" | "xl" | "2xl"; onBrand?: boolean } = {}): NodeTemplate {
+export function logo(
+  t: TreeBuilder,
+  opts: { mark?: boolean; size?: "lg" | "xl" | "2xl"; onBrand?: boolean; /** Over the store name's own style (a wordmark in the heading font). */ nameStyle?: StyleValues } = {},
+): NodeTemplate {
   return t.link(
     "/",
     [
@@ -41,7 +45,7 @@ export function logo(t: TreeBuilder, opts: { mark?: boolean; size?: "lg" | "xl" 
                   },
                 ),
               ]),
-          t.text(STORE_NAME, { role: "storeName", style: { fontWeight: "extrabold", fontSize: opts.size ?? "xl" } }),
+          t.text(STORE_NAME, { role: "storeName", style: { fontWeight: "extrabold", fontSize: opts.size ?? "xl", ...opts.nameStyle } }),
         ],
         { label: L("الشعار", "Logo"), style: { gap: 10, wrap: false } },
       ),
@@ -51,11 +55,15 @@ export function logo(t: TreeBuilder, opts: { mark?: boolean; size?: "lg" | "xl" 
 }
 
 /** Menu links in a row; pills tint the first (current) page. */
-export function nav(t: TreeBuilder, items = MENU, opts: NodeOptions & { pills?: boolean; color?: string } = {}): NodeTemplate {
-  const { pills, color = "foreground", ...rest } = opts;
+export function nav(
+  t: TreeBuilder,
+  items = MENU,
+  opts: NodeOptions & { pills?: boolean; color?: string; /** Over each link's text style (size, weight). */ textStyle?: StyleValues } = {},
+): NodeTemplate {
+  const { pills, color = "foreground", textStyle, ...rest } = opts;
   return t.row(
     items.map((item, i) =>
-      t.link(item.href, [t.text(item.text, { style: { fontWeight: "medium" } })], {
+      t.link(item.href, [t.text(item.text, { style: { fontWeight: "medium", ...textStyle } })], {
         label: L("رابط", "Menu link"),
         style: {
           paddingTop: pills ? 8 : 4,
@@ -89,6 +97,11 @@ export function iconLink(t: TreeBuilder, icon: ElementIconName, href: string, la
     },
   });
 }
+
+/** The store name as a wordmark: the heading font, tightly set (the reference headers' logo). */
+export const WORDMARK: StyleValues = { fontFamily: "heading", fontWeight: "bold", letterSpacing: "tight", lineHeight: "tight" };
+/** Menu links of a quiet header: small and medium weight (no letter spacing: it breaks joined Arabic letters). */
+export const QUIET_LINK: StyleValues = { fontSize: "sm", fontWeight: "medium" };
 
 export const searchLink = (t: TreeBuilder) => iconLink(t, "search", "/products", L("بحث", "Search"));
 export const cartLink = (t: TreeBuilder) => iconLink(t, "shopping-bag", "/cart", L("السلة", "Cart"));

@@ -12,5 +12,5 @@ export const STORE_SECTIONS: readonly AnySectionDefinition[] = [customSection];
 
 export const storeSectionRegistry = createSectionRegistry(STORE_SECTIONS);
 
-export { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "./forms";
+export { FORM_LAYOUTS, FORM_SUBMIT_CLASS, FORM_SUBMIT_INLINE_CLASS, FormFieldsView, formCopy, formLayout, type FormLayout } from "./forms";
 export { customSection };

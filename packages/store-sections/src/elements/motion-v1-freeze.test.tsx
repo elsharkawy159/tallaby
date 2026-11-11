@@ -75,7 +75,7 @@ function v1Instance(id: string) {
  * renderer change: stores keep their saved v1 copy, which still renders as
  * frozen through every other design here. So the pilots leave the sample.
  */
-const V2_PILOTS = new Set(["products-grid", "testimonials-classic"]);
+const V2_PILOTS = new Set(["products-grid", "testimonials-classic", "hero-carousel", "products-rail", "products-category-carousel", "products-feature", "products-spotlight", "features-classic"]);
 
 /** One design per library category (first in library order), plus every products design (rails, staggered grids). */
 const SAMPLE = [

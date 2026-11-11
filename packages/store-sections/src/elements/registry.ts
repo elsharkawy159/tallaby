@@ -1021,7 +1021,19 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     keywords: ["form", "newsletter", "subscribe", "contact", "نموذج", "اشتراك"],
     container: false,
     defaultProps: {},
-    fields: [{ key: "formId", label: L("النموذج", "Form"), type: "form", group: "data" }],
+    fields: [
+      { key: "formId", label: L("النموذج", "Form"), type: "form", group: "data" },
+      {
+        // One row: the one-line fields and the button side by side where the form is wide enough (a newsletter band).
+        key: "layout",
+        label: L("شكل النموذج", "Layout"),
+        type: "select",
+        options: [
+          { value: "stacked", label: L("حقول تحت بعض", "Stacked") },
+          { value: "inline", label: L("سطر واحد", "One row") },
+        ],
+      },
+    ],
   },
   {
     type: "addToCart",

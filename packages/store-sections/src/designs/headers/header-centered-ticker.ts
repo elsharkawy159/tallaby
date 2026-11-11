@@ -8,10 +8,14 @@
  *
  * The strip scrolls its messages as a ticker (the `marquee` element): still
  * and wrapped with reduced motion or Theme › Animations off.
+ *
+ * v2 (look-first pilot, F-89): a slimmer strip with small dots between the
+ * messages, the store name as a wordmark in the heading font, a quieter menu
+ * row and more air around the bar. Same nodes, labels and links as v1.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
-import { MENU, STORE_NAME, cartLink, iconLink, nav, searchLink } from "./_shared";
+import { MENU, QUIET_LINK, STORE_NAME, WORDMARK, cartLink, iconLink, nav, searchLink } from "./_shared";
 
 /** Store promises that scroll in the strip (store facts only: no prices or codes). */
 const ANNOUNCEMENTS = [
@@ -22,7 +26,7 @@ const ANNOUNCEMENTS = [
 
 export const headerCenteredTicker = defineDesign({
   id: "header-centered-ticker",
-  version: 1,
+  version: 2,
   category: "headers",
   subcategory: "centered-logo",
   name: L("لوجو في النص مع إعلان", "Centred logo with announcement"),
@@ -37,16 +41,17 @@ export const headerCenteredTicker = defineDesign({
         [
           t.marquee(
             ANNOUNCEMENTS.flatMap((text) => [
-              t.text(text, { label: L("رسالة", "Message"), style: { color: "background", fontSize: "xs", fontWeight: "medium" } }),
-              t.icon("sparkles", { label: L("فاصل", "Separator"), style: { color: "background", fontSize: "xs", opacity: 60 } }),
+              t.text(text, { label: L("رسالة", "Message"), style: { color: "background", fontSize: "xs", fontWeight: "medium", textTransform: "uppercase" } }),
+              // A dot now. Its role keeps the field names the v1 icons had (`icon`, `icon-2`, `icon-3`), so every other name stays.
+              t.box([], { label: L("فاصل", "Separator"), role: "icon", style: { background: "background", radius: 999, width: "4px", minHeight: 4, opacity: 50 } }),
             ]),
-            { label: L("الرسائل", "Messages"), speed: 40, style: { gap: 28, alignItems: "center" } },
+            { label: L("الرسائل", "Messages"), speed: 45, style: { gap: 36, alignItems: "center" } },
           ),
         ],
         {
           role: "announcement",
           label: L("شريط الإعلان", "Announcement bar"),
-          style: { background: "foreground", paddingTop: 10, paddingBottom: 10 },
+          style: { background: "foreground", paddingTop: 7, paddingBottom: 7 },
         },
       ),
       t.container(
@@ -61,8 +66,8 @@ export const headerCenteredTicker = defineDesign({
                     [
                       t.text(STORE_NAME, {
                         role: "storeName",
-                        style: { fontWeight: "bold", fontSize: "2xl", textAlign: "center", letterSpacing: "tight" },
-                        mobile: { fontSize: "xl" },
+                        style: { ...WORDMARK, fontSize: "3xl", textAlign: "center" },
+                        mobile: { fontSize: "2xl" },
                       }),
                     ],
                     { label: L("الشعار", "Logo"), style: { gap: 0, alignItems: "center" } },
@@ -82,12 +87,14 @@ export const headerCenteredTicker = defineDesign({
             {
               label: L("الشريط", "Bar"),
               columns: { desktop: 3, tablet: 3, mobile: 3 },
-              style: { gap: 8, alignItems: "center", paddingTop: 14, paddingBottom: 6 },
-              mobile: { gap: 4, paddingTop: 8, paddingBottom: 8 },
+              style: { gap: 8, alignItems: "center", paddingTop: 20, paddingBottom: 10 },
+              mobile: { gap: 4, paddingTop: 10, paddingBottom: 10 },
             },
           ),
           nav(t, MENU, {
-            style: { gap: 28, justifyContent: "center", paddingBottom: 12 },
+            color: "muted",
+            textStyle: QUIET_LINK,
+            style: { gap: 36, justifyContent: "center", paddingBottom: 14 },
             mobile: { hidden: true },
           }),
         ],

@@ -196,7 +196,7 @@ async function buildContext(
     ),
     renderWishlistButton: (product) => <StoreWishlistButton productId={product.id} />,
     forms,
-    renderForm: (form, instanceId) => <StoreForm form={form} instanceId={instanceId} />,
+    renderForm: (form, instanceId, options) => <StoreForm form={form} instanceId={instanceId} layout={options?.layout} />,
     // A seller-placed low-stock badge (F-34d) takes the alert over from the stock line.
     ...(product && { product, ...PRODUCT_HOOKS, stockBadgeOnPage: pageHasStockBadge(sections), crossSellOnPage: pageHasCrossSell(sections) }),
   };

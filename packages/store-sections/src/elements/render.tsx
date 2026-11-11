@@ -58,7 +58,7 @@ import { sectionText } from "../core/copy";
 import { IMAGE_SIZES, imageLoading, imageSource, type RenderContext } from "../core/types";
 import { DataEmpty } from "../sections/_data";
 import { CarouselElement, SlideElement } from "./render-carousel";
-import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
+import { FORM_SUBMIT_CLASS, FORM_SUBMIT_INLINE_CLASS, FormFieldsView, formCopy, formLayout } from "../sections/forms";
 import { resolvePhotoSlot } from "../designs/photo-slots";
 import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
 import { DATA_NODE_NEEDS, boundValue, hotspotProduct, isDataList, isPaginated, isProductHotspot, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
@@ -1027,14 +1027,30 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           </div>
         ) : null;
       }
+      // One row (a newsletter band) or the stacked form (`props.layout`).
+      const layout = formLayout(props.layout);
       if (ctx.renderForm) {
         return (
           <div {...attrs} className="min-w-0">
-            {ctx.renderForm(form, node.id)}
+            {ctx.renderForm(form, node.id, { layout })}
           </div>
         );
       }
       // Editor canvas: a still preview of the same fields.
+      if (layout === "inline") {
+        return (
+          <div {...attrs} className="min-w-0">
+            <FormFieldsView
+              form={form}
+              idPrefix={node.id}
+              locale={ctx.locale}
+              disabled
+              layout="inline"
+              submit={<span className={cn(FORM_SUBMIT_CLASS, FORM_SUBMIT_INLINE_CLASS)}>{formCopy(form, ctx.locale).submitLabel}</span>}
+            />
+          </div>
+        );
+      }
       return (
         <div {...attrs} className="flex min-w-0 flex-col gap-4">
           <FormFieldsView form={form} idPrefix={node.id} locale={ctx.locale} disabled />

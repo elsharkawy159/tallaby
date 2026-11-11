@@ -1,5 +1,6 @@
 /** Footer pieces: link columns, social circles, payment chips and the copyright line. */
 import type { ElementIconName } from "../../elements/registry";
+import type { StyleValues } from "../../elements/style";
 import type { NodeTemplate } from "../../elements/tree";
 import type { DesignText, TreeBuilder } from "../builder";
 import { L } from "../_kit";
@@ -28,23 +29,33 @@ const SOCIAL: { icon: ElementIconName; href: string; label: DesignText }[] = [
 const PAYMENTS = [L("فيزا", "VISA"), L("ماستركارد", "Mastercard"), L("ميزة", "Meeza"), L("إنستاباي", "InstaPay"), L("الدفع عند الاستلام", "Cash on delivery")];
 
 /** A titled column of links. `color` is the link colour on the footer background. */
-export function linkColumn(t: TreeBuilder, title: DesignText, links: { text: DesignText; href: string }[], color: string): NodeTemplate {
+export function linkColumn(
+  t: TreeBuilder,
+  title: DesignText,
+  links: { text: DesignText; href: string }[],
+  color: string,
+  /** `quiet` (the calm footers, F-89): a small muted title over small links. */
+  opts: { quiet?: boolean } = {},
+): NodeTemplate {
+  const { quiet } = opts;
   return t.stack(
     [
-      t.heading(title, "h4", { style: { fontSize: "md", marginBottom: 6 } }),
+      t.heading(title, "h4", {
+        style: quiet ? { fontSize: "sm", fontWeight: "semibold", fontFamily: "body", color, opacity: 60, marginBottom: 10 } : { fontSize: "md", marginBottom: 6 },
+      }),
       ...links.map((l) =>
-        t.link(l.href, [t.text(l.text, { style: { color, opacity: 80 } })], {
+        t.link(l.href, [t.text(l.text, { style: { color, opacity: quiet ? 90 : 80, ...(quiet && { fontSize: "sm" }) } })], {
           label: L("رابط", "Link"),
-          style: { paddingTop: 4, paddingBottom: 4, paddingStart: 0, paddingEnd: 0, hover: { opacity: 70 } },
+          style: { paddingTop: quiet ? 5 : 4, paddingBottom: quiet ? 5 : 4, paddingStart: 0, paddingEnd: 0, hover: { opacity: 70 } },
         }),
       ),
     ],
-    { label: L("عمود روابط", "Link column"), style: { gap: 4 } },
+    { label: L("عمود روابط", "Link column"), style: { gap: quiet ? 2 : 4 } },
   );
 }
 
 /** Outlined social circles. */
-export function socialRow(t: TreeBuilder, color: string, size = 40): NodeTemplate {
+export function socialRow(t: TreeBuilder, color: string, size = 40, style: StyleValues = {}): NodeTemplate {
   return t.row(
     SOCIAL.map((s) =>
       t.link(s.href, [t.icon(s.icon, { style: { fontSize: "md", color } })], {
@@ -63,19 +74,19 @@ export function socialRow(t: TreeBuilder, color: string, size = 40): NodeTemplat
         },
       }),
     ),
-    { label: L("التواصل الاجتماعي", "Social links"), role: "social", style: { gap: 8 } },
+    { label: L("التواصل الاجتماعي", "Social links"), role: "social", style: { gap: 8, ...style } },
   );
 }
 
 /** Payment method chips. */
-export function paymentRow(t: TreeBuilder, onDark: boolean): NodeTemplate {
+export function paymentRow(t: TreeBuilder, onDark: boolean, style: StyleValues = {}): NodeTemplate {
   return t.row(
     PAYMENTS.map((p) =>
       t.badge(p, {
         style: onDark ? { background: "transparent", borderWidth: 1, borderColor: "primaryInk", color: "primaryInk" } : { background: "secondary" },
       }),
     ),
-    { label: L("طرق الدفع", "Payment methods"), role: "payments", style: { gap: 6 } },
+    { label: L("طرق الدفع", "Payment methods"), role: "payments", style: { gap: 6, ...style } },
   );
 }
 

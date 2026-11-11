@@ -66,6 +66,8 @@ describe("library sections seed", () => {
     ...["image-text-steps", "tallaby-classic-about-split-story", "tallaby-classic-stats-band"],
     // Look-first pilot L5 (F-89, 2026-11-11): photo dots.
     ...["about-product-anatomy", "gallery-shop-look"],
+    // Look-first pilot L7 (F-89, 2026-11-11): the two-tone editorial banner.
+    ...["about-two-tone"],
   ]);
 
   it("every design from before 0109 was seeded by some migration", () => {

@@ -201,11 +201,14 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
     /**
      * One of the store's forms, picked by the seller after inserting. In a
      * template, `formTemplate` names the ready-made form (`contact`,
-     * `newsletter`…) that "Use template" creates and binds here.
+     * `newsletter`…) that "Use template" creates and binds here. `layout:
+     * "inline"` puts the one-line fields and the button on one row where the
+     * form is wide enough (`sections/forms.tsx`).
      */
-    storeForm: (opts?: NodeOptions & { formTemplate?: string }) => {
-      const { formTemplate, ...rest } = opts ?? {};
+    storeForm: (opts?: NodeOptions & { formTemplate?: string; layout?: "inline" }) => {
+      const { formTemplate, layout, ...rest } = opts ?? {};
       const node = make("storeForm", {}, { label: { ar: "النموذج", en: "Form" }, ...rest });
+      if (layout) node.props = { ...node.props, layout };
       return formTemplate ? { ...node, props: { ...node.props, formTemplate } } : node;
     },
     /** The cart button of the product a list card shows. */

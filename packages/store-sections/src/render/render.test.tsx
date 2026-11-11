@@ -6,7 +6,7 @@ import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "../core/fonts";
 import { designSystemToCss, designSystemToTokens } from "../core/theme";
 import type { PublicStoreForm, RenderContext } from "../core/types";
 import { STORE_SECTIONS, storeSectionRegistry } from "../sections";
-import { FormFieldsView } from "../sections/forms";
+import { FormFieldsView, formLayout } from "../sections/forms";
 import { PageRenderer, SectionRenderer, SiteTheme } from "./render";
 
 function makeCtx(overrides: Partial<RenderContext> = {}): RenderContext {
@@ -152,5 +152,59 @@ describe("form fields (storefront forms and editor preview)", () => {
     expect(markup).toContain("disabled");
     expect(markup).toContain("البريد &lt;b&gt;");
     expect(markup).toContain("<option");
+  });
+
+  it("keeps the stacked form unless a node asks for one row", () => {
+    expect(formLayout(undefined)).toBe("stacked");
+    expect(formLayout("row")).toBe("stacked");
+    expect(formLayout("inline")).toBe("inline");
+    expect(html(<FormFieldsView form={form} idPrefix="f" locale="ar" />)).not.toContain("data-form-layout");
+  });
+
+  it("inline: one-line fields and the button share a row, labels become placeholders, the rest goes under it", () => {
+    const newsletter: PublicStoreForm = {
+      id: "44444444-4444-4444-8444-444444444444",
+      fields: [
+        { key: "email", type: "email", label: "البريد الإلكتروني", required: true, width: "full" },
+        { key: "name", type: "text", label: "الاسم", required: false, width: "full", placeholder: "اسمك" },
+        { key: "consent", type: "checkbox", label: "أوافق على الرسائل", required: true, width: "full" },
+      ],
+      submitLabel: "",
+      successMessage: "",
+    };
+    const markup = html(<FormFieldsView form={newsletter} idPrefix="f" locale="ar" layout="inline" submit={<button type="submit">اشترك</button>} />);
+    expect(markup).toContain('data-form-layout="inline"');
+    // Every field is still there, labelled for screen readers, with the label (or its own placeholder) shown inside.
+    expect(markup).toContain('placeholder="البريد الإلكتروني"');
+    expect(markup).toContain('placeholder="اسمك"');
+    expect(markup).toContain('<label for="f-email" class="sr-only">');
+    expect(markup).toContain('name="consent"');
+    // The button is in the row, before the consent box.
+    expect(markup.indexOf("اشترك")).toBeGreaterThan(markup.indexOf('name="name"'));
+    expect(markup.indexOf("اشترك")).toBeLessThan(markup.indexOf('name="consent"'));
+  });
+
+  it("a storeForm node passes its layout to the host form, and draws the still preview in one row", () => {
+    const newsletter: PublicStoreForm = {
+      id: "f1",
+      fields: [{ key: "email", type: "email", label: "البريد", required: true, width: "full" }],
+      submitLabel: "اشترك",
+      successMessage: "",
+    };
+    const section = (layout?: string) => tree("nl", [node("form", "storeForm", { formId: "f1", ...(layout && { layout }) })]);
+    const seen: unknown[] = [];
+    const ctx = makeCtx({
+      forms: { f1: newsletter },
+      renderForm: (_form, _id, options) => {
+        seen.push(options?.layout);
+        return <i />;
+      },
+    });
+    render(section("inline"), ctx);
+    render(section(), ctx);
+    expect(seen).toEqual(["inline", "stacked"]);
+    const still = render(section("inline"), makeCtx({ forms: { f1: newsletter } }));
+    expect(still).toContain('data-form-layout="inline"');
+    expect(still).toContain("اشترك");
   });
 });

@@ -533,8 +533,8 @@ export interface RenderContext {
   renderCountdown?: (endsAt: string, instanceId: string) => ReactNode;
   /** Forms of this store by id, resolved server-side by the host (P4-10). Foreign ids are never present. */
   forms?: Record<string, PublicStoreForm>;
-  /** The interactive storefront form; without it (editor canvas) a static preview is drawn. */
-  renderForm?: (form: PublicStoreForm, instanceId: string) => ReactNode;
+  /** The interactive storefront form; without it (editor canvas) a static preview is drawn. `options.layout`: the node's layout (`inline`: fields and button on one row). */
+  renderForm?: (form: PublicStoreForm, instanceId: string, options?: { layout?: "stacked" | "inline" }) => ReactNode;
 }
 
 export type SectionRenderProps<P> = {
