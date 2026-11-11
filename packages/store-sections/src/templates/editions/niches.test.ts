@@ -15,9 +15,9 @@ const SHARED_KEYWORDS: Record<string, string[]> = {
 };
 
 describe("niche list", () => {
-  it("has the 82 niches of the plan, each id once", () => {
-    expect(NICHES).toHaveLength(82);
-    expect(new Set(NICHES.map((niche) => niche.id)).size).toBe(82);
+  it("has the 83 niches of the plan, each id once", () => {
+    expect(NICHES).toHaveLength(83);
+    expect(new Set(NICHES.map((niche) => niche.id)).size).toBe(83);
     for (const niche of NICHES) expect(niche.id).toMatch(/^[a-z]+(-[a-z]+)*$/);
   });
 
@@ -83,6 +83,6 @@ describe("niche list", () => {
     }
     expect(NICHE_LOOKS.dresses).toEqual(["fashion-luxe", "vella", "kasr"]);
     // 197 editions in the plan (§2.2 totals).
-    expect(Object.values(NICHE_LOOKS).reduce((sum, looks) => sum + looks.length, 0)).toBe(197);
+    expect(Object.values(NICHE_LOOKS).reduce((sum, looks) => sum + looks.length, 0)).toBe(199);
   });
 });

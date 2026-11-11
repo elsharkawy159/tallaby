@@ -1,6 +1,6 @@
 /**
  * The niche list of the niche editions (ROADMAP F-90, docs/systems/niche-editions-plan.md
- * §2.2): 82 sub-trades, each inside one store industry, with the words a
+ * §2.2): 83 sub-trades, each inside one store industry, with the words a
  * seller would type as a store category or name (Egyptian words and spellings
  * included) and the template looks picked for it, best first.
  *
@@ -97,6 +97,14 @@ const ROWS: readonly Row[] = [
     "احذية رجالي, جزم رجالي, جزمة رجالي, حذاء رجالي, شوز رجالي, احذية كلاسيك, جزم كلاسيك, لوفر, لوفرز, بوت رجالي, صندل رجالي, شبشب رجالي, احذية جلد, جزم جلد",
     "men's shoes, men shoes, shoes for men, loafers, loafer, oxford shoes, oxfords, derby shoes, formal shoes, leather shoes, men's boots, dress shoes, moccasins, brogues",
     "zay, ghorza",
+  ],
+  [
+    // Owner, 2026-11-11. "كروكس"/"كيروكس" is how Egyptian sellers name any rubber clog, so it is a
+    // matching word only; no pack, page or product names the brand.
+    "slippers-clogs", "shoes-bags", "شباشب وكروكس", "Slippers & clogs",
+    "شبشب, شباشب, شبشب بيتي, شباشب بيتي, كروكس, كيروكس, كلوج, سلايد, شبشب سلايد, شبشب صباع, زنوبة, شبشب بحر, شبشب فرو, شبشب طبي",
+    "slippers, slipper, flip flops, beach slippers, slides, sliders, clogs, clog, house slippers, home slippers, beach sandals, pool slides, fuzzy slippers, rubber clogs",
+    "streetwear, zay",
   ],
   [
     "handbags", "shoes-bags", "شنط يد", "Handbags",
