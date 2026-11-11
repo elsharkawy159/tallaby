@@ -11,6 +11,7 @@
 import type { ComponentNode, LibraryRef, SectionInstance, SiteLocale } from "../config/schema";
 import type { Localized } from "../core/types";
 import type { LibraryCategoryId } from "../library/types";
+import { MOTION_V2_MARK, MOTION_V2_PROP } from "../elements/motion-flags";
 import { getElementDefinition, type ElementIconName, type ElementType, type PatternVariant } from "../elements/registry";
 import type { StyleBreakpoint, StyleValues } from "../elements/style";
 import { fromTemplate, type MakeId, type NodeTemplate } from "../elements/tree";
@@ -63,9 +64,22 @@ export type Design = {
 
 const DESIGN_ID_RE = /^[a-z0-9-]+$/;
 
+/**
+ * A design. Its root `section` node gets the motion v2 marker
+ * (`props.motion: 2`, `elements/motion.ts`), so every section inserted from
+ * the library or a template from now on plays motion v2, while trees stores
+ * saved before keep their motion exactly (owner, 2026-11-11).
+ */
 export function defineDesign(design: Design): Design {
   if (!DESIGN_ID_RE.test(design.id)) throw new Error(`Invalid design id: ${design.id}`);
-  return design;
+  const tree = design.tree;
+  return { ...design, tree: (t) => withMotionV2(tree(t)) };
+}
+
+/** The root `section` node with the motion v2 marker (anything else unchanged). */
+export function withMotionV2(node: NodeTemplate): NodeTemplate {
+  if (node.type !== "section" || node.props?.[MOTION_V2_PROP] === MOTION_V2_MARK) return node;
+  return { ...node, props: { ...node.props, [MOTION_V2_PROP]: MOTION_V2_MARK } };
 }
 
 // ---------------------------------------------------------------------------

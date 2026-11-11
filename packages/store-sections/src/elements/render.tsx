@@ -70,7 +70,7 @@ import { SocialIcon } from "../social/icon";
 import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
 import { PaymentLogo, storePayments } from "./store-payments";
 import { isBannerPhoto, normalizeStyle } from "./style";
-import { REVEAL_CHOICES, REVEAL_MAX_STEP, marqueeSeconds, type RevealChoice, type RevealVariant } from "./motion";
+import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_CHOICES, REVEAL_MAX_STEP, isMotionV2, marqueeSeconds, splitWords, type RevealChoice, type RevealVariant } from "./motion";
 import { CountdownElement } from "./countdown";
 
 const ICONS: Record<ElementIconName, LucideIcon> = {
@@ -422,13 +422,67 @@ function revealOf(node: ComponentNode, props: Record<string, unknown>, ctx: Rend
   else if (node.type === "image") variant = "zoom-in";
   // A marquee fades in whole (its items move on their own).
   else if (node.type === "marquee") variant = "fade";
-  if (variant && choice === "auto" && preset !== "auto") variant = preset === "stagger" ? "fade-up" : preset;
+  if (variant && choice === "auto" && preset !== "auto") variant = presetVariant(preset, node);
+  // Motion v2's opt-in reveals only where they work: words on h2–h4 headings and short text, wipes on photos.
+  if (variant === "words" && !wordsText(node, props)) variant = "fade-up";
+  if (variant?.startsWith("wipe-") && node.type !== "image") variant = "fade-up";
   if (variant) {
     const attrs: Record<string, string> = { "data-reveal": variant };
     if (step > 0) attrs["data-reveal-step"] = String(step);
     return { attrs, children: null };
   }
   return { attrs: {}, children: REVEAL_ITEMS.has(node.type) ? "items" : "auto" };
+}
+
+/** What a section's Animation preset plays on a node that reveals: `stagger` fades up, `wipe` wipes photos (the rest fades up). */
+function presetVariant(preset: Exclude<NonNullable<RenderContext["revealPreset"]>, "auto">, node: ComponentNode): RevealVariant {
+  if (preset === "stagger") return "fade-up";
+  if (preset === "wipe") return node.type === "image" ? "wipe-start" : "fade-up";
+  return preset;
+}
+
+/** Longest text each kind of node draws (as in `renderNode`). */
+const WORDS_TEXT_MAX: Partial<Record<string, number>> = { heading: 200, paragraph: 2000, text: 300 };
+
+/**
+ * The text a `words` reveal splits: a heading (never the hero `h1`, LCP), a
+ * paragraph or a text node with plain text of 24 words at most; `null`
+ * otherwise (it then fades up whole).
+ */
+function wordsText(node: ComponentNode, props: Record<string, unknown>): string | null {
+  const max = WORDS_TEXT_MAX[node.type];
+  if (!max || props.priceNode != null || (node.type === "heading" && props.level === "h1")) return null;
+  const text = str(props.text, max);
+  return text.trim() && splitWords(text) ? text : null;
+}
+
+/**
+ * A node's text, split word by word for a `words` reveal (public pages only:
+ * the editor canvas edits plain text in place). Screen readers and search
+ * read the whole string once; the words are drawn beside it, hidden from
+ * them. Each word is a plain inline box, so without script or with reduced
+ * motion it is ordinary text.
+ */
+function revealText(attrs: Record<string, string>, text: string, ctx: RenderContext): ReactNode {
+  if (attrs["data-reveal"] !== "words" || ctx.mode === "edit") return text;
+  const pieces = splitWords(text);
+  if (!pieces) return text;
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {pieces.map((piece, i) =>
+          typeof piece === "string" ? (
+            piece
+          ) : (
+            <span key={i} data-w="" style={{ ["--i" as string]: piece.step }}>
+              {piece.word}
+            </span>
+          ),
+        )}
+      </span>
+    </>
+  );
 }
 
 /**
@@ -512,7 +566,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "section":
       if (ctx.mode !== "edit" && (missingData(node, ctx) || productSectionEmpty(node, ctx, scope))) return null;
       return (
-        <section {...attrs} className="relative isolate overflow-x-clip">
+        <section {...attrs} {...(isMotionV2(props) && { [MOTION_V2_ATTR]: String(MOTION_V2_MARK) })} className="relative isolate overflow-x-clip">
           {kids()}
         </section>
       );
@@ -594,21 +648,21 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       const Tag = level;
       return (
         <Tag {...attrs} className={cn("text-balance", HEADING_CLASS[level])}>
-          {(props.priceNode as ReactNode) ?? str(props.text, 200)}
+          {(props.priceNode as ReactNode) ?? revealText(reveal.attrs, str(props.text, 200), ctx)}
         </Tag>
       );
     }
     case "paragraph":
       return (
         <p {...attrs} className="whitespace-pre-line text-pretty leading-relaxed text-(--sf-muted)">
-          {(props.priceNode as ReactNode) ?? str(props.text, 2000)}
+          {(props.priceNode as ReactNode) ?? revealText(reveal.attrs, str(props.text, 2000), ctx)}
         </p>
       );
     case "text":
       // The price before a discount is always struck through (owner, 2026-10-29).
       return (
         <p {...attrs} className={cn("text-sm", props.bind === "compareAtPrice" && "line-through")}>
-          {(props.priceNode as ReactNode) ?? str(props.text, 300)}
+          {(props.priceNode as ReactNode) ?? revealText(reveal.attrs, str(props.text, 300), ctx)}
         </p>
       );
     case "blockQuote":
@@ -824,7 +878,8 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       const carousel = props.rail === true && node.type === "productList" && !isPaginated(node);
       const rail = carousel ? RAIL_CLASS : props.mobileRail === true && !isPaginated(node) ? MOBILE_RAIL_CLASS[node.type === "categoryList" ? "categories" : "cards"] : undefined;
       const grid = (
-        <div {...attrs} {...(carousel && { "data-rail": "" })} className={cn(!carousel && "grid", "min-w-0", rail)}>
+        // `data-sf-rail`: the motion runtime reveals a sideways row's cards together, when the row enters view (a card off to the side never crosses the screen).
+        <div {...attrs} {...(carousel && { "data-rail": "" })} {...(rail && { "data-sf-rail": "" })} className={cn(!carousel && "grid", "min-w-0", rail)}>
           {records.map((record, index) =>
             node.children.map((child) => (
               <ElementFragment key={`${recordKey(record)}-${child.id}`} node={child} ctx={ctx} depth={depth + 1} scope={record} reveal={reveal.children === null ? null : index} />

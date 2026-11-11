@@ -7,13 +7,25 @@
  * `opacity` and `transform` move, and nothing moves with reduced motion.
  */
 import { ANIMATION_SPEEDS, animationDefaultSchema } from "@workspace/motion/presets";
+import { INTENSITY_FACTOR, MOTION_V2, MOTION_V2_EASE, wordStep } from "@workspace/motion/tokens";
 import { SITE_ROOT_CLASS } from "../core/theme";
+import { MOTION_V2_ATTR, MOTION_V2_MARK, REVEAL_SPEED_FACTOR } from "./motion-flags";
 
+/** The reveals every store has had since before motion v2 (their v1 look is frozen). */
 export const REVEAL_VARIANTS = ["fade-up", "fade", "zoom-in", "slide-start", "slide-end"] as const;
-export type RevealVariant = (typeof REVEAL_VARIANTS)[number];
+/**
+ * Motion v2 reveals, opt-in only (an element's Reveal or a section's
+ * Animation): photos unmask from the start edge, the end edge or the bottom
+ * (`wipe-*`), and short text rises word by word (`words`). They use the v2
+ * tokens in every section.
+ */
+export const REVEAL_V2_VARIANTS = ["words", "wipe-start", "wipe-end", "wipe-up"] as const;
+export type RevealVariant = (typeof REVEAL_VARIANTS)[number] | (typeof REVEAL_V2_VARIANTS)[number];
 /** An element's Reveal override (advanced): `auto` lets the renderer pick. */
-export const REVEAL_CHOICES = ["auto", ...REVEAL_VARIANTS, "none"] as const;
+export const REVEAL_CHOICES = ["auto", ...REVEAL_VARIANTS, ...REVEAL_V2_VARIANTS, "none"] as const;
 export type RevealChoice = (typeof REVEAL_CHOICES)[number];
+
+export { MOTION_V2_ATTR, MOTION_V2_MARK, MOTION_V2_PROP, REVEAL_SPEED_FACTOR, isMotionV2 } from "./motion-flags";
 
 /** Stagger steps: item 7 onwards appears with item 6. */
 export const REVEAL_MAX_STEP = 5;
@@ -38,18 +50,21 @@ export function marqueeSeconds(value: unknown): number {
 export const ANIMATION_DEFAULTS = animationDefaultSchema.options;
 export { ANIMATION_SPEEDS };
 
-/** How much longer (or shorter) every reveal runs at each Theme › Animations speed (`--sf-speed`). */
-export const REVEAL_SPEED_FACTOR = { slow: 1.6, normal: 1, fast: 0.6 } as const;
 
 /**
  * Root attributes for Theme › Animations (`data-sf-motion="off"`), its speed
- * (`data-sf-speed`) and Hover effect (`data-sf-hover="none"`).
+ * (`data-sf-speed`), Hover effect (`data-sf-hover="none"`) and motion v2's
+ * Intensity (`data-sf-intensity`, only when it isn't normal; it scales v2
+ * distances and zoom amounts, never v1 sections).
  */
-export function siteMotionAttrs(motion: { reveal?: boolean; hoverZoom?: boolean; speed?: string } | null | undefined): Record<string, string> {
+export function siteMotionAttrs(
+  motion: { reveal?: boolean; hoverZoom?: boolean; speed?: string; intensity?: string } | null | undefined,
+): Record<string, string> {
   const out: Record<string, string> = {};
   if (motion?.reveal === false) out["data-sf-motion"] = "off";
   if (motion?.hoverZoom === false) out["data-sf-hover"] = "none";
   if (motion?.speed === "slow" || motion?.speed === "fast") out["data-sf-speed"] = motion.speed;
+  if (motion?.intensity === "subtle" || motion?.intensity === "expressive") out["data-sf-intensity"] = motion.intensity;
   return out;
 }
 
@@ -68,6 +83,56 @@ export function revealFrom(variant: string | undefined, rtl: boolean): { transfo
 
 /** Reveal timings in ms at normal speed, as in the CSS below. */
 export const REVEAL_TIMING = { duration: 1100, zoomDuration: 1600, step: STEP_MS } as const;
+
+/** Where a motion v2 reveal starts (an element in a `data-sf-mv="2"` section, or a v2-only variant anywhere), for the editor replay. */
+export function revealFromV2(variant: string | undefined, rtl: boolean, intensity = 1): { transform: string; clipPath?: string; opacity: number } {
+  const dist = MOTION_V2.fadeUp.distance * intensity;
+  const zoom = 1 + (MOTION_V2.zoomIn.scale - 1) * intensity;
+  const side = (px: number) => `translate3d(${rtl ? -px : px}px,0,0)`;
+  if (variant === "zoom-in") return { opacity: 0, transform: `scale(${zoom})`, clipPath: `inset(${MOTION_V2.zoomIn.clipInset}%)` };
+  if (variant === "slide-start") return { opacity: 0, transform: side(-MOTION_V2.slide.distance * intensity) };
+  if (variant === "slide-end") return { opacity: 0, transform: side(MOTION_V2.slide.distance * intensity) };
+  if (variant === "fade") return { opacity: 0, transform: "none" };
+  if (variant === "wipe-start" || variant === "wipe-end" || variant === "wipe-up") {
+    const wipeZoom = 1 + (MOTION_V2.wipe.scale - 1) * intensity;
+    return { opacity: 1, transform: `scale(${wipeZoom})`, clipPath: wipeInset(variant, rtl, `${Math.round((50 - 50 / wipeZoom) * 1000) / 1000}%`) };
+  }
+  return { opacity: 0, transform: `translate3d(0,${dist}px,0)` };
+}
+
+/**
+ * A wipe's hidden clip: 100% on the edge it grows away from, and `side` on
+ * the other three, so the photo, zoomed in while it settles, never spills out
+ * of its own box. `wipe-start` grows from the reading start (the right in
+ * Arabic), `wipe-end` from the reading end, `wipe-up` from the bottom.
+ */
+export function wipeInset(variant: "wipe-start" | "wipe-end" | "wipe-up", rtl: boolean, side: string): string {
+  if (variant === "wipe-up") return `inset(100% ${side} ${side} ${side})`;
+  // Growing from the left edge hides the right one fully, and the other way round.
+  const fromLeft = (variant === "wipe-start") !== rtl;
+  return fromLeft ? `inset(${side} 100% ${side} ${side})` : `inset(${side} ${side} ${side} 100%)`;
+}
+
+/** Motion v2 replay timings in ms at normal speed (`@workspace/motion/tokens`). */
+export const REVEAL_TIMING_V2 = {
+  duration: (variant: string | undefined): number =>
+    variant === "zoom-in"
+      ? MOTION_V2.zoomIn.duration
+      : variant === "fade"
+        ? MOTION_V2.fade.duration
+        : variant?.startsWith("wipe-")
+          ? MOTION_V2.wipe.duration
+          : variant === "words"
+            ? MOTION_V2.words.duration
+            : MOTION_V2.fadeUp.duration,
+  perWord: MOTION_V2.words.perWord,
+  ease: MOTION_V2_EASE,
+} as const;
+
+/** `--sf-intensity` for a site root's `data-sf-intensity` (normal when missing or unknown). */
+export function intensityFactor(value: string | null | undefined): number {
+  return value === "subtle" || value === "expressive" ? INTENSITY_FACTOR[value] : 1;
+}
 
 /**
  * Hover and press changes that ride along every element's own transition
@@ -115,7 +180,8 @@ const DRIFT_SCALE = 1.08;
 const sheet = `${root} dialog[data-sf-sheet]`;
 
 /** Fixed platform CSS, the same on every site (no seller input). */
-export const MOTION_CSS = [
+/** Motion v1: every store's CSS before motion v2. Frozen byte for byte (`motion-v1-freeze.test.tsx`). */
+export const MOTION_CSS_V1 = [
   "@media (prefers-reduced-motion:no-preference){",
   // Smooth in-page scrolling (anchor links, "back to top"); the html also carries
   // `data-scroll-behavior="smooth"`, so Next jumps instantly on route changes.
@@ -189,3 +255,78 @@ export const MOTION_CSS = [
   `:where(${root}:not(:lang(ar))) :where(h1,h2)[data-node-type="heading"]{letter-spacing:-0.015em}`,
   `${root}:lang(ar) [data-section-id] [data-node-id]{letter-spacing:0;text-transform:none}`,
 ].join("");
+
+// ---------------------------------------------------------------------------
+// Motion v2 (docs/motion-v2-plan.md §5.3), generated from `@workspace/motion/tokens`
+// ---------------------------------------------------------------------------
+
+/** A v2 time in seconds, scaled by the site speed. */
+const ms = (value: number) => `calc(${value / 1000}s * var(--sf-speed,1))`;
+/** One v2 reveal part: its time, the v2 ease, then its batch delay (`--sf-delay`, set by the runtime). */
+const partV2 = (property: string, duration: number) => `${property} ${ms(duration)} ${MOTION_V2_EASE} var(--sf-delay,0s)`;
+/** An element of a v2 section, under the motion runtime. */
+const v2 = `.sf-motion [${MOTION_V2_ATTR}="${MOTION_V2_MARK}"]`;
+const v2Hidden = `${v2} [data-reveal]:not(.is-inview)`;
+/** The v2-only variants, in any section (v1 sections included): their attribute is repeated so they outrank the v2 section rules. */
+const wipe = `[data-reveal^="wipe-"][data-reveal]`;
+const words = `[data-reveal="words"][data-reveal]`;
+/** The part of a wipe's clip that keeps a zoomed photo inside its own box: (1 - 1/zoom) / 2. */
+const WIPE_SIDE = "calc(50% - 50% / var(--sf-zoom))";
+const { fadeUp, fade, zoomIn, slide } = MOTION_V2;
+
+/** Motion v2 CSS: sections marked `data-sf-mv="2"` and the v2-only variants. Nothing here matches a v1 section's v1 reveals. */
+export const MOTION_CSS_V2 = [
+  // Words stay inline boxes in every state (no-JS and reduced motion too), so the line never reflows when the reveal ends.
+  "[data-w]{display:inline-block}",
+  "@media (prefers-reduced-motion:no-preference){",
+  `${root}[data-sf-intensity="subtle"]{--sf-intensity:${INTENSITY_FACTOR.subtle}}${root}[data-sf-intensity="expressive"]{--sf-intensity:${INTENSITY_FACTOR.expressive}}`,
+  // Tokens as variables, scaled by Theme › Motion › Intensity and Speed.
+  `:where([${MOTION_V2_ATTR}="${MOTION_V2_MARK}"],[data-reveal^="wipe-"],[data-reveal="words"]){--sf-dist:calc(${fadeUp.distance}px * var(--sf-intensity,1));--sf-zoom:calc(1 + ${Math.round((zoomIn.scale - 1) * 1000) / 1000} * var(--sf-intensity,1));--sf-dur:${ms(fadeUp.duration)}}`,
+  // The runtime gives each item of a batch its own `--sf-delay` (eased stagger); the server's step is ignored here.
+  `${v2} [data-reveal-step]{--sf-delay:0s}`,
+  `${v2Hidden}[data-reveal="fade-up"]{transform:translate3d(0,var(--sf-dist),0)}`,
+  `${v2Hidden}[data-reveal="zoom-in"]{transform:scale(var(--sf-zoom));clip-path:inset(${zoomIn.clipInset}%)}`,
+  `${v2Hidden}[data-reveal="slide-start"]{transform:translate3d(calc(-1 * var(--sf-dist)),0,0)}`,
+  `[dir="rtl"] ${v2Hidden}[data-reveal="slide-start"]{transform:translate3d(var(--sf-dist),0,0)}`,
+  `${v2Hidden}[data-reveal="slide-end"]{transform:translate3d(var(--sf-dist),0,0)}`,
+  `[dir="rtl"] ${v2Hidden}[data-reveal="slide-end"]{transform:translate3d(calc(-1 * var(--sf-dist)),0,0)}`,
+  `${v2} [data-reveal].is-inview{transition:${partV2("opacity", fade.duration)},transform var(--sf-dur) ${MOTION_V2_EASE} var(--sf-delay,0s),${HOVER_TRANSITION}}`,
+  `${v2} [data-reveal="fade"].is-inview{transition:${partV2("opacity", fade.duration)},${HOVER_TRANSITION}}`,
+  `${v2} :is([data-reveal="slide-start"],[data-reveal="slide-end"]).is-inview{transition:${partV2("opacity", fade.duration)},${partV2("transform", slide.duration)},${HOVER_TRANSITION}}`,
+  `${v2} [data-reveal="zoom-in"].is-inview{clip-path:inset(0);transition:${partV2("opacity", fade.duration)},${partV2("transform", zoomIn.duration)},${partV2("clip-path", zoomIn.duration)},${HOVER_TRANSITION}}`,
+  // Wipe: the photo stays opaque and unmasks from one edge while it settles from the zoom.
+  `.sf-motion ${wipe}:not(.is-inview){opacity:1;transform:scale(var(--sf-zoom))}`,
+  `.sf-motion [data-reveal="wipe-start"][data-reveal]:not(.is-inview){clip-path:${wipeInset("wipe-start", false, WIPE_SIDE)}}`,
+  `[dir="rtl"] .sf-motion [data-reveal="wipe-start"][data-reveal]:not(.is-inview){clip-path:${wipeInset("wipe-start", true, WIPE_SIDE)}}`,
+  `.sf-motion [data-reveal="wipe-end"][data-reveal]:not(.is-inview){clip-path:${wipeInset("wipe-end", false, WIPE_SIDE)}}`,
+  `[dir="rtl"] .sf-motion [data-reveal="wipe-end"][data-reveal]:not(.is-inview){clip-path:${wipeInset("wipe-end", true, WIPE_SIDE)}}`,
+  `.sf-motion [data-reveal="wipe-up"][data-reveal]:not(.is-inview){clip-path:${wipeInset("wipe-up", false, WIPE_SIDE)}}`,
+  `.sf-motion ${wipe}.is-inview{clip-path:inset(0);transition:${partV2("clip-path", MOTION_V2.wipe.duration)},${partV2("transform", MOTION_V2.wipe.duration)},${HOVER_TRANSITION}}`,
+  // Words: the element itself stays visible; each word (`--i`, capped by the server) rises in turn.
+  `.sf-motion ${words}:not(.is-inview){opacity:1;transform:none}`,
+  `.sf-motion ${words}:not(.is-inview) [data-w]{opacity:0;transform:translate3d(0,calc(${MOTION_V2.words.rise}em * var(--sf-intensity,1)),0)}`,
+  `.sf-motion ${words}.is-inview [data-w]{transition:opacity ${ms(MOTION_V2.words.duration)} ${MOTION_V2_EASE} calc(var(--sf-delay,0s) + var(--i,0) * ${ms(MOTION_V2.words.perWord)}),transform ${ms(MOTION_V2.words.duration)} ${MOTION_V2_EASE} calc(var(--sf-delay,0s) + var(--i,0) * ${ms(MOTION_V2.words.perWord)})}`,
+  "}",
+].join("");
+
+/** Fixed platform CSS, the same on every site (no seller input): v1 exactly as it was, then motion v2. */
+export const MOTION_CSS = MOTION_CSS_V1 + MOTION_CSS_V2;
+
+/** A `words` reveal's pieces: each word with its step (`--i`), and the real whitespace between them. */
+export type WordPiece = string | { word: string; step: number };
+
+/**
+ * Splits text for a `words` reveal on whitespace only, never into letters
+ * (Arabic letters must stay joined). `null` when it has no words or more than
+ * `MOTION_V2.words.maxWords` (it then fades up whole).
+ */
+export function splitWords(text: string): WordPiece[] | null {
+  const pieces: WordPiece[] = [];
+  let count = 0;
+  for (const token of text.split(/(\s+)/)) {
+    if (!token) continue;
+    if (/^\s+$/.test(token)) pieces.push(token);
+    else pieces.push({ word: token, step: wordStep(count++) });
+  }
+  return count > 0 && count <= MOTION_V2.words.maxWords ? pieces : null;
+}

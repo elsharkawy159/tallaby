@@ -5,7 +5,7 @@
  * accepted by the schema (old data) and draws nothing.
  */
 import { PRODUCT_SORTS, PRODUCT_SOURCES, type Localized, type PropDefinition } from "../core/types";
-import { MARQUEE_SPEED, REVEAL_CHOICES, type RevealChoice } from "./motion";
+import { MARQUEE_SPEED, REVEAL_CHOICES, REVEAL_V2_VARIANTS, type RevealChoice } from "./motion";
 import type { StyleBreakpoint, StyleValues } from "./style";
 import type { NodeTemplate } from "./tree";
 import { VIDEO_CAPABILITIES, parseVideoUrl } from "./video";
@@ -138,6 +138,11 @@ export interface ElementDefinition {
   fields: PropDefinition[];
   /** Hides fields that don't apply to these props beyond `showWhen`/`hideWhen` (a video site's unsupported options). */
   hideField?: (key: string, props: Record<string, unknown>) => boolean;
+  /**
+   * Props the platform writes and keeps, never shown in the inspector (the
+   * section's motion v2 marker, `props.motion`, written by `defineDesign`).
+   */
+  systemProps?: readonly string[];
 }
 
 const textField = (key: string, label: Localized, max: number, type: "text" | "textarea" = "text"): PropDefinition => ({
@@ -322,6 +327,8 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     defaultStyle: { paddingTop: 64, paddingBottom: 64 },
     defaultBreakpointStyles: { mobile: { paddingTop: 40, paddingBottom: 40 } },
     fields: [],
+    // Motion v2 marker (`elements/motion.ts` MOTION_V2_PROP): 2 on sections inserted from the library or a template.
+    systemProps: ["motion"],
   },
   // Layout
   {
@@ -1168,16 +1175,34 @@ const REVEAL_LABELS: Record<RevealChoice, Localized> = {
   "zoom-in": L("تقريب", "Zoom in"),
   "slide-start": L("انزلاق من البداية", "Slide from start"),
   "slide-end": L("انزلاق من النهاية", "Slide from end"),
+  words: L("كلمة بكلمة", "Word by word"),
+  "wipe-start": L("كشف من البداية", "Wipe from start"),
+  "wipe-end": L("كشف من النهاية", "Wipe from end"),
+  "wipe-up": L("كشف من الأسفل", "Wipe up"),
   none: L("بدون", "None"),
 };
 
+/** Motion v2 reveals each kind of element may pick: wipes for photos, words for headings and short text. */
+const V2_REVEALS: Partial<Record<ElementType, readonly RevealChoice[]>> = {
+  image: ["wipe-start", "wipe-end", "wipe-up"],
+  heading: ["words"],
+  paragraph: ["words"],
+  text: ["words"],
+};
+
 /** An element's Reveal override (docs/section-rules.md §6.6, advanced); Auto lets the renderer pick. */
-const revealField: PropDefinition = {
-  key: "reveal",
-  label: L("الظهور عند التمرير", "Reveal on scroll"),
-  type: "select",
-  group: "advanced",
-  options: REVEAL_CHOICES.map((value) => ({ value, label: REVEAL_LABELS[value] })),
+const revealField = (type: ElementType): PropDefinition => {
+  const extra = V2_REVEALS[type] ?? [];
+  return {
+    key: "reveal",
+    label: L("الظهور عند التمرير", "Reveal on scroll"),
+    type: "select",
+    group: "advanced",
+    options: REVEAL_CHOICES.filter((value) => !(REVEAL_V2_VARIANTS as readonly string[]).includes(value) || extra.includes(value)).map((value) => ({
+      value,
+      label: REVEAL_LABELS[value],
+    })),
+  };
 };
 
 /** Elements a seller may give their own reveal (content, not chrome or interactive parts). */
@@ -1199,7 +1224,7 @@ const REVEALABLE: ReadonlySet<ElementType> = new Set<ElementType>([
   "accordion",
 ]);
 
-export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = DEFINITIONS.map((d) => (REVEALABLE.has(d.type) ? { ...d, fields: [...d.fields, revealField] } : d));
+export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = DEFINITIONS.map((d) => (REVEALABLE.has(d.type) ? { ...d, fields: [...d.fields, revealField(d.type)] } : d));
 
 const BY_TYPE = new Map(ELEMENT_DEFINITIONS.map((d) => [d.type, d]));
 
