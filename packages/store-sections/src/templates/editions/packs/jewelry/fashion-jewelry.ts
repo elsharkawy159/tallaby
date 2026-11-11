@@ -242,4 +242,105 @@ export const FASHION_JEWELRY: Edition = {
     },
   },
   productPage: { copy: { reviews: L("قالوا إيه عن القطعة دي", "What buyers say"), related: L("تتلبس معاها", "Wear it with") } },
+  // Jewelry-luxe's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Bareeq", a warm
+  // gold glow for work and evenings, best sellers in the spotlight. Same pieces and prices; its own copy, photos
+  // and journey. The spotlight photo stays the pack's: only this look shows it.
+  perLook: {
+    "jewelry-luxe": {
+      store: {
+        name: L("بريق", "Bareeq"),
+        description: L("إكسسوارات مطلية دهب بلمسة هادية، للبس كل يوم وللسهرة.", "Gold-tone jewelry with a quiet shine, for every day and evenings out."),
+      },
+      copy: {
+        announcement: [
+          L("قطع جديدة كل شهر", "New pieces every month"),
+          L("الدفع عند الاستلام", "Cash on delivery"),
+          L("تغليف هدية مع كل طلب", "Gift wrapping with every order"),
+        ],
+        labels: { about: L("عن بريق", "About Bareeq") },
+        hero: {
+          alt: L("حلق دهبي وانسيال رفيع على ترابيزة برتقالي في نور الشمس", "Gold earrings and a fine bracelet on a terracotta table in sunlight"),
+          eyebrow: L("لمعة المسا", "Evening shine"),
+          title: L("لمعة دهبي من غير تكلّف", "A gold glow, kept simple"),
+          line: L(
+            "سلاسل وحلقان وانسيالات وخواتم مطلية دهب، تكمّل لبس الشغل وتنوّر السهرة.",
+            "Gold-plated necklaces, earrings, bracelets and rings that finish a work outfit and light up an evening.",
+          ),
+          cta: L("اكتشفي القطع", "Discover the pieces"),
+        },
+        categories: { title: L("اختاري على حسب القطعة", "Shop by piece") },
+        products: {
+          primary: {
+            eyebrow: L("الأكثر طلبًا", "Most ordered"),
+            title: L("القطع اللي بترجع تتطلب", "The pieces people reorder"),
+            line: L("القطع اللي عميلاتنا بيرجعوا يطلبوها، لنفسهم أو هدية.", "The pieces our customers come back for, for themselves or as gifts."),
+            cta: L("شوفي الكل", "See them all"),
+          },
+        },
+        story: {
+          alt: L("سلاسل دهبي متكوّمة على طبق بورسلين قديم", "Gold chains heaped on an old porcelain plate"),
+          eyebrow: L("إزاي بنختار", "How we choose"),
+          title: L("سلسلة واحدة، طرق كتير", "One chain, many ways to wear it"),
+          text: L(
+            "بنختار سلاسل تتلبس لوحدها أو فوق بعض، وبنكتب طول كل سلسلة بالسنتيمتر عشان تعرفي هتقع فين.",
+            "We choose chains that work alone or layered, and list each length in centimetres so you know where it will sit.",
+          ),
+          cta: L("حكايتنا", "Our story"),
+        },
+        trust: [
+          { title: L("قطع جديدة كل شهر", "New every month"), line: L("تشكيلة صغيرة بتتجدد", "A small range that keeps changing") },
+          { title: L("طول السلسلة مكتوب", "Chain length listed"), line: L("بالسنتيمتر في كل صفحة", "In centimetres on every page") },
+          { title: L("استبدال سهل", "Easy exchange"), line: L("خلال ١٤ يوم لو القطعة مالبستيهاش", "Within 14 days if the piece is unworn") },
+          { title: L("تغليف هدية", "Gift wrapping"), line: L("مع كل طلب", "With every order") },
+        ],
+        newsletter: {
+          title: L("قطعة جديدة كل شهر", "A new piece every month"),
+          line: L("رسالة في أول كل شهر فيها القطع الجديدة وإزاي تنسّقيها.", "A letter at the start of each month with the new pieces and how to wear them."),
+        },
+        footer: { line: L("بريق: إكسسوارات مطلية دهب، للبس كل يوم وللسهرة.", "Bareeq: gold-plated jewelry for every day and evenings out.") },
+        about: {
+          line: L("إكسسوارات مطلية دهب بلمسة هادية.", "Gold-plated jewelry with a quiet shine."),
+          alt: L("انسيال دهبي بحلقات عريضة على حجر رمادي جنب ورد توليب", "A chunky gold link bracelet on grey stone beside tulips"),
+          eyebrow: L("عن بريق", "About Bareeq"),
+          title: L("لمعة صغيرة تكفي", "A little shine is enough"),
+          text: L(
+            "بريق بدأ من علبة إكسسوار مليانة قطع بنحبها ومش بنلبسها. فبقينا نختار قطع بسيطة مطلية دهب عيار ١٨، تتلبس مع قميص الشغل زي ما تتلبس مع فستان السهرة.",
+            "Bareeq began with a jewelry box full of pieces we loved but never wore. So we choose simple 18K gold-plated pieces that go with a work shirt as well as an evening dress.",
+          ),
+          more: L(
+            "وصفحة كل قطعة بتقول خامتها بالظبط: ستانلس مطلي، فضة مطلية، كريستال أو لولي صناعي.",
+            "And each page names the exact material: plated steel, plated silver, crystal or faux pearl.",
+          ),
+          cta: L("اكتشفي القطع", "Discover the pieces"),
+        },
+        contact: {
+          title: L("كلّمينا", "Talk to us"),
+          line: L(
+            "عايزة تنسّقي سلاسل مع بعض؟ ابعتي لنا صورة لبسك ونقترح عليكي.",
+            "Want to layer necklaces? Send us a photo of your outfit and we suggest a few.",
+          ),
+          heading: L("اسألي عن تنسيق أو عن طلبك", "Ask about styling or your order"),
+        },
+        faq: {
+          line: L("العناية والخامات والتوصيل.", "Care, materials and delivery."),
+          question: L("إزاي أحافظ على لمعة القطعة؟", "How do I keep a piece shining?"),
+          answer: L(
+            "اقلعيها قبل الدش والرياضة والبرفان، وامسحيها بقماشة ناعمة ناشفة، واحفظيها في الكيس بتاعها بعيد عن الرطوبة.",
+            "Take it off before showering, exercise and perfume, wipe it with a soft dry cloth and keep it in its pouch away from damp.",
+          ),
+        },
+      },
+      // Pexels, checked by eye 2026-11-11 (no people, hands or lettering): warm gold on cream, blush and terracotta.
+      photos: {
+        hero: { wide: pexels(12320900, 1920), tall: pexels(19564918, 1200) },
+        tiles: [pexels(34372550, 1200), pexels(28716777, 1200), pexels(12638300, 1200), pexels(11567607, 1200)],
+        // Jewelry-luxe shows no banner; given so the two looks share no photo.
+        banner: pexels(7232404, 1920),
+        story: pexels(10816570, 1200),
+        about: pexels(20559476, 1200),
+      },
+      // The spotlight shows the best sellers (karat's shelf opens on the newest).
+      journey: { primary: "best-sellers" },
+    },
+  },
 };

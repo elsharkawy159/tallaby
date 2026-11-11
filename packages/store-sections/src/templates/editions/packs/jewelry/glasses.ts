@@ -195,4 +195,106 @@ export const GLASSES: Edition = {
     },
   },
   productPage: { copy: { reviews: L("آراء اللي لبسوها", "From people who wear it"), related: L("نظارات تانية هتعجبك", "More pairs you may like") } },
+  // Karat's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Bossa", colourful
+  // frames at friendly prices, pink and playful. Same pairs and prices; its own copy and photos. Karat's story
+  // rings 5 to 8 and its lookbook keep the pack's photos: only this look shows them.
+  perLook: {
+    karat: {
+      store: {
+        name: L("بُصّة", "Bossa"),
+        description: L("نظارات شمس ملوّنة وإطارات طبية وبلو لايت بأسعار تفرّح.", "Colourful sunglasses, optical frames and blue-light glasses at happy prices."),
+      },
+      copy: {
+        announcement: [
+          L("ألوان جديدة كل أسبوع", "New colours every week"),
+          L("التوصيل لكل مصر", "Delivery across Egypt"),
+          L("ادفع لما النظارة توصل", "Pay when your pair arrives"),
+        ],
+        labels: { about: L("عن بُصّة", "About Bossa") },
+        hero: {
+          alt: L("إطارين نظارة تورتواز على خلفية وردي", "Two tortoiseshell frames on a pink backdrop"),
+          eyebrow: L("نظارات بمزاج", "Glasses with a mood"),
+          title: L("بُص للدنيا بلون", "See the world in colour"),
+          line: L("شمس وطبي وبلو لايت، وكلها أقل من ٧٠٠ جنيه.", "Sunglasses, optical and blue-light frames, all under EGP 700."),
+          cta: L("شوف الجديد", "See what's new"),
+        },
+        categories: { title: L("كل نوع وله لون", "Every type, every colour") },
+        // The shelf's title, over its tabs.
+        products: { primary: { title: L("النظارات اللي بتخلص بسرعة", "The pairs that sell out fast") } },
+        story: {
+          alt: L("نظارة بإطار أسود وموف على ورق وردي جنب قبعة قش", "Black and purple frames on pink paper beside a straw hat"),
+          eyebrow: L("اختار بمزاجك", "Choose by mood"),
+          title: L("نظارة لكل لبس", "A pair for every outfit"),
+          text: L(
+            "مش لازم نظارة واحدة لكل حاجة: واحدة ملوّنة للبحر، وواحدة هادية للشغل، وبلو لايت قدام الشاشة.",
+            "You do not need one pair for everything: a bright one for the beach, a quiet one for work and blue-light glasses for the screen.",
+          ),
+          cta: L("عننا", "About us"),
+        },
+        trust: [
+          { title: L("أسعار تفرّح", "Friendly prices"), line: L("كل النظارات أقل من ٧٠٠ جنيه", "Every pair under EGP 700") },
+          { title: L("علبة وفوطة", "Case and cloth"), line: L("مع كل نظارة", "With every pair") },
+          { title: L("استبدال سهل", "Easy exchange"), line: L("لو الإطار مش مريح نبدّله", "If the frame is not comfortable, we swap it") },
+          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما النظارة توصل", "Pay when your pair arrives") },
+        ],
+        newsletter: {
+          title: L("الألوان الجديدة أول بأول", "New colours as they land"),
+          line: L("رسالة كل أسبوعين فيها الألوان والأشكال الجديدة.", "A letter every two weeks with the new colours and shapes."),
+        },
+        footer: { line: L("بُصّة: نظارات ملوّنة بأسعار تفرّح.", "Bossa: colourful glasses at happy prices.") },
+        about: {
+          line: L("نظارات ملوّنة بأسعار تفرّح.", "Colourful glasses at happy prices."),
+          alt: L("نظارة بإطار أسود وموف على ورق وردي جنب قبعة قش", "Black and purple frames on pink paper beside a straw hat"),
+          eyebrow: L("عننا", "About us"),
+          title: L("النظارة إكسسوار، مش عدسة وبس", "Glasses are an accessory, not just lenses"),
+          text: L(
+            "بُصّة بدأت عشان كنا عايزين نظارة شكلها حلو من غير ما ندفع مرتب شهر. بنختار ألوان وأشكال كتير، وبنجرّب كل إطار قبل ما ينزل.",
+            "Bossa started because we wanted good-looking glasses without paying a month's salary. We pick lots of colours and shapes, and try every frame before we list it.",
+          ),
+          more: L("وكل نظارة بتوصلك في علبتها ومعاها فوطة تنضيف.", "And every pair arrives in its case with a cleaning cloth."),
+          cta: L("شوف الجديد", "See what's new"),
+        },
+        contact: {
+          title: L("كلّمنا", "Talk to us"),
+          line: L("ابعت لنا صورتك ونقولك أي لون وأي شكل هيليق عليك.", "Send us a photo and we tell you which colour and shape suit you."),
+          heading: L("اسأل عن لون أو مقاس", "Ask about a colour or a size"),
+        },
+        faq: {
+          line: L("العدسات والمقاسات والتوصيل.", "Lenses, sizes and delivery."),
+          question: L("ينفع أركّب عدسات نظري في الإطار؟", "Can I fit my prescription lenses in a frame?"),
+          answer: L(
+            "أيوه، أي محل بصريات يقدر يركّب عدسات نظرك في الإطارات الطبية والبلو لايت. مقاس العدسة والكوبري مكتوب في صفحة كل إطار.",
+            "Yes, any optician can fit your prescription lenses in our optical and blue-light frames. The lens and bridge sizes are on each frame's page.",
+          ),
+        },
+        custom: {
+          "store-short": L("بُصّة", "Bossa"),
+          "hero-note": L("ألوان الموسم", "Colours of the season"),
+          // The round sticker: a price point, not an offer.
+          "hero-sticker-1": L("أقل من", "Under"),
+          "hero-sticker-2": L("٧٠٠", "700"),
+          "hero-sticker-3": L("جنيه", "EGP"),
+          "stories-1": L("شمس", "Sun"),
+          "stories-2": L("طبي", "Optical"),
+          "stories-3": L("للشاشة", "Screen"),
+          "stories-4": L("للصغيرين", "Little ones"),
+          "stories-5": L("مرايا", "Mirror lens"),
+          "stories-6": L("إطار أسود", "Black frame"),
+          "stories-7": L("مدوّرة", "Round"),
+          "stories-8": L("للمكتب", "Desk days"),
+          "lookbook-handle": L("بُصّة على إنستجرام", "Bossa on Instagram"),
+          "lookbook-line": L("ألوان جديدة كل أسبوع", "New colours every week"),
+        },
+      },
+      // Pexels, checked by eye 2026-11-11 (no people, no lettering on the temples): pink, peach and red.
+      photos: {
+        hero: { wide: pexels(26682030, 1920), tall: pexels(12693047, 1200) },
+        tiles: [pexels(20093375, 1200), pexels(13697735, 1200), pexels(35597800, 1200), pexels(5713793, 1200)],
+        // Karat shows no banner; given so the two looks share no photo.
+        banner: pexels(1313064, 1920),
+        // The about page.
+        story: pexels(10154994, 1200),
+      },
+    },
+  },
 };
