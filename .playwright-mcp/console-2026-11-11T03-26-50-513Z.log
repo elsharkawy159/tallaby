@@ -1,0 +1,99 @@
+[    1043ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ https://cdn.easy-orders.net/_next/static/chunks/8522.a961f42b95a83c86.js:1
+[    1198ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/71e7a36b-cbc4-4e9a-b253-9d9b222c1aa4:1
+[    1199ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/multi-lang:1
+[    1252ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/remove-watermark:1
+[    1253ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/sales-popup:1
+[    1253ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/spam-blocker:1
+[    1257ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/social-links/public:1
+[    1258ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/ui-blocks/store/71e7a36b-cbc4-4e9a-b253-9d9b222c1aa4:1
+[    1271ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/downsell:1
+[    1572ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/71e7a36b-cbc4-4e9a-b253-9d9b222c1aa4:1
+[    7803ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ https://cdn.easy-orders.net/_next/static/chunks/8522.a961f42b95a83c86.js:1
+[    7832ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/71e7a36b-cbc4-4e9a-b253-9d9b222c1aa4:1
+[    7833ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/ui-blocks/store/71e7a36b-cbc4-4e9a-b253-9d9b222c1aa4:1
+[    7837ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/multi-lang:1
+[    7837ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/remove-watermark:1
+[    7837ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/social-links/public:1
+[    7893ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/sales-popup:1
+[    7894ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/spam-blocker:1
+[    8020ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/downsell:1
+[    8021ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/71e7a36b-cbc4-4e9a-b253-9d9b222c1aa4:1
+[   15174ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ https://cdn.easy-orders.net/_next/static/chunks/8522.a961f42b95a83c86.js:1
+[   15215ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/75ee4b60-e53a-40c2-b808-0ea7c6368908:1
+[   15275ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/ui-blocks/store/75ee4b60-e53a-40c2-b808-0ea7c6368908:1
+[   15279ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/social-links/public:1
+[   15279ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/remove-watermark:1
+[   15279ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/multi-lang:1
+[   15280ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/spam-blocker:1
+[   15280ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/sales-popup:1
+[   15400ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/downsell:1
+[   15402ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/75ee4b60-e53a-40c2-b808-0ea7c6368908:1
+[   22199ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ https://cdn.easy-orders.net/_next/static/chunks/8522.a961f42b95a83c86.js:1
+[   22239ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/75ee4b60-e53a-40c2-b808-0ea7c6368908:1
+[   22240ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/ui-blocks/store/75ee4b60-e53a-40c2-b808-0ea7c6368908:1
+[   22304ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/sales-popup:1
+[   22305ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/multi-lang:1
+[   22305ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/spam-blocker:1
+[   22306ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/remove-watermark:1
+[   22306ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/social-links/public:1
+[   22368ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/downsell:1
+[   22398ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/75ee4b60-e53a-40c2-b808-0ea7c6368908:1
+[   27236ms] Invalid or unexpected token
+[   27283ms] SyntaxError: Failed to execute 'appendChild' on 'Node': Invalid or unexpected token
+    at m (https://cdn.easy-orders.net/_next/static/chunks/main-cd21fba45de985da.js:1:46154)
+    at https://cdn.easy-orders.net/_next/static/chunks/main-cd21fba45de985da.js:1:46835
+    at u2 (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:9:92098)
+    at o6 (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:9:113427)
+    at https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:9:108347
+    at x (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:33:1374)
+    at MessagePort.T (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:33:1904)
+[   27373ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/bc3a07c9-01b5-4dec-a6a4-520d729fae81:1
+[   27375ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/multi-lang:1
+[   27375ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/remove-watermark:1
+[   27381ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ https://cdn.easy-orders.net/_next/static/chunks/8522.a961f42b95a83c86.js:1
+[   27413ms] [WARNING] [Meta Pixel] - Multiple pixels with conflicting versions were detected on this page. @ https://connect.facebook.net/en_US/fbevents.js:206
+[   27447ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/spam-blocker:1
+[   27594ms] [ERROR] Failed to load resource: the server responded with a status of 410 () @ https://saadperfume.myeasyorders.com/x:1
+[   27601ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/orders-popup/store/bc3a07c9-01b5-4dec-a6a4-520d729fae81:1
+[   27713ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   27848ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/bc3a07c9-01b5-4dec-a6a4-520d729fae81:1
+[   28959ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   31025ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   35156ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   35830ms] Invalid or unexpected token
+[   35886ms] SyntaxError: Failed to execute 'appendChild' on 'Node': Invalid or unexpected token
+    at m (https://cdn.easy-orders.net/_next/static/chunks/main-cd21fba45de985da.js:1:46154)
+    at https://cdn.easy-orders.net/_next/static/chunks/main-cd21fba45de985da.js:1:46835
+    at u2 (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:9:92098)
+    at o6 (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:9:113427)
+    at https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:9:108347
+    at x (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:33:1374)
+    at MessagePort.T (https://cdn.easy-orders.net/_next/static/chunks/framework-3236775a9ca336a2.js:33:1904)
+[   35910ms] [WARNING] [Meta Pixel] - Multiple pixels with conflicting versions were detected on this page. @ https://connect.facebook.net/en_US/fbevents.js:206
+[   35971ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/multi-lang:1
+[   35971ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/remove-watermark:1
+[   35993ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ https://cdn.easy-orders.net/_next/static/chunks/8522.a961f42b95a83c86.js:1
+[   36031ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/plugins/store-plugins/is-active/spam-blocker:1
+[   36034ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/bc3a07c9-01b5-4dec-a6a4-520d729fae81:1
+[   36118ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/orders-popup/store/bc3a07c9-01b5-4dec-a6a4-520d729fae81:1
+[   36170ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   36194ms] [ERROR] Failed to load resource: the server responded with a status of 410 () @ https://saadperfume.myeasyorders.com/x:1
+[   36622ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://apps.easy-orders.net/api/v1/newsletter/store/bc3a07c9-01b5-4dec-a6a4-520d729fae81:1
+[   37237ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   39305ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   43467ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   51592ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   67779ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[   97906ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  128031ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  158155ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  188291ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  218418ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  248545ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  278707ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  308832ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  338971ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  369096ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  399233ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  429375ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
+[  459683ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://api.easy-orders.net/api/v1/categories/23ac4163-1d9c-45db-96a9-a1d93e94ab83:1
