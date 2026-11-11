@@ -1698,6 +1698,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-11 — F-90 distinct second looks: dresses, womens-shoes, tshirts, menswear, glasses, fashion-jewelry
+
+- **Owner (2026-11-11):** "not duplicate templates, make differences". Each niche's second look now has its own `perLook` entry: another demo store, its own copy (hero, story, announcements, newsletter, about, contact, FAQ, trust, main grid titles) and its own art-directed photos (hero 16:9 and 4:5, banner, story, four category tiles). Same products and prices.
+- **Stores:** dresses on `vella` = Karaz / كرز (bold colour, new every Thursday, evening row first); womens-shoes on `vella` = Mishya / مِشية (shoes for walking all day, boots row first); tshirts on `fashion-luxe` = Kheit / خيط (quiet colours, best sellers first, rows basics and oversized); menswear on `fashion-luxe` = Waqar / وقار (linen and wool for work and occasions, newest first, rows jackets and shirts); glasses on `karat` = Bossa / بُصّة (colourful frames under EGP 700); fashion-jewelry on `jewelry-luxe` = Bareeq / بريق (warm gold glow, best sellers in the spotlight).
+- **Photos:** Pexels (API search), each opened and checked by eye at full size: no people or body parts, no logos or readable lettering, none used elsewhere in `packages/store-sections/src`. Rejected after the check: 18257675, 12960395 (readable size labels), 38269423 (brand on the hangers), 8997980 (a readable sign), 5465844 (model lettering on the arm), 23495776 (a face relief), 8989864 (a dress in a menswear rail), 14816287 (insole lettering). Shop-the-look, spotlight, story-ring and lookbook photos stay the pack's (only one look shows each).
+- **Engine fix:** `editionForLook` now also points the categories' images at a look's own tiles (before, a `perLook` tile list failed `validateEdition`).
+- **Checks:** `vitest run src/templates` 27 files, 3,355 pass (validateEdition, sharedPhotos, look-guard, distinct); `tsc --noEmit` clean. Commits `771a6685`, `54dd111d`, `495d0e22`. Not done: the `/template-preview` screenshots (the C: drive was full).
+
 ### 2026-11-11 — `feat/section-system` merged to `main` and deployed (F-88, F-89, F-90)
 
 - **Owner (2026-11-11):** "merge everything to live". `feat/motion-v2`, `feat/gsap-homepage-motion` and `feat/template-product-page` were already inside the branch; `origin/main`'s footer commit was merged in first.
