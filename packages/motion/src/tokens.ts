@@ -33,6 +33,23 @@ export const MOTION_V2_STAGGER = [0, 60, 110, 150, 185, 215] as const;
 /** The v2 trigger: an element starts once its top crosses about 88% of the viewport height. */
 export const MOTION_V2_TRIGGER = { rootMargin: "0px 0px -12% 0px", threshold: 0 } as const;
 
+/**
+ * Scroll effects (docs/motion-v2-plan.md §5.5) at normal intensity: how far a
+ * parallax photo drifts (percent of its own height, each way), how much a
+ * zoom photo grows over its pass, where a hero's copy fades to and how far it
+ * rises on the way out, and the steps crossfade.
+ */
+export const MOTION_V2_SCROLL = {
+  parallaxRange: 8,
+  zoomScale: 0.12,
+  fadeExitOpacity: 0.2,
+  fadeExitRise: 24,
+  stepFade: 300,
+  stepDim: 0.35,
+  /** Count-up length at normal speed (ms). */
+  countUp: 1200,
+} as const;
+
 /** Theme › Motion › Intensity: scales distances and zoom amounts (`--sf-intensity`). Normal is stored as nothing. */
 export const MOTION_INTENSITIES = ["subtle", "normal", "expressive"] as const;
 export type MotionIntensity = (typeof MOTION_INTENSITIES)[number];
