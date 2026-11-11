@@ -133,14 +133,15 @@ describe("Tallaby Classic template", () => {
       expect(html.length, section.id).toBeGreaterThan(200);
       if (Object.keys(products).length) {
         expect(html).toContain('data-add="p1"');
-        expect(html).toContain('data-wish="p1"');
+        // The library's product card has no wishlist heart (home page, v8); Classic's own card (the product page) has.
+        if (walk(section.componentTree).some((n) => n.type === "wishlistButton")) expect(html).toContain('data-wish="p1"');
         expect(html).toContain("/products/p1");
       }
     }
   });
 
   it("hides product sections for a store with no products", () => {
-    const section = sections().find((s) => s.id === "tallaby-best-sellers")!;
+    const section = sections().find((s) => s.id === "tallaby-classic-best-sellers")!;
     const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={ctx({ products: {}, categories: [] })} defaultLocale="ar" />);
     expect(html).not.toContain("الأكثر مبيعًا");
   });

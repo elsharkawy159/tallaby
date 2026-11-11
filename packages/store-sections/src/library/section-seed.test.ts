@@ -62,8 +62,8 @@ describe("library sections seed", () => {
     ...["header-announcement-strip", "categories-portrait-labels", "text-big-marquee"],
     // Cross-sell offers element (F-32d, 2026-11-04).
     ...["product-cross-sell"],
-    // Motion v2 (F-88, 2026-11-11): the sticky steps design and Classic v7's two new sections.
-    ...["image-text-steps", "tallaby-classic-about-split-story", "tallaby-classic-stats-band"],
+    // Motion v2 (F-88, 2026-11-11): the sticky steps design. Classic v8's home page (F-89): its eight library designs.
+    ...["image-text-steps", "tallaby-classic-hero-carousel", "tallaby-classic-categories-photo-tiles", "tallaby-classic-best-sellers", "tallaby-classic-about-two-tone", "tallaby-classic-new-arrivals", "tallaby-classic-features-icon-cards", "tallaby-classic-faq-side", "tallaby-classic-newsletter-big"],
     // Look-first pilot L5 (F-89, 2026-11-11): photo dots.
     ...["about-product-anatomy", "gallery-shop-look"],
     // Look-first pilot L7 (F-89, 2026-11-11): the two-tone editorial banner.

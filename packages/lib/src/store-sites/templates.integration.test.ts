@@ -113,7 +113,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: true });
     const after = await home(w.a.sellerId, w.a.a2);
     const sections = (after.draftContent as { sections: { id: string }[] }).sections;
-    expect(sections.map((x) => x.id)).toEqual(["tallaby-hero", "extra"]);
+    expect(sections.map((x) => x.id)).toEqual(["tallaby-classic-hero-carousel", "extra"]);
     expect((await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.designSystem.colors).toMatchObject({ primary: "#ff3366" });
     expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: false, error: "nothing_to_undo" });
   });

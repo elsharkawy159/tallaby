@@ -1,8 +1,8 @@
 /**
- * Tallaby Classic home page, in the standard order of docs/template-rules.md
- * §2: a hero carousel, categories, best sellers, new arrivals, the trust
- * strip and the newsletter. No offers section: templates promise no discounts
- * (`../no-discounts.ts`; `classicOffers` stays a Classic design a seller can add). Categories and products come from data
+ * Tallaby Classic's own home designs (v3 to v7; since v8 the home page is built
+ * from library designs, `./home-library.ts`). In the order of docs/template-rules.md §2:
+ * a hero carousel, categories, best sellers, new arrivals, the trust
+ * strip and the newsletter. `classicOffers` stays a Classic design a seller can add. Categories and products come from data
  * nodes, so the page shows the store's own catalog; a list with nothing to
  * show hides its section.
  *
@@ -13,10 +13,8 @@
  */
 import type { ElementIconName } from "../../elements/registry";
 import type { StyleValues } from "../../elements/style";
-import { getDesign } from "../../designs";
-import { defineDesign, type Design, type DesignText, type TreeBuilder } from "../../designs/builder";
+import { defineDesign, type DesignText, type TreeBuilder } from "../../designs/builder";
 import { L, ON_BRAND, ON_BRAND_BODY } from "../../designs/_kit";
-import { fromLibrary } from "../_library";
 import { CLASSIC_PHOTOS } from "./photos";
 import { CARD, FLUSH, LINKS, SECTION, pill, productGrid, sectionHead } from "./_shared";
 
@@ -437,53 +435,9 @@ export const classicNewsletter = defineDesign({
 });
 
 /**
- * Classic v7 (motion v2, owner 2026-11-11): two visual breaks from the
- * motion v2 pilot library sections, with Classic's corners and section
- * rhythm. No steps section (owner).
+ * The home page of Classic v3 to v7. These stay Classic designs: stores made
+ * from those versions hold sections whose `source` is one of these ids, and
+ * the section library keys them (`getTemplateOwnDesign`). Since v8 the home
+ * page is built from library designs (`./home-library.ts`).
  */
-const classicLib = (id: string, patch: Parameters<typeof fromLibrary>[2]): Design => fromLibrary("tallaby-classic", getDesign(id)!, { corners: 16, ...patch });
-
-/** The store story between the two product rows: the photo wipes in and zooms slowly as the page scrolls. */
-export const classicStory = classicLib("about-split-story", {
-  photo: [undefined, undefined, CLASSIC_PHOTOS.shopFront],
-  text: {
-    "صورة القصة": L("واجهة متجر صغير بأبواب خشب", "A small shop front with wooden doors"),
-    "من ورشتنا": L("من متجرنا", "From our shop"),
-    "متصمم عشانك ومعمول في القاهرة": L("متجر صغير بيهتم بكل طلب", "A small shop that cares about every order"),
-    "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": L(
-      "بنختار كل منتج بعناية ونجرّبه قبل ما نعرضه عليك.",
-      "We choose every product with care and try it before we offer it to you.",
-    ),
-    "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": L("وبنرد على كل رسالة بنفسنا، قبل الطلب وبعده.", "And we answer every message ourselves, before and after you order."),
-    "حكايتنا": L("اعرف عنّا أكتر", "More about us"),
-  },
-  nodes: { "صورة ونص": { style: SECTION.style, mobile: SECTION.mobile } },
-});
-
-/** A brand band of figures that count up as it scrolls into view; plain promises the seller edits. */
-export const classicStats = classicLib("stats-band", {
-  text: {
-    "+٢٥ ألف": L("١٠٠٪", "100%"),
-    "طلب تم توصيله": L("منتجات أصلية", "Original products"),
-    "٤٫٨": L("٢٤", "24"),
-    "متوسط التقييم": L("ساعة بالكتير ونرد عليك", "Hours at most to hear back"),
-    "يومًا للاسترجاع": L("يوم للاستبدال والاسترجاع", "Days to exchange or return"),
-  },
-});
-
-/**
- * The standard home order (template rules §2) with two visual breaks: the
- * story between the product rows and the figures before the perks. Every
- * section but the hero rises in on scroll (§6a, on by default); only the
- * story has a scroll effect.
- */
-export const CLASSIC_HOME = [
-  classicHero,
-  classicCategories,
-  classicBestSellers,
-  classicStory,
-  classicNewArrivals,
-  classicStats,
-  classicPerks,
-  classicNewsletter,
-] as const;
+export const CLASSIC_LEGACY_HOME = [classicHero, classicCategories, classicBestSellers, classicNewArrivals, classicPerks, classicNewsletter] as const;

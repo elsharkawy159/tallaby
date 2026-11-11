@@ -7,7 +7,7 @@ import type { NodeTemplate } from "../../elements/tree";
 import type { ElementIconName } from "../../elements/registry";
 import { defineDesign, type DesignText, type TreeBuilder } from "../../designs/builder";
 import { L } from "../../designs/_kit";
-import { CARD, FLUSH, LINKS } from "./_shared";
+import { FLUSH, LINKS } from "./_shared";
 
 export const CLASSIC_STORE_NAME = L("كلاسيك ستور", "Classic Store");
 
@@ -21,7 +21,7 @@ const MENU = [
 ];
 
 /** The rounded brand mark (first letter, amber dot) and the store name. */
-export function classicLogo(t: TreeBuilder, size: "lg" | "xl" = "xl"): NodeTemplate {
+export function classicLogo(t: TreeBuilder, size: "lg" | "xl" = "xl", onBrand = false): NodeTemplate {
   return t.link(
     LINKS.home,
     [
@@ -29,7 +29,7 @@ export function classicLogo(t: TreeBuilder, size: "lg" | "xl" = "xl"): NodeTempl
         [
           t.box(
             [
-              t.text(L("ك", "C"), { role: "storeInitial", style: { fontWeight: "extrabold", color: "primaryInk", textAlign: "center", fontSize: "lg" } }),
+              t.text(L("ك", "C"), { role: "storeInitial", style: { fontWeight: "extrabold", color: onBrand ? "foreground" : "primaryInk", textAlign: "center", fontSize: "lg" } }),
               t.box([], {
                 label: L("النقطة", "Dot"),
                 style: {
@@ -39,18 +39,18 @@ export function classicLogo(t: TreeBuilder, size: "lg" | "xl" = "xl"): NodeTempl
                   width: "12px",
                   minHeight: 12,
                   radius: 999,
-                  background: "accent",
+                  background: onBrand ? "background" : "accent",
                   borderWidth: 2,
-                  borderColor: "background",
+                  borderColor: onBrand ? "primary" : "background",
                 },
               }),
             ],
             {
               label: L("العلامة", "Mark"),
-              style: { position: "relative", background: "primary", radius: 10, width: "36px", paddingTop: 5, paddingBottom: 5 },
+              style: { position: "relative", background: onBrand ? "accent" : "primary", radius: 10, width: "36px", paddingTop: 5, paddingBottom: 5 },
             },
           ),
-          t.text(CLASSIC_STORE_NAME, { role: "storeName", style: { fontWeight: "extrabold", fontSize: size, color: "foreground", lineHeight: "tight" }, mobile: { fontSize: "lg" } }),
+          t.text(CLASSIC_STORE_NAME, { role: "storeName", style: { fontWeight: "extrabold", fontSize: size, color: onBrand ? "primaryInk" : "foreground", lineHeight: "tight" }, mobile: { fontSize: "lg" } }),
         ],
         { label: L("الشعار", "Logo"), style: { gap: 10, wrap: false, alignItems: "center" } },
       ),
@@ -189,11 +189,11 @@ const PAYMENTS: DesignText[] = ["VISA", "Mastercard", "Meeza", "InstaPay", L("ا
 function column(t: TreeBuilder, title: DesignText, links: { text: DesignText; href: string }[]): NodeTemplate {
   return t.stack(
     [
-      t.heading(title, "h4", { style: { fontSize: "md", fontWeight: "bold" } }),
+      t.heading(title, "h4", { style: { fontSize: "sm", fontWeight: "semibold", color: "primaryInk", opacity: 60, marginBottom: 6 } }),
       ...links.map((l) =>
         t.link(l.href, [t.text(l.text, { style: { fontSize: "sm" } })], {
           label: L("رابط", "Link"),
-          style: { ...FLUSH, paddingTop: 4, paddingBottom: 4, color: "muted", hover: { color: "primary" } },
+          style: { ...FLUSH, paddingTop: 5, paddingBottom: 5, color: "primaryInk", opacity: 90, hover: { opacity: 70 } },
         }),
       ),
     ],
@@ -203,33 +203,33 @@ function column(t: TreeBuilder, title: DesignText, links: { text: DesignText; hr
 
 export const classicFooter = defineDesign({
   id: "tallaby-footer",
-  version: 2,
+  version: 3,
   category: "footers",
   subcategory: "payment-trust",
   name: L("كلاسيك: الفوتر", "Classic: footer"),
   description: L(
-    "الشعار والنبذة والسوشيال، وأعمدة التسوق والمساعدة والسياسات، وطرق الدفع وسطر «مدعوم من طلبي».",
-    "Logo, tagline and social links, Shop, Help and Policies columns, payment methods and a Powered by Tallaby line.",
+    "شريط بلون المتجر: الشعار والنبذة والسوشيال، وأعمدة التسوق والمساعدة والسياسات، وطرق الدفع وسطر «مدعوم من طلبي».",
+    "A band in the brand colour: logo, tagline and social links, Shop, Help and Policies columns, payment methods and a Powered by Tallaby line.",
   ),
   keywords: ["footer", "classic", "tallaby", "فوتر", "كلاسيك"],
   tree: (t) =>
-    t.section({ label: L("الفوتر", "Footer"), style: { paddingTop: 56, paddingBottom: 28, background: "surface", marginTop: 72 }, mobile: { paddingTop: 40, marginTop: 48 } }, [
+    t.section({ label: L("الفوتر", "Footer"), style: { paddingTop: 72, paddingBottom: 28, background: "primary", color: "primaryInk", marginTop: 72 }, mobile: { paddingTop: 48, marginTop: 48 } }, [
       t.container(
         [
           t.grid(
             [
               t.stack(
                 [
-                  classicLogo(t),
+                  classicLogo(t, "xl", true),
                   t.paragraph(L("أساسيات كل يوم، مختارة بعناية.", "Everyday essentials, picked with care."), {
                     role: "tagline",
-                    style: { color: "muted", maxWidth: "320px" },
+                    style: { color: "primaryInk", opacity: 85, fontSize: "sm", lineHeight: "relaxed", maxWidth: "320px" },
                   }),
                   t.row(
                     SOCIAL.map((s) =>
-                      t.link(s.href, [t.icon(s.icon, { style: { fontSize: "md", color: "foreground" } })], {
+                      t.link(s.href, [t.icon(s.icon, { style: { fontSize: "md", color: "primaryInk" } })], {
                         label: s.label,
-                        style: { width: "40px", paddingTop: 10, paddingBottom: 8, paddingStart: 0, paddingEnd: 0, radius: 999, background: "secondary", textAlign: "center", hover: { background: "accent" } },
+                        style: { width: "40px", paddingTop: 10, paddingBottom: 8, paddingStart: 0, paddingEnd: 0, radius: 999, borderWidth: 1, borderColor: "primaryInk", textAlign: "center", hover: { opacity: 70 } },
                       }),
                     ),
                     { label: L("التواصل الاجتماعي", "Social links"), role: "social", style: { gap: 8 } },
@@ -244,23 +244,23 @@ export const classicFooter = defineDesign({
             {
               label: L("الأعمدة", "Columns"),
               columns: { desktop: 4, tablet: 2, mobile: 1 },
-              style: { gap: 32 },
+              style: { gap: 48 },
               mobile: { gap: 28 },
             },
           ),
-          t.divider({ style: { marginTop: 36, marginBottom: 20 } }),
+          t.divider({ style: { marginTop: 56, marginBottom: 20, borderColor: "primaryInk", opacity: 20 }, mobile: { marginTop: 36 } }),
           t.row(
             [
               t.row(
                 [
                   t.text(L("© ٢٠٢٦ كلاسيك ستور. كل الحقوق محفوظة.", "© 2026 Classic Store. All rights reserved."), {
                     role: "copyright",
-                    style: { color: "muted", fontSize: "xs" },
+                    style: { color: "primaryInk", opacity: 70, fontSize: "xs" },
                   }),
                   t.link(TALLABY_URL, [t.text(L("مدعوم من طلبي", "Powered by Tallaby"), { style: { fontSize: "xs", fontWeight: "semibold" } })], {
                     label: L("مدعوم من طلبي", "Powered by Tallaby"),
                     role: "poweredBy",
-                    style: { ...FLUSH, color: "muted", hover: { color: "primary" } },
+                    style: { ...FLUSH, color: "primaryInk", hover: { opacity: 70 } },
                   }),
                 ],
                 { label: L("الحقوق", "Legal"), style: { gap: 14, alignItems: "center" } },
@@ -268,7 +268,7 @@ export const classicFooter = defineDesign({
               t.row(
                 PAYMENTS.map((p) =>
                   t.text(p, {
-                    style: { ...CARD, radius: 8, fontSize: "xs", fontWeight: "bold", color: "muted", paddingTop: 4, paddingBottom: 4, paddingStart: 10, paddingEnd: 10 },
+                    style: { background: "transparent", borderWidth: 1, borderColor: "primaryInk", radius: 8, fontSize: "xs", fontWeight: "semibold", color: "primaryInk", opacity: 80, paddingTop: 4, paddingBottom: 4, paddingStart: 10, paddingEnd: 10 },
                   }),
                 ),
                 { label: L("طرق الدفع", "Payment methods"), role: "payments", style: { gap: 6 } },
