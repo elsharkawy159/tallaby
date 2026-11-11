@@ -405,3 +405,42 @@ Manifest completeness and consistency; alias resolution and alias field names; s
 10. **Hero merges in §2.4.** Approve the six merges and the three new archetypes, or change the list.
 11. **Retiring unused designs.** 148 designs are in no template, but sellers may have inserted them. Retiring a design only hides it from the library; stores that used it keep their copy. Approve hiding, per category, in each session?
 12. **Composer in the AI builder.** Offer the composed template as a fourth suggestion first (recommended), or replace the shortlist straight away?
+
+---
+
+## 10. Look-first pilot (owner, 2026-11-11: this comes before Phases 1 to 4)
+
+Sellers say the sections and templates look old. Structure alone does not fix that, so the first work is the look, proven on three templates. The system phases above follow once the look is approved, in the same order as before.
+
+### 10.1 What the owner asked for, and what exists today
+
+| Request | Today | Work |
+|---|---|---|
+| Professional hero, category and product photos; products as white-background PNGs | 2,879 Pexels demo photos, mixed lighting and backgrounds, drawn `cover` | Product stage (§4.5); new white-background product photos for the three pilot templates; one art direction per template for hero, banner and category photos |
+| Motion and smoothness | Motion v2 is built; 7 of 325 designs use it | Every pilot section gets a reveal, and each pilot home page gets one or two scroll effects |
+| Hover effects | Photo zoom, second photo on hover, button lift, link underline exist | One product card with second photo, quick-add and the hover set, used by every pilot product section |
+| Before and after with a draggable handle | `about-before-after` shows two photos side by side; its own comment says the drag slider has no element yet | New `beforeAfter` element: two photos in one frame, a vertical handle dragged left and right (pointer, touch and arrow keys), mirrored in Arabic, both photos visible without the script. `about-before-after` v2 uses it |
+| Dots on a photo that open product or feature information | `about-shop-look` and `gallery-shoppable` have static numbered pins; a pin is not linked to a product | New `hotspot` element: a dot placed by percentage on a photo, opening a popover on hover, focus or tap. Two kinds: a store product (photo, name, price, link, add to cart) or seller text for a part of one product. New designs: shop the look (several products on one photo) and product anatomy (one product, a note per dot) |
+| Motion that follows the scroll and reverses on the way up | The scroll-progress engine already does this for `parallax`, `zoom`, `fade-exit`, `progress` and `steps`; reveals play once | Two more effects on the same engine: `reveal-scrub` (a section's photo and copy move into place as it crosses the screen, and back when scrolling up) and `horizontal` (a row of cards slides sideways while the page scrolls down). Still at most two scroll effects per page |
+
+Both new elements are fixed platform components with no seller code (`CLAUDE.md` rule 9), use transforms only, and work with reduced motion (the handle still drags; popovers open without animation).
+
+### 10.2 Order of work
+
+| Step | Work | Proof |
+|---|---|---|
+| L1 | Baseline: screenshots and scroll videos of `tallaby-classic`, `fashion-luxe` and `perfumes-bold` at 390 and 1280 px, Arabic and English, beside the reference Shopify themes the owner names | `docs/systems/pilot/before/` |
+| L2 | Product stage and the one product card (photo frame, second photo, quick-add, badge, price) | Render tests; the three templates' product sections |
+| L3 | Style tokens for the three pilot families (classic, luxe, bold) | The same section drawn in the three families |
+| L4 | Photos: white-background product photos and one art direction per pilot template | Owner approves the photo sets before they are used |
+| L5 | `beforeAfter` and `hotspot` elements, with their three designs | Element tests (drag, keyboard, RTL, no script) |
+| L6 | `reveal-scrub` and `horizontal` scroll effects | Scroll tests; perf numbers against the motion v2 baseline |
+| L7 | Rebuild the sections the three templates use, and their home rhythm (at most 9 sections, a photo-led break between product rows) | Rubric score of 4 or more on every row |
+| L8 | After screenshots and videos beside the baseline and the references. **Stop for owner review** | `docs/systems/pilot/after/` |
+
+### 10.3 Decisions this adds
+
+13. **Reference themes.** Name two or three Shopify themes to match. They set the rubric and the baseline comparison.
+14. **Photos for the pilot.** About 60 white-background product photos (20 per pilot template) plus hero, banner and category photos. Who supplies them: the owner, a curated stock search for approval, or generated images?
+15. **Hotspots and before/after on template home pages.** `template-rules.md` §2 keeps before/after sliders off template home pages. Allow one of them as a visual break in a template, or keep both library-only for sellers to add?
+16. **Live stores.** New elements and effects only reach a store when its seller adds the section or picks the template again. Confirm.
