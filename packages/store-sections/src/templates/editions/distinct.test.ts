@@ -22,6 +22,8 @@ const PENDING = new Set<string>([
   "belts-wallets",
   // zahra is the niche's template and shows the pack itself; karat and jewelry-luxe draw it until the accessories switch takes them off.
   "fashion-jewelry",
+  // kholkhal is the niche's template and shows the pack itself; karat draws it until the accessories switch takes it off.
+  "hair-accessories",
 ]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */

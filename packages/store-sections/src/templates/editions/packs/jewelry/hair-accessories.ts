@@ -41,9 +41,20 @@
  * Already used by a template: 20166054, 20166056, 8468177, 7123549,
  * 18421514, 31854724.
  *
- * Looks: `karat` only (its other planned look, `zahra`, is not
- * edition-ready). No `reviews`: a pack holds no invented buyer quotes, and
- * without them `karat` leaves its reviews section out.
+ * Looks: `kholkhal`, the niche's template (one template per niche, ROADMAP
+ * F-90): its default content and demo are this pack, so the template and the
+ * edition are one shop. `karat` still draws the pack until the accessories
+ * switch takes it off (`distinct.test.ts` lists the niche as pending). No
+ * `reviews`: a pack holds no invented buyer quotes, and without them `karat`
+ * leaves its reviews section out.
+ *
+ * Kholkhal's own photos (2026-11-11, checked by eye, none used elsewhere):
+ * hero slides 2 and 3, 20178660 (a gold shell claw clip on a white knit in
+ * window light) and 31702117 (embroidered snap clips on white). Left out:
+ * 13455596 (shop cards with a brand name on the bows), 31854721 (lettering on
+ * a soap), 40888671 (a bottle label behind the clip), 19832003 (a second bow
+ * beside the story's), 8100399 and 37472875 (bridal pins, too dark or too
+ * formal for the shop), 30284737 (a handbag takes the frame).
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, pexels } from "../../../library-template";
@@ -62,7 +73,7 @@ const TILES = [
 
 export const HAIR_ACCESSORIES: Edition = {
   niche: "hair-accessories",
-  looks: ["karat"],
+  looks: ["kholkhal", "karat"],
   priceBand: { min: 60, max: 450 },
   // Square packshots on pure white: a square white stage shows them whole, and every piece reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -109,6 +120,9 @@ export const HAIR_ACCESSORIES: Edition = {
     // A flower crown on gold polka-dot gift paper (landscape, the about page).
     about: pexels(4491555, 1200),
     custom: {
+      // `kholkhal`: the hero carousel's second and third slides (wide, cropped tall on phones; subject centred).
+      "hero-2": pexels(20178660, 1920), // a gold shell claw clip on a white knit in window light
+      "hero-3": pexels(31702117, 1920), // embroidered snap clips laid in two rows on white
       // `karat` lookbook, square: one large photo, then four small ones (subjects centred: the bento crops to the middle).
       "lookbook-1": pexels(9093777, 1200), // a lilac daisy scrunchie beside a cup of daisies on white
       "lookbook-2": pexels(33343186, 900), // cream and beige claw clips with white pebbles
@@ -158,8 +172,8 @@ export const HAIR_ACCESSORIES: Edition = {
       eyebrow: L("جاهزة للهدية", "Ready to gift"),
       title: L("كل طلب بيتغلف بفيونكة", "Every order is tied with a bow"),
       text: L(
-        "بنجرب كل توكة قبل ما تتشحن: السوستة بتقفل كويس، والأطراف ناعمة ومش بتشد الشعر. وبعدين بنحطها في كيس صغير ونربطه بفيونكة، ولو هدية اكتبي لنا الإهداء ونكتبه على كارت.",
-        "We test every clip before it ships: the spring closes firmly and the edges are smooth, so nothing pulls your hair. Then it goes into a little pouch tied with a bow, and if it is a gift, send us your message and we write it on a card.",
+        "بنجرب كل توكة قبل ما تتشحن: السوستة بتقفل كويس، والأطراف ناعمة ومش بتشد الشعر.",
+        "We test every clip before it ships: the spring closes firmly and the edges are smooth, so nothing pulls your hair.",
       ),
       cta: L("اعرفي حكايتنا", "Read our story"),
     },
@@ -214,7 +228,49 @@ export const HAIR_ACCESSORIES: Edition = {
         "For thick or long hair, take the large claw clip; for fine or short hair, the small ones hold better. Our scrunchies have no metal parts, so they do not snap hair or leave a dent.",
       ),
     },
+    // `kholkhal`: slide 2's button, and the button of the scrunchie campaign beside its row.
+    nav: [
+      { label: L("تسوقي الكلبس", "Shop claw clips"), href: `/products?search=${encodeURIComponent("كلبس")}` },
+      { label: L("تسوقي السكرانشي", "Shop scrunchies"), href: `/products?search=${encodeURIComponent("سكرانشي")}` },
+    ],
+    // `kholkhal`: "shop by hair type", three ready-made searches; each option is the item, its search, and `custom.finder-N-for` / `-under`.
+    finder: {
+      title: L("قولي لنا شعرك عامل إزاي", "Tell us about your hair"),
+      line: L("كل جملة بتفتح التوك اللي تناسبها.", "Each sentence opens the pieces that suit it."),
+      options: [
+        { label: L("كلبس كبير", "a big claw clip"), href: `/products?search=${encodeURIComponent("كلبس")}` },
+        { label: L("سكرانشي ساتان", "a satin scrunchie"), href: `/products?search=${encodeURIComponent("سكرانشي")}` },
+        { label: L("بنس صغيرة", "small pins"), href: `/products?search=${encodeURIComponent("بنس")}` },
+      ],
+    },
     custom: {
+      // `kholkhal`: the story's second paragraph (one sentence, after `story.text`).
+      "story-more": L(
+        "وبعدين بنحطها في كيس صغير ونربطه بفيونكة، ولو هدية اكتبي لنا الإهداء ونكتبه على كارت.",
+        "Then it goes into a little pouch tied with a bow, and if it is a gift, send us your message and we write it on a card.",
+      ),
+      // `kholkhal`: hero slides 2 and 3 (`photos.custom.hero-2`, `-3`). Titles of at most 6 words; slide 2's button is `nav.0`, slide 3's opens the shop from the lowest price.
+      "hero-2-alt": L("توكة كلبس دهبي على شكل صدفة فوق بلوفر أبيض", "A gold shell claw clip on a white knit"),
+      "hero-2-eyebrow": L("كلبس بكل المقاسات", "Claw clips in every size"),
+      "hero-2-title": L("شعرك فوق في ثانية", "Hair up in a second"),
+      "hero-2-line": L("كلبس يمسك الشعر التقيل من غير ما يوجع، وصغير للشعر الخفيف.", "Claw clips that hold thick hair without pinching, and small ones for fine hair."),
+      "hero-3-alt": L("توك صغيرة متطرزة بورد على خلفية بيضا", "Embroidered snap clips on white"),
+      "hero-3-eyebrow": L("هدية صغيرة", "A little gift"),
+      "hero-3-title": L("هدايا تحت ٢٥٠ جنيه", "Gifts under EGP 250"),
+      "hero-3-line": L("توك وبنس تتهادى في أي مناسبة، وكلها بتتغلف بفيونكة.", "Clips and pins to give for any occasion, each one wrapped with a bow."),
+      "hero-3-cta": L("تسوقي الهدايا", "Shop gifts"),
+      // `kholkhal`: the finder's three sentences, after each option's item ("for …", "under …"). Prices are true of the catalog.
+      "finder-1-for": L("شعر تقيل", "thick hair"),
+      "finder-1-under": L("٢٥٠ جنيه", "EGP 250"),
+      "finder-2-for": L("شعر كيرلي", "curly hair"),
+      "finder-2-under": L("٢٥٠ جنيه", "EGP 250"),
+      "finder-3-for": L("شعر خفيف", "fine hair"),
+      "finder-3-under": L("٢٠٠ جنيه", "EGP 200"),
+      // `kholkhal`: the campaign beside the scrunchie row, on `photos.banner` (landscape on desktop, tall on phones).
+      "banner-alt": L("تلات بكر شريط حرير جنب وردة بيضا", "Three spools of silk ribbon beside a white rose"),
+      "banner-eyebrow": L("ساتان وقطيفة وقطن", "Satin, velvet and cotton"),
+      "banner-title": L("سكرانشي مش بيشد الشعر", "Scrunchies that never pull"),
+      "banner-line": L("من غير معدن، فمش بيكسر الشعر ولا بيعمل علامة.", "No metal parts, so they never snap hair or leave a dent."),
       // `karat`: the store's short name inside a sentence.
       "store-short": L("فيونكة", "Fyonka"),
       // `karat`: the hero's small line and its round sticker (a price point, not an offer).
