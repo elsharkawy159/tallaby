@@ -1,23 +1,38 @@
 /**
- * Perfumes Bold (2026-10-28, perfumes niche, bold / promotional): white
- * paper, oxblood red and a bright saffron gold, Alexandria headings over
- * Tajawal, 12px corners and a 1320px container. A loud, after-dark home: the
- * announcement header, a background video of a crystal-capped bottle beside a
- * vase of flowers, round category stories, a rail of best sellers, the brand story over
- * a dark floral still life, four category rows with rounded frames, the big
- * newsletter and the sign-off footer. Built from section library designs
- * (`fromLibrary`).
+ * Perfumes Bold (perfumes niche, bold): white paper, oxblood red and a bright
+ * saffron gold, Alexandria headings over Tajawal, 12px corners and a 1320px
+ * container.
  *
- * Photos and video: Pexels, each checked by eye at full size (2026-10-28):
- * bottles, oils, burners and diffusers only, no people or hands, no brand
- * names or readable labels, none used twice. Video 8447362 (file
- * 8447362-uhd_2732_1440_25fps.mp4) with its poster; about 7814535 (home),
- * 7814724 (about page); tiles 31650365, 8361491, 6707562, 248032, 18245863,
- * 7984846, 6914953; products listed in DEMO.
+ * v2 (look-first pilot, 2026-11-11, ROADMAP F-89, docs/systems/plan.md §10):
+ * one shoot of pale studio packshots on a product stage, and a home that
+ * alternates products with photo-led breaks. Home (9 sections):
+ *   1. `hero-video`: the crystal-capped bottle video, lighter dim
+ *   2. `categories-photo-tiles`: five warm portrait tiles
+ *   3. `products-rail`: best sellers, two rows of four
+ *   4. `about-product-anatomy`: one bottle with three note dots (cap, juice,
+ *      glass base); the template's signature section
+ *   5. `products-category-carousel`: the first category (women)
+ *   6. `about-two-tone`: the ingredients story on the oxblood, `reveal-scrub`
+ *   7. `products-spotlight`: a tall tile beside the three newest (the attars)
+ *   8. `features-icon-cards`: delivery, cash on delivery, exchange, WhatsApp
+ *   9. `newsletter-big`
+ * Header `header-announcement`, footer `footer-signoff`. Scroll effects: the
+ * hero's `fade-exit` and the two-tone's `reveal-scrub` (two per page at most).
+ * Built from section library designs (`fromLibrary`); `tweak` sets what a
+ * patch cannot reach by layer label (each dot's place, the anatomy photo's
+ * ratio, the tile columns).
+ *
+ * Photos and video: Pexels, checked 2026-11-11, white-studio packshots for
+ * the products; no people, no brand names, none used twice. Video 8447362
+ * (file 8447362-uhd_2732_1440_25fps.mp4) with its poster. Category tiles:
+ * women 40618550, men 8789603, oud 11435366, home 7795826, gifts 36482359.
+ * Anatomy 20419734 (dots at the cap 49/15, the juice 50/58, the base 50/85).
+ * Two-tone 10487658 (saffron). Spotlight tile 8284238. About page 8450207.
+ * Products are listed in DEMO.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
-import { categoryRows } from "../_category-rows";
+import type { NodeTemplate } from "../../elements/tree";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { demoStore, handle, libraryTemplate, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
@@ -26,33 +41,50 @@ export const PERFUMES_BOLD_KEY = "perfumes-bold";
 
 const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(PERFUMES_BOLD_KEY, getDesign(id)!, { corners: 12, ...patch });
 
+const mapTree = (node: NodeTemplate, fn: (node: NodeTemplate) => NodeTemplate): NodeTemplate => {
+  const next = fn(node);
+  return { ...next, children: next.children?.map((child) => mapTree(child, fn)) };
+};
+
+/**
+ * A library copy with values a patch cannot name: nodes that share one layer
+ * label (the anatomy dots) or have none (its photo). Props and styles only,
+ * never the structure, so the section still stores as a library ref.
+ */
+const tweak = (design: Design, fn: (node: NodeTemplate) => NodeTemplate): Design => ({ ...design, tree: (t) => mapTree(design.tree(t), fn) });
+
 const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
 const WHATSAPP = "https://wa.me/201098436215";
 
-const P = (id: number) => pexels(id, 800);
+/**
+ * A packshot cropped to the 3:4 product stage on its subject (the photo
+ * host's focal-point crop): `x` / `y` are where the bottle sits in the photo
+ * (0–1) and `z` zooms in on a small one, so the grid reads as one shoot.
+ */
+const P = (id: number, x = 0.5, y = 0.5, z = 1) => `${pexels(id, 800)}&h=1067&fit=crop&crop=focalpoint&fp-x=${x}&fp-y=${y}&fp-z=${z}`;
 const PHOTOS = {
   heroVideo: pexelsVideo(8447362, "8447362-uhd_2732_1440_25fps.mp4"),
   heroPoster: pexelsVideoPoster(8447362),
-  darkFlowers: pexels(7814535, 1200),
-  aboutPage: pexels(7814724, 1200),
-  // Category stories.
-  catWomen: pexels(31650365, 1200),
-  catMen: pexels(8361491, 1200),
-  catOud: pexels(6707562, 1200),
-  catBakhoor: pexels(248032, 1200),
-  catHome: pexels(18245863, 1200),
-  catGifts: pexels(7984846, 1200),
-  catMinis: pexels(6914953, 1200),
+  anatomy: pexels(20419734, 1200),
+  saffron: pexels(10487658, 1280),
+  spotlight: pexels(8284238, 1200),
+  aboutPage: pexels(8450207, 1200),
+  // Category tiles.
+  catWomen: pexels(40618550, 900),
+  catMen: pexels(8789603, 900),
+  catOud: pexels(11435366, 900),
+  catHome: pexels(7795826, 900),
+  catGifts: pexels(36482359, 900),
 };
 
 const NAME = L("شذا", "Shaza");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("ثبات ١٢ ساعة · توصيل لكل محافظات مصر", "12-hour wear · Delivery across Egypt"),
+    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("توصيل لكل محافظات مصر · استبدال خلال ١٤ يوم", "Delivery across Egypt · 14-day exchange"),
     "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
     "م": L("ش", "S"),
     "اسم متجرك": NAME,
@@ -79,49 +111,147 @@ const footer = lib("footer-signoff", {
   links: { "https://wa.me/": WHATSAPP, "/products": [SHOP, NEW, BEST, RATED] },
 });
 
+/** The anatomy dots, in tree order: percent from the photo's left and top (the fourth is hidden). */
+const DOTS = [
+  { x: 49, y: 15 },
+  { x: 50, y: 58 },
+  { x: 50, y: 85 },
+] as const;
+
+function anatomy(): Design {
+  // Counts the dots of one build; reset at the section root, since a design's tree is built many times.
+  let dot = 0;
+  return tweak(
+    lib("about-product-anatomy", {
+      photo: [undefined, PHOTOS.anatomy],
+      text: {
+        "التفاصيل": L("جوّه الزجاجة", "Inside the bottle"),
+        "اللي بيفرق في كل جزء": L("كل جزء في الزجاجة له شغلانة", "Every part of the bottle has a job"),
+        "دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.": L("دوس على أي نقطة وشوف إيه اللي بيخلّي العطر يعيش.", "Tap a dot to see what makes the scent last."),
+        "صورة المنتج": L("زجاجة عطر أزرق بغطا أسود على خلفية رمادي فاتح", "A blue perfume bottle with a black cap on a pale grey backdrop"),
+        "الخامة": L("الغطا والبخّاخ", "Cap & atomiser"),
+        "خامة متينة تستحمل الاستخدام اليومي.": L(
+          "غطا تقيل بيقفل بإحكام، وتحته بخّاخ ناعم بيطلّع رذاذ خفيف ومتوزّع من غير تنقيط.",
+          "A weighted cap that shuts tight over a fine-mist atomiser: an even cloud, never a drip.",
+        ),
+        "التشطيب": L("العطر نفسه", "The juice"),
+        "تشطيب نضيف في كل تفصيلة، من أول نظرة.": L(
+          "أو دو بارفان بتركيز ٢٠٪: بيعيش من ٨ لـ ١٢ ساعة على الجلد، وأكتر على الهدوم.",
+          "Eau de parfum at 20% concentration: 8 to 12 hours on skin, longer on clothes.",
+        ),
+        "المقاس": L("القاعدة الزجاج", "The glass base"),
+        "مقاس عملي يناسب أغلب الاستخدامات.": L(
+          "زجاج سميك بقاعدة تقيلة: الزجاجة ثابتة على التسريحة، والعطر محمي من الحرارة.",
+          "Thick glass on a heavy base: steady on the dresser, and it shields the scent from heat.",
+        ),
+      },
+      nodes: { "الصورة": { style: { maxWidth: "460px" } } },
+    }),
+    (node) => {
+      if (node.type === "section") dot = 0;
+      if (node.type === "image") return { ...node, style: { ...node.style, aspectRatio: "portrait" }, breakpointStyles: { ...node.breakpointStyles, mobile: { ...node.breakpointStyles?.mobile, aspectRatio: "portrait" } } };
+      if (node.type !== "hotspot") return node;
+      const at = DOTS[dot++];
+      return at ? { ...node, props: { ...node.props, x: at.x, y: at.y } } : { ...node, style: { ...node.style, hidden: true }, breakpointStyles: { tablet: { hidden: true }, mobile: { hidden: true } } };
+    },
+  );
+}
+
 const home: Design[] = [
   lib("hero-video", {
     photo: [PHOTOS.heroPoster],
-    nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 40 } } },
+    nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 28 } } },
     text: {
       "فيديو الواجهة": L("زجاجة عطر بغطا كريستال جنب فازة زهور على حيطة حمرا", "A crystal-capped perfume bottle beside a vase of flowers against a red wall"),
       "المجموعة الجديدة": L("مجموعة الليل", "The After Dark collection"),
       "مساحتك، بطريقتك": L("ريحتك أول حاجة بتوصل", "Your scent arrives before you do"),
       "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "عطور تركيز عالي بتعيش ١٢ ساعة على الهدوم، من العود للفانيليا للورد البلدي.",
-        "High-concentration fragrances that last 12 hours on clothes, from oud to vanilla to Egyptian rose.",
+        "عطور بتركيز عالي بتفضل معاك طول اليوم، من العود للعنبر للورد البلدي.",
+        "High-concentration fragrances that stay with you all day, from oud to amber to Egyptian rose.",
       ),
       "تسوّق الآن": L("تسوّق المجموعة", "Shop the collection"),
       "شوف الجديد": L("وصل حديثًا", "New in"),
     },
     links: { "/products": SHOP, "/products?sort=newest": NEW },
   }),
-  lib("categories-circles", {
-    text: { "بتدوّر على إيه؟": L("ريحتك المزاج ده إيه؟", "What’s your mood today?") },
+  tweak(
+    lib("categories-photo-tiles", {
+      text: { "تسوّق حسب القسم": L("اختار على مزاجك", "Shop by mood") },
+      lists: [{ limit: 5 }],
+    }),
+    (node) =>
+      node.type === "categoryList"
+        ? {
+            ...node,
+            // Five tiles: one row on desktop and tablets, a swipe row on phones (a 2-column grid would orphan the fifth).
+            props: { ...node.props, mobileRail: true },
+            style: { ...node.style, columns: 5, gap: 16 },
+            breakpointStyles: { ...node.breakpointStyles, tablet: { ...node.breakpointStyles?.tablet, columns: 5, gap: 12 } },
+          }
+        : node,
+  ),
+  // A real two-column grid on phones (the rail's swipe row shows one card and a half there).
+  tweak(
+    lib("products-rail", {
+      text: {
+        "بيحبوها": L("اللي الكل بيسأل عليه", "The ones everyone asks about"),
+        "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
+        "عرض الكل": L("عرض الكل", "View all"),
+      },
+      links: { "/products": BEST },
+    }),
+    // Four across on tablets too, so eight products never leave a short last row.
+    (node) =>
+      node.type === "productList"
+        ? { ...node, props: { ...node.props, mobileRail: false }, breakpointStyles: { ...node.breakpointStyles, tablet: { ...node.breakpointStyles?.tablet, columns: 4, gap: 16 } } }
+        : node,
+  ),
+  anatomy(),
+  // The first category (women): its four leading products in one row (the demo has six, and a row never ends short).
+  lib("products-category-carousel", {
+    as: "category-row-1",
+    text: { "عرض الكل": L("شوف الكل", "See all") },
+    lists: [{ offset: 0 }, { categoryIndex: 1, limit: 4 }],
   }),
-  lib("products-rail", {
+  lib("about-two-tone", {
+    photo: [undefined, undefined, PHOTOS.saffron],
     text: {
-      "بيحبوها": L("اللي الكل بيسأل عليه", "The ones everyone asks about"),
-      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
+      "صناعة مصرية": L("المكوّنات", "The ingredients"),
+      "متعمول عشان يريّحك ويعيش معاك": L("زعفران، ورد وعود. من غير اختصارات", "Saffron, rose and oud. No shortcuts"),
+      "خامات مختارة وتفاصيل متشطبة بإيدينا، عشان تفضل معاك سنين.": L(
+        "بنختار الخامة الأول وبعدين نبني عليها العطر: زعفران حقيقي، ورد بلدي مجفف ودهن عود معتّق.",
+        "We pick the raw material first, then build the scent around it: real saffron, dried Egyptian rose and aged oud oil.",
+      ),
+      "تسوّق الآن": L("اعرف حكايتنا", "Our story"),
+      "صورة البانر": L("خيوط زعفران حمرا في معلقة خشب", "Red saffron threads in a wooden spoon"),
+    },
+    links: { "/products": "/about" },
+  }),
+  lib("products-spotlight", {
+    photo: [undefined, undefined, PHOTOS.spotlight],
+    text: {
+      "صورة المجموعة": L("زجاجتين عنبري على قماش دافي في ضوء دهبي", "Two amber bottles on warm fabric in golden light"),
+      "مجموعة": L("وصل حديثًا", "New in"),
+      "مجموعة الموسم": L("العطور الزيتية والعود", "Attars & oud oils"),
+      "قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.": L("نقطة واحدة تكفي. زيوت مركّزة من غير كحول، في قوارير زجاج.", "One drop is enough. Concentrated oils with no alcohol, in glass bottles."),
+      "تسوّق المجموعة": L("تسوّق الجديد", "Shop new in"),
+      "من المجموعة": L("آخر ما نزل", "Just landed"),
       "عرض الكل": L("عرض الكل", "View all"),
     },
+    links: { "/products": NEW },
   }),
-  lib("about-wide", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.darkFlowers],
+  lib("features-icon-cards", {
     text: {
-      "كل منتج بيتراجع قبل ما يوصلك": L("بنجرّب كل عطر ١٢ ساعة قبل ما ينزل", "Every scent is worn for 12 hours before it launches"),
-      "صورة المتجر": L("زجاجة عطر وسط ورد ملوّن ونقط مية على سطح أسود", "A perfume bottle among bright flowers and water drops on a black surface"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف، عشان تفتح العلبة وانت مطمن.": L(
-        "+٢٥٠٠٠ زجاجة خرجت من مصر الجديدة لكل المحافظات. بنركّب بتركيز ٢٠٪، وبنختبر الثبات على القماش والجلد، واللي مايكملش اليوم مايتباعش.",
-        "25,000+ bottles shipped from Heliopolis across Egypt. We blend at 20% concentration, test wear on fabric and skin, and anything that fades before evening never reaches the shelf.",
-      ),
-      "شوف إزاي بنشتغل": L("اعرف حكايتنا", "Our story"),
+      "لماذا تشتري منا": L("ليه شذا", "Why Shaza"),
+      "تسوّق وأنت مطمئن": L("اطلب وانت مطمّن", "Order with peace of mind"),
+      "توصيل سريع": L("توصيل لكل المحافظات", "Delivery across Egypt"),
+      "من يوم إلى ٤ أيام لكل المحافظات": L("من يومين لـ ٤ أيام، والزجاجة متغلّفة ضد الكسر", "2 to 4 days, packed so the bottle arrives whole"),
+      "أو ادفع بالبطاقة والمحفظة": L("افتح الطرد وادفع وانت مستلم", "Pay when the parcel reaches you"),
+      "استرجاع سهل": L("استبدال خلال ١٤ يوم", "14-day exchange"),
+      "١٤ يومًا لتغيّر رأيك": L("طالما الزجاجة لسه مقفولة", "As long as the bottle is still sealed"),
+      "دعم على واتساب": L("محتار؟ نرشّحلك", "Not sure? We’ll pick with you"),
+      "أشخاص حقيقيون طوال الأسبوع": L("قولنا بتحب إيه على واتساب", "Tell us what you like on WhatsApp"),
     },
-  }),
-  ...categoryRows(lib, {
-    viewAll: L("شوف الكل", "See all"),
-    muted: [1, 3],
-    nodes: { "صورة المنتج": { style: { radius: 12 } } },
   }),
   lib("newsletter-big", {
     text: {
@@ -135,7 +265,7 @@ const about: Design[] = [
   pageHeader(lib, "about-header", L("عن شذا", "About Shaza"), L("عطور تركيز عالي، متركّبة في مصر الجديدة.", "High-concentration fragrances, blended in Heliopolis.")),
   aboutStory(lib, {
     photo: PHOTOS.aboutPage,
-    alt: L("قارورة عطر وفرع ورد بنفسجي في إضاءة غامقة", "A perfume vial and a purple flower stem in dark light"),
+    alt: L("طاولة تركيب العطور بزجاجات عنبرية ومكونات طبيعية", "A perfume-making table with amber bottles and natural ingredients"),
     eyebrow: L("من ٢٠١٩", "Since 2019"),
     title: L("العطر لازم يتحس من أول رشّة", "A scent should be felt from the first spray"),
     text: L(
@@ -155,69 +285,59 @@ const DEMO = demoStore({
     ["womens-perfumes", "عطور حريمي", "Women", PHOTOS.catWomen],
     ["mens-perfumes", "عطور رجالي", "Men", PHOTOS.catMen],
     ["oud-attars", "العود والزيوت", "Oud & oils", PHOTOS.catOud],
-    ["bakhoor-incense", "البخور والمباخر", "Bakhoor", PHOTOS.catBakhoor],
-    ["home-fragrance", "معطّرات البيت", "Home scents", PHOTOS.catHome],
-    ["gift-sets", "الهدايا", "Gifts", PHOTOS.catGifts],
-    ["travel-minis", "أحجام الشنطة", "Minis", PHOTOS.catMinis],
+    ["home-fragrance", "البيت والبخور", "Home & incense", PHOTOS.catHome],
+    ["gift-sets", "الهدايا والميني", "Gifts & minis", PHOTOS.catGifts],
   ],
+  // Newest first in the order written: the three attars lead "New in" (the spotlight).
   products: [
-    // Women
-    ["ruby-noir-edp", "womens-perfumes", "روبي نوار ٥٠ مل", "Ruby Noir EDP 50ml", P(35824747), 1950, { isFeatured: true, rating: 4.9, sold90: 142 }],
-    ["pearl-bow-edp", "womens-perfumes", "بيرل بو ١٠٠ مل", "Pearl Bow EDP 100ml", P(36910560), 2250, { rating: 4.8, sold90: 97 }],
-    ["pearl-lace-edp", "womens-perfumes", "بيرل لايس ٥٠ مل", "Pearl Lace EDP 50ml", P(5357791), 1750, { rating: 4.7, sold90: 74 }],
-    ["prism-silk-extrait", "womens-perfumes", "بريزم سيلك إكستريه ٣٠ مل", "Prism Silk Extrait 30ml", P(16085723), 2650, { compareAtPrice: 2950, rating: 4.9, sold90: 88 }],
-    ["fuchsia-crush-edp", "womens-perfumes", "فوشيا كراش ٥٠ مل", "Fuchsia Crush EDP 50ml", P(9464723), 1850, { rating: 4.6, sold90: 52 }],
-    ["tangerine-pop-edp", "womens-perfumes", "تانجرين بوب ٥٠ مل", "Tangerine Pop EDP 50ml", P(8166972), 1650, { rating: 4.7, sold90: 61 }],
-    ["satin-musk-edp", "womens-perfumes", "ساتان مسك ٧٥ مل", "Satin Musk EDP 75ml", P(8553210), 2450, { rating: 4.8, sold90: 39 }],
-    ["desert-gold-edp", "womens-perfumes", "ديزرت جولد ٥٠ مل", "Desert Gold EDP 50ml", P(29614397), 1150, { rating: 4.5, sold90: 33, inStock: false }],
-    // Men
-    ["matte-black-edp", "mens-perfumes", "مات بلاك ١٠٠ مل", "Matte Black EDP 100ml", P(5994299), 2350, { isFeatured: true, rating: 4.9, sold90: 131 }],
-    ["gold-edge-edp", "mens-perfumes", "جولد إدج ١٠٠ مل", "Gold Edge EDP 100ml", P(7702669), 2650, { rating: 4.8, sold90: 86 }],
-    ["saffron-flash-edp", "mens-perfumes", "سافرون فلاش ٥٠ مل", "Saffron Flash EDP 50ml", P(28745493), 1850, { rating: 4.7, sold90: 63 }],
-    ["ice-stone-edt", "mens-perfumes", "آيس ستون ١٠٠ مل", "Ice Stone EDT 100ml", P(7814961), 1950, { compareAtPrice: 2200, rating: 4.6, sold90: 48 }],
-    ["amber-arch-edp", "mens-perfumes", "عنبر آرش ١٠٠ مل", "Amber Arch EDP 100ml", P(8167961), 2150, { rating: 4.8, sold90: 57 }],
-    ["oud-trio-set", "mens-perfumes", "طقم العود التلاتي", "The Oud Trio Set", P(36355219), 2850, { rating: 4.9, sold90: 72 }],
-    ["cognac-wood-edp", "mens-perfumes", "كونياك وود ١٠٠ مل", "Cognac Wood EDP 100ml", P(8166570), 2050, { rating: 4.6, sold90: 34 }],
-    ["bronze-spray-edp", "mens-perfumes", "برونز ٥٠ مل", "Bronze EDP 50ml", P(8789609), 1750, { rating: 4.5, sold90: 27 }],
     // Oud & oils
-    ["emerald-drop-oud", "oud-attars", "دهن عود إمرالد ١٢ مل", "Emerald Drop Oud Oil 12ml", P(4021773), 2400, { rating: 4.8, sold90: 46 }],
-    ["lava-stone-oud", "oud-attars", "عود لافا ستون ١٢ مل", "Lava Stone Oud Oil 12ml", P(8054327), 2650, { isFeatured: true, rating: 4.9, sold90: 58 }],
-    ["amber-oud-trio", "oud-attars", "طقم عود وعنبر ٣ زجاجات", "Oud & Amber Trio", P(6621462), 3450, { rating: 4.7, sold90: 31 }],
-    ["flower-infusion-oil", "oud-attars", "زيت زهور منقوع ١٠ مل", "Flower-Infused Oil 10ml", P(8450212), 1250, { rating: 4.6, sold90: 29 }],
-    ["crystal-bowl-oud", "oud-attars", "دهن عود في كاسة كريستال ٣٠ مل", "Crystal Bowl Oud Oil 30ml", P(37000509), 1650, { rating: 4.7, sold90: 35 }],
-    ["pure-drop-oud", "oud-attars", "عود بيور دروب ١٥ مل", "Pure Drop Oud Oil 15ml", P(35874415), 2950, { compareAtPrice: 3300, rating: 4.8, sold90: 22 }],
-    ["black-stone-oil", "oud-attars", "زيت عنبر الحجر الأسود ٣٠ مل", "Black Stone Amber Oil 30ml", P(18708752), 1850, { rating: 4.6, sold90: 18 }],
-    ["twin-attar-cubes", "oud-attars", "عطر زيتي مزدوج ٢ × ٦ مل", "Twin Attar Set 2 × 6ml", P(12402360), 1450, { rating: 4.5, sold90: 24 }],
-    // Bakhoor
-    ["bronze-dome-mabkhara", "bakhoor-incense", "مبخرة برونز بقبة", "Bronze Dome Mabkhara", P(17860008), 1450, { rating: 4.9, sold90: 44 }],
-    ["silver-deer-burner", "bakhoor-incense", "مبخرة الغزال الفضي", "Silver Stag Burner", P(10694212), 1850, { rating: 4.7, sold90: 21 }],
-    ["copper-filigree-mabkhara", "bakhoor-incense", "مبخرة نحاس مخرّمة", "Copper Filigree Mabkhara", P(18724948), 1250, { rating: 4.8, sold90: 33 }],
-    ["blue-backflow-burner", "bakhoor-incense", "مبخرة الشلال الأزرق", "Blue Backflow Burner", P(14974513), 690, { rating: 4.6, sold90: 52 }],
-    ["moroccan-incense-box", "bakhoor-incense", "مبخرة مغربي مربعة", "Moroccan Square Burner", P(38112011), 990, { rating: 4.5, sold90: 17 }],
-    ["snake-incense-holder", "bakhoor-incense", "حامل بخور التعبان", "Serpent Incense Holder", P(15877826), 590, { rating: 4.7, sold90: 26 }],
-    ["porcelain-oil-burner", "bakhoor-incense", "مبخرة زيوت بورسلين", "Porcelain Oil Burner", P(20390728), 750, { rating: 4.6, sold90: 19 }],
-    ["bamboo-stick-holder", "bakhoor-incense", "حامل أعواد بامبو", "Bamboo Stick Holder", P(9547310), 320, { rating: 4.4, sold90: 23 }],
-    // Home scents
-    ["golden-glow-diffuser", "home-fragrance", "معطّر جولدن جلو ٢٠٠ مل", "Golden Glow Diffuser 200ml", P(14766418), 890, { rating: 4.8, sold90: 39 }],
-    ["amber-bottle-diffuser", "home-fragrance", "معطّر الزجاجة العنبري ٢٠٠ مل", "Amber Bottle Diffuser 200ml", P(8313229), 790, { rating: 4.6, sold90: 25 }],
-    ["black-reed-diffuser", "home-fragrance", "معطّر الأعواد السودا", "Black Reed Diffuser", P(29149066), 1150, { rating: 4.7, sold90: 18 }],
-    // Gifts
-    ["sparkle-gift-box", "gift-sets", "علبة الهدية اللامعة", "The Sparkle Gift Box", P(6166572), 2950, { rating: 4.8, sold90: 28 }],
-    ["gold-bow-gift", "gift-sets", "صندوق الفيونكة الدهبي", "The Gold Bow Box", P(35159213), 3950, { rating: 4.9, sold90: 16 }],
-    // Minis
-    ["clear-roller-10ml", "travel-minis", "رول أون شفاف ١٠ مل", "Clear Roll-on 10ml", P(31797988), 390, { rating: 4.6, sold90: 64 }],
-    ["amber-roller-six", "travel-minis", "طقم ٦ رول أون عنبري", "Six Amber Roll-ons", P(6693891), 1450, { rating: 4.7, sold90: 37 }],
-    ["cork-mini-duo", "travel-minis", "اتنين ميني بالفلّين", "Cork Mini Duo", P(672051), 990, { rating: 4.5, sold90: 21 }],
+    ["ornate-glass-attar", "oud-attars", "قارورة عطر زجاج مزخرف ١٢ مل", "Ornate Glass Attar Bottle 12ml", P(36389336), 2650, { isFeatured: true, rating: 4.9, sold90: 128 }],
+    ["dropper-oud-oil", "oud-attars", "دهن عود بالقطّارة ١٠ مل", "Dropper Oud Oil 10ml", P(8054398), 2400, { rating: 4.8, sold90: 96 }],
+    ["blue-glass-attar", "oud-attars", "قارورة عطر زجاج أزرق ٦ مل", "Blue Glass Attar Bottle 6ml", P(36389333), 1450, { rating: 4.7, sold90: 41 }],
+    ["amber-oud-oil", "oud-attars", "دهن عود كهرمان ٣٠ مل", "Amber Oud Oil 30ml", P(8054396), 2950, { compareAtPrice: 3300, rating: 4.8, sold90: 38 }],
+    ["amber-oil-5ml", "oud-attars", "زيت عنبر ٥ مل", "Amber Oil 5ml", P(6915311, 0.5, 0.5, 1.4), 1250, { rating: 4.6, sold90: 29 }],
+    ["vintage-amber-bottle", "oud-attars", "زجاجة العنبر العتيقة ٥٠ مل", "Vintage Amber Bottle 50ml", P(5978582), 1850, { rating: 4.7, sold90: 33 }],
+    // Women
+    ["rouge-sensation-edp", "womens-perfumes", "روج سنسيشن ٥٠ مل", "Rouge Sensation EDP 50ml", P(32630384), 2150, { isFeatured: true, rating: 4.9, sold90: 142 }],
+    ["pearl-clear-edp", "womens-perfumes", "بيرل كلير ١٠٠ مل", "Pearl Clear EDP 100ml", P(15574229, 0.62, 0.5, 1), 1750, { rating: 4.8, sold90: 104 }],
+    ["dried-rose-edp", "womens-perfumes", "ورد مجفف ٧٥ مل", "Dried Rose EDP 75ml", P(1190829, 0.3, 0.5, 1), 2250, { rating: 4.8, sold90: 88 }],
+    ["rose-duo-mist-set", "womens-perfumes", "سيت رشّاشين وردي", "Rose Duo Mist Set", P(36437999, 0.42, 0.5, 1), 1450, { rating: 4.7, sold90: 76 }],
+    ["seashell-star-edp", "womens-perfumes", "نجمة الصدف ٣٠ مل", "Seashell Star EDP 30ml", P(16266295, 0.5, 0.6, 1.5), 1250, { rating: 4.6, sold90: 52 }],
+    ["rose-petal-edp", "womens-perfumes", "روز بيتال ٥٠ مل", "Rose Petal EDP 50ml", P(32645088, 0.5, 0.6, 1.4), 1850, { rating: 4.5, sold90: 27, inStock: false }],
+    // Men
+    ["mahogany-amber-edp", "mens-perfumes", "ماهوجني عنبر ١٠٠ مل", "Mahogany Amber EDP 100ml", P(4735929, 0.5, 0.6, 1.3), 2150, { isFeatured: true, rating: 4.9, sold90: 117 }],
+    ["black-oud-edt", "mens-perfumes", "عود أسود ٥٠ مل", "Black Oud EDT 50ml", P(6800931, 0.5, 0.62, 2.6), 1650, { rating: 4.7, sold90: 44 }],
+    ["desert-night-edt", "mens-perfumes", "ليل الصحرا ٥٠ مل", "Desert Night EDT 50ml", P(6801173, 0.72, 0.55, 2.3), 1650, { rating: 4.6, sold90: 36 }],
+    ["mens-body-mist", "mens-perfumes", "بودي مست رجالي ١٠٠ مل", "Men’s Body Mist 100ml", P(6801177, 0.35, 0.5, 2.2), 990, { rating: 4.5, sold90: 31 }],
+    ["frost-cork-edt", "mens-perfumes", "فروست كورك ١٠٠ مل", "Frost Cork EDT 100ml", P(8776570, 0.52, 0.6, 2.2), 1450, { rating: 4.5, sold90: 22 }],
+    // Home scents & incense
+    ["amber-bottle-diffuser", "home-fragrance", "معطّر الزجاجة العنبري ٢٠٠ مل", "Amber Bottle Diffuser 200ml", P(8313229), 790, { rating: 4.8, sold90: 81 }],
+    ["clear-glass-diffuser", "home-fragrance", "معطّر الزجاج الشفاف", "Clear Glass Diffuser", P(18987029), 890, { rating: 4.7, sold90: 47 }],
+    ["room-spray-150ml", "home-fragrance", "معطّر غرف ١٥٠ مل", "Room Spray 150ml", P(15766704), 520, { rating: 4.6, sold90: 43 }],
+    ["grey-pillar-candle", "home-fragrance", "شمعة رمادي", "Grey Pillar Candle", P(6800787, 0.5, 0.6, 1.4), 390, { rating: 4.6, sold90: 34 }],
+    ["white-candle-marble", "home-fragrance", "شمعة بيضا على رخام", "White Candle on Marble", P(7815528, 0.5, 0.65, 1.4), 450, { rating: 4.7, sold90: 39 }],
+    ["marble-incense-dish", "home-fragrance", "طبق بخور رخام", "Marble Incense Dish", P(17840019), 690, { rating: 4.8, sold90: 49 }],
+    ["palo-santo-dish", "home-fragrance", "طبق بالو سانتو سيراميك", "Ceramic Palo Santo Dish", P(5706231, 0.7, 0.55, 1.3), 590, { rating: 4.5, sold90: 19 }],
+    ["cat-incense-holder", "home-fragrance", "حامل بخور القطة", "Cat Incense Holder", P(15580445), 450, { rating: 4.7, sold90: 26 }],
+    // Gifts & minis
+    ["black-gift-box-set", "gift-sets", "طقم علب الهدايا السودا", "Black Gift Box Set", P(4271698, 0.58, 0.5, 1), 3250, { rating: 4.8, sold90: 28 }],
+    ["black-gift-box-tower", "gift-sets", "برج علب الهدايا السودا", "Black Gift Box Tower", P(4271695), 2950, { rating: 4.8, sold90: 24 }],
+    ["black-box-collection", "gift-sets", "مجموعة العلب السودا", "Black Box Collection", P(4271699), 2450, { rating: 4.7, sold90: 18 }],
+    ["large-black-gift-box", "gift-sets", "علبة هدية سودا كبيرة", "Large Black Gift Box", P(4271697), 3950, { rating: 4.9, sold90: 16 }],
+    ["four-roll-ons-set", "gift-sets", "طقم ٤ رول أون", "Four Roll-ons Set", P(6707556), 990, { rating: 4.7, sold90: 58 }],
+    ["five-amber-roll-ons", "gift-sets", "طقم ٥ رول أون عنبري", "Five Amber Roll-ons", P(6693894), 1250, { rating: 4.6, sold90: 32 }],
+    ["dried-flower-cork-vial", "gift-sets", "قارورة فلّين بزهور مجففة", "Dried Flower Cork Vial", P(8090382), 450, { rating: 4.5, sold90: 21 }],
+    ["glass-sample-vial", "gift-sets", "عيّنة زجاج ٣ مل", "Glass Sample Vial 3ml", P(5922087, 0.47, 0.78, 3), 190, { rating: 4.6, sold90: 37 }],
   ],
 });
 
 export const PERFUMES_BOLD = libraryTemplate({
   key: PERFUMES_BOLD_KEY,
-  version: 1,
+  version: 2,
   name: L("شذا", "Shaza"),
   description: L(
-    "عطور جريئة بطاقة عالية: فيديو في الواجهة، أقسام دايرية وأربع صفوف منتجات. للمتاجر اللي بتبيع كتير وبسرعة.",
-    "Bold, high-energy fragrances: a video hero, round categories and four product rows. For stores that sell fast and in volume.",
+    "عطور جريئة: فيديو في الواجهة، صور أقسام دافية، زجاجة بتفاصيلها على الصورة، وكل المنتجات بشكل تصوير واحد.",
+    "Bold fragrances: a video hero, warm category tiles, one bottle explained dot by dot, and every product framed as one shoot.",
   ),
   category: "beauty",
   style: ["bold"],
@@ -235,6 +355,7 @@ export const PERFUMES_BOLD = libraryTemplate({
   fonts: { heading: "Alexandria", body: "Tajawal" },
   radius: 12,
   containerMaxWidth: 1320,
+  productStage: { ratio: "3:4", fit: "cover", background: "#f1efee" },
   header,
   footer,
   pages: [

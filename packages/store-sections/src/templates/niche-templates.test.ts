@@ -6,6 +6,11 @@
  * bound to category places 1–4 with each place's demo category filling its
  * row, no photo used twice, and within a niche no shared header, hero,
  * categories or footer, with at least one video hero and one hero carousel.
+ *
+ * The look-first pilot templates (docs/systems/plan.md §10, 2026-11-11) leave
+ * the fixed 12-slot home: they follow the look-first rhythm instead (hero,
+ * categories, at most nine sections, a break between product sections, the
+ * newsletter last), and their demo categories need four products, not eight.
  */
 import { describe, expect, it } from "vitest";
 import type { ComponentNode } from "../config/schema";
@@ -34,6 +39,8 @@ const libraryIdOf = (template: TemplateDefinition, sectionId: string) => {
   return design?.libraryId ?? design?.id;
 };
 const SLOTS = ["hero", "categories", "products", "image-text", "products", "products", "products", "products", "newsletter"];
+/** Rebuilt in the look-first pilot: their home follows the look-first rhythm, not the 12 slots. */
+const LOOK_FIRST = new Set(["fashion-luxe", "perfumes-bold"]);
 
 describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
   const templates = keys.map((key) => byKey.get(key)!);
@@ -48,12 +55,25 @@ describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
     const home = config.pages.find((p) => p.isHome)!.content.sections;
     const categoryOf = (id: string) => template.designs.find((d) => d.id === id)?.category;
 
-    it("follows the 12-slot home: top bar header, the nine home sections in order, footer", () => {
+    it.runIf(LOOK_FIRST.has(key))("follows the look-first home: hero, categories, a break between product sections, newsletter last", () => {
+      const slots = home.map((s) => categoryOf(s.id));
+      expect(slots.slice(0, 2)).toEqual(["hero", "categories"]);
+      expect(slots.at(-1)).toBe("newsletter");
+      expect(slots.length).toBeLessThanOrEqual(9);
+      slots.forEach((slot, i) => expect(slot === "products" && slots[i + 1] === "products", `${home[i]!.id} then ${home[i + 1]?.id}`).toBe(false));
+      expect(walk(config.header?.componentTree).some((n) => n.props.role === "announcement")).toBe(true);
+      // Every demo category can fill a row of four.
+      for (const category of template.demo.categories) {
+        expect(template.demo.products.filter((p) => p.categoryId === category.id).length, category.id).toBeGreaterThanOrEqual(4);
+      }
+    });
+
+    it.skipIf(LOOK_FIRST.has(key))("follows the 12-slot home: top bar header, the nine home sections in order, footer", () => {
       expect(home.map((s) => categoryOf(s.id))).toEqual(SLOTS);
       expect(walk(config.header?.componentTree).some((n) => n.props.role === "announcement")).toBe(true);
     });
 
-    it("binds rows 7–10 to category places 1–4, heading and products alike", () => {
+    it.skipIf(LOOK_FIRST.has(key))("binds rows 7–10 to category places 1–4, heading and products alike", () => {
       const rows = home.slice(4, 8);
       rows.forEach((row, i) => {
         const nodes = walk(row.componentTree);
