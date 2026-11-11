@@ -1,0 +1,204 @@
+# Template inventory (generated 2026-11-11)
+
+Generated for [`../plan.md`](../plan.md). One row per code template (119).
+
+- **Home sections** is the library design behind each home section, in order.
+- **Product photo frames** lists the ratios of the product-card photos on the home page. More than one means the template mixes ratios.
+- Every product and category photo is drawn with `object-fit: cover`.
+- All 2,879 demo product and category photos are Pexels photos.
+
+| Template | Trade | Style | Header | Home sections | Footer | Product photo frames | Category photo frames |
+|---|---|---|---|---|---|---|---|
+| `tallaby-classic` | general | classic, minimal | tallaby-header | 8: tallaby-hero → tallaby-categories → tallaby-best-sellers → about-split-story → tallaby-new-arrivals → stats-band → tallaby-perks → tallaby-newsletter | tallaby-footer | square | square |
+| `streetwear` | fashion | bold | header-brand-bar | 7: hero-poster → categories-chips → products-rail → page-image → products-bento → text-statement → gallery-bento | footer-signoff | portrait, square, landscape | landscape |
+| `kasr` | fashion | luxe, classic | header-departments | 7: hero-carousel → categories-big-type → products-panel-rail → gallery-captioned → video-shop → features-ticker → testimonials-products | footer-links | square | square |
+| `techhub` | electronics | minimal | header-search | 6: hero-search → categories-ruled → products-tabbed → products-rail → brands-tiles → features-ruled | footer-help | square, portrait | square |
+| `volt` | mobile-accessories | bold | header-chips | 5: hero-big-word → categories-chips → products-rows → features-compare → testimonials-chat | footer-help | wide, square | landscape |
+| `arcade` | electronics | bold | header-brand-bar | 6: hero-thumbs → categories-captioned → products-list → stats-big-numbers → products-panel-rail → testimonials-classic | footer-centered | square | portrait |
+| `arena` | electronics | bold | header-chips | 8: hero-fullbleed → categories-photo-tiles → products-panel-rail → brands-cards → stats-band → video-shop → faq-topics → newsletter-interests | footer-signoff | square | portrait |
+| `pure` | beauty | minimal | header-line | 7: hero-halves → categories-photo-tiles → products-grid → features-steps → about-list → testimonials-rating → faq-columns | footer-ruled | square | portrait |
+| `botanica` | beauty | warm, minimal | header-line | 8: hero-split → categories-circles → products-grid → about-stories → features-bento → testimonials-products → stats-sentence → newsletter-letter | footer-panel | square | square |
+| `daily` | kitchen | minimal | header-ruled | 6: hero-ticket → categories-tiles → products-tabbed → features-icon-cards → testimonials-bento → faq-cards | footer-signup | square | – |
+| `sizzle` | food | bold | header-line | 6: hero-inline → categories-stories → products-grid → about-rows → testimonials-wall → faq-columns | footer-wordmark | square | – |
+| `harvest` | food | minimal | header-search | 5: hero-search → categories-tiles → products-tabbed → products-rows → features-icon-cards | footer-help | square | – |
+| `loaf` | food | warm, bold | header-centered | 7: hero-big-word → categories-circles → products-shelf → features-checklist → text-centered → testimonials-wall → faq-columns | footer-signup | wide, portrait | square |
+| `roast` | food | warm | header-pill | 8: hero-fullbleed → categories-circles → products-panel-rail → features-ticker → about-stories → gallery-side → faq-numbered → newsletter-big | footer-wordmark | square | square |
+| `sakan` | home | luxe, classic | header-ruled | 6: hero-thumbs → categories-captioned → products-feature → about-inset → stats-milestones → faq-panel | footer-centered | landscape, square | portrait |
+| `karat` | jewelry | bold, playful | header-pill | 5: hero-poster → categories-stories → products-shelf → testimonials-photos → gallery-bento | footer-wordmark | portrait | – |
+| `fadda` | jewelry | luxe, minimal | header-centered | 7: hero-split → categories-photo-tiles → products-feature → brands-quotes → text-terms → testimonials-ruled → newsletter-letter | footer-links | landscape, square | portrait |
+| `bambino` | kids | playful, warm | header-line | 6: hero-halves → categories-chips → products-grid → features-icon-cards → features-steps → testimonials-bento | footer-panel | square | landscape |
+| `doodle` | kids | playful | header-chips | 7: hero-bento → categories-circles → products-bento → about-panel → products-rail → features-classic → testimonials-photos | footer-signoff | landscape, square, portrait | square |
+| `hekaya` | books | playful | header-pill | 7: hero-split → categories-captioned → products-shelf → features-bento → stats-sentence → brands-bubbles → faq-chat | footer-signup | portrait | portrait |
+| `pace` | sports | bold | header-chips | 6: hero-halves → categories-chips → products-bento → features-orbit → products-rail → testimonials-bento | footer-signoff | square, landscape, portrait | landscape |
+| `stride` | sports | bold | header-announcement | 5: hero-ticket → categories-bento → products-shelf → about-list → testimonials-chat | footer-signup | portrait | – |
+| `core` | sports | bold, minimal | header-ruled | 6: hero-product → categories-ruled → products-rail → stats-big-numbers → text-columns → testimonials-classic | footer-panel | portrait | square |
+| `basecamp` | sports | warm | header-brand-bar | 8: hero-poster → categories-photo-tiles → products-bento → brands-bubbles → text-steps → features-side-title → brands-quotes → newsletter-big | footer-panel | square, landscape | portrait |
+| `garage` | auto | bold | header-brand-bar | 6: hero-poster → categories-chips → products-bento → features-compare → products-rows → testimonials-chat | footer-signoff | square, landscape | landscape |
+| `drive` | auto | minimal | header-search | 5: hero-search → categories-ruled → products-tabbed → features-ruled → faq-columns | footer-help | square | square |
+| `moto` | auto | bold | header-search | 7: hero-split → categories-ruled → products-feature → text-lead → products-rail → brands-cards → faq-numbered | footer-help | landscape, square, portrait | square |
+| `bashra` | beauty | warm | header-pill | 6: hero-classic → categories-circles → finder-pick → text-steps → products-grid → testimonials-ruled | footer-signup | square, landscape | square |
+| `sufra` | kitchen | classic, warm | header-announcement | 6: hero-fullbleed → categories-photo-tiles → products-feature → pay-open-box → finder-budget → faq-columns | footer-signup | landscape, square | portrait |
+| `sabaho` | food | warm | header-line | 6: hero-collage → categories-captioned → products-grid → pay-zones → products-rows → track-ask | footer-help | square | portrait |
+| `dar` | home | classic, warm | header-centered | 7: hero-thumbs → categories-feature-list → products-feature → pay-installments → team-story → team-branches → testimonials-classic | footer-centered | landscape, square | landscape, square |
+| `hadaya` | kids | playful | header-pill | 6: hero-poster → categories-chips → products-rail → features-classic → finder-budget → testimonials-wall | footer-signup | portrait, square | landscape |
+| `rep` | sports | bold | header-chips | 7: hero-fullbleed → categories-feature-list → products-carousel → finder-use → team-grid → team-numbers → testimonials-chat | footer-signoff | portrait, square | landscape, square |
+| `pitstop` | auto | minimal | header-brand-bar | 6: hero-fullbleed → categories-captioned → service-price-menu → finder-pick → pay-zones → testimonials-chat | footer-help | square, landscape | portrait |
+| `ghorza` | fashion | classic, luxe | header-centered | 7: hero-split → categories-ruled → products-rail → service-price-menu → products-carousel → team-values → testimonials-classic | footer-links | portrait | square |
+| `kettan` | fashion | minimal | header-line | 6: hero-halves → categories-chips → products-grid → features-icon-cards → products-carousel → testimonials-wall | footer-ruled | square, portrait | landscape |
+| `zay` | fashion | minimal, classic | header-chips | 6: hero-collage → categories-big-type → products-shelf → features-compare → products-carousel → testimonials-chat | footer-signoff | portrait | square |
+| `sitara` | fashion | classic, warm | header-centered | 5: hero-ticket → categories-stories → products-feature → pay-methods → testimonials-ruled | footer-signup | landscape, square | – |
+| `shanta` | shoes-bags | warm | header-pill | 6: hero-bento → categories-ruled → products-grid → team-founder → products-bento → faq-columns | footer-wordmark | landscape, square | square |
+| `tasfya` | fashion | bold | header-search | 7: hero-fullbleed → categories-photo-tiles → products-tabbed → finder-price-bands → products-carousel → pay-open-box → testimonials-classic | footer-help | square, portrait | portrait |
+| `kabl` | mobile-accessories | minimal | header-search | 6: hero-search → categories-photo-tiles → products-rows → service-support → finder-use → testimonials-classic | footer-help | square | portrait |
+| `zaki` | electronics | minimal | header-line | 7: hero-halves → categories-feature-list → products-grid → service-price-menu → products-rail → service-plans → faq-columns | footer-panel | square, portrait | landscape, square |
+| `saa` | electronics | bold | header-pill | 6: hero-bento → categories-chips → products-feature → features-compare → pay-installments → testimonials-chat | footer-signup | landscape, square | landscape |
+| `tany` | electronics | classic | header-ruled | 7: hero-split → categories-ruled → products-list → text-steps → service-plans → pay-open-box → testimonials-ruled | footer-help | square | square |
+| `nada` | beauty | minimal | header-line | 6: hero-halves → categories-captioned → products-grid → features-ruled → text-steps → faq-columns | footer-ruled | square | portrait |
+| `kohl` | beauty | bold | header-pill | 4: hero-big-word → categories-stories → products-shelf → testimonials-wall | footer-wordmark | wide, portrait | – |
+| `barber` | beauty | classic | header-brand-bar | 5: hero-halves → categories-chips → products-grid → service-price-menu → testimonials-chat | footer-signoff | square | landscape |
+| `matbakh` | kitchen | bold | header-search | 6: hero-search → categories-tiles → products-tabbed → finder-budget → pay-open-box → features-icon-cards | footer-help | square | – |
+| `fokhar` | handmade | warm | header-line | 6: hero-bento → categories-photo-tiles → products-bento → about-stories → pay-promise → gallery-polaroids | footer-panel | landscape, square | portrait |
+| `tawla` | home | classic, warm | header-ruled | 6: hero-halves → categories-photo-tiles → products-rail → features-side-title → text-terms → testimonials-ruled | footer-links | portrait | portrait |
+| `tanzim` | kitchen | minimal | header-chips | 5: hero-halves → categories-chips → products-rows → pay-days → faq-columns | footer-signup | square | landscape |
+| `qahwa` | kitchen | warm, bold | header-pill | 4: hero-big-word → categories-chips → products-panel-rail → testimonials-bento | footer-wordmark | wide, square | landscape |
+| `khodar` | food | minimal | header-search | 5: hero-search → categories-photo-tiles → products-rows → pay-promise → testimonials-quote | footer-help | square | portrait |
+| `lahma` | food | bold | header-brand-bar | 5: hero-poster → categories-circles → products-bento → pay-zones → testimonials-wall | footer-signoff | square, landscape | square |
+| `halawa` | sweets | classic, warm | header-pill | 5: hero-ticket → categories-stories → products-grid → team-timeline → faq-columns | footer-signup | square | – |
+| `atara` | food | warm | header-announcement | 5: hero-halves → categories-ruled → products-list → text-lead → testimonials-ruled | footer-ruled | square | square |
+| `bunn` | sweets | bold | header-ruled | 6: hero-big-word → categories-chips → finder-pick → text-steps → text-terms → testimonials-chat | footer-links | wide, square, landscape | landscape |
+| `mobilia` | home | minimal | header-line | 5: hero-halves → categories-tiles → products-grid → pay-installments → faq-columns | footer-ruled | square | – |
+| `zarea` | home | warm | header-pill | 7: hero-bento → categories-circles → products-shelf → finder-use → text-steps → gallery-polaroids → testimonials-wall | footer-panel | landscape, portrait, square | square |
+| `nour` | home | luxe, bold | header-brand-bar | 5: hero-big-word → categories-photo-tiles → products-feature → service-cards → testimonials-ruled | footer-centered | wide, landscape, square | portrait |
+| `mafrash` | home | warm | header-announcement | 5: hero-halves → categories-captioned → products-rail → features-ruled → testimonials-wall | footer-signup | portrait | portrait |
+| `rokn` | home | warm, classic | header-centered | 5: hero-halves → categories-circles → finder-price-bands → products-list → testimonials-spotlight | footer-wordmark | square | square |
+| `zahra` | jewelry | warm | header-pill | 5: hero-bento → categories-stories → products-shelf → finder-price-bands → testimonials-wall | footer-signup | landscape, portrait | – |
+| `lulu` | jewelry | luxe | header-centered | 7: hero-halves → categories-captioned → products-feature → features-side-title → team-founder → service-booking → testimonials-ruled | footer-links | landscape, square | portrait |
+| `saat` | jewelry | classic, luxe | header-ruled | 7: hero-halves → categories-ruled → products-grid → finder-versus → pay-installments → team-branches → testimonials-quote | footer-ruled | square | square |
+| `mahr` | jewelry | classic | header-announcement | 7: hero-split → categories-captioned → products-feature → stats-band → pay-installments → team-branches → faq-columns | footer-centered | landscape, square | portrait |
+| `mama` | kids | warm, minimal | header-line | 5: hero-halves → categories-photo-tiles → products-grid → team-values → testimonials-ruled | footer-panel | square | portrait |
+| `yoga` | sports | minimal, warm | header-line | 6: hero-halves → categories-ruled → products-grid → team-grid → service-booking → testimonials-ruled | footer-signup | square | square |
+| `koora` | sports | bold | header-chips | 4: hero-poster → categories-photo-tiles → products-bento → testimonials-chat | footer-signoff | square, landscape | portrait |
+| `darraga` | sports | bold | header-ruled | 5: hero-halves → categories-circles → products-rows → service-price-menu → team-branches | footer-panel | square | square |
+| `sabaha` | sports | playful | header-pill | 5: hero-fullbleed → categories-chips → products-shelf → pay-zones → testimonials-wall | footer-wordmark | portrait | landscape |
+| `boxing` | sports | bold | header-brand-bar | 5: hero-fullbleed → categories-big-type → products-bento → team-numbers → testimonials-chat | footer-signoff | square, landscape | square |
+| `tyre` | auto | bold | header-search | 6: hero-search → categories-captioned → products-rows → service-booking → pay-installments → service-support | footer-help | square | portrait |
+| `zeina` | auto | playful | header-pill | 4: hero-bento → categories-stories → products-shelf → testimonials-wall | footer-signup | landscape, portrait | – |
+| `kahraba` | auto | minimal | header-line | 6: hero-halves → categories-photo-tiles → products-rows → text-steps → service-booking → faq-columns | footer-ruled | square | portrait |
+| `safar` | auto | warm | header-chips | 5: hero-poster → categories-chips → products-rail → pay-days → testimonials-chat | footer-panel | portrait | landscape |
+| `garagy` | auto | minimal | header-announcement | 6: hero-halves → categories-chips → service-plans → text-steps → products-grid → service-support | footer-centered | square | landscape |
+| `mawsem` | fashion | classic | header-pill | 5: hero-carousel → categories-chips → products-grid → features-icon-cards → testimonials-wall | footer-signup | square | landscape |
+| `shasha` | electronics | classic | header-line | 6: hero-carousel → categories-ruled → products-list → service-plans → pay-open-box → track-ask | footer-help | square | square |
+| `ward` | beauty | classic, warm | header-centered | 6: hero-carousel → categories-circles → products-grid → features-ruled → text-steps → faq-columns | footer-centered | square | square |
+| `beity` | kitchen | classic | header-announcement | 5: hero-carousel → categories-tiles → products-tabbed → features-icon-cards → newsletter-strip | footer-panel | square | – |
+| `souq` | food | bold | header-search | 5: hero-carousel → categories-tiles → products-tabbed → pay-zones → service-support | footer-ruled | square | – |
+| `salon` | home | classic, luxe | header-ruled | 5: hero-carousel → categories-tiles → products-grid → pay-installments → faq-columns | footer-wordmark | square | – |
+| `kholkhal` | jewelry | classic, luxe | header-centered | 5: hero-carousel → categories-stories → products-shelf → finder-price-bands → testimonials-wall | footer-links | portrait | – |
+| `farha` | kids | playful | header-pill | 6: hero-carousel → categories-captioned → products-bento → finder-use → features-icon-cards → testimonials-wall | footer-signoff | square, landscape | portrait |
+| `nashat` | sports | bold | header-brand-bar | 4: hero-carousel → categories-feature-list → products-grid → testimonials-chat | footer-signoff | square | landscape, square |
+| `tarik` | auto | classic | header-chips | 4: hero-carousel → categories-stories → products-shelf → testimonials-wall | footer-ruled | portrait | – |
+| `furniture-luxe` | home | luxe | header-topbar | 9: hero-video → categories-photo-tiles → products-minimal → about-overlap → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-centered | footer-wordmark | square | portrait |
+| `furniture-bold` | home | bold | header-centered-ticker | 9: hero-carousel → categories-circles → products-boxed → about-wide → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-banner | footer-help | square | square |
+| `furniture-warm` | home | warm | header-announcement | 9: hero-fullbleed → categories-captioned → products-grid → about-split-story → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-photo | footer-centered | square, landscape | portrait |
+| `fashion-luxe` | fashion | luxe | header-centered-ticker | 9: hero-video → categories-ruled → products-grid → about-split-story → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-ruled | footer-links | square, portrait | square |
+| `fashion-bold` | fashion | bold | header-topbar | 9: hero-carousel → categories-big-type → products-bento → about-inset → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-strip | footer-signoff | square, landscape | square |
+| `fashion-warm` | fashion | warm | header-announcement | 9: hero-split → categories-captioned → products-campaign → about-stories → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-letter | footer-classic | square, portrait | portrait |
+| `electronics-luxe` | electronics | luxe, minimal | header-topbar | 9: hero-video → categories-circles → products-feature → about-list → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-interests | footer-ruled | landscape, square | square |
+| `electronics-bold` | electronics | bold | header-centered-ticker | 9: hero-carousel → categories-big-type → products-rail → about-inset → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-big | footer-help | portrait, square | square |
+| `electronics-warm` | electronics | warm | header-announcement | 9: hero-halves → categories-feature-list → products-shelf → about-fullbleed → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-letter | footer-classic | portrait | landscape, square |
+| `kids-luxe` | kids | luxe, minimal | header-topbar | 9: hero-video → categories-ruled → products-tabs-grid → about-split-story → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-ruled | footer-wordmark | portrait, square | square |
+| `kids-bold` | kids | bold, playful | header-centered-ticker | 9: hero-carousel → categories-circles → products-bento → about-circle → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-strip | footer-help | square, landscape | square |
+| `kids-warm` | kids | warm, playful | header-announcement | 9: hero-split → categories-chips → products-panel-rail → about-overlap → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-classic | footer-classic | square, portrait | landscape |
+| `beauty-luxe` | beauty | luxe, minimal | header-announcement | 9: hero-video → categories-ruled → products-spotlight → about-fullbleed → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-interests | footer-centered-light | portrait | square |
+| `beauty-bold` | beauty | bold | header-centered-ticker | 9: hero-carousel → categories-big-type → products-tabbed → about-list → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-channels | footer-links | square | square |
+| `grocery-luxe` | food | luxe | header-announcement | 9: hero-video → categories-photo-tiles → products-carousel → about-inset → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-classic | footer-ruled | portrait | portrait |
+| `grocery-bold` | food | bold | header-topbar | 9: hero-carousel → categories-chips → products-rows → about-circle → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-banner | footer-signoff | square | landscape |
+| `grocery-warm` | food | warm | header-centered-ticker | 9: hero-banner → categories-feature-list → products-classic → about-overlap → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-photo | footer-classic | square, landscape | landscape, square |
+| `perfumes-luxe` | beauty | luxe | header-topbar | 9: hero-fullbleed → categories-chips → products-feature → about-overlap → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-ruled | footer-wordmark | landscape, square | landscape |
+| `perfumes-bold` | beauty | bold | header-announcement | 9: hero-video → categories-circles → products-rail → about-wide → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-big | footer-signoff | portrait, square | square |
+| `perfumes-warm` | beauty | warm | header-centered-ticker | 9: hero-carousel → categories-feature-list → products-shelf → about-inset → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-photo | footer-classic | portrait | landscape, square |
+| `jewelry-luxe` | jewelry | luxe | header-topbar | 9: hero-video → categories-photo-tiles → products-spotlight → about-inset → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-centered | footer-centered-light | portrait, square | portrait |
+| `jewelry-bold` | jewelry | bold | header-centered-ticker | 9: hero-carousel → categories-big-type → products-tabbed → about-wide → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-big | footer-signoff | square | square |
+| `jewelry-warm` | jewelry | warm | header-announcement | 9: hero-halves → categories-feature-list → products-shelf → about-split-story → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-letter | footer-classic | portrait | landscape, square |
+| `gifts-luxe` | handmade | luxe | header-topbar | 9: hero-video → categories-ruled → products-carousel → about-inset → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-ruled | footer-centered-light | portrait | square |
+| `gifts-bold` | handmade | bold, playful | header-centered-ticker | 9: hero-carousel → categories-circles → products-bento → about-wide → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-banner | footer-help | square, landscape | square |
+| `gifts-warm` | handmade | warm | header-announcement | 9: hero-banner → categories-captioned → products-shelf → about-split-story → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-photo | footer-classic | portrait, square | portrait |
+| `sports-luxe` | sports | luxe | header-topbar | 9: hero-video → categories-captioned → products-feature → about-fullbleed → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-interests | footer-ruled | landscape, square, portrait | portrait |
+| `sports-bold` | sports | bold | header-centered-ticker | 9: hero-carousel → categories-big-type → products-rail → about-circle → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-strip | footer-signoff | portrait, square | square |
+| `sports-warm` | sports | warm | header-announcement | 9: hero-split → categories-chips → products-carousel → about-split-story → products-category-carousel → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-photo | footer-classic | portrait, landscape | landscape |
+| `wasla` | electronics | minimal | header-icons | 6: hero-carousel-panel → categories-counts → products-category-tabs → features-columns → categories-panels → products-centered-row | footer-dark-bar | square | square |
+| `vella` | fashion | minimal | header-announcement-strip | 9: hero-video → categories-portrait-labels → text-big-marquee → products-category-carousel → about-fullbleed → products-category-carousel → products-category-carousel → products-category-carousel → newsletter-centered | footer-classic | portrait | portrait |
+| `nasig` | fashion | minimal, warm | header-announcement-strip | 9: hero-fullbleed → categories-portrait-labels → products-carousel → about-wide → products-carousel → about-fullbleed → team-numbers → about-overlap → gallery-social-strip | footer-columns-signup | portrait | portrait |
+
+## Template pairs with nearly the same home page
+
+**Same position** is the share of home slots that hold the same design in the same place. **Same set** is the overlap of the designs used.
+
+| A | B | Same position | Same set | Same main style | Same trade |
+|---|---|---|---|---|---|
+| `electronics-warm` | `jewelry-warm` | 0.89 | 0.8 | yes | no |
+| `fashion-luxe` | `kids-luxe` | 0.89 | 0.8 | yes | no |
+| `furniture-bold` | `gifts-bold` | 0.89 | 0.8 | yes | no |
+| `mobilia` | `salon` | 0.8 | 0.67 | no | yes |
+| `zahra` | `kholkhal` | 0.8 | 0.67 | no | yes |
+| `grocery-luxe` | `gifts-luxe` | 0.78 | 0.64 | yes | no |
+| `grocery-luxe` | `jewelry-luxe` | 0.78 | 0.64 | yes | no |
+| `beauty-bold` | `jewelry-bold` | 0.78 | 0.64 | yes | no |
+| `beauty-luxe` | `sports-luxe` | 0.78 | 0.64 | yes | no |
+| `kids-bold` | `sports-bold` | 0.78 | 0.64 | yes | no |
+| `kids-bold` | `gifts-bold` | 0.78 | 0.64 | yes | no |
+| `kids-luxe` | `gifts-luxe` | 0.78 | 0.64 | yes | no |
+| `electronics-bold` | `sports-bold` | 0.78 | 0.64 | yes | no |
+| `electronics-bold` | `jewelry-bold` | 0.78 | 0.64 | yes | no |
+| `electronics-luxe` | `sports-luxe` | 0.78 | 0.64 | yes | no |
+| `fashion-bold` | `sports-bold` | 0.78 | 0.64 | yes | no |
+| `fashion-bold` | `kids-bold` | 0.78 | 0.64 | yes | no |
+| `fashion-bold` | `electronics-bold` | 0.78 | 0.64 | yes | no |
+| `fashion-luxe` | `gifts-luxe` | 0.78 | 0.64 | yes | no |
+| `furniture-warm` | `gifts-warm` | 0.78 | 0.64 | yes | no |
+| `furniture-luxe` | `jewelry-luxe` | 0.78 | 0.64 | yes | no |
+| `kholkhal` | `tarik` | 0.6 | 0.8 | yes | no |
+| `zahra` | `zeina` | 0.6 | 0.8 | no | no |
+| `kohl` | `zeina` | 0.75 | 0.6 | no | no |
+| `kohl` | `tarik` | 0.75 | 0.6 | no | no |
+| `zeina` | `tarik` | 0.75 | 0.6 | no | yes |
+| `gifts-warm` | `sports-warm` | 0.67 | 0.5 | yes | no |
+| `jewelry-warm` | `gifts-warm` | 0.67 | 0.5 | yes | no |
+| `jewelry-bold` | `sports-bold` | 0.67 | 0.5 | yes | no |
+| `jewelry-bold` | `gifts-bold` | 0.67 | 0.5 | yes | no |
+| `jewelry-luxe` | `gifts-luxe` | 0.67 | 0.5 | yes | no |
+| `perfumes-warm` | `gifts-warm` | 0.67 | 0.5 | yes | no |
+| `perfumes-warm` | `jewelry-warm` | 0.67 | 0.5 | yes | no |
+| `perfumes-bold` | `gifts-bold` | 0.67 | 0.5 | yes | no |
+| `perfumes-bold` | `jewelry-bold` | 0.67 | 0.5 | yes | no |
+| `grocery-warm` | `gifts-warm` | 0.67 | 0.5 | yes | no |
+| `grocery-warm` | `perfumes-warm` | 0.67 | 0.5 | yes | no |
+| `grocery-bold` | `sports-bold` | 0.67 | 0.5 | yes | no |
+| `grocery-bold` | `gifts-bold` | 0.67 | 0.5 | yes | no |
+| `beauty-bold` | `sports-bold` | 0.67 | 0.5 | yes | no |
+| `beauty-luxe` | `gifts-luxe` | 0.67 | 0.5 | yes | no |
+| `beauty-luxe` | `jewelry-luxe` | 0.67 | 0.5 | yes | no |
+| `kids-warm` | `sports-warm` | 0.67 | 0.5 | yes | no |
+| `kids-warm` | `perfumes-luxe` | 0.67 | 0.5 | no | no |
+| `kids-bold` | `grocery-bold` | 0.67 | 0.5 | yes | no |
+| `kids-luxe` | `beauty-luxe` | 0.67 | 0.5 | yes | no |
+| `electronics-warm` | `perfumes-warm` | 0.67 | 0.5 | yes | no |
+| `electronics-bold` | `perfumes-warm` | 0.67 | 0.5 | no | no |
+| `electronics-bold` | `perfumes-bold` | 0.67 | 0.5 | yes | no |
+| `electronics-bold` | `beauty-bold` | 0.67 | 0.5 | yes | no |
+| `electronics-luxe` | `perfumes-bold` | 0.67 | 0.5 | no | no |
+| `electronics-luxe` | `beauty-luxe` | 0.67 | 0.5 | yes | no |
+| `fashion-bold` | `gifts-bold` | 0.67 | 0.5 | yes | no |
+| `fashion-bold` | `jewelry-bold` | 0.67 | 0.5 | yes | no |
+| `fashion-bold` | `perfumes-warm` | 0.67 | 0.5 | no | no |
+| `fashion-bold` | `beauty-bold` | 0.67 | 0.5 | yes | no |
+| `fashion-luxe` | `beauty-luxe` | 0.67 | 0.5 | yes | no |
+| `furniture-warm` | `sports-warm` | 0.67 | 0.5 | yes | no |
+| `furniture-warm` | `fashion-luxe` | 0.67 | 0.5 | no | no |
+| `furniture-bold` | `jewelry-bold` | 0.67 | 0.5 | yes | no |
+| `furniture-bold` | `perfumes-bold` | 0.67 | 0.5 | yes | no |
+| `furniture-bold` | `grocery-bold` | 0.67 | 0.5 | yes | no |
+| `furniture-bold` | `kids-bold` | 0.67 | 0.5 | yes | no |
+| `furniture-luxe` | `grocery-luxe` | 0.67 | 0.5 | yes | no |
+| `nada` | `ward` | 0.67 | 0.5 | no | yes |
+| `bambino` | `kettan` | 0.67 | 0.5 | no | no |
+| `beity` | `souq` | 0.6 | 0.43 | no | no |
