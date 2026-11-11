@@ -19,6 +19,7 @@ import type { NodeTemplate } from "../../elements/tree";
 import type { Lib } from "../_pages";
 import { libraryTemplate, type LibraryTemplatePage, type LibraryTemplateSpec } from "../library-template";
 import type { TemplateDefinition, TemplateDemo } from "../types";
+import { editionForLook } from "./per-look";
 import type { Edition, EditionExtra, EditionPhotos, JourneySource, LookContent, LookDefaults, LookJourney, LookSlot, ProductStage } from "./types";
 
 /** What a look builds from a content object. */
@@ -293,8 +294,10 @@ function photosFor(edition: Edition, dark: boolean): EditionPhotos {
  * sections do not hold throws when a page is built (`config()`), as for any
  * library template.
  */
-export function applyEdition(template: TemplateDefinition, edition: Edition): TemplateDefinition {
+export function applyEdition(template: TemplateDefinition, pack: Edition): TemplateDefinition {
   const spec = LOOKS.get(template.key);
+  // The pack as this look shows it: its `perLook` entry for the look applied.
+  const edition = editionForLook(pack, template.key);
   const label = `edition "${edition.niche}"`;
   if (!spec) throw new Error(`applyEdition: template "${template.key}" is not edition-ready (it is not built with editionTemplate)`);
   if (!edition.looks.includes(template.key)) throw new Error(`applyEdition: ${label} is not approved on look "${template.key}"`);

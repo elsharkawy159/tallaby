@@ -37,6 +37,7 @@ import type { Edition } from "./types";
 export * from "./types";
 export * from "./niches";
 export * from "./match";
+export { editionForLook } from "./per-look";
 export { applyEdition, copyrightLine, editionTemplate, initialOf, isEditionReady, lookJourney, lookSlots, missingSlots, primaryHref, type EditionLookSpec, type LookParts } from "./apply";
 
 /**

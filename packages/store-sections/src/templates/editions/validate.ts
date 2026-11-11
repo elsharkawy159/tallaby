@@ -19,6 +19,7 @@ import { templateDemoProduct } from "../demo-product";
 import { isDiscountDesign, OFFER_COPY } from "../no-discounts";
 import type { TemplateDefinition } from "../types";
 import { applyEdition, categoryListFit, isEditionReady } from "./apply";
+import { editionForLook } from "./per-look";
 import type { Edition, EditionPhotos } from "./types";
 
 import { EDITION_MEDIA_HOST } from "./media";
@@ -95,6 +96,11 @@ export function editionPhotos(edition: Edition): [where: string, url: string][] 
     ...edition.demo.products.map((p): [string, string] => [`product ${p.slug}`, p.image ?? ""]),
     ...photoSet(light, "photos"),
     ...photoSet(dark ?? {}, "photos.dark"),
+    // Each look's own photos (`perLook`), so a photo shared with another pack is caught there too.
+    ...Object.entries(edition.perLook ?? {}).flatMap(([look, o]) => {
+      const { dark: lookDark, ...lookLight } = o.photos ?? {};
+      return [...photoSet(lookLight, `perLook.${look}.photos`), ...photoSet(lookDark ?? {}, `perLook.${look}.photos.dark`)];
+    }),
   ];
 }
 
@@ -197,7 +203,9 @@ function shortLists(template: TemplateDefinition, config: SiteConfig): { lists: 
  * The problems of an edition on one look; empty when it may ship. `look` is
  * the look's own template (`getCodeTemplate(key)`).
  */
-export function validateEdition(edition: Edition, look: TemplateDefinition, options: ValidateEditionOptions = {}): string[] {
+export function validateEdition(pack: Edition, look: TemplateDefinition, options: ValidateEditionOptions = {}): string[] {
+  // The pack as this look shows it (`perLook`).
+  const edition = editionForLook(pack, look.key);
   const problems: string[] = [];
   const { demo } = edition;
   const between = (n: number, [min, max]: readonly [number, number]) => n >= min && n <= max;

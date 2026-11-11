@@ -127,11 +127,43 @@ export type Edition = {
   productStage: ProductStage;
   /** `dark` replaces single photos for looks whose page is dark. */
   photos: EditionPhotos & { dark?: Partial<EditionPhotos> };
+  /**
+   * What changes on one look, by template key (owner, 2026-11-11: a niche on
+   * two templates must not look duplicated). Every look after the first of
+   * `looks` has one; the products, prices, categories and product stage stay
+   * the pack's. Resolved by `editionForLook`.
+   */
+  perLook?: Readonly<Record<string, EditionLookOverride>>;
   copy: EditionCopy;
   journey?: EditionJourney;
   /** At most two. */
   extras?: readonly EditionExtra[];
   /** Merged over the look's product page spec (its reviews and related titles often name the trade). */
+  productPage?: Partial<ProductPageSpec>;
+};
+
+/** Any part of a value: objects merge key by key, a list replaces the whole list. */
+export type DeepPartial<T> = T extends string | number | boolean
+  ? T
+  : T extends readonly unknown[]
+    ? T
+    : T extends { ar: string; en: string }
+      ? T
+      : { [K in keyof T]?: DeepPartial<T[K]> };
+
+/**
+ * One look's own version of a pack (`Edition.perLook`): another demo store
+ * name, other copy, other hero, banner, story and tile photos, another
+ * journey and extras. Copy merges over the pack's slot by slot; each photo
+ * slot given replaces the pack's (a `hero` replaces the whole hero).
+ */
+export type EditionLookOverride = {
+  store?: { name?: Localized; description?: Localized };
+  copy?: DeepPartial<EditionCopy>;
+  photos?: Partial<EditionPhotos> & { dark?: Partial<EditionPhotos> };
+  journey?: EditionJourney;
+  /** Replaces the pack's extras on this look (an empty list removes them). */
+  extras?: readonly EditionExtra[];
   productPage?: Partial<ProductPageSpec>;
 };
 
