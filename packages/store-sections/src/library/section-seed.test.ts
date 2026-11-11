@@ -62,6 +62,8 @@ describe("library sections seed", () => {
     ...["header-announcement-strip", "categories-portrait-labels", "text-big-marquee"],
     // Cross-sell offers element (F-32d, 2026-11-04).
     ...["product-cross-sell"],
+    // Motion v2 (F-88, 2026-11-11): the sticky steps design and Classic v7's two new sections.
+    ...["image-text-steps", "tallaby-classic-about-split-story", "tallaby-classic-stats-band"],
   ]);
 
   it("every design from before 0109 was seeded by some migration", () => {
@@ -77,7 +79,7 @@ describe("library sections seed", () => {
   it("0105 seeds the Classic designs (and the since-removed Atelier's) hidden, with named trees", () => {
     const sql = readFileSync(join(MIGRATIONS, "0105_template_library_sections.sql"), "utf8").replace(/\r\n/g, "\n");
     const keys = seededSectionKeys([sql]);
-    for (const design of TEMPLATE_OWN_DESIGNS) expect(keys.has(design.id), design.id).toBe(true);
+    for (const design of TEMPLATE_OWN_DESIGNS) if (!CODE_ONLY.has(design.id)) expect(keys.has(design.id), design.id).toBe(true);
     expect(sql.split("ON CONFLICT (key) DO NOTHING;").length - 1).toBe(keys.size);
     expect(sql.match(/,\n  true\n\)\nON CONFLICT/g)?.length).toBe(keys.size);
     expect(sql).toContain('"field":"section"');

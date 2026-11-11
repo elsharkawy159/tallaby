@@ -1,4 +1,5 @@
 import type { DataNeed, Localized } from "../core/types";
+import type { ShellScrollEffect } from "../elements/scroll-progress.lib";
 import type { NodeTemplate } from "../elements/tree";
 
 /**
@@ -82,6 +83,8 @@ export type SectionPreset = {
   designKey?: string;
   /** `library_sections.version` of `tree` (1 when unset). */
   version?: number;
+  /** The section Scroll effect a stored tree's design starts with (`Design.scrollEffect`, motion v2). */
+  scrollEffect?: ShellScrollEffect;
   category: LibraryCategoryId;
   subcategory: string;
   name: Localized;

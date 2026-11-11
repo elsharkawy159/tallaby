@@ -69,13 +69,21 @@ function v1Instance(id: string) {
   return { instance: filled, data };
 }
 
+/**
+ * The motion v2 pilot designs got new versions whose trees use the v2
+ * primitives (a words heading, for example). That is a new design, not a
+ * renderer change: stores keep their saved v1 copy, which still renders as
+ * frozen through every other design here. So the pilots leave the sample.
+ */
+const V2_PILOTS = new Set(["products-grid", "testimonials-classic"]);
+
 /** One design per library category (first in library order), plus every products design (rails, staggered grids). */
 const SAMPLE = [
   ...new Set([
     ...DESIGNS.filter((d, i) => DESIGNS.findIndex((o) => o.category === d.category) === i && d.category !== "product-page").map((d) => d.id),
     ...DESIGNS.filter((d) => d.category === "products").map((d) => d.id),
   ]),
-];
+].filter((id) => !V2_PILOTS.has(id));
 
 const stripRail = (html: string) => html.replace(/ data-sf-rail=""/g, "");
 

@@ -106,7 +106,12 @@ export function instantiatePreset(
   opts: { defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string } = {},
 ): SectionInstance | null {
   if (preset.tree) {
-    return instantiateTemplate(preset.tree, { id, source: `${preset.designKey ?? preset.id}@${preset.version ?? 1}`, ...opts });
+    return instantiateTemplate(preset.tree, {
+      id,
+      source: `${preset.designKey ?? preset.id}@${preset.version ?? 1}`,
+      ...opts,
+      ...(preset.scrollEffect && { scrollEffect: preset.scrollEffect }),
+    });
   }
   if (preset.designId) {
     const design = getDesign(preset.designId);

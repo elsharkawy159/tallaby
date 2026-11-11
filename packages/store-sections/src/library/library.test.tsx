@@ -172,7 +172,7 @@ describe("presets with a stored tree (library_sections, Task 10)", () => {
   /** What a library_sections row seeded from `design` becomes (no designId: the tree is the source of truth). */
   const treePreset = (design: (typeof DESIGNS)[number]): SectionPreset => {
     const { designId: _code, ...preset } = designPreset(design);
-    return { ...preset, designKey: design.id, tree: designSlotTree(design), version: design.version };
+    return { ...preset, designKey: design.id, tree: designSlotTree(design), version: design.version, ...(design.scrollEffect && { scrollEffect: design.scrollEffect }) };
   };
 
   it.each(["fashion", undefined])("instantiates exactly like the design preset (industry %s)", (industry) => {
