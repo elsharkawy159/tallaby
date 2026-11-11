@@ -92,6 +92,8 @@ export type StyleValues = {
   underline?: boolean;
   textAlign?: "start" | "center" | "end" | "justify";
   lineHeight?: Enum<typeof LINE_HEIGHTS>;
+  /** Most lines of text shown (1–4); the rest is cut with an ellipsis (a product name on a card). */
+  lineClamp?: number;
   color?: string;
   background?: string;
   paddingTop?: number;
@@ -168,6 +170,7 @@ const RULES: Record<StyleKey, Rule> = {
   underline: { kind: "bool" },
   textAlign: oneOf(["start", "center", "end", "justify"]),
   lineHeight: oneOf(LINE_HEIGHTS),
+  lineClamp: num(1, 4),
   color: { kind: "color" },
   background: { kind: "color" },
   paddingTop: num(0, 400),
@@ -367,6 +370,12 @@ export function styleDeclarations(style: StyleValues, sectionRoot = false): stri
   if (style.underline !== undefined) add("text-decoration-line", style.underline ? "underline" : "none");
   if (style.textAlign) add("text-align", style.textAlign);
   if (style.lineHeight) add("line-height", String(LINE_HEIGHTS[style.lineHeight]));
+  if (style.lineClamp !== undefined) {
+    add("display", "-webkit-box");
+    add("-webkit-box-orient", "vertical");
+    add("-webkit-line-clamp", String(style.lineClamp));
+    add("overflow", "hidden");
+  }
   if (style.color) add("color", colorValue(style.color));
   if (style.background) add("background", colorValue(style.background));
   const blockPadding = sectionRoot ? sectionPadding : px;

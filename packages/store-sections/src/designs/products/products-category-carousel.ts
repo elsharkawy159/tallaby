@@ -10,42 +10,19 @@
  * Change the place on both lists to show another category. Cards show
  * square photos (furniture and packshots are rarely tall); the photo layer
  * is labelled so a template can set its ratio and frame.
+ *
+ * v2 (look-first pilot, 2026-11-11): the premium card and the calmer heading
+ * (`_shared.ts`), the category name rising word by word (motion v2), and
+ * the site's product stage.
  */
-import type { NodeTemplate } from "../../elements/tree";
-import { defineDesign, type TreeBuilder } from "../builder";
-import { L, arrowLink } from "../_kit";
+import { defineDesign } from "../builder";
+import { L } from "../_kit";
 import { CATEGORY_LINK } from "../categories/_shared";
-import { PRODUCT_NAME, SHOP_LINK, priceRow, productName } from "./_shared";
-
-/** The card: the photo (sale chip, heart) on a soft frame, name, price and the cart button. */
-function card(t: TreeBuilder): NodeTemplate {
-  return t.stack(
-    [
-      t.box(
-        [
-          t.link(
-            SHOP_LINK,
-            [t.image("", PRODUCT_NAME, { label: L("صورة البطاقة", "Card photo"), bind: "image", style: { aspectRatio: "square", objectFit: "cover", width: "100%" } })],
-            { label: L("صورة المنتج", "Product photo"), bind: "href", style: { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0, radius: 16, overflow: "hidden", background: "secondary" } },
-          ),
-          t.badge(L("-٢٠٪", "-20%"), {
-            bind: "discount",
-            style: { position: "absolute", insetTop: "10px", insetStart: "10px", background: "primary", color: "primaryInk", fontWeight: "semibold", fontSize: "xs", radius: 999 },
-          }),
-          t.wishlistButton({ label: L("المفضلة", "Wishlist"), style: { position: "absolute", insetTop: "8px", insetEnd: "8px" } }),
-        ],
-        { label: L("الصورة", "Photo"), style: { position: "relative", paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0, background: "transparent" } },
-      ),
-      t.stack([productName(t, { fontWeight: "medium" }), priceRow(t)], { label: L("المعلومات", "Details"), style: { gap: 6 } }),
-      t.addToCart({ label: L("أضف للسلة", "Add to cart") }),
-    ],
-    { label: L("بطاقة المنتج", "Product card"), style: { gap: 12 } },
-  );
-}
+import { HEAD_GAP, HEAD_ROW, HEAD_TITLE, PRODUCTS_SECTION, premiumCard, viewAllLink } from "./_shared";
 
 export const productsCategoryCarousel = defineDesign({
   id: "products-category-carousel",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "by-category",
   name: L("منتجات قسم", "Category carousel"),
@@ -55,18 +32,19 @@ export const productsCategoryCarousel = defineDesign({
   ),
   keywords: ["products", "category", "carousel", "rail", "collection", "swipe", "منتجات", "قسم", "شريط", "سحب"],
   tree: (t) => {
-    const products = t.productList([card(t)], {
+    const products = t.productList([premiumCard(t, { ratio: "square", wishlist: true })], {
       label: L("منتجات القسم", "Category products"),
       role: "items",
       source: "category",
       limit: 8,
       columns: { desktop: 4, tablet: 3, mobile: 2 },
       mobileRail: true,
+      // The carousel sizes its cards for these gaps (`RAIL_CLASS`, elements/render.tsx).
       style: { gap: 24 },
       tablet: { gap: 16 },
       mobile: { gap: 12 },
     });
-    return t.section({ label: L("منتجات قسم", "Category carousel") }, [
+    return t.section({ label: L("منتجات قسم", "Category carousel"), ...PRODUCTS_SECTION }, [
       t.container(
         [
           t.stack(
@@ -75,21 +53,17 @@ export const productsCategoryCarousel = defineDesign({
                 [
                   t.row(
                     [
-                      t.heading(L("اسم القسم", "Category name"), "h2", { bind: "name", role: "title", style: { fontSize: "display-sm", lineHeight: "tight" } }),
-                      arrowLink(t, L("عرض الكل", "View all"), CATEGORY_LINK, { bind: "href", style: { color: "foreground" } }),
+                      t.heading(L("اسم القسم", "Category name"), "h2", { bind: "name", role: "title", ...HEAD_TITLE, motion: { reveal: "words" } }),
+                      viewAllLink(t, CATEGORY_LINK, { bind: "href" }),
                     ],
-                    {
-                      label: L("رأس القسم", "Section head"),
-                      style: { justifyContent: "between", alignItems: "end", gap: 16, wrap: false },
-                      mobile: { direction: "column", alignItems: "start", gap: 10 },
-                    },
+                    { label: L("رأس القسم", "Section head"), motion: { reveal: "none" }, ...HEAD_ROW },
                   ),
                 ],
                 { label: L("القسم", "Category"), role: "intro", limit: 1, columns: { desktop: 1 } },
               ),
               { ...products, props: { ...products.props, categoryIndex: 1, rail: true } },
             ],
-            { label: L("المحتوى", "Content"), style: { gap: 28 }, mobile: { gap: 20 } },
+            { label: L("المحتوى", "Content"), style: { gap: HEAD_GAP.desktop }, mobile: { gap: HEAD_GAP.mobile } },
           ),
         ],
         { label: L("الحاوية", "Container") },

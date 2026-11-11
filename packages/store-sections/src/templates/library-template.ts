@@ -39,6 +39,12 @@ export type LibraryTemplateSpec = {
   fonts: { heading: StoreFontName; body: StoreFontName };
   radius: number;
   containerMaxWidth?: number;
+  /**
+   * Product stage (docs/systems/plan.md §4.5): one frame (ratio, fit,
+   * background, padding) for every product photo in a product list. Unset:
+   * each design keeps its own frame, as before.
+   */
+  productStage?: NonNullable<SiteConfig["designSystem"]["spacing"]["productStage"]>;
   header: Design;
   footer: Design;
   /** The first page is the home page. */
@@ -70,7 +76,7 @@ export function libraryTemplate(input: LibraryTemplateSpec): TemplateDefinition 
     designSystem: {
       colors: spec.colors,
       typography: { headingFont: spec.fonts.heading, bodyFont: spec.fonts.body },
-      spacing: { borderRadius: spec.radius, containerMaxWidth: spec.containerMaxWidth ?? 1440 },
+      spacing: { borderRadius: spec.radius, containerMaxWidth: spec.containerMaxWidth ?? 1440, ...(spec.productStage && { productStage: spec.productStage }) },
     },
     header: section(spec.header),
     footer: section(spec.footer),
