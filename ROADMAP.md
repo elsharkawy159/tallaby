@@ -1697,6 +1697,16 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-11 — F-90 niche editions: 21 packs (branch `feat/section-system`, local commits, not pushed)
+
+- **Packs registered** (`b7b302c3` … `9fc71b9f`), each 16 products in 4 × 4, white packshots in `library-media/editions/<niche>/`, Pexels art direction checked by eye (no people, logos or lettering), no invented reviews: dresses, tshirts, glasses, pants-jeans, lighting-smart-home, pc-gaming, fashion-jewelry, chargers-cables, watches (jewelry-luxe only; saat needs 6 categories, waiting on 6 `watches-extra` packshots), slippers-clogs (new niche, owner request: شبشب، كروكس; clogs never named after the brand), menswear, womens-shoes, handbags, mens-shoes, gold-jewelry (karat and weight in titles, prices follow the day's gold price), sneakers, lingerie-sleepwear (modest sleepwear only), sportswear, hair-accessories, belts-wallets, phone-cases.
+- **Photos:** 23 generated with Canva AI (stopped at the owner's credit limit), the rest by the owner in ChatGPT from `docs/systems/editions-photos.md` (master prompt plus one line per item); checked on contact sheets, 3 mislabelled pairs renamed, converted to WebP (1200 px, about 30–80 KB), uploaded without overwrite.
+- **Validator fixes:** a category list showing every category is full, counted from its offset; header and footer category strips need no full rows.
+- **New niche:** `slippers-clogs` (83 niches, 199 editions).
+- **No migration.** Editions are code-only; nothing reaches existing stores.
+- **Tests:** editions 278 pass, store-sections 10,204 pass; `product-cross-sell.test.ts` timed out once under full-suite load and passes alone. Typecheck clean.
+- **Left:** screenshots of every pack at 390/1280 px in both languages (browser tool not connected this session); watches on saat; templates for the other niches must be made edition-ready before their packs (perfumes, beauty, home, food, kids and the rest).
+
 ### 2026-11-11 — F-90 niche editions: Phase 1 built, Phase 2 pilot started (branch `feat/section-system`, local commits, not pushed)
 
 - **Phase 1** (`a8265741` … `3097c50d`): the edition system (82 niches, `matchNiche`, `Edition` type, `validateEdition`, `applyEdition`), all twelve pilot looks edition-ready with byte-for-byte look-guard fixtures (default output unchanged), custom slots, preview `?edition=`, the dashboard and tallaby.com niche row and edition chips, `applyStoreTemplate` with a server-checked `editionId` (the demo catalog never enters a store), and the AI builder shortlist using the store's niche. Generated packshots live in the public `library-media` bucket under `editions/<niche>/`.
