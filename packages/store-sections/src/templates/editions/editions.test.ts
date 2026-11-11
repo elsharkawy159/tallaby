@@ -17,7 +17,7 @@ import { resolveDemoCatalog } from "../demo-catalog";
 import { demoStore, pexels, pexelsVideo, pexelsVideoPoster } from "../library-template";
 import { applyEdition, editionTemplate, isEditionReady, lookSlots, missingSlots } from "./apply";
 import { EDITIONS, editionReadyLooks, editionsForLook, editionsForNiche, getEdition } from "./index";
-import type { Edition } from "./types";
+import type { Edition, LookSlot } from "./types";
 import { EDITION_PHOTO_HOSTS, sharedPhotos, validateEdition } from "./validate";
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
@@ -369,6 +369,78 @@ describe("applyEdition", () => {
   it("declares every slot fashion-luxe needs", () => {
     expect(lookSlots("fashion-luxe")).toContain("photos.look.src");
     expect(lookSlots("kabl-not-converted")).toEqual([]);
+  });
+});
+
+// ── Custom slots ────────────────────────────────────────────────────────────
+
+describe("custom slots", () => {
+  const spec = {
+    version: 1,
+    name: L("اختبار", "Test"),
+    description: L("اختبار", "Test"),
+    category: "fashion",
+    style: ["minimal"],
+    sortOrder: 1,
+    palette: [],
+    colors: LOOK.config().designSystem.colors,
+    fonts: { heading: "Reem Kufi", body: "Noto Sans Arabic" },
+    radius: 0,
+    demo: TSHIRTS.demo,
+    journey: { primary: "newest", rows: [] },
+  } as const;
+  const lib = (id: string, patch = {}) => fromLibrary("test-custom", getDesign(id)!, patch);
+  const seen: unknown[] = [];
+  const template = editionTemplate({
+    ...spec,
+    key: "test-custom",
+    lib,
+    dark: true,
+    slots: ["custom.finder-title", "photos.custom.banner-2"],
+    optional: ["custom.finder-note"],
+    defaultContent: { custom: { "finder-title": L("بتدور على إيه؟", "What are you after?") }, photos: { custom: { "banner-2": pexels(1, 800) } } },
+    look: (c) => {
+      seen.push(c.custom["finder-title"]!.en, c.custom["finder-note"]?.en, c.photos.custom["banner-2"]);
+      return { header: lib("header-topbar"), footer: lib("footer-links"), pages: [{ slug: "home", name: L("الرئيسية", "Home"), sections: [] }] };
+    },
+  });
+  const pack = (change: (e: Edition) => Edition = (e) => e) =>
+    change(withChange((e) => ({ ...e, looks: ["test-custom"], copy: { ...e.copy, custom: { "finder-title": L("عايز أنهي قَصّة؟", "Which fit do you want?") } }, photos: { ...e.photos, custom: { "banner-2": pexels(15557045, 1600) } } })));
+
+  it("gives a look its declared custom copy and photos, from its defaults and from a pack", () => {
+    expect(seen).toEqual(["What are you after?", undefined, pexels(1, 800)]);
+    applyEdition(template, pack());
+    expect(seen.slice(3)).toEqual(["Which fit do you want?", undefined, pexels(15557045, 1600)]);
+    // A dark look reads the pack's dark custom photo over its light one, key by key.
+    applyEdition(template, pack((e) => ({ ...e, photos: { ...e.photos, dark: { custom: { other: pexels(2, 800) } } } })));
+    expect(seen.at(-1)).toBe(pexels(15557045, 1600));
+    applyEdition(template, pack((e) => ({ ...e, photos: { ...e.photos, dark: { custom: { "banner-2": pexels(2, 800) } } } })));
+    expect(seen.at(-1)).toBe(pexels(2, 800));
+  });
+
+  it("names a custom slot a pack lacks, and refuses an undeclared custom read", () => {
+    expect(() => applyEdition(template, { ...TSHIRTS, looks: ["test-custom"] })).toThrow('edition "tshirts" lacks slots "custom.finder-title", "photos.custom.banner-2" for look "test-custom"');
+    expect(() =>
+      editionTemplate({ ...spec, key: "test-custom-undeclared", lib, slots: ["custom.a"], defaultContent: { custom: { a: L("أ", "A"), b: L("ب", "B") } }, look: (c) => (void c.custom.b, { header: lib("header-topbar"), footer: lib("footer-links"), pages: [] }) }),
+    ).toThrow('look "test-custom-undeclared" reads slot "custom.b" that it does not declare');
+  });
+
+  it("keeps slot paths typed: a custom key is free, a misspelt named slot is not", () => {
+    const ok: LookSlot[] = ["custom.anything-here", "photos.custom.banner-2", "hero.title"];
+    // @ts-expect-error "hero.titel" is not a slot
+    const bad: LookSlot = "hero.titel";
+    expect([...ok, bad]).toHaveLength(4);
+  });
+
+  it("validates custom copy and photos like the rest", () => {
+    const check = (e: Edition) => validateEdition(e, LOOK);
+    const onLook = (e: Edition): Edition => ({ ...e, looks: ["fashion-luxe"] });
+    expect(check(onLook(pack()))).toEqual([]);
+    expect(check(onLook(pack((e) => ((e.copy.custom!["finder-title"]!.en = ""), e))))).toContain("copy.custom.finder-title: the English is empty");
+    expect(check(onLook(pack((e) => ({ ...e, copy: { ...e.copy, custom: { deal: L("كوبون للكل", "A coupon for all") } } }))))).toContain('copy.custom.deal: reads as an offer or discount ("كوبون للكل")');
+    expect(check(onLook(pack((e) => ({ ...e, photos: { ...e.photos, custom: { "banner-2": "https://cdn.example.com/a.jpg" } } }))))).toContain("photos.custom.banner-2: the photo is on cdn.example.com, not on images.pexels.com");
+    expect(check(onLook(pack((e) => ({ ...e, photos: { ...e.photos, custom: { "banner-2": e.photos.banner } } }))))[0]).toMatch(/^photos.custom.banner-2 uses the same photo as photos.banner/);
+    expect(check(onLook(pack((e) => ({ ...e, photos: { ...e.photos, dark: { custom: { "banner-2": "http://images.pexels.com/x.jpg" } } } }))))).toContain("photos.dark.custom.banner-2: the photo is not https");
   });
 });
 

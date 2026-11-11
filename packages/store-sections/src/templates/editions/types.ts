@@ -73,6 +73,12 @@ export type EditionCopy = {
   reviews?: { title: Localized; items: readonly { quote: Localized; name: Localized }[] };
   /** The footer's line about the store. */
   footer?: { line: Localized };
+  /**
+   * Copy of a section no named group fits, by a kebab-case key the look
+   * chooses (`finder-title`, `compare-row-1`). A look declares each key it
+   * reads as the slot `custom.<key>`; a pack writes the keys its looks declare.
+   */
+  custom?: Readonly<Record<string, Localized>>;
 };
 
 /** An edition's art-directed photos (plan §3.1). Product packshots are in its `demo`. */
@@ -89,6 +95,8 @@ export type EditionPhotos = {
   about?: string;
   /** A flat lay for "shop the look", with its dots in percent from the photo's left and top: the store's 1st, 2nd, 3rd newest product. */
   look?: { src: string; dots: readonly { x: number; y: number }[] };
+  /** Photos of a section no named slot fits, by a kebab-case key the look chooses: the slot `photos.custom.<key>`. */
+  custom?: Readonly<Record<string, string>>;
 };
 
 export type EditionJourney = {
@@ -152,7 +160,7 @@ type ContentShape = EditionCopy & {
  */
 export type LookContent = Filled<ContentShape>;
 
-/** A slot by its path: `hero.title`, `trust.2`, `photos.hero.video`, or a whole group (`look`, `about`). */
+/** A slot by its path: `hero.title`, `trust.2`, `photos.hero.video`, a whole group (`look`, `about`), or a custom key (`custom.finder-title`, `photos.custom.banner-2`). */
 export type LookSlot = Paths<ContentShape>;
 
 /**

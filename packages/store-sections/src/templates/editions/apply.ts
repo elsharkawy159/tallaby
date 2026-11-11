@@ -187,7 +187,8 @@ export function editionTemplate(spec: EditionLookSpec): TemplateDefinition {
 function photosFor(edition: Edition, dark: boolean): EditionPhotos {
   const { dark: darkSet, ...light } = edition.photos;
   if (!dark || !darkSet) return light;
-  return { ...light, ...darkSet, hero: { ...light.hero, ...darkSet.hero } };
+  const custom = light.custom || darkSet.custom ? { custom: { ...light.custom, ...darkSet.custom } } : {};
+  return { ...light, ...darkSet, hero: { ...light.hero, ...darkSet.hero }, ...custom };
 }
 
 /**

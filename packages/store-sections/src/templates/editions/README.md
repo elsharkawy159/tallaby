@@ -29,7 +29,7 @@ The rule: **with its default content the look must build exactly what it built b
    This writes `__fixtures__/<key>.v<version>.json` (the definition and the whole built site). It never overwrites. Check the file is new in `git status`. If you already edited the look, stash your edit, capture, then restore it.
 
 2. **Sort every string and photo of the look into three groups.**
-   - *Names the trade or the demo store* (hero copy, story, promises, FAQ, addresses, "Atelier", alt texts): a **slot**. It moves into `DEFAULT_CONTENT`.
+   - *Names the trade or the demo store* (a headline, a finder question, a service list, promises, FAQ, addresses, "Atelier", alt texts): a **slot**. Use the named group if one fits (table below); otherwise a custom slot, `custom.<kebab-name>` for copy and `photos.custom.<kebab-name>` for a photo. It moves into `DEFAULT_CONTENT`.
    - *Derived from the store name* (logo initial, copyright line, "About <store>"): compute it in the look from `c.store.name` with `initialOf` and `copyrightLine`.
    - *Generic shop labels* (New in, Best sellers, View all, Track order, Shipping, FAQ) and all layout patches (`nodes`, `links`, `retouch`): stay in the look.
 
@@ -83,18 +83,38 @@ The same names in every look. A look uses the ones that fit its sections.
 | `photos.story` | 4:5 |
 | `photos.about` | A third photo block, optional in a pack: fall back to `photos.story` |
 | `photos.look.src`, `.dots.N` (`x`, `y`) | The shop-the-look flat lay and its dots |
+| `custom.<key>`, `photos.custom.<key>` | Copy or a photo of a section no group above fits |
+
+### Custom slots
+
+For a section no named group fits (comparison table, stats band, installments, branches, marquee phrases, price menu, a second banner):
+
+```ts
+// defaultContent
+custom: { "compare-title": L("…", "…"), "compare-row-1": L("…", "…") },
+photos: { custom: { "banner-2": PHOTOS.bento } },
+// slots
+slots: ["custom.compare-title", "custom.compare-row-1", "photos.custom.banner-2"],
+// in look()
+c.custom["compare-title"]!
+```
+
+- One flat map: every value is one `{ ar, en }` (or one photo URL). A list is numbered keys (`stat-1`, `stat-2`); a label with a link is a key for the label and a fixed catalog link in the look.
+- Keys are kebab-case and start with the section's job (`compare-`, `stats-`, `branches-`), so two looks that show the same kind of section can share keys and a pack writes them once. Before inventing a key, search the other converted looks for one that means the same thing.
+- Declare each key as its own slot (`custom.<key>`), never the whole `custom` group. The guard and the pack check treat it like any other slot.
+- Say in a comment beside the key what the pack writer must supply (length, what it sits next to).
 
 Map each photo block of the look to the slot with the nearest ratio and say which in a comment. `fashion-luxe`: two-tone band = `banner`, about page = `story`.
 
 ### Pitfalls
 
-- **A section with no slot group** (comparison table, stats band, installments, branches, marquee phrases, price menu): do not invent a name in your look only. Either leave the section's copy in the look if it is truly generic, or add one optional group to `EditionCopy` in `types.ts` and to the table above, in the same change, and tell the lead: `types.ts` is shared by every conversion.
+- **Do not edit `types.ts`, `apply.ts` or `validate.ts`.** They are shared by every conversion running in parallel. A section with no named group uses custom slots (above); if you think a named group is missing, say so in your report.
 - **Category names typed by hand** (a header link "Chargers" to `/products?search=…`): use `nav`, never a constant.
 - **`lib` corners.** `editionTemplate` passes the look's `lib` to the product page. Every pilot look has `corners` equal to `radius`, so nothing changes; the guard will tell you if yours differs.
 - **Optional sections.** If the look drops a section when a slot is absent, check the home still has a break between two product sections.
 - **`labels.about` and friends are leaves of an optional group in a pack.** Declare the leaf (`labels.about`), not the group.
 - **Demo order matters** where a section shows "the three newest" (the look dots): say so in a comment beside the slot, pack writers need it.
-- **Do not edit** `niches.ts`, `match.ts` or their tests here.
+- **Do not edit** `niches.ts`, `match.ts`, `index.ts` or their tests here. Your change is your look's file and its fixture.
 
 ## 2. Write a pack
 
@@ -123,6 +143,6 @@ Rules the validator enforces (`validateEdition`):
 
 Also, not checked by code: one ratio per photo slot, white-background packshots, no people or logos, and product order where a look shows the newest products (`fashion-luxe`: the first three products are the look photo's dots).
 
-`productPage.copy` replaces the look's reviews and related titles; set it when the look's own wording does not fit the trade. `journey` changes what the main grid shows and which categories the rows show. `photos.dark` replaces single photos on looks declared `dark`. `variants` is for the product page preview and is not drawn yet.
+`productPage.copy` replaces the look's reviews and related titles; set it when the look's own wording does not fit the trade. `journey` changes what the main grid shows and which categories the rows show. `photos.dark` replaces single photos on looks declared `dark` (custom photos key by key). `copy.custom` and `photos.custom` hold the custom keys the pack's looks declare; a missing one is named by the validator. `variants` is for the product page preview and is not drawn yet.
 
 `applyEdition` returns the look's key and version with `edition: "<niche>"`, the pack's `demo` and a new `config()`. A copy, link or list that a section does not hold throws when `config()` runs, as for any library template.

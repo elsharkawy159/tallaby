@@ -67,6 +67,7 @@ function photoSet(photos: Partial<EditionPhotos>, path: string): [string, string
     [`${path}.story`, photos.story],
     [`${path}.about`, photos.about],
     [`${path}.look.src`, photos.look?.src],
+    ...Object.entries(photos.custom ?? {}).map(([key, url]): [string, string] => [`${path}.custom.${key}`, url]),
   ];
   return out.filter((entry): entry is [string, string] => entry[1] !== undefined);
 }
