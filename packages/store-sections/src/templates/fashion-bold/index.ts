@@ -7,6 +7,12 @@
  * panel, four category rows with rounded frames, a cobalt newsletter strip
  * and the sign-off footer. Built from section library designs (`fromLibrary`).
  *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Alwan itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`, `fashion-bold.v1.json`), so the
+ * version stays 1.
+ *
  * Photos: Pexels, each checked by eye at full size (2026-10-28): garments on
  * rails and hangers, folded knits, shoes, belts and bags only, no people or
  * hands, no readable labels or brand lettering, none used twice and none
@@ -34,7 +40,9 @@ import { L } from "../../designs/_kit";
 import { categoryRows } from "../_category-rows";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, handle, libraryTemplate, pexels, phone } from "../library-template";
+import { copyrightLine, editionTemplate, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, handle, pexels, phone } from "../library-template";
 
 export const FASHION_BOLD_KEY = "fashion-bold";
 
@@ -63,113 +71,217 @@ const PHOTOS = {
 
 const NAME = L("ألوان", "Alwan");
 
-const header = lib("header-topbar", {
-  text: {
-    "توصيل سريع لكل محافظات مصر": L("توصيل خلال ٤٨ ساعة في القاهرة والجيزة", "48-hour delivery in Cairo and Giza"),
-    "الدفع عند الاستلام": L("قيس قبل ما تدفع", "Try it on before you pay"),
-    "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل القطع", "Shop all"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("الأكثر مبيعًا", "Best sellers"),
-    "من نحن": L("عن ألوان", "About"),
+/** Alwan's own content: every string and photo that names the trade or the demo store. */
+const DEFAULT_CONTENT: LookDefaults = {
+  announcement: [L("توصيل خلال ٤٨ ساعة في القاهرة والجيزة", "48-hour delivery in Cairo and Giza"), L("قيس قبل ما تدفع", "Try it on before you pay")],
+  hero: {
+    alt: L("شماعة طويلة عليها جواكت جلد", "A long rail of leather jackets"),
+    eyebrow: L("وصل حديثًا", "Just landed"),
+    title: L("الجلد رجع بقوة", "Leather is back"),
+    line: L("جواكت جلد ودنيم بقصّات جديدة، وتوصيل خلال يومين.", "Leather and denim jackets in new cuts, delivered in two days."),
+    cta: L("شوف الجديد", "Shop new in"),
   },
-  links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
-});
-
-const footer = lib("footer-signoff", {
-  text: {
-    "شكرًا إنك عدّيت علينا": L("البس اللي يشبهك", "Wear what feels like you"),
-    "كلمنا على واتساب": L("كلمنا على واتساب", "Chat on WhatsApp"),
-    "تسوق": L("تسوّق", "Shop"),
-    "كل المنتجات": L("كل القطع", "All pieces"),
-    "وصل حديثًا": L("وصل حديثًا", "New in"),
-    "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-    "العروض": L("الأعلى تقييمًا", "Top rated"),
-    "المساعدة": L("المساعدة", "Help"),
-    "الشحن والتوصيل": L("الشحن والتوصيل", "Shipping"),
-    "الاسترجاع والاستبدال": L("الاستبدال", "Exchanges"),
-    "الأسئلة الشائعة": L("الأسئلة الشائعة", "FAQ"),
-    "من نحن": L("عن ألوان", "About Alwan"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ ألوان. كل الحقوق محفوظة.", "© 2026 Alwan. All rights reserved."),
+  products: { primary: { title: L("الأكثر مبيعًا", "Best sellers"), line: L("القطع اللي الكل لابسها", "What everyone is wearing") } },
+  story: {
+    alt: L("شماعة ملابس ملونة وجنبها ورد أصفر", "A colourful clothing rail with yellow flowers"),
+    eyebrow: L("من وسط البلد", "From Downtown Cairo"),
+    title: L("ألوان جريئة لكل يوم", "Bold colour for every day"),
+    text: L(
+      "+٣٠٠٠٠ طلب من كل محافظات مصر. بنصمم في وسط البلد ونخيط في ورش مصرية، وكل قطعة بتتقاس قبل ما تتغلف.",
+      "30,000+ orders across Egypt. We design in Downtown Cairo, sew in Egyptian workshops and check the fit of every piece before it ships.",
+    ),
+    cta: L("اعرف حكايتنا", "Our story"),
   },
-  links: { "https://wa.me/": "https://wa.me/201118264057", "/products": [SHOP, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-carousel", {
-    photo: [PHOTOS.slideLeather, PHOTOS.slideBoutique, PHOTOS.slideHangers],
-    text: {
-      "صورة الحملة الأولى": L("شماعة طويلة عليها جواكت جلد", "A long rail of leather jackets"),
-      "وصل حديثًا": L("وصل حديثًا", "Just landed"),
-      "الموسم الجديد وصل": L("الجلد رجع بقوة", "Leather is back"),
-      "قطع مختارة بعناية، وتوصيل لحد باب البيت.": L("جواكت جلد ودنيم بقصّات جديدة، وتوصيل خلال يومين.", "Leather and denim jackets in new cuts, delivered in two days."),
-      "تسوّق الجديد": L("شوف الجديد", "Shop new in"),
-      "صورة الحملة الثانية": L("شماعة بوتيك بألوان باستيل", "A boutique rail in pastel tones"),
-      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-      "المفضّلة عند عملائنا": L("القطع اللي بتخلص الأول", "The pieces that sell out first"),
-      "القطع اللي بترجع لها كل مرة.": L("فساتين وتيشيرتات بألوان تفرّح، ومقاسات من S لـ 3XL.", "Dresses and tees in happy colours, sized S to 3XL."),
-      "شوف الأكثر مبيعًا": L("شوف الأكثر مبيعًا", "Shop best sellers"),
-      "صورة الحملة الثالثة": L("شماعة تيشيرتات بألوان كتير", "A rail of tees in many colours"),
-      "عروض الأسبوع": L("نسّق بنفسك", "Mix it up"),
-      "خصومات لفترة محدودة": L("قطعتين وعشر إطلالات", "Two pieces, ten looks"),
-      "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": L("قمصان، تريكو وجواكت بتتنسق مع بعض بسهولة.", "Shirts, knits and jackets that work together."),
-      "تسوّق العروض": L("تسوّق كل القطع", "Shop everything"),
-    },
-    links: { "/products": [NEW, BEST, SHOP] },
-    // Tablets and phones: the copy sits over the bright top of the photos, so the shade darkens all of it.
-    nodes: { "التظليل": { tablet: { background: "black", opacity: 60 }, mobile: { background: "black", opacity: 60 } } },
-  }),
-  lib("categories-big-type", {
-    text: { "منتج": L("قطع", "pieces") },
-  }),
-  lib("products-bento", {
-    text: {
-      "الأكثر طلبًا": L("الأكثر مبيعًا", "Best sellers"),
-      "الكل بيسأل عليهم": L("القطع اللي الكل لابسها", "What everyone is wearing"),
-      "عرض الكل": L("الكل", "All"),
-    },
-    links: { "/products": BEST },
-  }),
-  lib("about-inset", {
-    photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.colourRail],
-    text: {
-      "إزاي بنشتغل": L("من وسط البلد", "From Downtown Cairo"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("ألوان جريئة لكل يوم", "Bold colour for every day"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": L(
-        "+٣٠٠٠٠ طلب من كل محافظات مصر. بنصمم في وسط البلد ونخيط في ورش مصرية، وكل قطعة بتتقاس قبل ما تتغلف.",
-        "30,000+ orders across Egypt. We design in Downtown Cairo, sew in Egyptian workshops and check the fit of every piece before it ships.",
-      ),
-      "اعرف أكتر": L("اعرف حكايتنا", "Our story"),
-      "صورة المتجر": L("شماعة ملابس ملونة وجنبها ورد أصفر", "A colourful clothing rail with yellow flowers"),
-    },
-  }),
-  ...categoryRows(lib, {
-    viewAll: L("شوف الكل", "See all"),
-    muted: [1, 3],
-    nodes: { "صورة المنتج": { style: { radius: 18 } } },
-  }),
-  lib("newsletter-strip", {
-    text: {
-      "اعرف الجديد الأول": L("اعرف الدروب الجاي قبل الكل", "Hear about the next drop first"),
-      "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": L("الألوان الجديدة وأفكار للتنسيق، مرة في الأسبوع.", "New colours and styling ideas, once a week."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن ألوان", "About Alwan"), L("ملابس بألوان جريئة، متصممة في وسط البلد.", "Bold, colourful clothes, designed in Downtown Cairo.")),
-  aboutStory(lib, {
-    photo: PHOTOS.dressRail,
+  newsletter: {
+    title: L("اعرف الدروب الجاي قبل الكل", "Hear about the next drop first"),
+    line: L("الألوان الجديدة وأفكار للتنسيق، مرة في الأسبوع.", "New colours and styling ideas, once a week."),
+  },
+  footer: { line: L("البس اللي يشبهك", "Wear what feels like you") },
+  about: {
+    line: L("ملابس بألوان جريئة، متصممة في وسط البلد.", "Bold, colourful clothes, designed in Downtown Cairo."),
     alt: L("فساتين بألوان وطبعات جريئة على الشماعة", "Dresses in bold colours and prints on a rail"),
     eyebrow: L("من ٢٠١٨", "Since 2018"),
     title: L("الدولاب مش لازم يكون رمادي", "Your wardrobe doesn't have to be grey"),
     text: L("بدأنا بعشرين تيشيرت بألوان مختلفة على صفحة إنستجرام، وخلصوا في يوم. من ساعتها وإحنا بنعمل ألوان تفرّح.", "We started with twenty tees in different colours on Instagram, and they sold out in a day. We have made joyful colour ever since."),
     more: L("بنخيط في ورش مصرية، وبنوصل لكل المحافظات، والاستبدال ببلاش خلال ١٤ يوم.", "We sew in Egyptian workshops, deliver to every governorate and exchange for free within 14 days."),
-    button: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    cta: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
+  },
+  contact: {
+    title: L("كلمنا", "Talk to us"),
+    line: L(
+      `٢٤ شارع طلعت حرب، وسط البلد، القاهرة، ${phone("+20 111 826 4057")}، ${handle("hello@alwan.eg")}`,
+      `24 Talaat Harb St, Downtown, Cairo | ${phone("+20 111 826 4057")} | ${handle("hello@alwan.eg")}`,
+    ),
+    heading: L("محتار في المقاس؟ ابعتلنا", "Unsure about size? Ask us"),
+  },
+  faq: {
+    line: L("المقاسات والتوصيل والاستبدال.", "Sizes, delivery and exchanges."),
+    question: L("أقدر أقيس قبل ما أدفع؟", "Can I try it on before paying?"),
+    answer: L(
+      "أيوه، المندوب بيستناك تقيس، ولو المقاس مش مظبوط بترجّع القطعة معاه من غير ما تدفع حاجة.",
+      "Yes. The courier waits while you try it on, and if the size is wrong you hand it back without paying.",
+    ),
+  },
+  custom: {
+    // The hero's second and third slides (the first is `hero`).
+    "slide-2-alt": L("شماعة بوتيك بألوان باستيل", "A boutique rail in pastel tones"),
+    "slide-2-eyebrow": L("الأكثر مبيعًا", "Best sellers"),
+    "slide-2-title": L("القطع اللي بتخلص الأول", "The pieces that sell out first"),
+    "slide-2-line": L("فساتين وتيشيرتات بألوان تفرّح، ومقاسات من S لـ 3XL.", "Dresses and tees in happy colours, sized S to 3XL."),
+    "slide-2-cta": L("شوف الأكثر مبيعًا", "Shop best sellers"),
+    "slide-3-alt": L("شماعة تيشيرتات بألوان كتير", "A rail of tees in many colours"),
+    "slide-3-eyebrow": L("نسّق بنفسك", "Mix it up"),
+    "slide-3-title": L("قطعتين وعشر إطلالات", "Two pieces, ten looks"),
+    "slide-3-line": L("قمصان، تريكو وجواكت بتتنسق مع بعض بسهولة.", "Shirts, knits and jackets that work together."),
+    "slide-3-cta": L("تسوّق كل القطع", "Shop everything"),
+  },
+  photos: {
+    hero: { wide: PHOTOS.slideLeather },
+    story: PHOTOS.colourRail,
+    about: PHOTOS.dressRail,
+    custom: { "slide-2": PHOTOS.slideBoutique, "slide-3": PHOTOS.slideHangers },
+  },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). Generic shop labels (New in, Best sellers, Shipping) and the
+ * layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  const noun = c.custom?.["products-noun"];
+  const s = (n: 2 | 3, part: string) => c.custom[`slide-${n}-${part}`]!;
+
+  const header = lib("header-topbar", {
+    text: {
+      "توصيل سريع لكل محافظات مصر": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
+      "اسم متجرك": name,
+      "المتجر": L("كل القطع", "Shop all"),
+      "العروض": L("وصل حديثًا", "New in"),
+      "المدونة": L("الأكثر مبيعًا", "Best sellers"),
+      "من نحن": L(aboutName.ar, "About"),
+    },
+    links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
+  });
+
+  const footer = lib("footer-signoff", {
+    text: {
+      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "كلمنا على واتساب": L("كلمنا على واتساب", "Chat on WhatsApp"),
+      "تسوق": L("تسوّق", "Shop"),
+      "كل المنتجات": L("كل القطع", "All pieces"),
+      "وصل حديثًا": L("وصل حديثًا", "New in"),
+      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
+      "العروض": L("الأعلى تقييمًا", "Top rated"),
+      "المساعدة": L("المساعدة", "Help"),
+      "الشحن والتوصيل": L("الشحن والتوصيل", "Shipping"),
+      "الاسترجاع والاستبدال": L("الاستبدال", "Exchanges"),
+      "الأسئلة الشائعة": L("الأسئلة الشائعة", "FAQ"),
+      "من نحن": aboutName,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "https://wa.me/": "https://wa.me/201118264057", "/products": [SHOP, NEW, BEST, RATED] },
+  });
+
+  const home: Design[] = [
+    lib("hero-carousel", {
+      photo: [c.photos.hero.wide, c.photos.custom["slide-2"]!, c.photos.custom["slide-3"]!],
+      text: {
+        "صورة الحملة الأولى": c.hero.alt,
+        "وصل حديثًا": c.hero.eyebrow,
+        "الموسم الجديد وصل": c.hero.title,
+        "قطع مختارة بعناية، وتوصيل لحد باب البيت.": c.hero.line,
+        "تسوّق الجديد": c.hero.cta,
+        "صورة الحملة الثانية": s(2, "alt"),
+        "الأكثر مبيعًا": s(2, "eyebrow"),
+        "المفضّلة عند عملائنا": s(2, "title"),
+        "القطع اللي بترجع لها كل مرة.": s(2, "line"),
+        "شوف الأكثر مبيعًا": s(2, "cta"),
+        "صورة الحملة الثالثة": s(3, "alt"),
+        "عروض الأسبوع": s(3, "eyebrow"),
+        "خصومات لفترة محدودة": s(3, "title"),
+        "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": s(3, "line"),
+        "تسوّق العروض": s(3, "cta"),
+      },
+      links: { "/products": [NEW, BEST, SHOP] },
+      // Tablets and phones: the copy sits over the bright top of the photos, so the shade darkens all of it.
+      nodes: { "التظليل": { tablet: { background: "black", opacity: 60 }, mobile: { background: "black", opacity: 60 } } },
+    }),
+    lib("categories-big-type", {
+      text: { "منتج": noun ?? L("قطع", "pieces") },
+    }),
+    lib("products-bento", {
+      text: {
+        "الأكثر طلبًا": c.products.primary.title,
+        "الكل بيسأل عليهم": c.products.primary.line,
+        "عرض الكل": L("الكل", "All"),
+      },
+      links: { "/products": primaryHref(journey.primary) },
+      // The bento's two lists show best sellers by default; an edition's journey changes both.
+      ...(journey.primary !== "best-sellers" && { lists: [{ source: journey.primary }, { source: journey.primary }] }),
+    }),
+    lib("about-inset", {
+      photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, c.photos.story],
+      text: {
+        "إزاي بنشتغل": c.story.eyebrow,
+        "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
+        "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": c.story.text,
+        "اعرف أكتر": c.story.cta,
+        "صورة المتجر": c.story.alt,
+      },
+    }),
+    ...categoryRows(lib, {
+      viewAll: L("شوف الكل", "See all"),
+      muted: [1, 3],
+      nodes: { "صورة المنتج": { style: { radius: 18 } } },
+    }),
+    lib("newsletter-strip", {
+      text: {
+        "اعرف الجديد الأول": c.newsletter.title,
+        "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": c.newsletter.line,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -232,7 +344,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const FASHION_BOLD = libraryTemplate({
+export const FASHION_BOLD = editionTemplate({
   key: FASHION_BOLD_KEY,
   version: 1,
   name: L("ألوان", "Alwan"),
@@ -256,38 +368,6 @@ export const FASHION_BOLD = libraryTemplate({
   fonts: { heading: "Changa", body: "Tajawal" },
   radius: 18,
   containerMaxWidth: 1300,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن ألوان", "About"), seo: { title: L("عن ألوان", "About Alwan") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("كلمنا", "Talk to us"),
-        text: L(
-          `٢٤ شارع طلعت حرب، وسط البلد، القاهرة، ${phone("+20 111 826 4057")}، ${handle("hello@alwan.eg")}`,
-          `24 Talaat Harb St, Downtown, Cairo | ${phone("+20 111 826 4057")} | ${handle("hello@alwan.eg")}`,
-        ),
-        heading: L("محتار في المقاس؟ ابعتلنا", "Unsure about size? Ask us"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("المقاسات والتوصيل والاستبدال.", "Sizes, delivery and exchanges."),
-        question: L("أقدر أقيس قبل ما أدفع؟", "Can I try it on before paying?"),
-        answer: L(
-          "أيوه، المندوب بيستناك تقيس، ولو المقاس مش مظبوط بترجّع القطعة معاه من غير ما تدفع حاجة.",
-          "Yes. The courier waits while you try it on, and if the size is wrong you hand it back without paying.",
-        ),
-      }),
-    },
-  ],
   demo: DEMO,
   productPage: {
     thumbs: "side",
@@ -295,4 +375,46 @@ export const FASHION_BOLD = libraryTemplate({
     extras: ["product-perks"],
     copy: { reviews: L("قالوا عن ألوان", "What people say"), related: L("نسّقها مع", "Style it with") },
   },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "hero.alt",
+    "hero.eyebrow",
+    "hero.title",
+    "hero.line",
+    "hero.cta",
+    "products.primary.title",
+    "products.primary.line",
+    "story",
+    "newsletter.title",
+    "newsletter.line",
+    "footer.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
+    // The hero's second and third slides.
+    "custom.slide-2-alt",
+    "custom.slide-2-eyebrow",
+    "custom.slide-2-title",
+    "custom.slide-2-line",
+    "custom.slide-2-cta",
+    "custom.slide-3-alt",
+    "custom.slide-3-eyebrow",
+    "custom.slide-3-title",
+    "custom.slide-3-line",
+    "custom.slide-3-cta",
+    "photos.custom.slide-2",
+    "photos.custom.slide-3",
+  ],
+  // `photos.about`: the about page's photo (falls back to the story's).
+  // `custom.products-noun`: the noun after a category's product count (default "قطع / pieces").
+  optional: ["photos.about", "custom.products-noun"],
+  // Best sellers in the bento, then the store's four categories as rows.
+  journey: { primary: "best-sellers", rows: [1, 2, 3, 4] },
+  defaultContent: DEFAULT_CONTENT,
 });
