@@ -21,12 +21,9 @@ import type { TemplateDefinition } from "../types";
 import { applyEdition, isEditionReady } from "./apply";
 import type { Edition, EditionPhotos } from "./types";
 
-/**
- * The host of our own public media bucket, for generated photos (plan §3.2,
- * decision 3: the public media bucket under `template-media/`).
- * TODO(lead): set it once the bucket host is decided; empty means Pexels only.
- */
-export const EDITION_MEDIA_HOST = "";
+import { EDITION_MEDIA_HOST } from "./media";
+
+export { EDITION_MEDIA_HOST };
 
 const own = (hosts: readonly string[]) => [...hosts, ...(EDITION_MEDIA_HOST ? [EDITION_MEDIA_HOST] : [])];
 /** Hosts an edition's photos may come from. */

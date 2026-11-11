@@ -333,7 +333,7 @@ describe("custom slots", () => {
     expect(check(onLook(pack()))).toEqual([]);
     expect(check(onLook(pack((e) => ((e.copy.custom!["finder-title"]!.en = ""), e))))).toContain("copy.custom.finder-title: the English is empty");
     expect(check(onLook(pack((e) => ({ ...e, copy: { ...e.copy, custom: { deal: L("كوبون للكل", "A coupon for all") } } }))))).toContain('copy.custom.deal: reads as an offer or discount ("كوبون للكل")');
-    expect(check(onLook(pack((e) => ({ ...e, photos: { ...e.photos, custom: { "banner-2": "https://cdn.example.com/a.jpg" } } }))))).toContain("photos.custom.banner-2: the photo is on cdn.example.com, not on images.pexels.com");
+    expect(check(onLook(pack((e) => ({ ...e, photos: { ...e.photos, custom: { "banner-2": "https://cdn.example.com/a.jpg" } } }))))).toContain("photos.custom.banner-2: the photo is on cdn.example.com, not on images.pexels.com or sakwqwocbccpyrmwjowq.supabase.co");
     expect(check(onLook(pack((e) => ({ ...e, photos: { ...e.photos, custom: { "banner-2": e.photos.banner } } }))))[0]).toMatch(/^photos.custom.banner-2 uses the same photo as photos.banner/);
     expect(check(onLook(pack((e) => ({ ...e, photos: { ...e.photos, dark: { custom: { "banner-2": "http://images.pexels.com/x.jpg" } } } }))))).toContain("photos.dark.custom.banner-2: the photo is not https");
   });
@@ -372,7 +372,7 @@ describe("validateEdition", () => {
     ["two announcement lines", withChange((e) => ({ ...e, copy: { ...e.copy, announcement: e.copy.announcement.slice(0, 2) } })), "copy.announcement has 2 lines (exactly 3)"],
     ["three promises", withChange((e) => ({ ...e, copy: { ...e.copy, trust: e.copy.trust.slice(0, 3) } })), "copy.trust has 3 promises (exactly 4)"],
     ["a photo over http", withChange((e) => ((e.photos.banner = e.photos.banner.replace("https:", "http:")), e)), "photos.banner: the photo is not https"],
-    ["a photo on another host", withChange((e) => ((product(e, "zip-polo").image = "https://cdn.example.com/polo.jpg"), e)), "product zip-polo: the photo is on cdn.example.com, not on images.pexels.com"],
+    ["a photo on another host", withChange((e) => ((product(e, "zip-polo").image = "https://cdn.example.com/polo.jpg"), e)), "product zip-polo: the photo is on cdn.example.com, not on images.pexels.com or sakwqwocbccpyrmwjowq.supabase.co"],
     ["a product with no photo", withChange((e) => ((product(e, "zip-polo").image = null), e)), "product zip-polo has no photo"],
     ["a photo used twice", withChange((e) => ((e.photos.story = pexels(12025472, 1600)), e)), /^photos\.story uses the same photo as product white-heavy-tee/],
     ["tiles that do not match the categories", withChange((e) => ({ ...e, photos: { ...e.photos, tiles: e.photos.tiles.slice(0, 3) } })), "photos.tiles has 3 photos for 4 categories"],

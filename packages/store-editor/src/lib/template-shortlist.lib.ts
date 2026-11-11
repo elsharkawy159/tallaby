@@ -3,15 +3,21 @@
  * 2026-11-08-ai-store-builder-v2-design.md §5), all in code, no model call.
  *
  * Score = industry (exact > related, nearest first > the any-store default >
- * other) + style overlap (the seller's style words mapped to template
+ * other) + the store niche's edition + style overlap (the seller's style words mapped to template
  * styles with a small dictionary) − fit (the home shows more product cards
  * or category tiles than the seller has) − colour harmony (the seller's
  * primary colour barely shows on the template's background). The pick keeps
  * the three apart: no two with the same main style while a different one
  * scores close enough. Ties break on a stable hash of seed + key, so a
  * seller's list doesn't reorder on resume. Pure; no React here.
+ *
+ * Niche editions (ROADMAP F-90, plan §4.5): with the store's niche
+ * (`matchNiche`, in code), a template that has that niche's edition gets
+ * `nicheEdition` points and its suggestion carries `editionId`, so it is
+ * previewed and installed with the edition. With no pack registered nothing
+ * changes.
  */
-import { CODE_TEMPLATES, colorContrastRatio, templateTraits, TEMPLATE_STYLES, type TemplateStyle, type TemplateTraits } from "@workspace/store-sections/templates";
+import { CODE_TEMPLATES, colorContrastRatio, editionOnLook, templateTraits, TEMPLATE_STYLES, type Edition, type TemplateStyle, type TemplateTraits } from "@workspace/store-sections/templates";
 import { RELATED_INDUSTRIES } from "./industries.lib";
 
 export type ShortlistTemplate = Pick<TemplateTraits, "key" | "category" | "style" | "needs"> & Partial<Pick<TemplateTraits, "tone" | "background">>;
@@ -34,13 +40,19 @@ export type TemplateShortlistInput = {
   count?: number;
   /** The templates to choose from (default: every code template). */
   templates?: readonly ShortlistTemplate[];
+  /** The store's niche (`matchNiche`), or null/absent when the words do not say. */
+  nicheId?: string | null;
+  /** The packs to look in. Tests only: callers leave it out (the registered packs). */
+  editions?: readonly Edition[];
 };
 
 export type ScoredTemplate = {
   key: string;
   mainStyle: TemplateStyle;
   score: number;
-  parts: { industry: number; style: number; fit: number; color: number };
+  parts: { industry: number; style: number; fit: number; color: number; niche: number };
+  /** The niche whose edition this template is previewed and installed with. Absent: the template's own content. */
+  editionId?: string;
 };
 
 /** Score weights. Industry dominates; style decides inside it; fit and colour nudge. */
@@ -53,6 +65,15 @@ export const SHORTLIST_WEIGHTS = {
   industryGeneral: 30,
   styleMain: 30,
   styleSecond: 15,
+  /**
+   * The template has the store niche's edition (`editionOnLook`). More than a
+   * main style match (30) plus the colour nudges, so inside an industry the
+   * look that already speaks the seller's trade leads; less than the gap
+   * between an exact and the nearest related industry (100 − 60 = 40), so a
+   * look borrowed from another industry never passes a template of the
+   * store's own industry on this bonus alone. Industry stays dominant.
+   */
+  nicheEdition: 35,
   /** Per missing product card / category tile, and the most each can cost. */
   productShortfall: 2,
   productShortfallMax: 20,
@@ -175,17 +196,21 @@ function rank(input: TemplateShortlistInput): Ranked[] {
   return (input.templates ?? defaultTemplates())
     .filter((template) => !excluded.has(template.key) && template.style.length > 0)
     .map((template): Ranked => {
+      // Only a pack approved on this template counts (an unknown niche id finds none).
+      const edition = input.nicheId ? editionOnLook(template.key, input.nicheId, input.editions) : undefined;
       const parts = {
         industry: industryScore(template.category, input.industryId),
         style: styleScore(template.style, wanted),
         fit: fitPenalty(template.needs, input.productCount, input.categoryCount),
         color: colorPenalty(template, input.primaryColor),
+        niche: edition ? SHORTLIST_WEIGHTS.nicheEdition : 0,
       };
       return {
         key: template.key,
         mainStyle: template.style[0]!,
-        score: parts.industry + parts.style + parts.fit + parts.color,
+        score: parts.industry + parts.style + parts.fit + parts.color + parts.niche,
         parts,
+        ...(edition && { editionId: edition.niche }),
         order: stableHash(`${input.seed}:${template.key}`),
       };
     })
