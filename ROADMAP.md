@@ -1701,6 +1701,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-12 — F-90 Tibr (jewelry-warm) becomes the belts-wallets template
+
+- **jewelry-warm v2** (`ba69b572`): edition-ready and rebuilt look-first as a small leather workshop. Home (9): `hero-fullbleed` (the workbench, copy on the photo, the page's one scroll moment) → `categories-captioned` (4 portrait tiles) → `products-grid` (8 best sellers on the white product stage) → `about-overlap` (workshop story) → category row 1 → `features-checklist` as the trade's care block (photo + four care steps) → category row 2 → `features-trust-band` → `newsletter-strip`; `header-announcement`, `footer-line`. Cordovan `#5b2a22`, canvas grey `#e3e6e0`, brass `#a87b2f` on white; Aref Ruqaa over IBM Plex Sans Arabic; 6px corners; hero eyebrow in sentence case. Tibr's own default stays the gold workshop (bags category dropped: 3 products).
+- **belts-wallets pack:** `looks: ["jewelry-warm", "zay"]` (zay stays until the accessories switch; `belts-wallets` listed as pending in `distinct.test.ts`); new `custom.banner-alt` and `custom.care-*`. `NICHE_TEMPLATES` row ready.
+- **Photos used** (pack's, all checked by eye again): hero 6653239, workshop band 4452611, care block and about page 4452395, tiles 31323080, 6127090, 4452516, 37326800. **Rejected:** 6653230 (same shoot as the hero, redundant), 4452502 (pink and teal rolls, off palette), 4452511 (clean, kept as a spare). Tile 4452516 (leather rolls for card holders) is the weakest; a card-holder photo would be better.
+- **Checked:** `/template-preview/jewelry-warm?edition=belts-wallets` at 390 and 1280 px, Arabic and English, no sideways overflow; screenshots in `docs/systems/niche-templates/jewelry-warm/`. Open: the newsletter strip's store form has two fields and a consent line, so it is not a single row.
+- No migration.
+
 ### 2026-11-11 — F-90 `zahra` becomes the fashion-jewelry template
 
 - **Look:** `templates/zahra` is edition-ready (commit `483bfde2`: v2 converted, byte for byte the same as its captured `zahra.v2.json`), then rebuilt as **v3** look-first: `hero-fullbleed` (rings on blush; the page's one motion, parallax and fade on scroll), `categories-captioned` (four across), `products-tabs-grid` (eight best sellers on the white stage), `about-fullbleed` (gift-wrapping story), earrings row, `about-product-anatomy` (one necklace, four note dots: plating, chain, stones, care; the trade's own section), rings row, `features-trust-band` (gift wrapping fourth), `newsletter-strip`. Header `header-announcement-strip` (strip in the petrol ink), footer `footer-line`. Palette white / blush `#f6ebe6` / dusty rose `#d9a5a0` / petrol `#1f4a4f`; Aref Ruqaa over Alexandria; 14px corners; eyebrows in sentence case. Library designs only, no new or forked section. Guard fixture now `zahra.v3.json` (v2 deleted, as the guard asks for a bumped look).
