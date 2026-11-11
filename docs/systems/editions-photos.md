@@ -90,6 +90,20 @@ Home slippers
 15. **navy-knit-home-slippers**: A pair of navy knitted closed-toe home slippers.
 16. **beige-closed-toe-slippers**: A pair of beige felt closed-toe house slippers.
 
+## watches, 6 more (so the pack also fits the saat template)
+
+saat shows categories three per row, so the watches pack needs 6 categories. Same chat and watch line as above; save in `.editions-inbox/watches-extra/`.
+
+Sport & diver
+1. **green-dial-diver-watch**: A steel diver watch with a green dial and a rotating bezel, steel bracelet.
+2. **orange-dial-sport-watch**: A black sport watch with an orange dial and a black rubber strap.
+3. **blue-chronograph-rubber-watch**: A steel chronograph watch with a blue dial and a blue rubber strap.
+
+Kids' watches
+4. **blue-kids-analog-watch**: A small blue kids' analog watch with large clear numbers and a soft silicone strap.
+5. **pink-kids-analog-watch**: A small pink kids' analog watch with large clear numbers and a soft silicone strap.
+6. **yellow-kids-digital-watch**: A small yellow kids' digital watch with a blank screen and a silicone strap.
+
 ---
 
 # Batch 2: niches whose templates are ready (16 each, 176 in all)
