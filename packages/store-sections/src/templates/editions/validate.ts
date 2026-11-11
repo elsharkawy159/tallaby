@@ -174,7 +174,9 @@ function shortLists(template: TemplateDefinition, config: SiteConfig): { lists: 
           continue;
         }
         const shown = listRecords(node, ctx).length;
-        if (shown < limit || (columns > 1 && shown % columns !== 0)) problems.push(`${section.id} > ${node.type}: ${shown}/${limit} (${columns} columns)`);
+        // A category list that shows every category is full; a product list must reach its limit.
+        const target = node.type === "categoryList" ? Math.min(limit, template.demo?.categories.length ?? limit) : limit;
+        if (shown < target || (columns > 1 && shown % columns !== 0)) problems.push(`${section.id} > ${node.type}: ${shown}/${limit} (${columns} columns)`);
       }
     }
   };

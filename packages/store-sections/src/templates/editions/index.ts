@@ -11,6 +11,9 @@ import type { TemplateDefinition } from "../types";
 import { applyEdition, isEditionReady } from "./apply";
 import { matchNiche, type MatchNicheInput } from "./match";
 import { getNiche, nichesOfIndustry, type Niche } from "./niches";
+import { DRESSES } from "./packs/fashion/dresses";
+import { TSHIRTS } from "./packs/fashion/tshirts";
+import { GLASSES } from "./packs/jewelry/glasses";
 import type { Edition } from "./types";
 
 export * from "./types";
@@ -23,7 +26,7 @@ export { applyEdition, copyrightLine, editionTemplate, initialOf, isEditionReady
  *   import { DRESSES } from "./packs/fashion/dresses";
  * and add `DRESSES` here.
  */
-export const EDITIONS: readonly Edition[] = [];
+export const EDITIONS: readonly Edition[] = [DRESSES, GLASSES, TSHIRTS];
 
 /** The pack of a niche. */
 export function getEdition(nicheId: string | null | undefined): Edition | undefined {
