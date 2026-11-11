@@ -7,7 +7,7 @@ import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/paym
 import { CookieSettingsButton } from "@/components/layout/tracking-consent-banner.client";
 import { isCompareHubPublic } from "@/lib/marketing/compare.lib";
 import { footerSolutionLinks } from "@/lib/marketing/content-routes.lib";
-import { CONTACT, DASHBOARD_URL, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
+import { CONTACT, DASHBOARD_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { Container } from "./layout-primitives";
 
@@ -63,7 +63,6 @@ export async function SiteFooter() {
         { href: "/faq#payments", label: t("paymentMethods") },
         { href: "/faq#shipping", label: t("shippingInfo") },
         { href: "/faq#domain", label: t("connectDomain") },
-        { href: LOGIN_URL, label: t("sellerLogin"), external: true },
       ],
     },
   ];
