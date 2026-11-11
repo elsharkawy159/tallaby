@@ -9,6 +9,10 @@
  * newsletter strip and the sign-off footer. Built from section library
  * designs (`fromLibrary`).
  *
+ * Edition-ready (ROADMAP F-90): the sections are built by `look(content,
+ * journey)` from `DEFAULT_CONTENT`, and with it the look builds exactly its
+ * v1 output (`../editions/__fixtures__/sports-bold.v1.json`).
+ *
  * Photos: Pexels, each checked by eye at about 2000px (2026-10-28):
  * equipment, courts and pitches only, no people or hands, no readable
  * brand lettering, none used twice. Slides 19190279, 13425628, 12486370;
@@ -30,7 +34,9 @@ import { L } from "../../designs/_kit";
 import { categoryRows } from "../_category-rows";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels, phone } from "../library-template";
+import { copyrightLine, editionTemplate, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels, phone } from "../library-template";
 
 export const SPORTS_BOLD_KEY = "sports-bold";
 
@@ -40,7 +46,6 @@ const SHOP = "/products";
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
-const WHATSAPP = "https://wa.me/201095842731";
 
 const P = (id: number) => pexels(id, 800);
 const PHOTOS = {
@@ -60,98 +65,38 @@ const PHOTOS = {
 
 const NAME = L("نبض", "Nabd");
 
-const header = lib("header-centered-ticker", {
-  text: {
-    "توصيل لكل محافظات مصر": L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
-    "الدفع عند الاستلام": L("ادفع عند الاستلام", "Pay on delivery"),
-    "استبدال سهل خلال ١٤ يوم": L("تتبّع طلبك من صفحة طلباتي", "Track your order in My orders"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل المعدات", "Shop all"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("الأكثر مبيعًا", "Best sellers"),
-    "من نحن": L("عن نبض", "About"),
-    "تواصل معنا": L("تتبّع طلبك", "Track order"),
+/** Nabd's own content (the sports gear shop), copied from v1 character for character. */
+const DEFAULT_CONTENT: LookDefaults = {
+  announcement: [
+    L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
+    L("ادفع عند الاستلام", "Pay on delivery"),
+    L("تتبّع طلبك من صفحة طلباتي", "Track your order in My orders"),
+  ],
+  hero: {
+    alt: L("حارات تراك جري حمرا بخطوط بيضا", "Red running-track lanes with white lines"),
+    eyebrow: L("الموسم الجديد", "New season"),
+    title: L("ارفع السرعة", "Turn up the pace"),
+    line: L("حديد، كور ومضارب للي بيتمرن بجد، بتوصلك خلال ٤٨ ساعة.", "Iron, balls and rackets for people who train hard, delivered in 48 hours."),
+    cta: L("شوف الجديد", "Shop new"),
   },
-  links: { "/products": [undefined, undefined, NEW], "/blog": BEST, "/contact": "/profile/orders" },
-});
-
-const footer = lib("footer-signoff", {
-  text: {
-    "شكرًا إنك عدّيت علينا": L("يلا نتمرن", "Let’s go train"),
-    "كلمنا على واتساب": L("اسأل مدرب على واتساب", "Ask a coach on WhatsApp"),
-    "تسوق": L("تسوّق", "Shop"),
-    "كل المنتجات": L("كل المعدات", "All gear"),
-    "العروض": L("الأعلى تقييمًا", "Top rated"),
-    "المساعدة": L("المساعدة", "Help"),
-    "الاسترجاع والاستبدال": L("الاستبدال والاسترجاع", "Exchanges & refunds"),
-    "من نحن": L("عن نبض", "About Nabd"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ نبض. كل الحقوق محفوظة.", "© 2026 Nabd. All rights reserved."),
+  products: { primary: { title: L("الأكثر مبيعًا الشهر ده", "This month’s best sellers") } },
+  story: {
+    alt: L("صالة تدريب فيها شنط ملاكمة وحبال", "A training gym with heavy bags and straps"),
+    eyebrow: L("من صالتنا في مدينة نصر", "From our Nasr City gym"),
+    title: L("مدربين قبل ما نكون بياعين", "Coaches first, sellers second"),
+    text: L(
+      "+٢٠٠٠٠ لاعب ومدرب في مصر بيتمرنوا بمعدات من نبض. كل قطعة بنستخدمها في صالتنا الأول، ولو ما عجبتكش بنبدّلها خلال ١٤ يوم.",
+      "20,000+ players and coaches in Egypt train with Nabd gear. We use every piece in our own gym first, and swap anything you don't love within 14 days.",
+    ),
+    cta: L("اعرف حكايتنا", "Our story"),
   },
-  links: { "https://wa.me/": WHATSAPP, "/products": [SHOP, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-carousel", {
-    photo: [PHOTOS.slideTrack, PHOTOS.slideCourts, PHOTOS.slidePitch],
-    text: {
-      "صورة الحملة الأولى": L("حارات تراك جري حمرا بخطوط بيضا", "Red running-track lanes with white lines"),
-      "وصل حديثًا": L("الموسم الجديد", "New season"),
-      "الموسم الجديد وصل": L("ارفع السرعة", "Turn up the pace"),
-      "قطع مختارة بعناية، وتوصيل لحد باب البيت.": L("حديد، كور ومضارب للي بيتمرن بجد، بتوصلك خلال ٤٨ ساعة.", "Iron, balls and rackets for people who train hard, delivered in 48 hours."),
-      "تسوّق الجديد": L("شوف الجديد", "Shop new"),
-      "صورة الحملة الثانية": L("ملاعب تنس زرقا من فوق", "Blue tennis courts from above"),
-      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-      "المفضّلة عند عملائنا": L("اللي الكل بيلعب بيه", "What everyone plays with"),
-      "القطع اللي بترجع لها كل مرة.": L("مضارب وريش وكور اختارها لاعيبة النوادي في القاهرة.", "Rackets, shuttles and balls picked by Cairo club players."),
-      "شوف الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-      "صورة الحملة الثالثة": L("ملعب كورة وسط غابة من فوق", "A football pitch in a forest, from above"),
-      "عروض الأسبوع": L("جهّز فريقك", "Kit out your team"),
-      "خصومات لفترة محدودة": L("كل اللي الفريق محتاجه", "Everything the team needs"),
-      "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": L("كور ماتش وتمرين، أقماع وحبال في طلب واحد.", "Match and training balls, cones and ropes in one order."),
-      "تسوّق العروض": L("تسوّق الكل", "Shop all"),
-    },
-    links: { "/products": [NEW, BEST, SHOP] },
-  }),
-  lib("categories-big-type", {
-    text: { "منتج": L("منتج", "items") },
-  }),
-  lib("products-rail", {
-    text: {
-      "بيحبوها": L("الأكثر مبيعًا الشهر ده", "This month’s best sellers"),
-      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-      "عرض الكل": L("الكل", "All"),
-    },
-  }),
-  lib("about-circle", {
-    person: [PHOTOS.boxingGym],
-    text: {
-      "صورة الفريق": L("صالة تدريب فيها شنط ملاكمة وحبال", "A training gym with heavy bags and straps"),
-      "إحنا مين": L("من صالتنا في مدينة نصر", "From our Nasr City gym"),
-      "فريق صغير بيحب اللي بيعمله": L("مدربين قبل ما نكون بياعين", "Coaches first, sellers second"),
-      "بنرد على كل رسالة بنفسنا، وبنختار كل منتج كأننا هنستخدمه.": L(
-        "+٢٠٠٠٠ لاعب ومدرب في مصر بيتمرنوا بمعدات من نبض. كل قطعة بنستخدمها في صالتنا الأول، ولو ما عجبتكش بنبدّلها خلال ١٤ يوم.",
-        "20,000+ players and coaches in Egypt train with Nabd gear. We use every piece in our own gym first, and swap anything you don't love within 14 days.",
-      ),
-      "قابل الفريق": L("اعرف حكايتنا", "Our story"),
-    },
-  }),
-  ...categoryRows(lib, {
-    viewAll: L("الكل", "All"),
-    muted: [1, 3],
-    nodes: { "صورة المنتج": { style: { radius: 16 } } },
-  }),
-  lib("newsletter-strip", {
-    text: {
-      "اعرف الجديد الأول": L("اعرف الجديد قبل الكل", "Hear about new gear first"),
-      "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": L("معدات جديدة وتمرين الأسبوع من مدربينا، مرة في الأسبوع.", "New gear and our coaches’ workout of the week, once a week."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن نبض", "About Nabd"), L("معدات رياضة للي بيتمرن بجد، من مدينة نصر.", "Sports gear for people who train hard, from Nasr City.")),
-  aboutStory(lib, {
-    photo: PHOTOS.functionalGym,
+  newsletter: {
+    title: L("اعرف الجديد قبل الكل", "Hear about new gear first"),
+    line: L("معدات جديدة وتمرين الأسبوع من مدربينا، مرة في الأسبوع.", "New gear and our coaches’ workout of the week, once a week."),
+  },
+  footer: { line: L("يلا نتمرن", "Let’s go train") },
+  about: {
+    line: L("معدات رياضة للي بيتمرن بجد، من مدينة نصر.", "Sports gear for people who train hard, from Nasr City."),
     alt: L("صالة تدريب فيها أجهزة عجل وحلقات", "A training gym with air bikes and rings"),
     eyebrow: L("من ٢٠١٦", "Since 2016"),
     title: L("بدأنا من صالة تدريب", "We started in a gym"),
@@ -160,10 +105,189 @@ const about: Design[] = [
       "We were coaches looking for gear that survives daily training at a fair price. We could not find it, so we started importing it ourselves.",
     ),
     more: L("النهارده بنجهّز صالات ونوادي ومدارس في كل محافظات مصر.", "Today we equip gyms, clubs and schools in every governorate of Egypt."),
-    button: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    cta: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
+  },
+  contact: {
+    title: L("تعالى الصالة أو كلمنا", "Visit the gym or call us"),
+    line: L(
+      `٦٢ شارع مكرم عبيد، مدينة نصر، القاهرة، ${phone("٠١٠٩ ٥٨٤ ٢٧٣١")}`,
+      `62 Makram Ebeid St, Nasr City, Cairo | ${phone("+20 109 584 2731")}`,
+    ),
+    heading: L("جهّز صالتك أو فريقك معانا", "Equip your gym or team with us"),
+  },
+  faq: {
+    line: L("التوصيل وطلبات الصالات والفرق.", "Delivery and orders for gyms and teams."),
+    question: L("بتجهزوا صالات وفرق كاملة؟", "Do you equip whole gyms and teams?"),
+    answer: L(
+      "أيوه، ابعتلنا مساحة الصالة أو عدد اللاعيبة على واتساب، ومدرب من فريقنا يبعتلك قايمة كاملة. التوصيل والتركيب في القاهرة خلال ٣ أيام.",
+      "Yes. Send us the gym size or the squad size on WhatsApp and one of our coaches will send a full list. Cairo delivery and set-up take 3 days.",
+    ),
+  },
+  custom: {
+    // The header's and the footer's link to the whole catalog, named for the trade.
+    "shop-all": L("كل المعدات", "Shop all"),
+    "footer-shop-all": L("كل المعدات", "All gear"),
+    // The footer's WhatsApp button and its number (digits with the country code, the same on both sides).
+    "whatsapp-cta": L("اسأل مدرب على واتساب", "Ask a coach on WhatsApp"),
+    "phone-digits": L("201095842731", "201095842731"),
+    // The hero's 2nd and 3rd slides (alt, small label, title of at most 6 words, one line, button).
+    "hero-2-alt": L("ملاعب تنس زرقا من فوق", "Blue tennis courts from above"),
+    "hero-2-eyebrow": L("الأكثر مبيعًا", "Best sellers"),
+    "hero-2-title": L("اللي الكل بيلعب بيه", "What everyone plays with"),
+    "hero-2-line": L("مضارب وريش وكور اختارها لاعيبة النوادي في القاهرة.", "Rackets, shuttles and balls picked by Cairo club players."),
+    "hero-2-cta": L("الأكثر مبيعًا", "Best sellers"),
+    "hero-3-alt": L("ملعب كورة وسط غابة من فوق", "A football pitch in a forest, from above"),
+    "hero-3-eyebrow": L("جهّز فريقك", "Kit out your team"),
+    "hero-3-title": L("كل اللي الفريق محتاجه", "Everything the team needs"),
+    "hero-3-line": L("كور ماتش وتمرين، أقماع وحبال في طلب واحد.", "Match and training balls, cones and ropes in one order."),
+    "hero-3-cta": L("تسوّق الكل", "Shop all"),
+  },
+  photos: {
+    hero: { wide: PHOTOS.slideTrack },
+    story: PHOTOS.boxingGym,
+    about: PHOTOS.functionalGym,
+    custom: { "hero-2": PHOTOS.slideCourts, "hero-3": PHOTOS.slidePitch },
+  },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). Generic shop labels and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  void journey;
+  const name = c.store.name;
+  const x = c.custom;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-centered-ticker", {
+    text: {
+      "توصيل لكل محافظات مصر": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "استبدال سهل خلال ١٤ يوم": c.announcement[2]!,
+      "اسم متجرك": name,
+      "المتجر": x["shop-all"]!,
+      "العروض": L("وصل حديثًا", "New in"),
+      "المدونة": L("الأكثر مبيعًا", "Best sellers"),
+      "من نحن": L(aboutName.ar, "About"),
+      "تواصل معنا": L("تتبّع طلبك", "Track order"),
+    },
+    links: { "/products": [undefined, undefined, NEW], "/blog": BEST, "/contact": "/profile/orders" },
+  });
+
+  const footer = lib("footer-signoff", {
+    text: {
+      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "كلمنا على واتساب": x["whatsapp-cta"]!,
+      "تسوق": L("تسوّق", "Shop"),
+      "كل المنتجات": x["footer-shop-all"]!,
+      "العروض": L("الأعلى تقييمًا", "Top rated"),
+      "المساعدة": L("المساعدة", "Help"),
+      "الاسترجاع والاستبدال": L("الاستبدال والاسترجاع", "Exchanges & refunds"),
+      "من نحن": aboutName,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "https://wa.me/": `https://wa.me/${x["phone-digits"]!.en}`, "/products": [SHOP, NEW, BEST, RATED] },
+  });
+
+  const home: Design[] = [
+    lib("hero-carousel", {
+      photo: [c.photos.hero.wide, c.photos.custom["hero-2"]!, c.photos.custom["hero-3"]!],
+      text: {
+        "صورة الحملة الأولى": c.hero.alt,
+        "وصل حديثًا": c.hero.eyebrow,
+        "الموسم الجديد وصل": c.hero.title,
+        "قطع مختارة بعناية، وتوصيل لحد باب البيت.": c.hero.line,
+        "تسوّق الجديد": c.hero.cta,
+        "صورة الحملة الثانية": x["hero-2-alt"]!,
+        "الأكثر مبيعًا": x["hero-2-eyebrow"]!,
+        "المفضّلة عند عملائنا": x["hero-2-title"]!,
+        "القطع اللي بترجع لها كل مرة.": x["hero-2-line"]!,
+        "شوف الأكثر مبيعًا": x["hero-2-cta"]!,
+        "صورة الحملة الثالثة": x["hero-3-alt"]!,
+        "عروض الأسبوع": x["hero-3-eyebrow"]!,
+        "خصومات لفترة محدودة": x["hero-3-title"]!,
+        "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": x["hero-3-line"]!,
+        "تسوّق العروض": x["hero-3-cta"]!,
+      },
+      links: { "/products": [NEW, BEST, SHOP] },
+    }),
+    lib("categories-big-type", {
+      text: { "منتج": L("منتج", "items") },
+    }),
+    lib("products-rail", {
+      text: {
+        "بيحبوها": c.products.primary.title,
+        "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
+        "عرض الكل": L("الكل", "All"),
+      },
+    }),
+    lib("about-circle", {
+      person: [c.photos.story],
+      text: {
+        "صورة الفريق": c.story.alt,
+        "إحنا مين": c.story.eyebrow,
+        "فريق صغير بيحب اللي بيعمله": c.story.title,
+        "بنرد على كل رسالة بنفسنا، وبنختار كل منتج كأننا هنستخدمه.": c.story.text,
+        "قابل الفريق": c.story.cta,
+      },
+    }),
+    ...categoryRows(lib, {
+      viewAll: L("الكل", "All"),
+      muted: [1, 3],
+      nodes: { "صورة المنتج": { style: { radius: 16 } } },
+    }),
+    lib("newsletter-strip", {
+      text: {
+        "اعرف الجديد الأول": c.newsletter.title,
+        "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": c.newsletter.line,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, {
+          title: c.contact.title,
+          text: c.contact.line,
+          heading: c.contact.heading,
+        }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, {
+          text: c.faq.line,
+          question: c.faq.question,
+          answer: c.faq.answer,
+        }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -226,7 +350,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const SPORTS_BOLD = libraryTemplate({
+export const SPORTS_BOLD = editionTemplate({
   key: SPORTS_BOLD_KEY,
   version: 1,
   name: L("نبض", "Nabd"),
@@ -250,38 +374,50 @@ export const SPORTS_BOLD = libraryTemplate({
   fonts: { heading: "Changa", body: "Rubik" },
   radius: 16,
   containerMaxWidth: 1320,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن نبض", "About"), seo: { title: L("عن نبض", "About Nabd") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تعالى الصالة أو كلمنا", "Visit the gym or call us"),
-        text: L(
-          `٦٢ شارع مكرم عبيد، مدينة نصر، القاهرة، ${phone("٠١٠٩ ٥٨٤ ٢٧٣١")}`,
-          `62 Makram Ebeid St, Nasr City, Cairo | ${phone("+20 109 584 2731")}`,
-        ),
-        heading: L("جهّز صالتك أو فريقك معانا", "Equip your gym or team with us"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("التوصيل وطلبات الصالات والفرق.", "Delivery and orders for gyms and teams."),
-        question: L("بتجهزوا صالات وفرق كاملة؟", "Do you equip whole gyms and teams?"),
-        answer: L(
-          "أيوه، ابعتلنا مساحة الصالة أو عدد اللاعيبة على واتساب، ومدرب من فريقنا يبعتلك قايمة كاملة. التوصيل والتركيب في القاهرة خلال ٣ أيام.",
-          "Yes. Send us the gym size or the squad size on WhatsApp and one of our coaches will send a full list. Cairo delivery and set-up take 3 days.",
-        ),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "announcement.2",
+    "hero.alt",
+    "hero.eyebrow",
+    "hero.title",
+    "hero.line",
+    "hero.cta",
+    "products.primary.title",
+    "story",
+    "newsletter.title",
+    "newsletter.line",
+    "footer.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
+    "custom.shop-all",
+    "custom.footer-shop-all",
+    "custom.whatsapp-cta",
+    "custom.phone-digits",
+    "custom.hero-2-alt",
+    "custom.hero-2-eyebrow",
+    "custom.hero-2-title",
+    "custom.hero-2-line",
+    "custom.hero-2-cta",
+    "custom.hero-3-alt",
+    "custom.hero-3-eyebrow",
+    "custom.hero-3-title",
+    "custom.hero-3-line",
+    "custom.hero-3-cta",
+    "photos.custom.hero-2",
+    "photos.custom.hero-3",
   ],
+  // `photos.about`: the about page's photo (falls back to the story's).
+  optional: ["photos.about"],
+  // Best sellers in the rail, then the store's first four categories as rows.
+  journey: { primary: "best-sellers", rows: [1, 2, 3, 4] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {
     thumbs: "side",
