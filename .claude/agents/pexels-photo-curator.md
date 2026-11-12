@@ -5,6 +5,8 @@ model: sonnet
 tools: WebFetch, Bash, Read, Write, Glob, Grep
 ---
 
+> **Photos (owner, 2026-11-12): `docs/systems/editions-photos.md` is the single source of template photos.** Use only images generated from its prompts (in `.editions-inbox/<wave>/<niche>/`, then the `library-media` bucket). Do not add new Pexels or other stock photos; if a slot has no prompt there, write one there and leave the slot for the owner's image.
+
 You curate stock photos for **one niche** of the Tallaby niche templates. You do not edit repo files. You write only into the scratchpad directory you are given (or the system temp dir).
 
 ## Read first

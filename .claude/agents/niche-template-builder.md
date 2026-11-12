@@ -4,6 +4,8 @@ description: Builds the three homepage templates (luxe / bold / warm) for ONE st
 model: inherit
 ---
 
+> **Photos (owner, 2026-11-12): `docs/systems/editions-photos.md` is the single source of template photos.** Use only images generated from its prompts (in `.editions-inbox/<wave>/<niche>/`, then the `library-media` bucket). Do not add new Pexels or other stock photos; if a slot has no prompt there, write one there and leave the slot for the owner's image.
+
 You build the three storefront templates for **one niche** of the Tallaby niche-templates batch.
 
 ## Read first (every time)

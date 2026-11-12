@@ -72,7 +72,7 @@ Each conversion is also a redesign to the look-first standard of the pilot (`doc
 - Its own palette and type pair, chosen for the trade, not shared with another niche template in the same industry. No warm-cream-and-terracotta default, no acid-lime-on-black default, no all-caps eyebrows over every heading.
 - One section the trade needs that the others don't (a size guide or fitting note, the day's gold price, shop by phone model, a care block, a before/after, product dots on a photo), from the library only.
 - Motion: one orchestrated hero moment and the library's scroll reveals; nothing else moves.
-- Photos: white-background packshots for products; art-directed photos with no people, logos or lettering, none used by another template or pack, checked by eye.
+- Photos: white-background packshots for products; art-directed photos with no people, logos or lettering, none used by another template or pack, checked by eye. **Source: `docs/systems/editions-photos.md` only (owner, 2026-11-12):** every photo is generated from its prompts; no new Pexels or other stock photos. A slot with no prompt yet gets one added there, and waits for its image (a Pexels photo already in a template stays until its replacement arrives).
 - Checked at 390 and 1280 px in Arabic and English through `/template-preview/<key>?edition=<niche>`; no sideways overflow.
 
 ## 4. Waves after this

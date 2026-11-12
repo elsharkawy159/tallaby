@@ -1,16 +1,22 @@
-# Edition photos to generate (ChatGPT)
+# Template photos: the source (ChatGPT)
 
-ROADMAP F-90. Product photos for the niche edition packs that are still missing (updated 2026-11-12). Generate them in **one ChatGPT chat per niche**: paste the master prompt once, then send the short prompts one at a time.
+ROADMAP F-90. **This file is the single source of every photo our store templates show** (owner, 2026-11-12): product packshots, heroes, category tiles, banners, story and about photos, and each template's own extra slots. Every photo is generated from a prompt here and checked by eye; no new Pexels or other stock photos go into a template. The Pexels photos templates still show are listed under "Live templates" with their replacements, and are swapped as the images arrive. A template that needs a photo not listed here gets its prompt added here first.
+
+Generate them in **one ChatGPT chat per niche and kind**: paste the master prompt once, then send the short prompts one at a time.
 
 ## Where the files go
 
-Save each image as **`<slug>.png`** (the slug is in bold before each prompt) in:
+Save each image as **`<slug>.png`** (the slug is in bold before each prompt; scenes are `scene-<slot>.png`) in its wave's niche folder:
 
 ```
-.editions-inbox/<niche>/<slug>.png
+.editions-inbox/
+  00-live-templates/<niche>/      the 21 live niches: their packshots, and the replacement scenes listed under "Live templates"
+  01-wave-1/<niche>/              earbuds, kidswear, backpacks-travel, mobiles, audio, small-appliances, modest-wear, silver-jewelry, wearables
+  02-wave-2-beauty/<niche>/       … one folder per wave below, up to
+  13-wave-13-books-and-stationery/<niche>/
 ```
 
-For example `.editions-inbox/slippers-clogs/white-classic-clog.png`. The folder is git-ignored. If renaming is a pain, download them **in the order of this list**, one niche per folder, and I will match them by order and check each one by eye.
+For example `.editions-inbox/01-wave-1/earbuds/white-wireless-earbuds.png` or `.editions-inbox/01-wave-1/earbuds/scene-hero-wide.png`. Every niche folder already exists. The folder is git-ignored. If renaming is a pain, download them **in the order of this list** into the niche's folder, and I will match them by order and check each one by eye.
 
 When a niche folder is complete, tell me. I convert to WebP, upload them to the `library-media` bucket and build the pack.
 
@@ -56,7 +62,7 @@ Reply with the image only. I will now send the products one by one.
 | 6 | small-appliances | Shasha | electronics (with 4 and 5) |
 | – | modest-wear, silver-jewelry, wearables | Sitara, Fadda, Saa | optional: these templates already serve their niche |
 
-When a niche folder in `.editions-inbox/<niche>/` is complete (16 packshots + 8 scenes), tell me its name. I check every image by eye, convert and upload them, build the pack and redesign its template, then switch the industry once its last niche is in.
+When a niche folder in `.editions-inbox/<wave>/<niche>/` is complete (16 packshots + 8 scenes), tell me its name. I check every image by eye, convert and upload them, build the pack and redesign its template, then switch the industry once its last niche is in.
 
 **All photos I need, in one place:**
 
@@ -75,7 +81,7 @@ Start with wave 1's six; the later waves can be made in any order, an industry a
 
 ## Scene photos
 
-Every new pack also needs **8 scene photos**, so its template looks premium: one more chat per niche with the scene master prompt below. Save scenes as `.editions-inbox/<niche>/scene-<slug>.png` (packshots stay `<slug>.png`).
+Every new pack also needs **8 scene photos**, so its template looks premium: one more chat per niche with the scene master prompt below. Save scenes as `.editions-inbox/<wave>/<niche>/scene-<slug>.png` (packshots stay `<slug>.png`).
 
 ### Scene master prompt (paste once at the start of each scene chat)
 
@@ -486,7 +492,7 @@ Scenes
 
 ## Later waves: every other niche (2026-11-12)
 
-The rest of the platform's niches, so you can make photos ahead of time. Same rules: one ChatGPT chat per niche with the master prompt for the 16 packshots (numbered in the order to save them), a second chat with the scene master prompt for the 8 scenes, files in `.editions-inbox/<niche>/`. Each wave is one industry; I pick and redesign one template per niche when its photos arrive (`docs/systems/one-template-per-niche.md` §4), and switch the industry when all its niches are in.
+The rest of the platform's niches, so you can make photos ahead of time. Same rules: one ChatGPT chat per niche with the master prompt for the 16 packshots (numbered in the order to save them), a second chat with the scene master prompt for the 8 scenes, files in `.editions-inbox/<wave>/<niche>/`. Each wave is one industry; I pick and redesign one template per niche when its photos arrive (`docs/systems/one-template-per-niche.md` §4), and switch the industry when all its niches are in.
 
 | Wave | Industry | Niches | Niche ids | Images |
 |---|---|---|---|---|
