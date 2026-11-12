@@ -17,10 +17,15 @@ const DESCRIPTION: Record<SiteLocale, string> = {
 /** Extra gallery shots taken from other demo products. */
 const EXTRA_IMAGES = 2;
 
-export function templateDemoProduct(demo: TemplateDemo, opts: { storeName?: string; locale?: SiteLocale } = {}): ProductDetail {
+export function templateDemoProduct(
+  demo: TemplateDemo,
+  /** `productSlug`: the demo product a preview link opened (unknown slugs fall back to the first). */
+  opts: { storeName?: string; locale?: SiteLocale; productSlug?: string | null } = {},
+): ProductDetail {
   const locale = opts.locale ?? "ar";
   const storeName = opts.storeName ?? (demo.store.name[locale] || demo.store.name.ar || DEMO_PRODUCT.seller.name);
-  const first = demo.products.find((p) => p.image) ?? demo.products[0];
+  const chosen = opts.productSlug ? demo.products.find((p) => p.slug === opts.productSlug) : undefined;
+  const first = chosen ?? demo.products.find((p) => p.image) ?? demo.products[0];
   if (!first) return { ...DEMO_PRODUCT, seller: { ...DEMO_PRODUCT.seller, name: storeName } };
 
   const own = first.image ? [first.image] : [];

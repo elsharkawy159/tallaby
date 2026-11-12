@@ -39,7 +39,8 @@ export function resolveDemoCatalog(
       id: c.id,
       key: c.id,
       name: name(c.name),
-      href: "#",
+      // As the storefront's category links (catalog.server.ts): the full-page preview maps it to its own catalog.
+      href: `/products?category=${encodeURIComponent(c.id)}`,
       image: c.image,
       productCount: c.productCount,
     })),

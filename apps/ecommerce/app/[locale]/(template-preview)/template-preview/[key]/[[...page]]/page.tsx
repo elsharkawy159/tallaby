@@ -11,15 +11,17 @@ import {
   collectCatalogQueries,
   drawChrome,
   flushHeaderOnMobile,
+  productCatalogSection,
   storeSectionRegistry,
   type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { CarouselRuntime, MotionRuntime, PhotoToolsRuntime } from "@workspace/store-sections/client";
-import { prepareTemplateForStore, resolveDemoCatalog, templateDemoProduct, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
+import { prepareTemplateForStore, resolveDemoCatalog, templateDemoProduct, templateFormNeeds, type TemplateDemo, type TemplateMeta } from "@workspace/store-sections/templates";
 import { starterPreviewForm } from "@workspace/lib/store-forms/starter";
 import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
 import { templateFrameSrc } from "@/lib/marketing/templates.lib";
+import { PREVIEW_CATALOG_SLUG, previewLinkTarget, withPreviewParams } from "@/lib/marketing/template-preview-links.lib";
 import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { getTemplatePreview } from "@/lib/marketing/templates.server";
 import { storeFontVariables, storefrontFont } from "../../../../(shop)/storefront/[subdomain]/_components/storefront-font";
@@ -28,7 +30,7 @@ import { FrameGuard } from "./frame-guard.client";
 
 type Props = {
   params: Promise<{ locale: string; key: string; page?: string[] }>;
-  searchParams: Promise<{ thumb?: string; edition?: string | string[] }>;
+  searchParams: Promise<{ thumb?: string; edition?: string | string[]; product?: string | string[]; category?: string | string[]; search?: string | string[] }>;
 };
 
 /**
@@ -43,9 +45,18 @@ type Props = {
  * product page. An unknown niche, a pack not approved on this template and a
  * template that takes no editions all draw the template as it is, silently
  * (`getTemplatePreview`). Never indexed (the layout's robots).
+ *
+ * Opened in its own tab it can be browsed like a store (owner, 2026-11-12):
+ * product links open the product page with that product (`?product=`), and
+ * "all products", category and search links open a catalog page
+ * (`/products?category=&search=`) drawn with the template's own product card,
+ * as a live store's /products (`template-preview-links.lib.ts`).
  */
 export default async function TemplatePreviewFrame({ params, searchParams }: Props) {
-  const [{ locale: routeLocale, key, page: pageParam }, { thumb, edition: editionParam }] = await Promise.all([params, searchParams]);
+  const [{ locale: routeLocale, key, page: pageParam }, query] = await Promise.all([params, searchParams]);
+  const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)?.trim().slice(0, 100) || undefined;
+  const { thumb } = query;
+  const editionParam = query.edition;
   if ((pageParam?.length ?? 0) > 1) notFound();
   const preview = await getTemplatePreview(key, typeof editionParam === "string" ? editionParam : null);
   if (!preview) notFound();
@@ -55,20 +66,25 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
   // sections holding one show here too (a section with an unbound form is hidden).
   const formIds = Object.fromEntries(templateFormNeeds(stored).map((kind) => [kind, `preview-${kind}`]));
   const site = Object.keys(formIds).length ? prepareTemplateForStore(stored, { defaultLocale: stored.settings.defaultLocale, formIds }) : stored;
-  const slug = pageParam?.[0];
-  const page = slug ? site.pages.find((p) => p.slug === slug) : (site.pages.find((p) => p.isHome) ?? site.pages[0]);
+  const slug = pageParam?.[0] ? decodeURIComponent(pageParam[0]) : undefined;
+  const home = site.pages.find((p) => p.isHome) ?? site.pages[0];
+  // The catalog is a virtual page: a template with its own "products" page keeps that page.
+  const isCatalog = slug === PREVIEW_CATALOG_SLUG && !site.pages.some((p) => p.slug === slug);
+  const page = isCatalog ? home : slug ? site.pages.find((p) => p.slug === slug) : home;
   if (!page) notFound();
 
   const locale = routeLocale === "en" ? "en" : "ar";
   const isThumb = thumb === "1";
-  const sections = isThumb ? page.content.sections.slice(0, 3) : page.content.sections;
+  const catalog = isCatalog ? catalogView(site, meta.demo, locale, one(query.category), one(query.search)) : null;
+  const sections = catalog ? (catalog.section && catalog.count ? [catalog.section] : []) : isThumb ? page.content.sections.slice(0, 3) : page.content.sections;
   // Drawn like a live store (burger sheet on phones, Powered by in the footer), so the gallery shows what a store gets.
   const chrome = { translated: false, hasLogo: false, locale };
   const header = drawChrome(flushHeaderOnMobile(site.header), "header", chrome) ?? null;
   const footer = isThumb ? null : (drawChrome(site.footer, "footer", chrome) ?? null);
   const all = [...(header ? [header] : []), ...sections, ...(footer ? [footer] : [])];
   // The product page is drawn with the demo product, as a store's product page shows a real one.
-  const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds, edition, isProductPage(page) ? templateDemoProduct(meta.demo, { locale }) : undefined);
+  const product = !isCatalog && isProductPage(page) ? templateDemoProduct(meta.demo, { locale, productSlug: one(query.product) }) : undefined;
+  const ctx = buildContext(site, catalog ? { ...meta, demo: catalog.demo } : meta, key, routeLocale, locale, all, formIds, edition, product);
   // Page sections reveal on scroll like a live store; the header and footer don't.
   const chromeCtx = { ...ctx, reveal: false };
 
@@ -82,14 +98,92 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
       <PageStyles sections={all} />
       {header && <SectionRenderer instance={header} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={site.settings.defaultLocale} />}
       <main className="flex-1">
-        {sections.map((instance, index) => (
-          <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} aboveFold={index === 0} />
-        ))}
+        {catalog && <CatalogHead catalog={catalog} locale={locale} href={previewHrefFor(site, routeLocale, key, edition)} />}
+        {sections.map((instance, index) => {
+          const drawn = <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} aboveFold={index === 0} />;
+          // The catalog grid sits in the page width, as the store's /products wraps it.
+          return catalog ? (
+            <div key={instance.id} className={cn(s.wrap, "pb-14 md:pb-20")}>
+              {drawn}
+            </div>
+          ) : (
+            drawn
+          );
+        })}
       </main>
       {footer && <SectionRenderer instance={footer} registry={storeSectionRegistry} ctx={chromeCtx} defaultLocale={site.settings.defaultLocale} />}
       {/* The phone bottom navigation, as a store shows it by default. */}
       {!isThumb && <SiteBottomNav header={site.header} ctx={chromeCtx} />}
     </div>
+  );
+}
+
+/**
+ * Links point at the preview's own pages, product page and catalog, so a
+ * preview opened in its own tab can be browsed; anything else is left as it is.
+ */
+function previewHrefFor(site: SiteConfig, routeLocale: string, key: string, edition: string | null): (href: string) => string {
+  const pageSlugs = new Set(site.pages.filter((p) => !p.isHome).map((p) => p.slug));
+  const productPageSlug = site.pages.find((p) => isProductPage(p))?.slug ?? null;
+  return (href) => {
+    const target = previewLinkTarget(href, { pageSlugs, productPageSlug });
+    return target ? withPreviewParams(templateFrameSrc(routeLocale, key, target.slug, false, edition), target.params) : href;
+  };
+}
+
+type CatalogView = {
+  /** The template's product card in a full grid (`productCatalogSection`), or null when it has no product list. */
+  section: ReturnType<typeof productCatalogSection>;
+  /** The demo store with only the products this view shows. */
+  demo: TemplateDemo;
+  count: number;
+  categories: { id: string; name: string }[];
+  category: { id: string; name: string } | null;
+  search: string | null;
+};
+
+/** The preview's catalog: every demo product, or one category's, or a search's (title in either language). */
+function catalogView(site: SiteConfig, demo: TemplateDemo, locale: "ar" | "en", categoryId?: string, search?: string): CatalogView {
+  const name = (v: { ar: string; en: string }) => v[locale] || v.ar || v.en;
+  const categories = demo.categories.map((c) => ({ id: c.id, name: name(c.name) }));
+  const category = categories.find((c) => c.id === categoryId) ?? null;
+  const needle = search?.toLocaleLowerCase();
+  const products = demo.products.filter(
+    (p) =>
+      (!category || p.categoryId === category.id) &&
+      (!needle || [p.title.ar, p.title.en].some((t) => t?.toLocaleLowerCase().includes(needle))),
+  );
+  return { section: productCatalogSection(site.pages), demo: { ...demo, products }, count: products.length, categories, category, search: search ?? null };
+}
+
+/** The catalog's title, count and category chips, in the store's colours; the template's own header and footer frame it. */
+function CatalogHead({ catalog, locale, href }: { catalog: CatalogView; locale: "ar" | "en"; href: (href: string) => string }) {
+  const ar = locale === "ar";
+  const title = catalog.category?.name ?? (catalog.search ? (ar ? `نتائج البحث: ${catalog.search}` : `Results for "${catalog.search}"`) : ar ? "كل المنتجات" : "All products");
+  const count = ar ? `${catalog.count.toLocaleString("ar-EG")} منتج` : `${catalog.count} ${catalog.count === 1 ? "product" : "products"}`;
+  const chip = (on: boolean) =>
+    cn(
+      "inline-flex min-h-10 items-center rounded-full border-[1.5px] px-4 text-sm font-semibold transition-colors",
+      on ? "border-(--sf-brand) bg-(--sf-brand) text-(--sf-brand-ink)" : "border-(--sf-line) bg-(--sf-paper) text-(--sf-ink) hover:border-(--sf-ink)",
+    );
+  return (
+    <section className={cn(s.wrap, "pt-10 pb-6 md:pt-14")}>
+      <h1 className="text-3xl font-bold text-(--sf-ink) md:text-4xl">{title}</h1>
+      <p className="mt-2 text-sm text-(--sf-muted)">{count}</p>
+      {catalog.categories.length > 1 && (
+        <nav className="mt-6 flex flex-wrap gap-2" aria-label={ar ? "الأقسام" : "Categories"}>
+          <a href={href("/products")} className={chip(!catalog.category && !catalog.search)}>
+            {ar ? "الكل" : "All"}
+          </a>
+          {catalog.categories.map((c) => (
+            <a key={c.id} href={href(`/products?category=${encodeURIComponent(c.id)}`)} className={chip(catalog.category?.id === c.id)}>
+              {c.name}
+            </a>
+          ))}
+        </nav>
+      )}
+      {catalog.count === 0 && <p className="mt-10 text-base text-(--sf-muted)">{ar ? "مفيش منتجات هنا." : "No products here."}</p>}
+    </section>
   );
 }
 
@@ -107,13 +201,7 @@ function buildContext(
   product?: ProductDetail,
 ): RenderContext {
   const demo = meta.demo;
-  const slugs = new Set(site.pages.filter((p) => !p.isHome).map((p) => p.slug));
-  // Page links point at the preview's own pages, so a preview opened in its own tab can be browsed.
-  const previewHref = (href: string) => {
-    if (href === "/") return templateFrameSrc(routeLocale, key, undefined, false, edition);
-    const slug = href.startsWith("/") ? href.slice(1) : null;
-    return slug && slugs.has(slug) ? templateFrameSrc(routeLocale, key, slug, false, edition) : href;
-  };
+  const previewHref = previewHrefFor(site, routeLocale, key, edition);
   return {
     mode: "public",
     reveal: true,
