@@ -394,15 +394,14 @@ export const MOTION_CSS_SCROLL = [
 
 /** A motion v2 section, at zero specificity (a seller's own Hover style still wins). */
 const v2Hover = `:where(${root}:not([data-sf-hover="none"]) [${MOTION_V2_ATTR}="${MOTION_V2_MARK}"])`;
-const linkText = `:is([data-node-type="text"],[data-node-type="paragraph"],[data-node-type="heading"])`;
 /** A live carousel's track inside a motion v2 section. */
 const liveTrackV2 = `${root}:not([data-sf-motion="off"]) [${MOTION_V2_ATTR}="${MOTION_V2_MARK}"] [data-carousel]>[data-carousel-track]`;
 
 /**
  * Motion v2 interaction polish (§5.6), only inside marked sections; unmarked
  * sections keep today's hover exactly. With a fine pointer: the second photo
- * crossfades in 300 ms and settles from 1.04, a text link's underline draws
- * from the reading start and its icon nudges 3 px toward the reading end,
+ * crossfades in 300 ms and settles from 1.04, a text link's icon nudges (no
+ * drawn underline: removed by the owner, 2026-11-12) 3 px toward the reading end,
  * buttons lift and press a little quicker. A carousel slide's copy eases out
  * as it leaves (`data-sf-leaving`, set by the carousel runtime).
  */
@@ -411,9 +410,6 @@ export const MOTION_CSS_POLISH = [
   `${v2Hover} [data-sf-swap]>img:first-child{transition:opacity .3s ${MOTION_V2_EASE}}`,
   `${v2Hover} [data-sf-swap]>img+img{scale:1.04;transition:scale .7s ${MOTION_V2_EASE}}`,
   `${v2Hover} [data-sf-swap]:hover>img+img{scale:1}`,
-  `${v2Hover} [data-sf-link] ${linkText}{background-image:linear-gradient(currentColor,currentColor);background-repeat:no-repeat;background-position:left bottom;background-size:0% 1px;transition:background-size .25s ${MOTION_V2_EASE}}`,
-  `[dir="rtl"] ${v2Hover} [data-sf-link] ${linkText}{background-position:right bottom}`,
-  `${v2Hover} [data-sf-link]:is(:hover,:focus-visible) ${linkText}{background-size:100% 1px}`,
   `${v2Hover} [data-sf-link] [data-node-type="icon"]{transition:translate .2s ${MOTION_V2_EASE}}`,
   `${v2Hover} [data-sf-link]:is(:hover,:focus-visible) [data-node-type="icon"]{translate:3px 0}`,
   `[dir="rtl"] ${v2Hover} [data-sf-link]:is(:hover,:focus-visible) [data-node-type="icon"]{translate:-3px 0}`,
