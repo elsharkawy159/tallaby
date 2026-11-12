@@ -330,6 +330,10 @@
       "types": "./src/products/agent-products.dto.ts",
       "default": "./src/products/agent-products.dto.ts"
     },
+    "./products/autofill": {
+      "types": "./src/products/autofill/index.ts",
+      "default": "./src/products/autofill/index.ts"
+    },
     "./products/agent/server": {
       "types": "./src/products/agent-products.server.ts",
       "default": "./src/products/agent-products.server.ts"

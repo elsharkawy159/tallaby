@@ -2,6 +2,7 @@ import { generateStructured, type GenerateContentPart } from "@workspace/ai"
 import type { TaxonomyScope } from "@workspace/lib/stores/scope/server"
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data"
 import {
+  AUTOFILL_CALL_OPTIONS,
   AUTOFILL_FEATURE,
   productAutofillOutputSchema,
   type AutofillInput,
@@ -16,9 +17,6 @@ import { AUTOFILL_SYSTEM_RULES, autofillRequestText } from "./ai-autofill-prompt
  * output only fills a form the seller reviews; nothing is saved here.
  * Cost rules: docs/ai.md.
  */
-
-/** The same seller sending the same input again within this window gets the stored answer, free. */
-const RESULT_CACHE_MS = 10 * 60_000
 
 export type AutofillRun = {
   output: ProductAutofillOutput
@@ -59,16 +57,11 @@ export async function autofillProduct(
     feature: options.feature ?? AUTOFILL_FEATURE,
     refId: options.refId,
     sellerId,
-    tier: "fast",
+    // Fast tier, medium media resolution, minimal thinking, 10-minute result cache (shared with Admin).
+    ...AUTOFILL_CALL_OPTIONS,
     schema: productAutofillOutputSchema,
     system: AUTOFILL_SYSTEM_RULES,
     content,
-    // Medium, not low: the model reads small text in review screenshots and spec sheets.
-    mediaResolution: "medium",
-    // Live 2026-10-29: "low" spent ~1,500 reasoning tokens a call (billed as
-    // output) for the same listing that "minimal" wrote with none: $0.0037 → $0.0015.
-    thinkingLevel: "minimal",
-    cacheMs: RESULT_CACHE_MS,
   })
 
   return {
