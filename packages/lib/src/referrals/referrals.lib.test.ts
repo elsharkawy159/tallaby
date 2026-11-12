@@ -1,18 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
   REFERRAL_CODE_RE,
+  REFERRAL_PROGRAM,
+  REFERRAL_SIGNUP_BONUS_PIASTRES,
   availablePiastres,
   commissionPiastres,
   fromPiastres,
   generateReferralCode,
-  isUnlocked,
   maskDestination,
   normalizeEgyptianPhone,
   normalizeReferralCode,
   payoutRequestSchema,
   referralCookieToSet,
   referralShareUrl,
+  signupBonusCrossed,
   toPiastres,
+  topUpsUsdCents,
   withdrawBlockReason,
 } from "./referrals.lib";
 
@@ -38,21 +41,39 @@ describe("money", () => {
   });
 });
 
-describe("unlock and withdraw rules", () => {
-  it("needs 10 referrals and 10 stores, or an earlier unlock", () => {
-    expect(isUnlocked({ successfulReferrals: 10, stores: 10, unlockedAt: null })).toBe(true);
-    expect(isUnlocked({ successfulReferrals: 10, stores: 9, unlockedAt: null })).toBe(false);
-    expect(isUnlocked({ successfulReferrals: 9, stores: 30, unlockedAt: null })).toBe(false);
-    expect(isUnlocked({ successfulReferrals: 0, stores: 0, unlockedAt: "2026-10-29T00:00:00Z" })).toBe(true);
+describe("sign-up bonus program (owner, 2026-11-12)", () => {
+  it("is the live program; the percent path stays in code, switched off", () => {
+    expect(REFERRAL_PROGRAM).toBe("signup_bonus");
+    expect(REFERRAL_SIGNUP_BONUS_PIASTRES).toBe(10_000);
   });
 
-  it("reports the first reason a withdrawal is blocked", () => {
-    const ok = { unlocked: true, available: 50000, hasOpenRequest: false, sellerStatus: "approved" };
+  it("totals wallet-credited USD, converting old EGP-credited top-ups at the switch rate", () => {
+    expect(topUpsUsdCents({ usdCredited: "3.00", egpCredited: "0", rate: 53.9007 })).toBe(300);
+    // EGP 107.80 at 53.9007 = $2.00.
+    expect(topUpsUsdCents({ usdCredited: "3.00", egpCredited: "107.80", rate: 53.9007 })).toBe(500);
+    expect(topUpsUsdCents({ usdCredited: "0", egpCredited: "0", rate: null })).toBe(0);
+    // EGP credits cannot be measured without a rate.
+    expect(topUpsUsdCents({ usdCredited: "5.00", egpCredited: "100.00", rate: null })).toBeNull();
+  });
+
+  it("is earned only by the top-up that crosses from below $5 to $5 or more", () => {
+    expect(signupBonusCrossed({ beforeUsdCents: 0, thisUsdCents: 499 })).toBe(false);
+    expect(signupBonusCrossed({ beforeUsdCents: 0, thisUsdCents: 500 })).toBe(true);
+    // Cumulative: $2 then $3.
+    expect(signupBonusCrossed({ beforeUsdCents: 200, thisUsdCents: 300 })).toBe(true);
+    // Already at $5 before (paid by percentage, or a later top-up): never again.
+    expect(signupBonusCrossed({ beforeUsdCents: 500, thisUsdCents: 1000 })).toBe(false);
+    expect(signupBonusCrossed({ beforeUsdCents: 900, thisUsdCents: 500 })).toBe(false);
+  });
+});
+
+describe("withdraw rules", () => {
+  it("needs no referral or store count, only the minimum, no open request and an active account", () => {
+    const ok = { available: 50000, hasOpenRequest: false, sellerStatus: "approved" };
     expect(withdrawBlockReason(ok)).toBeNull();
     expect(withdrawBlockReason({ ...ok, available: 49999 })).toBe("below_minimum");
     expect(withdrawBlockReason({ ...ok, hasOpenRequest: true, available: 0 })).toBe("open_request");
-    expect(withdrawBlockReason({ ...ok, unlocked: false, hasOpenRequest: true })).toBe("locked");
-    expect(withdrawBlockReason({ ...ok, sellerStatus: "suspended", unlocked: false })).toBe("suspended");
+    expect(withdrawBlockReason({ ...ok, sellerStatus: "suspended", hasOpenRequest: true })).toBe("suspended");
   });
 });
 

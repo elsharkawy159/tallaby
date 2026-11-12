@@ -193,8 +193,8 @@ export async function applyStoreTopUpWebhook(input: {
         .update(sellerWalletTopUps)
         .set({ status: "succeeded", providerTransactionId: transactionId, transactionId: entry.entryId, updatedAt: sql`now()` })
         .where(pending);
-      // The referrer's 20 % (F-37), in this transaction: never missed, never doubled.
-      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUpCommissionBase(topUp) });
+      // The referrer's reward (F-37: EGP 100 when the $5 line is crossed), in this transaction: never missed, never doubled.
+      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUpCommissionBase(topUp), credit });
       return "credited";
     } catch (error) {
       if (error instanceof DuplicateStoreWalletEntryError) return "duplicate";

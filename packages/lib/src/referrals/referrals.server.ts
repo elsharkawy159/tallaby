@@ -3,27 +3,32 @@
  *
  * - `postReferralCommission` runs inside the transaction that marks a store
  *   top-up succeeded (Kashier webhook and admin-approved manual top-up), so a
- *   commission is never missed and never doubled (unique `top_up_id`).
+ *   reward is never missed and never doubled: the EGP 100 sign-up bonus is one
+ *   row per referred seller (0168 partial unique index), the dormant percent
+ *   commission one row per top-up (unique `top_up_id`).
  * - Seller-facing reads and the withdrawal request always take the seller id
  *   from the session (requireSeller), never from the client.
  * - Nothing here touches a wallet table.
  */
 import { and, db, eq, isNull, referralCommissions, referralPayouts, sellers, sellerNotifications, sql } from "@workspace/db";
 import {
-  REFERRAL_UNLOCK_REFERRALS,
-  REFERRAL_UNLOCK_STORES,
+  REFERRAL_PROGRAM,
+  REFERRAL_SIGNUP_BONUS_PIASTRES,
+  REFERRAL_SIGNUP_BONUS_THRESHOLD_USD_CENTS,
   availablePiastres,
   commissionPiastres,
   fromPiastres,
   generateReferralCode,
-  isUnlocked,
   maskDestination,
   normalizeEgyptianPhone,
   normalizeReferralCode,
   payoutRequestSchema,
+  signupBonusCrossed,
   toPiastres,
+  topUpsUsdCents,
   withdrawBlockReason,
   type PayoutDestination,
+  type ReferralProgram,
   type WithdrawBlockReason,
 } from "./referrals.lib";
 
@@ -64,13 +69,28 @@ export async function resolveReferrerForSignup(
 // Commissions
 // ---------------------------------------------------------------------------
 
+/** A top-up that was just marked succeeded, as the referral program needs it. */
+export type SucceededTopUp = {
+  id: string;
+  sellerId: string;
+  /** The EGP paid before tax (topUpCommissionBase): the percent base, and `top_up_amount` on the row. */
+  amount: string;
+  /** What the wallet received (topUpCredit): USD since the switch, EGP before it. */
+  credit: { amount: string; currency: "EGP" | "USD" };
+};
+
 /**
- * Records the referrer's 25 % of a top-up that was just marked succeeded in
- * `tx`. No-op for sellers nobody referred. Idempotent on `top_up_id`.
+ * The referrer's reward for a top-up that was just marked succeeded in `tx`.
+ * No-op for sellers nobody referred or an admin excluded as fake.
+ * - `signup_bonus` (live since 2026-11-12): EGP 100 once, when this top-up takes
+ *   the referred seller's succeeded top-ups from below $5 to $5 or more.
+ * - `percent` (switched off): REFERRAL_RATE_PERCENT of this top-up.
+ * Idempotent: a repeated event finds the row and posts nothing.
  */
 export async function postReferralCommission(
   tx: Tx,
-  topUp: { id: string; sellerId: string; amount: string },
+  topUp: SucceededTopUp,
+  program: ReferralProgram = REFERRAL_PROGRAM,
 ): Promise<{ posted: boolean }> {
   const [seller] = await tx
     .select({ referrerId: sellers.referredBySellerId, excludedAt: sellers.referralExcludedAt })
@@ -81,7 +101,10 @@ export async function postReferralCommission(
   // An account an admin excluded as fake earns its referrer nothing more.
   if (!referrerId || seller.excludedAt) return { posted: false };
 
-  const amount = fromPiastres(commissionPiastres(topUp.amount));
+  const amount =
+    program === "percent" ? fromPiastres(commissionPiastres(topUp.amount)) : await signupBonusAmount(tx, topUp);
+  if (!amount) return { posted: false };
+
   const inserted = await tx
     .insert(referralCommissions)
     .values({
@@ -90,14 +113,41 @@ export async function postReferralCommission(
       topUpId: topUp.id,
       topUpAmount: topUp.amount,
       amount,
+      kind: program,
     })
-    .onConflictDoNothing({ target: referralCommissions.topUpId })
+    // No target: a repeated event hits `top_up_id`, a second bonus the one-per-seller index (0168).
+    .onConflictDoNothing()
     .returning({ id: referralCommissions.id });
   if (!inserted.length) return { posted: false };
 
-  await refreshReferralUnlock(tx, referrerId);
   await notifyCommissionEarned(tx, referrerId, amount);
   return { posted: true };
+}
+
+/**
+ * "100.00" when this top-up crosses the referred seller's $5 line, else null.
+ * Their other succeeded top-ups count in US cents: USD credits as they are,
+ * EGP credits from before the switch at `billing_settings.conversion_rate`.
+ * Not retroactive: a seller already at $5 earns nothing.
+ */
+async function signupBonusAmount(tx: Tx, topUp: SucceededTopUp): Promise<string | null> {
+  const result = await tx.execute<{ usd: string; egp: string; rate: string | null }>(sql`
+    SELECT
+      coalesce(sum(t.credit_amount) FILTER (WHERE t.credit_currency = 'USD' AND t.credit_amount IS NOT NULL), 0)::text AS usd,
+      coalesce(sum(t.amount) FILTER (WHERE NOT (coalesce(t.credit_currency, '') = 'USD' AND t.credit_amount IS NOT NULL)), 0)::text AS egp,
+      (SELECT b.conversion_rate::text FROM billing_settings b WHERE b.id) AS rate
+    FROM seller_wallet_top_ups t
+    WHERE t.seller_id = ${topUp.sellerId} AND t.status = 'succeeded' AND t.id <> ${topUp.id}
+  `);
+  const row = (result as unknown as { usd: string; egp: string; rate: string | null }[])[0];
+  const rate = row?.rate ? Number(row.rate) : null;
+  const beforeUsdCents = topUpsUsdCents({ usdCredited: row?.usd ?? "0", egpCredited: row?.egp ?? "0", rate });
+  const thisUsdCents =
+    topUp.credit.currency === "USD"
+      ? toPiastres(topUp.credit.amount)
+      : topUpsUsdCents({ usdCredited: "0", egpCredited: topUp.credit.amount, rate });
+  if (beforeUsdCents === null || thisUsdCents === null) return null;
+  return signupBonusCrossed({ beforeUsdCents, thisUsdCents }) ? fromPiastres(REFERRAL_SIGNUP_BONUS_PIASTRES) : null;
 }
 
 /**
@@ -128,41 +178,31 @@ async function notifyCommissionEarned(tx: Tx, referrerId: string, amount: string
   }
 }
 
-/** Successful referrals and their live stores, excluding accounts an admin marked fake. */
-export async function getReferralCounts(
-  q: Queryable,
-  referrerId: string,
-): Promise<{ successfulReferrals: number; stores: number }> {
-  const result = await q.execute<{ referrals: number; stores: number }>(sql`
-    SELECT
-      (SELECT count(*)::int FROM sellers r
-        WHERE r.referred_by_seller_id = ${referrerId} AND r.referral_excluded_at IS NULL
-          AND EXISTS (SELECT 1 FROM seller_wallet_top_ups t WHERE t.seller_id = r.id AND t.status = 'succeeded')
-      ) AS referrals,
-      (SELECT count(*)::int FROM stores st JOIN sellers r ON r.id = st.seller_id
-        WHERE r.referred_by_seller_id = ${referrerId} AND r.referral_excluded_at IS NULL AND st.deleted_at IS NULL
-      ) AS stores
-  `);
-  const row = (result as unknown as { referrals: number; stores: number }[])[0];
-  return { successfulReferrals: Number(row?.referrals ?? 0), stores: Number(row?.stores ?? 0) };
+/**
+ * A referred seller's succeeded top-ups in USD, as numeric SQL for display and
+ * counts only (the bonus itself is decided in integer cents above). `alias` is
+ * a fixed sellers alias written in code, never input.
+ */
+export function toppedUpUsdSql(alias: "r") {
+  return sql.raw(`(SELECT round(coalesce(sum(CASE WHEN t.credit_currency = 'USD' AND t.credit_amount IS NOT NULL THEN t.credit_amount
+      ELSE t.amount / nullif((SELECT b.conversion_rate FROM billing_settings b WHERE b.id), 0) END), 0), 2)
+    FROM seller_wallet_top_ups t WHERE t.seller_id = ${alias}.id AND t.status = 'succeeded')`);
 }
 
-/** Sets `referral_unlocked_at` once both counts reach 10. Returns the unlock state. */
-export async function refreshReferralUnlock(q: Queryable, referrerId: string): Promise<boolean> {
-  const [seller] = await q
-    .select({ unlockedAt: sellers.referralUnlockedAt })
-    .from(sellers)
-    .where(eq(sellers.id, referrerId))
-    .limit(1);
-  if (!seller) return false;
-  if (seller.unlockedAt) return true;
-  const counts = await getReferralCounts(q, referrerId);
-  if (!isUnlocked({ ...counts, unlockedAt: null })) return false;
-  await q
-    .update(sellers)
-    .set({ referralUnlockedAt: sql`now()` })
-    .where(and(eq(sellers.id, referrerId), isNull(sellers.referralUnlockedAt)));
-  return true;
+/**
+ * Sellers who signed up through the referrer's link, and those whose top-ups
+ * reached $5, both without accounts an admin marked fake.
+ */
+export async function getReferralCounts(q: Queryable, referrerId: string): Promise<{ referred: number; qualified: number }> {
+  const result = await q.execute<{ referred: number; qualified: number }>(sql`
+    SELECT
+      count(*)::int AS referred,
+      (count(*) FILTER (WHERE ${toppedUpUsdSql("r")} * 100 >= ${REFERRAL_SIGNUP_BONUS_THRESHOLD_USD_CENTS}))::int AS qualified
+    FROM sellers r
+    WHERE r.referred_by_seller_id = ${referrerId} AND r.referral_excluded_at IS NULL
+  `);
+  const row = (result as unknown as { referred: number; qualified: number }[])[0];
+  return { referred: Number(row?.referred ?? 0), qualified: Number(row?.qualified ?? 0) };
 }
 
 // ---------------------------------------------------------------------------
@@ -191,7 +231,11 @@ export type ReferralRow = {
   storeName: string | null;
   signedUpAt: string | null;
   stores: number;
+  /** USD of succeeded top-ups (old EGP ones at the switch rate). */
   toppedUp: string;
+  /** Reached $5 (the bonus line; paid by percentage when that was before 2026-11-12). */
+  qualified: boolean;
+  /** EGP earned from this seller: the bonus, plus any older percent commissions. */
   commission: string;
 };
 
@@ -212,9 +256,9 @@ export type ReferralOverview = {
   earned: string;
   paid: string;
   available: string;
-  counts: { successfulReferrals: number; stores: number };
-  goals: { referrals: number; stores: number };
-  unlocked: boolean;
+  counts: { referred: number; qualified: number };
+  /** The EGP per qualified seller ("100.00"). */
+  bonus: string;
   blockReason: WithdrawBlockReason | null;
   openPayout: ReferralPayoutView | null;
   payouts: ReferralPayoutView[];
@@ -253,11 +297,7 @@ function toPayoutView(row: typeof referralPayouts.$inferSelect): ReferralPayoutV
 export async function getReferralOverview(sellerId: string, q: Queryable = db): Promise<ReferralOverview | null> {
   const code = await getOrCreateReferralCode(sellerId, q);
   if (!code) return null;
-  const [seller] = await q
-    .select({ status: sellers.status, unlockedAt: sellers.referralUnlockedAt })
-    .from(sellers)
-    .where(eq(sellers.id, sellerId))
-    .limit(1);
+  const [seller] = await q.select({ status: sellers.status }).from(sellers).where(eq(sellers.id, sellerId)).limit(1);
   if (!seller) return null;
 
   const [money, counts, payoutRows, referralRows] = await Promise.all([
@@ -275,7 +315,7 @@ export async function getReferralOverview(sellerId: string, q: Queryable = db): 
           ORDER BY st.is_primary DESC, st.created_at ASC LIMIT 1) AS store_name,
         coalesce(r.referred_at, r.created_at)::text AS signed_up_at,
         (SELECT count(*)::int FROM stores st WHERE st.seller_id = r.id AND st.deleted_at IS NULL) AS stores,
-        coalesce((SELECT sum(t.amount) FROM seller_wallet_top_ups t WHERE t.seller_id = r.id AND t.status = 'succeeded'), 0)::text AS topped_up,
+        ${toppedUpUsdSql("r")}::text AS topped_up,
         coalesce((SELECT sum(c.amount) FROM referral_commissions c
           WHERE c.referred_seller_id = r.id AND c.referrer_seller_id = ${sellerId} AND c.status = 'earned'), 0)::text AS commission
       FROM sellers r
@@ -285,8 +325,6 @@ export async function getReferralOverview(sellerId: string, q: Queryable = db): 
     `),
   ]);
 
-  // An unlock earned before the last change of counts sticks; refresh it here too.
-  const unlocked = seller.unlockedAt ? true : await refreshReferralUnlock(q, sellerId);
   const payouts = payoutRows.map(toPayoutView);
   const openPayout = payouts.find((p) => p.status === "requested") ?? null;
 
@@ -296,10 +334,8 @@ export async function getReferralOverview(sellerId: string, q: Queryable = db): 
     paid: fromPiastres(money.paid),
     available: fromPiastres(money.available),
     counts,
-    goals: { referrals: REFERRAL_UNLOCK_REFERRALS, stores: REFERRAL_UNLOCK_STORES },
-    unlocked,
+    bonus: fromPiastres(REFERRAL_SIGNUP_BONUS_PIASTRES),
     blockReason: withdrawBlockReason({
-      unlocked,
       available: money.available,
       hasOpenRequest: Boolean(openPayout),
       sellerStatus: seller.status ?? "pending",
@@ -312,6 +348,7 @@ export async function getReferralOverview(sellerId: string, q: Queryable = db): 
         signedUpAt: r.signed_up_at,
         stores: Number(r.stores),
         toppedUp: fromPiastres(toPiastres(r.topped_up)),
+        qualified: toPiastres(r.topped_up) >= REFERRAL_SIGNUP_BONUS_THRESHOLD_USD_CENTS,
         commission: fromPiastres(toPiastres(r.commission)),
       }),
     ),
@@ -336,16 +373,14 @@ export async function requestReferralPayout(
   try {
     return await q.transaction(async (tx) => {
       const [seller] = await tx
-        .select({ status: sellers.status, unlockedAt: sellers.referralUnlockedAt })
+        .select({ status: sellers.status })
         .from(sellers)
         .where(eq(sellers.id, sellerId))
         .for("update");
       if (!seller) return { success: false as const, error: "not_found" as const };
 
-      const unlocked = seller.unlockedAt ? true : await refreshReferralUnlock(tx, sellerId);
       const money = await balances(tx, sellerId);
       const block = withdrawBlockReason({
-        unlocked,
         available: money.available,
         hasOpenRequest: money.requested > 0,
         sellerStatus: seller.status ?? "pending",

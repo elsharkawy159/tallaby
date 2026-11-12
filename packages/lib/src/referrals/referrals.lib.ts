@@ -2,10 +2,13 @@
  * Pure rules for the Tallaby affiliate program (ROADMAP.md F-37, 0117).
  * No DB imports, safe on the client.
  *
- * A seller shares `tallaby.com/?ref=<code>`; every seller who signs up through
- * it earns the referrer 25 % (20 % until 2026-11-12) of each succeeded store-wallet top-up, for life,
- * paid in cash by an admin. Its own ledger: no wallet balance ever changes.
- * Money is integer piastres here; the DB stores numeric(10,2).
+ * A seller shares `tallaby.com/?ref=<code>`. Since 2026-11-12 (owner) every
+ * seller who signs up through it earns the referrer EGP 100 once, when their
+ * succeeded store-wallet top-ups first add up to $5 or more (0168). The older
+ * program, 25 % of each succeeded top-up, stays in code behind
+ * `REFERRAL_PROGRAM` and earns nothing while it is off. Paid in cash by an
+ * admin. Its own ledger: no wallet balance ever changes.
+ * Money is integer piastres (EGP) or cents (USD) here; the DB stores numeric(10,2).
  */
 import { z } from "zod";
 
@@ -20,11 +23,21 @@ export function normalizeEgyptianPhone(input: string): string {
   return digits;
 }
 
+export type ReferralProgram = "percent" | "signup_bonus";
+/**
+ * The live program (owner, 2026-11-12): `signup_bonus`. Set it back to
+ * `percent` to pay REFERRAL_RATE_PERCENT of every top-up again.
+ */
+export const REFERRAL_PROGRAM: ReferralProgram = "signup_bonus";
+
+/** The dormant percent program's rate (25 % since 2026-11-12, 20 % before). */
 export const REFERRAL_RATE_PERCENT = 25;
-/** EGP 500, the smallest withdrawal (owner, 2026-10-29). */
+/** EGP 100 per referred seller account, once (owner, 2026-11-12). */
+export const REFERRAL_SIGNUP_BONUS_PIASTRES = 10_000;
+/** $5 of succeeded top-ups earns the bonus. */
+export const REFERRAL_SIGNUP_BONUS_THRESHOLD_USD_CENTS = 500;
+/** EGP 500, the smallest withdrawal (owner, 2026-10-29). No referral count is needed since 2026-11-12. */
 export const REFERRAL_MIN_PAYOUT_PIASTRES = 50_000;
-export const REFERRAL_UNLOCK_REFERRALS = 10;
-export const REFERRAL_UNLOCK_STORES = 10;
 
 export const REFERRAL_COOKIE = "tallaby_ref";
 /** 60 days, in seconds. */
@@ -44,7 +57,7 @@ export function fromPiastres(piastres: number): string {
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 }
 
-/** 25 % of a top-up, rounded down to the piastre. */
+/** 25 % of a top-up, rounded down to the piastre (the dormant percent program). */
 export function commissionPiastres(topUpAmount: string): number {
   return Math.floor((toPiastres(topUpAmount) * REFERRAL_RATE_PERCENT) / 100);
 }
@@ -58,21 +71,37 @@ export function availablePiastres(input: { earned: number; requestedOrPaid: numb
   return input.earned - input.requestedOrPaid;
 }
 
-export function isUnlocked(input: { successfulReferrals: number; stores: number; unlockedAt: string | null }): boolean {
-  if (input.unlockedAt) return true;
-  return input.successfulReferrals >= REFERRAL_UNLOCK_REFERRALS && input.stores >= REFERRAL_UNLOCK_STORES;
+/**
+ * Succeeded top-ups in US cents: the USD the wallet received, plus EGP-credited
+ * top-ups from before the USD switch at the switch rate
+ * (`billing_settings.conversion_rate`). Null when EGP credits exist but there
+ * is no rate to measure them, so no bonus is guessed.
+ */
+export function topUpsUsdCents(input: { usdCredited: string; egpCredited: string; rate: number | null }): number | null {
+  const usdCents = toPiastres(input.usdCredited);
+  const egpPiastres = toPiastres(input.egpCredited);
+  if (egpPiastres === 0) return usdCents;
+  if (!input.rate || !(input.rate > 0)) return null;
+  return usdCents + Math.round((egpPiastres * 10_000) / Math.round(input.rate * 10_000));
 }
 
-export type WithdrawBlockReason = "suspended" | "locked" | "open_request" | "below_minimum";
+/** Whether this top-up takes the seller's total from below $5 to $5 or more. */
+export function signupBonusCrossed(input: { beforeUsdCents: number; thisUsdCents: number }): boolean {
+  return (
+    input.beforeUsdCents < REFERRAL_SIGNUP_BONUS_THRESHOLD_USD_CENTS &&
+    input.beforeUsdCents + input.thisUsdCents >= REFERRAL_SIGNUP_BONUS_THRESHOLD_USD_CENTS
+  );
+}
+
+/** Why a withdrawal is blocked. The 10 referrals + 10 stores unlock ended on 2026-11-12 (owner). */
+export type WithdrawBlockReason = "suspended" | "open_request" | "below_minimum";
 
 export function withdrawBlockReason(input: {
-  unlocked: boolean;
   available: number;
   hasOpenRequest: boolean;
   sellerStatus: string;
 }): WithdrawBlockReason | null {
   if (input.sellerStatus !== "approved") return "suspended";
-  if (!input.unlocked) return "locked";
   if (input.hasOpenRequest) return "open_request";
   if (input.available < REFERRAL_MIN_PAYOUT_PIASTRES) return "below_minimum";
   return null;

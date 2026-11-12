@@ -224,4 +224,4 @@ without the snapshot are untouched.
 
 ## 14. Affiliate commissions are not a wallet (2026-10-29)
 
-The Tallaby affiliate program (ROADMAP.md F-37, migration 0117) keeps its own ledger: `referral_commissions` (20 % of each succeeded store-wallet top-up of a referred seller, unique per `top_up_id`) and `referral_payouts` (cash withdrawals an admin pays by hand). It is posted inside the top-up success transaction but never writes `user_wallets`, `seller_wallet`, `wallet_transactions` or calls `postStoreWalletEntry`. Code: `packages/lib/src/referrals/`.
+The Tallaby affiliate program (ROADMAP.md F-37, migration 0117) keeps its own ledger: `referral_commissions` (since 2026-11-12, 0168: one EGP 100 `signup_bonus` row per referred seller, on the succeeded top-up that takes their total to $5; before that, `percent` rows of 20–25 % of each succeeded top-up, unique per `top_up_id`) and `referral_payouts` (cash withdrawals an admin pays by hand). It is posted inside the top-up success transaction but never writes `user_wallets`, `seller_wallet`, `wallet_transactions` or calls `postStoreWalletEntry`. Code: `packages/lib/src/referrals/`.

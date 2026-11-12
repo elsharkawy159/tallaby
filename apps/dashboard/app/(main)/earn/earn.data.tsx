@@ -1,6 +1,6 @@
-import { Banknote, CircleCheck, CircleX, Clock, Lock, MessageCircle, Route, TrendingUp, Unlock, UserPlus, Users, Wallet } from "lucide-react";
+import { BadgeCheck, Banknote, CircleCheck, CircleX, Clock, MessageCircle, Route, TrendingUp, UserPlus, Users, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { REFERRAL_MIN_PAYOUT_PIASTRES, REFERRAL_RATE_PERCENT, fromPiastres, referralShareUrl } from "@workspace/lib/referrals";
+import { REFERRAL_MIN_PAYOUT_PIASTRES, fromPiastres, referralShareUrl } from "@workspace/lib/referrals";
 import { getReferralOverview, type ReferralPayoutView } from "@workspace/lib/referrals/server";
 import { EmptyState, Note, ResponsiveTable, Row, Rows, SectionCard, SellerButton, SellerCard, StatusBadge, TwoColumns } from "@/components/seller-ui";
 import { STOREFRONT_URL, getSupportWhatsAppUrl } from "@/lib/constants";
@@ -12,8 +12,8 @@ const STAT_ICONS = { earned: TrendingUp, available: Wallet, paid: CircleCheck } 
 const HOW_STEPS = ["share", "topUp", "earn"] as const;
 
 /**
- * Earn with us (F-37): commission totals, the share link, progress to unlock
- * withdrawals, referred sellers and withdrawals. Never cached: money data is
+ * Earn with us (F-37): earnings totals, the share link, how many referred
+ * sellers reached $5 (the EGP 100 bonus), referred sellers and withdrawals. Never cached: money data is
  * read fresh on every request (CLAUDE.md rule 8).
  */
 export async function EarnSection({ sellerId }: { sellerId: string }) {
@@ -27,7 +27,10 @@ export async function EarnSection({ sellerId }: { sellerId: string }) {
 
   const minimum = formatMoney(fromPiastres(REFERRAL_MIN_PAYOUT_PIASTRES), locale);
   const shareUrl = referralShareUrl(overview.code, STOREFRONT_URL);
-  const percent = (count: number, goal: number) => Math.min(100, Math.round((count / goal) * 100));
+  const bonus = formatMoney(overview.bonus, locale);
+  const bonusNumber = String(Math.round(Number(overview.bonus)));
+  const { referred, qualified } = overview.counts;
+  const qualifiedPercent = referred > 0 ? Math.min(100, Math.round((qualified / referred) * 100)) : 0;
 
   return (
     <>
@@ -36,12 +39,12 @@ export async function EarnSection({ sellerId }: { sellerId: string }) {
         <span aria-hidden className="pointer-events-none absolute -inset-y-1/2 start-[45%] end-[-10%] bg-[radial-gradient(50%_50%_at_50%_40%,rgb(253_173_40/.24),transparent_70%)]" />
         <div className="relative min-w-0">
           <h1 className="text-[clamp(22px,3vw,30px)] font-bold leading-[1.35]">{t("title")}</h1>
-          <p className="mt-1.5 max-w-[560px] text-pretty text-sm text-[#c6d8dc]">{t("intro")}</p>
+          <p className="mt-1.5 max-w-[560px] text-pretty text-sm text-[#c6d8dc]">{t("intro", { bonus })}</p>
         </div>
         <div className="relative grid size-[120px] place-items-center rounded-full border border-white/10 bg-white/5 text-center max-[600px]:size-[96px]">
           <div>
             <b dir="ltr" className="block font-montserrat text-[34px] font-extrabold leading-none text-(--tallaby-amber-600) max-[600px]:text-[26px]">
-              {REFERRAL_RATE_PERCENT}%
+              {bonusNumber}
             </b>
             <small className="text-[11.5px] text-[#c6d8dc]">{tSetup("perTopUp")}</small>
           </div>
@@ -77,38 +80,26 @@ export async function EarnSection({ sellerId }: { sellerId: string }) {
             <li key={step} className="flex flex-col gap-1.5 rounded-[18px] border border-(--s-line-soft) bg-(--s-tint) p-4">
               <span className="grid size-[30px] place-items-center rounded-full bg-accent font-montserrat text-[13px] font-extrabold text-(--tallaby-teal-900)">{index + 1}</span>
               <b className="text-sm font-bold text-(--s-ink)">{tSetup(`how.${step}.title`)}</b>
-              <small className="text-[12.5px] leading-[1.7] text-(--s-muted)">{tSetup(`how.${step}.body`, { percent: REFERRAL_RATE_PERCENT })}</small>
+              <small className="text-[12.5px] leading-[1.7] text-(--s-muted)">{tSetup(`how.${step}.body`, { bonus })}</small>
             </li>
           ))}
         </ol>
       </SectionCard>
 
       <TwoColumns>
-        <SectionCard
-          icon={overview.unlocked ? Unlock : Lock}
-          tone={overview.unlocked ? "success" : "accent"}
-          title={overview.unlocked ? t("progress.unlocked") : t("progress.title")}
-        >
-          {(
-            [
-              ["referrals", overview.counts.successfulReferrals, overview.goals.referrals],
-              ["stores", overview.counts.stores, overview.goals.stores],
-            ] as const
-          ).map(([key, count, goal]) => (
-            <div key={key} className="flex flex-col gap-1.5">
-              <p className="text-[13px] text-(--s-text) tabular-nums">{t(`progress.${key}`, { count, goal })}</p>
-              <span role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={goal} className="block h-2 overflow-hidden rounded-full bg-(--s-fill)">
-                <i className="block h-full rounded-full bg-(--s-primary)" style={{ width: `${percent(count, goal)}%` }} />
-              </span>
-            </div>
-          ))}
-          <p className="text-pretty text-xs text-(--s-faint)">{t("progress.rule")}</p>
+        <SectionCard icon={BadgeCheck} tone={qualified > 0 ? "success" : "accent"} title={t("progress.title")}>
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[13px] text-(--s-text) tabular-nums">{t("progress.referred", { count: referred })}</p>
+            <p className="text-[13px] text-(--s-text) tabular-nums">{t("progress.qualified", { count: qualified })}</p>
+            <span role="progressbar" aria-valuenow={qualified} aria-valuemin={0} aria-valuemax={Math.max(referred, 1)} aria-label={t("progress.qualified", { count: qualified })} className="block h-2 overflow-hidden rounded-full bg-(--s-fill)">
+              <i className="block h-full rounded-full bg-(--s-primary)" style={{ width: `${qualifiedPercent}%` }} />
+            </span>
+          </div>
+          <p className="text-pretty text-xs text-(--s-faint)">{t("progress.rule", { bonus })}</p>
         </SectionCard>
 
         <SectionCard icon={Banknote} title={t("withdraw.title")} description={t("withdraw.minimum", { amount: minimum })}>
-          {overview.blockReason && (
-            <Note icon={overview.blockReason === "locked" ? Lock : undefined}>{t(`withdraw.blocked.${overview.blockReason}`, { amount: minimum })}</Note>
-          )}
+          {overview.blockReason && <Note>{t(`withdraw.blocked.${overview.blockReason}`, { amount: minimum })}</Note>}
           <div className="flex flex-wrap gap-2">
             <WithdrawButton disabled={overview.blockReason !== null} amountLabel={formatMoney(overview.available, locale)} />
             <SellerButton variant="mini" size="sm" asChild>
@@ -143,7 +134,17 @@ export async function EarnSection({ sellerId }: { sellerId: string }) {
               { key: "store", header: t("referrals.store"), phone: "title", cell: (r) => r.storeName ?? t("referrals.unnamed") },
               { key: "signedUp", header: t("referrals.signedUp"), phone: "sub", cell: (r) => (r.signedUpAt ? formatDate(r.signedUpAt, locale) : "—") },
               { key: "stores", header: t("referrals.stores"), phone: "full", cell: (r) => <span className="tabular-nums">{r.stores}</span> },
-              { key: "toppedUp", header: t("referrals.toppedUp"), phone: "full", cell: (r) => <span className="tabular-nums">{formatMoney(r.toppedUp, locale)}</span> },
+              {
+                key: "toppedUp",
+                header: t("referrals.toppedUp"),
+                phone: "full",
+                cell: (r) => (
+                  <span className="inline-flex flex-wrap items-center gap-1.5">
+                    <span className="tabular-nums">{formatMoney(r.toppedUp, locale, { currency: "USD" })}</span>
+                    {r.qualified && <StatusBadge tone="success">{t("referrals.qualified")}</StatusBadge>}
+                  </span>
+                ),
+              },
               { key: "commission", header: t("referrals.commission"), phone: "end", cell: (r) => <b className="font-bold tabular-nums">{formatMoney(r.commission, locale)}</b> },
             ]}
           />

@@ -43,9 +43,10 @@ export default async function ReferralsPage({ searchParams }: { searchParams: Pr
       <div>
         <h1 className="text-2xl font-semibold">Referrals</h1>
         <p className="text-sm text-muted-foreground">
-          Sellers earn 20% of every succeeded store top-up by the sellers they refer, paid in cash. They can ask for
-          a withdrawal (whole balance, at least EGP 500) after 10 successful referrals and 10 stores. Send the money,
-          then mark the request paid with the transfer reference.
+          Sellers earn EGP 100 once for each seller they refer whose succeeded store top-ups reach $5 (since
+          2026-11-12; earlier 20-25% commissions stay in their balance), paid in cash. They can ask for a withdrawal
+          (whole balance, at least EGP 500) at any time. Send the money, then mark the request paid with the transfer
+          reference.
         </p>
       </div>
       <nav className="flex flex-wrap gap-1.5" aria-label="Referral views">
@@ -109,7 +110,6 @@ function ReferrersTable({ rows }: { rows: AdminReferrerRow[] }) {
                 <TableCell className="text-end tabular-nums">{formatCurrency(Number(r.paid))}</TableCell>
                 <TableCell className="text-end tabular-nums">{formatCurrency(Number(r.balance))}</TableCell>
                 <TableCell className="space-x-1">
-                  {r.unlockedAt ? <Badge>Unlocked</Badge> : <Badge variant="secondary">Locked</Badge>}
                   {r.status !== "approved" && <Badge variant="destructive">{r.status ?? "pending"}</Badge>}
                   {r.suspicious > 0 && <Badge variant="destructive">{r.suspicious} same phone</Badge>}
                 </TableCell>

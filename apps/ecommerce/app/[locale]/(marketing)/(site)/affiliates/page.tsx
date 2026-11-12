@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, Banknote, Check, Infinity as InfinityIcon, Link2, Share2, Wallet } from "lucide-react";
+import { ArrowUpRight, Banknote, Check, Link2, Share2, UserCheck, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { CtaButton } from "@/components/marketing/site/cta-button";
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 /** The dashboard page with the seller's link (sign-in first when signed out). */
 const EARN_URL = `${DASHBOARD_URL}earn`;
 
-const STEP_ICONS = [Link2, Share2, InfinityIcon, Banknote];
+const STEP_ICONS = [Link2, Share2, UserCheck, Banknote];
 
 export default async function AffiliatesPage() {
   const t = await getTranslations("affiliates");
@@ -36,7 +36,7 @@ export default async function AffiliatesPage() {
   const terms = t.raw("terms.items") as string[];
   const faq = t.raw("faq.items") as { q: string; a: string }[];
   const card = [
-    { icon: InfinityIcon, text: t("card.lifetime") },
+    { icon: UserCheck, text: t("card.lifetime") },
     { icon: Banknote, text: t("card.cash") },
     { icon: Wallet, text: t("card.minimum") },
   ];
@@ -122,14 +122,14 @@ export default async function AffiliatesPage() {
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { label: t("example.topUp"), value: "1,000" },
-                { label: t("example.commission"), value: "200", accent: true },
+                { label: t("example.topUp"), value: "$5", unit: null },
+                { label: t("example.commission"), value: "100", unit: t("example.currency"), accent: true },
               ].map((item) => (
                 <div key={item.label} className="grid gap-1 rounded-[14px] bg-white/5 p-4">
                   <span className="text-[13px] text-mist">{item.label}</span>
                   <span>
                     <Num className={item.accent ? "text-[34px] font-extrabold text-amber-300" : "text-[34px] font-extrabold"}>{item.value}</Num>
-                    <small className="ms-1.5 text-sm text-haze">{t("example.currency")}</small>
+                    {item.unit && <small className="ms-1.5 text-sm text-haze">{item.unit}</small>}
                   </span>
                 </div>
               ))}

@@ -219,7 +219,7 @@ export function ReverseButton({ referredSellerId, name }: { referredSellerId: st
         open={open}
         onOpenChange={setOpen}
         title={`Reverse ${name}`}
-        description="Cancels every commission this seller earned their referrer and stops them counting toward the 10 + 10 unlock. Use it for fake or duplicate accounts."
+        description="Cancels every commission and sign-up bonus this seller earned their referrer, and they can never earn the bonus again. Use it for fake or duplicate accounts."
         label="Reason"
         multiline
         confirm="Reverse commissions"
@@ -230,7 +230,7 @@ export function ReverseButton({ referredSellerId, name }: { referredSellerId: st
   );
 }
 
-/** Clears a referrer's unlock (after reversing fake accounts). */
+/** Clears a referrer's unlock. Unused since 2026-11-12: withdrawals need no unlock. */
 export function RelockButton({ sellerId }: { sellerId: string }) {
   const [open, setOpen] = useState(false);
   return (

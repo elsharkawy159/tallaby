@@ -6,7 +6,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
-import { RelockButton, ReverseButton } from "../referrals-admin.client";
+import { ReverseButton } from "../referrals-admin.client";
 
 export const dynamic = "force-dynamic";
 
@@ -35,13 +35,9 @@ export default async function ReferrerPage({ params }: { params: Promise<{ selle
           </h1>
           <p className="text-sm text-muted-foreground">
             Code <span className="font-mono">{detail.code ?? "—"}</span> · phone{" "}
-            <span className="font-mono">{detail.phone ?? "—"}</span> · {detail.counts.successfulReferrals}/10 referrals ·{" "}
-            {detail.counts.stores}/10 stores
+            <span className="font-mono">{detail.phone ?? "—"}</span> · {detail.counts.referred} referred ·{" "}
+            {detail.counts.qualified} reached $5
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {detail.unlockedAt ? <Badge>Unlocked {day(detail.unlockedAt)}</Badge> : <Badge variant="secondary">Locked</Badge>}
-          {detail.unlockedAt && <RelockButton sellerId={detail.sellerId} />}
         </div>
       </div>
 

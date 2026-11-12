@@ -3,7 +3,8 @@
  *
  * Admins see every referrer, pay or reject withdrawal requests (with the
  * transfer reference or a reason), reverse a fake referred account's
- * commissions and re-lock a referrer. Each change is status-guarded, runs in
+ * commissions (the EGP 100 sign-up bonus too, 0168) and re-lock a referrer
+ * (dormant: withdrawals need no unlock since 2026-11-12). Each change is status-guarded, runs in
  * one transaction and writes admin_audit_log. No wallet is touched.
  */
 import { and, db, eq, inArray, referralCommissions, referralPayouts, sellers, sql } from "@workspace/db";
@@ -173,7 +174,7 @@ export type AdminReferrerDetail = {
   phone: string | null;
   code: string | null;
   unlockedAt: string | null;
-  counts: { successfulReferrals: number; stores: number };
+  counts: { referred: number; qualified: number };
   referred: AdminReferredRow[];
 };
 
@@ -312,7 +313,7 @@ const reverseSchema = z.object({ referredSellerId: z.uuid(), reason });
 
 /**
  * A referred account is fake: reverses all its earned commissions and marks it
- * excluded, so it stops counting toward its referrer's unlock.
+ * excluded, so it stops counting for its referrer (and can never earn the sign-up bonus).
  */
 export async function reverseReferralCommissions(actorId: string, input: unknown, q: Queryable = db) {
   const parsed = reverseSchema.safeParse(input);

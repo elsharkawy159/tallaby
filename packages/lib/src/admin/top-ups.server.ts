@@ -113,8 +113,8 @@ export async function reviewManualStoreTopUp(
           .set({ data: sql`${sellerNotifications.data} || jsonb_build_object('amount', ${credit.amount}::text, 'currency', 'USD')` })
           .where(and(eq(sellerNotifications.sellerId, topUp.sellerId), eq(sellerNotifications.dedupeKey, `top_up_approved:${topUp.id}`)));
       }
-      // The referrer's 20 % (F-37), in this transaction.
-      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUpCommissionBase(topUp) });
+      // The referrer's reward (F-37: EGP 100 when the $5 line is crossed), in this transaction.
+      await postReferralCommission(tx, { id: topUp.id, sellerId: topUp.sellerId, amount: topUpCommissionBase(topUp), credit });
       await writeAdminAudit(tx, {
         actorId,
         sellerId: topUp.sellerId,
