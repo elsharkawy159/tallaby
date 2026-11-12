@@ -5,8 +5,12 @@
  * and hoodies), white-background flat lays (`editionPhoto`, square). Data
  * only. No React here.
  *
- * Shipped on streetwear only: sports-luxe and stride, the niche's other
- * planned looks, are not edition-ready yet.
+ * Madar (sports-luxe) is the niche's template (one template per niche,
+ * 2026-11-12): its default content and demo are this pack, so the template
+ * and the edition are one store. Streetwear keeps drawing the pack until the
+ * fashion switch, with its own hero (the gym still life) through `perLook`.
+ * Madar also reads the fabric guide (`fabric-N-*`, three fabric close-ups),
+ * the sign-up's photo and alt, its eyebrow and note, and `shop-all`.
  *
  * Brand rule: every piece is unbranded; nothing names a brand or says a piece
  * is "inspired by" one. Fabrics are named the same way everywhere:
@@ -21,7 +25,21 @@
  * running tracks, locker rooms and gym kit still lifes; no people, hands or
  * feet, no logos, stripe marks or brand lettering (lane and locker numbers
  * only), none used by a template or another pack, none twice.
- * Hero 8032746 (wide: a rolled black mat, a jump rope, a glass bottle, two
+ * Madar's photos (2026-11-12, new, each checked by eye at 1600px: fabric
+ * close-ups only, no lettering, labels, people or hands; none used by a
+ * template or another pack): hero 1487809 (a slate-blue performance weave in
+ * soft folds), fabric guide 10221743 (pale perforated sports mesh), 4863009
+ * (teal stretch jersey with a sheen, crumpled), 34860712 (heather grey cotton
+ * jersey), sign-up 18372335 (a cobalt technical knit, flat). Looked at and
+ * left out: 31961168 and 9594679 (folded joggers, hoodies on a rack: used by
+ * streetwear), 9594671 (used by fashion-warm), 31961165 (a printed logo on
+ * the joggers), 30095407 and 37468337 (lettering on the hoodie and cap),
+ * 4004222 (a brand name on the bra), 11059828 and 11059826 (printed numbers
+ * and labels), 4440572 (hands), 5648264 (sweaters, not training wear),
+ * 34851009 (purple mesh, off the palette), 33653656 (graphite waffle mesh:
+ * a fourth fabric the guide has no row for), 1487835 (charcoal satin, close
+ * to the hero), 7981247 (stripe marks), 40489941 (jersey numbers and crests).
+ * Streetwear's hero 8032746 (wide: a rolled black mat, a jump rope, a glass bottle, two
  * black dumbbells and white wristbands on a herringbone floor) and 5274793
  * (tall: a white metal bottle with a carabiner on a rubber track). Tiles:
  * training tops 37496664 (an open red locker with a key tag), leggings and
@@ -77,7 +95,7 @@ const HANDLE = handle("@tamreen");
 
 export const SPORTSWEAR: Edition = {
   niche: NICHE,
-  looks: ["streetwear"],
+  looks: ["sports-luxe", "streetwear"],
   priceBand: { min: 350, max: 1800 },
   // The flat lays are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -114,7 +132,8 @@ export const SPORTSWEAR: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(8032746, 1920), tall: pexels(5274793, 1200) },
+    // Madar's hero: the fabric itself. `tall` is streetwear's phone photo (Madar crops `wide`).
+    hero: { wide: pexels(1487809, 1920), tall: pexels(5274793, 1200) },
     tiles: TILES,
     banner: pexels(37718513, 2000),
     story: pexels(4162550, 1200),
@@ -125,6 +144,12 @@ export const SPORTSWEAR: Edition = {
       "lookbook-3": pexels(18502968, 900),
       "lookbook-4": pexels(4162586, 900),
       "lookbook-5": pexels(8533779, 900),
+      // Madar's fabric guide, landscape close-ups in the order of its rows.
+      "fabric-1": pexels(10221743, 1400),
+      "fabric-2": pexels(4863009, 1400),
+      "fabric-3": pexels(34860712, 1400),
+      // Madar's sign-up, beside the form (square on desktop, a band on phones).
+      newsletter: pexels(18372335, 1200),
     },
   },
   copy: {
@@ -135,10 +160,7 @@ export const SPORTSWEAR: Edition = {
     ],
     labels: { search: L("دوّر على ليجينز، شورت، هودي…", "Search leggings, shorts, hoodies…") },
     hero: {
-      alt: L(
-        "مرتبة تمرين سودا ونط حبل وزجاجة مية ودمبلز على أرضية خشب",
-        "A black exercise mat, a jump rope, a water bottle and dumbbells on a wooden floor",
-      ),
+      alt: L("قماش رياضي أزرق رمادي بنسجة رفيعة عن قرب", "A slate-blue performance weave up close"),
       eyebrow: L("لبس التمرين الجديد وصل", "New training wear is in"),
       title: L("لبس تمرين يستحمل عرقك", "Training wear that keeps up"),
       line: L(
@@ -177,6 +199,8 @@ export const SPORTSWEAR: Edition = {
     newsletter: {
       title: L("اعرف القطع الجديدة أول واحد", "Hear about new pieces first"),
       line: L("رسالة لما تنزل تشكيلة جديدة، مش أكتر.", "One letter when a new range lands, nothing more."),
+      eyebrow: L("التشكيلة الجاية", "The next range"),
+      note: L("تقدر تلغي الاشتراك في أي وقت.", "Unsubscribe any time."),
     },
     // Streetwear's large sign-off line.
     footer: { line: L("اتمرّن براحتك", "Train your way") },
@@ -222,9 +246,45 @@ export const SPORTSWEAR: Edition = {
       // Demo handle: the seller's own replaces it.
       "lookbook-handle": L(HANDLE, HANDLE),
       "lookbook-line": L("صور جديدة كل أسبوع", "New photos every week"),
+      // Madar: the header's link to the whole catalog.
+      "shop-all": L("كل لبس التمرين", "Shop all"),
+      // Madar's fabric guide, one row per fabric: the pieces made of it, its name (also the photo's alt), what it does.
+      "fabric-1-pieces": L("تيشيرتات، شورتات، توب بربع سوستة", "Tees, shorts, the quarter-zip"),
+      "fabric-1-name": L("بوليستر بينشف بسرعة", "Quick-dry polyester"),
+      "fabric-1-text": L(
+        "نسيج فيه فتحات صغيرة بتسيب الهوا يعدّي، فالعرق بينشف والتيشيرت ما بيتقلش عليك في نص الجري.",
+        "A knit with tiny vents that lets the air through, so sweat dries and a tee never turns heavy halfway through a run.",
+      ),
+      "fabric-2-pieces": L("ليجينز، شورتات سايكلنج، برا رياضي", "Leggings, cycling shorts, the sports bra"),
+      "fabric-2-name": L("نايلون بإيلاستين", "Nylon with elastane"),
+      "fabric-2-text": L(
+        "قماش ناعم ومشدود بيتمط معاك في كل اتجاه ويرجع لشكله، وما بيشفّش في السكوات.",
+        "Smooth, firm fabric that stretches every way you move, springs back, and stays opaque in a squat.",
+      ),
+      "fabric-3-pieces": L("هوديز، جوجرز، شورت سويت", "Hoodies, joggers, sweat shorts"),
+      "fabric-3-name": L("قطن فليس", "Cotton fleece"),
+      "fabric-3-text": L(
+        "قطن من برا ووبر ناعم من جوا: دفا في الطريق للجيم وبعد التمرين وفي صباحية الشتا.",
+        "Cotton outside, soft brushed loops inside: warm on the way to the gym, after training and on winter mornings.",
+      ),
+      "newsletter-alt": L("قماش تمرين أزرق كوبالت عن قرب", "A cobalt training knit up close"),
     },
   },
-  // Streetwear's rail shows the newest products.
+  // Both looks show the newest products first.
   journey: { primary: "newest" },
+  perLook: {
+    // Streetwear keeps its own hero, the gym still life (the fabric is Madar's).
+    streetwear: {
+      photos: { hero: { wide: pexels(8032746, 1920), tall: pexels(5274793, 1200) } },
+      copy: {
+        hero: {
+          alt: L(
+            "مرتبة تمرين سودا ونط حبل وزجاجة مية ودمبلز على أرضية خشب",
+            "A black exercise mat, a jump rope, a water bottle and dumbbells on a wooden floor",
+          ),
+        },
+      },
+    },
+  },
   productPage: { copy: { reviews: L("آراء اللي اتمرّنوا بيه", "From people who train in it"), related: L("قطع ممكن تعجبك", "Pieces you may like") } },
 };

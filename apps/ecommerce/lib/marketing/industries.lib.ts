@@ -290,7 +290,7 @@ export const INDUSTRIES: readonly Industry[] = [
     icon: Dumbbell,
     group: "fashion",
     templateCategory: "sp",
-    templateKeys: ["sports-luxe", "sports-warm", "stride"],
+    templateKeys: ["sports-warm", "stride", "pace"],
     photo: px(7880188, 1200),
     heroCover: true,
     productPhotos: [px(29224210), px(40074772), px(16695681), px(13007642)],

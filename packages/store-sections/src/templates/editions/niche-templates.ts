@@ -39,7 +39,7 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
   { niche: "tshirts", template: "streetwear", edition: "tshirts", status: "ready" },
   { niche: "menswear", template: "zay", edition: "menswear", status: "ready" },
   { niche: "pants-jeans", template: "fashion-bold", edition: "pants-jeans", status: "ready" },
-  { niche: "sportswear", template: "sports-luxe", edition: "sportswear", status: "pending" },
+  { niche: "sportswear", template: "sports-luxe", edition: "sportswear", status: "ready" },
   { niche: "modest-wear", template: "sitara", status: "ready" }, // native, then a new pack
   { niche: "kidswear", template: "fashion-warm", status: "pending" }, // new pack
   // ── shoes & bags ──

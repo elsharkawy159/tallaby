@@ -28,6 +28,8 @@ const PENDING = new Set<string>([
   "slippers-clogs",
   // sports-bold is the niche's template and shows the pack itself; streetwear (its own hero and story photos only) draws it until the shoes-and-bags switch takes it off.
   "sneakers",
+  // sports-luxe is the niche's template and shows the pack itself; streetwear (its own hero only) draws it until the fashion switch takes it off.
+  "sportswear",
 ]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */

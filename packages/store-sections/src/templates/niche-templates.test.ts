@@ -30,8 +30,7 @@ const NICHES: Record<string, readonly string[]> = {
   // jewelry-bold deleted with the accessories switch (2026-11-12, one template per niche).
   jewelry: ["jewelry-luxe", "jewelry-warm"],
   gifts: ["gifts-luxe", "gifts-bold", "gifts-warm"],
-  // sports-bold left for shoes & bags as the sneakers template (one template per niche, 2026-11-12).
-  sports: ["sports-luxe", "sports-warm"],
+  // sports-bold left for shoes & bags as the sneakers template and sports-luxe for fashion as the sportswear template (one template per niche, 2026-11-12); sports-warm alone is no niche of three, and the sports wave picks its templates.
 };
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
@@ -114,9 +113,9 @@ describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
     ]) {
       expect(new Set(ids).size, ids.join(", ")).toBe(keys.length);
     }
-    // A niche of three offers a video hero and a carousel hero. Jewelry keeps two since jewelry-bold was deleted, and sports two since sports-bold became the sneakers template (one template per niche, 2026-11-12), each with a video hero and no carousel.
+    // A niche of three offers a video hero and a carousel hero. Jewelry keeps two since jewelry-bold was deleted (one template per niche, 2026-11-12), with a video hero and no carousel.
     const heroes = pick((x) => libraryIdOf(x.t, homeOf(x)[0]!.id));
     expect(heroes).toContain("hero-video");
-    if (_niche !== "jewelry" && _niche !== "sports") expect(heroes.some((id) => id?.startsWith("hero-carousel"))).toBe(true);
+    if (_niche !== "jewelry") expect(heroes.some((id) => id?.startsWith("hero-carousel"))).toBe(true);
   });
 });
