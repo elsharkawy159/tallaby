@@ -744,6 +744,9 @@ function productPartEmpty(node: ComponentNode & { type: ProductElementType }, pr
       );
     case "productContent":
       return !product.contentHtml?.trim();
+    // No reviews and no questions yet: an empty "what buyers say" band reads as unfinished.
+    case "productReviews":
+      return product.reviewCount <= 0 && (product.questionCount ?? 0) <= 0;
     // Variant-aware on the storefront, so only "alert off" is known to draw nothing.
     case "productStockBadge":
       return !product.lowStockAlert?.show;
@@ -759,6 +762,15 @@ function productPartEmpty(node: ComponentNode & { type: ProductElementType }, pr
  * seller's own content and keeps the section.
  */
 const FRAME_TYPES: ReadonlySet<string> = new Set(["section", "container", "vFlex", "hFlex", "grid", "div", "card", "pattern", "divider", "spacer", "heading"]);
+
+/** A section head's eyebrow and subtitle (`sectionHead` roles) label the part as its heading does. */
+const FRAME_ROLES: ReadonlySet<string> = new Set(["eyebrow", "subtitle"]);
+
+function isFrameNode(node: ComponentNode): boolean {
+  if (FRAME_TYPES.has(node.type)) return true;
+  const role = (node.props as { role?: unknown } | undefined)?.role;
+  return typeof role === "string" && FRAME_ROLES.has(role);
+}
 
 /**
  * A storefront section made only of product parts that all draw nothing
@@ -777,7 +789,7 @@ export function productSectionEmpty(section: ComponentNode, ctx: RenderContext, 
   let content = false;
   walkNodes([section], (node) => {
     if (!isProductElement(node.type)) {
-      if (!FRAME_TYPES.has(node.type)) content = true;
+      if (!isFrameNode(node)) content = true;
       return;
     }
     parts += 1;

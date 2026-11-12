@@ -39,23 +39,23 @@ export const AddToCartButton = ({
   buyNow = false,
   label,
   icon = "cart",
+  lines,
 }: AddToCartButtonProps) => {
-  const { addToCart, isProductLoading } = useCart();
+  const { addToCart, addLinesToCart, isProductLoading } = useCart();
   const router = useRouter();
   const currency = useCurrencyCode();
   const tProduct = useTranslations("product");
   const isLoading = isProductLoading(productId);
 
   const handleAddToCart = async () => {
-    const result = await addToCart({
-      productId,
-      quantity,
-      variantId,
-    });
+    // Several variants at once (the product page's pieces): one line each.
+    const result =
+      lines && lines.length > 1
+        ? await addLinesToCart({ productId, lines })
+        : await addToCart({ productId, quantity, variantId });
 
     if (result.success) {
-      const unitPrice = Number(result.data?.price ?? 0);
-      const value = unitPrice * quantity;
+      const value = "value" in result ? result.value : Number(result.data?.price ?? 0) * quantity;
 
       trackCommerceEvent(
         "AddToCart",

@@ -374,12 +374,19 @@ describe("product sections with nothing to show", () => {
     expect(publicDraw(section([node("productDetails", { showDescription: false, showDelivery: false })]), { ...empty, description: "Soft." })).toBe("");
   });
 
+  it("draw no reviews band (heading, subtitle and all) while the product has no reviews or questions", () => {
+    const subtitle = { id: "s-1", type: "paragraph", props: { text: "Customer reviews and questions about this product.", role: "subtitle" }, children: [] } as unknown as ComponentNode;
+    expect(publicDraw(section([heading, subtitle, node("productReviews")]), empty)).toBe("");
+    expect(publicDraw(section([heading, subtitle, node("productReviews")]), { ...empty, reviewCount: 3 })).toContain("Customer reviews");
+  });
+
   it("keep the band when one product part draws something", () => {
     // The delivery & returns row is on by default, so details always draw something.
     expect(publicDraw(section([node("productDetails")]), empty)).toContain("<section");
     const withContent = { ...empty, contentHtml: "<p>Hi</p>" };
     expect(publicDraw(section([heading, node("productContent")]), withContent)).toContain("<section");
-    expect(publicDraw(section([node("productContent"), node("productReviews")]), empty)).toContain("<section");
+    expect(publicDraw(section([node("productContent"), node("productReviews")]), { ...empty, reviewCount: 2 })).toContain("<section");
+    expect(publicDraw(section([node("productReviews")]), { ...empty, questionCount: 1 })).toContain("<section");
   });
 
   it("keep the band when it holds the seller's own content beside an empty product part", () => {
@@ -400,7 +407,7 @@ describe("product sections with nothing to show", () => {
     } as ComponentNode;
     expect(publicDraw(section([heading, hidden]), empty)).toBe("");
     const desktopOnly = { ...hidden, breakpointStyles: { tablet: { hidden: true } } } as ComponentNode;
-    expect(publicDraw(section([heading, desktopOnly]), empty)).toContain("<section");
+    expect(publicDraw(section([heading, desktopOnly]), { ...empty, reviewCount: 1 })).toContain("<section");
   });
 
   it("leave sections without product parts and the editor alone", () => {

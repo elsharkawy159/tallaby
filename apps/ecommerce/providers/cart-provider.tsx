@@ -143,6 +143,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setProductLoading
     );
 
+  /**
+   * Several variants of one product in one go (the product page's pieces:
+   * 2 black, 1 red). Added one line after another, one toast and one cart
+   * refresh at the end; stops at the first line the server refuses.
+   */
+  const addLinesToCart = async (p: {
+    productId: string;
+    lines: { variantId?: string; quantity: number }[];
+  }) => {
+    setProductLoading(p.productId, true);
+    let added = 0;
+    let value = 0;
+    let metaEventId: string | undefined;
+    try {
+      for (const line of p.lines) {
+        const result = await addToCartAction(p.productId, line.quantity, line.variantId);
+        if (!result.success) {
+          toast.error(result.error || tToast("failedToAddItem"));
+          break;
+        }
+        added += 1;
+        value += Number(result.data?.price ?? 0) * line.quantity;
+        metaEventId ??= result.metaEventId as string | undefined;
+      }
+    } catch (err) {
+      console.error(tToast("failedToAddItem"), err);
+      toast.error(tToast("failedToAddItem"));
+    } finally {
+      if (added > 0) {
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+        await refreshCart();
+      }
+      setProductLoading(p.productId, false);
+    }
+    const success = added === p.lines.length;
+    if (success) toast.success(tToast("itemAddedToCart"));
+    return { success, added, value, metaEventId };
+  };
+
   const updateQuantity = (itemId: string, quantity: number) => {
     if (quantity < 0) {
       toast.error(tToast("quantityCannotBeNegative"));
@@ -183,6 +222,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     subtotal,
     loading,
     addToCart,
+    addLinesToCart,
     updateQuantity,
     removeFromCart,
     clearCart,

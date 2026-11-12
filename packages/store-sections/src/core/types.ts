@@ -236,6 +236,8 @@ export type ProductDetail = ProductSummary & {
   lowStockAlert?: LowStockSetting | null;
   variants: ProductVariantDetail[];
   reviewCount: number;
+  /** Public questions on the product (the reviews element lists them too); absent counts as none. */
+  questionCount?: number;
   brand: string | null;
   /** `href`: the storefront link to the category (the host fills it); without it, `/products?category=<id>`. */
   category: { id: string; name: string; href?: string } | null;
