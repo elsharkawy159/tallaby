@@ -14,15 +14,15 @@ Work one niche at a time, in this order. For each niche, use **two ChatGPT chats
 
 The order of niches:
 
-1. **earbuds**: the first niche under "Make next". Then kidswear, backpacks-travel, mobiles, audio, small-appliances, in that order.
+1. **kidswear**: the next niche under "Make next" (earbuds is done, 2026-11-12). Then backpacks-travel, mobiles, audio, small-appliances, in that order.
 2. **Live templates, worst photos first:** the list at the top of "Live templates" (sportswear tiles, Fadda, slippers-clogs hero …), then the rest of that part.
 3. **Global images:** 13 placeholders, one chat.
 4. **Optional:** modest-wear, silver-jewelry, wearables.
 5. **Later waves:** Wave 2 (beauty) onward, an industry at a time.
 
-When a niche's folder is complete, tell me its name ("earbuds is ready").
+When a niche's folder is complete, tell me its name ("kidswear is ready").
 
----.
+---
 
 ## Where the files go
 
@@ -75,11 +75,13 @@ Reply with the image only. I will now send the products one by one.
 
 **Done and live:** every photo of the earlier lists. The 21 packs below use them, each on its own template: dresses, lingerie & sleepwear, t-shirts, menswear, pants & jeans, sportswear, handbags, women's shoes, men's shoes, slippers & clogs, sneakers, gold jewelry, glasses, watches, fashion jewelry, hair accessories, belts & wallets, phone cases, chargers & cables, PC & gaming, lighting & smart home. Accessories already shows one template per niche.
 
-**Make next:** the six packs below, in this order. Each is **16 packshots** (master prompt above, one chat per niche) plus **8 scene photos** (scene master prompt below, a second chat per niche). The order follows what each one unlocks:
+**Received:** earbuds (Wasla), 2026-11-12: 16 packshots, 8 scenes and the premium kit in `.editions-inbox/01-wave-1/earbuds/` (ChatGPT named the files by their titles; matched by eye when the pack is built).
+
+**Make next:** the five packs below, in this order (earbuds is done). Each is **16 packshots** (master prompt above, one chat per niche) plus **8 scene photos** (scene master prompt below, a second chat per niche). The order follows what each one unlocks:
 
 | # | Niche | Template | Unlocks |
 |---|---|---|---|
-| 1 | earbuds | Wasla | mobile accessories, one template per niche |
+| ✓ | ~~earbuds~~ (received 2026-11-12) | Wasla | mobile accessories, one template per niche |
 | 2 | kidswear | Nawl | fashion, one template per niche |
 | 3 | backpacks-travel | Safar | shoes & bags, one template per niche |
 | 4 | mobiles | TechHub | electronics (with 5 and 6) |
@@ -180,7 +182,7 @@ Placeholders and empty states every store shares: the default product photo, emp
 
 ## Make next
 
-### 1. earbuds (16), template wasla
+### 1. earbuds (16), template wasla — **DONE, received 2026-11-12; skip to kidswear**
 
 **Save to: `.editions-inbox/01-wave-1/earbuds/`**
 
