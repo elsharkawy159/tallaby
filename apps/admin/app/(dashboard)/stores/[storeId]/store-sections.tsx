@@ -32,6 +32,7 @@ import {
 } from "@workspace/lib/storefront/vercel-domains";
 import { domainAdminAction } from "../../domains/domains.server";
 import { AssignDomainButton } from "./assign-domain.client";
+import { EditSubdomainButton } from "./store-subdomain.client";
 import { logServerError } from "@workspace/db/log";
 import { listStoreTemplates } from "@workspace/lib/store-sites/server";
 import { loadCachedTemplateCards } from "@/lib/store-templates.data";
@@ -122,6 +123,13 @@ export async function StoreOverviewSection({ store, canWrite }: SectionProps & {
             <Fact label="Subdomain">
               <span dir="ltr">{store.subdomain}</span>
               {store.isPrimary && <Badge variant="outline" className="ml-2 font-normal">Primary</Badge>}
+              {canWrite && (
+                <EditSubdomainButton
+                  storeId={store.id}
+                  current={store.subdomain}
+                  customDomain={store.domains.find((domain) => domain.status === "active")?.domain ?? null}
+                />
+              )}
             </Fact>
             <Fact label="Default language">{store.defaultLocale.toUpperCase()}</Fact>
             <Fact label="Catalog">{store.catalogMode === "selected" ? "Selected products" : "All seller products"}</Fact>

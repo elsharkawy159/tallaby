@@ -32,9 +32,12 @@ import {
   postStoreWalletEntry,
 } from "@workspace/db/wallet";
 import { unpublishStoreSite } from "../store-sites/server";
+import { updateStoreSubdomain } from "../stores/server";
+import { normalizeSubdomain, validateSubdomain, type SubdomainProblem } from "../storefront";
 import {
   MAX_TRIAL_EXTENSION_DAYS,
   adminStoreActionSchema,
+  adminStoreSubdomainSchema,
   decimalToPiastres,
   sellerOverrideSchema,
   walletAdjustmentSchema,
@@ -348,6 +351,97 @@ export async function applyAdminStoreAction(
     return { success: true, data };
   } catch (error) {
     return failure<AdminStoreActionError>(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Store subdomain (owner request 2026-11-12)
+// ---------------------------------------------------------------------------
+
+export type AdminStoreSubdomainError =
+  | "not_admin"
+  | "invalid_input"
+  | "not_found"
+  | "no_change"
+  | "store_read_only"
+  | "taken"
+  | SubdomainProblem;
+
+export type AdminStoreSubdomainResult = {
+  auditId: string;
+  sellerId: string;
+  storeId: string;
+  subdomain: string;
+  previous: string;
+  /** Any custom domain on the store, for cache invalidation. */
+  customDomain: string | null;
+};
+
+/**
+ * Moves one store to a new `{subdomain}.tallaby.com` for the admin. The move
+ * itself is the seller's own `updateStoreSubdomain` (same format and
+ * reserved-name rules, same "taken" check across stores, sellers and other
+ * sellers' redirects, and the old address kept as a redirect to this store),
+ * run for the store's owner as read from the database, inside the same
+ * transaction as the audit row. The seller flow has no cooldown, so there is
+ * nothing to bypass.
+ */
+export async function changeStoreSubdomainByAdmin(
+  actorId: string,
+  input: unknown,
+  q: Queryable = db,
+): Promise<AdminResult<AdminStoreSubdomainResult, AdminStoreSubdomainError>> {
+  const parsed = adminStoreSubdomainSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const o = parsed.data;
+  // Format and reserved names first, so a typo never opens a transaction.
+  const wanted = normalizeSubdomain(o.subdomain);
+  const problem = validateSubdomain(wanted);
+  if (problem) return { success: false, error: problem };
+
+  try {
+    const data = await q.transaction(async (tx) => {
+      await assertAdminActor(tx, actorId);
+      const [store] = await tx
+        .select({ id: stores.id, sellerId: stores.sellerId, subdomain: stores.subdomain })
+        .from(stores)
+        .where(and(eq(stores.id, o.storeId), isNull(stores.deletedAt)))
+        .for("update");
+      if (!store) throw new OverrideError("not_found");
+      if (store.subdomain === wanted) throw new OverrideError("no_change");
+
+      const moved = await updateStoreSubdomain(store.sellerId, store.id, wanted, tx);
+      if (!moved.success) {
+        throw new OverrideError(moved.error === "available" ? "invalid_input" : moved.error);
+      }
+
+      const [domain] = await tx
+        .select({ domain: sellerCustomDomains.domain })
+        .from(sellerCustomDomains)
+        .where(eq(sellerCustomDomains.storeId, store.id))
+        .limit(1);
+
+      const auditId = await writeAdminAudit(tx, {
+        actorId,
+        sellerId: store.sellerId,
+        storeId: store.id,
+        action: "change_store_subdomain",
+        before: { subdomain: moved.data.previous },
+        after: { subdomain: moved.data.subdomain, redirectFrom: moved.data.previous },
+        reason: o.reason,
+      });
+      return {
+        auditId,
+        sellerId: store.sellerId,
+        storeId: store.id,
+        subdomain: moved.data.subdomain,
+        previous: moved.data.previous,
+        customDomain: domain?.domain ?? null,
+      };
+    });
+    return { success: true, data };
+  } catch (error) {
+    return failure<AdminStoreSubdomainError>(error);
   }
 }
 

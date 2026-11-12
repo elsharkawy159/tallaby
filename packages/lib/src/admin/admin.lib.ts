@@ -96,6 +96,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   "decline_app_request",
   // Admin › Theme requests (0156, F-77)
   "update_theme_request",
+  // Admin › store page: a store's new tallaby.com subdomain (owner request 2026-11-12; the action check is a pattern, no migration)
+  "change_store_subdomain",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];
@@ -200,6 +202,20 @@ export const adminStoreActionSchema = z.strictObject({
 });
 
 export type AdminStoreActionInput = z.input<typeof adminStoreActionSchema>;
+
+/**
+ * Admin › store page: move a store to a new `{subdomain}.tallaby.com`. Only
+ * the shape is checked here; the subdomain rules (format, reserved names,
+ * taken) are the seller's own (`updateStoreSubdomain`). The seller comes
+ * from the store row, never from the caller.
+ */
+export const adminStoreSubdomainSchema = z.strictObject({
+  storeId: uuid,
+  subdomain: z.string().max(64),
+  reason,
+});
+
+export type AdminStoreSubdomainInput = z.input<typeof adminStoreSubdomainSchema>;
 
 /**
  * P9-01 store-wallet `adjustment`. `amount` is signed ("-50", "120.50").
