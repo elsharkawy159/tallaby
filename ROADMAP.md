@@ -1774,6 +1774,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-12 — Release: 0166–0169 applied, main deployed
+
+- **Owner:** "merge everything to live". Migrations `0166` (COD deposit), `0167` (customer requirements), `0168` (affiliate sign-up bonus), `0169` (size charts) applied on staging, then rehearsed on production in a rolled-back transaction, then applied on production (all idempotent; re-run on staging was a no-op; seller bell check holds `deposit_reported`/`deposit_paid` on both). Then `main` pushed to `origin/main` and `origin/stage`.
+
 ### 2026-11-12 — F-93 App Center: one hub, shared registry, public catalog API (owner request)
 
 - **Owner (2026-11-12, §5):** one App Center for every Tallaby app and integration, scalable toward apps.tallaby.com; old pages keep working; metadata in one shared package; a public read-only catalog API; no third-party apps yet.
