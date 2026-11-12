@@ -2686,6 +2686,7 @@
     },
     "stage": {
       "awaiting_payment": "Awaiting payment",
+      "awaiting_deposit": "Awaiting deposit",
       "new": "New",
       "to_ship": "Ready to ship",
       "out_for_delivery": "Out for delivery",
@@ -2780,8 +2781,35 @@
         "digital": "Digital order. There's nothing to ship."
       },
       "awaitingPayment": "Waiting for the customer's online payment.",
+      "awaitingDeposit": "The customer still has to pay the deposit. Don't ship until it's in: confirm it under Payment once you see it in your account.",
       "prepaid": "Paid in advance. To cancel it, contact Tallaby support.",
       "carrierManaged": "Bosta updates this order's status by itself. To cancel it, cancel the shipment with Bosta."
+    },
+    "deposit": {
+      "title": "Deposit",
+      "titlePercent": "Deposit ({percent}%)",
+      "status": {
+        "awaiting": "Not paid",
+        "reported": "Customer says sent",
+        "paid": "Paid"
+      },
+      "depositAmount": "Deposit",
+      "onDelivery": "Cash on delivery",
+      "paidByCard": "Paid by card on your gateway",
+      "paidByTransfer": "Confirmed by you",
+      "reportedAt": "Sent on {date}. Check your account.",
+      "checkHint": "Check your wallet or InstaPay for this amount (the screenshot is below), then confirm it.",
+      "awaitingHint": "Already got the money in your account? Confirm it and the order can ship.",
+      "received": "Deposit received",
+      "notReceived": "Not received",
+      "confirmed": "Deposit confirmed. You can confirm and ship the order now.",
+      "rejected": "Marked as not received. The customer can send it again.",
+      "errors": {
+        "not_found": "We couldn't find this order on your stores.",
+        "not_pending": "This order's deposit can't be changed now.",
+        "already_paid": "This deposit is already confirmed.",
+        "generic": "Something went wrong. Try again."
+      }
     },
     "errors": {
       "notFound": "This order isn't available.",
@@ -2932,6 +2960,7 @@
         "not_found": "Order not found.",
         "not_shippable": "This order can't be shipped anymore.",
         "awaiting_payment": "This order isn't paid yet. It can go to Bosta once the payment lands.",
+        "awaiting_deposit": "This order's deposit isn't paid yet. It can go to Bosta once the deposit is in.",
         "foreign_order": "This order is outside Egypt or isn't in EGP, and Bosta only delivers in Egypt.",
         "already_shipped": "This order already has a shipment.",
         "other_carrier": "This order is already with another delivery method.",
@@ -4708,7 +4737,25 @@
       "readOnly": "This store is read-only.",
       "notFound": "Store not found.",
       "rateLimited": "Too many changes. Please wait a few minutes and try again.",
+      "depositCodOff": "Turn on cash on delivery first.",
+      "depositNoMethod": "Set up a wallet, InstaPay or your card gateway first, so customers can pay the deposit.",
       "generic": "Couldn't save. Please try again."
+    },
+    "deposit": {
+      "title": "Deposit",
+      "description": "Customers who pick cash on delivery pay a share first, straight to you, and the rest on delivery. It cuts fake and refused orders.",
+      "toggle": "Ask for a deposit on cash on delivery",
+      "onTag": "{percent}% on",
+      "pausedTag": "Paused",
+      "percentLabel": "Deposit share of the order total",
+      "needsCod": "Turn on cash on delivery to ask for a deposit.",
+      "needsMethod": "Customers need a way to pay you the deposit: set up a wallet or InstaPay below, or connect your card gateway. Until then the deposit is off at checkout.",
+      "example": "On a {total} {currency} order: {deposit} {currency} deposit now, {rest} {currency} on delivery.",
+      "ruleRounding": "The deposit is rounded up to the nearest 5 and is never more than the order total.",
+      "ruleWhere": "It's paid to your own card gateway or your wallets and InstaPay, never to Tallaby. You confirm transfers on the order.",
+      "ruleWait": "The order waits as \"Awaiting deposit\" and is cancelled after 48 hours if it isn't paid. The courier collects only the rest.",
+      "saved": "Deposit saved",
+      "turnedOff": "Deposit turned off"
     },
     "methods": {
       "cod": {
@@ -6977,6 +7024,14 @@
       "first_order_top_up": {
         "title": "You got your first order!",
         "body": "Order #{orderNumber} arrived. Top up your wallet to keep seeing new orders."
+      },
+      "deposit_reported": {
+        "title": "Deposit sent",
+        "body": "The customer says they sent the deposit for order #{orderNumber}. Check your account and confirm it."
+      },
+      "deposit_paid": {
+        "title": "Deposit paid",
+        "body": "The deposit for order #{orderNumber} was paid by card. The order can ship."
       }
     }
   },

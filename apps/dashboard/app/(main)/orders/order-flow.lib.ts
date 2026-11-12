@@ -1,5 +1,6 @@
 import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import type { ShippingStatus } from "@/lib/shipping/shipping-status";
+import { isDepositPending } from "@workspace/lib/orders/cod-deposit";
 
 /**
  * Whether the seller ships this line. While Tallaby runs no fulfillment
@@ -28,6 +29,8 @@ export function isSellerHandledLine(
 
 export type SellerOrderStage =
   | "awaiting_payment"
+  /** A COD order whose deposit (F-21) isn't paid yet: it must not ship. */
+  | "awaiting_deposit"
   | "new"
   | "to_ship"
   | "out_for_delivery"
@@ -82,6 +85,8 @@ export interface SellerOrderFlowInput {
    * fee, so it is never confirmed, shipped, sent to a carrier or restocked.
    */
   isTest: boolean | null;
+  /** `orders.deposit_status` (0166, F-21); null = no deposit. */
+  depositStatus?: string | null;
 }
 
 export interface SellerOrderFlow {
@@ -126,6 +131,9 @@ export function resolveSellerOrderStage(input: SellerOrderFlowInput): SellerOrde
     ? SHIPMENT_STAGE[input.shipment.status as ShippingStatus]
     : undefined;
   if (fromShipment) return fromShipment;
+
+  // An unpaid COD deposit (F-21) holds the order before anything else.
+  if (isDepositPending(input.depositStatus) && (status === "pending" || status === "confirmed")) return "awaiting_deposit";
 
   switch (status) {
     case "delivered":
@@ -186,6 +194,10 @@ export function resolveSellerOrderFlow(input: SellerOrderFlowInput): SellerOrder
   const cancel: SellerOrderAction[] = prepaid ? [] : ["cancel"];
   let actions: SellerOrderAction[] = [];
   switch (stage) {
+    case "awaiting_deposit":
+      // Nothing ships until the deposit is in; the deposit buttons sit on the order panel.
+      actions = [...cancel];
+      break;
     case "new":
       actions = ["confirm", ...cancel];
       break;
@@ -234,7 +246,7 @@ export const PROGRESS_STEPS = ["new", "to_ship", "out_for_delivery", "delivered"
 
 /** Index of the stage on the progress track; -1 when the order left the happy path. */
 export function progressIndex(stage: SellerOrderStage): number {
-  if (stage === "awaiting_payment") return 0;
+  if (stage === "awaiting_payment" || stage === "awaiting_deposit") return 0;
   if (stage === "failed") return 2;
   return (PROGRESS_STEPS as readonly string[]).indexOf(stage);
 }

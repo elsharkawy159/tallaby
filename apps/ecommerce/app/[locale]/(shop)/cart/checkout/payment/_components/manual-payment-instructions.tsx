@@ -27,6 +27,8 @@ interface ManualPaymentInstructionsProps {
   currency: string;
   /** Where the money goes: the store's own details, or Tallaby's account. */
   recipient: PaymentRecipient | null;
+  /** A COD order's deposit (F-21): `amount` is the deposit, sent with `method`. */
+  deposit?: boolean;
 }
 
 /** "01012345678" → "0101 234 5678"; IBAN in groups of 4. Display only; copy uses the raw value. */
@@ -74,6 +76,7 @@ export function ManualPaymentInstructions({
   amount,
   currency,
   recipient,
+  deposit = false,
 }: ManualPaymentInstructionsProps) {
   const t = useTranslations("checkout");
   const tr = useTranslations("checkout.transfer");
@@ -95,6 +98,10 @@ export function ManualPaymentInstructions({
     startTransition(async () => {
       const body = new FormData();
       body.set("orderId", orderId);
+      if (deposit) {
+        body.set("purpose", "deposit");
+        body.set("method", method);
+      }
       if (proof) body.set("proof", await compressImage(proof));
       const result = await reportManualPaymentSent(body);
       if (result.success && result.data) {
@@ -112,7 +119,9 @@ export function ManualPaymentInstructions({
           <Image src={config.logo} alt={methodName} title={methodName} width={30} height={30} className="size-7.5 object-contain" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm md:text-lg font-bold text-gray-900">{tr("title", { method: methodName })}</h2>
+          <h2 className="text-sm md:text-lg font-bold text-gray-900">
+            {deposit ? t("deposit.transferTitle", { method: methodName }) : tr("title", { method: methodName })}
+          </h2>
           <p className="flex items-center gap-1.5 text-xs text-gray-600">
             {toStore ? <Store className="size-3.5" aria-hidden /> : <BadgeCheck className="size-3.5" aria-hidden />}
             {toStore ? tr("paidToStore") : tr("paidToTallaby")}
@@ -123,7 +132,7 @@ export function ManualPaymentInstructions({
       <CardContent className="space-y-5 p-4 md:p-6">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5">
-            <p className="text-xs text-gray-600">{t("amountToSend")}</p>
+            <p className="text-xs text-gray-600">{deposit ? t("deposit.amountToSend") : t("amountToSend")}</p>
             <p
               className="text-xl md:text-2xl font-bold text-primary"
               dangerouslySetInnerHTML={{ __html: formatPrice(Number(amount), locale, "lg", currencyDefaultLabel(currency)) }}

@@ -251,6 +251,46 @@ export async function OrderConfirmationContent({
         </CardContent>
       </Card>
 
+      {order.deposit && order.status !== "cancelled" && (
+        <Card
+          className={cn(
+            "rounded-xl md:rounded-2xl border",
+            order.deposit.status === "paid" ? "border-green-200 bg-green-50/60" : "border-amber-200 bg-amber-50/60",
+          )}
+        >
+          <CardContent className="space-y-3 py-3 md:py-4 text-xs md:text-sm">
+            <p className={cn("font-semibold", order.deposit.status === "paid" ? "text-green-800" : "text-amber-900")}>
+              {tCheckout(`deposit.orderPage.${order.deposit.status}`)}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-white/80 p-2.5">
+                <p className="text-[11px] text-gray-600">
+                  {order.deposit.percent ? tCheckout("deposit.payNow", { percent: order.deposit.percent }) : tCheckout("deposit.payNowPlain")}
+                </p>
+                <p
+                  className="text-sm md:text-base font-bold text-gray-900"
+                  dangerouslySetInnerHTML={{ __html: formatPrice(order.deposit.amount, locale, "sm", currencyLabel) }}
+                />
+              </div>
+              <div className="rounded-lg bg-white/80 p-2.5">
+                <p className="text-[11px] text-gray-600">{tCheckout("deposit.onDelivery")}</p>
+                <p
+                  className="text-sm md:text-base font-bold text-gray-900"
+                  dangerouslySetInnerHTML={{ __html: formatPrice(order.deposit.remainder, locale, "sm", currencyLabel) }}
+                />
+              </div>
+            </div>
+            {order.deposit.status === "awaiting" && (
+              <Button asChild size="sm" className="w-full sm:w-auto">
+                <Link href={`/cart/checkout/payment?orderId=${order.id}`} prefetch={false}>
+                  {tCheckout("deposit.payDeposit")}
+                </Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {isAwaitingManualVerification && (
         <Card className="rounded-xl md:rounded-2xl border border-amber-200 bg-amber-50/60">
           <CardContent className="space-y-3 py-3 md:py-4 text-xs md:text-sm text-amber-800">

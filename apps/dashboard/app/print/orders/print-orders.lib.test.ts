@@ -107,3 +107,14 @@ describe("pickingList", () => {
     ]);
   });
 });
+
+describe("amountToCollect with a COD deposit (F-21)", () => {
+  it("is the remainder once the deposit is paid, the total before", () => {
+    expect(
+      amountToCollect({ paymentMethod: "cash_on_delivery", paymentStatus: "pending", totalAmount: "1213.00", depositAmount: "245.00", depositStatus: "paid" }),
+    ).toBe("968.00");
+    expect(
+      amountToCollect({ paymentMethod: "cash_on_delivery", paymentStatus: "pending", totalAmount: "1213.00", depositAmount: "245.00", depositStatus: "awaiting" }),
+    ).toBe("1213.00");
+  });
+});

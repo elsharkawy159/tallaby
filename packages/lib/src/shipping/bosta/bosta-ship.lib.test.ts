@@ -52,3 +52,18 @@ describe("bostaWebhookUrl", () => {
     expect(bostaWebhookUrl("abc", "http://localhost:3001")).toBeNull();
   });
 });
+
+describe("COD deposit (F-21)", () => {
+  it("keeps a COD order home while its deposit is unpaid", () => {
+    expect(bostaCollection({ paymentStatus: "pending", paymentMethod: "cash_on_delivery", depositStatus: "awaiting" })).toEqual({ ok: false, error: "awaiting_deposit" });
+    expect(bostaCollection({ paymentStatus: "pending", paymentMethod: "cash_on_delivery", depositStatus: "reported" })).toEqual({ ok: false, error: "awaiting_deposit" });
+    expect(
+      bostaShipBlocker({ status: "pending", paymentStatus: "pending", paymentMethod: "cash_on_delivery", depositStatus: "awaiting" }, null),
+    ).toBe("awaiting_deposit");
+  });
+
+  it("collects cash again once the deposit is paid", () => {
+    expect(bostaCollection({ paymentStatus: "pending", paymentMethod: "cash_on_delivery", depositStatus: "paid" })).toEqual({ ok: true, prepaid: false });
+    expect(bostaShipBlocker({ status: "confirmed", paymentStatus: "pending", paymentMethod: "cash_on_delivery", depositStatus: "paid" }, null)).toBeNull();
+  });
+});

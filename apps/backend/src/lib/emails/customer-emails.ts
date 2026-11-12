@@ -17,6 +17,7 @@ import {
   type RefundMethod,
 } from "@workspace/emails";
 import { formatVariantTitleFromCart, pickProductTitle } from "@workspace/lib/orders";
+import { cashDuePiastres, readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
 import { ORDERS_FROM_ADDRESS } from "../resend";
 import { EMAIL_TYPES } from "../email-delivery";
 import { addDays, formatDate, formatMoney, joinUrl, resolveImageUrl, SITE_URL } from "./format";
@@ -91,6 +92,13 @@ export async function buildOrderConfirmation(orderId: string) {
     },
     paymentMethod: ctx.paymentMethod,
     isCashOnDelivery: ctx.isCashOnDelivery,
+    // COD deposit (ROADMAP.md F-21): pay it first, then the rest in cash.
+    deposit: (() => {
+      const deposit = ctx.isCashOnDelivery ? readOrderDeposit(ctx.order) : null;
+      return deposit && deposit.status !== "paid"
+        ? { amount: ctx.money(deposit.amountPiastres / 100), remainder: ctx.money(deposit.remainderPiastres / 100) }
+        : null;
+    })(),
     shippingAddress: ctx.order.userAddress_shippingAddressId
       ? {
           fullName: ctx.order.userAddress_shippingAddressId.fullName,
@@ -140,7 +148,8 @@ export async function sendOrderShipped(orderId: string): Promise<SendOnceResult>
       items: ctx.order.orderItems.map((item) => lineItem(ctx, item)),
       shippingAddress: ctx.address,
       paymentMethod: ctx.paymentMethod,
-      amountDue: ctx.isCashOnDelivery ? ctx.money(ctx.order.totalAmount) : null,
+      // The remainder once a COD deposit is paid (F-21).
+      amountDue: ctx.isCashOnDelivery ? ctx.money(cashDuePiastres(ctx.order) / 100) : null,
       links: { trackOrder: ctx.orderUrl },
     }),
     ...customerSender(ctx),

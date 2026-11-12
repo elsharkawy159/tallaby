@@ -158,6 +158,14 @@
       "types": "./src/orders/platform-fee.lib.ts",
       "default": "./src/orders/platform-fee.lib.ts"
     },
+    "./orders/cod-deposit": {
+      "types": "./src/orders/cod-deposit.lib.ts",
+      "default": "./src/orders/cod-deposit.lib.ts"
+    },
+    "./orders/cod-deposit/server": {
+      "types": "./src/orders/cod-deposit.server.ts",
+      "default": "./src/orders/cod-deposit.server.ts"
+    },
     "./orders/payment-proof": {
       "types": "./src/orders/payment-proof.lib.ts",
       "default": "./src/orders/payment-proof.lib.ts"

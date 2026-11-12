@@ -9,6 +9,7 @@ import {
   type EgyptPostRow,
 } from "./egypt-post.lib";
 import { isEgyptianCarrierOrder } from "./store-quote";
+import { cashDuePiastres, isDepositPending } from "../orders/cod-deposit.lib";
 
 /**
  * Store orders → Wassalha (Egypt Post) upload sheet (ROADMAP.md F-12c).
@@ -69,7 +70,8 @@ export async function exportWassalhaOrders(sellerId: string, storeId: string, or
 
   for (const order of found) {
     const orderNumber = String(order.orderNumber);
-    if (!(EXPORTABLE_STATUSES as readonly string[]).includes(order.status ?? "")) {
+    // An unpaid COD deposit (F-21) keeps the order home, like an unconfirmed one.
+    if (!(EXPORTABLE_STATUSES as readonly string[]).includes(order.status ?? "") || isDepositPending(order.depositStatus)) {
       skipped.push({ orderId: order.id, orderNumber, reason: "not_ready" });
       continue;
     }
@@ -101,7 +103,8 @@ export async function exportWassalhaOrders(sellerId: string, storeId: string, or
       orderId: order.id,
       orderNumber,
       orderNotes: order.notes,
-      totalAmount: Number(order.totalAmount),
+      // COD_Value: the remainder once a COD deposit is paid (F-21).
+      totalAmount: cashDuePiastres(order) / 100,
       paymentStatus: order.paymentStatus,
       packageWeightKg: weight,
       customerName: address?.fullName ?? order.user?.fullName ?? null,

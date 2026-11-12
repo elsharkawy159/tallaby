@@ -5,6 +5,7 @@ import type { SellerOrderStage } from "./order-flow.lib";
 /** Same tones as the delivery workspace's shipment badges. */
 const STAGE_TONE: Record<SellerOrderStage, BadgeTone> = {
   awaiting_payment: "muted",
+  awaiting_deposit: "warning",
   new: "warning",
   to_ship: "info",
   out_for_delivery: "info",

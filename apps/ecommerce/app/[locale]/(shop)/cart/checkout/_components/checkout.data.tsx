@@ -63,6 +63,7 @@ import {
   isManualPaymentMethod,
 } from "@/lib/manual-payment-methods";
 import type { StorefrontCheckoutPayments } from "@workspace/lib/payments/store-methods";
+import { splitDeposit } from "@workspace/lib/orders/cod-deposit";
 import {
   applyCheckoutAnswers,
   isDefaultCheckoutForm,
@@ -349,6 +350,17 @@ export const CheckoutData = ({
   // In another currency the store's own methods pay (card gateway, transfers); stuck only with COD alone and unusable.
   const noMethodInCurrency = isForeignCurrency && !offersOtherThanCod && (!codAllowed || !isCodEligible);
 
+  // Cash on delivery with a deposit (ROADMAP.md F-21): shown under the total and
+  // on the option. The server works it out again from its own total.
+  const codDeposit = storePayments?.deposit ?? null;
+  const depositRows = useMemo(() => {
+    if (!codDeposit || paymentMethod !== "cash_on_delivery") return null;
+    const split = splitDeposit(summary.totalAfterDiscount ?? summary.total ?? 0, codDeposit.percent);
+    return split.depositPiastres > 0
+      ? { amount: split.depositPiastres / 100, remainder: split.remainderPiastres / 100, percent: codDeposit.percent }
+      : null;
+  }, [codDeposit, paymentMethod, summary.totalAfterDiscount, summary.total]);
+
   const walletAvailableBalance =
     checkoutData.walletAvailableBalance != null
       ? Number(checkoutData.walletAvailableBalance)
@@ -425,8 +437,12 @@ export const CheckoutData = ({
               id: "cash_on_delivery",
               value: "cash_on_delivery",
               title: t("cashOnDelivery"),
-              description:
+              description: [
                 storePayments?.codNote || t("cashOnDeliveryDescription"),
+                codDeposit ? t("deposit.codOptionNote", { percent: codDeposit.percent }) : null,
+              ]
+                .filter(Boolean)
+                .join(" · "),
               enabled: isCodEligible,
               disabledLabel: !isCodEligibleShipping
                 ? isZoneShipping
@@ -481,6 +497,7 @@ export const CheckoutData = ({
 
     return groups;
   }, [
+    codDeposit,
     onlineCardPaymentEnabled,
     codAllowed,
     isCodEligible,
@@ -564,7 +581,10 @@ export const CheckoutData = ({
           await refreshCart();
           router.refresh();
 
+          // A COD order with a deposit (F-21) goes straight to paying the deposit.
+          const orderDeposit = (result.data?.order as { depositStatus?: string | null } | undefined)?.depositStatus;
           if (
+            orderDeposit === "awaiting" ||
             data.paymentMethod === "online_payment" ||
             isManualPaymentMethod(data.paymentMethod) ||
             isWalletPartialPaymentMethod(data.paymentMethod)
@@ -909,6 +929,7 @@ export const CheckoutData = ({
               onCouponApplied={handleCouponApplied}
               onCouponRemoved={handleCouponRemoved}
               appliedCoupon={appliedCoupon}
+              deposit={depositRows}
             >
               {shippingRefusal ? (
                 <p role="alert" className="text-xs md:text-sm text-orange-600">

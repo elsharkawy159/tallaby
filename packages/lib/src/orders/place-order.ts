@@ -80,6 +80,7 @@ import { productsOutsideStore } from '../stores/catalog.server'
 import { couponInStore } from '../stores/store-scope.server'
 import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
 import { minOrderShortfalls, shouldEnforceMinOrder, type MinOrderShortfall } from './min-order-quantity.lib'
+import { splitDeposit } from './cod-deposit.lib'
 
 /**
  * Snapshot on every store-website order placed while the store delivers itself
@@ -849,6 +850,33 @@ export async function placeOrderFromCart(
   const sellerTransfer = sellerTransferFor(storefrontPayments, resolvedPaymentMethod)
   const sellerCollected = Boolean(sellerGateway || sellerTransfer)
 
+  // COD deposit (ROADMAP.md F-21): a storefront COD order pays the store's
+  // percent of the total first, to the seller's own gateway or transfers
+  // (snapshotted here, like sellerPayment), and the rest on delivery. Worked
+  // out from the server total, never a client number. No money moves here and
+  // the fee is unchanged.
+  const depositSetting =
+    orderSource === 'storefront' && resolvedPaymentMethod === 'cash_on_delivery'
+      ? (storefrontPayments?.deposit ?? null)
+      : null
+  const depositSplit = depositSetting ? splitDeposit(totalAmount, depositSetting.percent) : null
+  const deposit =
+    depositSetting && depositSplit && depositSplit.depositPiastres > 0
+      ? {
+          percent: depositSetting.percent,
+          amount: formatDecimal(depositSplit.depositPiastres / 100),
+          snapshot: {
+            ...(storefrontPayments?.gateway && {
+              gateway: {
+                provider: storefrontPayments.gateway.provider,
+                integrationId: storefrontPayments.gateway.integrationId,
+              },
+            }),
+            transfers: Object.values(storefrontPayments?.transfers ?? {}),
+          },
+        }
+      : null
+
   const storeShipping: StoreShippingSnapshot | null =
     storeQuote && (storeQuote.kind === 'zone' || storeQuote.kind === 'tallaby_rates')
       ? {
@@ -874,7 +902,7 @@ export async function placeOrderFromCart(
   const hasFeeHolds = Object.keys(feeHolds).length > 0
 
   const baseOrderMetadata: Record<string, unknown> | null =
-    storeShipping || sellerCollected || hasFeeHolds || orderMetadata
+    storeShipping || sellerCollected || hasFeeHolds || orderMetadata || deposit
       ? {
           ...orderMetadata,
           ...(hasFeeHolds && { feeHolds }),
@@ -887,6 +915,7 @@ export async function placeOrderFromCart(
             },
           }),
           ...(sellerTransfer && { sellerPayment: sellerTransfer }),
+          ...(deposit && { deposit: deposit.snapshot }),
         }
       : null
 
@@ -1019,6 +1048,11 @@ export async function placeOrderFromCart(
           paidAt: paymentOverrides?.paidAt ?? null,
           metadata: insertMetadata,
           isTest: testOrder,
+          ...(deposit && {
+            depositAmount: deposit.amount,
+            depositPercent: deposit.percent,
+            depositStatus: 'awaiting',
+          }),
         })
         .returning()
 

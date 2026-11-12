@@ -60,6 +60,9 @@ export const SELLER_NOTIFICATION_TYPES = [
   "theme_request_updated",
   // The first real order of a seller who isn't activated (0159, F-84): `data` = { orderId, orderNumber }
   "first_order_top_up",
+  // COD deposit (0166, F-21): the customer sent a transfer / the seller's gateway paid it. `data` = { orderId, orderNumber }
+  "deposit_reported",
+  "deposit_paid",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -155,7 +158,9 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
   switch (n.type) {
     case "order_created":
     case "carrier_shipment_failed":
-    case "carrier_needs_attention": {
+    case "carrier_needs_attention":
+    case "deposit_reported":
+    case "deposit_paid": {
       const orderId = dataString(n.data, "orderId");
       return orderId ? `/orders?order=${encodeURIComponent(orderId)}` : "/orders";
     }

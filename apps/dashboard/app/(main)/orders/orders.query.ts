@@ -26,6 +26,7 @@ import {
   unconfirmedHours,
 } from "./order-confirm.lib";
 import { DEFAULT_CURRENCY } from "@workspace/lib";
+import { readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
 import {
   pickProductSlug,
   resolveCustomerEmail,
@@ -82,6 +83,7 @@ function orderFlow(
     paymentStatus: string | null;
     isDigitalOnly: boolean | null;
     isTest: boolean | null;
+    depositStatus: string | null;
     orderItems: { sellerId: string; fulfillmentType: string | null }[];
     shipments: { status: string; sellerId: string | null; externalId: string | null }[];
   },
@@ -100,6 +102,7 @@ function orderFlow(
       : null,
     walletPaid: walletPaid.has(order.id),
     isTest: order.isTest,
+    depositStatus: order.depositStatus,
   });
 }
 
@@ -119,7 +122,7 @@ export async function loadOrderSummaries(
   const [list, walletPaid] = await Promise.all([
     db.query.orders.findMany({
       where: and(inArray(orders.id, ids), ownOrders(sellerId, onlyOrderId)),
-      columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true, isTest: true },
+      columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true, isTest: true, depositStatus: true },
       with: {
         shipments: { columns: { status: true, sellerId: true, externalId: true, carrier: true, trackingNumber: true } },
         orderItems: { columns: { sellerId: true, fulfillmentType: true } },
@@ -176,6 +179,10 @@ export async function loadSellerOrders(
       shippingCost: true,
       discountAmount: true,
       totalAmount: true,
+      depositAmount: true,
+      depositPercent: true,
+      depositStatus: true,
+      depositPaidAt: true,
       currency: true,
       notes: true,
       isGift: true,
@@ -379,6 +386,20 @@ export async function loadSellerOrders(
       discountAmount: o.discountAmount ?? "0",
       totalAmount: o.totalAmount ?? "0",
       currency: o.currency ?? DEFAULT_CURRENCY,
+      deposit: (() => {
+        const deposit = readOrderDeposit(o);
+        if (!deposit) return null;
+        const meta = (o.metadata ?? {}) as Record<string, unknown>;
+        return {
+          amount: (deposit.amountPiastres / 100).toFixed(2),
+          remainder: (deposit.remainderPiastres / 100).toFixed(2),
+          percent: deposit.percent,
+          status: deposit.status,
+          paidAt: o.depositPaidAt,
+          paidVia: meta.depositPaidVia === "gateway" || meta.depositPaidVia === "transfer" ? meta.depositPaidVia : null,
+          reportedAt: typeof meta.paymentSelfReportedAt === "string" && deposit.status === "reported" ? meta.paymentSelfReportedAt : null,
+        };
+      })(),
       lines: mine.map((i) => ({
         id: i.id,
         productName: i.productName,

@@ -55,6 +55,8 @@ export async function loadPrintOrders(
       shippingCost: true,
       discountAmount: true,
       totalAmount: true,
+      depositAmount: true,
+      depositStatus: true,
       currency: true,
     },
     with: {
@@ -180,7 +182,7 @@ export async function loadPrintOrders(
       currency: o.currency ?? "EGP",
       // Another seller's lines share this order: the door amount is not this seller's to print.
       collect: wholeOrder
-        ? amountToCollect({ paymentMethod: o.paymentMethod, paymentStatus: o.paymentStatus, totalAmount })
+        ? amountToCollect({ paymentMethod: o.paymentMethod, paymentStatus: o.paymentStatus, totalAmount, depositAmount: o.depositAmount, depositStatus: o.depositStatus })
         : null,
     };
     return [order];

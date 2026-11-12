@@ -12,6 +12,8 @@ import {
   type StoreIntegrationSummary,
 } from "../integrations/store-integrations.server";
 import { createKashierSession } from "../kashier/kashier";
+import { isDepositPending } from "../orders/cod-deposit.lib";
+import { notifyDeposit } from "../orders/cod-deposit.server";
 import { buildBillingData, PAYMOB_EGYPT_BASE_URL } from "../paymob/paymob.lib";
 import { buildPaymobCheckoutUrl } from "../paymob/paymob";
 import {
@@ -23,6 +25,7 @@ import {
   parseKashierWebhook,
   parsePaymobWebhook,
   readGatewayConfig,
+  readOrderDepositGateway,
   readOrderGateway,
   storeGatewayReturnPath,
   storeGatewayWebhookUrl,
@@ -431,20 +434,28 @@ export async function createStoreGatewayCheckout(input: {
   /** The storefront origin the shopper is on, e.g. https://shop.tallaby.com */
   siteUrl: string;
   locale: string;
+  /**
+   * `deposit`: pay a COD order's deposit (ROADMAP.md F-21) on the gateway
+   * snapshotted at checkout, for the deposit amount only.
+   */
+  purpose?: "order" | "deposit";
 }): Promise<IntegrationResult<{ checkoutUrl: string }, StoreGatewayCheckoutError>> {
   const order = await db.query.orders.findFirst({
     where: and(eq(orders.id, input.orderId), eq(orders.userId, input.userId)),
     with: { user: true, userAddress_shippingAddressId: true },
   });
+  const isDeposit = input.purpose === "deposit";
   if (
     !order ||
-    order.paymentMethod !== "online_payment" ||
-    !["pending", "failed"].includes(order.paymentStatus ?? "pending") ||
-    !["payment_processing", "pending"].includes(order.status ?? "")
+    (isDeposit
+      ? !isDepositCheckoutOpen(order)
+      : order.paymentMethod !== "online_payment" ||
+        !["pending", "failed"].includes(order.paymentStatus ?? "pending") ||
+        !["payment_processing", "pending"].includes(order.status ?? ""))
   ) {
     return { success: false, error: "not_payable" };
   }
-  const meta = readOrderGateway(order.metadata);
+  const meta = isDeposit ? readOrderDepositGateway(order.metadata) : readOrderGateway(order.metadata);
   if (!meta || !order.storeId) return { success: false, error: "gateway_missing" };
   const account = await loadGatewayAccount(meta.integrationId);
   if (!account || account.storeId !== order.storeId || account.provider !== meta.provider) {
@@ -456,7 +467,8 @@ export async function createStoreGatewayCheckout(input: {
   const reference = buildGatewayReference(order.id);
   const returnUrl = `${input.siteUrl.replace(/\/+$/, "")}${storeGatewayReturnPath(order.id)}`;
   const currency = order.currency || "EGP";
-  const description = `Order ${order.orderNumber}`;
+  const description = isDeposit ? `Deposit, order ${order.orderNumber}` : `Order ${order.orderNumber}`;
+  const amount = isDeposit ? (order.depositAmount ?? "0") : order.totalAmount;
 
   try {
     if (account.provider === "paymob") {
@@ -467,7 +479,7 @@ export async function createStoreGatewayCheckout(input: {
         headers: { Authorization: `Token ${secret.secretKey}`, "Content-Type": "application/json" },
         body: JSON.stringify(
           paymobIntentionBody(secret, {
-            amountPiastres: toPiastres(order.totalAmount),
+            amountPiastres: toPiastres(amount),
             currency,
             reference,
             itemName: description,
@@ -501,7 +513,7 @@ export async function createStoreGatewayCheckout(input: {
       { ...secret, mode: account.config.mode, webhookUrl, allowedMethods: currency === "EGP" ? "card,wallet" : "card" },
       {
         orderReference: reference,
-        amount: order.totalAmount,
+        amount,
         currency,
         customerEmail: order.user?.email,
         // Kashier requires customer.reference; fall back to the order if there is no user.
@@ -531,7 +543,7 @@ export type GatewayWebhookResult = {
   paidOrderId?: string;
 };
 
-type ApplyOutcome = "paid" | "failed" | "pending" | "duplicate" | "mismatch" | "not_found" | "foreign";
+type ApplyOutcome = "paid" | "deposit_paid" | "failed" | "pending" | "duplicate" | "mismatch" | "not_found" | "foreign";
 
 /**
  * `POST /api/webhooks/store-payments/:integrationId` (apps/backend). The
@@ -587,6 +599,8 @@ async function markWebhookVerified(account: GatewayAccount) {
 export async function applyGatewayEvent(account: GatewayAccount, orderId: string, event: GatewayEvent): Promise<ApplyOutcome> {
   const order = await db.query.orders.findFirst({ where: eq(orders.id, orderId) });
   if (!order) return "not_found";
+  // A COD order with a deposit (F-21): the event pays the deposit, never the order.
+  if (isDepositOrder(order)) return applyDepositGatewayEvent(account, order, event);
   const meta = readOrderGateway(order.metadata);
   if (order.storeId !== account.storeId || meta?.integrationId !== account.integrationId) {
     console.error("[store-gateway] event for another store's order", { integrationId: account.integrationId, orderId });
@@ -688,5 +702,131 @@ export async function applyGatewayEvent(account: GatewayAccount, orderId: string
     outcome = "pending";
   });
 
+  return outcome;
+}
+
+/* ------------------------------------------------------------------ */
+/* COD deposit (ROADMAP.md F-21)                                       */
+/* ------------------------------------------------------------------ */
+
+type OrderRow = NonNullable<Awaited<ReturnType<typeof db.query.orders.findFirst>>>;
+
+/** A COD order that carries a deposit (0166): gateway events for it pay the deposit. */
+function isDepositOrder(order: Pick<OrderRow, "paymentMethod" | "depositStatus" | "depositAmount">): boolean {
+  return order.paymentMethod === "cash_on_delivery" && order.depositStatus != null && order.depositAmount != null;
+}
+
+/** The customer may still pay the deposit by card: unpaid, and the order is open. */
+function isDepositCheckoutOpen(order: Pick<OrderRow, "paymentMethod" | "depositStatus" | "depositAmount" | "status">): boolean {
+  return (
+    isDepositOrder(order) &&
+    isDepositPending(order.depositStatus) &&
+    ["pending", "confirmed"].includes(order.status ?? "") &&
+    toPiastres(order.depositAmount ?? 0) > 0
+  );
+}
+
+/**
+ * A deposit payment on the seller's own gateway. Same guards as an order
+ * payment (store and integration must match, the transaction id is
+ * namespaced, serialised on it, amount must equal the deposit), but it only
+ * moves `deposit_status` to `paid`: the order keeps its status and stays COD
+ * for the remainder, and no fee is charged here (it was taken when the COD
+ * order was created). The money is the seller's; nothing is ledgered.
+ */
+async function applyDepositGatewayEvent(account: GatewayAccount, order: OrderRow, event: GatewayEvent): Promise<ApplyOutcome> {
+  const meta = readOrderDepositGateway(order.metadata);
+  if (order.storeId !== account.storeId || meta?.integrationId !== account.integrationId) {
+    console.error("[store-gateway] deposit event for another store's order", { integrationId: account.integrationId, orderId: order.id });
+    return "foreign";
+  }
+
+  const now = new Date().toISOString();
+  const amount = (event.amountPiastres / 100).toFixed(2);
+  const transactionId = `store:${account.integrationId}:${event.transactionId}`;
+  const paymentData = { provider: account.provider, collector: "seller", integrationId: account.integrationId, purpose: "deposit", event };
+  let outcome: ApplyOutcome = "pending";
+
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${transactionId}))`);
+    const existing = await tx.query.payments.findFirst({
+      where: and(eq(payments.transactionId, transactionId), eq(payments.orderId, order.id)),
+    });
+    if (existing && (existing.status === "paid" || existing.status === "failed")) {
+      outcome = "duplicate";
+      return;
+    }
+    if (existing && event.status === "PENDING") {
+      outcome = "duplicate";
+      return;
+    }
+
+    const writePayment = async (values: { status: "paid" | "failed" | "pending"; errorMessage?: string; capturedAt?: string }) => {
+      const row = {
+        orderId: order.id,
+        amount,
+        method: "cod_deposit",
+        currency: event.currency || order.currency || "EGP",
+        transactionId,
+        paymentData,
+        ...values,
+      };
+      if (existing) await tx.update(payments).set({ ...row, updatedAt: now }).where(eq(payments.id, existing.id));
+      else await tx.insert(payments).values(row);
+    };
+
+    if (event.status === "SUCCESS") {
+      const expected = toPiastres(order.depositAmount ?? 0);
+      if (event.amountPiastres !== expected || (order.currency && event.currency !== order.currency)) {
+        await writePayment({
+          status: "pending",
+          errorMessage: `Deposit amount mismatch: expected ${(expected / 100).toFixed(2)} ${order.currency}, received ${amount} ${event.currency}`,
+        });
+        outcome = "mismatch";
+        return;
+      }
+      const [claimed] = await tx
+        .update(orders)
+        .set({
+          depositStatus: "paid",
+          depositPaidAt: now,
+          updatedAt: now,
+          metadata: sql`coalesce(${orders.metadata}, '{}'::jsonb) || jsonb_build_object('depositPaidVia', 'gateway')`,
+        })
+        .where(
+          and(
+            eq(orders.id, order.id),
+            inArray(orders.depositStatus, ["awaiting", "reported"]),
+            // A cancelled order stays cancelled; the money is kept for review.
+            inArray(orders.status, ["pending", "confirmed"]),
+          ),
+        )
+        .returning({ id: orders.id });
+      if (!claimed) {
+        const current = await tx.query.orders.findFirst({ where: eq(orders.id, order.id), columns: { depositStatus: true } });
+        if (current?.depositStatus === "paid") {
+          outcome = "duplicate";
+          return;
+        }
+        await writePayment({ status: "pending", errorMessage: "Deposit paid after the order was cancelled; refund from the gateway" });
+        outcome = "mismatch";
+        return;
+      }
+      await writePayment({ status: "paid", capturedAt: now });
+      outcome = "deposit_paid";
+      return;
+    }
+
+    if (event.status === "FAILURE") {
+      await writePayment({ status: "failed", errorMessage: "Deposit payment failed" });
+      outcome = "failed";
+      return;
+    }
+
+    await writePayment({ status: "pending" });
+    outcome = "pending";
+  });
+
+  if ((outcome as ApplyOutcome) === "deposit_paid") await notifyDeposit(order.id, "deposit_paid");
   return outcome;
 }

@@ -81,6 +81,8 @@ export interface OrderConfirmationEmailProps {
   paymentMethod?: string | null;
   /** Cash on delivery: shows the "have {total} ready" note. */
   isCashOnDelivery?: boolean;
+  /** COD with a deposit (ROADMAP.md F-21), formatted: the note asks for the deposit first, then the rest. */
+  deposit?: { amount: string; remainder: string } | null;
   shippingAddress?: OrderConfirmationShippingAddress | null;
   links: {
     /** Absolute URL to the customer's order page. */
@@ -114,6 +116,7 @@ export const OrderConfirmationEmail = ({
   pricing,
   paymentMethod,
   isCashOnDelivery = false,
+  deposit = null,
   shippingAddress,
   links,
   locale = "en",
@@ -209,7 +212,9 @@ export const OrderConfirmationEmail = ({
                           {paymentMethod}
                           {isCashOnDelivery ? (
                             <Callout f={f} tone="warning" marginTop={10}>
-                              {interpolate(copy.codNote, { total: pricing.total })}
+                              {deposit
+                                ? interpolate(copy.depositNote, { deposit: deposit.amount, remainder: deposit.remainder })
+                                : interpolate(copy.codNote, { total: pricing.total })}
                             </Callout>
                           ) : null}
                         </>

@@ -10,7 +10,7 @@ export type OrdersChannel = string;
 export const ORDERS_TABS: OrdersTab[] = ["all", "new", "to_ship", "out_for_delivery", "delivered", "closed"];
 
 export const TAB_STAGES: Record<Exclude<OrdersTab, "all">, SellerOrderStage[]> = {
-  new: ["new", "awaiting_payment"],
+  new: ["new", "awaiting_payment", "awaiting_deposit"],
   to_ship: ["to_ship"],
   out_for_delivery: ["out_for_delivery", "failed"],
   delivered: ["delivered"],

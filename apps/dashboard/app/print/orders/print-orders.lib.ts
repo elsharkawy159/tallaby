@@ -1,4 +1,5 @@
 import { isPaymentSettled } from "@/app/(main)/orders/order-flow.lib";
+import { cashDuePiastres } from "@workspace/lib/orders/cod-deposit";
 
 /**
  * The printouts: an A4 invoice and an A6 packing slip per order (ROADMAP.md
@@ -40,15 +41,21 @@ export function printOrdersHref(doc: PrintDoc, ids: readonly string[], autoPrint
 
 /**
  * What the courier collects at the door: the order total for an unpaid cash
- * order, else null (paid, or paid another way such as InstaPay).
+ * order, minus a paid COD deposit (F-21), else null (paid, or paid another way
+ * such as InstaPay).
  */
 export function amountToCollect(order: {
   paymentMethod: string | null;
   paymentStatus: string | null;
   totalAmount: string;
+  depositAmount?: string | null;
+  depositStatus?: string | null;
 }): string | null {
   if (!order.paymentMethod || !COD_METHODS.has(order.paymentMethod)) return null;
   if (isPaymentSettled(order.paymentStatus)) return null;
+  if (order.depositStatus === "paid" && order.depositAmount != null) {
+    return (cashDuePiastres({ totalAmount: order.totalAmount, depositAmount: order.depositAmount, depositStatus: "paid" }) / 100).toFixed(2);
+  }
   return order.totalAmount;
 }
 

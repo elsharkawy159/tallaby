@@ -12,6 +12,7 @@ import { z } from "zod";
 import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
 import { parseStoreCurrency } from "../utils/formatPrice";
 import type { OrderGatewayMeta } from "./store-gateways.lib";
+import { codDepositFor, depositPayable, type CodDepositSetting } from "../orders/cod-deposit.lib";
 
 export type PaymentCollector = "seller" | "tallaby" | "delivery";
 export type PaymentMethodStatus = "live" | "soon";
@@ -368,6 +369,12 @@ export type StorefrontCheckoutPayments = {
   transfers: Partial<Record<SellerTransferMethod, SellerPaymentDetails>>;
   /** The method checkout selects first: the seller's pick while it is offered, else null (cash on delivery first, as before). */
   defaultMethod?: StorefrontCheckoutMethod | null;
+  /**
+   * The COD deposit (ROADMAP.md F-21): a COD order pays this percent first, to
+   * the seller's gateway or transfers above. Null when the store asks none, COD
+   * is off, or there is no way to pay it.
+   */
+  deposit?: CodDepositSetting | null;
 };
 
 /**
@@ -382,6 +389,8 @@ export function storefrontCheckoutMethods(
   payments: StorePayments,
   gateway: OrderGatewayMeta | null = null,
   currency: string = "EGP",
+  /** `stores.settings.codDeposit` (parseCodDeposit), F-21. */
+  depositSetting: CodDepositSetting | null = null,
 ): StorefrontCheckoutPayments {
   const methods: StorefrontCheckoutMethod[] = [];
   const transfers: StorefrontCheckoutPayments["transfers"] = {};
@@ -408,6 +417,11 @@ export function storefrontCheckoutMethods(
     codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
     codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,
     transfers,
+    deposit: codDepositFor({
+      codEnabled: methods.includes("cash_on_delivery"),
+      setting: depositSetting,
+      payable: depositPayable({ gateway: offeredGateway, transfers }),
+    }),
   };
 }
 

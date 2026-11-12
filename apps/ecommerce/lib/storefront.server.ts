@@ -44,6 +44,7 @@ import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/st
 import { parseStoreApp } from "@workspace/lib/stores/app";
 import { parseStoreSalesPopup } from "@workspace/lib/stores/sales-popup";
 import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
+import { parseCodDeposit } from "@workspace/lib/orders/cod-deposit";
 import {
   parseStorePayments,
   storefrontCheckoutMethods,
@@ -315,7 +316,7 @@ export async function getStorefrontCheckoutPayments(): Promise<StorefrontCheckou
   const settings = row?.settings as Record<string, unknown> | null | undefined;
   // The seller's own card gateway, when connected (ROADMAP.md F-39).
   const gateway = row ? await getStorefrontGateway(scope.storeId, scope.sellerId) : null;
-  return storefrontCheckoutMethods(parseStorePayments(settings?.payments), gateway, parseStoreCurrency(settings).currency);
+  return storefrontCheckoutMethods(parseStorePayments(settings?.payments), gateway, parseStoreCurrency(settings).currency, parseCodDeposit(settings));
 }
 
 /** The label a store's checkout shows prices with, read fresh. */

@@ -48,6 +48,8 @@ export interface OrderConfirmationData {
     paymentMethod: string;
     /** The customer attached a transfer screenshot (ROADMAP.md F-21p). */
     hasPaymentProof: boolean;
+    /** COD deposit (ROADMAP.md F-21), in currency units; null = none. */
+    deposit: { amount: number; remainder: number; percent: number | null; status: "awaiting" | "reported" | "paid" } | null;
     isGift: boolean;
     giftMessage?: string;
     notes?: string;

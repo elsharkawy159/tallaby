@@ -64,6 +64,8 @@ import {
   sniffPaymentProofType,
 } from "@workspace/lib/orders/payment-proof";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
+import { isDepositPending } from "@workspace/lib/orders/cod-deposit";
+import { markDepositReported, notifyDeposit } from "@workspace/lib/orders/cod-deposit/server";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
 import { resolveOrderNotificationEmail } from "@workspace/lib/orders/notification-email/server";
@@ -568,7 +570,11 @@ const MAX_PAYMENT_PROOF_UPLOADS = 5;
  * order's owner (signed in or the guest cookie that placed it) or holds its
  * signed access link (`accessToken`). The file's type is read from its bytes
  * and it goes to the private bucket through the service role; the seller sees
- * it on the order in the dashboard. Payload: FormData { orderId, accessToken?, proof? }.
+ * it on the order in the dashboard. Payload: FormData { orderId, accessToken?, proof?, purpose?, method? }.
+ *
+ * `purpose=deposit` (ROADMAP.md F-21): the deposit of a COD order, sent with
+ * `method`, one of the seller transfers snapshotted on the order. The deposit
+ * moves to `reported` and the seller's bell rings; the seller confirms it.
  */
 export async function reportManualPaymentSent(formData: FormData) {
   try {
@@ -589,21 +595,36 @@ export async function reportManualPaymentSent(formData: FormData) {
       return { success: false, error: "Order not found" };
     }
 
-    if (
+    const metadata = (order.metadata as Record<string, unknown> | null) ?? {};
+    const forDeposit = formData.get("purpose") === "deposit";
+    const depositMethod = String(formData.get("method") ?? "");
+    if (forDeposit) {
+      const snapshot = (metadata.deposit as { transfers?: { method?: unknown }[] } | undefined)?.transfers ?? [];
+      if (
+        order.paymentMethod !== "cash_on_delivery" ||
+        !isDepositPending(order.depositStatus) ||
+        !snapshot.some((transfer) => transfer?.method === depositMethod)
+      ) {
+        return { success: false, error: "Order is not waiting for a deposit" };
+      }
+    } else if (
       !MANUAL_PAYMENT_METHODS.includes(
         order.paymentMethod as (typeof MANUAL_PAYMENT_METHODS)[number]
       )
     ) {
       return { success: false, error: "Order is not a manual-transfer payment" };
     }
-
-    const metadata = (order.metadata as Record<string, unknown> | null) ?? {};
     const now = new Date().toISOString();
     let paymentProof: { path: string; uploadedAt: string } | null = null;
 
     if (proof instanceof File && proof.size > 0) {
       const t = await getTranslations("checkout.transfer.proof");
-      if (order.status === "cancelled" || order.paymentStatus === "paid" || order.paymentStatus === "collected") {
+      if (
+        order.status === "cancelled" ||
+        order.paymentStatus === "paid" ||
+        order.paymentStatus === "collected" ||
+        (forDeposit && order.depositStatus === "paid")
+      ) {
         return { success: false, error: t("closed") };
       }
       const uploads = Number(metadata.paymentProofUploads ?? 0);
@@ -636,6 +657,7 @@ export async function reportManualPaymentSent(formData: FormData) {
           ...metadata,
           paymentSelfReported: true,
           paymentSelfReportedAt: now,
+          ...(forDeposit && { depositMethod }),
           ...(paymentProof && {
             paymentProof,
             paymentProofUploads: Number(metadata.paymentProofUploads ?? 0) + 1,
@@ -644,6 +666,15 @@ export async function reportManualPaymentSent(formData: FormData) {
         updatedAt: now,
       })
       .where(eq(orders.id, order.id));
+
+    if (forDeposit) {
+      // Awaiting → reported once; a new screenshot after the seller said "not received" moves it again.
+      const moved = await markDepositReported(order.id);
+      if (moved || paymentProof) {
+        const orderId = order.id;
+        after(() => notifyDeposit(orderId, "deposit_reported"));
+      }
+    }
 
     return {
       success: true,

@@ -13,6 +13,7 @@ import {
 } from "@workspace/db";
 import { getStoreBostaAccount, recordBostaResult, type StoreBostaAccount } from "../integrations/bosta.server";
 import { toPiastres } from "../orders/platform-fee.lib";
+import { cashDuePiastres } from "../orders/cod-deposit.lib";
 import { applySellerShipmentStatus } from "./apply-seller-shipment.server";
 import {
   createBostaDelivery,
@@ -98,6 +99,8 @@ async function loadOrder(storeId: string, sellerId: string, orderId: string) {
       paymentStatus: true,
       paymentMethod: true,
       totalAmount: true,
+      depositAmount: true,
+      depositStatus: true,
       subtotal: true,
       currency: true,
       notes: true,
@@ -133,7 +136,8 @@ function orderInput(loaded: LoadedOrder, destination: BostaDestination, prepaid:
   return {
     orderId: order.id,
     orderNumber: order.orderNumber,
-    totalPiastres: toPiastres(order.totalAmount),
+    // Cash at the door: the remainder once a COD deposit is paid (F-21).
+    totalPiastres: cashDuePiastres(order),
     itemsPiastres: toPiastres(order.subtotal),
     prepaid,
     customerName: address?.fullName || customer?.fullName || "",
@@ -226,7 +230,7 @@ export async function previewBostaShipment(
             state: loaded.address.state,
           }
         : null,
-      cod: bostaCod({ prepaid, totalPiastres: toPiastres(loaded.order.totalAmount) }),
+      cod: bostaCod({ prepaid, totalPiastres: cashDuePiastres(loaded.order) }),
       prepaid,
       itemsCount: loaded.order.orderItems.reduce((sum, item) => sum + Math.max(0, item.quantity), 0),
       size: account.settings.size,

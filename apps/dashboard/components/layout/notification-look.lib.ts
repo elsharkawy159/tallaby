@@ -25,6 +25,8 @@ export const NOTIFICATION_LOOK: Record<SellerNotificationType, { icon: LucideIco
   review_received: { icon: Star, tone: "accent" },
   carrier_shipment_failed: { icon: PackageX, tone: "danger" },
   carrier_needs_attention: { icon: TriangleAlert, tone: "accent" },
+  deposit_reported: { icon: HandCoins, tone: "accent" },
+  deposit_paid: { icon: HandCoins, tone: "success" },
   referral_commission_earned: { icon: HandCoins, tone: "success" },
   referral_payout_paid: { icon: HandCoins, tone: "success" },
   referral_payout_rejected: { icon: HandCoins, tone: "danger" },

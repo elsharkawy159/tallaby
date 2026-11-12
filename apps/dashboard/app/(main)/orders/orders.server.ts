@@ -93,7 +93,7 @@ async function loadOrder(orderId: string, sellerId: string) {
         db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)),
       ),
     ),
-    columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true, metadata: true, isTest: true },
+    columns: { id: true, status: true, paymentStatus: true, isDigitalOnly: true, storeId: true, metadata: true, isTest: true, depositStatus: true },
     with: {
       shipments: { columns: { id: true, status: true, sellerId: true, externalId: true } },
       orderItems: {
@@ -138,6 +138,7 @@ async function loadOrder(orderId: string, sellerId: string) {
       : null,
     walletPaid: Boolean(walletDebit),
     isTest: order.isTest,
+    depositStatus: order.depositStatus,
   });
 
   return { order, shipment, flow };

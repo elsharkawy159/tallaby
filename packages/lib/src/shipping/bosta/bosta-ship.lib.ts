@@ -9,7 +9,7 @@ export const BOSTA_SHIPPABLE_ORDER_STATUSES = ["pending", "confirmed", "shipping
 /** Methods paid in cash at the door; the legacy default is `cash`. */
 const CASH_METHODS = new Set(["cash_on_delivery", "cash"]);
 
-export type BostaCollection = { ok: true; prepaid: boolean } | { ok: false; error: "awaiting_payment" };
+export type BostaCollection = { ok: true; prepaid: boolean } | { ok: false; error: "awaiting_payment" | "awaiting_deposit" };
 
 /**
  * A settled order is prepaid (COD 0). A cash order is collected in full: a
@@ -17,13 +17,19 @@ export type BostaCollection = { ok: true; prepaid: boolean } | { ok: false; erro
  * (`wallet_instapay`, …), never with cash. Anything else unpaid (card,
  * InstaPay, …) waits until the payment lands.
  */
-export function bostaCollection(order: { paymentStatus: string | null; paymentMethod: string | null }): BostaCollection {
+export function bostaCollection(order: {
+  paymentStatus: string | null;
+  paymentMethod: string | null;
+  /** COD deposit (0166, F-21): an unpaid deposit keeps the order home. */
+  depositStatus?: string | null;
+}): BostaCollection {
   if (order.paymentStatus === "paid" || order.paymentStatus === "collected") return { ok: true, prepaid: true };
+  if (order.depositStatus === "awaiting" || order.depositStatus === "reported") return { ok: false, error: "awaiting_deposit" };
   if (CASH_METHODS.has(order.paymentMethod ?? "cash")) return { ok: true, prepaid: false };
   return { ok: false, error: "awaiting_payment" };
 }
 
-export type BostaShipBlocker = "not_shippable" | "awaiting_payment" | "already_shipped" | "other_carrier" | "foreign_order";
+export type BostaShipBlocker = "not_shippable" | "awaiting_payment" | "awaiting_deposit" | "already_shipped" | "other_carrier" | "foreign_order";
 
 /**
  * Why this order can't be sent to Bosta right now, or null. A shipment may
@@ -31,7 +37,7 @@ export type BostaShipBlocker = "not_shippable" | "awaiting_payment" | "already_s
  * create call failed (no `externalId`), both of which may (re)try.
  */
 export function bostaShipBlocker(
-  order: { status: string | null; paymentStatus: string | null; paymentMethod: string | null },
+  order: { status: string | null; paymentStatus: string | null; paymentMethod: string | null; depositStatus?: string | null },
   shipment: { carrier: string | null; status: string; externalId: string | null; riderId: string | null } | null,
 ): BostaShipBlocker | null {
   if (order.status === "payment_processing") return "awaiting_payment";

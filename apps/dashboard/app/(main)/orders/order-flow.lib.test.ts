@@ -214,3 +214,30 @@ describe("progressIndex", () => {
     expect(progressIndex("cancelled")).toBe(-1);
   });
 });
+
+describe("COD deposit (F-21)", () => {
+  it("holds an order whose deposit isn't paid: only cancel, nothing ships", () => {
+    for (const depositStatus of ["awaiting", "reported"]) {
+      for (const orderStatus of ["pending", "confirmed"]) {
+        const result = flow({ orderStatus, depositStatus });
+        expect(result.stage).toBe("awaiting_deposit");
+        expect(result.actions).toEqual(["cancel"]);
+        expect(result.primary).toBe("cancel");
+      }
+    }
+    expect(progressIndex("awaiting_deposit")).toBe(0);
+    expect(isAwaitingPrep("pending", "awaiting_deposit")).toBe(false);
+  });
+
+  it("works as a normal COD order once the deposit is paid", () => {
+    expect(flow({ depositStatus: "paid" })).toMatchObject({ stage: "new", actions: ["confirm", "cancel"] });
+    expect(flow({ orderStatus: "confirmed", depositStatus: "paid" })).toMatchObject({ stage: "to_ship" });
+  });
+
+  it("follows the shipment and closed statuses first", () => {
+    expect(resolveSellerOrderStage({ ...base, orderStatus: "cancelled", depositStatus: "awaiting" })).toBe("cancelled");
+    expect(
+      resolveSellerOrderStage({ ...base, depositStatus: "awaiting", shipment: { status: "out_for_delivery", ownedBySeller: true } }),
+    ).toBe("out_for_delivery");
+  });
+});

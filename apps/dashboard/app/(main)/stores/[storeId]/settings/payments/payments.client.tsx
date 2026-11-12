@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AtSign, Banknote, Check, CircleDashed, Clock, Eye, Landmark, Link2, LoaderCircle, Pencil, Plus, Settings2, Smartphone, TriangleAlert } from "lucide-react";
+import { AtSign, Banknote, Check, CircleDashed, Clock, Eye, HandCoins, Landmark, Link2, LoaderCircle, Pencil, Plus, Settings2, Smartphone, TriangleAlert } from "lucide-react";
+import { DEPOSIT_PERCENTS, computeDepositPiastres, type CodDepositSetting, type DepositPercent } from "@workspace/lib/orders/cod-deposit";
 
 import {
   INSTAPAY_RECEIVE_TYPES,
@@ -26,7 +27,7 @@ import { CurrencyInput } from "@/components/form/currency-input";
 import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
-import { saveDefaultPaymentMethod, saveStorePaymentMethod } from "./payments.server";
+import { saveCodDeposit, saveDefaultPaymentMethod, saveStorePaymentMethod } from "./payments.server";
 import { toDetails, type PaymentDetailsFormValues } from "./payments.dto";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "../../apps/app-drawer.lib";
@@ -92,6 +93,7 @@ export function StorePaymentsSettings({
   money,
   storeId,
   initial,
+  initialDeposit,
   gateways,
   readOnly,
   usdLive,
@@ -100,6 +102,8 @@ export function StorePaymentsSettings({
   money: MoneyUnit;
   storeId: string;
   initial: StorePayments;
+  /** `stores.settings.codDeposit` (F-21). */
+  initialDeposit: CodDepositSetting | null;
   gateways: StoreGatewayOverview;
   readOnly: boolean;
   /** The USD switch (0136): the order fee is no longer EGP 5. */
@@ -191,6 +195,10 @@ export function StorePaymentsSettings({
 
   const connectedGateway = gateways.connected?.provider;
   const codFee = entry("cod")?.fee;
+  // A deposit is paid to the seller: an enabled wallet / InstaPay, or the card gateway in this currency (F-21).
+  const gatewayPays = Boolean(connectedGateway && gatewaySupportsCurrency(connectedGateway, money.currency ?? DEFAULT_CURRENCY));
+  const depositPayable = gatewayPays || enabledKeys.some((key) => key !== "cod");
+  const codOn = enabledKeys.includes("cod");
 
   // The customer's list in checkout order (cash, card, then transfers), as checkout values.
   const previewMethods: { value: string; label: string; logo?: string }[] = [
@@ -222,6 +230,14 @@ export function StorePaymentsSettings({
 
         <SectionCard icon={Banknote} tone="success" title={t("cashTitle")} description={t("cashDescription")}>
           <Rows>{row("cod")}</Rows>
+          <DepositSettings
+            storeId={storeId}
+            initial={initialDeposit}
+            codOn={codOn}
+            payable={depositPayable}
+            money={money}
+            readOnly={readOnly}
+          />
         </SectionCard>
 
         <SectionCard
@@ -551,5 +567,127 @@ function MethodSheet({
         </SheetFooter>
       </SheetContent>
     </Sheet>
+  );
+}
+
+/** Sample order for the deposit example line, in store currency units. */
+const DEPOSIT_EXAMPLE_TOTAL = 1000;
+
+/**
+ * Cash on delivery › Deposit (عربون, ROADMAP.md F-21): a COD order pays a
+ * share first, to the seller's own wallet / InstaPay or card gateway, and the
+ * rest on delivery. Off until the seller picks a percent; it can't be turned
+ * on without cash on delivery and a way to pay the seller.
+ */
+function DepositSettings({
+  storeId,
+  initial,
+  codOn,
+  payable,
+  money,
+  readOnly,
+}: {
+  storeId: string;
+  initial: CodDepositSetting | null;
+  codOn: boolean;
+  payable: boolean;
+  money: MoneyUnit;
+  readOnly: boolean;
+}) {
+  const t = useTranslations("storePayments.deposit");
+  const tErr = useTranslations("storePayments");
+  const locale = useLocale();
+  const router = useRouter();
+  const [deposit, setDeposit] = useState<CodDepositSetting | null>(initial);
+  const [pending, startTransition] = useTransition();
+  const canTurnOn = codOn && payable;
+  const on = Boolean(deposit);
+  const paused = on && !canTurnOn;
+  const unit = moneyUnitText(locale, money);
+  const fmt = (n: number) => new Intl.NumberFormat(locale.startsWith("ar") ? "ar-EG" : "en-US", { maximumFractionDigits: 2 }).format(n);
+
+  const save = (percent: DepositPercent | null) =>
+    startTransition(async () => {
+      const result = await saveCodDeposit(storeId, percent);
+      if (result.success) {
+        setDeposit(result.data);
+        toast.success(t(result.data ? "saved" : "turnedOff"));
+        router.refresh();
+      } else {
+        toast.error(tErr(`errors.${result.error}`));
+      }
+    });
+
+  const percent = deposit?.percent ?? 20;
+  const exampleDeposit = computeDepositPiastres(DEPOSIT_EXAMPLE_TOTAL * 100, percent) / 100;
+
+  return (
+    <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-(--s-line) p-3.5">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent-ink">
+          <HandCoins className="size-5" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1 basis-[180px]">
+          <b className="flex flex-wrap items-center gap-2 text-sm font-bold text-(--s-text)">
+            {t("title")}
+            {on && !paused && <Tag tone="success">{t("onTag", { percent })}</Tag>}
+            {paused && <Tag tone="warning">{t("pausedTag")}</Tag>}
+          </b>
+          <small className="block text-xs leading-relaxed text-(--s-subtle)">{t("description")}</small>
+        </div>
+        <Toggle
+          checked={on}
+          disabled={readOnly || pending || (!on && !canTurnOn)}
+          className="ms-auto max-[600px]:min-h-10"
+          onCheckedChange={(next) => save(next ? percent : null)}
+          aria-label={t("toggle")}
+        />
+      </div>
+
+      {!canTurnOn && (
+        <Note tone="amber" icon={TriangleAlert}>
+          {t(!codOn ? "needsCod" : "needsMethod")}
+        </Note>
+      )}
+
+      {on && (
+        <>
+          <div role="radiogroup" aria-label={t("percentLabel")} className="grid grid-cols-4 gap-2">
+            {DEPOSIT_PERCENTS.map((p) => {
+              const selected = p === deposit?.percent;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={readOnly || pending}
+                  onClick={() => !selected && save(p)}
+                  className={cn(
+                    "min-h-11 rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface) font-montserrat text-[15px] font-bold text-(--s-text) transition-colors duration-150 enabled:hover:border-(--s-field-strong) disabled:cursor-default",
+                    selected && "border-(--s-primary) bg-primary-soft text-primary-ink enabled:hover:border-(--s-primary)",
+                  )}
+                >
+                  {fmt(p)}%
+                </button>
+              );
+            })}
+          </div>
+          <p className="rounded-xl bg-(--s-tint) px-3 py-2 text-[12.5px] leading-relaxed text-(--s-muted)">
+            {t("example", {
+              total: fmt(DEPOSIT_EXAMPLE_TOTAL),
+              deposit: fmt(exampleDeposit),
+              rest: fmt(DEPOSIT_EXAMPLE_TOTAL - exampleDeposit),
+              currency: unit,
+            })}
+          </p>
+          <ul className="flex list-disc flex-col gap-1 ps-5 text-xs leading-relaxed text-(--s-subtle)">
+            <li>{t("ruleRounding")}</li>
+            <li>{t("ruleWhere")}</li>
+            <li>{t("ruleWait")}</li>
+          </ul>
+        </>
+      )}
+    </div>
   );
 }

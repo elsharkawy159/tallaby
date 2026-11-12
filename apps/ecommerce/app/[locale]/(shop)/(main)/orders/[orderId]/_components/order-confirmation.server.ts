@@ -16,6 +16,7 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations";
 import { readPaymentProof } from "@workspace/lib/orders/payment-proof";
+import { readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
 
 export async function getOrderConfirmationData(
   orderId: string,
@@ -209,6 +210,12 @@ export async function getOrderConfirmationData(
         paymentStatus: order.paymentStatus || "",
         paymentMethod: order.paymentMethod || "",
         hasPaymentProof: readPaymentProof(order.id, order.metadata) !== null,
+        deposit: (() => {
+          const deposit = order.paymentMethod === "cash_on_delivery" ? readOrderDeposit(order) : null;
+          return deposit
+            ? { amount: deposit.amountPiastres / 100, remainder: deposit.remainderPiastres / 100, percent: deposit.percent, status: deposit.status }
+            : null;
+        })(),
         isGift: order.isGift || false,
         giftMessage: order.giftMessage || "",
         notes: order.notes || "",

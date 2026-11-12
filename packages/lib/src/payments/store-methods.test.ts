@@ -27,6 +27,7 @@ describe("storefrontCheckoutMethods", () => {
       codMaxOrder: null,
       codNote: null,
       transfers: {},
+      deposit: null,
     });
   });
 
@@ -229,5 +230,23 @@ describe("storeShippingCollector", () => {
     expect(storeShippingCollector("orange_cash")).toBe("seller");
     expect(storeShippingCollector("wallet_something")).toBe("seller");
     expect(storeShippingCollector("something_new")).toBe("seller");
+  });
+});
+
+describe("storefrontCheckoutMethods: COD deposit (F-21)", () => {
+  const wallet = { enabled: true, details: { holderName: "Omar", phone: "01012345678" } };
+  const gateway = { provider: "kashier" as const, integrationId: "00000000-0000-4000-8000-000000000001" };
+
+  it("asks for the deposit only with COD on and a seller method to pay it", () => {
+    expect(storefrontCheckoutMethods({ cod: { enabled: true, fee: 0 }, vodafone_cash: wallet }, null, "EGP", { percent: 20 }).deposit).toEqual({ percent: 20 });
+    expect(storefrontCheckoutMethods({ cod: { enabled: true, fee: 0 } }, gateway, "EGP", { percent: 50 }).deposit).toEqual({ percent: 50 });
+    expect(storefrontCheckoutMethods({ cod: { enabled: true, fee: 0 } }, null, "EGP", { percent: 20 }).deposit).toBeNull();
+    expect(storefrontCheckoutMethods({ cod: { enabled: false, fee: 0 }, vodafone_cash: wallet }, null, "EGP", { percent: 20 }).deposit).toBeNull();
+    expect(storefrontCheckoutMethods({ cod: { enabled: true, fee: 0 }, vodafone_cash: wallet }).deposit).toBeNull();
+  });
+
+  it("doesn't count a gateway that can't charge the store's currency", () => {
+    const paymob = { provider: "paymob" as const, integrationId: gateway.integrationId };
+    expect(storefrontCheckoutMethods({ cod: { enabled: true, fee: 0 } }, paymob, "SAR", { percent: 20 }).deposit).toBeNull();
   });
 });

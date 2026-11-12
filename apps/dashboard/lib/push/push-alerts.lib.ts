@@ -35,6 +35,9 @@ const PUSH_TYPE_CATEGORY: Readonly<Record<string, PushCategory>> = {
   order_created: "newOrder",
   carrier_shipment_failed: "orderProblem",
   carrier_needs_attention: "orderProblem",
+  // COD deposit (0166, F-21): an order waits on the seller's check, or can now ship.
+  deposit_reported: "newOrder",
+  deposit_paid: "newOrder",
   low_stock: "lowStock",
   top_up_approved: "account",
   top_up_rejected: "account",
@@ -161,7 +164,7 @@ export function planPushDeliveries(
 }
 
 /** Bell and push rows that name an order: a seller who isn't activated doesn't get them (ROADMAP.md F-68). */
-export const ORDER_LOCKED_TYPES = ["order_created", "carrier_shipment_failed", "carrier_needs_attention"] as const;
+export const ORDER_LOCKED_TYPES = ["order_created", "carrier_shipment_failed", "carrier_needs_attention", "deposit_reported", "deposit_paid"] as const;
 const ORDER_LOCKED: ReadonlySet<string> = new Set(ORDER_LOCKED_TYPES);
 
 /** Sellers whose activation decides whether one of these rows is pushed. */

@@ -453,6 +453,52 @@ export function OrderSummaryTotalRow ({ total }: OrderSummaryTotalRowProps) {
   )
 }
 
+export interface OrderSummaryDeposit {
+  /** Currency units, already rounded (cod-deposit.lib). */
+  amount: number
+  remainder: number
+  percent: number
+}
+
+/**
+ * Under "Total" when cash on delivery asks for a deposit (عربون, ROADMAP.md
+ * F-21): what the customer pays now to the store, and what is left in cash at
+ * the door. The server works the same numbers out again when the order is placed.
+ */
+export function OrderSummaryDepositRows ({ deposit }: { deposit: OrderSummaryDeposit }) {
+  const locale = useLocale()
+  const currencyLabel = useCurrencyLabel()
+  const t = useTranslations('checkout.deposit')
+
+  return (
+    <div className='mt-1 overflow-hidden rounded-xl border border-primary/25 bg-primary/5' aria-live='polite'>
+      <div className='flex items-center justify-between gap-3 px-3 py-2.5'>
+        <span className='flex min-w-0 items-center gap-2 text-xs md:text-sm font-bold text-gray-900'>
+          <span className='size-2 shrink-0 rounded-full bg-primary' aria-hidden />
+          {t('payNow', { percent: deposit.percent })}
+        </span>
+        <span
+          className='shrink-0 text-sm md:text-base font-bold text-primary'
+          dangerouslySetInnerHTML={{ __html: formatPrice(deposit.amount, locale, 'sm', currencyLabel) }}
+        />
+      </div>
+      <div className='flex items-center justify-between gap-3 border-t border-primary/15 bg-white/70 px-3 py-2.5'>
+        <span className='flex min-w-0 items-center gap-2 text-xs md:text-sm font-medium text-gray-700'>
+          <span className='size-2 shrink-0 rounded-full border-2 border-gray-400' aria-hidden />
+          {t('onDelivery')}
+        </span>
+        <span
+          className='shrink-0 text-sm md:text-base font-semibold text-gray-900'
+          dangerouslySetInnerHTML={{ __html: formatPrice(deposit.remainder, locale, 'sm', currencyLabel) }}
+        />
+      </div>
+      <p className='border-t border-primary/15 px-3 py-2 text-[11px] md:text-xs leading-relaxed text-gray-600'>
+        {t('summaryHint')}
+      </p>
+    </div>
+  )
+}
+
 interface OrderSummaryCouponProps {
   isLoggedIn: boolean
   shippingAddressId?: string

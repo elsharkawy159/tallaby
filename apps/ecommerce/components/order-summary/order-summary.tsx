@@ -11,6 +11,7 @@ import {
   OrderSummaryCoupon,
   OrderSummaryCostRows,
   OrderSummaryLineItems,
+  OrderSummaryDepositRows,
   OrderSummaryTotalRow,
 } from './order-summary.chunks'
 import { useCurrencyCode } from '@/lib/currency-label.client'
@@ -32,6 +33,7 @@ export function OrderSummary ({
   onCouponRemoved,
   onQuantityChange,
   busyItemId,
+  deposit,
 }: OrderSummaryProps) {
   const t = useTranslations('checkout')
 
@@ -85,6 +87,7 @@ export function OrderSummary ({
           )}
 
           <OrderSummaryTotalRow total={displayTotal} />
+          {deposit && <OrderSummaryDepositRows deposit={deposit} />}
         </div>
       </div>
 

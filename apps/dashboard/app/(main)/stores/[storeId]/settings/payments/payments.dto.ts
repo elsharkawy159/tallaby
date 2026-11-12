@@ -8,6 +8,8 @@ export type StorePaymentsErrorKey =
   | "readOnly"
   | "notFound"
   | "rateLimited"
+  | "depositCodOff"
+  | "depositNoMethod"
   | "generic";
 
 export type StorePaymentsResult<T> = { success: true; data: T } | { success: false; error: StorePaymentsErrorKey };

@@ -80,4 +80,6 @@ export interface OrderSummaryProps {
   onQuantityChange?: (item: OrderSummaryItem, quantity: number) => void
   /** The line being saved, whose buttons are disabled. */
   busyItemId?: string | null
+  /** Cash on delivery with a deposit (F-21): shown under the total. */
+  deposit?: { amount: number; remainder: number; percent: number } | null
 }

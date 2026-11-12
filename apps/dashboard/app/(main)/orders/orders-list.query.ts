@@ -49,14 +49,16 @@ const stageCase = sql`CASE
               WHEN 'cancelled' THEN 'cancelled'
             END
        FROM ${shipments} sh WHERE sh.order_id = ${orders.id}),
-    CASE COALESCE(${orders.status}::text, 'pending')
+    CASE WHEN ${orders.depositStatus} IN ('awaiting', 'reported')
+              AND COALESCE(${orders.status}::text, 'pending') IN ('pending', 'confirmed') THEN 'awaiting_deposit'
+    ELSE CASE COALESCE(${orders.status}::text, 'pending')
       WHEN 'delivered' THEN 'delivered'
       WHEN 'returned' THEN 'returned'
       WHEN 'out_for_delivery' THEN 'out_for_delivery'
       WHEN 'payment_processing' THEN 'awaiting_payment'
       WHEN 'pending' THEN CASE WHEN ${orders.paymentStatus} IN ('paid', 'collected') THEN 'to_ship' ELSE 'new' END
       ELSE 'to_ship'
-    END
+    END END
   )
 END`;
 // Nested on purpose: in a one-table select, drizzle strips the table name from a

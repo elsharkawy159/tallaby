@@ -191,6 +191,18 @@ export function readOrderGateway(metadata: unknown): OrderGatewayMeta | null {
     : null;
 }
 
+/**
+ * The seller gateway a COD order's deposit (ROADMAP.md F-21) is paid on:
+ * `orders.metadata.deposit.gateway`, snapshotted at checkout. Kept apart from
+ * `paymentGateway`, which means the whole order is a card order.
+ */
+export function readOrderDepositGateway(metadata: unknown): OrderGatewayMeta | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const deposit = (metadata as Record<string, unknown>).deposit;
+  if (!deposit || typeof deposit !== "object") return null;
+  return readOrderGateway({ paymentGateway: (deposit as Record<string, unknown>).gateway });
+}
+
 /** Unique per checkout attempt (gateways refuse a reused reference); carries the order id. */
 export const buildGatewayReference = buildKashierOrderReference;
 export const parseGatewayReference = parseKashierOrderReference;

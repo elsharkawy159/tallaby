@@ -36,6 +36,8 @@ export interface TransactionalCopy {
     track: string;
     yourItems: string;
     codNote: string;
+    /** COD with a deposit (ROADMAP.md F-21). */
+    depositNote: string;
     help: string;
     helpTrack: string;
     footer: string;
@@ -317,6 +319,7 @@ export const transactionalEn: TransactionalCopy = {
     track: "Track your order",
     yourItems: "Your items",
     codNote: "Please have {total} ready for the courier.",
+    depositNote: "This store asks for a {deposit} deposit first: pay it to the store from your order page, then have {remainder} ready for the courier. Orders whose deposit isn't paid within 48 hours are cancelled.",
     help: "Need help with this order?",
     helpTrack: "You can track your order any time from",
     footer: "Confirmation for order {orderNumber}, sent to",
@@ -620,6 +623,7 @@ export const transactionalAr: TransactionalCopy = {
     track: "تتبّع طلبك",
     yourItems: "منتجاتك",
     codNote: "يُرجى تجهيز {total} لمندوب التوصيل.",
+    depositNote: "هذا المتجر يطلب عربونًا {deposit} أولًا: ادفعه للمتجر من صفحة طلبك، ثم جهّز {remainder} لمندوب التوصيل. الطلبات التي لا يُدفع عربونها خلال 48 ساعة تُلغى.",
     help: "تحتاج مساعدة بخصوص هذا الطلب؟",
     helpTrack: "ويمكنك تتبّع طلبك في أي وقت من",
     footer: "رسالة تأكيد للطلب رقم {orderNumber}، أُرسلت إلى",

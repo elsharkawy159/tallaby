@@ -1722,6 +1722,13 @@ export const orders = pgTable("orders", {
 	isDigitalOnly: boolean("is_digital_only").default(false),
 	/** A test order on a store that isn't activated yet (0155, F-76): no fee, no stock, no buyer messages, out of totals. */
 	isTest: boolean("is_test").default(false).notNull(),
+	/** COD deposit due (0166, F-21), paid to the seller (never Tallaby); NULL = no deposit. */
+	depositAmount: numeric("deposit_amount", { precision: 10, scale:  2 }),
+	/** 10 | 20 | 30 | 50 (0166). */
+	depositPercent: smallint("deposit_percent"),
+	/** awaiting | reported (customer says sent) | paid (0166); NULL = no deposit. */
+	depositStatus: text("deposit_status"),
+	depositPaidAt: timestamp("deposit_paid_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	processedAt: timestamp("processed_at", { withTimezone: true, mode: 'string' }),
@@ -1735,6 +1742,8 @@ export const orders = pgTable("orders", {
 	index("order_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	index("orders_store_id_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`store_id IS NOT NULL`),
 	index("orders_store_created_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`store_id IS NOT NULL`),
+	index("orders_deposit_pending_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamptz_ops")).where(sql`deposit_status IN ('awaiting', 'reported')`),
+	check("orders_deposit_check", sql`(deposit_status IS NULL OR deposit_status IN ('awaiting', 'reported', 'paid')) AND (deposit_percent IS NULL OR deposit_percent IN (10, 20, 30, 50)) AND (deposit_amount IS NULL OR deposit_amount >= 0) AND ((deposit_status IS NULL) = (deposit_amount IS NULL))`),
 	index("orders_is_test_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`is_test`),
 	foreignKey({
 			columns: [table.storeId],
@@ -3590,7 +3599,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) | deposit_reported, deposit_paid (0166, F-21: `data` = { orderId, orderNumber }) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3613,7 +3622,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended', 'app_renewed', 'app_renewal_failed', 'app_ended')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended', 'app_renewed', 'app_renewal_failed', 'app_ended', 'deposit_reported', 'deposit_paid')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */

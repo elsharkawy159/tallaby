@@ -30,11 +30,19 @@ import {
   parseStorePayments,
   validateDefaultMethodChange,
   validateMethodChange,
+  storefrontCheckoutMethods,
   type MethodChange,
   type MethodChangeError,
   type StorePayments,
 } from "../payments/store-methods";
 import type { OrderGatewayMeta } from "../payments/store-gateways.lib";
+import {
+  depositPayable,
+  validateCodDepositChange,
+  type CodDepositChangeError,
+  type CodDepositSetting,
+} from "../orders/cod-deposit.lib";
+import { parseStoreCurrency } from "../utils/formatPrice";
 import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { seedStarterSite } from "./starter-site.server";
 import { toShippingZone, type StoreShippingZone } from "./shipping-context.server";
@@ -687,6 +695,64 @@ export async function setStoreDefaultPaymentMethod(
     return { success: true, data };
   } catch (error) {
     if (error instanceof StoreActionError) return { success: false, error: error.code as StorePaymentsError };
+    throw error;
+  }
+}
+
+/**
+ * Store settings › Payment methods › Deposit (ROADMAP.md F-21): the percent a
+ * COD order pays first, or null to turn it off. Saved in
+ * `stores.settings.codDeposit` (outside `payments`, see cod-deposit.lib.ts)
+ * under a row lock and audited. Turning it on needs cash on delivery and a way
+ * for the customer to pay the seller (the caller passes the store's connected
+ * gateway, read for the same seller and store): a wallet or InstaPay set up
+ * and on, or a card gateway that charges in the store's currency.
+ */
+export async function setStoreCodDeposit(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  percent: number | null,
+  gateway: OrderGatewayMeta | null,
+  q: Queryable = db,
+): Promise<StoreResult<CodDepositSetting | null, StoreWriteError | CodDepositChangeError>> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  try {
+    const data = await q.transaction(async (tx) => {
+      const [store] = await tx
+        .select({ settings: stores.settings, status: stores.status })
+        .from(stores)
+        .where(ownStore(sellerId, storeId))
+        .for("update");
+      if (!store) throw new StoreActionError("not_found");
+      if (store.status !== "active") throw new StoreActionError("store_read_only");
+
+      const settings = (store.settings ?? {}) as Record<string, unknown>;
+      const checkout = storefrontCheckoutMethods(parseStorePayments(settings.payments), gateway, parseStoreCurrency(settings).currency);
+      const result = validateCodDepositChange(percent, {
+        codEnabled: checkout.methods.includes("cash_on_delivery"),
+        payable: depositPayable(checkout),
+      });
+      if (!result.success) throw new StoreActionError(result.error);
+
+      const { codDeposit: _previous, ...rest } = settings;
+      await tx
+        .update(stores)
+        .set({ settings: result.data ? { ...rest, codDeposit: result.data } : rest, updatedAt: sql`now()` })
+        .where(ownStore(sellerId, storeId));
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "payments",
+        action: result.data ? "enabled" : "disabled",
+        changes: { codDeposit: result.data },
+      });
+      return result.data;
+    });
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof StoreActionError) return { success: false, error: error.code as StoreWriteError | CodDepositChangeError };
     throw error;
   }
 }

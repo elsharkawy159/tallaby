@@ -1,5 +1,6 @@
 import type { OrderRisk } from "@workspace/lib/customers";
 import type { SellerOrderFlow } from "./order-flow.lib";
+import type { DepositStatus } from "@workspace/lib/orders/cod-deposit";
 
 export interface SellerOrderLine {
   /** order_items.id */
@@ -39,6 +40,19 @@ export interface SellerOrderBosta {
   lastSyncedAt: string | null;
 }
 
+export interface SellerOrderDeposit {
+  amount: string;
+  /** Cash left to collect on delivery. */
+  remainder: string;
+  percent: number | null;
+  status: DepositStatus;
+  paidAt: string | null;
+  /** Paid on the seller's card gateway, or confirmed by the seller after a transfer. */
+  paidVia: "gateway" | "transfer" | null;
+  /** When the customer said they sent it (status `reported`). */
+  reportedAt: string | null;
+}
+
 /** One order on /orders, with only this seller's lines. */
 export interface SellerOrderRow {
   /** orders.id */
@@ -68,6 +82,8 @@ export interface SellerOrderRow {
   totalAmount: string;
   /** The order's own currency: every amount on this row is in it. */
   currency: string;
+  /** COD deposit (0166, F-21), paid to the seller; null = none. */
+  deposit: SellerOrderDeposit | null;
   lines: SellerOrderLine[];
   itemCount: number;
   failureReason: string | null;

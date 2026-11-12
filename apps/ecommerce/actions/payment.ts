@@ -65,3 +65,24 @@ export async function createPaymentCheckoutUrl(orderId: string) {
     ? { ...result, data: { ...result.data, presentation: "iframe" as const } }
     : result;
 }
+
+/**
+ * Pay a COD order's deposit (ROADMAP.md F-21) by card on the seller's own
+ * gateway snapshotted at checkout. The order must be the caller's; the lib
+ * checks the deposit is still unpaid and the gateway still the store's, and
+ * charges the deposit amount only. The webhook marks it paid.
+ */
+export async function createDepositCheckoutUrl(orderId: string) {
+  const userId = await getCurrentUserId();
+  if (!userId) return { success: false as const, error: "Unauthorized" };
+  const result = await createStoreGatewayCheckout({
+    orderId: String(orderId),
+    userId,
+    siteUrl: await getRequestSiteUrl(),
+    locale: await getLocale(),
+    purpose: "deposit",
+  });
+  return result.success
+    ? { success: true as const, data: { checkoutUrl: result.data.checkoutUrl } }
+    : { success: false as const, error: result.error };
+}

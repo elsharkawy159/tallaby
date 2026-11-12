@@ -20,6 +20,10 @@ import {
 } from "@/lib/manual-payment-methods";
 import { readSellerPayment } from "@workspace/lib/payments/store-methods";
 import { computeManualRemainderAmount } from "@workspace/lib/orders/payment";
+import { readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
+import { gatewaySupportsCurrency } from "@workspace/lib/payments/store-methods";
+import { readOrderDepositGateway } from "@workspace/lib/payments/store-gateways";
+import { DepositPayment, type DepositTransferOption } from "./_components/deposit-payment.client";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 export const dynamic = "force-dynamic";
@@ -60,6 +64,41 @@ export default async function CheckoutPaymentPage({
   }
 
   const order = result.data;
+
+  // A COD order with a deposit (ROADMAP.md F-21): pay the deposit to the store.
+  const deposit = order.paymentMethod === "cash_on_delivery" ? readOrderDeposit(order) : null;
+  if (deposit) {
+    if (deposit.status === "paid" || order.status === "cancelled") {
+      redirect({ href: buildOrderPagePath(order.id), locale });
+    }
+    const snapshot = (order.metadata as { deposit?: { transfers?: unknown[] } } | null)?.deposit;
+    const transfers: DepositTransferOption[] = (snapshot?.transfers ?? []).flatMap((raw) => {
+      const details = readSellerPayment({ sellerPayment: raw });
+      return details ? [{ method: details.method, recipient: sellerPaymentRecipient(details) }] : [];
+    });
+    const gateway = readOrderDepositGateway(order.metadata);
+    const card = Boolean(gateway && gatewaySupportsCurrency(gateway.provider, order.currency || "EGP"));
+    return (
+      <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
+        <DynamicBreadcrumb />
+        <main className="flex-1 py-4 md:py-6 pb-12 md:pb-16 max-w-4xl w-full px-4 mx-auto">
+          <div className="space-y-4 md:space-y-6">
+            <DepositPayment
+              orderId={order.id}
+              orderNumber={order.orderNumber ?? null}
+              currency={order.currency || "EGP"}
+              amount={deposit.amountPiastres / 100}
+              remainder={deposit.remainderPiastres / 100}
+              percent={deposit.percent}
+              card={card}
+              transfers={transfers}
+            />
+            <PaymentOrderSummary order={order} />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (order.paymentStatus === "paid" || order.status === "confirmed") {
     redirect({ href: buildOrderPagePath(order.id), locale });

@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import type { StorePayments } from "@workspace/lib/payments/store-methods";
 import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
-import { setStoreDefaultPaymentMethod, updateStorePaymentMethod } from "@workspace/lib/stores/server";
+import { setStoreCodDeposit, setStoreDefaultPaymentMethod, updateStorePaymentMethod } from "@workspace/lib/stores/server";
+import type { CodDepositSetting } from "@workspace/lib/orders/cod-deposit";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import type { StorePaymentsErrorKey, StorePaymentsResult } from "./payments.dto";
@@ -24,6 +25,9 @@ const ERRORS: Record<string, StorePaymentsErrorKey> = {
   not_available: "notAvailable",
   store_read_only: "readOnly",
   not_found: "notFound",
+  invalid_percent: "invalidDetails",
+  cod_off: "depositCodOff",
+  no_payment_method: "depositNoMethod",
 };
 
 export async function saveStorePaymentMethod(
@@ -78,6 +82,35 @@ export async function saveDefaultPaymentMethod(storeId: string, method: string |
       return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
     }
     console.error("[store-payments] default save failed", (error as Error)?.name);
+    return { success: false, error: "generic" };
+  }
+}
+
+/**
+ * Cash on delivery › Deposit (ROADMAP.md F-21): the percent a COD order pays
+ * first (10, 20, 30 or 50), or null to turn it off. The store is explicit and
+ * re-checked; the gateway is read on the server for this seller's store only.
+ */
+export async function saveCodDeposit(storeId: string, percent: number | null): Promise<StorePaymentsResult<CodDepositSetting | null>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!saveLimiter.check(`payments:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
+    const gateway = await getStorefrontGateway(store.id, seller.sellerId);
+    const result = await setStoreCodDeposit(
+      seller.sellerId,
+      seller.userId,
+      store.id,
+      typeof percent === "number" ? percent : null,
+      gateway,
+    );
+    if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
+    revalidatePath(`/stores/${store.id}/settings/payments`);
+    return { success: true, data: result.data };
+  } catch (error) {
+    if (isAccessError(error)) {
+      return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
+    }
+    console.error("[store-payments] deposit save failed", (error as Error)?.name);
     return { success: false, error: "generic" };
   }
 }
