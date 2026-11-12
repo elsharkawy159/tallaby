@@ -12,10 +12,10 @@ describe("parseTrackingConsent", () => {
     expect(parseTrackingConsent(value)).toBe("unset");
   });
 
-  it("only an accepted choice allows a server event", () => {
+  it("only a decline stops a server event (no pop-up: no choice counts as accepted)", () => {
     expect(hasStoreTrackingConsent("granted")).toBe(true);
     expect(hasStoreTrackingConsent("denied")).toBe(false);
-    expect(hasStoreTrackingConsent(undefined)).toBe(false);
+    expect(hasStoreTrackingConsent(undefined)).toBe(true);
   });
 });
 
@@ -25,8 +25,9 @@ describe("shouldShowConsentBanner", () => {
     expect(shouldShowConsentBanner("pending", true)).toBe(false);
   });
 
-  it("shows while undecided", () => {
-    expect(shouldShowConsentBanner("unset", false)).toBe(true);
+  it("never pops up by itself, even undecided", () => {
+    expect(shouldShowConsentBanner("unset", false)).toBe(false);
+    expect(shouldShowConsentBanner("unset", true)).toBe(true);
   });
 
   it("remembers a choice, and reopens only from Cookie settings", () => {

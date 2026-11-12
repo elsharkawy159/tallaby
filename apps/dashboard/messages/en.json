@@ -5238,7 +5238,7 @@
       "testMode": "test events on",
       "testCodeLabel": "Test event code (optional)",
       "testCodeHint": "From Events Manager › Test events. Remove it when you're done testing.",
-      "consentNote": "A server Purchase is sent only for orders placed on this store's website, after the shopper accepts tracking there. It uses the order id as the event id, so Meta counts it once with the Pixel's Purchase.",
+      "consentNote": "A server Purchase is sent only for orders placed on this store's website, unless the shopper turned tracking off there. It uses the order id as the event id, so Meta counts it once with the Pixel's Purchase.",
       "test": "Test connection",
       "testOk": "Connected. Meta accepted the token for this Pixel."
     },

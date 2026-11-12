@@ -4,9 +4,12 @@
  * follow the same choice as the browser pixels. The banner writes it; only
  * "granted" allows a server event. tallaby.com uses the same cookie on its own
  * host for Tallaby's events (F-70a): it is host-only, so the two never mix.
+ *
+ * Since 2026-11-12 (owner: no cookie pop-up) tracking is on by default: only
+ * an explicit "denied" stops a server event, as it stops the browser tags.
  */
 export const STORE_TRACKING_CONSENT_COOKIE = "tallaby_store_consent";
 
 export function hasStoreTrackingConsent(value: string | undefined | null): boolean {
-  return value === "granted";
+  return value !== "denied";
 }

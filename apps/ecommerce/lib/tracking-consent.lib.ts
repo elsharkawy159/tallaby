@@ -3,8 +3,9 @@
  * D19) and tallaby.com (Tallaby's GA4 and Meta Pixel, F-70a). The browser side
  * is tracking-consent.client.ts.
  *
- * Anything but an explicit "granted" means no tags. A visitor who ignores the
- * banner stays "unset", which sends nothing.
+ * Since 2026-11-12 (owner) there is no cookie pop-up: a visitor who never
+ * chose counts as "granted" (tracking-consent.client.ts, storefront-consent.ts),
+ * and only an explicit "denied" stops the tags.
  */
 export type TrackingConsent = "granted" | "denied" | "unset";
 
@@ -12,10 +13,10 @@ export function parseTrackingConsent(value: string | null | undefined): Tracking
   return value === "granted" || value === "denied" ? value : "unset";
 }
 
-/** Should the banner be on screen? Always while undecided; otherwise only when reopened from "Cookie settings". */
+/** Should the banner be on screen? Only when reopened from "Cookie settings" (no pop-up on a first visit, owner 2026-11-12). */
 export function shouldShowConsentBanner(consent: TrackingConsent | "pending", settingsOpen: boolean): boolean {
   if (consent === "pending") return false;
-  return consent === "unset" || settingsOpen;
+  return settingsOpen;
 }
 
 // GA4: _ga, _ga_<stream>, _gid, _gat*. Meta: _fbp, _fbc.

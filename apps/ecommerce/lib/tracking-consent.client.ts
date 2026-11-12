@@ -15,8 +15,11 @@ const CONSENT_KEY = "tallaby-store-tracking-consent:v1";
 const CONSENT_EVENT = "tallaby-store-tracking-consent";
 const OPEN_SETTINGS_EVENT = "tallaby-open-cookie-settings";
 
-// Private mode can block storage: the choice then lasts until the page is left.
-let memoryConsent: TrackingConsent = "unset";
+// No choice made means tracking is on (owner, 2026-11-12: no cookie pop-up on
+// tallaby.com or stores). A stored "denied" (an earlier decline, or the footer's
+// "Cookie settings") still turns it off. Private mode can block storage: a
+// choice then lasts until the page is left.
+let memoryConsent: TrackingConsent = "granted";
 
 export function readTrackingConsent(): TrackingConsent {
   try {

@@ -81,7 +81,7 @@
       "whatTitle": "What is Meta Pixel?",
       "what": [
         "Meta Pixel is a Meta tool that records what visitors do in your store after clicking your ad: viewing a product, adding it to the cart or placing an order. Meta uses this data to measure your campaigns and improve who sees your ads.",
-        "On Tallaby, you paste your Pixel ID into the Apps and integrations page, and store events are sent automatically once a visitor accepts cookies. You can also connect the Conversions API to send purchases from the server, and choose whether Purchase is sent when the order is placed or when it's delivered."
+        "On Tallaby, you paste your Pixel ID into the Apps and integrations page, and store events are sent automatically from each visitor's first page. You can also connect the Conversions API to send purchases from the server, and choose whether Purchase is sent when the order is placed or when it's delivered."
       ],
       "usesTitle": "What you can do",
       "uses": [
@@ -112,7 +112,7 @@
         { "title": "Copy your Pixel ID", "body": "In Events Manager on your Meta Business account, copy the Pixel ID." },
         { "title": "Open Apps and integrations", "body": "In your Tallaby dashboard, open the Apps and integrations page and choose Meta Pixel." },
         { "title": "Paste the ID and save", "body": "Paste your Pixel ID. If you want the Conversions API, open its app and add your access token." },
-        { "title": "Test the events", "body": "Open your store, accept cookies and add a product to the cart, then check that the events appear in Test Events." }
+        { "title": "Test the events", "body": "Open your store and add a product to the cart, then check that the events appear in Test Events." }
       ],
       "relatedTitle": "Related pages",
       "related": [
@@ -126,7 +126,7 @@
         { "q": "Do I need the Conversions API?", "a": "It's not required, but it also sends purchases from the server, so your data stays more accurate when a browser blocks the Pixel. Sending Purchase on delivery needs it." },
         { "q": "When is the Purchase event sent?", "a": "You choose in the settings: when the order is placed, or when it's delivered. Sending on delivery needs the Conversions API." },
         { "q": "Does the Pixel work with a product catalog?", "a": "Yes, separately. Copy your product feed link from the Apps and integrations page and add it as a scheduled feed in Meta's Commerce Manager." },
-        { "q": "How do I check the Pixel is working?", "a": "Open Test Events in Events Manager, then browse your store, accept cookies and add a product to the cart, and the events will appear. You can also add a test code in the Conversions API settings." },
+        { "q": "How do I check the Pixel is working?", "a": "Open Test Events in Events Manager, then browse your store and add a product to the cart, and the events will appear. You can also add a test code in the Conversions API settings." },
         { "q": "Can I connect more than one Pixel?", "a": "No. You can connect one Pixel per store." }
       ],
       "closingTitle": "Connect Meta Pixel and measure your ads",
