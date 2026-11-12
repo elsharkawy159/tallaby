@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
   };
 
   if (!state || !nonceMatches(state.nonce, nonce)) return finish("/?google=invalid");
-  const appsPath = `/stores/${state.storeId}/apps`;
+  // App Center › Google Sheets › Settings, where the result toast shows (F-93).
+  const appsPath = `/stores/${state.storeId}/apps/google-sheets/settings`;
 
   try {
     const { seller, store } = await requireStore(state.storeId, { forWrite: true });
@@ -53,6 +54,7 @@ export async function GET(request: NextRequest) {
     if (!saved.success) return finish(`${appsPath}?google=failed`);
 
     revalidatePath(appsPath);
+    revalidatePath(`/stores/${state.storeId}/apps`);
     return finish(`${appsPath}?google=connected`);
   } catch (error) {
     if (isAccessError(error)) return finish("/?google=invalid");

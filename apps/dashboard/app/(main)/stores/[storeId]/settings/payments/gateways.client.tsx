@@ -33,6 +33,7 @@ export function StoreGatewaysCard({
   readOnly,
   usdLive,
   currency,
+  only,
 }: {
   storeId: string;
   initial: StoreGatewayOverview;
@@ -40,6 +41,8 @@ export function StoreGatewaysCard({
   usdLive: boolean;
   /** The store's currency: a gateway that can't charge in it can't be connected or used. */
   currency: string;
+  /** App Center › <gateway> › Settings shows just that gateway (F-93); Payment methods shows them all. */
+  only?: readonly string[];
 }) {
   const t = useTranslations("storePayments.gateways");
   const tApp = useTranslations("storeApps.providers");
@@ -147,7 +150,7 @@ export function StoreGatewaysCard({
   return (
     <SectionCard icon={CreditCard} title={t("title")} description={t("description")}>
       {!overview.webhooksReady && <Note tone="amber">{t("errors.webhooksNotConfigured")}</Note>}
-      <Rows>{GATEWAYS.map(row)}</Rows>
+      <Rows>{(only ? GATEWAYS.filter((app) => only.includes(app.key)) : GATEWAYS).map(row)}</Rows>
       <ConfirmActionDialog
         open={!!confirming}
         onOpenChange={(open) => !open && setConfirming(null)}

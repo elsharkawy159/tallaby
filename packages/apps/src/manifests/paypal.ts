@@ -1,0 +1,25 @@
+import { defineApp } from "../manifest";
+
+export default defineApp({
+  id: "paypal",
+  slug: "paypal",
+  kind: "integration",
+  category: "payments",
+  mechanism: "gateway",
+  name: { ar: "باي بال", en: "PayPal" },
+  vendor: { ar: "PayPal", en: "PayPal" },
+  summary: { ar: "للعملاء الذين يدفعون من خارج مصر. قريبًا.", en: "For customers paying from abroad. Coming soon." },
+  description: { ar: "للعملاء الذين يدفعون من خارج مصر. قريبًا.", en: "For customers paying from abroad. Coming soon." },
+  highlights: [],
+  keywords: ["PayPal"],
+  icon: { background: "#003087", foreground: "#FFFFFF", dark: true },
+  screenshots: [],
+  pricing: { model: "free" },
+  providerFees: true,
+  plans: ["free", "pro"],
+  developer: "tallaby",
+  status: "coming_soon",
+  installMode: "connect",
+  settingsRoute: null,
+  surfaces: ["storefront.checkout", "payments"],
+});

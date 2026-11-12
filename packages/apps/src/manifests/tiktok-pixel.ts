@@ -1,0 +1,25 @@
+import { defineApp } from "../manifest";
+
+export default defineApp({
+  id: "tiktok_pixel",
+  slug: "tiktok-pixel",
+  kind: "integration",
+  category: "tracking",
+  mechanism: "script",
+  name: { ar: "TikTok Pixel", en: "TikTok Pixel" },
+  vendor: { ar: "TikTok", en: "TikTok" },
+  summary: { ar: "قِس نتائج إعلاناتك على تيك توك.", en: "Measure your TikTok ads." },
+  description: { ar: "قِس نتائج إعلاناتك على تيك توك. قريبًا.", en: "Measure your TikTok ads. Coming soon." },
+  highlights: [],
+  keywords: ["TikTok", "pixel", "ads"],
+  icon: { background: "#000000", foreground: "#FFFFFF", dark: true },
+  screenshots: [],
+  pricing: { model: "free" },
+  plans: ["free", "pro"],
+  developer: "tallaby",
+  status: "coming_soon",
+  installMode: "connect",
+  settingsRoute: null,
+  surfaces: ["storefront.script"],
+  internal: { provider: "tiktok_pixel" },
+});

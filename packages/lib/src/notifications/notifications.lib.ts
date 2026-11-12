@@ -3,6 +3,7 @@
  * `type` and `data`; each app renders the text, and these helpers decide where
  * a notification leads and validate what a client sends back.
  */
+import { appPaths, getApp } from "@workspace/apps";
 import { themeRequestsPath } from "../theme-requests/theme-requests.lib";
 
 export const ADMIN_NOTIFICATION_TYPES = [
@@ -180,7 +181,10 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     case "app_renewal_failed":
     case "app_ended": {
       const storeId = dataString(n.data, "storeId");
-      return storeId ? `/stores/${encodeURIComponent(storeId)}/apps` : "/wallet";
+      if (!storeId) return "/wallet";
+      // The app's own page in the App Center (F-93), else the App Center.
+      const app = getApp(dataString(n.data, "appKey") ?? "");
+      return app ? appPaths.detail(encodeURIComponent(storeId), app) : `/stores/${encodeURIComponent(storeId)}/apps`;
     }
     case "question_received":
     case "review_received":

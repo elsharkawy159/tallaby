@@ -435,7 +435,7 @@
     "blog": "المدونة",
     "forms": "النماذج",
     "mediaLibrary": "مكتبة الوسائط",
-    "apps": "التطبيقات والتكاملات",
+    "apps": "مركز التطبيقات",
     "storeAnalytics": "زيارات المتجر",
     "roadmap": "خارطة الطريق والأفكار",
     "finance": "المحفظة",
@@ -5417,6 +5417,91 @@
       "search": "ابحث في المنتجات بالاسم أو الكود",
       "noProducts": "مفيش منتجات",
       "draft": "مسودة"
+    }
+  },
+  "appCenter": {
+    "title": "مركز التطبيقات",
+    "description": "كل التطبيقات والربط لهذا المتجر في مكان واحد: الشحن والدفع وتتبع الإعلانات وأدوات صفحة المنتج.",
+    "search": "ابحث في التطبيقات والربط",
+    "tabs": {
+      "all": "الكل",
+      "installed": "المثبّتة"
+    },
+    "allCategories": "الكل",
+    "categoriesLabel": "أقسام التطبيقات",
+    "kind": {
+      "app": "تطبيق",
+      "integration": "ربط"
+    },
+    "badge": {
+      "error": "يحتاج مراجعة",
+      "connected": "متصل",
+      "installed": "مثبّت",
+      "requested": "تم الطلب",
+      "enabled": "مفعّل",
+      "request": "اطلبه",
+      "coming_soon": "قريبًا",
+      "paid_locked": "بعد محفظة الدولار",
+      "available": "متاح"
+    },
+    "status": {
+      "beta": "تجريبي",
+      "coming_soon": "قريبًا"
+    },
+    "byDeveloper": "من {developer}",
+    "resultCount": "{count, plural, zero {لا تطبيقات} one {تطبيق واحد} two {تطبيقان} few {# تطبيقات} many {# تطبيقًا} other {# تطبيق}}",
+    "installedCount": "{count} مثبّت",
+    "empty": {
+      "installedTitle": "لا توجد تطبيقات مثبّتة بعد",
+      "installedBody": "افتح تبويب «الكل» واربط الشحن أو الدفع أو تتبع الإعلانات.",
+      "browse": "تصفّح كل التطبيقات",
+      "searchTitle": "لا توجد تطبيقات باسم «{query}»",
+      "searchBody": "جرّب اسمًا آخر بالعربي أو الإنجليزي، أو امسح البحث.",
+      "clear": "امسح البحث",
+      "categoryTitle": "لا توجد تطبيقات في هذا القسم بعد",
+      "categoryBody": "اطلب التطبيق الذي تحتاجه من الأسفل."
+    },
+    "detail": {
+      "back": "مركز التطبيقات",
+      "overview": "نظرة عامة",
+      "settings": "الإعدادات",
+      "whatItDoes": "ماذا يفعل",
+      "worksOn": "أين يعمل",
+      "pricing": "السعر",
+      "providerFees": "{vendor} تأخذ رسومها من حسابك عندها، وطلبي لا يأخذ شيئًا.",
+      "plans": "الباقات",
+      "allPlans": "كل الباقات",
+      "developer": "المطوّر",
+      "category": "القسم",
+      "requires": "اربط {app} أولًا.",
+      "docs": "اقرأ الشرح",
+      "screenshots": "صور من التطبيق",
+      "onlyThisStore": "الإعدادات هنا لمتجر {store} فقط.",
+      "noSettings": "هذا التطبيق لا يحتاج إعدادات: يعمل بمجرد تثبيته."
+    },
+    "action": {
+      "settings": "افتح الإعدادات",
+      "connect": "اربط",
+      "install": "ثبّت",
+      "remove": "احذف",
+      "request": "اطلبه",
+      "requested": "تم الطلب",
+      "comingSoon": "قريبًا",
+      "paidLocked": "يتوفر بعد تحويل المحفظة إلى الدولار"
+    },
+    "surface": {
+      "storefront_product_page": "صفحات المنتجات",
+      "storefront_script": "كل صفحات متجرك",
+      "storefront_checkout": "صفحة إتمام الطلب",
+      "server_events": "خوادم طلبي",
+      "orders": "الطلبات",
+      "orders_export": "تصدير الطلبات",
+      "shipping": "الشحن",
+      "payments": "الدفع",
+      "catalog_import": "استيراد المنتجات",
+      "catalog_feed": "كتالوج المنتجات",
+      "customer_messages": "رسائل لعملائك",
+      "agent": "مساعدك الذكي"
     }
   },
   "storeApps": {

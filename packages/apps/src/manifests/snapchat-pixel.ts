@@ -1,0 +1,25 @@
+import { defineApp } from "../manifest";
+
+export default defineApp({
+  id: "snapchat_pixel",
+  slug: "snapchat-pixel",
+  kind: "integration",
+  category: "tracking",
+  mechanism: "script",
+  name: { ar: "Snapchat Pixel", en: "Snapchat Pixel" },
+  vendor: { ar: "Snap Inc.", en: "Snap Inc." },
+  summary: { ar: "قِس نتائج إعلاناتك على سناب شات.", en: "Measure your Snapchat ads." },
+  description: { ar: "قِس نتائج إعلاناتك على سناب شات. قريبًا.", en: "Measure your Snapchat ads. Coming soon." },
+  highlights: [],
+  keywords: ["Snapchat", "Snap", "pixel", "ads"],
+  icon: { background: "#FFFC00", foreground: "#000000" },
+  screenshots: [],
+  pricing: { model: "free" },
+  plans: ["free", "pro"],
+  developer: "tallaby",
+  status: "coming_soon",
+  installMode: "connect",
+  settingsRoute: null,
+  surfaces: ["storefront.script"],
+  internal: { provider: "snapchat_pixel" },
+});

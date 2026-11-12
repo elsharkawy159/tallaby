@@ -313,6 +313,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 68  | F-83 | Tallaby agent system: one core, skills, page agents | P1                         | yes (expected)  | Approved 2026-11-08                                  |
 | 69  | F-91 | Customer requirements on a product (text, photo, choice; extra price) | P1     | yes (0167)      | Approved 2026-11-12 (incl. extra price); built, not deployed |
 | 70  | F-92 | Size chart app: «اعرف مقاسك» on product pages                   | P1     | yes (0169)      | Owner request 2026-11-12; built, not deployed        |
+| 71  | F-93 | App Center: every app and integration in one hub, shared registry + public catalog API | P1 | no | Owner request 2026-11-12; built, not deployed |
 
 ---
 
@@ -1288,6 +1289,19 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### F-93 App Center (مركز التطبيقات): every app and integration in one hub — P1 · Owner request 2026-11-12
+
+**Why:** Apps, carriers, gateways and tracking lived on four different pages and a side sheet; a future apps.tallaby.com (and later third-party apps) needs one source of app metadata.
+**What:** One registry package `@workspace/apps` (`packages/apps`): one manifest per app (`src/manifests/<id>.ts`), validated by a zod schema (unique ids/slugs, ar + en text, known category/settings route, no unknown keys). `packages/lib/src/integrations/catalog.ts` is now a thin adapter over it (same `STORE_APPS` shape for the install engine, app requests, Shipping and Payment methods). Dashboard App Center at `/stores/:storeId/apps` (search in both languages + Latin keywords, category chips, All / Installed tabs with counts, cards with state badge and price), app page `/stores/:storeId/apps/:slug` (description, what it does, where it works, price, plans, developer, docs; install / connect / open settings / remove / request) and settings `/stores/:storeId/apps/:slug/settings` (the registry's `settingsRoute` → the existing screen). Public read-only `GET /api/apps/catalog[/:appId]?locale=ar|en` on the ecommerce app (`{ version: 1, locale, apps }`, public fields only, CORS `*.tallaby.com`, CDN-cached). Format, how to add an app and the path to apps.tallaby.com: `docs/apps-platform.md`.
+**Status:** [Built 2026-11-12, not deployed] No migration.
+
+- **F-93a · P1 · deps: —** `@workspace/apps` registry (26 manifests incl. Product feeds as a built-in app), schema + tests; lib catalog adapter + equivalence test.
+- **F-93b · P1 · deps: F-93a** Dashboard App Center list, app page, settings route; Bosta, Wassalha, Size chart, AI assistants moved under `apps/_settings/` and rendered by the settings route; the sheet panels (Meta Pixel, GA4, GTM, Meta CAPI, Google Sheets, Shopify import) render on their settings page; Paymob / Kashier settings reuse the Payment methods gateway card filtered to that gateway; Product feeds moved from the Installed tab to its own app.
+- **F-93c · P1 · deps: F-93a** Public catalog API + CORS + tests; `docs/apps-platform.md`.
+- **F-93d · P2 · deps: F-93c** Later: apps.tallaby.com reads the API; developer accounts, OAuth scopes per `surfaces`, webhooks, review flow for third-party apps (design notes in the doc only); screenshots per app.
+
+---
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
@@ -1298,6 +1312,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 | 2026-11-12 | "On adding a product in the dashboard, I need a 'requirement from customer' option, so when the seller needs something specific from the customer (upload image, text, etc.) — helps handmade products or print products like printing an image on a T-shirt. Handle it on the dashboard and the storefront." **This is the owner's approval of F-91, including the extra price.** | F-91 (F-91a–e) | **Built** 2026-11-12, not deployed; needs migration `0167` (§7) |
 | 2026-11-12 | Customer requirements decisions: types Short text, Long text, Image upload, Choice list, then changed the same day to **one Text type** (a textarea, max length default 500, up to 2000) + Image upload + Choice list; an optional **extra price** per field (a choice list: per option, e.g. "Gold print +30"), added to the unit price when filled; this changes cart and checkout totals and is approved for this feature | F-91 | **Built** 2026-11-12 (§7) |
 | 2026-11-12 | "Make an app on the dashboard Apps page: 'Size Chart' (جدول المقاسات). It has a default schema from Tallaby and the seller can modify it. It takes inputs from the customer — weight, height, etc. — then shows the recommended size (L, XL, 2XL, …). Fully customizable so the seller can customize it for specific products like shoes, T-shirts, pants, etc. The customer enters these values on the product page; the seller applies the app to specific products." | F-92 (F-92a–d) | **Built** 2026-11-12, not deployed; needs migration `0169` (§7) |
+| 2026-11-12 | "Make the dashboard store apps like a central of apps from one place, as later we will make a different project on store.tallaby.com or apps.tallaby.com, so make it scalable." Decisions: **scope everything**: one hub for Tallaby apps (Size Chart, order notifications …) and integrations (Bosta, Paymob/Kashier, Meta/TikTok/Snap pixels, Google, Wassalha …) with search, categories, an Installed tab, an app page and each app's settings under one route; old settings/integration pages redirect there (no lost links, no lost data). **Future-proof**: all app metadata in one shared package and a public read-only catalog endpoint for the future apps.tallaby.com; third-party developer apps not built now, but nothing may block them. | F-93 (F-93a–d) | **Built** 2026-11-12, not deployed; no migration (§7) |
 | 2026-11-12 | "On /settings/payments, the COD payment: make a 'Deposit' feature so the customer has to pay a deposit, with options 10%, 20%, 30%, 50%. When the customer orders COD and the order is placed, they find online payment to pay the deposit. On the storefront checkout order summary, when COD is selected, show the deposit amount under 'Total', so the COD amount and deposit amount are clear." **This is the owner's approval of F-21.** | F-21 (F-21a/b/c) | **Built** 2026-11-12, not deployed; needs migration `0166` (§7) |
 | 2026-11-12 | Deposit decisions: paid by **both** the seller's own card gateway (F-39) and the seller's wallets / InstaPay with a screenshot (F-21p); money goes to the seller, never the Tallaby wallet; no gateway and no seller method → the deposit can't be turned on. Unpaid → "Awaiting deposit", not shipped, **auto-cancel after 48 h** with stock back; gateway marks it paid by webhook, a transfer needs the seller's "Deposit received" / reject. Deposit = % of the total **rounded up to the nearest 5**, never above the total; carrier COD = the remainder; fees unchanged (Free $0.03 at creation, Pro none); integer piastres; any store currency | F-21 | **Built** 2026-11-12 (§7) |
 | 2026-11-12 | Replace the footer's "مدعوم من طلبي" text with a clear button: «صمم عبر منصة طلبي» + Tallaby logo ("Built with Tallaby" in English), noticeable on every template | Storefront | Built the same day: a white pill badge with the Tallaby mark in every footer (see §7) |
@@ -1465,6 +1480,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-92b Dashboard Apps › Size chart (install, editor, apply to products/categories) — 2026-11-12, not deployed; not seen in a browser (env is production)
 - [x] F-92c Storefront «اعرف مقاسك» dialog above the buy box — 2026-11-12, not deployed; not seen in a browser
 - [ ] F-92d Chart name on the product form, plain product layout, MCP tools
+- [x] F-93a `@workspace/apps` registry (26 manifests, zod schema) + lib catalog adapter — 2026-11-12, not deployed
+- [x] F-93b Dashboard App Center (list, app page, settings route, moved settings screens) — 2026-11-12, not deployed; not seen in a browser (env is production)
+- [x] F-93c Public `GET /api/apps/catalog[/:appId]` + `docs/apps-platform.md` — 2026-11-12, not deployed
+- [ ] F-93d apps.tallaby.com, developer accounts, scopes, webhooks, screenshots
 - [x] F-90 One template per niche: all 83 niches mapped, every industry switched, 32 templates deleted (116 → 84) — 2026-11-12, not deployed; no migration; not seen in a browser
 - [ ] F-90 Packs and redesigns for the 59 `own` rows (wave 1's six new packs, then waves 2–13 as their photos arrive)
 - [x] F-21c Deposit checkout + seller confirm (checkout summary, deposit payment page by card or transfer + screenshot, dashboard "Awaiting deposit" + confirm/reject, bell, 48 h cron, carrier COD = remainder) — 2026-11-12, not deployed
@@ -1754,6 +1773,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-12 — F-93 App Center: one hub, shared registry, public catalog API (owner request)
+
+- **Owner (2026-11-12, §5):** one App Center for every Tallaby app and integration, scalable toward apps.tallaby.com; old pages keep working; metadata in one shared package; a public read-only catalog API; no third-party apps yet.
+- **Registry `packages/apps` (`@workspace/apps`, new workspace package; `pnpm install` run, lockfile +25 lines, no dependency upgraded):** `manifest.ts` (format + zod schema), `manifests/*.ts` (26 apps), `registry.ts` (`APPS`, `getApp`, `getAppBySlug`, search, `appPaths`), `public.ts` (allow-listed public projection). Ids = the old catalog keys / `store_integrations.provider`, so every install row, request row and integration row keeps working. New entry: `product_feeds` (built in, F-11b), which moved from the Installed tab to its own app. `packages/lib/src/integrations/catalog.ts` adapts the manifests to the old `STORE_APPS` shape; a test pins it to the pre-registry list. `storeAppHref` now returns the app page; new `storeAppSettingsHref`. Secrets, install engine, billing and ledger code untouched.
+- **Dashboard:** `stores/[storeId]/apps/page.tsx` + `app-center.client.tsx` (list), `[slug]/layout.tsx` (header, Overview / Settings tabs), `[slug]/page.tsx` (overview, actions), `[slug]/settings/page.tsx` + `_settings/settings-routes.data.tsx` (`Record<AppSettingsRoute, …>`, exhaustive). `app-center.lib.ts` (pure per-store state and main action, tested), `app-center.data.ts` (store's rows only, React `cache` per request, never cross-store cached). Bosta, Wassalha, Size chart and AI assistants folders moved to `apps/_settings/` (their headers now come from the layout); the old side-sheet panels render inside `_settings/integration-settings.client.tsx`; `apps.client.tsx` and `app-page-header.tsx` removed. Paymob / Kashier settings = the Payment methods gateway card with a new `only` filter. `installApp` / `uninstallApp` now also purge the size-chart tag for `size_chart` and revalidate the app's pages. Sidebar label "App Center" / «مركز التطبيقات».
+- **Links:** old `/apps/bosta`, `/apps/wassalha`, `/apps/size-chart`, `/apps/ai-assistants` keep their URL (the slug equals the old folder; it is now the app page, settings one tab away); `/apps?google=…` redirects to Google Sheets › Settings, where the Google OAuth callback and start routes now return. Shipping › Shipping companies links to each carrier's settings; app bill notifications open the app's page. Store settings › Payment methods keeps COD, transfer wallets, deposit and the gateway card (store settings, not apps).
+- **Public API (ecommerce app, serves tallaby.com):** `GET /api/apps/catalog?locale=ar|en` and `/api/apps/catalog/:idOrSlug`; `Cache-Control: public, max-age=300, s-maxage=3600, stale-while-revalidate=86400`, `Vary: Origin`, CORS for `https://*.tallaby.com` (localhost outside production). Logo URLs on `NEXT_PUBLIC_DASHBOARD_URL`. No DB, no store data, no `internal`, no settings routes.
+- **No migration.** Checks: `@workspace/apps` 16 tests, lib catalog/notifications/billing tests, dashboard full suite (1211) and ecommerce catalog API tests pass; typecheck clean in apps, lib, dashboard (except stale `.next/dev/types` for the removed old pages, regenerated by the next build/dev), ecommerce (except old `profile.chunks.tsx`). **Not seen in a browser** (apps' `.env` point at production and the dashboard needs a seller login).
 
 ### 2026-11-12 — F-90 every niche mapped, every industry switched, 32 templates deleted (owner)
 

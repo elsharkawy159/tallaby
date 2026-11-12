@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   try {
     const { seller, store } = await requireStore(storeId, { forWrite: true });
     if (!limiter.check(`google-start:${seller.sellerId}`)) {
-      return NextResponse.redirect(new URL(`/stores/${store.id}/apps?google=rateLimited`, request.url));
+      return NextResponse.redirect(new URL(`/stores/${store.id}/apps/google-sheets/settings?google=rateLimited`, request.url));
     }
     const nonce = newOAuthNonce();
     const state = signOAuthState({ sellerId: seller.sellerId, storeId: store.id, nonce });

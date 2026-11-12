@@ -1,70 +1,38 @@
-import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
-import { listStoreAppInstalls } from "@workspace/lib/billing/apps";
-import { getBillingState } from "@workspace/lib/billing/server";
+import { redirect } from "next/navigation";
+import { APPS, appPaths, getApp } from "@workspace/apps";
+import { getStoreApp } from "@workspace/lib/integrations";
+import { storeHostname } from "@workspace/lib/storefront";
 import { PageContainer } from "@/components/seller-ui";
-import { listStoreAppRequests, listStoreIntegrations } from "@workspace/lib/integrations/server";
-import { getAllCategories } from "@/actions/categories";
-import { loadStorePage } from "@/lib/stores/store-page.server";
-import { isGoogleSheetsConfigured } from "@/lib/integrations/google-oauth.server";
-import { storeHostname, storeUrl } from "@workspace/lib/storefront";
-import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
-import { parseStoreSeo } from "@workspace/lib/stores";
-import { StoreApps } from "./apps.client";
-import { ProductFeeds } from "./product-feeds.client";
-import { FEED_PLATFORMS, storeFeedUrls } from "./product-feeds.lib";
-import type { AppCategoryOption } from "./apps.types";
+import { AppCenter } from "./app-center.client";
+import { loadAppCenterPage } from "./app-center.data";
+import { appState } from "./app-center.lib";
 
-type CategoryNode = { id: string; name: string | null; nameAr: string | null; categories?: CategoryNode[] };
-
-/** Flattens the admin category tree into "Parent › Child" options (P7-07 mapping). */
-function categoryOptions(nodes: CategoryNode[], locale: string, prefix = ""): AppCategoryOption[] {
-  return nodes.flatMap((node) => {
-    const name = (locale === "ar" ? node.nameAr || node.name : node.name || node.nameAr) ?? "";
-    const label = prefix ? `${prefix} › ${name}` : name;
-    return [{ id: node.id, label }, ...categoryOptions(node.categories ?? [], locale, label)];
-  });
-}
-
-export default async function StoreAppsPage({ params }: { params: Promise<{ storeId: string }> }) {
-  const { storeId } = await params;
-  const store = await loadStorePage(storeId);
-  const integrations = await listStoreIntegrations(store.sellerId, store.id);
-  if (!integrations) notFound();
-
-  const [locale, tree, customDomain, installs, requests, billing] = await Promise.all([
-    getLocale(),
-    getAllCategories(),
-    findActiveCustomDomainForSubdomain(store.subdomain),
-    listStoreAppInstalls(store.sellerId, store.id),
-    listStoreAppRequests(store.sellerId, store.id),
-    getBillingState(),
-  ]);
-  const categories = tree.success ? categoryOptions((tree.data ?? []) as CategoryNode[], locale) : [];
-  // Product feeds (F-11b) live on the store's own address: its active custom domain, else its subdomain.
-  const feedUrls = storeFeedUrls(storeUrl(store.subdomain, customDomain), store.supportedLocales);
+/**
+ * Store › App Center (ROADMAP.md F-93): every app and integration from the
+ * registry, with this store's install state. Per store (rule 5): the state
+ * comes from this store's rows only and is never cached (rule 8).
+ */
+export default async function StoreAppCenterPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ storeId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [{ storeId }, query] = await Promise.all([params, searchParams]);
+  const { store, state, readOnly } = await loadAppCenterPage(storeId);
+  // Old Google OAuth round-trips came back to the Apps page (`?google=…`); the toast now lives on Google Sheets › Settings.
+  const google = typeof query.google === "string" ? query.google : null;
+  if (google) redirect(`${appPaths.settings(store.id, getApp("google_sheets")!)}?google=${encodeURIComponent(google)}`);
+  const items = APPS.map((manifest) => ({ id: manifest.id, state: appState(getStoreApp(manifest.id)!, state) }));
 
   return (
     <PageContainer>
-      <StoreApps
+      <AppCenter
         storeId={store.id}
-        store={{
-          name: store.name,
-          logoUrl: store.logoUrl,
-          hostname: storeHostname(store.subdomain),
-          siteStatus: store.siteStatus,
-          hasCustomDomain: Boolean(customDomain),
-          metaDomainToken: parseStoreSeo(store.seo).facebookDomainVerification,
-        }}
-        initial={integrations}
-        installs={installs.map(({ appKey, cancelAtPeriodEnd }) => ({ appKey, cancelAtPeriodEnd }))}
-        requests={requests}
-        readOnly={store.status !== "active"}
-        googleSheetsEnabled={isGoogleSheetsConfigured()}
-        usdLive={billing.usdLive}
-        feedsReady={store.siteStatus === "published" ? FEED_PLATFORMS.length : 0}
-        categories={categories}
-        feeds={<ProductFeeds key="feeds" urls={feedUrls} published={store.siteStatus === "published"} />}
+        store={{ name: store.name, logoUrl: store.logoUrl, hostname: storeHostname(store.subdomain), siteStatus: store.siteStatus }}
+        items={items}
+        readOnly={readOnly}
       />
     </PageContainer>
   );

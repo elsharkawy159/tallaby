@@ -136,3 +136,12 @@ describe("admin messages (0131)", () => {
     expect(sellerNotificationValues({}, () => "x").amount).toBe("");
   });
 });
+
+describe("sellerNotificationHref › app bills (F-93)", () => {
+  const STORE = "11111111-1111-4111-8111-111111111111";
+  it("opens the app's page in the App Center, else the App Center, else the wallet", () => {
+    expect(sellerNotificationHref({ type: "app_renewed", data: { storeId: STORE, appKey: "customer_notifications" } })).toBe(`/stores/${STORE}/apps/customer-notifications`);
+    expect(sellerNotificationHref({ type: "app_ended", data: { storeId: STORE, appKey: "gone" } })).toBe(`/stores/${STORE}/apps`);
+    expect(sellerNotificationHref({ type: "app_renewal_failed", data: {} })).toBe("/wallet");
+  });
+});

@@ -268,6 +268,9 @@ importers:
       '@workspace/ai':
         specifier: workspace:*
         version: link:../../packages/ai
+      '@workspace/apps':
+        specifier: workspace:*
+        version: link:../../packages/apps
       '@workspace/cache':
         specifier: workspace:*
         version: link:../../packages/cache
@@ -410,6 +413,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.90.14
         version: 5.90.14(react@19.2.8)
+      '@workspace/apps':
+        specifier: workspace:*
+        version: link:../../packages/apps
       '@workspace/cache':
         specifier: workspace:*
         version: link:../../packages/cache
@@ -694,6 +700,22 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(@types/node@25.0.6)(jiti@2.6.1)(jsdom@28.1.0)(lightningcss@1.30.2)(tsx@4.21.0)
 
+  packages/apps:
+    dependencies:
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
+    devDependencies:
+      '@workspace/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@25.0.6)(jiti@2.6.1)(jsdom@28.1.0)(lightningcss@1.30.2)(tsx@4.21.0)
+
   packages/cache:
     devDependencies:
       '@types/node':
@@ -845,6 +867,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.89.0
         version: 2.89.0
+      '@workspace/apps':
+        specifier: workspace:*
+        version: link:../apps
       '@workspace/cache':
         specifier: workspace:*
         version: link:../cache

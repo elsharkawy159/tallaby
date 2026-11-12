@@ -9,13 +9,15 @@ import {
   siTiktok,
   type SimpleIcon,
 } from "simple-icons";
+import { APPS, type AppId } from "@workspace/apps";
 import type { StoreAppKey } from "@workspace/lib/integrations";
 
 /**
- * Brand mark and tile colours for every entry of the store apps catalog
- * (`STORE_APPS` in @workspace/lib/integrations). Marks without a Simple Icons
- * glyph use the company's own logo (`image`, from its website or Wikimedia
- * Commons); `icon` stays as the fallback shape.
+ * Brand mark and tile for every App Center app. Colours and the logo file
+ * come from the app's manifest (`icon` in @workspace/apps, F-93); only the
+ * SVG glyph lives here, since Simple Icons is a dashboard dependency. Marks
+ * without a Simple Icons glyph use the company's own logo (`image`, from its
+ * website or Wikimedia Commons); `icon` stays as the fallback shape.
  */
 export type AppBrand = {
   icon: Pick<SimpleIcon, "path">;
@@ -56,35 +58,54 @@ const MESSAGE_ICON = {
   path: "M4.5 3.5h15A2.5 2.5 0 0 1 22 6v9.5a2.5 2.5 0 0 1-2.5 2.5H10l-4.6 3.4c-.6.4-1.4 0-1.4-.8V18A2.5 2.5 0 0 1 2 15.5V6a2.5 2.5 0 0 1 2.5-2.5Z",
 };
 
+/** A product grid: Product feeds (F-11b). */
+const FEED_ICON = {
+  path: "M4.5 3h5A1.5 1.5 0 0 1 11 4.5v5A1.5 1.5 0 0 1 9.5 11h-5A1.5 1.5 0 0 1 3 9.5v-5A1.5 1.5 0 0 1 4.5 3Zm10 0h5A1.5 1.5 0 0 1 21 4.5v5a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 13 9.5v-5A1.5 1.5 0 0 1 14.5 3Zm-10 10h5a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 9.5 21h-5A1.5 1.5 0 0 1 3 19.5v-5A1.5 1.5 0 0 1 4.5 13Zm12.5 0a1 1 0 0 1 1 1v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2h-2a1 1 0 1 1 0-2h2v-2a1 1 0 0 1 1-1Z",
+};
+
 /** A tape measure: the Size chart app (F-92). */
 const RULER_ICON = {
   path: "M3.5 7h17A1.5 1.5 0 0 1 22 8.5v7a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 15.5v-7A1.5 1.5 0 0 1 3.5 7Zm2 2v3.5h1.5V9H5.5Zm3.5 0v2.5h1.5V9H9Zm3.5 0v3.5H14V9h-1.5Zm3.5 0v2.5h1.5V9H16Z",
 };
 
-export const APP_BRANDS: Record<StoreAppKey, AppBrand> = {
-  ai_assistants: { icon: SPARKLES_ICON, bg: "#1F1A2E", fg: "#F4B860", dark: true },
-  customer_notifications: { icon: BELL_ICON, bg: "#145163", fg: "#FFFFFF", dark: true },
-  sms: { icon: MESSAGE_ICON, bg: "#fdad28", fg: "#145163" },
-  size_chart: { icon: RULER_ICON, bg: "#FCE9D2", fg: "#145163" },
-  meta_pixel: { icon: siMeta, bg: "#0866FF", fg: "#FFFFFF" },
-  meta_capi: { icon: siMeta, bg: "#0B1F3A", fg: "#5AA0FF", dark: true },
-  google_analytics: { icon: siGoogleanalytics, bg: "#F9AB00", fg: "#FFFFFF" },
-  google_tag_manager: { icon: siGoogletagmanager, bg: "#246FDB", fg: "#FFFFFF" },
-  tiktok_pixel: { icon: siTiktok, bg: "#000000", fg: "#FFFFFF", dark: true },
-  snapchat_pixel: { icon: siSnapchat, bg: "#FFFC00", fg: "#000000" },
-  shopify_import: { icon: siShopify, bg: "#95BF47", fg: "#FFFFFF" },
-  google_sheets: { icon: siGooglesheets, bg: "#0F9D58", fg: "#FFFFFF" },
-  bosta: { icon: PARCEL_ICON, bg: "#E30613", fg: "#FFFFFF", image: "/app-logos/bosta.png" },
-  wassalha: { icon: SHEET_ICON, bg: "#003F87", fg: "#FFD100", dark: true, image: "/app-logos/egypt-post.png" },
-  mylerz: { icon: PARCEL_ICON, bg: "#1B2A6B", fg: "#FFFFFF", dark: true, image: "/app-logos/mylerz.png" },
-  jt_express: { icon: PARCEL_ICON, bg: "#D7000F", fg: "#FFFFFF", image: "/app-logos/jt-express.png" },
-  aramex: { icon: PARCEL_ICON, bg: "#DC291E", fg: "#FFFFFF", image: "/app-logos/aramex.png" },
-  paymob: { icon: CARD_ICON, bg: "#1863DC", fg: "#FFFFFF", image: "/app-logos/paymob.png" },
-  kashier: { icon: CARD_ICON, bg: "#5B2BE0", fg: "#FFFFFF", image: "/app-logos/kashier.png" },
-  paytabs: { icon: CARD_ICON, bg: "#1F3A5F", fg: "#FFFFFF", dark: true },
-  moyasar: { icon: CARD_ICON, bg: "#0E7C66", fg: "#FFFFFF", dark: true },
-  paylink: { icon: CARD_ICON, bg: "#2B4C9B", fg: "#FFFFFF", dark: true },
-  tabby: { icon: CARD_ICON, bg: "#3BFFC1", fg: "#292929" },
-  paypal: { icon: siPaypal, bg: "#003087", fg: "#FFFFFF", dark: true },
-  tallaby_pay: { icon: CARD_ICON, bg: "#0A5C4F", fg: "#FFFFFF", dark: true, image: "/logo/logo.png" },
+const GLYPHS: Record<AppId, Pick<SimpleIcon, "path">> = {
+  ai_assistants: SPARKLES_ICON,
+  customer_notifications: BELL_ICON,
+  sms: MESSAGE_ICON,
+  size_chart: RULER_ICON,
+  product_feeds: FEED_ICON,
+  meta_pixel: siMeta,
+  meta_capi: siMeta,
+  google_analytics: siGoogleanalytics,
+  google_tag_manager: siGoogletagmanager,
+  tiktok_pixel: siTiktok,
+  snapchat_pixel: siSnapchat,
+  shopify_import: siShopify,
+  google_sheets: siGooglesheets,
+  bosta: PARCEL_ICON,
+  wassalha: SHEET_ICON,
+  mylerz: PARCEL_ICON,
+  jt_express: PARCEL_ICON,
+  aramex: PARCEL_ICON,
+  paymob: CARD_ICON,
+  kashier: CARD_ICON,
+  paytabs: CARD_ICON,
+  moyasar: CARD_ICON,
+  paylink: CARD_ICON,
+  tabby: CARD_ICON,
+  paypal: siPaypal,
+  tallaby_pay: CARD_ICON,
 };
+
+export const APP_BRANDS = Object.fromEntries(
+  APPS.map((app) => [
+    app.id,
+    {
+      icon: GLYPHS[app.id],
+      bg: app.icon.background,
+      fg: app.icon.foreground,
+      ...(app.icon.dark ? { dark: true } : {}),
+      ...(app.icon.image ? { image: app.icon.image } : {}),
+    } satisfies AppBrand,
+  ]),
+) as Record<StoreAppKey, AppBrand>;

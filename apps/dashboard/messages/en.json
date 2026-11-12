@@ -435,7 +435,7 @@
     "blog": "Blog",
     "forms": "Forms",
     "mediaLibrary": "Media library",
-    "apps": "Apps & integrations",
+    "apps": "App Center",
     "storeAnalytics": "Store views",
     "roadmap": "Roadmap & ideas",
     "finance": "Wallet",
@@ -5417,6 +5417,91 @@
       "search": "Search products by name or SKU",
       "noProducts": "No products found",
       "draft": "Draft"
+    }
+  },
+  "appCenter": {
+    "title": "App Center",
+    "description": "Every app and integration for this store, in one place: shipping, payments, ads tracking and tools for your product pages.",
+    "search": "Search apps and integrations",
+    "tabs": {
+      "all": "All",
+      "installed": "Installed"
+    },
+    "allCategories": "All",
+    "categoriesLabel": "App categories",
+    "kind": {
+      "app": "App",
+      "integration": "Integration"
+    },
+    "badge": {
+      "error": "Needs attention",
+      "connected": "Connected",
+      "installed": "Installed",
+      "requested": "Requested",
+      "enabled": "Turned on",
+      "request": "Request it",
+      "coming_soon": "Coming soon",
+      "paid_locked": "After the dollar wallet",
+      "available": "Available"
+    },
+    "status": {
+      "beta": "Beta",
+      "coming_soon": "Coming soon"
+    },
+    "byDeveloper": "By {developer}",
+    "resultCount": "{count, plural, one {# app} other {# apps}}",
+    "installedCount": "{count} installed",
+    "empty": {
+      "installedTitle": "No apps installed yet",
+      "installedBody": "Open the All tab to connect shipping, payments or ads tracking.",
+      "browse": "Browse all apps",
+      "searchTitle": "No apps match “{query}”",
+      "searchBody": "Try another name, in Arabic or English, or clear the search.",
+      "clear": "Clear search",
+      "categoryTitle": "No apps in this category yet",
+      "categoryBody": "Ask for the one you need below."
+    },
+    "detail": {
+      "back": "App Center",
+      "overview": "Overview",
+      "settings": "Settings",
+      "whatItDoes": "What it does",
+      "worksOn": "Where it works",
+      "pricing": "Price",
+      "providerFees": "{vendor} charges its own fees on your account with them. Tallaby takes nothing.",
+      "plans": "Plans",
+      "allPlans": "Every plan",
+      "developer": "Developer",
+      "category": "Category",
+      "requires": "Connect {app} first.",
+      "docs": "Read the guide",
+      "screenshots": "Screenshots",
+      "onlyThisStore": "Settings here apply to {store} only.",
+      "noSettings": "This app has nothing to set: it works once it is installed."
+    },
+    "action": {
+      "settings": "Open settings",
+      "connect": "Connect",
+      "install": "Install",
+      "remove": "Remove",
+      "request": "Request it",
+      "requested": "Requested",
+      "comingSoon": "Coming soon",
+      "paidLocked": "Available after the dollar wallet"
+    },
+    "surface": {
+      "storefront_product_page": "Product pages",
+      "storefront_script": "Every page of your store",
+      "storefront_checkout": "Checkout",
+      "server_events": "Tallaby's servers",
+      "orders": "Orders",
+      "orders_export": "Order exports",
+      "shipping": "Shipping",
+      "payments": "Payments",
+      "catalog_import": "Product import",
+      "catalog_feed": "Product feeds",
+      "customer_messages": "Messages to your customers",
+      "agent": "Your AI assistant"
     }
   },
   "storeApps": {

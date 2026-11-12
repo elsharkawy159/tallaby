@@ -9,7 +9,7 @@ import { Bike, CircleCheck, LoaderCircle, MapPin, Plug, Settings2 } from "lucide
 
 import {
   isStoreAppLive,
-  storeAppHref,
+  storeAppSettingsHref,
   storeAppsInGroup,
   type BostaAutoShip,
   type StoreApp,
@@ -18,7 +18,7 @@ import type { BostaOverview, WassalhaOverview } from "@workspace/lib/integration
 import { IconTile, Note, OptionCard, OptionCards, SellerButton, StatusBadge } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { AppLogo } from "../apps/app-logo";
-import { updateBostaSettings } from "../apps/bosta/bosta.server";
+import { updateBostaSettings } from "../apps/_settings/bosta/bosta.server";
 import { StepCard } from "./shipping-ui";
 
 /** Bosta, Wassalha, then the carriers coming soon: the catalog's shipping group. */
@@ -72,7 +72,7 @@ export function ShippingCompaniesCard({
       <div className="grid grid-cols-2 gap-2.5 max-[720px]:grid-cols-1">
         {live.map((app) => {
           const state = stateOf(app);
-          const href = storeAppHref(storeId, app);
+          const href = storeAppSettingsHref(storeId, app);
           const managed = state === "connected" || state === "error";
           return (
             <div key={app.key} className={cn(CARD, state === "connected" && "border-success/30 bg-success-soft/40")}>

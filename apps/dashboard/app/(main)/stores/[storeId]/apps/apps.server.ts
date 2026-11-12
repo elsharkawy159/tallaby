@@ -39,7 +39,7 @@ export async function connectStoreApp(
     const result = await connectIdentifierIntegration(seller.sellerId, seller.userId, store.id, String(provider), id);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
 
-    await afterAppChange(seller.sellerId, store.id);
+    await afterAppChange(seller.sellerId, store.id, String(provider));
     return { success: true, data: result.data };
   } catch (error) {
     const denied = appsAccessError(error);
@@ -95,7 +95,7 @@ export async function installApp(storeId: string, appKey: string): Promise<Store
     });
     if (!result.success) return { success: false, error: INSTALL_ERRORS[result.error] };
 
-    await afterAppChange(seller.sellerId, store.id);
+    await afterAppChange(seller.sellerId, store.id, String(appKey));
     return { success: true, data: null };
   } catch (error) {
     const denied = appsAccessError(error);
@@ -114,7 +114,7 @@ export async function uninstallApp(storeId: string, appKey: string): Promise<Sto
     const result = await uninstallStoreApp({ sellerId: seller.sellerId, storeId: store.id, appKey: String(appKey) });
     if (!result.success) return { success: false, error: "notInstalled" };
 
-    await afterAppChange(seller.sellerId, store.id);
+    await afterAppChange(seller.sellerId, store.id, String(appKey));
     return { success: true, data: { endsAt: result.endsAt } };
   } catch (error) {
     const denied = appsAccessError(error);
@@ -136,7 +136,7 @@ export async function disconnectStoreApp(storeId: string, provider: string): Pro
         : await disconnectStoreIntegration(seller.sellerId, store.id, String(provider));
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
 
-    await afterAppChange(seller.sellerId, store.id);
+    await afterAppChange(seller.sellerId, store.id, String(provider));
     return { success: true, data: null };
   } catch (error) {
     const denied = appsAccessError(error);
