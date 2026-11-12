@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Blocks, CreditCard, Mail, Percent, Repeat, Sparkles, Truck, Wallet, WalletCards } from "lucide-react";
+import { Blocks, ChevronDown, CreditCard, Mail, Percent, Repeat, Sparkles, Truck, Wallet, WalletCards } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
@@ -11,6 +11,7 @@ import { TopUpCopy } from "@/components/marketing/site/top-up-copy.client";
 import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { FeeEstimator } from "@/components/marketing/pricing/fee-calculators.client";
+import { ComparePlans } from "@/components/marketing/pricing/compare-plans";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { getMarketingPriceVars, getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
@@ -75,6 +76,12 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               </span>
             ))}
           </Reveal>
+          <p className="mt-5 text-center">
+            <a href="#compare" className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-teal-700 underline-offset-4 hover:underline">
+              {t("compare.jump")}
+              <ChevronDown className="size-4" aria-hidden />
+            </a>
+          </p>
         </Container>
       </div>
 
@@ -86,6 +93,15 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <Reveal>
             <FeeEstimator rates={rates} />
           </Reveal>
+        </Container>
+      </Section>
+
+      <Section id="compare" aria-labelledby="compare-title" className="scroll-mt-[68px] pt-0 min-[861px]:pt-0">
+        <Container>
+          <Reveal>
+            <SectionHeading id="compare-title" kicker={t("compare.kicker")} title={t("compare.title")} description={t("compare.desc")} centered />
+          </Reveal>
+          <ComparePlans />
         </Container>
       </Section>
 

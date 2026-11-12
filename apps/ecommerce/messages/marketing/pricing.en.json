@@ -76,6 +76,396 @@
       "perOrder": "{fee} per order",
       "perMonth": "{price} a month, no order fee"
     },
+    "compare": {
+      "kicker": "Compare plans",
+      "title": "Every feature, side by side",
+      "desc": "Both plans come with every store feature. They differ only in how you pay, and in your monthly AI credits and campaign emails.",
+      "jump": "Compare all features",
+      "count": "{count} features in {groups} groups",
+      "openAll": "Open all groups",
+      "closeAll": "Close all groups",
+      "featureCol": "Feature",
+      "included": "Included",
+      "groupCount": "{count} features",
+      "headFree": "{orderFee} per order",
+      "headPro": "{pro} a month",
+      "note": "Amounts are approximate at today's exchange rate. Apps, extra packs, payment gateway fees and shipping are separate, and their cost is shown before you pay.",
+      "values": {
+        "none": "None",
+        "unlimited": "Unlimited",
+        "proMonthly": "{pro} a month",
+        "orderFee": "{orderFee} per order",
+        "stores": "Up to {count}",
+        "perMonthCount": "{count} a month",
+        "withApp": "With the app"
+      },
+      "groups": {
+        "plan": "Plan and limits",
+        "website": "Store and website",
+        "products": "Products and stock",
+        "orders": "Orders and customers",
+        "payments": "Payments",
+        "shipping": "Shipping",
+        "marketing": "Marketing",
+        "ai": "AI",
+        "analytics": "Reports",
+        "account": "Account and support"
+      },
+      "rows": {
+        "monthlyFee": {
+          "label": "Monthly fee",
+          "desc": "Taken from your store wallet. Pro has no yearly plan."
+        },
+        "orderFee": {
+          "label": "Fee per order",
+          "desc": "A flat amount per created order, whatever its value."
+        },
+        "salesShare": {
+          "label": "Share of your sales",
+          "desc": "We never take a percentage of an order's value."
+        },
+        "products": {
+          "label": "Products and orders",
+          "desc": "No cap on how many you add or receive."
+        },
+        "visits": {
+          "label": "Store visits",
+          "desc": "No traffic limit and no extra charge for busy days."
+        },
+        "stores": {
+          "label": "Stores per account",
+          "desc": "Each store has its own products, design and settings."
+        },
+        "switchPlan": {
+          "label": "Switch plans any time",
+          "desc": "Move between Free and Pro from your dashboard."
+        },
+        "templates": {
+          "label": "Ready-made templates",
+          "desc": "Templates for each kind of store, in Arabic and English."
+        },
+        "builder": {
+          "label": "Visual website builder",
+          "desc": "Select, style and move any section or element. No code."
+        },
+        "theme": {
+          "label": "Store design system",
+          "desc": "Your colours, fonts and buttons applied across the whole store."
+        },
+        "pages": {
+          "label": "Pages and blog",
+          "desc": "Add your own pages and write blog posts for your store."
+        },
+        "forms": {
+          "label": "Forms",
+          "desc": "Contact and newsletter forms, with every submission in your dashboard."
+        },
+        "media": {
+          "label": "Media library",
+          "desc": "All your store's photos in one place."
+        },
+        "domain": {
+          "label": "Store link and custom domain",
+          "desc": "A free store link, and free connection of your own domain on your main store."
+        },
+        "seo": {
+          "label": "SEO tools",
+          "desc": "Titles, descriptions and keywords for the store and each page, with a preview and a sitemap."
+        },
+        "languages": {
+          "label": "Arabic and English store",
+          "desc": "Your store works right to left and left to right."
+        },
+        "currency": {
+          "label": "Store currency",
+          "desc": "One currency per store, Egyptian pounds by default."
+        },
+        "storeApp": {
+          "label": "Your store as an app",
+          "desc": "Customers can install your store on their phone, with your logo as the icon."
+        },
+        "policies": {
+          "label": "Returns and shipping pages",
+          "desc": "Your own policy pages, easy for customers to find."
+        },
+        "publish": {
+          "label": "Publish when you're ready",
+          "desc": "Edit in private and go live with one switch."
+        },
+        "requestTheme": {
+          "label": "Request a theme",
+          "desc": "Send us a link or photos of a design you'd like, and follow your request in the dashboard."
+        },
+        "variants": {
+          "label": "Variants",
+          "desc": "Sizes, colours and other options, each with its own price and stock."
+        },
+        "import": {
+          "label": "Product import",
+          "desc": "From Excel, a product link or Shopify, and update prices and stock from Excel."
+        },
+        "bulkEdit": {
+          "label": "Bulk editing",
+          "desc": "Change many products at once, with a preview and a 10-minute undo."
+        },
+        "taxonomy": {
+          "label": "Categories and brands",
+          "desc": "Your own categories and brands, with the product order you choose."
+        },
+        "stock": {
+          "label": "Stock tracking",
+          "desc": "Track a count for each product, or sell without one."
+        },
+        "stockHistory": {
+          "label": "Stock history",
+          "desc": "Every stock change with its reason and who made it."
+        },
+        "lowStock": {
+          "label": "Low-stock alerts",
+          "desc": "An alert for you, and an optional \"few left\" badge on the product."
+        },
+        "backInStock": {
+          "label": "Back-in-stock emails",
+          "desc": "Customers leave their email and hear from you when a product returns."
+        },
+        "minQty": {
+          "label": "Minimum order quantity",
+          "desc": "Set the smallest quantity a customer can buy of a product."
+        },
+        "reviews": {
+          "label": "Reviews and questions",
+          "desc": "Customer reviews and questions on product pages, and reviews you add yourself."
+        },
+        "socialProof": {
+          "label": "Sales pop-up and live views",
+          "desc": "Show real recent orders and how many people are looking at a product."
+        },
+        "trash": {
+          "label": "Product trash",
+          "desc": "Deleted products wait 30 days, so you can restore them."
+        },
+        "feeds": {
+          "label": "Product feeds",
+          "desc": "One link for Meta, Google Merchant Center and TikTok catalogs."
+        },
+        "catalog": {
+          "label": "Shareable catalog",
+          "desc": "A link to chosen products with prices, ready to send on WhatsApp."
+        },
+        "orderStages": {
+          "label": "Orders by stage",
+          "desc": "Every order's stage at a glance, with WhatsApp and call buttons."
+        },
+        "bulkExport": {
+          "label": "Bulk actions and Excel export",
+          "desc": "Update many orders at once and export the list you see."
+        },
+        "print": {
+          "label": "Invoices, slips and picking list",
+          "desc": "Print invoices and packing slips, and a list of what to pick."
+        },
+        "manual": {
+          "label": "Manual orders and order links",
+          "desc": "Record phone and WhatsApp sales, or send the customer a link to finish the order."
+        },
+        "missed": {
+          "label": "Missed orders",
+          "desc": "Customers who started checkout and left, with a reminder email."
+        },
+        "pendingCarts": {
+          "label": "Pending carts",
+          "desc": "See what's in carts that haven't reached checkout yet."
+        },
+        "customers": {
+          "label": "Customers list",
+          "desc": "Every customer with their orders, your notes and tags, and an Excel export."
+        },
+        "repeatOrder": {
+          "label": "Order again",
+          "desc": "Customers can repeat a past order in one tap."
+        },
+        "fakeOrders": {
+          "label": "Fake-order protection",
+          "desc": "Block phone numbers, see a risk badge on each order, and limit repeated checkouts."
+        },
+        "whatsappConfirm": {
+          "label": "WhatsApp confirmation",
+          "desc": "Customers confirm a cash on delivery order on WhatsApp in one tap."
+        },
+        "checkoutForm": {
+          "label": "Checkout and thank-you settings",
+          "desc": "Add your own questions to the checkout form and choose what the thank-you page shows."
+        },
+        "simpleCheckout": {
+          "label": "Quick checkout",
+          "desc": "A short form with a location button, and saved details for returning customers."
+        },
+        "minOrder": {
+          "label": "Minimum order amount",
+          "desc": "Set the smallest order total your store accepts."
+        },
+        "customerEmails": {
+          "label": "Order emails to customers",
+          "desc": "Sent under your store name with the Order Notifications app. Its cost is shown in your dashboard before you turn it on."
+        },
+        "orderAlerts": {
+          "label": "New-order alerts on your phone",
+          "desc": "A push notification for every new order."
+        },
+        "cod": {
+          "label": "Cash on delivery",
+          "desc": "On for every store from the start."
+        },
+        "wallets": {
+          "label": "Mobile wallets",
+          "desc": "Vodafone Cash, e& Cash, WE Pay and Orange Cash, paid straight to your number."
+        },
+        "instapay": {
+          "label": "InstaPay and transfers",
+          "desc": "The customer pays your account and uploads a screenshot for you to check."
+        },
+        "cards": {
+          "label": "Card payments",
+          "desc": "Through your own Paymob or Kashier account, at the provider's own fees."
+        },
+        "zones": {
+          "label": "Shipping prices by area",
+          "desc": "A price for each governorate or area, free over an amount, and cash on delivery per area."
+        },
+        "aiZones": {
+          "label": "Delivery areas from a description",
+          "desc": "Describe where you deliver, and AI fills in the areas and prices for you to check. Uses AI credits."
+        },
+        "freeDelivery": {
+          "label": "Store-wide free delivery",
+          "desc": "Free delivery on every order or over an amount you set."
+        },
+        "bosta": {
+          "label": "Bosta",
+          "desc": "Create waybills and follow every shipment from your dashboard."
+        },
+        "wassalha": {
+          "label": "Egypt Post (Wassalha)",
+          "desc": "A ready-made upload sheet, then tracking numbers back on your orders."
+        },
+        "riders": {
+          "label": "Your own riders",
+          "desc": "Add riders and assign orders to them."
+        },
+        "coupons": {
+          "label": "Coupons",
+          "desc": "Discount codes, a store pop-up with a countdown, and coupons shown in the cart."
+        },
+        "discounts": {
+          "label": "Automatic discounts",
+          "desc": "Discounts and free gifts applied in the cart without a code."
+        },
+        "quantityOffers": {
+          "label": "Quantity offers",
+          "desc": "A lower price when customers buy more of a product."
+        },
+        "crossSell": {
+          "label": "Cross-sell offers",
+          "desc": "Suggest matching products under the product and in the cart, with an optional discount."
+        },
+        "emailCampaigns": {
+          "label": "Email campaigns",
+          "desc": "Campaign emails to your subscribers and customers, shared across your stores."
+        },
+        "extraEmails": {
+          "label": "Extra campaign emails",
+          "desc": "Buy more when your monthly allowance runs out. The price is shown before you buy."
+        },
+        "winback": {
+          "label": "Win-back emails",
+          "desc": "Bring back customers who haven't ordered in a while."
+        },
+        "subscribers": {
+          "label": "Newsletter subscribers",
+          "desc": "Everyone who signed up on your store, in one list."
+        },
+        "audiences": {
+          "label": "Ad audiences",
+          "desc": "Export buyers, missed orders or subscribers as a file for your ad audiences."
+        },
+        "metaPixel": {
+          "label": "Meta Pixel and Conversions API",
+          "desc": "Choose the events you send, and count a purchase when the order is delivered."
+        },
+        "googleTags": {
+          "label": "Google Analytics and Tag Manager",
+          "desc": "Connect GA4 and GTM by pasting your ID."
+        },
+        "sheets": {
+          "label": "Google Sheets",
+          "desc": "Send your orders to a Google Sheet."
+        },
+        "aiCredits": {
+          "label": "AI credits",
+          "desc": "Each AI action uses credits. They are shared across your whole account."
+        },
+        "extraCredits": {
+          "label": "Extra AI credits",
+          "desc": "Buy more from your wallet. Credits you buy never expire."
+        },
+        "autofill": {
+          "label": "Products written by AI",
+          "desc": "From photos, a PDF or a line of text: name, description and search fields in Arabic and English."
+        },
+        "aiSeo": {
+          "label": "SEO written by AI",
+          "desc": "Titles and descriptions for your store and pages in one click."
+        },
+        "mcp": {
+          "label": "Connect AI assistants (MCP)",
+          "desc": "Connect Claude or ChatGPT to your account to add, edit and publish products."
+        },
+        "reports": {
+          "label": "Sales reports",
+          "desc": "Your order funnel, traffic sources, refusals by governorate, and best and weakest products."
+        },
+        "productViews": {
+          "label": "Views per product",
+          "desc": "Each product's views over the last 30 days."
+        },
+        "crossSellReport": {
+          "label": "Cross-sell report",
+          "desc": "What your cross-sell offers added to your sales."
+        },
+        "statements": {
+          "label": "Wallet and statements",
+          "desc": "Every wallet movement, and account statements to download."
+        },
+        "arabicDashboard": {
+          "label": "Arabic dashboard",
+          "desc": "In Arabic by default, and in English too."
+        },
+        "dashboardApp": {
+          "label": "Dashboard on your phone",
+          "desc": "Install the dashboard on your phone like an app."
+        },
+        "notifications": {
+          "label": "Notification inbox",
+          "desc": "Orders, top-ups, questions and reviews in one place."
+        },
+        "signup": {
+          "label": "Sign-up",
+          "desc": "With email or a Google account, no card needed."
+        },
+        "support": {
+          "label": "Support",
+          "desc": "WhatsApp and email support, and a help center."
+        },
+        "roadmap": {
+          "label": "Public roadmap",
+          "desc": "Suggest features and vote on what we build next."
+        },
+        "referral": {
+          "label": "Affiliate program",
+          "desc": "Earn a commission when sellers you invite top up."
+        }
+      }
+    },
     "extras": {
       "kicker": "Other costs",
       "title": "Everything you might pay, plainly",
@@ -103,6 +493,10 @@
         {
           "q": "What does an order cost on the free plan?",
           "a": "{orderFee} per created order, whatever its value. No monthly fee and no percentage."
+        },
+        {
+          "q": "Do both plans have the same features?",
+          "a": "Yes. Every store feature is on both plans. Pro has no order fee, and comes with {proCredits} AI credits and more campaign emails a month."
         },
         {
           "q": "Is the free plan completely free?",

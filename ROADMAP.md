@@ -1706,6 +1706,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-12 — tallaby.com pricing: full "Compare plans" table
+
+- **Owner (2026-11-12):** show all our features on the pricing page, with Shopify's pricing page (`shopify.com/eg/pricing`) as the structure reference only: plan cards, then a long grouped feature table with check marks per plan, a sticky plan header, collapsible groups on phones, FAQ last.
+- **Built (no migration):** `/pricing` gets a "Compare plans" section between the estimator and Other costs, plus a "Compare all features" link under the plan cards. 88 rows in 10 groups (plan and limits 7, store and website 14, products and stock 14, orders and customers 15, payments 4, shipping 6, marketing 12, AI 5, reports 4, account and support 7), defined in `apps/ecommerce/components/marketing/pricing/compare-plans.lib.ts`; every number comes from `@workspace/lib/plans` and the price tokens (visitor's currency, `withPrices`). Only live features; nothing "soon". Server-rendered `<details>` groups each holding a real `<table>` (row headers, sr-only column headers, caption); the plan bar sticks under the 68px site header with the Free/Pro prices and sign-up buttons (desktop); the Pro column keeps a teal tint top to bottom. `compare-groups-toggle.client.tsx` is the only client part: Open/Close all, and it folds every group but the first on load under 861px. One new FAQ ("Do both plans have the same features?"). Strings in `pricing.{ar,en}.json` (`pricing.compare`).
+- **Left out on purpose:** AI Store Builder (behind a flag), staff accounts, TikTok/Snapchat pixels, SMS, landing pages, deposits, digital products, international selling, Tallaby fulfillment, paid ads, campaign tracking (UTM page removed, F-65b), returns barcode scan (hidden), store visits page (hidden from sidebar), test orders, the welcome gift and the old EGP 5 fee.
+- **Tests:** `compare-plans.test.ts` (pricing ar/en key parity, every group/row/value named, no plan numbers in copy, plans differ only on monthly fee, order fee, AI credits and campaign emails). Screenshots at 360 and 1440 px, Arabic and English, checked in headless Chrome, including the sticky bar.
+
 ### 2026-11-12 — Storefront footer "صمم عبر منصة طلبي" badge
 
 - **Owner (2026-11-12):** replace the quiet «مدعوم من طلبي» / "Powered by Tallaby" text link in every storefront footer with a clear button: «صمم عبر منصة طلبي» + the Tallaby logo (English "Built with Tallaby").
