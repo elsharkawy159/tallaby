@@ -431,7 +431,7 @@ function Variants({ product, attrs, ctx }: StillProps) {
   return (
     <div {...attrs} className="flex min-w-0 flex-col gap-3">
       <p className="text-sm font-semibold text-(--sf-ink)">
-        {sectionText("productOptions", ctx.locale)}: <span className="font-normal text-(--sf-muted)">{selected.label}</span>
+        {product.optionName || sectionText("productOptions", ctx.locale)}: <span className="font-normal text-(--sf-muted)">{selected.label}</span>
       </p>
       <div className="flex flex-wrap gap-2.5">
         {product.variants.map((variant) => {

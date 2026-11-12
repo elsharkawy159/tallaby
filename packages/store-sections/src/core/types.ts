@@ -235,6 +235,8 @@ export type ProductDetail = ProductSummary & {
   /** The seller's "Show a low-stock alert" (0122, F-34): the stock element turns into the urgency badge at or below the threshold. */
   lowStockAlert?: LowStockSetting | null;
   variants: ProductVariantDetail[];
+  /** The variants' option name ("Size") for the picker's header; absent = the generic "Options". */
+  optionName?: string;
   reviewCount: number;
   /** Public questions on the product (the reviews element lists them too); absent counts as none. */
   questionCount?: number;

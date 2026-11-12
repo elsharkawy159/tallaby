@@ -54,6 +54,8 @@ export function templateDemoProduct(demo: TemplateDemo, opts: { storeName?: stri
     bulletPoints: [],
     // Sizes as chips, all in stock, at the product's price.
     variants: (first.variants ?? []).map((value, i) => ({ id: `${first.id}-option-${i + 1}`, label: value[locale] || value.ar, price, quantity: 6 })),
+    // Demo variants are sizes (TemplateDemo `variants`).
+    ...(first.variants?.length && { optionName: locale === "en" ? "Size" : "المقاس" }),
     brand: null,
     category: category ? { id: category.id, name: category.name[locale] || category.name.ar } : null,
     seller: { name: storeName, rating: null, ratingCount: 0, freeDelivery: false },
