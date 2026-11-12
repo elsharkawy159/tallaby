@@ -59,6 +59,22 @@ describe("productPage", () => {
     expect(byLabel(productPage(lib, { extras: ["product-perks"], button: "outline" })[0]!, "زر الشراء")[0]!.props.variant).toBe("outline");
   });
 
+  it("copy.perks replaces the perks tiles' copy and icons, in order", () => {
+    const perks = [
+      { icon: "truck", title: L("أ١", "T1"), text: L("ب١", "L1") },
+      { title: L("أ٢", "T2"), text: L("ب٢", "L2") },
+      { icon: "chat", title: L("أ٣", "T3"), text: L("ب٣", "L3") },
+      { icon: "package", title: L("أ٤", "T4"), text: L("ب٤", "L4") },
+    ] as const;
+    const designs = productPage(lib, { extras: ["product-perks"], copy: { perks } });
+    const nodes = nodesOf(designs[1]!);
+    const texts = JSON.stringify(nodes.filter((n) => n.type === "text").map((n) => n.props.text));
+    expect(texts).toContain("أ٤");
+    expect(texts).not.toContain("من غير أسئلة");
+    expect(nodes.filter((n) => n.type === "icon").map((n) => n.props.name)).toEqual(["truck", "shield", "chat", "package"]);
+    expect(() => productPage(lib, { extras: ["product-perks"], copy: { perks: perks.slice(0, 3) } })).toThrow(/4 tiles/);
+  });
+
   it("spec gallery end puts gallery second", () => {
     const [main] = productPage(lib, { gallery: "end", thumbs: "side" });
     const [gallery] = byLabel(main!, "صور المنتج");

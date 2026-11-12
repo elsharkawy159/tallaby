@@ -26,6 +26,10 @@ export type TemplateDemo = {
     rating: number | null;
     sold90: number;
     sold14: number;
+    /** The product page preview's description (default: a generic line). Preview only. */
+    description?: Localized;
+    /** The product page preview's options, one chip each (sizes 36…45). Preview only. */
+    variants?: readonly Localized[];
   }[];
 };
 

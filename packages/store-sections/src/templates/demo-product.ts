@@ -49,10 +49,11 @@ export function templateDemoProduct(demo: TemplateDemo, opts: { storeName?: stri
     inStock: first.inStock,
     quantity: first.inStock ? 24 : 0,
     directCheckout: false,
-    description: DESCRIPTION[locale],
+    description: first.description?.[locale] || first.description?.ar || DESCRIPTION[locale],
     contentHtml: null,
     bulletPoints: [],
-    variants: [],
+    // Sizes as chips, all in stock, at the product's price.
+    variants: (first.variants ?? []).map((value, i) => ({ id: `${first.id}-option-${i + 1}`, label: value[locale] || value.ar, price, quantity: 6 })),
     brand: null,
     category: category ? { id: category.id, name: category.name[locale] || category.name.ar } : null,
     seller: { name: storeName, rating: null, ratingCount: 0, freeDelivery: false },

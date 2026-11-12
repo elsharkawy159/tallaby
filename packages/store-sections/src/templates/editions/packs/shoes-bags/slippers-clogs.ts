@@ -50,8 +50,10 @@
  * until the shoes-and-bags switch takes them off. Tasfya's hero is a pool
  * deck: 9308418 (blue polka-dot flip-flops on pale concrete beside the
  * water, checked at 3300px: no lettering on the footbeds, two plain drain
- * covers), served as a 16:9 crop anchored at the foot (`fp-y=0.9`) so the
- * pair stays in frame on every screen; its `wide` slot is that crop.
+ * covers), served as a 21:9 crop zoomed 1.4× around the pair (2026-11-12
+ * QA: the full-width 16:9 crop pushed the headline below the first desktop
+ * screen) so the pair reads large and stays in frame on every screen; its
+ * `wide` slot is that crop.
  * Streetwear keeps the sand flat lay (4996730) through `perLook`. Tasfya
  * also reads `finder` (where the pair is worn: beach, pool and shower,
  * errands, home, each a search of its category's word) and
@@ -65,14 +67,95 @@
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, handle, pexels, phone } from "../../../library-template";
+import type { Localized } from "../../../../core/types";
+import type { TemplateDemo } from "../../../types";
 import { editionPhoto } from "../../media";
 import type { Edition } from "../../types";
 
 const NICHE = "slippers-clogs";
 const P = (slug: string) => editionPhoto(NICHE, slug);
 
-/** Tasfya's hero: the pool deck, cropped 16:9 at its foot so the flip-flops stay whole on phones and desktops. */
-const POOL_DECK = "https://images.pexels.com/photos/9308418/pexels-photo-9308418.jpeg?auto=compress&cs=tinysrgb&fit=crop&crop=focalpoint&fp-x=0.5&fp-y=0.9&w=1920&h=1080";
+/**
+ * Tasfya's hero: the pool deck, cropped 21:9 and zoomed 1.4× around the pair
+ * (the right of the photo, its lower half), so the flip-flops read at desktop
+ * width and the headline still fits the first screen; phones show a 16:9 cut
+ * of it, which keeps the pair whole.
+ */
+const POOL_DECK = "https://images.pexels.com/photos/9308418/pexels-photo-9308418.jpeg?auto=compress&cs=tinysrgb&fit=crop&crop=focalpoint&fp-x=0.65&fp-y=0.72&fp-z=1.4&w=1920&h=823";
+
+/** Every pair's sizes, as chips on its product page (the story and about page promise 36 to 45 on every page). */
+const SIZES = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45].map((size) => L(size.toLocaleString("ar-EG"), String(size)));
+
+/** Each pair's product page description (preview only), by slug. */
+const DESCRIPTIONS: Readonly<Record<string, Localized>> = {
+  "sage-green-clog": L(
+    "كلوج كاوتش خفيف بلون أخضر زيتوني فاتح، بفتحات تهوية وسير ورا الكعب بيتقلب لقدّام. بيستحمل المية ويتغسل بالمية والصابون.",
+    "A light rubber clog in pale sage, with air holes and a heel strap that flips forward. It takes the water and washes clean with soap.",
+  ),
+  "beige-cushion-slide": L(
+    "سلايد بيج بنعل طري تخين، قطعة واحدة كاوتش من غير خياطة. للبيت والبحر والمشوار القريب.",
+    "A beige slide on a thick soft sole, one piece of rubber with no seams. For home, the beach and short trips out.",
+  ),
+  "white-platform-flip-flops": L(
+    "شبشب صباع أبيض بنعل عالي خفيف، وسير طري ما بيجرحش بين الصوابع.",
+    "White flip-flops on a light raised sole, with a soft strap that does not rub between the toes.",
+  ),
+  "grey-fluffy-home-slippers": L(
+    "شبشب بيتي مفتوح من فرو رمادي ناعم، بنعل ما بيزحلقش على السيراميك. لليالي البرد.",
+    "Open home slippers in soft grey fur, on a sole that holds on tiles. For cold evenings.",
+  ),
+  "white-classic-clog": L(
+    "الكلوج الكلاسيك بالأبيض: كاوتش خفيف بفتحات تهوية وسير كعب بيتقلب. بيتلبس على البحر وفي البيت.",
+    "The classic clog in white: light rubber, air holes and a heel strap that flips. Worn at the beach and at home.",
+  ),
+  "black-rubber-slide": L(
+    "سلايد كاوتش أسود بسير عريض ونعل محزّز. بيستحمل المية، للبيسين والحمّام والجيم.",
+    "A black rubber slide with a wide strap and a ridged sole. It takes the water: for the pool, the shower and the gym.",
+  ),
+  "navy-rubber-flip-flops": L(
+    "شبشب صباع كاوتش كحلي خفيف، لرملة البحر والبيسين. بيتغسل بالمية وبينشف بسرعة.",
+    "Light navy rubber flip-flops for the sand and the pool. Rinse them with water and they dry fast.",
+  ),
+  "pink-fur-slides": L(
+    "شبشب فرو بمبي مفتوح من قدّام، بنعل طري ما بيعملش صوت على الأرض.",
+    "Pink fur slides, open at the toe, on a soft sole that stays quiet on the floor.",
+  ),
+  "black-classic-clog": L(
+    "الكلوج الكلاسيك بالأسود: كاوتش خفيف بفتحات تهوية وسير كعب بيتقلب. ما بيبانش عليه التراب.",
+    "The classic clog in black: light rubber, air holes and a heel strap that flips. It hides the dust.",
+  ),
+  "white-two-strap-slide": L(
+    "سلايد أبيض بسيرين ونعل طري مريح للمشي. للبحر والمشاوير الخفيفة.",
+    "A white slide with two straps and a soft sole made for walking. For the beach and light errands.",
+  ),
+  "black-flip-flops": L("شبشب صباع أسود بسيط، كاوتش خفيف للبحر والبيت.", "Plain black flip-flops in light rubber, for the beach and the house."),
+  "navy-knit-home-slippers": L(
+    "شبشب بيتي تريكو كحلي، بيدفّي رجلك وبيتغسل في الغسالة على البرنامج الهادي.",
+    "Navy knit home slippers that keep your feet warm and go in the washer on a gentle cycle.",
+  ),
+  "pink-platform-clog": L(
+    "كلوج بمبي بنعل عالي: كاوتش خفيف بفتحات تهوية وسير كعب. بيطوّلك شوية من غير ما يتقل.",
+    "A pink clog on a platform sole: light rubber, air holes and a heel strap. A little extra height without the weight.",
+  ),
+  "brown-buckle-cork-slide": L(
+    "سلايد بنعل فلّين وسيرين جلد بني بتوك بتتظبط على رجلك. النعل بياخد شكل رجلك مع اللبس.",
+    "A cork-sole slide with two brown leather straps and buckles you set to your foot. The footbed shapes to you as you wear it.",
+  ),
+  "tan-leather-flip-flops": L(
+    "شبشب صباع جلد هافان بنعل جلد، للصيف والسهرات الخفيفة. الجلد بيغمق ويحلو مع الوقت.",
+    "Tan leather flip-flops on a leather sole, for summer days and easy evenings. The leather darkens and gets better with time.",
+  ),
+  "beige-closed-toe-slippers": L(
+    "شبشب بيتي مقفول بيج، ببطانة ناعمة ونعل ما بيزحلقش. بيدفّي رجلك في الشتا.",
+    "Closed-toe home slippers in beige, with a soft lining and a sole that holds on tiles. Warm feet all winter.",
+  ),
+};
+
+/** The demo with each pair's product page: its description and its sizes (preview only). */
+const withProductPages = (demo: TemplateDemo): TemplateDemo => ({
+  ...demo,
+  products: demo.products.map((p) => ({ ...p, ...(DESCRIPTIONS[p.slug] && { description: DESCRIPTIONS[p.slug] }), variants: SIZES })),
+});
 
 /** A catalog search for a word in the products' names. */
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
@@ -91,7 +174,7 @@ export const SLIPPERS_CLOGS: Edition = {
   priceBand: { min: 150, max: 1200 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
-  demo: demoStore({
+  demo: withProductPages(demoStore({
     name: L("زنّوبة", "Zannouba"),
     description: L(
       "كلوج وسلايد وشباشب صباع وشباشب بيتي، للبحر والشارع والبيت.",
@@ -122,7 +205,7 @@ export const SLIPPERS_CLOGS: Edition = {
       ["tan-leather-flip-flops", "flip-flops", "شبشب صباع جلد هافان", "Tan Leather Flip-Flops", P("tan-leather-flip-flops"), 590, { isFeatured: true, rating: 4.7, sold90: 88 }],
       ["beige-closed-toe-slippers", "home-slippers", "شبشب بيتي مقفول بيج", "Beige Closed-Toe Slippers", P("beige-closed-toe-slippers"), 380, { rating: 4.6, sold90: 143 }],
     ],
-  }),
+  })),
   photos: {
     hero: { wide: POOL_DECK, tall: pexels(4996974, 1200) },
     tiles: TILES,
@@ -258,7 +341,19 @@ export const SLIPPERS_CLOGS: Edition = {
   },
   // Streetwear's rail shows the newest products (zay's shelf has its own tabs).
   journey: { primary: "newest" },
-  productPage: { copy: { reviews: L("آراء اللي لبسوه", "From people who wear them"), related: L("موديلات ممكن تعجبك", "Pairs you may like") } },
+  productPage: {
+    copy: {
+      reviews: L("آراء اللي لبسوه", "From people who wear them"),
+      related: L("موديلات ممكن تعجبك", "Pairs you may like"),
+      // The product page's four tiles (`product-perks`) say what the home's promises say: size exchange and cash, not the library's returns and card.
+      perks: [
+        { icon: "truck", title: L("توصيل لحد الباب", "Delivered to your door"), text: L("لكل محافظات مصر", "To every governorate") },
+        { icon: "rotate", title: L("استبدال المقاس", "Size exchange"), text: L("خلال ١٤ يوم من الاستلام", "Within 14 days of delivery") },
+        { icon: "chat", title: L("مساعدة في المقاس", "Help with sizing"), text: L("ابعتلنا طول رجلك على واتساب", "Send us your foot length on WhatsApp") },
+        { icon: "package", title: L("ادفع عند الاستلام", "Pay on delivery"), text: L("كاش مع المندوب", "Cash to the courier") },
+      ],
+    },
+  },
   // Zay's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Rahtak" (Egyptian for
   // "your comfort"), a calm shop for the pair you wear all day at home and around the block, where streetwear's
   // Zannouba is beach and summer. Same pairs and prices; its own copy and photos. Zay's hero collage keeps the

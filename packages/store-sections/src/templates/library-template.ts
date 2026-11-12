@@ -129,7 +129,7 @@ export type DemoProductRow = [
   en: string,
   image: string,
   price: number,
-  o?: Partial<Pick<DemoProduct, "compareAtPrice" | "isFeatured" | "inStock" | "rating" | "sold90">>,
+  o?: Partial<Pick<DemoProduct, "compareAtPrice" | "isFeatured" | "inStock" | "rating" | "sold90" | "description" | "variants">>,
 ];
 
 /**
@@ -157,6 +157,8 @@ export function demoStore(o: {
       rating: extra.rating ?? 4.7,
       sold90: extra.sold90 ?? 10,
       sold14: Math.round((extra.sold90 ?? 10) / 5),
+      ...(extra.description && { description: extra.description }),
+      ...(extra.variants && { variants: extra.variants }),
     }),
   );
   return {

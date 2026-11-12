@@ -37,6 +37,13 @@
  * tightened Arabic. The outlet's v3 sections (shop by budget, open before
  * you pay, reviews) are gone.
  *
+ * QA fixes (2026-11-12, still v4, not released): the poster photo is a 21:9
+ * band on desktop (16:9 on phones) so the headline and button end inside a
+ * 1280×900 first screen; the promises lose their closing rule (the
+ * newsletter's top rule follows); the finder's pills hold two lines, so all
+ * four are one height; the product page shows the pack's sizes, description
+ * and promises (`productPage.copy.perks`).
+ *
  * Content: the `slippers-clogs` pack is Tasfya's own shop ("Zannouba"): the
  * look's default content and demo are the pack's, so the template and the
  * niche's edition are one store.
@@ -47,8 +54,8 @@
  * (`tasfya.v4.json`) and the v3 one is deleted
  * (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's (see its header): hero 9308418 (cropped 16:9 at its
- * foot), tiles 8801134, 13836590, 27719438, 12969102, banner 18674213
+ * Photos: the pack's (see its header): hero 9308418 (cropped 21:9 and
+ * zoomed around the pair), tiles 8801134, 13836590, 27719438, 12969102, banner 18674213
  * (the home story), about page 34667259; products are the pack's white packshots. No people,
  * feet, logos or lettering.
  */
@@ -167,6 +174,8 @@ function hero(c: LookContent): Design {
           style: { insetTop: "-36px", insetBottom: "auto", background: "accent" },
           mobile: { insetTop: "-28px", insetBottom: "auto" },
         },
+        // Closer to the photo, so the headline and its button end inside the first desktop screen (1280×900).
+        العنوان: { style: { marginTop: 28 } },
       },
     }),
   );
@@ -174,7 +183,14 @@ function hero(c: LookContent): Design {
     // The size range fits the round sticker on phones.
     if (node.type === "heading" && node.props?.role !== "title")
       return { ...node, style: { ...node.style, fontSize: "3xl" }, breakpointStyles: { ...node.breakpointStyles, mobile: { ...node.breakpointStyles?.mobile, fontSize: "2xl" } } };
-    if (node.type === "image") return { ...node, props: { ...node.props, scrollEffect: "zoom" } };
+    // A 21:9 band on desktop (16:9 there pushed the headline below the first screen); 16:9 on phones, where the copy sits under it.
+    if (node.type === "image")
+      return {
+        ...node,
+        props: { ...node.props, scrollEffect: "zoom" },
+        style: { ...node.style, aspectRatio: "banner" },
+        breakpointStyles: { ...node.breakpointStyles, mobile: { ...node.breakpointStyles?.mobile, aspectRatio: "wide", keepRatio: true } },
+      };
     return node;
   });
 }
@@ -198,6 +214,8 @@ function finder(c: LookContent): Design {
         // The places as plain pills: the library's icons (a pin, a heart, a phone, a person) name other trades.
         أيقونة: { style: { hidden: true }, tablet: { hidden: true }, mobile: { hidden: true } },
         استخدام: { style: { background: "background", minHeight: 64, justifyContent: "center" } },
+        // Room for two lines in every pill, the label centred in it: one-line places ("On the beach") matched their two-line neighbours on phones.
+        المحتوى: { style: { minHeight: 44 } },
       },
     }),
   );
@@ -276,21 +294,26 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       scrollEffect: undefined,
     },
     categoryRow(journey.rows[1]!, 2),
+    // The promises' closing rule is dropped: the newsletter's own top rule follows (two hairlines 66px apart read as a mistake).
     retouch(
-      lib("features-classic", {
-        text: {
-          "توصيل سريع": c.trust[0]!.title,
-          "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
-          "الدفع عند الاستلام": c.trust[1]!.title,
-          "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-          "استرجاع سهل": c.trust[2]!.title,
-          "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-          "دعم على واتساب": c.trust[3]!.title,
-          "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
-        },
-      }),
-      "icon",
-      (node, index) => ({ ...node, props: { ...node.props, name: PROMISE_ICONS[index] ?? node.props?.name } }),
+      retouch(
+        lib("features-classic", {
+          text: {
+            "توصيل سريع": c.trust[0]!.title,
+            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "الدفع عند الاستلام": c.trust[1]!.title,
+            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
+            "استرجاع سهل": c.trust[2]!.title,
+            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+            "دعم على واتساب": c.trust[3]!.title,
+            "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+          },
+        }),
+        "icon",
+        (node, index) => ({ ...node, props: { ...node.props, name: PROMISE_ICONS[index] ?? node.props?.name } }),
+      ),
+      "divider",
+      (node, index) => (index === 1 ? hide(node) : node),
     ),
     calm(
       lib("newsletter-ruled", {

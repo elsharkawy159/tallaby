@@ -10,7 +10,9 @@ import { PRODUCT_PAGE_SLUG } from "../config/product-page.lib";
 import type { SitePage } from "../config/schema";
 import { L } from "../designs/_kit";
 import { instantiateDesign, type Design, type DesignText } from "../designs/builder";
+import type { ElementIconName } from "../elements/registry";
 import type { StyleValues } from "../elements/style";
+import type { NodeTemplate } from "../elements/tree";
 import type { NodePatch } from "./_library";
 import type { Lib } from "./_pages";
 
@@ -30,14 +32,21 @@ export type ProductPageSpec = {
   button?: "solid" | "outline";
   /** Reviews section background; default "shelf". */
   band?: "paper" | "shelf" | "brand";
-  /** Template copy: reviews title and related products title (the breadcrumbs use the package's own copy). */
-  copy?: { reviews?: DesignText; related?: DesignText };
+  /**
+   * Template copy: reviews title and related products title (the breadcrumbs use the package's own copy),
+   * and the four `product-perks` tiles in order, when the store's promises differ from the library's
+   * (its returns and payment lines must not contradict the home page).
+   */
+  copy?: { reviews?: DesignText; related?: DesignText; perks?: readonly ProductPerk[] };
   /**
    * Store-wide library sections inserted after the main section; default none.
    * With `product-perks`, the buy box's own perks box is switched off.
    */
   extras?: readonly ("product-perks" | "product-shipping")[];
 };
+
+/** One `product-perks` tile: its title, its line, and an icon (default: the library's). */
+export type ProductPerk = { icon?: ElementIconName; title: DesignText; text: DesignText };
 
 /** The product page's name in both languages (`pageNames.product`). */
 export const PRODUCT_PAGE_NAME = L("صفحة المنتج", "Product page");
@@ -54,6 +63,13 @@ const SECTION_TITLE = "العنوان";
 // The designs' copy the template copy replaces.
 const REVIEWS_COPY = "رأي اللي جربوه";
 const RELATED_COPY = "ممكن يعجبك كمان";
+// The `product-perks` tiles' copy, in order (title, line).
+const PERKS_COPY: readonly (readonly [string, string])[] = [
+  ["توصيل سريع", "من يوم لـ ٤ أيام"],
+  ["ضمان المتجر", "بفاتورة رسمية"],
+  ["استرجاع ١٤ يوم", "من غير أسئلة"],
+  ["ادفع عند الاستلام", "كاش أو كارت"],
+];
 
 function headingStyle(spec: ProductPageSpec): StyleValues | undefined {
   return spec.headingCase === "upper" ? { textTransform: "uppercase" } : undefined;
@@ -105,7 +121,31 @@ export function productPage(lib: Lib, spec: ProductPageSpec = {}): Design[] {
     ...(heading && { nodes: { [SECTION_TITLE]: { style: heading } } }),
     ...(spec.copy?.related && { text: { [RELATED_COPY]: spec.copy.related } }),
   });
-  return [main, ...(spec.extras ?? []).map((id) => lib(id)), lib("product-content"), reviews, related];
+  const extra = (id: NonNullable<ProductPageSpec["extras"]>[number]) => (id === "product-perks" && spec.copy?.perks ? perks(lib, spec.copy.perks) : lib(id));
+  return [main, ...(spec.extras ?? []).map(extra), lib("product-content"), reviews, related];
+}
+
+/** The perks tiles with the store's own promises: copy by the library's text, icons in tree order. */
+function perks(lib: Lib, items: readonly ProductPerk[]): Design {
+  if (items.length !== PERKS_COPY.length) throw new Error(`productPage: copy.perks needs ${PERKS_COPY.length} tiles, it has ${items.length}`);
+  const text: Record<string, DesignText> = {};
+  items.forEach((item, i) => {
+    text[PERKS_COPY[i]![0]] = item.title;
+    text[PERKS_COPY[i]![1]] = item.text;
+  });
+  const design = lib("product-perks", { text });
+  return {
+    ...design,
+    tree: (t) => {
+      let index = 0;
+      const visit = (node: NodeTemplate): NodeTemplate => {
+        const icon = node.type === "icon" ? items[index++]?.icon : undefined;
+        const next = icon ? { ...node, props: { ...node.props, name: icon } } : node;
+        return next.children ? { ...next, children: next.children.map(visit) } : next;
+      };
+      return visit(design.tree(t));
+    },
+  };
 }
 
 /** A design as a template section: its id doubles as the instance id (as in `libraryTemplate`). */

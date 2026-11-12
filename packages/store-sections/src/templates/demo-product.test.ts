@@ -22,6 +22,17 @@ describe("templateDemoProduct", () => {
     expect(product.variants).toEqual([]);
   });
 
+  it("shows the demo product's own description and sizes when its pack gives them (tasfya)", () => {
+    const demo = getCodeTemplate("tasfya")!.demo;
+    const en = templateDemoProduct(demo, { locale: "en" });
+    expect(en.description).toContain("pale sage");
+    expect(en.variants.map((v) => v.label)).toEqual(["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"]);
+    expect(en.variants.every((v) => v.quantity > 0 && v.price === en.price)).toBe(true);
+    const ar = templateDemoProduct(demo, { locale: "ar" });
+    expect(ar.variants[0]!.label).toBe("٣٦");
+    expect(ar.description).toContain("كلوج");
+  });
+
   it("uses the given store name and the Arabic copy by default", () => {
     const demo = getCodeTemplate("kasr")!.demo;
     const product = templateDemoProduct(demo, { storeName: "My shop" });
