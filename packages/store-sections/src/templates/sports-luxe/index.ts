@@ -8,6 +8,10 @@
  * with portrait cards, an interests newsletter and the ruled footer. Built
  * from section library designs (`fromLibrary`).
  *
+ * Edition-ready (ROADMAP F-90): the sections are built by `look(content,
+ * journey)` from `DEFAULT_CONTENT`, and with it the look builds exactly its
+ * v1 output (`../editions/__fixtures__/sports-luxe.v1.json`).
+ *
  * Photos and video: Pexels, each checked by eye at about 2000px
  * (2026-10-28): equipment and empty courts only, no people or hands, no
  * readable brand lettering, none used twice. Video 6389051 (poster: a hex
@@ -29,7 +33,9 @@ import { L } from "../../designs/_kit";
 import { categoryRows } from "../_category-rows";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, handle, libraryTemplate, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, handle, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
 
 export const SPORTS_LUXE_KEY = "sports-luxe";
 
@@ -57,109 +63,51 @@ const PHOTOS = {
 
 const NAME = L("مدار", "Madar");
 
-const header = lib("header-topbar", {
-  text: {
-    "توصيل سريع لكل محافظات مصر": L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
-    "الدفع عند الاستلام": L("ضمان سنة على كل الأجهزة", "One-year guarantee on all gear"),
-    "تتبّع طلبك": L("تتبّع طلبك", "Track order"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل المعدات", "Shop all"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("الأكثر طلبًا", "Best sellers"),
-    "من نحن": L("النادي", "The club"),
+/** Madar's own content (the sports gear club shop), copied from v1 character for character. */
+const DEFAULT_CONTENT: LookDefaults = {
+  announcement: [
+    L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
+    L("ضمان سنة على كل الأجهزة", "One-year guarantee on all gear"),
+    L("الدفع عند الاستلام", "Pay on delivery"),
+  ],
+  labels: { about: L("النادي", "The club") },
+  hero: {
+    alt: L("رف دمبلز سداسية في ضوء الصبح", "A hex dumbbell rack in the morning light"),
+    eyebrow: L("مجموعة الخريف ٢٠٢٦", "Autumn 2026"),
+    title: L("تمرين يليق بيك", "Training, refined"),
+    line: L(
+      "حديد مصبوب، مضارب متوازنة ومعدات رحلات بتعيش سنين. كل قطعة بنجربها في نادينا في الزمالك قبل ما تنزل.",
+      "Cast iron, balanced rackets and outdoor gear that lasts for years. We test every piece at our Zamalek club before it joins the range.",
+    ),
+    cta: L("تسوّق المعدات", "Shop the gear"),
   },
-  links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
-});
-
-const footer = lib("footer-ruled", {
-  text: {
-    "م": L("م", "M"),
-    "اسم متجرك": NAME,
-    "منتجات أصلية بضمان، توصلك لحد البيت.": L(
+  categories: { title: L("لكل رياضة ركنها", "A corner for every sport") },
+  products: { primary: { eyebrow: L("اختيار النادي", "The club’s pick"), title: L("قطعة الموسم", "Piece of the season") } },
+  story: {
+    alt: L("صالة تدريب هادية فيها أجهزة قوة", "A calm training floor with strength machines"),
+    eyebrow: L("نادي مدار", "The Madar club"),
+    title: L("بنجرّب قبل ما نبيع", "We train with it before we sell it"),
+    text: L(
+      "فتحنا مدار في ٢٠١١ كصالة صغيرة في الزمالك. النهارده المدربين بتوعنا بيختاروا كل دمبل ومضرب وخيمة، وبيستخدموها أسابيع في النادي قبل ما تدخل المتجر.",
+      "Madar opened in 2011 as a small Zamalek gym. Today our coaches choose every dumbbell, racket and tent, and use it for weeks at the club before it reaches the shop.",
+    ),
+    cta: L("اعرف النادي", "About the club"),
+  },
+  newsletter: {
+    title: L("بتلعب إيه؟", "What do you play?"),
+    line: L(
+      "اختار رياضتك، وهنبعتلك المعدات الجديدة وبرنامج تمرين من مدربينا مرة في الشهر.",
+      "Pick your sport and we will send new gear and a plan from our coaches, once a month.",
+    ),
+  },
+  footer: {
+    line: L(
       `معدات تدريب مختارة لصالة البيت والملعب. ١٧ شارع حسن صبري، الزمالك، القاهرة، ${phone("٠١٢٢ ٧٣١ ٤٨٠٥")}، ${handle("hello@madar.eg")}`,
       `Training gear chosen for the home gym and the court. 17 Hassan Sabri St, Zamalek, Cairo | ${phone("+20 122 731 4805")} | hello@madar.eg`,
     ),
-    "تسوق": L("تسوّق", "Shop"),
-    "كل المنتجات": L("كل المعدات", "All gear"),
-    "العروض": L("الأعلى تقييمًا", "Top rated"),
-    "المساعدة": L("المساعدة", "Help"),
-    "من نحن": L("عن مدار", "About Madar"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ مدار. كل الحقوق محفوظة.", "© 2026 Madar. All rights reserved."),
   },
-  links: { "/products": [SHOP, NEW, BEST, RATED], "https://wa.me/": "https://wa.me/201227314805" },
-});
-
-const home: Design[] = [
-  lib("hero-video", {
-    photo: [PHOTOS.heroPoster],
-    nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 35 } } },
-    text: {
-      "فيديو الواجهة": L("رف دمبلز سداسية في ضوء الصبح", "A hex dumbbell rack in the morning light"),
-      "المجموعة الجديدة": L("مجموعة الخريف ٢٠٢٦", "Autumn 2026"),
-      "مساحتك، بطريقتك": L("تمرين يليق بيك", "Training, refined"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "حديد مصبوب، مضارب متوازنة ومعدات رحلات بتعيش سنين. كل قطعة بنجربها في نادينا في الزمالك قبل ما تنزل.",
-        "Cast iron, balanced rackets and outdoor gear that lasts for years. We test every piece at our Zamalek club before it joins the range.",
-      ),
-      "تسوّق الآن": L("تسوّق المعدات", "Shop the gear"),
-      "شوف الجديد": L("وصل حديثًا", "New in"),
-    },
-    links: { "/products": SHOP, "/products?sort=newest": NEW },
-  }),
-  lib("categories-captioned", {
-    text: {
-      "اكتشف الأقسام": L("لكل رياضة ركنها", "A corner for every sport"),
-      "كل الأقسام": L("الكل", "All"),
-      "منتج": L("منتج", "items"),
-    },
-    // All six categories in one row (the design shows five).
-    lists: [{ limit: 6 }],
-    nodes: { "الأقسام": { style: { columns: 6 } } },
-  }),
-  lib("products-feature", {
-    text: {
-      "اختيارنا ليك": L("اختيار النادي", "The club’s pick"),
-      "اختيار الأسبوع": L("قطعة الموسم", "Piece of the season"),
-    },
-    // The featured piece, then the best sellers (never the same product).
-    lists: [undefined, { source: "best-sellers" }],
-  }),
-  lib("about-fullbleed", {
-    photo: [undefined, undefined, PHOTOS.clubFloor],
-    text: {
-      "صورة القصة": L("صالة تدريب هادية فيها أجهزة قوة", "A calm training floor with strength machines"),
-      "حكايتنا": L("نادي مدار", "The Madar club"),
-      "تفاصيل صغيرة تصنع الفرق": L("بنجرّب قبل ما نبيع", "We train with it before we sell it"),
-      "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.": L(
-        "فتحنا مدار في ٢٠١١ كصالة صغيرة في الزمالك. النهارده المدربين بتوعنا بيختاروا كل دمبل ومضرب وخيمة، وبيستخدموها أسابيع في النادي قبل ما تدخل المتجر.",
-        "Madar opened in 2011 as a small Zamalek gym. Today our coaches choose every dumbbell, racket and tent, and use it for weeks at the club before it reaches the shop.",
-      ),
-      "اعرف أكثر": L("اعرف النادي", "About the club"),
-    },
-  }),
-  ...categoryRows(lib, {
-    viewAll: L("الكل", "All"),
-    nodes: { "صورة البطاقة": { style: { aspectRatio: "portrait" } } },
-  }),
-  lib("newsletter-interests", {
-    text: {
-      "إيه اللي يهمك؟": L("بتلعب إيه؟", "What do you play?"),
-      "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": L(
-        "اختار رياضتك، وهنبعتلك المعدات الجديدة وبرنامج تمرين من مدربينا مرة في الشهر.",
-        "Pick your sport and we will send new gear and a plan from our coaches, once a month.",
-      ),
-      "وصل حديثًا": L("صالة البيت", "Home gym"),
-      "العروض": L("تنس وبادل", "Tennis & padel"),
-      "هدايا": L("رحلات وتخييم", "Camping"),
-      "نصايح": L("نصايح المدربين", "Coach tips"),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن مدار", "About Madar"), L("معدات تدريب مختارة من نادينا في الزمالك، من ٢٠١١.", "Training gear chosen at our Zamalek club, since 2011.")),
-  aboutStory(lib, {
-    photo: PHOTOS.hexGym,
+  about: {
+    line: L("معدات تدريب مختارة من نادينا في الزمالك، من ٢٠١١.", "Training gear chosen at our Zamalek club, since 2011."),
     alt: L("صالة جيم بإضاءة سداسية في السقف", "A gym under hexagon ceiling lights"),
     eyebrow: L("النادي والمتجر", "Club and shop"),
     title: L("كل قطعة عدّت على مدربينا", "Every piece passed our coaches"),
@@ -168,10 +116,182 @@ const about: Design[] = [
       "We test the iron on the floor, the rackets on court and the tents in Sinai. Whatever fails the test never reaches the shop.",
     ),
     more: L("وكل جهاز معاه ضمان سنة، والصيانة عندنا في النادي.", "Every piece carries a one-year guarantee, with servicing at the club."),
-    button: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
+  },
+  contact: {
+    title: L("زور النادي أو كلمنا", "Visit the club or call us"),
+    line: L(
+      `١٧ شارع حسن صبري، الزمالك، القاهرة، ${phone("٠١٢٢ ٧٣١ ٤٨٠٥")}`,
+      `17 Hassan Sabri St, Zamalek, Cairo | ${phone("+20 122 731 4805")}`,
+    ),
+    heading: L("اسأل مدرب عن أي قطعة", "Ask a coach about any piece"),
+  },
+  faq: {
+    line: L("التوصيل والضمان والتجربة.", "Delivery, guarantee and trying gear."),
+    question: L("أقدر أجرب المضرب قبل ما أشتري؟", "Can I try a racket before buying?"),
+    answer: L(
+      "أيوه، احجز ميعاد في النادي في الزمالك وجرّب أي مضرب في الملعب نص ساعة. والتوصيل في القاهرة والجيزة خلال يومين.",
+      "Yes. Book a slot at our Zamalek club and try any racket on court for half an hour. Cairo and Giza delivery takes two days.",
+    ),
+  },
+  custom: {
+    // The header's and the footer's links to the whole catalog, named for the trade.
+    "shop-all": L("كل المعدات", "Shop all"),
+    "footer-shop-all": L("كل المعدات", "All gear"),
+    // The footer's WhatsApp link: digits with the country code, the same on both sides.
+    "phone-digits": L("201227314805", "201227314805"),
+    // Four topics the letters cover (one or two words each).
+    "newsletter-interest-1": L("صالة البيت", "Home gym"),
+    "newsletter-interest-2": L("تنس وبادل", "Tennis & padel"),
+    "newsletter-interest-3": L("رحلات وتخييم", "Camping"),
+    "newsletter-interest-4": L("نصايح المدربين", "Coach tips"),
+  },
+  photos: {
+    hero: { wide: PHOTOS.heroPoster, video: PHOTOS.heroVideo },
+    story: PHOTOS.clubFloor,
+    about: PHOTOS.hexGym,
+  },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). Generic shop labels and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-topbar", {
+    text: {
+      "توصيل سريع لكل محافظات مصر": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "تتبّع طلبك": L("تتبّع طلبك", "Track order"),
+      "اسم متجرك": name,
+      "المتجر": x["shop-all"]!,
+      "العروض": L("وصل حديثًا", "New in"),
+      "المدونة": L("الأكثر طلبًا", "Best sellers"),
+      "من نحن": c.labels.about!,
+    },
+    links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
+  });
+
+  const footer = lib("footer-ruled", {
+    text: {
+      "م": initialOf(name),
+      "اسم متجرك": name,
+      "منتجات أصلية بضمان، توصلك لحد البيت.": c.footer.line!,
+      "تسوق": L("تسوّق", "Shop"),
+      "كل المنتجات": x["footer-shop-all"]!,
+      "العروض": L("الأعلى تقييمًا", "Top rated"),
+      "المساعدة": L("المساعدة", "Help"),
+      "من نحن": aboutName,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "/products": [SHOP, NEW, BEST, RATED], "https://wa.me/": `https://wa.me/${x["phone-digits"]!.en}` },
+  });
+
+  const home: Design[] = [
+    lib("hero-video", {
+      photo: [c.photos.hero.wide],
+      nodes: { "الفيديو": { props: { url: c.photos.hero.video } }, "التعتيم": { style: { opacity: 35 } } },
+      text: {
+        "فيديو الواجهة": c.hero.alt,
+        "المجموعة الجديدة": c.hero.eyebrow,
+        "مساحتك، بطريقتك": c.hero.title,
+        "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تسوّق الآن": c.hero.cta,
+        "شوف الجديد": L("وصل حديثًا", "New in"),
+      },
+      links: { "/products": SHOP, "/products?sort=newest": NEW },
+    }),
+    lib("categories-captioned", {
+      text: {
+        "اكتشف الأقسام": c.categories.title,
+        "كل الأقسام": L("الكل", "All"),
+        "منتج": L("منتج", "items"),
+      },
+      // All six categories in one row (the design shows five).
+      lists: [{ limit: 6 }],
+      nodes: { "الأقسام": { style: { columns: 6 } } },
+    }),
+    lib("products-feature", {
+      text: {
+        "اختيارنا ليك": c.products.primary.eyebrow!,
+        "اختيار الأسبوع": c.products.primary.title,
+      },
+      // The featured piece, then the main list (never the same product).
+      lists: [undefined, { source: journey.primary }],
+    }),
+    lib("about-fullbleed", {
+      photo: [undefined, undefined, c.photos.story],
+      text: {
+        "صورة القصة": c.story.alt,
+        "حكايتنا": c.story.eyebrow,
+        "تفاصيل صغيرة تصنع الفرق": c.story.title,
+        "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.": c.story.text,
+        "اعرف أكثر": c.story.cta,
+      },
+    }),
+    ...categoryRows(lib, {
+      viewAll: L("الكل", "All"),
+      nodes: { "صورة البطاقة": { style: { aspectRatio: "portrait" } } },
+    }),
+    lib("newsletter-interests", {
+      text: {
+        "إيه اللي يهمك؟": c.newsletter.title,
+        "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": c.newsletter.line,
+        "وصل حديثًا": x["newsletter-interest-1"]!,
+        "العروض": x["newsletter-interest-2"]!,
+        "هدايا": x["newsletter-interest-3"]!,
+        "نصايح": x["newsletter-interest-4"]!,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: primaryHref(journey.primary),
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, {
+          title: c.contact.title,
+          text: c.contact.line,
+          heading: c.contact.heading,
+        }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, {
+          text: c.faq.line,
+          question: c.faq.question,
+          answer: c.faq.answer,
+        }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -234,7 +354,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const SPORTS_LUXE = libraryTemplate({
+export const SPORTS_LUXE = editionTemplate({
   key: SPORTS_LUXE_KEY,
   version: 1,
   name: L("مدار", "Madar"),
@@ -258,38 +378,44 @@ export const SPORTS_LUXE = libraryTemplate({
   fonts: { heading: "Noto Kufi Arabic", body: "Readex Pro" },
   radius: 4,
   containerMaxWidth: 1440,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن مدار", "About"), seo: { title: L("عن مدار", "About Madar") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("زور النادي أو كلمنا", "Visit the club or call us"),
-        text: L(
-          `١٧ شارع حسن صبري، الزمالك، القاهرة، ${phone("٠١٢٢ ٧٣١ ٤٨٠٥")}`,
-          `17 Hassan Sabri St, Zamalek, Cairo | ${phone("+20 122 731 4805")}`,
-        ),
-        heading: L("اسأل مدرب عن أي قطعة", "Ask a coach about any piece"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("التوصيل والضمان والتجربة.", "Delivery, guarantee and trying gear."),
-        question: L("أقدر أجرب المضرب قبل ما أشتري؟", "Can I try a racket before buying?"),
-        answer: L(
-          "أيوه، احجز ميعاد في النادي في الزمالك وجرّب أي مضرب في الملعب نص ساعة. والتوصيل في القاهرة والجيزة خلال يومين.",
-          "Yes. Book a slot at our Zamalek club and try any racket on court for half an hour. Cairo and Giza delivery takes two days.",
-        ),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "labels.about",
+    "hero.alt",
+    "hero.eyebrow",
+    "hero.title",
+    "hero.line",
+    "hero.cta",
+    "categories.title",
+    "products.primary.eyebrow",
+    "products.primary.title",
+    "story",
+    "newsletter.title",
+    "newsletter.line",
+    "footer.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.hero.video",
+    "photos.story",
+    "custom.shop-all",
+    "custom.footer-shop-all",
+    "custom.phone-digits",
+    "custom.newsletter-interest-1",
+    "custom.newsletter-interest-2",
+    "custom.newsletter-interest-3",
+    "custom.newsletter-interest-4",
   ],
+  // `photos.about`: the about page's photo (falls back to the story's).
+  optional: ["photos.about"],
+  // The featured piece beside the best sellers; four category rows in order.
+  journey: { primary: "best-sellers", rows: [1, 2, 3, 4] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {
     thumbs: "bottom",
