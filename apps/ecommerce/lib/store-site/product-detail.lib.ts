@@ -114,6 +114,8 @@ export function toProductDetail(
     lowStockAlert: product.showLowStockBadge === true ? { show: true, threshold: product.lowStockThreshold ?? null } : null,
     variants,
     reviewCount: Number(product.reviewCount ?? 0),
+    // With no reviews and no questions the reviews section is not drawn (productSectionEmpty).
+    questionCount: Array.isArray(product.productQuestions) ? product.productQuestions.length : 0,
     brand: product.brand?.name ?? null,
     category,
     seller: {

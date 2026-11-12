@@ -462,6 +462,9 @@
     "invalid": "This link is not valid or has expired."
   },
   "storeProduct": {
+    "pieceChoice": "Your choice for piece {n}",
+    "pieceChoicesLabel": "Choice for each piece",
+    "pieceStockLimit": "{count, plural, =0 {This choice is sold out} one {Only 1 left of this choice} other {Only # left of this choice}}",
     "quantityOffers": {
       "title": "Buy more, save more",
       "buy": "{count, plural, one {Buy # piece} other {Buy # pieces}}",

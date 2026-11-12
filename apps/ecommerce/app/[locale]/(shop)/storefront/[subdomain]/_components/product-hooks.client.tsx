@@ -23,6 +23,8 @@ import { StoreBuyBox, StoreQuantity } from "./store-buy-box.client";
 import { StoreGallery } from "./store-product-gallery.client";
 import { StoreLiveViews, StoreLowStockAlert, StorePriceBlock, StoreStockLine } from "./store-product-info.client";
 import { StoreVariantPicker } from "./store-variant-picker.client";
+import { StorePieceChoices } from "./store-piece-choices.client";
+import { countPieces, resolvePieces } from "@/components/product-page/variant-options.lib";
 import { StoreRestockForm } from "./store-restock-form.client";
 import { StoreQuantityOffers } from "./store-quantity-offers.client";
 
@@ -155,6 +157,45 @@ export function StoreProductBuyBox({
   const hasStock = product.status === "active" && stock > 0 && !minOrder.unavailable;
   const twoButtons = buyNow && product.directCheckout !== true && hasStock;
 
+  // Pieces 2…N of a product with variants each get their own choice (2 black, 1 red).
+  // Not for a seller minimum (0151): each line would be checked against it alone.
+  const variants = product.productVariants ?? [];
+  const piecesOn = variants.length > 1 && minOrder.minimum <= 1 && hasStock && !inCart;
+  const [piecePicks, setPiecePicks] = useState<(string | null | undefined)[]>([]);
+  const changeQuantity = (next: number) => {
+    setQuantity(next);
+    // A removed piece forgets its choice: raising the quantity again copies the last one.
+    setPiecePicks((picks) => picks.slice(0, Math.max(0, next - 1)));
+  };
+  const pieces = piecesOn ? resolvePieces(variantId, piecePicks, quantity) : [];
+  const stockOf = (id: string | null) => {
+    if (product.trackStock === false) return Number.POSITIVE_INFINITY;
+    const found = variants.find((v) => v.id === id);
+    return found ? Number(found.stock ?? 0) : stock;
+  };
+  const lines = countPieces([variantId, ...pieces]);
+  const limits = new Map<string, number>();
+  for (const line of lines) if (line.variantId && line.quantity > stockOf(line.variantId)) limits.set(line.variantId, stockOf(line.variantId));
+  const maxQuantity = piecesOn
+    ? product.trackStock === false
+      ? Number.POSITIVE_INFINITY
+      : variants.reduce((sum, v) => sum + Math.max(0, Number(v.stock ?? 0)), 0)
+    : stock;
+  const cartLines = piecesOn ? lines.map((line) => ({ variantId: line.variantId ?? undefined, quantity: line.quantity })) : undefined;
+  const choices = piecesOn ? (
+    <StorePieceChoices
+      product={product}
+      pieces={pieces}
+      limits={limits}
+      onChange={(index, id) => {
+        // The other pieces keep what they show now; only a piece added later copies the last one.
+        const next: (string | null)[] = [...pieces];
+        next[index] = id;
+        setPiecePicks(next);
+      }}
+    />
+  ) : null;
+
   const box = (layout: "inline" | "dock", hideQuantity = false) => (
     <StoreBuyBox
       product={product}
@@ -164,7 +205,10 @@ export function StoreProductBuyBox({
       quantity={quantity}
       minQuantity={minOrder.floor}
       belowMinimum={minOrder.unavailable}
-      onQuantityChange={setQuantity}
+      onQuantityChange={changeQuantity}
+      maxQuantity={maxQuantity}
+      lines={cartLines}
+      blocked={limits.size > 0}
       addLabel={addLabel}
       buyLabel={buyLabel}
       outline={buttonStyle === "outline"}
@@ -182,7 +226,7 @@ export function StoreProductBuyBox({
   const tiers = hasStock ? (
     <>
       {minOrder.minimum > 1 && <p className="mb-3 text-sm font-semibold text-(--sf-ink)">{tCommon("minOrderLine", { count: minOrder.minimum })}</p>}
-      <StoreQuantityOffers productId={product.id} price={price} stock={stock} quantity={quantity} floor={minOrder.floor} readOnly={inCart} onSelect={setQuantity} />
+      <StoreQuantityOffers productId={product.id} price={price} stock={maxQuantity} quantity={quantity} floor={minOrder.floor} readOnly={inCart} onSelect={changeQuantity} />
     </>
   ) : null;
   if (!stickyMobile) {
@@ -191,6 +235,7 @@ export function StoreProductBuyBox({
         <>
           {tiers}
           {box("inline")}
+          {choices && <div className="mt-4">{choices}</div>}
         </>
       );
     }
@@ -213,9 +258,10 @@ export function StoreProductBuyBox({
       {restock && <div className="md:mt-3">{restock}</div>}
       {twoButtons && (
         <div className="md:hidden">
-          <StoreQuantity value={quantity} min={minOrder.floor} max={stock} onChange={setQuantity} />
+          <StoreQuantity value={quantity} min={minOrder.floor} max={maxQuantity} onChange={changeQuantity} />
         </div>
       )}
+      {choices && <div className="mt-4">{choices}</div>}
       <SiteDock>
         <DockBar>{box("dock", twoButtons)}</DockBar>
       </SiteDock>

@@ -68,6 +68,11 @@ export interface CartState {
     data?: CartItem | null;
     metaEventId?: string;
   }>;
+  /** Several variants of one product at once (one toast, one refresh). */
+  addLinesToCart: (params: {
+    productId: string;
+    lines: { variantId?: string; quantity: number }[];
+  }) => Promise<{ success: boolean; added: number; value: number; metaEventId?: string }>;
   updateQuantity: (
     itemId: string,
     quantity: number

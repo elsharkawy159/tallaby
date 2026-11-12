@@ -37,6 +37,9 @@ export function StoreBuyBox({
   showBuyNow,
   layout = "inline",
   hideQuantity = false,
+  maxQuantity,
+  lines,
+  blocked = false,
 }: {
   product: Product;
   /** The selected variant's stock (else the product's). */
@@ -57,6 +60,12 @@ export function StoreBuyBox({
   showBuyNow: boolean;
   layout?: "inline" | "dock";
   hideQuantity?: boolean;
+  /** The stepper's top when the pieces may be other variants (all the variants' stock); else `stock`. */
+  maxQuantity?: number;
+  /** The pieces as cart lines (2 black, 1 red); more than one line adds them all. */
+  lines?: { variantId?: string; quantity: number }[];
+  /** A piece asks for more than its variant's stock: the add buttons wait. */
+  blocked?: boolean;
 }) {
   const t = useTranslations("storeProduct");
   const tCommon = useTranslations("common");
@@ -92,6 +101,8 @@ export function StoreBuyBox({
       productId={product.id}
       quantity={quantity}
       variantId={selectedVariantId ?? undefined}
+      lines={lines}
+      disabled={blocked}
       className={cn(button, outline ? OUTLINE : SOLID)}
       variant={outline ? "outline" : "default"}
       stock={stock}
@@ -115,6 +126,8 @@ export function StoreBuyBox({
           productId={product.id}
           quantity={quantity}
           variantId={selectedVariantId ?? undefined}
+      lines={lines}
+      disabled={blocked}
           className={cn(button, INK)}
           variant="default"
           stock={stock}
@@ -125,7 +138,7 @@ export function StoreBuyBox({
     ) : null;
 
   const stepper = hideQuantity ? null : (
-    <StoreQuantity value={quantity} min={minQuantity} max={stock} compact={dock} onChange={onQuantityChange} />
+    <StoreQuantity value={quantity} min={minQuantity} max={maxQuantity ?? stock} compact={dock} onChange={onQuantityChange} />
   );
 
   if (dock) {

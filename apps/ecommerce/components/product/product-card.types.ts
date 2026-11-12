@@ -58,6 +58,8 @@ export interface AddToCartButtonProps {
   label?: string;
   /** The add icon: a cart (default) or a shopping bag (the store product page). */
   icon?: "cart" | "bag";
+  /** Several variants of the product at once (2 black, 1 red); used when it has more than one line. */
+  lines?: { variantId?: string; quantity: number }[];
 }
 
 export interface WishlistButtonProps {
