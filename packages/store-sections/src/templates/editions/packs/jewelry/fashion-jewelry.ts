@@ -22,9 +22,6 @@
  * sheets). Banner 11185142 (five stone-bead bracelets on white boards).
  * Story 4714615 (vintage earrings, a velvet ring box and silk ribbon spools).
  * About 9430429 (silver rings and a chain around a shell on blush).
- * `jewelry-luxe` spotlight 6716445 (a pearl set in two-tone metal on pink).
- * `karat` lookbook 34501351, 12144978, 36229131, 34544786, 38480376; story
- * rings 15518758, 7743156, 9430463, 4155247.
  *
  * Left out after the check: 9173459 (crosses and a religious medallion),
  * 9478069 (letter pendants and a printed card), 37801576 and 37801574
@@ -47,12 +44,9 @@
  * 2026-11-11, no people or lettering, used nowhere else). Its dots: the
  * plating, the chain, the stones, care.
  *
- * Looks: `zahra` (the niche's template, one template per niche; it shows
- * the pack itself), then `karat` and `jewelry-luxe` until the accessories
- * switch takes them off. Four products per category, so each
- * `jewelry-luxe` category row is one full row of four. No `reviews`: a pack
- * holds no invented buyer quotes, and without them `karat` leaves its
- * reviews section out.
+ * Looks: `zahra` only (the niche's template, one template per niche; the
+ * accessories switch, 2026-11-12, took `karat` and `jewelry-luxe` off). Four
+ * products per category. No `reviews`: a pack holds no invented buyer quotes.
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, pexels } from "../../../library-template";
@@ -71,7 +65,7 @@ const TILES = [
 
 export const FASHION_JEWELRY: Edition = {
   niche: "fashion-jewelry",
-  looks: ["zahra", "karat", "jewelry-luxe"],
+  looks: ["zahra"],
   priceBand: { min: 250, max: 1500 },
   // Square packshots on pure white: a square white stage shows them whole, and every piece reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -87,7 +81,7 @@ export const FASHION_JEWELRY: Edition = {
       ["bracelets", "انسيالات وأساور", "Bracelets", TILES[2]!],
       ["rings", "خواتم", "Rings", TILES[3]!],
     ],
-    // Newest first. The three featured pieces fill `jewelry-luxe`'s spotlight.
+    // Newest first.
     products: [
       ["gold-coin-layered-necklace", "necklaces", "سلسلة طبقتين دهبي بدلاية عملة", "Gold Layered Coin Necklace", shot("gold-coin-layered-necklace"), 650, { isFeatured: true, rating: 4.8, sold90: 212 }],
       ["gold-hoop-earrings", "earrings", "حلق هوب دهبي عريض", "Chunky Gold Hoop Earrings", shot("gold-hoop-earrings"), 380, { isFeatured: true, rating: 4.9, sold90: 318 }],
@@ -127,21 +121,6 @@ export const FASHION_JEWELRY: Edition = {
         { x: 46, y: 70 },
       ],
     },
-    custom: {
-      // `jewelry-luxe` spotlight, 4:5: a pearl set in two-tone metal on pink paper.
-      "spot-photo": pexels(6716445, 1200),
-      // `karat` lookbook, square: one large photo, then four small ones (subjects centred: the bento crops to the middle).
-      "lookbook-1": pexels(34501351, 1200), // earrings and a pearl scrunchie bracelet on white chiffon
-      "lookbook-2": pexels(12144978, 900), // braided gold hoops on kraft paper
-      "lookbook-3": pexels(36229131, 900), // pearl strands and clip earrings in a mother-of-pearl shell
-      "lookbook-4": pexels(34544786, 900), // studs and pearls in a teal leaf dish
-      "lookbook-5": pexels(38480376, 900), // enamel bangles and bead bracelets on grey felt
-      // `karat` story rings 5 to 8 (rings 1 to 4 show the category tiles).
-      "stories-5": pexels(15518758, 900), // twisted gold hoops hanging from a leaf
-      "stories-6": pexels(7743156, 900), // a pearl wrap bracelet and a pearl strand on tulle
-      "stories-7": pexels(9430463, 900), // silver rings and a chain on a stone, blush
-      "stories-8": pexels(4155247, 900), // gold chains and rings in a brass dish among leaves
-    },
   },
   copy: {
     announcement: [
@@ -163,9 +142,7 @@ export const FASHION_JEWELRY: Edition = {
     categories: { title: L("اختاري القطعة", "Choose your piece") },
     products: {
       primary: {
-        alt: L("طقم لولي بمعدن دهبي وفضي على ورق بمبي", "A pearl set in gold and silver tones on pink paper"),
         eyebrow: L("المفضلين عندنا", "Our favourites"),
-        // Read by both looks: over the three featured pieces (`jewelry-luxe`) and over the shelf tabs (`karat`), so it names no number.
         title: L("القطع اللي الكل بيسأل عليها", "The pieces everyone asks about"),
         line: L(
           "سلسلة العملة بطبقتين، والهوب الدهبي العريض، وانسيال البيبر كليب: يتلبسوا مع بعض أو كل واحد لوحده.",
@@ -243,27 +220,8 @@ export const FASHION_JEWELRY: Edition = {
       ),
     },
     custom: {
-      // `jewelry-luxe`: the link to the whole catalog (header, footer, the spotlight's "view all").
+      // `zahra`: the header's link to the whole catalog.
       "shop-all": L("كل الإكسسوارات", "All jewelry"),
-      // `karat`: the store's short name inside a sentence.
-      "store-short": L("حِلية", "Hilya"),
-      // `karat`: the hero's small line and its round sticker (a price point, not an offer).
-      "hero-note": L("تشكيلة الموسم", "This season"),
-      "hero-sticker-1": L("هدايا تحت", "Gifts under"),
-      "hero-sticker-2": L("٥٠٠", "500"),
-      "hero-sticker-3": L("جنيه", "EGP"),
-      // `karat`: the eight story rings. 1 to 4 show the category tiles, in the categories' order.
-      "stories-1": L("سلاسل", "Necklaces"),
-      "stories-2": L("حلقان", "Earrings"),
-      "stories-3": L("انسيالات", "Bracelets"),
-      "stories-4": L("خواتم", "Rings"),
-      "stories-5": L("هوب", "Hoops"),
-      "stories-6": L("لولي", "Pearls"),
-      "stories-7": L("فضي", "Silver"),
-      "stories-8": L("دهبي", "Gold-tone"),
-      // `karat`: the lookbook's brand tile. No invented handle: the seller's own replaces it.
-      "lookbook-handle": L("حِلية على إنستجرام", "Hilya on Instagram"),
-      "lookbook-line": L("أفكار تنسيق جديدة كل أسبوع", "New styling ideas every week"),
       // `zahra`: the noun after a category's product count.
       "products-noun": L("قطعة", "pieces"),
       // `zahra`: the four anatomy notes, in the order of `photos.look.dots` (a title of one or two words, one line each).
@@ -278,105 +236,4 @@ export const FASHION_JEWELRY: Edition = {
     },
   },
   productPage: { copy: { reviews: L("قالوا إيه عن القطعة دي", "What buyers say"), related: L("تتلبس معاها", "Wear it with") } },
-  // Jewelry-luxe's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Bareeq", a warm
-  // gold glow for work and evenings, best sellers in the spotlight. Same pieces and prices; its own copy, photos
-  // and journey. The spotlight photo stays the pack's: only this look shows it.
-  perLook: {
-    "jewelry-luxe": {
-      store: {
-        name: L("بريق", "Bareeq"),
-        description: L("إكسسوارات مطلية دهب بلمسة هادية، للبس كل يوم وللسهرة.", "Gold-tone jewelry with a quiet shine, for every day and evenings out."),
-      },
-      copy: {
-        announcement: [
-          L("قطع جديدة كل شهر", "New pieces every month"),
-          L("الدفع عند الاستلام", "Cash on delivery"),
-          L("تغليف هدية مع كل طلب", "Gift wrapping with every order"),
-        ],
-        labels: { about: L("عن بريق", "About Bareeq") },
-        hero: {
-          alt: L("حلق دهبي وانسيال رفيع على ترابيزة برتقالي في نور الشمس", "Gold earrings and a fine bracelet on a terracotta table in sunlight"),
-          eyebrow: L("لمعة المسا", "Evening shine"),
-          title: L("لمعة دهبي من غير تكلّف", "A gold glow, kept simple"),
-          line: L(
-            "سلاسل وحلقان وانسيالات وخواتم مطلية دهب، تكمّل لبس الشغل وتنوّر السهرة.",
-            "Gold-plated necklaces, earrings, bracelets and rings that finish a work outfit and light up an evening.",
-          ),
-          cta: L("اكتشفي القطع", "Discover the pieces"),
-        },
-        categories: { title: L("اختاري على حسب القطعة", "Shop by piece") },
-        products: {
-          primary: {
-            eyebrow: L("الأكثر طلبًا", "Most ordered"),
-            title: L("القطع اللي بترجع تتطلب", "The pieces people reorder"),
-            line: L("القطع اللي عميلاتنا بيرجعوا يطلبوها، لنفسهم أو هدية.", "The pieces our customers come back for, for themselves or as gifts."),
-            cta: L("شوفي الكل", "See them all"),
-          },
-        },
-        story: {
-          alt: L("سلاسل دهبي متكوّمة على طبق بورسلين قديم", "Gold chains heaped on an old porcelain plate"),
-          eyebrow: L("إزاي بنختار", "How we choose"),
-          title: L("سلسلة واحدة، طرق كتير", "One chain, many ways to wear it"),
-          text: L(
-            "بنختار سلاسل تتلبس لوحدها أو فوق بعض، وبنكتب طول كل سلسلة بالسنتيمتر عشان تعرفي هتقع فين.",
-            "We choose chains that work alone or layered, and list each length in centimetres so you know where it will sit.",
-          ),
-          cta: L("حكايتنا", "Our story"),
-        },
-        trust: [
-          { title: L("قطع جديدة كل شهر", "New every month"), line: L("تشكيلة صغيرة بتتجدد", "A small range that keeps changing") },
-          { title: L("طول السلسلة مكتوب", "Chain length listed"), line: L("بالسنتيمتر في كل صفحة", "In centimetres on every page") },
-          { title: L("استبدال سهل", "Easy exchange"), line: L("خلال ١٤ يوم لو القطعة مالبستيهاش", "Within 14 days if the piece is unworn") },
-          { title: L("تغليف هدية", "Gift wrapping"), line: L("مع كل طلب", "With every order") },
-        ],
-        newsletter: {
-          title: L("قطعة جديدة كل شهر", "A new piece every month"),
-          line: L("رسالة في أول كل شهر فيها القطع الجديدة وإزاي تنسّقيها.", "A letter at the start of each month with the new pieces and how to wear them."),
-        },
-        footer: { line: L("بريق: إكسسوارات مطلية دهب، للبس كل يوم وللسهرة.", "Bareeq: gold-plated jewelry for every day and evenings out.") },
-        about: {
-          line: L("إكسسوارات مطلية دهب بلمسة هادية.", "Gold-plated jewelry with a quiet shine."),
-          alt: L("انسيال دهبي بحلقات عريضة على حجر رمادي جنب ورد توليب", "A chunky gold link bracelet on grey stone beside tulips"),
-          eyebrow: L("عن بريق", "About Bareeq"),
-          title: L("لمعة صغيرة تكفي", "A little shine is enough"),
-          text: L(
-            "بريق بدأ من علبة إكسسوار مليانة قطع بنحبها ومش بنلبسها. فبقينا نختار قطع بسيطة مطلية دهب عيار ١٨، تتلبس مع قميص الشغل زي ما تتلبس مع فستان السهرة.",
-            "Bareeq began with a jewelry box full of pieces we loved but never wore. So we choose simple 18K gold-plated pieces that go with a work shirt as well as an evening dress.",
-          ),
-          more: L(
-            "وصفحة كل قطعة بتقول خامتها بالظبط: ستانلس مطلي، فضة مطلية، كريستال أو لولي صناعي.",
-            "And each page names the exact material: plated steel, plated silver, crystal or faux pearl.",
-          ),
-          cta: L("اكتشفي القطع", "Discover the pieces"),
-        },
-        contact: {
-          title: L("كلّمينا", "Talk to us"),
-          line: L(
-            "عايزة تنسّقي سلاسل مع بعض؟ ابعتي لنا صورة لبسك ونقترح عليكي.",
-            "Want to layer necklaces? Send us a photo of your outfit and we suggest a few.",
-          ),
-          heading: L("اسألي عن تنسيق أو عن طلبك", "Ask about styling or your order"),
-        },
-        faq: {
-          line: L("العناية والخامات والتوصيل.", "Care, materials and delivery."),
-          question: L("إزاي أحافظ على لمعة القطعة؟", "How do I keep a piece shining?"),
-          answer: L(
-            "اقلعيها قبل الدش والرياضة والبرفان، وامسحيها بقماشة ناعمة ناشفة، واحفظيها في الكيس بتاعها بعيد عن الرطوبة.",
-            "Take it off before showering, exercise and perfume, wipe it with a soft dry cloth and keep it in its pouch away from damp.",
-          ),
-        },
-      },
-      // Pexels, checked by eye 2026-11-11 (no people, hands or lettering): warm gold on cream, blush and terracotta.
-      photos: {
-        hero: { wide: pexels(12320900, 1920), tall: pexels(19564918, 1200) },
-        tiles: [pexels(34372550, 1200), pexels(28716777, 1200), pexels(12638300, 1200), pexels(11567607, 1200)],
-        // Jewelry-luxe shows no banner; given so the two looks share no photo.
-        banner: pexels(7232404, 1920),
-        story: pexels(10816570, 1200),
-        about: pexels(20559476, 1200),
-      },
-      // The spotlight shows the best sellers (karat's shelf opens on the newest).
-      journey: { primary: "best-sellers" },
-    },
-  },
 };

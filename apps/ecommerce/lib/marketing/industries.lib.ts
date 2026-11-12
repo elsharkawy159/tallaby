@@ -194,7 +194,7 @@ export const INDUSTRIES: readonly Industry[] = [
     icon: Gem,
     group: "fashion",
     templateCategory: "jw",
-    templateKeys: ["jewelry-luxe", "jewelry-bold", "jewelry-warm", "karat"],
+    templateKeys: ["jewelry-luxe", "zahra", "jewelry-warm", "karat"],
     photo: px(12194350, 1200),
     heroCover: true,
     productPhotos: [px(12124617), px(29967978), px(7679654), px(8502482)],

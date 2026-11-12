@@ -46,7 +46,7 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
   { niche: "handbags", template: "shanta", edition: "handbags", status: "ready" },
   { niche: "womens-shoes", template: "kasr", edition: "womens-shoes", status: "ready" },
   { niche: "mens-shoes", template: "ghorza", edition: "mens-shoes", status: "ready" },
-  { niche: "slippers-clogs", template: "tasfya", edition: "slippers-clogs", status: "pending" },
+  { niche: "slippers-clogs", template: "tasfya", edition: "slippers-clogs", status: "ready" },
   { niche: "sneakers", template: "sports-bold", edition: "sneakers", status: "pending" },
   { niche: "backpacks-travel", template: "safar", status: "pending" }, // new pack
   // ── accessories (industry "jewelry") ──
@@ -75,7 +75,10 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
  * per niche. Add one only when `isIndustrySwitchable` says so; the switch
  * also deletes the industry's templates that are in no row (plan §2).
  */
-export const SWITCHED_INDUSTRIES: ReadonlySet<string> = new Set<string>([]);
+export const SWITCHED_INDUSTRIES: ReadonlySet<string> = new Set<string>([
+  // Accessories, 2026-11-12: lulu, mahr and jewelry-bold deleted.
+  "jewelry",
+]);
 
 const isReady = (row: NicheTemplate) => row.status === "ready";
 

@@ -22,8 +22,6 @@
  * (three spools of silk ribbon beside a white rose, a calm grey field).
  * Story 30056548 (a cream satin bow on white paper). About 4491555 (a
  * flower crown on gold polka-dot gift paper, white space to the right).
- * `karat` lookbook 9093777, 33343186, 37801583, 35993344, 19457054; story
- * rings 7123092, 9428776, 23440285, 19507872.
  *
  * Left out after the check: 6983530 (a brand mark on the glasses case),
  * 18031831 (a lip tint label), 18017909 (a supplement label), 30988733,
@@ -43,10 +41,9 @@
  *
  * Looks: `kholkhal`, the niche's template (one template per niche, ROADMAP
  * F-90): its default content and demo are this pack, so the template and the
- * edition are one shop. `karat` still draws the pack until the accessories
- * switch takes it off (`distinct.test.ts` lists the niche as pending). No
- * `reviews`: a pack holds no invented buyer quotes, and without them `karat`
- * leaves its reviews section out.
+ * edition are one shop. It is the pack's only look (the accessories switch,
+ * 2026-11-12, took `karat` off). No `reviews`: a pack holds no invented
+ * buyer quotes.
  *
  * Kholkhal's own photos (2026-11-11, checked by eye, none used elsewhere):
  * hero slides 2 and 3, 20178660 (a gold shell claw clip on a white knit in
@@ -73,7 +70,7 @@ const TILES = [
 
 export const HAIR_ACCESSORIES: Edition = {
   niche: "hair-accessories",
-  looks: ["kholkhal", "karat"],
+  looks: ["kholkhal"],
   priceBand: { min: 60, max: 450 },
   // Square packshots on pure white: a square white stage shows them whole, and every piece reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -89,7 +86,7 @@ export const HAIR_ACCESSORIES: Edition = {
       ["headbands", "توكات راس", "Headbands", TILES[2]!],
       ["pins-barrettes", "بنس وتوك صغيرة", "Pins & barrettes", TILES[3]!],
     ],
-    // Newest first (the `karat` shelf's first tab).
+    // Newest first.
     products: [
       ["tortoise-claw-clip", "claw-clips", "توكة كلبس تورتواز كبيرة", "Large Tortoise Claw Clip", shot("tortoise-claw-clip"), 180, { isFeatured: true, rating: 4.9, sold90: 342 }],
       ["silk-scrunchie-set", "scrunchies", "طقم ٣ سكرانشي ساتان (أوف وايت وروز وشمبانيا)", "Satin Scrunchie Set of 3 (Ivory, Blush, Champagne)", shot("silk-scrunchie-set"), 240, { isFeatured: true, rating: 4.8, sold90: 296 }],
@@ -123,17 +120,6 @@ export const HAIR_ACCESSORIES: Edition = {
       // `kholkhal`: the hero carousel's second and third slides (wide, cropped tall on phones; subject centred).
       "hero-2": pexels(20178660, 1920), // a gold shell claw clip on a white knit in window light
       "hero-3": pexels(31702117, 1920), // embroidered snap clips laid in two rows on white
-      // `karat` lookbook, square: one large photo, then four small ones (subjects centred: the bento crops to the middle).
-      "lookbook-1": pexels(9093777, 1200), // a lilac daisy scrunchie beside a cup of daisies on white
-      "lookbook-2": pexels(33343186, 900), // cream and beige claw clips with white pebbles
-      "lookbook-3": pexels(37801583, 900), // a pearl bracelet and peach ribbon on a pink plate
-      "lookbook-4": pexels(35993344, 900), // a tangle of pink satin ribbon
-      "lookbook-5": pexels(19457054, 900), // ivory satin ribbon and a bow on a wooden table
-      // `karat` story rings 5 to 8 (rings 1 to 4 show the category tiles).
-      "stories-5": pexels(7123092, 900), // pink crepe ribbon, pompoms and gift bows
-      "stories-6": pexels(9428776, 900), // pearl strands and white coral on linen
-      "stories-7": pexels(23440285, 900), // a pile of champagne silk ribbon
-      "stories-8": pexels(19507872, 900), // gold and pink gift bows on white
     },
   },
   copy: {
@@ -156,9 +142,7 @@ export const HAIR_ACCESSORIES: Edition = {
     categories: { title: L("اختاري توكتك", "Pick your clip") },
     products: {
       primary: {
-        alt: L("توك كلبس ولولي وسكرانشي ساتان", "Claw clips, pearls and satin scrunchies"),
         eyebrow: L("المفضلين عندنا", "Our favourites"),
-        // Read over the shelf tabs (`karat`), so it names no number.
         title: L("اللي البنات بيطلبوه تاني وتالت", "The ones girls keep coming back for"),
         line: L(
           "الكلبس التورتواز الكبير، وطقم السكرانشي الساتان، وتوكة الراس القطيفة: تلاتة يمشوا مع أي لبس.",
@@ -271,25 +255,6 @@ export const HAIR_ACCESSORIES: Edition = {
       "banner-eyebrow": L("ساتان وقطيفة وقطن", "Satin, velvet and cotton"),
       "banner-title": L("سكرانشي مش بيشد الشعر", "Scrunchies that never pull"),
       "banner-line": L("من غير معدن، فمش بيكسر الشعر ولا بيعمل علامة.", "No metal parts, so they never snap hair or leave a dent."),
-      // `karat`: the store's short name inside a sentence.
-      "store-short": L("فيونكة", "Fyonka"),
-      // `karat`: the hero's small line and its round sticker (a price point, not an offer).
-      "hero-note": L("ألوان الموسم", "This season's colours"),
-      "hero-sticker-1": L("هدايا تحت", "Gifts under"),
-      "hero-sticker-2": L("٢٥٠", "250"),
-      "hero-sticker-3": L("جنيه", "EGP"),
-      // `karat`: the eight story rings. 1 to 4 show the category tiles, in the categories' order.
-      "stories-1": L("كلبس", "Claw clips"),
-      "stories-2": L("سكرانشي", "Scrunchies"),
-      "stories-3": L("توكات راس", "Headbands"),
-      "stories-4": L("بنس", "Pins"),
-      "stories-5": L("بمبي", "Pink"),
-      "stories-6": L("لولي", "Pearls"),
-      "stories-7": L("ساتان", "Satin"),
-      "stories-8": L("هدايا", "Gifts"),
-      // `karat`: the lookbook's brand tile. No invented handle: the seller's own replaces it.
-      "lookbook-handle": L("فيونكة على إنستجرام", "Fyonka on Instagram"),
-      "lookbook-line": L("تسريحات سريعة جديدة كل أسبوع", "New quick hairstyles every week"),
     },
   },
   productPage: { copy: { reviews: L("قالوا إيه عن التوكة دي", "What buyers say"), related: L("تتلبس معاها", "Wear it with") } },

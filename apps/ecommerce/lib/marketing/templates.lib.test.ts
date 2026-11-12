@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isRetiredTemplate } from "@workspace/store-sections/templates";
+import { CODE_TEMPLATES, NICHES, getEdition, isRetiredTemplate, readyNicheTemplate } from "@workspace/store-sections/templates";
 import { buildGallery, buildNicheTabs, categoryCode, galleryCards, localized, nicheEntries, pickEdition, tabEdition, templateFrameSrc, type CatalogTemplate, type GalleryNicheTab } from "./templates.lib";
 
 const row = (over: Partial<CatalogTemplate>): CatalogTemplate => ({
@@ -124,7 +124,7 @@ describe("niche tabs", () => {
 });
 
 describe("one template per niche (ROADMAP F-90)", () => {
-  // The real switched set is empty; these pass one. Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
+  // These pass their own switched set (the real one holds accessories). Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
   const SWITCHED = new Set(["mobile-accessories"]);
 
   it("leaves out a switched industry's templates that serve no niche; nothing when none is switched", () => {
@@ -194,5 +194,39 @@ describe("one template per niche (ROADMAP F-90)", () => {
     // Without switched tabs nothing changes anywhere.
     expect(ids(galleryCards(entries, [dresses], "ac", null))).toEqual(["kabl", "glow", "volt"]);
     expect(galleryCards(entries, [dresses], "all", null).every((c) => c.edition === null && c.tag === null)).toBe(true);
+  });
+});
+
+// Accessories switched on 2026-11-12: the real catalog and switched set, built as templates.server.ts builds them.
+describe("accessories gallery, one template per niche (ROADMAP F-90)", () => {
+  const gallery = buildGallery(
+    CODE_TEMPLATES.map((t) => row({ key: t.key, category: t.category })),
+    "en",
+    (r) => isRetiredTemplate(r),
+  );
+  const niches = NICHES.filter((n) => n.industry === "jewelry").flatMap((niche) => {
+    const found = readyNicheTemplate(niche.id);
+    return found ? [{ id: niche.id, industry: niche.industry, name: niche.name, looks: [found.template], switched: true as const, edition: found.edition ?? null }] : [];
+  });
+  const tabs = buildNicheTabs(niches, gallery.map((e) => e.id), "en");
+
+  it("shows seven niche cards on ?category=jw, each with its niche tag and edition; fadda native", () => {
+    const cards = galleryCards(gallery, tabs, "jw", null);
+    expect(cards.map((c) => [c.entry.id, c.edition])).toEqual([
+      ["karat", "glasses"],
+      ["saat", "watches"],
+      ["jewelry-luxe", "gold-jewelry"],
+      ["fadda", null],
+      ["zahra", "fashion-jewelry"],
+      ["kholkhal", "hair-accessories"],
+      ["jewelry-warm", "belts-wallets"],
+    ]);
+    expect(cards.map((c) => c.tag)).toEqual(niches.map((n) => n.name.en));
+    for (const card of cards) if (card.edition) expect(getEdition(card.edition)?.looks, card.entry.id).toEqual([card.entry.id]);
+  });
+
+  it("a niche tab holds its one card; the deleted templates are gone", () => {
+    expect(galleryCards(gallery, tabs, "jw", "watches").map((c) => [c.entry.id, c.edition, c.tag])).toEqual([["saat", "watches", tabs.find((t) => t.id === "watches")!.name]]);
+    for (const key of ["lulu", "mahr", "jewelry-bold"]) expect(gallery.some((e) => e.id === key), key).toBe(false);
   });
 });

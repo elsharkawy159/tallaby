@@ -82,7 +82,7 @@ describe("niche list", () => {
       for (const look of looks) expect(keys.has(look), `${niche}: ${look}`).toBe(true);
     }
     expect(NICHE_LOOKS.dresses).toEqual(["fashion-luxe", "vella", "kasr"]);
-    // 197 editions in the plan (§2.2 totals).
-    expect(Object.values(NICHE_LOOKS).reduce((sum, looks) => sum + looks.length, 0)).toBe(199);
+    // 197 editions in the plan (§2.2 totals); mahr and jewelry-bold left with the accessories switch (2026-11-12).
+    expect(Object.values(NICHE_LOOKS).reduce((sum, looks) => sum + looks.length, 0)).toBe(197);
   });
 });

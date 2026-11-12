@@ -66,9 +66,7 @@ import { NOUR } from "./nour";
 import { MAFRASH } from "./mafrash";
 import { ROKN } from "./rokn";
 import { ZAHRA } from "./zahra";
-import { LULU } from "./lulu";
 import { SAAT } from "./saat";
-import { MAHR } from "./mahr";
 import { MAMA } from "./mama";
 import { YOGA } from "./yoga";
 import { KOORA } from "./koora";
@@ -118,7 +116,6 @@ import { GROCERY_WARM } from "./grocery-warm";
 import { PERFUMES_BOLD } from "./perfumes-bold";
 import { PERFUMES_LUXE } from "./perfumes-luxe";
 import { PERFUMES_WARM } from "./perfumes-warm";
-import { JEWELRY_BOLD } from "./jewelry-bold";
 import { JEWELRY_LUXE } from "./jewelry-luxe";
 import { JEWELRY_WARM } from "./jewelry-warm";
 import { GIFTS_BOLD } from "./gifts-bold";
@@ -136,7 +133,7 @@ import type { TemplateDefinition, TemplateDemo } from "./types";
 /** Templates 02–110, built from section-library designs (`library-template.ts`), in registry order. */
 export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, BOTANICA, DAILY, SIZZLE, HARVEST, LOAF, ROAST, SAKAN, KARAT, FADDA, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO,
   BASHRA, SUFRA, SABAHO, DAR, HADAYA, REP, PITSTOP, GHORZA,
-  KETTAN, ZAY, SITARA, SHANTA, TASFYA, KABL, ZAKI, SAA, TANY, NADA, KOHL, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, LULU, SAAT, MAHR, MAMA, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
+  KETTAN, ZAY, SITARA, SHANTA, TASFYA, KABL, ZAKI, SAA, TANY, NADA, KOHL, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, SAAT, MAMA, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
   MAWSEM, SHASHA, WARD, BEITY, SOUQ, SALON, KHOLKHAL, FARHA, NASHAT, TARIK,
   // Niche templates (2026-10-28): up to three per niche, with the 12-slot home (top bar to footer).
   FURNITURE_LUXE, FURNITURE_BOLD, FURNITURE_WARM,
@@ -146,7 +143,7 @@ export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [STREETWEAR, KAS
   BEAUTY_LUXE, BEAUTY_BOLD,
   GROCERY_LUXE, GROCERY_BOLD, GROCERY_WARM,
   PERFUMES_LUXE, PERFUMES_BOLD, PERFUMES_WARM,
-  JEWELRY_LUXE, JEWELRY_BOLD, JEWELRY_WARM,
+  JEWELRY_LUXE, JEWELRY_WARM,
   GIFTS_LUXE, GIFTS_BOLD, GIFTS_WARM,
   SPORTS_LUXE, SPORTS_BOLD, SPORTS_WARM,
   // After the WoodMart "Accessories" demo's layout (2026-10-29).

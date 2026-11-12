@@ -51,8 +51,8 @@
  * (37401771), 34399145 (34399114), 29502933 (29502931), 20493840 (the
  * hero's own shoot).
  *
- * Looks: `jewelry-luxe` (its other planned looks, `mahr` and `kholkhal`, are
- * not edition-ready). Four products per category, so each `jewelry-luxe`
+ * Looks: `jewelry-luxe` only, the niche's template (one template per niche;
+ * `mahr` was deleted with the accessories switch, 2026-11-12). Four products per category, so each `jewelry-luxe`
  * category row is one full row of four. The three featured pieces (the
  * wedding band, the rope chain and the bangle set) fill the spotlight. No
  * `reviews`: a pack holds no invented buyer quotes.
@@ -74,7 +74,6 @@ const TILES = [
 
 export const GOLD_JEWELRY: Edition = {
   niche: "gold-jewelry",
-  // `mahr` and `kholkhal` are planned looks for this niche but not edition-ready yet.
   looks: ["jewelry-luxe"],
   priceBand: { min: 4000, max: 60000 },
   // Square packshots on pure white: a square white stage shows each piece whole, and every one reads as one shoot.

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CODE_TEMPLATES } from "@workspace/store-sections/templates";
 import {
   cardEdition,
   categoryOrder,
@@ -193,7 +194,7 @@ describe("cardEdition", () => {
 });
 
 describe("one template per niche (ROADMAP F-90)", () => {
-  // The real switched set is empty; these pass one. Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
+  // These pass their own switched set (the real one holds accessories). Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
   const SWITCHED = new Set(["mobile-accessories"]);
   const gallery = [
     { key: "volt", category: "mobile-accessories", sortOrder: 60 },
@@ -246,6 +247,37 @@ describe("one template per niche (ROADMAP F-90)", () => {
     expect(galleryNiches("all", keys).niches).toEqual([]);
     // The same tab, switched: its ready niche cards in the gallery, in niche order (pc-gaming, then lighting).
     expect(galleryNiches("electronics", keys, new Set(["electronics"])).tabLooks).toEqual(["arena", "zaki"]);
+  });
+});
+
+describe("accessories, switched to one template per niche (ROADMAP F-90, 2026-11-12)", () => {
+  // The real catalog and the real switched set.
+  const gallery = galleryTemplates(CODE_TEMPLATES.map((t) => ({ key: t.key, category: t.category })));
+  const keys = new Set(gallery.map((tpl) => tpl.key));
+  const NICHE_ORDER = ["glasses", "watches", "gold-jewelry", "silver-jewelry", "fashion-jewelry", "hair-accessories", "belts-wallets"];
+  const LOOKS = ["karat", "saat", "jewelry-luxe", "fadda", "zahra", "kholkhal", "jewelry-warm"];
+
+  it("shows seven niche cards, one per niche, in niche order", () => {
+    const filter = galleryNiches("jewelry", keys);
+    expect(filter.switched).toBe(true);
+    expect(filter.niches.map((n) => n.id)).toEqual(NICHE_ORDER);
+    expect(filter.tabLooks).toEqual(LOOKS);
+    const all = pageTemplates(gallery, { page: 1, category: "jewelry", nicheLooks: filter.looksOf(null), tabLooks: filter.tabLooks });
+    expect(all.items.map((tpl) => tpl.key)).toEqual(LOOKS);
+    expect(all.total).toBe(7);
+    for (const [i, niche] of NICHE_ORDER.entries()) expect(filter.looksOf(niche), niche).toEqual([LOOKS[i]]);
+  });
+
+  it("names each card's niche and applies its edition; fadda is native", () => {
+    const cards = nicheCards(LOOKS);
+    expect(Object.keys(cards)).toEqual(LOOKS);
+    for (const [i, key] of LOOKS.entries()) expect(cards[key]!.niche, key).toBe(NICHE_ORDER[i]);
+    expect(cards.fadda!.edition).toBeNull();
+    expect(cards.zahra!.edition).toBe("fashion-jewelry");
+    expect(cards.karat!.name.en).toEqual(expect.any(String));
+    // The deleted templates are not in the gallery.
+    for (const key of ["lulu", "mahr", "jewelry-bold"]) expect(keys.has(key), key).toBe(false);
+    expect(gallery.filter((tpl) => tpl.category === "jewelry").map((tpl) => tpl.key).sort()).toEqual([...LOOKS].sort());
   });
 });
 

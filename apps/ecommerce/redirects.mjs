@@ -21,6 +21,13 @@ export const redirects = [
   { source: "/affiliate", destination: "/affiliates", permanent: false, has: [PLATFORM_HOST] },
   { source: "/en/affiliate", destination: "/en/affiliates", permanent: false, has: [PLATFORM_HOST] },
 
+  // Templates deleted when accessories switched to one template per niche
+  // (ROADMAP F-90, 2026-11-12): their pages go to the accessories gallery.
+  ...["lulu", "mahr", "jewelry-bold"].flatMap((id) => [
+    { source: `/templates/${id}`, destination: "/templates?category=jw", permanent: false, has: [PLATFORM_HOST] },
+    { source: `/en/templates/${id}`, destination: "/en/templates?category=jw", permanent: false, has: [PLATFORM_HOST] },
+  ]),
+
   // Seller onboarding lives in the dashboard.
   {
     source: "/onboarding",

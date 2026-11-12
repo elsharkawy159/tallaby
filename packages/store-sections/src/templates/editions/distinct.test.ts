@@ -18,20 +18,14 @@ import type { Edition } from "./types";
 const PENDING = new Set<string>([
   // fashion-bold is the niche's template and shows the pack itself; zay and fashion-luxe draw it until the fashion switch takes them off.
   "pants-jeans",
-  // jewelry-warm is the niche's template (one template per niche); zay still draws the pack until the accessories switch takes it off.
-  "belts-wallets",
-  // zahra is the niche's template and shows the pack itself; karat and jewelry-luxe draw it until the accessories switch takes them off.
-  "fashion-jewelry",
-  // kholkhal is the niche's template and shows the pack itself; karat draws it until the accessories switch takes it off.
-  "hair-accessories",
   // kasr is the niche's template and shows the pack itself; fashion-luxe and vella draw it until the shoes-and-bags switch takes them off.
   "womens-shoes",
   // shanta is the niche's template and shows the pack itself; fashion-luxe draws it (its own shop the look only) until the shoes-and-bags switch takes it off.
   "handbags",
   // ghorza is the niche's template and shows the pack itself; zay draws it until the fashion switch takes it off.
   "mens-shoes",
-  // saat is the niche's template and shows the pack itself; jewelry-luxe draws it until the accessories switch takes it off.
-  "watches",
+  // tasfya is the niche's template and shows the pack itself; streetwear (its own hero only) and zay draw it until the shoes-and-bags switch takes them off.
+  "slippers-clogs",
 ]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */

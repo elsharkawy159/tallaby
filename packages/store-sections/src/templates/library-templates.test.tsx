@@ -33,7 +33,8 @@ const SEEDS: Record<string, readonly string[]> = {
     ...["kettan", "zay", "sitara", "shanta", "tasfya", "kabl", "zaki", "saa", "tany"],
     ...["nada", "kohl", "barber", "matbakh", "fokhar", "tawla", "tanzim", "qahwa", "khodar"],
     ...["lahma", "halawa", "atara", "bunn", "mobilia", "zarea", "nour", "mafrash", "rokn", "zahra"],
-    ...["lulu", "saat", "mahr", "mama", "yoga", "koora"],
+    // lulu and mahr were deleted with the accessories switch (2026-11-12).
+    ...["saat", "mama", "yoga", "koora"],
     ...["darraga", "sabaha", "boxing", "tyre", "zeina", "kahraba", "safar", "garagy"],
   ],
   // Templates 39–48 and 101–110 (v1; 101–110 open with the carousel hero).

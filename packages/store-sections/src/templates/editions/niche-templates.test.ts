@@ -1,7 +1,7 @@
 /**
  * One template per niche (ROADMAP F-90, docs/systems/one-template-per-niche.md
  * §1): the `NICHE_TEMPLATES` rules, and the switched-industry rules checked
- * on the real set and, since that is empty for now, on fake sets too.
+ * on the real set (accessories since 2026-11-12) and on fake sets too.
  */
 import { describe, expect, it } from "vitest";
 import { CLASSIC_KEY } from "../classic";
@@ -101,7 +101,28 @@ describe("switched industries", () => {
     }
   });
 
-  // The real set is empty for now: the same checks on fake rows and sets.
+  it("accessories (jewelry) is switched: seven niche cards, one template each, nothing retired left in code", () => {
+    expect(SWITCHED_INDUSTRIES.has("jewelry")).toBe(true);
+    expect(isIndustrySwitchable("jewelry")).toBe(true);
+    const cards = switchedNicheTemplates("jewelry");
+    expect(cards.map((row) => [row.niche, row.template, row.edition ?? null])).toEqual([
+      ["glasses", "karat", "glasses"],
+      ["watches", "saat", "watches"],
+      ["gold-jewelry", "jewelry-luxe", "gold-jewelry"],
+      ["silver-jewelry", "fadda", null],
+      ["fashion-jewelry", "zahra", "fashion-jewelry"],
+      ["hair-accessories", "kholkhal", "hair-accessories"],
+      ["belts-wallets", "jewelry-warm", "belts-wallets"],
+    ]);
+    // Every accessories template in code is a niche card; the deleted ones are gone.
+    expect(CODE_TEMPLATES.filter((t) => t.category === "jewelry").map((t) => t.key).sort()).toEqual(cards.map((row) => row.template).sort());
+    for (const key of ["lulu", "mahr", "jewelry-bold"]) expect(CODE_TEMPLATES.some((t) => t.key === key), key).toBe(false);
+    expect(switchedNicheCard("zahra")?.niche).toBe("fashion-jewelry");
+    // One pack, one template: each accessories pack draws only on its niche's template.
+    for (const row of cards.filter((r) => r.edition)) expect(EDITIONS.find((e) => e.niche === row.edition)?.looks, row.niche).toEqual([row.template]);
+  });
+
+  // The other industries are not switched yet: the same checks on fake rows and sets.
   const FAKE: readonly NicheTemplate[] = [
     { niche: "phone-cases", template: "volt", edition: "phone-cases", status: "ready" },
     { niche: "chargers-cables", template: "kabl", edition: "chargers-cables", status: "ready" },

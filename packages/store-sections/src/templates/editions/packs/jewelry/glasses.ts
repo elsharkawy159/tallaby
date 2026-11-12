@@ -1,23 +1,25 @@
 /**
- * The glasses pack (niche editions, ROADMAP F-90): an eyewear shop with
- * sunglasses, optical frames, blue-light glasses and sport and kids pairs.
- * Data only; the looks draw it.
+ * The glasses pack (niche editions, ROADMAP F-90): "Bossa", an eyewear shop
+ * with colourful sunglasses, optical frames, blue-light glasses and sport
+ * and kids pairs at friendly prices. Data only; `karat` draws it.
  *
  * Packshots: the generated white-background set in the `library-media`
  * bucket (`editionPhoto("glasses", <slug>)`), square, one angle.
  *
- * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
- * glasses on pale paper, white and beige only, no people or hands, none used
- * by a template or another pack, none twice. Left out after the check:
- * 9328548 and 26050118 (brand and model lettering on the temples), 5465834
- * (a mark on the lens), 23962110 (barcode tags), 28834289 and 5706223
- * (lettering on a temple and a book cover). Known and accepted: 14348164
- * shows a keyboard's own key legends (delete, return, shift), no brand.
+ * Art-directed photos: Pexels, each checked by eye (2026-11-11): glasses on
+ * pink, peach, red and pale paper, no people or hands, no lettering on the
+ * temples, none used by a template or another pack, none twice. Hero
+ * 26682030 (wide) and 12693047 (tall); tiles 20093375, 13697735, 35597800,
+ * 5713793; banner 1313064 (karat shows none); story 10154994 (the about
+ * page). Left out after the check: 9328548 and 26050118 (brand and model
+ * lettering on the temples), 5465834 (a mark on the lens), 23962110 (barcode
+ * tags), 28834289 and 5706223 (lettering on a temple and a book cover).
  *
- * Looks: `jewelry-luxe`, then `karat`. Four products per category, so each
- * category row is one full row of four. No `reviews`: a pack holds no
- * invented buyer quotes, and without them `karat` leaves its reviews
- * section out.
+ * Looks: `karat` only, the niche's template (one template per niche). The
+ * accessories switch (2026-11-12) took `jewelry-luxe` off and folded karat's
+ * own shop (its former `perLook` entry) into the pack, so karat shows the
+ * same store as before. No `reviews`: a pack holds no invented buyer quotes,
+ * and without them `karat` leaves its reviews section out.
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, pexels } from "../../../library-template";
@@ -27,29 +29,24 @@ import type { Edition } from "../../types";
 const shot = (slug: string) => editionPhoto("glasses", slug);
 
 /** Category tiles, 3:4, in the categories' order. */
-const TILES = [
-  pexels(27353347, 1200), // three black sunglasses on white, blind shadows
-  pexels(5766564, 1200), // a wall of optical frames on glass shelves
-  pexels(14348164, 1200), // round glasses beside a pale keyboard
-  pexels(28938431, 1200), // three small colourful sunglasses on yellow
-];
+const TILES = [pexels(20093375, 1200), pexels(13697735, 1200), pexels(35597800, 1200), pexels(5713793, 1200)];
 
 export const GLASSES: Edition = {
   niche: "glasses",
-  looks: ["jewelry-luxe", "karat"],
+  looks: ["karat"],
   priceBand: { min: 250, max: 1500 },
   // Square packshots on pure white: a square white stage shows them whole, and every frame reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
   demo: demoStore({
-    name: L("لمحة", "Lamha"),
-    description: L("نظارات شمس وإطارات طبية ونظارات بلو لايت، بتوصلك لحد البيت.", "Sunglasses, optical frames and blue-light glasses, delivered to your door."),
+    name: L("بُصّة", "Bossa"),
+    description: L("نظارات شمس ملوّنة وإطارات طبية وبلو لايت بأسعار تفرّح.", "Colourful sunglasses, optical frames and blue-light glasses at happy prices."),
     categories: [
       ["sunglasses", "نظارات شمس", "Sunglasses", TILES[0]!],
       ["optical", "إطارات طبية", "Optical frames", TILES[1]!],
       ["blue-light", "نظارات بلو لايت", "Blue-light glasses", TILES[2]!],
       ["sport-kids", "رياضية وأطفال", "Sport and kids", TILES[3]!],
     ],
-    // Newest first. The three featured pairs fill `jewelry-luxe`'s spotlight.
+    // Newest first (karat's shelf opens on the newest).
     products: [
       ["gold-round-optical-frame", "optical", "إطار نظارة طبية مدور دهبي", "Gold Round Optical Frame", shot("gold-round-optical-frame"), 600, { isFeatured: true, rating: 4.9, sold90: 187 }],
       ["round-tortoise-sunglasses", "sunglasses", "نظارة شمس مدورة تورتواز", "Round Tortoiseshell Sunglasses", shot("round-tortoise-sunglasses"), 450, { isFeatured: true, rating: 4.8, sold90: 264 }],
@@ -70,18 +67,13 @@ export const GLASSES: Edition = {
     ],
   }),
   photos: {
-    // One shoot: metal and tortoiseshell frames scattered on pale beige paper.
-    hero: { wide: pexels(4226868, 1920), tall: pexels(4226875, 1200) },
+    hero: { wide: pexels(26682030, 1920), tall: pexels(12693047, 1200) },
     tiles: TILES,
-    // Eight frames laid out on peach paper.
-    banner: pexels(26050120, 1920),
-    // Round black frames on a notepad with a dried flower (the subject sits in the middle, so the 4:5 and the landscape crop both keep it).
-    story: pexels(4439427, 1200),
-    // Silver aviator frames beside a blank card with a brass clip (landscape, the about page).
-    about: pexels(4226787, 1200),
+    // Karat shows no banner; the pack still holds one.
+    banner: pexels(1313064, 1920),
+    // The about page.
+    story: pexels(10154994, 1200),
     custom: {
-      // `jewelry-luxe` spotlight, 4:5: a gold and a silver frame on peach, long shadows.
-      "spot-photo": pexels(29395557, 1200),
       // `karat` lookbook, square: one large photo, then four small ones (subjects centred: the bento and the rings crop to the middle).
       "lookbook-1": pexels(7602873, 1200), // black round glasses on a beige chair
       "lookbook-2": pexels(25389282, 900), // a black rectangular frame on white
@@ -97,204 +89,94 @@ export const GLASSES: Edition = {
   },
   copy: {
     announcement: [
-      L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
-      L("الدفع عند الاستلام", "Cash on delivery"),
-      L("كل نظارة بتوصل في علبتها ومعاها فوطة تنضيف", "Every pair arrives in its case with a cleaning cloth"),
+      L("ألوان جديدة كل أسبوع", "New colours every week"),
+      L("التوصيل لكل مصر", "Delivery across Egypt"),
+      L("ادفع لما النظارة توصل", "Pay when your pair arrives"),
     ],
-    labels: { about: L("حكايتنا", "Our story"), search: L("دوّر على نظارة", "Search for a pair") },
+    labels: { about: L("عن بُصّة", "About Bossa"), search: L("دوّر على نظارة", "Search for a pair") },
     hero: {
-      alt: L("إطارات نظارات معدن وتورتواز على ورق بيج", "Metal and tortoiseshell frames on beige paper"),
-      eyebrow: L("تشكيلة الموسم", "This season's edit"),
-      title: L("نظارة تليق عليك وتريّح عينك", "Frames that suit your face"),
-      line: L(
-        "نظارات شمس وإطارات طبية ونظارات بلو لايت، مختارة بشكل يناسب كل وش وكل يوم.",
-        "Sunglasses, optical frames and blue-light glasses, chosen to suit every face and every day.",
-      ),
-      cta: L("تسوّق النظارات", "Shop the glasses"),
+      alt: L("إطارين نظارة تورتواز على خلفية وردي", "Two tortoiseshell frames on a pink backdrop"),
+      eyebrow: L("نظارات بمزاج", "Glasses with a mood"),
+      title: L("بُص للدنيا بلون", "See the world in colour"),
+      line: L("شمس وطبي وبلو لايت، وكلها أقل من ٧٠٠ جنيه.", "Sunglasses, optical and blue-light frames, all under EGP 700."),
+      cta: L("شوف الجديد", "See what's new"),
     },
-    categories: { title: L("تسوّق حسب النوع", "Shop by type") },
+    categories: { title: L("كل نوع وله لون", "Every type, every colour") },
     products: {
       primary: {
-        alt: L("إطار دهبي وإطار فضي على ورق مشمشي", "A gold frame and a silver frame on peach paper"),
-        eyebrow: L("اختياراتنا", "Our picks"),
-        // Read by both looks: over the three featured pairs (`jewelry-luxe`) and over the shelf tabs (`karat`), so it names no number.
-        title: L("نظارات بنرشحها لك", "Pairs we recommend"),
+        // The shelf's title, over its tabs.
+        title: L("النظارات اللي بتخلص بسرعة", "The pairs that sell out fast"),
         line: L("إطار طبي خفيف، ونظارة شمس كلاسيك، وأفياتور دهبي: تلاتة يمشوا مع أي لبس.", "A light optical frame, a classic pair of sunglasses and a gold aviator: three that go with anything."),
-        cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
       },
     },
     story: {
-      alt: L("نظارة مدورة سودا على نوتة بيضا وجنبها زهرة مجففة", "Round black glasses on a white notepad beside a dried flower"),
-      eyebrow: L("إزاي بنشتغل", "How we work"),
-      title: L("كل نظارة بتتراجع قبل ما تتغلف", "Every pair is checked before it is packed"),
+      alt: L("نظارة بإطار أسود وموف على ورق وردي جنب قبعة قش", "Black and purple frames on pink paper beside a straw hat"),
+      eyebrow: L("اختار بمزاجك", "Choose by mood"),
+      title: L("نظارة لكل لبس", "A pair for every outfit"),
       text: L(
-        "بنراجع المفصلات والعدسات ونظبط الدراعات، وبعدين بنحط النظارة في علبتها مع فوطة تنضيف. اللي في الصورة هو اللي بيوصلك.",
-        "We check the hinges and lenses and straighten the arms, then put each pair in its case with a cleaning cloth. What you see in the photo is what arrives.",
+        "مش لازم نظارة واحدة لكل حاجة: واحدة ملوّنة للبحر، وواحدة هادية للشغل، وبلو لايت قدام الشاشة.",
+        "You do not need one pair for everything: a bright one for the beach, a quiet one for work and blue-light glasses for the screen.",
       ),
-      cta: L("اعرف حكايتنا", "Our story"),
+      cta: L("عننا", "About us"),
     },
     trust: [
-      { title: L("توصيل لحد الباب", "Delivered to your door"), line: L("بنبعت طلبك لأي محافظة", "We send your order to any governorate") },
-      { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما النظارة توصلك", "Pay when your pair arrives") },
-      { title: L("استبدال سهل", "Easy exchange"), line: L("لو المقاس مش مريح كلّمنا ونبدّلها", "If the fit is not right, message us and we swap it") },
+      { title: L("أسعار تفرّح", "Friendly prices"), line: L("كل النظارات أقل من ٧٠٠ جنيه", "Every pair under EGP 700") },
       { title: L("علبة وفوطة", "Case and cloth"), line: L("مع كل نظارة", "With every pair") },
+      { title: L("استبدال سهل", "Easy exchange"), line: L("لو الإطار مش مريح نبدّله", "If the frame is not comfortable, we swap it") },
+      { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما النظارة توصل", "Pay when your pair arrives") },
     ],
     newsletter: {
-      title: L("اعرف الموديلات الجديدة أول واحد", "See new styles first"),
-      line: L("رسالة واحدة في الشهر: موديلات جديدة ونصايح تختار بيها الإطار المناسب لوشك.", "One letter a month: new styles and tips for choosing the frame that suits your face."),
+      title: L("الألوان الجديدة أول بأول", "New colours as they land"),
+      line: L("رسالة كل أسبوعين فيها الألوان والأشكال الجديدة.", "A letter every two weeks with the new colours and shapes."),
       note: L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."),
     },
-    footer: { line: L("نظارات شمس وإطارات طبية ونظارات بلو لايت، مختارة بعناية وبتوصلك لحد البيت.", "Sunglasses, optical frames and blue-light glasses, carefully chosen and delivered to your door.") },
+    footer: { line: L("بُصّة: نظارات ملوّنة بأسعار تفرّح.", "Bossa: colourful glasses at happy prices.") },
     about: {
-      line: L("نظارات مختارة بعناية، لكل وش ولكل يوم.", "Carefully chosen glasses, for every face and every day."),
-      alt: L("إطار أفياتور فضي جنب كارت أبيض بمشبك نحاس", "A silver aviator frame beside a blank card with a brass clip"),
-      eyebrow: L("حكايتنا", "Our story"),
-      title: L("موديلات قليلة، مختارة صح", "Few styles, chosen well"),
+      line: L("نظارات ملوّنة بأسعار تفرّح.", "Colourful glasses at happy prices."),
+      alt: L("نظارة بإطار أسود وموف على ورق وردي جنب قبعة قش", "Black and purple frames on pink paper beside a straw hat"),
+      eyebrow: L("عننا", "About us"),
+      title: L("النظارة إكسسوار، مش عدسة وبس", "Glasses are an accessory, not just lenses"),
       text: L(
-        "بنختار كل موديل بنفسنا ونجربه قبل ما ننزله: المفصلة، الوزن، وراحة الأنف. عشان كده التشكيلة صغيرة وكل نظارة فيها ليها سبب.",
-        "We pick every style ourselves and try it before we list it: the hinge, the weight, the nose pads. That is why the range is small and every pair in it has a reason to be there.",
+        "بُصّة بدأت عشان كنا عايزين نظارة شكلها حلو من غير ما ندفع مرتب شهر. بنختار ألوان وأشكال كتير، وبنجرّب كل إطار قبل ما ينزل.",
+        "Bossa started because we wanted good-looking glasses without paying a month's salary. We pick lots of colours and shapes, and try every frame before we list it.",
       ),
-      more: L("ولو محتار بين موديلين، ابعت لنا صورتك ونقولك رأينا.", "And if you cannot decide between two styles, send us a photo and we tell you what we think."),
-      cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
+      more: L("وكل نظارة بتوصلك في علبتها ومعاها فوطة تنضيف.", "And every pair arrives in its case with a cleaning cloth."),
+      cta: L("شوف الجديد", "See what's new"),
     },
     contact: {
       title: L("كلّمنا", "Talk to us"),
-      line: L("ابعت لنا شكل وشك أو مقاس نظارتك القديمة ونرشح لك الإطار المناسب.", "Tell us your face shape or the size of your old pair and we suggest the right frame."),
-      heading: L("اسأل عن المقاس أو عن طلبك", "Ask about sizing or your order"),
+      line: L("ابعت لنا صورتك ونقولك أي لون وأي شكل هيليق عليك.", "Send us a photo and we tell you which colour and shape suit you."),
+      heading: L("اسأل عن لون أو مقاس", "Ask about a colour or a size"),
     },
     faq: {
-      line: L("المقاسات والعدسات والتوصيل.", "Sizing, lenses and delivery."),
-      question: L("أعرف مقاس النظارة المناسب إزاي؟", "How do I know which size fits me?"),
+      line: L("العدسات والمقاسات والتوصيل.", "Lenses, sizes and delivery."),
+      question: L("ينفع أركّب عدسات نظري في الإطار؟", "Can I fit my prescription lenses in a frame?"),
       answer: L(
-        "بص على دراع نظارتك القديمة من جوه: هتلاقي تلات أرقام (عرض العدسة، الكوبري، طول الدراع). قارنهم بالمقاسات المكتوبة في صفحة كل نظارة.",
-        "Look inside the arm of your old pair: you will find three numbers (lens width, bridge, arm length). Compare them with the sizes on each product page.",
+        "أيوه، أي محل بصريات يقدر يركّب عدسات نظرك في الإطارات الطبية والبلو لايت. مقاس العدسة والكوبري مكتوب في صفحة كل إطار.",
+        "Yes, any optician can fit your prescription lenses in our optical and blue-light frames. The lens and bridge sizes are on each frame's page.",
       ),
     },
     custom: {
-      // `jewelry-luxe`: the link to the whole catalog (header, footer, the spotlight's "view all").
-      "shop-all": L("كل النظارات", "All glasses"),
       // `karat`: the store's short name inside a sentence.
-      "store-short": L("لمحة", "Lamha"),
-      // `karat`: the hero's small line and its round sticker (not an offer).
-      "hero-note": L("وصلت دلوقتي", "Just in"),
-      "hero-sticker-1": L("موديلات", "New"),
-      "hero-sticker-2": L("٢٠٢٦", "2026"),
-      "hero-sticker-3": L("جديدة", "styles"),
+      "store-short": L("بُصّة", "Bossa"),
+      // `karat`: the hero's small line and its round sticker (a price point, not an offer).
+      "hero-note": L("ألوان الموسم", "Colours of the season"),
+      "hero-sticker-1": L("أقل من", "Under"),
+      "hero-sticker-2": L("٧٠٠", "700"),
+      "hero-sticker-3": L("جنيه", "EGP"),
       // `karat`: the eight story rings. 1 to 4 show the category tiles, in the categories' order.
-      "stories-1": L("شمس", "Sunglasses"),
-      "stories-2": L("طبية", "Optical"),
-      "stories-3": L("بلو لايت", "Blue-light"),
-      "stories-4": L("أطفال", "Kids"),
-      "stories-5": L("عدسات مرايا", "Mirrored"),
-      "stories-6": L("إطارات سودا", "Black frames"),
-      "stories-7": L("مدورة", "Round"),
-      "stories-8": L("للمكتب", "For the desk"),
+      "stories-1": L("شمس", "Sun"),
+      "stories-2": L("طبي", "Optical"),
+      "stories-3": L("للشاشة", "Screen"),
+      "stories-4": L("للصغيرين", "Little ones"),
+      "stories-5": L("مرايا", "Mirror lens"),
+      "stories-6": L("إطار أسود", "Black frame"),
+      "stories-7": L("مدوّرة", "Round"),
+      "stories-8": L("للمكتب", "Desk days"),
       // `karat`: the lookbook's brand tile. No invented handle: the seller's own replaces it.
-      "lookbook-handle": L("لمحة على إنستجرام", "Lamha on Instagram"),
-      "lookbook-line": L("صور جديدة كل أسبوع", "New photos every week"),
+      "lookbook-handle": L("بُصّة على إنستجرام", "Bossa on Instagram"),
+      "lookbook-line": L("ألوان جديدة كل أسبوع", "New colours every week"),
     },
   },
   productPage: { copy: { reviews: L("آراء اللي لبسوها", "From people who wear it"), related: L("نظارات تانية هتعجبك", "More pairs you may like") } },
-  // Karat's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Bossa", colourful
-  // frames at friendly prices, pink and playful. Same pairs and prices; its own copy and photos. Karat's story
-  // rings 5 to 8 and its lookbook keep the pack's photos: only this look shows them.
-  perLook: {
-    karat: {
-      store: {
-        name: L("بُصّة", "Bossa"),
-        description: L("نظارات شمس ملوّنة وإطارات طبية وبلو لايت بأسعار تفرّح.", "Colourful sunglasses, optical frames and blue-light glasses at happy prices."),
-      },
-      copy: {
-        announcement: [
-          L("ألوان جديدة كل أسبوع", "New colours every week"),
-          L("التوصيل لكل مصر", "Delivery across Egypt"),
-          L("ادفع لما النظارة توصل", "Pay when your pair arrives"),
-        ],
-        labels: { about: L("عن بُصّة", "About Bossa") },
-        hero: {
-          alt: L("إطارين نظارة تورتواز على خلفية وردي", "Two tortoiseshell frames on a pink backdrop"),
-          eyebrow: L("نظارات بمزاج", "Glasses with a mood"),
-          title: L("بُص للدنيا بلون", "See the world in colour"),
-          line: L("شمس وطبي وبلو لايت، وكلها أقل من ٧٠٠ جنيه.", "Sunglasses, optical and blue-light frames, all under EGP 700."),
-          cta: L("شوف الجديد", "See what's new"),
-        },
-        categories: { title: L("كل نوع وله لون", "Every type, every colour") },
-        // The shelf's title, over its tabs.
-        products: { primary: { title: L("النظارات اللي بتخلص بسرعة", "The pairs that sell out fast") } },
-        story: {
-          alt: L("نظارة بإطار أسود وموف على ورق وردي جنب قبعة قش", "Black and purple frames on pink paper beside a straw hat"),
-          eyebrow: L("اختار بمزاجك", "Choose by mood"),
-          title: L("نظارة لكل لبس", "A pair for every outfit"),
-          text: L(
-            "مش لازم نظارة واحدة لكل حاجة: واحدة ملوّنة للبحر، وواحدة هادية للشغل، وبلو لايت قدام الشاشة.",
-            "You do not need one pair for everything: a bright one for the beach, a quiet one for work and blue-light glasses for the screen.",
-          ),
-          cta: L("عننا", "About us"),
-        },
-        trust: [
-          { title: L("أسعار تفرّح", "Friendly prices"), line: L("كل النظارات أقل من ٧٠٠ جنيه", "Every pair under EGP 700") },
-          { title: L("علبة وفوطة", "Case and cloth"), line: L("مع كل نظارة", "With every pair") },
-          { title: L("استبدال سهل", "Easy exchange"), line: L("لو الإطار مش مريح نبدّله", "If the frame is not comfortable, we swap it") },
-          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما النظارة توصل", "Pay when your pair arrives") },
-        ],
-        newsletter: {
-          title: L("الألوان الجديدة أول بأول", "New colours as they land"),
-          line: L("رسالة كل أسبوعين فيها الألوان والأشكال الجديدة.", "A letter every two weeks with the new colours and shapes."),
-        },
-        footer: { line: L("بُصّة: نظارات ملوّنة بأسعار تفرّح.", "Bossa: colourful glasses at happy prices.") },
-        about: {
-          line: L("نظارات ملوّنة بأسعار تفرّح.", "Colourful glasses at happy prices."),
-          alt: L("نظارة بإطار أسود وموف على ورق وردي جنب قبعة قش", "Black and purple frames on pink paper beside a straw hat"),
-          eyebrow: L("عننا", "About us"),
-          title: L("النظارة إكسسوار، مش عدسة وبس", "Glasses are an accessory, not just lenses"),
-          text: L(
-            "بُصّة بدأت عشان كنا عايزين نظارة شكلها حلو من غير ما ندفع مرتب شهر. بنختار ألوان وأشكال كتير، وبنجرّب كل إطار قبل ما ينزل.",
-            "Bossa started because we wanted good-looking glasses without paying a month's salary. We pick lots of colours and shapes, and try every frame before we list it.",
-          ),
-          more: L("وكل نظارة بتوصلك في علبتها ومعاها فوطة تنضيف.", "And every pair arrives in its case with a cleaning cloth."),
-          cta: L("شوف الجديد", "See what's new"),
-        },
-        contact: {
-          title: L("كلّمنا", "Talk to us"),
-          line: L("ابعت لنا صورتك ونقولك أي لون وأي شكل هيليق عليك.", "Send us a photo and we tell you which colour and shape suit you."),
-          heading: L("اسأل عن لون أو مقاس", "Ask about a colour or a size"),
-        },
-        faq: {
-          line: L("العدسات والمقاسات والتوصيل.", "Lenses, sizes and delivery."),
-          question: L("ينفع أركّب عدسات نظري في الإطار؟", "Can I fit my prescription lenses in a frame?"),
-          answer: L(
-            "أيوه، أي محل بصريات يقدر يركّب عدسات نظرك في الإطارات الطبية والبلو لايت. مقاس العدسة والكوبري مكتوب في صفحة كل إطار.",
-            "Yes, any optician can fit your prescription lenses in our optical and blue-light frames. The lens and bridge sizes are on each frame's page.",
-          ),
-        },
-        custom: {
-          "store-short": L("بُصّة", "Bossa"),
-          "hero-note": L("ألوان الموسم", "Colours of the season"),
-          // The round sticker: a price point, not an offer.
-          "hero-sticker-1": L("أقل من", "Under"),
-          "hero-sticker-2": L("٧٠٠", "700"),
-          "hero-sticker-3": L("جنيه", "EGP"),
-          "stories-1": L("شمس", "Sun"),
-          "stories-2": L("طبي", "Optical"),
-          "stories-3": L("للشاشة", "Screen"),
-          "stories-4": L("للصغيرين", "Little ones"),
-          "stories-5": L("مرايا", "Mirror lens"),
-          "stories-6": L("إطار أسود", "Black frame"),
-          "stories-7": L("مدوّرة", "Round"),
-          "stories-8": L("للمكتب", "Desk days"),
-          "lookbook-handle": L("بُصّة على إنستجرام", "Bossa on Instagram"),
-          "lookbook-line": L("ألوان جديدة كل أسبوع", "New colours every week"),
-        },
-      },
-      // Pexels, checked by eye 2026-11-11 (no people, no lettering on the temples): pink, peach and red.
-      photos: {
-        hero: { wide: pexels(26682030, 1920), tall: pexels(12693047, 1200) },
-        tiles: [pexels(20093375, 1200), pexels(13697735, 1200), pexels(35597800, 1200), pexels(5713793, 1200)],
-        // Karat shows no banner; given so the two looks share no photo.
-        banner: pexels(1313064, 1920),
-        // The about page.
-        story: pexels(10154994, 1200),
-      },
-    },
-  },
 };

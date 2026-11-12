@@ -136,7 +136,7 @@ const ROWS: readonly Row[] = [
     "gold-jewelry", "jewelry", "ذهب", "Gold jewelry",
     "ذهب, دهب, مجوهرات ذهب, مشغولات ذهبية, عيار 21, عيار 18, سبائك, سبائك ذهب, جنيهات ذهب, دبل, دبلة, شبكة, محابس, خواتم ذهب, سلاسل ذهب, غوايش",
     "gold, gold jewelry, gold jewellery, gold rings, gold necklace, gold chains, gold bars, gold bracelets, 21k, 18k, 24k, karat gold, bullion, wedding rings, wedding bands, fine jewelry",
-    "mahr, jewelry-luxe, kholkhal",
+    "jewelry-luxe, kholkhal",
   ],
   [
     "silver-jewelry", "jewelry", "فضة", "Silver jewelry",
@@ -148,7 +148,7 @@ const ROWS: readonly Row[] = [
     "fashion-jewelry", "jewelry", "إكسسوارات حريمي", "Fashion jewelry",
     "اكسسوارات حريمي, اكسسوارات بناتي, اكسسوار, اكسسوارات ستانلس, ستانلس, ستانلس ستيل, حلق, حلقان, سلسلة, سلاسل, خاتم, خواتم, اسورة, اساور, انسيال, انسيالات, كوليه, خلخال, مطلي ذهب, اكسسوارات مطلية",
     "fashion jewelry, fashion jewellery, costume jewelry, jewelry, jewellery, earrings, earring, necklace, necklaces, bracelet, bracelets, rings, ring, anklet, anklets, pendant, pendants, gold plated, charms",
-    "karat, zahra, jewelry-bold",
+    "zahra, karat",
   ],
   [
     "hair-accessories", "jewelry", "إكسسوارات شعر", "Hair accessories",

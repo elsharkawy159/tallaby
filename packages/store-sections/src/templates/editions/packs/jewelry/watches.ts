@@ -26,10 +26,7 @@
  * analogue face on pale grey). Story 8327593 (an open pocket watch movement,
  * a case knife, a crystal and a spring-bar tool on a white bench; a stamp on
  * the knife is too small to read). About 8327579 (a
- * staking set and its punches on a worn wooden bench). `jewelry-luxe`
- * spotlight 31839434 (an open pocket watch beside dried flowers on white,
- * window light). Known and accepted: 31839434's dial reads "QUARTZ", a
- * generic word, no maker.
+ * staking set and its punches on a worn wooden bench).
  *
  * Left out after the check (brand or maker's name on the dial unless
  * noted): 11732775 (Rhythm), 9640592 (Visetti), 31050003 (DW), 5659200,
@@ -50,10 +47,9 @@
  *
  * Looks: `saat`, the niche's template (one template per niche, ROADMAP
  * F-90): its default content and demo are this pack, so the template and the
- * edition are one shop. `jewelry-luxe` still draws the pack until the
- * accessories switch takes it off (`distinct.test.ts` lists the niche as
- * pending). Four products per category, so every category row (`saat`'s
- * two, `jewelry-luxe`'s four) is one full row of four; the six-category
+ * edition are one shop. It is the pack's only look (the accessories switch,
+ * 2026-11-12, took `jewelry-luxe` off). Four products per category, so each
+ * of `saat`'s two category rows is one full row of four; the six-category
  * plan for `saat` v3 was dropped with its v4 redesign. No `reviews`: a pack
  * holds no invented buyer quotes.
  *
@@ -86,7 +82,7 @@ const TILES = [
 export const WATCHES: Edition = {
   niche: "watches",
   // `saat` first: the niche's template, built with this pack as its own content.
-  looks: ["saat", "jewelry-luxe"],
+  looks: ["saat"],
   priceBand: { min: 600, max: 4500 },
   // Square packshots on pure white: a square white stage shows each watch whole, and every one reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -102,7 +98,7 @@ export const WATCHES: Edition = {
       ["smart-sport", "سمارت ورياضية", "Smart and sport", TILES[2]!],
       ["classic-dress", "كلاسيك وسهرة", "Classic and dress", TILES[3]!],
     ],
-    // The navy steel watch sells most (it leads `saat`'s best sellers). The three featured watches fill `jewelry-luxe`'s spotlight.
+    // The navy steel watch sells most (it leads `saat`'s best sellers).
     products: [
       ["black-smartwatch-silicone-strap", "smart-sport", "ساعة سمارت سودا بأستيك سيليكون", "Black Smartwatch with Silicone Strap", shot("black-smartwatch-silicone-strap"), 1900, { rating: 4.6, sold90: 233 }],
       ["navy-dial-steel-watch", "mens", "ساعة ستيل بوش كحلي", "Navy Dial Steel Watch", shot("navy-dial-steel-watch"), 1850, { isFeatured: true, rating: 4.8, sold90: 286 }],
@@ -123,20 +119,16 @@ export const WATCHES: Edition = {
     ],
   }),
   photos: {
-    // `saat` and `jewelry-luxe` show the wide one: the chronograph sits near the middle, so square and 4:5 crops keep it.
-    // Neither look shows `tall` (tweezers and a case knife on a white bench, an open pocket watch out of focus).
+    // `saat` shows the wide one: the chronograph sits near the middle, so square and 4:5 crops keep it.
+    // `saat` does not show `tall` (tweezers and a case knife on a white bench, an open pocket watch out of focus).
     hero: { wide: pexels(190819, 1920), tall: pexels(8327595, 1200) },
     tiles: TILES,
     // `saat`'s smartwatch campaign: a black smartwatch with an analogue face on pale grey (wide on desktop, tall on phones; centred).
     banner: pexels(437037, 1920),
-    // An open pocket watch movement and the bench tools on white (`saat`'s wide story photo, `jewelry-luxe`'s story block).
+    // An open pocket watch movement and the bench tools on white (`saat`'s wide story photo).
     story: pexels(8327593, 1600),
     // A staking set on a worn wooden bench (`jewelry-luxe`'s about page).
     about: pexels(8327579, 1200),
-    custom: {
-      // `jewelry-luxe` spotlight, 4:5: an open pocket watch beside dried flowers on white.
-      "spot-photo": pexels(31839434, 1200),
-    },
   },
   copy: {
     announcement: [
@@ -163,9 +155,8 @@ export const WATCHES: Edition = {
     categories: { title: L("اختار ساعتك", "Choose your watch") },
     products: {
       primary: {
-        alt: L("ساعة جيب مفتوحة جنب ورد مجفف على قماش أبيض", "An open pocket watch beside dried flowers on white cloth"),
         eyebrow: L("اختياراتنا", "Our picks"),
-        // Read by both looks: over the four best sellers (`saat`) and over the three featured watches (`jewelry-luxe`), so it names no number.
+        // Over the four best sellers; it names no number.
         title: L("الساعات اللي بتخلص بسرعة", "The watches that sell fastest"),
         line: L(
           "ساعة ستيل بوش كحلي، وروز جولد بأستيك شبك، وكرونوغراف بجلد بني: تلبسهم في الشغل وفي الخروجة.",
@@ -233,8 +224,6 @@ export const WATCHES: Edition = {
       ),
     },
     custom: {
-      // `jewelry-luxe`: the link to the whole catalog (header, footer, the spotlight's "view all").
-      "shop-all": L("كل الساعات", "All watches"),
       // `saat`: the hero's second button, to the contact page.
       "hero-cta-2": L("اسأل عن المقاس", "Ask about sizing"),
       // `saat` price menu: a title and one line, then three groups (a title, then rows of a service and its price: 3, 2 and 2 rows).

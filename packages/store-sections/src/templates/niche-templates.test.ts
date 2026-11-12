@@ -1,5 +1,5 @@
 /**
- * The niche templates (2026-10-28): three per niche (two for beauty), each with the fixed
+ * The niche templates (2026-10-28): three per niche (two for beauty and jewelry), each with the fixed
  * 12-slot home (top bar and header, hero, categories, products, about, four
  * "products by category" rows, newsletter, footer). Checks what the brief
  * asks that the shared template tests don't: the slot order, the four rows
@@ -27,7 +27,8 @@ const NICHES: Record<string, readonly string[]> = {
   beauty: ["beauty-luxe", "beauty-bold"],
   grocery: ["grocery-luxe", "grocery-bold", "grocery-warm"],
   perfumes: ["perfumes-luxe", "perfumes-bold", "perfumes-warm"],
-  jewelry: ["jewelry-luxe", "jewelry-bold", "jewelry-warm"],
+  // jewelry-bold deleted with the accessories switch (2026-11-12, one template per niche).
+  jewelry: ["jewelry-luxe", "jewelry-warm"],
   gifts: ["gifts-luxe", "gifts-bold", "gifts-warm"],
   sports: ["sports-luxe", "sports-bold", "sports-warm"],
 };
@@ -112,8 +113,9 @@ describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
     ]) {
       expect(new Set(ids).size, ids.join(", ")).toBe(keys.length);
     }
+    // A niche of three offers a video hero and a carousel hero. Jewelry keeps two since jewelry-bold was deleted (one template per niche, 2026-11-12), with a video hero and no carousel.
     const heroes = pick((x) => libraryIdOf(x.t, homeOf(x)[0]!.id));
     expect(heroes).toContain("hero-video");
-    expect(heroes.some((id) => id?.startsWith("hero-carousel"))).toBe(true);
+    if (_niche !== "jewelry") expect(heroes.some((id) => id?.startsWith("hero-carousel"))).toBe(true);
   });
 });

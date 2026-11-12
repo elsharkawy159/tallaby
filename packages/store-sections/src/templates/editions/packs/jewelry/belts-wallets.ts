@@ -9,9 +9,7 @@
  *
  * The niche's template is jewelry-warm (Tibr; one template per niche,
  * docs/systems/one-template-per-niche.md): the copy and photos are written
- * for it first. zay still draws the pack, with the same copy, until the
- * accessories switch takes it off (its collage and comparison read the zay
- * keys at the end of `custom`).
+ * for it, its only look (the accessories switch, 2026-11-12, took zay off).
  *
  * On jewelry-warm: the hero 6653239 is cropped tall on phones with the copy
  * on it; the workshop band (`about-overlap`) is the banner 4452611; the care
@@ -41,10 +39,7 @@
  * contrast stitching). Banner 4452611 (leather tools, a waxed thread spool
  * and cut pieces on a cutting mat; the stamps on the blades are blurred and
  * unreadable). Story / about 4452395 (a cognac hide over darker hides on a
- * wooden table). Zay's hero collage: 4452515 (4:5, rolls of brown leather),
- * 6033953 (square, a brass-handled awl and a spool of waxed thread on a
- * workbench), 9103863 (4:3, an awl over a veg-tan piece marked with stitch
- * holes; a blue edge at the far left falls outside the 4:3 crop).
+ * wooden table).
  *
  * Left out after the check: Vlada Karpovich's leather series (4452375,
  * 4452378, 4452379, 4452384, 4452396, 4452398, 4452402, 4452506, 4452507,
@@ -68,10 +63,9 @@
  * 34443363, 35222039, 35322142, 35322147, 37326646, 37326652, 37326694.
  * Checked and clean but not used: 6653230, 4452502, 4452511.
  *
- * No buyer quotes (`reviews`): a pack holds no invented reviews, so zay's
- * home ends on its best-seller carousel.
+ * No buyer quotes (`reviews`): a pack holds no invented reviews.
  *
- * No hero video: neither look plays one.
+ * No hero video: jewelry-warm plays none.
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, handle, pexels, phone } from "../../../library-template";
@@ -90,7 +84,7 @@ const EMAIL = "hello@seer.example";
 
 export const BELTS_WALLETS: Edition = {
   niche: NICHE,
-  looks: ["jewelry-warm", "zay"],
+  looks: ["jewelry-warm"],
   priceBand: { min: 150, max: 1500 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -131,12 +125,6 @@ export const BELTS_WALLETS: Edition = {
     tiles: TILES,
     banner: pexels(4452611, 2000),
     story: pexels(4452395, 1200),
-    // Zay's hero collage: 1 portrait 4:5, 2 square, 3 landscape 4:3, one per caption (`custom.hero-piece-1..3`).
-    custom: {
-      "hero-piece-1": pexels(4452515, 1200),
-      "hero-piece-2": pexels(6033953, 900),
-      "hero-piece-3": pexels(9103863, 1400),
-    },
   },
   copy: {
     announcement: [
@@ -172,8 +160,6 @@ export const BELTS_WALLETS: Edition = {
       ),
       cta: L("اعرف حكايتنا", "Read our story"),
     },
-    // Zay's carousel of best sellers.
-    rows: [{ title: L("الأكتر طلبًا كهدية", "The most chosen as gifts") }],
     trust: [
       { title: L("علبة هدية", "A gift box"), line: L("كل قطعة بتوصل متغلّفة وجاهزة تتهادى", "Every piece arrives wrapped and ready to give") },
       { title: L("حروف اسمك", "Your initials"), line: L("بنكتبها على المحفظة أو الكارد هولدر لو طلبت", "Stamped on a wallet or card holder on request") },
@@ -184,7 +170,6 @@ export const BELTS_WALLETS: Edition = {
       title: L("اعرف القطع الجديدة أول واحد", "Hear about new pieces first"),
       line: L("رسالة لما تنزل ألوان أو موديلات جديدة، مش أكتر.", "One letter when new colours or styles arrive, nothing more."),
     },
-    // Zay's large sign-off line.
     footer: { line: L("جلد بيكبر معاك", "Leather that ages with you") },
     about: {
       line: L("جلديات صغيرة من الجلد الطبيعي، تنفع لك وتنفع هدية.", "Small leather goods in genuine leather, for you or as a gift."),
@@ -221,16 +206,6 @@ export const BELTS_WALLETS: Edition = {
       "care-point-2": L("ادهنه بكريم جلد كل كام شهر", "Condition it every few months"),
       "care-point-3": L("خليه بعيد عن الشمس والحرارة", "Keep it away from sun and heat"),
       "care-point-4": L("خزّن الحزام ملفوف، مش متعلّق من الإبزيم", "Store a belt rolled, not hung by its buckle"),
-      // Zay: the store's short name inside a sentence ("Why Seer?", "About Seer").
-      "store-short": L("سَيْر", "Seer"),
-      // Zay's hero captions, numbered under the collage photos: leather rolls, the thread and awl, the stitch holes.
-      "hero-piece-1": L("الجلد", "The leather"),
-      "hero-piece-2": L("الخيط", "The thread"),
-      "hero-piece-3": L("الغُرزة", "The stitch"),
-      // Zay's comparison: rows 1 and 3 are ticked for the store only, row 2 for both.
-      "compare-row-1": L("جلد طبيعي مكتوب لونه وخامته لكل قطعة", "Genuine leather, colour and finish named for every piece"),
-      "compare-row-2": L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
-      "compare-row-3": L("علبة هدية وحروف اسمك لو طلبت", "A gift box, and your initials on request"),
     },
   },
   productPage: { copy: { reviews: L("آراء اللي اشتروها", "From people who bought it"), related: L("قطع تكمّل الهدية", "Pieces to finish the gift") } },
