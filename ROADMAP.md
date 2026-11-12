@@ -1701,6 +1701,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-12 — Admin: edit a store's subdomain; niches in the change-theme dialog
+
+- **Owner (2026-11-12):** let Admin edit a store's subdomain, and show the niches in the store page's change-theme dialog so building their stores is easy.
+- **Subdomain** (`5abba3bf`): "Edit subdomain" beside the store page's Subdomain (admin / super_admin), a dialog with the `<sub>.tallaby.com` input, a live format hint and an optional audit note. `changeStoreSubdomainByAdmin` (`@workspace/lib/admin/server`) re-checks the admin, reads the owner from the store row and moves the store with the seller's own `updateStoreSubdomain` (same format, reserved and taken rules; the old address becomes a `seller_subdomain_redirects` row pointing at the store), with one `change_store_subdomain` audit row in the same transaction; the storefront is purged under both names plus the custom domain lookup, as the dashboard does. The seller flow has no cooldown. No migration (the audit action check is a pattern).
+- **Niches** (`f47357ed`): the dialog filters by industry, then niche, opens on the store's industry and niche, tags each card with its niche, previews it (live thumbnail and a tallaby.com `/template-preview/<key>?edition=<niche>` tab) and applies it with the niche's edition. `applyStoreThemeAction` takes `editionId`; a malformed one is refused and `applyStoreTemplate` refuses one the template does not offer, as in the dashboard. `galleryNiches`, `nicheCards` and `cardEdition` moved to `@workspace/store-editor` (`lib/template-niches.lib`, `lib/template-edition.lib`); the dashboard re-exports them.
+- **Checks:** admin and dashboard `tsc` clean for these files, admin store-page and builder vitest, dashboard templates vitest, store-editor and lib unit tests. Not checked in a browser; no DB integration test for the admin subdomain change yet.
+
 ### 2026-11-12 — No cookie pop-up on tallaby.com or stores; tracking on by default
 
 - **Owner (2026-11-12):** hide the cookie pop-up on tallaby.com and storefronts; asked what tracking should do without it, chose "track everyone" (over "track no one" and "keep it on stores only"), knowing Egypt's data law and EU visitors may expect consent.
