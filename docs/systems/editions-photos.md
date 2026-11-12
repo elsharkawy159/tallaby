@@ -9,7 +9,7 @@ Generate them in **one ChatGPT chat per niche and kind**: paste the master promp
 Work one niche at a time, in this order. For each niche, use **two ChatGPT chats**:
 
 1. **Chat 1, product photos:** paste the **Master prompt** (below), plus the **Clothing line** if the niche says "Clothing line applies", plus the niche's own "Add:" line. Then send the niche's numbered products (1–16) one at a time.
-2. **Chat 2, scenes:** paste the **Scene master prompt** (under "Scene photos") and the niche's palette line. Send its 8 scenes one at a time, then the 22 **Premium kit** prompts in the same chat.
+2. **Chat 2, scenes:** paste the **Scene master prompt** (under "Scene photos") and the niche's palette line. Send its 8 scenes one at a time, then the 9 **Premium kit** prompts in the same chat.
 3. Save every image in the niche's **"Save to"** folder under its bold name (see "Where the files go").
 
 The order of niches:
@@ -98,7 +98,7 @@ When a niche folder in `.editions-inbox/<wave>/<niche>/` is complete (16 packsho
 | Waves 2–13, every other industry (end of this file) | 53 | 848 | 424 | 1,272 |
 | Live templates, replace their Pexels photos | 22 | 8 (Fadda) | 201 | 209 |
 | **All core photos** | **83** (silver jewelry is in two rows) | **1,000** | **697** | **1,697** |
-| Premium kit, 22 per niche (after each niche's core photos) | 83 | | 1,826 | 1,826 |
+| Premium kit, 9 per niche (after each niche's core photos; trimmed from 24 on 2026-11-12) | 83 | | 747 | 747 |
 | Global images (placeholders and empty states) | | | 13 | 13 |
 | Optional: a second angle of every product (`<slug>-2.png`) | | | | 336 listed for live packs; 16 per new niche |
 
@@ -139,35 +139,21 @@ Every niche's scene set is the same eight slots:
 
 ## Premium kit (every niche, after its 8 scenes)
 
-So a template looks premium and every section has a real, high-definition photo (carousel slides, call-to-action bands, offers, seasons, the about page, galleries, collection headers, the social card), each niche also gets these. Send them **in the same scene chat, after the niche's 8 scenes**, so ChatGPT already knows the shop, its products and its palette; start the first one with *"Same shop, same palette and light as the scenes above."* Save them in the niche's same "Save to" folder. Make a niche's core photos (packshots and 8 scenes) first; the kit comes after.
+So a template looks premium and its main extra sections have a real, high-definition photo (a second hero slide, a call-to-action band, an offer, Ramadan, the about page, the newsletter, the social card), each niche also gets these. Send them **in the same scene chat, after the niche's 8 scenes**, so ChatGPT already knows the shop, its products and its palette; start the first one with *"Same shop, same palette and light as the scenes above."* Save them in the niche's same "Save to" folder. Make a niche's core photos (packshots and 8 scenes) first; the kit comes after.
 
-Heroes and calls to action
-- **scene-hero-2** (16:9, space for text on the right): a second hero slide: the shop's best seller close up, in the setting it is used in.
-- **scene-hero-3** (16:9, space for text on the left): a third hero slide: three or four of the shop's products together in one calm, wide still life.
-- **scene-hero-tall-2** (4:5, space for text at the top): the phone version of scene-hero-2.
-- **scene-cta-wide** (21:9, a calm empty middle for text, products only at the two ends): a call-to-action band.
-- **scene-cta-tall** (4:5, space for text at the top): the same call to action for phones.
+**Trimmed (owner, 2026-11-12): 9 images, one of each kind, no more.** Phone versions only where a wide photo would crop badly (the hero and the call to action).
 
-Offers and seasons
-- **scene-offer** (16:9, space for text on one side): an offer banner: the products on a bold block of the palette's accent colour, crisp shadow. No text, no numbers, no percent signs.
-- **scene-season-ramadan** (16:9, space for text on one side): the products on a Ramadan evening table: a brass lantern, dates in a small bowl, warm amber light.
-- **scene-season-eid** (16:9, space for text on one side): the products gift-wrapped in plain paper with ribbon, beside unwrapped ones, festive but calm.
-- **scene-season-summer** (16:9, space for text on one side): the products in bright summer light: sea-blue shadows, straw, sun.
+1. **scene-hero-2** (16:9, space for text on the right): a second hero slide: the shop's best seller close up, in the setting it is used in.
+2. **scene-hero-tall-2** (4:5, space for text at the top): the phone version of scene-hero-2.
+3. **scene-cta-wide** (21:9, a calm empty middle for text, products only at the two ends): a call-to-action band.
+4. **scene-cta-tall** (4:5, space for text at the top): the same call to action for phones.
+5. **scene-offer** (16:9, space for text on one side): an offer banner: the products on a bold block of the palette's accent colour, crisp shadow. No text, no numbers, no percent signs.
+6. **scene-season-ramadan** (16:9, space for text on one side): the products on a Ramadan evening table: a brass lantern, dates in a small bowl, warm amber light.
+7. **scene-about-2** (4:5): the shop's back room: shelves of the products and a packing table with tissue paper and plain boxes.
+8. **scene-newsletter** (4:3, space for text on one side): a quiet close-up of the products' material or texture.
+9. **scene-og** (1.91:1, 1200×630, products centred with wide margins all round): the social share card shown when the store's link is posted.
 
-About, delivery and newsletter
-- **scene-about-2** (4:5): the shop's back room: shelves of the products and a packing table with tissue paper and plain boxes.
-- **scene-about-3** (16:9): the shop's interior, wide: its products neatly displayed, no signs.
-- **scene-packaging** (1:1): the shop's plain unbranded packaging: a box, tissue paper and ribbon around one product.
-- **scene-delivery** (4:3): a plain parcel ready on a clean counter by a door, morning light. No labels.
-- **scene-newsletter** (4:3, space for text on one side): a quiet close-up of the products' material or texture.
-
-Gallery, collections and backgrounds
-- **scene-gallery-1** … **scene-gallery-4** (1:1): four square details for a gallery or social row: the products in small, real moments, no people.
-- **scene-collection-1** … **scene-collection-4** (21:9, space for text in the middle): a wide header per category for its collection page, in the category order of the packshot list.
-- **scene-texture** (1:1, seamless, very low contrast): a background texture from the shop's world (its fabric, paper, stone or wood) in the palette, tileable.
-- **scene-og** (1.91:1, 1200×630, products centred with wide margins all round): the social share card shown when the store's link is posted.
-
-That is **22 more images per niche** (scene-gallery and scene-collection are four each).
+That is **9 more images per niche**. Do not make the old extras (scene-hero-3, scene-season-eid, scene-season-summer, scene-about-3, scene-packaging, scene-delivery, scene-gallery-1…4, scene-collection-1…4, scene-texture) for new niches. Niches that already have them (earbuds, 2026-11-12) keep them; nothing is deleted.
 
 ---
 
