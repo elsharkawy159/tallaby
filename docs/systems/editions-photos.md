@@ -4,6 +4,26 @@ ROADMAP F-90. **This file is the single source of every photo our store template
 
 Generate them in **one ChatGPT chat per niche and kind**: paste the master prompt once, then send the short prompts one at a time.
 
+## Start here
+
+Work one niche at a time, in this order. For each niche, use **two ChatGPT chats**:
+
+1. **Chat 1, product photos:** paste the **Master prompt** (below), plus the **Clothing line** if the niche says "Clothing line applies", plus the niche's own "Add:" line. Then send the niche's numbered products (1–16) one at a time.
+2. **Chat 2, scenes:** paste the **Scene master prompt** (under "Scene photos") and the niche's palette line. Send its 8 scenes one at a time, then the 22 **Premium kit** prompts in the same chat.
+3. Save every image in the niche's **"Save to"** folder under its bold name (see "Where the files go").
+
+The order of niches:
+
+1. **earbuds**: the first niche under "Make next". Then kidswear, backpacks-travel, mobiles, audio, small-appliances, in that order.
+2. **Live templates, worst photos first:** the list at the top of "Live templates" (sportswear tiles, Fadda, slippers-clogs hero …), then the rest of that part.
+3. **Global images:** 13 placeholders, one chat.
+4. **Optional:** modest-wear, silver-jewelry, wearables.
+5. **Later waves:** Wave 2 (beauty) onward, an industry at a time.
+
+When a niche's folder is complete, tell me its name ("earbuds is ready").
+
+---
+
 ## Where the files go
 
 **Every niche section below starts with a "Save to:" line: that is its folder.** Paths are relative to the project folder `F:\Programming Projects\tallaby\`, so `.editions-inbox/01-wave-1/earbuds/` means `F:\Programming Projects\tallaby\.editions-inbox\01-wave-1\earbuds\`.
