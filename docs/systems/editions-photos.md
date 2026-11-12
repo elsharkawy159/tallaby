@@ -71,9 +71,11 @@ When a niche folder in `.editions-inbox/<wave>/<niche>/` is complete (16 packsho
 | Wave 1, make next (below) | 6 | 96 | 48 | 144 |
 | Wave 1, optional (below) | 3 | 48 | 24 | 72 |
 | Waves 2–13, every other industry (end of this file) | 53 | 848 | 424 | 1,272 |
-| **All** | **62** | **992** | **496** | **1,488** |
+| Live templates, replace their Pexels photos | 22 | 8 (Fadda) | 201 | 209 |
+| **All** | **83** (silver jewelry is in two rows) | **1,000** | **697** | **1,697** |
+| Optional: a second angle of every product (`<slug>-2.png`) | | | | 336 listed for live packs; 16 per new niche |
 
-Start with wave 1's six; the later waves can be made in any order, an industry at a time.
+Start with wave 1's six and the worst live photos (listed under "Live templates"); the later waves can be made in any order, an industry at a time. Second angles are optional: they give each product page its own extra photos.
 
 **Dropped:** the 6 extra watch packshots (Saat now uses four categories of four).
 
@@ -487,6 +489,791 @@ Scenes
 - **scene-tile-4**: A smartwatch on its charging stand on a bedside table at night with a warm lamp.
 - **scene-banner**: A long gym bench with a towel, a bottle and a smartwatch, wide and quiet.
 - **scene-story**: A clean workbench with watch straps, spring-bar tools and small parts trays.
+
+---
+
+## Live templates: replace the Pexels photos
+
+The 21 live niche templates (and Fadda for silver jewelry) still show Pexels photos for their heroes, tiles, banners, stories and their own extra slots. Each line below replaces one of them, slot by slot, as each template draws it (checked in its code, 2026-11-12): the ratio to generate, what must stay in frame when the template crops it, and what the photo shows now (and what is wrong with it). Scene chats use the scene master prompt (give the niche's palette once); product angles use the packshot master prompt (plus the clothing line for clothes).
+
+Save into `.editions-inbox/00-live-templates/<niche>/`: scenes as `scene-<slot>.png`, angles as `<slug>-2.png`. A line marked *(not drawn by …)* is a pack photo no live template shows today: make it last. Fadda's 8 products are Pexels photos too, so its packshots are required, not optional. When a new photo shows a different subject, I update its alt text when I swap it in.
+
+**Worst photos today, make these first:** sportswear's four tiles (lockers, a track: no garment); lingerie's pajama-sets tile (a sleep mask); slippers-clogs' hero (small flip-flops on a deck) and worn home-slippers tile; mens-shoes' about photo (scuffed boots); tshirts' story and gallery; Fadda's hero, Rings and Stacks tiles (one photo used three times); gold-jewelry's chains tile (a bust); belts-wallets' card-holder tile (leather rolls); pc-gaming's hero (lit screens); watches' women's and smart tiles.
+
+### dresses — Hareer (`fashion-luxe`), live
+
+Palette for scenes: *ivory white, soft taupe, warm stone grey, jet black (blush and sage as dress colours only).*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, full-bleed under a 28% dim with the headline centred: keep the middle calm, dresses at both sides; phones crop the centre): A bright boutique fitting corner, a pale oak rail of dresses on the left (sage wrap, navy shirt dress, black satin, ivory linen, mocha pleated), a cream linen curtain and a tall plant on the right, a plain warm-white wall in the middle, soft window light, no mirror. *Now: Pexels 3965551, a boutique fitting corner with a rail, plants and cream curtains.*
+- **scene-tile-1** (3:4, category: Casual dresses; the name sits on a dark fade at the foot, keep the bottom fifth simple): A sage green wrap midi dress and a navy belted shirt dress on wooden hangers on a pale oak rail against a warm-white wall, morning light. *Now: Pexels 8030176, a mixed rail of white, black and rust dresses and coats: reads as a general rail, not casual dresses.*
+- **scene-tile-2** (3:4, category: Evening dresses): A burgundy velvet evening dress on a padded ivory hanger from a picture rail, its hem falling to a pale stone floor, side light on the velvet. *Now: Pexels 15893780, blush tulle and gold sequin gowns on white hangers: reads bridal.*
+- **scene-tile-3** (3:4, category: Summer dresses): A yellow floral sundress on a wooden hanger on a whitewashed wall peg beside a straw hat, a soft palm-leaf shadow. *Now: Pexels 17151139, a yellow cotton dress on a hook beside a straw hat (good subject; regenerate so the set matches).*
+- **scene-tile-4** (3:4, category: Modest maxi dresses): A long dusty rose crepe maxi dress with long sleeves on a wooden hanger against a cream fitting-room door, the whole length to the hem in view. *Now: Pexels 10689510, a mocha tiered midi on a fitting-room door with other clothes and a gold mirror around it: busy, and not a maxi.*
+- **scene-banner** (generate 4:3: drawn as one half of a two-tone block, 3:4 on tablets, so keep the subject centred): Blush satin and ivory silk crepe in soft folds on a stone-grey surface, a thin taupe ribbon across them, low raking window light. *Now: Pexels 8793891, blush satin folds.*
+- **scene-story** (4:5, the about page beside "Few styles, well chosen"): A coral and a yellow summer dress on wooden hangers on a whitewashed wall hook, a woven basket on the floor below, warm afternoon light. *Now: Pexels 9788969, two summer dresses on hangers.*
+- **scene-look** (3:4, shop the look; the three dots point at the store's three newest dresses, at x/y % of the photo: yellow sundress 20/44, sky blue striped dress 45/52, white linen tiered dress 68/54): Three summer dresses on wooden hangers hanging from a pergola beam on a sunny terrace, left to right a yellow floral sundress (its body about 20% across, 44% down), a sky blue striped dress (about 45% across, 52% down) and a white linen tiered dress (about 68% across, 54% down), a whitewashed wall and a soft bougainvillea shadow behind. *Now: Pexels 8916600, three summer dresses on hangers on a terrace, yellow, light blue and white.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **yellow-floral-sundress**: Yellow Floral Sundress — the back, as the same flat-lay.
+2. **sky-blue-striped-dress**: Sky Blue Striped Dress — the back.
+3. **white-linen-tiered-dress**: White Linen Tiered Dress — a close detail of the linen tiers and seams.
+4. **sage-green-wrap-midi-dress**: Sage Green Wrap Midi Dress — the side, showing the wrap and tie.
+5. **navy-belted-shirt-dress**: Navy Belted Shirt Dress — the back.
+6. **beige-knit-midi-dress**: Beige Ribbed Knit Midi Dress — a close detail of the rib knit.
+7. **terracotta-tshirt-dress**: Terracotta Cotton T-Shirt Dress — the back.
+8. **burgundy-velvet-evening-dress**: Burgundy Velvet Evening Dress — the back.
+9. **black-satin-slip-dress**: Black Satin Slip Evening Dress — the back, showing the straps.
+10. **emerald-one-shoulder-gown**: Emerald Satin One-Shoulder Gown — the back.
+11. **champagne-sequin-evening-dress**: Champagne Sequin Evening Dress — a close detail of the sequins.
+12. **coral-off-shoulder-summer-dress**: Coral Off-Shoulder Summer Dress — the back.
+13. **dusty-rose-maxi-dress**: Dusty Rose Crepe Maxi Dress — the back.
+14. **olive-maxi-shirt-dress**: Olive Maxi Shirt Dress — a close detail of the collar and buttons.
+15. **black-floral-chiffon-maxi-dress**: Black Floral Chiffon Maxi Dress — the back.
+16. **mocha-pleated-maxi-dress**: Mocha Satin Pleated Maxi Dress — a close detail of the pleats.
+
+---
+
+### lingerie-sleepwear — Vella (`vella`), live
+
+Palette for scenes: *white, pale zinc grey, soft charcoal, one small signal-red accent (an object, never a garment).* Add: *"Sleepwear: modest, nothing revealing; garments folded, hung or laid on furniture."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, full-bleed under a 30% dim with the headline centred: keep the middle calm; phones crop the centre): A made bed in white and pale grey linen seen from the side, an ivory satin pajama set folded on the pillow on the left, a white waffle robe over the footboard on the right, a small red ceramic cup on the bedside table, soft morning window light. *Now: Pexels 5629138, a rumpled blush duvet and a white pillow: no garment in view.*
+- **scene-tile-1** (3:4, category: Pajama sets; the name sits under the photo): A navy cotton pajama set with white piping folded neatly on a white bed, the top laid over the trousers, seen from slightly above. *Now: Pexels 7445030, a plush sleep mask on pale blue bedding: no pajamas at all.*
+- **scene-tile-2** (3:4, category: Nightgowns): A long white cotton puff-sleeve nightgown on a wooden hanger on a white wardrobe door, full length in view, soft rainy-window light. *Now: Pexels 3932950, a long white embroidered dress on a hanger by a rainy window (good subject).*
+- **scene-tile-3** (3:4, category: Robes): A white waffle robe and a grey hooded fleece robe on two wall hooks in a white dressing room, a folded towel on a stool below. *Now: Pexels 31145149, two white waffle robes on wall hooks.*
+- **scene-tile-4** (3:4, category: Loungewear): An oatmeal knit lounge set folded on a pale grey armchair with a knitted throw, a black jersey set folded beside it on the armrest. *Now: Pexels 18797320, taupe tops on a wooden rail beside baskets and a plant: reads as a shop rail, not loungewear.*
+- **scene-banner** (generate 1:1: drawn square beside the story text, 4:3 on phones, so keep the stack centred): Folded lounge sets stacked on the arm of a cream sofa, oatmeal knit, black jersey and lilac fleece, a mug on a side table, soft window light. *Now: Pexels 7691347, folded knits on a cream sofa.*
+- **scene-story** (4:5, the about page): A calm white bedroom corner, two robes on a wall rail, a green armchair with a folded pajama set on the seat, linen curtains, no books. *Now: Pexels 20065482, a white bedroom with two robes, a green armchair and a closed book.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **ivory-satin-pajama-set**: Ivory Satin Long-Sleeve Pajama Set — the top's back, laid flat.
+2. **navy-cotton-pajama-set**: Navy Cotton Long-Sleeve Pajama Set — a close detail of the collar and piping.
+3. **pink-striped-pajama-set**: Pink Striped Cotton Short Pajama Set — the back, laid flat.
+4. **sage-modal-pajama-set**: Sage Modal Pajama Set — a close detail of the modal fabric and buttons.
+5. **champagne-satin-nightgown**: Champagne Satin Long Nightgown — the back, laid flat.
+6. **white-cotton-nightgown**: White Cotton Puff-Sleeve Nightgown — a close detail of the puff sleeve.
+7. **dusty-rose-nightgown**: Dusty Rose Cotton Nightgown — the back, laid flat.
+8. **navy-printed-nightgown**: Navy Dotted Cotton Long-Sleeve Nightgown — a close detail of the dotted cotton.
+9. **white-waffle-robe**: White Waffle Cotton Robe — the back, laid flat.
+10. **blush-satin-robe**: Blush Satin Belted Robe — folded neatly with the belt on top.
+11. **grey-fleece-robe**: Grey Hooded Fleece Robe — the back, showing the hood.
+12. **beige-linen-robe**: Beige Linen Long Robe — a close detail of the linen and the belt loop.
+13. **oatmeal-knit-lounge-set**: Oatmeal Knit Lounge Set — folded as a neat stack.
+14. **black-jersey-lounge-set**: Black Jersey Lounge Set — folded as a neat stack.
+15. **lilac-fleece-lounge-set**: Lilac Hooded Fleece Lounge Set — the hoodie's back, laid flat.
+16. **cream-cotton-lounge-dress**: Cream Cotton Long-Sleeve Lounge Dress — the back, laid flat.
+
+---
+
+### tshirts — Streetwear (`streetwear`), live
+
+Palette for scenes: *white, raw concrete grey, acid lime, pure black.*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9 poster photo, all copy sits on the black band under it, a round sticker overlaps the photo's top edge: keep the top strip plain; 4:3 on phones, so keep the tees in the middle): A black steel rail against a raw concrete wall holding a row of crisp tees on black hangers, white, black, grey melange, sand, olive and one acid-lime tee in the middle, hard afternoon light and a long shadow. *Now: Pexels 40450765, tees in many colours on a rail.*
+- **scene-tile-1** (generate 4:3: wide cards, square on phones, so centre the subject; category: Basics): Three folded basic tees stacked, white, black and grey melange, on a bare concrete bench. *Now: Pexels 7319172, a white tee on a hanger in a shop.*
+- **scene-tile-2** (4:3, category: Oversized): A washed black oversized tee laid loose and flat on concrete, sleeves dropped wide, a stripe of sun across it. *Now: Pexels 37704842, a loose cream tee in sunlight (tiny neck label and hem tag).*
+- **scene-tile-3** (4:3, category: Stripes & prints): A navy and white striped tee and a blue tie-dye tee folded side by side on pale concrete, seen from above. *Now: Pexels 7640756, a close-up of a striped weave: fabric, not a tee.*
+- **scene-tile-4** (4:3, category: Polos): Three piqué polos with tipped collars on black hangers, burgundy, white and forest green, against a grey concrete wall. *Now: Pexels 28460164, a pile of tipped polo collars.*
+- **scene-banner** (16:9 band, a paper title plate covers its bottom start corner, which flips with the language: keep the bottom third quiet; 4:3 on phones): A long tight row of white tees on black hangers on a black rail, receding into the frame, concrete wall, one acid-lime painted band low on the wall. *Now: Pexels 2112648, white tees on black hangers.*
+- **scene-story** (4:5, the about page's store photo): A small streetwear shop corner, folded tees stacked on a raw plywood table, a black rail of tees behind, concrete floor, one acid-lime stool. *Now: Pexels 9702241, a cotton branch on white: no shop and no tee.*
+- **scene-lookbook-1** (1:1, the large bento photo): A black tee and an acid-lime tee hanging side by side on a black rail, close on the necklines, concrete behind. *Now: Pexels 8146450, a yellow and a red tee on a rail: off the palette, a small label inside the red neck.*
+- **scene-lookbook-2** (1:1): A white basic tee laid perfectly flat on pale grey concrete, from straight above. *Now: Pexels 12039633, a white tee flat on pale grey (reads as a mock-up).*
+- **scene-lookbook-3** (1:1): A close row of black tee sleeves on hangers with one acid-lime sleeve breaking the row. *Now: Pexels 9940948, a row of red tee sleeves: red is off the palette.*
+- **scene-lookbook-4** (1:1): Raw cotton bolls on a concrete ledge beside a folded white tee. *Now: Pexels 13924869, a close-up of raw cotton fibre.*
+- **scene-lookbook-5** (1:1): A rolled grey melange tee and a rolled black tee in a black wire basket on concrete, from above. *Now: Pexels 4440651, a steam iron on marble beside a grey tee: an appliance with a brand-like badge.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **burgundy-tipped-polo**: Burgundy Tipped Polo — a close detail of the tipped collar and placket.
+2. **white-pique-polo**: White Pique Polo — the back, laid flat.
+3. **navy-pique-polo**: Navy Pique Polo — a close detail of the piqué knit.
+4. **navy-white-striped-tshirt**: Navy and White Striped Tee — the back, laid flat.
+5. **washed-black-oversized-tshirt**: Washed Black Oversized Tee — folded neatly.
+6. **white-basic-cotton-tshirt**: White Basic Cotton Tee — a close detail of the neck rib.
+7. **blue-tie-dye-tshirt**: Blue Tie-Dye Tee — the back, laid flat.
+8. **sand-beige-oversized-tshirt**: Sand Beige Oversized Tee — the back, laid flat.
+9. **black-basic-cotton-tshirt**: Black Basic Cotton Tee — folded neatly.
+10. **forest-green-pique-polo**: Forest Green Pique Polo — the back, laid flat.
+11. **black-chest-stripe-tshirt**: Black Tee with a White Chest Stripe — the back, laid flat.
+12. **brown-oversized-tshirt**: Chocolate Brown Oversized Tee — folded neatly.
+13. **dusty-blue-basic-tshirt**: Dusty Blue Basic Cotton Tee — folded neatly.
+14. **green-white-colour-block-tshirt**: Green and White Colour-Block Tee — the back, laid flat.
+15. **olive-oversized-tshirt**: Olive Oversized Tee — the back, laid flat.
+16. **grey-melange-basic-tshirt**: Grey Melange Basic Tee — a close detail of the melange cotton.
+
+---
+
+### menswear — Zay (`zay`), live
+
+Palette for scenes: *cool pale grey, light steel grey, periwinkle, deep navy.*
+
+Zay draws only the hero collage, the small category thumbs and the about photo. The pack's `hero`, `banner` and `look` are shown only by its second look (fashion-luxe), so they are not listed here.
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-piece-1** (4:5, the collage's large photo, caption "The full outfit"): A full smart-casual outfit laid flat on pale grey linen from straight above, a navy bomber jacket, a white Oxford shirt, a folded grey crew sweater, stone chinos and brown penny loafers. *Now: Pexels 36910113, a checked blazer, chambray shirt, rust trousers, a tie and loafers: the rust and check fight the navy and grey palette, and the shop sells no ties.*
+- **scene-hero-piece-2** (1:1, caption "Shirts"): A folded light blue linen shirt lying on a folded white Oxford shirt, collars and buttons crisp, on pale grey. *Now: Pexels 6276002, a navy shirt collar and buttons.*
+- **scene-hero-piece-3** (4:3, caption "Knitwear"): A stack of folded knits, grey crew neck, beige quarter-zip and olive knit polo, on a pale steel-grey shelf, soft side light. *Now: Pexels 3633039, a navy knit texture close-up: fabric only.*
+- **scene-tile-1** (1:1, category: Shirts; a small round-cropped thumb, hidden on phones: one centred piece, tight framing): A white Oxford shirt folded with the collar up, centred on pale grey. *Now: Pexels 35150391, a light blue placket over a grey pinstripe.*
+- **scene-tile-2** (1:1, category: Polos & knitwear): A folded navy piqué polo resting on a folded grey sweater, centred on pale grey. *Now: Pexels 13889763, a stack of cream, beige and brown knits.*
+- **scene-tile-3** (1:1, category: Trousers): Stone chinos folded in thirds, waistband up, centred on pale grey. *Now: Pexels 6045283, trousers hanging close together.*
+- **scene-tile-4** (1:1, category: Jackets): A navy bomber jacket folded with its collar forward, centred on pale grey. *Now: Pexels 615003, brown and navy jackets on a rail.*
+- **scene-story** (4:5, the about page): A navy steel rail of shirts, knits and jackets in white, grey, navy and olive, a pair of brown loafers on the floor below, pale grey wall, window light. *Now: Pexels 7794265, the neck of a grey crew knit.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **grey-crew-sweater**: Grey Crew-Neck Sweater — folded neatly.
+2. **olive-field-jacket**: Olive Field Jacket — the back, laid flat.
+3. **navy-bomber-jacket**: Navy Bomber Jacket — the back, laid flat.
+4. **white-oxford-shirt**: White Oxford Shirt — a close detail of the collar and buttons.
+5. **stone-chino-trousers**: Stone Chino Trousers — the back, laid flat.
+6. **navy-pique-polo**: Navy Piqué Polo — folded neatly.
+7. **light-blue-linen-shirt**: Light Blue Linen Shirt — folded neatly.
+8. **charcoal-tailored-trousers**: Charcoal Tailored Trousers — a close detail of the waistband and crease.
+9. **tan-suede-jacket**: Tan Faux Suede Jacket — the back, laid flat.
+10. **olive-knit-polo**: Olive Knit Polo — a close detail of the knit collar.
+11. **navy-striped-shirt**: Navy Striped Shirt — folded neatly.
+12. **navy-drawstring-trousers**: Navy Drawstring Trousers — a close detail of the drawstring waist.
+13. **black-leather-jacket**: Black Leather Jacket — the back, laid flat.
+14. **beige-quarter-zip-sweater**: Beige Quarter-Zip Sweater — a close detail of the zip collar.
+15. **black-overshirt**: Black Overshirt — the back, laid flat.
+16. **black-cargo-trousers**: Black Cargo Trousers — the side, showing the cargo pocket.
+
+---
+
+### pants-jeans — Alwan (`fashion-bold`), live
+
+Palette for scenes: *white, pale chambray blue, deep indigo, top-stitch gold.*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, slide 1 of the carousel: copy sits on a dark fade along the bottom, so keep the lower third quiet and the jeans in the upper two thirds): Rolled jeans in every wash, from bleached light to raw indigo, lined up in a neat row on a pale chambray surface, seen from slightly above, gold top-stitching showing on the cuffs. *Now: Pexels 19824259, rolled jeans.*
+- **scene-slide-2** (16:9, slide 2 "best sellers", same bottom fade): Jeans hanging from wooden hangers on a white wall rail, dark indigo on one end to light wash on the other, waistbands at the top. *Now: Pexels 16390580, jeans on wooden hangers, dark to light.*
+- **scene-banner** (16:9, used as slide 3 "tell us your length, we hem", same bottom fade): Indigo denim folded in heavy layers on chambray, a raw hem beside a neat gold-stitched hem, plain steel tailor's scissors closed beside them. *Now: Pexels 10133275, indigo denim folded.*
+- **scene-tile-1** (3:4, category: Jeans; name under the photo): A tall stack of folded jeans, light to dark wash, on a white table, the side seams and gold stitching facing the camera. *Now: Pexels 6764122, a close stack of folded jeans.*
+- **scene-tile-2** (3:4, category: Wide-leg trousers): One pair of beige linen wide-leg trousers hanging full length from a wooden hanger against a white wall, the legs falling straight. *Now: Pexels 31842963, many coloured trousers on white hangers with a drawstring pair in front: the busiest of the four tiles.*
+- **scene-tile-3** (3:4, category: Chinos & tailored): Beige chinos and navy tailored trousers folded over a wooden valet bar, a brown leather belt coiled below, chambray wall. *Now: Pexels 33633245, taupe trousers, a knit, a belt and boots laid out on navy.*
+- **scene-tile-4** (3:4, category: Joggers & sweatpants): Grey melange and black joggers folded with the cuffs forward on a white bench, soft cotton texture. *Now: Pexels 10348923, soft cotton and knit folded in earth tones.*
+- **scene-story** (3:4, set into the indigo panel, 4:3 on phones; also the about page, so keep the subject centred): Folded jeans stacked on a white table under a window, one pair opened across the top to show the gold top-stitched pocket seams, no patches or rivet marks. *Now: Pexels 4546763, folded jeans on white.*
+- **scene-fit-1** (1:1, step "measure a pair you love"): Mid blue jeans laid flat on pale chambray, a coiled cloth tape measure beside them with its blank back facing up so no markings show. *Now: Pexels 10895045, a tape measure on blue with its printed numbers in view.*
+- **scene-fit-2** (1:1, step "pick the cut and wash"): Five folded denim strips fanned out like a swatch book, bleached light to charcoal, on white. *Now: Pexels 30828508, denim bands, light to charcoal.*
+- **scene-fit-3** (1:1, step "we hem to your length"): A close-up of a fresh jeans hem with gold top-stitching, a gold thread spool and a pin cushion beside it on indigo denim. *Now: Pexels 4109765, an indigo hem with gold top-stitching.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **light-wash-mom-jeans**: Light Wash Mom Jeans — the back, laid flat, showing the pockets.
+2. **blue-wide-leg-jeans**: Blue Wide-Leg Jeans — the back, laid flat.
+3. **mid-blue-straight-jeans**: Mid Blue Straight Jeans — folded neatly, the waistband on top.
+4. **beige-chino-trousers**: Beige Chino Trousers — the back, laid flat.
+5. **grey-melange-joggers**: Grey Melange Joggers — a close detail of the cuff and drawstring.
+6. **beige-linen-wide-leg-trousers**: Beige Linen Wide-Leg Trousers — a close detail of the linen and waistband.
+7. **black-slim-jeans**: Black Slim Jeans — the back, laid flat.
+8. **navy-tailored-trousers**: Navy Tailored Trousers — folded over in half, showing the crease.
+9. **black-tapered-joggers**: Black Tapered Joggers — the back, laid flat.
+10. **black-wide-leg-trousers**: Black Wide-Leg Trousers — the back, laid flat.
+11. **grey-straight-jeans**: Grey Straight Jeans — folded neatly, the waistband on top.
+12. **olive-cargo-trousers**: Olive Cargo Trousers — the side, showing the cargo pocket.
+13. **navy-side-stripe-joggers**: Navy Side-Stripe Joggers — the side, showing the stripe.
+14. **terracotta-palazzo-trousers**: Terracotta Palazzo Trousers — a close detail of the belt.
+15. **brown-corduroy-trousers**: Brown Corduroy Trousers — a close detail of the cord.
+16. **beige-straight-sweatpants**: Beige Straight Sweatpants — the back, laid flat.
+
+---
+
+### sportswear — Madar (`sports-luxe`), live
+
+Palette for scenes: *white, ice blue, cobalt, graphite (steel blue as a soft extra).* Add: *"Training wear: unbranded, no stripes, swooshes or logos, no gym machines or plates."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, full-bleed, the headline and button sit on a dark fade at the bottom start, which flips with the language: keep the bottom third and both lower corners calm, the garments centred and high): Folded training pieces stacked crisp on a graphite bench, a slate quick-dry tee, cobalt leggings and a graphite zip jacket, close enough that the weave and mesh read, cool daylight. *Now: Pexels 1487809, a slate performance weave in folds: fabric only, no garment.*
+- **scene-tile-1** (3:4, category: Training tops): A black quick-dry training tee and a white mesh tank top folded side by side on a pale ice-blue bench, soft side light. *Now: Pexels 37496664, an open red locker with a key tag: no garment, red is off the palette.*
+- **scene-tile-2** (3:4, category: Leggings & joggers): Black high-waist leggings and grey training joggers folded with the waistbands forward on white. *Now: Pexels 36717697, a rolled mat, a dumbbell and a band: equipment, not garments.*
+- **scene-tile-3** (3:4, category: Shorts): Black running shorts, navy training shorts and olive cycling shorts folded in a column on ice blue, from above. *Now: Pexels 8454925, the curve of an orange running track: no garment.*
+- **scene-tile-4** (3:4, category: Jackets & hoodies): A graphite zip training jacket and a grey zip hoodie hanging from steel hooks on a clean white changing-room wall. *Now: Pexels 12255816, a wall of pale grey lockers: no garment.*
+- **scene-story** (1:1: cropped to a circle inside a steel ring on the home page, and used again on the about page, so the subject must sit in the centre): A pale wood changing-room bench with a folded cobalt training set and a plain steel water bottle in the middle, ice-blue tiled wall behind. *Now: Pexels 4162550, charcoal lockers and slatted benches: no garment.*
+- **scene-fabric-1** (1:1 macro, row "Quick-dry polyester"): Macro of pale grey perforated quick-dry polyester mesh in soft folds, cool side light. *Now: Pexels 10221743, pale perforated sports mesh.*
+- **scene-fabric-2** (1:1 macro, row "Nylon with elastane"): Macro of teal stretch nylon-elastane jersey with a gentle sheen, slightly stretched. *Now: Pexels 4863009, teal stretch jersey, crumpled.*
+- **scene-fabric-3** (1:1 macro, row "Cotton fleece"): Macro of heather grey cotton fleece on a folded edge, the soft brushed inside showing. *Now: Pexels 34860712, heather grey cotton jersey: jersey, not fleece.*
+- **scene-newsletter** (1:1: the sign-up card's start half, a 16:9 band on phones, so centre the subject): A cobalt technical knit training top folded flat on white, the ribbed collar and a zip pull in view, from above. *Now: Pexels 18372335, a cobalt technical knit, flat.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-training-tshirt**: Black Quick-Dry Training Tee — the back, laid flat.
+2. **black-high-waist-leggings**: Black High-Waist Leggings — a close detail of the high waistband.
+3. **black-running-shorts**: Black Running Shorts with Liner — the back, laid flat.
+4. **black-zip-training-jacket**: Black Zip Training Jacket — the back, laid flat.
+5. **teal-sports-bra**: Teal Sports Bra — the back, laid flat.
+6. **grey-training-joggers**: Grey Training Joggers — a close detail of the cuff.
+7. **navy-training-shorts**: Navy Training Shorts — the back, laid flat.
+8. **grey-zip-hoodie**: Grey Zip Hoodie — the back, showing the hood.
+9. **white-mesh-tank-top**: White Mesh Tank Top — a close detail of the mesh.
+10. **navy-seamless-leggings**: Navy Seamless Leggings — a close detail of the seamless knit.
+11. **olive-cycling-shorts**: Olive Cycling Shorts — the back, laid flat.
+12. **white-windbreaker**: White Windbreaker — folded neatly.
+13. **grey-long-sleeve-training-top**: Grey Long-Sleeve Training Top — the back, laid flat.
+14. **black-track-pants**: Black Track Pants — the side, laid flat.
+15. **grey-sweat-shorts**: Grey Sweat Shorts — the back, laid flat.
+16. **navy-quarter-zip-top**: Navy Quarter-Zip Top — a close detail of the zip collar.
+
+---
+
+### sneakers — Nabd (`sports-bold`), live
+
+Palette for scenes: *white, concrete grey, infrared red, navy ink (periwinkle as a small extra).* Add: *"Sneakers: unbranded, no side stripes, swooshes, logos or sole lettering."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-tall** (1:1: the hero bento's photo tile, 4:3 on tablets, so keep the pair centred with room on every side): A pair of white canvas low-top sneakers with white laces, three-quarter view, standing on stacked sheets of infrared red and concrete grey paper, hard sunlight and a crisp shadow. *Now: Pexels 4296075, white canvas low-tops on red, orange and green paper.*
+- **scene-tile-1** (1:1, category: Everyday white; cropped to a circle inside a ring: centre the pair with a small margin): A pair of white leather low-tops from above on pale concrete, toes pointing down, centred. *Now: Pexels 7193625, cream leather low-tops from above (served as a 4:3 crop from the top so the ring keeps the toes).*
+- **scene-tile-2** (1:1, category: Running): A pair of grey knit runners side by side in profile on a concrete step, centred. *Now: Pexels 9207813, mint knit runners against a coral wall.*
+- **scene-tile-3** (1:1, category: High-tops): A pair of black canvas high-tops with white laces standing on a concrete ledge, centred. *Now: Pexels 29253011, black canvas mid-tops pegged on a clothesline.*
+- **scene-tile-4** (1:1, category: Slip-ons & canvas): A pair of navy canvas slip-ons on infrared red paper, from above, centred. *Now: Pexels 5488660, burgundy canvas low-tops on orange and blue paper.*
+- **scene-banner** (16:9 across the page, a white text card overlaps its bottom end corner, which flips with the language: keep both lower corners plain; 4:3 on phones): A sneaker shop wall, three rows of pale oak shelves with single sneakers in white, cream, olive, navy and grey evenly spaced, concrete wall, the bottom shelf empty. *Now: Pexels 13807630, white and olive pairs on oak shop shelves.*
+- **scene-story** (4:5, the about page): One white and navy chunky sneaker alone on a concrete plinth against an infrared red wall, large in the frame, hard side light. *Now: Pexels 11827147, one chunky sneaker on an orange shelf: the shoe fills about a tenth of the frame.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **white-leather-low-top**: White Leather Low-Top — the sole, seen from below.
+2. **black-mesh-runner**: Black Mesh Runner — the side profile of one shoe.
+3. **black-canvas-high-top**: Black Canvas High-Top — the heel, from behind.
+4. **navy-canvas-slip-on**: Navy Canvas Slip-On — the pair from straight above.
+5. **white-chunky-sneaker**: White Chunky Sneaker — the side profile, showing the thick sole.
+6. **grey-knit-runner**: Grey Knit Runner — a close detail of the knit upper.
+7. **brown-leather-high-top**: Brown Leather High-Top — the heel, from behind.
+8. **black-checker-slip-on**: Black and White Checkerboard Slip-On — the pair from straight above.
+9. **white-green-heel-low-top**: White Leather Low-Top with a Green Heel — the heel, from behind.
+10. **navy-orange-runner**: Navy and Orange Runner — the sole, seen from below.
+11. **white-canvas-high-top**: White Canvas High-Top — the side profile of one shoe.
+12. **beige-canvas-low-top**: Beige Canvas Low-Top — the pair from straight above.
+13. **cream-suede-low-top**: Cream Suede Low-Top on a Gum Sole — the gum sole, seen from below.
+14. **white-pink-runner**: White and Pink Runner — the side profile of one shoe.
+15. **grey-suede-high-top**: Grey Suede High-Top — a close detail of the suede and laces.
+16. **olive-canvas-low-top**: Olive Canvas Low-Top — the heel, from behind.
+
+---
+
+### womens-shoes — Kasr (`kasr`), live
+
+Palette for scenes: *white, porcelain grey, bordeaux, powder blue.* Add: *"Shoes: one pair or one shoe, the whole shoe in frame, no insole or sole lettering."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9 shelf photo, a label card covers the top start corner, which flips with the language: keep the top third plain wall and the pair on the lower middle): One pair of nude block-heel ankle-strap sandals on a white floating shelf against a porcelain-grey wall, the upper third empty wall, soft gallery light. *Now: Pexels 14928875, gold block-heel sandals on a white floating shelf.*
+- **scene-hero-side-1** (4:3 plinth tile "boots": the whole boot centred with room above the shaft): A black leather block-heel ankle boot on a white plinth against powder blue, the whole boot in frame with space above it. *Now: Pexels 27274309, a black ankle boot on a white plinth: the 4:3 crop trims the boot's top.*
+- **scene-hero-side-2** (4:3 plinth tile "heels": the whole shoe centred, toe included): A bordeaux suede kitten-heel slingback on a pale wooden block against porcelain grey, toe to heel in frame. *Now: Pexels 15792209, a coral strappy heel on a wooden block: the crop trims the toe, and coral is off the palette.*
+- **scene-tile-1** (3:4, category: Heels; drawn large at 4:3, so centre the pair): A pair of black patent pointed pumps on a white gallery plinth, powder-blue wall, sharp focus across both shoes. *Now: Pexels 13788573, blue suede heels on a cowhide bench: soft focus at the top.*
+- **scene-tile-2** (3:4, category: Flats & ballerinas; drawn as a small thumb, so one centred pair): Black bow ballerina flats side by side on a pale shelf, seen from slightly above. *Now: Pexels 37853534, tan cross-strap ballerinas on a shop shelf.*
+- **scene-tile-3** (3:4, category: Sandals; small thumb): Tan woven leather sandals on pale limestone in sunlight, centred. *Now: Pexels 38583189, tan sandals in white sand.*
+- **scene-tile-4** (3:4, category: Boots; small thumb): Camel suede ankle boots standing on a porcelain-grey step, centred. *Now: Pexels 5863649, rows of ankle boots on shop shelves: too busy for a small thumb.*
+- **scene-story** (16:9 wide rounded photo under the fit headline, 4:3 on phones): A long white gallery shelf against porcelain grey with four pairs spaced evenly, beige flats, bordeaux slingbacks, black pumps and camel ankle boots, soft light. *Now: Pexels 40773101, green polka-dot slingbacks on a boutique shelf: green is off the palette.*
+- **scene-about** (optional, 4:5: fills `photos.about`, which Kasr's about page reads before the story, so the about page gets an upright photo): An open powder-blue shoe box with plain white tissue and a pair of nude block heels inside, on a white table, no print on the box. *Now: the about page reuses the story photo, 40773101.*
+- **scene-banner** (generate 4:3: drawn 4:3 beside the sandals row and 3:4 on tablets and phones, headline on a dark fade at the foot: pair centred, bottom quiet): A pair of nude block-heel sandals on pale limestone steps in strong summer sun, a palm-frond shadow across the steps. *Now: Pexels 16217395, orange block-heel sandals on cracked concrete: orange is off the palette.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **burgundy-kitten-heels**: Burgundy Suede Kitten-Heel Slingbacks — the heel and strap, from behind.
+2. **beige-pointed-flats**: Beige Pointed Flats — the pair from straight above.
+3. **black-pointed-pumps**: Black Patent Pointed Pumps — the side profile of one shoe.
+4. **nude-block-heels**: Nude Block-Heel Ankle-Strap Sandals — the side profile of one shoe.
+5. **gold-strappy-heels**: Gold Metallic Strappy Heels — a close detail of the straps.
+6. **black-ballerina-flats**: Black Bow Ballerina Flats — a close detail of the bow.
+7. **tan-leather-loafers-women**: Women's Tan Leather Loafers — the side profile of one shoe.
+8. **silver-mary-janes**: Silver Metallic Mary Janes — the pair from straight above.
+9. **white-flat-sandals**: White Two-Strap Flat Sandals — the pair from straight above.
+10. **tan-woven-sandals**: Tan Woven Leather Sandals — a close detail of the weave.
+11. **black-platform-sandals**: Black Platform Buckle Sandals — the side profile, showing the platform.
+12. **beige-wedge-sandals**: Beige Canvas Jute Wedge Sandals — the side profile, showing the jute wedge.
+13. **black-ankle-boots**: Black Leather Block-Heel Ankle Boots — the side profile of one boot.
+14. **camel-suede-boots**: Camel Suede Ankle Boots — the heel, from behind.
+15. **brown-knee-boots**: Brown Leather Knee Boots — the side profile of one boot.
+16. **white-chelsea-boots**: White Leather Chelsea Boots — a close detail of the elastic side panel.
+
+---
+
+### mens-shoes — Ghorza (`ghorza`), live
+
+Palette for scenes: *white, cool steel grey, pale shoe-horn steel, espresso brown.* Add: *"Shoes: polished and new, never worn or scuffed; no insole or sole lettering; plain unlabelled tins and tools."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-tall** (1:1 stage, cut to 4:3 from the foot on phones, a price tag overlaps a top corner: keep the whole shoe, sole included, in the lower three quarters): One black leather cap-toe oxford, three-quarter side view, on a matte black stage under one soft top light, deep black background, a mirror shine on the toe, the shoe large in the frame. *Now: Pexels 4161710, a black cap-toe shoe on a black stage (good; regenerate so the set matches).*
+- **scene-tile-1** (3:4 rounded tile, category: Loafers & moccasins): Brown leather penny loafers on a pale steel-grey shelf, three-quarter view. *Now: Pexels 19335787, brown moccasin loafers on a cream rug.*
+- **scene-tile-2** (3:4, category: Oxfords & derbies): Brown wingtip brogues with cedar shoe trees on a steel-grey stand. *Now: Pexels 6765524, brown brogues with shoe trees on a shop stand.*
+- **scene-tile-3** (3:4, category: Boots): A pair of brown suede Chelsea boots on a lit oak shelf, centred. *Now: Pexels 37595187, a row of Chelsea boots with blurred price tags.*
+- **scene-tile-4** (3:4, category: Sandals & casual): A pair of brown leather two-strap sandals on pale planks beside a small succulent. *Now: Pexels 35059665, two-buckle suede sandals by a succulent (fine; regenerate so the set matches).*
+- **scene-story** (3:4, the shine-bench story beside three ticked points, 4:3 on phones): A shoe-shine bench, black oxfords on wooden shoe trees on an espresso leather mat, plain unlabelled polish tins, horsehair brushes and a soft cloth, warm lamp light. *Now: Pexels 19165536, black oxfords on shoe trees on a cutting mat, black and white: ruler figures at the mat's edge, blurred jar labels.*
+- **scene-banner** (3:4 tall photo beside the oxfords row, a 16:9 band on tablets and 4:3 on phones, copy on a dark fade at the foot: pair in the upper middle): A pair of dark brown perforated derbies on a polished walnut block, espresso background, a soft spotlight, the lower third falling into shadow. *Now: Pexels 9992898, derbies on a log in a blurred room: on phones the copy covers the shoes.*
+- **scene-about** (4:5, the about page): Polished dark brown lace-up boots standing under a steel shelf with neat shoe trees and a folded cloth, cool grey wall. *Now: Pexels 5710709, worn, scuffed brown lace-up boots with dried wheat and a notebook.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **brown-penny-loafers**: Brown Leather Penny Loafers — the side profile of one shoe.
+2. **black-oxford-shoes**: Black Leather Oxford Shoes — the pair from straight above.
+3. **brown-chelsea-boots**: Brown Suede Chelsea Boots — a close detail of the elastic side panel.
+4. **white-leather-sneakers-men**: White Leather Sneakers — the sole, seen from below.
+5. **navy-suede-loafers**: Navy Suede Loafers — the heel, from behind.
+6. **brown-brogues**: Brown Leather Brogues — a close detail of the brogue punching.
+7. **black-chelsea-boots**: Black Leather Chelsea Boots — the side profile of one boot.
+8. **navy-boat-shoes**: Navy Leather Boat Shoes — a close detail of the laces and stitching.
+9. **black-tassel-loafers**: Black Leather Tassel Loafers — a close detail of the tassels.
+10. **dark-brown-derby-shoes**: Dark Brown Leather Derby Shoes — the side profile of one shoe.
+11. **tan-desert-boots**: Tan Suede Desert Boots — the crepe sole, seen from below.
+12. **brown-leather-sandals-men**: Brown Leather Sandals — the pair from straight above.
+13. **tan-driving-moccasins**: Tan Suede Driving Moccasins — the pebbled sole and heel, from behind.
+14. **burgundy-oxford-shoes**: Burgundy Leather Oxford Shoes — the side profile of one shoe.
+15. **dark-brown-lace-up-boots**: Dark Brown Leather Lace-Up Boots — the heel, from behind.
+16. **black-leather-slides-men**: Black Leather Slides — the pair from straight above.
+
+---
+
+### slippers-clogs — Tasfya (`tasfya`), live
+
+Palette for scenes: *white, shallow-water aqua, pool-float pink, deep teal.* Add: *"Footwear: new and clean, unbranded, no rivet emblems, no charms, no lettering on footbeds or straps."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9 on phones, cut to a 21:9 band on desktop: keep the pair large inside the middle band; all copy sits on the teal under the photo, and a round pink sticker overlaps its top edge): A pair of pool-float pink rubber clogs side by side on pale pool-deck concrete at the water's edge, close and low, the pair large and centred, aqua water with sun ripples behind. *Now: Pexels 9308418, blue polka-dot flip-flops on a pool deck: the pair is small even after a 1.4× zoom.*
+- **scene-tile-1** (3:4 rounded tile, category: Clogs): A pair of sage green clogs on a pale pink tile, seen from slightly above. *Now: Pexels 8801134, pink clogs on pink.*
+- **scene-tile-2** (3:4, category: Slides): A pair of beige cushion slides on aqua pool tiles with a wet sheen. *Now: Pexels 13836590, sage slides on dark sand.*
+- **scene-tile-3** (3:4, category: Flip-flops): A pair of navy rubber flip-flops standing in white sand at the water's edge, the sea behind. *Now: Pexels 27719438, pink jelly flip-flops in sand by the sea.*
+- **scene-tile-4** (3:4, category: Home slippers): A pair of new grey fluffy home slippers with clean pale soles on a light oak floor beside a white rug, window light. *Now: Pexels 12969102, fluffy slippers that look worn, with grey soles.*
+- **scene-banner** (generate 4:3: one half of the two-tone block "Beach days", 3:4 on tablets, so centre the subject): Pink and teal striped beach towels on sand with a pair of black rubber slides and a pair of white flip-flops resting on them, from above. *Now: Pexels 18674213, striped towels on sand: no footwear in the photo.*
+- **scene-story** (4:5, the about page): White waffle home slippers beside a woven mat on a light floor, a deep teal door ajar behind. *Now: Pexels 34667259, white waffle slippers by a woven mat.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **sage-green-clog**: Sage Green Clog — the side profile of one clog.
+2. **beige-cushion-slide**: Beige Cushion Slide — the side profile, showing the thick sole.
+3. **white-platform-flip-flops**: White Platform Flip-Flops — the side profile, showing the platform.
+4. **grey-fluffy-home-slippers**: Grey Fluffy Home Slippers — the sole, seen from below.
+5. **white-classic-clog**: White Classic Clog — the heel strap, from behind.
+6. **black-rubber-slide**: Black Rubber Slide — the pair from straight above.
+7. **navy-rubber-flip-flops**: Navy Rubber Flip-Flops — the side profile of one flip-flop.
+8. **pink-fur-slides**: Pink Fur Slides — a close detail of the fur strap.
+9. **black-classic-clog**: Black Classic Clog — the pair from straight above.
+10. **white-two-strap-slide**: White Two-Strap Slide — the side profile of one slide.
+11. **black-flip-flops**: Black Flip-Flops — the sole, seen from below.
+12. **navy-knit-home-slippers**: Navy Knit Home Slippers — a close detail of the knit.
+13. **pink-platform-clog**: Pink Platform Clog — the side profile, showing the platform.
+14. **brown-buckle-cork-slide**: Brown Buckle Cork Slide — a close detail of the buckles and cork.
+15. **tan-leather-flip-flops**: Tan Leather Flip-Flops — the pair from straight above.
+16. **beige-closed-toe-slippers**: Beige Closed-Toe Slippers — the side profile of one slipper.
+
+---
+
+### handbags — Shanta (`shanta`), live
+
+Palette for scenes: *white, mineral sage grey, camel, bottle green.* Add: *"Bags: unbranded, plain clasps and hardware, no embossed marks, charms or tags."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-tall** (1:1 beside the copy panel, 3:4 on tablets, zooms slowly on scroll: bag centred with margin all round): One cognac leather top-handle bag on a white plinth against a mineral sage wall, dried palm leaves in a beige vase to one side, soft daylight. *Now: Pexels 5706272, one cognac bag on a plinth.*
+- **scene-tile-1** (3:4, category: Totes; the name and count sit on a dark fade at the foot, keep the bottom fifth simple): A black leather tote and a beige canvas tote standing on a pale oak bench. *Now: Pexels 36367487, a taupe pebbled tote on a pale blue canvas tote.*
+- **scene-tile-2** (3:4, category: Crossbody bags): A camel crossbody bag with its strap curled beside it on a sage-grey shelf, upright framing. *Now: Pexels 20591024, a black quilted chain bag on dark: a landscape shot cropped tall.*
+- **scene-tile-3** (3:4, category: Clutches & evening): A gold evening clutch and a faux pearl beaded clutch on a bottle-green velvet tray. *Now: Pexels 31551512, a beaded bag with a disco ball and dried flowers behind.*
+- **scene-tile-4** (3:4, category: Shoulder bags): A brown leather hobo bag hanging from a brass wall peg against a mineral sage wall. *Now: Pexels 4830929, a teal and a cognac top-handle bag among plants.*
+- **scene-story** (4:5 tall photo beside the story, zooms slowly on scroll; also the about page): A close-up of camel leather with cream double stitching and a brass D-ring, the edge of a bottle-green leather strap in one corner. *Now: Pexels 12105084, dark leather, cream stitching and a steel D-ring up close.*
+- **scene-anatomy** (3:4, one bag with four note dots at x/y % of the photo: the handles 63/31, the zip and pockets 75/47, the hardware 71/74, the size 42/66): One burgundy structured top-handle dome bag, front three-quarter view, a little right of centre on a plain mineral sage backdrop, its two rolled handles arching up to about a third from the top, a zip running over the top and down the right side, gold ring fittings at the handle bases and small gold metal feet at the lower right, the plain front panel filling the lower left. *Now: Pexels 22434764, a burgundy dome bag on a faintly lavender backdrop.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **camel-crossbody-bag**: Camel Faux Leather Crossbody Bag — the back, with the strap laid out.
+2. **white-mini-crossbody**: White Mini Crossbody Bag — open, showing the inside.
+3. **olive-saddle-bag**: Olive Faux Leather Saddle Bag — the side, showing its depth.
+4. **black-leather-tote**: Black Genuine Leather Tote — open from above, showing the inside.
+5. **gold-evening-clutch**: Gold Evening Clutch — a close detail of the clasp.
+6. **black-shoulder-bag**: Black Faux Leather Shoulder Bag — the back.
+7. **beige-canvas-tote**: Beige Canvas Tote — open from above, showing the inside.
+8. **black-crossbody-bag**: Black Crossbody Bag with Chain Strap — a close detail of the chain and quilting.
+9. **black-satin-clutch**: Black Satin Clutch — the back.
+10. **brown-hobo-bag**: Brown Genuine Leather Hobo Bag — the side, showing its depth.
+11. **tan-leather-tote**: Tan Genuine Leather Tote — a close detail of the handle stitching.
+12. **pearl-beaded-clutch**: Faux Pearl Beaded Clutch — a close detail of the beading.
+13. **burgundy-baguette-bag**: Burgundy Faux Leather Baguette Bag — the back.
+14. **woven-straw-tote**: Woven Straw Tote — a close detail of the weave.
+15. **silver-chain-mini-bag**: Silver Mini Bag with Chain — open, showing the inside.
+16. **cream-quilted-bag**: Cream Quilted Shoulder Bag — the side, showing its depth.
+
+---
+
+### glasses — Karat (`karat`), live
+
+Palette for scenes: *blush pink paper, deep plum, mustard gold, warm white.* Add: *"Eyewear: frames unbranded, temples plain with no printing, lenses clean, reflections soft."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, the poster: the copy sits over a dark fade on the left and bottom; phones crop it landscape from the centre): Three frames (round tortoiseshell, a mustard-gold aviator and a plum cat-eye) on blush paper, a plum paper fold casting a crisp sun shadow, the frames centre-right, calm blush space on the left for text. *Now: Pexels 26682030, two tortoiseshell frames on pink; clean but bare, only one colour of frame.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Karat)*: One red cat-eye pair standing open on a blush paper step, a soft plum shadow behind. *Now: Pexels 12693047.*
+- **scene-tile-1** (3:4, category: Sunglasses; also story ring 1, shown as a small circle, so keep the subject centred): A round tortoiseshell pair, a red cat-eye pair and a gold aviator with green lenses fanned on blush paper in hard summer sun, the tinted lens shadows on the paper. *Now: Pexels 20093375.*
+- **scene-tile-2** (3:4, category: Optical frames; story ring 2, centred): A thin gold round optical frame and a clear crystal frame folded side by side on plum linen beside a small folded lens cloth. *Now: Pexels 13697735.*
+- **scene-tile-3** (3:4, category: Blue-light glasses; story ring 3, centred): A rose-gold cat-eye and a black round pair of clear-lens glasses resting on a closed plain laptop lid next to a white mug, cool morning light. *Now: Pexels 35597800.*
+- **scene-tile-4** (3:4, category: Sport and kids; story ring 4, centred): Small pink round kids' sunglasses, a sky-blue flexible kids' frame and a white cycling shield pair on mustard-yellow paper, bright and playful. *Now: Pexels 5713793.*
+- **scene-banner** (21:9, space for text in the middle) *(not drawn by Karat)*: A long blush paper sweep with five frames spaced along it, plum and mustard shadows. *Now: Pexels 1313064.*
+- **scene-story** (4:5, the about page): Black and purple frames on blush paper beside a straw hat and a rolled plum beach towel, afternoon sun. *Now: Pexels 10154994, the same subject; keep it so the alt still fits.*
+- **scene-lookbook-1** (1:1, the bento's large photo): Black round glasses on the seat of a beige upholstered chair, a plum cushion edge, soft window light. *Now: Pexels 7602873.*
+- **scene-lookbook-2** (1:1, small, subject centred): A black rectangular frame standing open on a mustard plinth against blush. *Now: Pexels 25389282, a bare frame on white that reads like a packshot.*
+- **scene-lookbook-3** (1:1, small, centred): A black double-bridge frame on pale grey-pink paper with a hard window shadow. *Now: Pexels 32398468.*
+- **scene-lookbook-4** (1:1, small, centred): A black cat-eye frame lying on deep plum paper, one lens catching the light. *Now: Pexels 5752242, a frame on white, packshot-like.*
+- **scene-lookbook-5** (1:1, small, centred): Mirrored sunglasses lying lenses-up, reflecting a blue summer sky with soft clouds, on warm white sand. *Now: Pexels 4696100.*
+- **scene-stories-5** (1:1, shown as a small circle, centred, "Mirror lens"): Round sunglasses with blue mirrored lenses on blush paper, filling the middle of the frame. *Now: Pexels 36090899.*
+- **scene-stories-6** (1:1, circle, centred, "Black frame"): A dark round frame on pale linen, folded, seen close. *Now: Pexels 30336929.*
+- **scene-stories-7** (1:1, circle, centred, "Round"): Round black glasses on a beige seat seen from straight above. *Now: Pexels 7602881.*
+- **scene-stories-8** (1:1, circle, centred, "Desk days"): A thin gold frame on a light wood desk beside a closed blank notebook and a pencil. *Now: Pexels 7107485, a keyboard blurred behind it.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **gold-round-optical-frame**: Gold Round Optical Frame — folded, three-quarter view from above.
+2. **round-tortoise-sunglasses**: Round Tortoiseshell Sunglasses — side view showing the temple.
+3. **rose-gold-cat-eye-blue-light-glasses**: Rose Gold Cat-Eye Blue-Light Glasses — folded, from the front.
+4. **gold-aviator-sunglasses**: Gold Aviator Sunglasses — side view showing the double bridge and the temple.
+5. **kids-sky-blue-flexible-frame**: Kids Sky Blue Flexible Frame — temples folded, from above.
+6. **black-square-sunglasses**: Black Square Sunglasses — three-quarter view, temples open.
+7. **clear-crystal-optical-frame**: Clear Crystal Optical Frame — side view showing the clear temple and its hinge.
+8. **black-round-blue-light-glasses**: Black Round Blue-Light Glasses — folded, from the front.
+9. **black-red-sport-sunglasses**: Black Sport Sunglasses with Red Lenses — side view showing the wrap.
+10. **black-rectangle-optical-frame**: Black Rectangular Optical Frame — folded, three-quarter view.
+11. **tortoise-square-blue-light-glasses**: Tortoiseshell Square Blue-Light Glasses — side view.
+12. **white-shield-cycling-sunglasses**: White Cycling Sunglasses with Blue Shield Lens — three-quarter view from above.
+13. **red-cat-eye-sunglasses**: Red Cat-Eye Sunglasses — folded, from the front.
+14. **tortoise-browline-optical-frame**: Tortoiseshell Browline Optical Frame — side view showing the browline and the metal rim.
+15. **navy-rectangle-blue-light-glasses**: Navy Rectangular Blue-Light Glasses — folded, three-quarter view.
+16. **kids-pink-round-sunglasses**: Kids Pink Round Sunglasses — side view, temples open.
+
+---
+
+### watches — Saat (`saat`), live
+
+Palette for scenes: *white, brushed steel grey, midnight blue, a small touch of seconds-hand red.* Add: *"Watches: unbranded, dials plain with simple baton marks and no numerals, words or logos; smartwatch screens off (black glass)."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, `hero-halves`: shown square on desktop beside the midnight copy half, landscape first on phones, and it zooms slowly as the page scrolls, so put the watch dead centre with room around it; no text space needed): A steel chronograph with a plain midnight-blue dial and a red seconds hand lying on dark walnut wood, raking window light along the bracelet. *Now: Pexels 190819, a steel chronograph on dark wood; strong, keep the subject.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Saat)*: Watchmaker's tweezers and a case knife on a white bench, an open steel watch out of focus behind. *Now: Pexels 8327595.*
+- **scene-tile-1** (3:4, category: Men's watches; shown in a round bezel ring, so centre the dial): A steel watch with a speckled navy dial standing on a small steel block on oak, window-blind shadows across it. *Now: Pexels 34069486.*
+- **scene-tile-2** (3:4, category: Women's watches; round crop, centred): A slim rose-gold mesh watch and a silver mother-of-pearl dial watch laid crossed on brushed steel over midnight-blue linen, crisp light. *Now: Pexels 34833638, a small square watch on a pearl bracelet among white petals; soft, pink, off the steel and midnight palette.*
+- **scene-tile-3** (3:4, category: Smart and sport; round crop, centred): A black smartwatch, screen off, and a black rubber-strap sport watch on a midnight-blue rubber mat with a steel water bottle edge, cool clean light. *Now: Pexels 13610157, a rose-gold smartwatch on a quilted cream bag; soft, reads as fashion, not sport.*
+- **scene-tile-4** (3:4, category: Classic and dress; round crop, centred): A white-dial watch on a brown leather strap and a gold watch with a black dial lying on an oak bench, warm side light. *Now: Pexels 5058216, one white-dial watch on oak; keep the mood.*
+- **scene-banner** (21:9, the smartwatch campaign beside the Smart and sport row: landscape on desktop, portrait on phones, so keep both watches close together in the centre; "hands or smart?"): A black smartwatch with its screen off and a steel analogue watch with a midnight dial side by side on pale grey stone, one red seconds hand the only colour. *Now: Pexels 437037, a smartwatch with an analogue face on its screen (a lit screen).*
+- **scene-story** (4:5 slot, shown wide in `about-wide` and landscape on phones, so keep the movement in the centre band): An open pocket-watch movement, a case knife, a spare crystal and a spring-bar tool on a white bench, cool daylight. *Now: Pexels 8327593; a tiny stamp on the case knife.*
+- **scene-about** (4:5, the about page): A watchmaker's staking set and its punches on a worn wooden bench, a loupe beside it. *Now: Pexels 8327579.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-smartwatch-silicone-strap**: Black Smartwatch with Silicone Strap — side view showing the crown button, screen off.
+2. **navy-dial-steel-watch**: Navy Dial Steel Watch — side view showing the crown.
+3. **rose-gold-mesh-womens-watch**: Rose Gold Mesh Women's Watch — strap open, seen from above.
+4. **brown-leather-chronograph**: Brown Leather Chronograph — side view showing the crown and pushers.
+5. **black-mesh-minimal-watch**: Black Mesh Minimal Watch — the plain caseback, no engraving.
+6. **silver-pearl-dial-womens-watch**: Silver Mother-of-Pearl Dial Women's Watch — three-quarter view.
+7. **pink-smartwatch**: Pink Smartwatch — side view, screen off.
+8. **gold-black-dial-leather-watch**: Gold Watch with Black Dial and Leather Strap — the buckle and the strap's back.
+9. **silver-steel-white-dial-watch**: Silver Steel Watch with White Dial — the folding clasp, bracelet open.
+10. **gold-oval-womens-watch**: Gold Oval Women's Watch — side view.
+11. **black-silicone-sport-watch**: Black Sport Watch with Rubber Strap — side view showing the buttons.
+12. **rose-gold-brown-leather-watch**: Rose Gold Watch with Brown Leather Strap — three-quarter view.
+13. **two-tone-steel-watch**: Two-Tone Steel Watch — side view showing the crown.
+14. **burgundy-leather-womens-watch**: Burgundy Leather Women's Watch — strap open, seen from above.
+15. **silver-smartwatch-mesh-strap**: Round Silver Smartwatch with Mesh Strap — side view, screen off.
+16. **white-ceramic-womens-watch**: White Ceramic Watch — the plain caseback, no engraving.
+
+---
+
+### gold-jewelry — Jewelry Luxe (`jewelry-luxe`), live
+
+Palette for scenes: *porcelain white, ink black, champagne gold, warm stone grey.* Add: *"Jewelry: 21K yellow gold, never on skin, no hallmarks, stamps or engraved words, no price tags."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, the `hero-video` poster, shown alone since the pack has no video: full width under a 35% dark veil, the copy centred; phones crop it from the centre): Two granulated 21K gold bangles and a rope chain on ink-black silk, warm low side light, the pieces low in the frame, calm dark space above the centre for the copy. *Now: Pexels 20493839, two granulated bangles with a green stone on dark cloth; good, keep the mood.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Jewelry Luxe)*: Two-tone gold hoops on black glass with their reflection. *Now: Pexels 3266700.*
+- **scene-tile-1** (3:4, category: Bands and rings; portrait tile): Two plain gold wedding bands and a twisted ring standing on a porcelain-white stone block, champagne light. *Now: Pexels 34372573, two thin bands on white pebbles beside linen; the bands are tiny in the frame.*
+- **scene-tile-2** (3:4, category: Chains and pendants): A rope chain and a Cuban link chain laid in soft curves on black velvet, a small plain gold disc pendant on one, lit from the side. *Now: Pexels 29013500, rope chains hung on a bust in a shop window: a bust reads as a mannequin and the window is busy.*
+- **scene-tile-3** (3:4, category: Bangles and bracelets): Three 21K bangles stacked with a link bracelet in a shallow black lacquer tray on warm stone. *Now: Pexels 40315331, woven bangles stacked in a tray.*
+- **scene-tile-4** (3:4, category: Earrings): Small gold hoops and crescent earrings on a rippled porcelain-white ceramic dish, soft shadows. *Now: Pexels 16935587, twisted hoops on rippled white.*
+- **scene-banner** (21:9, space for text in the middle) *(not drawn by Jewelry Luxe)*: A long ink-black velvet counter with gold chains and bangles spaced along it, warm side light. *Now: Pexels 4295007, a coin necklace on a black bust (a bust again).*
+- **scene-story** (4:5, `about-inset`: portrait on desktop, landscape on phones, so keep the balance in the centre; "gold is weighed in front of you"): A brass beam balance on a goldsmith's counter with a black weight in one pan and a small gold chain in the other, warm grey wall. *Now: Pexels 8431786, a beam balance with a black weight on grey; no gold on it.*
+- **scene-about** (4:5, the about page): Two gold wedding bands in an open ink-black velvet box on porcelain silk, three dark red rose petals beside it. *Now: Pexels 29612233, bands in a red box among petals; the red takes the frame.*
+- **scene-spot-photo** (4:5, `products-spotlight`: portrait on desktop, wide on tablets, landscape on phones under a 60% dark shade, so keep the pieces centred): A gold bangle, a ring and an open black ring box on champagne silk over porcelain, soft directional light. *Now: Pexels 30311749, on red and white, with an out-of-focus dark mark at the top edge.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **gold-wedding-band**: Plain Wedding Band, 21K, about 2.8 g — standing on edge, side view (inside plain, no engraving).
+2. **gold-rope-chain**: Rope Chain, 21K, about 8 g — clasp detail, close.
+3. **gold-bangle-set**: Set of Three Bangles, 21K, about 11.5 g — the three stacked, side view.
+4. **gold-small-hoops**: Small Hoop Earrings, 18K, about 1.4 g — side view showing the hinge.
+5. **gold-twist-ring**: Twisted Ring, 18K, about 2.2 g — three-quarter view.
+6. **gold-name-plate-pendant**: Name Plate Pendant, 21K, about 2.5 g — the plate blank, close and slightly from the side.
+7. **gold-engraved-bangle**: Engraved Bangle, 21K, about 7 g — standing, side view of the pattern (no letters).
+8. **gold-drop-earrings**: Drop Earrings, 18K, about 2.4 g — side view.
+9. **gold-floral-ring**: Engraved Flower Ring, 21K, about 2.6 g — top view of the flower.
+10. **gold-hand-pendant**: Hand Pendant, 21K, about 1.8 g — the back of the pendant, plain.
+11. **gold-link-bracelet**: Link Bracelet, 18K, about 5 g — clasp detail.
+12. **gold-stud-earrings**: Small Stud Earrings, 18K, about 0.9 g — side view showing the post and back.
+13. **gold-wide-band-ring**: Wide Brushed Band, 21K, about 4.3 g — standing on edge, three-quarter view.
+14. **gold-cuban-chain**: Cuban Link Chain, 21K, about 10.5 g — the links close, with the clasp.
+15. **gold-charm-bracelet**: Coin Charm Bracelet, 21K, about 6 g — the coins close (blank, no faces or words).
+16. **gold-crescent-earrings**: Crescent Earrings, 21K, about 2 g — side view.
+
+---
+
+### fashion-jewelry — Zahra (`zahra`), live
+
+Palette for scenes: *white, blush plaster, dusty rose, deep petrol blue.* Add: *"Fashion jewelry: gold-tone and silver-tone, crystals and pearls; the piece fills at least half the frame, props (stones, dried flowers) stay small."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, `hero-fullbleed`: copy on the photo, which drifts on scroll; phones crop it tall from the centre, so keep the pieces in the middle third, calm blush on the left and right): Gold-tone rings, a layered coin necklace and two pearl drops on blush plaster with two small dusty-rose stones, soft window light, no flowers. *Now: Pexels 9430992, silver rings, speckled stones and dried limonium; silver in a gold-led shop, and the sprigs compete with the pieces.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Zahra)*: A gold chain draped over a smooth blush stone. *Now: Pexels 9430468.*
+- **scene-tile-1** (3:4, category: Necklaces; tile with a caption under it): A gold layered coin necklace and a herringbone chain laid in curves on white marble, a petrol shadow edge. *Now: Pexels 4735887, two coin necklaces on marble (already fixed; this keeps it in one set).*
+- **scene-tile-2** (3:4, category: Earrings): Chunky gold hoops and a pair of pearl drop earrings on white satin folds. *Now: Pexels 13081070, chunky hoops on white satin.*
+- **scene-tile-3** (3:4, category: Bracelets): A gold paperclip chain bracelet, a pink beaded bracelet and a crystal tennis bracelet on a white cloud-shaped ceramic dish on blush. *Now: Pexels 36823002, one pearl bracelet on a cloud dish; small.*
+- **scene-tile-4** (3:4, category: Rings): A gold signet ring, a pearl cocktail ring and a stack of thin silver rings in a pearly clay dish on white sheets, close. *Now: Pexels 9714276, rings in a clay dish; the rings sit small.*
+- **scene-banner** (21:9, space for text in the middle) *(not drawn by Zahra)*: Stone-bead and gold bracelets spaced along white painted boards. *Now: Pexels 11185142.*
+- **scene-story** (4:5 slot, shown square in `about-fullbleed` on desktop and landscape on phones; the gift-wrapping story): A small blush gift box half-wrapped in dusty-rose silk ribbon, an open petrol velvet ring box with a gold ring, two ribbon spools, on white linen. *Now: Pexels 4714615, vintage earrings, a velvet ring box and ribbon spools.*
+- **scene-about** (landscape, the about page): Silver-tone and gold-tone rings and a fine chain around a pale shell on blush plaster. *Now: Pexels 9430429, silver rings and a chain around a shell on blush.*
+- **scene-anatomy** (4:5, shown portrait at most 480 px wide, with four note dots): One gold-tone crystal necklace laid in a soft U on a pale pebble before a blush paper roll. The dots point at, in percent from the left and top: the plated clasp or bail near the top centre (51, 27), the chain running down the left (35, 43), the crystal pendant cluster low and right of centre (60, 66), and a small folded polishing cloth just left of the pendant (46, 70) for the care note. *Now: Pexels 27357178, a gold-tone crystal necklace on a pebble before pink paper; regenerate so each dot lands on its part.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **gold-coin-layered-necklace**: Gold Layered Coin Necklace — the coins close (blank, no faces or words).
+2. **gold-hoop-earrings**: Chunky Gold Hoop Earrings — side view showing the thickness.
+3. **gold-chain-bracelet**: Gold Paperclip Chain Bracelet — clasp detail.
+4. **gold-signet-ring**: Gold Signet Ring — three-quarter view, the top plain.
+5. **pearl-pendant-necklace**: Pearl Pendant Necklace — the pendant close.
+6. **pearl-drop-earrings**: Pearl Drop Earrings — side view.
+7. **beaded-charm-bracelet**: Pink Beaded Charm Bracelet — the charms close.
+8. **pearl-cocktail-ring**: Pearl Cocktail Ring — side view.
+9. **gold-herringbone-necklace**: Gold Herringbone Necklace — the chain close, showing its flat sheen.
+10. **crystal-stud-earrings**: Crystal Stud Earrings — side view showing the post.
+11. **silver-cuff-bracelet**: Silver Cuff Bracelet — standing, side view of the opening.
+12. **crystal-solitaire-ring**: Crystal Solitaire Ring — side view of the setting.
+13. **silver-heart-pendant-necklace**: Silver Heart Pendant Necklace — the pendant close.
+14. **silver-chain-drop-earrings**: Silver Chain Drop Earrings — hanging straight, front view.
+15. **gold-tennis-bracelet**: Gold Crystal Tennis Bracelet — the clasp and a few stones close.
+16. **stackable-silver-rings**: Stackable Silver Rings Set — the rings fanned apart.
+
+---
+
+### hair-accessories — Kholkhal (`kholkhal`), live
+
+Palette for scenes: *white, pale lilac, cherry red, butter yellow.* Add: *"Hair accessories: on paper, fabric or boxes only, never in hair or on a head; colours bright and clean."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, carousel slide 1, everyday clips: full width with the copy on the photo; phones crop it tall from the centre, so keep the clips in the middle third, calm paper at both sides): Pastel snap clips and small claw clips scattered on white and pale lilac paper, one cherry clip as the accent, soft top light. *Now: Pexels 8468179, pastel snap clips on white, peach and pink paper; peach and pink drift off the lilac palette.*
+- **scene-hero-2** (16:9, carousel slide 2, claw clips; same crop): A large tortoise claw clip, a matte black one and a cream one in a row on a white chunky knit, window light. *Now: Pexels 20178660, one gold shell claw clip on a white knit; a single small clip.*
+- **scene-hero-3** (16:9, carousel slide 3, gifts under EGP 250; same crop): An open lilac gift box holding a satin scrunchie set, a pearl barrette and gold hair pins, a cherry satin ribbon loose beside it on white. *Now: Pexels 31702117, embroidered snap clips in two rows; it doesn't say "gift".*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Kholkhal)*: Pearl hair pins beside a small glass jewelry box and a few peony petals. *Now: Pexels 4515450.*
+- **scene-tile-1** (3:4, category: Claw clips; `categories-chips` crops it landscape on desktop and square on phones, so keep the subject in the centre): An amber tortoise claw clip on white faux fur, close. *Now: Pexels 20166053.*
+- **scene-tile-2** (3:4, category: Scrunchies; centred): Three satin scrunchies in ivory, blush and champagne stacked on a round lilac box. *Now: Pexels 6044137, scrunchies on a linen box with limonium; the sprig competes.*
+- **scene-tile-3** (3:4, category: Headbands; centred): A padded black velvet headband and a pearl headband on butter-yellow paper. *Now: Pexels 27592172, a fluffy teddy headband on butter yellow; not one the shop sells.*
+- **scene-tile-4** (3:4, category: Pins & barrettes; centred): A pearl barrette, a black satin bow barrette and a pair of crystal slides on blush-lilac sand. *Now: Pexels 9750766, one mother-of-pearl slide on sand; small.*
+- **scene-banner** (21:9 slot, the campaign beside the Scrunchies row: landscape on desktop, portrait on tablets and phones, so keep the subject in the centre): A big soft pile of velvet scrunchies (black, burgundy, green) and satin ones (ivory, blush) on pale lilac fabric, filling the middle. It carries the row, since the row's packshot thumbnails read small. *Now: Pexels 15130427, three spools of silk ribbon beside a white rose; no scrunchie in it.*
+- **scene-story** (4:5, `about-split-story`, "every order tied with a bow"): A small white box tied with a cherry satin bow, a cream claw clip resting on the lid, on white paper. *Now: Pexels 30056548, a cream satin bow on white paper.*
+- **scene-about** (landscape, the about page): A shop table with clips, scrunchies and headbands sorted into lilac trays, gift boxes stacked at the side. *Now: Pexels 4491555, a flower crown on gold polka-dot paper; the shop sells no flower crowns.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **tortoise-claw-clip**: Large Tortoise Claw Clip — open, side view showing the spring and teeth.
+2. **silk-scrunchie-set**: Satin Scrunchie Set of 3 (Ivory, Blush, Champagne) — the three in a row from above.
+3. **padded-black-headband**: Padded Black Velvet Headband — side view showing the padding.
+4. **pearl-barrette**: Pearl Barrette — the back with its clasp.
+5. **black-matte-claw-clip**: Matte Black Claw Clip — open, side view.
+6. **velvet-scrunchie-set**: Velvet Scrunchie Set of 3 (Black, Burgundy, Green) — stacked, three-quarter view.
+7. **pearl-headband**: Pearl Headband — top view of the pearl band.
+8. **black-bow-barrette**: Black Satin Bow Barrette — the back with its clip.
+9. **cream-claw-clip**: Cream Claw Clip — open, side view.
+10. **satin-bow-scrunchie**: Pink Satin Bow Scrunchie — side view of the bow.
+11. **knotted-satin-headband**: Champagne Knotted Satin Headband — the knot close.
+12. **gold-hair-pins-set**: Gold-Tone Hair Pin Set — the pins fanned out.
+13. **pearl-mini-claw-clips**: Pearl Mini Claw Clips, Set of 4 — one open, side view.
+14. **cotton-scrunchie-pack**: Cotton Scrunchie Pack of 5 (Neutrals) — stacked into a short tower.
+15. **tortoise-thin-headband**: Thin Tortoise Headband — side view.
+16. **crystal-hair-slides**: Crystal Hair Slides, Pair — one slide open, from the side.
+
+---
+
+### belts-wallets — Tibr (`jewelry-warm`), live
+
+Palette for scenes: *cordovan brown, canvas grey, brass, white paper.* Add: *"Leather goods: genuine leather, no stamped maker's marks, no printed boxes or tags; finished pieces, not just raw hides."*
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, `hero-fullbleed`: the copy on the photo, parallax and fade on scroll; phones crop it tall from the centre, so keep the subject in the middle third): A leatherworker's bench: a tan hide, a round knife, an awl and a stitching wheel, with a finished brown belt coiled and a bifold wallet at the centre, warm workshop light, a calm darker area at one side for text. *Now: Pexels 6653239, tools on a tan hide; no finished piece in it.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Tibr)*: The edge of a tan hide over pale weathered planks. *Now: Pexels 4452397.*
+- **scene-tile-1** (3:4, category: Belts): Three rolled leather belts, black, brown and tan braided, with silver and brass buckles on canvas-grey cloth. *Now: Pexels 31323080, three rolled belts with gunmetal buckles; good, keep.*
+- **scene-tile-2** (3:4, category: Wallets): A tan grained bifold wallet, half open, and a navy zip wallet on folds of black cloth. *Now: Pexels 6127090, one tan wallet on black cloth.*
+- **scene-tile-3** (3:4, category: Card holders & clips): A brown card holder with plain blank cards half out, a green card holder and a tan money clip wallet fanned on cordovan leather. *Now: Pexels 4452516, rolls of brown, burgundy and teal leather; no card holder in it (the weakest tile).*
+- **scene-tile-4** (3:4, category: Key holders & small goods): A black key case with its snap open, a brown leather key ring on a plain brass ring and a black coin pouch on light wood. *Now: Pexels 37326800, snap-flap pouches with contrast stitching.*
+- **scene-banner** (21:9 slot, the workshop band in `about-overlap`: shown wide on desktop and landscape on phones with a text card overlapping one side, so keep the subject in the other two thirds): Leather tools, a waxed thread spool and cut wallet pieces on a green cutting mat with no printing, under a brass work lamp. *Now: Pexels 4452611; the stamps on the blades are blurred but there.*
+- **scene-story** (4:5, the care block beside four care steps: portrait on desktop, landscape on phones; also the about page): A brown belt and a black wallet beside an unlabelled tin of leather balm, a soft cloth and a horsehair brush on canvas grey. *Now: Pexels 4452395, a cognac hide over darker hides; it shows no care and no finished piece.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **brown-leather-belt**: Brown Leather Belt, Brass Buckle — the buckle close, three-quarter view.
+2. **black-bifold-wallet**: Black Leather Bifold Wallet — open flat, showing the card slots.
+3. **brown-card-holder**: Brown Leather Card Holder — the back, plain.
+4. **tan-passport-cover**: Tan Leather Passport Cover — open flat, the inside pockets.
+5. **black-leather-belt**: Black Leather Belt, Silver Buckle — the buckle close.
+6. **navy-zip-wallet**: Navy Leather Zip-Around Wallet — open, showing the inside.
+7. **green-card-holder**: Green Leather Card Holder — side view showing the edges and stitching.
+8. **black-key-holder**: Black Leather Key Case — open, the key hooks showing.
+9. **tan-braided-belt**: Tan Braided Leather Belt — the weave and the buckle close.
+10. **brown-bifold-wallet**: Brown Leather Bifold Wallet — open flat.
+11. **tan-money-clip-wallet**: Tan Leather Money Clip Wallet — the back, showing the steel clip.
+12. **brown-leather-keychain**: Brown Leather Key Ring — side view.
+13. **reversible-black-brown-belt**: Reversible Black and Brown Leather Belt — the brown back turned out, the swivel buckle close.
+14. **tan-long-wallet**: Tan Leather Long Wallet — open flat.
+15. **black-card-holder**: Black Leather Card Holder — side view showing the edges.
+16. **black-coin-pouch**: Black Leather Coin Pouch — snap open, three-quarter view.
+
+---
+
+### silver-jewelry — Fadda (`fadda`), live (native: no pack)
+
+Palette for scenes: *cool grey paper, pale stone grey, polished silver, graphite.* Add: *"Sterling silver, polished or brushed, no hallmarks or engraved words; on stone, linen or boxes, never on skin."*
+
+Fadda has no pack: its photos are in `templates/fadda/index.ts` (`PHOTOS`), and **its eight products are Pexels photos too**. One photo (1378705) is the hero, the Rings tile and a product. These scenes replace them. The silver-jewelry pack planned in the main file (16 packshots, 8 scenes) can come later.
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero** (1:1, `hero-split`: square on desktop at 620 px or taller, portrait on tablets, square on phones; the copy sits in the other half, so the ring sits centred): One sculpted, organic sterling silver ring standing on dark graphite stone, a single cool light raking across its surface, deep soft shadow. *Now: Pexels 1378705, a sculpted ring on a dark surface; good, but it is also the Rings tile and the ring's product photo.*
+- **scene-tile-1** (3:4, category: Rings; portrait tile): Three different sterling silver rings (sculpted, plain and twisted) standing on a pale grey river stone on grey linen. *Now: Pexels 1378705, the hero photo again.*
+- **scene-tile-2** (3:4, category: Stacks): A stack of five thin silver rings on a slim silver cone (a ring stand), cool window light on pale stone. *Now: Pexels 1378706, the hero's own shoot.*
+- **scene-tile-3** (3:4, category: Bridal): A silver ring with a single clear stone in an open graphite velvet box on pale grey silk. *Now: Pexels 27405174.*
+- **scene-tile-4** (3:4, category: Bands): Two plain sterling silver bands, one brushed and one polished, leaning together on a pale grey stone slab. *Now: Pexels 35205571, also a product photo here and already used by another template.*
+- **scene-tile-5** (3:4, category: Selections): Eight silver rings set in a shallow grey linen ring tray, from slightly above. *Now: Pexels 16063791, a ring tray; also the Ring Selection product photo.*
+- **scene-about** (4:5, the about page): A silversmith's bench in a small Downtown Cairo studio: a bench pin, files, a ring mandrel, silver wire and small dishes of pieces, cool daylight from a tall window. *Now: Pexels 33873069, a silversmith's bench with tools and dishes; already used elsewhere.*
+
+Product photos and angles. The **main packshot is required** here, since each one replaces a Pexels photo: save as `<slug>.png` with the packshot master prompt. The angle is optional, as `<slug>-2.png`.
+1. **sculpted-silver-ring**: Sculpted Silver Ring. Packshot: a sculpted organic sterling silver ring, three-quarter view. Angle: side view.
+2. **leaf-pair-rings**: Silver Ring Pair. Packshot: two slim silver rings with a leaf texture, side by side. Angle: the two rings interlocked, from above.
+3. **everyday-stack**: Everyday Stack of Five. Packshot: five thin silver rings stacked, front view. Angle: the five rings fanned apart.
+4. **eternity-stack**: Stone-set Stack. Packshot: three thin silver rings set with small clear stones, stacked. Angle: the stones close, from the side.
+5. **promise-ring**: Gem-set Promise Ring. Packshot: a fine silver ring with one small pale blue stone. Angle: the setting from the side.
+6. **engagement-ring-box**: Engagement Ring in a Box. Packshot: a silver solitaire ring in an open grey velvet box, no lettering. Angle: the ring out of the box, three-quarter view.
+7. **engraved-bands**: Engraved Band Pair. Packshot: two plain silver bands, the inside blank (no letters). Angle: both bands standing on edge, side view.
+8. **ring-tray-set**: Ring Selection. Packshot: six assorted silver rings laid in a small row. Angle: the six rings in a loose circle, from above.
+
+---
+
+### phone-cases — Volt (`volt`), live
+
+Palette for scenes: *white, navy, electric blue, lime.* Add: *"Phones and cases: unbranded, no logo or camera-maker mark on the back, screens off (black glass) or blank white."*
+
+Volt draws only the category tiles and the about page photo. Its hero is a big word with the first featured product's packshot.
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, space for text on one side) *(not drawn by Volt)*: A lilac silicone case on light wood beside two small plants. *Now: Pexels 2718446.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Volt)*: A red matte case on dry autumn leaves. *Now: Pexels 11059612.*
+- **scene-tile-1** (3:4, category: Clear cases; `categories-chips` crops it landscape on desktop and square on phones, so keep it centred): A phone in a clear magnetic case lying back-up on white, a navy phone body showing through the case, an electric-blue shadow edge, close on the corners. *Now: Pexels 13780411, a clear case on a blush phone on dark granite.*
+- **scene-tile-2** (3:4, category: Silicone cases; centred): Sage, pink, navy and black silicone cases stacked in a loose fan on white, a lime accent paper beneath. *Now: Pexels 32912373, purple, blue and white cases on black; dark against Volt's white page.*
+- **scene-tile-3** (3:4, category: Leather, wallet & rugged; centred): A brown leather case, a black faux-leather wallet flip case open with blank cards, and a black rugged case on its kickstand, on navy cloth. *Now: Pexels 19784109, one black rugged case with a ring stand on a desk.*
+- **scene-tile-4** (3:4, category: Protectors & straps; centred): A sheet of tempered glass with its fitting frame, a camera lens protector and a beaded phone strap beside a phone (screen off) on white. *Now: Pexels 11028408, a phone under a palm shadow; you can't see the protector.*
+- **scene-banner** (21:9, space for text in the middle) *(not drawn by Volt)*: A phone, screen off, on dark grained leather. *Now: Pexels 1350462.*
+- **scene-story** (4:5, the about page): A phone in a white bumper case, screen off, beside round glasses and a plain notebook on navy linen. *Now: Pexels 8100970, the same subject on black linen with a blank white screen.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **clear-magnetic-case**: Clear Magnetic Case — the inside, showing the magnetic ring.
+2. **sage-silicone-case**: Sage Silicone Case — side view showing the buttons.
+3. **brown-leather-case**: Brown Genuine Leather Case — the inside, the soft lining.
+4. **tempered-glass-protector**: Tempered Glass Protector with Fitting Frame — the glass lifted out of its frame.
+5. **clear-slim-case**: Clear Slim Case — side view showing the thin edge.
+6. **black-silicone-case**: Black Silicone Case — the inside, the soft lining.
+7. **black-wallet-flip-case**: Black Faux Leather Wallet Flip Case — open flat, the card slots.
+8. **camera-lens-protector**: Camera Lens Protector — the protector beside its applicator, from above.
+9. **clear-bumper-case**: Clear Bumper Case with Reinforced Corners — a corner close.
+10. **pink-silicone-case**: Pink Silicone Case — side view.
+11. **tan-card-slot-case**: Tan Faux Leather Card Slot Case — the slot with a blank card half in.
+12. **beaded-phone-strap**: Beaded Phone Strap — laid in a loop, from above.
+13. **frosted-black-case**: Frosted Case with Black Edges — side view showing the black edge.
+14. **navy-silicone-case**: Navy Silicone Case — the inside.
+15. **black-rugged-case**: Black Rugged Case with Kickstand — the kickstand open, side view.
+16. **crossbody-phone-lanyard**: Black Crossbody Phone Lanyard — the clip and the strap coiled.
+
+---
+
+### chargers-cables — Kabl (`kabl`), live
+
+Palette for scenes: *cool grey, navy, electric blue, soft yellow.* Add: *"Chargers and cables: unbranded, no printed watts, specs or marks on the plugs, phone screens off."*
+
+Kabl draws the category tiles and the about page photo. Its hero is a search bar with no photo.
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, space for text on the right) *(not drawn by Kabl)*: A laptop corner, a black phone and a white charger with its cable coiled on beige. *Now: Pexels 5208870.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Kabl)*: A phone, screen off, on a bamboo stand beside a notebook on marble. *Now: Pexels 6373172.*
+- **scene-tile-1** (3:4, category: Chargers; portrait tile): A black GaN charger, a white 20 W charger and a black car charger standing in a row on cool grey, plugs facing the light. *Now: Pexels 16886336, white chargers in a power strip; faint embossed marks.*
+- **scene-tile-2** (3:4, category: Cables): A black braided USB-C cable, a white USB-C cable and a 3-in-1 cable coiled neatly side by side on navy cloth. *Now: Pexels 5208819, two white chargers with coiled cables on beige; it looks like the Chargers tile.*
+- **scene-tile-3** (3:4, category: Power banks): A black 20000 mAh power bank, a white magnetic one and a small pink one stacked on cool grey stone with a cable looped in front. *Now: Pexels 947407, a black battery on red leather; the red fights the palette.*
+- **scene-tile-4** (3:4, category: Wireless charging): A phone, screen off, lying on a round white charging pad beside a black 3-in-1 stand on a soft-yellow desk. *Now: Pexels 5083491, a phone on a pad; its screen shows a faint battery line.*
+- **scene-banner** (21:9, space for text in the middle) *(not drawn by Kabl)*: Two phones, screens off, charging side by side with white braided cables. *Now: Pexels 1028674.*
+- **scene-story** (4:5, the about page): A white charger, a braided USB-C cable and a grey power bank on pale marble, soft daylight. *Now: Pexels 3921706, the same subject; keep it so the alt still fits.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-65w-gan-charger**: Black 65W GaN Charger (2× USB-C + USB-A) — the ports side, close.
+2. **black-braided-usb-c-cable-2m**: Black Braided USB-C Cable, 2 m — the plug and braid close.
+3. **black-20000mah-power-bank**: Black 20000mAh Power Bank — the ports end.
+4. **black-3-in-1-wireless-stand**: Black 3-in-1 Wireless Charging Stand — side view.
+5. **white-20w-usb-c-charger**: White 20W USB-C Fast Charger — the port side and the pins.
+6. **white-usb-c-cable-1m**: White USB-C Cable, 1 m — the two plugs close.
+7. **white-10000mah-power-bank**: White 10000mAh Power Bank — the ports end.
+8. **white-wireless-charging-pad**: White Wireless Charging Pad — side view showing its thin profile.
+9. **white-dual-port-charger**: White Dual-Port Charger (USB-C + USB-A) — the ports close.
+10. **white-usb-c-to-lightning-cable**: White USB-C to Lightning Cable (for iPhone) — the two plugs close.
+11. **white-magnetic-power-bank**: White Magnetic Wireless Power Bank — the back, showing the magnetic ring.
+12. **white-wireless-charging-stand**: White Wireless Charging Stand — side view.
+13. **black-car-charger**: Black Car Charger — the ports end.
+14. **black-3-in-1-cable**: Black 3-in-1 Braided Cable — the three tips fanned out.
+15. **pink-mini-power-bank**: Pink Mini Power Bank — the port end.
+16. **black-magnetic-car-mount**: Black Magnetic Wireless Car Mount — side view showing the vent clip.
+
+---
+
+### pc-gaming — Arena (`arena`), live
+
+Palette for scenes: *near-black, violet light, lime accent, cool graphite.* Add: *"Gaming gear: unbranded, RGB glow soft and violet, no logos on mice, headsets or controllers, monitors off or showing a plain dark gradient."*
+
+Arena's page is dark, so its about page shows `photos.dark.story`. The light `story` is shown by no look.
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, `hero-fullbleed` on the dark page: the copy reads over the dark upper half; phones crop it tall from the centre): A dark gaming desk in the lower third: a plain keyboard, a mouse, a headset on a stand and one wide curved monitor that is off, with a soft violet wall glow, a calm near-black space above for text. *Now: Pexels 1820328, three monitors showing a mountain dawn (lit screens with content).*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Arena)*: A white and red mechanical keyboard on navy. *Now: Pexels 13728045.*
+- **scene-tile-1** (3:4, category: Keyboards; portrait tile): A black mechanical keyboard, keycaps lit from below in violet to lime, close and angled on a dark desk mat. *Now: Pexels 37722338, keycaps lit blue to pink.*
+- **scene-tile-2** (3:4, category: Mice): A black honeycomb lightweight mouse side-on on a dark mat, a violet glow behind it. *Now: Pexels 19120448, a black mouse with a red monitor glow.*
+- **scene-tile-3** (3:4, category: Headsets & audio): A black gaming headset with a boom mic on a headset stand, a dark desk, violet rim light, nothing behind it. *Now: Pexels 7858756, a black and red headset with a blurred screen behind it.*
+- **scene-tile-4** (3:4, category: Controllers & desk gear): A black wireless gamepad and a USB desk microphone on a dark desk mat, a lime light edge. *Now: Pexels 27271924, one pale grey controller on a dark mat.*
+- **scene-banner** (21:9, space for text in the middle) *(not drawn by Arena)*: A black controller in low violet light. *Now: Pexels 14205160.*
+- **scene-story** (4:5, space for text at the top) *(not drawn by Arena, the light story)*: A light corner desk by a window: a curved monitor that is off, a headset on a stand, a controller and plants. *Now: Pexels 28350931.*
+- **scene-story-dark** (4:5, Arena's about page, `photos.dark.story`): An empty dark game lounge with two low armchairs and two white controllers on a small lime table, violet ceiling light. *Now: Pexels 7862237, two white controllers on a yellow table.*
+- **scene-video-poster** (16:9, the `video-shop` player; with no video file the poster shows as a still above the product row, so keep the subject centred): A white wireless mouse and a white compact keyboard on a black desk mat, a soft violet glow from one side. *Now: Pexels 17821147, a lone white mouse on black.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-full-size-gaming-keyboard**: Black Full-Size Gaming Keyboard with Wrist Rest — side profile showing the key height.
+2. **white-wireless-gaming-mouse**: White Wireless Gaming Mouse — side view showing the thumb buttons.
+3. **black-gaming-headset-boom-mic**: Black Gaming Headset with Boom Mic — side view with the mic lowered.
+4. **black-wireless-gamepad**: Black Wireless Gamepad — the top edge, showing the triggers.
+5. **pink-compact-mechanical-keyboard**: Pink Compact Mechanical Keyboard — side profile.
+6. **black-honeycomb-lightweight-mouse**: Black Honeycomb Lightweight Mouse — from above, the honeycomb shell.
+7. **black-red-gaming-headset**: Black and Red Gaming Headset — the ear cushions from the inside.
+8. **black-usb-desk-microphone**: Black USB Desk Microphone — side view on its stand.
+9. **black-mechanical-keyboard-white-keycaps**: Black Mechanical Keyboard with White Keycaps — a corner close, the switches showing.
+10. **black-wired-gaming-mouse**: Black Wired Gaming Mouse — side view with the cable.
+11. **white-gaming-headset-boom-mic**: White Gaming Headset with Boom Mic — side view.
+12. **black-xl-desk-mousepad**: Black Large Desk Mousepad — rolled half open, showing the stitched edge.
+13. **white-compact-mechanical-keyboard**: White Compact Mechanical Keyboard — side profile.
+14. **black-vertical-ergonomic-mouse**: Black Vertical Ergonomic Mouse — the side where the thumb rests.
+15. **black-gaming-earbuds-case**: Black Gaming Earbuds — the case open with the earbuds inside, from above.
+16. **black-headset-stand**: Black Headset Stand — side view, empty.
+
+---
+
+### lighting-smart-home — Zaki (`zaki`), live
+
+Palette for scenes: *pale green-grey walls, deep green, teal, warm yellow lamplight; bright daytime rooms.* Add: *"Lighting: lamps lit softly even in daylight, no visible brand on bulbs or plugs, phone and hub screens off; Egyptian flats, tiled or wood floors, no clutter."*
+
+Zaki shows the pack's **`perLook.zaki`** store (Nawwara) and its photos. The pack's own photos (Dayy: hero 7045363 and 11125319, tiles 20056503, 13806238, 34771394, 29099976, banner 5400775, story 38014632, dark story 14161060) belong to `nour`, the other look, so they are not listed here.
+
+Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
+- **scene-hero-wide** (16:9, `hero-halves`: cropped square from the centre on desktop beside the copy half, landscape on phones; no text space needed, centre the lights): A bright white kitchen in a Cairo flat, three black dome pendants lit warm over a pale green-grey island, morning daylight. *Now: Pexels 6283972, a white kitchen with three black pendants over the island; keep the subject.*
+- **scene-hero-tall** (4:5, space for text at the top) *(not drawn by Zaki)*: A pale floor lamp lit in a bright corner by a window. *Now: Pexels 6508354.*
+- **scene-tile-1** (3:4, category: Pendants & chandeliers; `categories-feature-list` crops it landscape, so keep the lights in the middle band): Two clear glass globe pendants and a rattan dome lit over a wooden dining table in daylight. *Now: Pexels 12202390, clear glass pendants over a kitchen.*
+- **scene-tile-2** (3:4, category: Floor lamps): A wooden tripod floor lamp lit beside a deep green armchair against a pale panelled wall. *Now: Pexels 11545385, a pale floor lamp by a blue panelled wall; the blue is off palette.*
+- **scene-tile-3** (3:4, category: Table & desk lamps): A black metal desk lamp and a terracotta mushroom lamp, both lit, on a light wood desk in sunlit leaf shadows. *Now: Pexels 31410610, a wooden desk lamp in leaf shadows.*
+- **scene-tile-4** (3:4, category: Smart lighting): Warm teal-to-amber LED strip glowing under a floating shelf, a smart bulb lit in a white ceramic lamp and a phone face-down beside it. *Now: Pexels 28940512, bulbs, a plug and a camera on white; flat, and the camera isn't sold.*
+- **scene-banner** (21:9, space for text in the middle) *(not drawn by Zaki)*: A long bright living room with three lamps lit at different heights. *Now: Pexels 5849392.*
+- **scene-story** (4:5, the about page): A lit white ceramic table lamp beside a potted plant on a light wooden desk against a pale green-grey wall, warm afternoon light. *Now: Pexels 32543097, a lit table lamp beside a plant on a wooden desk.*
+
+Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **brass-table-lamp-linen-shade**: Brass Table Lamp with Linen Shade — lit, three-quarter view.
+2. **gold-three-ring-chandelier**: Gold Three-Ring Chandelier — from below, the rings stacked.
+3. **black-arc-floor-lamp**: Black Arc Floor Lamp — side view showing the full arc.
+4. **smart-led-strip-5m**: 5 m Smart LED Strip — the reel half unrolled, lit warm.
+5. **glass-globe-pendant-light**: Glass Globe Pendant Light — lit.
+6. **white-smart-led-bulb**: White Smart LED Bulb — lit warm, side view.
+7. **wood-tripod-floor-lamp**: Wooden Tripod Floor Lamp — lit, three-quarter view.
+8. **black-metal-desk-lamp**: Black Metal Desk Lamp — side view with the arm raised.
+9. **rattan-dome-pendant-light**: Rattan Dome Pendant Light — lit, from slightly below.
+10. **amber-filament-smart-bulb**: Amber Filament Smart Bulb — lit, the filament glowing.
+11. **gold-slim-floor-lamp**: Slim Gold Floor Lamp — the shade close, lit.
+12. **white-ceramic-table-lamp**: White Ceramic Table Lamp — lit.
+13. **black-gold-dome-pendant-light**: Black and Gold Dome Pendant Light — from below, the gold inside lit.
+14. **white-smart-night-lamp**: White Smart Night Lamp — lit soft warm.
+15. **paper-column-floor-lamp**: Paper Column Floor Lamp — lit, the paper glowing.
+16. **terracotta-mushroom-table-lamp**: Terracotta Mushroom Table Lamp — lit, side view.
 
 ---
 
