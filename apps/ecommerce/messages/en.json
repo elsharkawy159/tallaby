@@ -1990,6 +1990,7 @@
     "searchSeeAll": "See all {count, plural, one {# result} other {# results}} for “{query}”",
     "ratingSummary": "{rating} from {count, plural, one {# rating} other {# ratings}}",
     "cartTitle": "Your cart",
+    "closeCart": "Close the cart",
     "cartEmpty": "Your cart is empty",
     "cartEmptyHint": "Add something from {store} and it will show up here.",
     "browseProducts": "Browse products",

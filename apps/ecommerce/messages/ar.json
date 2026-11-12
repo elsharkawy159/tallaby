@@ -1990,6 +1990,7 @@
     "searchSeeAll": "عرض {count, plural, zero {النتائج} one {نتيجة واحدة} two {النتيجتين} few {# نتائج} many {# نتيجة} other {# نتيجة}} لـ «{query}»",
     "ratingSummary": "{rating} من {count, plural, one {تقييم واحد} two {تقييمين} few {# تقييمات} many {# تقييمًا} other {# تقييم}}",
     "cartTitle": "سلتك",
+    "closeCart": "إغلاق السلة",
     "cartEmpty": "سلتك فارغة",
     "cartEmptyHint": "أضف منتجًا من {store} وسيظهر هنا.",
     "browseProducts": "تصفح المنتجات",

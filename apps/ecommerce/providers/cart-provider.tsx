@@ -23,10 +23,26 @@ export function notifyCartItemAdded() {
   window.dispatchEvent(new Event(CART_ITEM_ADDED_EVENT));
 }
 
+// How many listeners show the shopper what they added (a store's cart sheet).
+let addedListeners = 0;
+
 /** Runs `handler` after each `notifyCartItemAdded`; returns the unsubscribe. */
 export function onCartItemAdded(handler: () => void): () => void {
   window.addEventListener(CART_ITEM_ADDED_EVENT, handler);
-  return () => window.removeEventListener(CART_ITEM_ADDED_EVENT, handler);
+  addedListeners += 1;
+  return () => {
+    window.removeEventListener(CART_ITEM_ADDED_EVENT, handler);
+    addedListeners -= 1;
+  };
+}
+
+/**
+ * "Added to cart" toast, unless something on the page already shows the cart
+ * after an add (a store's cart sheet opens): the toast would only repeat it
+ * (owner, 2026-11-12). tallaby.com's shop has no sheet, so it keeps the toast.
+ */
+function addedToastText(text: string): string | null {
+  return addedListeners > 0 ? null : text;
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -137,7 +153,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     handleAction(
       addToCartAction,
       [p.productId, p.quantity, p.variantId],
-      tToast("itemAddedToCart"),
+      addedToastText(tToast("itemAddedToCart")),
       tToast("failedToAddItem"),
       p.productId,
       setProductLoading
@@ -178,7 +194,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setProductLoading(p.productId, false);
     }
     const success = added === p.lines.length;
-    if (success) toast.success(tToast("itemAddedToCart"));
+    const addedText = addedToastText(tToast("itemAddedToCart"));
+    if (success && addedText) toast.success(addedText);
     return { success, added, value, metaEventId };
   };
 

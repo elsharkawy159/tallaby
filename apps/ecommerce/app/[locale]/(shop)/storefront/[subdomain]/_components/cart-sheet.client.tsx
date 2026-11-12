@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { onCartItemAdded, useCart } from "@/providers/cart-provider";
 import type { StoreMinOrder } from "@workspace/lib/stores/min-order";
 import { StorefrontCart } from "./storefront-cart.client";
+import { useSwipeToClose } from "./use-swipe-to-close.client";
 import s from "../storefront.module.css";
 
 const OPEN_EVENT = "sf:open-cart";
@@ -48,6 +49,9 @@ export function StoreCartSheet({
   const t = useTranslations("storefront");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
+  const side = locale === "ar" ? "left" : "right";
+  // Phones: drag the cart back to its edge to close it.
+  const swipeRef = useSwipeToClose(side, () => setOpen(false));
 
   useEffect(() => {
     const show = () => setOpen(true);
@@ -73,10 +77,23 @@ export function StoreCartSheet({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent side={locale === "ar" ? "left" : "right"} data-sf-motion="off" className={cn(s.tokens, fontClassName, "flex w-full flex-col gap-0 bg-(--sf-paper) p-5 text-(--sf-ink) sm:max-w-md")}>
-        <SheetHeader className="p-0 pb-2 text-start">
+      <SheetContent
+        ref={swipeRef}
+        side={side}
+        hideClose
+        data-sf-motion="off"
+        className={cn(s.tokens, fontClassName, "flex w-full touch-pan-y flex-col gap-0 bg-(--sf-paper) p-5 text-(--sf-ink) sm:max-w-md")}
+      >
+        <SheetHeader className="flex-row items-center justify-between gap-3 p-0 pb-2 text-start">
           <SheetTitle className="text-xl font-bold">{t("cartTitle")}</SheetTitle>
           <SheetDescription className="sr-only">{t("cartTitle")}</SheetDescription>
+          {/* A clear 44px close button in the store's colours (the shared sheet's corner X is small and faint). */}
+          <SheetClose
+            className="-me-1.5 grid size-11 shrink-0 place-items-center rounded-full bg-(--sf-shelf) text-(--sf-ink) transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--sf-ink)_10%,var(--sf-shelf))] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sf-brand) motion-reduce:transition-none"
+            aria-label={t("closeCart")}
+          >
+            <X className="size-6" strokeWidth={2.25} aria-hidden />
+          </SheetClose>
         </SheetHeader>
         <div className="min-h-0 flex-1">
           <StorefrontCart storeName={storeName} minOrder={minOrder} onNavigate={() => setOpen(false)} />
