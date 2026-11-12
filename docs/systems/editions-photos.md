@@ -14,6 +14,7 @@ For each image (you, or ChatGPT with file access):
 2. **Download it into that niche's "Save to" folder**, nowhere else.
 3. **Name it exactly as the bold name before its prompt**, plus `.png`: packshots `<slug>.png`, scenes `scene-<slot>.png`, second angles `<slug>-2.png`. Example: `.editions-inbox/01-wave-1/earbuds/white-wireless-earbuds.png` and `.editions-inbox/01-wave-1/earbuds/scene-hero-wide.png`.
 4. Keep the full resolution ChatGPT gives (no screenshots, no compression); PNG or JPG.
+5. **Never overwrite.** Before making an image, look in its folder: if a file with that name already exists (any of .png, .jpg, .webp), it is done; skip it. Sections that already hold finished photos say so in an "Already in this folder" line.
 
 ```
 .editions-inbox/
@@ -583,6 +584,8 @@ Save into `.editions-inbox/00-live-templates/<niche>/`: scenes as `scene-<slot>.
 
 **Save to: `.editions-inbox/00-live-templates/dresses/`**
 
+**Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
+
 Palette for scenes: *ivory white, soft taupe, warm stone grey, jet black (blush and sage as dress colours only).*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -595,29 +598,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-story** (4:5, the about page beside "Few styles, well chosen"): A coral and a yellow summer dress on wooden hangers on a whitewashed wall hook, a woven basket on the floor below, warm afternoon light. *Now: Pexels 9788969, two summer dresses on hangers.*
 - **scene-look** (3:4, shop the look; the three dots point at the store's three newest dresses, at x/y % of the photo: yellow sundress 20/44, sky blue striped dress 45/52, white linen tiered dress 68/54): Three summer dresses on wooden hangers hanging from a pergola beam on a sunny terrace, left to right a yellow floral sundress (its body about 20% across, 44% down), a sky blue striped dress (about 45% across, 52% down) and a white linen tiered dress (about 68% across, 54% down), a whitewashed wall and a soft bougainvillea shadow behind. *Now: Pexels 8916600, three summer dresses on hangers on a terrace, yellow, light blue and white.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **yellow-floral-sundress**: Yellow Floral Sundress — the back, as the same flat-lay.
-2. **sky-blue-striped-dress**: Sky Blue Striped Dress — the back.
-3. **white-linen-tiered-dress**: White Linen Tiered Dress — a close detail of the linen tiers and seams.
-4. **sage-green-wrap-midi-dress**: Sage Green Wrap Midi Dress — the side, showing the wrap and tie.
-5. **navy-belted-shirt-dress**: Navy Belted Shirt Dress — the back.
-6. **beige-knit-midi-dress**: Beige Ribbed Knit Midi Dress — a close detail of the rib knit.
-7. **terracotta-tshirt-dress**: Terracotta Cotton T-Shirt Dress — the back.
-8. **burgundy-velvet-evening-dress**: Burgundy Velvet Evening Dress — the back.
-9. **black-satin-slip-dress**: Black Satin Slip Evening Dress — the back, showing the straps.
-10. **emerald-one-shoulder-gown**: Emerald Satin One-Shoulder Gown — the back.
-11. **champagne-sequin-evening-dress**: Champagne Sequin Evening Dress — a close detail of the sequins.
-12. **coral-off-shoulder-summer-dress**: Coral Off-Shoulder Summer Dress — the back.
-13. **dusty-rose-maxi-dress**: Dusty Rose Crepe Maxi Dress — the back.
-14. **olive-maxi-shirt-dress**: Olive Maxi Shirt Dress — a close detail of the collar and buttons.
-15. **black-floral-chiffon-maxi-dress**: Black Floral Chiffon Maxi Dress — the back.
-16. **mocha-pleated-maxi-dress**: Mocha Satin Pleated Maxi Dress — a close detail of the pleats.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **yellow-floral-sundress-2**: Yellow Floral Sundress — the back, as the same flat-lay.
+2. **sky-blue-striped-dress-2**: Sky Blue Striped Dress — the back.
+3. **white-linen-tiered-dress-2**: White Linen Tiered Dress — a close detail of the linen tiers and seams.
+4. **sage-green-wrap-midi-dress-2**: Sage Green Wrap Midi Dress — the side, showing the wrap and tie.
+5. **navy-belted-shirt-dress-2**: Navy Belted Shirt Dress — the back.
+6. **beige-knit-midi-dress-2**: Beige Ribbed Knit Midi Dress — a close detail of the rib knit.
+7. **terracotta-tshirt-dress-2**: Terracotta Cotton T-Shirt Dress — the back.
+8. **burgundy-velvet-evening-dress-2**: Burgundy Velvet Evening Dress — the back.
+9. **black-satin-slip-dress-2**: Black Satin Slip Evening Dress — the back, showing the straps.
+10. **emerald-one-shoulder-gown-2**: Emerald Satin One-Shoulder Gown — the back.
+11. **champagne-sequin-evening-dress-2**: Champagne Sequin Evening Dress — a close detail of the sequins.
+12. **coral-off-shoulder-summer-dress-2**: Coral Off-Shoulder Summer Dress — the back.
+13. **dusty-rose-maxi-dress-2**: Dusty Rose Crepe Maxi Dress — the back.
+14. **olive-maxi-shirt-dress-2**: Olive Maxi Shirt Dress — a close detail of the collar and buttons.
+15. **black-floral-chiffon-maxi-dress-2**: Black Floral Chiffon Maxi Dress — the back.
+16. **mocha-pleated-maxi-dress-2**: Mocha Satin Pleated Maxi Dress — a close detail of the pleats.
 
 ---
 
 ### lingerie-sleepwear — Vella (`vella`), live
 
 **Save to: `.editions-inbox/00-live-templates/lingerie-sleepwear/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, pale zinc grey, soft charcoal, one small signal-red accent (an object, never a garment).* Add: *"Sleepwear: modest, nothing revealing; garments folded, hung or laid on furniture."*
 
@@ -630,29 +635,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (generate 1:1: drawn square beside the story text, 4:3 on phones, so keep the stack centred): Folded lounge sets stacked on the arm of a cream sofa, oatmeal knit, black jersey and lilac fleece, a mug on a side table, soft window light. *Now: Pexels 7691347, folded knits on a cream sofa.*
 - **scene-story** (4:5, the about page): A calm white bedroom corner, two robes on a wall rail, a green armchair with a folded pajama set on the seat, linen curtains, no books. *Now: Pexels 20065482, a white bedroom with two robes, a green armchair and a closed book.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **ivory-satin-pajama-set**: Ivory Satin Long-Sleeve Pajama Set — the top's back, laid flat.
-2. **navy-cotton-pajama-set**: Navy Cotton Long-Sleeve Pajama Set — a close detail of the collar and piping.
-3. **pink-striped-pajama-set**: Pink Striped Cotton Short Pajama Set — the back, laid flat.
-4. **sage-modal-pajama-set**: Sage Modal Pajama Set — a close detail of the modal fabric and buttons.
-5. **champagne-satin-nightgown**: Champagne Satin Long Nightgown — the back, laid flat.
-6. **white-cotton-nightgown**: White Cotton Puff-Sleeve Nightgown — a close detail of the puff sleeve.
-7. **dusty-rose-nightgown**: Dusty Rose Cotton Nightgown — the back, laid flat.
-8. **navy-printed-nightgown**: Navy Dotted Cotton Long-Sleeve Nightgown — a close detail of the dotted cotton.
-9. **white-waffle-robe**: White Waffle Cotton Robe — the back, laid flat.
-10. **blush-satin-robe**: Blush Satin Belted Robe — folded neatly with the belt on top.
-11. **grey-fleece-robe**: Grey Hooded Fleece Robe — the back, showing the hood.
-12. **beige-linen-robe**: Beige Linen Long Robe — a close detail of the linen and the belt loop.
-13. **oatmeal-knit-lounge-set**: Oatmeal Knit Lounge Set — folded as a neat stack.
-14. **black-jersey-lounge-set**: Black Jersey Lounge Set — folded as a neat stack.
-15. **lilac-fleece-lounge-set**: Lilac Hooded Fleece Lounge Set — the hoodie's back, laid flat.
-16. **cream-cotton-lounge-dress**: Cream Cotton Long-Sleeve Lounge Dress — the back, laid flat.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **ivory-satin-pajama-set-2**: Ivory Satin Long-Sleeve Pajama Set — the top's back, laid flat.
+2. **navy-cotton-pajama-set-2**: Navy Cotton Long-Sleeve Pajama Set — a close detail of the collar and piping.
+3. **pink-striped-pajama-set-2**: Pink Striped Cotton Short Pajama Set — the back, laid flat.
+4. **sage-modal-pajama-set-2**: Sage Modal Pajama Set — a close detail of the modal fabric and buttons.
+5. **champagne-satin-nightgown-2**: Champagne Satin Long Nightgown — the back, laid flat.
+6. **white-cotton-nightgown-2**: White Cotton Puff-Sleeve Nightgown — a close detail of the puff sleeve.
+7. **dusty-rose-nightgown-2**: Dusty Rose Cotton Nightgown — the back, laid flat.
+8. **navy-printed-nightgown-2**: Navy Dotted Cotton Long-Sleeve Nightgown — a close detail of the dotted cotton.
+9. **white-waffle-robe-2**: White Waffle Cotton Robe — the back, laid flat.
+10. **blush-satin-robe-2**: Blush Satin Belted Robe — folded neatly with the belt on top.
+11. **grey-fleece-robe-2**: Grey Hooded Fleece Robe — the back, showing the hood.
+12. **beige-linen-robe-2**: Beige Linen Long Robe — a close detail of the linen and the belt loop.
+13. **oatmeal-knit-lounge-set-2**: Oatmeal Knit Lounge Set — folded as a neat stack.
+14. **black-jersey-lounge-set-2**: Black Jersey Lounge Set — folded as a neat stack.
+15. **lilac-fleece-lounge-set-2**: Lilac Hooded Fleece Lounge Set — the hoodie's back, laid flat.
+16. **cream-cotton-lounge-dress-2**: Cream Cotton Long-Sleeve Lounge Dress — the back, laid flat.
 
 ---
 
 ### tshirts — Streetwear (`streetwear`), live
 
 **Save to: `.editions-inbox/00-live-templates/tshirts/`**
+
+**Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, raw concrete grey, acid lime, pure black.*
 
@@ -670,29 +677,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-lookbook-4** (1:1): Raw cotton bolls on a concrete ledge beside a folded white tee. *Now: Pexels 13924869, a close-up of raw cotton fibre.*
 - **scene-lookbook-5** (1:1): A rolled grey melange tee and a rolled black tee in a black wire basket on concrete, from above. *Now: Pexels 4440651, a steam iron on marble beside a grey tee: an appliance with a brand-like badge.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **burgundy-tipped-polo**: Burgundy Tipped Polo — a close detail of the tipped collar and placket.
-2. **white-pique-polo**: White Pique Polo — the back, laid flat.
-3. **navy-pique-polo**: Navy Pique Polo — a close detail of the piqué knit.
-4. **navy-white-striped-tshirt**: Navy and White Striped Tee — the back, laid flat.
-5. **washed-black-oversized-tshirt**: Washed Black Oversized Tee — folded neatly.
-6. **white-basic-cotton-tshirt**: White Basic Cotton Tee — a close detail of the neck rib.
-7. **blue-tie-dye-tshirt**: Blue Tie-Dye Tee — the back, laid flat.
-8. **sand-beige-oversized-tshirt**: Sand Beige Oversized Tee — the back, laid flat.
-9. **black-basic-cotton-tshirt**: Black Basic Cotton Tee — folded neatly.
-10. **forest-green-pique-polo**: Forest Green Pique Polo — the back, laid flat.
-11. **black-chest-stripe-tshirt**: Black Tee with a White Chest Stripe — the back, laid flat.
-12. **brown-oversized-tshirt**: Chocolate Brown Oversized Tee — folded neatly.
-13. **dusty-blue-basic-tshirt**: Dusty Blue Basic Cotton Tee — folded neatly.
-14. **green-white-colour-block-tshirt**: Green and White Colour-Block Tee — the back, laid flat.
-15. **olive-oversized-tshirt**: Olive Oversized Tee — the back, laid flat.
-16. **grey-melange-basic-tshirt**: Grey Melange Basic Tee — a close detail of the melange cotton.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **burgundy-tipped-polo-2**: Burgundy Tipped Polo — a close detail of the tipped collar and placket.
+2. **white-pique-polo-2**: White Pique Polo — the back, laid flat.
+3. **navy-pique-polo-2**: Navy Pique Polo — a close detail of the piqué knit.
+4. **navy-white-striped-tshirt-2**: Navy and White Striped Tee — the back, laid flat.
+5. **washed-black-oversized-tshirt-2**: Washed Black Oversized Tee — folded neatly.
+6. **white-basic-cotton-tshirt-2**: White Basic Cotton Tee — a close detail of the neck rib.
+7. **blue-tie-dye-tshirt-2**: Blue Tie-Dye Tee — the back, laid flat.
+8. **sand-beige-oversized-tshirt-2**: Sand Beige Oversized Tee — the back, laid flat.
+9. **black-basic-cotton-tshirt-2**: Black Basic Cotton Tee — folded neatly.
+10. **forest-green-pique-polo-2**: Forest Green Pique Polo — the back, laid flat.
+11. **black-chest-stripe-tshirt-2**: Black Tee with a White Chest Stripe — the back, laid flat.
+12. **brown-oversized-tshirt-2**: Chocolate Brown Oversized Tee — folded neatly.
+13. **dusty-blue-basic-tshirt-2**: Dusty Blue Basic Cotton Tee — folded neatly.
+14. **green-white-colour-block-tshirt-2**: Green and White Colour-Block Tee — the back, laid flat.
+15. **olive-oversized-tshirt-2**: Olive Oversized Tee — the back, laid flat.
+16. **grey-melange-basic-tshirt-2**: Grey Melange Basic Tee — a close detail of the melange cotton.
 
 ---
 
 ### menswear — Zay (`zay`), live
 
 **Save to: `.editions-inbox/00-live-templates/menswear/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *cool pale grey, light steel grey, periwinkle, deep navy.*
 
@@ -708,29 +717,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-tile-4** (1:1, category: Jackets): A navy bomber jacket folded with its collar forward, centred on pale grey. *Now: Pexels 615003, brown and navy jackets on a rail.*
 - **scene-story** (4:5, the about page): A navy steel rail of shirts, knits and jackets in white, grey, navy and olive, a pair of brown loafers on the floor below, pale grey wall, window light. *Now: Pexels 7794265, the neck of a grey crew knit.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **grey-crew-sweater**: Grey Crew-Neck Sweater — folded neatly.
-2. **olive-field-jacket**: Olive Field Jacket — the back, laid flat.
-3. **navy-bomber-jacket**: Navy Bomber Jacket — the back, laid flat.
-4. **white-oxford-shirt**: White Oxford Shirt — a close detail of the collar and buttons.
-5. **stone-chino-trousers**: Stone Chino Trousers — the back, laid flat.
-6. **navy-pique-polo**: Navy Piqué Polo — folded neatly.
-7. **light-blue-linen-shirt**: Light Blue Linen Shirt — folded neatly.
-8. **charcoal-tailored-trousers**: Charcoal Tailored Trousers — a close detail of the waistband and crease.
-9. **tan-suede-jacket**: Tan Faux Suede Jacket — the back, laid flat.
-10. **olive-knit-polo**: Olive Knit Polo — a close detail of the knit collar.
-11. **navy-striped-shirt**: Navy Striped Shirt — folded neatly.
-12. **navy-drawstring-trousers**: Navy Drawstring Trousers — a close detail of the drawstring waist.
-13. **black-leather-jacket**: Black Leather Jacket — the back, laid flat.
-14. **beige-quarter-zip-sweater**: Beige Quarter-Zip Sweater — a close detail of the zip collar.
-15. **black-overshirt**: Black Overshirt — the back, laid flat.
-16. **black-cargo-trousers**: Black Cargo Trousers — the side, showing the cargo pocket.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **grey-crew-sweater-2**: Grey Crew-Neck Sweater — folded neatly.
+2. **olive-field-jacket-2**: Olive Field Jacket — the back, laid flat.
+3. **navy-bomber-jacket-2**: Navy Bomber Jacket — the back, laid flat.
+4. **white-oxford-shirt-2**: White Oxford Shirt — a close detail of the collar and buttons.
+5. **stone-chino-trousers-2**: Stone Chino Trousers — the back, laid flat.
+6. **navy-pique-polo-2**: Navy Piqué Polo — folded neatly.
+7. **light-blue-linen-shirt-2**: Light Blue Linen Shirt — folded neatly.
+8. **charcoal-tailored-trousers-2**: Charcoal Tailored Trousers — a close detail of the waistband and crease.
+9. **tan-suede-jacket-2**: Tan Faux Suede Jacket — the back, laid flat.
+10. **olive-knit-polo-2**: Olive Knit Polo — a close detail of the knit collar.
+11. **navy-striped-shirt-2**: Navy Striped Shirt — folded neatly.
+12. **navy-drawstring-trousers-2**: Navy Drawstring Trousers — a close detail of the drawstring waist.
+13. **black-leather-jacket-2**: Black Leather Jacket — the back, laid flat.
+14. **beige-quarter-zip-sweater-2**: Beige Quarter-Zip Sweater — a close detail of the zip collar.
+15. **black-overshirt-2**: Black Overshirt — the back, laid flat.
+16. **black-cargo-trousers-2**: Black Cargo Trousers — the side, showing the cargo pocket.
 
 ---
 
 ### pants-jeans — Alwan (`fashion-bold`), live
 
 **Save to: `.editions-inbox/00-live-templates/pants-jeans/`**
+
+**Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, pale chambray blue, deep indigo, top-stitch gold.*
 
@@ -747,29 +758,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-fit-2** (1:1, step "pick the cut and wash"): Five folded denim strips fanned out like a swatch book, bleached light to charcoal, on white. *Now: Pexels 30828508, denim bands, light to charcoal.*
 - **scene-fit-3** (1:1, step "we hem to your length"): A close-up of a fresh jeans hem with gold top-stitching, a gold thread spool and a pin cushion beside it on indigo denim. *Now: Pexels 4109765, an indigo hem with gold top-stitching.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **light-wash-mom-jeans**: Light Wash Mom Jeans — the back, laid flat, showing the pockets.
-2. **blue-wide-leg-jeans**: Blue Wide-Leg Jeans — the back, laid flat.
-3. **mid-blue-straight-jeans**: Mid Blue Straight Jeans — folded neatly, the waistband on top.
-4. **beige-chino-trousers**: Beige Chino Trousers — the back, laid flat.
-5. **grey-melange-joggers**: Grey Melange Joggers — a close detail of the cuff and drawstring.
-6. **beige-linen-wide-leg-trousers**: Beige Linen Wide-Leg Trousers — a close detail of the linen and waistband.
-7. **black-slim-jeans**: Black Slim Jeans — the back, laid flat.
-8. **navy-tailored-trousers**: Navy Tailored Trousers — folded over in half, showing the crease.
-9. **black-tapered-joggers**: Black Tapered Joggers — the back, laid flat.
-10. **black-wide-leg-trousers**: Black Wide-Leg Trousers — the back, laid flat.
-11. **grey-straight-jeans**: Grey Straight Jeans — folded neatly, the waistband on top.
-12. **olive-cargo-trousers**: Olive Cargo Trousers — the side, showing the cargo pocket.
-13. **navy-side-stripe-joggers**: Navy Side-Stripe Joggers — the side, showing the stripe.
-14. **terracotta-palazzo-trousers**: Terracotta Palazzo Trousers — a close detail of the belt.
-15. **brown-corduroy-trousers**: Brown Corduroy Trousers — a close detail of the cord.
-16. **beige-straight-sweatpants**: Beige Straight Sweatpants — the back, laid flat.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **light-wash-mom-jeans-2**: Light Wash Mom Jeans — the back, laid flat, showing the pockets.
+2. **blue-wide-leg-jeans-2**: Blue Wide-Leg Jeans — the back, laid flat.
+3. **mid-blue-straight-jeans-2**: Mid Blue Straight Jeans — folded neatly, the waistband on top.
+4. **beige-chino-trousers-2**: Beige Chino Trousers — the back, laid flat.
+5. **grey-melange-joggers-2**: Grey Melange Joggers — a close detail of the cuff and drawstring.
+6. **beige-linen-wide-leg-trousers-2**: Beige Linen Wide-Leg Trousers — a close detail of the linen and waistband.
+7. **black-slim-jeans-2**: Black Slim Jeans — the back, laid flat.
+8. **navy-tailored-trousers-2**: Navy Tailored Trousers — folded over in half, showing the crease.
+9. **black-tapered-joggers-2**: Black Tapered Joggers — the back, laid flat.
+10. **black-wide-leg-trousers-2**: Black Wide-Leg Trousers — the back, laid flat.
+11. **grey-straight-jeans-2**: Grey Straight Jeans — folded neatly, the waistband on top.
+12. **olive-cargo-trousers-2**: Olive Cargo Trousers — the side, showing the cargo pocket.
+13. **navy-side-stripe-joggers-2**: Navy Side-Stripe Joggers — the side, showing the stripe.
+14. **terracotta-palazzo-trousers-2**: Terracotta Palazzo Trousers — a close detail of the belt.
+15. **brown-corduroy-trousers-2**: Brown Corduroy Trousers — a close detail of the cord.
+16. **beige-straight-sweatpants-2**: Beige Straight Sweatpants — the back, laid flat.
 
 ---
 
 ### sportswear — Madar (`sports-luxe`), live
 
 **Save to: `.editions-inbox/00-live-templates/sportswear/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, ice blue, cobalt, graphite (steel blue as a soft extra).* Add: *"Training wear: unbranded, no stripes, swooshes or logos, no gym machines or plates."*
 
@@ -785,29 +798,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-fabric-3** (1:1 macro, row "Cotton fleece"): Macro of heather grey cotton fleece on a folded edge, the soft brushed inside showing. *Now: Pexels 34860712, heather grey cotton jersey: jersey, not fleece.*
 - **scene-newsletter** (1:1: the sign-up card's start half, a 16:9 band on phones, so centre the subject): A cobalt technical knit training top folded flat on white, the ribbed collar and a zip pull in view, from above. *Now: Pexels 18372335, a cobalt technical knit, flat.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **black-training-tshirt**: Black Quick-Dry Training Tee — the back, laid flat.
-2. **black-high-waist-leggings**: Black High-Waist Leggings — a close detail of the high waistband.
-3. **black-running-shorts**: Black Running Shorts with Liner — the back, laid flat.
-4. **black-zip-training-jacket**: Black Zip Training Jacket — the back, laid flat.
-5. **teal-sports-bra**: Teal Sports Bra — the back, laid flat.
-6. **grey-training-joggers**: Grey Training Joggers — a close detail of the cuff.
-7. **navy-training-shorts**: Navy Training Shorts — the back, laid flat.
-8. **grey-zip-hoodie**: Grey Zip Hoodie — the back, showing the hood.
-9. **white-mesh-tank-top**: White Mesh Tank Top — a close detail of the mesh.
-10. **navy-seamless-leggings**: Navy Seamless Leggings — a close detail of the seamless knit.
-11. **olive-cycling-shorts**: Olive Cycling Shorts — the back, laid flat.
-12. **white-windbreaker**: White Windbreaker — folded neatly.
-13. **grey-long-sleeve-training-top**: Grey Long-Sleeve Training Top — the back, laid flat.
-14. **black-track-pants**: Black Track Pants — the side, laid flat.
-15. **grey-sweat-shorts**: Grey Sweat Shorts — the back, laid flat.
-16. **navy-quarter-zip-top**: Navy Quarter-Zip Top — a close detail of the zip collar.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-training-tshirt-2**: Black Quick-Dry Training Tee — the back, laid flat.
+2. **black-high-waist-leggings-2**: Black High-Waist Leggings — a close detail of the high waistband.
+3. **black-running-shorts-2**: Black Running Shorts with Liner — the back, laid flat.
+4. **black-zip-training-jacket-2**: Black Zip Training Jacket — the back, laid flat.
+5. **teal-sports-bra-2**: Teal Sports Bra — the back, laid flat.
+6. **grey-training-joggers-2**: Grey Training Joggers — a close detail of the cuff.
+7. **navy-training-shorts-2**: Navy Training Shorts — the back, laid flat.
+8. **grey-zip-hoodie-2**: Grey Zip Hoodie — the back, showing the hood.
+9. **white-mesh-tank-top-2**: White Mesh Tank Top — a close detail of the mesh.
+10. **navy-seamless-leggings-2**: Navy Seamless Leggings — a close detail of the seamless knit.
+11. **olive-cycling-shorts-2**: Olive Cycling Shorts — the back, laid flat.
+12. **white-windbreaker-2**: White Windbreaker — folded neatly.
+13. **grey-long-sleeve-training-top-2**: Grey Long-Sleeve Training Top — the back, laid flat.
+14. **black-track-pants-2**: Black Track Pants — the side, laid flat.
+15. **grey-sweat-shorts-2**: Grey Sweat Shorts — the back, laid flat.
+16. **navy-quarter-zip-top-2**: Navy Quarter-Zip Top — a close detail of the zip collar.
 
 ---
 
 ### sneakers — Nabd (`sports-bold`), live
 
 **Save to: `.editions-inbox/00-live-templates/sneakers/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, concrete grey, infrared red, navy ink (periwinkle as a small extra).* Add: *"Sneakers: unbranded, no side stripes, swooshes, logos or sole lettering."*
 
@@ -820,29 +835,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (16:9 across the page, a white text card overlaps its bottom end corner, which flips with the language: keep both lower corners plain; 4:3 on phones): A sneaker shop wall, three rows of pale oak shelves with single sneakers in white, cream, olive, navy and grey evenly spaced, concrete wall, the bottom shelf empty. *Now: Pexels 13807630, white and olive pairs on oak shop shelves.*
 - **scene-story** (4:5, the about page): One white and navy chunky sneaker alone on a concrete plinth against an infrared red wall, large in the frame, hard side light. *Now: Pexels 11827147, one chunky sneaker on an orange shelf: the shoe fills about a tenth of the frame.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **white-leather-low-top**: White Leather Low-Top — the sole, seen from below.
-2. **black-mesh-runner**: Black Mesh Runner — the side profile of one shoe.
-3. **black-canvas-high-top**: Black Canvas High-Top — the heel, from behind.
-4. **navy-canvas-slip-on**: Navy Canvas Slip-On — the pair from straight above.
-5. **white-chunky-sneaker**: White Chunky Sneaker — the side profile, showing the thick sole.
-6. **grey-knit-runner**: Grey Knit Runner — a close detail of the knit upper.
-7. **brown-leather-high-top**: Brown Leather High-Top — the heel, from behind.
-8. **black-checker-slip-on**: Black and White Checkerboard Slip-On — the pair from straight above.
-9. **white-green-heel-low-top**: White Leather Low-Top with a Green Heel — the heel, from behind.
-10. **navy-orange-runner**: Navy and Orange Runner — the sole, seen from below.
-11. **white-canvas-high-top**: White Canvas High-Top — the side profile of one shoe.
-12. **beige-canvas-low-top**: Beige Canvas Low-Top — the pair from straight above.
-13. **cream-suede-low-top**: Cream Suede Low-Top on a Gum Sole — the gum sole, seen from below.
-14. **white-pink-runner**: White and Pink Runner — the side profile of one shoe.
-15. **grey-suede-high-top**: Grey Suede High-Top — a close detail of the suede and laces.
-16. **olive-canvas-low-top**: Olive Canvas Low-Top — the heel, from behind.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **white-leather-low-top-2**: White Leather Low-Top — the sole, seen from below.
+2. **black-mesh-runner-2**: Black Mesh Runner — the side profile of one shoe.
+3. **black-canvas-high-top-2**: Black Canvas High-Top — the heel, from behind.
+4. **navy-canvas-slip-on-2**: Navy Canvas Slip-On — the pair from straight above.
+5. **white-chunky-sneaker-2**: White Chunky Sneaker — the side profile, showing the thick sole.
+6. **grey-knit-runner-2**: Grey Knit Runner — a close detail of the knit upper.
+7. **brown-leather-high-top-2**: Brown Leather High-Top — the heel, from behind.
+8. **black-checker-slip-on-2**: Black and White Checkerboard Slip-On — the pair from straight above.
+9. **white-green-heel-low-top-2**: White Leather Low-Top with a Green Heel — the heel, from behind.
+10. **navy-orange-runner-2**: Navy and Orange Runner — the sole, seen from below.
+11. **white-canvas-high-top-2**: White Canvas High-Top — the side profile of one shoe.
+12. **beige-canvas-low-top-2**: Beige Canvas Low-Top — the pair from straight above.
+13. **cream-suede-low-top-2**: Cream Suede Low-Top on a Gum Sole — the gum sole, seen from below.
+14. **white-pink-runner-2**: White and Pink Runner — the side profile of one shoe.
+15. **grey-suede-high-top-2**: Grey Suede High-Top — a close detail of the suede and laces.
+16. **olive-canvas-low-top-2**: Olive Canvas Low-Top — the heel, from behind.
 
 ---
 
 ### womens-shoes — Kasr (`kasr`), live
 
 **Save to: `.editions-inbox/00-live-templates/womens-shoes/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, porcelain grey, bordeaux, powder blue.* Add: *"Shoes: one pair or one shoe, the whole shoe in frame, no insole or sole lettering."*
 
@@ -858,29 +875,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-about** (optional, 4:5: fills `photos.about`, which Kasr's about page reads before the story, so the about page gets an upright photo): An open powder-blue shoe box with plain white tissue and a pair of nude block heels inside, on a white table, no print on the box. *Now: the about page reuses the story photo, 40773101.*
 - **scene-banner** (generate 4:3: drawn 4:3 beside the sandals row and 3:4 on tablets and phones, headline on a dark fade at the foot: pair centred, bottom quiet): A pair of nude block-heel sandals on pale limestone steps in strong summer sun, a palm-frond shadow across the steps. *Now: Pexels 16217395, orange block-heel sandals on cracked concrete: orange is off the palette.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **burgundy-kitten-heels**: Burgundy Suede Kitten-Heel Slingbacks — the heel and strap, from behind.
-2. **beige-pointed-flats**: Beige Pointed Flats — the pair from straight above.
-3. **black-pointed-pumps**: Black Patent Pointed Pumps — the side profile of one shoe.
-4. **nude-block-heels**: Nude Block-Heel Ankle-Strap Sandals — the side profile of one shoe.
-5. **gold-strappy-heels**: Gold Metallic Strappy Heels — a close detail of the straps.
-6. **black-ballerina-flats**: Black Bow Ballerina Flats — a close detail of the bow.
-7. **tan-leather-loafers-women**: Women's Tan Leather Loafers — the side profile of one shoe.
-8. **silver-mary-janes**: Silver Metallic Mary Janes — the pair from straight above.
-9. **white-flat-sandals**: White Two-Strap Flat Sandals — the pair from straight above.
-10. **tan-woven-sandals**: Tan Woven Leather Sandals — a close detail of the weave.
-11. **black-platform-sandals**: Black Platform Buckle Sandals — the side profile, showing the platform.
-12. **beige-wedge-sandals**: Beige Canvas Jute Wedge Sandals — the side profile, showing the jute wedge.
-13. **black-ankle-boots**: Black Leather Block-Heel Ankle Boots — the side profile of one boot.
-14. **camel-suede-boots**: Camel Suede Ankle Boots — the heel, from behind.
-15. **brown-knee-boots**: Brown Leather Knee Boots — the side profile of one boot.
-16. **white-chelsea-boots**: White Leather Chelsea Boots — a close detail of the elastic side panel.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **burgundy-kitten-heels-2**: Burgundy Suede Kitten-Heel Slingbacks — the heel and strap, from behind.
+2. **beige-pointed-flats-2**: Beige Pointed Flats — the pair from straight above.
+3. **black-pointed-pumps-2**: Black Patent Pointed Pumps — the side profile of one shoe.
+4. **nude-block-heels-2**: Nude Block-Heel Ankle-Strap Sandals — the side profile of one shoe.
+5. **gold-strappy-heels-2**: Gold Metallic Strappy Heels — a close detail of the straps.
+6. **black-ballerina-flats-2**: Black Bow Ballerina Flats — a close detail of the bow.
+7. **tan-leather-loafers-women-2**: Women's Tan Leather Loafers — the side profile of one shoe.
+8. **silver-mary-janes-2**: Silver Metallic Mary Janes — the pair from straight above.
+9. **white-flat-sandals-2**: White Two-Strap Flat Sandals — the pair from straight above.
+10. **tan-woven-sandals-2**: Tan Woven Leather Sandals — a close detail of the weave.
+11. **black-platform-sandals-2**: Black Platform Buckle Sandals — the side profile, showing the platform.
+12. **beige-wedge-sandals-2**: Beige Canvas Jute Wedge Sandals — the side profile, showing the jute wedge.
+13. **black-ankle-boots-2**: Black Leather Block-Heel Ankle Boots — the side profile of one boot.
+14. **camel-suede-boots-2**: Camel Suede Ankle Boots — the heel, from behind.
+15. **brown-knee-boots-2**: Brown Leather Knee Boots — the side profile of one boot.
+16. **white-chelsea-boots-2**: White Leather Chelsea Boots — a close detail of the elastic side panel.
 
 ---
 
 ### mens-shoes — Ghorza (`ghorza`), live
 
 **Save to: `.editions-inbox/00-live-templates/mens-shoes/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, cool steel grey, pale shoe-horn steel, espresso brown.* Add: *"Shoes: polished and new, never worn or scuffed; no insole or sole lettering; plain unlabelled tins and tools."*
 
@@ -894,29 +913,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (3:4 tall photo beside the oxfords row, a 16:9 band on tablets and 4:3 on phones, copy on a dark fade at the foot: pair in the upper middle): A pair of dark brown perforated derbies on a polished walnut block, espresso background, a soft spotlight, the lower third falling into shadow. *Now: Pexels 9992898, derbies on a log in a blurred room: on phones the copy covers the shoes.*
 - **scene-about** (4:5, the about page): Polished dark brown lace-up boots standing under a steel shelf with neat shoe trees and a folded cloth, cool grey wall. *Now: Pexels 5710709, worn, scuffed brown lace-up boots with dried wheat and a notebook.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **brown-penny-loafers**: Brown Leather Penny Loafers — the side profile of one shoe.
-2. **black-oxford-shoes**: Black Leather Oxford Shoes — the pair from straight above.
-3. **brown-chelsea-boots**: Brown Suede Chelsea Boots — a close detail of the elastic side panel.
-4. **white-leather-sneakers-men**: White Leather Sneakers — the sole, seen from below.
-5. **navy-suede-loafers**: Navy Suede Loafers — the heel, from behind.
-6. **brown-brogues**: Brown Leather Brogues — a close detail of the brogue punching.
-7. **black-chelsea-boots**: Black Leather Chelsea Boots — the side profile of one boot.
-8. **navy-boat-shoes**: Navy Leather Boat Shoes — a close detail of the laces and stitching.
-9. **black-tassel-loafers**: Black Leather Tassel Loafers — a close detail of the tassels.
-10. **dark-brown-derby-shoes**: Dark Brown Leather Derby Shoes — the side profile of one shoe.
-11. **tan-desert-boots**: Tan Suede Desert Boots — the crepe sole, seen from below.
-12. **brown-leather-sandals-men**: Brown Leather Sandals — the pair from straight above.
-13. **tan-driving-moccasins**: Tan Suede Driving Moccasins — the pebbled sole and heel, from behind.
-14. **burgundy-oxford-shoes**: Burgundy Leather Oxford Shoes — the side profile of one shoe.
-15. **dark-brown-lace-up-boots**: Dark Brown Leather Lace-Up Boots — the heel, from behind.
-16. **black-leather-slides-men**: Black Leather Slides — the pair from straight above.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **brown-penny-loafers-2**: Brown Leather Penny Loafers — the side profile of one shoe.
+2. **black-oxford-shoes-2**: Black Leather Oxford Shoes — the pair from straight above.
+3. **brown-chelsea-boots-2**: Brown Suede Chelsea Boots — a close detail of the elastic side panel.
+4. **white-leather-sneakers-men-2**: White Leather Sneakers — the sole, seen from below.
+5. **navy-suede-loafers-2**: Navy Suede Loafers — the heel, from behind.
+6. **brown-brogues-2**: Brown Leather Brogues — a close detail of the brogue punching.
+7. **black-chelsea-boots-2**: Black Leather Chelsea Boots — the side profile of one boot.
+8. **navy-boat-shoes-2**: Navy Leather Boat Shoes — a close detail of the laces and stitching.
+9. **black-tassel-loafers-2**: Black Leather Tassel Loafers — a close detail of the tassels.
+10. **dark-brown-derby-shoes-2**: Dark Brown Leather Derby Shoes — the side profile of one shoe.
+11. **tan-desert-boots-2**: Tan Suede Desert Boots — the crepe sole, seen from below.
+12. **brown-leather-sandals-men-2**: Brown Leather Sandals — the pair from straight above.
+13. **tan-driving-moccasins-2**: Tan Suede Driving Moccasins — the pebbled sole and heel, from behind.
+14. **burgundy-oxford-shoes-2**: Burgundy Leather Oxford Shoes — the side profile of one shoe.
+15. **dark-brown-lace-up-boots-2**: Dark Brown Leather Lace-Up Boots — the heel, from behind.
+16. **black-leather-slides-men-2**: Black Leather Slides — the pair from straight above.
 
 ---
 
 ### slippers-clogs — Tasfya (`tasfya`), live
 
 **Save to: `.editions-inbox/00-live-templates/slippers-clogs/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, shallow-water aqua, pool-float pink, deep teal.* Add: *"Footwear: new and clean, unbranded, no rivet emblems, no charms, no lettering on footbeds or straps."*
 
@@ -929,29 +950,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (generate 4:3: one half of the two-tone block "Beach days", 3:4 on tablets, so centre the subject): Pink and teal striped beach towels on sand with a pair of black rubber slides and a pair of white flip-flops resting on them, from above. *Now: Pexels 18674213, striped towels on sand: no footwear in the photo.*
 - **scene-story** (4:5, the about page): White waffle home slippers beside a woven mat on a light floor, a deep teal door ajar behind. *Now: Pexels 34667259, white waffle slippers by a woven mat.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **sage-green-clog**: Sage Green Clog — the side profile of one clog.
-2. **beige-cushion-slide**: Beige Cushion Slide — the side profile, showing the thick sole.
-3. **white-platform-flip-flops**: White Platform Flip-Flops — the side profile, showing the platform.
-4. **grey-fluffy-home-slippers**: Grey Fluffy Home Slippers — the sole, seen from below.
-5. **white-classic-clog**: White Classic Clog — the heel strap, from behind.
-6. **black-rubber-slide**: Black Rubber Slide — the pair from straight above.
-7. **navy-rubber-flip-flops**: Navy Rubber Flip-Flops — the side profile of one flip-flop.
-8. **pink-fur-slides**: Pink Fur Slides — a close detail of the fur strap.
-9. **black-classic-clog**: Black Classic Clog — the pair from straight above.
-10. **white-two-strap-slide**: White Two-Strap Slide — the side profile of one slide.
-11. **black-flip-flops**: Black Flip-Flops — the sole, seen from below.
-12. **navy-knit-home-slippers**: Navy Knit Home Slippers — a close detail of the knit.
-13. **pink-platform-clog**: Pink Platform Clog — the side profile, showing the platform.
-14. **brown-buckle-cork-slide**: Brown Buckle Cork Slide — a close detail of the buckles and cork.
-15. **tan-leather-flip-flops**: Tan Leather Flip-Flops — the pair from straight above.
-16. **beige-closed-toe-slippers**: Beige Closed-Toe Slippers — the side profile of one slipper.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **sage-green-clog-2**: Sage Green Clog — the side profile of one clog.
+2. **beige-cushion-slide-2**: Beige Cushion Slide — the side profile, showing the thick sole.
+3. **white-platform-flip-flops-2**: White Platform Flip-Flops — the side profile, showing the platform.
+4. **grey-fluffy-home-slippers-2**: Grey Fluffy Home Slippers — the sole, seen from below.
+5. **white-classic-clog-2**: White Classic Clog — the heel strap, from behind.
+6. **black-rubber-slide-2**: Black Rubber Slide — the pair from straight above.
+7. **navy-rubber-flip-flops-2**: Navy Rubber Flip-Flops — the side profile of one flip-flop.
+8. **pink-fur-slides-2**: Pink Fur Slides — a close detail of the fur strap.
+9. **black-classic-clog-2**: Black Classic Clog — the pair from straight above.
+10. **white-two-strap-slide-2**: White Two-Strap Slide — the side profile of one slide.
+11. **black-flip-flops-2**: Black Flip-Flops — the sole, seen from below.
+12. **navy-knit-home-slippers-2**: Navy Knit Home Slippers — a close detail of the knit.
+13. **pink-platform-clog-2**: Pink Platform Clog — the side profile, showing the platform.
+14. **brown-buckle-cork-slide-2**: Brown Buckle Cork Slide — a close detail of the buckles and cork.
+15. **tan-leather-flip-flops-2**: Tan Leather Flip-Flops — the pair from straight above.
+16. **beige-closed-toe-slippers-2**: Beige Closed-Toe Slippers — the side profile of one slipper.
 
 ---
 
 ### handbags — Shanta (`shanta`), live
 
 **Save to: `.editions-inbox/00-live-templates/handbags/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, mineral sage grey, camel, bottle green.* Add: *"Bags: unbranded, plain clasps and hardware, no embossed marks, charms or tags."*
 
@@ -964,29 +987,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-story** (4:5 tall photo beside the story, zooms slowly on scroll; also the about page): A close-up of camel leather with cream double stitching and a brass D-ring, the edge of a bottle-green leather strap in one corner. *Now: Pexels 12105084, dark leather, cream stitching and a steel D-ring up close.*
 - **scene-anatomy** (3:4, one bag with four note dots at x/y % of the photo: the handles 63/31, the zip and pockets 75/47, the hardware 71/74, the size 42/66): One burgundy structured top-handle dome bag, front three-quarter view, a little right of centre on a plain mineral sage backdrop, its two rolled handles arching up to about a third from the top, a zip running over the top and down the right side, gold ring fittings at the handle bases and small gold metal feet at the lower right, the plain front panel filling the lower left. *Now: Pexels 22434764, a burgundy dome bag on a faintly lavender backdrop.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **camel-crossbody-bag**: Camel Faux Leather Crossbody Bag — the back, with the strap laid out.
-2. **white-mini-crossbody**: White Mini Crossbody Bag — open, showing the inside.
-3. **olive-saddle-bag**: Olive Faux Leather Saddle Bag — the side, showing its depth.
-4. **black-leather-tote**: Black Genuine Leather Tote — open from above, showing the inside.
-5. **gold-evening-clutch**: Gold Evening Clutch — a close detail of the clasp.
-6. **black-shoulder-bag**: Black Faux Leather Shoulder Bag — the back.
-7. **beige-canvas-tote**: Beige Canvas Tote — open from above, showing the inside.
-8. **black-crossbody-bag**: Black Crossbody Bag with Chain Strap — a close detail of the chain and quilting.
-9. **black-satin-clutch**: Black Satin Clutch — the back.
-10. **brown-hobo-bag**: Brown Genuine Leather Hobo Bag — the side, showing its depth.
-11. **tan-leather-tote**: Tan Genuine Leather Tote — a close detail of the handle stitching.
-12. **pearl-beaded-clutch**: Faux Pearl Beaded Clutch — a close detail of the beading.
-13. **burgundy-baguette-bag**: Burgundy Faux Leather Baguette Bag — the back.
-14. **woven-straw-tote**: Woven Straw Tote — a close detail of the weave.
-15. **silver-chain-mini-bag**: Silver Mini Bag with Chain — open, showing the inside.
-16. **cream-quilted-bag**: Cream Quilted Shoulder Bag — the side, showing its depth.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **camel-crossbody-bag-2**: Camel Faux Leather Crossbody Bag — the back, with the strap laid out.
+2. **white-mini-crossbody-2**: White Mini Crossbody Bag — open, showing the inside.
+3. **olive-saddle-bag-2**: Olive Faux Leather Saddle Bag — the side, showing its depth.
+4. **black-leather-tote-2**: Black Genuine Leather Tote — open from above, showing the inside.
+5. **gold-evening-clutch-2**: Gold Evening Clutch — a close detail of the clasp.
+6. **black-shoulder-bag-2**: Black Faux Leather Shoulder Bag — the back.
+7. **beige-canvas-tote-2**: Beige Canvas Tote — open from above, showing the inside.
+8. **black-crossbody-bag-2**: Black Crossbody Bag with Chain Strap — a close detail of the chain and quilting.
+9. **black-satin-clutch-2**: Black Satin Clutch — the back.
+10. **brown-hobo-bag-2**: Brown Genuine Leather Hobo Bag — the side, showing its depth.
+11. **tan-leather-tote-2**: Tan Genuine Leather Tote — a close detail of the handle stitching.
+12. **pearl-beaded-clutch-2**: Faux Pearl Beaded Clutch — a close detail of the beading.
+13. **burgundy-baguette-bag-2**: Burgundy Faux Leather Baguette Bag — the back.
+14. **woven-straw-tote-2**: Woven Straw Tote — a close detail of the weave.
+15. **silver-chain-mini-bag-2**: Silver Mini Bag with Chain — open, showing the inside.
+16. **cream-quilted-bag-2**: Cream Quilted Shoulder Bag — the side, showing its depth.
 
 ---
 
 ### glasses — Karat (`karat`), live
 
 **Save to: `.editions-inbox/00-live-templates/glasses/`**
+
+**Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
 
 Palette for scenes: *blush pink paper, deep plum, mustard gold, warm white.* Add: *"Eyewear: frames unbranded, temples plain with no printing, lenses clean, reflections soft."*
 
@@ -1009,29 +1034,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-stories-7** (1:1, circle, centred, "Round"): Round black glasses on a beige seat seen from straight above. *Now: Pexels 7602881.*
 - **scene-stories-8** (1:1, circle, centred, "Desk days"): A thin gold frame on a light wood desk beside a closed blank notebook and a pencil. *Now: Pexels 7107485, a keyboard blurred behind it.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **gold-round-optical-frame**: Gold Round Optical Frame — folded, three-quarter view from above.
-2. **round-tortoise-sunglasses**: Round Tortoiseshell Sunglasses — side view showing the temple.
-3. **rose-gold-cat-eye-blue-light-glasses**: Rose Gold Cat-Eye Blue-Light Glasses — folded, from the front.
-4. **gold-aviator-sunglasses**: Gold Aviator Sunglasses — side view showing the double bridge and the temple.
-5. **kids-sky-blue-flexible-frame**: Kids Sky Blue Flexible Frame — temples folded, from above.
-6. **black-square-sunglasses**: Black Square Sunglasses — three-quarter view, temples open.
-7. **clear-crystal-optical-frame**: Clear Crystal Optical Frame — side view showing the clear temple and its hinge.
-8. **black-round-blue-light-glasses**: Black Round Blue-Light Glasses — folded, from the front.
-9. **black-red-sport-sunglasses**: Black Sport Sunglasses with Red Lenses — side view showing the wrap.
-10. **black-rectangle-optical-frame**: Black Rectangular Optical Frame — folded, three-quarter view.
-11. **tortoise-square-blue-light-glasses**: Tortoiseshell Square Blue-Light Glasses — side view.
-12. **white-shield-cycling-sunglasses**: White Cycling Sunglasses with Blue Shield Lens — three-quarter view from above.
-13. **red-cat-eye-sunglasses**: Red Cat-Eye Sunglasses — folded, from the front.
-14. **tortoise-browline-optical-frame**: Tortoiseshell Browline Optical Frame — side view showing the browline and the metal rim.
-15. **navy-rectangle-blue-light-glasses**: Navy Rectangular Blue-Light Glasses — folded, three-quarter view.
-16. **kids-pink-round-sunglasses**: Kids Pink Round Sunglasses — side view, temples open.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **gold-round-optical-frame-2**: Gold Round Optical Frame — folded, three-quarter view from above.
+2. **round-tortoise-sunglasses-2**: Round Tortoiseshell Sunglasses — side view showing the temple.
+3. **rose-gold-cat-eye-blue-light-glasses-2**: Rose Gold Cat-Eye Blue-Light Glasses — folded, from the front.
+4. **gold-aviator-sunglasses-2**: Gold Aviator Sunglasses — side view showing the double bridge and the temple.
+5. **kids-sky-blue-flexible-frame-2**: Kids Sky Blue Flexible Frame — temples folded, from above.
+6. **black-square-sunglasses-2**: Black Square Sunglasses — three-quarter view, temples open.
+7. **clear-crystal-optical-frame-2**: Clear Crystal Optical Frame — side view showing the clear temple and its hinge.
+8. **black-round-blue-light-glasses-2**: Black Round Blue-Light Glasses — folded, from the front.
+9. **black-red-sport-sunglasses-2**: Black Sport Sunglasses with Red Lenses — side view showing the wrap.
+10. **black-rectangle-optical-frame-2**: Black Rectangular Optical Frame — folded, three-quarter view.
+11. **tortoise-square-blue-light-glasses-2**: Tortoiseshell Square Blue-Light Glasses — side view.
+12. **white-shield-cycling-sunglasses-2**: White Cycling Sunglasses with Blue Shield Lens — three-quarter view from above.
+13. **red-cat-eye-sunglasses-2**: Red Cat-Eye Sunglasses — folded, from the front.
+14. **tortoise-browline-optical-frame-2**: Tortoiseshell Browline Optical Frame — side view showing the browline and the metal rim.
+15. **navy-rectangle-blue-light-glasses-2**: Navy Rectangular Blue-Light Glasses — folded, three-quarter view.
+16. **kids-pink-round-sunglasses-2**: Kids Pink Round Sunglasses — side view, temples open.
 
 ---
 
 ### watches — Saat (`saat`), live
 
 **Save to: `.editions-inbox/00-live-templates/watches/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, brushed steel grey, midnight blue, a small touch of seconds-hand red.* Add: *"Watches: unbranded, dials plain with simple baton marks and no numerals, words or logos; smartwatch screens off (black glass)."*
 
@@ -1046,29 +1073,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-story** (4:5 slot, shown wide in `about-wide` and landscape on phones, so keep the movement in the centre band): An open pocket-watch movement, a case knife, a spare crystal and a spring-bar tool on a white bench, cool daylight. *Now: Pexels 8327593; a tiny stamp on the case knife.*
 - **scene-about** (4:5, the about page): A watchmaker's staking set and its punches on a worn wooden bench, a loupe beside it. *Now: Pexels 8327579.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **black-smartwatch-silicone-strap**: Black Smartwatch with Silicone Strap — side view showing the crown button, screen off.
-2. **navy-dial-steel-watch**: Navy Dial Steel Watch — side view showing the crown.
-3. **rose-gold-mesh-womens-watch**: Rose Gold Mesh Women's Watch — strap open, seen from above.
-4. **brown-leather-chronograph**: Brown Leather Chronograph — side view showing the crown and pushers.
-5. **black-mesh-minimal-watch**: Black Mesh Minimal Watch — the plain caseback, no engraving.
-6. **silver-pearl-dial-womens-watch**: Silver Mother-of-Pearl Dial Women's Watch — three-quarter view.
-7. **pink-smartwatch**: Pink Smartwatch — side view, screen off.
-8. **gold-black-dial-leather-watch**: Gold Watch with Black Dial and Leather Strap — the buckle and the strap's back.
-9. **silver-steel-white-dial-watch**: Silver Steel Watch with White Dial — the folding clasp, bracelet open.
-10. **gold-oval-womens-watch**: Gold Oval Women's Watch — side view.
-11. **black-silicone-sport-watch**: Black Sport Watch with Rubber Strap — side view showing the buttons.
-12. **rose-gold-brown-leather-watch**: Rose Gold Watch with Brown Leather Strap — three-quarter view.
-13. **two-tone-steel-watch**: Two-Tone Steel Watch — side view showing the crown.
-14. **burgundy-leather-womens-watch**: Burgundy Leather Women's Watch — strap open, seen from above.
-15. **silver-smartwatch-mesh-strap**: Round Silver Smartwatch with Mesh Strap — side view, screen off.
-16. **white-ceramic-womens-watch**: White Ceramic Watch — the plain caseback, no engraving.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-smartwatch-silicone-strap-2**: Black Smartwatch with Silicone Strap — side view showing the crown button, screen off.
+2. **navy-dial-steel-watch-2**: Navy Dial Steel Watch — side view showing the crown.
+3. **rose-gold-mesh-womens-watch-2**: Rose Gold Mesh Women's Watch — strap open, seen from above.
+4. **brown-leather-chronograph-2**: Brown Leather Chronograph — side view showing the crown and pushers.
+5. **black-mesh-minimal-watch-2**: Black Mesh Minimal Watch — the plain caseback, no engraving.
+6. **silver-pearl-dial-womens-watch-2**: Silver Mother-of-Pearl Dial Women's Watch — three-quarter view.
+7. **pink-smartwatch-2**: Pink Smartwatch — side view, screen off.
+8. **gold-black-dial-leather-watch-2**: Gold Watch with Black Dial and Leather Strap — the buckle and the strap's back.
+9. **silver-steel-white-dial-watch-2**: Silver Steel Watch with White Dial — the folding clasp, bracelet open.
+10. **gold-oval-womens-watch-2**: Gold Oval Women's Watch — side view.
+11. **black-silicone-sport-watch-2**: Black Sport Watch with Rubber Strap — side view showing the buttons.
+12. **rose-gold-brown-leather-watch-2**: Rose Gold Watch with Brown Leather Strap — three-quarter view.
+13. **two-tone-steel-watch-2**: Two-Tone Steel Watch — side view showing the crown.
+14. **burgundy-leather-womens-watch-2**: Burgundy Leather Women's Watch — strap open, seen from above.
+15. **silver-smartwatch-mesh-strap-2**: Round Silver Smartwatch with Mesh Strap — side view, screen off.
+16. **white-ceramic-womens-watch-2**: White Ceramic Watch — the plain caseback, no engraving.
 
 ---
 
 ### gold-jewelry — Jewelry Luxe (`jewelry-luxe`), live
 
 **Save to: `.editions-inbox/00-live-templates/gold-jewelry/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *porcelain white, ink black, champagne gold, warm stone grey.* Add: *"Jewelry: 21K yellow gold, never on skin, no hallmarks, stamps or engraved words, no price tags."*
 
@@ -1084,29 +1113,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-about** (4:5, the about page): Two gold wedding bands in an open ink-black velvet box on porcelain silk, three dark red rose petals beside it. *Now: Pexels 29612233, bands in a red box among petals; the red takes the frame.*
 - **scene-spot-photo** (4:5, `products-spotlight`: portrait on desktop, wide on tablets, landscape on phones under a 60% dark shade, so keep the pieces centred): A gold bangle, a ring and an open black ring box on champagne silk over porcelain, soft directional light. *Now: Pexels 30311749, on red and white, with an out-of-focus dark mark at the top edge.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **gold-wedding-band**: Plain Wedding Band, 21K, about 2.8 g — standing on edge, side view (inside plain, no engraving).
-2. **gold-rope-chain**: Rope Chain, 21K, about 8 g — clasp detail, close.
-3. **gold-bangle-set**: Set of Three Bangles, 21K, about 11.5 g — the three stacked, side view.
-4. **gold-small-hoops**: Small Hoop Earrings, 18K, about 1.4 g — side view showing the hinge.
-5. **gold-twist-ring**: Twisted Ring, 18K, about 2.2 g — three-quarter view.
-6. **gold-name-plate-pendant**: Name Plate Pendant, 21K, about 2.5 g — the plate blank, close and slightly from the side.
-7. **gold-engraved-bangle**: Engraved Bangle, 21K, about 7 g — standing, side view of the pattern (no letters).
-8. **gold-drop-earrings**: Drop Earrings, 18K, about 2.4 g — side view.
-9. **gold-floral-ring**: Engraved Flower Ring, 21K, about 2.6 g — top view of the flower.
-10. **gold-hand-pendant**: Hand Pendant, 21K, about 1.8 g — the back of the pendant, plain.
-11. **gold-link-bracelet**: Link Bracelet, 18K, about 5 g — clasp detail.
-12. **gold-stud-earrings**: Small Stud Earrings, 18K, about 0.9 g — side view showing the post and back.
-13. **gold-wide-band-ring**: Wide Brushed Band, 21K, about 4.3 g — standing on edge, three-quarter view.
-14. **gold-cuban-chain**: Cuban Link Chain, 21K, about 10.5 g — the links close, with the clasp.
-15. **gold-charm-bracelet**: Coin Charm Bracelet, 21K, about 6 g — the coins close (blank, no faces or words).
-16. **gold-crescent-earrings**: Crescent Earrings, 21K, about 2 g — side view.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **gold-wedding-band-2**: Plain Wedding Band, 21K, about 2.8 g — standing on edge, side view (inside plain, no engraving).
+2. **gold-rope-chain-2**: Rope Chain, 21K, about 8 g — clasp detail, close.
+3. **gold-bangle-set-2**: Set of Three Bangles, 21K, about 11.5 g — the three stacked, side view.
+4. **gold-small-hoops-2**: Small Hoop Earrings, 18K, about 1.4 g — side view showing the hinge.
+5. **gold-twist-ring-2**: Twisted Ring, 18K, about 2.2 g — three-quarter view.
+6. **gold-name-plate-pendant-2**: Name Plate Pendant, 21K, about 2.5 g — the plate blank, close and slightly from the side.
+7. **gold-engraved-bangle-2**: Engraved Bangle, 21K, about 7 g — standing, side view of the pattern (no letters).
+8. **gold-drop-earrings-2**: Drop Earrings, 18K, about 2.4 g — side view.
+9. **gold-floral-ring-2**: Engraved Flower Ring, 21K, about 2.6 g — top view of the flower.
+10. **gold-hand-pendant-2**: Hand Pendant, 21K, about 1.8 g — the back of the pendant, plain.
+11. **gold-link-bracelet-2**: Link Bracelet, 18K, about 5 g — clasp detail.
+12. **gold-stud-earrings-2**: Small Stud Earrings, 18K, about 0.9 g — side view showing the post and back.
+13. **gold-wide-band-ring-2**: Wide Brushed Band, 21K, about 4.3 g — standing on edge, three-quarter view.
+14. **gold-cuban-chain-2**: Cuban Link Chain, 21K, about 10.5 g — the links close, with the clasp.
+15. **gold-charm-bracelet-2**: Coin Charm Bracelet, 21K, about 6 g — the coins close (blank, no faces or words).
+16. **gold-crescent-earrings-2**: Crescent Earrings, 21K, about 2 g — side view.
 
 ---
 
 ### fashion-jewelry — Zahra (`zahra`), live
 
 **Save to: `.editions-inbox/00-live-templates/fashion-jewelry/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, blush plaster, dusty rose, deep petrol blue.* Add: *"Fashion jewelry: gold-tone and silver-tone, crystals and pearls; the piece fills at least half the frame, props (stones, dried flowers) stay small."*
 
@@ -1122,29 +1153,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-about** (landscape, the about page): Silver-tone and gold-tone rings and a fine chain around a pale shell on blush plaster. *Now: Pexels 9430429, silver rings and a chain around a shell on blush.*
 - **scene-anatomy** (4:5, shown portrait at most 480 px wide, with four note dots): One gold-tone crystal necklace laid in a soft U on a pale pebble before a blush paper roll. The dots point at, in percent from the left and top: the plated clasp or bail near the top centre (51, 27), the chain running down the left (35, 43), the crystal pendant cluster low and right of centre (60, 66), and a small folded polishing cloth just left of the pendant (46, 70) for the care note. *Now: Pexels 27357178, a gold-tone crystal necklace on a pebble before pink paper; regenerate so each dot lands on its part.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **gold-coin-layered-necklace**: Gold Layered Coin Necklace — the coins close (blank, no faces or words).
-2. **gold-hoop-earrings**: Chunky Gold Hoop Earrings — side view showing the thickness.
-3. **gold-chain-bracelet**: Gold Paperclip Chain Bracelet — clasp detail.
-4. **gold-signet-ring**: Gold Signet Ring — three-quarter view, the top plain.
-5. **pearl-pendant-necklace**: Pearl Pendant Necklace — the pendant close.
-6. **pearl-drop-earrings**: Pearl Drop Earrings — side view.
-7. **beaded-charm-bracelet**: Pink Beaded Charm Bracelet — the charms close.
-8. **pearl-cocktail-ring**: Pearl Cocktail Ring — side view.
-9. **gold-herringbone-necklace**: Gold Herringbone Necklace — the chain close, showing its flat sheen.
-10. **crystal-stud-earrings**: Crystal Stud Earrings — side view showing the post.
-11. **silver-cuff-bracelet**: Silver Cuff Bracelet — standing, side view of the opening.
-12. **crystal-solitaire-ring**: Crystal Solitaire Ring — side view of the setting.
-13. **silver-heart-pendant-necklace**: Silver Heart Pendant Necklace — the pendant close.
-14. **silver-chain-drop-earrings**: Silver Chain Drop Earrings — hanging straight, front view.
-15. **gold-tennis-bracelet**: Gold Crystal Tennis Bracelet — the clasp and a few stones close.
-16. **stackable-silver-rings**: Stackable Silver Rings Set — the rings fanned apart.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **gold-coin-layered-necklace-2**: Gold Layered Coin Necklace — the coins close (blank, no faces or words).
+2. **gold-hoop-earrings-2**: Chunky Gold Hoop Earrings — side view showing the thickness.
+3. **gold-chain-bracelet-2**: Gold Paperclip Chain Bracelet — clasp detail.
+4. **gold-signet-ring-2**: Gold Signet Ring — three-quarter view, the top plain.
+5. **pearl-pendant-necklace-2**: Pearl Pendant Necklace — the pendant close.
+6. **pearl-drop-earrings-2**: Pearl Drop Earrings — side view.
+7. **beaded-charm-bracelet-2**: Pink Beaded Charm Bracelet — the charms close.
+8. **pearl-cocktail-ring-2**: Pearl Cocktail Ring — side view.
+9. **gold-herringbone-necklace-2**: Gold Herringbone Necklace — the chain close, showing its flat sheen.
+10. **crystal-stud-earrings-2**: Crystal Stud Earrings — side view showing the post.
+11. **silver-cuff-bracelet-2**: Silver Cuff Bracelet — standing, side view of the opening.
+12. **crystal-solitaire-ring-2**: Crystal Solitaire Ring — side view of the setting.
+13. **silver-heart-pendant-necklace-2**: Silver Heart Pendant Necklace — the pendant close.
+14. **silver-chain-drop-earrings-2**: Silver Chain Drop Earrings — hanging straight, front view.
+15. **gold-tennis-bracelet-2**: Gold Crystal Tennis Bracelet — the clasp and a few stones close.
+16. **stackable-silver-rings-2**: Stackable Silver Rings Set — the rings fanned apart.
 
 ---
 
 ### hair-accessories — Kholkhal (`kholkhal`), live
 
 **Save to: `.editions-inbox/00-live-templates/hair-accessories/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *white, pale lilac, cherry red, butter yellow.* Add: *"Hair accessories: on paper, fabric or boxes only, never in hair or on a head; colours bright and clean."*
 
@@ -1161,29 +1194,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-story** (4:5, `about-split-story`, "every order tied with a bow"): A small white box tied with a cherry satin bow, a cream claw clip resting on the lid, on white paper. *Now: Pexels 30056548, a cream satin bow on white paper.*
 - **scene-about** (landscape, the about page): A shop table with clips, scrunchies and headbands sorted into lilac trays, gift boxes stacked at the side. *Now: Pexels 4491555, a flower crown on gold polka-dot paper; the shop sells no flower crowns.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **tortoise-claw-clip**: Large Tortoise Claw Clip — open, side view showing the spring and teeth.
-2. **silk-scrunchie-set**: Satin Scrunchie Set of 3 (Ivory, Blush, Champagne) — the three in a row from above.
-3. **padded-black-headband**: Padded Black Velvet Headband — side view showing the padding.
-4. **pearl-barrette**: Pearl Barrette — the back with its clasp.
-5. **black-matte-claw-clip**: Matte Black Claw Clip — open, side view.
-6. **velvet-scrunchie-set**: Velvet Scrunchie Set of 3 (Black, Burgundy, Green) — stacked, three-quarter view.
-7. **pearl-headband**: Pearl Headband — top view of the pearl band.
-8. **black-bow-barrette**: Black Satin Bow Barrette — the back with its clip.
-9. **cream-claw-clip**: Cream Claw Clip — open, side view.
-10. **satin-bow-scrunchie**: Pink Satin Bow Scrunchie — side view of the bow.
-11. **knotted-satin-headband**: Champagne Knotted Satin Headband — the knot close.
-12. **gold-hair-pins-set**: Gold-Tone Hair Pin Set — the pins fanned out.
-13. **pearl-mini-claw-clips**: Pearl Mini Claw Clips, Set of 4 — one open, side view.
-14. **cotton-scrunchie-pack**: Cotton Scrunchie Pack of 5 (Neutrals) — stacked into a short tower.
-15. **tortoise-thin-headband**: Thin Tortoise Headband — side view.
-16. **crystal-hair-slides**: Crystal Hair Slides, Pair — one slide open, from the side.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **tortoise-claw-clip-2**: Large Tortoise Claw Clip — open, side view showing the spring and teeth.
+2. **silk-scrunchie-set-2**: Satin Scrunchie Set of 3 (Ivory, Blush, Champagne) — the three in a row from above.
+3. **padded-black-headband-2**: Padded Black Velvet Headband — side view showing the padding.
+4. **pearl-barrette-2**: Pearl Barrette — the back with its clasp.
+5. **black-matte-claw-clip-2**: Matte Black Claw Clip — open, side view.
+6. **velvet-scrunchie-set-2**: Velvet Scrunchie Set of 3 (Black, Burgundy, Green) — stacked, three-quarter view.
+7. **pearl-headband-2**: Pearl Headband — top view of the pearl band.
+8. **black-bow-barrette-2**: Black Satin Bow Barrette — the back with its clip.
+9. **cream-claw-clip-2**: Cream Claw Clip — open, side view.
+10. **satin-bow-scrunchie-2**: Pink Satin Bow Scrunchie — side view of the bow.
+11. **knotted-satin-headband-2**: Champagne Knotted Satin Headband — the knot close.
+12. **gold-hair-pins-set-2**: Gold-Tone Hair Pin Set — the pins fanned out.
+13. **pearl-mini-claw-clips-2**: Pearl Mini Claw Clips, Set of 4 — one open, side view.
+14. **cotton-scrunchie-pack-2**: Cotton Scrunchie Pack of 5 (Neutrals) — stacked into a short tower.
+15. **tortoise-thin-headband-2**: Thin Tortoise Headband — side view.
+16. **crystal-hair-slides-2**: Crystal Hair Slides, Pair — one slide open, from the side.
 
 ---
 
 ### belts-wallets — Tibr (`jewelry-warm`), live
 
 **Save to: `.editions-inbox/00-live-templates/belts-wallets/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *cordovan brown, canvas grey, brass, white paper.* Add: *"Leather goods: genuine leather, no stamped maker's marks, no printed boxes or tags; finished pieces, not just raw hides."*
 
@@ -1197,23 +1232,23 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (21:9 slot, the workshop band in `about-overlap`: shown wide on desktop and landscape on phones with a text card overlapping one side, so keep the subject in the other two thirds): Leather tools, a waxed thread spool and cut wallet pieces on a green cutting mat with no printing, under a brass work lamp. *Now: Pexels 4452611; the stamps on the blades are blurred but there.*
 - **scene-story** (4:5, the care block beside four care steps: portrait on desktop, landscape on phones; also the about page): A brown belt and a black wallet beside an unlabelled tin of leather balm, a soft cloth and a horsehair brush on canvas grey. *Now: Pexels 4452395, a cognac hide over darker hides; it shows no care and no finished piece.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **brown-leather-belt**: Brown Leather Belt, Brass Buckle — the buckle close, three-quarter view.
-2. **black-bifold-wallet**: Black Leather Bifold Wallet — open flat, showing the card slots.
-3. **brown-card-holder**: Brown Leather Card Holder — the back, plain.
-4. **tan-passport-cover**: Tan Leather Passport Cover — open flat, the inside pockets.
-5. **black-leather-belt**: Black Leather Belt, Silver Buckle — the buckle close.
-6. **navy-zip-wallet**: Navy Leather Zip-Around Wallet — open, showing the inside.
-7. **green-card-holder**: Green Leather Card Holder — side view showing the edges and stitching.
-8. **black-key-holder**: Black Leather Key Case — open, the key hooks showing.
-9. **tan-braided-belt**: Tan Braided Leather Belt — the weave and the buckle close.
-10. **brown-bifold-wallet**: Brown Leather Bifold Wallet — open flat.
-11. **tan-money-clip-wallet**: Tan Leather Money Clip Wallet — the back, showing the steel clip.
-12. **brown-leather-keychain**: Brown Leather Key Ring — side view.
-13. **reversible-black-brown-belt**: Reversible Black and Brown Leather Belt — the brown back turned out, the swivel buckle close.
-14. **tan-long-wallet**: Tan Leather Long Wallet — open flat.
-15. **black-card-holder**: Black Leather Card Holder — side view showing the edges.
-16. **black-coin-pouch**: Black Leather Coin Pouch — snap open, three-quarter view.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **brown-leather-belt-2**: Brown Leather Belt, Brass Buckle — the buckle close, three-quarter view.
+2. **black-bifold-wallet-2**: Black Leather Bifold Wallet — open flat, showing the card slots.
+3. **brown-card-holder-2**: Brown Leather Card Holder — the back, plain.
+4. **tan-passport-cover-2**: Tan Leather Passport Cover — open flat, the inside pockets.
+5. **black-leather-belt-2**: Black Leather Belt, Silver Buckle — the buckle close.
+6. **navy-zip-wallet-2**: Navy Leather Zip-Around Wallet — open, showing the inside.
+7. **green-card-holder-2**: Green Leather Card Holder — side view showing the edges and stitching.
+8. **black-key-holder-2**: Black Leather Key Case — open, the key hooks showing.
+9. **tan-braided-belt-2**: Tan Braided Leather Belt — the weave and the buckle close.
+10. **brown-bifold-wallet-2**: Brown Leather Bifold Wallet — open flat.
+11. **tan-money-clip-wallet-2**: Tan Leather Money Clip Wallet — the back, showing the steel clip.
+12. **brown-leather-keychain-2**: Brown Leather Key Ring — side view.
+13. **reversible-black-brown-belt-2**: Reversible Black and Brown Leather Belt — the brown back turned out, the swivel buckle close.
+14. **tan-long-wallet-2**: Tan Leather Long Wallet — open flat.
+15. **black-card-holder-2**: Black Leather Card Holder — side view showing the edges.
+16. **black-coin-pouch-2**: Black Leather Coin Pouch — snap open, three-quarter view.
 
 ---
 
@@ -1250,6 +1285,8 @@ Product photos and angles. The **main packshot is required** here, since each on
 
 **Save to: `.editions-inbox/00-live-templates/phone-cases/`**
 
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
+
 Palette for scenes: *white, navy, electric blue, lime.* Add: *"Phones and cases: unbranded, no logo or camera-maker mark on the back, screens off (black glass) or blank white."*
 
 Volt draws only the category tiles and the about page photo. Its hero is a big word with the first featured product's packshot.
@@ -1264,29 +1301,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (21:9, space for text in the middle) *(not drawn by Volt)*: A phone, screen off, on dark grained leather. *Now: Pexels 1350462.*
 - **scene-story** (4:5, the about page): A phone in a white bumper case, screen off, beside round glasses and a plain notebook on navy linen. *Now: Pexels 8100970, the same subject on black linen with a blank white screen.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **clear-magnetic-case**: Clear Magnetic Case — the inside, showing the magnetic ring.
-2. **sage-silicone-case**: Sage Silicone Case — side view showing the buttons.
-3. **brown-leather-case**: Brown Genuine Leather Case — the inside, the soft lining.
-4. **tempered-glass-protector**: Tempered Glass Protector with Fitting Frame — the glass lifted out of its frame.
-5. **clear-slim-case**: Clear Slim Case — side view showing the thin edge.
-6. **black-silicone-case**: Black Silicone Case — the inside, the soft lining.
-7. **black-wallet-flip-case**: Black Faux Leather Wallet Flip Case — open flat, the card slots.
-8. **camera-lens-protector**: Camera Lens Protector — the protector beside its applicator, from above.
-9. **clear-bumper-case**: Clear Bumper Case with Reinforced Corners — a corner close.
-10. **pink-silicone-case**: Pink Silicone Case — side view.
-11. **tan-card-slot-case**: Tan Faux Leather Card Slot Case — the slot with a blank card half in.
-12. **beaded-phone-strap**: Beaded Phone Strap — laid in a loop, from above.
-13. **frosted-black-case**: Frosted Case with Black Edges — side view showing the black edge.
-14. **navy-silicone-case**: Navy Silicone Case — the inside.
-15. **black-rugged-case**: Black Rugged Case with Kickstand — the kickstand open, side view.
-16. **crossbody-phone-lanyard**: Black Crossbody Phone Lanyard — the clip and the strap coiled.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **clear-magnetic-case-2**: Clear Magnetic Case — the inside, showing the magnetic ring.
+2. **sage-silicone-case-2**: Sage Silicone Case — side view showing the buttons.
+3. **brown-leather-case-2**: Brown Genuine Leather Case — the inside, the soft lining.
+4. **tempered-glass-protector-2**: Tempered Glass Protector with Fitting Frame — the glass lifted out of its frame.
+5. **clear-slim-case-2**: Clear Slim Case — side view showing the thin edge.
+6. **black-silicone-case-2**: Black Silicone Case — the inside, the soft lining.
+7. **black-wallet-flip-case-2**: Black Faux Leather Wallet Flip Case — open flat, the card slots.
+8. **camera-lens-protector-2**: Camera Lens Protector — the protector beside its applicator, from above.
+9. **clear-bumper-case-2**: Clear Bumper Case with Reinforced Corners — a corner close.
+10. **pink-silicone-case-2**: Pink Silicone Case — side view.
+11. **tan-card-slot-case-2**: Tan Faux Leather Card Slot Case — the slot with a blank card half in.
+12. **beaded-phone-strap-2**: Beaded Phone Strap — laid in a loop, from above.
+13. **frosted-black-case-2**: Frosted Case with Black Edges — side view showing the black edge.
+14. **navy-silicone-case-2**: Navy Silicone Case — the inside.
+15. **black-rugged-case-2**: Black Rugged Case with Kickstand — the kickstand open, side view.
+16. **crossbody-phone-lanyard-2**: Black Crossbody Phone Lanyard — the clip and the strap coiled.
 
 ---
 
 ### chargers-cables — Kabl (`kabl`), live
 
 **Save to: `.editions-inbox/00-live-templates/chargers-cables/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *cool grey, navy, electric blue, soft yellow.* Add: *"Chargers and cables: unbranded, no printed watts, specs or marks on the plugs, phone screens off."*
 
@@ -1302,29 +1341,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (21:9, space for text in the middle) *(not drawn by Kabl)*: Two phones, screens off, charging side by side with white braided cables. *Now: Pexels 1028674.*
 - **scene-story** (4:5, the about page): A white charger, a braided USB-C cable and a grey power bank on pale marble, soft daylight. *Now: Pexels 3921706, the same subject; keep it so the alt still fits.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **black-65w-gan-charger**: Black 65W GaN Charger (2× USB-C + USB-A) — the ports side, close.
-2. **black-braided-usb-c-cable-2m**: Black Braided USB-C Cable, 2 m — the plug and braid close.
-3. **black-20000mah-power-bank**: Black 20000mAh Power Bank — the ports end.
-4. **black-3-in-1-wireless-stand**: Black 3-in-1 Wireless Charging Stand — side view.
-5. **white-20w-usb-c-charger**: White 20W USB-C Fast Charger — the port side and the pins.
-6. **white-usb-c-cable-1m**: White USB-C Cable, 1 m — the two plugs close.
-7. **white-10000mah-power-bank**: White 10000mAh Power Bank — the ports end.
-8. **white-wireless-charging-pad**: White Wireless Charging Pad — side view showing its thin profile.
-9. **white-dual-port-charger**: White Dual-Port Charger (USB-C + USB-A) — the ports close.
-10. **white-usb-c-to-lightning-cable**: White USB-C to Lightning Cable (for iPhone) — the two plugs close.
-11. **white-magnetic-power-bank**: White Magnetic Wireless Power Bank — the back, showing the magnetic ring.
-12. **white-wireless-charging-stand**: White Wireless Charging Stand — side view.
-13. **black-car-charger**: Black Car Charger — the ports end.
-14. **black-3-in-1-cable**: Black 3-in-1 Braided Cable — the three tips fanned out.
-15. **pink-mini-power-bank**: Pink Mini Power Bank — the port end.
-16. **black-magnetic-car-mount**: Black Magnetic Wireless Car Mount — side view showing the vent clip.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-65w-gan-charger-2**: Black 65W GaN Charger (2× USB-C + USB-A) — the ports side, close.
+2. **black-braided-usb-c-cable-2m-2**: Black Braided USB-C Cable, 2 m — the plug and braid close.
+3. **black-20000mah-power-bank-2**: Black 20000mAh Power Bank — the ports end.
+4. **black-3-in-1-wireless-stand-2**: Black 3-in-1 Wireless Charging Stand — side view.
+5. **white-20w-usb-c-charger-2**: White 20W USB-C Fast Charger — the port side and the pins.
+6. **white-usb-c-cable-1m-2**: White USB-C Cable, 1 m — the two plugs close.
+7. **white-10000mah-power-bank-2**: White 10000mAh Power Bank — the ports end.
+8. **white-wireless-charging-pad-2**: White Wireless Charging Pad — side view showing its thin profile.
+9. **white-dual-port-charger-2**: White Dual-Port Charger (USB-C + USB-A) — the ports close.
+10. **white-usb-c-to-lightning-cable-2**: White USB-C to Lightning Cable (for iPhone) — the two plugs close.
+11. **white-magnetic-power-bank-2**: White Magnetic Wireless Power Bank — the back, showing the magnetic ring.
+12. **white-wireless-charging-stand-2**: White Wireless Charging Stand — side view.
+13. **black-car-charger-2**: Black Car Charger — the ports end.
+14. **black-3-in-1-cable-2**: Black 3-in-1 Braided Cable — the three tips fanned out.
+15. **pink-mini-power-bank-2**: Pink Mini Power Bank — the port end.
+16. **black-magnetic-car-mount-2**: Black Magnetic Wireless Car Mount — side view showing the vent clip.
 
 ---
 
 ### pc-gaming — Arena (`arena`), live
 
 **Save to: `.editions-inbox/00-live-templates/pc-gaming/`**
+
+**Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
 Palette for scenes: *near-black, violet light, lime accent, cool graphite.* Add: *"Gaming gear: unbranded, RGB glow soft and violet, no logos on mice, headsets or controllers, monitors off or showing a plain dark gradient."*
 
@@ -1342,29 +1383,31 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-story-dark** (4:5, Arena's about page, `photos.dark.story`): An empty dark game lounge with two low armchairs and two white controllers on a small lime table, violet ceiling light. *Now: Pexels 7862237, two white controllers on a yellow table.*
 - **scene-video-poster** (16:9, the `video-shop` player; with no video file the poster shows as a still above the product row, so keep the subject centred): A white wireless mouse and a white compact keyboard on a black desk mat, a soft violet glow from one side. *Now: Pexels 17821147, a lone white mouse on black.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **black-full-size-gaming-keyboard**: Black Full-Size Gaming Keyboard with Wrist Rest — side profile showing the key height.
-2. **white-wireless-gaming-mouse**: White Wireless Gaming Mouse — side view showing the thumb buttons.
-3. **black-gaming-headset-boom-mic**: Black Gaming Headset with Boom Mic — side view with the mic lowered.
-4. **black-wireless-gamepad**: Black Wireless Gamepad — the top edge, showing the triggers.
-5. **pink-compact-mechanical-keyboard**: Pink Compact Mechanical Keyboard — side profile.
-6. **black-honeycomb-lightweight-mouse**: Black Honeycomb Lightweight Mouse — from above, the honeycomb shell.
-7. **black-red-gaming-headset**: Black and Red Gaming Headset — the ear cushions from the inside.
-8. **black-usb-desk-microphone**: Black USB Desk Microphone — side view on its stand.
-9. **black-mechanical-keyboard-white-keycaps**: Black Mechanical Keyboard with White Keycaps — a corner close, the switches showing.
-10. **black-wired-gaming-mouse**: Black Wired Gaming Mouse — side view with the cable.
-11. **white-gaming-headset-boom-mic**: White Gaming Headset with Boom Mic — side view.
-12. **black-xl-desk-mousepad**: Black Large Desk Mousepad — rolled half open, showing the stitched edge.
-13. **white-compact-mechanical-keyboard**: White Compact Mechanical Keyboard — side profile.
-14. **black-vertical-ergonomic-mouse**: Black Vertical Ergonomic Mouse — the side where the thumb rests.
-15. **black-gaming-earbuds-case**: Black Gaming Earbuds — the case open with the earbuds inside, from above.
-16. **black-headset-stand**: Black Headset Stand — side view, empty.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **black-full-size-gaming-keyboard-2**: Black Full-Size Gaming Keyboard with Wrist Rest — side profile showing the key height.
+2. **white-wireless-gaming-mouse-2**: White Wireless Gaming Mouse — side view showing the thumb buttons.
+3. **black-gaming-headset-boom-mic-2**: Black Gaming Headset with Boom Mic — side view with the mic lowered.
+4. **black-wireless-gamepad-2**: Black Wireless Gamepad — the top edge, showing the triggers.
+5. **pink-compact-mechanical-keyboard-2**: Pink Compact Mechanical Keyboard — side profile.
+6. **black-honeycomb-lightweight-mouse-2**: Black Honeycomb Lightweight Mouse — from above, the honeycomb shell.
+7. **black-red-gaming-headset-2**: Black and Red Gaming Headset — the ear cushions from the inside.
+8. **black-usb-desk-microphone-2**: Black USB Desk Microphone — side view on its stand.
+9. **black-mechanical-keyboard-white-keycaps-2**: Black Mechanical Keyboard with White Keycaps — a corner close, the switches showing.
+10. **black-wired-gaming-mouse-2**: Black Wired Gaming Mouse — side view with the cable.
+11. **white-gaming-headset-boom-mic-2**: White Gaming Headset with Boom Mic — side view.
+12. **black-xl-desk-mousepad-2**: Black Large Desk Mousepad — rolled half open, showing the stitched edge.
+13. **white-compact-mechanical-keyboard-2**: White Compact Mechanical Keyboard — side profile.
+14. **black-vertical-ergonomic-mouse-2**: Black Vertical Ergonomic Mouse — the side where the thumb rests.
+15. **black-gaming-earbuds-case-2**: Black Gaming Earbuds — the case open with the earbuds inside, from above.
+16. **black-headset-stand-2**: Black Headset Stand — side view, empty.
 
 ---
 
 ### lighting-smart-home — Zaki (`zaki`), live
 
 **Save to: `.editions-inbox/00-live-templates/lighting-smart-home/`**
+
+**Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
 
 Palette for scenes: *pale green-grey walls, deep green, teal, warm yellow lamplight; bright daytime rooms.* Add: *"Lighting: lamps lit softly even in daylight, no visible brand on bulbs or plugs, phone and hub screens off; Egyptian flats, tiled or wood floors, no clutter."*
 
@@ -1380,23 +1423,23 @@ Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
 - **scene-banner** (21:9, space for text in the middle) *(not drawn by Zaki)*: A long bright living room with three lamps lit at different heights. *Now: Pexels 5849392.*
 - **scene-story** (4:5, the about page): A lit white ceramic table lamp beside a potted plant on a light wooden desk against a pale green-grey wall, warm afternoon light. *Now: Pexels 32543097, a lit table lamp beside a plant on a wooden desk.*
 
-Product angles (optional, one more view each, save as `<slug>-2.png`, same master prompt, "show the same product from <angle>")
-1. **brass-table-lamp-linen-shade**: Brass Table Lamp with Linen Shade — lit, three-quarter view.
-2. **gold-three-ring-chandelier**: Gold Three-Ring Chandelier — from below, the rings stacked.
-3. **black-arc-floor-lamp**: Black Arc Floor Lamp — side view showing the full arc.
-4. **smart-led-strip-5m**: 5 m Smart LED Strip — the reel half unrolled, lit warm.
-5. **glass-globe-pendant-light**: Glass Globe Pendant Light — lit.
-6. **white-smart-led-bulb**: White Smart LED Bulb — lit warm, side view.
-7. **wood-tripod-floor-lamp**: Wooden Tripod Floor Lamp — lit, three-quarter view.
-8. **black-metal-desk-lamp**: Black Metal Desk Lamp — side view with the arm raised.
-9. **rattan-dome-pendant-light**: Rattan Dome Pendant Light — lit, from slightly below.
-10. **amber-filament-smart-bulb**: Amber Filament Smart Bulb — lit, the filament glowing.
-11. **gold-slim-floor-lamp**: Slim Gold Floor Lamp — the shade close, lit.
-12. **white-ceramic-table-lamp**: White Ceramic Table Lamp — lit.
-13. **black-gold-dome-pendant-light**: Black and Gold Dome Pendant Light — from below, the gold inside lit.
-14. **white-smart-night-lamp**: White Smart Night Lamp — lit soft warm.
-15. **paper-column-floor-lamp**: Paper Column Floor Lamp — lit, the paper glowing.
-16. **terracotta-mushroom-table-lamp**: Terracotta Mushroom Table Lamp — lit, side view.
+Product angles (optional, one more view each; the bold name is the file, `<slug>-2.png`, same master prompt, "show the same product from <angle>")
+1. **brass-table-lamp-linen-shade-2**: Brass Table Lamp with Linen Shade — lit, three-quarter view.
+2. **gold-three-ring-chandelier-2**: Gold Three-Ring Chandelier — from below, the rings stacked.
+3. **black-arc-floor-lamp-2**: Black Arc Floor Lamp — side view showing the full arc.
+4. **smart-led-strip-5m-2**: 5 m Smart LED Strip — the reel half unrolled, lit warm.
+5. **glass-globe-pendant-light-2**: Glass Globe Pendant Light — lit.
+6. **white-smart-led-bulb-2**: White Smart LED Bulb — lit warm, side view.
+7. **wood-tripod-floor-lamp-2**: Wooden Tripod Floor Lamp — lit, three-quarter view.
+8. **black-metal-desk-lamp-2**: Black Metal Desk Lamp — side view with the arm raised.
+9. **rattan-dome-pendant-light-2**: Rattan Dome Pendant Light — lit, from slightly below.
+10. **amber-filament-smart-bulb-2**: Amber Filament Smart Bulb — lit, the filament glowing.
+11. **gold-slim-floor-lamp-2**: Slim Gold Floor Lamp — the shade close, lit.
+12. **white-ceramic-table-lamp-2**: White Ceramic Table Lamp — lit.
+13. **black-gold-dome-pendant-light-2**: Black and Gold Dome Pendant Light — from below, the gold inside lit.
+14. **white-smart-night-lamp-2**: White Smart Night Lamp — lit soft warm.
+15. **paper-column-floor-lamp-2**: Paper Column Floor Lamp — lit, the paper glowing.
+16. **terracotta-mushroom-table-lamp-2**: Terracotta Mushroom Table Lamp — lit, side view.
 
 ---
 
