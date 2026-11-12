@@ -182,7 +182,7 @@ export const ROAST = libraryTemplate({
     "محمصة بن: صورة المحمصة بعرض الشاشة، تحميص الأسبوع، وعود يوم التحميص ومن الحباية للفنجان. أربع صفحات جاهزة.",
     "Coffee roaster: a full-bleed roaster hero, this week’s roast, roast-day promises and bean to cup. Four ready pages.",
   ),
-  category: "food",
+  category: "sweets",
   style: ["warm"],
   sortOrder: 200,
   palette: ["#f7efe4", "#ecdcc6", "#e39a4b", "#2a1a12"],

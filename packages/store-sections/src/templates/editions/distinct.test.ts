@@ -16,20 +16,7 @@ import type { Edition } from "./types";
  * when its `perLook` entry is written; the list must end empty.
  */
 const PENDING = new Set<string>([
-  // fashion-bold is the niche's template and shows the pack itself; zay and fashion-luxe draw it until the fashion switch takes them off.
-  "pants-jeans",
-  // kasr is the niche's template and shows the pack itself; fashion-luxe and vella draw it until the shoes-and-bags switch takes them off.
-  "womens-shoes",
-  // shanta is the niche's template and shows the pack itself; fashion-luxe draws it (its own shop the look only) until the shoes-and-bags switch takes it off.
-  "handbags",
-  // ghorza is the niche's template and shows the pack itself; zay draws it until the fashion switch takes it off.
-  "mens-shoes",
-  // tasfya is the niche's template and shows the pack itself; streetwear (its own hero only) and zay draw it until the shoes-and-bags switch takes them off.
-  "slippers-clogs",
-  // sports-bold is the niche's template and shows the pack itself; streetwear (its own hero and story photos only) draws it until the shoes-and-bags switch takes it off.
-  "sneakers",
-  // sports-luxe is the niche's template and shows the pack itself; streetwear (its own hero only) draws it until the fashion switch takes it off.
-  "sportswear",
+  // Empty since 2026-11-12: every industry switched to one template per niche, so every pack draws on one look.
 ]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */
@@ -100,10 +87,12 @@ describe("niche editions on two templates are not duplicates", () => {
 });
 
 describe("editionForLook", () => {
-  const base = EDITIONS.find((e) => e.looks.length > 1)!;
-  const [first, second] = base.looks as [string, string];
+  // Every pack draws on one look since 2026-11-12; a second, made-up look exercises the merge.
+  const base = EDITIONS[0]!;
+  const [first, second] = [base.looks[0]!, "another-look"];
   const pack: Edition = {
     ...base,
+    looks: [first, second],
     perLook: {
       [second]: {
         store: { name: { ar: "متجر تاني", en: "Other Store" } },

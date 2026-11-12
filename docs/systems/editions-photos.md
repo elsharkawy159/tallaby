@@ -1472,7 +1472,7 @@ The rest of the platform's niches, so you can make photos ahead of time. Same ru
 
 ## Wave 2: Beauty (5 niches)
 
-### skincare (16)
+### skincare (16), template pure
 
 **Save to: `.editions-inbox/02-wave-2-beauty/skincare/`**
 
@@ -1514,7 +1514,7 @@ Scenes
 
 ---
 
-### makeup (16)
+### makeup (16), template beauty-bold
 
 **Save to: `.editions-inbox/02-wave-2-beauty/makeup/`**
 
@@ -1556,7 +1556,7 @@ Scenes
 
 ---
 
-### perfumes (16)
+### perfumes (16), template perfumes-bold
 
 **Save to: `.editions-inbox/02-wave-2-beauty/perfumes/`**
 
@@ -1598,7 +1598,7 @@ Scenes
 
 ---
 
-### haircare (16)
+### haircare (16), template botanica
 
 **Save to: `.editions-inbox/02-wave-2-beauty/haircare/`**
 
@@ -1640,7 +1640,7 @@ Scenes
 
 ---
 
-### mens-grooming (16)
+### mens-grooming (16), template barber
 
 **Save to: `.editions-inbox/02-wave-2-beauty/mens-grooming/`**
 
@@ -1684,7 +1684,7 @@ Scenes
 
 ## Wave 3: Home (5 niches)
 
-### furniture (16)
+### furniture (16), template furniture-luxe
 
 **Save to: `.editions-inbox/03-wave-3-home/furniture/`**
 
@@ -1726,7 +1726,7 @@ Scenes
 
 ---
 
-### bedding-textiles (16)
+### bedding-textiles (16), template mafrash
 
 **Save to: `.editions-inbox/03-wave-3-home/bedding-textiles/`**
 
@@ -1768,7 +1768,7 @@ Scenes
 
 ---
 
-### decor (16)
+### decor (16), template rokn
 
 **Save to: `.editions-inbox/03-wave-3-home/decor/`**
 
@@ -1810,7 +1810,7 @@ Scenes
 
 ---
 
-### plants-garden (16)
+### plants-garden (16), template zarea
 
 **Save to: `.editions-inbox/03-wave-3-home/plants-garden/`**
 
@@ -1852,7 +1852,7 @@ Scenes
 
 ---
 
-### home-organisation (16)
+### home-organisation (16), template tanzim
 
 **Save to: `.editions-inbox/03-wave-3-home/home-organisation/`**
 
@@ -1896,7 +1896,7 @@ Scenes
 
 ## Wave 4: Kitchen (4 niches)
 
-### cookware (16)
+### cookware (16), template matbakh
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/cookware/`**
 
@@ -1938,7 +1938,7 @@ Scenes
 
 ---
 
-### tableware (16)
+### tableware (16), template sufra
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/tableware/`**
 
@@ -1980,7 +1980,7 @@ Scenes
 
 ---
 
-### coffee-gear (16)
+### coffee-gear (16), template qahwa
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/coffee-gear/`**
 
@@ -2022,7 +2022,7 @@ Scenes
 
 ---
 
-### kitchen-appliances (16)
+### kitchen-appliances (16), template beity
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/kitchen-appliances/`**
 
@@ -2066,7 +2066,7 @@ Scenes
 
 ## Wave 5: Food (6 niches)
 
-### grocery (16)
+### grocery (16), template souq
 
 **Save to: `.editions-inbox/05-wave-5-food/grocery/`**
 
@@ -2108,7 +2108,7 @@ Scenes
 
 ---
 
-### fresh-produce (16)
+### fresh-produce (16), template khodar
 
 **Save to: `.editions-inbox/05-wave-5-food/fresh-produce/`**
 
@@ -2150,7 +2150,7 @@ Scenes
 
 ---
 
-### meat-poultry (16)
+### meat-poultry (16), template lahma
 
 **Save to: `.editions-inbox/05-wave-5-food/meat-poultry/`**
 
@@ -2192,7 +2192,7 @@ Scenes
 
 ---
 
-### bakery (16)
+### bakery (16), template loaf
 
 **Save to: `.editions-inbox/05-wave-5-food/bakery/`**
 
@@ -2234,7 +2234,7 @@ Scenes
 
 ---
 
-### spices-herbs (16)
+### spices-herbs (16), template atara
 
 **Save to: `.editions-inbox/05-wave-5-food/spices-herbs/`**
 
@@ -2276,7 +2276,7 @@ Scenes
 
 ---
 
-### fast-food (16)
+### fast-food (16), template sizzle
 
 **Save to: `.editions-inbox/05-wave-5-food/fast-food/`**
 
@@ -2320,7 +2320,7 @@ Scenes
 
 ## Wave 6: Sweets (4 niches)
 
-### oriental-sweets (16)
+### oriental-sweets (16), template halawa
 
 **Save to: `.editions-inbox/06-wave-6-sweets/oriental-sweets/`**
 
@@ -2362,7 +2362,7 @@ Scenes
 
 ---
 
-### chocolate-cakes (16)
+### chocolate-cakes (16), template roast
 
 **Save to: `.editions-inbox/06-wave-6-sweets/chocolate-cakes/`**
 
@@ -2404,7 +2404,7 @@ Scenes
 
 ---
 
-### coffee-beans (16)
+### coffee-beans (16), template bunn
 
 **Save to: `.editions-inbox/06-wave-6-sweets/coffee-beans/`**
 
@@ -2446,7 +2446,7 @@ Scenes
 
 ---
 
-### dates-nuts (16)
+### dates-nuts (16), template grocery-luxe
 
 **Save to: `.editions-inbox/06-wave-6-sweets/dates-nuts/`**
 
@@ -2490,7 +2490,7 @@ Scenes
 
 ## Wave 7: Kids (4 niches)
 
-### toys (16)
+### toys (16), template farha
 
 **Save to: `.editions-inbox/07-wave-7-kids/toys/`**
 
@@ -2532,7 +2532,7 @@ Scenes
 
 ---
 
-### baby-essentials (16)
+### baby-essentials (16), template bambino
 
 **Save to: `.editions-inbox/07-wave-7-kids/baby-essentials/`**
 
@@ -2574,7 +2574,7 @@ Scenes
 
 ---
 
-### kids-gifts (16)
+### kids-gifts (16), template hadaya
 
 **Save to: `.editions-inbox/07-wave-7-kids/kids-gifts/`**
 
@@ -2616,7 +2616,7 @@ Scenes
 
 ---
 
-### school-supplies (16)
+### school-supplies (16), template kids-bold
 
 **Save to: `.editions-inbox/07-wave-7-kids/school-supplies/`**
 
@@ -2660,7 +2660,7 @@ Scenes
 
 ## Wave 8: Sports (6 niches)
 
-### gym-fitness (16)
+### gym-fitness (16), template core
 
 **Save to: `.editions-inbox/08-wave-8-sports/gym-fitness/`**
 
@@ -2702,7 +2702,7 @@ Scenes
 
 ---
 
-### football (16)
+### football (16), template koora
 
 **Save to: `.editions-inbox/08-wave-8-sports/football/`**
 
@@ -2744,7 +2744,7 @@ Scenes
 
 ---
 
-### running (16)
+### running (16), template stride
 
 **Save to: `.editions-inbox/08-wave-8-sports/running/`**
 
@@ -2786,7 +2786,7 @@ Scenes
 
 ---
 
-### cycling (16)
+### cycling (16), template darraga
 
 **Save to: `.editions-inbox/08-wave-8-sports/cycling/`**
 
@@ -2828,7 +2828,7 @@ Scenes
 
 ---
 
-### outdoor-camping (16)
+### outdoor-camping (16), template basecamp
 
 **Save to: `.editions-inbox/08-wave-8-sports/outdoor-camping/`**
 
@@ -2870,7 +2870,7 @@ Scenes
 
 ---
 
-### yoga (16)
+### yoga (16), template yoga
 
 **Save to: `.editions-inbox/08-wave-8-sports/yoga/`**
 
@@ -2914,7 +2914,7 @@ Scenes
 
 ## Wave 9: Health (3 niches)
 
-### vitamins-supplements (16)
+### vitamins-supplements (16), template nada
 
 **Save to: `.editions-inbox/09-wave-9-health/vitamins-supplements/`**
 
@@ -2956,7 +2956,7 @@ Scenes
 
 ---
 
-### pharmacy-care (16)
+### pharmacy-care (16), template ward
 
 **Save to: `.editions-inbox/09-wave-9-health/pharmacy-care/`**
 
@@ -2998,7 +2998,7 @@ Scenes
 
 ---
 
-### medical-devices (16)
+### medical-devices (16), template beauty-luxe
 
 **Save to: `.editions-inbox/09-wave-9-health/medical-devices/`**
 
@@ -3042,7 +3042,7 @@ Scenes
 
 ## Wave 10: Pets (3 niches)
 
-### pet-food (16)
+### pet-food (16), template grocery-warm
 
 **Save to: `.editions-inbox/10-wave-10-pets/pet-food/`**
 
@@ -3084,7 +3084,7 @@ Scenes
 
 ---
 
-### pet-accessories (16)
+### pet-accessories (16), template kids-warm
 
 **Save to: `.editions-inbox/10-wave-10-pets/pet-accessories/`**
 
@@ -3126,7 +3126,7 @@ Scenes
 
 ---
 
-### fish-birds (16)
+### fish-birds (16), template sabaha
 
 **Save to: `.editions-inbox/10-wave-10-pets/fish-birds/`**
 
@@ -3170,7 +3170,7 @@ Scenes
 
 ## Wave 11: Auto (6 niches)
 
-### car-accessories (16)
+### car-accessories (16), template garage
 
 **Save to: `.editions-inbox/11-wave-11-auto/car-accessories/`**
 
@@ -3212,7 +3212,7 @@ Scenes
 
 ---
 
-### car-care (16)
+### car-care (16), template garagy
 
 **Save to: `.editions-inbox/11-wave-11-auto/car-care/`**
 
@@ -3254,7 +3254,7 @@ Scenes
 
 ---
 
-### tyres-batteries (16)
+### tyres-batteries (16), template tyre
 
 **Save to: `.editions-inbox/11-wave-11-auto/tyres-batteries/`**
 
@@ -3296,7 +3296,7 @@ Scenes
 
 ---
 
-### motorcycle (16)
+### motorcycle (16), template moto
 
 **Save to: `.editions-inbox/11-wave-11-auto/motorcycle/`**
 
@@ -3338,7 +3338,7 @@ Scenes
 
 ---
 
-### car-interior (16)
+### car-interior (16), template zeina
 
 **Save to: `.editions-inbox/11-wave-11-auto/car-interior/`**
 
@@ -3380,7 +3380,7 @@ Scenes
 
 ---
 
-### ev-charging (16)
+### ev-charging (16), template kahraba
 
 **Save to: `.editions-inbox/11-wave-11-auto/ev-charging/`**
 
@@ -3424,7 +3424,7 @@ Scenes
 
 ## Wave 12: Handmade (4 niches)
 
-### handmade-gifts (16)
+### handmade-gifts (16), template gifts-warm
 
 **Save to: `.editions-inbox/12-wave-12-handmade/handmade-gifts/`**
 
@@ -3466,7 +3466,7 @@ Scenes
 
 ---
 
-### ceramics (16)
+### ceramics (16), template fokhar
 
 **Save to: `.editions-inbox/12-wave-12-handmade/ceramics/`**
 
@@ -3508,7 +3508,7 @@ Scenes
 
 ---
 
-### candles-soap (16)
+### candles-soap (16), template gifts-luxe
 
 **Save to: `.editions-inbox/12-wave-12-handmade/candles-soap/`**
 
@@ -3550,7 +3550,7 @@ Scenes
 
 ---
 
-### crochet-embroidery (16)
+### crochet-embroidery (16), template tawla
 
 **Save to: `.editions-inbox/12-wave-12-handmade/crochet-embroidery/`**
 
@@ -3594,7 +3594,7 @@ Scenes
 
 ## Wave 13: Books & stationery (3 niches)
 
-### books (16)
+### books (16), template hekaya
 
 **Save to: `.editions-inbox/13-wave-13-books-and-stationery/books/`**
 
@@ -3636,7 +3636,7 @@ Scenes
 
 ---
 
-### stationery (16)
+### stationery (16), template doodle
 
 **Save to: `.editions-inbox/13-wave-13-books-and-stationery/stationery/`**
 
@@ -3678,7 +3678,7 @@ Scenes
 
 ---
 
-### kids-books (16)
+### kids-books (16), template kids-luxe
 
 **Save to: `.editions-inbox/13-wave-13-books-and-stationery/kids-books/`**
 

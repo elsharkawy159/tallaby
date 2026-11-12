@@ -36,10 +36,16 @@
  * grid shows four, and `nour`'s hero shows the first featured one (the brass
  * table lamp, so it stays first). No `reviews`: a pack holds no invented
  * buyer quotes, and without them `nour` leaves its reviews section out.
+ *
+ * 2026-11-12 (one template per niche): `nour` is deleted and the pack draws
+ * only on `zaki`, the niche's template, through its `perLook` entry (Nawwara).
+ * The base copy and photos above stay as the entry's starting point; the
+ * `nour` notes describe the base content, not a live look.
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, pexels } from "../../../library-template";
 import { editionPhoto } from "../../media";
+import { editionForLook } from "../../per-look";
 import type { Edition } from "../../types";
 
 const NICHE = "lighting-smart-home";
@@ -54,9 +60,10 @@ const TILES = [
   pexels(29099976, 1200), // warm LED strips in a ceiling cove over a kitchen bar
 ];
 
-export const LIGHTING_SMART_HOME: Edition = {
+/** The pack as written: the base, and Zaki's own shop in `perLook` (see the top of this file). */
+const LIGHTING_SMART_HOME_BASE: Edition = {
   niche: NICHE,
-  looks: ["nour", "zaki"],
+  looks: ["zaki"],
   priceBand: { min: 250, max: 9000 },
   // Square packshots on pure white: a square white stage shows each lamp whole, and the grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -398,3 +405,6 @@ export const LIGHTING_SMART_HOME: Edition = {
     },
   },
 };
+
+/** The registered pack: Zaki's shop folded in, one look, no `perLook` (one pack, one template). */
+export const LIGHTING_SMART_HOME: Edition = editionForLook(LIGHTING_SMART_HOME_BASE, "zaki");

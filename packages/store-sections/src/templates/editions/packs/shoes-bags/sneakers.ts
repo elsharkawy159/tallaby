@@ -101,7 +101,7 @@ const HANDLE = handle("@raseef");
 
 export const SNEAKERS: Edition = {
   niche: NICHE,
-  looks: ["sports-bold", "streetwear"],
+  looks: ["sports-bold"],
   priceBand: { min: 700, max: 2800 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -287,16 +287,5 @@ export const SNEAKERS: Edition = {
   },
   // Nabd's grid and streetwear's rail show the newest products.
   journey: { primary: "newest" },
-  // Streetwear keeps its own hero (the pink shelf, the lone sneaker on phones), story photo and whole tiles until the shoes-and-bags switch takes it off.
-  perLook: {
-    streetwear: {
-      photos: { hero: { wide: pexels(1020372, 1920), tall: pexels(11827147, 1200) }, story: pexels(4296075, 1200), tiles: STREET_TILES },
-      copy: {
-        hero: { alt: L("رف بمبي عليه كوتشيات رانينج بألوان هادية على خلفية سودا", "A pink shelf of pastel runners against black") },
-        story: { alt: L("كوتشي كانفس أبيض بخياطة زجزاج على ورق ملوّن", "White canvas low-tops with zigzag stitching on coloured paper") },
-        about: { alt: L("كوتشي كانفس أبيض بخياطة زجزاج على ورق ملوّن", "White canvas low-tops with zigzag stitching on coloured paper") },
-      },
-    },
-  },
   productPage: { copy: { reviews: L("آراء اللي لبسوه", "From people who wear them"), related: L("موديلات ممكن تعجبك", "Pairs you may like") } },
 };

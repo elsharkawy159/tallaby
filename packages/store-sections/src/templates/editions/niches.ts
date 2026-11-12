@@ -40,13 +40,13 @@ const ROWS: readonly Row[] = [
     "tshirts", "fashion", "تيشيرتات", "T-shirts",
     "تيشيرت, تيشيرتات, تي شيرت, تيشرت, تيشرتات, تشيرت, تشيرتات, هودي, هوديز, هوديهات, سويت شيرت, سويتشيرت, بولو, اوفر سايز, تيشيرتات مطبوعة, ستريت وير",
     "t-shirt, t-shirts, tshirt, tshirts, tee, tees, hoodie, hoodies, sweatshirt, sweatshirts, polo, polo shirts, oversized, graphic tees, printed t-shirts, streetwear",
-    "streetwear, fashion-bold, nasig",
+    "streetwear, fashion-bold",
   ],
   [
     "pants-jeans", "fashion", "بناطيل وجينز", "Pants & jeans",
     "بنطلون, بناطيل, بنطلونات, بنطال, جينز, جينزات, بنطلون جينز, بناطيل جينز, شورت, شورتات, ليجن, ليجنز, بنطلون قماش, سروال, سراويل",
     "pants, jeans, trousers, denim, shorts, leggings, chinos, joggers, cargo pants, wide leg pants, slacks, denim jeans",
-    "fashion-bold, zay, mawsem",
+    "fashion-bold, zay",
   ],
   [
     "modest-wear", "fashion", "عبايات وملابس محتشمة", "Abayas & modest wear",
@@ -64,13 +64,13 @@ const ROWS: readonly Row[] = [
     "kidswear", "fashion", "ملابس أطفال", "Kids' wear",
     "ملابس اطفال, لبس اطفال, هدوم اطفال, ملابس اولادي, ملابس ولادي, ملابس بناتي, ملابس بيبي, ملابس مواليد, لبس مواليد, سالوبيت, سالوبيتات, بيجامات اطفال, فساتين اطفال, اطقم اطفال",
     "kidswear, kids wear, kids clothing, kids clothes, children's clothing, children's wear, baby clothes, baby clothing, boys clothing, girls clothing, onesie, onesies, romper, rompers, toddler clothes",
-    "kids-warm, kids-luxe",
+    "fashion-warm, kids-warm, kids-luxe",
   ],
   [
     "lingerie-sleepwear", "fashion", "لانجيري وبيجامات", "Lingerie & sleepwear",
     "لانجيري, لانجري, بيجامة, بيجامات, بيجامات حريمي, قمصان نوم, قميص نوم, ملابس نوم, ملابس داخلية, اندر وير, روب, ارواب, برا, ملابس بيتي, هوم وير, لبس بيت",
     "lingerie, sleepwear, pajamas, pyjamas, pajama, nightwear, nightgown, nightgowns, underwear, loungewear, homewear, robe, robes, bra, bras, nightdress",
-    "fashion-warm, vella",
+    "vella, fashion-warm",
   ],
   [
     "sportswear", "fashion", "ملابس رياضية", "Sportswear",
@@ -84,19 +84,19 @@ const ROWS: readonly Row[] = [
     "sneakers", "shoes-bags", "كوتشيات", "Sneakers",
     "كوتشي, كوتشيات, كوتش, سنيكرز, سنيكر, سنيكرس, احذية رياضية, حذاء رياضي, جزم رياضية, كوتشي رجالي, كوتشي حريمي",
     "sneakers, sneaker, trainers, kicks, athletic shoes, sports shoes, high tops, low tops, canvas shoes, tennis shoes, casual sneakers",
-    "streetwear, sports-bold, stride",
+    "sports-bold, streetwear, stride",
   ],
   [
     "womens-shoes", "shoes-bags", "أحذية حريمي", "Women's shoes",
     "احذية حريمي, جزم حريمي, جزمة حريمي, احذية نسائية, شوزات, شوز حريمي, كعب, كعب عالي, صندل, صنادل, صندل حريمي, بالرينا, باليرينا, هاف بوت, بوت حريمي, شبشب حريمي, سابوه",
     "women's shoes, women shoes, shoes for women, ladies shoes, heels, high heels, sandals, sandal, flats, ballerinas, pumps, wedges, women's boots, ankle boots, mules, stilettos",
-    "fashion-luxe, vella",
+    "kasr, fashion-luxe, vella",
   ],
   [
     "mens-shoes", "shoes-bags", "أحذية رجالي", "Men's shoes",
     "احذية رجالي, جزم رجالي, جزمة رجالي, حذاء رجالي, شوز رجالي, احذية كلاسيك, جزم كلاسيك, لوفر, لوفرز, بوت رجالي, صندل رجالي, شبشب رجالي, احذية جلد, جزم جلد",
     "men's shoes, men shoes, shoes for men, loafers, loafer, oxford shoes, oxfords, derby shoes, formal shoes, leather shoes, men's boots, dress shoes, moccasins, brogues",
-    "zay, ghorza",
+    "ghorza, zay",
   ],
   [
     // Owner, 2026-11-11. "كروكس"/"كيروكس" is how Egyptian sellers name any rubber clog, so it is a
@@ -104,7 +104,7 @@ const ROWS: readonly Row[] = [
     "slippers-clogs", "shoes-bags", "شباشب وكروكس", "Slippers & clogs",
     "شبشب, شباشب, شبشب بيتي, شباشب بيتي, كروكس, كيروكس, كلوج, سلايد, شبشب سلايد, شبشب صباع, زنوبة, شبشب بحر, شبشب فرو, شبشب طبي",
     "slippers, slipper, flip flops, beach slippers, slides, sliders, clogs, clog, house slippers, home slippers, beach sandals, pool slides, fuzzy slippers, rubber clogs",
-    "streetwear, zay",
+    "tasfya, streetwear, zay",
   ],
   [
     "handbags", "shoes-bags", "شنط يد", "Handbags",
@@ -116,7 +116,7 @@ const ROWS: readonly Row[] = [
     "backpacks-travel", "shoes-bags", "شنط ظهر وسفر", "Backpacks & travel",
     "شنط ظهر, شنطة ظهر, شنط سفر, شنطة سفر, شنط مدرسة, شنطة مدرسة, باك باك, حقائب سفر, حقيبة سفر, حقيبة ظهر, ترولي, شنط ترولي, شنط لاب توب, شنطة لابتوب",
     "backpack, backpacks, travel bag, travel bags, luggage, suitcase, suitcases, trolley bag, duffel bag, duffle, school bag, school bags, laptop bag, carry-on, rucksack",
-    "shanta, safar, basecamp",
+    "safar, shanta, basecamp",
   ],
 
   // ── jewelry (shown as "Accessories & Jewelry") ──
@@ -124,7 +124,7 @@ const ROWS: readonly Row[] = [
     "glasses", "jewelry", "نظارات", "Glasses & sunglasses",
     "نظارة, نظارات, نضارة, نضارات, نظارات شمس, نضارات شمس, نظارة شمس, نظارات شمسية, نظارات طبية, نضارات طبي, نظارات نظر, نضارة نظر, عدسات, عدسات لاصقة, شنابر, فريمات",
     "glasses, eyeglasses, sunglasses, sun glasses, eyewear, spectacles, shades, optical, optics, frames, eyeglass frames, contact lenses, lenses, blue light glasses, reading glasses",
-    "jewelry-luxe, karat, fashion-bold",
+    "karat, jewelry-luxe, fashion-bold",
   ],
   [
     "watches", "jewelry", "ساعات يد", "Hand watches",
@@ -154,13 +154,13 @@ const ROWS: readonly Row[] = [
     "hair-accessories", "jewelry", "إكسسوارات شعر", "Hair accessories",
     "اكسسوارات شعر, توك, توكة, توك شعر, بنس, بنس شعر, ربطات شعر, ربطة شعر, سكرانشي, سكرنشي, طوق, اطواق, تيجان, تاج, مشابك شعر, بندانة, فيونكات, فيونكة",
     "hair accessories, hair clips, hair clip, scrunchie, scrunchies, hair ties, hair bands, headband, headbands, hair pins, hairpins, barrettes, hair bows, claw clips, tiara, tiaras",
-    "karat, zahra",
+    "kholkhal, karat, zahra",
   ],
   [
     "belts-wallets", "jewelry", "أحزمة ومحافظ", "Belts & wallets",
     "حزام, احزمة, حزام جلد, احزمة جلد, حزام رجالي, محفظة, محافظ, محفظة رجالي, محفظة جلد, محافظ جلد, جلود, منتجات جلدية, مصنوعات جلدية, كارد هولدر, حافظة كروت, بوك",
     "belt, belts, wallet, wallets, leather belt, leather belts, leather wallet, leather wallets, card holder, cardholder, leather goods, men's wallets, money clip, billfold, key holder",
-    "shanta, zay",
+    "jewelry-warm, shanta, zay",
   ],
 
   // ── electronics ──
@@ -168,31 +168,31 @@ const ROWS: readonly Row[] = [
     "mobiles", "electronics", "موبايلات", "Mobiles",
     "موبايلات, موبيلات, هواتف, هاتف, هواتف ذكية, تليفونات, تليفون, تلفونات, جوالات, محمول, موبايلات مستعملة, موبايل مستعمل, موبايلات جديدة, تابلت, تابلتات",
     "mobiles, mobile phones, mobile phone, phones, smartphones, smartphone, cell phones, tablets, tablet, used phones, handsets, android phones, refurbished phones",
-    "shasha, techhub, tany",
+    "techhub, shasha",
   ],
   [
     "pc-gaming", "electronics", "كمبيوتر وجيمنج", "PC & gaming accessories",
     "كمبيوتر, كمبيوترات, لاب توب, لابتوب, لابتوبات, جيمنج, جيمينج, كيبورد, كيبوردات, ماوس, ماوسات, اكسسوارات كمبيوتر, اكسسوارات جيمنج, دراعات, دراعات تحكم, كراسي جيمنج, قطع كمبيوتر, هارد, العاب فيديو, شاشات كمبيوتر",
     "pc, computer, computers, laptop, laptops, gaming, gamer, gaming accessories, keyboard, keyboards, mouse, gaming mouse, video games, pc parts, pc components, graphics card, monitors, monitor, gaming chair, controllers",
-    "arena, arcade, electronics-bold",
+    "arena",
   ],
   [
     "lighting-smart-home", "electronics", "إضاءة وبيت ذكي", "Lighting & smart home",
     "اضاءة, انارة, لمبات, لمبة, لمبات ليد, اضاءة ليد, ليد, نجف, نجفة, ثريات, اباجورة, اباجورات, ابليك, ابليكات, سبوتات, كشافات, بيت ذكي, منزل ذكي, سمارت هوم, مفاتيح ذكية",
     "lighting, lights, lamps, lamp, chandelier, chandeliers, led lights, led, bulbs, bulb, smart home, smart bulbs, smart plugs, light fixtures, floor lamp, table lamps, spotlights, home automation",
-    "nour, zaki, electronics-warm",
+    "zaki",
   ],
   [
     "audio", "electronics", "سماعات وصوتيات", "Audio",
     "سماعات, سماعة, صوتيات, سبيكر, سبيكرات, سماعات بلوتوث, مكبر صوت, مكبرات صوت, ساوند بار, هيدفون, هيدفونات, سماعات راس, ساب ووفر, ميكروفون, ميكروفونات, مايك, مايكات, انظمة صوت",
     "audio, speakers, speaker, bluetooth speaker, bluetooth speakers, headphones, headphone, soundbar, soundbars, subwoofer, microphone, microphones, sound system, hi-fi, hifi, amplifier, home theater",
-    "arcade, electronics-luxe, techhub",
+    "electronics-luxe, techhub",
   ],
   [
     "small-appliances", "electronics", "أجهزة صغيرة", "Small appliances",
     "اجهزة صغيرة, اجهزة كهربائية, اجهزة منزلية صغيرة, ادوات كهربائية, مكواة, مكاوي, مكنسة, مكانس, مكنسة كهربائية, مروحة, مراوح, دفاية, دفايات, سخان, سخانات, شفاط",
     "small appliances, small home appliances, electric appliances, household appliances, vacuum cleaner, vacuum cleaners, vacuum, iron, steam iron, fan, fans, heater, heaters, water heater, humidifier, air purifier",
-    "shasha, electronics-warm, beity",
+    "shasha, beity",
   ],
   [
     "wearables", "electronics", "ساعات ذكية", "Smart watches",
@@ -226,19 +226,19 @@ const ROWS: readonly Row[] = [
     "skincare", "beauty", "عناية بالبشرة", "Skincare",
     "عناية بالبشرة, بشرة, عناية بالوجه, سكين كير, سكن كير, كريمات, كريم, سيروم, سيرومات, غسول, غسول وجه, واقي شمس, صن بلوك, ماسكات, ماسك وجه, مرطب, مرطبات, تونر",
     "skincare, skin care, serum, serums, moisturizer, moisturizers, cleanser, cleansers, sunscreen, sunblock, face mask, face masks, toner, face cream, creams, facial care, korean skincare",
-    "pure, nada, bashra",
+    "pure, nada",
   ],
   [
     "makeup", "beauty", "مكياج", "Makeup",
     "مكياج, ميكب, ميك اب, ميكاب, مستحضرات تجميل, روج, ارواج, احمر شفاه, فاونديشن, كونسيلر, ماسكرا, ايشادو, ايلاينر, بلاشر, كحل, بودرة, فرش مكياج, ادوات مكياج, باليت",
     "makeup, make up, cosmetics, lip liner, lipstick, lipsticks, foundation, concealer, mascara, eyeshadow, eyeliner, blush, makeup brushes, lip gloss, palette, palettes",
-    "kohl, beauty-bold, ward",
+    "beauty-bold, ward",
   ],
   [
     "perfumes", "beauty", "عطور", "Perfumes",
     "عطر, عطور, برفان, برفانات, بارفان, بيرفيوم, عود, بخور, مسك, عطور رجالي, عطور حريمي, عطور شرقية, عطور فرنسية, تركيبات عطور, زيوت عطرية, معطر جسم, بودي سبلاش, مخمرية",
     "perfume, perfumes, fragrance, fragrances, cologne, oud, incense, bakhoor, musk, eau de parfum, body mist, body splash, attar, scent, scents, perfume oils",
-    "perfumes-luxe, perfumes-bold, perfumes-warm",
+    "perfumes-bold",
   ],
   [
     "haircare", "beauty", "عناية بالشعر", "Hair care",
@@ -258,31 +258,31 @@ const ROWS: readonly Row[] = [
     "furniture", "home", "أثاث", "Furniture",
     "اثاث, موبيليا, عفش, اثاث منزلي, اثاث مودرن, اثاث مكتبي, غرف نوم, غرفة نوم, غرف سفرة, انتريه, انتريهات, ركنة, كنب, كنبة, كراسي, ترابيزات, ترابيزة, مكاتب, دواليب, سراير",
     "furniture, home furniture, office furniture, sofa, sofas, couch, couches, bed, beds, bedroom, bedrooms, dining table, tables, chairs, chair, wardrobe, wardrobes, desk, desks, living room",
-    "furniture-luxe, mobilia, dar",
+    "furniture-luxe",
   ],
   [
     "bedding-textiles", "home", "مفروشات", "Bedding & textiles",
     "مفروشات, مفارش, مفرش, ملايات, ملاية, اطقم سرير, طقم ملايات, لحاف, الحفة, بطاطين, بطانية, مخدات, مخدة, كوفرتة, كوفرتات, فوط, بشاكير, ستائر, سجاجيد, سجاد",
     "bedding, bed sheets, sheets, bedsheets, duvet, duvets, comforter, comforters, blanket, blankets, pillows, pillow, towels, towel, curtains, rugs, carpets, home textiles, linens, quilt",
-    "mafrash, tawla, furniture-warm",
+    "mafrash, tawla",
   ],
   [
     "decor", "home", "ديكور", "Decor",
     "ديكور, ديكورات, ديكور منزلي, تابلوهات, تابلوه, لوحات, براويز, برواز, فازات, فازة, مرايات, مراية, مرايا, تحف, انتيكات, اكسسوارات منزلية, ساعات حائط, ساعة حائط, ورق حائط, مجسمات",
     "decor, home decor, decoration, decorations, wall art, paintings, picture frames, vases, vase, mirrors, mirror, wall clock, wall clocks, wallpaper, ornaments, figurines, canvas art, home accents",
-    "rokn, furniture-warm, sakan",
+    "rokn",
   ],
   [
     "plants-garden", "home", "نباتات وحدائق", "Plants & garden",
     "نباتات, نبات, نباتات زينة, نباتات داخلية, زرع, مشتل, مشاتل, حدائق, حديقة, جنينة, بذور, تقاوي, اصص, قصاري, سماد, اسمدة, ادوات زراعة, صبار, ورد طبيعي, شتلات",
     "plants, plant, garden, gardening, indoor plants, houseplants, seeds, pots, planters, planter, flower pots, fertilizer, succulents, cactus, plant nursery, garden tools",
-    "zarea, furniture-warm",
+    "zarea",
   ],
   [
     "home-organisation", "home", "تنظيم البيت", "Home organisation",
     "تنظيم البيت, تنظيم, منظمات, منظم, اورجانايزر, اورجنايزر, ادوات تنظيم, تخزين, صناديق تخزين, علب تخزين, سلال, سلة, ارفف, رفوف, شماعات, شماعة, حوامل, منظم ادراج, منظمات مطبخ, استاندات",
     "organizer, organizers, organiser, organisers, home organization, home organisation, storage, storage boxes, storage bins, baskets, shelves, shelf, hangers, racks, drawer organizer, closet organizer, containers",
-    "tanzim, daily",
+    "tanzim",
   ],
 
   // ── kitchen ──
@@ -290,7 +290,7 @@ const ROWS: readonly Row[] = [
     "cookware", "kitchen", "أواني طهي", "Cookware",
     "اواني طهي, اواني, اواني جرانيت, حلل, حلة, اطقم حلل, طقم حلل, طاسة, طاسات, طواجن, طاجن, صواني, صينية فرن, ادوات مطبخ, ادوات طبخ, سكاكين, سكينة, برام, كسرولة",
     "cookware, pots and pans, pans, pan, frying pan, saucepan, casserole, kitchenware, kitchen tools, kitchen utensils, utensils, knives, knife, baking trays, bakeware, non-stick, granite cookware, pressure cooker",
-    "matbakh, daily, beity",
+    "matbakh, beity",
   ],
   [
     "tableware", "kitchen", "أطقم سفرة", "Tableware",
@@ -316,7 +316,7 @@ const ROWS: readonly Row[] = [
     "grocery", "food", "بقالة", "Grocery",
     "بقالة, سوبر ماركت, سوبرماركت, ماركت, هايبر, ميني ماركت, مواد غذائية, منتجات غذائية, تموين, خزين, بقوليات, ارز, مكرونة, معلبات, منظفات, مشروبات, عصائر, البان, جبن, اجبان",
     "grocery, groceries, supermarket, market, minimarket, mini market, food products, pantry, canned food, beverages, drinks, dairy, cheese, rice, pasta, snacks, household supplies",
-    "souq, harvest, grocery-bold",
+    "souq",
   ],
   [
     "fresh-produce", "food", "خضار وفاكهة", "Fresh produce",
@@ -328,13 +328,13 @@ const ROWS: readonly Row[] = [
     "meat-poultry", "food", "لحوم ودواجن", "Meat & poultry",
     "لحوم, لحمة, لحم, لحوم بلدي, لحمة بلدي, لحوم مجمدة, دواجن, فراخ, جزارة, جزار, كفتة, سجق, مجمدات, سمك طازج, مأكولات بحرية, جمبري, ضاني, كندوز, بتلو, كبدة",
     "meat, meats, poultry, chicken, beef, lamb, butcher, butchery, fresh meat, frozen meat, sausages, minced meat, steak, steaks, seafood, turkey, halal meat",
-    "lahma, grocery-bold",
+    "lahma",
   ],
   [
     "bakery", "food", "مخبوزات", "Bakery",
     "مخبوزات, مخبوزات طازة, مخبز, فرن, عيش, خبز, فينو, كرواسون, باتيه, بسكويت, قرص, فطير, فطائر, معجنات, توست, بقسماط, دونتس",
     "bakery, bakeries, baked goods, bread, breads, croissant, croissants, pastry, pastries, buns, toast, bagels, donuts, doughnuts, sourdough, biscuits, pies, muffins",
-    "loaf, sabaho",
+    "loaf",
   ],
   [
     "spices-herbs", "food", "عطارة", "Spices & herbs",
@@ -346,7 +346,7 @@ const ROWS: readonly Row[] = [
     "fast-food", "food", "وجبات سريعة", "Fast food",
     "وجبات سريعة, وجبات, مطعم, مطاعم, برجر, بيتزا, شاورما, كريب, سندوتشات, ساندوتشات, سندوتش, فرايد تشيكن, بروست, كشري, فطار, اكل بيتي, اكل جاهز, دليفري, حواوشي, مشويات",
     "fast food, restaurant, restaurants, burger, burgers, pizza, shawarma, sandwiches, sandwich, fried chicken, crepe, crepes, takeaway, delivery, meals, home food, food truck, wraps",
-    "sizzle, grocery-bold",
+    "sizzle",
   ],
 
   // ── sweets ──
@@ -360,7 +360,7 @@ const ROWS: readonly Row[] = [
     "chocolate-cakes", "sweets", "شوكولاتة وتورت", "Chocolate & cakes",
     "شوكولاتة, شيكولاتة, شوكولا, شكولاتة, تورت, تورتة, تورتات, تورت مناسبات, تورتة عيد ميلاد, كيك, كيكات, جاتوه, كب كيك, حلويات غربية, براونيز, تشيز كيك, كوكيز, ماكرون, ترافل",
     "chocolate, chocolates, cake, cakes, cupcakes, cupcake, birthday cake, birthday cakes, custom cakes, brownies, cheesecake, cookies, macarons, truffles, desserts, dessert, patisserie, gateaux",
-    "halawa, gifts-luxe",
+    "roast, halawa, gifts-luxe",
   ],
   [
     "coffee-beans", "sweets", "بن وقهوة", "Coffee",
@@ -372,7 +372,7 @@ const ROWS: readonly Row[] = [
     "dates-nuts", "sweets", "تمور ومكسرات", "Dates & nuts",
     "تمور, تمر, بلح, عجوة, مكسرات, لب, سوداني, فول سوداني, كاجو, لوز, فستق, بندق, عين جمل, ياميش, ياميش رمضان, فواكه مجففة, قمر الدين, تسالي, زبيب",
     "dates, nuts, mixed nuts, roasted nuts, almonds, cashews, cashew, pistachio, pistachios, walnuts, hazelnuts, peanuts, dried fruits, dried fruit, trail mix, raisins, medjool",
-    "atara, grocery-luxe",
+    "grocery-luxe, atara",
   ],
 
   // ── kids ──
@@ -386,7 +386,7 @@ const ROWS: readonly Row[] = [
     "baby-essentials", "kids", "مستلزمات البيبي", "Baby essentials",
     "مستلزمات البيبي, مستلزمات بيبي, مستلزمات اطفال, مستلزمات مواليد, بيبي, مواليد, حفاضات, ببرونة, ببرونات, رضاعات, رضاعة, سكاتة, تيتينة, عربية اطفال, عربيات اطفال, كرسي سيارة اطفال, مشاية, سرير اطفال, شنطة مواليد, مناديل مبللة",
     "baby essentials, baby products, baby, babies, newborn, diapers, diaper, nappies, baby bottles, feeding bottles, pacifier, pacifiers, stroller, strollers, baby car seat, baby care, wipes, baby gear",
-    "bambino, mama, kids-luxe",
+    "bambino, kids-luxe",
   ],
   [
     "kids-gifts", "kids", "هدايا أطفال", "Kids' gifts",
@@ -398,7 +398,7 @@ const ROWS: readonly Row[] = [
     "school-supplies", "kids", "أدوات مدرسية", "School supplies",
     "ادوات مدرسية, ادوات مدرسة, مستلزمات مدرسية, مستلزمات مدارس, كشاكيل, كشكول, كراسات, كراسة, مقلمة, مقالم, اقلام رصاص, الوان, الوان خشب, لانش بوكس, زمزمية, زمزميات, برايات, استيكة, مسطرة, جلاد",
     "school supplies, back to school, school stationery, school notebooks, school essentials, pencil case, pencil cases, pencils, crayons, colored pencils, lunch box, lunch boxes, water bottle, water bottles, erasers, sharpeners",
-    "hekaya, kids-warm",
+    "kids-bold, hekaya, kids-warm",
   ],
 
   // ── sports ──
@@ -406,7 +406,7 @@ const ROWS: readonly Row[] = [
     "gym-fitness", "sports", "جيم ولياقة", "Gym & fitness",
     "جيم, لياقة, لياقة بدنية, فتنس, فيتنس, اجهزة رياضية, ادوات رياضية, معدات رياضية, اجهزة جيم, دامبلز, دمبل, اوزان, بار حديد, مشاية كهربائية, كمال اجسام, تمارين, حبل مقاومة, جوانتي جيم",
     "gym, fitness, gym equipment, fitness equipment, exercise equipment, workout equipment, dumbbells, dumbbell, weights, kettlebell, kettlebells, treadmill, resistance bands, home gym, bodybuilding, workout, barbell, crossfit",
-    "pace, core, rep",
+    "core",
   ],
   [
     "football", "sports", "كرة قدم", "Football",
@@ -430,7 +430,7 @@ const ROWS: readonly Row[] = [
     "outdoor-camping", "sports", "رحلات وتخييم", "Outdoor & camping",
     "رحلات, تخييم, كامبينج, خيم, خيمة, خيام, ادوات رحلات, مستلزمات رحلات, مستلزمات تخييم, كراسي رحلات, سليبنج باج, شوايات, شواية, هايكنج, سفاري, صيد, ادوات صيد, سنارة, ترمس",
     "outdoor, outdoors, camping, camping gear, tent, tents, hiking, sleeping bag, sleeping bags, trekking, fishing, fishing gear, grill, bbq, campfire, adventure gear, picnic, survival gear",
-    "basecamp, sports-warm, safar",
+    "basecamp, safar",
   ],
   [
     "yoga", "sports", "يوجا", "Yoga",
@@ -444,7 +444,7 @@ const ROWS: readonly Row[] = [
     "vitamins-supplements", "health", "فيتامينات ومكملات", "Vitamins & supplements",
     "فيتامينات, فيتامين, فيتامين سي, فيتامين د, مكملات, مكملات غذائية, مكمل غذائي, مكملات رياضية, بروتين, واي بروتين, كرياتين, اوميجا 3, كولاجين, زنك, ماغنسيوم, بناء عضلات, حرق دهون, تخسيس",
     "vitamins, vitamin, supplements, supplement, dietary supplements, protein, whey protein, creatine, omega 3, collagen, multivitamin, multivitamins, sports nutrition, nutrition, weight loss, pre-workout, minerals, probiotics",
-    "pure, nada, core",
+    "nada, pure, core",
   ],
   [
     "pharmacy-care", "health", "صيدلية وعناية", "Pharmacy & personal care",
@@ -456,7 +456,7 @@ const ROWS: readonly Row[] = [
     "medical-devices", "health", "أجهزة طبية", "Medical devices",
     "اجهزة طبية, مستلزمات طبية, جهاز ضغط, اجهزة ضغط, جهاز سكر, اجهزة سكر, شرائط سكر, ترمومتر, سماعة طبيب, نبولايزر, جهاز استنشاق, جهاز اكسجين, اوكسيميتر, كرسي متحرك, كراسي متحركة, عكاز, مشدات طبية, احزمة طبية, ميزان, موازين",
     "medical devices, medical equipment, medical supplies, blood pressure monitor, glucometer, glucose meter, thermometer, thermometers, nebulizer, wheelchair, wheelchairs, oximeter, pulse oximeter, stethoscope, crutches, orthopedic, braces, mobility aids",
-    "techhub, pure",
+    "beauty-luxe, techhub, pure",
   ],
 
   // ── pets ──
@@ -464,7 +464,7 @@ const ROWS: readonly Row[] = [
     "pet-food", "pets", "أكل حيوانات", "Pet food",
     "اكل حيوانات, اكل حيوانات اليفة, اكل قطط, اكل كلاب, طعام قطط, طعام كلاب, طعام حيوانات, دراي فود, دراي فوود, ويت فود, سناكس قطط, تريتس, علف, اعلاف",
     "pet food, cat food, dog food, dry food, wet food, kibble, pet treats, dog treats, cat treats, pet nutrition, puppy food, kitten food, animal feed",
-    "grocery-warm, harvest",
+    "grocery-warm",
   ],
   [
     "pet-accessories", "pets", "مستلزمات حيوانات", "Pet accessories",
@@ -476,7 +476,7 @@ const ROWS: readonly Row[] = [
     "fish-birds", "pets", "أسماك وطيور", "Fish & birds",
     "اسماك زينة, سمك زينة, احواض سمك, حوض سمك, احواض, فلاتر احواض, اكواريوم, اكل سمك, طيور, طيور زينة, عصافير, عصفور, اكل عصافير, اقفاص, قفص, ببغاء, ببغاوات, كناري, بادجي",
     "pet fish, aquarium, aquariums, fish tank, fish tanks, ornamental fish, fish food, birds, bird, bird cage, bird cages, bird food, parrots, parrot, canary, budgies, aquatic, pond",
-    "zarea, grocery-warm",
+    "sabaha, zarea, grocery-warm",
   ],
 
   // ── auto ──
@@ -484,19 +484,19 @@ const ROWS: readonly Row[] = [
     "car-accessories", "auto", "إكسسوارات سيارات", "Car accessories",
     "اكسسوارات سيارات, اكسسوارات عربيات, كماليات سيارات, كماليات عربيات, كماليات, شاشات عربيات, كاسيت, كاسيت عربية, حامل موبايل عربية, كاميرا عربية, داش كام, حساسات, حساسات ركن, اضاءة عربيات, كشافات عربيات, ليدات عربيات, سماعات عربيات, قطع غيار سيارات, قطع غيار",
     "car accessories, auto accessories, car gadgets, car electronics, dash cam, dashcam, car screen, car stereo, car audio, parking sensors, car phone holder, car lights, car parts, auto parts, spare parts, automotive",
-    "garage, tarik, drive",
+    "garage",
   ],
   [
     "car-care", "auto", "عناية بالسيارة", "Car care",
     "عناية بالسيارة, عناية بالعربية, عناية سيارات, تلميع, تلميع سيارات, غسيل سيارات, غسيل عربيات, شامبو سيارات, واكس سيارات, نانو سيراميك, بوليش, منظفات سيارات, ملمع تابلوه, فوط مايكروفايبر, معطر سيارات, معطرات سيارات, ديتيلنج, زيوت سيارات, زيت موتور",
     "car care, car wash, car detailing, detailing, car polish, car wax, car shampoo, ceramic coating, car cleaning, car cleaner, microfiber towels, car air freshener, air fresheners, engine oil, motor oil",
-    "garagy, pitstop",
+    "garagy",
   ],
   [
     "tyres-batteries", "auto", "كاوتش وبطاريات", "Tyres & batteries",
     "كاوتش, كاوتشات, كاوتش عربيات, فرد كاوتش, اطارات, اطار, اطارات سيارات, بطاريات, بطارية, بطاريات سيارات, بطارية عربية, بطاريات جافة, جنوط, جنط, ترصيص, ظبط زوايا",
     "tyres, tyre, tires, tire, car tyres, car batteries, car battery, batteries, battery, rims, wheels, alloy wheels, wheel alignment, tire shop, tyre shop",
-    "tyre, pitstop",
+    "tyre",
   ],
   [
     "motorcycle", "auto", "موتوسيكلات", "Motorcycle gear",
@@ -514,7 +514,7 @@ const ROWS: readonly Row[] = [
     "ev-charging", "auto", "شحن كهربائي", "EV charging",
     "شحن كهربائي, شحن عربيات كهربائية, شحن سيارات كهربائية, شاحن عربية كهربائية, شواحن سيارات كهربائية, شاحن منزلي للسيارات, كابل شحن سيارات, سيارات كهربائية, عربيات كهربائية, عربية كهربائية, محطات شحن, محطة شحن, وول بوكس",
     "ev charging, ev charger, ev chargers, ev cable, ev accessories, ev, electric vehicle, electric vehicles, electric car, electric cars, charging station, charging stations, wallbox, home charger",
-    "kahraba, drive",
+    "kahraba",
   ],
 
   // ── handmade ──
@@ -522,7 +522,7 @@ const ROWS: readonly Row[] = [
     "handmade-gifts", "handmade", "هدايا هاند ميد", "Handmade gifts",
     "هدايا هاند ميد, هاند ميد, هاندميد, هدايا, هدية, هدايا مخصصة, هدايا بالاسم, هدايا مناسبات, بوكسات هدايا, بوكس هدايا, شغل يدوي, اشغال يدوية, مشغولات يدوية, صناعة يدوية, ريزن, ريزين, ماكراميه, مكرمية",
     "handmade gifts, handmade, hand made, gifts, gift, gift shop, gift boxes, gift box, gift sets, personalized gifts, custom gifts, crafts, handcrafted, handicrafts, resin, resin art, macrame, artisan",
-    "gifts-warm, gifts-luxe, gifts-bold",
+    "gifts-warm, gifts-luxe",
   ],
   [
     "ceramics", "handmade", "فخار وخزف", "Ceramics",
@@ -534,13 +534,13 @@ const ROWS: readonly Row[] = [
     "candles-soap", "handmade", "شموع وصابون", "Candles & soap",
     "شموع, شمع, شمعة, شموع معطرة, شموع عطرية, شموع ديكور, شموع صويا, صابون, صابونة, صابون طبيعي, صابون يدوي, صابون مغربي, فواحات, فواحة, مباخر, معطرات جو, بومب استحمام",
     "candles, candle, scented candles, soy candles, candle making, soap, soaps, handmade soap, natural soap, wax melts, diffusers, diffuser, bath bombs, aromatherapy, home fragrance",
-    "gifts-warm, botanica",
+    "gifts-luxe, gifts-warm, botanica",
   ],
   [
     "crochet-embroidery", "handmade", "كروشيه وتطريز", "Crochet & embroidery",
     "كروشيه, تطريز, تطريز يدوي, مطرزات, تريكو, صوف, خيوط, خيوط صوف, خيط, ابر كروشيه, عرايس كروشيه, شنط كروشيه, مفارش كروشيه, اميجرومي, كنفاه, ايتامين, باتش ورك, شغل ابرة",
     "crochet, handmade crochet, crochet bags, embroidery, embroidered, knitting, knitted, yarn, yarns, wool, amigurumi, cross stitch, needlework, patchwork, thread, threads",
-    "gifts-warm, tawla",
+    "tawla, gifts-warm",
   ],
 
   // ── books ──
@@ -554,13 +554,13 @@ const ROWS: readonly Row[] = [
     "stationery", "books", "أدوات مكتبية", "Stationery",
     "ادوات مكتبية, مكتبة, مكتبات, قرطاسية, مستلزمات مكتب, اقلام, قلم, اقلام حبر, نوت بوك, نوتبوك, نوتات, اجندة, اجندات, بلانر, ورق, ورق طباعة, ملفات, دباسة, استيكرز, هايلايتر",
     "stationery, stationary, office supplies, pens, pen, notebooks, notebook, planner, planners, journals, journal, sticky notes, paper, files, folders, markers, highlighters, stickers, desk accessories",
-    "hekaya, tanzim",
+    "doodle, hekaya, tanzim",
   ],
   [
     "kids-books", "books", "كتب أطفال", "Children's books",
     "كتب اطفال, قصص اطفال, قصص مصورة, قصص تربوية, قصص قبل النوم, حواديت, حدوتة, حكايات, حكايات اطفال, كتب تلوين, كتاب تلوين, كتب تفاعلية, مجلات اطفال",
     "children's books, kids books, picture books, storybooks, story books, coloring books, colouring books, bedtime stories, activity books, board books, fairy tales, early readers",
-    "hekaya, kids-warm",
+    "kids-luxe, hekaya, kids-warm",
   ],
 ];
 

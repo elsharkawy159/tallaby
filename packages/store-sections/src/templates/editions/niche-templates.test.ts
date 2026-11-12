@@ -1,7 +1,8 @@
 /**
  * One template per niche (ROADMAP F-90, docs/systems/one-template-per-niche.md
  * §1): the `NICHE_TEMPLATES` rules, and the switched-industry rules checked
- * on the real set (accessories since 2026-11-12) and on fake sets too.
+ * on the real set (accessories, then every industry, 2026-11-12) and on fake
+ * sets too.
  */
 import { describe, expect, it } from "vitest";
 import { CLASSIC_KEY } from "../classic";
@@ -23,12 +24,22 @@ import {
 } from "./niche-templates";
 import { NICHES, getNiche } from "./niches";
 
+/** Deleted on 2026-11-12 when every industry switched to one template per niche (stores keep their copies). */
+const DELETED_2026_11_12 = [
+  ...["kettan", "nasig", "mawsem", "arcade", "tany", "electronics-bold", "electronics-warm"],
+  ...["bashra", "kohl", "perfumes-luxe", "perfumes-warm"],
+  ...["sakan", "dar", "mobilia", "nour", "salon", "furniture-bold", "furniture-warm"],
+  ...["daily", "harvest", "sabaho", "grocery-bold", "mama"],
+  ...["pace", "rep", "boxing", "nashat", "sports-warm"],
+  ...["drive", "pitstop", "tarik", "gifts-bold"],
+];
+
 /** Every rule a switched industry must meet: its problems, empty when it may switch. */
 function switchProblems(industry: string, rows: readonly NicheTemplate[] = NICHE_TEMPLATES): string[] {
   const problems: string[] = [];
   for (const niche of NICHES.filter((n) => n.industry === industry)) {
     const row = rows.find((r) => r.niche === niche.id);
-    if (!row || row.status !== "ready") problems.push(`niche ${niche.id} has no ready row`);
+    if (!row || row.status === "pending") problems.push(`niche ${niche.id} has no ready row`);
   }
   const served = new Set(rows.map((row) => row.template));
   for (const template of CODE_TEMPLATES.filter((t) => t.category === industry && t.key !== CLASSIC_KEY)) {
@@ -38,8 +49,31 @@ function switchProblems(industry: string, rows: readonly NicheTemplate[] = NICHE
 }
 
 describe("NICHE_TEMPLATES", () => {
-  it("has the 30 wave-1 rows", () => {
-    expect(NICHE_TEMPLATES).toHaveLength(30);
+  it("has one row per niche: the 30 of wave 1 and the 53 of waves 2–13", () => {
+    expect(NICHE_TEMPLATES).toHaveLength(83);
+    expect(NICHE_TEMPLATES.map((row) => row.niche).sort()).toEqual(NICHES.map((niche) => niche.id).sort());
+    // Every row can be shown: no niche waits for a template.
+    expect(NICHE_TEMPLATES.filter((row) => row.status === "pending").map((row) => row.niche)).toEqual([]);
+  });
+
+  it("every template but Tallaby Classic serves exactly one niche, in the niche's own industry", () => {
+    const served = NICHE_TEMPLATES.map((row) => row.template);
+    expect(CODE_TEMPLATES.filter((t) => t.key !== CLASSIC_KEY && !served.includes(t.key)).map((t) => t.key)).toEqual([]);
+    expect(CODE_TEMPLATES).toHaveLength(84);
+    // A template borrowed from another industry moved to its niche's, so the niche's tab lists it.
+    // kasr keeps "fashion" (its edition-ready output is guarded byte for byte); galleries list it under shoes & bags by its row.
+    for (const row of NICHE_TEMPLATES.filter((r) => r.template !== "kasr")) {
+      expect(CODE_TEMPLATES.find((t) => t.key === row.template)?.category, row.template).toBe(getNiche(row.niche)?.industry);
+    }
+  });
+
+  it("deleted templates are gone from the catalog, and nothing treats their keys as niche templates", () => {
+    expect(DELETED_2026_11_12).toHaveLength(32);
+    for (const key of DELETED_2026_11_12) {
+      expect(CODE_TEMPLATES.some((t) => t.key === key), key).toBe(false);
+      expect(nicheOfTemplate(key), key).toBeUndefined();
+      for (const edition of EDITIONS) expect(edition.looks, `${edition.niche}: ${key}`).not.toContain(key);
+    }
   });
 
   it("lists a template in at most one row and a niche once", () => {
@@ -67,10 +101,21 @@ describe("NICHE_TEMPLATES", () => {
     }
   });
 
-  it("marks a row with no pack ready only when it is native", () => {
+  it("marks a row with no pack ready only when it is native; the others show the template's own content", () => {
     // Native rows (plan §2): the template's own content is already the niche.
     const native = ["modest-wear", "silver-jewelry", "wearables"];
     for (const row of NICHE_TEMPLATES.filter((r) => !r.edition && r.status === "ready")) expect(native).toContain(row.niche);
+    // "own": no pack yet, so never an edition.
+    for (const row of NICHE_TEMPLATES.filter((r) => r.status === "own")) expect(row.edition, row.niche).toBeUndefined();
+  });
+
+  it("one pack, one template: every pack draws only on its niche's template", () => {
+    for (const edition of EDITIONS) {
+      const row = nicheTemplateFor(edition.niche);
+      expect(row?.edition, edition.niche).toBe(edition.niche);
+      expect(edition.looks, edition.niche).toEqual([row!.template]);
+      for (const look of Object.keys(edition.perLook ?? {})) expect(look, edition.niche).toBe(row!.template);
+    }
   });
 
   it("finds rows by niche and by template", () => {
@@ -81,19 +126,28 @@ describe("NICHE_TEMPLATES", () => {
     expect(nicheOfTemplate("no-such-template")).toBeUndefined();
     expect(readyNicheTemplate("fadda")).toBeUndefined();
     expect(readyNicheTemplate("silver-jewelry")?.template).toBe("fadda");
-    expect(readyNicheTemplate("kidswear")).toBeUndefined();
+    // Kids' wear has no pack yet: its row shows Nawl's own content.
+    expect(readyNicheTemplate("kidswear")?.template).toBe("fashion-warm");
+    expect(readyNicheTemplate("kidswear", [{ niche: "kidswear", template: "fashion-warm", status: "pending" }])).toBeUndefined();
   });
 
   it("puts the ready niche template first among a niche's looks", () => {
     expect(nicheTemplateFirst("dresses", ["vella", "fashion-luxe"])).toEqual(["fashion-luxe", "vella"]);
     expect(nicheTemplateFirst("dresses", ["vella"])).toEqual(["vella"]);
-    // A pending row changes nothing.
-    expect(nicheTemplateFirst("kidswear", ["zay", "fashion-warm"])).toEqual(["zay", "fashion-warm"]);
+    // An "own" row leads too; a pending row changes nothing.
+    expect(nicheTemplateFirst("kidswear", ["zay", "fashion-warm"])).toEqual(["fashion-warm", "zay"]);
+    expect(nicheTemplateFirst("kidswear", ["zay", "fashion-warm"], [{ niche: "kidswear", template: "fashion-warm", status: "pending" }])).toEqual(["zay", "fashion-warm"]);
     expect(nicheTemplateFirst(null, ["zay"])).toEqual(["zay"]);
   });
 });
 
 describe("switched industries", () => {
+  it("every industry with niches is switched", () => {
+    expect([...SWITCHED_INDUSTRIES].sort()).toEqual([...new Set(NICHES.map((niche) => niche.industry))].sort());
+    expect(isIndustrySwitched("general")).toBe(false);
+    expect(CODE_TEMPLATES.filter((t) => isRetiredTemplate(t)).map((t) => t.key)).toEqual([]);
+  });
+
   it("every real switched industry meets the switch rules", () => {
     for (const industry of SWITCHED_INDUSTRIES) {
       expect(isIndustrySwitchable(industry), industry).toBe(true);
@@ -136,8 +190,8 @@ describe("switched industries", () => {
     expect(isIndustrySwitchable("mobile-accessories", [...FAKE.slice(0, 2), { niche: "earbuds", template: "wasla", status: "pending" }])).toBe(false);
     // An industry with no niche never switches.
     expect(isIndustrySwitchable("general", FAKE)).toBe(false);
-    // Today: earbuds is pending, so mobile accessories cannot switch.
-    expect(isIndustrySwitchable("mobile-accessories")).toBe(false);
+    // Earbuds shows Wasla's own content until its pack is built, so mobile accessories could switch.
+    expect(isIndustrySwitchable("mobile-accessories")).toBe(true);
   });
 
   it("the template rule: every template of a switched industry is in a row", () => {
@@ -156,12 +210,14 @@ describe("switched industries", () => {
     const order = NICHES.filter((n) => n.industry === "mobile-accessories").map((n) => n.id);
     expect(switchedNicheTemplates("mobile-accessories", FAKE_SWITCHED, FAKE).map((row) => row.niche)).toEqual(order);
     expect(switchedNicheTemplates("fashion", FAKE_SWITCHED, FAKE)).toEqual([]);
-    expect(switchedNicheTemplates("mobile-accessories")).toEqual([]);
+    expect(switchedNicheTemplates("mobile-accessories", new Set<string>())).toEqual([]);
+    expect(switchedNicheTemplates("mobile-accessories").map((row) => row.template)).toEqual(["volt", "kabl", "wasla"]);
   });
 
   it("a switched card is a ready row of a switched industry", () => {
     expect(switchedNicheCard("volt", FAKE_SWITCHED, FAKE)?.niche).toBe("phone-cases");
-    expect(switchedNicheCard("volt")).toBeUndefined();
+    expect(switchedNicheCard("volt", new Set<string>())).toBeUndefined();
+    expect(switchedNicheCard("volt")?.niche).toBe("phone-cases");
     expect(switchedNicheCard("fashion-luxe", FAKE_SWITCHED)).toBeUndefined();
     expect(switchedNicheCard("wasla", FAKE_SWITCHED, [{ niche: "earbuds", template: "wasla", status: "pending" }])).toBeUndefined();
   });

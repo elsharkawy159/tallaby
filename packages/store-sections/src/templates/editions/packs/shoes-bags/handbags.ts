@@ -75,7 +75,7 @@ const EMAIL = "hello@lamaa.example";
 
 export const HANDBAGS: Edition = {
   niche: NICHE,
-  looks: ["shanta", "fashion-luxe"],
+  looks: ["shanta"],
   priceBand: { min: 450, max: 3500 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -224,21 +224,4 @@ export const HANDBAGS: Edition = {
     },
   },
   productPage: { copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("شنط ممكن تعجبك", "Bags you may like") } },
-  perLook: {
-    // fashion-luxe keeps its wide hero and its shop the look until the shoes-and-bags switch takes it off: the dots are the
-    // demo's three newest products (the camel crossbody on the cognac barrel bag, the white mini crossbody on the cream pouch,
-    // the olive saddle bag on the olive case).
-    "fashion-luxe": {
-      photos: { look: { src: pexels(9595079, 1400), dots: [{ x: 57, y: 42 }, { x: 52, y: 55 }, { x: 40, y: 69 }] } },
-      copy: {
-        hero: { alt: L("شنطتين جلد هافان بإيد قصيرة على قاعدة بيضا جنب سعف نخل ناشف في فازة بيج", "Two cognac top-handle bags on a white plinth beside dried palm leaves in a beige vase") },
-        look: {
-          alt: L("تلات شنط صغيرة فوق بعض على دولاب معدن: هافان وكريمي وزيتي", "Three small bags stacked on a metal cabinet: cognac, cream and olive"),
-          eyebrow: L("ألوان الخريف", "Autumn colours"),
-          title: L("هافان وكريمي وزيتي", "Cognac, cream and olive"),
-          text: L("دوسي على أي نقطة في الصورة وشوفي أقرب شنطة ليها من تشكيلتنا.", "Tap a dot on the photo to see the closest bag from our range."),
-        },
-      },
-    },
-  },
 };

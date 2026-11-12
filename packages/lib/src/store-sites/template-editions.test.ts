@@ -154,3 +154,21 @@ describe("applyStoreTemplate with an editionId", () => {
     }
   });
 });
+
+// One template per niche (2026-11-12): 32 templates were deleted from code. A store keeps its own copy; anything that
+// still looks one up by key gets "not found" (galleries skip it, an install refuses it), never a crash.
+describe("templates deleted on 2026-11-12", () => {
+  const DELETED = ["kettan", "nour", "mobilia", "kohl", "pace", "drive", "gifts-bold", "electronics-warm"];
+
+  it("have no config, meta or public preview, and are not offered", async () => {
+    const cards = await listTemplateCards();
+    for (const key of DELETED) {
+      expect(codeTemplateConfig(key), key).toBeNull();
+      expect(await getTemplateMeta(key), key).toBeNull();
+      expect(await getPublicTemplate(key), key).toBeNull();
+      expect(await loadOfferedTemplateConfig(key), key).toBeNull();
+      expect(cards.some((card) => card.key === key), key).toBe(false);
+    }
+    expect(cards).toHaveLength(84);
+  });
+});

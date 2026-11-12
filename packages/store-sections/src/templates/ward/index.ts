@@ -193,7 +193,7 @@ export const WARD = libraryTemplate({
     "جمال كل يوم: بانرات متحركة، الخمسة، الريفيل بيشتغل إزاي وأسئلة. أربع صفحات جاهزة.",
     "Everyday beauty: a banner carousel, the five, how refills work and questions. Four ready pages.",
   ),
-  category: "beauty",
+  category: "health",
   style: ["classic", "warm"],
   sortOrder: 1030,
   palette: ["#fbf8f6", "#f2e9e6", "#f1c6c9", "#9b3d5a"],

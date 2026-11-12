@@ -16,29 +16,22 @@ import { STREETWEAR } from "./streetwear";
 import { KASR } from "./kasr";
 import { TECHHUB } from "./techhub";
 import { VOLT } from "./volt";
-import { ARCADE } from "./arcade";
 import { ARENA } from "./arena";
 import { PURE } from "./pure";
 import { BOTANICA } from "./botanica";
-import { DAILY } from "./daily";
 import { SIZZLE } from "./sizzle";
-import { HARVEST } from "./harvest";
 import { LOAF } from "./loaf";
 import { ROAST } from "./roast";
-import { SAKAN } from "./sakan";
 import { KARAT } from "./karat";
 import { FADDA } from "./fadda";
 import { BAMBINO } from "./bambino";
 import { DOODLE } from "./doodle";
 import { HEKAYA } from "./hekaya";
-import { PACE } from "./pace";
 import { STRIDE } from "./stride";
 import { CORE } from "./core";
 import { BASECAMP } from "./basecamp";
 import { GARAGE } from "./garage";
-import { DRIVE } from "./drive";
 import { MOTO } from "./moto";
-import { KETTAN } from "./kettan";
 import { ZAY } from "./zay";
 import { SITARA } from "./sitara";
 import { SHANTA } from "./shanta";
@@ -46,9 +39,7 @@ import { TASFYA } from "./tasfya";
 import { KABL } from "./kabl";
 import { ZAKI } from "./zaki";
 import { SAA } from "./saa";
-import { TANY } from "./tany";
 import { NADA } from "./nada";
-import { KOHL } from "./kohl";
 import { BARBER } from "./barber";
 import { MATBAKH } from "./matbakh";
 import { FOKHAR } from "./fokhar";
@@ -60,98 +51,78 @@ import { LAHMA } from "./lahma";
 import { HALAWA } from "./halawa";
 import { ATARA } from "./atara";
 import { BUNN } from "./bunn";
-import { MOBILIA } from "./mobilia";
 import { ZAREA } from "./zarea";
-import { NOUR } from "./nour";
 import { MAFRASH } from "./mafrash";
 import { ROKN } from "./rokn";
 import { ZAHRA } from "./zahra";
 import { SAAT } from "./saat";
-import { MAMA } from "./mama";
 import { YOGA } from "./yoga";
 import { KOORA } from "./koora";
 import { DARRAGA } from "./darraga";
 import { SABAHA } from "./sabaha";
-import { BOXING } from "./boxing";
 import { TYRE } from "./tyre";
 import { ZEINA } from "./zeina";
 import { KAHRABA } from "./kahraba";
 import { SAFAR } from "./safar";
 import { GARAGY } from "./garagy";
-import { BASHRA } from "./bashra";
 import { SUFRA } from "./sufra";
-import { SABAHO } from "./sabaho";
-import { DAR } from "./dar";
 import { HADAYA } from "./hadaya";
-import { REP } from "./rep";
-import { PITSTOP } from "./pitstop";
 import { GHORZA } from "./ghorza";
-import { MAWSEM } from "./mawsem";
 import { SHASHA } from "./shasha";
 import { WARD } from "./ward";
 import { BEITY } from "./beity";
 import { SOUQ } from "./souq";
-import { SALON } from "./salon";
 import { KHOLKHAL } from "./kholkhal";
 import { FARHA } from "./farha";
-import { NASHAT } from "./nashat";
-import { TARIK } from "./tarik";
-import { FURNITURE_BOLD } from "./furniture-bold";
 import { FURNITURE_LUXE } from "./furniture-luxe";
-import { FURNITURE_WARM } from "./furniture-warm";
 import { FASHION_BOLD } from "./fashion-bold";
 import { FASHION_LUXE } from "./fashion-luxe";
 import { FASHION_WARM } from "./fashion-warm";
-import { ELECTRONICS_BOLD } from "./electronics-bold";
 import { ELECTRONICS_LUXE } from "./electronics-luxe";
-import { ELECTRONICS_WARM } from "./electronics-warm";
 import { KIDS_BOLD } from "./kids-bold";
 import { KIDS_LUXE } from "./kids-luxe";
 import { KIDS_WARM } from "./kids-warm";
 import { BEAUTY_BOLD } from "./beauty-bold";
 import { BEAUTY_LUXE } from "./beauty-luxe";
-import { GROCERY_BOLD } from "./grocery-bold";
 import { GROCERY_LUXE } from "./grocery-luxe";
 import { GROCERY_WARM } from "./grocery-warm";
 import { PERFUMES_BOLD } from "./perfumes-bold";
-import { PERFUMES_LUXE } from "./perfumes-luxe";
-import { PERFUMES_WARM } from "./perfumes-warm";
 import { JEWELRY_LUXE } from "./jewelry-luxe";
 import { JEWELRY_WARM } from "./jewelry-warm";
-import { GIFTS_BOLD } from "./gifts-bold";
 import { GIFTS_LUXE } from "./gifts-luxe";
 import { GIFTS_WARM } from "./gifts-warm";
 import { SPORTS_BOLD } from "./sports-bold";
 import { SPORTS_LUXE } from "./sports-luxe";
-import { SPORTS_WARM } from "./sports-warm";
 import { WASLA } from "./wasla";
 import { VELLA } from "./vella";
-import { NASIG } from "./nasig";
 import { templateRefConfig } from "./ref-config";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
-/** Templates 02–110, built from section-library designs (`library-template.ts`), in registry order. */
-export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, BOTANICA, DAILY, SIZZLE, HARVEST, LOAF, ROAST, SAKAN, KARAT, FADDA, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO,
-  BASHRA, SUFRA, SABAHO, DAR, HADAYA, REP, PITSTOP, GHORZA,
-  KETTAN, ZAY, SITARA, SHANTA, TASFYA, KABL, ZAKI, SAA, TANY, NADA, KOHL, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, SAAT, MAMA, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
-  MAWSEM, SHASHA, WARD, BEITY, SOUQ, SALON, KHOLKHAL, FARHA, NASHAT, TARIK,
-  // Niche templates (2026-10-28): up to three per niche, with the 12-slot home (top bar to footer).
-  FURNITURE_LUXE, FURNITURE_BOLD, FURNITURE_WARM,
+/**
+ * Templates 02–110, built from section-library designs (`library-template.ts`), in registry order.
+ * One template per niche since 2026-11-12 (ROADMAP F-90, docs/systems/one-template-per-niche.md):
+ * every template here serves one row of `NICHE_TEMPLATES`; the 32 that served none were deleted
+ * (stores keep their own copies).
+ */
+export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [STREETWEAR, KASR, TECHHUB, VOLT, ARENA, PURE, BOTANICA, SIZZLE, LOAF, ROAST, KARAT, FADDA, BAMBINO, DOODLE, HEKAYA, STRIDE, CORE, BASECAMP, GARAGE, MOTO,
+  SUFRA, HADAYA, GHORZA,
+  ZAY, SITARA, SHANTA, TASFYA, KABL, ZAKI, SAA, NADA, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, BUNN, ZAREA, MAFRASH, ROKN, ZAHRA, SAAT, YOGA, KOORA, DARRAGA, SABAHA, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
+  SHASHA, WARD, BEITY, SOUQ, KHOLKHAL, FARHA,
+  // Niche templates (2026-10-28), with the 12-slot home (top bar to footer).
+  FURNITURE_LUXE,
   FASHION_LUXE, FASHION_BOLD, FASHION_WARM,
-  ELECTRONICS_LUXE, ELECTRONICS_BOLD, ELECTRONICS_WARM,
+  ELECTRONICS_LUXE,
   KIDS_LUXE, KIDS_BOLD, KIDS_WARM,
   BEAUTY_LUXE, BEAUTY_BOLD,
-  GROCERY_LUXE, GROCERY_BOLD, GROCERY_WARM,
-  PERFUMES_LUXE, PERFUMES_BOLD, PERFUMES_WARM,
+  GROCERY_LUXE, GROCERY_WARM,
+  PERFUMES_BOLD,
   JEWELRY_LUXE, JEWELRY_WARM,
-  GIFTS_LUXE, GIFTS_BOLD, GIFTS_WARM,
-  SPORTS_LUXE, SPORTS_BOLD, SPORTS_WARM,
+  GIFTS_LUXE, GIFTS_WARM,
+  SPORTS_LUXE, SPORTS_BOLD,
   // After the WoodMart "Accessories" demo's layout (2026-10-29).
   WASLA,
   // After the Void Fashion store on EasyOrders (2026-10-30).
   VELLA,
-  // After the layout of kotn.com (2026-11-08).
-  NASIG,
 ];
 
 export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ...LIBRARY_TEMPLATES];

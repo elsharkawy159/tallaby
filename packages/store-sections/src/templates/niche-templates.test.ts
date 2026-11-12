@@ -19,17 +19,19 @@ import type { TemplateDefinition } from "./types";
 
 /** Niche → its three template keys. */
 const NICHES: Record<string, readonly string[]> = {
-  furniture: ["furniture-luxe", "furniture-bold", "furniture-warm"],
+  // One template per niche (2026-11-12): furniture-bold, furniture-warm, electronics-bold, electronics-warm, grocery-bold,
+  // perfumes-luxe, perfumes-warm and gifts-bold were deleted; the groups keep the templates left.
+  furniture: ["furniture-luxe"],
   fashion: ["fashion-luxe", "fashion-bold", "fashion-warm"],
-  electronics: ["electronics-luxe", "electronics-bold", "electronics-warm"],
+  electronics: ["electronics-luxe"],
   kids: ["kids-luxe", "kids-bold", "kids-warm"],
   // beauty-warm removed by the owner (2026-11-03).
   beauty: ["beauty-luxe", "beauty-bold"],
-  grocery: ["grocery-luxe", "grocery-bold", "grocery-warm"],
-  perfumes: ["perfumes-luxe", "perfumes-bold", "perfumes-warm"],
+  grocery: ["grocery-luxe", "grocery-warm"],
+  perfumes: ["perfumes-bold"],
   // jewelry-bold deleted with the accessories switch (2026-11-12, one template per niche).
   jewelry: ["jewelry-luxe", "jewelry-warm"],
-  gifts: ["gifts-luxe", "gifts-bold", "gifts-warm"],
+  gifts: ["gifts-luxe", "gifts-warm"],
   // sports-bold left for shoes & bags as the sneakers template and sports-luxe for fashion as the sportswear template (one template per niche, 2026-11-12); sports-warm alone is no niche of three, and the sports wave picks its templates.
 };
 
@@ -113,9 +115,12 @@ describe.each(Object.entries(NICHES))("niche %s", (_niche, keys) => {
     ]) {
       expect(new Set(ids).size, ids.join(", ")).toBe(keys.length);
     }
-    // A niche of three offers a video hero and a carousel hero. Jewelry keeps two since jewelry-bold was deleted (one template per niche, 2026-11-12), with a video hero and no carousel.
+    // A niche of three offers a video hero and a carousel hero. The groups that lost templates with one template per
+    // niche (2026-11-12) keep what is left: no carousel rule for them.
     const heroes = pick((x) => libraryIdOf(x.t, homeOf(x)[0]!.id));
-    expect(heroes).toContain("hero-video");
-    if (_niche !== "jewelry") expect(heroes.some((id) => id?.startsWith("hero-carousel"))).toBe(true);
+    if (keys.length === 3) {
+      expect(heroes).toContain("hero-video");
+      expect(heroes.some((id) => id?.startsWith("hero-carousel"))).toBe(true);
+    }
   });
 });

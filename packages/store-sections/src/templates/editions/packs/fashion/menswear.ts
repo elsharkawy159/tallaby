@@ -72,7 +72,7 @@ const EMAIL = "hello@hendam.example";
 
 export const MENSWEAR: Edition = {
   niche: NICHE,
-  looks: ["zay", "fashion-luxe"],
+  looks: ["zay"],
   priceBand: { min: 450, max: 4500 },
   // The flat lays are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -226,101 +226,4 @@ export const MENSWEAR: Edition = {
     },
   },
   productPage: { copy: { reviews: L("آراء اللي لبسوه", "From people who wear it"), related: L("قطع تكمّل الطقم", "Pieces to finish the outfit") } },
-  // Fashion-luxe's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Waqar", natural
-  // fabrics and warm colours for work and occasions, newest first. Same pieces and prices; its own copy, photos
-  // and journey. The shop-the-look photo (dots on the three newest) stays the pack's: only this look shows it.
-  perLook: {
-    "fashion-luxe": {
-      store: {
-        name: L("وقار", "Waqar"),
-        description: L("قمصان وتريكو وبناطيل وجواكت رجالي للشغل والمناسبات.", "Men's shirts, knits, trousers and jackets for work and occasions."),
-      },
-      copy: {
-        announcement: [
-          L("تشكيلة الكتان والصوف وصلت", "Linen and wool pieces are in"),
-          L("التوصيل لكل محافظات مصر", "Delivery to every governorate"),
-          L("تبديل المقاس خلال ١٤ يوم", "Size exchange within 14 days"),
-        ],
-        labels: { about: L("عن وقار", "About Waqar") },
-        hero: {
-          alt: L("قمصان وجواكت كتان بني وخردلي ورمادي على عمود خشب", "Linen shirts and jackets in brown, mustard and grey on a wooden rail"),
-          eyebrow: L("الكتان والصوف", "Linen and wool"),
-          title: L("شياكة هادية للمواعيد المهمة", "Quiet tailoring for days that matter"),
-          line: L(
-            "قمصان وجواكت وبناطيل بخامات طبيعية، للشغل والفرح والعزومة.",
-            "Shirts, jackets and trousers in natural fabrics, for work, weddings and dinners.",
-          ),
-          cta: L("تسوّق الجديد", "Shop new in"),
-        },
-        categories: { title: L("لكل مناسبة قطعتها", "A piece for every occasion") },
-        products: {
-          primary: {
-            title: L("وصل حديثًا", "Just arrived"),
-            line: L("آخر القطع اللي نزلت في التشكيلة.", "The latest pieces in the range."),
-          },
-        },
-        // The two-tone band (folded tops in warm colours); its button goes to the about page.
-        story: {
-          alt: L("قطع قطن نبيتي وطوبي وبني وكريمي متطبّقة فوق بعض", "Folded cotton pieces in burgundy, rust, brown and cream"),
-          eyebrow: L("ألوان الخريف", "Autumn colours"),
-          title: L("ألوان دافية تتنسّق لوحدها", "Warm colours that match themselves"),
-          text: L(
-            "نبيتي وطوبي وبني وكريمي: كل لون في التشكيلة يمشي مع التاني، فتبدّل القطعة من غير ما الطقم يبوظ.",
-            "Burgundy, rust, brown and cream: every colour in the range works with the rest, so you can swap one piece without breaking the outfit.",
-          ),
-          cta: L("حكايتنا", "Our story"),
-        },
-        look: {
-          eyebrow: L("نسّقناها لك", "Styled for you"),
-          title: L("تلات طبقات لأيام البرد", "Three layers for cold days"),
-          text: L("دوس على أي نقطة وشوف القطعة اللي تشبهها من التشكيلة.", "Tap a dot to see the piece from the range that matches it."),
-        },
-        trust: [
-          { title: L("خامات طبيعية", "Natural fabrics"), line: L("الخامة مكتوبة في صفحة كل قطعة", "The fabric is named on every page") },
-          { title: L("تبديل المقاس", "Size exchange"), line: L("خلال ١٤ يوم من الاستلام", "Within 14 days of delivery") },
-          { title: L("نساعدك في التنسيق", "Help with styling"), line: L("قول لنا المناسبة ونرشح لك طقم", "Tell us the occasion and we suggest an outfit") },
-          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("كاش مع المندوب", "Cash to the courier") },
-        ],
-        newsletter: {
-          title: L("قطع المناسبات أول بأول", "Occasion pieces as they land"),
-          line: L("رسالة واحدة كل موسم: الجديد وإزاي تنسّقه.", "One letter a season: what is new and how to wear it."),
-        },
-        footer: { line: L("وقار: لبس رجالي للشغل والمناسبات.", "Waqar: menswear for work and occasions.") },
-        about: {
-          line: L("لبس رجالي هادي للشغل والمناسبات.", "Quiet menswear for work and occasions."),
-          alt: L("بلوفرات صوف بني مقلّمة فوق كرسي خشب قديم", "Striped brown wool knits on an old wooden stool"),
-          eyebrow: L("عن وقار", "About Waqar"),
-          title: L("لبس يليق بالمناسبة", "Clothes that suit the occasion"),
-          text: L(
-            "وقار بدأ من سؤال بيتكرر قبل كل فرح وكل مقابلة شغل: ألبس إيه ويبقى شيك من غير مبالغة؟ فاخترنا قطع بخامات طبيعية وألوان دافية، تتلبس بالجاكيت أو من غيره.",
-            "Waqar began with the question before every wedding and every interview: what looks smart without trying too hard? So we chose pieces in natural fabrics and warm colours, worn with a jacket or without.",
-          ),
-          more: L("ولو المقاس مش مظبوط عليك، بنبدّله خلال ١٤ يوم.", "And if the size is not right, we exchange it within 14 days."),
-          cta: L("تسوّق الجديد", "Shop new in"),
-        },
-        contact: {
-          title: L("كلّمنا", "Talk to us"),
-          line: L(`مصر الجديدة، القاهرة، ${PHONE_AR}، ${handle("hello@waqar.example")}`, `Heliopolis, Cairo | ${PHONE_EN} | hello@waqar.example`),
-          heading: L("عندك مناسبة؟ قول لنا ونرشح لك طقم", "Got an occasion? Tell us and we suggest an outfit"),
-        },
-        faq: {
-          line: L("الخامات والمقاسات والتوصيل.", "Fabrics, sizes and delivery."),
-          question: L("أعرف خامة القطعة منين؟", "How do I know what a piece is made of?"),
-          answer: L(
-            "خامة كل قطعة مكتوبة في صفحتها بالظبط: كتان، قطن، صوف، سويد صناعي أو جلد طبيعي. ومش بنسمّي خامة باسم مش اسمها.",
-            "Each page names the exact fabric: linen, cotton, wool, faux suede or genuine leather. We never call a fabric something it is not.",
-          ),
-        },
-      },
-      // Pexels, checked by eye 2026-11-11 (no people, hands or readable lettering): warm linen, wool and denim.
-      photos: {
-        hero: { wide: pexels(6461400, 1920), tall: pexels(30005364, 1200) },
-        tiles: [pexels(8967723, 1200), pexels(5603004, 1200), pexels(15130699, 1200), pexels(32427323, 1200)],
-        banner: pexels(8346214, 2000),
-        story: pexels(5602987, 1200),
-      },
-      // The newest pieces in the grid (zay shows best sellers), then jackets and shirts as rows.
-      journey: { primary: "newest", rows: [4, 1] },
-    },
-  },
 };

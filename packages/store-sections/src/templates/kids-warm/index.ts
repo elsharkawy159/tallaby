@@ -227,7 +227,7 @@ export const KIDS_WARM = libraryTemplate({
     "محل ألعاب عيلة بروح دافية: واجهة بنصين، كروت أقسام، لوحة هدايا وحكاية العيلة. لمحلات الألعاب والهدايا والدباديب.",
     "A warm family toy shop: a split hero, category cards, a gifts panel and the family story. For toy, gift and teddy-bear shops.",
   ),
-  category: "kids",
+  category: "pets",
   style: ["warm", "playful"],
   sortOrder: 1310,
   palette: ["#fbf3ec", "#f3e3d3", "#9c4a2f", "#e3a35f"],

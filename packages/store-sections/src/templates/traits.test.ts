@@ -43,8 +43,8 @@ describe("tone and needs", () => {
   });
 
   it("reads dark homes as dark", () => {
-    expect(templateTone(getCodeTemplate("arcade")!)).toBe("dark");
-    expect(templateTone(getCodeTemplate("nour")!)).toBe("dark");
+    // arcade and nour were deleted on 2026-11-12 (one template per niche); arena is the dark home left.
+    expect(templateTone(getCodeTemplate("arena")!)).toBe("dark");
     expect(templateTone(getCodeTemplate("tallaby-classic")!)).toBe("light");
   });
 

@@ -177,7 +177,7 @@ export const NADA = libraryTemplate({
     "عناية بسيطة ونضيفة: روتين من ٥ منتجات والريفيل بيشتغل إزاي. أربع صفحات جاهزة.",
     "Clean, minimal skincare: a five-product routine and how refills work. Four ready pages.",
   ),
-  category: "beauty",
+  category: "health",
   style: ["minimal"],
   sortOrder: 600,
   palette: ["#fbfbf9", "#eef1ec", "#dfe9d5", "#3e6b57"],

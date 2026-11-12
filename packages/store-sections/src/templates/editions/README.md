@@ -174,7 +174,7 @@ No look requires `reviews`: a pack must not invent buyer quotes. Without them th
 | `zay` | home, `testimonials-chat` | `reviews` (3 items) and `custom.reviews-reply` | the home ends on the best-seller carousel |
 | `streetwear` | about page, `testimonials-classic` | `reviews` (3 items) | the page is its header and the story |
 | `volt` | home, `testimonials-chat` | `reviews` (3 items) and `custom.reviews-reply` | as before |
-| `kabl`, `nour` | home | `reviews` (3 items) | as before |
+| `kabl` | home | `reviews` (3 items) | as before |
 
 In none of them does dropping the section leave two product sections touching. `fashion-luxe`, `vella`, `jewelry-luxe`, `saat` (v4), `zaki` and `arena` have no reviews section.
 

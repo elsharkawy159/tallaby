@@ -3,7 +3,7 @@ import { EDITIONS } from "@workspace/store-sections/templates";
 import { TSHIRTS } from "../../../../../packages/store-sections/src/templates/editions/tshirts.fixture";
 import { parseBuilderState, type BuilderFileRow, type BuilderState } from "./builder.dto";
 import { applyEditReading, applyIntakeReading, intakeWithoutModel, type IntakeReading } from "./builder-intake.lib";
-import { builderNiche, builderNicheInput, installEdition, suggestionEdition, suggestionEditionChoice } from "./builder-niche.lib";
+import { builderNiche, builderNicheInput, installEdition, installTarget, suggestionEdition, suggestionEditionChoice } from "./builder-niche.lib";
 
 /**
  * The builder's niche (ROADMAP F-90): computed in code from what the seller
@@ -168,6 +168,19 @@ describe("suggestionEdition: only a valid edition gets through", () => {
     for (const niche of without) {
       expect(suggestionEdition("fashion-luxe", niche)).toBeNull();
       expect(installEdition({ templateKey: "fashion-luxe", nicheId: niche })).toEqual({});
+    }
+  });
+});
+
+describe("installTarget: a deleted template falls back to Tallaby Classic", () => {
+  it("installs the chosen template with its edition while it is in the catalog", () => {
+    expect(installTarget({ templateKey: "fashion-luxe", nicheId: "tshirts" }, PACKS)).toEqual({ templateKey: "fashion-luxe", editionId: "tshirts" });
+    expect(installTarget({ templateKey: "kasr", nicheId: null }, PACKS)).toEqual({ templateKey: "kasr" });
+  });
+
+  it("installs Tallaby Classic, with no edition, for a key deleted on 2026-11-12, an unknown key or none", () => {
+    for (const key of ["nour", "mobilia", "kohl", "no-such-template", "", null]) {
+      expect(installTarget({ templateKey: key, nicheId: "tshirts" }, PACKS), String(key)).toEqual({ templateKey: "tallaby-classic" });
     }
   });
 });

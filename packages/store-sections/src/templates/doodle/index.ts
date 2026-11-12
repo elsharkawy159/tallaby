@@ -176,7 +176,7 @@ export const DOODLE = libraryTemplate({
     "ألعاب خشب مرحة: افتتاحية بنتو، المفضلة عند الأطفال وليه خشب. أربع صفحات جاهزة.",
     "Playful wooden toys: a bento opening, kids’ favourites and why wood. Four ready pages.",
   ),
-  category: "kids",
+  category: "books",
   style: ["playful"],
   sortOrder: 300,
   palette: ["#f1faee", "#dceee6", "#ffd166", "#d62839"],

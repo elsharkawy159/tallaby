@@ -166,7 +166,7 @@ export const SAFAR = libraryTemplate({
     "أدوات رحلات وتخييم: بوستر الرحلة، أدوات جديدة، أيام التوصيل وآراء من الطريق. أربع صفحات جاهزة.",
     "Road trip and camping gear: a trip poster, fresh gear, delivery days and reviews from the road. Four ready pages.",
   ),
-  category: "auto",
+  category: "shoes-bags",
   style: ["warm"],
   sortOrder: 990,
   palette: ["#f3efe6", "#e5dccb", "#fcd34d", "#b45309"],

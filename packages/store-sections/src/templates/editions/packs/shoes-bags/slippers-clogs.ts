@@ -170,7 +170,7 @@ const HANDLE = handle("@zannouba");
 
 export const SLIPPERS_CLOGS: Edition = {
   niche: NICHE,
-  looks: ["tasfya", "streetwear", "zay"],
+  looks: ["tasfya"],
   priceBand: { min: 150, max: 1200 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -352,110 +352,6 @@ export const SLIPPERS_CLOGS: Edition = {
         { icon: "chat", title: L("مساعدة في المقاس", "Help with sizing"), text: L("ابعتلنا طول رجلك على واتساب", "Send us your foot length on WhatsApp") },
         { icon: "package", title: L("ادفع عند الاستلام", "Pay on delivery"), text: L("كاش مع المندوب", "Cash to the courier") },
       ],
-    },
-  },
-  // Zay's own shop (owner, 2026-11-11: two looks of one niche must not look duplicated): "Rahtak" (Egyptian for
-  // "your comfort"), a calm shop for the pair you wear all day at home and around the block, where streetwear's
-  // Zannouba is beach and summer. Same pairs and prices; its own copy and photos. Zay's hero collage keeps the
-  // pack's three house-slipper photos (only zay shows them), with its own captions.
-  perLook: {
-    // Streetwear keeps its sand flat lay hero until the shoes-and-bags switch takes it off.
-    streetwear: {
-      photos: { hero: { wide: pexels(4996730, 1920), tall: pexels(4996974, 1200) } },
-      copy: { hero: { alt: L("برنيطة قش وشبشب صباع مخطط ونجمة بحر على رملة فاتحة", "A straw hat, striped flip-flops and a starfish on pale sand") } },
-    },
-    zay: {
-      store: {
-        name: L("راحتك", "Rahtak"),
-        description: L("شباشب بيتي وكلوج وسلايد للبيت والمشاوير القريبة.", "Home slippers, clogs and slides for the house and short trips out."),
-      },
-      copy: {
-        labels: { search: L("دوّر على شبشب بيتي، كلوج، سلايد…", "Search home slippers, clogs, slides…") },
-        hero: {
-          alt: L("سلايد رمادي على أرضية خشب جنب كرسي خوص في أوضة فاتحة", "Grey slides on a wooden floor by a cane chair in a light room"),
-          eyebrow: L("شبشب كل يوم", "The everyday pair"),
-          title: L("من الصبح لآخر الليل", "From morning to late night"),
-          line: L(
-            "شبشب للبيت، وكلوج للمشوار، وسلايد للحمام: نعل طري يريّح رجلك طول اليوم.",
-            "A pair for the house, clogs for errands, slides for the bathroom: soft soles that rest your feet all day.",
-          ),
-          cta: L("اختار شبشبك", "Find your pair"),
-        },
-        // Zay draws no announcement bar, story, promises or newsletter; they are written so the store reads as one shop anywhere it is shown.
-        announcement: [
-          L("نعل ما بيزحلقش مكتوب لكل موديل", "Every page names a non-slip sole"),
-          L("التوصيل لكل محافظات مصر", "Delivery to every governorate"),
-          L("تبديل المقاس خلال ١٤ يوم", "Size exchange within 14 days"),
-        ],
-        categories: { title: L("شبشب لكل ركن", "A pair for every corner") },
-        products: { primary: { title: L("الشباشب حسب يومك", "Pairs for your day"), line: L("اختار حسب المكان اللي هتلبسه فيه.", "Choose by where you will wear it.") } },
-        story: {
-          alt: L("شبشب بيتي أبيض على أرضية خشب جنب ستارة، في نور الشمس", "White home slippers on a wooden floor by a curtain, in sunlight"),
-          eyebrow: L("النعل أول حاجة", "The sole comes first"),
-          title: L("خطوة طرية على أي أرضية", "A soft step on any floor"),
-          text: L(
-            "بنقلب كل شبشب ونبص على نعله قبل ما نختاره: طري تحت الكعب، ومحزّز عشان ما يزحلقش على السيراميك.",
-            "We turn every pair over and check the sole before we choose it: soft under the heel, and ridged so it holds on tiles.",
-          ),
-          cta: L("اعرف عننا", "About us"),
-        },
-        rows: [{ title: L("اللي بيتلبس كل يوم", "The ones worn every day") }],
-        trust: [
-          { title: L("نعل ما بيزحلقش", "Non-slip soles"), line: L("مكتوب في صفحة كل موديل", "Named on every page") },
-          { title: L("تبديل المقاس", "Size exchange"), line: L("خلال ١٤ يوم من الاستلام", "Within 14 days of delivery") },
-          { title: L("التوصيل لكل مصر", "Delivery across Egypt"), line: L("لحد باب البيت", "To your front door") },
-          { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("كاش مع المندوب", "Cash to the courier") },
-        ],
-        newsletter: {
-          title: L("موديلات البيت الجديدة", "New pairs for home"),
-          line: L("رسالة لما ينزل شبشب جديد، مش أكتر.", "A letter when a new pair arrives, nothing more."),
-        },
-        footer: { line: L("على راحتك", "Take it easy") },
-        about: {
-          line: L("شباشب مريحة للبيت والمشاوير القريبة.", "Comfortable pairs for home and short trips out."),
-          alt: L("شبشب بيتي أبيض على أرضية خشب جنب ستارة، في نور الشمس", "White home slippers on a wooden floor by a curtain, in sunlight"),
-          eyebrow: L("عن راحتك", "About Rahtak"),
-          title: L("الشبشب اللي بتلبسه أكتر من الجزمة", "The pair you wear more than shoes"),
-          text: L(
-            "راحتك بدأت من ملاحظة بسيطة: بنقضي في الشبشب ساعات أكتر من أي جزمة، ومع ذلك بنشتريه على السريع. فبنختار كل موديل على حسب نعله: طري تحت الكعب، وما بيزحلقش على السيراميك.",
-            "Rahtak began with a simple thought: we spend more hours in slippers than in any shoe, yet we buy them in a hurry. So we choose every pair for its sole: soft under the heel, and no slipping on tiles.",
-          ),
-          more: L("ولو المقاس طلع واسع أو ضيق، بنبدّله خلال ١٤ يوم.", "And if the size runs big or small, we exchange it within 14 days."),
-          cta: L("تسوّق الشباشب", "Shop the pairs"),
-        },
-        contact: {
-          title: L("كلّمنا", "Talk to us"),
-          line: L(`مدينة نصر، القاهرة، ${PHONE_AR}، ${handle("hello@rahtak.example")}`, `Nasr City, Cairo | ${PHONE_EN} | hello@rahtak.example`),
-          heading: L("عايز شبشب ما يزحلقش؟ اسألنا", "Want a pair that does not slip? Ask us"),
-        },
-        faq: {
-          line: L("النعل والمقاسات والتبديل.", "Soles, sizes and exchanges."),
-          question: L("الشبشب بيزحلق على السيراميك؟", "Do the pairs slip on tiles?"),
-          answer: L(
-            "نعل كل موديل مكتوب في صفحته: الكاوتش المحزّز ما بيزحلقش على السيراميك المبلول، والفرو والتريكو للأرضيات الناشفة. ولو محتار ابعت لنا صورة أرضية البيت.",
-            "Each page names the sole: ridged rubber holds on wet tiles, fur and knit are for dry floors. Not sure? Send us a photo of your floor.",
-          ),
-        },
-        custom: {
-          "store-short": L("راحتك", "Rahtak"),
-          "hero-piece-1": L("على الباب", "By the door"),
-          "hero-piece-2": L("نعل طري", "Soft soles"),
-          "hero-piece-3": L("قهوة الصبح", "Morning coffee"),
-          "compare-row-1": L("نعل ما بيزحلقش مكتوب لكل موديل", "Non-slip sole named for every pair"),
-          "compare-row-2": L("الدفع عند الاستلام", "Cash on delivery"),
-          "compare-row-3": L("مقاسات من ٣٦ لـ ٤٥ لكل موديل", "Sizes 36 to 45 for every pair"),
-        },
-      },
-      // Pexels, checked by eye at 1600px 2026-11-11 (no people, feet, hands, brand marks or lettering): pairs at
-      // home on floors, mats and tiles, cool and calm next to streetwear's sand and sea.
-      photos: {
-        hero: { wide: pexels(5794015, 1920), tall: pexels(17575814, 1200) },
-        // Clogs (a blue and yellow rubber clog on grass, a plain rivet), slides (olive slides on a patterned tile
-        // floor and a bath mat), flip-flops (blue print flip-flops in grass), home slippers (four leather pairs on a mat).
-        tiles: [pexels(1033774, 1200), pexels(4515022, 1200), pexels(34505160, 1200), pexels(4474051, 1200)],
-        banner: pexels(33475834, 2000),
-        story: pexels(10095862, 1200),
-      },
     },
   },
 };

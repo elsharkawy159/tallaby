@@ -196,10 +196,12 @@ describe("with the real catalog", { timeout: 30_000 }, () => {
     for (const p of picks) expect(getCodeTemplate(p.key)!.category).toBe("fashion");
   });
 
-  it("an industry with few templates falls back to related ones", () => {
+  it("pets, which had no template, leads with its own niche templates (one template per niche, 2026-11-12)", () => {
     const picks = scoreTemplates({ industryId: "pets", styleWords: [], productCount: 10, categoryCount: 3, seed: "store-2" });
     expect(picks).toHaveLength(3);
-    for (const p of picks) expect(["home", "food", "kids", "general"]).toContain(getCodeTemplate(p.key)!.category);
+    expect(getCodeTemplate(picks[0]!.key)!.category).toBe("pets");
+    // Style diversity may still bring in a related industry.
+    for (const p of picks) expect(["pets", "home", "food", "kids", "general"]).toContain(getCodeTemplate(p.key)!.category);
   });
 
   it("show more walks every template once", () => {

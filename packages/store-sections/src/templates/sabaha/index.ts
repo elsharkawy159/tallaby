@@ -186,7 +186,7 @@ export const SABAHA = libraryTemplate({
     "سباحة وبحر: حمام سباحة بعرض الشاشة، الأقسام، الرف، بنوصل للبحر وآراء الصيف. أربع صفحات جاهزة.",
     "Swim and beach: a full-width pool, categories, the shelf, delivery to the beach and summer reviews. Four ready pages.",
   ),
-  category: "sports",
+  category: "pets",
   style: ["playful"],
   sortOrder: 940,
   palette: ["#f4fbfc", "#dff3f6", "#fde68a", "#0e7490"],

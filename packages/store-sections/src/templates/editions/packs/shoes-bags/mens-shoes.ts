@@ -78,7 +78,7 @@ const EMAIL = "hello@qaleb.example";
 
 export const MENS_SHOES: Edition = {
   niche: NICHE,
-  looks: ["ghorza", "zay"],
+  looks: ["ghorza"],
   priceBand: { min: 600, max: 4200 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },

@@ -22,25 +22,26 @@ const PAGE_PRODUCT = { ...DEMO_PRODUCT, contentHtml: "<h3>المواصفات</h3
 
 const SEEDS: Record<string, readonly string[]> = {
   // 0074–0083 seeded v1 by category; 0084 (v2, mobile header padding) also seeds Classic and Atelier first.
+  // Templates deleted since (2026-11-12, one template per niche) are left out of each list.
   "0084_mobile_header_padding.sql": [
-    ...["streetwear", "kasr", "techhub", "volt", "arcade", "arena", "pure", "botanica"],
-    ...["daily", "sizzle", "harvest", "loaf", "roast", "sakan"],
-    ...["karat", "fadda", "bambino", "doodle", "hekaya", "pace", "stride", "core", "basecamp"],
-    ...["garage", "drive", "moto"],
+    ...["streetwear", "kasr", "techhub", "volt", "arena", "pure", "botanica"],
+    ...["sizzle", "loaf", "roast"],
+    ...["karat", "fadda", "bambino", "doodle", "hekaya", "stride", "core", "basecamp"],
+    ...["garage", "moto"],
   ],
   // Templates 49–100 (v1), one migration for all ten store categories.
   "0090_library_templates_49_100.sql": [
-    ...["kettan", "zay", "sitara", "shanta", "tasfya", "kabl", "zaki", "saa", "tany"],
-    ...["nada", "kohl", "barber", "matbakh", "fokhar", "tawla", "tanzim", "qahwa", "khodar"],
-    ...["lahma", "halawa", "atara", "bunn", "mobilia", "zarea", "nour", "mafrash", "rokn", "zahra"],
+    ...["zay", "sitara", "shanta", "tasfya", "kabl", "zaki", "saa"],
+    ...["nada", "barber", "matbakh", "fokhar", "tawla", "tanzim", "qahwa", "khodar"],
+    ...["lahma", "halawa", "atara", "bunn", "zarea", "mafrash", "rokn", "zahra"],
     // lulu and mahr were deleted with the accessories switch (2026-11-12).
-    ...["saat", "mama", "yoga", "koora"],
-    ...["darraga", "sabaha", "boxing", "tyre", "zeina", "kahraba", "safar", "garagy"],
+    ...["saat", "yoga", "koora"],
+    ...["darraga", "sabaha", "tyre", "zeina", "kahraba", "safar", "garagy"],
   ],
   // Templates 39–48 and 101–110 (v1; 101–110 open with the carousel hero).
   "0095_library_templates_39_48_101_110.sql": [
-    ...["bashra", "sufra", "sabaho", "dar", "hadaya", "rep", "pitstop", "ghorza"],
-    ...["mawsem", "shasha", "ward", "beity", "souq", "salon", "kholkhal", "farha", "nashat", "tarik"],
+    ...["sufra", "hadaya", "ghorza"],
+    ...["shasha", "ward", "beity", "souq", "kholkhal", "farha"],
   ],
 };
 

@@ -230,7 +230,7 @@ export const KIDS_LUXE = libraryTemplate({
     "بوتيك ألعاب هادي: فيديو ألعاب خشب، أقسام بخطوط رفيعة وأربع صفوف للأقسام. لمحلات ألعاب المونتيسوري والهدايا الراقية.",
     "A calm toy boutique: a wooden-toy video, hairline category cells and four category rows. For Montessori and premium gift toy shops.",
   ),
-  category: "kids",
+  category: "books",
   style: ["luxe", "minimal"],
   sortOrder: 1290,
   palette: ["#f6f2ea", "#ebe4d6", "#2f3a2e", "#cfae8a"],

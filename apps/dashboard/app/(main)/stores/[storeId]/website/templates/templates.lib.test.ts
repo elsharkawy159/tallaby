@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CODE_TEMPLATES } from "@workspace/store-sections/templates";
+import { CODE_TEMPLATES, NICHES, NICHE_TEMPLATES } from "@workspace/store-sections/templates";
 import {
   cardEdition,
   categoryOrder,
@@ -194,22 +194,23 @@ describe("cardEdition", () => {
 });
 
 describe("one template per niche (ROADMAP F-90)", () => {
-  // These pass their own switched set (the real one holds accessories). Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
+  // These pass their own switched set (the real one holds every industry since 2026-11-12). Real rows: phone-cases → volt and
+  // chargers-cables → kabl are ready, earbuds → wasla shows its own content; "old-cases" is a made-up template that serves no niche.
   const SWITCHED = new Set(["mobile-accessories"]);
   const gallery = [
     { key: "volt", category: "mobile-accessories", sortOrder: 60 },
     { key: "kabl", category: "mobile-accessories", sortOrder: 70 },
-    { key: "wasla", category: "mobile-accessories", sortOrder: 80 },
+    { key: "old-cases", category: "mobile-accessories", sortOrder: 80 },
     { key: "zaki", category: "electronics", sortOrder: 50 },
     { key: "arena", category: "electronics", sortOrder: 40 },
-    { key: "nour", category: "home", sortOrder: 30 },
+    { key: "rokn", category: "home", sortOrder: 30 },
     { key: "tallaby-classic", category: "general", sortOrder: 1 },
   ];
   const keys = new Set(gallery.map((tpl) => tpl.key));
 
   it("a switched industry lists one card per ready niche, in niche order, and hides its other templates", () => {
     const visible = galleryTemplates(gallery, SWITCHED);
-    expect(visible.map((tpl) => tpl.key)).toEqual(["volt", "kabl", "zaki", "arena", "nour", "tallaby-classic"]);
+    expect(visible.map((tpl) => tpl.key)).toEqual(["volt", "kabl", "zaki", "arena", "rokn", "tallaby-classic"]);
     const filter = galleryNiches("mobile-accessories", keys, SWITCHED);
     expect(filter.switched).toBe(true);
     expect(filter.niches.map((n) => n.id)).toEqual(["phone-cases", "chargers-cables"]);
@@ -235,18 +236,21 @@ describe("one template per niche (ROADMAP F-90)", () => {
   });
 
   it("an unswitched industry behaves as before, with the ready niche template first on its niche tab", () => {
-    expect(galleryTemplates(gallery).map((tpl) => tpl.key)).toEqual(gallery.map((tpl) => tpl.key));
-    expect(nicheCards(["volt", "kabl"])).toEqual({});
-    const filter = galleryNiches("electronics", keys);
+    const NONE = new Set<string>();
+    // Every industry is switched for real: only the made-up template is hidden.
+    expect(galleryTemplates(gallery).map((tpl) => tpl.key)).toEqual(gallery.map((tpl) => tpl.key).filter((key) => key !== "old-cases"));
+    expect(galleryTemplates(gallery, NONE).map((tpl) => tpl.key)).toEqual(gallery.map((tpl) => tpl.key));
+    expect(nicheCards(["volt", "kabl"], NONE)).toEqual({});
+    const filter = galleryNiches("electronics", keys, NONE);
     expect(filter.switched).toBe(false);
     expect(filter.tabLooks).toBeNull();
     expect(filter.niches.map((n) => n.id)).toEqual(expect.arrayContaining(["pc-gaming", "lighting-smart-home"]));
-    // lighting-smart-home: the pack lists nour first; its niche template (zaki, ready) leads.
-    expect(filter.looksOf("lighting-smart-home")).toEqual(["zaki", "nour"]);
+    // lighting-smart-home: one pack, one template (nour was deleted on 2026-11-12).
+    expect(filter.looksOf("lighting-smart-home")).toEqual(["zaki"]);
     expect(filter.looksOf(null)).toEqual([]);
     expect(galleryNiches("all", keys).niches).toEqual([]);
-    // The same tab, switched: its ready niche cards in the gallery, in niche order (pc-gaming, then lighting).
-    expect(galleryNiches("electronics", keys, new Set(["electronics"])).tabLooks).toEqual(["arena", "zaki"]);
+    // The same tab, switched: its niche cards in the gallery, in niche order (pc-gaming, then lighting).
+    expect(galleryNiches("electronics", keys).tabLooks).toEqual(["arena", "zaki"]);
   });
 });
 
@@ -278,6 +282,40 @@ describe("accessories, switched to one template per niche (ROADMAP F-90, 2026-11
     // The deleted templates are not in the gallery.
     for (const key of ["lulu", "mahr", "jewelry-bold"]) expect(keys.has(key), key).toBe(false);
     expect(gallery.filter((tpl) => tpl.category === "jewelry").map((tpl) => tpl.key).sort()).toEqual([...LOOKS].sort());
+  });
+});
+
+describe("every industry switched to one template per niche (ROADMAP F-90, 2026-11-12)", () => {
+  // The real catalog and the real switched set.
+  const gallery = galleryTemplates(CODE_TEMPLATES.map((t) => ({ key: t.key, category: t.category })));
+  const keys = new Set(gallery.map((tpl) => tpl.key));
+
+  it("shows 83 niche cards and Tallaby Classic, nothing else", () => {
+    expect(gallery).toHaveLength(84);
+    expect(gallery.filter((tpl) => tpl.key !== "tallaby-classic").map((tpl) => tpl.key).sort()).toEqual(NICHE_TEMPLATES.map((row) => row.template).sort());
+    for (const key of ["kettan", "nour", "mobilia", "kohl", "pace", "drive", "gifts-bold"]) expect(keys.has(key), key).toBe(false);
+  });
+
+  it("every industry tab lists one card per niche, in niche order, with the niche's name", () => {
+    for (const industry of new Set(NICHES.map((niche) => niche.industry))) {
+      const niches = NICHES.filter((niche) => niche.industry === industry);
+      const filter = galleryNiches(industry, keys);
+      expect(filter.switched, industry).toBe(true);
+      expect(filter.niches.map((n) => n.id), industry).toEqual(niches.map((n) => n.id));
+      const looks = niches.map((niche) => NICHE_TEMPLATES.find((row) => row.niche === niche.id)!.template);
+      expect(filter.tabLooks, industry).toEqual(looks);
+      const all = pageTemplates(gallery, { page: 1, category: industry, nicheLooks: filter.looksOf(null), tabLooks: filter.tabLooks, pageSize: 100 });
+      expect(all.items.map((tpl) => tpl.key), industry).toEqual(looks);
+      const cards = nicheCards(looks);
+      for (const [i, key] of looks.entries()) expect(cards[key]?.niche, key).toBe(niches[i]!.id);
+    }
+  });
+
+  it("a card with no pack yet shows its template's own content (no edition)", () => {
+    expect(nicheCards(["pure", "wasla"])).toEqual({
+      pure: { niche: "skincare", name: expect.objectContaining({ en: "Skincare" }), edition: null },
+      wasla: { niche: "earbuds", name: expect.objectContaining({ en: expect.any(String) }), edition: null },
+    });
   });
 });
 

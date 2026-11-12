@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CODE_TEMPLATES } from "../catalog";
 import { normalizeText } from "./match";
 import { getNiche, NICHE_INDUSTRY_NAMES, NICHE_LOOKS, NICHES, nichesOfIndustry } from "./niches";
+import { nicheTemplateFor } from "./niche-templates";
 
 /**
  * Keywords listed in more than one niche on purpose (normalised spelling →
@@ -72,17 +73,20 @@ describe("niche list", () => {
     expect(shared).toEqual(SHARED_KEYWORDS);
   });
 
-  it("picks only looks that exist, two or three per niche, best first", () => {
+  it("picks only looks that exist, one to three per niche, the niche's template first", () => {
     const keys = new Set(CODE_TEMPLATES.map((template) => template.key));
     expect(Object.keys(NICHE_LOOKS).sort()).toEqual(NICHES.map((niche) => niche.id).sort());
     for (const [niche, looks] of Object.entries(NICHE_LOOKS)) {
-      expect(looks.length, niche).toBeGreaterThanOrEqual(2);
+      expect(looks.length, niche).toBeGreaterThanOrEqual(1);
+      // One template per niche (2026-11-12): the niche's own template leads its looks.
+      expect(looks[0], niche).toBe(nicheTemplateFor(niche)?.template);
       expect(looks.length, niche).toBeLessThanOrEqual(3);
       expect(new Set(looks).size, niche).toBe(looks.length);
       for (const look of looks) expect(keys.has(look), `${niche}: ${look}`).toBe(true);
     }
     expect(NICHE_LOOKS.dresses).toEqual(["fashion-luxe", "vella", "kasr"]);
-    // 197 editions in the plan (§2.2 totals); mahr and jewelry-bold left with the accessories switch (2026-11-12).
-    expect(Object.values(NICHE_LOOKS).reduce((sum, looks) => sum + looks.length, 0)).toBe(197);
+    // 197 editions in the plan (§2.2 totals); mahr and jewelry-bold left with the accessories switch, and 32 more
+    // templates with the switch of every other industry (2026-11-12): 172 looks left.
+    expect(Object.values(NICHE_LOOKS).reduce((sum, looks) => sum + looks.length, 0)).toBe(172);
   });
 });

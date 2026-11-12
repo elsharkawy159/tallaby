@@ -166,7 +166,7 @@ export const WASLA = libraryTemplate({
     "متجر إكسسوارات نضيف ومنظم: سلايدر بلوح فاتح، دوائر أقسام، منتجات بتبويبات وألواح عروض رمادي. لمتاجر الجرابات والشواحن والكابلات.",
     "A clean, tidy accessories store: a light panel slider, category circles, tabbed products and grey offer panels. For case, charger and cable shops.",
   ),
-  category: "electronics",
+  category: "mobile-accessories",
   style: ["minimal"],
   sortOrder: 1500,
   palette: ["#ffffff", "#f3f3f3", "#2e6bc6", "#242424"],

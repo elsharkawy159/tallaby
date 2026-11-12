@@ -95,7 +95,7 @@ const HANDLE = handle("@tamreen");
 
 export const SPORTSWEAR: Edition = {
   niche: NICHE,
-  looks: ["sports-luxe", "streetwear"],
+  looks: ["sports-luxe"],
   priceBand: { min: 350, max: 1800 },
   // The flat lays are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -272,19 +272,5 @@ export const SPORTSWEAR: Edition = {
   },
   // Both looks show the newest products first.
   journey: { primary: "newest" },
-  perLook: {
-    // Streetwear keeps its own hero, the gym still life (the fabric is Madar's).
-    streetwear: {
-      photos: { hero: { wide: pexels(8032746, 1920), tall: pexels(5274793, 1200) } },
-      copy: {
-        hero: {
-          alt: L(
-            "مرتبة تمرين سودا ونط حبل وزجاجة مية ودمبلز على أرضية خشب",
-            "A black exercise mat, a jump rope, a water bottle and dumbbells on a wooden floor",
-          ),
-        },
-      },
-    },
-  },
   productPage: { copy: { reviews: L("آراء اللي اتمرّنوا بيه", "From people who train in it"), related: L("قطع ممكن تعجبك", "Pieces you may like") } },
 };

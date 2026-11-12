@@ -27,6 +27,24 @@ export const redirects = [
     { source: `/templates/${id}`, destination: "/templates?category=jw", permanent: false, has: [PLATFORM_HOST] },
     { source: `/en/templates/${id}`, destination: "/en/templates?category=jw", permanent: false, has: [PLATFORM_HOST] },
   ]),
+  // Templates deleted when every other industry switched to one template per
+  // niche (ROADMAP F-90, 2026-11-12): each page goes to its old category's gallery.
+  ...Object.entries({
+    fa: ["kettan", "nasig", "mawsem"],
+    el: ["arcade", "tany", "electronics-bold", "electronics-warm"],
+    be: ["bashra", "kohl", "perfumes-luxe", "perfumes-warm"],
+    ho: ["sakan", "dar", "mobilia", "nour", "salon", "furniture-bold", "furniture-warm", "daily"],
+    fo: ["harvest", "sabaho", "grocery-bold"],
+    ki: ["mama"],
+    sp: ["pace", "rep", "boxing", "nashat", "sports-warm"],
+    au: ["drive", "pitstop", "tarik"],
+    ge: ["gifts-bold"],
+  }).flatMap(([category, ids]) =>
+    ids.flatMap((id) => [
+      { source: `/templates/${id}`, destination: `/templates?category=${category}`, permanent: false, has: [PLATFORM_HOST] },
+      { source: `/en/templates/${id}`, destination: `/en/templates?category=${category}`, permanent: false, has: [PLATFORM_HOST] },
+    ]),
+  ),
 
   // Seller onboarding lives in the dashboard.
   {

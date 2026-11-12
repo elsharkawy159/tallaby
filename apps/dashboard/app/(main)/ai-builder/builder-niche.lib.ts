@@ -1,4 +1,4 @@
-import { editionOnLook, getNiche, matchNiche, type Edition, type MatchNicheInput } from "@workspace/store-sections/templates";
+import { DEFAULT_TEMPLATE, editionOnLook, getCodeTemplate, getNiche, matchNiche, type Edition, type MatchNicheInput } from "@workspace/store-sections/templates";
 import { OTHER_INDUSTRY, type BuilderState } from "./builder.dto";
 
 /**
@@ -61,4 +61,15 @@ export function suggestionEditionChoice(templateKey: string, nicheId: unknown, e
 export function installEdition(state: Pick<BuilderState, "templateKey" | "nicheId">, editions?: readonly Edition[]): { editionId?: string } {
   const editionId = suggestionEdition(state.templateKey, state.nicheId, editions);
   return editionId ? { editionId } : {};
+}
+
+/**
+ * What a build installs: the chosen template with its edition, or Tallaby
+ * Classic (no edition) when the chosen template is no longer in the code
+ * catalog (one template per niche deleted 32 on 2026-11-12; a build started
+ * before that may hold one of their keys).
+ */
+export function installTarget(state: Pick<BuilderState, "templateKey" | "nicheId">, editions?: readonly Edition[]): { templateKey: string; editionId?: string } {
+  if (state.templateKey && getCodeTemplate(state.templateKey)) return { templateKey: state.templateKey, ...installEdition(state, editions) };
+  return { templateKey: DEFAULT_TEMPLATE.key };
 }

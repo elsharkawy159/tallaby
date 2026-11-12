@@ -247,7 +247,7 @@ export const BEAUTY_LUXE = libraryTemplate({
     "عناية بالبشرة بهدوء: فيديو زجاجات بيضا، فهرس أقسام وأربع صفوف بكروت طولية. لماركات السكين كير الراقية.",
     "Quiet, clinical skincare: a white-bottle video, a ruled category index and four rows of tall cards. For premium skincare brands.",
   ),
-  category: "beauty",
+  category: "health",
   style: ["luxe", "minimal"],
   sortOrder: 1320,
   palette: ["#fbfaf8", "#f1eee9", "#2a2527", "#a8876b"],

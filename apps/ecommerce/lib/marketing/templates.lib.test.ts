@@ -124,14 +124,16 @@ describe("niche tabs", () => {
 });
 
 describe("one template per niche (ROADMAP F-90)", () => {
-  // These pass their own switched set (the real one holds accessories). Real rows: phone-cases → volt and chargers-cables → kabl are ready, earbuds → wasla is pending.
+  // These pass their own switched set (the real one holds every industry since 2026-11-12). Real rows: phone-cases → volt and
+  // chargers-cables → kabl are ready; "old-cases" is a made-up template that serves no niche.
   const SWITCHED = new Set(["mobile-accessories"]);
 
   it("leaves out a switched industry's templates that serve no niche; nothing when none is switched", () => {
-    const rows = [row({ key: "volt", category: "mobile-accessories" }), row({ key: "wasla", category: "mobile-accessories" }), row({ key: "zaki", category: "electronics" })];
+    const rows = [row({ key: "volt", category: "mobile-accessories" }), row({ key: "old-cases", category: "mobile-accessories" }), row({ key: "zaki", category: "electronics" })];
     expect(buildGallery(rows, "en", (r) => isRetiredTemplate(r, SWITCHED)).map((e) => e.id)).toEqual(["volt", "zaki"]);
-    expect(buildGallery(rows, "en", (r) => isRetiredTemplate(r)).map((e) => e.id)).toEqual(["volt", "wasla", "zaki"]);
-    expect(buildGallery(rows, "en").map((e) => e.id)).toEqual(["volt", "wasla", "zaki"]);
+    expect(buildGallery(rows, "en", (r) => isRetiredTemplate(r)).map((e) => e.id)).toEqual(["volt", "zaki"]);
+    expect(buildGallery(rows, "en", (r) => isRetiredTemplate(r, new Set<string>())).map((e) => e.id)).toEqual(["volt", "old-cases", "zaki"]);
+    expect(buildGallery(rows, "en").map((e) => e.id)).toEqual(["volt", "old-cases", "zaki"]);
   });
 
   it("files a switched niche with its one template and its edition", () => {
@@ -228,5 +230,32 @@ describe("accessories gallery, one template per niche (ROADMAP F-90)", () => {
   it("a niche tab holds its one card; the deleted templates are gone", () => {
     expect(galleryCards(gallery, tabs, "jw", "watches").map((c) => [c.entry.id, c.edition, c.tag])).toEqual([["saat", "watches", tabs.find((t) => t.id === "watches")!.name]]);
     for (const key of ["lulu", "mahr", "jewelry-bold"]) expect(gallery.some((e) => e.id === key), key).toBe(false);
+  });
+});
+
+// Every industry switched on 2026-11-12 (owner: map all niches now, delete the rest).
+describe("whole gallery, one template per niche (ROADMAP F-90, 2026-11-12)", () => {
+  const gallery = buildGallery(
+    CODE_TEMPLATES.map((t) => row({ key: t.key, category: t.category })),
+    "en",
+    (r) => isRetiredTemplate(r),
+  );
+  const niches = NICHES.flatMap((niche) => {
+    const found = readyNicheTemplate(niche.id);
+    return found ? [{ id: niche.id, industry: niche.industry, name: niche.name, looks: [found.template], switched: true as const, edition: found.edition ?? null }] : [];
+  });
+  const tabs = buildNicheTabs(niches, gallery.map((e) => e.id), "en");
+
+  it("has one tab per niche (83) and 84 templates: one per niche and Tallaby Classic", () => {
+    expect(tabs).toHaveLength(83);
+    expect(gallery).toHaveLength(84);
+    for (const key of ["kettan", "nour", "mobilia", "kohl", "pace", "drive", "gifts-bold"]) expect(gallery.some((e) => e.id === key), key).toBe(false);
+  });
+
+  it("every niche tab holds its one card, tagged with the niche", () => {
+    for (const tab of tabs) {
+      const cards = galleryCards(gallery, tabs, tab.category, tab.id);
+      expect(cards.map((c) => [c.entry.id, c.tag]), tab.id).toEqual([[tab.looks[0], tab.name]]);
+    }
   });
 });

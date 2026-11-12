@@ -36,7 +36,7 @@ import { suggestCategories } from "@/app/(main)/stores/[storeId]/products/add/ad
 import { proposeZones } from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.server";
 import type { ProposedZone } from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.dto";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
-import { installEdition } from "./builder-niche.lib";
+import { installTarget } from "./builder-niche.lib";
 import {
   BUILDER_FEATURES,
   BUILDER_LIMITS,
@@ -193,12 +193,14 @@ async function templateFormInput(kind: string, locale: "ar" | "en") {
 
 async function applyTemplate(ctx: RunContext, build: BuildRow) {
   const store = await requireStoreOf(ctx, build);
-  const result = await applyStoreTemplate(ctx.sellerId, store.id, build.state.templateKey ?? "", ctx.userId, {
+  // A chosen template deleted since the build started falls back to Tallaby Classic (installTarget).
+  const { templateKey, ...edition } = installTarget(build.state);
+  const result = await applyStoreTemplate(ctx.sellerId, store.id, templateKey, ctx.userId, {
     allowedSections: ALLOWED,
     overrideKeys: OVERRIDE_KEYS,
     formInput: templateFormInput,
     // The niche's edition, when the chosen template still has it (F-90): re-checked here, and again by the server.
-    ...installEdition(build.state),
+    ...edition,
   });
   if (!result.success) throw new Error(`template_${result.error}`);
   return {};

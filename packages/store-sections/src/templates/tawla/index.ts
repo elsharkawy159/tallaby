@@ -189,7 +189,7 @@ export const TAWLA = libraryTemplate({
     "مفارش ومنسوجات: لبّس السفرة، طقم السفرة كاملة، لسه من النول وطريقة العناية. أربع صفحات جاهزة.",
     "Table linen and textiles: dress the table, the full table set, fresh from the loom and care. Four ready pages.",
   ),
-  category: "home",
+  category: "handmade",
   style: ["classic", "warm"],
   sortOrder: 670,
   palette: ["#f8f6f1", "#ebe7dc", "#f2c57c", "#355c7d"],

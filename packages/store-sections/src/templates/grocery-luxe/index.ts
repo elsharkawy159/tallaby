@@ -226,7 +226,7 @@ export const GROCERY_LUXE = libraryTemplate({
     "بقالة فاخرة بهدوء: فيديو خضار طازة، صور أقسام طويلة وأربع صفوف للأقسام. لمحلات الأكل الراقي والمنتجات المختارة.",
     "A quiet fine-food store: a fresh-produce video, tall aisle photos and four category rows. For gourmet grocers and curated food shops.",
   ),
-  category: "food",
+  category: "sweets",
   style: ["luxe"],
   sortOrder: 1350,
   palette: ["#faf6ee", "#efe8d8", "#2f3a24", "#c8902f"],

@@ -200,7 +200,7 @@ describe("a look builds without reviews", () => {
     }
   });
 
-  it.each(["fashion-luxe", "vella", "streetwear", "zay", "jewelry-luxe", "karat", "saat", "kabl", "volt", "nour", "zaki", "arena"])("%s: no testimonials section, and nothing of one left behind", (key) => {
+  it.each(["fashion-luxe", "vella", "streetwear", "zay", "jewelry-luxe", "karat", "saat", "kabl", "volt", "zaki", "arena"])("%s: no testimonials section, and nothing of one left behind", (key) => {
     const config = build(key);
     expect(sectionIds(config).filter((id) => id.includes("testimonials"))).toEqual([]);
     const json = JSON.stringify(config);
@@ -226,7 +226,6 @@ describe("a look builds without reviews", () => {
     ["streetwear", "streetwear-testimonials-classic"],
     ["kabl", "kabl-testimonials-classic"],
     ["volt", "volt-testimonials-chat"],
-    ["nour", "nour-testimonials-ruled"],
   ])("%s builds its reviews section when the pack has reviews", (key, id) => {
     const config = build(key, withReviews(key));
     expect(sectionIds(config)).toContain(id);
