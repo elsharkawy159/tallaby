@@ -1,225 +1,318 @@
 /**
- * Tasfya (template 53, fashion outlet; Claude Design "Storefront Templates"):
- * white paper, black ink, a loud red for actions and a yellow highlight,
- * Lalezar headings over Cairo text and 8px corners. An outlet (v3): the
- * shop window, the rails (categories), just dropped, shop by budget, selling
- * fast, open before you pay and shopper reviews. Built from section library
- * designs (`fromLibrary`).
+ * Tasfya (shoes & bags, the slippers-clogs niche template; one template per
+ * niche, ROADMAP F-90, `docs/systems/one-template-per-niche.md`): a summer
+ * and home footwear shop set by the pool. White paper for the product
+ * stage, a shallow-water aqua tint, the deep end's teal for the poster and
+ * actions, and a pool-float pink for the size sticker and the cart; Baloo Bhaijaan 2 headings (round and soft, moulded like a rubber
+ * clog) over Readex Pro; 20px corners, the curve of a clog's toe. Built from
+ * section library designs (`fromLibrary`).
  *
- * Edition-ready (ROADMAP F-90): the sections are built by `look(content,
- * journey)` from `DEFAULT_CONTENT`, and with it the look builds exactly its
- * v3 output (`../editions/__fixtures__/tasfya.v3.json`).
+ * v4 (2026-11-12): rebuilt look-first around the pair. Home, nine sections:
+ *   1. `hero-poster`                 a printed pool poster on the deep teal:
+ *                                    a line on top, the pool deck photo (a
+ *                                    pair of polka-dot flip-flops beside the
+ *                                    water) with the round pink size sticker
+ *                                    on its top edge, then the headline. The
+ *                                    page's one moment: the photo zooms
+ *                                    slowly as the page scrolls (transform
+ *                                    only, still with reduced motion)
+ *   2. `categories-portrait-labels`  four tall category photos, rounded
+ *   3. `products-feature`            the pick of the week large on the white
+ *                                    stage, four of the newest beside it
+ *   4. `finder-use`                  the trade's own section: "where will
+ *                                    you wear them?" (beach, pool and
+ *                                    shower, errands, home), each a link to
+ *                                    its pairs, on the aqua band
+ *   5. `products-category-carousel`  clogs (the store's 1st category)
+ *   6. `about-two-tone`              the story and the photo-led break in
+ *                                    one: beach towels on sand beside the
+ *                                    teal half ("from the front door to the
+ *                                    beach")
+ *   7. `products-category-carousel`  flip-flops (the 3rd category)
+ *   8. `features-classic`            four promises between two hairlines
+ *   9. `newsletter-ruled`            one row
+ * Chrome: `header-pill` (a floating ink capsule, the cart in pink) and
+ * `footer-centered` on the teal. Eyebrows are set in sentence case and
+ * headings at the face's own spacing (`calm`), never capitals or
+ * tightened Arabic. The outlet's v3 sections (shop by budget, open before
+ * you pay, reviews) are gone.
  *
- * Photos: Pexels, each checked by eye (2026-10-21): clothes on shop rails
- * and wooden hangers, a store window with sale signs, dresses on a wall
- * hook, a clutch and a shoulder bag. No people, no hands, no mannequins and
- * no logos (the design's photos of models were all replaced).
+ * Content: the `slippers-clogs` pack is Tasfya's own shop ("Zannouba"): the
+ * look's default content and demo are the pack's, so the template and the
+ * niche's edition are one store.
+ *
+ * Guard: `tasfya.v3.json` was captured from the v3 outlet before any edit,
+ * and the edition-ready v3 matched it byte for byte (commit 38347df4). v4
+ * is the deliberate redesign, so its fixture is a new capture
+ * (`tasfya.v4.json`) and the v3 one is deleted
+ * (`../editions/look-guard.test.ts`).
+ *
+ * Photos: the pack's (see its header): hero 9308418 (cropped 16:9 at its
+ * foot), tiles 8801134, 13836590, 27719438, 12969102, banner 18674213
+ * (the home story), about page 34667259; products are the pack's white packshots. No people,
+ * feet, logos or lettering.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
+import type { ElementIconName } from "../../elements/registry";
+import type { NodeTemplate } from "../../elements/tree";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import { SLIPPERS_CLOGS } from "../editions/packs/shoes-bags/slippers-clogs";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
-import { demoStore, pexels } from "../library-template";
 
 export const TASFYA_KEY = "tasfya";
 
-const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(TASFYA_KEY, getDesign(id)!, { corners: 8, ...patch });
+const RADIUS = 20;
 
-const SHOP = "/products";
-const NEW = "/products?sort=newest";
-const BEST = "/products?sort=popularity";
-const RATED = "/products?sort=rating";
-const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
+const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(TASFYA_KEY, getDesign(id)!, { corners: RADIUS, ...patch });
 
-const PHOTOS = {
-  polkaDresses: pexels(1943846, 900),
-  womenRail: pexels(12048380, 900),
-  teeRail: pexels(5698851, 900),
-  sweaterRails: pexels(3812433, 900),
-  shimmerClutch: pexels(32498616, 900),
-  rhinestoneBag: pexels(15432831, 900),
-  jacketRail: pexels(18144397, 900),
-  blouses: pexels(11435420, 900),
-  knitTops: pexels(37420550, 900),
-  tanks: pexels(3735633, 900),
-  basicsRail: pexels(8743972, 900),
-  saleWindow: pexels(33276443),
-};
-
-const NAME = L("تصفية أوتلت", "Tasfya Outlet");
-
-/** Tasfya's own content (the outlet), copied from v3 character for character. */
-const DEFAULT_CONTENT: LookDefaults = {
-  announcement: [L("قطع حقيقية من محلات حقيقية", "Real pieces from real shops")],
-  labels: { search: L("ابحث عن ماركة أو قطعة…", "Search brands and pieces…") },
-  nav: [
-    { label: L("فساتين", "Dresses"), href: search("فستان") },
-    { label: L("قمصان وجواكت", "Shirts & jackets"), href: search("جاكيت") },
-    { label: L("شنط", "Bags"), href: search("شنطة") },
-  ],
-  hero: {
-    alt: L("فترينة محل فيها رفوف لبس", "A shop window with clothing rails"),
-    eyebrow: L("أوتلت", "Outlet"),
-    title: L("قطع حقيقية من محلات حقيقية", "Real pieces from real shops"),
-    line: L("قطع جديدة كل خميس، وتبديل خلال ٧ أيام.", "New pieces every Thursday, and exchanges within 7 days."),
-    cta: L("تسوق الأوتلت", "Shop the outlet"),
-  },
-  categories: { title: L("لفّ على الرفوف", "Browse the rails") },
-  products: { primary: { title: L("لسه نازل", "Just dropped"), line: L("لسه نازل", "Just dropped") } },
-  rows: [{ title: L("بيخلص بسرعة", "Selling fast") }],
-  reviews: {
-    title: L("اللي اشتروا قالوا", "Shoppers say"),
-    items: [
-      { quote: L("الجاكيت وصل جديد بالتيكت بتاعه، ونفس اللي في الصورة بالظبط.", "The jacket arrived new with its tag, exactly like the photo."), name: L("دينا ف.", "Dina F.") },
-      { quote: L("قست الفستان قدام المندوب وطلع واسع، رجعته من غير ما أدفع.", "Tried the dress at the door, it was loose, and I sent it back without paying."), name: L("هشام ط.", "Hesham T.") },
-      { quote: L("بلحق كل خميس قبل المقاسات ما تخلص.", "I check every Thursday before the sizes run out."), name: L("سارة م.", "Sara M.") },
-    ],
-  },
-  about: {
-    line: L("قطع الموسم اللي فات بأسعار أوتلت.", "Last season’s pieces at outlet prices."),
-    alt: L("فترينة محل فيها رفوف لبس", "A shop window with clothing rails"),
-    eyebrow: L("من ٢٠١٩", "Since 2019"),
-    title: L("الموسم اللي فات، بنص التمن", "Last season, at half the price"),
-    text: L("بنشتري الكميات اللي فضلت عند المحلات آخر الموسم، ونبيعها بأسعار تصفية.", "We buy what shops have left at the end of each season and sell it at clearance prices."),
-    more: L("كل قطعة بتتفحص، ولو فيها علامة صغيرة بنكتبها في الوصف.", "Every piece is checked, and any small mark is written in the description."),
-    cta: L("تسوق الأوتلت", "Shop the outlet"),
-  },
-  contact: {
-    title: L("تواصل", "Contact"),
-    line: L("كل يوم من ١٢ الضهر لـ ١١ بالليل، على واتساب أو الإيميل.", "Every day, 12 pm to 11 pm, on WhatsApp or by email."),
-    heading: L("اسأل عن مقاس أو قطعة", "Ask about a size or a piece"),
-  },
-  faq: {
-    line: L("التبديل والتوصيل والمقاسات.", "Exchanges, delivery and sizes."),
-    question: L("ينفع أبدّل قطعة من الأوتلت؟", "Can I exchange an outlet piece?"),
-    answer: L("أيوه، خلال ٧ أيام لو بالتيكت بتاعها، ما عدا قطع العينة.", "Yes, within 7 days with its tags on, except sample pieces."),
-  },
-  custom: {
-    // The footer's phone, and its WhatsApp and tel links (digits with the country code, the same on both sides).
-    phone: L("٠١٠٠ ٢٢٣ ٣٤٤٠", "+20 100 223 3440"),
-    "phone-digits": L("201002233440", "201002233440"),
-    // The store's short name inside "About <name>".
-    "store-short": L("تصفية", "Tasfya"),
-    // Shop by budget: three price bands, lowest first.
-    "budget-1": L("أقل من ٥٠٠", "Under 500"),
-    "budget-2": L("٥٠٠ – ١٬٠٠٠", "500 – 1,000"),
-    "budget-3": L("أكتر من ١٬٠٠٠", "Over 1,000"),
-    // Open before you pay: its two lines.
-    "open-box-1": L("قيس القطعة وشوفها قدام المندوب.", "Check the piece and try it on in front of the courier."),
-    "open-box-2": L("لو المقاس مش مظبوط رجّعه للمندوب ومتدفعش حاجة.", "If the size is wrong, hand it back and pay nothing."),
-    // The 2nd and 3rd reviewers' cities.
-    "reviews-city-2": L("الإسكندرية", "Alexandria"),
-    "reviews-city-3": L("الجيزة", "Giza"),
-  },
-  photos: { hero: { wide: PHOTOS.saleWindow } },
-};
-
-function look(c: LookContent, journey: LookJourney): LookParts {
-  void journey;
-  const name = c.store.name;
-  const x = c.custom;
-  const short = x["store-short"]!;
-  const aboutName = L(`عن ${short.ar}`, `About ${short.en}`);
-  const digits = x["phone-digits"]!.en;
-  const reviews = c.reviews.items;
-
-  const header = lib("header-search", {
-    text: {
-      "م": initialOf(name),
-      "اسم متجرك": name,
-      "ابحث عن منتج…": c.labels.search,
-      "وصل حديثًا": c.products.primary.title,
-      "العروض": c.nav[0]!.label,
-      "هدايا": c.nav[1]!.label,
-      "إكسسوارات": c.nav[2]!.label,
-      "توصيل خلال ٤٨ ساعة": c.announcement[0]!,
+/**
+ * A library design with its nodes changed in tree order (all nodes, or those
+ * of one type), for what a `nodes` patch cannot reach: nodes with no layer
+ * label (eyebrows, headings, icons) or a node's motion. The tree keeps its
+ * shape, only props and styles change.
+ */
+function retouch(design: Design, type: string | undefined, change: (node: NodeTemplate, index: number) => NodeTemplate): Design {
+  return {
+    ...design,
+    tree: (t) => {
+      let index = 0;
+      const visit = (node: NodeTemplate): NodeTemplate => {
+        const next = type === undefined || node.type === type ? change(node, index++) : node;
+        return next.children ? { ...next, children: next.children.map(visit) } : next;
+      };
+      return visit(design.tree(t));
     },
-    links: { "/products": [undefined, NEW, BEST, c.nav[0]!.href, c.nav[1]!.href, c.nav[2]!.href] },
+  };
+}
+
+/**
+ * Eyebrows in sentence case, and headings at Baloo's own spacing: the
+ * library sets some eyebrows in spaced capitals and tightens display
+ * headings, which crowds Arabic.
+ */
+const calm = (design: Design): Design =>
+  retouch(design, undefined, (node) => {
+    if (node.props?.role === "eyebrow") return { ...node, style: { ...node.style, textTransform: "none", letterSpacing: "normal" } };
+    if (node.type === "heading" && node.style?.letterSpacing) return { ...node, style: { ...node.style, letterSpacing: "normal" } };
+    return node;
   });
 
-  const footer = lib("footer-help", {
+/** Hidden on every screen (a node the layout does not need; the tree keeps its shape). */
+const hide = (node: NodeTemplate): NodeTemplate => ({
+  ...node,
+  style: { ...node.style, hidden: true },
+  breakpointStyles: {
+    ...node.breakpointStyles,
+    tablet: { ...node.breakpointStyles?.tablet, hidden: true },
+    mobile: { ...node.breakpointStyles?.mobile, hidden: true },
+  },
+});
+
+const NEW = "/products?sort=newest";
+const BEST = "/products?sort=popularity";
+
+const VIEW_ALL = L("عرض الكل", "View all");
+
+/** The four promises' icons, in the pack's order: delivery, size exchange, help with sizing, pay on delivery. */
+const PROMISE_ICONS: readonly ElementIconName[] = ["truck", "rotate", "chat", "package"];
+
+/** Tasfya's own content is the slippers-clogs pack's shop (Zannouba): one source for the template and its edition. */
+const DEFAULT_CONTENT: LookDefaults = {
+  ...SLIPPERS_CLOGS.copy,
+  photos: {
+    hero: SLIPPERS_CLOGS.photos.hero,
+    banner: SLIPPERS_CLOGS.photos.banner,
+    story: SLIPPERS_CLOGS.photos.story,
+    ...(SLIPPERS_CLOGS.photos.about && { about: SLIPPERS_CLOGS.photos.about }),
+  },
+};
+
+/** One row of four of a category's products, by the category's place in the store. */
+const categoryRow = (place: number, n: number): Design =>
+  calm(
+    lib("products-category-carousel", {
+      as: `category-row-${n}`,
+      text: { "عرض الكل": VIEW_ALL },
+      lists: [{ offset: place - 1 }, { categoryIndex: place, limit: 4 }],
+    }),
+  );
+
+/**
+ * The hero: the pool poster. The size sticker sits on the photo's top edge
+ * (the pair lies at its foot), and the photo zooms slowly as the page
+ * scrolls: the page's one moment. The headline never animates (it is the h1).
+ */
+function hero(c: LookContent): Design {
+  const x = c.custom;
+  const poster = calm(
+    lib("hero-poster", {
+      photo: [undefined, undefined, c.photos.hero.wide],
+      text: {
+        "مجموعة الموسم": c.hero.eyebrow,
+        "من ١ إلى ٣٠ نوفمبر": c.announcement[0]!,
+        "صورة الحملة": c.hero.alt,
+        خصم: x["hero-sticker-1"]!,
+        "٣٠٪": x["hero-sticker-2"]!,
+        "لفترة محدودة": x["hero-sticker-3"]!,
+        "الموسم الجديد وصل": c.hero.title,
+        "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": c.hero.line,
+        "اكتشف المجموعة": c.hero.cta,
+      },
+      links: { "/products": NEW },
+      nodes: {
+        الملصق: {
+          style: { insetTop: "-36px", insetBottom: "auto", background: "accent" },
+          mobile: { insetTop: "-28px", insetBottom: "auto" },
+        },
+      },
+    }),
+  );
+  return retouch(poster, undefined, (node) => {
+    // The size range fits the round sticker on phones.
+    if (node.type === "heading" && node.props?.role !== "title")
+      return { ...node, style: { ...node.style, fontSize: "3xl" }, breakpointStyles: { ...node.breakpointStyles, mobile: { ...node.breakpointStyles?.mobile, fontSize: "2xl" } } };
+    if (node.type === "image") return { ...node, props: { ...node.props, scrollEffect: "zoom" } };
+    return node;
+  });
+}
+
+/** Where the pair is worn: four places, each a link to its pairs (the finder's own grid of products is hidden, so the band stays short). */
+function finder(c: LookContent): Design {
+  const [beach, pool, errands, home] = c.finder.options;
+  const band = calm(
+    lib("finder-use", {
+      text: {
+        "ساعدني أختار": L("ساعدني أختار", "Help me choose"),
+        "هتستخدمها في إيه؟": c.finder.title,
+        "اختار استخدامك ونوديك على المنتجات المناسبة ليه.": c.finder.line,
+        المشاوير: beach!.label,
+        الرياضة: pool!.label,
+        المكالمات: errands!.label,
+        "الشغل من البيت": home!.label,
+      },
+      links: { "/products": [beach!.href, pool!.href, errands!.href, home!.href] },
+      nodes: {
+        // The places as plain pills: the library's icons (a pin, a heart, a phone, a person) name other trades.
+        أيقونة: { style: { hidden: true }, tablet: { hidden: true }, mobile: { hidden: true } },
+        استخدام: { style: { background: "background", minHeight: 64, justifyContent: "center" } },
+      },
+    }),
+  );
+  return retouch(band, undefined, (node) => {
+    if (node.type === "section") return { ...node, style: { ...node.style, background: "secondary" } };
+    if (node.type === "productList" || (node.type === "text" && node.props?.text === "الأكثر طلبًا دلوقتي")) return hide(node);
+    return node;
+  });
+}
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). Generic shop labels (New in, Best sellers, Shipping) and the
+ * layout stay here; what names the trade is a slot of `c`.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+
+  // A floating ink capsule: the store, four links, the cart in pink.
+  const header = lib("header-pill", {
     text: {
-      "٠١٠٠ ١٢٣ ٤٥٦٧": x.phone!,
-      "م": initialOf(name),
       "اسم متجرك": name,
-      "العروض": L("الأعلى تقييماً", "Top rated"),
-      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      الرئيسية: L("الرئيسية", "Home"),
+      المتجر: x["shop-all"]!,
+      العروض: L("وصل حديثًا", "New in"),
+      المدونة: c.labels.about,
     },
-    links: {
-      "https://wa.me/201001234567": `https://wa.me/${digits}`,
-      "tel:+201001234567": `tel:+${digits}`,
-      "/products": [undefined, NEW, BEST, RATED],
+    links: { "/products": [undefined, NEW], "/blog": "/about" },
+  });
+
+  // Centred on the teal: the store, its line, the social links and the help pages.
+  const footer = lib("footer-centered", {
+    text: {
+      م: initialOf(name),
+      "اسم متجرك": name,
+      "مختارات بعناية منذ ٢٠١٨، لكل بيت في مصر.": c.footer.line,
+      "من نحن": c.labels.about,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
     },
   });
 
   const home: Design[] = [
-    lib("hero-fullbleed", {
-      photo: [c.photos.hero.wide],
-      text: {
-        "المجموعة الجديدة": c.hero.eyebrow,
-        "صُنعت لتدوم معك": c.hero.title,
-        "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
-        "تسوّق الآن": c.hero.cta,
-        "صورة الواجهة": c.hero.alt,
-      },
-    }),
-    lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
-    lib("products-tabbed", {
-      text: {
-        "المتجر": L("الأوتلت", "Outlet"),
-        "منتجاتنا": c.products.primary.line,
-        "العروض": L("الأعلى تقييماً", "Top rated"),
-      },
-      links: { "/products": [NEW, BEST, RATED] },
-    }),
-    lib("finder-price-bands", {
-      text: {
-        "أقل من ٦٠٠": x["budget-1"]!,
-        "٦٠٠ – ١٬٥٠٠": x["budget-2"]!,
-        "أكتر من ١٬٥٠٠": x["budget-3"]!,
-      },
-    }),
-    lib("products-carousel", {
-      text: { "الأكثر مبيعاً": c.rows[0]!.title },
-      links: { "/products": BEST },
-    }),
-    lib("pay-open-box", {
-      text: {
-        "جرّب المنتج قدام المندوب.": x["open-box-1"]!,
-        "لو فيه أي مشكلة رجّعه للمندوب ومتدفعش حاجة.": x["open-box-2"]!,
-      },
-    }),
-    lib("testimonials-classic", {
-      text: {
-        "آراء العملاء": c.reviews.title,
-        "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews[0]!.quote,
-        "م": initialOf(reviews[0]!.name),
-        "مريم أ.": reviews[0]!.name,
-        "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews[1]!.quote,
-        "ع": initialOf(reviews[1]!.name),
-        "عمر ك.": reviews[1]!.name,
-        "الإسكندرية": x["reviews-city-2"]!,
-        "أسعار معقولة وجودة أفضل مما توقعت.": reviews[2]!.quote,
-        "ن": initialOf(reviews[2]!.name),
-        "نور ح.": reviews[2]!.name,
-        "الجيزة": x["reviews-city-3"]!,
-      },
-    }),
+    hero(c),
+    // Four tall photos, rounded like the rest of the page (the design squares them), each with its name and a link.
+    calm(
+      lib("categories-portrait-labels", {
+        text: { المجموعات: c.categories.title },
+        nodes: { الصورة: { style: { radius: RADIUS } } },
+      }),
+    ),
+    // The pick of the week (the newest featured pair) large on the white stage, and four of the main list beside it.
+    calm(
+      lib("products-feature", {
+        text: { "اختيارنا ليك": c.products.primary.title },
+        lists: [undefined, { source: journey.primary, limit: 4 }],
+      }),
+    ),
+    finder(c),
+    categoryRow(journey.rows[0]!, 1),
+    // The story and the photo-led break in one: the beach towels beside the teal half (no scroll scrub: the hero is the page's one moment).
+    {
+      ...calm(
+        lib("about-two-tone", {
+          photo: [undefined, undefined, c.photos.banner],
+          text: {
+            "صورة البانر": x["banner-alt"]!,
+            "صناعة مصرية": c.story.eyebrow,
+            "متعمول عشان يريّحك ويعيش معاك": c.story.title,
+            "خامات مختارة وتفاصيل متشطبة بإيدينا، عشان تفضل معاك سنين.": c.story.text,
+            "تسوّق الآن": c.story.cta,
+          },
+          links: { "/products": "/about" },
+        }),
+      ),
+      scrollEffect: undefined,
+    },
+    categoryRow(journey.rows[1]!, 2),
+    retouch(
+      lib("features-classic", {
+        text: {
+          "توصيل سريع": c.trust[0]!.title,
+          "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+          "الدفع عند الاستلام": c.trust[1]!.title,
+          "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
+          "استرجاع سهل": c.trust[2]!.title,
+          "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+          "دعم على واتساب": c.trust[3]!.title,
+          "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+        },
+      }),
+      "icon",
+      (node, index) => ({ ...node, props: { ...node.props, name: PROMISE_ICONS[index] ?? node.props?.name } }),
+    ),
+    calm(
+      lib("newsletter-ruled", {
+        text: {
+          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
+          "عروض للمشتركين بس، مرة في الأسبوع.": c.newsletter.line,
+        },
+      }),
+    ),
   ];
 
   const about: Design[] = [
-    pageHeader(lib, "about-header", aboutName, c.about.line),
+    pageHeader(lib, "about-header", c.labels.about, c.about.line),
     aboutStory(lib, {
-      photo: c.photos.hero.wide,
+      photo: c.photos.about ?? c.photos.story,
       alt: c.about.alt,
       eyebrow: c.about.eyebrow,
       title: c.about.title,
       text: c.about.text,
       more: c.about.more,
       button: c.about.cta,
-      href: SHOP,
+      href: BEST,
     }),
   ];
 
@@ -228,7 +321,12 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     footer,
     pages: [
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-      { slug: "about", name: L("عن تصفية", "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "about",
+        name: c.labels.about,
+        seo: { title: c.labels.about, description: c.about.line },
+        sections: about,
+      },
       {
         slug: "contact",
         name: L("تواصل", "Contact"),
@@ -245,85 +343,80 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   };
 }
 
-const DEMO = demoStore({
-  name: NAME,
-  description: L("قطع الموسم اللي فات بأسعار أوتلت.", "Last season’s pieces at outlet prices."),
-  categories: [
-    ["women", "حريمي", "Women", PHOTOS.womenRail],
-    ["men", "رجالي", "Men", PHOTOS.jacketRail],
-    ["bags", "شنط", "Bags", PHOTOS.shimmerClutch],
-    ["basics", "أساسيات", "Basics", PHOTOS.sweaterRails],
-    ["tops", "توبات وبلوزات", "Tops & blouses", PHOTOS.blouses],
-  ],
-  products: [
-    ["polka-midi-dress", "women", "فستان بولكا ميدي", "Polka Midi Dress", PHOTOS.polkaDresses, 990, { compareAtPrice: 2400, isFeatured: true, rating: 4.6, sold90: 140 }],
-    ["corduroy-jacket", "men", "جاكيت قطيفة", "Corduroy Jacket", PHOTOS.jacketRail, 890, { compareAtPrice: 1990, sold90: 88 }],
-    ["shimmer-clutch", "bags", "كلاتش لامع", "Shimmer Flap Clutch", PHOTOS.shimmerClutch, 790, { compareAtPrice: 1850, sold90: 52 }],
-    ["heavy-tee", "basics", "تيشيرت تقيل", "Heavy Tee", PHOTOS.teeRail, 220, { compareAtPrice: 450, rating: 4.7, sold90: 300 }],
-    ["printed-blouse", "tops", "بلوزة مطبوعة", "Printed Blouse", PHOTOS.blouses, 490, { compareAtPrice: 1100, sold90: 64 }],
-    ["rib-knit-top", "tops", "توب تريكو مضلّع", "Rib Knit Top", PHOTOS.knitTops, 420, { compareAtPrice: 950, sold90: 24 }],
-    ["striped-tank", "basics", "توب حمالات مقلّم", "Striped Tank Top", PHOTOS.tanks, 180, { compareAtPrice: 390, sold90: 70 }],
-    ["rhinestone-shoulder-bag", "bags", "شنطة كتف بفصوص", "Rhinestone Shoulder Bag", PHOTOS.rhinestoneBag, 650, { compareAtPrice: 1450, inStock: false, sold90: 12 }],
-    ["long-sleeve-basics", "basics", "تيشيرت كم طويل", "Long-Sleeve Tee", PHOTOS.basicsRail, 250, { compareAtPrice: 520, sold90: 46 }],
-  ],
-});
-
 export const TASFYA = editionTemplate({
   key: TASFYA_KEY,
-  version: 3,
-  changelog: "Tasfya v3: categories, best sellers, reviews, section order",
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("اللي اشتروا قالوا", "Shoppers say"), related: L("لحّق العروض", "Grab more deals") } },
+  version: 4,
+  changelog: "Tasfya v4: the slippers-clogs template, rebuilt look-first",
   name: L("تصفية", "Tasfya"),
   description: L(
-    "أوتلت موضة: الرفوف، لسه نازل، تسوق بالميزانية، بيخلص بسرعة، افتح قبل ما تدفع وآراء المشترين. أربع صفحات جاهزة.",
-    "Fashion outlet: the rails, just dropped, shop by budget, selling fast, open before you pay and shopper reviews. Four ready pages.",
+    "شباشب وكلوج: بوستر حمام سباحة بملصق المقاسات، أقسام بصور طولية، أحدث موديل كبير على خلفية بيضا، هتلبسه فين، وصفوف للكلوج والشباشب الصباع. لمحلات الشباشب والكلوج والسلايد والشباشب البيتي.",
+    "Slippers and clogs: a pool poster with a size sticker, tall category photos, the newest pair large on a white stage, where will you wear them, and rows of clogs and flip-flops. For slipper, clog, slide and home-slipper shops.",
   ),
-  category: "fashion",
+  category: "shoes-bags",
   style: ["bold"],
   sortOrder: 530,
-  palette: ["#ffffff", "#f1f1ee", "#ffe15d", "#d7263d"],
+  palette: ["#ffffff", "#def2f1", "#ff8fab", "#0a6077"],
   colors: {
-    primary: "#d7263d",
-    secondary: "#f1f1ee",
+    primary: "#0a6077",
+    secondary: "#def2f1",
     background: "#ffffff",
-    foreground: "#141414",
-    muted: "#55554f",
-    border: "#e2e2dd",
-    accent: "#ffe15d",
+    foreground: "#0c2a33",
+    muted: "#4f6a71",
+    border: "#cfe3e3",
+    accent: "#ff8fab",
   },
-  fonts: { heading: "Lalezar", body: "Cairo" },
-  radius: 8,
+  fonts: { heading: "Baloo Bhaijaan 2", body: "Readex Pro" },
+  radius: RADIUS,
+  productStage: SLIPPERS_CLOGS.productStage,
   lib,
   look,
-  // Every slot `look` reads.
+  // Every slot `look` reads; an edition must hold them all.
   slots: [
     "announcement.0",
-    "labels.search",
-    "nav.0",
-    "nav.1",
-    "nav.2",
+    "labels.about",
     "hero",
     "categories.title",
     "products.primary.title",
-    "products.primary.line",
-    "rows.0.title",
-    "reviews",
+    "finder",
+    "story.eyebrow",
+    "story.title",
+    "story.text",
+    "story.cta",
+    "trust.0",
+    "trust.1",
+    "trust.2",
+    "trust.3",
+    "newsletter.title",
+    "newsletter.line",
+    "footer.line",
     "about",
     "contact",
     "faq",
     "photos.hero.wide",
-    "custom.phone",
-    "custom.phone-digits",
-    "custom.store-short",
-    "custom.budget-1",
-    "custom.budget-2",
-    "custom.budget-3",
-    "custom.open-box-1",
-    "custom.open-box-2",
-    "custom.reviews-city-2",
-    "custom.reviews-city-3",
+    "photos.banner",
+    "photos.story",
+    // The round sticker on the poster's photo: three short lines (a word, the size range, a word).
+    "custom.hero-sticker-1",
+    "custom.hero-sticker-2",
+    "custom.hero-sticker-3",
+    // The alt of the banner photo (the home story sits beside it).
+    "custom.banner-alt",
+    // The header's link to the whole catalog.
+    "custom.shop-all",
   ],
-  journey: { primary: "newest", rows: [] },
+  // `photos.about`: the about page's photo (falls back to the story's).
+  optional: ["photos.about"],
+  // The newest pairs (one large, four beside it), then the store's 1st and 3rd categories (clogs, flip-flops) as rows.
+  journey: { primary: "newest", rows: [1, 3] },
   defaultContent: DEFAULT_CONTENT,
-  demo: DEMO,
+  demo: SLIPPERS_CLOGS.demo,
+  productPage: {
+    thumbs: "bottom",
+    band: "brand",
+    extras: ["product-perks"],
+    copy: SLIPPERS_CLOGS.productPage?.copy ?? {
+      reviews: L("آراء اللي لبسوه", "From people who wear them"),
+      related: L("موديلات ممكن تعجبك", "Pairs you may like"),
+    },
+  },
 });

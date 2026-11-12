@@ -44,6 +44,24 @@
  * streetwear's about page and zay's home are built without them.
  *
  * No hero video: none found without people or feet.
+ *
+ * Looks: `tasfya` (the niche's template, one template per niche; it shows
+ * the pack itself and is its own content), then `streetwear` and `zay`
+ * until the shoes-and-bags switch takes them off. Tasfya's hero is a pool
+ * deck: 9308418 (blue polka-dot flip-flops on pale concrete beside the
+ * water, checked at 3300px: no lettering on the footbeds, two plain drain
+ * covers), served as a 16:9 crop anchored at the foot (`fp-y=0.9`) so the
+ * pair stays in frame on every screen; its `wide` slot is that crop.
+ * Streetwear keeps the sand flat lay (4996730) through `perLook`. Tasfya
+ * also reads `finder` (where the pair is worn: beach, pool and shower,
+ * errands, home, each a search of its category's word) and
+ * `custom.shop-all`; its home story sits beside the banner photo.
+ * Looked at for tasfya's hero and left out: 8456247 (tropical flip-flops
+ * in sand: the pair sits where English copy would go), 29823200 (heeled
+ * sandals on a drained mosaic pool), 12932253 (lime clogs by a pool,
+ * portrait: does not crop wide, and the heel rivet may carry a brand
+ * mark), 33305477 (white flip-flops above a tiled pool, portrait: does not
+ * crop wide), 38884670 (yellow slides with a flower decoration).
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, handle, pexels, phone } from "../../../library-template";
@@ -52,6 +70,12 @@ import type { Edition } from "../../types";
 
 const NICHE = "slippers-clogs";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+
+/** Tasfya's hero: the pool deck, cropped 16:9 at its foot so the flip-flops stay whole on phones and desktops. */
+const POOL_DECK = "https://images.pexels.com/photos/9308418/pexels-photo-9308418.jpeg?auto=compress&cs=tinysrgb&fit=crop&crop=focalpoint&fp-x=0.5&fp-y=0.9&w=1920&h=1080";
+
+/** A catalog search for a word in the products' names. */
+const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
 const TILES = [pexels(8801134, 1200), pexels(13836590, 1200), pexels(27719438, 1200), pexels(12969102, 1200)];
 
@@ -63,7 +87,7 @@ const HANDLE = handle("@zannouba");
 
 export const SLIPPERS_CLOGS: Edition = {
   niche: NICHE,
-  looks: ["streetwear", "zay"],
+  looks: ["tasfya", "streetwear", "zay"],
   priceBand: { min: 150, max: 1200 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -79,12 +103,12 @@ export const SLIPPERS_CLOGS: Edition = {
       ["flip-flops", "شباشب صباع", "Flip-flops", TILES[2]!],
       ["home-slippers", "شباشب بيتي", "Home slippers", TILES[3]!],
     ],
-    // Newest first, mixed so a row of the newest shows every category.
+    // Newest first, mixed so a row of the newest shows every category. Featured (tasfya's "pick of the week", the newest featured one): three older pairs, so the pick is never one of the four newest beside it.
     products: [
-      ["sage-green-clog", "clogs", "كلوج أخضر زيتوني فاتح", "Sage Green Clog", P("sage-green-clog"), 690, { isFeatured: true, rating: 4.8, sold90: 214 }],
-      ["beige-cushion-slide", "slides", "سلايد بيج بنعل طري", "Beige Cushion Slide", P("beige-cushion-slide"), 420, { isFeatured: true, rating: 4.7, sold90: 263 }],
+      ["sage-green-clog", "clogs", "كلوج أخضر زيتوني فاتح", "Sage Green Clog", P("sage-green-clog"), 690, { rating: 4.8, sold90: 214 }],
+      ["beige-cushion-slide", "slides", "سلايد بيج بنعل طري", "Beige Cushion Slide", P("beige-cushion-slide"), 420, { rating: 4.7, sold90: 263 }],
       ["white-platform-flip-flops", "flip-flops", "شبشب صباع أبيض بنعل عالي", "White Platform Flip-Flops", P("white-platform-flip-flops"), 340, { rating: 4.6, sold90: 148 }],
-      ["grey-fluffy-home-slippers", "home-slippers", "شبشب بيتي فرو رمادي", "Grey Fluffy Home Slippers", P("grey-fluffy-home-slippers"), 320, { isFeatured: true, rating: 4.8, sold90: 237 }],
+      ["grey-fluffy-home-slippers", "home-slippers", "شبشب بيتي فرو رمادي", "Grey Fluffy Home Slippers", P("grey-fluffy-home-slippers"), 320, { rating: 4.8, sold90: 237 }],
       ["white-classic-clog", "clogs", "كلوج كلاسيك أبيض", "White Classic Clog", P("white-classic-clog"), 650, { compareAtPrice: 750, rating: 4.7, sold90: 302 }],
       ["black-rubber-slide", "slides", "سلايد كاوتش أسود", "Black Rubber Slide", P("black-rubber-slide"), 280, { rating: 4.6, sold90: 341 }],
       ["navy-rubber-flip-flops", "flip-flops", "شبشب صباع كاوتش كحلي", "Navy Rubber Flip-Flops", P("navy-rubber-flip-flops"), 180, { rating: 4.5, sold90: 389 }],
@@ -93,14 +117,14 @@ export const SLIPPERS_CLOGS: Edition = {
       ["white-two-strap-slide", "slides", "سلايد أبيض بسيرين", "White Two-Strap Slide", P("white-two-strap-slide"), 380, { rating: 4.5, sold90: 132 }],
       ["black-flip-flops", "flip-flops", "شبشب صباع أسود", "Black Flip-Flops", P("black-flip-flops"), 160, { rating: 4.6, sold90: 412 }],
       ["navy-knit-home-slippers", "home-slippers", "شبشب بيتي تريكو كحلي", "Navy Knit Home Slippers", P("navy-knit-home-slippers"), 290, { rating: 4.6, sold90: 154 }],
-      ["pink-platform-clog", "clogs", "كلوج بمبي بنعل عالي", "Pink Platform Clog", P("pink-platform-clog"), 850, { rating: 4.7, sold90: 121 }],
-      ["brown-buckle-cork-slide", "slides", "سلايد فلّين بني بتوكتين", "Brown Buckle Cork Slide", P("brown-buckle-cork-slide"), 950, { compareAtPrice: 1100, rating: 4.8, sold90: 97 }],
-      ["tan-leather-flip-flops", "flip-flops", "شبشب صباع جلد هافان", "Tan Leather Flip-Flops", P("tan-leather-flip-flops"), 590, { rating: 4.7, sold90: 88 }],
+      ["pink-platform-clog", "clogs", "كلوج بمبي بنعل عالي", "Pink Platform Clog", P("pink-platform-clog"), 850, { isFeatured: true, rating: 4.7, sold90: 121 }],
+      ["brown-buckle-cork-slide", "slides", "سلايد فلّين بني بتوكتين", "Brown Buckle Cork Slide", P("brown-buckle-cork-slide"), 950, { isFeatured: true, compareAtPrice: 1100, rating: 4.8, sold90: 97 }],
+      ["tan-leather-flip-flops", "flip-flops", "شبشب صباع جلد هافان", "Tan Leather Flip-Flops", P("tan-leather-flip-flops"), 590, { isFeatured: true, rating: 4.7, sold90: 88 }],
       ["beige-closed-toe-slippers", "home-slippers", "شبشب بيتي مقفول بيج", "Beige Closed-Toe Slippers", P("beige-closed-toe-slippers"), 380, { rating: 4.6, sold90: 143 }],
     ],
   }),
   photos: {
-    hero: { wide: pexels(4996730, 1920), tall: pexels(4996974, 1200) },
+    hero: { wide: POOL_DECK, tall: pexels(4996974, 1200) },
     tiles: TILES,
     banner: pexels(18674213, 2000),
     story: pexels(34667259, 1200),
@@ -125,7 +149,7 @@ export const SLIPPERS_CLOGS: Edition = {
     ],
     labels: { about: L("حكايتنا", "Our story"), search: L("دوّر على كلوج، سلايد، شبشب…", "Search clogs, slides, slippers…") },
     hero: {
-      alt: L("برنيطة قش وشبشب صباع مخطط ونجمة بحر على رملة فاتحة", "A straw hat, striped flip-flops and a starfish on pale sand"),
+      alt: L("شبشب صباع كحلي منقّط على أرضية حمام سباحة جنب المية", "Blue polka-dot flip-flops on a pool deck beside the water"),
       eyebrow: L("تشكيلة الصيف", "The summer range"),
       title: L("صيف خفيف وبيت مريح", "Light summers, comfy homes"),
       line: L(
@@ -135,6 +159,17 @@ export const SLIPPERS_CLOGS: Edition = {
       cta: L("تسوّق الشباشب", "Shop the pairs"),
     },
     categories: { title: L("لكل مشوار شبشب", "A pair for every outing") },
+    // Tasfya: where the pair is worn, each place a search of its category's word (flip-flops, slides, clogs, home slippers).
+    finder: {
+      title: L("هتلبسه فين؟", "Where will you wear them?"),
+      line: L("اختار المكان ونوريك الشباشب اللي تناسبه.", "Pick the place and we show you the pairs made for it."),
+      options: [
+        { label: L("على البحر", "On the beach"), href: search("صباع") },
+        { label: L("في البيسين والحمّام", "By the pool and in the shower"), href: search("سلايد") },
+        { label: L("في المشاوير والجنينة", "On errands and in the garden"), href: search("كلوج") },
+        { label: L("جوّه البيت", "Around the house"), href: search("بيتي") },
+      ],
+    },
     products: {
       primary: {
         // Streetwear: the eyebrow is also the footer's link to the newest products.
@@ -206,6 +241,8 @@ export const SLIPPERS_CLOGS: Edition = {
       "banner-line": L("سلايد وشباشب صباع كاوتش تستحمل الرملة والمية.", "Rubber slides and flip-flops that take the sand and the water."),
       "craft-statement": L("شبشب واحد مريح أحسن من خمسة على الجزّامة.", "One comfortable pair beats five by the door."),
       "craft-statement-cta": L("كل الشباشب", "Shop all pairs"),
+      // Tasfya: the header's link to the whole catalog.
+      "shop-all": L("كل الشباشب", "All pairs"),
       // Demo handle: the seller's own replaces it.
       "lookbook-handle": L(HANDLE, HANDLE),
       "lookbook-line": L("صور جديدة كل صيف", "New photos every summer"),
@@ -227,6 +264,11 @@ export const SLIPPERS_CLOGS: Edition = {
   // Zannouba is beach and summer. Same pairs and prices; its own copy and photos. Zay's hero collage keeps the
   // pack's three house-slipper photos (only zay shows them), with its own captions.
   perLook: {
+    // Streetwear keeps its sand flat lay hero until the shoes-and-bags switch takes it off.
+    streetwear: {
+      photos: { hero: { wide: pexels(4996730, 1920), tall: pexels(4996974, 1200) } },
+      copy: { hero: { alt: L("برنيطة قش وشبشب صباع مخطط ونجمة بحر على رملة فاتحة", "A straw hat, striped flip-flops and a starfish on pale sand") } },
+    },
     zay: {
       store: {
         name: L("راحتك", "Rahtak"),
