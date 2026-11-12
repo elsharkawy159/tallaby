@@ -49,6 +49,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import { HANDBAGS } from "../editions/packs/shoes-bags/handbags";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const SHANTA_KEY = "shanta";
 
@@ -373,6 +374,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const SHANTA = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(SHANTA_KEY, "handbags", { ar: 2812, en: 2812 }),
   key: SHANTA_KEY,
   version: 4,
   changelog: "Shanta v4: the handbags template, rebuilt look-first",

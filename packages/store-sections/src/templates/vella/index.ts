@@ -29,6 +29,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, handle, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const VELLA_KEY = "vella";
 
@@ -295,6 +296,8 @@ const DEMO = demoStore({
 });
 
 export const VELLA = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(VELLA_KEY, "lingerie-sleepwear", { ar: 2682, en: 2691 }),
   key: VELLA_KEY,
   version: 1,
   name: NAME,

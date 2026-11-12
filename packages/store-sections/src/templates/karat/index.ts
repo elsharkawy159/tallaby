@@ -23,6 +23,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, handle, pexels } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const KARAT_KEY = "karat";
 
@@ -328,6 +329,8 @@ const DEMO = demoStore({
 });
 
 export const KARAT = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(KARAT_KEY, "glasses", { ar: 1682, en: 1694 }),
   key: KARAT_KEY,
   version: 3,
   changelog: "Karat v3: product page",

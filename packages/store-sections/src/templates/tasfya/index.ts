@@ -68,6 +68,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import { SLIPPERS_CLOGS } from "../editions/packs/shoes-bags/slippers-clogs";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const TASFYA_KEY = "tasfya";
 
@@ -367,6 +368,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const TASFYA = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(TASFYA_KEY, "slippers-clogs", { ar: 2535, en: 2558 }),
   key: TASFYA_KEY,
   version: 4,
   changelog: "Tasfya v4: the slippers-clogs template, rebuilt look-first",

@@ -23,6 +23,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, pexels } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const ZAKI_KEY = "zaki";
 
@@ -339,6 +340,8 @@ const DEMO = demoStore({
 });
 
 export const ZAKI = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(ZAKI_KEY, "lighting-smart-home", { ar: 2508, en: 2519 }),
   key: ZAKI_KEY,
   version: 4,
   changelog: "Zaki v4: categories, section order, trimmed service blocks",

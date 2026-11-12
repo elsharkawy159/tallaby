@@ -104,6 +104,7 @@ export function toTemplateCardView(template: StoreTemplateCard): TemplateCardVie
     formKinds: template.formKinds,
     pageNames: template.pageNames,
     editions: template.editions ?? [],
+    preview: template.preview ?? null,
     pages: template.outline.map((page) => ({
       slug: page.slug,
       isHome: page.isHome,

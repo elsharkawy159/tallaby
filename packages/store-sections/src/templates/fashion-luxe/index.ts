@@ -65,6 +65,7 @@ import {
   pexelsVideoPoster,
   phone,
 } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const FASHION_LUXE_KEY = "fashion-luxe";
 
@@ -732,6 +733,8 @@ const DEMO = demoStore({
 });
 
 export const FASHION_LUXE = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(FASHION_LUXE_KEY, "dresses", { ar: 2812, en: 2812 }),
   key: FASHION_LUXE_KEY,
   version: 3,
   name: L("حرير", "Hareer"),

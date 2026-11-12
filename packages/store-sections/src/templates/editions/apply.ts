@@ -18,7 +18,7 @@ import { createTreeBuilder, defineDesign, type Design } from "../../designs/buil
 import type { NodeTemplate } from "../../elements/tree";
 import type { Lib } from "../_pages";
 import { libraryTemplate, type LibraryTemplatePage, type LibraryTemplateSpec } from "../library-template";
-import type { TemplateDefinition, TemplateDemo } from "../types";
+import type { TemplateDefinition, TemplateDemo, TemplatePreview } from "../types";
 import { editionForLook } from "./per-look";
 import type { Edition, EditionExtra, EditionPhotos, JourneySource, LookContent, LookDefaults, LookJourney, LookSlot, ProductStage } from "./types";
 
@@ -40,6 +40,8 @@ export type EditionLookSpec = Omit<LibraryTemplateSpec, "header" | "footer" | "p
   defaultContent: LookDefaults;
   /** The look: header, footer and pages from a content object. Pure, and it reads nothing but `content` and `journey` for copy and photos. */
   look: (content: LookContent, journey: LookJourney) => LookParts;
+  /** Gallery card screenshots (`templatePreview` in `../preview.ts`): kept on the template, never in its config. */
+  preview?: TemplatePreview;
 };
 
 const LOOKS = new Map<string, EditionLookSpec>();
@@ -237,7 +239,7 @@ function withExtras(spec: EditionLookSpec, home: readonly Design[], extras: read
 }
 
 function build(spec: EditionLookSpec, content: object, journey: LookJourney, o: BuildOptions): TemplateDefinition {
-  const { slots, optional = [], dark: _dark, journey: _journey, defaultContent: _defaults, look, ...base } = spec;
+  const { slots, optional = [], dark: _dark, journey: _journey, defaultContent: _defaults, look, preview: _preview, ...base } = spec;
   const missing = missingSlots(content, slots);
   if (missing.length) throw new Error(`${o.label} lacks ${missing.length === 1 ? "slot" : "slots"} ${missing.map((s) => `"${s}"`).join(", ")} for look "${spec.key}"`);
   if (journey.rows.length !== spec.journey.rows.length) {
@@ -275,7 +277,7 @@ export function editionTemplate(spec: EditionLookSpec): TemplateDefinition {
   };
   const template = build(spec, content, spec.journey, { demo: spec.demo, label: `look "${spec.key}": its default content` });
   LOOKS.set(spec.key, spec);
-  return template;
+  return spec.preview ? { ...template, preview: spec.preview } : template;
 }
 
 /** An edition's photos for a look: its dark set over its light one when the look's page is dark. */
@@ -311,5 +313,5 @@ export function applyEdition(template: TemplateDefinition, pack: Edition): Templ
     ? { ...spec.productPage, ...edition.productPage, copy: { ...spec.productPage?.copy, ...edition.productPage.copy } }
     : undefined;
   const built = build(spec, content, journey, { demo, productStage: edition.productStage, productPage, extras: edition.extras, fitCategoryRows: true, label });
-  return { ...built, edition: edition.niche };
+  return { ...built, edition: edition.niche, ...(spec.preview && { preview: spec.preview }) };
 }

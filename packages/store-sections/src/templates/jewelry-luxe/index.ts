@@ -39,6 +39,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, handle, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const JEWELRY_LUXE_KEY = "jewelry-luxe";
 
@@ -364,6 +365,8 @@ const DEMO = demoStore({
 });
 
 export const JEWELRY_LUXE = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(JEWELRY_LUXE_KEY, "gold-jewelry", { ar: 2812, en: 2812 }),
   key: JEWELRY_LUXE_KEY,
   version: 1,
   name: L("ماسة", "Masa"),

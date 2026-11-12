@@ -23,6 +23,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, pexels } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const ZAY_KEY = "zay";
 
@@ -287,6 +288,8 @@ const DEMO = demoStore({
 });
 
 export const ZAY = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(ZAY_KEY, "menswear", { ar: 2100, en: 2140 }),
   key: ZAY_KEY,
   version: 3,
   changelog: "Zay v3: new hero, categories, section order",

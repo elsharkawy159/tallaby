@@ -21,6 +21,7 @@ import { fromLibrary, type LibraryPatch } from "../_library";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, handle, pexels } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const STREETWEAR_KEY = "streetwear";
 
@@ -349,6 +350,8 @@ const DEMO = demoStore({
 });
 
 export const STREETWEAR = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(STREETWEAR_KEY, "tshirts", { ar: 2577, en: 2610 }),
   key: STREETWEAR_KEY,
   version: 4,
   changelog: "Streetwear v4: categories, section order",

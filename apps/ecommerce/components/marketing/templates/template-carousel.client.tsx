@@ -10,7 +10,7 @@ import { CtaButton } from "@/components/marketing/site/cta-button";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { carouselCardStyle, carouselOffset, wrapIndex } from "@/components/marketing/home/home-demo.lib";
 import { templateFrameSrc, type GalleryEntry } from "@/lib/marketing/templates.lib";
-import { TemplateLiveThumb } from "./template-live-thumb.client";
+import { TemplateThumb } from "./template-thumb";
 
 /** A 44px tap area centred on a smaller control, drawn by an invisible pseudo-element; the control looks the same. */
 const TAP_44 = "relative before:absolute before:top-1/2 before:left-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']";
@@ -132,7 +132,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
           if (e.key === "ArrowLeft") go(active + (isRtl ? 1 : -1));
           if (e.key === "ArrowRight") go(active + (isRtl ? -1 : 1));
         }}
-        className="relative h-[550px] cursor-grab touch-pan-y overflow-hidden select-none active:cursor-grabbing min-[641px]:h-[590px]"
+        className="relative h-[580px] cursor-grab touch-pan-y overflow-hidden select-none active:cursor-grabbing min-[641px]:h-[620px]"
       >
         <button type="button" aria-label={t("previous")} onClick={() => go(active - 1)} className="absolute start-[max(20px,calc(50%-400px))] top-1/2 z-20 hidden size-12 -translate-y-1/2 place-items-center rounded-full border border-line bg-white text-teal-900 shadow-[0_6px_18px_rgba(13,55,67,0.1)] min-[641px]:grid">
           <ChevronRight className="size-5 ltr:rotate-180" aria-hidden />
@@ -150,7 +150,8 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
               aria-label={entry.name}
               className={cn(
                 "absolute top-2.5 left-1/2 flex w-[min(300px,78vw)] flex-col overflow-hidden rounded-[30px] border border-line bg-white shadow-[0_14px_36px_rgba(13,55,67,0.09)] min-[641px]:w-[330px]",
-                on ? "cursor-default" : "cursor-pointer",
+                // Only the centre card scrolls its screenshot on hover.
+                on ? "tpl-shot-trigger cursor-default" : "cursor-pointer",
                 dragging ? "transition-none" : "transition-[transform,opacity] duration-500 ease-[cubic-bezier(.2,.7,.2,1)]",
               )}
               style={{
@@ -168,9 +169,9 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
               </div>
               <div className="mx-3 overflow-hidden rounded-[18px] border border-[#edf1f2]">
                 {seen.has(i) ? (
-                  <TemplateLiveThumb src={templateFrameSrc(locale, entry.id, undefined, true)} className="aspect-[4/5]" frameHeight={1600} />
+                  <TemplateThumb shot={entry.shot} liveSrc={templateFrameSrc(locale, entry.id, undefined, true)} sizes="330px" />
                 ) : (
-                  <div className="aspect-[4/5] bg-neutral-100" />
+                  <div className="aspect-[3/4] bg-neutral-100" />
                 )}
               </div>
               <div className="flex items-center gap-1.5 px-[18px] pt-3 text-xs text-ink-400">
@@ -185,7 +186,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
                   {t("use")}
                 </SignupTrigger>
                 <CtaButton asChild tone="outline" size="sm" className="h-11">
-                  <Link href={`/templates/${entry.id}`} tabIndex={on ? 0 : -1}>
+                  <Link href={entry.shot?.edition ? `/templates/${entry.id}?edition=${encodeURIComponent(entry.shot.edition)}` : `/templates/${entry.id}`} tabIndex={on ? 0 : -1}>
                     {t("preview")}
                   </Link>
                 </CtaButton>

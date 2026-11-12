@@ -53,6 +53,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import { HAIR_ACCESSORIES } from "../editions/packs/jewelry/hair-accessories";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const KHOLKHAL_KEY = "kholkhal";
 
@@ -321,6 +322,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const KHOLKHAL = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(KHOLKHAL_KEY, "hair-accessories", { ar: 2729, en: 2729 }),
   key: KHOLKHAL_KEY,
   version: 3,
   changelog: "Kholkhal v3: the hair-accessories template, rebuilt look-first",

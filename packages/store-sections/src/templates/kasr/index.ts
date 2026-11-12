@@ -64,6 +64,7 @@ import {
 } from "../editions/apply";
 import { WOMENS_SHOES } from "../editions/packs/shoes-bags/womens-shoes";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const KASR_KEY = "kasr";
 
@@ -450,6 +451,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const KASR = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(KASR_KEY, "womens-shoes", { ar: 2812, en: 2812 }),
   key: KASR_KEY,
   version: 5,
   changelog: "Kasr v5: the womens-shoes template, rebuilt look-first",

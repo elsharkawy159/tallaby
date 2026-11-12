@@ -149,8 +149,8 @@ export default async function TemplatePage({ params }: Props) {
             <h2 className="mb-8 text-[28px] font-bold text-teal-900">{t("detail.more")}</h2>
             <div className="grid gap-6 min-[601px]:grid-cols-2 min-[901px]:grid-cols-3">
               {more.map((x) => (
-                <Link key={x.id} href={`/templates/${x.id}`} className="group grid gap-2.5 hover:no-underline">
-                  <TemplateFrame image={x.thumbnailUrl} liveSrc={templateFrameSrc(locale, x.id, undefined, true)} className="rounded-card border-line shadow-soft group-hover:-translate-y-1" />
+                <Link key={x.id} href={x.shot?.edition ? `/templates/${x.id}?edition=${encodeURIComponent(x.shot.edition)}` : `/templates/${x.id}`} className="group grid gap-2.5 hover:no-underline">
+                  <TemplateFrame shot={x.shot} liveSrc={templateFrameSrc(locale, x.id, undefined, true)} className="rounded-card border-line shadow-soft group-hover:-translate-y-1" />
                   <b className="font-latin text-base text-teal-900">{x.name}</b>
                 </Link>
               ))}

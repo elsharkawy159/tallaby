@@ -242,3 +242,37 @@
 [dir="rtl"] [data-slot="progress-indicator"] {
   transform: translateX(var(--progress-offset));
 }
+
+/*
+ * Template card screenshot (TemplateShot, owner 2026-11-12): a tall page shot
+ * in a 3:4 frame showing its top. Hovering the card (a fine pointer) or
+ * focusing inside it by keyboard scrolls the shot slowly to the bottom of the
+ * page; leaving brings it back up. The frame is a size container, so 100cqh
+ * is its height. Reduced motion: the top only, no scroll.
+ */
+.tpl-shot {
+  container-type: size;
+}
+
+.tpl-shot__img {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tpl-shot__img {
+    transition: transform 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tpl-shot-trigger:has(:focus-visible) .tpl-shot__img,
+  .tpl-shot-trigger:focus-visible .tpl-shot__img {
+    transform: translateY(calc(-100% + 100cqh));
+    transition: transform var(--tpl-shot-run, 6s) cubic-bezier(0.45, 0.05, 0.4, 1) 0.25s;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tpl-shot-trigger:hover .tpl-shot__img {
+      transform: translateY(calc(-100% + 100cqh));
+      transition: transform var(--tpl-shot-run, 6s) cubic-bezier(0.45, 0.05, 0.4, 1) 0.25s;
+    }
+  }
+}

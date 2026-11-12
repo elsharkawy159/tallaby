@@ -22,6 +22,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, pexels } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const VOLT_KEY = "volt";
 
@@ -243,6 +244,8 @@ const DEMO = demoStore({
 });
 
 export const VOLT = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(VOLT_KEY, "phone-cases", { ar: 1683, en: 1683 }),
   key: VOLT_KEY,
   version: 4,
   changelog: "Volt v4: wide hero photo",

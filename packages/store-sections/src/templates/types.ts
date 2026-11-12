@@ -68,4 +68,22 @@ export type TemplateDefinition = {
   productPageSpec?: Readonly<ProductPageSpec>;
   /** The niche id of the edition it was built with (`applyEdition`, `./editions`); unset for a template's own content. */
   edition?: string;
+  /** Gallery card screenshots of its home page (`./preview.ts`); unset: cards draw the page live. */
+  preview?: TemplatePreview;
 };
+
+/**
+ * One screenshot of a template's home page: the whole page shot at 1280 px
+ * wide, stored at `width` (600) wide for gallery cards. `src` is a path in
+ * tallaby.com's public folder (`apps/ecommerce/public`), e.g.
+ * `/template-previews/vella.ar.webp`; the dashboard and Admin prefix the
+ * tallaby.com origin.
+ */
+export type TemplatePreviewShot = { src: string; width: number; height: number };
+
+/**
+ * A template's gallery card screenshots (owner, 2026-11-12): its home page
+ * drawn with `edition` (its niche pack; null for its own content), one shot
+ * per language.
+ */
+export type TemplatePreview = { edition: string | null; ar: TemplatePreviewShot; en: TemplatePreviewShot };

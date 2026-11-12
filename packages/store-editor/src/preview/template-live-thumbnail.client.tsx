@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle } from "lucide-react";
+import { cn } from "@workspace/ui/lib/utils";
 import type { TemplateDemo } from "@workspace/store-sections";
 import type { TemplatePreviewView } from "../templates.dto";
 import { SitePreview, type PreviewCatalog } from "./site-preview.client";
@@ -9,6 +10,8 @@ import { SitePreview, type PreviewCatalog } from "./site-preview.client";
 /** The thumbnail frame: a 16:10 desktop window. */
 const THUMB_WIDTH = 1280;
 const THUMB_HEIGHT = 800;
+/** A tall (3:4) card's frame height at the same width. */
+const TALL_THUMB_HEIGHT = Math.round((THUMB_WIDTH * 4) / 3);
 
 /** The demo store as the preview's catalog (same shape as the editor's). */
 export function demoCatalog(demo: TemplateDemo | null): PreviewCatalog {
@@ -27,11 +30,14 @@ export function TemplateLiveThumbnail({
   load,
   fontClassName,
   fallback,
+  tall = false,
 }: {
   templateKey: string;
   load: (key: string) => Promise<TemplatePreviewView | null>;
   fontClassName: string;
   fallback: ReactNode;
+  /** A 3:4 card (the gallery cards with screenshots, owner 2026-11-12) instead of 16:10. */
+  tall?: boolean;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -70,13 +76,13 @@ export function TemplateLiveThumbnail({
   const { data, failed } = state.key === templateKey ? state : { data: null, failed: false };
   const home = data?.pages.find((p) => p.isHome) ?? data?.pages[0];
   return (
-    <div ref={box} className="relative aspect-[16/10] w-full overflow-hidden border-b bg-muted/40" aria-hidden>
+    <div ref={box} className={cn("relative w-full overflow-hidden border-b bg-muted/40", tall ? "aspect-[3/4]" : "aspect-[16/10]")} aria-hidden>
       {data && home ? (
         <div
           className="pointer-events-none absolute start-0 top-0 origin-top-left rtl:origin-top-right"
           style={{
             width: THUMB_WIDTH,
-            height: THUMB_HEIGHT,
+            height: tall ? TALL_THUMB_HEIGHT : THUMB_HEIGHT,
             transform: `scale(${scale})`,
           }}
         >
@@ -87,7 +93,7 @@ export function TemplateLiveThumbnail({
               url: "https://example.tallaby.com",
             }}
             catalog={demoCatalog(data.demo)}
-            sections={home.sections.slice(0, 3)}
+            sections={home.sections.slice(0, tall ? 5 : 3)}
             header={data.header}
             footer={null}
             designSystem={data.designSystem}

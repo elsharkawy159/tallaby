@@ -23,6 +23,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, pexels } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const KABL_KEY = "kabl";
 
@@ -286,6 +287,8 @@ const DEMO = demoStore({
 });
 
 export const KABL = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(KABL_KEY, "chargers-cables", { ar: 1625, en: 1625 }),
   key: KABL_KEY,
   version: 3,
   changelog: "Kabl v3: category data tiles, section order, reviews to close",

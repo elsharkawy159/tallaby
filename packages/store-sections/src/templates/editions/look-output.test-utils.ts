@@ -5,14 +5,16 @@
  * each design's id / library ref / patch, product page spec) and the whole
  * built site (`config()`: design system, header, footer and every page's
  * element trees). Functions are dropped by `JSON.stringify`; the trees they
- * build are in `config`.
+ * build are in `config`. `preview` (gallery card screenshots, added
+ * 2026-11-12) is left out: it is never part of the look a store gets.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { TemplateDefinition } from "../types";
 
 export function builtOutput(template: TemplateDefinition): string {
-  return JSON.stringify({ definition: template, config: template.config() });
+  const { preview: _preview, ...definition } = template;
+  return JSON.stringify({ definition, config: template.config() });
 }
 
 /** One line of JSON with no line break, so git's line-ending conversion cannot touch it. */

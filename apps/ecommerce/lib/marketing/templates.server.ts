@@ -23,7 +23,7 @@ import { buildGallery, buildNicheTabs, type CatalogNiche, type CatalogTemplate, 
  * because each entry is built from a ~95 KB config; a deploy brings changes.
  */
 const getCachedCatalog = createCachedQuery({
-  name: "marketing:template-catalog:v4",
+  name: "marketing:template-catalog:v5",
   ttl: cacheProfiles.taxonomy,
   // Templates and sections are code: a deploy brings new trees.
   perDeploy: true,
@@ -53,6 +53,7 @@ const getCachedCatalog = createCachedQuery({
             ...(meta.pageNames[page.slug] && { names: meta.pageNames[page.slug] }),
           })),
           editions: editionOptions(template.key),
+          preview: template.preview ?? null,
         },
       ];
     }),

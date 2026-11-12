@@ -11,6 +11,7 @@ export * from "./traits";
 export * from "./meta";
 export * from "./demo-catalog";
 export * from "./demo-product";
+export * from "./preview";
 export * from "./editions";
 export { CLASSIC_KEY, CLASSIC_DESIGNS, classicConfig } from "./classic";
 export * from "./library-ref";

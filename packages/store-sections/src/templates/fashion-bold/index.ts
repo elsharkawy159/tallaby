@@ -53,6 +53,7 @@ import {
 } from "../editions/apply";
 import { PANTS_JEANS } from "../editions/packs/fashion/pants-jeans";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const FASHION_BOLD_KEY = "fashion-bold";
 
@@ -386,6 +387,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const FASHION_BOLD = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(FASHION_BOLD_KEY, "pants-jeans", { ar: 2812, en: 2812 }),
   key: FASHION_BOLD_KEY,
   version: 2,
   changelog:

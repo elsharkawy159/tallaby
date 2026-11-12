@@ -53,6 +53,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import { MENS_SHOES } from "../editions/packs/shoes-bags/mens-shoes";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const GHORZA_KEY = "ghorza";
 
@@ -386,6 +387,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const GHORZA = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(GHORZA_KEY, "mens-shoes", { ar: 2694, en: 2694 }),
   key: GHORZA_KEY,
   version: 4,
   changelog: "Ghorza v4: the men's shoes template, rebuilt look-first",

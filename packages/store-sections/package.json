@@ -35,6 +35,10 @@
       "types": "./src/templates/index.ts",
       "default": "./src/templates/index.ts"
     },
+    "./template-preview": {
+      "types": "./src/templates/preview.ts",
+      "default": "./src/templates/preview.ts"
+    },
     "./library-ref": {
       "types": "./src/templates/library-ref.ts",
       "default": "./src/templates/library-ref.ts"

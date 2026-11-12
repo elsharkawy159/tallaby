@@ -43,6 +43,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, handle, pexels, phone } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const JEWELRY_WARM_KEY = "jewelry-warm";
 
@@ -408,6 +409,8 @@ const DEMO = demoStore({
 });
 
 export const JEWELRY_WARM = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(JEWELRY_WARM_KEY, "belts-wallets", { ar: 2798, en: 2798 }),
   key: JEWELRY_WARM_KEY,
   version: 2,
   name: L("تِبر", "Tibr"),

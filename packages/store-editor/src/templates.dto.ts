@@ -1,6 +1,7 @@
 /** Template shapes shared by the editor's template panels and the host apps (Website › Templates in the dashboard re-exports them). */
 
 import type { DesignSystem, PageContent, SectionInstance, TemplateDemo } from "@workspace/store-sections";
+import type { TemplatePreview } from "@workspace/store-sections/templates";
 
 type Localized = { ar?: string; en?: string };
 
@@ -23,6 +24,8 @@ export type TemplateCardView = {
   editions?: readonly { id: string; name: { ar: string; en: string } }[];
   /** Pages with their section names (resolved on the server from the section library). */
   pages: { slug: string; isHome: boolean; name: string; sections: Localized[] }[];
+  /** Card screenshots of its home page (a path on tallaby.com, `templatePreviewUrl`); null or left out: the card draws the page live. */
+  preview?: TemplatePreview | null;
 };
 
 /**

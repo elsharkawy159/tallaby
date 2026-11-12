@@ -4,6 +4,7 @@
  * the niche data comes from the server (`store-theme.data.ts`), and the
  * edition rule is the shared `cardEdition`.
  */
+import type { TemplatePreview } from "@workspace/store-sections/templates";
 import type { NicheCardView } from "@workspace/store-editor/templates.dto";
 import { cardEdition } from "@workspace/store-editor/lib/template-edition.lib";
 
@@ -23,6 +24,8 @@ export type ThemeOption = {
   editions: { id: string; name: Bilingual }[];
   /** A switched industry's niche card (it always shows its niche), else null. */
   nicheCard: NicheCardView | null;
+  /** Card screenshots of its home page (paths on tallaby.com), or null: the card draws the page live. */
+  preview?: TemplatePreview | null;
 };
 
 /**

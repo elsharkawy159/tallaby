@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Plus } from "lucide-react";
+import { cn } from "@workspace/ui/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Chip, ChipRow } from "@/components/marketing/site/chips";
@@ -11,7 +12,7 @@ import { IconTile } from "@/components/marketing/site/site-card";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { TEMPLATE_CATEGORIES, type TemplateCategory } from "@/lib/marketing/templates.data";
 import { galleryCards, templateFrameSrc, type GalleryEntry, type GalleryNicheTab } from "@/lib/marketing/templates.lib";
-import { TemplateLiveThumb } from "./template-live-thumb.client";
+import { TemplateThumb } from "./template-thumb";
 
 /**
  * The /templates grid: category chips, a count, and cards with each template's
@@ -113,17 +114,19 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
         ) : null}
       </div>
 
-      <div className="grid gap-5 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-3">
+      <div className="grid gap-5 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-3 min-[1201px]:grid-cols-4">
         {ordered.map((tpl) => {
           // On a niche tab every listed card is that niche's edition; a niche-only industry's card is its niche's.
           const card = visibleIds.has(tpl.id) ? cardOf.get(tpl.id) : undefined;
           const edition = card?.edition ?? null;
+          // Its home page screenshot when it shows this card's edition (owner, 2026-11-12), else drawn live.
+          const shot = tpl.shot && tpl.shot.edition === edition ? tpl.shot : null;
           const href = edition ? `/templates/${tpl.id}?edition=${encodeURIComponent(edition)}` : `/templates/${tpl.id}`;
           return (
             <article
               key={tpl.id}
               hidden={!visibleIds.has(tpl.id)}
-              className="flex flex-col [&[hidden]]:hidden overflow-hidden rounded-card-lg border border-line bg-white shadow-soft transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-raise"
+              className="tpl-shot-trigger flex flex-col [&[hidden]]:hidden overflow-hidden rounded-card-lg border border-line bg-white shadow-soft transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-raise"
             >
               <div className="flex items-center justify-between gap-2.5 px-[18px] pt-4 pb-3">
                 <div className="min-w-0">
@@ -139,8 +142,19 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
                 aria-label={t("previewNamed", { name: tpl.name })}
                 className="group/preview relative mx-3 block overflow-hidden rounded-[18px] border border-[#edf1f2] hover:no-underline"
               >
-                <TemplateLiveThumb key={edition ?? "own"} src={templateFrameSrc(locale, tpl.id, undefined, true, edition)} />
-                <span className="absolute inset-0 grid place-items-center bg-teal-900/55 opacity-0 transition-opacity duration-200 group-hover/preview:opacity-100 group-focus-visible/preview:opacity-100">
+                <TemplateThumb
+                  key={edition ?? "own"}
+                  shot={shot}
+                  liveSrc={templateFrameSrc(locale, tpl.id, undefined, true, edition)}
+                  sizes="(min-width: 1201px) 290px, (min-width: 641px) 45vw, 92vw"
+                />
+                {/* Over a screenshot the button sits low on a light shade, so the page scrolling behind it stays in view. */}
+                <span
+                  className={cn(
+                    "absolute inset-0 grid justify-items-center opacity-0 transition-opacity duration-200 group-hover/preview:opacity-100 group-focus-visible/preview:opacity-100",
+                    shot ? "items-end bg-linear-to-t from-teal-900/60 via-transparent to-transparent pb-5" : "items-center bg-teal-900/55",
+                  )}
+                >
                   <span className="inline-flex items-center gap-2 rounded-full bg-white px-[18px] py-2.5 text-sm font-bold text-teal-900">
                     {t("previewTemplate")}
                     <ForwardArrow />

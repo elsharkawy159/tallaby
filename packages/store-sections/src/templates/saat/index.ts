@@ -68,6 +68,7 @@ import {
 } from "../editions/apply";
 import { WATCHES } from "../editions/packs/jewelry/watches";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const SAAT_KEY = "saat";
 
@@ -411,6 +412,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const SAAT = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(SAAT_KEY, "watches", { ar: 2812, en: 2812 }),
   key: SAAT_KEY,
   version: 4,
   changelog: "Saat v4: the watches template, rebuilt look-first",

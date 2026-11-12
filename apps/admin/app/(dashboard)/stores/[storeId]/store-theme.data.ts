@@ -38,6 +38,7 @@ export function buildThemeGallery(
     pageCount: template.outline.length,
     editions: (template.editions ?? []).map((edition) => ({ id: edition.id, name: edition.name })),
     nicheCard: cards[template.key] ?? null,
+    preview: template.preview ?? null,
   }));
 
   const tabs: Record<string, ThemeNicheTab> = {};

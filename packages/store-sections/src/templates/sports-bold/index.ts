@@ -76,6 +76,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, primaryHref, type LookParts } from "../editions/apply";
 import { SNEAKERS } from "../editions/packs/shoes-bags/sneakers";
 import type { JourneySource, LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const SPORTS_BOLD_KEY = "sports-bold";
 
@@ -452,6 +453,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const SPORTS_BOLD = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(SPORTS_BOLD_KEY, "sneakers", { ar: 2812, en: 2812 }),
   key: SPORTS_BOLD_KEY,
   version: 2,
   changelog: "Nabd v2: the sneakers template, rebuilt look-first",

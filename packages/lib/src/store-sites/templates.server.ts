@@ -57,7 +57,7 @@ import {
   type SectionInstance,
   type SiteConfig,
 } from "@workspace/store-sections";
-import { editionOptions, getCodeTemplate, templateMeta, type NicheOption, type TemplateMeta } from "@workspace/store-sections/templates";
+import { editionOptions, getCodeTemplate, templateMeta, type NicheOption, type TemplateMeta, type TemplatePreview } from "@workspace/store-sections/templates";
 import { createStoreForm } from "../store-forms/server";
 import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
@@ -157,6 +157,8 @@ export type StoreTemplateCard = {
   formKinds: string[];
   /** Section ids per page, for the card's outline preview. */
   outline: { slug: string; isHome: boolean; name: string; sections: string[] }[];
+  /** Card screenshots of its home page (the template's `preview`), or null: the card draws the page live. */
+  preview?: TemplatePreview | null;
   /** The niche editions the template can be previewed and installed with (empty for a template with none). */
   editions: NicheOption[];
 };
@@ -213,6 +215,7 @@ export async function listTemplateCards(_q?: Queryable): Promise<StoreTemplateCa
       formKinds: [...templateFormNeeds(config)],
       outline: templateOutline(config),
       editions: editionOptions(template.key),
+      preview: template.preview ?? null,
     });
   }
   return cards;

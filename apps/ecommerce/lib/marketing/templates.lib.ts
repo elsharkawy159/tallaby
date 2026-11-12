@@ -1,5 +1,7 @@
 import { routing } from "@/i18n/routing";
 import type { TemplateCategory } from "./templates.data";
+import { previewShot, type PreviewShot } from "@workspace/store-sections/template-preview";
+import type { TemplatePreview } from "@workspace/store-sections/templates";
 
 /**
  * The template gallery lists every template in the code catalog with a valid
@@ -26,6 +28,8 @@ export type CatalogTemplate = {
   pages: CatalogPage[];
   /** Niche editions the template can be shown with (niche id and name); left out or empty for a template with none. */
   editions?: readonly { id: string; name: { ar: string; en: string } }[];
+  /** Its card screenshots (the template's `preview`); null or left out: cards draw the page live. */
+  preview?: TemplatePreview | null;
 };
 
 export type GalleryPage = { slug: string; isHome: boolean; name: string };
@@ -47,6 +51,8 @@ export type GalleryEntry = {
   editions: { id: string; name: string }[];
   /** The code catalog's order: a higher number is a newer template. */
   sortOrder: number;
+  /** The card screenshot in this language (`public/template-previews`) and the edition it shows; null: the card draws the page live. */
+  shot: PreviewShot | null;
 };
 
 /** Template categories (store industry ids) → gallery filter codes; anything else is "ge". */
@@ -129,6 +135,7 @@ export function buildGallery(rows: readonly CatalogTemplate[], locale: string, r
         .map((page) => ({ slug: page.slug, isHome: page.isHome, name: localized(page.names, locale) ?? page.name })),
       editions: (row.editions ?? []).map((edition) => ({ id: edition.id, name: localized(edition.name, locale) ?? edition.id })),
       sortOrder: row.sortOrder,
+      shot: previewShot(row.preview, locale),
     }));
 }
 

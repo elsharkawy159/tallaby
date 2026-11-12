@@ -234,9 +234,9 @@ function demoPageName(template: TemplateCardView, page: { slug: string }, locale
   return template.pageNames?.[page.slug]?.[locale] ?? null;
 }
 
-/** The gallery tile's window (card 1c): a desktop page cropped to the tile's shape. */
+/** The gallery tile's window (card 1c, 3:4 since 2026-11-12): a desktop page cropped to the tile's shape, for a template with no screenshot. */
 const TILE_WIDTH = 1280;
-const TILE_HEIGHT = Math.round((TILE_WIDTH * 398) / 380);
+const TILE_HEIGHT = Math.round((TILE_WIDTH * 4) / 3);
 
 /**
  * A template thumbnail: the template's home page with its demo store, loaded
@@ -298,14 +298,14 @@ function TileThumbnail({
 
   const home = data?.pages.find((p) => p.isHome) ?? data?.pages[0];
   return (
-    <span ref={box} aria-hidden className="relative block aspect-[380/398] w-full overflow-hidden bg-(--s-fill)">
+    <span ref={box} aria-hidden className="relative block aspect-[3/4] w-full overflow-hidden bg-(--s-fill)">
       {data && home ? (
         <span className="pointer-events-none absolute start-0 top-0 block origin-top-left rtl:origin-top-right" style={{ width: TILE_WIDTH, height: TILE_HEIGHT, transform: `scale(${scale})` }}>
           <SitePreview
             className="h-full"
             store={{ name: data.demo?.store.name.ar ?? "", url: "https://example.tallaby.com" }}
             catalog={demoCatalog(data.demo)}
-            sections={home.sections.slice(0, 4)}
+            sections={home.sections.slice(0, 5)}
             header={data.header}
             footer={null}
             designSystem={data.designSystem}

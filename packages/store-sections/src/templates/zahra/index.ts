@@ -43,6 +43,7 @@ import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import { FASHION_JEWELRY } from "../editions/packs/jewelry/fashion-jewelry";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { templatePreview } from "../preview";
 
 export const ZAHRA_KEY = "zahra";
 
@@ -285,6 +286,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 }
 
 export const ZAHRA = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(ZAHRA_KEY, "fashion-jewelry", { ar: 2812, en: 2812 }),
   key: ZAHRA_KEY,
   version: 3,
   changelog: "Zahra v3: the fashion-jewelry template, rebuilt look-first",

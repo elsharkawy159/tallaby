@@ -23,6 +23,7 @@ import { aboutStory, contactPage, pageHeader } from "../_pages";
 import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, pexels } from "../library-template";
+import { templatePreview } from "../preview";
 
 export const ARENA_KEY = "arena";
 
@@ -327,6 +328,8 @@ const DEMO = demoStore({
 });
 
 export const ARENA = editionTemplate({
+  // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
+  preview: templatePreview(ARENA_KEY, "pc-gaming", { ar: 1836, en: 1835 }),
   key: ARENA_KEY,
   version: 4,
   changelog: "Arena v4: hero, categories, section order",

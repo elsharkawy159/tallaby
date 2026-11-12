@@ -14,6 +14,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import { templatePreviewPageUrl } from "@workspace/store-editor/lib/template-edition.lib";
 import { TemplateLiveThumbnail } from "@workspace/store-editor/preview/template-live-thumbnail.client";
 import type { TemplatePreviewView } from "@workspace/store-editor/templates.dto";
+import { TemplateShot } from "@workspace/ui/components/template-shot";
+import { previewShot, templatePreviewUrl } from "@workspace/store-sections/template-preview";
 import { RemoteImage } from "@/components/media/remote-image";
 import { BuilderIntl } from "@/app/(builder)/builder-intl.client";
 import { templatePreview } from "@/app/(builder)/stores/[storeId]/editor/admin-store-editor.server";
@@ -239,11 +241,13 @@ export function ChangeThemeButton({
                   const isCurrent = theme.key === currentKey;
                   const isSelected = selected?.key === theme.key && selected.edition === edition;
                   const nicheName = themeNicheName(theme, edition);
+                  // Its home page screenshot, served by tallaby.com, when it shows this card's edition (owner, 2026-11-12).
+                  const shot = previewShot(theme.preview, previewLocale, edition);
                   return (
                     <li
                       key={`${theme.key}:${edition ?? ""}`}
                       className={cn(
-                        "overflow-hidden rounded-lg border bg-background transition-shadow",
+                        "tpl-shot-trigger overflow-hidden rounded-lg border bg-background transition-shadow",
                         isSelected ? "border-primary ring-2 ring-primary" : "hover:border-foreground/30",
                         theme.isPremium && "opacity-50",
                       )}
@@ -256,8 +260,10 @@ export function ChangeThemeButton({
                         className="group block w-full text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:cursor-not-allowed"
                       >
                         <div className="relative w-full bg-muted">
-                          {theme.thumbnailUrl && !edition ? (
-                            <div className="relative aspect-[16/10] w-full border-b">
+                          {shot ? (
+                            <TemplateShot src={templatePreviewUrl(shot.src, PREVIEW_ORIGIN)} width={shot.width} height={shot.height} sizes="(min-width: 1024px) 240px, 45vw" className="border-b bg-muted" />
+                          ) : theme.thumbnailUrl && !edition ? (
+                            <div className="relative aspect-[3/4] w-full border-b">
                               <RemoteImage src={theme.thumbnailUrl} alt="" fill sizes="(min-width: 1024px) 240px, 45vw" className="object-cover object-top" />
                             </div>
                           ) : (
@@ -267,6 +273,7 @@ export function ChangeThemeButton({
                               load={loaderFor(edition)}
                               fontClassName={storeFontVariables}
                               fallback={<PaletteBand palette={theme.palette} className="absolute inset-0" />}
+                              tall
                             />
                           )}
                           {nicheName && (

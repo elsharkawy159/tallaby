@@ -21,6 +21,8 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Chip, EmptyState, Modal, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { RemoteImage } from "@/components/media/remote-image";
+import { TemplateShot } from "@workspace/ui/components/template-shot";
+import { previewShot, templatePreviewUrl } from "@workspace/store-sections/template-preview";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, listTemplatesPage, undoTemplate } from "./templates.server";
 import type { TemplateCardView, TemplatesPageView } from "./templates.dto";
@@ -410,17 +412,21 @@ export function TemplateGallery({
               const name = text(template.name);
               const edition = editionOf(template);
               const nicheTag = editionName(template, edition);
+              // Its home page screenshot, served by tallaby.com, when it shows this card's edition (owner, 2026-11-12): a tall card that scrolls the page on hover.
+              const shot = previewShot(template.preview, locale, edition);
               return (
-                <li key={template.key} className="group flex min-w-0 flex-col gap-3">
+                <li key={template.key} className="tpl-shot-trigger group flex min-w-0 flex-col gap-3">
                   {/* Gallery tile: the preview fills the tile; Use / Preview buttons sit below it, always visible (owner, 2026-11-07). */}
                   <div className={cn("relative overflow-hidden rounded-2xl border border-(--s-line) bg-(--s-surface) shadow-(--s-shadow-card) transition-shadow duration-200 group-hover:shadow-(--s-shadow-hover)", current && "outline-2 outline-offset-2 outline-(--s-primary)")}>
                     <button type="button" className="block w-full cursor-pointer text-start" onClick={() => setPreviewing(template)} aria-label={t("preview.open", { name })}>
-                      {template.thumbnailUrl ? (
-                        <span className="relative block aspect-[380/398] w-full">
+                      {shot ? (
+                        <TemplateShot src={templatePreviewUrl(shot.src, TEMPLATE_PREVIEW_ORIGIN)} width={shot.width} height={shot.height} sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 92vw" className="bg-(--s-fill)" />
+                      ) : template.thumbnailUrl ? (
+                        <span className="relative block aspect-[3/4] w-full">
                           <RemoteImage src={template.thumbnailUrl} alt="" fill sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw" className="object-cover object-top" />
                         </span>
                       ) : (
-                        <TemplateLiveThumbnail storeId={storeId} templateKey={template.key} editionId={edition} fontClassName={fontClassName} fallback={<ThumbnailFallback />} tall />
+                        <TemplateLiveThumbnail storeId={storeId} templateKey={template.key} editionId={edition} fontClassName={fontClassName} fallback={<ThumbnailFallback tall />} tall />
                       )}
                     </button>
                     {(current || template.isPremium) && (
@@ -599,9 +605,9 @@ export function Swatches({ colors }: { colors: readonly string[] }) {
   );
 }
 
-function ThumbnailFallback() {
+function ThumbnailFallback({ tall = false }: { tall?: boolean }) {
   return (
-    <span className="grid aspect-[380/398] w-full place-items-center bg-(--s-fill) text-(--s-subtle)">
+    <span className={cn("grid w-full", tall ? "aspect-[3/4]" : "aspect-[380/398]", "place-items-center bg-(--s-fill) text-(--s-subtle)")}>
       <LayoutTemplate className="size-6" aria-hidden />
     </span>
   );
@@ -614,7 +620,7 @@ function TemplateGridSkeleton({ label }: { label: string }) {
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-x-4 gap-y-6" aria-hidden>
         {Array.from({ length: TEMPLATES_PAGE_SIZE }, (_, index) => (
           <li key={index} className="flex flex-col gap-3">
-            <Skeleton className="aspect-[380/398] w-full rounded-2xl" />
+            <Skeleton className="aspect-[3/4] w-full rounded-2xl" />
             <Skeleton className="h-5 w-2/3" />
             <Skeleton className="h-3.5 w-1/2" />
           </li>
