@@ -800,6 +800,8 @@ export const cartItems = pgTable("cart_items", {
 	crossSellId: uuid("cross_sell_id"),
 	/** A free gift the customer picked (0149): price 0, rechecked at checkout, deleted with its rule. */
 	giftRuleId: uuid("gift_rule_id"),
+	/** Customer requirements the customer filled (0167, F-91): { key, extrasPiastres, lines }; `price` already includes the extras. */
+	customerInputs: jsonb("customer_inputs"),
 }, (table) => [
 	index("cart_items_cart_id_idx").using("btree", table.cartId.asc().nullsLast().op("uuid_ops")),
 	index("cart_items_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
@@ -1363,6 +1365,8 @@ export const orderItems = pgTable("order_items", {
 	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
 	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
 	metadata: jsonb(),
+	/** Snapshot of the customer requirements (0167, F-91): both labels, value, extra, image storage paths. */
+	customerInputs: jsonb("customer_inputs"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -1593,6 +1597,8 @@ export const products = pgTable("products", {
 	dimensions: jsonb(),
 	price: jsonb(),
 	productType: productType("product_type").default('physical'),
+	/** Customer requirements (0167, F-91): up to 10 field definitions, validated by @workspace/lib/products/customer-fields; null = none. */
+	customerFields: jsonb("customer_fields"),
 }, (table) => [
 	index("product_brand_id_idx").using("btree", table.brandId.asc().nullsLast().op("uuid_ops")),
 	index("product_main_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
@@ -1605,6 +1611,7 @@ export const products = pgTable("products", {
 	index("products_trashed_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.deletedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(deleted_at IS NOT NULL AND purged_at IS NULL)`),
 	check("products_low_stock_threshold_check", sql`low_stock_threshold IS NULL OR low_stock_threshold BETWEEN 1 AND 99`),
 	check("products_min_order_quantity_check", sql`min_order_quantity BETWEEN 1 AND 10000`),
+	check("products_customer_fields_check", sql`customer_fields IS NULL OR jsonb_typeof(customer_fields) = 'array'`),
 	check("products_ai_source_check", sql`ai_source IS NULL OR ai_source IN ('autofill_add', 'autofill_edit')`),
 	foreignKey({
 			columns: [table.sellerCategoryId],
@@ -3300,6 +3307,49 @@ export const storeAppInstalls = pgTable("store_app_installs", {
 	check("store_app_installs_period_check", sql`pricing_model <> 'monthly' OR (current_period_start IS NOT NULL AND current_period_end IS NOT NULL)`),
 ]);
 
+/**
+ * Size Chart app (0169, ROADMAP.md F-92): a store's size charts. `definition`
+ * is `sizeChartDefinitionSchema` (packages/lib/src/size-charts). Server-only: RLS on, no policies.
+ */
+export const storeSizeCharts = pgTable("store_size_charts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	storeId: uuid("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+	/** {"ar": "...", "en": "..."} */
+	name: jsonb().notNull(),
+	definition: jsonb().notNull(),
+	position: integer().default(0).notNull(),
+	createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_size_charts_store_idx").using("btree", table.storeId, table.position),
+	index("store_size_charts_seller_idx").using("btree", table.sellerId),
+	unique("store_size_charts_id_store_key").on(table.id, table.storeId),
+	check("store_size_charts_name_check", sql`jsonb_typeof(name) = 'object' AND octet_length(name::text) <= 1024`),
+	check("store_size_charts_definition_check", sql`jsonb_typeof(definition) = 'object' AND octet_length(definition::text) <= 65536`),
+]);
+
+/** What a size chart is applied to (0169): one product or one store category per row; a product's own row beats its category's. */
+export const storeSizeChartTargets = pgTable("store_size_chart_targets", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chartId: uuid("chart_id").notNull(),
+	storeId: uuid("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	productId: uuid("product_id").references(() => products.id, { onDelete: "cascade" }),
+	categoryId: uuid("category_id").references(() => sellerProductCategories.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({ columns: [table.chartId, table.storeId], foreignColumns: [storeSizeCharts.id, storeSizeCharts.storeId], name: "store_size_chart_targets_chart_fkey" }).onDelete("cascade"),
+	uniqueIndex("store_size_chart_targets_product_key").using("btree", table.storeId, table.productId).where(sql`product_id IS NOT NULL`),
+	uniqueIndex("store_size_chart_targets_category_key").using("btree", table.storeId, table.categoryId).where(sql`category_id IS NOT NULL`),
+	index("store_size_chart_targets_chart_idx").using("btree", table.chartId),
+	index("store_size_chart_targets_product_idx").using("btree", table.productId).where(sql`product_id IS NOT NULL`),
+	index("store_size_chart_targets_category_idx").using("btree", table.categoryId).where(sql`category_id IS NOT NULL`),
+	index("store_size_chart_targets_seller_idx").using("btree", table.sellerId),
+	check("store_size_chart_targets_one_check", sql`num_nonnulls(product_id, category_id) = 1`),
+]);
+
 /** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
 /** One AI credit balance per seller account (0137, ROADMAP.md F-57). Server-only: RLS on, no policies. */
 export const sellerAiCredits = pgTable("seller_ai_credits", {
@@ -3729,8 +3779,9 @@ export const featureRequestVotes = pgTable("feature_request_votes", {
 ]);
 
 /**
- * Affiliate program commissions (0117, F-37): 20 % of each succeeded store-wallet
- * top-up of a referred seller, one row per top-up. Its own ledger; paid in cash
+ * Affiliate program commissions (0117, F-37): a share of each succeeded store-wallet
+ * top-up of a referred seller (kind 'percent', one row per top-up), or since 0168
+ * the EGP 100 sign-up bonus (kind 'signup_bonus', one per referred seller). Its own ledger; paid in cash
  * through referral_payouts. Server-only (RLS on, no policies).
  */
 export const referralCommissions = pgTable("referral_commissions", {
@@ -3742,6 +3793,8 @@ export const referralCommissions = pgTable("referral_commissions", {
 	amount: numeric({ precision: 10, scale: 2 }).notNull(),
 	/** earned | reversed */
 	status: text().default('earned').notNull(),
+	/** percent (a share of one top-up) | signup_bonus (EGP 100 once per referred seller, 0168) */
+	kind: text().default('percent').notNull(),
 	reversedAt: timestamp("reversed_at", { withTimezone: true, mode: 'string' }),
 	reversedBy: uuid("reversed_by"),
 	reversalReason: text("reversal_reason"),
@@ -3750,6 +3803,7 @@ export const referralCommissions = pgTable("referral_commissions", {
 	unique("referral_commissions_top_up_key").on(table.topUpId),
 	index("referral_commissions_referrer_idx").using("btree", table.referrerSellerId, table.createdAt.desc()),
 	index("referral_commissions_referred_idx").using("btree", table.referredSellerId),
+	uniqueIndex("referral_commissions_one_signup_bonus").using("btree", table.referredSellerId).where(sql`kind = 'signup_bonus'`),
 	foreignKey({ columns: [table.referrerSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referrer_seller_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.referredSellerId], foreignColumns: [sellers.id], name: "referral_commissions_referred_seller_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.topUpId], foreignColumns: [sellerWalletTopUps.id], name: "referral_commissions_top_up_id_fkey" }).onDelete("cascade"),
@@ -3758,6 +3812,7 @@ export const referralCommissions = pgTable("referral_commissions", {
 	check("referral_commissions_amount_check", sql`amount >= 0 AND top_up_amount > 0`),
 	check("referral_commissions_not_self", sql`referrer_seller_id <> referred_seller_id`),
 	check("referral_commissions_reversed_check", sql`status <> 'reversed' OR reversed_at IS NOT NULL`),
+	check("referral_commissions_kind_check", sql`kind IN ('percent', 'signup_bonus')`),
 ]);
 
 /**

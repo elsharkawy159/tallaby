@@ -1,5 +1,6 @@
 import { isPaymentSettled } from "@/app/(main)/orders/order-flow.lib";
 import { cashDuePiastres } from "@workspace/lib/orders/cod-deposit";
+import { parseCustomerInputsSnapshot } from "@workspace/lib/products/customer-fields";
 
 /**
  * The printouts: an A4 invoice and an A6 packing slip per order (ROADMAP.md
@@ -64,6 +65,8 @@ export interface PickingRow {
   productName: string;
   variantName: string | null;
   sku: string | null;
+  /** The customer requirements of a made-to-order line (F-91): such a line is its own row. */
+  customerInputs?: unknown;
   quantity: number;
   /** Order numbers with this item, in print order. */
   orderNumbers: string[];
@@ -71,7 +74,15 @@ export interface PickingRow {
 
 type PickingOrder = {
   orderNumber: string;
-  lines: { productId: string | null; variantId: string | null; productName: string; variantName: string | null; sku: string | null; quantity: number }[];
+  lines: {
+    productId: string | null;
+    variantId: string | null;
+    productName: string;
+    variantName: string | null;
+    sku: string | null;
+    quantity: number;
+    customerInputs?: unknown;
+  }[];
 };
 
 /**
@@ -83,9 +94,12 @@ export function pickingList(orders: readonly PickingOrder[], locale: "ar" | "en"
   const rows = new Map<string, PickingRow>();
   for (const order of orders) {
     for (const line of order.lines) {
-      const key = line.productId
-        ? `${line.productId}:${line.variantId ?? ""}`
-        : `name:${line.productName}:${line.variantName ?? ""}:${line.sku ?? ""}`;
+      // Another name or photo (F-91) is another thing to make: its own row.
+      const inputs = parseCustomerInputsSnapshot(line.customerInputs);
+      const key =
+        (line.productId
+          ? `${line.productId}:${line.variantId ?? ""}`
+          : `name:${line.productName}:${line.variantName ?? ""}:${line.sku ?? ""}`) + (inputs ? `:${inputs.key}` : "");
       const row = rows.get(key);
       if (row) {
         row.quantity += line.quantity;
@@ -96,6 +110,7 @@ export function pickingList(orders: readonly PickingOrder[], locale: "ar" | "en"
           productName: line.productName,
           variantName: line.variantName,
           sku: line.sku,
+          ...(inputs && { customerInputs: inputs }),
           quantity: line.quantity,
           orderNumbers: [order.orderNumber],
         });

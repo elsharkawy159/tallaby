@@ -3,6 +3,7 @@ import { formatDateTime, formatMoney, moneyDir } from "@/lib/i18n/format";
 import { pickingList } from "./print-orders.lib";
 import { OrderBarcode } from "./order-barcode";
 import type { PrintOrder, PrintSender } from "./print-orders.types";
+import { describeCustomerInputs, parseCustomerInputsSnapshot } from "@workspace/lib/products/customer-fields";
 
 /** A translator for the `orders` namespace (createTranslator), in the printout's language. */
 export type PrintT = {
@@ -11,6 +12,21 @@ export type PrintT = {
 };
 
 type DocProps = { order: PrintOrder; t: PrintT; locale: "ar" | "en" };
+
+/** A line's customer requirements (F-91) as plain text: "Name: Omar", photos as "2 photos attached". */
+function PrintCustomerInputs({ value, t, locale }: { value: unknown; t: PrintT; locale: "ar" | "en" }) {
+  const rows = describeCustomerInputs(parseCustomerInputsSnapshot(value), locale, (count) => t("customerInputs.photos", { count }));
+  if (!rows.length) return null;
+  return (
+    <ul className="mt-0.5 text-xs text-neutral-800">
+      {rows.map((row, index) => (
+        <li key={index} className="break-words whitespace-pre-wrap" dir="auto">
+          <span className="text-neutral-600">{row.label}:</span> <span className="font-semibold">{row.value}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function paymentLabel(order: PrintOrder, t: PrintT) {
   const key = `details.paymentMethods.${order.paymentMethod}`;
@@ -164,6 +180,7 @@ export function InvoiceDocument({ order, t, locale }: DocProps) {
                     {line.sku && t("print.sku", { sku: line.sku })}
                   </p>
                 )}
+                <PrintCustomerInputs value={line.customerInputs} t={t} locale={locale} />
               </td>
               <td className="py-2 text-center tabular-nums">{line.quantity}</td>
               <td className="py-2 text-end tabular-nums" dir={moneyDir(locale, order)}>
@@ -243,6 +260,7 @@ export function SlipDocument({ order, t, locale }: DocProps) {
                 <span className="font-medium">{line.productName}</span>
                 {line.variantName && <span className="text-neutral-600"> · {line.variantName}</span>}
                 {line.sku && <span className="block text-[10px] text-neutral-500">{t("print.sku", { sku: line.sku })}</span>}
+                <PrintCustomerInputs value={line.customerInputs} t={t} locale={locale} />
               </span>
             </li>
           ))}
@@ -301,6 +319,7 @@ export function PickingDocument({ orders, t, locale }: { orders: PrintOrder[]; t
                     {row.sku && t("print.sku", { sku: row.sku })}
                   </p>
                 )}
+                <PrintCustomerInputs value={row.customerInputs} t={t} locale={locale} />
               </td>
               <td className="py-2 text-center text-lg font-extrabold tabular-nums">{row.quantity}</td>
               <td className="py-2 text-xs leading-relaxed text-neutral-700">

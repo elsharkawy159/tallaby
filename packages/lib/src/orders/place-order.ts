@@ -81,6 +81,12 @@ import { couponInStore } from '../stores/store-scope.server'
 import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
 import { minOrderShortfalls, shouldEnforceMinOrder, type MinOrderShortfall } from './min-order-quantity.lib'
 import { splitDeposit } from './cod-deposit.lib'
+import {
+  parseCustomerFields,
+  parseCustomerInputsSnapshot,
+  recheckCustomerInputs,
+  type CustomerInputsSnapshot,
+} from '../products/customer-fields.lib'
 
 /**
  * Snapshot on every store-website order placed while the store delivers itself
@@ -227,6 +233,8 @@ export type PlaceOrderFromCartResult =
       minimumPurchase?: number
       /** With error 'belowMinOrderQuantity': each product under its minimum, every seller's. */
       minOrderShortfalls?: (MinOrderShortfall & { title: string; sellerId: string })[]
+      /** With error 'customerInputsChanged' (F-91): the cart lines the customer must review. */
+      customerInputLines?: { cartItemId: string; productId: string; title: string }[]
     }
 
 /**
@@ -402,6 +410,34 @@ export async function placeOrderFromCart(
     }
   }
 
+  // Customer requirements (F-91): a line's inputs are checked again against the
+  // product's fields NOW. The cart price already holds the extras worked out on
+  // add; if a field changed (a new required field, a removed option, another
+  // extra) the customer reviews the line instead of being charged a different
+  // amount. Seller and admin flows (manual, external) keep what the line holds.
+  const customerInputsByLine = new Map<string, CustomerInputsSnapshot | null>()
+  const changedInputLines: { cartItemId: string; productId: string; title: string }[] = []
+  for (const item of cart.cartItems) {
+    const stored = parseCustomerInputsSnapshot(item.customerInputs)
+    if (orderSource !== 'storefront' && orderSource !== 'website') {
+      customerInputsByLine.set(item.id, stored)
+      continue
+    }
+    const fields = item.giftRuleId ? [] : parseCustomerFields(item.product.customerFields)
+    if (!fields.length && !stored) continue
+    const check = recheckCustomerInputs(fields, stored)
+    if (check.ok) customerInputsByLine.set(item.id, check.snapshot)
+    else
+      changedInputLines.push({
+        cartItemId: item.id,
+        productId: item.productId,
+        title: pickProductTitle(item.product.productTranslations, locale, item.product.sku, item.productId),
+      })
+  }
+  if (changedInputLines.length > 0) {
+    return { success: false, error: 'customerInputsChanged', customerInputLines: changedInputLines }
+  }
+
   // The seller's minimum per product (0151), summed across variants. Before any
   // stock, coupon or money. Gifts and cross-sell lines whose offer applies stay outside.
   if (shouldEnforceMinOrder(orderSource, allowBelowMinOrderQuantity)) {
@@ -572,6 +608,8 @@ export async function placeOrderFromCart(
       commissionAmount: '0.00',
       sellerEarning: formatDecimal(itemSubtotal),
       metadata: null as ({ platformFee?: PlatformFeeSnapshot } & Record<string, unknown>) | null,
+      // Snapshot of the customer requirements (F-91); `price` already includes their extras.
+      customerInputs: customerInputsByLine.get(item.id) ?? null,
       currency: orderCurrency,
       condition: item.product.condition,
       fulfillmentType: item.product.fulfillmentType,

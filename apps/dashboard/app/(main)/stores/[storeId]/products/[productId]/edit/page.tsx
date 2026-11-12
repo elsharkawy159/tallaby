@@ -20,6 +20,7 @@ import { loadProductLinkHost } from "../../add/product-link-host.data";
 import { loadProductStoreLinks } from "../../_components/product-store-links.data";
 import { loadProductViewStats } from "../../_components/product-views.data";
 import { loadProductSocialProof } from "../../social-proof/social-proof.data";
+import { parseCustomerFields } from "@workspace/lib/products/customer-fields";
 import type { EditProductStatus } from "./edit-product-actions.client";
 import type { CategoryOption } from "../../add/add-product.schema";
 
@@ -85,6 +86,7 @@ export default async function EditProductPage({
     lowStockThreshold: socialProof.lowStockThreshold,
     minOrderQuantity: socialProof.minOrderQuantity,
     sellerReviews: socialProof.reviews,
+    customerFields: parseCustomerFields((product as { customerFields?: unknown }).customerFields),
   };
 
   // Not awaited: the views stat streams into the header (F-15b); never rejects.

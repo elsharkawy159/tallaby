@@ -244,6 +244,7 @@ export async function loadSellerOrders(
           price: true,
           total: true,
           fulfillmentType: true,
+          customerInputs: true,
         },
         with: {
           product: {
@@ -410,6 +411,7 @@ export async function loadSellerOrders(
         total: i.total ?? "0",
         image: (i.product?.images as string[] | null | undefined)?.[0] ?? null,
         productUrl: productUrl(o.storeId, i.productId),
+        customerInputs: i.customerInputs ?? null,
       })),
       itemCount: mine.reduce((n, i) => n + (i.quantity ?? 1), 0),
       failureReason: shipment?.failureReason ?? null,

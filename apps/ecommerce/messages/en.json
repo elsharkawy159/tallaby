@@ -1,4 +1,40 @@
 {
+  "sizeFinder": {
+    "open": "Find my size",
+    "yourSizeInline": "Your size:",
+    "title": "Find my size",
+    "close": "Close",
+    "tabs": {
+      "find": "Find my size",
+      "chart": "Size chart"
+    },
+    "optional": "(optional)",
+    "fit": "How do you like it to fit?",
+    "fits": {
+      "tight": "Tight",
+      "regular": "Regular",
+      "loose": "Loose"
+    },
+    "units": {
+      "cm": "cm",
+      "kg": "kg",
+      "in": "in",
+      "lb": "lb"
+    },
+    "yourSize": "Your size",
+    "closest": "Closest size",
+    "hint": {
+      "above": "You’re above this chart’s largest size. Check the size chart or ask the store.",
+      "below": "You’re below this chart’s smallest size. Check the size chart or ask the store."
+    },
+    "shifted": "Moved from {size} for the fit you chose.",
+    "select": "Choose size {size}",
+    "selected": "This size is selected",
+    "fill": "Enter your measurements to see your size.",
+    "noResult": "This size chart has no sizes for these measurements yet.",
+    "remembered": "We remember your measurements on this device, so other products fill them in.",
+    "size": "Size"
+  },
   "orderLinkConfirm": {
     "title": "Please confirm your order",
     "body": "The store created this order for you. Check the details below, then confirm it.",
@@ -2118,7 +2154,7 @@
     },
     "affiliates": {
       "title": "Earn with us: the affiliate program",
-      "description": "Share your referral link and earn 25% for life of every top-up by the sellers you bring, paid in cash to your bank account or Vodafone Cash."
+      "description": "Share your referral link and earn EGP 100 for every seller who signs up through it and tops up $5, paid in cash to your bank account or Vodafone Cash."
     },
     "followUs": {
       "title": "Follow us",
@@ -3100,15 +3136,15 @@
   "affiliates": {
     "hero": {
       "eyebrow": "Earn with us",
-      "title": "Earn <em>25%</em> of every top-up by the sellers you bring, for life",
-      "lead": "Share your link with your referral code. Every time a seller who signed up through it tops up their store wallet on Tallaby, you earn 25% of the amount, in cash, not wallet credit.",
+      "title": "Earn <em>EGP 100</em> for every seller you bring who tops up $5",
+      "lead": "Share your link with your referral code. Every seller who signs up through it and tops up their store wallet with $5 or more earns you EGP 100, once per seller, in cash, not wallet credit.",
       "getLink": "Get your link",
       "howLink": "How it works"
     },
     "card": {
-      "rate": "25%",
-      "rateLabel": "of every store-wallet top-up",
-      "lifetime": "For life, every time the seller tops up",
+      "rate": "100",
+      "rateLabel": "EGP for every seller who tops up $5",
+      "lifetime": "Once per seller, even over several top-ups",
       "cash": "Cash to a bank account or Vodafone Cash",
       "minimum": "Withdraw from EGP 500"
     },
@@ -3125,36 +3161,36 @@
           "body": "Copy it or share it on WhatsApp and Facebook with anyone who wants to start an online store. Whoever opens your link and signs up within 60 days counts for you."
         },
         {
-          "title": "Earn 25% for life",
-          "body": "Every time a seller you brought tops up their store wallet successfully, 25% of the amount is credited to you, every time, with no end date."
+          "title": "Earn EGP 100 per seller",
+          "body": "Once a seller you brought has topped up their store wallet with $5 or more in total, EGP 100 is credited to you, once for that seller."
         },
         {
           "title": "Withdraw in cash",
-          "body": "After 10 successful referrals and 10 stores, request your available balance (EGP 500 or more) to your bank account or Vodafone Cash."
+          "body": "When your available balance reaches EGP 500, request it to your bank account or Vodafone Cash."
         }
       ]
     },
     "example": {
       "kicker": "Example",
-      "title": "An EGP 1,000 top-up = EGP 200 for you",
-      "body": "A seller who signed up through your link tops up their store wallet with EGP 1,000? You earn EGP 250 right away. If they top up again, you earn 25% again.",
-      "topUp": "Seller's top-up",
-      "commission": "Your commission",
+      "title": "A $5 top-up = EGP 100 for you",
+      "body": "A seller who signed up through your link tops up their store wallet with $5, or $2 and then $3? You earn EGP 100 right away. Bring five such sellers and you can withdraw EGP 500.",
+      "topUp": "Seller's top-ups",
+      "commission": "Your reward",
       "currency": "EGP"
     },
     "terms": {
       "kicker": "Terms",
       "title": "The program's terms, plainly",
       "items": [
-        "The commission is 25% of every successful store-wallet top-up by a seller who signed up through your link, for life.",
-        "Commissions are paid in cash to a bank account or Vodafone Cash, never as credit in your store wallet.",
-        "A referral counts as successful once the referred seller's first wallet top-up succeeds.",
-        "Withdrawal opens after at least 10 successful referrals and at least 10 stores created through your link. They are two separate counts, and a seller who creates 3 stores counts as 3 stores.",
+        "You earn EGP 100 once for every seller account that signs up through your link and whose successful store-wallet top-ups reach $5 in total.",
+        "Rewards are paid in cash to a bank account or Vodafone Cash, never as credit in your store wallet.",
+        "The reward is per seller account, not per store: a seller who opens 3 stores still earns you EGP 100 once.",
+        "Percentage commissions you earned before 2026-11-12 stay in your balance and can be withdrawn.",
         "The minimum withdrawal is EGP 500, each request covers your whole available balance, and you can have one open request at a time.",
-        "A commission can be withdrawn as soon as it is credited, with no waiting period.",
+        "A reward can be withdrawn as soon as it is credited, with no waiting period.",
         "Your link is remembered for 60 days and the first link a person opens is the one that counts. The referrer can't be changed after signup, and you can't refer yourself.",
         "Referral links are for Tallaby seller accounts only.",
-        "Tallaby cancels commissions from fake accounts and self-referrals, and withdrawals are paused while your account isn't active."
+        "Tallaby cancels rewards from fake accounts and self-referrals, and withdrawals are paused while your account isn't active."
       ]
     },
     "faq": {
@@ -3166,12 +3202,12 @@
           "a": "Anyone with a Tallaby seller account. Creating one is free, and your link is ready on the “Earn with us” page of your dashboard."
         },
         {
-          "q": "Which amounts earn a commission?",
-          "a": "25% of every amount a seller you brought successfully tops up in their store wallet, for life. The EGP 100 welcome gift isn't a top-up, so it earns no commission."
+          "q": "When do I earn the EGP 100?",
+          "a": "As soon as a seller who signed up through your link has successfully topped up their store wallet with $5 or more, in one top-up or several. You earn it once per seller."
         },
         {
           "q": "When can I withdraw?",
-          "a": "Once you reach at least 10 successful referrals and at least 10 stores created through your link, and your available balance is EGP 500 or more. After that, withdrawal stays open for you."
+          "a": "Whenever your available balance is EGP 500 or more, for example after five sellers who each topped up $5. There is no referral or store count to reach."
         },
         {
           "q": "How do I get paid?",
@@ -3179,11 +3215,11 @@
         },
         {
           "q": "Do I see the details of the sellers I referred?",
-          "a": "You see the store name, signup date, number of stores, total topped up and your commission from it, never their phone number or email."
+          "a": "You see the store name, signup date, number of stores, total topped up and your reward from it, never their phone number or email."
         },
         {
           "q": "Does a seller I referred pay more?",
-          "a": "No. They pay Tallaby's usual prices like every seller; Tallaby pays your commission."
+          "a": "No. They pay Tallaby's usual prices like every seller; Tallaby pays your reward."
         }
       ]
     },
@@ -3208,5 +3244,33 @@
     "social": "Social media",
     "visit": "Visit Tallaby",
     "sell": "Create your store"
+  },
+  "customerFields": {
+    "title": "Details we need from you",
+    "optional": "optional",
+    "required": "required",
+    "textPlaceholder": "Type here",
+    "charCount": "{count} / {max}",
+    "uploadPhoto": "Upload a photo",
+    "addAnotherPhoto": "Add another photo",
+    "uploading": "Uploading the photo…",
+    "photoHint": "JPG, PNG or WebP, up to 10 MB",
+    "photosCount": "{count} of {max}",
+    "photoAlt": "Photo {number}",
+    "removePhoto": "Remove photo {number}",
+    "imagesAttached": "{count, plural, =0 {No photos} one {1 photo attached} other {# photos attached}}",
+    "errors": {
+      "required": "This field is required",
+      "tooLong": "The text is longer than {max} characters",
+      "invalidOption": "Pick one of the options",
+      "tooManyFiles": "You can upload up to {max} photos",
+      "invalidFile": "Upload a JPG, PNG or WebP photo up to 10 MB",
+      "unknownField": "This product's details changed. Refresh the page and try again",
+      "uploadFailed": "The photo couldn't be uploaded. Try again",
+      "rateLimited": "Too many photos in a short time. Wait a moment and try again",
+      "fillOnProductPage": "This product needs details from you. Fill them in on the product page",
+      "invalid": "Check the required details and try again",
+      "changedAtCheckout": "The seller changed the details needed for: {items}. Remove it from your cart and add it again from its page"
+    }
   }
 }

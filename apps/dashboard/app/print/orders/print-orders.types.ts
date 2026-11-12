@@ -20,6 +20,8 @@ export interface PrintOrderLine {
   quantity: number;
   price: string;
   total: string;
+  /** Customer requirements snapshot (0167, F-91): printed as text, photos counted. */
+  customerInputs?: unknown;
 }
 
 /** One order as printed: only the session seller's lines. */

@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/providers/cart-provider";
 import { productMinOrder } from "./product-page.lib";
+import { CustomerFieldsForm } from "./customer-fields-form.client";
 
 interface ProductActionsProps {
   product: Product;
@@ -115,9 +116,13 @@ export const ProductActions = ({
     <p className="mb-2 text-sm font-medium text-gray-700">{tCommon("minOrderLine", { count: minOrder.minimum })}</p>
   );
 
+  // Customer requirements (F-91), right above the buttons.
+  const requirements = hasStock && product.customerFields ? <CustomerFieldsForm className="mb-4" /> : null;
+
   if (!showBuyNow) {
-    return minLine ? (
+    return minLine || requirements ? (
       <div className="min-w-0">
+        {requirements}
         {minLine}
         {row}
       </div>
@@ -130,6 +135,7 @@ export const ProductActions = ({
   const buyVariant = buttonVariant === "outline" ? "default" : "outline";
   return (
     <div className={cn("flex min-w-0 flex-col gap-3", className)}>
+      {requirements}
       {minLine}
       {row}
       {hasStock && !buyNow && (

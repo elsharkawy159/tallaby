@@ -4,6 +4,7 @@ import {
   getWalletPaidAmountFromMetadata,
 } from "@workspace/lib/orders/payment";
 import { orderDiscountLabel } from "@/lib/order-discount-label";
+import { CustomerInputsLines } from "@/components/cart/customer-inputs-lines.client";
 import { parseOrderDiscountLines } from "@workspace/lib/orders";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { getPaymobPaymentOrder } from "@/actions/paymob";
@@ -137,6 +138,7 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
                       {item.variantName}
                     </p>
                   )}
+                  <CustomerInputsLines value={(item as { customerInputs?: unknown }).customerInputs} className="text-[11px]" />
                   <p className="text-[11px] text-muted-foreground">
                     {tCommon("quantity")}: {item.quantity}
                   </p>

@@ -322,6 +322,22 @@
       "types": "./src/store-forms/subscribers.server.ts",
       "default": "./src/store-forms/subscribers.server.ts"
     },
+    "./products/customer-fields": {
+      "types": "./src/products/customer-fields.lib.ts",
+      "default": "./src/products/customer-fields.lib.ts"
+    },
+    "./products/customer-fields/server": {
+      "types": "./src/products/customer-fields.server.ts",
+      "default": "./src/products/customer-fields.server.ts"
+    },
+    "./size-charts": {
+      "types": "./src/size-charts/size-chart.lib.ts",
+      "default": "./src/size-charts/size-chart.lib.ts"
+    },
+    "./size-charts/server": {
+      "types": "./src/size-charts/size-chart.server.ts",
+      "default": "./src/size-charts/size-chart.server.ts"
+    },
     "./products/trash": {
       "types": "./src/products/trash.lib.ts",
       "default": "./src/products/trash.lib.ts"

@@ -146,6 +146,8 @@ export async function getOrderConfirmationData(
           sellerId: item.sellerId,
           productName: item.productName,
           variantName: item.variantName ?? undefined,
+          // Customer requirements (F-91): text and choices; photos only counted.
+          customerInputs: item.customerInputs ?? null,
           quantity: item.quantity,
           price: item.price,
           subtotal: item.subtotal,

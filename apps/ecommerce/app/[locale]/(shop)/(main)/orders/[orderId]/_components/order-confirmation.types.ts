@@ -60,6 +60,8 @@ export interface OrderConfirmationData {
     sellerId: string;
     productName: string;
     variantName?: string;
+    /** Customer requirements snapshot (0167, F-91). */
+    customerInputs?: unknown;
     quantity: number;
     price: string;
     subtotal: string;

@@ -9,6 +9,7 @@ import { trackCommerceEvent } from "@/lib/storefront-events.client";
 import { toMetaContentIds } from "@/lib/meta/meta.product";
 import { useCurrencyCode } from "@/lib/currency-label.client";
 import { useRouter } from "@/i18n/navigation";
+import { useOptionalProductPage } from "@/components/product-page/product-page-provider.client";
 
 const sizeStyles = {
   sm: {
@@ -46,13 +47,19 @@ export const AddToCartButton = ({
   const currency = useCurrencyCode();
   const tProduct = useTranslations("product");
   const isLoading = isProductLoading(productId);
+  // On its own product page, the customer requirements (F-91) go with the add.
+  const page = useOptionalProductPage();
+  const customer = page && page.product.id === productId && page.customer.fields.length ? page.customer : null;
 
   const handleAddToCart = async () => {
+    const customerInputs = customer ? customer.collect() : undefined;
+    if (customerInputs === null) return;
     // Several variants at once (the product page's pieces): one line each.
     const result =
       lines && lines.length > 1
-        ? await addLinesToCart({ productId, lines })
-        : await addToCart({ productId, quantity, variantId });
+        ? await addLinesToCart({ productId, lines, customerInputs })
+        : await addToCart({ productId, quantity, variantId, customerInputs });
+    if (!result.success && customer && result.customerInputErrors?.length) customer.setErrors(result.customerInputErrors);
 
     if (result.success) {
       const value = "value" in result ? result.value : Number(result.data?.price ?? 0) * quantity;
@@ -82,7 +89,7 @@ export const AddToCartButton = ({
     <Button
       className={className}
       onClick={handleAddToCart}
-      disabled={disabled || isLoading || Number(stock) === 0}
+      disabled={disabled || isLoading || Number(stock) === 0 || Boolean(customer?.uploading)}
       size={size}
       variant={variant}
     >

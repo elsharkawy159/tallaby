@@ -18,6 +18,19 @@ import {
 } from "@workspace/emails";
 import { formatVariantTitleFromCart, pickProductTitle } from "@workspace/lib/orders";
 import { cashDuePiastres, readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
+import { describeCustomerInputs, parseCustomerInputsSnapshot } from "@workspace/lib/products/customer-fields";
+
+/**
+ * A line's customer requirements (F-91) as plain text beside its variant:
+ * "Name: Omar · Photo: 1 photo attached". Photos are only counted, never linked.
+ */
+function withCustomerInputs(variant: string | null | undefined, inputs: unknown, locale: string): string | null {
+  const parts = describeCustomerInputs(parseCustomerInputsSnapshot(inputs), locale, (count) =>
+    locale === "en" ? (count === 1 ? "1 photo attached" : `${count} photos attached`) : count === 1 ? "صورة واحدة مرفقة" : `${count} صور مرفقة`,
+  ).map((part) => `${part.label}: ${part.value.length > 120 ? `${part.value.slice(0, 117)}…` : part.value}`);
+  const text = [variant, ...parts].filter(Boolean).join(" · ");
+  return text || null;
+}
 import { ORDERS_FROM_ADDRESS } from "../resend";
 import { EMAIL_TYPES } from "../email-delivery";
 import { addDays, formatDate, formatMoney, joinUrl, resolveImageUrl, SITE_URL } from "./format";
@@ -75,7 +88,7 @@ export async function buildOrderConfirmation(orderId: string) {
       const line = lineItem(ctx, item);
       return {
         productName: line.name,
-        variantName: line.variant ?? null,
+        variantName: withCustomerInputs(line.variant, item.customerInputs, ctx.locale),
         sellerName: line.sellerName ?? null,
         quantity: item.quantity,
         unitPrice: ctx.money(item.price),

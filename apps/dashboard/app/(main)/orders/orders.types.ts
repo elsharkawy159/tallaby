@@ -14,6 +14,8 @@ export interface SellerOrderLine {
   image: string | null;
   /** The product page on the store's own site (custom domain or subdomain). */
   productUrl: string | null;
+  /** What the customer filled for the product's requirements (0167, F-91); null = none. */
+  customerInputs: unknown;
 }
 
 export interface SellerOrderAddress {

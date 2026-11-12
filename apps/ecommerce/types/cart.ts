@@ -1,4 +1,5 @@
 // apps/ecommerce/types/cart.ts
+import type { CustomerInputError, CustomerInputValue } from "@workspace/lib/products/customer-fields";
 
 export interface CartItem {
   id: string;
@@ -11,6 +12,8 @@ export interface CartItem {
   giftRuleId?: string | null;
   /** A cross-sell line (0145). */
   crossSellId?: string | null;
+  /** What the customer filled for the product's requirements (0167, F-91); `price` includes the extras. */
+  customerInputs?: unknown;
   sellerId: string;
   cartId: string;
   createdAt?: string | null;
@@ -50,6 +53,8 @@ export interface CartSummary {
   items: CartItem[];
   subtotal: number;
   itemCount: number;
+  /** Short-lived links to the customer's own photos on the lines (F-91). */
+  customerUploadViews?: Record<string, string>;
 }
 
 export interface CartState {
@@ -62,17 +67,21 @@ export interface CartState {
     productId: string;
     quantity: number;
     variantId?: string;
+    customerInputs?: CustomerInputValue[];
   }) => Promise<{
     success: boolean;
     message?: string;
     data?: CartItem | null;
     metaEventId?: string;
+    /** The server refused the customer requirements (F-91). */
+    customerInputErrors?: CustomerInputError[];
   }>;
   /** Several variants of one product at once (one toast, one refresh). */
   addLinesToCart: (params: {
     productId: string;
     lines: { variantId?: string; quantity: number }[];
-  }) => Promise<{ success: boolean; added: number; value: number; metaEventId?: string }>;
+    customerInputs?: CustomerInputValue[];
+  }) => Promise<{ success: boolean; added: number; value: number; metaEventId?: string; customerInputErrors?: CustomerInputError[] }>;
   updateQuantity: (
     itemId: string,
     quantity: number

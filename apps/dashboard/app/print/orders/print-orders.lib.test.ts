@@ -93,6 +93,24 @@ describe("pickingList", () => {
     expect(rows[0]).toMatchObject({ quantity: 3, orderNumbers: ["TL-9"] });
   });
 
+  it("keeps made-to-order lines with different customer inputs apart (F-91)", () => {
+    const inputs = (text: string) => ({
+      key: JSON.stringify([["name1", text]]),
+      extrasPiastres: 0,
+      lines: [{ fieldId: "name1", type: "text", label: { ar: "الاسم", en: "Name" }, text, extraPiastres: 0 }],
+    });
+    const rows = pickingList(
+      [
+        { orderNumber: "TL-1", lines: [{ ...line("p1", null, "Shirt", null, 1), customerInputs: inputs("Omar") }] },
+        { orderNumber: "TL-2", lines: [{ ...line("p1", null, "Shirt", null, 2), customerInputs: inputs("Omar") }, { ...line("p1", null, "Shirt", null, 1), customerInputs: inputs("Ali") }] },
+        { orderNumber: "TL-3", lines: [line("p1", null, "Shirt", null, 1)] },
+      ],
+      "en",
+    );
+    expect(rows.map((r) => r.quantity).sort()).toEqual([1, 1, 3]);
+    expect(rows.find((r) => r.quantity === 3)?.customerInputs).toMatchObject({ lines: [{ text: "Omar" }] });
+  });
+
   it("groups lines without a product id by name", () => {
     const rows = pickingList(
       [

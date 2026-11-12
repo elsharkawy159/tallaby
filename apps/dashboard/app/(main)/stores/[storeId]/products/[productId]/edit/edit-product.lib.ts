@@ -229,6 +229,8 @@ export function buildEditDefaultValues(
     lowStockThreshold: null,
     minOrderQuantity: 1,
     sellerReviews: [],
+    // Filled from products.customer_fields by the edit page (F-91).
+    customerFields: [],
     variantTypes,
     variants,
     localized: {

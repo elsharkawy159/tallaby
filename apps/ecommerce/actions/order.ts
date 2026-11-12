@@ -265,6 +265,15 @@ export async function createOrder(data: {
           minOrderShortfalls: result.minOrderShortfalls,
         };
       }
+      // Customer requirements changed since the line was added (F-91): the customer reviews it.
+      if (result.error === "customerInputsChanged" && result.customerInputLines?.length) {
+        const t = await getTranslations("customerFields.errors");
+        return {
+          success: false,
+          error: t("changedAtCheckout", { items: result.customerInputLines.map((line) => line.title).join("، ") }),
+          customerInputLines: result.customerInputLines,
+        };
+      }
       const shippingKey = STORE_SHIPPING_ERRORS[result.error];
       if (shippingKey) {
         const t = await getTranslations("checkout");

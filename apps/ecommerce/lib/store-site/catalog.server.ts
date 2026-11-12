@@ -10,6 +10,7 @@ import type {
   ReviewSummary,
 } from "@workspace/store-sections/render";
 import { normalizeMinOrderQuantity } from "@workspace/lib/orders/min-order-quantity";
+import { hasRequiredCustomerFields, parseCustomerFields } from "@workspace/lib/products/customer-fields";
 import { lowStockLeft } from "@workspace/store-sections/low-stock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getProducts } from "@/lib/products/product-list.server";
@@ -42,6 +43,7 @@ type RawProduct = Record<string, unknown> & {
   showLowStockBadge?: boolean | null;
   lowStockThreshold?: number | null;
   minOrderQuantity?: number | null;
+  customerFields?: unknown;
 };
 
 export type ResolvedCatalog = {
@@ -57,8 +59,11 @@ export type ResolvedCatalog = {
   productPages?: Record<string, { page: number; totalPages: number }>;
 };
 
-/** The card opens the product page: to pick a variant, or to see the seller's minimum (0151). */
-const needsProductPage = (row: RawProduct) => (row.productVariants?.length ?? 0) > 0 || normalizeMinOrderQuantity(row.minOrderQuantity) > 1;
+/** The card opens the product page: to pick a variant, to see the seller's minimum (0151), or to fill a required customer field (F-91). */
+const needsProductPage = (row: RawProduct) =>
+  (row.productVariants?.length ?? 0) > 0 ||
+  normalizeMinOrderQuantity(row.minOrderQuantity) > 1 ||
+  hasRequiredCustomerFields(parseCustomerFields(row.customerFields));
 
 function nthImage(images: unknown, index: number): string | null {
   if (!Array.isArray(images)) return null;

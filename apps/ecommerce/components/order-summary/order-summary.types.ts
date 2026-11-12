@@ -9,6 +9,8 @@ export interface OrderSummaryItem {
   giftRuleId?: string | null
   /** A cross-sell line (0145): outside the product's minimum (0151). */
   crossSellId?: string | null
+  /** Customer requirements the customer filled (0167, F-91). */
+  customerInputs?: unknown
   variant?: {
     option1?: string | null
     option2?: string | null

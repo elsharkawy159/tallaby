@@ -52,6 +52,8 @@ import { ShippingSection } from "./sections/shipping-section";
 import { VisibilitySection } from "./sections/visibility-section";
 import { SocialProofSection } from "../social-proof/social-proof-section.client";
 import { saveProductSocialProof } from "../social-proof/social-proof.server";
+import { CustomerFieldsSection } from "../customer-fields/customer-fields-section.client";
+import { saveProductCustomerFields } from "../customer-fields/customer-fields.server";
 import {
   MobilePublishBar,
   PublishChecklist,
@@ -174,6 +176,7 @@ function AddProductForm({
   const productStoreId = useProductStoreId();
   const productsHref = useProductsHref();
   const tSocialProof = useTranslations("productForm.sections.socialProof");
+  const tCustomerFields = useTranslations("productForm.sections.customerFields");
   const tCommon = useTranslations("common");
   const resolver = useLocalizedResolver(
     zodResolver(addProductFormSchema) as any,
@@ -268,6 +271,7 @@ function AddProductForm({
       lowStockThreshold: _lowStockThreshold,
       minOrderQuantity: _minOrderQuantity,
       sellerReviews: _reviews,
+      customerFields: _customerFields,
       ...payload
     } = rest;
     return { payload, taxonomy };
@@ -286,6 +290,9 @@ function AddProductForm({
       reviews: data.sellerReviews ?? [],
     });
     if (!saved.success) toast.warning(tSocialProof("saveFailed"));
+    // Customer requirements (F-91): saved on their own, like the reviews.
+    const fields = await saveProductCustomerFields(productStoreId, productId, data.customerFields ?? []);
+    if (!fields.success) toast.warning(tCustomerFields("saveFailed"));
   };
 
   const linkStoreCategory = async (
@@ -374,7 +381,7 @@ function AddProductForm({
   // scrolls to the first invalid section. Only an in-flight save disables it.
   const validateAndSubmit = form.handleSubmit(handleSubmit, (errors) => {
     toast.error(t("fixRequired"));
-    const first = getFirstInvalidSection(errors);
+    const first = getFirstInvalidSection(errors) ?? (errors.customerFields ? "sec-customer-fields" : null);
     if (first) {
       // Errors in the other language are invisible until we switch to it.
       const en = errors.localized?.en;
@@ -610,6 +617,7 @@ function AddProductForm({
                 <ContentSection activeLocale={activeLocale} />
                 <InventorySection sellerPricing={sellerPricing} activeLocale={activeLocale} />
                 <ShippingSection sellerPricing={sellerPricing} />
+                <CustomerFieldsSection />
                 <SocialProofSection />
                 <VisibilitySection activeLocale={activeLocale} />
               </form>

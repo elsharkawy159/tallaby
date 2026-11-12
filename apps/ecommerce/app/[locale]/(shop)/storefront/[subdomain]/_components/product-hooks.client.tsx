@@ -27,6 +27,8 @@ import { StorePieceChoices } from "./store-piece-choices.client";
 import { countPieces, resolvePieces } from "@/components/product-page/variant-options.lib";
 import { StoreRestockForm } from "./store-restock-form.client";
 import { StoreQuantityOffers } from "./store-quantity-offers.client";
+import { CustomerFieldsForm } from "@/components/product-page/customer-fields-form.client";
+import { unitPriceWithExtras } from "@workspace/lib/products/customer-fields";
 
 /**
  * The interactive parts of a store product page (template product page spec
@@ -77,7 +79,7 @@ export function StoreProductGallery({ thumbs, zoom }: { thumbs: "side" | "bottom
 }
 
 export function StoreProductPrice({ showDiscount, showCountdown }: { showDiscount: boolean; showCountdown: boolean }) {
-  const { product, variant } = useProductPage();
+  const { product, variant, customer } = useProductPage();
   const locale = useLocale() as ProductLocale;
   const pricing = useSelectedPricing();
   const expiry = useMemo(() => (showCountdown ? discountExpiryDate(pricing.discountEndsAt) : null), [showCountdown, pricing.discountEndsAt]);
@@ -85,8 +87,9 @@ export function StoreProductPrice({ showDiscount, showCountdown }: { showDiscoun
 
   return (
     <StorePriceBlock
-      price={pricing.price}
-      listPrice={pricing.listPrice}
+      // The customer requirements' extras (F-91) follow what is filled.
+      price={unitPriceWithExtras(pricing.price, customer.extrasPiastres)}
+      listPrice={pricing.listPrice != null ? unitPriceWithExtras(pricing.listPrice, customer.extrasPiastres) : null}
       discountPercent={percent}
       discountEndsAt={expiry}
       hasFreeDelivery={productHasFreeDelivery(product)}
@@ -145,7 +148,7 @@ export function StoreProductBuyBox({
   addLabel?: string;
   buyLabel?: string;
 }) {
-  const { product, variantId, inCart, cartQuantity } = useProductPage();
+  const { product, variantId, inCart, cartQuantity, customer } = useProductPage();
   const { stock, price } = useSelectedPricing();
   const tCommon = useTranslations("common");
   const { cartItems } = useCart();
@@ -222,11 +225,14 @@ export function StoreProductBuyBox({
     stock <= 0 && product.status === "active" ? (
       <StoreRestockForm key={variantId ?? "product"} productId={product.id} variantId={variantId} />
     ) : null;
+  // Customer requirements (F-91): right above the add buttons, wherever the box is.
+  const requirements = hasStock ? <CustomerFieldsForm className="mb-5" /> : null;
   // Sets the same quantity as the stepper (F-07c), so it lives with the box.
   const tiers = hasStock ? (
     <>
+      {requirements}
       {minOrder.minimum > 1 && <p className="mb-3 text-sm font-semibold text-(--sf-ink)">{tCommon("minOrderLine", { count: minOrder.minimum })}</p>}
-      <StoreQuantityOffers productId={product.id} price={price} stock={maxQuantity} quantity={quantity} floor={minOrder.floor} readOnly={inCart} onSelect={changeQuantity} />
+      <StoreQuantityOffers productId={product.id} price={unitPriceWithExtras(price, customer.extrasPiastres)} stock={maxQuantity} quantity={quantity} floor={minOrder.floor} readOnly={inCart} onSelect={changeQuantity} />
     </>
   ) : null;
   if (!stickyMobile) {

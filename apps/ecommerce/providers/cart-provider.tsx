@@ -12,6 +12,7 @@ import {
   clearCart as clearCartAction,
 } from "@/actions/cart";
 import type { CartState } from "@/types/cart";
+import type { CustomerInputError, CustomerInputValue } from "@workspace/lib/products/customer-fields";
 
 const CartContext = createContext<CartState | undefined>(undefined);
 
@@ -133,7 +134,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         };
       }
       toast.error(result.error || errorMsg);
-      return { success: false as const, message: result.error };
+      return {
+        success: false as const,
+        message: result.error,
+        customerInputErrors: result.customerInputErrors as CustomerInputError[] | undefined,
+      };
     } catch (err) {
       console.error(errorMsg, err);
       toast.error(errorMsg);
@@ -149,10 +154,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     productId: string;
     quantity: number;
     variantId?: string;
+    customerInputs?: CustomerInputValue[];
   }) =>
     handleAction(
       addToCartAction,
-      [p.productId, p.quantity, p.variantId],
+      [{ productId: p.productId, quantity: p.quantity, variantId: p.variantId, customerInputs: p.customerInputs }],
       addedToastText(tToast("itemAddedToCart")),
       tToast("failedToAddItem"),
       p.productId,
@@ -167,16 +173,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addLinesToCart = async (p: {
     productId: string;
     lines: { variantId?: string; quantity: number }[];
+    customerInputs?: CustomerInputValue[];
   }) => {
     setProductLoading(p.productId, true);
     let added = 0;
     let value = 0;
     let metaEventId: string | undefined;
+    let customerInputErrors: CustomerInputError[] | undefined;
     try {
       for (const line of p.lines) {
-        const result = await addToCartAction(p.productId, line.quantity, line.variantId);
+        const result = await addToCartAction({
+          productId: p.productId,
+          quantity: line.quantity,
+          variantId: line.variantId,
+          customerInputs: p.customerInputs,
+        });
         if (!result.success) {
           toast.error(result.error || tToast("failedToAddItem"));
+          customerInputErrors = "customerInputErrors" in result ? (result.customerInputErrors as CustomerInputError[] | undefined) : undefined;
           break;
         }
         added += 1;
@@ -196,7 +210,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const success = added === p.lines.length;
     const addedText = addedToastText(tToast("itemAddedToCart"));
     if (success && addedText) toast.success(addedText);
-    return { success, added, value, metaEventId };
+    return { success, added, value, metaEventId, customerInputErrors };
   };
 
   const updateQuantity = (itemId: string, quantity: number) => {

@@ -36,6 +36,20 @@ import {
 import { cartLineHasStock } from "@/lib/cart-stock.lib";
 import { touchCartActivity } from "@/lib/cart-activity.server";
 import { removeInvalidCartGifts } from "@workspace/lib/orders/line-discounts/server";
+import {
+  customerInputValuesSchema,
+  customerUploadPrefix,
+  parseCustomerFields,
+  parseCustomerInputsSnapshot,
+  sameCustomerInputs,
+  snapshotFiles,
+  unitPriceWithExtras,
+  validateCustomerInputs,
+  type CustomerInputError,
+  type CustomerInputValue,
+  type CustomerInputsSnapshot,
+} from "@workspace/lib/products/customer-fields";
+import { customerUploadsAreValid, signCustomerUploadViews } from "@workspace/lib/products/customer-fields/server";
 
 type ProductPrice = {
   base: number;
@@ -220,6 +234,11 @@ export const getCartItems = async () => {
     return nextItem;
   });
 
+  // Customer requirements (F-91): the line's own photos as short-lived links
+  // (the visitor's own cart, never cached), for thumbnails in the cart.
+  const uploadPaths = itemsWithFixedPrices.flatMap((item) => snapshotFiles(parseCustomerInputsSnapshot(item.customerInputs)));
+  const customerUploadViews = uploadPaths.length ? await signCustomerUploadViews(uploadPaths).catch(() => ({})) : {};
+
   const subtotal = itemsWithFixedPrices.reduce(
     (sum, i) => sum + Number(i.price) * i.quantity,
     0
@@ -236,6 +255,7 @@ export const getCartItems = async () => {
       items: itemsWithFixedPrices as Array<(typeof itemsWithFixedPrices)[number] & { product: { id: string; title: string; slug: string; images: unknown; sellerId: string } }>,
       subtotal,
       itemCount,
+      customerUploadViews: customerUploadViews as Record<string, string>,
     },
   };
 };
@@ -249,6 +269,8 @@ export async function addToCart(
         variantId?: string;
         /** A cross-sell unit: stays one unit, outside the product's minimum. */
         exactQuantity?: boolean;
+        /** What the customer filled for the product's "Customer requirements" (F-91). */
+        customerInputs?: CustomerInputValue[];
       },
   quantity = 1,
   variantId?: string
@@ -258,6 +280,7 @@ export async function addToCart(
   let qty: number;
   let varId: string | undefined;
   let exactQuantity = false;
+  let rawInputs: unknown = undefined;
 
   if (typeof productIdOrData === "string") {
     productId = productIdOrData;
@@ -268,6 +291,7 @@ export async function addToCart(
     qty = productIdOrData.quantity ?? 1;
     varId = productIdOrData.variantId;
     exactQuantity = productIdOrData.exactQuantity === true;
+    rawInputs = productIdOrData.customerInputs;
   }
 
   const cart = await ensureCart();
@@ -372,9 +396,44 @@ export async function addToCart(
   // Determine price - use variant price if available, otherwise product price
   // getPriceFinal normalises the price as the product page does, so the
   // snapshot written to cart_items always matches the price shown there.
-  const price = variant
+  const basePrice = variant
     ? getPriceFinal(variant.price)
     : getPriceFinal(product.price);
+
+  // Customer requirements (F-91): the values are checked against the product's
+  // fields here, on the server, and their extras are added to the unit price
+  // in piastres (never a client price). A product with a required field can't
+  // be added without them (a card's quick add, a reorder): the customer fills
+  // them on the product page. Photos must be this visitor's own uploads.
+  let customerInputs: CustomerInputsSnapshot | null = null;
+  const customerFields = parseCustomerFields(product.customerFields);
+  if (customerFields.length) {
+    const t = await getTranslations("customerFields");
+    const values = customerInputValuesSchema.safeParse(rawInputs ?? []);
+    if (!values.success) return { success: false, error: t("errors.invalid") };
+    const checked = validateCustomerInputs(customerFields, values.data, {
+      uploadPrefix: customerUploadPrefix(cart.storeId, cart.userId),
+    });
+    if (!checked.ok) {
+      const missingOnly = checked.errors.every((error) => error.code === "required") && values.data.length === 0;
+      return {
+        success: false,
+        error: missingOnly ? t("errors.fillOnProductPage") : t("errors.invalid"),
+        customerInputErrors: checked.errors as CustomerInputError[],
+      };
+    }
+    customerInputs = checked.snapshot;
+    if (!(await customerUploadsAreValid(snapshotFiles(customerInputs)))) {
+      return {
+        success: false,
+        error: t("errors.invalidFile"),
+        customerInputErrors: (customerInputs?.lines ?? [])
+          .filter((line) => line.type === "image")
+          .map((line) => ({ fieldId: line.fieldId, code: "invalidFile" as const })),
+      };
+    }
+  }
+  const price = unitPriceWithExtras(basePrice, customerInputs?.extrasPiastres ?? 0);
 
   // Check for existing cart item - fetch all items with same productId and filter by variant
   const allItems = await db.query.cartItems.findMany({
@@ -388,6 +447,8 @@ export async function addToCart(
   const existing = allItems.find((item) => {
     // A free gift is its own line (0149): buying the same product stays separate.
     if (item.giftRuleId) return false;
+    // Other customer inputs (another name, photo or choice) are their own line (F-91).
+    if (!sameCustomerInputs(parseCustomerInputsSnapshot(item.customerInputs), customerInputs)) return false;
     if (varId) {
       // Match items with the same variant ID
       return (item.variant as any)?.id === varId;
@@ -415,6 +476,7 @@ export async function addToCart(
           quantity: qty,
           price,
           variant: variantData,
+          customerInputs,
         } as any)
         .returning();
 

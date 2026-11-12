@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm/relations";
 import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuilds, storeBuildItems, storeBuildClaims, storeBuildIntakes } from "./schema";
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows, agentPendingActions, agentReadCounts } from "./schema";
 import { productStoreSplit } from "./schema";
+import { storeSizeCharts, storeSizeChartTargets } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends, storeAppRequests, storeAppInstalls, themeRequests } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
@@ -1493,6 +1494,19 @@ export const productCrossSellsRelations = relations(productCrossSells, ({one}) =
 export const productQuantityOffersRelations = relations(productQuantityOffers, ({one}) => ({
 	seller: one(sellers, { fields: [productQuantityOffers.sellerId], references: [sellers.id] }),
 	product: one(products, { fields: [productQuantityOffers.productId], references: [products.id] }),
+}));
+
+export const storeSizeChartsRelations = relations(storeSizeCharts, ({one, many}) => ({
+	seller: one(sellers, { fields: [storeSizeCharts.sellerId], references: [sellers.id] }),
+	store: one(stores, { fields: [storeSizeCharts.storeId], references: [stores.id] }),
+	targets: many(storeSizeChartTargets),
+}));
+
+export const storeSizeChartTargetsRelations = relations(storeSizeChartTargets, ({one}) => ({
+	chart: one(storeSizeCharts, { fields: [storeSizeChartTargets.chartId], references: [storeSizeCharts.id] }),
+	store: one(stores, { fields: [storeSizeChartTargets.storeId], references: [stores.id] }),
+	product: one(products, { fields: [storeSizeChartTargets.productId], references: [products.id] }),
+	category: one(sellerProductCategories, { fields: [storeSizeChartTargets.categoryId], references: [sellerProductCategories.id] }),
 }));
 
 export const storeDiscountRulesRelations = relations(storeDiscountRules, ({one}) => ({

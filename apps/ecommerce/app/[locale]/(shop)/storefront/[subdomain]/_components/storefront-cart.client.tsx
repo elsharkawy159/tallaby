@@ -20,6 +20,7 @@ import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { cn, resolvePrimaryImage } from "@/lib/utils";
 import { useCart } from "@/providers/cart-provider";
 import { STORE_SOLID_BUTTON } from "./store-buttons.lib";
+import { CustomerInputsLines } from "@/components/cart/customer-inputs-lines.client";
 
 /**
  * This storefront's cart: the cart actions are scoped by host, so on a store
@@ -40,7 +41,7 @@ export function StorefrontCart({
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const currencyLabel = useCurrencyLabel();
-  const { cartItems, loading, refreshCart, removeFromCart } = useCart();
+  const { cartItems, cartData, loading, refreshCart, removeFromCart } = useCart();
   const items = cartItems.filter((item) => !item.savedForLater);
   const subtotal = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);
   const count = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -135,6 +136,8 @@ export function StorefrontCart({
                     {t("variant", { name: variantTitle })}
                   </p>
                 )}
+                {/* Customer requirements (F-91): another name or photo is another line. */}
+                <CustomerInputsLines value={item.customerInputs} views={cartData?.customerUploadViews} />
                 {cartItemMinimum(item) != null && (
                   <p className="text-xs text-(--sf-muted)">{tCommon("minOrderLine", { count: cartItemMinimum(item)! })}</p>
                 )}

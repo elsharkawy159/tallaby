@@ -22,6 +22,8 @@ import type { ProductLocale } from "@/lib/product-translations";
 import { SellerInfo } from "./SellerInfo";
 import { Star } from "lucide-react";
 import { PriceTicket } from "./price-ticket";
+import { useOptionalProductPage } from "./product-page-provider.client";
+import { unitPriceWithExtras } from "@workspace/lib/products/customer-fields";
 import { getDiscountPercent } from "@/lib/utils";
 import { MetaViewContent } from "@/components/meta/meta-view-content.client";
 import { LOW_STOCK_THRESHOLD, discountExpiryDate as offerExpiryDate, productBelowMinimum, productPricing, stickyBuyBarClass } from "./product-page.lib";
@@ -49,6 +51,8 @@ export const ProductDetails = ({
   const locale = useLocale() as ProductLocale;
   const currencyLabel = useCurrencyLabel();
   const t = useTranslations("product");
+  // The customer requirements' extras (F-91) follow what is filled.
+  const extrasPiastres = useOptionalProductPage()?.customer.extrasPiastres ?? 0;
 
   // Use internal state if props are not provided (backwards compatibility)
   const [internalSelectedVariantId, setInternalSelectedVariantId] = useState<
@@ -163,8 +167,8 @@ export const ProductDetails = ({
 
         <div className="mt-5">
           <PriceTicket
-            price={price}
-            listPrice={listPrice}
+            price={unitPriceWithExtras(price, extrasPiastres)}
+            listPrice={listPrice != null ? unitPriceWithExtras(listPrice, extrasPiastres) : listPrice}
             discountPercent={discountPercent}
             discountExpiryDate={discountExpiryDate}
             hasFreeDelivery={hasFreeDelivery}

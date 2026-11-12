@@ -10,6 +10,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { currencyDefaultLabel, formatPrice } from "@workspace/lib";
 import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { CustomerInputsLines } from "@/components/cart/customer-inputs-lines.client";
 import type { OrderConfirmationData } from "./order-confirmation.types";
 
 interface OrderItemRowProps {
@@ -86,6 +87,7 @@ export function OrderItemRow({
               {t("variant")}: {item.variantName}
             </p>
           )}
+          <CustomerInputsLines value={item.customerInputs} />
           <p className="text-xs text-muted-foreground">
             {t("soldBy")} {item.seller.displayName}
           </p>

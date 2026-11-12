@@ -13,6 +13,7 @@ import { Ticket, X, Loader2, LogIn, Minus, Plus, Trash2, Truck, Sparkles, PartyP
 import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
+import { CustomerInputsLines } from '@/components/cart/customer-inputs-lines.client'
 import { cartItemFloor } from '@/lib/cart-min-order.lib'
 import { cn } from '@workspace/ui/lib/utils'
 import { orderDiscountLabel } from '@/lib/order-discount-label'
@@ -78,6 +79,8 @@ export function OrderSummaryLineItems ({ items, onQuantityChange, busyItemId }: 
                   {variantTitle}
                 </p>
               )}
+              {/* Customer requirements (F-91), as filled. */}
+              <CustomerInputsLines value={item.customerInputs} className='mt-1' />
               {item.giftRuleId ? (
                 <div className='mt-1.5 flex items-center gap-2 text-xs text-green-700'>
                   {onQuantityChange && (

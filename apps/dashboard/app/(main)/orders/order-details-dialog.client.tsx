@@ -20,6 +20,7 @@ import { OrderRiskNote } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import { OrderPaymentProof } from "./payment-proof.client";
 import { OrderDepositCard } from "./deposit.client";
+import { OrderLineCustomerInputs } from "./customer-inputs.client";
 import type { SellerOrderRow } from "./orders.types";
 import { DetailRow, DIALOG_CLOSE_40, PanelSection, PhoneText } from "./orders-ui";
 import { PrintOrdersButton } from "./print-orders-button.client";
@@ -264,6 +265,7 @@ export function OrderDetailsDialog({
                               })}
                               {line.sku && <span> ({t("sku", { sku: line.sku })})</span>}
                             </div>
+                            <OrderLineCustomerInputs orderId={order.id} orderItemId={line.id} value={line.customerInputs} />
                           </div>
                           <div className="shrink-0 text-end font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, unit)}>
                             <Money value={line.total} locale={locale} unit={unit} />

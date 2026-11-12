@@ -2315,6 +2315,66 @@
         "lowStockThreshold": "Show when stock is at or below",
         "lowStockThresholdHint": "{count, plural, one {Shows at # piece left.} other {Shows at # pieces or fewer.}} Leave it empty for 5.",
         "lowStockThresholdInvalid": "Enter a whole number from {min} to {max}."
+      },
+      "customerFields": {
+        "title": "Customer requirements",
+        "description": "Ask the customer for what you need to make this product: a name to print, a photo, or a choice. Shown above “Add to cart”.",
+        "hint": "Good for handmade and print products, such as a photo printed on a T-shirt. Any field can add an extra price to the unit price when the customer fills it.",
+        "summary": "{count, plural, one {1 field} other {# fields}} · {required, plural, =0 {all optional} one {1 required} other {# required}}",
+        "summaryNone": "None",
+        "add": {
+          "text": "Text",
+          "image": "Photo upload",
+          "choice": "Choice list"
+        },
+        "types": {
+          "text": "Text",
+          "image": "Photo upload",
+          "choice": "Choice list"
+        },
+        "max": "You reached the limit: {count} fields per product",
+        "type": "Field type",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "remove": "Remove field",
+        "label": "Field name",
+        "labelPlaceholder": {
+          "text": {
+            "ar": "مثال: الاسم المطلوب طباعته",
+            "en": "e.g. Name to print"
+          },
+          "image": {
+            "ar": "مثال: صورتك للطباعة",
+            "en": "e.g. Your photo to print"
+          },
+          "choice": {
+            "ar": "مثال: لون الطباعة",
+            "en": "e.g. Print color"
+          }
+        },
+        "labelRequired": "Write the field name in Arabic and English",
+        "help": "Help text",
+        "optional": "Optional",
+        "required": "The customer must fill it",
+        "requiredDescription": "Without it the product can’t be added to the cart, and quick-add buttons open the product page.",
+        "extraPrice": "Extra price",
+        "extraPriceHint": "Added to the unit price when the customer fills the field. Leave it empty if it is free.",
+        "maxLength": "Maximum characters",
+        "characters": "chars",
+        "maxFiles": "Maximum photos",
+        "photos": "photos",
+        "less": "Less",
+        "more": "More",
+        "photoRules": "JPG, PNG or WebP, up to 10 MB each. They come with the order and only you can see them.",
+        "options": "Options",
+        "optionAr": "Option in Arabic",
+        "optionEn": "Option in English",
+        "optionExtra": "Extra price for this option",
+        "optionsHint": "The customer picks one. Give the option that costs more an extra price, such as “Gold print +30”.",
+        "optionsInvalid": "Add at least {min} options and write each one in Arabic and English",
+        "addOption": "Add an option",
+        "removeOption": "Remove option",
+        "saveFailed": "The product was saved, but its customer requirements weren’t. Open the product and save again."
       }
     },
     "import": {
@@ -3216,6 +3276,15 @@
         "cancel": "Cancel",
         "saved": "Tracking number saved."
       }
+    },
+    "customerInputs": {
+      "title": "Customer requirements",
+      "photos": "{count, plural, =0 {No photos} one {1 photo attached} other {# photos attached}}",
+      "extra": "(extra price)",
+      "showPhotos": "{count, plural, one {Show the photo} other {Show photos (#)}}",
+      "photoAlt": "Customer photo {number}",
+      "download": "Download",
+      "photosUnavailable": "The photos couldn’t be opened right now. Try again in a moment."
     }
   },
   "shipping": {
@@ -5202,6 +5271,154 @@
       "step4": "Set it to update <b>daily</b> and save. TikTok reviews your products"
     }
   },
+  "sizeChartApp": {
+    "back": "Apps",
+    "subtitle": "Help shoppers of {store} pick the right size before they order.",
+    "readOnly": "This store is read-only, so its charts can’t be changed.",
+    "optional": "Optional",
+    "install": {
+      "title": "Show “Find my size” on product pages",
+      "on": "On",
+      "off": "Off",
+      "onBody": "Products with a chart show a Find my size button next to the size picker.",
+      "offBody": "Turn it on to show your charts. Your charts stay saved while it’s off.",
+      "installed": "Find my size is on",
+      "removed": "Find my size is off. Your charts are kept."
+    },
+    "charts": {
+      "title": "Size charts",
+      "description": "Make a chart for each kind of product, up to {max}.",
+      "new": "New size chart",
+      "emptyTitle": "No size charts yet",
+      "emptyBody": "Start from a Tallaby chart for T-shirts, pants, shoes or dresses and change any number.",
+      "notApplied": "Not applied to any product yet",
+      "products": "{count, plural, one {# product} other {# products}}",
+      "apply": "Apply to",
+      "edit": "Edit",
+      "installHint": "Shoppers don’t see these charts until you turn on Find my size above."
+    },
+    "templates": {
+      "title": "Start a size chart",
+      "description": "Pick the closest one. You can change every measurement and size.",
+      "tops": {
+        "name": "T-shirts & tops",
+        "body": "Height and weight, XS to 3XL"
+      },
+      "pants": {
+        "name": "Pants & jeans",
+        "body": "Waist and height, 28 to 40"
+      },
+      "shoes": {
+        "name": "Shoes",
+        "body": "Foot length, EU 36 to 46"
+      },
+      "dresses": {
+        "name": "Dresses & women’s tops",
+        "body": "Height, weight and bust, XS to 2XL"
+      },
+      "blank": {
+        "name": "Blank chart",
+        "body": "One measurement and one size to build on"
+      }
+    },
+    "editor": {
+      "back": "Size charts",
+      "editTitle": "Edit size chart",
+      "newTitle": "New size chart",
+      "delete": "Delete",
+      "save": "Save chart",
+      "saved": "Size chart saved",
+      "deleted": "Size chart deleted",
+      "nameTitle": "Name",
+      "nameBody": "Shoppers see it on the size chart.",
+      "nameAr": "Name in Arabic",
+      "nameEn": "Name in English",
+      "inputsTitle": "What shoppers type",
+      "inputsBody": "The measurements shoppers enter, up to {max}.",
+      "labelAr": "Label in Arabic",
+      "labelEn": "Label in English",
+      "unit": "Unit",
+      "min": "Lowest",
+      "max": "Highest",
+      "step": "Step",
+      "required": "Required",
+      "removeInput": "Remove measurement",
+      "customInput": "Other measurement",
+      "sizesTitle": "Sizes",
+      "sizesBody": "From smallest to largest, up to {max}. Give each size a range for each measurement.",
+      "size": "Size",
+      "from": "From",
+      "to": "To",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "removeSize": "Remove size",
+      "sizesHint": "Leave a range empty and that measurement doesn’t count for the size.",
+      "addSize": "Add size",
+      "optionsTitle": "Options",
+      "fit": "Ask for the fit (tight, regular, loose): tight picks one size smaller, loose one larger",
+      "showTable": "Show the sizes as a table to shoppers",
+      "noteAr": "Tip in Arabic",
+      "noteEn": "Tip in English",
+      "deleteTitle": "Delete this size chart?",
+      "deleteBody": "Products using it stop showing Find my size. This can’t be undone."
+    },
+    "units": {
+      "cm": "cm",
+      "kg": "kg",
+      "in": "in",
+      "lb": "lb"
+    },
+    "check": {
+      "duplicate_input": "Two measurements have the same key. Remove one.",
+      "duplicate_size": "Two sizes have the same name.",
+      "min_max": "A “From” value is higher than its “To”, or a lowest value is above its highest.",
+      "empty": "Fill in the name and every label in at least one language.",
+      "generic": "Check the chart: a size name or a number is missing or out of range."
+    },
+    "tryIt": {
+      "title": "Try it",
+      "body": "Type numbers as a shopper would.",
+      "fit": "Fit",
+      "yourSize": "Their size",
+      "closest": "Closest size",
+      "above": "Larger than every size in the chart",
+      "below": "Smaller than every size in the chart",
+      "none": "Add ranges to the sizes to get a result",
+      "fill": "Fill in the required measurements"
+    },
+    "fit": {
+      "tight": "Tight",
+      "regular": "Regular",
+      "loose": "Loose"
+    },
+    "errors": {
+      "invalid": "Check the chart and try again.",
+      "invalidTargets": "Some products or categories aren’t in this store. Refresh the page and try again.",
+      "limit": "This store already has the most size charts it can have. Delete one first.",
+      "notFound": "This size chart was not found. Refresh the page.",
+      "notInstalled": "Find my size is already off.",
+      "readOnly": "This store is read-only.",
+      "rateLimited": "Too many changes in a short time. Wait a few minutes and try again.",
+      "generic": "Something went wrong. Try again."
+    },
+    "targets": {
+      "title": "Apply “{chart}”",
+      "description": "A product’s own chart is used before its category’s.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saved": "Saved",
+      "savedMoved": "Saved. {count, plural, one {# product or category was} other {# products or categories were}} moved from another chart.",
+      "categories": "Store categories",
+      "categoriesNote": "Every product in a ticked category gets this chart.",
+      "noCategories": "This store has no categories yet.",
+      "products": "Products",
+      "productsNote": "Pick single products.",
+      "remove": "Remove",
+      "search": "Search products by name or SKU",
+      "noProducts": "No products found",
+      "draft": "Draft"
+    }
+  },
   "storeApps": {
     "title": "Apps",
     "description": "Connect tracking, export and import tools to this store. Tracking tools load only on this store's website.",
@@ -5549,6 +5766,11 @@
         "name": "AI assistants",
         "vendor": "Claude · ChatGPT · Cursor",
         "description": "Manage your products, orders and website by chatting with Claude, ChatGPT or Cursor."
+      },
+      "size_chart": {
+        "name": "Size chart",
+        "vendor": "Tallaby",
+        "description": "Shoppers type their height, weight or foot length on the product page and see the size that fits them."
       }
     },
     "heroTitle": "Connect your tools",
@@ -5564,7 +5786,8 @@
       "data": "Import & export",
       "shipping": "Shipping",
       "payments": "Payments",
-      "ai": "AI"
+      "ai": "AI",
+      "storefront": "Product page"
     },
     "groupCount": "{count, plural, one {# app} other {# apps}}",
     "find": "Find an app",
@@ -5577,7 +5800,8 @@
       "carrier": "Shipping company",
       "sheet": "Excel upload",
       "gateway": "Payment gateway",
-      "agent": "AI assistant"
+      "agent": "AI assistant",
+      "widget": "Product page tool"
     },
     "comingSoon": "Coming soon",
     "imported": "Imported",
@@ -7353,9 +7577,9 @@
   "earn": {
     "metaTitle": "Earn with us",
     "title": "Earn with us: affiliate marketing",
-    "intro": "Share your link with your referral code. You earn 25% of every amount the sellers you bring top up into their wallet, for life. Paid in cash (bank or Vodafone Cash), not as wallet credit.",
+    "intro": "Share your link with your referral code. You earn {bonus} for every seller who signs up through it and tops up their wallet with $5 or more. Paid in cash (bank or Vodafone Cash), not as wallet credit.",
     "stats": {
-      "earned": "Total commission",
+      "earned": "Total earned",
       "available": "Available to withdraw",
       "paid": "Already paid"
     },
@@ -7370,11 +7594,10 @@
       "shareText": "Start your online store on Tallaby: {url}"
     },
     "progress": {
-      "title": "Unlock withdrawals",
-      "referrals": "{count} / {goal} successful referrals",
-      "stores": "{count} / {goal} stores created through your link",
-      "rule": "A referral counts once the seller's first wallet top-up succeeds. You can withdraw after at least 10 successful referrals and 10 stores.",
-      "unlocked": "Withdrawals are unlocked"
+      "title": "Sellers you referred",
+      "referred": "Signed up through your link: {count}",
+      "qualified": "Topped up $5 or more: {count}",
+      "rule": "You earn {bonus} once for every seller whose wallet top-ups reach $5 in total, even over several top-ups. Earlier percentage commissions stay in your balance."
     },
     "referrals": {
       "title": "Your referrals",
@@ -7383,7 +7606,8 @@
       "signedUp": "Signed up",
       "stores": "Stores",
       "toppedUp": "Topped up",
-      "commission": "Your commission",
+      "qualified": "Qualified",
+      "commission": "Your reward",
       "unnamed": "New store"
     },
     "withdraw": {
@@ -7394,7 +7618,6 @@
       "supportMessage": "Hi, I have a question about my Tallaby affiliate commission.",
       "blocked": {
         "suspended": "Your account is not active, so withdrawals are paused. Contact support.",
-        "locked": "Reach 10 successful referrals and 10 stores to unlock withdrawals.",
         "open_request": "You already have a withdrawal request. The Tallaby team will pay it soon.",
         "below_minimum": "You need at least {amount} available to withdraw."
       },
@@ -7413,7 +7636,6 @@
       "errors": {
         "invalid_input": "Check the payment details and try again.",
         "suspended": "Your account is not active, so withdrawals are paused.",
-        "locked": "Withdrawals are not unlocked yet.",
         "open_request": "You already have a withdrawal request.",
         "below_minimum": "Your available balance is below the minimum.",
         "not_found": "Something went wrong. Try again.",
@@ -8343,7 +8565,7 @@
     "shareOn": "Share on:",
     "codeCopied": "Code copied",
     "copyCode": "Copy code",
-    "perTopUp": "of every top-up",
+    "perTopUp": "EGP per seller",
     "howTitle": "How you earn",
     "how": {
       "share": {
@@ -8352,11 +8574,11 @@
       },
       "topUp": {
         "title": "They create a store and top up",
-        "body": "A referral counts as successful when the seller's first wallet top-up succeeds."
+        "body": "A seller counts for you once their wallet top-ups reach $5, in one top-up or several."
       },
       "earn": {
-        "title": "You earn your commission",
-        "body": "You get {percent}% of every amount they top up, for life, paid to you in cash."
+        "title": "You earn your reward",
+        "body": "You get {bonus} once for every such seller, paid to you in cash."
       }
     },
     "accountTitle": "Account settings",
