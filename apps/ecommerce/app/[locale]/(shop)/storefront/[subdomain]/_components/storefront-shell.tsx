@@ -75,7 +75,7 @@ export async function StorefrontShell({
   const [popupCoupons, salesFeed] = await Promise.all([
     shared
       ? null
-      : getCachedSellerPopupCoupons(store.id).catch((error) => {
+      : getCachedSellerPopupCoupons(store.id, store.storeId).catch((error) => {
           console.error("Store coupon pop-up failed to load:", error);
           return [];
         }),

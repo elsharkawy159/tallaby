@@ -13,7 +13,7 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { countNewFormSubmissions } from "@workspace/lib/store-forms/server";
 import { getUser } from "@/actions/auth";
 import { loadOrderLock } from "@/lib/auth/require-seller.server";
-import { productInStore } from "@workspace/lib/stores/scope/server";
+import { couponInStore, productInStore } from "@workspace/lib/stores/scope/server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import {
@@ -62,7 +62,8 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       db
         .select({ count: sql<number>`count(*)` })
         .from(coupons)
-        .where(eq(coupons.sellerId, sellerId)),
+        // The selected store's coupons plus "All stores" ones, as the Coupons page lists (F-87k).
+        .where(and(eq(coupons.sellerId, sellerId), selected ? couponInStore(selected.id) : undefined)),
       locked
         ? hidden
         : db

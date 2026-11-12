@@ -12,7 +12,7 @@ import { and, coupons, db, desc, eq, gte, inArray, orderItems, orders, productTr
 import { isNotNull } from "drizzle-orm";
 import { isCouponPopupTrigger, type StoreCouponOfferCandidate } from "../orders/coupon-popup.lib";
 import { getCouponChannels, getCouponProductIds } from "../orders/coupon-scope.lib";
-import { aliasedProductShownInStore, productShownInStore, taxonomyInStore, type StoreCatalogScope } from "../stores/store-scope.server";
+import { aliasedProductShownInStore, couponInStore, productShownInStore, taxonomyInStore, type StoreCatalogScope } from "../stores/store-scope.server";
 import { BEST_SELLER_DAYS, SOLD_ORDER_STATUSES, UNSOLD_ITEM_STATUSES, couponDiscountType, isCouponLive, type CouponDiscountType, ratingStats, reviewAuthorName, type RatingStats } from "./catalog-data.lib";
 
 /** Units sold per product in this store's orders over the last `days` days. */
@@ -225,8 +225,13 @@ export type SellerCouponRow = {
   live: boolean;
 };
 
-/** The seller's coupons (pickers show which are live); `ids` narrows to some. */
-export async function sellerCoupons(sellerId: string, ids?: readonly string[]): Promise<SellerCouponRow[]> {
+/**
+ * The coupons that work in this store (pickers show which are live): the
+ * seller's, in `storeId` or "All stores" (`couponInStore`, F-87k), so a
+ * builder section pointing at another store's coupon renders nothing.
+ * `ids` narrows to some.
+ */
+export async function sellerCoupons(sellerId: string, storeId: string | null, ids?: readonly string[]): Promise<SellerCouponRow[]> {
   if (ids && ids.length === 0) return [];
   const rows = await db
     .select({
@@ -242,7 +247,7 @@ export async function sellerCoupons(sellerId: string, ids?: readonly string[]): 
       usageCount: coupons.usageCount,
     })
     .from(coupons)
-    .where(and(eq(coupons.sellerId, sellerId), ids ? inArray(coupons.id, [...ids]) : undefined))
+    .where(and(eq(coupons.sellerId, sellerId), couponInStore(storeId), ids ? inArray(coupons.id, [...ids]) : undefined))
     .orderBy(desc(coupons.createdAt))
     .limit(100);
   return rows.map((c) => ({
@@ -257,11 +262,12 @@ export async function sellerCoupons(sellerId: string, ids?: readonly string[]): 
 }
 
 /**
- * The seller's coupons set to show as a store pop-up (0114) that have not
- * ended or been switched off, newest change first. Which one is live is
- * decided per request (`pickStoreCouponOffer`): these rows may be cached.
+ * The coupons of this store (its own and "All stores", F-87k) set to show as
+ * a store pop-up (0114) that have not ended or been switched off, newest
+ * change first. Which one is live is decided per request
+ * (`pickStoreCouponOffer`): these rows may be cached.
  */
-export async function sellerPopupCoupons(sellerId: string): Promise<StoreCouponOfferCandidate[]> {
+export async function sellerPopupCoupons(sellerId: string, storeId: string): Promise<StoreCouponOfferCandidate[]> {
   const rows = await db
     .select({
       id: coupons.id,
@@ -281,6 +287,7 @@ export async function sellerPopupCoupons(sellerId: string): Promise<StoreCouponO
     .where(
       and(
         eq(coupons.sellerId, sellerId),
+        couponInStore(storeId),
         eq(coupons.isActive, true),
         isNotNull(coupons.popupTrigger),
         gte(coupons.expiresAt, new Date().toISOString()),

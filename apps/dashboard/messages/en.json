@@ -3502,7 +3502,8 @@
       "edit": "Edit",
       "delete": "Delete",
       "toggle": "Coupon on",
-      "actions": "Coupon actions"
+      "actions": "Coupon actions",
+      "allStores": "All stores"
     },
     "form": {
       "createTitle": "Create coupon",
@@ -3573,7 +3574,12 @@
         "minutes": "Minutes",
         "hours": "Hours",
         "days": "Days"
-      }
+      },
+      "applyOn": "Apply on",
+      "applyOnHint": "The coupon works only in the store you pick, or in all your stores.",
+      "allStores": "All stores",
+      "otherStore": "Archived store",
+      "productsNeedStore": "To pick specific products, choose one store under Apply on."
     },
     "errors": {
       "invalid_input": "Check the highlighted fields and try again.",
@@ -3590,7 +3596,9 @@
       "products": "Pick at least one product.",
       "channels": "Pick at least one place.",
       "dates": "Pick a start and an end date.",
-      "popupDuration": "Enter a whole number, up to 30 days."
+      "popupDuration": "Enter a whole number, up to 30 days.",
+      "productsNeedStore": "Choose one store to pick specific products.",
+      "invalid_store": "This store isn't available. Refresh the page and pick another store."
     },
     "deleteDialog": {
       "title": "Delete {code}?",

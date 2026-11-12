@@ -57,18 +57,23 @@ export const getCachedStoreReviewStats = createCachedQuery({
   query: (sellerId: string, storeId: string, catalogSplit: boolean) => storeReviewStats(sellerId, { storeId, catalogSplit }),
 });
 
-/** Coupon rows only; whether one is live is decided per request (start/end dates). */
+/**
+ * Coupon rows only; whether one is live is decided per request (start/end dates).
+ * Per store (F-87k): this store's coupons and the "All stores" ones, keyed by
+ * seller and store. Tagged with the seller, so any coupon write (a store's or
+ * an all-stores one) purges every store's entry.
+ */
 export const getCachedSellerCoupons = createCachedQuery({
-  name: "storefront:seller-coupons:v1",
+  name: "storefront:seller-coupons:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, _ids: string) => [couponTags.seller(sellerId)],
-  query: (sellerId: string, ids: string) => sellerCoupons(sellerId, ids.split(",").filter(Boolean)),
+  tags: (sellerId: string, _storeId: string, _ids: string) => [couponTags.seller(sellerId)],
+  query: (sellerId: string, storeId: string, ids: string) => sellerCoupons(sellerId, storeId, ids.split(",").filter(Boolean)),
 });
 
-/** The seller's store pop-up coupons (0114); `pickStoreCouponOffer` picks the live one per request. */
+/** The store's pop-up coupons (0114; its own and "All stores", F-87k); `pickStoreCouponOffer` picks the live one per request. */
 export const getCachedSellerPopupCoupons = createCachedQuery({
-  name: "storefront:seller-popup-coupons:v1",
+  name: "storefront:seller-popup-coupons:v2",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string) => [couponTags.seller(sellerId)],
-  query: (sellerId: string) => sellerPopupCoupons(sellerId),
+  tags: (sellerId: string, _storeId: string) => [couponTags.seller(sellerId)],
+  query: (sellerId: string, storeId: string) => sellerPopupCoupons(sellerId, storeId),
 });

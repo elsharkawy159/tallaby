@@ -14,7 +14,7 @@ import { touchCartActivity } from "@/lib/cart-activity.server";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { activeCartWhere, getCartScope } from "@/lib/storefront.server";
 import { isSwitchOn } from "@/lib/platform-switches.server";
-import { productShownInStore } from "@workspace/lib/stores/scope/server";
+import { couponInStore, productShownInStore } from "@workspace/lib/stores/scope/server";
 
 export type QuantityTierCard = {
   minQuantity: number;
@@ -102,9 +102,13 @@ export type CartOffersView = {
 
 const EMPTY_VIEW: CartOffersView = { lines: {}, totalPiastres: 0, coupons: [], appliedCouponCode: null, gifts: [], nextGift: null, removedGifts: false };
 
-/** The seller's coupons they chose to show in the cart, that this customer can still use. Never cached. */
+/**
+ * The coupons the seller chose to show in this store's cart (its own and "All
+ * stores", F-87k), that this customer can still use. Never cached.
+ */
 async function loadCartCoupons(
   sellerId: string,
+  storeId: string,
   userId: string,
   lines: readonly { productId: string; sellerId: string; netPiastres: number }[],
 ): Promise<CartCouponCard[]> {
@@ -114,6 +118,7 @@ async function loadCartCoupons(
     .where(
       and(
         eq(coupons.sellerId, sellerId),
+        couponInStore(storeId),
         eq(coupons.showInCart, true),
         eq(coupons.isActive, true),
         sql`${coupons.startsAt} <= NOW()`,
@@ -179,6 +184,7 @@ export async function getCartOffers(): Promise<CartOffersView> {
     const [cartCoupons, appliedCouponCode, giftView] = await Promise.all([
       loadCartCoupons(
         scope.sellerId,
+        scope.storeId,
         userId,
         items
           .filter((item) => !item.giftRuleId)

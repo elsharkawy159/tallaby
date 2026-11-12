@@ -79,6 +79,36 @@ export function isLineEligibleForCoupon(
 }
 
 /**
+ * Which store a coupon works in (F-87k, owner 2026-11-12): `store_id` null is
+ * "All stores" (every store of the seller, and the legacy rows from before the
+ * split), otherwise only that one store. `storeId` is the store of the request
+ * or cart (never a client value); null/undefined is the marketplace, where a
+ * store coupon never works. Callers treat a coupon outside the store exactly
+ * like an unknown code.
+ */
+export function isCouponInStore(
+  coupon: { storeId: string | null },
+  storeId: string | null | undefined,
+): boolean {
+  if (coupon.storeId == null) return true
+  return storeId != null && coupon.storeId === storeId
+}
+
+/**
+ * A seller coupon's "Apply on" target: products belong to one store now, so a
+ * coupon limited to some products must target one store (`storeId`); "All
+ * stores" (null) is whole-order only. Whether the store is the seller's and
+ * the products are in it is checked by the caller against the database.
+ */
+export function sellerCouponTargetError(target: {
+  storeId: string | null
+  productIds: readonly string[] | null
+}): 'invalid_products' | null {
+  if (target.storeId == null && target.productIds && target.productIds.length > 0) return 'invalid_products'
+  return null
+}
+
+/**
  * Splits `discount` across lines in proportion to each line's subtotal, so
  * the parts add up to the discount exactly (the last line absorbs rounding).
  */

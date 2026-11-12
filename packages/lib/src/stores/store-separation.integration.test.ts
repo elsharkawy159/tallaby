@@ -20,10 +20,12 @@ import { createIsolationWorld, type IsolationWorld } from "./isolation.fixtures"
 import { cartProductsOutsideStoreCatalog, productsOutsideStore, setStoreCatalog, storeSellsProduct } from "./catalog.server";
 import { isSwitchOn } from "./platform-switches.server";
 import { storeHasVisibleProducts } from "./server";
-import { sellerBrandList, storeCategoryGroups } from "../store-sites/catalog-data.server";
+import { sellerBrandList, sellerCoupons, sellerPopupCoupons, storeCategoryGroups } from "../store-sites/catalog-data.server";
+import { isLineEligibleForCoupon } from "../orders/coupon-scope.lib";
 import { subscribeToStockAlert } from "../stock-alerts/stock-alerts.server";
 import {
   assertStoreProduct,
+  couponInStore,
   primaryStoreId,
   productInStore,
   productShownInStore,
@@ -862,6 +864,91 @@ describe.skipIf(!TEST_DATABASE_URL)("store separation isolation (integration)", 
       forced.catalogSplit = false;
       const agentList = (await agentListStoreCategories(agentCtx(ids.s1, ids.storeB))).map((c) => c.id);
       expect(agentList).toEqual(expect.arrayContaining([tax.catA, tax.catB]));
+    });
+  });
+
+  describe("coupons per store (F-87k, owner 2026-11-12)", () => {
+    const code = () => `SEP${randomUUID().slice(0, 8).toUpperCase()}`;
+    const c = { a: "", all: "", s2: "", codeA: "", codeAll: "", codeS2: "" };
+
+    async function insertCoupon(sellerId: string, storeId: string | null, couponCode: string) {
+      const [row] = await db
+        .insert(s.coupons)
+        .values({
+          sellerId,
+          storeId,
+          code: couponCode,
+          name: "Sep",
+          discountType: "percentage",
+          discountValue: "10.00",
+          isActive: true,
+          popupTrigger: "enter",
+          popupDurationMinutes: 60,
+          applicableTo: { channels: ["storefront"] },
+          startsAt: new Date(Date.now() - 86_400_000).toISOString(),
+          expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+        })
+        .returning({ id: s.coupons.id });
+      return row!.id;
+    }
+
+    /**
+     * The code lookup of checkout and the cart (`place-order.ts`,
+     * `validateCoupon`): the code in this store, then the line rule, which keeps
+     * a seller coupon to that seller's products.
+     */
+    async function redeemable(couponCode: string, storeId: string, line: { productId: string; sellerId: string }) {
+      const [row] = await db
+        .select({ sellerId: s.coupons.sellerId, applicableTo: s.coupons.applicableTo })
+        .from(s.coupons)
+        .where(and(sql`UPPER(${s.coupons.code}) = ${couponCode}`, couponInStore(storeId)));
+      return row ? isLineEligibleForCoupon(row, line) : false;
+    }
+
+    beforeAll(async () => {
+      c.codeA = code();
+      c.codeAll = code();
+      c.codeS2 = code();
+      c.a = await insertCoupon(ids.s1, ids.storeA, c.codeA);
+      c.all = await insertCoupon(ids.s1, null, c.codeAll);
+      c.s2 = await insertCoupon(ids.s2, ids.storeS2, c.codeS2);
+    });
+
+    afterAll(async () => {
+      await db.delete(s.coupons).where(inArray(s.coupons.id, [c.a, c.all, c.s2].filter(Boolean)));
+    });
+
+    it("a store A coupon applies in A and fails in B; an All stores coupon applies in both", async () => {
+      const s1Line = { productId: p.s1a, sellerId: ids.s1 };
+      expect(await redeemable(c.codeA, ids.storeA, s1Line)).toBe(true);
+      expect(await redeemable(c.codeA, ids.storeB, s1Line)).toBe(false);
+      expect(await redeemable(c.codeAll, ids.storeA, s1Line)).toBe(true);
+      expect(await redeemable(c.codeAll, ids.storeB, s1Line)).toBe(true);
+    });
+
+    it("S2 can't use S1's coupons, nor S1 S2's, in any store", async () => {
+      const s2Line = { productId: p.s2, sellerId: ids.s2 };
+      expect(await redeemable(c.codeA, ids.storeS2, s2Line)).toBe(false);
+      // An All stores coupon passes the store filter but only discounts its seller's lines.
+      expect(await redeemable(c.codeAll, ids.storeS2, s2Line)).toBe(false);
+      for (const store of [ids.storeA, ids.storeB]) {
+        expect(await redeemable(c.codeS2, store, { productId: p.s1a, sellerId: ids.s1 })).toBe(false);
+      }
+    });
+
+    it("builder pickers and the pop-up list only the store's coupons and the All stores ones", async () => {
+      const listed = async (storeId: string) => (await sellerCoupons(ids.s1, storeId)).map((row) => row.id);
+      expect(await listed(ids.storeA)).toEqual(expect.arrayContaining([c.a, c.all]));
+      expect(await listed(ids.storeB)).toContain(c.all);
+      expect(await listed(ids.storeB)).not.toContain(c.a);
+      // Old builder JSON naming store A's coupon in store B renders nothing.
+      expect(await sellerCoupons(ids.s1, ids.storeB, [c.a])).toEqual([]);
+      expect(await sellerCoupons(ids.s1, ids.storeA, [c.s2])).toEqual([]);
+
+      const popups = async (storeId: string) => (await sellerPopupCoupons(ids.s1, storeId)).map((row) => row.couponId);
+      expect(await popups(ids.storeA)).toEqual(expect.arrayContaining([c.a, c.all]));
+      expect(await popups(ids.storeB)).toContain(c.all);
+      expect(await popups(ids.storeB)).not.toContain(c.a);
     });
   });
 

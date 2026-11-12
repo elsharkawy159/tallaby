@@ -1251,7 +1251,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-87h · P1 · deps: F-87g** 0161 + 0164; Admin wallet tools per store.
 - **F-87i · P1 · deps: F-87c, F-87g** Dashboard UX: switcher scope, wallet page, banners, empty states.
 - **F-87j · P1 · deps: F-87m** "Copy to store" (single + bulk).
-- **F-87k · P2 · deps: F-87c** Coupons, policies (F-46) and custom domain per store.
+- **F-87k · P2 · deps: F-87c** Coupons, policies (F-46) and custom domain per store. **Coupons: built 2026-11-12** (§7; no migration): "Apply on" one store or All stores (`store_id` null, owner 2026-11-12); policies and custom domain still to do.
 - **F-87l · P2 · deps: owner** Fulfillment profile per store (optional).
 - **F-87m · P1 · deps: F-87c** 0163 catalog split on staging, E2E, then production.
 - **F-87n · P2 · deps: F-87m, F-87h** 0165 cleanup, docs and rules wording.
@@ -1694,6 +1694,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-87i Dashboard UX for separate stores
 - [ ] F-87j "Copy to store" (single + bulk)
 - [ ] F-87k Coupons, policies and custom domain per store
+  - [x] Coupons per store: "Apply on" (one store or All stores), list per selected store, storefront/cart/checkout/pop-up/builder reads filtered by store (2026-11-12; uncommitted; no migration; not seen in a browser; DB suite written, not run: no `TEST_DATABASE_URL`)
+  - [ ] Policies per store (F-46)
+  - [ ] One custom domain per store
 - [ ] F-87l Fulfillment profile per store (owner)
 - [x] F-87m 0163 catalog split (staging 2026-11-10, production 2026-11-11; manual E2E checklist in docs/plans/stores-separation.md §3.4 still to walk through by hand)
 - [ ] F-87n 0165 cleanup and docs
@@ -1701,6 +1704,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-12 — F-87k coupons per store
+
+- **Owner (2026-11-12):** coupons are separate per store: a coupon made in store #1 must not show or work in store #2. With more than one store the coupon form has **Apply on**: All stores, or one store by name; with one store there is no choice and the coupon goes to that store.
+- **Storage:** `coupons.store_id` (0160, already live): a store id, or null = **All stores** (also every coupon from before). New coupons may be All stores (owner, 2026-11-12; the plan had "new coupons need a store"). `code` stays unique platform-wide. The server checks the chosen store against the session (`requireProductStore`; a forged one is `invalid_store`) and saves the checked id.
+- **Products:** a coupon with a product list needs one store and its products must be in it (`invalid_products` otherwise, also when moving a coupon to another store). With All stores the "Selected products" option is off and the server rejects a product list (`sellerCouponTargetError`). The picker searches the chosen store; changing the store clears the picks.
+- **Dashboard list:** the selected store's coupons plus All stores ones (quiet "All stores" badge when the seller has 2+ stores); uses and discount totals and the sidebar count follow the same filter. Toggle and delete still check `seller_id` only.
+- **Enforcement:** one SQL rule `couponInStore(storeId)` (`store_id IS NULL OR store_id = store`; no store = All stores only) in `@workspace/lib/stores/scope/server`, pure twin `isCouponInStore`. Applied to checkout (`place-order.ts`: the cart row's store; one condition in the code lookup, money logic unchanged), cart code apply (`validateCoupon`: the request host's store), show-in-cart coupons, the store pop-up, builder coupon sections on the storefront and the builder pickers (dashboard and Admin editors). Another store's code is "invalid coupon", like an unknown one; old builder JSON naming another store's coupon renders nothing.
+- **Caching:** `storefront:seller-coupons:v2` and `storefront:seller-popup-coupons:v2` are keyed by seller and store, tagged with the seller, so any coupon write purges every store's entry.
+- **Legacy:** coupons from before stay All stores. An older All stores coupon with a product list keeps working (its products are per store), but editing it with 2+ stores asks for one store; with one store the form moves it to that store.
+- **Tests:** unit (`coupon-scope.lib.test.ts`, `coupon-in-store.test.ts`, `coupons.lib.test.ts`, dashboard `store-scope-features.server.test.ts`) and DB (`store-separation.integration.test.ts` › coupons per store: A applies in A not B, All stores in both, S2 never uses S1's; not run, no `TEST_DATABASE_URL`). **No migration.**
 
 ### 2026-11-12 — Admin: manage a store's products, add products with AI
 

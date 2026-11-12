@@ -3,8 +3,41 @@ import {
   allocateDiscountAcrossLines,
   getCouponChannels,
   isCouponAllowedOnChannel,
+  isCouponInStore,
   isLineEligibleForCoupon,
+  sellerCouponTargetError,
 } from './coupon-scope.lib'
+
+describe('isCouponInStore (F-87k: coupons per store)', () => {
+  it('lets an all-stores coupon (store_id null) work in every store and on the marketplace', () => {
+    expect(isCouponInStore({ storeId: null }, 'store-a')).toBe(true)
+    expect(isCouponInStore({ storeId: null }, 'store-b')).toBe(true)
+    expect(isCouponInStore({ storeId: null }, null)).toBe(true)
+  })
+
+  it('keeps a store coupon to its own store', () => {
+    expect(isCouponInStore({ storeId: 'store-a' }, 'store-a')).toBe(true)
+    expect(isCouponInStore({ storeId: 'store-a' }, 'store-b')).toBe(false)
+  })
+
+  it('refuses a store coupon where there is no store (marketplace)', () => {
+    expect(isCouponInStore({ storeId: 'store-a' }, null)).toBe(false)
+    expect(isCouponInStore({ storeId: 'store-a' }, undefined)).toBe(false)
+  })
+})
+
+describe('sellerCouponTargetError', () => {
+  it('accepts a whole-order coupon for all stores or one store', () => {
+    expect(sellerCouponTargetError({ storeId: null, productIds: null })).toBeNull()
+    expect(sellerCouponTargetError({ storeId: 'store-a', productIds: null })).toBeNull()
+    expect(sellerCouponTargetError({ storeId: null, productIds: [] })).toBeNull()
+  })
+
+  it('needs one store for a product list (products belong to one store)', () => {
+    expect(sellerCouponTargetError({ storeId: null, productIds: ['p1'] })).toBe('invalid_products')
+    expect(sellerCouponTargetError({ storeId: 'store-a', productIds: ['p1'] })).toBeNull()
+  })
+})
 
 describe('isLineEligibleForCoupon', () => {
   it('accepts every line for a platform coupon', () => {

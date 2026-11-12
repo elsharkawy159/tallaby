@@ -21,8 +21,8 @@ import { formatDate } from "@/lib/i18n/format";
 import { CurrencyInput } from "@/components/form/currency-input";
 import { toAsciiDigits } from "@/components/form/form-ui";
 import { MixedCurrencyNote, useAccountMoney } from "@/components/account-money.client";
-import { Field, FieldRow, OptionCard, OptionCards, Segmented, SellerButton, TextInput, Toggle } from "@/components/seller-ui";
-import { useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
+import { Field, FieldRow, NativeSelect, OptionCard, OptionCards, Segmented, SellerButton, TextInput, Toggle } from "@/components/seller-ui";
+import { ProductStoreProvider, useProductStoreId } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 import { CouponProductPicker } from "./coupon-product-picker";
 import { CouponTicketStub } from "./coupon-ticket";
 import {
@@ -45,13 +45,20 @@ type Props = {
   coupon: SellerCouponRow | null;
   /** Unused while "Where it works" is hidden (owner, 2026-10-28). */
   storeHost: string | null;
+  /** The seller's stores: "Apply on" shows with more than one (F-87k). */
+  stores: { id: string; name: string }[];
   onSaved: () => void;
 };
 
-export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
+/** The "Apply on" select's value for "All stores" (`store_id` null). */
+const ALL_STORES = "all";
+
+export function CouponEditor({ open, onOpenChange, coupon, stores, onSaved }: Props) {
   const { unit } = useAccountMoney();
   const t = useTranslations("coupons.form");
-  const storeId = useProductStoreId();
+  // The sidebar's selected store: where a new coupon starts. The save names its store explicitly.
+  const selectedStoreId = useProductStoreId() || stores[0]?.id || null;
+  const multiStore = stores.length > 1;
   const tErrors = useTranslations("coupons.errors");
   const tRow = useTranslations("coupons.row");
   const locale = useLocale();
@@ -63,15 +70,29 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
   // Each open starts from the coupon being edited (or a fresh form).
   useEffect(() => {
     if (!open) return;
-    setForm(coupon ? couponToForm(coupon) : emptyCouponForm());
+    const start = coupon ? couponToForm(coupon) : emptyCouponForm(selectedStoreId);
+    // With one store there is no choice: the coupon goes to that store (an older all-stores one too).
+    setForm(multiStore || !selectedStoreId ? start : { ...start, storeId: selectedStoreId });
     setErrors({});
-  }, [open, coupon]);
+  }, [open, coupon, selectedStoreId, multiStore]);
 
   const set = <K extends keyof CouponFormState>(key: K, value: CouponFormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
     // Editing a field clears its message; the rest stay until the next save.
     const field = key === "startDate" || key === "endDate" ? "dates" : key;
     setErrors((e) => (field in e ? { ...e, [field]: undefined } : e));
+  };
+
+  // Products belong to one store: a new store drops the picks, and All stores is whole-order only.
+  const setStore = (value: string) => {
+    const next = value === ALL_STORES ? null : value;
+    setForm((f) => ({
+      ...f,
+      storeId: next,
+      productIds: next === f.storeId ? f.productIds : [],
+      productScope: next === null ? "all" : f.productScope,
+    }));
+    setErrors((e) => ({ ...e, productIds: undefined }));
   };
 
   const submit = (event: React.FormEvent) => {
@@ -81,7 +102,7 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
     if (!input) return;
 
     startSaving(async () => {
-      const result = await saveSellerCoupon(storeId, input, coupon?.id);
+      const result = await saveSellerCoupon(form.storeId, input, coupon?.id);
       if (result.success) {
         toast.success(coupon ? t("updated") : t("created"));
         onSaved();
@@ -158,6 +179,28 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
               </Field>
             </FieldRow>
 
+            {/* Apply on (F-87k): one store or all of them; hidden with a single store. */}
+            {multiStore && (
+              <Field label={t("applyOn")} htmlFor={`${ids}-store`} note={t("applyOnHint")}>
+                <NativeSelect
+                  id={`${ids}-store`}
+                  value={form.storeId ?? ALL_STORES}
+                  onChange={(e) => setStore(e.target.value)}
+                >
+                  <option value={ALL_STORES}>{t("allStores")}</option>
+                  {stores.map((store) => (
+                    <option key={store.id} value={store.id}>
+                      {store.name}
+                    </option>
+                  ))}
+                  {/* A coupon of a store that is now archived keeps its value. */}
+                  {form.storeId && !stores.some((store) => store.id === form.storeId) && (
+                    <option value={form.storeId}>{t("otherStore")}</option>
+                  )}
+                </NativeSelect>
+              </Field>
+            )}
+
             {/* Discount */}
             <fieldset className="flex min-w-0 flex-col gap-3">
               <legend className="mb-3 text-[14.5px] font-bold text-(--s-ink)">{t("discount")}</legend>
@@ -226,14 +269,21 @@ export function CouponEditor({ open, onOpenChange, coupon, onSaved }: Props) {
                   description={t("selectedProductsHint")}
                   checked={form.productScope === "selected"}
                   onChange={() => set("productScope", "selected")}
+                  disabled={form.storeId === null}
                 />
               </OptionCards>
-              {form.productScope === "selected" && (
-                <CouponProductPicker
-                  selectedIds={form.productIds}
-                  onChange={(next) => set("productIds", next)}
-                  invalid={!!errors.productIds}
-                />
+              {form.storeId === null && multiStore && (
+                <p className="text-pretty text-xs text-(--s-faint)">{t("productsNeedStore")}</p>
+              )}
+              {form.productScope === "selected" && form.storeId !== null && (
+                // The picker searches the chosen store (the server checks it again).
+                <ProductStoreProvider storeId={form.storeId}>
+                  <CouponProductPicker
+                    selectedIds={form.productIds}
+                    onChange={(next) => set("productIds", next)}
+                    invalid={!!errors.productIds}
+                  />
+                </ProductStoreProvider>
               )}
               {errors.productIds && (
                 <p role="alert" className="text-xs font-semibold text-destructive">

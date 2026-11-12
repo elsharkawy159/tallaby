@@ -8,6 +8,7 @@ import {
   SELLER_COUPON_DISCOUNT_TYPES,
   getCouponChannels,
   getCouponProductIds,
+  sellerCouponTargetError,
   type CouponChannel,
   type SellerCouponDiscountType,
 } from "@workspace/lib/orders/coupon-scope";
@@ -24,6 +25,7 @@ import { z } from "zod";
 import { getUser } from "./auth";
 import { isAccessError, loadOrderLock } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
+import { couponInStore } from "@workspace/lib/stores/scope/server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 
 export type SellerCouponRow = {
@@ -42,6 +44,8 @@ export type SellerCouponRow = {
   /** Store pop-up (0114): when it opens, and the visitor's minutes to use the code. */
   popup: { trigger: CouponPopupTrigger; durationMinutes: number } | null;
   showInCart: boolean;
+  /** "Apply on" (F-87k): the one store it works in, or null for all the seller's stores. */
+  storeId: string | null;
   isActive: boolean;
   startsAt: string;
   expiresAt: string;
@@ -66,6 +70,8 @@ export type SellerCouponsPage = {
    * store in its URL. The server checks it again on every call.
    */
   productStoreId: string | null;
+  /** The seller's stores for the "Apply on" choice (shown with more than one). */
+  stores: { id: string; name: string }[];
 };
 
 /** Error codes the client maps to `coupons.errors.*` messages. */
@@ -75,6 +81,7 @@ export type SaveCouponError =
   | "code_taken"
   | "invalid_dates"
   | "invalid_products"
+  | "invalid_store"
   | "not_found"
   | "unknown";
 
@@ -160,6 +167,7 @@ function toRow(
         ? { trigger: coupon.popupTrigger, durationMinutes: coupon.popupDurationMinutes }
         : null,
     showInCart: coupon.showInCart,
+    storeId: coupon.storeId ?? null,
     isActive: coupon.isActive ?? false,
     startsAt: coupon.startsAt,
     expiresAt: coupon.expiresAt,
@@ -168,16 +176,26 @@ function toRow(
   };
 }
 
-/** Everything the coupons page needs, in one round trip. */
+/**
+ * Everything the coupons page needs, in one round trip. The list (and its
+ * uses and totals) is the selected store's coupons plus the "All stores"
+ * ones (F-87k); with no store, the whole account as before. The selected
+ * store only filters this read: every write names its store explicitly.
+ */
 export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
   const sellerId = await getSellerId();
-  if (!sellerId) return { coupons: [], storeHost: null, productStoreId: null };
+  if (!sellerId) return { coupons: [], storeHost: null, productStoreId: null, stores: [] };
 
   // A coupon's uses and discount follow from orders: hidden until activation (ROADMAP.md F-68).
-  const { ordersLocked: locked } = await loadOrderLock(sellerId);
-  const [couponRows, discountRows, seller, productStoreId] = await Promise.all([
+  const [{ ordersLocked: locked }, sellerStores] = await Promise.all([
+    loadOrderLock(sellerId),
+    getSellerStores().catch(() => null),
+  ]);
+  const productStoreId = sellerStores?.selected?.id ?? null;
+  const own = and(eq(coupons.sellerId, sellerId), productStoreId ? couponInStore(productStoreId) : undefined);
+  const [couponRows, discountRows, seller] = await Promise.all([
     db.query.coupons.findMany({
-      where: eq(coupons.sellerId, sellerId),
+      where: own,
       orderBy: [desc(coupons.createdAt)],
     }),
     locked
@@ -189,16 +207,12 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
           })
           .from(couponUsage)
           .innerJoin(coupons, eq(coupons.id, couponUsage.couponId))
-          .where(eq(coupons.sellerId, sellerId))
+          .where(own)
           .groupBy(couponUsage.couponId),
     db.query.sellers.findFirst({
       where: eq(sellers.id, sellerId),
       columns: { subdomain: true },
     }),
-    getSellerStores().then(
-      ({ selected }) => selected?.id ?? null,
-      () => null,
-    ),
   ]);
 
   const discountByCoupon = new Map(
@@ -214,6 +228,9 @@ export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
       ? `${seller.subdomain}.${STORE_ROOT_DOMAIN}`
       : null,
     productStoreId,
+    stores: (sellerStores?.stores ?? [])
+      .filter((store) => store.status !== "archived")
+      .map((store) => ({ id: store.id, name: store.name })),
   };
 }
 
@@ -300,11 +317,15 @@ export async function searchCouponProducts(input: {
 }
 
 /**
- * Creates a coupon, or updates one when `couponId` is given. Product targets
- * must be in `storeId` (F-87c; the coupons page sends its selected store, the
- * server checks it against the session): a foreign or forged store, or a
- * product outside it, is `invalid_products` (as a foreign product always
- * was). The coupon itself stays the seller's (per-store coupons: F-87k).
+ * Creates a coupon, or updates one when `couponId` is given. `storeId` is the
+ * form's "Apply on" choice (F-87k, owner 2026-11-12): one store, or null for
+ * "All stores" (`store_id` null). The store is checked against the session
+ * (`requireProductStore`): a foreign or forged one is `invalid_store`, or
+ * `invalid_products` when the coupon has product targets (as a foreign
+ * product always was). Product targets need one store and must be in it
+ * (F-87c): with "All stores", or a product outside the store, the coupon is
+ * `invalid_products`. Changing the store of an existing coupon is allowed on
+ * the same rules.
  */
 export async function saveSellerCoupon(
   storeId: string | null,
@@ -325,21 +346,29 @@ export async function saveSellerCoupon(
   }
 
   const productIds = v.productIds?.length ? [...new Set(v.productIds)] : null;
-  if (productIds) {
-    let inStore;
+  const targetError = sellerCouponTargetError({ storeId, productIds });
+  if (targetError) return { success: false, error: targetError };
+
+  let targetStoreId: string | null = null;
+  if (storeId !== null) {
+    let scope: Awaited<ReturnType<typeof requireProductStore>>;
     try {
-      ({ inStore } = await requireProductStore(storeId));
+      scope = await requireProductStore(storeId);
     } catch (error) {
-      // Shown as "pick them again": the store isn't this seller's, so neither are the products.
-      if (isAccessError(error)) return { success: false, error: "invalid_products" };
+      // With products, shown as "pick them again": the store isn't this seller's, so neither are the products.
+      if (isAccessError(error)) return { success: false, error: productIds ? "invalid_products" : "invalid_store" };
       throw error;
     }
-    const owned = await db
-      .select({ id: products.id })
-      .from(products)
-      .where(and(eq(products.sellerId, sellerId), inArray(products.id, productIds), inStore));
-    if (owned.length !== productIds.length) {
-      return { success: false, error: "invalid_products" };
+    // The checked store, never the client's string.
+    targetStoreId = scope.store.id;
+    if (productIds) {
+      const owned = await db
+        .select({ id: products.id })
+        .from(products)
+        .where(and(eq(products.sellerId, sellerId), inArray(products.id, productIds), scope.inStore));
+      if (owned.length !== productIds.length) {
+        return { success: false, error: "invalid_products" };
+      }
     }
   }
 
@@ -361,6 +390,7 @@ export async function saveSellerCoupon(
     popupTrigger: v.popup?.trigger ?? null,
     popupDurationMinutes: v.popup?.durationMinutes ?? null,
     showInCart: v.showInCart,
+    storeId: targetStoreId,
     startsAt: new Date(v.startsAt).toISOString(),
     expiresAt: new Date(v.expiresAt).toISOString(),
   };

@@ -77,6 +77,7 @@ import {
 import { getStorefrontShippingContext } from '../stores/shipping-context.server'
 import { isStorePhoneBlocked } from '../stores/blocked-phones.server'
 import { productsOutsideStore } from '../stores/catalog.server'
+import { couponInStore } from '../stores/store-scope.server'
 import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
 import { minOrderShortfalls, shouldEnforceMinOrder, type MinOrderShortfall } from './min-order-quantity.lib'
 
@@ -609,6 +610,9 @@ export async function placeOrderFromCart(
     const coupon = await db.query.coupons.findFirst({
       where: and(
         sql`UPPER(${coupons.code}) = ${normalizedCode}`,
+        // Coupons per store (F-87k): another store's code is like an unknown one.
+        // The store is the cart row's, never a client value.
+        couponInStore(cart.storeId),
         eq(coupons.isActive, true),
         sql`(${coupons.startsAt} IS NULL OR ${coupons.startsAt} <= NOW())`,
         sql`(${coupons.expiresAt} IS NULL OR ${coupons.expiresAt} >= NOW())`,

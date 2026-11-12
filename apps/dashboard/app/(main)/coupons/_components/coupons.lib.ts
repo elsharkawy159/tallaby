@@ -48,6 +48,8 @@ export type CouponFormState = {
   popupUnit: PopupUnit;
   /** List this coupon in the store's cart (F-13c). */
   showInCart: boolean;
+  /** "Apply on" (F-87k): one store's id, or null for all the seller's stores. */
+  storeId: string | null;
 };
 
 export type PopupUnit = "minutes" | "hours" | "days";
@@ -82,7 +84,8 @@ export function toDateInput(value: string | number | Date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-export function emptyCouponForm(): CouponFormState {
+/** A blank form, applied on `storeId` (the selected store; null = all stores). */
+export function emptyCouponForm(storeId: string | null = null): CouponFormState {
   const now = Date.now();
   return {
     code: "",
@@ -102,6 +105,7 @@ export function emptyCouponForm(): CouponFormState {
     popupDuration: "1",
     popupUnit: "hours",
     showInCart: false,
+    storeId,
   };
 }
 
@@ -123,6 +127,7 @@ export function couponToForm(coupon: SellerCouponRow): CouponFormState {
     startDate: toDateInput(coupon.startsAt),
     endDate: toDateInput(coupon.expiresAt),
     showInCart: coupon.showInCart,
+    storeId: coupon.storeId,
     ...(coupon.popup
       ? { popupTrigger: coupon.popup.trigger, ...minutesToDuration(coupon.popup.durationMinutes) }
       : { popupTrigger: "off" as const, popupDuration: "1", popupUnit: "hours" as const }),
@@ -167,7 +172,8 @@ export function validateCouponForm(
   if (!form.name.trim()) errors.name = "name";
   if (value == null) errors.discountValue = "value";
   else if (form.discountType === "percentage" && value > 90) errors.discountValue = "percentMax";
-  if (form.productScope === "selected" && form.productIds.length === 0) errors.productIds = "products";
+  if (form.productScope === "selected" && form.storeId === null) errors.productIds = "productsNeedStore";
+  else if (form.productScope === "selected" && form.productIds.length === 0) errors.productIds = "products";
   if (!form.startDate || !form.endDate) errors.dates = "dates";
   else if (form.endDate < form.startDate) errors.dates = "invalid_dates";
   const popupMinutes = toCount(form.popupDuration) == null ? null : Number(ascii(form.popupDuration)) * UNIT_MINUTES[form.popupUnit];

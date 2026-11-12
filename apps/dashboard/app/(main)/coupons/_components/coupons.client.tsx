@@ -40,6 +40,7 @@ import {
   SellerButton,
   SellerCard,
   StatusBadge,
+  Tag,
   Toggle,
   type BadgeTone,
 } from "@/components/seller-ui";
@@ -54,7 +55,7 @@ import {
   type CouponStatus,
 } from "./coupons.lib";
 
-export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCouponsPage) {
+export function CouponsView({ coupons: initialCoupons, storeHost, stores }: SellerCouponsPage) {
   const t = useTranslations("coupons");
   const locale = useLocale();
   const router = useRouter();
@@ -91,6 +92,7 @@ export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCoupon
       onOpenChange={setEditorOpen}
       coupon={editing}
       storeHost={storeHost}
+      stores={stores}
       onSaved={() => router.refresh()}
     />
   );
@@ -151,6 +153,7 @@ export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCoupon
               key={coupon.id}
               coupon={coupon}
               status={status}
+              multiStore={stores.length > 1}
               onEdit={() => openEditor(coupon)}
               onDelete={() => setDeleting(coupon)}
               onActiveChange={(isActive) =>
@@ -175,12 +178,15 @@ export function CouponsView({ coupons: initialCoupons, storeHost }: SellerCoupon
 function CouponRow({
   coupon,
   status,
+  multiStore,
   onEdit,
   onDelete,
   onActiveChange,
 }: {
   coupon: SellerCouponRow;
   status: CouponStatus;
+  /** The list is the selected store's coupons plus all-stores ones: only those get a badge. */
+  multiStore: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onActiveChange: (isActive: boolean) => void;
@@ -230,7 +236,10 @@ function CouponRow({
             <Copy aria-hidden />
           </IconButton>
         </div>
-        <p className="truncate text-[13.5px] font-semibold text-(--s-text)">{coupon.name}</p>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <p className="truncate text-[13.5px] font-semibold text-(--s-text)">{coupon.name}</p>
+          {multiStore && coupon.storeId === null && <Tag>{t("row.allStores")}</Tag>}
+        </div>
         <p className="text-xs text-(--s-subtle)">
           {new Intl.ListFormat(locale, { type: "unit", style: "short" }).format(
             [

@@ -124,7 +124,7 @@ export async function loadEditorStoreData(sellerId: string, catalog: StoreCatalo
     attempt("brands", failed, () => sellerBrandList(sellerId, catalog)),
     attempt("reviews", failed, () => storeReviews(sellerId, catalog, { limit: 24 })),
     attempt("reviews", failed, () => storeReviewStats(sellerId, catalog)),
-    attempt("coupons", failed, () => sellerCoupons(sellerId)),
+    attempt("coupons", failed, () => sellerCoupons(sellerId, catalog?.storeId ?? null)),
   ]);
   return {
     brands: brandRows?.map((b) => ({ id: b.id, name: { ar: b.nameAr || b.name, en: b.name || b.nameAr || "" }, logo: publicImage(b.logoUrl) })) ?? null,

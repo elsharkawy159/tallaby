@@ -16,6 +16,8 @@
  * - `taxonomyInStore` / `aliasedTaxonomyInStore` / `taxonomyItemsInStore`:
  *   the seller categories and brands of one store (F-87d): per seller before
  *   the split, `store_id = store` after it.
+ * - `couponInStore`: the coupons that work in one store (its own plus the
+ *   "All stores" ones, F-87k).
  * - `storeHasProduct` / `assertStoreProduct`: the same condition for one pair.
  *   Callers check `storeOwnedBy` (or `requireStore`) first; these only check
  *   the pair.
@@ -24,7 +26,7 @@
  * caller's transaction.
  */
 import type { SQL } from "drizzle-orm";
-import { and, db, eq, isNull, products, sellerProductBrands, sellerProductCategories, sql, storeProducts, stores } from "@workspace/db";
+import { and, coupons, db, eq, isNull, or, products, sellerProductBrands, sellerProductCategories, sql, storeProducts, stores } from "@workspace/db";
 import { isSwitchOn } from "./platform-switches.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -128,6 +130,20 @@ function productInStoreSql(storeId: SQL, { catalogSplit, scope = "shown" }: Prod
  * a cached read puts both in its key, so an entry never mixes stores or modes.
  */
 export type StoreCatalogScope = { storeId: string; catalogSplit: boolean };
+
+/**
+ * The SQL condition "this `coupons` row works in store `storeId`" (F-87k,
+ * owner 2026-11-12): the store's own coupons plus the "All stores" ones
+ * (`store_id` null, also every legacy row). No store (the marketplace) or a
+ * malformed id matches only the all-stores coupons. Same rule as
+ * `isCouponInStore` in `orders/coupon-scope`. Callers still filter by the
+ * store's seller; the store id comes from the request host or the cart row,
+ * never from a client.
+ */
+export function couponInStore(storeId: string | null | undefined): SQL {
+  if (typeof storeId !== "string" || !UUID_RE.test(storeId)) return isNull(coupons.storeId);
+  return or(isNull(coupons.storeId), eq(coupons.storeId, storeId))!;
+}
 
 /** `productInStore(storeId, { catalogSplit, scope: 'shown' })`: what the store's storefront shows. */
 export function productShownInStore({ storeId, catalogSplit }: StoreCatalogScope): SQL {

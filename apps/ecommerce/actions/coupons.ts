@@ -11,6 +11,7 @@ import {
   isCouponAllowedOnChannel,
   isLineEligibleForCoupon,
 } from "@workspace/lib/orders/coupon-scope"
+import { couponInStore } from "@workspace/lib/stores/scope/server"
 import {
   calculateCouponDiscount,
   buildSummaryWithCoupon,
@@ -95,11 +96,15 @@ export async function validateCoupon(
     const userId = user?.user?.id
     const now = new Date().toISOString()
     const normalizedCode = code.trim().toUpperCase()
+    // The store comes from the request host, never from the client.
+    const scope = await getCartScope()
 
-    // Find coupon with case-insensitive match
+    // Find coupon with case-insensitive match. Coupons per store (F-87k): only
+    // this store's and "All stores" codes; another store's code is invalid.
     const coupon = await db.query.coupons.findFirst({
       where: and(
         sql`UPPER(${coupons.code}) = ${normalizedCode}`,
+        couponInStore(scope?.storeId),
         eq(coupons.isActive, true)
       )
     })
@@ -195,7 +200,7 @@ export async function validateCoupon(
 
     // Calculate cart totals
     // A coupon stacks on the net price of a line with an offer, as place-order does.
-    const offers = await storeCartDiscounts((await getCartScope())?.storeId, cart.cartItems)
+    const offers = await storeCartDiscounts(scope?.storeId, cart.cartItems)
     const cartItemsForCoupon: CartItemForCoupon[] = cart.cartItems.map((item, index) => ({
       id: item.id,
       productId: item.productId,
@@ -210,7 +215,6 @@ export async function validateCoupon(
       0
     )
 
-    const scope = await getCartScope()
     const channel = scope ? "storefront" : "marketplace"
     // A Tallaby coupon is priced in EGP (place-order refuses it too).
     const wrongCurrency = !coupon.sellerId && scope != null && scope.currency !== "EGP"

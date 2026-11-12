@@ -36,6 +36,8 @@ const mocks = vi.hoisted(() => ({
 const fake = vi.hoisted(() => {
   const state = {
     wheres: [] as unknown[],
+    /** Every .values() / .set() payload, in order. */
+    writes: [] as unknown[],
     calls: [] as string[],
     results: { select: [] as unknown[][], update: [] as unknown[][], insert: [] as unknown[][], delete: [] as unknown[][] },
   };
@@ -44,6 +46,12 @@ const fake = vi.hoisted(() => {
     const proxy: unknown = new Proxy(target, {
       get(_t, prop) {
         if (prop === "then") return (resolve: (v: unknown) => unknown, reject: (e: unknown) => unknown) => Promise.resolve(result).then(resolve, reject);
+        if (prop === "values" || prop === "set") {
+          return (arg: unknown) => {
+            state.writes.push(arg);
+            return proxy;
+          };
+        }
         if (prop === "where") {
           return (arg: unknown) => {
             state.wheres.push(arg);
@@ -80,6 +88,7 @@ const fake = vi.hoisted(() => {
   };
   const reset = () => {
     state.wheres.length = 0;
+    state.writes.length = 0;
     state.calls.length = 0;
     for (const list of Object.values(state.results)) list.length = 0;
   };
@@ -320,11 +329,42 @@ describe("coupon product targets (F-87c, per-store coupons are F-87k)", () => {
     expect(fake.state.calls).not.toContain("update");
   });
 
-  it("a coupon without product targets doesn't need a store (unchanged)", async () => {
-    fake.state.results.insert.push([{ id: ROW, code: "SAVE10", name: "Save", discountType: "percentage", discountValue: "10", applicableTo: {}, startsAt: "", expiresAt: "" }]);
+  const savedRow = (storeId: string | null) => ({ id: ROW, code: "SAVE10", name: "Save", discountType: "percentage", discountValue: "10", applicableTo: {}, startsAt: "", expiresAt: "", storeId });
+
+  it("All stores (null) without product targets needs no store and saves store_id null", async () => {
+    fake.state.results.insert.push([savedRow(null)]);
     const saved = await coupons.saveSellerCoupon(null, { ...coupon, productIds: null });
-    expect(saved.success).toBe(true);
+    expect(saved).toMatchObject({ success: true, data: { storeId: null } });
     expect(mocks.requireProductStore).not.toHaveBeenCalled();
+    expect(fake.state.writes[0]).toMatchObject({ storeId: null });
+  });
+
+  it("All stores with a product list is invalid_products before any read (products belong to one store, F-87k)", async () => {
+    expect(await coupons.saveSellerCoupon(null, coupon)).toEqual({ success: false, error: "invalid_products" });
+    expect(mocks.requireProductStore).not.toHaveBeenCalled();
+    expect(fake.state.calls).toEqual([]);
+  });
+
+  it("one store: checked with the guard, and saved with the guard's store id", async () => {
+    fake.state.results.insert.push([savedRow(STORE)]);
+    const saved = await coupons.saveSellerCoupon(STORE, { ...coupon, productIds: null });
+    expect(saved).toMatchObject({ success: true, data: { storeId: STORE } });
+    expect(mocks.requireProductStore).toHaveBeenCalledWith(STORE);
+    expect(fake.state.writes[0]).toMatchObject({ storeId: STORE });
+  });
+
+  it("a foreign or forged store without products is invalid_store and nothing is written", async () => {
+    refuse();
+    expect(await coupons.saveSellerCoupon(OTHER, { ...coupon, productIds: null })).toEqual({ success: false, error: "invalid_store" });
+    expect(fake.state.calls).toEqual([]);
+  });
+
+  it("moving a coupon to another store updates store_id, still scoped to the seller", async () => {
+    fake.state.results.update.push([savedRow(STORE)]);
+    const saved = await coupons.saveSellerCoupon(STORE, { ...coupon, productIds: null }, ROW);
+    expect(saved.success).toBe(true);
+    expect(fake.state.writes[0]).toMatchObject({ storeId: STORE });
+    expect(render(fake.state.wheres.at(-1))).toContain('"coupons"."seller_id" = $');
   });
 });
 

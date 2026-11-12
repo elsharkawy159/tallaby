@@ -287,7 +287,7 @@ async function resolveStoreExtras(
       ),
     ),
     reviewQueries.length ? safe("review stats", () => getCachedStoreReviewStats(sellerId, storeId, catalogSplit)) : null,
-    couponIds.length ? safe("coupons", () => getCachedSellerCoupons(sellerId, couponIds.join(","))) : null,
+    couponIds.length ? safe("coupons", () => getCachedSellerCoupons(sellerId, storeId, couponIds.join(","))) : null,
   ]);
 
   const title = (value: { ar: string | null; en: string | null }) => (locale === "ar" ? value.ar || value.en : value.en || value.ar) ?? null;
