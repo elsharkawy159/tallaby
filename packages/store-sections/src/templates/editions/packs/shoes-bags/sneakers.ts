@@ -5,8 +5,8 @@
  * canvas), white-background packshots (`editionPhoto`, square, one pair
  * each). Data only. No React here.
  *
- * Shipped on streetwear only: sports-bold and stride, the niche's other
- * planned looks, are not edition-ready yet.
+ * Shipped on sports-bold (Nabd, the niche's template) and on streetwear
+ * (see Looks below).
  *
  * Brand rule: every pair is unbranded. No product, category or line names a
  * brand or says a pair is "inspired by" one. Materials are named from what
@@ -60,6 +60,21 @@
  * streetwear's about page is built without that section.
  *
  * No hero video: none found without people, feet or logos.
+ *
+ * Looks: `sports-bold` Nabd (the niche's template, one template per niche;
+ * it shows the pack itself and is its own content), then `streetwear` until
+ * the shoes-and-bags switch takes it off. Nabd's photos are the pack's own,
+ * moved between slots (2026-11-12, each looked at again at full size): the
+ * hero tile is 4296075 (the white canvas pair on red, orange and green
+ * paper; at 3648px the only marks are the zigzag stitching and two coloured
+ * windows in the heel of the sole, no lettering), the home story sits on the
+ * banner 13807630, and the about page shows 11827147 (the lone chunky
+ * sneaker on the orange shelf) as `story`. Streetwear keeps its hero (the
+ * pink shelf 1020372 and 11827147 on phones) and its story photo 4296075
+ * through `perLook`. No new Pexels photo. Nabd also reads the hero's size
+ * tile, the head-to-head (a runner against an everyday white, four spec
+ * rows), the high-tops panel, the promises' heading, the sign-up's four
+ * topics, the footer's phone and email and `custom.shop-all`.
  */
 import { L } from "../../../../designs/_kit";
 import { demoStore, handle, pexels, phone } from "../../../library-template";
@@ -69,7 +84,14 @@ import type { Edition } from "../../types";
 const NICHE = "sneakers";
 const P = (slug: string) => editionPhoto(NICHE, slug);
 
-const TILES = [pexels(7193625, 1200), pexels(9207813, 1200), pexels(29253011, 1200), pexels(5488660, 1200)];
+/** A catalog search for a word in the products' names. */
+const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
+
+/** Streetwear's tiles: the photos whole (3:4 cards). */
+const STREET_TILES = [pexels(7193625, 1200), pexels(9207813, 1200), pexels(29253011, 1200), pexels(5488660, 1200)];
+/** Everyday white for Nabd's round tiles: the cream pair sits at the top of a tall shot of pale boards, so it is cut 4:3 from the top and the ring holds the toes and laces. */
+const EVERYDAY_WHITE_RING = "https://images.pexels.com/photos/7193625/pexels-photo-7193625.jpeg?auto=compress&cs=tinysrgb&fit=crop&crop=focalpoint&fp-x=0.47&fp-y=0&w=1200&h=900";
+const TILES = [EVERYDAY_WHITE_RING, STREET_TILES[1]!, STREET_TILES[2]!, STREET_TILES[3]!];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -79,7 +101,7 @@ const HANDLE = handle("@raseef");
 
 export const SNEAKERS: Edition = {
   niche: NICHE,
-  looks: ["streetwear"],
+  looks: ["sports-bold", "streetwear"],
   priceBand: { min: 700, max: 2800 },
   // The packshots are square on pure white: shown whole on a white stage, so a grid reads as one shoot.
   productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
@@ -95,11 +117,12 @@ export const SNEAKERS: Edition = {
       ["high-tops", "هاي توب", "High-tops", TILES[2]!],
       ["slip-ons-canvas", "سليب أون وكانفس", "Slip-ons & canvas", TILES[3]!],
     ],
-    // Newest first, mixed so a row of the newest shows every category.
+    // Newest first, mixed so a row of the newest shows every category. Featured (Nabd's hero pair, the newest featured one): the
+    // chunky white, so it is never one of the head-to-head's two pairs (the first runner and the first everyday white).
     products: [
-      ["white-leather-low-top", "everyday-white", "كوتشي جلد أبيض سادة", "White Leather Low-Top", P("white-leather-low-top"), 1450, { isFeatured: true, rating: 4.8, sold90: 312 }],
-      ["black-mesh-runner", "running", "كوتشي رانينج شبك أسود", "Black Mesh Runner", P("black-mesh-runner"), 1150, { isFeatured: true, rating: 4.7, sold90: 274 }],
-      ["black-canvas-high-top", "high-tops", "هاي توب كانفس أسود", "Black Canvas High-Top", P("black-canvas-high-top"), 950, { isFeatured: true, rating: 4.8, sold90: 251 }],
+      ["white-leather-low-top", "everyday-white", "كوتشي جلد أبيض سادة", "White Leather Low-Top", P("white-leather-low-top"), 1450, { rating: 4.8, sold90: 312 }],
+      ["black-mesh-runner", "running", "كوتشي رانينج شبك أسود", "Black Mesh Runner", P("black-mesh-runner"), 1150, { rating: 4.7, sold90: 274 }],
+      ["black-canvas-high-top", "high-tops", "هاي توب كانفس أسود", "Black Canvas High-Top", P("black-canvas-high-top"), 950, { rating: 4.8, sold90: 251 }],
       ["navy-canvas-slip-on", "slip-ons-canvas", "سليب أون كانفس كحلي", "Navy Canvas Slip-On", P("navy-canvas-slip-on"), 750, { rating: 4.6, sold90: 198 }],
       ["white-chunky-sneaker", "everyday-white", "كوتشي شانكي أبيض بنعل عالي", "White Chunky Sneaker", P("white-chunky-sneaker"), 1850, { compareAtPrice: 2200, isFeatured: true, rating: 4.7, sold90: 236 }],
       ["grey-knit-runner", "running", "كوتشي رانينج تريكو رمادي", "Grey Knit Runner", P("grey-knit-runner"), 1250, { rating: 4.6, sold90: 187 }],
@@ -109,17 +132,19 @@ export const SNEAKERS: Edition = {
       ["navy-orange-runner", "running", "كوتشي رانينج كحلي وبرتقالي", "Navy and Orange Runner", P("navy-orange-runner"), 1350, { compareAtPrice: 1600, rating: 4.6, sold90: 176 }],
       ["white-canvas-high-top", "high-tops", "هاي توب كانفس أبيض", "White Canvas High-Top", P("white-canvas-high-top"), 950, { rating: 4.6, sold90: 205 }],
       ["beige-canvas-low-top", "slip-ons-canvas", "كوتشي كانفس بيج", "Beige Canvas Low-Top", P("beige-canvas-low-top"), 790, { rating: 4.5, sold90: 141 }],
-      ["cream-suede-low-top", "everyday-white", "كوتشي شمواه كريمي بنعل عسلي", "Cream Suede Low-Top on a Gum Sole", P("cream-suede-low-top"), 1750, { rating: 4.8, sold90: 117 }],
+      ["cream-suede-low-top", "everyday-white", "كوتشي شمواه كريمي بنعل عسلي", "Cream Suede Low-Top on a Gum Sole", P("cream-suede-low-top"), 1750, { isFeatured: true, rating: 4.8, sold90: 117 }],
       ["white-pink-runner", "running", "كوتشي رانينج أبيض وبمبي", "White and Pink Runner", P("white-pink-runner"), 1250, { rating: 4.7, sold90: 162 }],
       ["grey-suede-high-top", "high-tops", "هاي توب شمواه رمادي", "Grey Suede High-Top", P("grey-suede-high-top"), 2200, { compareAtPrice: 2500, rating: 4.7, sold90: 83 }],
       ["olive-canvas-low-top", "slip-ons-canvas", "كوتشي كانفس زيتي", "Olive Canvas Low-Top", P("olive-canvas-low-top"), 790, { rating: 4.6, sold90: 129 }],
     ],
   }),
   photos: {
-    hero: { wide: pexels(1020372, 1920), tall: pexels(11827147, 1200) },
+    // Nabd's hero tile is `tall` (4296075, square: the pair stays whole in its square tile); `wide` is streetwear's.
+    hero: { wide: pexels(1020372, 1920), tall: pexels(4296075, 1400) },
     tiles: TILES,
     banner: pexels(13807630, 2000),
-    story: pexels(4296075, 1200),
+    // Nabd: the home story sits on `banner`; `story` is the about page's photo.
+    story: pexels(11827147, 1200),
     custom: {
       // Streetwear's lookbook, square: one large photo, then four small ones.
       "lookbook-1": pexels(12969390, 1200),
@@ -135,9 +160,11 @@ export const SNEAKERS: Edition = {
       L("ادفع عند الاستلام", "Pay on delivery"),
       L("استبدال المقاس خلال ١٤ يوم", "Size exchange within 14 days"),
     ],
+    // Nabd: a header link to the high-tops (the store's 3rd category), also the high-tops panel's button.
+    nav: [{ label: L("هاي توب", "High-tops"), href: search("هاي توب") }],
     labels: { search: L("دوّر على رانينج، هاي توب، أبيض…", "Search runners, high-tops, white pairs…") },
     hero: {
-      alt: L("رف بمبي عليه كوتشيات رانينج بألوان هادية على خلفية سودا", "A pink shelf of pastel runners against black"),
+      alt: L("جوز كوتشي كانفس أبيض بخياطة زجزاج على ورق أحمر وبرتقالي وأخضر", "A pair of white canvas low-tops with zigzag stitching on red, orange and green paper"),
       eyebrow: L("وصل الموسم الجديد", "The new season is in"),
       title: L("كوتشي للشارع، مريح لآخر اليوم", "Street pairs, comfy all day"),
       line: L(
@@ -156,7 +183,7 @@ export const SNEAKERS: Edition = {
       },
     },
     story: {
-      alt: L("كوتشي كانفس أبيض بخياطة زجزاج على ورق ملوّن", "White canvas low-tops with zigzag stitching on coloured paper"),
+      alt: L("كوتشي شانكي أبيض وأسود لوحده على رف خشب برتقالي", "One white and black chunky sneaker alone on an orange wooden shelf"),
       eyebrow: L("بنختار بالعين والرجل", "Picked by eye and by foot"),
       title: L("مش أي كوتشي يدخل الرف", "Not every pair makes the shelf"),
       text: L(
@@ -181,7 +208,7 @@ export const SNEAKERS: Edition = {
     footer: { line: L("امشي براحتك", "Walk your way") },
     about: {
       line: L("كوتشيات للشارع ولكل يوم، مختارة على الراحة والشكل.", "Sneakers for the street and every day, chosen for comfort and looks."),
-      alt: L("كوتشي كانفس أبيض بخياطة زجزاج على ورق ملوّن", "White canvas low-tops with zigzag stitching on coloured paper"),
+      alt: L("كوتشي شانكي أبيض وأسود لوحده على رف خشب برتقالي", "One white and black chunky sneaker alone on an orange wooden shelf"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("الكوتشي اللي بتعيش فيه", "The pair you live in"),
       text: L(
@@ -221,9 +248,55 @@ export const SNEAKERS: Edition = {
       // Demo handle: the seller's own replaces it.
       "lookbook-handle": L(HANDLE, HANDLE),
       "lookbook-line": L("صور جديدة كل أسبوع", "New photos every week"),
+      // Nabd: the header's link to the whole catalog, and the footer's phone and email.
+      "shop-all": L("كل الكوتشيات", "All pairs"),
+      "contact-phone": L(PHONE_AR, PHONE_EN),
+      "contact-email": L(handle(EMAIL), EMAIL),
+      // Nabd's hero: the line under the size range (`hero-sticker-2`) on the brand tile, one short line.
+      "hero-sizes-line": L("في كل موديل، واستبدال المقاس خلال ١٤ يوم", "in every style, with size exchanges for 14 days"),
+      // Nabd's head-to-head: the newest runner (the store's 2nd category) against the newest everyday white (its 1st).
+      // A title, then four rows: a label of one or two words and a short value for each side. The dot marks the
+      // better side: the runner in rows 1 and 2, the everyday white in rows 3 and 4.
+      "versus-title": L("رانينج ولا أبيض لكل يوم؟", "A runner or an everyday white?"),
+      "versus-1-label": L("التهوية", "Airflow"),
+      "versus-1-a": L("شبك بيتنفّس", "Breathable mesh"),
+      "versus-1-b": L("جلد مقفول", "Closed leather"),
+      "versus-2-label": L("الوزن", "Weight"),
+      "versus-2-a": L("خفيف للجري", "Light for running"),
+      "versus-2-b": L("جلد أتقل شوية", "Leather, a little heavier"),
+      "versus-3-label": L("التنضيف", "Cleaning"),
+      "versus-3-a": L("غسيل بالإيد", "Hand wash"),
+      "versus-3-b": L("مسحة بفوطة مبلولة", "A damp cloth"),
+      "versus-4-label": L("يمشي مع", "Goes with"),
+      "versus-4-a": L("لبس التمرين", "Gym clothes"),
+      "versus-4-b": L("أي لبس", "Anything"),
+      // Nabd's high-tops panel beside three high-tops (the store's 3rd category): a small label, a title, one line, a button to the high-tops.
+      "panel-eyebrow": L("هاي توب", "High-tops"),
+      "panel-title": L("بيغطي الكاحل ويقعد معاك سنين", "Covers the ankle, lasts for years"),
+      "panel-line": L("كانفس وجلد وشمواه، بنعل كاوتش يستحمل الأسفلت.", "Canvas, leather and suede on rubber soles that take the asphalt."),
+      "panel-cta": L("كل الهاي توب", "All high-tops"),
+      // Nabd's promises: the heading and its line over the first three promises.
+      "trust-title": L("نلبسه قبلك ونبدّله لو ما ظبطش", "We wear it first, and swap it if it does not fit"),
+      "trust-line": L("ده اللي بيحصل مع كل طلب.", "What happens with every order."),
+      // Nabd's sign-up: four topics the letters cover (one or two words each).
+      "newsletter-interest-1": L("موديلات جديدة", "New styles"),
+      "newsletter-interest-2": L("رجوع المقاسات", "Sizes back in"),
+      "newsletter-interest-3": L("رانينج", "Running"),
+      "newsletter-interest-4": L("تنضيف الكوتشي", "Sneaker care"),
     },
   },
-  // Streetwear's rail shows the newest products.
+  // Nabd's grid and streetwear's rail show the newest products.
   journey: { primary: "newest" },
+  // Streetwear keeps its own hero (the pink shelf, the lone sneaker on phones), story photo and whole tiles until the shoes-and-bags switch takes it off.
+  perLook: {
+    streetwear: {
+      photos: { hero: { wide: pexels(1020372, 1920), tall: pexels(11827147, 1200) }, story: pexels(4296075, 1200), tiles: STREET_TILES },
+      copy: {
+        hero: { alt: L("رف بمبي عليه كوتشيات رانينج بألوان هادية على خلفية سودا", "A pink shelf of pastel runners against black") },
+        story: { alt: L("كوتشي كانفس أبيض بخياطة زجزاج على ورق ملوّن", "White canvas low-tops with zigzag stitching on coloured paper") },
+        about: { alt: L("كوتشي كانفس أبيض بخياطة زجزاج على ورق ملوّن", "White canvas low-tops with zigzag stitching on coloured paper") },
+      },
+    },
+  },
   productPage: { copy: { reviews: L("آراء اللي لبسوه", "From people who wear them"), related: L("موديلات ممكن تعجبك", "Pairs you may like") } },
 };

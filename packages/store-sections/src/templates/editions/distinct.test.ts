@@ -26,6 +26,8 @@ const PENDING = new Set<string>([
   "mens-shoes",
   // tasfya is the niche's template and shows the pack itself; streetwear (its own hero only) and zay draw it until the shoes-and-bags switch takes them off.
   "slippers-clogs",
+  // sports-bold is the niche's template and shows the pack itself; streetwear (its own hero and story photos only) draws it until the shoes-and-bags switch takes it off.
+  "sneakers",
 ]);
 
 /** What makes a look's version of the pack recognisable, each compared between two looks. */
