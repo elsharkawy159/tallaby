@@ -22,7 +22,7 @@ The order of niches:
 
 When a niche's folder is complete, tell me its name ("earbuds is ready").
 
----
+---.
 
 ## Where the files go
 
