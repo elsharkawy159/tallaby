@@ -76,7 +76,7 @@ When a niche folder in `.editions-inbox/<wave>/<niche>/` is complete (16 packsho
 | Wave 1, optional (below) | 3 | 48 | 24 | 72 |
 | Waves 2–13, every other industry (end of this file) | 53 | 848 | 424 | 1,272 |
 | Live templates, replace their Pexels photos | 22 | 8 (Fadda) | 201 | 209 |
-| **All** | **83** (silver jewelry is in two rows) | **1,000** | **697** | **1,697** |
+| **All core photos** | **83** (silver jewelry is in two rows) | **1,000** | **697** | **1,697** |
 | Premium kit, 22 per niche (after each niche's core photos) | 83 | | 1,826 | 1,826 |
 | Global images (placeholders and empty states) | | | 13 | 13 |
 | Optional: a second angle of every product (`<slug>-2.png`) | | | | 336 listed for live packs; 16 per new niche |
