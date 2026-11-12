@@ -204,7 +204,10 @@ function hero(c: LookContent): Design {
       return {
         ...node,
         style: { ...node.style, paddingTop: 18, paddingBottom: 18 },
-        children: figure ? [{ ...figure, style: { ...figure.style, fontSize: "4xl" } }, ...rest] : rest,
+        // The design's phone size (5xl) would outgrow this half-width tile and break "36–45" over two lines.
+        children: figure
+          ? [{ ...figure, style: { ...figure.style, fontSize: "4xl" }, breakpointStyles: { ...figure.breakpointStyles, mobile: { ...figure.breakpointStyles?.mobile, fontSize: "3xl" } } }, ...rest]
+          : rest,
       };
     }
     if (node.type === "productList" && node.props?.role === "product") {
