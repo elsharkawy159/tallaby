@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Plug,
   PlugZap,
+  Ruler,
   Search,
   ShieldAlert,
   Sparkles,
@@ -90,6 +91,7 @@ const GROUP_ICONS: Record<Category, LucideIcon> = {
   payments: CreditCard,
   data: ArrowLeftRight,
   messaging: MessageSquare,
+  storefront: Ruler,
 };
 
 export type AppsStore = {

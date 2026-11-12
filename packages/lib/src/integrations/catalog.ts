@@ -13,13 +13,13 @@ import type { AppPricing } from "../billing/app-pricing.lib";
 import { INTEGRATIONS, type IntegrationProvider } from "./registry";
 
 /** Also the Apps page's Explore categories (F-47). */
-export type StoreAppGroup = "ai" | "tracking" | "shipping" | "payments" | "data" | "messaging";
+export type StoreAppGroup = "ai" | "tracking" | "shipping" | "payments" | "data" | "messaging" | "storefront";
 
 /** How an app works, shown on its card before it is connected. */
-export type StoreAppKind = "script" | "server" | "import" | "account" | "carrier" | "sheet" | "gateway" | "agent" | "notifications";
+export type StoreAppKind = "script" | "server" | "import" | "account" | "carrier" | "sheet" | "gateway" | "agent" | "notifications" | "widget";
 
 /** Dashboard page (under /stores/:storeId/) that manages the app; none → the Apps page side sheet. */
-export type StoreAppPage = "apps/bosta" | "apps/wassalha" | "apps/ai-assistants" | "settings/payments";
+export type StoreAppPage = "apps/bosta" | "apps/wassalha" | "apps/ai-assistants" | "apps/size-chart" | "settings/payments";
 
 type StoreAppDefinition = {
   key: string;
@@ -43,6 +43,9 @@ const FREE = { model: "free" } as const;
 export const STORE_APPS = [
   // F-29: Claude, ChatGPT, Cursor … manage the store over MCP. Connections live in agent_grants (0133), not store_integrations.
   { key: "ai_assistants", group: "ai", kind: "agent", page: "apps/ai-assistants", live: true, pricing: FREE, defaultInstalled: true },
+
+  // F-92: "Find my size" on product pages. Installed from its own page (store_app_installs); charts live in store_size_charts (0169).
+  { key: "size_chart", group: "storefront", kind: "widget", page: "apps/size-chart", live: true, pricing: FREE },
 
   { key: "meta_pixel", group: "tracking", kind: "script", provider: "meta_pixel", pricing: FREE },
   { key: "google_analytics", group: "tracking", kind: "script", provider: "google_analytics", pricing: FREE },
@@ -77,7 +80,7 @@ export const STORE_APPS = [
 export type StoreApp = (typeof STORE_APPS)[number];
 export type StoreAppKey = StoreApp["key"];
 
-export const STORE_APP_GROUPS: StoreAppGroup[] = ["ai", "tracking", "shipping", "payments", "data", "messaging"];
+export const STORE_APP_GROUPS: StoreAppGroup[] = ["ai", "storefront", "tracking", "shipping", "payments", "data", "messaging"];
 
 /** Live when it has a provider whose registry entry is available, or is a built page-only app; everything else is "soon". */
 export function isStoreAppLive(app: StoreApp): boolean {

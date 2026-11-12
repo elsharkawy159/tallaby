@@ -64,4 +64,13 @@ describe("store apps catalog", () => {
     expect("provider" in app).toBe(false);
     expect(storeAppsInGroup("ai").map((a) => a.key)).toEqual(["ai_assistants"]);
   });
+
+  it("lists the Size chart app as a free, live storefront app with its own page (F-92)", () => {
+    const app = getStoreApp("size_chart")!;
+    expect(isStoreAppLive(app)).toBe(true);
+    expect(isStoreAppDefaultInstalled(app)).toBe(false);
+    expect(storeAppPricing(app)).toEqual({ model: "free" });
+    expect(storeAppHref("s1", app)).toBe("/stores/s1/apps/size-chart");
+    expect(storeAppsInGroup("storefront").map((a) => a.key)).toEqual(["size_chart"]);
+  });
 });

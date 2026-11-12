@@ -43,6 +43,8 @@ import { StickyStoreHeader } from "./sticky-store-header.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
 import { PoweredByTallaby } from "./powered-by-tallaby";
+import { SizeFinder } from "@/components/storefront/size-finder.client";
+import type { ProductSizeChart } from "@workspace/lib/size-charts/server";
 import { OfferCountdown } from "@/components/storefront/store-offer.client";
 import {
   StoreProductBuyBox,
@@ -309,6 +311,7 @@ export async function StoreSitePage({
   locale,
   productPage = 1,
   product,
+  sizeChart,
 }: {
   store: Storefront;
   site: SiteConfig;
@@ -318,6 +321,8 @@ export async function StoreSitePage({
   productPage?: number;
   /** The product page's product (`/products/{slug}`); the page is then the site's product page. */
   product?: ProductDetail;
+  /** The product's size chart (Size chart app, F-92): "Find my size" above the buy box. */
+  sizeChart?: ProductSizeChart | null;
 }) {
   const path = product ? product.href : page.isHome ? "/" : `/${page.slug}`;
   const base = await buildContext(
@@ -329,7 +334,11 @@ export async function StoreSitePage({
     product,
   );
   // Page sections reveal on scroll (docs/section-rules.md §6); the header and footer don't.
-  const ctx: RenderContext = { ...base, reveal: true };
+  const ctx: RenderContext = {
+    ...base,
+    reveal: true,
+    ...(product && sizeChart && { renderSizeFinder: () => <SizeFinder storeId={store.storeId} chart={sizeChart} /> }),
+  };
   // The storefront layout owns <main>, so the sections render directly.
   return (
     <>

@@ -315,6 +315,11 @@ export function invalidateProductQuantityOffers(sellerId: string, productId: str
   return inv([productTags.quantityOffers(sellerId, productId)]);
 }
 
+/** A size chart, what it is applied to, or the Size chart app changed (F-92). Only that store. */
+export function invalidateStoreSizeCharts(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.sizeCharts(sellerId, storeId)]);
+}
+
 /** Offers or the store's switch changed (F-32). An offer can apply in every store of the seller. */
 export function invalidateStoreCrossSells(sellerId: string, storeIds: readonly string[]): CacheInvalidation {
   return inv(storeIds.map((storeId) => storeTags.crossSells(sellerId, storeId)));

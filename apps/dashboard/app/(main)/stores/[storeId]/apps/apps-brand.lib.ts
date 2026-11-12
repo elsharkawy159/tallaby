@@ -56,10 +56,16 @@ const MESSAGE_ICON = {
   path: "M4.5 3.5h15A2.5 2.5 0 0 1 22 6v9.5a2.5 2.5 0 0 1-2.5 2.5H10l-4.6 3.4c-.6.4-1.4 0-1.4-.8V18A2.5 2.5 0 0 1 2 15.5V6a2.5 2.5 0 0 1 2.5-2.5Z",
 };
 
+/** A tape measure: the Size chart app (F-92). */
+const RULER_ICON = {
+  path: "M3.5 7h17A1.5 1.5 0 0 1 22 8.5v7a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 15.5v-7A1.5 1.5 0 0 1 3.5 7Zm2 2v3.5h1.5V9H5.5Zm3.5 0v2.5h1.5V9H9Zm3.5 0v3.5H14V9h-1.5Zm3.5 0v2.5h1.5V9H16Z",
+};
+
 export const APP_BRANDS: Record<StoreAppKey, AppBrand> = {
   ai_assistants: { icon: SPARKLES_ICON, bg: "#1F1A2E", fg: "#F4B860", dark: true },
   customer_notifications: { icon: BELL_ICON, bg: "#145163", fg: "#FFFFFF", dark: true },
   sms: { icon: MESSAGE_ICON, bg: "#fdad28", fg: "#145163" },
+  size_chart: { icon: RULER_ICON, bg: "#FCE9D2", fg: "#145163" },
   meta_pixel: { icon: siMeta, bg: "#0866FF", fg: "#FFFFFF" },
   meta_capi: { icon: siMeta, bg: "#0B1F3A", fg: "#5AA0FF", dark: true },
   google_analytics: { icon: siGoogleanalytics, bg: "#F9AB00", fg: "#FFFFFF" },

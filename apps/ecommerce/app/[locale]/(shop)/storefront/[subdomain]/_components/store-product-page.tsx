@@ -4,6 +4,7 @@ import type { Product } from "@/components/product-page/product-page.types";
 import type { ProductLocale } from "@/lib/product-translations";
 import { storeCategoryOf, toProductDetail } from "@/lib/store-site/product-detail.lib";
 import { getStorefrontCategories, type Storefront } from "@/lib/storefront.server";
+import { getProductSizeChart } from "@/lib/store-site/size-chart.server";
 import { StoreSitePage } from "./store-site";
 
 /**
@@ -27,12 +28,16 @@ export async function StoreProductPage({
   const page = productPageOf(site);
   if (!page) return null;
   // The breadcrumb links its category to the catalog filtered by it; a failed read only loses the link.
-  const categories = product.category
-    ? await getStorefrontCategories(store.id, store.storeId).catch((error) => {
-        console.error("Store categories failed to load for the product page:", error);
-        return [];
-      })
-    : [];
+  // The Size chart app (F-92): the chart applied to this product or its store category, else null.
+  const [categories, sizeChart] = await Promise.all([
+    product.category
+      ? getStorefrontCategories(store.id, store.storeId).catch((error) => {
+          console.error("Store categories failed to load for the product page:", error);
+          return [];
+        })
+      : [],
+    getProductSizeChart(store.id, store.storeId, product),
+  ]);
   const detail = toProductDetail(product, locale as ProductLocale, { storeCategory: storeCategoryOf(product, categories) });
-  return <StoreSitePage store={store} site={site} page={page} locale={locale} product={detail} />;
+  return <StoreSitePage store={store} site={site} page={page} locale={locale} product={detail} sizeChart={sizeChart} />;
 }

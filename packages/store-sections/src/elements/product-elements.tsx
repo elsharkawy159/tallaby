@@ -845,11 +845,14 @@ export function renderProductElement(type: ProductElementType, rawProps: Record<
   // Below it, the perks box (static, the package's own): a sibling after the host's buy box, so a
   // sticky phone bar the host draws inside its buy box never takes it along.
   const perks = type === "productBuyBox" && ownProduct && props.perks !== false ? <Perks ctx={ctx} /> : null;
-  if (liveViews || offerCountdown || perks) {
+  // The Size chart app's "Find my size" (F-92), right above the page product's add-to-cart (the host draws nothing without a chart).
+  const sizeFinder = type === "productBuyBox" && ownProduct && ctx.mode === "public" ? ctx.renderSizeFinder?.(product) : null;
+  if (liveViews || offerCountdown || perks || sizeFinder) {
     return (
       <div {...attrs} className="flex min-w-0 flex-col gap-3">
         {offerCountdown}
         {liveViews}
+        {sizeFinder}
         {hook ? hook(product, props) : STILLS[type]({ product, props, attrs: {}, ctx })}
         {perks && <div className="mt-1 min-w-0">{perks}</div>}
       </div>

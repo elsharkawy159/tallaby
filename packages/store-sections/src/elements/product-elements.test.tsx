@@ -105,6 +105,18 @@ describe("product elements", () => {
     expect(seen[1]?.crossSellElsewhere).toBe(true);
   });
 
+  it("draws the host's Find my size part right above the buy box, on the storefront only (F-92)", () => {
+    const host = { renderProductBuyBox: () => <p>box</p>, renderSizeFinder: (p: ProductDetail) => <i>size:{p.title}</i> };
+    const html = draw(node("productBuyBox"), product, { mode: "public", ...host });
+    expect(html).toContain("<i>size:Earbuds</i>");
+    expect(html.indexOf("size:Earbuds")).toBeLessThan(html.indexOf("box"));
+    expect(draw(node("productBuyBox"), product, { mode: "edit", ...host })).not.toContain("size:");
+    // A product card's buy box (another product's scope) never gets it.
+    const other = { ...product, id: "other", title: "Other" };
+    const card = renderToStaticMarkup(<>{renderElementTree([node("productBuyBox")], ctx({ mode: "public", product, ...host }), 1, { kind: "product", record: other })}</>);
+    expect(card).not.toContain("size:");
+  });
+
   it("productStockBadge shows the seller's alert only when it applies (F-34d)", () => {
     const alert = { show: true, threshold: 3 };
     const pub = { mode: "public" as const };

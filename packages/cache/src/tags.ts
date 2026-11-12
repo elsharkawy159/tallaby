@@ -84,6 +84,8 @@ export const storeTags = {
   forms: (sellerId: string, storeId: string) => `store:forms:${sellerId}:${storeId}`,
   /** The store's cross-sell offers (F-32). */
   crossSells: (sellerId: string, storeId: string) => `store:cross-sells:${sellerId}:${storeId}`,
+  /** The store's size charts and what they are applied to (F-92). */
+  sizeCharts: (sellerId: string, storeId: string) => `store:size-charts:${sellerId}:${storeId}`,
   /** The store's catalog mode and selected products (D24, P4-07). */
   catalog: (sellerId: string, storeId: string) => `store:catalog:${sellerId}:${storeId}`,
   /** Published blog posts and CMS items of the store (P4-16, P4-11). Never drafts. */

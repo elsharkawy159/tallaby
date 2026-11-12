@@ -14,6 +14,7 @@ import {
   invalidateStoreCatalog,
   invalidateStoreCms,
   invalidateStoreIntegrations,
+  invalidateStoreSizeCharts,
   invalidateStoreSite,
   invalidateSellerProducts,
   invalidateStoreProducts,
@@ -452,5 +453,14 @@ describe("admin invalidations (docs/admin-saas.md §4.3)", () => {
       adminTags.integrationSummary(),
     ]);
     expect(result.tags).not.toContain(storeTags.integrations("seller-a", "store-a2"));
+  });
+});
+
+describe("invalidateStoreSizeCharts", () => {
+  it("emits only that store's size-chart tag, scoped by seller (F-92)", () => {
+    const result = invalidateStoreSizeCharts("seller-a", "store-a1");
+    expect(result.tags).toEqual(["store:size-charts:seller-a:store-a1"]);
+    expect(result.tags).not.toContain(storeTags.sizeCharts("seller-a", "store-a2"));
+    expect(result.paths).toEqual([]);
   });
 });

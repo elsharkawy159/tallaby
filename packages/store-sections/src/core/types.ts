@@ -515,6 +515,8 @@ export interface RenderContext {
   renderLiveViews?: (product: ProductDetail) => ReactNode;
   /** The store coupon pop-up's countdown, drawn above the live views line and the buy box (storefront only; draws nothing until the visitor saw the pop-up). */
   renderOfferCountdown?: (product: ProductDetail) => ReactNode;
+  /** The Size chart app's "Find my size" (F-92), drawn right above the page product's buy box (storefront only; the host draws nothing when the product has no chart). */
+  renderSizeFinder?: (product: ProductDetail) => ReactNode;
   /** Wishlist toggle, when the host supports it on this store. */
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
   /** The header's switch to the store's other language (`languageSwitcher` node). */
