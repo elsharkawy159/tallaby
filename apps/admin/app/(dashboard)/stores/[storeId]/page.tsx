@@ -183,7 +183,7 @@ export default async function StoreDetailPage({ params }: PageProps) {
             id="catalog"
             icon={Package}
             title="Products"
-            description="Which of the seller's products this store sells."
+            description="This store's products. Manage them, or add new ones by hand or with AI."
           >
             <Streamed>
               <StoreCatalogSection store={store} />

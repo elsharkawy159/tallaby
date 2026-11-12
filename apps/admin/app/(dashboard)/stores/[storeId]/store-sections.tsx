@@ -493,9 +493,17 @@ export async function StoreCatalogSection({ store }: SectionProps) {
           <Fact label="Seller categories">{catalog.lists ? catalog.lists.categories : "Needs migration 0068"}</Fact>
           <Fact label="Seller brands">{catalog.lists ? catalog.lists.brands : "Needs migration 0068"}</Fact>
         </dl>
-        <Link href={`/products?seller=${encodeURIComponent(store.sellerSlug)}`} className="mt-4 inline-block text-sm text-muted-foreground hover:underline">
-          Open the seller&apos;s products
-        </Link>
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link
+            href={`/stores/${store.id}/products`}
+            className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Manage this store&apos;s products
+          </Link>
+          <Link href={`/products?seller=${encodeURIComponent(store.sellerSlug)}`} className="text-sm text-muted-foreground hover:underline">
+            Open the seller&apos;s products
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

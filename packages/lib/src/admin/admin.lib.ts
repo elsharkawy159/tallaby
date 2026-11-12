@@ -96,6 +96,11 @@ export const ADMIN_AUDIT_ACTIONS = [
   "decline_app_request",
   // Admin › Theme requests (0156, F-77)
   "update_theme_request",
+  // Admin › Store › Products: an admin builds a store for its seller (owner request 2026-11-12)
+  "create_store_product",
+  "set_store_product_status",
+  "trash_store_products",
+  "restore_store_products",
   // Admin › store page: a store's new tallaby.com subdomain (owner request 2026-11-12; the action check is a pattern, no migration)
   "change_store_subdomain",
 ] as const;

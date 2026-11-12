@@ -64,6 +64,10 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   decline_app_request: "App request declined",
   update_theme_request: "Theme request updated",
   change_store_subdomain: "Store subdomain changed",
+  create_store_product: "Product added to the store",
+  set_store_product_status: "Product published or hidden",
+  trash_store_products: "Products moved to Trash",
+  restore_store_products: "Products restored from Trash",
 };
 
 export function auditActionLabel(action: string): string {
