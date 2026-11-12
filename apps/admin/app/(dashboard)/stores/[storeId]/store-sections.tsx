@@ -39,7 +39,8 @@ import { loadCachedTemplateCards } from "@/lib/store-templates.data";
 import { RemoteImage } from "@/components/media/remote-image";
 import { storeUrl } from "@workspace/lib/storefront";
 import { storeFontVariables } from "@/app/(builder)/stores/[storeId]/editor/store-fonts";
-import { ChangeThemeButton, PaletteBand, type ThemeOption } from "./store-theme.client";
+import { ChangeThemeButton, PaletteBand } from "./store-theme.client";
+import { buildThemeGallery } from "./store-theme.data";
 import { SiteSettingsEditor } from "./site-settings.client";
 import { loadSiteSettings } from "./site-settings.data";
 import {
@@ -288,18 +289,19 @@ export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { 
   ]);
   const activeDomain = store.domains.find((domain) => domain.status === "active")?.domain ?? null;
   const storeHost = storeUrl(store.subdomain, activeDomain).replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const themes: ThemeOption[] = (gallery?.templates ?? []).map((template) => ({
-    key: template.key,
-    name: localizedText(template.name),
-    category: template.category,
-    thumbnailUrl: template.thumbnailUrl,
-    isPremium: template.isPremium,
-    isDefault: template.isDefault,
-    palette: template.palette,
-    pageCount: template.outline.length,
-  }));
+  // The dialog's themes, industry tabs and niches (the seller gallery's rules).
+  const themeGallery = buildThemeGallery(gallery?.templates ?? [], store);
   const currentKey = gallery?.currentKey ?? store.templateKey;
-  const current = themes.find((theme) => theme.key === currentKey) ?? null;
+  const currentRow = gallery?.templates.find((template) => template.key === currentKey) ?? null;
+  const current = currentRow
+    ? {
+        name: localizedText(currentRow.name),
+        category: currentRow.category,
+        thumbnailUrl: currentRow.thumbnailUrl,
+        palette: currentRow.palette,
+        pageCount: currentRow.outline.length,
+      }
+    : null;
   const install = gallery?.lastInstall ?? null;
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -338,12 +340,13 @@ export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { 
                     action={undoStoreThemeAction}
                   />
                 )}
-                {themes.length > 0 && (
+                {themeGallery.themes.length > 0 && (
                   <ChangeThemeButton
                     storeId={store.id}
                     storeName={store.name}
                     currentKey={currentKey}
-                    themes={themes}
+                    gallery={themeGallery}
+                    previewLocale={store.defaultLocale === "en" ? "en" : "ar"}
                     siteLive={store.siteStatus === "published"}
                   />
                 )}

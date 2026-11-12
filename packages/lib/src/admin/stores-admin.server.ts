@@ -239,6 +239,9 @@ export async function getStoreForAdmin(storeId: string, q: Queryable = db) {
       catalogMode: stores.catalogMode,
       logoUrl: stores.logoUrl,
       defaultLocale: stores.defaultLocale,
+      // The change-theme dialog opens on the store's industry and niche.
+      storeCategory: stores.storeCategory,
+      storeCategoryAr: stores.storeCategoryAr,
       firstPublishedAt: stores.firstPublishedAt,
       lastPublishedAt: stores.lastPublishedAt,
       createdAt: stores.createdAt,

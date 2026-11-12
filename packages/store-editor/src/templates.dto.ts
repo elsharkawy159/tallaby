@@ -25,6 +25,13 @@ export type TemplateCardView = {
   pages: { slug: string; isHome: boolean; name: string; sections: Localized[] }[];
 };
 
+/**
+ * A niche card of a niche-only industry (ROADMAP F-90): the niche it is made
+ * for (its name is the card's tag) and the edition it shows and installs
+ * (null: the template's own content is already the niche).
+ */
+export type NicheCardView = { niche: string; name: { ar: string; en: string }; edition: string | null };
+
 /** A template's full content for the editor's preview dialog (rendered with the store's products). */
 export type TemplatePreviewView = {
   designSystem: DesignSystem;

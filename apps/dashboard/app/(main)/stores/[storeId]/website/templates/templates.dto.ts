@@ -1,7 +1,7 @@
 /** Website › Templates (PLAN.md §8.1, P4-05): shapes shared by the page, the gallery and the actions. */
 
-export type { TemplateCardView, TemplatePreviewView, TemplateErrorKey, TemplateActionResult } from "@workspace/store-editor/templates.dto";
-import type { TemplateCardView, TemplateErrorKey } from "@workspace/store-editor/templates.dto";
+export type { NicheCardView, TemplateCardView, TemplatePreviewView, TemplateErrorKey, TemplateActionResult } from "@workspace/store-editor/templates.dto";
+import type { NicheCardView, TemplateCardView, TemplateErrorKey } from "@workspace/store-editor/templates.dto";
 
 type Localized = { ar?: string; en?: string };
 
@@ -20,13 +20,6 @@ export type TemplatesPageQuery = {
 
 /** A niche as a filter tab or a card tag. */
 export type NicheOptionView = { id: string; name: { ar: string; en: string } };
-
-/**
- * A niche card of a niche-only industry (ROADMAP F-90): the niche it is made
- * for (its name is the card's tag) and the edition it shows and installs
- * (null: the template's own content is already the niche).
- */
-export type NicheCardView = { niche: string; name: { ar: string; en: string }; edition: string | null };
 
 /** One page of the gallery (`listTemplatesPage`). */
 export type TemplatesPageView = {

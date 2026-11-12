@@ -45,9 +45,11 @@ const TEMPLATE_MESSAGES: Partial<Record<TemplateErrorKey, string>> = {
   rateLimited: MESSAGES.rateLimited,
 };
 
-type Input = { storeId?: unknown; revisionId?: unknown; templateKey?: unknown; publishNow?: unknown; reason?: unknown };
+type Input = { storeId?: unknown; revisionId?: unknown; templateKey?: unknown; editionId?: unknown; publishNow?: unknown; reason?: unknown };
 const record = (input: unknown): Input => (input && typeof input === "object" && !Array.isArray(input) ? (input as Input) : {});
 const text = (value: unknown) => (typeof value === "string" ? value : "");
+/** A niche id as the dialog sends it, else null; applyStoreTemplate then checks the template offers it. */
+const editionOf = (value: unknown) => (typeof value === "string" && /^[a-z0-9][a-z0-9-]{0,62}$/.test(value) ? value : null);
 const validReason = (reason: string) => reason.trim().length >= ADMIN_REASON_MIN && reason.trim().length <= ADMIN_REASON_MAX;
 
 function toResult(result: EditorResult<unknown>, message: string): AdminActionResult {
@@ -77,14 +79,19 @@ export async function unpublishSiteAction(input: unknown): Promise<AdminActionRe
  * Applies a theme (template) to the store's drafts, like the seller's
  * Website › Templates. With `publishNow` the drafts are then published, but
  * only when the site is already live: a store that was never published, or
- * that was taken offline, stays offline.
+ * that was taken offline, stays offline. `editionId` installs a niche
+ * edition (ROADMAP F-90) like the seller's "Use template"; one the template
+ * does not offer is refused ("That theme is no longer offered").
  */
 export async function applyStoreThemeAction(input: unknown): Promise<AdminActionResult> {
-  const { storeId, templateKey, publishNow, reason } = record(input);
+  const { storeId, templateKey, editionId, publishNow, reason } = record(input);
   const id = text(storeId);
   const why = text(reason);
   if (!validReason(why)) return { success: false, error: MESSAGES.invalidInput! };
-  const applied = await applyTemplate(id, text(templateKey), why);
+  // A malformed edition is refused, never dropped: the admin asked for a niche's look.
+  const edition = editionOf(editionId);
+  if (editionId != null && editionId !== "" && !edition) return { success: false, error: TEMPLATE_MESSAGES.templateNotFound! };
+  const applied = await applyTemplate(id, text(templateKey), why, edition);
   if (!applied.success) return templateError(applied);
   revalidatePath(`/stores/${id}`);
   if (publishNow !== true) return { success: true, message: "Theme applied to the drafts and logged" };

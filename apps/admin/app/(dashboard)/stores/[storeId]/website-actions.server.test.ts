@@ -128,6 +128,7 @@ describe("store Website tab actions", () => {
       STORE,
       "botanica",
       "Seller asked",
+      null,
     );
     expect(publish).not.toHaveBeenCalled();
 
@@ -202,5 +203,25 @@ describe("store Website tab actions", () => {
       error: "There is no theme change to undo.",
     });
     expect(undoTemplate).toHaveBeenCalledWith(STORE, "Wrong theme");
+  });
+
+  it("applies a theme with a niche edition, and refuses a malformed or unoffered one", async () => {
+    vi.mocked(applyTemplate).mockResolvedValueOnce({ success: true, data: { pagesUpdated: 3, pagesCreated: 0 } });
+    expect(await applyStoreThemeAction({ storeId: STORE, templateKey: "fashion-luxe", editionId: "tshirts", reason: "Seller asked" })).toMatchObject({ success: true });
+    expect(applyTemplate).toHaveBeenCalledWith(STORE, "fashion-luxe", "Seller asked", "tshirts");
+
+    expect(await applyStoreThemeAction({ storeId: STORE, templateKey: "fashion-luxe", editionId: "T shirts; --", reason: "Seller asked" })).toEqual({
+      success: false,
+      error: "That theme is no longer offered. Reload the page and pick another.",
+    });
+    expect(await applyStoreThemeAction({ storeId: STORE, templateKey: "fashion-luxe", editionId: 7, reason: "Seller asked" })).toMatchObject({ success: false });
+    expect(applyTemplate).toHaveBeenCalledTimes(1);
+
+    // The offered-edition check is applyStoreTemplate's (edition_not_found → templateNotFound in the editor action).
+    vi.mocked(applyTemplate).mockResolvedValueOnce({ success: false, error: "templateNotFound" });
+    expect(await applyStoreThemeAction({ storeId: STORE, templateKey: "fashion-bold", editionId: "tshirts", reason: "Seller asked" })).toEqual({
+      success: false,
+      error: "That theme is no longer offered. Reload the page and pick another.",
+    });
   });
 });

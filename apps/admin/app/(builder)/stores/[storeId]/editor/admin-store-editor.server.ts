@@ -26,6 +26,7 @@ import {
   saveStoreChrome,
   saveStoreDesignSystem,
   saveStorePageDraft,
+  templateEditionId,
   undoStoreTemplate,
   unpublishStoreSite,
   updateStorePage,
@@ -80,6 +81,8 @@ const TEMPLATE_ERRORS: Record<string, TemplateErrorKey> = {
   not_found: "notFound",
   store_read_only: "readOnly",
   template_not_found: "templateNotFound",
+  // A niche edition the template does not offer (a stale dialog): the same message as a template that is gone (as the dashboard).
+  edition_not_found: "templateNotFound",
   premium_template: "premiumTemplate",
   invalid_template: "invalidTemplate",
   too_many_pages: "tooManyPages",
@@ -462,7 +465,13 @@ function templateFormInput(kind: string, locale: "ar" | "en") {
 
 const templateFail = <T>(error: string): TemplateActionResult<T> => ({ success: false, error: TEMPLATE_ERRORS[error] ?? (error as TemplateErrorKey) });
 
-export async function applyTemplate(storeId: string, templateKey: string, reason?: string) {
+/**
+ * `editionId`: a niche edition (ROADMAP F-90) to install the template with,
+ * as the seller's "Use template" does. applyStoreTemplate checks it: an
+ * edition the template does not offer fails the apply (`edition_not_found`).
+ */
+export async function applyTemplate(storeId: string, templateKey: string, reason?: string, editionId?: string | null) {
+  const edition = typeof editionId === "string" && editionId !== "" ? editionId : null;
   return auditedAction<{ pagesUpdated: number; pagesCreated: number }, TemplateActionResult<{ pagesUpdated: number; pagesCreated: number }>>(
     storeId,
     reason,
@@ -473,7 +482,12 @@ export async function applyTemplate(storeId: string, templateKey: string, reason
         ref.storeId,
         String(templateKey),
         actorId,
-        { allowedSections: ALLOWED, overrideKeys: OVERRIDE_KEYS, formInput: async (kind, locale) => templateFormInput(kind, locale) },
+        {
+          allowedSections: ALLOWED,
+          overrideKeys: OVERRIDE_KEYS,
+          formInput: async (kind, locale) => templateFormInput(kind, locale),
+          ...(edition && { editionId: edition }),
+        },
         tx,
       );
       if (!applied.success) return { result: templateFail(applied.error), before: {}, after: {} };
@@ -481,7 +495,7 @@ export async function applyTemplate(storeId: string, templateKey: string, reason
       return {
         result: { success: true, data: { pagesUpdated: applied.data.pagesUpdated, pagesCreated: applied.data.pagesCreated } },
         before: {},
-        after: { templateKey: applied.data.templateKey, installId: applied.data.installId },
+        after: { templateKey: applied.data.templateKey, installId: applied.data.installId, ...(edition && { edition }) },
       };
     },
     (error) => ({ success: false, error: error === "invalidInput" ? "generic" : error }),
@@ -504,12 +518,14 @@ export async function undoTemplate(storeId: string, reason?: string) {
 }
 
 /** Read-only: the template's pages and look for the preview dialog. */
-export async function templatePreview(storeId: string, templateKey: string): Promise<TemplateActionResult<TemplatePreviewView>> {
+export async function templatePreview(storeId: string, templateKey: string, editionId?: string | null): Promise<TemplateActionResult<TemplatePreviewView>> {
   return withAdminStore<TemplateActionResult<TemplatePreviewView>>(
     storeId,
     "template preview",
     async ({ ref }) => {
-      const config = await getStoreTemplateConfig(ref.sellerId, ref.storeId, String(templateKey), undefined, loadCachedTemplateConfig);
+      // A niche edition the template offers, else null: the preview then shows the template's own content (as the dashboard).
+      const edition = templateEditionId(String(templateKey), editionId);
+      const config = await getStoreTemplateConfig(ref.sellerId, ref.storeId, String(templateKey), undefined, loadCachedTemplateConfig, edition);
       if (!config) return { success: false, error: "templateNotFound" };
       return {
         success: true,
@@ -518,7 +534,7 @@ export async function templatePreview(storeId: string, templateKey: string): Pro
           header: config.header,
           footer: config.footer,
           pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, name: page.name, sections: page.content.sections, content: page.content })),
-          demo: (await getTemplateMeta(String(templateKey)))?.demo ?? null,
+          demo: (await getTemplateMeta(String(templateKey), undefined, edition))?.demo ?? null,
         },
       };
     },
