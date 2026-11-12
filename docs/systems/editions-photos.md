@@ -6,21 +6,25 @@ Generate them in **one ChatGPT chat per niche and kind**: paste the master promp
 
 ## Where the files go
 
-Save each image as **`<slug>.png`** (the slug is in bold before each prompt; scenes are `scene-<slot>.png`) in its wave's niche folder:
+**Every niche section below starts with a "Save to:" line: that is its folder.** Paths are relative to the project folder `F:\Programming Projects\tallaby\`, so `.editions-inbox/01-wave-1/earbuds/` means `F:\Programming Projects\tallaby\.editions-inbox\01-wave-1\earbuds\`.
+
+For each image (you, or ChatGPT with file access):
+
+1. Generate it from its prompt.
+2. **Download it into that niche's "Save to" folder**, nowhere else.
+3. **Name it exactly as the bold name before its prompt**, plus `.png`: packshots `<slug>.png`, scenes `scene-<slot>.png`, second angles `<slug>-2.png`. Example: `.editions-inbox/01-wave-1/earbuds/white-wireless-earbuds.png` and `.editions-inbox/01-wave-1/earbuds/scene-hero-wide.png`.
+4. Keep the full resolution ChatGPT gives (no screenshots, no compression); PNG or JPG.
 
 ```
 .editions-inbox/
-  00-live-templates/<niche>/      the 21 live niches: their packshots, and the replacement scenes listed under "Live templates"
-  01-wave-1/<niche>/              earbuds, kidswear, backpacks-travel, mobiles, audio, small-appliances, modest-wear, silver-jewelry, wearables
-  02-wave-2-beauty/<niche>/       … one folder per wave below, up to
+  00-global/                                  images every store shares (placeholders, empty states): see "Global images"
+  00-live-templates/<niche>/                  the 22 live templates: their packshots and replacement scenes
+  01-wave-1/<niche>/                          earbuds, kidswear, backpacks-travel, mobiles, audio, small-appliances, modest-wear, silver-jewelry, wearables
+  02-wave-2-beauty/<niche>/                   … one folder per wave below, up to
   13-wave-13-books-and-stationery/<niche>/
 ```
 
-For example `.editions-inbox/01-wave-1/earbuds/white-wireless-earbuds.png` or `.editions-inbox/01-wave-1/earbuds/scene-hero-wide.png`. Every niche folder already exists. The folder is git-ignored. If renaming is a pain, download them **in the order of this list** into the niche's folder, and I will match them by order and check each one by eye.
-
-When a niche folder is complete, tell me. I convert to WebP, upload them to the `library-media` bucket and build the pack.
-
-Reject and regenerate any image with: text, a logo or brand name, a person, hand or foot, a grey or coloured background, a cut-off product, or two products when one was asked.
+Every folder already exists (`.editions-inbox/README.md` lists them). The folder is git-ignored. If renaming is a pain, download them **in the order of this list** into the niche's folder, and I will match them by order and check each one by eye.
 
 ---
 
@@ -73,6 +77,8 @@ When a niche folder in `.editions-inbox/<wave>/<niche>/` is complete (16 packsho
 | Waves 2–13, every other industry (end of this file) | 53 | 848 | 424 | 1,272 |
 | Live templates, replace their Pexels photos | 22 | 8 (Fadda) | 201 | 209 |
 | **All** | **83** (silver jewelry is in two rows) | **1,000** | **697** | **1,697** |
+| Premium kit, 22 per niche (after each niche's core photos) | 83 | | 1,826 | 1,826 |
+| Global images (placeholders and empty states) | | | 13 | 13 |
 | Optional: a second angle of every product (`<slug>-2.png`) | | | | 336 listed for live packs; 16 per new niche |
 
 Start with wave 1's six and the worst live photos (listed under "Live templates"); the later waves can be made in any order, an industry at a time. Second angles are optional: they give each product page its own extra photos.
@@ -110,9 +116,66 @@ Every niche's scene set is the same eight slots:
 
 ---
 
+## Premium kit (every niche, after its 8 scenes)
+
+So a template looks premium and every section has a real, high-definition photo (carousel slides, call-to-action bands, offers, seasons, the about page, galleries, collection headers, the social card), each niche also gets these. Send them **in the same scene chat, after the niche's 8 scenes**, so ChatGPT already knows the shop, its products and its palette; start the first one with *"Same shop, same palette and light as the scenes above."* Save them in the niche's same "Save to" folder. Make a niche's core photos (packshots and 8 scenes) first; the kit comes after.
+
+Heroes and calls to action
+- **scene-hero-2** (16:9, space for text on the right): a second hero slide: the shop's best seller close up, in the setting it is used in.
+- **scene-hero-3** (16:9, space for text on the left): a third hero slide: three or four of the shop's products together in one calm, wide still life.
+- **scene-hero-tall-2** (4:5, space for text at the top): the phone version of scene-hero-2.
+- **scene-cta-wide** (21:9, a calm empty middle for text, products only at the two ends): a call-to-action band.
+- **scene-cta-tall** (4:5, space for text at the top): the same call to action for phones.
+
+Offers and seasons
+- **scene-offer** (16:9, space for text on one side): an offer banner: the products on a bold block of the palette's accent colour, crisp shadow. No text, no numbers, no percent signs.
+- **scene-season-ramadan** (16:9, space for text on one side): the products on a Ramadan evening table: a brass lantern, dates in a small bowl, warm amber light.
+- **scene-season-eid** (16:9, space for text on one side): the products gift-wrapped in plain paper with ribbon, beside unwrapped ones, festive but calm.
+- **scene-season-summer** (16:9, space for text on one side): the products in bright summer light: sea-blue shadows, straw, sun.
+
+About, delivery and newsletter
+- **scene-about-2** (4:5): the shop's back room: shelves of the products and a packing table with tissue paper and plain boxes.
+- **scene-about-3** (16:9): the shop's interior, wide: its products neatly displayed, no signs.
+- **scene-packaging** (1:1): the shop's plain unbranded packaging: a box, tissue paper and ribbon around one product.
+- **scene-delivery** (4:3): a plain parcel ready on a clean counter by a door, morning light. No labels.
+- **scene-newsletter** (4:3, space for text on one side): a quiet close-up of the products' material or texture.
+
+Gallery, collections and backgrounds
+- **scene-gallery-1** … **scene-gallery-4** (1:1): four square details for a gallery or social row: the products in small, real moments, no people.
+- **scene-collection-1** … **scene-collection-4** (21:9, space for text in the middle): a wide header per category for its collection page, in the category order of the packshot list.
+- **scene-texture** (1:1, seamless, very low contrast): a background texture from the shop's world (its fabric, paper, stone or wood) in the palette, tileable.
+- **scene-og** (1.91:1, 1200×630, products centred with wide margins all round): the social share card shown when the store's link is posted.
+
+That is **22 more images per niche** (scene-gallery and scene-collection are four each).
+
+---
+
+## Global images (all stores)
+
+**Save to: `.editions-inbox/00-global/`**
+
+Placeholders and empty states every store shares: the default product photo, empty cart, no results, the store-offline page and others. One scene chat with the scene master prompt and this palette: *warm white, soft stone grey, sand, graphite.* Calm and neutral, never one trade's products.
+
+- **product-placeholder** (1:1, pure white background): a soft embossed outline of a shopping bag on off-white paper, very subtle. Shown where a product has no photo yet.
+- **category-placeholder** (3:4): plain warm-white paper with a soft diagonal window shadow. A category tile without a photo.
+- **banner-placeholder** (21:9, space for text in the middle): soft daylight window shadows on a warm-white plaster wall.
+- **hero-placeholder-wide** (16:9, space for text on one side) and **hero-placeholder-tall** (4:5, space for text at the top): a bright, empty shop corner: pale wood shelves, a plant, soft light.
+- **empty-cart** (1:1): an empty woven shopping basket on a plain warm-white surface, soft shadow.
+- **empty-wishlist** (1:1): an empty paper gift bag with a loose ribbon, standing on warm white.
+- **no-results** (1:1): an empty pale-wood shelf against a warm-white wall, soft side light.
+- **not-found** (16:9, space for text on one side): a quiet closed wooden door in a sunlit plaster wall, a potted plant beside it. No numbers.
+- **store-offline** (16:9, space for text on one side): a shop doorway with a linen curtain drawn across it, warm late light. No signs.
+- **order-confirmed** (1:1): a neatly wrapped parcel with a ribbon on a warm-white table.
+- **order-tracking** (16:9): a delivery scooter parked alone on a quiet Cairo street in the morning, a plain box on its back. No rider, no logos, no plates.
+- **og-default** (1.91:1, 1200×630): an abstract warm-white and sand composition of soft shadows: the default social card.
+
+---
+
 ## Make next
 
 ### 1. earbuds (16), template wasla
+
+**Save to: `.editions-inbox/01-wave-1/earbuds/`**
 
 Last missing niche of **mobile accessories**: with it, that industry switches to one template per niche.
 
@@ -156,6 +219,8 @@ Scenes
 
 ### 2. kidswear (16), template fashion-warm
 
+**Save to: `.editions-inbox/01-wave-1/kidswear/`**
+
 Last missing niche of **fashion**: with it, fashion switches to one template per niche.
 
 Palette for scenes: *butter yellow, sky blue, warm white, soft coral.* Clothing line applies. Add: *"Kids' clothes for ages 2–10, simple and colourful, no characters, no prints with words."*
@@ -197,6 +262,8 @@ Scenes
 ---
 
 ### 3. backpacks-travel (16), template safar
+
+**Save to: `.editions-inbox/01-wave-1/backpacks-travel/`**
 
 Last missing niche of **shoes & bags**: with it, shoes & bags switches to one template per niche.
 
@@ -240,6 +307,8 @@ Scenes
 
 ### 4. mobiles (16), template techhub
 
+**Save to: `.editions-inbox/01-wave-1/mobiles/`**
+
 One of three missing niches of **electronics** (with audio and small appliances).
 
 Palette for scenes: *cool white, slate blue, silver, a little warm wood.* Add: *"Phones: generic unbranded smartphones, not any real brand's design (no notch shape, camera layout or colour that copies a known model), screen off and black, shown upright at a slight angle with the back visible when asked."*
@@ -282,6 +351,8 @@ Scenes
 
 ### 5. audio (16), template electronics-luxe
 
+**Save to: `.editions-inbox/01-wave-1/audio/`**
+
 One of three missing niches of **electronics** (with mobiles and small appliances).
 
 Palette for scenes: *warm walnut, charcoal, cream, brushed aluminium.* Add: *"Audio gear: unbranded, premium materials (fabric, wood, aluminium), no logos, no screens."*
@@ -323,6 +394,8 @@ Scenes
 ---
 
 ### 6. small-appliances (16), template shasha
+
+**Save to: `.editions-inbox/01-wave-1/small-appliances/`**
 
 One of three missing niches of **electronics** (with mobiles and audio).
 
@@ -368,6 +441,8 @@ Scenes
 
 ### modest-wear (16), template sitara
 
+**Save to: `.editions-inbox/01-wave-1/modest-wear/`**
+
 Optional: Sitara already serves this niche with its own photos. A pack makes it richer; it doesn't block anything.
 
 Palette for scenes: *soft sand, dusty rose, warm white, a touch of olive.* Clothing line applies. Add: *"Modest wear: long, loose cuts, nothing tight or short. Abayas and dresses shown full length on a flat-lay."*
@@ -410,6 +485,8 @@ Scenes
 
 ### silver-jewelry (16), template fadda
 
+**Save to: `.editions-inbox/01-wave-1/silver-jewelry/`**
+
 Optional: Fadda already serves this niche (accessories is switched). A pack makes it richer; it doesn't block anything.
 
 Palette for scenes: *cool white, pale grey stone, soft blue-grey, black velvet accents.* Add: *"Jewelry: sterling silver, shown on the white background from slightly above, small and centred with lots of white space, no gemstones unless asked."*
@@ -451,6 +528,8 @@ Scenes
 ---
 
 ### wearables (16), template saa
+
+**Save to: `.editions-inbox/01-wave-1/wearables/`**
 
 Optional: Saa already serves this niche. A pack makes it richer; it doesn't block anything.
 
@@ -502,6 +581,8 @@ Save into `.editions-inbox/00-live-templates/<niche>/`: scenes as `scene-<slot>.
 
 ### dresses — Hareer (`fashion-luxe`), live
 
+**Save to: `.editions-inbox/00-live-templates/dresses/`**
+
 Palette for scenes: *ivory white, soft taupe, warm stone grey, jet black (blush and sage as dress colours only).*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -536,6 +617,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### lingerie-sleepwear — Vella (`vella`), live
 
+**Save to: `.editions-inbox/00-live-templates/lingerie-sleepwear/`**
+
 Palette for scenes: *white, pale zinc grey, soft charcoal, one small signal-red accent (an object, never a garment).* Add: *"Sleepwear: modest, nothing revealing; garments folded, hung or laid on furniture."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -568,6 +651,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### tshirts — Streetwear (`streetwear`), live
+
+**Save to: `.editions-inbox/00-live-templates/tshirts/`**
 
 Palette for scenes: *white, raw concrete grey, acid lime, pure black.*
 
@@ -607,6 +692,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### menswear — Zay (`zay`), live
 
+**Save to: `.editions-inbox/00-live-templates/menswear/`**
+
 Palette for scenes: *cool pale grey, light steel grey, periwinkle, deep navy.*
 
 Zay draws only the hero collage, the small category thumbs and the about photo. The pack's `hero`, `banner` and `look` are shown only by its second look (fashion-luxe), so they are not listed here.
@@ -642,6 +729,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### pants-jeans — Alwan (`fashion-bold`), live
+
+**Save to: `.editions-inbox/00-live-templates/pants-jeans/`**
 
 Palette for scenes: *white, pale chambray blue, deep indigo, top-stitch gold.*
 
@@ -680,6 +769,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### sportswear — Madar (`sports-luxe`), live
 
+**Save to: `.editions-inbox/00-live-templates/sportswear/`**
+
 Palette for scenes: *white, ice blue, cobalt, graphite (steel blue as a soft extra).* Add: *"Training wear: unbranded, no stripes, swooshes or logos, no gym machines or plates."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -716,6 +807,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### sneakers — Nabd (`sports-bold`), live
 
+**Save to: `.editions-inbox/00-live-templates/sneakers/`**
+
 Palette for scenes: *white, concrete grey, infrared red, navy ink (periwinkle as a small extra).* Add: *"Sneakers: unbranded, no side stripes, swooshes, logos or sole lettering."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -748,6 +841,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### womens-shoes — Kasr (`kasr`), live
+
+**Save to: `.editions-inbox/00-live-templates/womens-shoes/`**
 
 Palette for scenes: *white, porcelain grey, bordeaux, powder blue.* Add: *"Shoes: one pair or one shoe, the whole shoe in frame, no insole or sole lettering."*
 
@@ -785,6 +880,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### mens-shoes — Ghorza (`ghorza`), live
 
+**Save to: `.editions-inbox/00-live-templates/mens-shoes/`**
+
 Palette for scenes: *white, cool steel grey, pale shoe-horn steel, espresso brown.* Add: *"Shoes: polished and new, never worn or scuffed; no insole or sole lettering; plain unlabelled tins and tools."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -819,6 +916,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### slippers-clogs — Tasfya (`tasfya`), live
 
+**Save to: `.editions-inbox/00-live-templates/slippers-clogs/`**
+
 Palette for scenes: *white, shallow-water aqua, pool-float pink, deep teal.* Add: *"Footwear: new and clean, unbranded, no rivet emblems, no charms, no lettering on footbeds or straps."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -852,6 +951,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### handbags — Shanta (`shanta`), live
 
+**Save to: `.editions-inbox/00-live-templates/handbags/`**
+
 Palette for scenes: *white, mineral sage grey, camel, bottle green.* Add: *"Bags: unbranded, plain clasps and hardware, no embossed marks, charms or tags."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -884,6 +985,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### glasses — Karat (`karat`), live
+
+**Save to: `.editions-inbox/00-live-templates/glasses/`**
 
 Palette for scenes: *blush pink paper, deep plum, mustard gold, warm white.* Add: *"Eyewear: frames unbranded, temples plain with no printing, lenses clean, reflections soft."*
 
@@ -928,6 +1031,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### watches — Saat (`saat`), live
 
+**Save to: `.editions-inbox/00-live-templates/watches/`**
+
 Palette for scenes: *white, brushed steel grey, midnight blue, a small touch of seconds-hand red.* Add: *"Watches: unbranded, dials plain with simple baton marks and no numerals, words or logos; smartwatch screens off (black glass)."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -962,6 +1067,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### gold-jewelry — Jewelry Luxe (`jewelry-luxe`), live
+
+**Save to: `.editions-inbox/00-live-templates/gold-jewelry/`**
 
 Palette for scenes: *porcelain white, ink black, champagne gold, warm stone grey.* Add: *"Jewelry: 21K yellow gold, never on skin, no hallmarks, stamps or engraved words, no price tags."*
 
@@ -999,6 +1106,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### fashion-jewelry — Zahra (`zahra`), live
 
+**Save to: `.editions-inbox/00-live-templates/fashion-jewelry/`**
+
 Palette for scenes: *white, blush plaster, dusty rose, deep petrol blue.* Add: *"Fashion jewelry: gold-tone and silver-tone, crystals and pearls; the piece fills at least half the frame, props (stones, dried flowers) stay small."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -1034,6 +1143,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### hair-accessories — Kholkhal (`kholkhal`), live
+
+**Save to: `.editions-inbox/00-live-templates/hair-accessories/`**
 
 Palette for scenes: *white, pale lilac, cherry red, butter yellow.* Add: *"Hair accessories: on paper, fabric or boxes only, never in hair or on a head; colours bright and clean."*
 
@@ -1072,6 +1183,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### belts-wallets — Tibr (`jewelry-warm`), live
 
+**Save to: `.editions-inbox/00-live-templates/belts-wallets/`**
+
 Palette for scenes: *cordovan brown, canvas grey, brass, white paper.* Add: *"Leather goods: genuine leather, no stamped maker's marks, no printed boxes or tags; finished pieces, not just raw hides."*
 
 Scenes (replace the Pexels photos; save as `scene-<slot>.png`)
@@ -1106,6 +1219,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### silver-jewelry — Fadda (`fadda`), live (native: no pack)
 
+**Save to: `.editions-inbox/00-live-templates/silver-jewelry/`**
+
 Palette for scenes: *cool grey paper, pale stone grey, polished silver, graphite.* Add: *"Sterling silver, polished or brushed, no hallmarks or engraved words; on stone, linen or boxes, never on skin."*
 
 Fadda has no pack: its photos are in `templates/fadda/index.ts` (`PHOTOS`), and **its eight products are Pexels photos too**. One photo (1378705) is the hero, the Rings tile and a product. These scenes replace them. The silver-jewelry pack planned in the main file (16 packshots, 8 scenes) can come later.
@@ -1132,6 +1247,8 @@ Product photos and angles. The **main packshot is required** here, since each on
 ---
 
 ### phone-cases — Volt (`volt`), live
+
+**Save to: `.editions-inbox/00-live-templates/phone-cases/`**
 
 Palette for scenes: *white, navy, electric blue, lime.* Add: *"Phones and cases: unbranded, no logo or camera-maker mark on the back, screens off (black glass) or blank white."*
 
@@ -1169,6 +1286,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 
 ### chargers-cables — Kabl (`kabl`), live
 
+**Save to: `.editions-inbox/00-live-templates/chargers-cables/`**
+
 Palette for scenes: *cool grey, navy, electric blue, soft yellow.* Add: *"Chargers and cables: unbranded, no printed watts, specs or marks on the plugs, phone screens off."*
 
 Kabl draws the category tiles and the about page photo. Its hero is a search bar with no photo.
@@ -1204,6 +1323,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### pc-gaming — Arena (`arena`), live
+
+**Save to: `.editions-inbox/00-live-templates/pc-gaming/`**
 
 Palette for scenes: *near-black, violet light, lime accent, cool graphite.* Add: *"Gaming gear: unbranded, RGB glow soft and violet, no logos on mice, headsets or controllers, monitors off or showing a plain dark gradient."*
 
@@ -1242,6 +1363,8 @@ Product angles (optional, one more view each, save as `<slug>-2.png`, same maste
 ---
 
 ### lighting-smart-home — Zaki (`zaki`), live
+
+**Save to: `.editions-inbox/00-live-templates/lighting-smart-home/`**
 
 Palette for scenes: *pale green-grey walls, deep green, teal, warm yellow lamplight; bright daytime rooms.* Add: *"Lighting: lamps lit softly even in daylight, no visible brand on bulbs or plugs, phone and hub screens off; Egyptian flats, tiled or wood floors, no clutter."*
 
@@ -1300,6 +1423,8 @@ The rest of the platform's niches, so you can make photos ahead of time. Same ru
 
 ### skincare (16)
 
+**Save to: `.editions-inbox/02-wave-2-beauty/skincare/`**
+
 Palette for scenes: *milky white, pale peach, soft clay, sea-glass green.* Add: *"Skincare: plain unlabelled bottles, jars and tubes in frosted glass or soft matte plastic, caps closed, no text, no printed lines or logos on any container."*
 
 Cleansers & toners
@@ -1339,6 +1464,8 @@ Scenes
 ---
 
 ### makeup (16)
+
+**Save to: `.editions-inbox/02-wave-2-beauty/makeup/`**
 
 Palette for scenes: *deep rose, warm nude, black lacquer, soft gold.* Add: *"Makeup: generic unbranded cases in plain colours, no embossing, no logo on caps or compacts; lipsticks shown with the bullet up, compacts open when asked."*
 
@@ -1380,6 +1507,8 @@ Scenes
 
 ### perfumes (16)
 
+**Save to: `.editions-inbox/02-wave-2-beauty/perfumes/`**
+
 Palette for scenes: *deep amber, smoked oud brown, ivory, antique brass.* Add: *"Perfume: plain unlabelled glass bottles in simple generic shapes (cylinder, square, round), no engraving, never a copy of a known perfume bottle or cap; liquid colour visible."*
 
 Eau de parfum
@@ -1420,6 +1549,8 @@ Scenes
 
 ### haircare (16)
 
+**Save to: `.editions-inbox/02-wave-2-beauty/haircare/`**
+
 Palette for scenes: *olive green, warm cream, honey, pale terracotta.* Add: *"Hair care: plain unlabelled bottles, jars and tubes, no text; tools unbranded with cables neatly coiled."*
 
 Shampoo & conditioner
@@ -1459,6 +1590,8 @@ Scenes
 ---
 
 ### mens-grooming (16)
+
+**Save to: `.editions-inbox/02-wave-2-beauty/mens-grooming/`**
 
 Palette for scenes: *charcoal, cognac leather, slate, brushed chrome.* Add: *"Grooming: plain unlabelled bottles, tins and jars, tools unbranded, no blades exposed beyond what is normal for the product."*
 
@@ -1502,6 +1635,8 @@ Scenes
 
 ### furniture (16)
 
+**Save to: `.editions-inbox/03-wave-3-home/furniture/`**
+
 Palette for scenes: *warm walnut, oatmeal bouclé, travertine beige, deep forest green.* Add: *"Furniture: one piece alone, three-quarter view from slightly above, the whole piece in frame, no cushions with prints, no objects on it unless stated, unbranded."*
 
 Living room
@@ -1541,6 +1676,8 @@ Scenes
 ---
 
 ### bedding-textiles (16)
+
+**Save to: `.editions-inbox/03-wave-3-home/bedding-textiles/`**
 
 Palette for scenes: *crisp white, dusty blue, sand linen, soft sage.* Add: *"Textiles: neatly folded and stacked, or laid flat seen from straight above, edges straight, no labels or tags, no prints with words."*
 
@@ -1582,6 +1719,8 @@ Scenes
 
 ### decor (16)
 
+**Save to: `.editions-inbox/03-wave-3-home/decor/`**
+
 Palette for scenes: *terracotta, ivory plaster, black iron, dried-grass gold.* Add: *"Decor: unbranded objects; wall art shows abstract shapes or landscapes only, no faces, no letters or calligraphy; mirrors reflect only plain white; clocks have plain faces with simple marks, no numbers."*
 
 Wall art & frames
@@ -1622,6 +1761,8 @@ Scenes
 
 ### plants-garden (16)
 
+**Save to: `.editions-inbox/03-wave-3-home/plants-garden/`**
+
 Palette for scenes: *leaf green, sun-baked terracotta, whitewash, warm sand.* Add: *"Plants: healthy, real, shown in a plain pot fully in frame; seed packets, soil and fertiliser in plain unlabelled paper or clear bags with no text."*
 
 Indoor plants
@@ -1661,6 +1802,8 @@ Scenes
 ---
 
 ### home-organisation (16)
+
+**Save to: `.editions-inbox/03-wave-3-home/home-organisation/`**
 
 Palette for scenes: *clean white, pale grey, light birch, soft butter.* Add: *"Storage: unbranded, empty unless stated, shown closed and square to the camera at a slight angle, no labels or label holders with writing."*
 
@@ -1704,6 +1847,8 @@ Scenes
 
 ### cookware (16)
 
+**Save to: `.editions-inbox/04-wave-4-kitchen/cookware/`**
+
 Palette for scenes: *charcoal granite, copper, warm cream, olive wood.* Add: *"Cookware: unbranded, no logos stamped on handles or bases, lids on unless stated, shown empty and clean at a slight three-quarter angle from above."*
 
 Pots & sets
@@ -1743,6 +1888,8 @@ Scenes
 ---
 
 ### tableware (16)
+
+**Save to: `.editions-inbox/04-wave-4-kitchen/tableware/`**
 
 Palette for scenes: *porcelain white, cobalt blue, linen beige, gold rim.* Add: *"Tableware: unbranded, no stamps or text on the base, plain or simple geometric patterns only, clean and empty unless stated."*
 
@@ -1784,6 +1931,8 @@ Scenes
 
 ### coffee-gear (16)
 
+**Save to: `.editions-inbox/04-wave-4-kitchen/coffee-gear/`**
+
 Palette for scenes: *espresso brown, brushed steel, sand ceramic, matte black.* Add: *"Coffee gear: unbranded, no logos, no dials with numbers, scales with the display off; never a copy of a known brand's iconic design."*
 
 Turkish coffee
@@ -1823,6 +1972,8 @@ Scenes
 ---
 
 ### kitchen-appliances (16)
+
+**Save to: `.editions-inbox/04-wave-4-kitchen/kitchen-appliances/`**
 
 Palette for scenes: *soft white, terracotta red, pale oat, stainless steel.* Add: *"Appliances: unbranded, no logos, no display digits or button labels, cables tidy, doors and lids closed unless stated."*
 
@@ -1866,6 +2017,8 @@ Scenes
 
 ### grocery (16)
 
+**Save to: `.editions-inbox/05-wave-5-food/grocery/`**
+
 Palette for scenes: *wheat beige, market red, kraft brown, fresh green.* Add: *"Grocery: every pack is a plain unlabelled clear bag, jar, bottle, tin or carton with no text, no printed design and no brand; the food inside clearly visible where the pack is clear."*
 
 Rice, pasta & pulses
@@ -1905,6 +2058,8 @@ Scenes
 ---
 
 ### fresh-produce (16)
+
+**Save to: `.editions-inbox/05-wave-5-food/fresh-produce/`**
 
 Palette for scenes: *leaf green, tomato red, crate wood, sunshine yellow.* Add: *"Produce: fresh, raw, washed and neat, the real colours, piled in a small group or alone on white, no stickers, no crates or baskets unless stated."*
 
@@ -1946,6 +2101,8 @@ Scenes
 
 ### meat-poultry (16)
 
+**Save to: `.editions-inbox/05-wave-5-food/meat-poultry/`**
+
 Palette for scenes: *deep burgundy, butcher-paper white, slate grey, rosemary green.* Add: *"Meat: raw, fresh and neatly trimmed, laid on a plain white tray or white butcher paper, no blood pooling, no packaging labels, appetising and clean."*
 
 Beef & veal
@@ -1985,6 +2142,8 @@ Scenes
 ---
 
 ### bakery (16)
+
+**Save to: `.editions-inbox/05-wave-5-food/bakery/`**
 
 Palette for scenes: *golden crust, flour white, oven black, warm wheat.* Add: *"Bakery: freshly baked, golden, shown on a plain white plate, a plain white paper bag or alone on white; no printed bags, no text."*
 
@@ -2026,6 +2185,8 @@ Scenes
 
 ### spices-herbs (16)
 
+**Save to: `.editions-inbox/05-wave-5-food/spices-herbs/`**
+
 Palette for scenes: *saffron orange, cumin brown, dried-rose pink, old brass.* Add: *"Spices: shown as a neat mound on a plain white plate or in a plain unlabelled clear jar; honey and oils in plain unlabelled glass jars and bottles; no text anywhere."*
 
 Ground spices
@@ -2065,6 +2226,8 @@ Scenes
 ---
 
 ### fast-food (16)
+
+**Save to: `.editions-inbox/05-wave-5-food/fast-food/`**
 
 Palette for scenes: *ketchup red, mustard yellow, kraft brown, char black.* Add: *"Food: freshly made, appetising and neat, served on a plain white plate, in a plain white box or wrapped in plain kraft paper; no printed packaging, no cups with logos, no drinks with brands."*
 
@@ -2108,6 +2271,8 @@ Scenes
 
 ### oriental-sweets (16)
 
+**Save to: `.editions-inbox/06-wave-6-sweets/oriental-sweets/`**
+
 Palette for scenes: *syrup gold, pistachio green, copper, warm ivory.* Add: *"Sweets: freshly made, glossy and neat, shown on a plain white plate, in a plain white box or a round metal tray as stated; no printed boxes, no text."*
 
 Trays & syrup sweets
@@ -2147,6 +2312,8 @@ Scenes
 ---
 
 ### chocolate-cakes (16)
+
+**Save to: `.editions-inbox/06-wave-6-sweets/chocolate-cakes/`**
 
 Palette for scenes: *cocoa brown, blush pink, cream, gold leaf.* Add: *"Cakes and chocolate: freshly made, neat and glossy, on a plain white cake stand, a plain white plate or in a plain white box; no writing or numbers on cakes, no candles, no toppers, no printed wrappers."*
 
@@ -2188,6 +2355,8 @@ Scenes
 
 ### coffee-beans (16)
 
+**Save to: `.editions-inbox/06-wave-6-sweets/coffee-beans/`**
+
 Palette for scenes: *roasted brown, cardamom green, kraft beige, matte black.* Add: *"Coffee: beans or ground coffee in plain unlabelled kraft bags with a clear window, clear jars or as a neat mound on a plain white plate; capsules plain and generic, never a known brand's shape; no text anywhere."*
 
 Turkish coffee
@@ -2227,6 +2396,8 @@ Scenes
 ---
 
 ### dates-nuts (16)
+
+**Save to: `.editions-inbox/06-wave-6-sweets/dates-nuts/`**
 
 Palette for scenes: *date brown, pistachio green, almond cream, Ramadan gold.* Add: *"Dates and nuts: shown as a neat mound on a plain white plate, in a plain white box or a clear unlabelled jar or bag; dried fruit glossy and neat; no text."*
 
@@ -2270,6 +2441,8 @@ Scenes
 
 ### toys (16)
 
+**Save to: `.editions-inbox/07-wave-7-kids/toys/`**
+
 Palette for scenes: *primary red, sunshine yellow, natural beech, sky blue.* Add: *"Toys: generic and unbranded, no characters from films or shows, no dolls with human faces, no letters or numbers on blocks or boxes; plush animals have simple stitched eyes."*
 
 Wooden & building toys
@@ -2309,6 +2482,8 @@ Scenes
 ---
 
 ### baby-essentials (16)
+
+**Save to: `.editions-inbox/07-wave-7-kids/baby-essentials/`**
 
 Palette for scenes: *powder blue, milk white, soft sand, pale sage.* Add: *"Baby products: generic and unbranded; diapers, wipes and formula in plain unlabelled packs and tins with no text and no printed babies; gear shown empty, no baby in it."*
 
@@ -2350,6 +2525,8 @@ Scenes
 
 ### kids-gifts (16)
 
+**Save to: `.editions-inbox/07-wave-7-kids/kids-gifts/`**
+
 Palette for scenes: *party pink, mint, confetti gold, white.* Add: *"Gifts: unbranded, no printed names, letters or numbers anywhere (no number balloons, no name cards); gift boxes plain or with a simple ribbon."*
 
 Sebou' & newborn gifts
@@ -2389,6 +2566,8 @@ Scenes
 ---
 
 ### school-supplies (16)
+
+**Save to: `.editions-inbox/07-wave-7-kids/school-supplies/`**
 
 Palette for scenes: *notebook blue, pencil yellow, eraser pink, chalkboard green.* Add: *"Stationery: unbranded; notebooks and covers plain with no printing, no letters or numbers on rulers (plain tick marks only), pencils plain with no stamps; bottles and boxes unlabelled."*
 
@@ -2432,6 +2611,8 @@ Scenes
 
 ### gym-fitness (16)
 
+**Save to: `.editions-inbox/08-wave-8-sports/gym-fitness/`**
+
 Palette for scenes: *charcoal, iron black, chalk white, signal red.* Add: *"Gym gear: unbranded, plain matte finishes, no numbers or weight markings on plates, dumbbells or kettlebells, no logos, bands and ropes coiled neatly."*
 
 Weights
@@ -2471,6 +2652,8 @@ Scenes
 ---
 
 ### football (16)
+
+**Save to: `.editions-inbox/08-wave-8-sports/football/`**
 
 Palette for scenes: *pitch green, white, floodlight silver, night navy.* Clothing line applies to jerseys and kits. Add: *"Football gear: plain jerseys with no crests, numbers, sponsors or club stripes; balls and boots unbranded with no logos or printed words; boots shown as a pair side by side."*
 
@@ -2512,6 +2695,8 @@ Scenes
 
 ### running (16)
 
+**Save to: `.editions-inbox/08-wave-8-sports/running/`**
+
 Palette for scenes: *dawn peach, asphalt grey, white, electric blue.* Clothing line applies to apparel. Add: *"Running gear: unbranded, shoes shown as a single shoe in side view with laces tied, no logos, stripes or printed words."*
 
 Running shoes
@@ -2551,6 +2736,8 @@ Scenes
 ---
 
 ### cycling (16)
+
+**Save to: `.editions-inbox/08-wave-8-sports/cycling/`**
 
 Palette for scenes: *olive green, cream, burnt orange, steel grey.* Clothing line applies to the jersey. Add: *"Bikes and scooters: shown alone, side view, fully in frame, standing on a kickstand or upright, no decals, logos or frame lettering; parts and gear unbranded."*
 
@@ -2592,6 +2779,8 @@ Scenes
 
 ### outdoor-camping (16)
 
+**Save to: `.editions-inbox/08-wave-8-sports/outdoor-camping/`**
+
 Palette for scenes: *desert sand, terracotta, deep teal, charcoal.* Add: *"Camping gear: unbranded, plain fabrics with no logos or printed words, tents and chairs shown set up and fully in frame."*
 
 Tents & sleeping
@@ -2631,6 +2820,8 @@ Scenes
 ---
 
 ### yoga (16)
+
+**Save to: `.editions-inbox/08-wave-8-sports/yoga/`**
 
 Palette for scenes: *sage, oat, blush clay, warm white.* Clothing line applies to yoga wear. Add: *"Yoga gear: natural matte materials (cork, cotton, natural rubber), mats shown rolled or partly unrolled, no prints, patterns with words or logos."*
 
@@ -2674,6 +2865,8 @@ Scenes
 
 ### vitamins-supplements (16)
 
+**Save to: `.editions-inbox/09-wave-9-health/vitamins-supplements/`**
+
 Palette for scenes: *citrus orange, cream, leaf green, white.* Add: *"Supplements: plain unlabelled tubs, bottles, jars and pouches with no text, numbers, pictures or printed labels; capsules or powder only when asked, in a small neat dish, never spilled."*
 
 Vitamins & minerals
@@ -2714,6 +2907,8 @@ Scenes
 
 ### pharmacy-care (16)
 
+**Save to: `.editions-inbox/09-wave-9-health/pharmacy-care/`**
+
 Palette for scenes: *clinical white, pale aqua, soft blue, silver.* Add: *"Pharmacy products: plain unlabelled tubes, bottles, jars and boxes in white and soft colours, no text, numbers, crosses or brand marks, no pills or syringes."*
 
 Oral care
@@ -2753,6 +2948,8 @@ Scenes
 ---
 
 ### medical-devices (16)
+
+**Save to: `.editions-inbox/09-wave-9-health/medical-devices/`**
 
 Palette for scenes: *cool grey, white, pale teal, graphite.* Add: *"Medical devices: generic and unbranded, every display blank (dark grey, no digits or symbols), cuffs and cables coiled neatly, no logos, printed scales or markings."*
 
@@ -2796,6 +2993,8 @@ Scenes
 
 ### pet-food (16)
 
+**Save to: `.editions-inbox/10-wave-10-pets/pet-food/`**
+
 Palette for scenes: *warm biscuit, cream, sage, terracotta.* Add: *"Pet food: plain unlabelled bags, pouches, tins and jars with no text, numbers or pictures of animals; kibble shown only in a bowl when asked; no animals in the image."*
 
 Cat food
@@ -2836,6 +3035,8 @@ Scenes
 
 ### pet-accessories (16)
 
+**Save to: `.editions-inbox/10-wave-10-pets/pet-accessories/`**
+
 Palette for scenes: *soft grey, mustard, denim blue, cream.* Add: *"Pet accessories: unbranded, plain fabrics, no prints with words, no paw-print logos, empty beds and carriers, no animal in the image."*
 
 Beds & homes
@@ -2875,6 +3076,8 @@ Scenes
 ---
 
 ### fish-birds (16)
+
+**Save to: `.editions-inbox/10-wave-10-pets/fish-birds/`**
 
 Palette for scenes: *aqua, sand, leaf green, pale wood.* Add: *"Aquariums and cages: shown with no fish or birds, clean water and live plants in tanks, plain glass and wire, unbranded equipment with no labels; food in plain unlabelled tubs or jars."*
 
@@ -2918,6 +3121,8 @@ Scenes
 
 ### car-accessories (16)
 
+**Save to: `.editions-inbox/11-wave-11-auto/car-accessories/`**
+
 Palette for scenes: *graphite, gloss black, amber, cool white.* Add: *"Car gadgets: unbranded, screens and displays off (black), cables coiled neatly, no logos, button labels or printed markings."*
 
 Car tech
@@ -2957,6 +3162,8 @@ Scenes
 ---
 
 ### car-care (16)
+
+**Save to: `.editions-inbox/11-wave-11-auto/car-care/`**
 
 Palette for scenes: *ocean blue, foam white, chrome silver, citrus yellow.* Add: *"Car care products: plain unlabelled bottles, spray bottles, jugs and tins with no text, numbers or printed labels; towels, mitts and pads plain."*
 
@@ -2998,6 +3205,8 @@ Scenes
 
 ### tyres-batteries (16)
 
+**Save to: `.editions-inbox/11-wave-11-auto/tyres-batteries/`**
+
 Palette for scenes: *asphalt black, rubber grey, safety yellow, white.* Add: *"Tyres and wheels: plain sidewalls with no lettering, numbers or logos, clean tread; batteries in plain cases with no text, stickers or symbols."*
 
 Car tyres
@@ -3037,6 +3246,8 @@ Scenes
 ---
 
 ### motorcycle (16)
+
+**Save to: `.editions-inbox/11-wave-11-auto/motorcycle/`**
 
 Palette for scenes: *rust red, matte black, khaki, cream.* Clothing line applies to the jacket. Add: *"Motorcycle gear: unbranded, no decals, numbers or logos, helmets empty with clear or smoked visors; motorcycles and scooters shown alone, side view, fully in frame, on the kickstand, no rider."*
 
@@ -3078,6 +3289,8 @@ Scenes
 
 ### car-interior (16)
 
+**Save to: `.editions-inbox/11-wave-11-auto/car-interior/`**
+
 Palette for scenes: *tan leather, espresso brown, cream, smoke grey.* Add: *"Interior accessories: shown alone and off the car unless stated, unbranded, plain stitching, no logos, emblems or printed patterns."*
 
 Seat covers
@@ -3117,6 +3330,8 @@ Scenes
 ---
 
 ### ev-charging (16)
+
+**Save to: `.editions-inbox/11-wave-11-auto/ev-charging/`**
 
 Palette for scenes: *cool white, electric teal, graphite, pale concrete.* Add: *"EV chargers: generic unbranded wall units, cables and plugs, displays and LEDs off or a soft plain teal glow with no symbols, connectors clean, cables coiled neatly, no text or logos."*
 
@@ -3160,6 +3375,8 @@ Scenes
 
 ### handmade-gifts (16)
 
+**Save to: `.editions-inbox/12-wave-12-handmade/handmade-gifts/`**
+
 Palette for scenes: *dusty pink, kraft brown, cream, soft gold.* Add: *"Handmade gifts: clearly handmade, unbranded, no names, initials, letters or messages on anything; gift boxes closed with plain ribbon."*
 
 Gift boxes
@@ -3199,6 +3416,8 @@ Scenes
 ---
 
 ### ceramics (16)
+
+**Save to: `.editions-inbox/12-wave-12-handmade/ceramics/`**
 
 Palette for scenes: *terracotta, sand, cobalt blue, off-white.* Add: *"Ceramics: clearly handmade with small irregularities and real glaze, empty unless stated, no stamps, letters or painted words."*
 
@@ -3240,6 +3459,8 @@ Scenes
 
 ### candles-soap (16)
 
+**Save to: `.editions-inbox/12-wave-12-handmade/candles-soap/`**
+
 Palette for scenes: *honey, ivory, lavender grey, olive.* Add: *"Candles and soaps: handmade look, unbranded, plain jars, tins and wrapping with no labels, stickers or stamped words; candles unlit unless stated."*
 
 Candles
@@ -3279,6 +3500,8 @@ Scenes
 ---
 
 ### crochet-embroidery (16)
+
+**Save to: `.editions-inbox/12-wave-12-handmade/crochet-embroidery/`**
 
 Palette for scenes: *mustard, sage, rose, natural ecru.* Add: *"Crochet and embroidery: clearly handmade stitches, natural yarns, no letters, names or characters; amigurumi as simple plants and fruit."*
 
@@ -3322,6 +3545,8 @@ Scenes
 
 ### books (16)
 
+**Save to: `.editions-inbox/13-wave-13-books-and-stationery/books/`**
+
 Palette for scenes: *deep green, cream, oxblood, walnut.* Add: *"Books: closed, with plain cloth or paper covers and blank spines, no titles, letters, numbers or pictures; cream page edges."*
 
 Novels & fiction
@@ -3362,6 +3587,8 @@ Scenes
 
 ### stationery (16)
 
+**Save to: `.editions-inbox/13-wave-13-books-and-stationery/stationery/`**
+
 Palette for scenes: *paper white, cobalt, sunflower yellow, kraft.* Add: *"Stationery: unbranded, plain covers, pens capped, no printed letters, numbers, measurement marks or stickers with words."*
 
 Pens & writing
@@ -3401,6 +3628,8 @@ Scenes
 ---
 
 ### kids-books (16)
+
+**Save to: `.editions-inbox/13-wave-13-books-and-stationery/kids-books/`**
 
 Palette for scenes: *tomato red, sunshine yellow, sky blue, cream.* Add: *"Children's books: closed, chunky and colourful, covers with simple abstract shapes (circles, waves, stars), no titles, letters, numbers, characters, animals or faces."*
 
