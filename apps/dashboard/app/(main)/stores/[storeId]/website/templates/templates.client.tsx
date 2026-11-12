@@ -24,7 +24,7 @@ import { RemoteImage } from "@/components/media/remote-image";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, listTemplatesPage, undoTemplate } from "./templates.server";
 import type { TemplateCardView, TemplatesPageView } from "./templates.dto";
-import { cardEdition, parseTemplatesCategory, parseTemplatesNiche, parseTemplatesPage, TEMPLATES_PAGE_SIZE } from "./templates.lib";
+import { cardEdition, parseTemplatesCategory, parseTemplatesNiche, parseTemplatesPage, TEMPLATE_PREVIEW_ORIGIN, TEMPLATES_PAGE_SIZE, templatePreviewTabUrl } from "./templates.lib";
 
 type Localized = { ar?: string; en?: string };
 
@@ -463,9 +463,17 @@ export function TemplateGallery({
                       {current ? <RotateCcw aria-hidden /> : <Sparkles aria-hidden />}
                       {current ? tw("reapplyShort") : t("use")}
                     </SellerButton>
-                    <SellerButton size="sm" variant="outline" onClick={() => setPreviewing(template)}>
-                      <Eye aria-hidden />
-                      {t("preview.action")}
+                    {/* The full-page template in a new tab, with this card's edition (owner, 2026-11-12). The tile still opens the preview dialog. */}
+                    <SellerButton asChild size="sm" variant="outline">
+                      <a
+                        href={templatePreviewTabUrl(TEMPLATE_PREVIEW_ORIGIN, locale, template.key, null, edition)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={t("preview.newTabLabel", { name })}
+                      >
+                        <Eye aria-hidden />
+                        {t("preview.action")}
+                      </a>
                     </SellerButton>
                   </div>
                 </li>
