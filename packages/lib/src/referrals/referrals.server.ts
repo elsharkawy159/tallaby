@@ -65,7 +65,7 @@ export async function resolveReferrerForSignup(
 // ---------------------------------------------------------------------------
 
 /**
- * Records the referrer's 20 % of a top-up that was just marked succeeded in
+ * Records the referrer's 25 % of a top-up that was just marked succeeded in
  * `tx`. No-op for sellers nobody referred. Idempotent on `top_up_id`.
  */
 export async function postReferralCommission(

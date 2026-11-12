@@ -3,7 +3,7 @@
  * No DB imports, safe on the client.
  *
  * A seller shares `tallaby.com/?ref=<code>`; every seller who signs up through
- * it earns the referrer 20 % of each succeeded store-wallet top-up, for life,
+ * it earns the referrer 25 % (20 % until 2026-11-12) of each succeeded store-wallet top-up, for life,
  * paid in cash by an admin. Its own ledger: no wallet balance ever changes.
  * Money is integer piastres here; the DB stores numeric(10,2).
  */
@@ -20,7 +20,7 @@ export function normalizeEgyptianPhone(input: string): string {
   return digits;
 }
 
-export const REFERRAL_RATE_PERCENT = 20;
+export const REFERRAL_RATE_PERCENT = 25;
 /** EGP 500, the smallest withdrawal (owner, 2026-10-29). */
 export const REFERRAL_MIN_PAYOUT_PIASTRES = 50_000;
 export const REFERRAL_UNLOCK_REFERRALS = 10;
@@ -44,7 +44,7 @@ export function fromPiastres(piastres: number): string {
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 }
 
-/** 20 % of a top-up, rounded down to the piastre. */
+/** 25 % of a top-up, rounded down to the piastre. */
 export function commissionPiastres(topUpAmount: string): number {
   return Math.floor((toPiastres(topUpAmount) * REFERRAL_RATE_PERCENT) / 100);
 }

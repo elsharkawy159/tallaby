@@ -2118,7 +2118,7 @@
     },
     "affiliates": {
       "title": "Earn with us: the affiliate program",
-      "description": "Share your referral link and earn 20% for life of every top-up by the sellers you bring, paid in cash to your bank account or Vodafone Cash."
+      "description": "Share your referral link and earn 25% for life of every top-up by the sellers you bring, paid in cash to your bank account or Vodafone Cash."
     },
     "followUs": {
       "title": "Follow us",
@@ -3100,13 +3100,13 @@
   "affiliates": {
     "hero": {
       "eyebrow": "Earn with us",
-      "title": "Earn <em>20%</em> of every top-up by the sellers you bring, for life",
-      "lead": "Share your link with your referral code. Every time a seller who signed up through it tops up their store wallet on Tallaby, you earn 20% of the amount, in cash, not wallet credit.",
+      "title": "Earn <em>25%</em> of every top-up by the sellers you bring, for life",
+      "lead": "Share your link with your referral code. Every time a seller who signed up through it tops up their store wallet on Tallaby, you earn 25% of the amount, in cash, not wallet credit.",
       "getLink": "Get your link",
       "howLink": "How it works"
     },
     "card": {
-      "rate": "20%",
+      "rate": "25%",
       "rateLabel": "of every store-wallet top-up",
       "lifetime": "For life, every time the seller tops up",
       "cash": "Cash to a bank account or Vodafone Cash",
@@ -3125,8 +3125,8 @@
           "body": "Copy it or share it on WhatsApp and Facebook with anyone who wants to start an online store. Whoever opens your link and signs up within 60 days counts for you."
         },
         {
-          "title": "Earn 20% for life",
-          "body": "Every time a seller you brought tops up their store wallet successfully, 20% of the amount is credited to you, every time, with no end date."
+          "title": "Earn 25% for life",
+          "body": "Every time a seller you brought tops up their store wallet successfully, 25% of the amount is credited to you, every time, with no end date."
         },
         {
           "title": "Withdraw in cash",
@@ -3137,7 +3137,7 @@
     "example": {
       "kicker": "Example",
       "title": "An EGP 1,000 top-up = EGP 200 for you",
-      "body": "A seller who signed up through your link tops up their store wallet with EGP 1,000? You earn EGP 200 right away. If they top up again, you earn 20% again.",
+      "body": "A seller who signed up through your link tops up their store wallet with EGP 1,000? You earn EGP 250 right away. If they top up again, you earn 25% again.",
       "topUp": "Seller's top-up",
       "commission": "Your commission",
       "currency": "EGP"
@@ -3146,7 +3146,7 @@
       "kicker": "Terms",
       "title": "The program's terms, plainly",
       "items": [
-        "The commission is 20% of every successful store-wallet top-up by a seller who signed up through your link, for life.",
+        "The commission is 25% of every successful store-wallet top-up by a seller who signed up through your link, for life.",
         "Commissions are paid in cash to a bank account or Vodafone Cash, never as credit in your store wallet.",
         "A referral counts as successful once the referred seller's first wallet top-up succeeds.",
         "Withdrawal opens after at least 10 successful referrals and at least 10 stores created through your link. They are two separate counts, and a seller who creates 3 stores counts as 3 stores.",
@@ -3167,7 +3167,7 @@
         },
         {
           "q": "Which amounts earn a commission?",
-          "a": "20% of every amount a seller you brought successfully tops up in their store wallet, for life. The EGP 100 welcome gift isn't a top-up, so it earns no commission."
+          "a": "25% of every amount a seller you brought successfully tops up in their store wallet, for life. The EGP 100 welcome gift isn't a top-up, so it earns no commission."
         },
         {
           "q": "When can I withdraw?",

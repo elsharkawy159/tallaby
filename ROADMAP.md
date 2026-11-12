@@ -1709,6 +1709,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-12 — Affiliate commission 25 %
+
+- **Owner (2026-11-12):** the Tallaby affiliate program (F-37) pays **25 %** instead of 20 % of every succeeded store-wallet top-up by a referred seller, for life. `REFERRAL_RATE_PERCENT` = 25 (`packages/lib/src/referrals/referrals.lib.ts`); dashboard Earn page and tallaby.com affiliate copy updated (example: 1,000 → 250). Applies to top-ups that succeed from the deploy on; existing `referral_commissions` rows keep their amounts. No migration.
+
 ### 2026-11-12 — F-21 COD deposit (عربون) built (owner approval)
 
 - **Owner (2026-11-12, §5):** a "Deposit" on cash on delivery in Store settings › Payment methods, 10 / 20 / 30 / 50 %; after a COD order the customer pays the deposit online; checkout shows the deposit and the cash-on-delivery amount under "Total". Decisions: paid to the seller (own card gateway and/or wallets / InstaPay with a screenshot), never the Tallaby wallet; can't be turned on without a way to pay; unpaid → "Awaiting deposit", auto-cancel after 48 h; rounded up to the nearest 5; carrier COD = remainder; fees unchanged.

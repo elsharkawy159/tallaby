@@ -74,7 +74,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate program (integration)", { timeout
     await client.end();
   }, 120_000);
 
-  it("posts 20 % once per top-up, however often Kashier repeats it", async () => {
+  it("posts 25 % once per top-up, however often Kashier repeats it", async () => {
     const referrer = await makeSeller();
     const referred = await makeSeller({ referrer });
     const { event } = await paidTopUp(referred, "150.00");
@@ -105,7 +105,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate program (integration)", { timeout
     await paidTopUp(referred, "100.00");
     const rows = await commissions(referrer);
     expect(rows).toHaveLength(1);
-    expect(rows[0]!.amount).toBe("20.00");
+    expect(rows[0]!.amount).toBe("25.00");
   });
 
   it("attributes only new accounts, never by the referrer's own phone", async () => {
@@ -173,7 +173,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate program (integration)", { timeout
     const referrer = await makeSeller();
     await db.update(s.sellers).set({ referralUnlockedAt: new Date().toISOString() }).where(eq(s.sellers.id, referrer));
     const referred = await makeSeller({ referrer });
-    await paidTopUp(referred, "2499.95"); // 499.99 commission
+    await paidTopUp(referred, "1999.95"); // 499.98 commission
     const destination = { method: "vodafone_cash", holderName: "Omar Ali", phone: "01012345678" };
     expect(await ref.requestReferralPayout(referrer, destination)).toEqual({ success: false, error: "below_minimum" });
     await db.update(s.sellers).set({ status: "suspended" }).where(eq(s.sellers.id, referrer));

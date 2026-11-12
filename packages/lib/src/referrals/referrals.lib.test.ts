@@ -25,11 +25,11 @@ describe("money", () => {
     expect(fromPiastres(5)).toBe("0.05");
   });
 
-  it("takes 20 % of a top-up, rounded down to the piastre", () => {
-    expect(commissionPiastres("100.00")).toBe(2000);
+  it("takes 25 % of a top-up, rounded down to the piastre", () => {
+    expect(commissionPiastres("100.00")).toBe(2500);
     expect(commissionPiastres("0.03")).toBe(0);
-    expect(commissionPiastres("99.99")).toBe(1999);
-    expect(commissionPiastres("1234.56")).toBe(24691);
+    expect(commissionPiastres("99.99")).toBe(2499);
+    expect(commissionPiastres("1234.56")).toBe(30864);
   });
 
   it("subtracts requested and paid payouts from earned", () => {
