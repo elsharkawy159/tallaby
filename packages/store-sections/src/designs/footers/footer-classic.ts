@@ -8,7 +8,7 @@
  * store name as a wordmark, small quiet column titles and links, contact
  * lines in the footer's own ink (no accent icons), and a slim bottom row with
  * a small copyright and the payment marks. The "by Tallaby" line is hidden:
- * the drawn "Powered by Tallaby" credit takes its place, so the footer no
+ * the drawn Tallaby badge takes its place, so the footer no
  * longer credits twice. Same nodes, labels and links as v1.
  */
 import type { ElementIconName } from "../../elements/registry";
@@ -73,7 +73,7 @@ export const footerClassic = defineDesign({
             [
               t.text(COPYRIGHT, { style: { ...ON_BRAND_BODY, fontSize: "xs", opacity: 70 } }),
               paymentRow(t, true),
-              // Hidden: every footer is drawn with "Powered by Tallaby" beside the copyright (`drawChrome`), so this showed the credit twice.
+              // Hidden: every footer is drawn with the Tallaby badge beside the copyright (`drawChrome`), so this showed the credit twice.
               // The node stays for its field name and the templates' copy.
               t.text(L("بواسطة طلبي", "by Tallaby"), {
                 style: { ...ON_BRAND_BODY, fontSize: "xs", fontWeight: "semibold", hidden: true },

@@ -2008,7 +2008,7 @@
     "call": "Call",
     "email": "Email the store",
     "moreStores": "Create your own store with Tallaby",
-    "poweredBy": "Powered by <link>Tallaby</link>",
+    "poweredBy": "Built with Tallaby",
     "notFoundTitle": "There's no store at this address",
     "notFoundBody": "Check the link you were sent, or ask the store for its correct address.",
     "notFoundCta": "Go to Tallaby",

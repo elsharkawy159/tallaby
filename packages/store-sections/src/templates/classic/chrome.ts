@@ -208,8 +208,8 @@ export const classicFooter = defineDesign({
   subcategory: "payment-trust",
   name: L("كلاسيك: الفوتر", "Classic: footer"),
   description: L(
-    "شريط بلون المتجر: الشعار والنبذة والسوشيال، وأعمدة التسوق والمساعدة والسياسات، وطرق الدفع وسطر «مدعوم من طلبي».",
-    "A band in the brand colour: logo, tagline and social links, Shop, Help and Policies columns, payment methods and a Powered by Tallaby line.",
+    "شريط بلون المتجر: الشعار والنبذة والسوشيال، وأعمدة التسوق والمساعدة والسياسات، وطرق الدفع وزر «صمم عبر منصة طلبي».",
+    "A band in the brand colour: logo, tagline and social links, Shop, Help and Policies columns, payment methods and a Built with Tallaby badge.",
   ),
   keywords: ["footer", "classic", "tallaby", "فوتر", "كلاسيك"],
   tree: (t) =>
@@ -257,8 +257,8 @@ export const classicFooter = defineDesign({
                     role: "copyright",
                     style: { color: "primaryInk", opacity: 70, fontSize: "xs" },
                   }),
-                  t.link(TALLABY_URL, [t.text(L("مدعوم من طلبي", "Powered by Tallaby"), { style: { fontSize: "xs", fontWeight: "semibold" } })], {
-                    label: L("مدعوم من طلبي", "Powered by Tallaby"),
+                  t.link(TALLABY_URL, [t.text(L("صمم عبر منصة طلبي", "Built with Tallaby"), { style: { fontSize: "xs", fontWeight: "semibold" } })], {
+                    label: L("صمم عبر منصة طلبي", "Built with Tallaby"),
                     role: "poweredBy",
                     style: { ...FLUSH, color: "primaryInk", hover: { opacity: 70 } },
                   }),

@@ -48,6 +48,8 @@ export {
   languageSwitcherOn,
   mobileMenuRows,
   setChromeOption,
+  TALLABY_HOME,
+  TALLABY_MARK_URL,
   withLanguageSwitcher,
   type ChromeOption,
   type ChromePart,

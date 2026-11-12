@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { findNode, findParent } from "../elements/tree";
-import { chromeHasThemeToggle, chromeOptionOn, drawChrome, flushHeaderOnMobile, setChromeOption, withLanguageSwitcher } from "./header";
+import { normalizeStyle } from "../elements/style";
+import { chromeHasThemeToggle, chromeOptionOn, drawChrome, flushHeaderOnMobile, setChromeOption, TALLABY_MARK_URL, withLanguageSwitcher } from "./header";
 import { sanitizeSiteConfig } from "./sanitize";
 import type { SectionInstance, SiteConfig } from "./schema";
 import { CODE_TEMPLATES } from "../templates/catalog";
@@ -363,7 +364,7 @@ describe("header and footer options (drawChrome)", () => {
     expect(box.children[1]!.children.map((c) => c.type)).toEqual(["themeToggle"]);
   });
 
-  it("puts Powered by Tallaby beside the copyright line, once, in the language shown", () => {
+  it("puts the Tallaby badge beside the copyright line, once, in the language shown", () => {
     const input = chrome([
       n("box", "container", {}, [
         n("legal", "hFlex", {}, [
@@ -375,12 +376,27 @@ describe("header and footer options (drawChrome)", () => {
     const out = drawChrome(input, "footer", { translated: false, hasLogo: false, locale: "en" })!;
     expect(findNode(out.componentTree!, "old")).toBeNull();
     expect(findNode(out.componentTree!, "c-legal")!.children.map((c) => c.id)).toEqual(["copy", "c-powered-by"]);
-    expect(findNode(out.componentTree!, "c-powered-by-text")!.props.text).toBe("Powered by");
-    const link = findNode(out.componentTree!, "c-powered-by-link")!;
-    expect(link.props.href).toBe("https://tallaby.com");
-    expect(link.children[0]!.props.text).toBe("Tallaby");
-    expect(link.children[0]!.style?.underline).toBe(true);
-    expect(findNode(drawChrome(input, "footer", { translated: false, hasLogo: false })!.componentTree!, "c-powered-by-link")!.children[0]!.props.text).toBe("طلبي");
+    // A pill link: the Tallaby mark and the words, white with dark ink so it reads on any footer.
+    const badge = findNode(out.componentTree!, "c-powered-by")!;
+    expect(badge.type).toBe("linkBlock");
+    expect(badge.props).toMatchObject({ href: "https://tallaby.com", label: "Built with Tallaby" });
+    expect(badge.style).toMatchObject({ background: "#ffffff", radius: 999, borderWidth: 1 });
+    expect(badge.style?.hover).toBeDefined();
+    expect(findNode(out.componentTree!, "c-powered-by-row")!.children.map((c) => c.type)).toEqual(["image", "text"]);
+    expect(findNode(out.componentTree!, "c-powered-by-mark")!.props.src).toBe(TALLABY_MARK_URL);
+    expect(findNode(out.componentTree!, "c-powered-by-text")!.props.text).toBe("Built with Tallaby");
+    // On phones the badge takes its own row under the copyright, lined up with it.
+    expect(findNode(out.componentTree!, "c-legal")!.breakpointStyles?.mobile).toMatchObject({ direction: "column", alignItems: "start" });
+    expect(findNode(drawChrome(input, "footer", { translated: false, hasLogo: false })!.componentTree!, "c-powered-by-text")!.props.text).toBe("صمم عبر منصة طلبي");
+    // Every style it uses survives the style whitelist.
+    expect(normalizeStyle(badge.style)).toEqual(badge.style);
+  });
+
+  it("puts the Tallaby badge in its own centred row when the footer has no copyright line", () => {
+    const out = drawChrome(chrome([n("box", "container", {}, [n("about", "text", { text: "About us" })])]), "footer", { translated: false, hasLogo: false, locale: "ar" })!;
+    const legal = findNode(out.componentTree!, "c-legal")!;
+    expect(legal.style).toMatchObject({ justifyContent: "center" });
+    expect(legal.children.map((c) => c.id)).toEqual(["c-powered-by"]);
   });
 
   it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the footer always credits Tallaby once", (_key, template) => {

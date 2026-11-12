@@ -227,7 +227,7 @@ export async function StoreSiteChrome({
   const credit = part === "footer" && !instance?.componentTree?.length && (
     <footer className="flex flex-col items-center gap-3 py-5 text-center text-xs">
       {store.app.showDownloadButton && <StoreAppInstallButton storeName={store.displayName} />}
-      <PoweredByTallaby className="opacity-80" />
+      <PoweredByTallaby />
     </footer>
   );
   if (!instance) return credit || null;

@@ -142,10 +142,11 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
       </p>
 
       <div className={s.footerBase}>
-        <div className={cn(s.wrap, "flex flex-col gap-2 py-5 text-sm sm:flex-row sm:justify-between")}>
-          <span>
-            {t("copyright", { year: new Date().getFullYear(), store: store.displayName })} · <PoweredByTallaby />
-          </span>
+        <div className={cn(s.wrap, "flex flex-col gap-3 py-5 text-sm sm:flex-row sm:items-center sm:justify-between")}>
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-3.5">
+            <span>{t("copyright", { year: new Date().getFullYear(), store: store.displayName })}</span>
+            <PoweredByTallaby />
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             {store.app.showDownloadButton && <StoreAppInstallButton storeName={store.displayName} />}
             <a href={BASE_URL || "https://tallaby.com"} className="font-medium text-white hover:underline">
