@@ -48,3 +48,9 @@ scripts/perf/
 
 # Downloaded demo photos waiting to be processed (niche editions, F-90)
 .editions-inbox/
+
+# QA and design screenshots (owner, 2026-11-12): local only, never committed
+docs/systems/**/*.png
+docs/systems/**/*.jpg
+docs/systems/**/*.jpeg
+docs/systems/**/*.webp
