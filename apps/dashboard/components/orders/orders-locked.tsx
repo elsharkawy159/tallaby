@@ -55,18 +55,33 @@ export async function OrdersLocked({ lock }: { lock: OrderLock }) {
   );
 }
 
+/**
+ * The amber notice row. Phones: the icon and text get the full width and the
+ * button goes on its own line under them, full width; from `sm` it sits inline
+ * at the end. (The old wrapping row never wrapped: its `flex-1` text column has
+ * a 0 basis, so the nowrap button always fit beside it and squeezed the text
+ * into a thin column on phones.)
+ */
+const NOTICE_ROW =
+  "flex flex-col gap-3 rounded-[20px] border border-(--tallaby-amber-100) bg-accent-soft px-4 py-3 text-[13.5px] text-accent-ink sm:flex-row sm:items-center dark:border-transparent";
+const NOTICE_BUTTON = "w-full max-[600px]:h-10 sm:w-auto";
+
 /** The short message on the dashboard home and above the first order. */
 export async function OrdersLockedNotice({ lock }: { lock: OrderLock }) {
   if (!lock.ordersLocked) return null;
   const [t, title] = await Promise.all([getTranslations("orderLock"), lockTitle(lock)]);
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[20px] border border-(--tallaby-amber-100) bg-accent-soft px-4 py-3 text-[13.5px] text-accent-ink dark:border-transparent">
-      <span aria-hidden>⚠️</span>
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold">{title}</p>
-        <p className="mt-0.5 text-pretty">{t(lockBody(lock))}</p>
+    <div className={NOTICE_ROW}>
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <span aria-hidden className="shrink-0 text-sm leading-5">
+          ⚠️
+        </span>
+        <div className="min-w-0 flex-1 break-words">
+          <p className="font-semibold leading-5">{title}</p>
+          <p className="mt-0.5 text-pretty">{t(lockBody(lock))}</p>
+        </div>
       </div>
-      <Button asChild size="sm" className="max-[600px]:h-10">
+      <Button asChild size="sm" className={NOTICE_BUTTON}>
         <Link href="/wallet">{t(lock.pendingReview ? "viewWallet" : "topUp")}</Link>
       </Button>
     </div>
@@ -85,13 +100,15 @@ export async function OrdersGraceNotice({ lock }: { lock: OrderLock }) {
   const days = graceDaysLeft(lock.grace);
   const first = lock.grace.firstOrderReceived;
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[20px] border border-(--tallaby-amber-100) bg-accent-soft px-4 py-3 text-[13.5px] text-accent-ink dark:border-transparent">
-      <Clock className="size-4 shrink-0" aria-hidden />
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold">{first ? t("graceFirstOrderTitle") : t("graceTitle", { days })}</p>
-        <p className="mt-0.5 text-pretty">{first ? t("graceFirstOrderBody", { days, amount }) : t("graceBody", { amount })}</p>
+    <div className={NOTICE_ROW}>
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <Clock className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <div className="min-w-0 flex-1 break-words">
+          <p className="font-semibold leading-5">{first ? t("graceFirstOrderTitle") : t("graceTitle", { days })}</p>
+          <p className="mt-0.5 text-pretty">{first ? t("graceFirstOrderBody", { days, amount }) : t("graceBody", { amount })}</p>
+        </div>
       </div>
-      <Button asChild size="sm" className="max-[600px]:h-10">
+      <Button asChild size="sm" className={NOTICE_BUTTON}>
         <Link href="/wallet">{t(lock.pendingReview ? "viewWallet" : "topUp")}</Link>
       </Button>
     </div>
