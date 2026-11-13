@@ -10,6 +10,7 @@ import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_
 import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { OrdersGraceNotice, OrdersLockedNotice } from "@/components/orders/orders-locked";
+import { currentGraceNoticeStoreReady } from "@/lib/billing/grace-notice.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
   ChartSkeleton,
@@ -45,12 +46,15 @@ export default async function VendorDashboardPage({
 }: {
   searchParams: Promise<{ range?: string | string[]; channel?: string | string[]; welcome?: string | string[]; signup?: string | string[] }>;
 }) {
-  const [{ range: rawRange, channel: rawChannel, welcome, signup }, { stores }, orderLock, snapshot] = await Promise.all([
+  const lockPromise = currentOrderLock();
+  const [{ range: rawRange, channel: rawChannel, welcome, signup }, { stores }, orderLock, snapshot, graceStoreReady] = await Promise.all([
     searchParams,
     getSellerStores(),
-    currentOrderLock(),
+    lockPromise,
     // Cached per request; the sections below read the same snapshot.
     getHomeSnapshot(),
+    // The grace notice waits for a published store with a product (owner, 2026-11-13).
+    lockPromise.then(currentGraceNoticeStoreReady),
   ]);
   const range = parseHomeRange(rawRange);
   // A store channel must be one of the seller's own stores (never trust the URL).
@@ -76,7 +80,7 @@ export default async function VendorDashboardPage({
   const notices = (
     <>
       <OrdersLockedNotice lock={orderLock} />
-      <OrdersGraceNotice lock={orderLock} />
+      <OrdersGraceNotice lock={orderLock} storeReady={graceStoreReady} />
       {welcome === "1" && <WelcomeBanner />}
       {welcome === "1" && signup && (
         <Suspense fallback={null}>

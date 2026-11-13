@@ -4,6 +4,7 @@ import { Clock, Wallet } from "lucide-react";
 import { graceDaysLeft, type OrderLock } from "@workspace/lib/billing/order-lock";
 import { Button } from "@workspace/ui/components/button";
 import { getMinTopUpText } from "@/lib/billing/min-top-up-egp.server";
+import { showGraceNotice } from "@/lib/billing/grace-notice.lib";
 
 const PLACEHOLDER_ROWS = ["w-3/4", "w-2/3", "w-4/5", "w-1/2", "w-3/5", "w-2/3"];
 
@@ -91,10 +92,12 @@ export async function OrdersLockedNotice({ lock }: { lock: OrderLock }) {
 /**
  * While the grace window is open (F-84): how many days are left to top up, or,
  * once the first order arrived, that the next one waits for a top-up. Orders
- * stay open meanwhile; the store sells either way.
+ * stay open meanwhile; the store sells either way. Shown only once the seller
+ * has a published store with a product in it (`storeReady`), or the first
+ * order arrived; before that the seller is still building (owner, 2026-11-13).
  */
-export async function OrdersGraceNotice({ lock }: { lock: OrderLock }) {
-  if (lock.activated || lock.ordersLocked || !lock.grace) return null;
+export async function OrdersGraceNotice({ lock, storeReady }: { lock: OrderLock; storeReady: boolean }) {
+  if (!showGraceNotice(lock, storeReady) || !lock.grace) return null;
   const [t, minTopUp] = await Promise.all([getTranslations("orderLock"), getLocale().then(getMinTopUpText)]);
   const amount = minTopUp ?? "none";
   const days = graceDaysLeft(lock.grace);
