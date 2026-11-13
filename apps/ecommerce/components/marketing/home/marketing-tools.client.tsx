@@ -132,9 +132,7 @@ function WhatsAppPane() {
     <>
       <PaneHead title={t("title")} badge={t("badge")} tone="amber" />
       <div className="flex flex-col gap-2.5 rounded-[18px] bg-[#efeae2] p-3.5 leading-[1.7] text-[#1f2c2f]">
-        <b className="text-sm">
-          {t("customer")} · <span className="font-normal text-ink-400">{t("order")}</span>
-        </b>
+        <b className="text-sm">{t("customer")}</b>
         <p className="max-w-[85%] self-end rounded-xl bg-[#d9fdd3] px-3 py-2.5">{t("message")}</p>
         <p className="max-w-[85%] self-start rounded-xl bg-white px-3 py-2.5">{t("reply")}</p>
       </div>
@@ -145,15 +143,15 @@ function WhatsAppPane() {
 
 function CartsPane() {
   const t = useTranslations("home.marketing.carts");
-  const rows = t.raw("rows") as { name: string; when: string; total: string }[];
+  const rows = t.raw("rows") as { product: string; when: string; total: string }[];
   return (
     <>
       <PaneHead title={t("title")} badge={<><span className="font-latin">4,860</span> {t("badge")}</>} tone="amber" />
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {rows.map((row, i) => (
-          <li key={row.name} className="flex items-center gap-3 rounded-[14px] border border-[#edf1f2] px-3 py-2.5">
+          <li key={row.product} className="flex items-center gap-3 rounded-[14px] border border-[#edf1f2] px-3 py-2.5">
             <div className="min-w-0 flex-1">
-              <b className="block text-sm text-teal-900">{row.name}</b>
+              <b className="block text-sm text-teal-900">{row.product}</b>
               <small className="text-xs text-ink-400">{row.when} · <span className="font-latin">{row.total}</span> {t("egp")}</small>
             </div>
             <span className={cn("rounded-[10px] px-3 py-[7px] text-[12.5px] font-bold whitespace-nowrap", i === 0 ? "bg-[#e5f6ea] text-[#15803d]" : "bg-teal-900 text-white")}>

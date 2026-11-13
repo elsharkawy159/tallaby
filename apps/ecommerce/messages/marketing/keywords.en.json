@@ -74,7 +74,7 @@
       "lead": "Clear steps to build your own online store: type your store's name, pick a template, add your products, then turn on payments and shipping and publish.",
       "dashboard": {
         "title": "Home",
-        "greeting": "Good morning, Nour",
+        "greeting": "Good morning",
         "sub": "You have 3 new orders to review.",
         "kpis": [
           { "label": "Sales", "value": "48,320", "unit": "EGP" },
@@ -83,8 +83,8 @@
           { "label": "Conversion", "value": "2.3", "unit": "%" }
         ],
         "ordersTitle": "Latest orders",
-        "ordersHead": ["Order", "Customer", "Total", "Status"],
-        "orders": [["#2481", "Mariam", "420 EGP", "New"], ["#2480", "Ahmed", "260 EGP", "Shipping"], ["#2479", "Salma", "310 EGP", "Delivered"]]
+        "ordersHead": ["Product", "Governorate", "Total", "Status"],
+        "orders": [["Cotton T-shirt", "Cairo", "420 EGP", "New"], ["Handbag", "Giza", "260 EGP", "Shipping"], ["Wristwatch", "Alexandria", "310 EGP", "Delivered"]]
       },
       "trust": ["No monthly subscription on Free", "{orderFee} per order", "No developer needed", "A store in Arabic and English"],
       "introTitle": "How do you create an online store yourself?",
@@ -160,8 +160,8 @@
         "planActive": "Active",
         "planRows": [{ "label": "Monthly fee", "value": "None" }, { "label": "Setup fee", "value": "None" }, { "label": "Fee per order", "value": "{orderFee}" }],
         "ordersTitle": "Latest orders",
-        "ordersHead": ["Order", "Customer", "Total", "Status"],
-        "orders": [["#1032", "Mona", "380 EGP", "New"], ["#1031", "Karim", "245 EGP", "Shipping"], ["#1030", "Hala", "510 EGP", "Delivered"]]
+        "ordersHead": ["Product", "Governorate", "Total", "Status"],
+        "orders": [["Summer dress", "Dakahlia", "380 EGP", "New"], ["Leather wallet", "Gharbia", "245 EGP", "Shipping"], ["Sneakers", "Assiut", "510 EGP", "Delivered"]]
       },
       "trust": ["No monthly fee", "{orderFee} per order", "Orders show from day one", "No credit card"],
       "introTitle": "Can I really create a free online store?",
@@ -236,8 +236,8 @@
         "zonesHead": ["Zone", "Shipping", "Free over"],
         "zones": [["Cairo and Giza", "50 EGP", "1,000 EGP"], ["Alexandria", "60 EGP", "1,200 EGP"], ["Aswan", "85 EGP", "1,500 EGP"]],
         "ordersTitle": "Latest orders",
-        "ordersHead": ["Order", "Governorate", "Total", "Status"],
-        "orders": [["#2210", "Dakahlia", "430 EGP", "Awaiting confirmation"], ["#2209", "Giza", "275 EGP", "With Bosta"], ["#2208", "Alexandria", "620 EGP", "Delivered"]]
+        "ordersHead": ["Product", "Governorate", "Total", "Status"],
+        "orders": [["Wireless earbuds", "Dakahlia", "430 EGP", "Awaiting confirmation"], ["Fast charger", "Giza", "275 EGP", "With Bosta"], ["Smartwatch", "Alexandria", "620 EGP", "Delivered"]]
       },
       "trust": ["Cash on delivery", "Shipping with Bosta", "Paymob and Kashier, your account", "Shipping prices by governorate"],
       "introTitle": "Why build your online store in Egypt on Tallaby?",
@@ -305,8 +305,8 @@
           { "label": "Delivered", "value": "96", "unit": "%" }
         ],
         "ordersTitle": "Latest orders",
-        "ordersHead": ["Order", "Governorate", "Total", "Status"],
-        "orders": [["#3307", "Qalyubia", "340 EGP", "Awaiting confirmation"], ["#3306", "Sharqia", "520 EGP", "With the rider"], ["#3305", "Cairo", "260 EGP", "Confirmed"]]
+        "ordersHead": ["Product", "Governorate", "Total", "Status"],
+        "orders": [["Mug set", "Qalyubia", "340 EGP", "Awaiting confirmation"], ["Bed sheet set", "Sharqia", "520 EGP", "With the rider"], ["Clay vase", "Cairo", "260 EGP", "Confirmed"]]
       },
       "trust": ["Cash on delivery on", "WhatsApp order confirmation", "Block problem numbers", "Shipping by governorate"],
       "introTitle": "Why does your store need cash on delivery?",

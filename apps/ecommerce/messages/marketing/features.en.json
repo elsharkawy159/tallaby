@@ -232,18 +232,18 @@
         "title": "Orders",
         "path": "Orders › All orders",
         "head": ["Order", "Governorate", "Total", "Alert"],
-        "rows": [["#4102", "Giza", "390 EGP"], ["#4101", "Giza", "390 EGP"], ["#4100", "Monufia", "540 EGP"]],
+        "rows": [["Brown handbag", "Giza", "390 EGP"], ["Brown handbag", "Giza", "390 EGP"], ["Wristwatch", "Monufia", "540 EGP"]],
         "refused": "Refused 2 orders",
         "duplicate": "Possible duplicate",
         "confirmed": "Confirmed",
         "pending": "Awaiting confirmation",
-        "panelTitle": "Order #4102",
+        "panelTitle": "New order",
         "panelHint": "This number refused 2 earlier orders in your store",
         "ask": "Ask to confirm",
         "confirm": "Confirm order",
         "block": "Block",
         "blockTitle": "Order protection › Blocked numbers",
-        "message": "Hi Mona, confirming your order #4102: brown handbag, total EGP 390. Shall we send it to your saved address?"
+        "message": "Hi, confirming your order: brown handbag, total EGP 390. Shall we send it to your saved address?"
       }
     },
     "abandoned-checkouts": {
@@ -294,13 +294,13 @@
       "mock": {
         "title": "Not completed",
         "path": "Orders › Not completed",
-        "rows": [["Sara", "2 items: handbag, wallet", "610 EGP", "Left 20 minutes ago"], ["Youssef", "1 item: wristwatch", "450 EGP", "Left 2 hours ago"]],
+        "rows": [["2 items: handbag, wallet", "610 EGP", "Left 20 minutes ago"], ["1 item: wristwatch", "450 EGP", "Left 2 hours ago"]],
         "whatsapp": "WhatsApp",
         "call": "Call",
         "emailSent": "Reminder email sent",
         "contacted": "Contacted",
         "markContacted": "Mark contacted",
-        "message": "Hi Sara, we noticed you didn't finish your order (handbag and wallet, EGP 610). Can we help you complete it?",
+        "message": "Hi, we noticed your order wasn't finished (handbag and wallet, EGP 610). Can we help you complete it?",
         "ask": "WhatsApp",
         "formTitle": "Checkout › Shipping address",
         "addressLabel": "Address"

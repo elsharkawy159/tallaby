@@ -11,8 +11,8 @@ export async function ShippingDemo() {
     <div aria-hidden className="flex w-full max-w-[470px] flex-col gap-3 rounded-[20px] border border-line bg-white p-4 shadow-soft min-[641px]:rounded-card min-[641px]:p-5">
       <div className="flex items-start justify-between gap-2.5">
         <div>
-          <b dir="ltr" className="font-latin text-base text-teal-900">#2481</b>
-          <small className="block text-[12.5px] text-ink-400">{t("customer")}</small>
+          <b className="text-base text-teal-900">{t("product")}</b>
+          <small className="block text-[12.5px] text-ink-400">{t("place")}</small>
         </div>
         <span className="rounded-full bg-[#e0ecff] px-2.5 py-[3px] text-xs font-bold whitespace-nowrap text-[#1d4ed8]">{t("status.shipped")}</span>
       </div>

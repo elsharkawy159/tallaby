@@ -192,7 +192,7 @@
       ],
       "closingTitle": "Connect Bosta and ship your first order today",
       "mock": {
-        "title": "Order #2209",
+        "title": "Order details",
         "path": "Orders › Ship with Bosta",
         "dialogTitle": "Ship with Bosta",
         "pickup": "Bosta picks it up from your warehouse",

@@ -5,9 +5,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Money } from "@/components/marketing/pricing/visitor-prices.client";
 import { HERO_DEMO_WALLET_USD_CENTS } from "./home-demo.lib";
 
-type Order = { customer: string; product: string; when: string; total: number; status: "pending" | "shipped" | "delivered" };
+type Order = { product: string; when: string; total: number; status: "pending" | "shipped" | "delivered" };
 
-const NEW_ORDER_ID = 2481;
 /** Sample week (a still frame, the new order included): sales, orders and visits that agree with each other. */
 const SALES = 49_820;
 const ORDERS = 39;
@@ -28,7 +27,7 @@ export async function HeroDemo() {
   const t = await getTranslations("home.demo.hero");
   const egp = t("egp");
   const productName = (t.raw("products") as string[])[0] ?? "";
-  const fresh: Order = { customer: (t.raw("customers") as string[])[0] ?? "", product: productName, when: "justNow", total: PRODUCT.price + SHIPPING, status: "pending" };
+  const fresh: Order = { product: productName, when: "justNow", total: PRODUCT.price + SHIPPING, status: "pending" };
   const orders = [fresh, ...(t.raw("orders") as Order[])].slice(0, 4);
   const pending = orders.filter((o) => o.status === "pending").length;
   const kpis = [
@@ -71,8 +70,7 @@ export async function HeroDemo() {
             <li className="px-3.5 py-2.5 text-[14px] font-bold text-[#171717]">{t("latest")}</li>
             {orders.map((o, i) => (
               <li key={i} className={cn("flex items-center gap-2.5 border-t border-[#e7e9e8] px-3.5 py-2 text-xs", i === 0 && "bg-[#fff4dc]")}>
-                <span className="min-w-0 flex-1 truncate">{o.customer}</span>
-                <span className="hidden flex-1 truncate text-[#808080] min-[1081px]:block">{o.product}</span>
+                <span className="min-w-0 flex-1 truncate">{o.product}</span>
                 <span className="hidden text-[#808080] min-[861px]:block">{t(`when.${o.when}`)}</span>
                 <span className="font-semibold whitespace-nowrap">
                   <span className="font-latin">{money(o.total)}</span> {egp}
@@ -109,11 +107,9 @@ export async function HeroDemo() {
           <ShoppingBag className="size-[18px]" />
         </span>
         <div>
-          <b className="block text-[13.5px] text-teal-900">
-            {t("newOrder")} <span dir="ltr" className="font-latin">#{NEW_ORDER_ID}</span>
-          </b>
+          <b className="block text-[13.5px] text-teal-900">{t("newOrder")}</b>
           <small className="text-xs text-ink-400">
-            {fresh.customer} · <span className="font-latin">{money(fresh.total)}</span> {egp}
+            {fresh.product} · <span className="font-latin">{money(fresh.total)}</span> {egp}
           </small>
         </div>
       </div>

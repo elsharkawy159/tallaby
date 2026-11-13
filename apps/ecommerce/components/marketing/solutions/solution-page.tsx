@@ -33,16 +33,16 @@ type DashboardWords = { title: string; greeting: string; sub: string; ordersTitl
 
 const bidi = (part: string) => <BidiText text={part} />;
 
-/** The latest-orders table every scene ends with: order number, a name or governorate, total, status. */
+/** The latest-orders table every scene ends with: product, governorate, total, status. */
 function OrdersCard({ words }: { words: DashboardWords }) {
   return (
     <MockCard className="gap-0 overflow-hidden p-0">
       <div className="px-3.5 py-2.5 text-[13px] font-bold text-[#171717]">{words.ordersTitle}</div>
       <MockTable
         head={words.ordersHead}
-        rows={words.orders.map(([order, customer, total, status], i) => [
-          <MockCode key="o">{order}</MockCode>,
-          customer,
+        rows={words.orders.map(([product, governorate, total, status], i) => [
+          product,
+          governorate,
           <MockCode key="t">{total}</MockCode>,
           <MockPill key="s" tone={i === 0 ? "amber" : i === 1 ? "gray" : "green"}>
             {status}

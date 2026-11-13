@@ -42,7 +42,7 @@ export type NeedMessages = {
   /** offers: quantity tiers. */
   tiers?: { qty: string; price: string; save?: string }[];
   /** reviews: product reviews as the store shows them. */
-  reviews?: { name: string; text: string }[];
+  reviews?: { text: string }[];
   /** notes: what a customer wrote. */
   text?: string;
   /** alert: the phone notification. */
@@ -212,15 +212,12 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
     reviews: () => (
       <>
         {need.reviews?.map((review) => (
-          <div key={review.name} className="rounded-[12px] bg-white p-3 shadow-[0_0_0_1px_#e6eef0]">
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <b className="text-[13px] text-teal-900">{review.name}</b>
-              <span className="flex text-amber-600">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star key={i} className="size-3 fill-current" />
-                ))}
-              </span>
-            </div>
+          <div key={review.text} className="rounded-[12px] bg-white p-3 shadow-[0_0_0_1px_#e6eef0]">
+            <span className="mb-1 flex text-amber-600">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star key={i} className="size-3 fill-current" />
+              ))}
+            </span>
             <p className="text-[12.5px] text-ink-500">{review.text}</p>
           </div>
         ))}

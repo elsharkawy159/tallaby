@@ -116,8 +116,8 @@ async function RiskShot() {
       <MockCard className="gap-0 overflow-hidden p-0">
         <MockTable
           head={t.raw("head") as string[]}
-          rows={rows.map(([order, area, total], i) => [
-            <MockCode key="o">{order}</MockCode>,
+          rows={rows.map(([product, area, total], i) => [
+            product,
             area,
             <MockCode key="t">{total}</MockCode>,
             i === 0 ? (
@@ -157,10 +157,9 @@ async function MissedShot() {
   return (
     <DashFrame active="orders" title={t("title")}>
       <Head t={t} />
-      {rows.map(([name, items, total, left], i) => (
-        <MockCard key={name}>
-          <MockCardHead title={name} hint={left} end={<MockCode>{total}</MockCode>} />
-          <small className="text-[11px] text-[#55605f]">{items}</small>
+      {rows.map(([items, total, left], i) => (
+        <MockCard key={items}>
+          <MockCardHead title={items} hint={left} end={<MockCode>{total}</MockCode>} />
           <div className="flex flex-wrap items-center gap-2">
             <WhatsAppButton>{t("whatsapp")}</WhatsAppButton>
             <span className="inline-flex h-8 items-center gap-1.5 rounded-[9px] border border-[#d9dddc] px-3 text-xs font-bold text-teal-900">
@@ -373,8 +372,8 @@ export function moreStepContent(t: T, partner: string | undefined): Record<MoreS
     ),
     confirmed: () => (
       <>
-        {row(<MockCode>#2481</MockCode>, <MockPill tone="amber">{t("pending")}</MockPill>)}
-        {row(<MockCode>#2481</MockCode>, <MockPill>{t("confirmed")}</MockPill>)}
+        {row(<b className="text-teal-900">{t("panelTitle")}</b>, <MockPill tone="amber">{t("pending")}</MockPill>)}
+        {row(<b className="text-teal-900">{t("panelTitle")}</b>, <MockPill>{t("confirmed")}</MockPill>)}
       </>
     ),
     leadForm: () => (
@@ -388,10 +387,10 @@ export function moreStepContent(t: T, partner: string | undefined): Record<MoreS
       </>
     ),
     missedRow: () => {
-      const [name, items, total] = (t.raw("rows") as string[][])[0]!;
+      const [items, total, left] = (t.raw("rows") as string[][])[0]!;
       return (
         <MockCard>
-          <MockCardHead title={name} hint={items} end={<MockCode>{total}</MockCode>} />
+          <MockCardHead title={items} hint={left} end={<MockCode>{total}</MockCode>} />
         </MockCard>
       );
     },

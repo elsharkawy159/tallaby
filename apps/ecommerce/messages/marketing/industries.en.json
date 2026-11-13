@@ -340,11 +340,9 @@
           "solution": "Customer reviews show on the product page, and you can add reviews customers sent you on WhatsApp or Instagram.",
           "reviews": [
             {
-              "name": "Mona",
               "text": "Light texture and it sinks in fast."
             },
             {
-              "name": "Sara",
               "text": "Arrived in two days, well packed."
             }
           ]
@@ -532,11 +530,9 @@
           "solution": "Customer reviews show on the perfume's page, and you can add feedback customers sent you on WhatsApp.",
           "reviews": [
             {
-              "name": "Ahmed",
               "text": "Lasts all day, and the box is lovely."
             },
             {
-              "name": "Noha",
               "text": "Smells exactly as described."
             }
           ]
@@ -1056,7 +1052,7 @@
           "pain": "Many pieces are bought as gifts, and the customer wants to add a message.",
           "solution": "Customers write the message or a special request in the order notes, and you see it with the order.",
           "label": "Order notes",
-          "text": "It's a birthday gift. Please write \"Happy birthday, Nour\"."
+          "text": "It's a birthday gift. Please write \"Happy birthday\"."
         }
       ],
       "templatesTitle": "Templates for jewelry and accessories stores",
@@ -1214,7 +1210,7 @@
           "solution": "Install the dashboard on your phone and turn on notifications to get an alert for every new order, then assign it to a rider.",
           "app": "Tallaby",
           "time": "now",
-          "label": "New order #1048",
+          "label": "New order",
           "body": "2 kahk boxes · Nasr City · Cash on delivery"
         },
         {
@@ -1604,11 +1600,9 @@
           "solution": "Customer reviews show on the product page, and you can add feedback customers sent you yourself.",
           "reviews": [
             {
-              "name": "Karim",
               "text": "Stays put even over speed bumps. Easy to fit."
             },
             {
-              "name": "Mohamed",
               "text": "Fits the steering wheel perfectly."
             }
           ]
@@ -1740,7 +1734,7 @@
           "pain": "Customers want a name on the mug or a different colour, and send it on WhatsApp where it gets lost.",
           "solution": "Customers write their request in the order notes, and you see it with the order. Message them on WhatsApp from the order page if you need to.",
           "label": "Order notes",
-          "text": "Please write \"Laila\" on the blue mug in Arabic script.",
+          "text": "Please write \"Congratulations\" on the blue mug in Arabic script.",
           "note": "Shown with the order details"
         },
         {

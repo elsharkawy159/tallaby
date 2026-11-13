@@ -209,9 +209,8 @@
       "whatsapp": {
         "title": "Order confirmation message",
         "badge": "One click from you",
-        "customer": "Mariam Ahmed",
-        "order": "Order 2481",
-        "message": "Hi Mariam, we received your order 2481 for 1,290 EGP. Please confirm it so we can ship today.",
+        "customer": "New customer",
+        "message": "Hi, we received your order for 1,290 EGP. Please confirm it so we can ship today.",
         "reply": "Confirmed, thank you",
         "note": "The button opens WhatsApp with a ready message that you edit and send yourself. Tallaby doesn't send WhatsApp messages automatically."
       },
@@ -223,9 +222,9 @@
         "contacted": "Contacted",
         "note": "Tallaby keeps the shopper's details once they enter a phone number, even if they leave.",
         "rows": [
-          { "name": "Hana Samy", "when": "12 min ago", "total": "1,240" },
-          { "name": "Omar Tarek", "when": "40 min ago", "total": "860" },
-          { "name": "Laila Hassan", "when": "2 hrs ago", "total": "2,760" }
+          { "product": "Pink tote bag", "when": "12 min ago", "total": "1,240" },
+          { "product": "Men's leather wallet", "when": "40 min ago", "total": "860" },
+          { "product": "2 bags: handbag and shoulder bag", "when": "2 hrs ago", "total": "2,760" }
         ]
       },
       "coupon": {
@@ -323,7 +322,7 @@
         "egp": "EGP",
         "title": "Dashboard",
         "walletLabel": "Wallet balance",
-        "greeting": "Good morning, Nour",
+        "greeting": "Good morning",
         "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
         "latest": "Latest orders",
         "newOrder": "New order",
@@ -348,12 +347,11 @@
           "min18": "18 min ago",
           "hr1": "1 hr ago"
         },
-        "customers": ["Mariam Ahmed", "Youssef Khaled", "Hana Samy", "Omar Tarek"],
         "products": ["Red leather handbag", "Pink tote bag", "Printed barrel bag"],
         "orders": [
-          { "customer": "Youssef Khaled", "product": "Men's leather wallet", "when": "min6", "total": 500, "status": "pending" },
-          { "customer": "Hana Samy", "product": "Pink tote bag", "when": "min18", "total": 1340, "status": "pending" },
-          { "customer": "Omar Tarek", "product": "Red leather handbag", "when": "hr1", "total": 1500, "status": "shipped" }
+          { "product": "Men's leather wallet", "when": "min6", "total": 500, "status": "pending" },
+          { "product": "Pink tote bag", "when": "min18", "total": 1340, "status": "pending" },
+          { "product": "Printed barrel bag", "when": "hr1", "total": 1500, "status": "shipped" }
         ]
       },
       "mcp": {
@@ -419,14 +417,15 @@
         }
       },
       "shipping": {
-        "customer": "Mariam · Heliopolis, Cairo",
+        "product": "Red leather handbag",
+        "place": "Heliopolis, Cairo",
         "shipWith": "Ship with",
         "tracking": "Tracking number",
         "label": "Print label",
         "status": { "shipped": "Shipped" },
         "options": [
           { "name": "Bosta", "body": "Through your Bosta account", "price": "55 EGP", "latin": true },
-          { "name": "Your riders", "body": "Ahmed Samir · available", "price": "40 EGP" },
+          { "name": "Your riders", "body": "A rider is free now", "price": "40 EGP" },
           { "name": "Wassalha", "body": "Sheet ready to upload", "price": "60 EGP", "latin": true }
         ]
       },
