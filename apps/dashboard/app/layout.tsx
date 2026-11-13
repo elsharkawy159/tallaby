@@ -69,9 +69,7 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <head>
-        <meta name="robots" content="noindex, nofollow" />
-      </head>
+      {/* noindex comes from generateMetadata above (the default for every route); only /login overrides it. */}
       <body
         className={`${locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable} antialiased`}
       >

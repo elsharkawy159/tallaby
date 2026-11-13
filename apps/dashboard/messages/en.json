@@ -930,6 +930,11 @@
   "meta": {
     "title": "Seller Dashboard",
     "description": "Tallaby seller dashboard",
+    "login": {
+      "title": "Tallaby Dashboard | لوحة تحكم طلبي",
+      "description": "The Tallaby dashboard: run your online store, orders, products and shipping in one place. Sign in or create your store for free.",
+      "siteName": "Tallaby"
+    },
     "editProduct": {
       "title": "Edit Product | Dashboard",
       "description": "Edit your product listing"
