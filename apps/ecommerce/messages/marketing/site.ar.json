@@ -16,7 +16,12 @@
     "integrations": "التكاملات",
     "compare": "المقارنات",
     "allSolutions": "كل الحلول",
-    "allFeatures": "كل المميزات"
+    "allFeatures": "كل المميزات",
+    "solutionFreeStore": "متجر إلكتروني مجاني",
+    "solutionEgypt": "منصة للبيع في مصر",
+    "solutionCod": "الدفع عند الاستلام",
+    "solutionClothing": "متجر ملابس",
+    "solutionCostTool": "حاسبة تكلفة المتجر"
   },
   "site": {
     "breadcrumb": "مسار التنقل",

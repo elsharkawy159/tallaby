@@ -6,7 +6,6 @@ import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
 import { CookieSettingsButton } from "@/components/layout/tracking-consent-banner.client";
 import { isCompareHubPublic } from "@/lib/marketing/compare.lib";
-import { footerSolutionLinks } from "@/lib/marketing/content-routes.lib";
 import { CONTACT, DASHBOARD_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { Container } from "./layout-primitives";
@@ -20,7 +19,7 @@ type FooterLink = { href: string; label: string; external?: boolean };
  * buttons and payment marks.
  */
 export async function SiteFooter() {
-  const [t, tm] = await Promise.all([getTranslations("siteFooter"), getTranslations("meta")]);
+  const t = await getTranslations("siteFooter");
 
   const columns: { title: string; links: FooterLink[] }[] = [
     {
@@ -38,11 +37,15 @@ export async function SiteFooter() {
         { href: "/faq", label: t("faq") },
       ],
     },
-    // Built from the page lists, so a new solution, industry, feature or tool page appears here by itself.
+    // A short hand-picked list with short labels (owner, 2026-11-13); a new page is linked from its hub, not here.
     {
       title: t("solutions"),
       links: [
-        ...footerSolutionLinks().map((page) => ({ href: page.href, label: tm(`${page.metaKey}.title`) })),
+        { href: "/solutions/free-online-store", label: t("solutionFreeStore") },
+        { href: "/solutions/online-store-egypt", label: t("solutionEgypt") },
+        { href: "/solutions/cash-on-delivery-store", label: t("solutionCod") },
+        { href: "/industries/clothing-store", label: t("solutionClothing") },
+        { href: "/tools/store-cost-calculator", label: t("solutionCostTool") },
         { href: "/solutions", label: t("allSolutions") },
         { href: "/features", label: t("allFeatures") },
       ],

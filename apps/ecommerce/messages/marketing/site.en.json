@@ -16,7 +16,12 @@
     "integrations": "Integrations",
     "compare": "Compare",
     "allSolutions": "All solutions",
-    "allFeatures": "All features"
+    "allFeatures": "All features",
+    "solutionFreeStore": "Free online store",
+    "solutionEgypt": "Selling in Egypt",
+    "solutionCod": "Cash on delivery",
+    "solutionClothing": "Clothing store",
+    "solutionCostTool": "Store cost calculator"
   },
   "site": {
     "breadcrumb": "Breadcrumb",

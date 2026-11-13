@@ -92,7 +92,7 @@ Every page also gets Organization and WebSite (`siteGraph()` in `(site)/layout.t
 | Blog post | Written in the Admin app (Blog) → `platform_blog_posts`. No deploy is needed. |
 | **New top-level segment** (e.g. `/alternatives`, `/guides`) | Add the folder **and** its name to `MARKETING_SEGMENTS` in `lib/marketing/locale-landing.lib.ts` (a test checks the folder list), add the paths to `contentPagePaths()` or `STATIC_PAGE_LASTMOD`, and add any new message group to `MARKETING_GROUPS` in `i18n/messages.ts`. Strings read by client components must also be listed in `MARKETING_CLIENT_NAMESPACES` (`i18n/client-messages.lib.ts`). |
 
-Automatic once a page is in a list: sitemap (`contentPagePaths()` in `lib/marketing/content-routes.lib.ts`), footer "Solutions" column (`footerSolutionLinks()`, first 3 of each list), static params, and the guard tests.
+Automatic once a page is in a list: sitemap (`contentPagePaths()` in `lib/marketing/content-routes.lib.ts`), static params, and the guard tests. (The footer "Solutions" column was built from the lists too, until it became a short hand-picked list on 2026-11-13.)
 
 ---
 
@@ -270,7 +270,7 @@ Not emitted anywhere: HowTo, Article for non-blog content pages, Product/Aggrega
 - **Header** (`components/marketing/site/nav.lib.ts` `NAV_ITEMS`): `/#features`, `/#ai`, `/templates`, `/#marketing`, `/pricing`, `/faq`. **No link to any solution, industry, feature, tool or integrations page.**
 - **Footer** (`site-footer.tsx`):
   - Product: `/templates`, `/#builder`, `/pricing`, `/integrations`, `/compare` (only if `COMPARE_PUBLIC`), AI builder (only if `storeBuilderEnabled()`), `/affiliates`, `/faq`.
-  - **Solutions**: `footerSolutionLinks()`, up to 3 each from SOLUTIONS, INDUSTRIES, FEATURE_PAGES and TOOL_SLUGS, labelled with each page's meta title. Today that's 4 links.
+  - **Solutions**: `footerSolutionLinks()`, up to 3 each from SOLUTIONS, INDUSTRIES, FEATURE_PAGES and TOOL_SLUGS, labelled with each page's meta title. Today that's 4 links. (Since 2026-11-13 a hand-picked list of 5 pages plus the two hubs, with short labels; see SEO_PLAN.md §13.2.)
   - Company: `/about`, `/blog`, `/careers`, `/contact`.
   - Help: `/faq`, `/faq#payments`, `/faq#shipping`, `/faq#domain`, dashboard login.
   - Legal: `/terms`, `/privacy`, `/privacy#cookies`; socials.

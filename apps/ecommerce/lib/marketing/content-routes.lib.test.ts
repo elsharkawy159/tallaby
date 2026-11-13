@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { publicCompetitors } from "./compare.lib";
-import { contentPagePaths, footerSolutionLinks } from "./content-routes.lib";
-import { loadAllMessages } from "@/i18n/messages";
+import { contentPagePaths } from "./content-routes.lib";
 import { filterHubItems, hubCategoryCounts } from "./hub.lib";
 import { integrationHref, INTEGRATION_ITEMS } from "./integrations-hub.lib";
 
@@ -55,30 +54,5 @@ describe("hub filtering", () => {
 
   it("counts per category", () => {
     expect(hubCategoryCounts(items)).toEqual({ ship: 1, pay: 1 });
-  });
-});
-
-describe("footerSolutionLinks", () => {
-  it("lists each kind of page, capped per kind, with its meta key", () => {
-    const links = footerSolutionLinks();
-    expect(links).toEqual(
-      expect.arrayContaining([
-        { href: "/solutions/free-online-store", metaKey: "solution-free-online-store" },
-        { href: "/solutions/create-online-store", metaKey: "solution-create-online-store" },
-        { href: "/industries/clothing-store", metaKey: "industry-clothing-store" },
-        { href: "/features/ai-online-store", metaKey: "feature-ai-online-store" },
-        { href: "/features/fake-order-protection", metaKey: "feature-fake-order-protection" },
-        { href: "/tools/store-cost-calculator", metaKey: "tool-store-cost-calculator" },
-        { href: "/tools/profit-margin-calculator", metaKey: "tool-profit-margin-calculator" },
-      ]),
-    );
-    expect(footerSolutionLinks(0)).toEqual([]);
-  });
-
-  it("has a meta title for every link in both languages", async () => {
-    for (const locale of ["ar", "en"]) {
-      const meta = (await loadAllMessages(locale)).meta as Record<string, { title?: string }>;
-      for (const link of footerSolutionLinks(Infinity)) expect(meta[link.metaKey]?.title, `${locale} ${link.metaKey}`).toBeTruthy();
-    }
   });
 });
