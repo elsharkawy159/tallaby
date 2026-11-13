@@ -315,6 +315,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 70  | F-92 | Size chart app: «اعرف مقاسك» on product pages                   | P1     | yes (0169)      | Owner request 2026-11-12; built, not deployed        |
 | 71  | F-93 | App Center: every app and integration in one hub, shared registry + public catalog API | P1 | no | Owner request 2026-11-12; built, not deployed |
 | 72  | F-94 | Store setup reminder emails (24 h and 7 days after signup, Arabic, Resend) | P1 | yes (0170) | Owner request 2026-11-13; built, not deployed |
+| 73  | F-95 | Nested store categories: main categories hold sub-categories (two levels) | P1 | yes (0171) | Owner request 2026-11-14; built, not deployed |
 
 ---
 
@@ -1313,6 +1314,17 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-94a · P1 · deps: —** Shared setup rule + reminder rules, claim table `0170`, cron, backend sender, Arabic emails, opt-out route, Admin card, tests.
 - **F-94b · P3 · deps: F-94a** Later, if wanted: a reminder for people who confirmed their email but never finished signup step 2 (no `sellers` row, so not covered now).
 
+### F-95 Nested store categories (تصنيفات رئيسية وفرعية) — P1 · Owner request 2026-11-14
+
+**Why:** stores with big catalogs need main categories holding sub-categories. First user: hossamvoltix (electrics) wants **تأسيس** and **تشطيب** with his existing categories inside (today he fakes it with hand-built home sections).
+**What:** two levels, `seller_product_categories.parent_id` (one parent each; a parent has no parent). A product still links to ONE store category; a main category covers its own products plus its sub-categories' everywhere a category is a scope (storefront page and filter, counts, Arrange products, discount rules, size charts (a sub-category's own chart wins), MCP search). Names unique among siblings. Deleting a main category makes its sub-categories main ones. Builder category lists: **Show** = all (default, today's flat list) / main categories / sub-categories of a chosen main category; hand-picked categories still win. Brands stay flat. Design: `docs/superpowers/specs/2026-11-14-nested-store-categories-design.md`; plan: `docs/superpowers/plans/2026-11-14-nested-store-categories.md`.
+**Status:** [Built 2026-11-14, not deployed] Needs migration `0171` on staging, then production, BEFORE deploying.
+
+- **F-95a · P1 · deps: —** Migration `0171` (parent_id, guard trigger, sibling-unique names), `@workspace/lib/store-sites/category-tree`, dashboard Categories page (Main category picker, tree list, sibling reorder, rolled-up counts), product form "Main › Sub".
+- **F-95b · P1 · deps: F-95a** Storefront (tree-order groups with rollup, main category page with sub-category chips, Main › Sub breadcrumb + BreadcrumbList, cache key v4) and builder category list "Show" option + inspector pickers.
+- **F-95c · P1 · deps: F-95a** Discount rules, size charts, Arrange products, MCP tools, product feed `product_type` "Main > Sub".
+- **F-95d · P3 · deps: F-95b** Later, if wanted: three levels, a category under two main categories, a header menu editor that lists categories, a `/category/<slug>` route.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1321,6 +1333,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-14 | "Add nested category levels to the seller dashboard and storefront: on the categories page the seller can make a higher-level category and put nested categories in it; in the website builder's categories section I can select the categories level and which categories to show from the section options. Scalable and flexible." For hossamvoltix.tallaby.com: two main categories تأسيس and تشطيب (electrics). Decisions: two levels for now; one main category per category; a main category covers its sub-categories. | F-95 (F-95a–d) | **Built** 2026-11-14, not deployed; needs migration `0171` (§7) |
 | 2026-11-13 | Make the seller dashboard's home URL (`dashboard.tallaby.com`) show in Google like EasyOrders' "Easy Orders Dashboard \| لوحة التحكم ايزي اوردرز": for us "Tallaby Dashboard \| لوحة تحكم طلبي" with a short Arabic description. | SEO (no F-number) | **Built** 2026-11-13, not committed or deployed; no migration (§7) |
 | 2026-11-13 | The "X days left to top up your wallet" notice right after signup disappoints sellers before they have built anything: show it only once the seller has published their website and added at least one product. Also, on phones the notice text was cut a lot by the small area next to the button. | F-84 (F-84f) | **Built** 2026-11-13, not committed or deployed; no migration (§7) |
 | 2026-11-13 | Admin's WhatsApp message to a seller: remove the wallet recharge part so it never feels like asking the seller for money; make it more human and less AI-sounding (no "مرحباً" opener, warm and casual per dialect, at most one emoji, no "(Tallaby.com)" or "شكراً لفتح متجرك"); keep it simple and short (about 5–7 lines, shorter steps, one-line closing, no separate "فريق طلبي" signature). | F-84 (Admin seller message) | **Built** 2026-11-13, not committed or deployed; no migration (§7) |
@@ -1504,6 +1517,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-93d apps.tallaby.com, developer accounts, scopes, webhooks, screenshots
 - [x] F-94a Store setup reminder emails (day1 + day7, Arabic, caps, opt-out, Admin card) + migration `0170` — 2026-11-13, not deployed; migration not applied
 - [ ] F-94b Reminder for confirmed users who never finished signup step 2
+- [x] F-95a Nested categories: migration `0171`, tree helpers, dashboard Categories page, product form labels — 2026-11-14, not deployed; migration not applied
+- [x] F-95b Storefront main/sub-categories + builder category list "Show" option — 2026-11-14, not deployed; not seen in a browser
+- [x] F-95c Discounts, size charts, Arrange products, MCP, product feed cover sub-categories — 2026-11-14, not deployed
+- [ ] F-95d Three levels / two parents / menu editor / category route (only if asked)
 - [x] F-90 One template per niche: all 83 niches mapped, every industry switched, 32 templates deleted (116 → 84) — 2026-11-12, not deployed; no migration; not seen in a browser
 - [ ] F-90 Packs and redesigns for the 59 `own` rows (wave 1's six new packs, then waves 2–13 as their photos arrive)
 - [x] F-21c Deposit checkout + seller confirm (checkout summary, deposit payment page by card or transfer + screenshot, dashboard "Awaiting deposit" + confirm/reject, bell, 48 h cron, carrier COD = remainder) — 2026-11-12, not deployed
@@ -1794,6 +1811,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-14 — F-95 Nested store categories (owner request)
+
+- **Owner (§5):** main categories that hold sub-categories, on the dashboard, the storefront and the builder's categories section; first for hossamvoltix (تأسيس / تشطيب). Owner picked two levels and one main category per category.
+- **Migration `0171_nested_store_categories.sql`** (additive, idempotent; **not applied anywhere yet**; apply on staging, then production with owner approval, BEFORE deploying, since Drizzle selects every column): nullable `seller_product_categories.parent_id` (FK ON DELETE SET NULL, partial index), BEFORE trigger `seller_product_categories_parent_guard` (not self, same store and seller, the parent is a main category, a category with sub-categories can't get a parent or change store; 23514, parent read FOR SHARE), unique name key swapped to `(store_id, coalesce(parent_id, nil), lower(btrim(name)))` (new before old, strictly looser). `scripts/stores-split-rollback.sql` stops working once a seller has two same-named sub-categories.
+- **F-95a (`92a56bed`):** `@workspace/lib/store-sites/category-tree` (`flattenCategoryTree`, `categoryWithChildren`, `categoryParentChain`); dashboard Categories page: Main category picker in Add/Edit (locked for a category that has sub-categories), sub-categories indented under their main one, drag moves siblings only, Sort A–Z per level, counts roll up; `ensureTaxonomyItem` prefers a main-category name match; deleting a main category whose sub-category has a main category's name returns `childNameTaken`. Product form labels "Main › Sub".
+- **F-95b (`8bffaa01`):** `storeCategoryGroups` → `shapeStoreCategoryGroups` (tree order, `parentKey`/`childKeys`, rollup, a main category listed with only sub-category products; unchanged for stores without parents); the product list filter matches a main category's sub-categories; category circles show main categories; catalog page chips "All <Main>" + sub-categories; Main › Sub breadcrumb and BreadcrumbList; `storefront-categories-v4`. Builder `categoryList` props `level` (all/top/children) and `parentCategoryId` (new field type `mainCategory`), pickers label "Main › Sub", the editor preview rolls sub-category products into a main category's product list. Featured sort on a main category: its own manual order, then sub-category products newest first.
+- **F-95c (`0a7ec3d0`):** discount lines carry `[category, main category]` (one join); size chart product > own category > main category (`storefront:size-chart:v2`, also tagged `productTags.store`); Arrange products of a main category includes its sub-categories' products; MCP `list_store_categories` returns `parentId`/`parentName` in tree order, search by a main category includes sub-categories, find-by-name prefers a main one; feed `product_type` "Main > Sub" (`store-feed:page:v4`).
+- Checks: lib, store-sections, store-editor, ecommerce and dashboard tests and typechecks pass (ecommerce typecheck's only errors are the existing `profile.chunks.tsx` ones). DB integration tests for the trigger and the size-chart fallback are written but need `TEST_DATABASE_URL`. Not seen in a browser.
 
 ### 2026-11-13 — Admin seller WhatsApp message: no money ask, shorter, more human (owner request)
 
