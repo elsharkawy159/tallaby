@@ -8,6 +8,12 @@ import {
 import {
   cleanTaxonomyName,
   escapeLike,
+  groupTaxonomyTree,
+  isCheckViolation,
+  moveTaxonomyItem,
+  parentChoices,
+  placeTaxonomyItem,
+  sortTaxonomyTreeByLabel,
   isSellerTaxonomyImage,
   isUniqueViolation,
   sortTaxonomyByLabel,
@@ -136,5 +142,61 @@ describe("image and reorder schemas", () => {
     expect(reorderTaxonomySchema.safeParse([]).success).toBe(true);
     expect(reorderTaxonomySchema.safeParse([ID, ID]).success).toBe(false);
     expect(reorderTaxonomySchema.safeParse(["x"]).success).toBe(false);
+  });
+});
+
+describe("category tree helpers (0171)", () => {
+  const row = (id: string, parentId: string | null = null, name = id) => ({ id, parentId, name, nameAr: null });
+  // Tree order: rough › (pipes, wires), finish › (paint), lamps
+  const list = [row("rough"), row("pipes", "rough"), row("wires", "rough"), row("finish"), row("paint", "finish"), row("lamps")];
+  const ids = (items: { id: string }[] | null) => items?.map((i) => i.id) ?? null;
+
+  it("groups main rows with their sub-categories; a flat list is all main rows", () => {
+    expect(groupTaxonomyTree(list).map((g) => [g.item.id, ids(g.children)])).toEqual([
+      ["rough", ["pipes", "wires"]],
+      ["finish", ["paint"]],
+      ["lamps", []],
+    ]);
+    expect(groupTaxonomyTree([row("a"), row("b")]).every((g) => g.children.length === 0)).toBe(true);
+  });
+
+  it("moves a main row with its sub-categories, and a sub-category only inside its main one", () => {
+    expect(ids(moveTaxonomyItem(list, "lamps", "rough"))).toEqual(["lamps", "rough", "pipes", "wires", "finish", "paint"]);
+    expect(ids(moveTaxonomyItem(list, "rough", "lamps"))).toEqual(["finish", "paint", "lamps", "rough", "pipes", "wires"]);
+    expect(ids(moveTaxonomyItem(list, "wires", "pipes"))).toEqual(["rough", "wires", "pipes", "finish", "paint", "lamps"]);
+    expect(moveTaxonomyItem(list, "paint", "pipes")).toBeNull();
+    expect(moveTaxonomyItem(list, "paint", "lamps")).toBeNull();
+    expect(moveTaxonomyItem(list, "lamps", "lamps")).toBeNull();
+  });
+
+  it("sorts A–Z within each level", () => {
+    const messy = [row("z"), row("zb", "z"), row("za", "z"), row("a")];
+    expect(ids(sortTaxonomyTreeByLabel(messy, "en"))).toEqual(["a", "z", "za", "zb"]);
+  });
+
+  it("places a moved item last in its new level", () => {
+    expect(ids(placeTaxonomyItem(list, "lamps", "rough"))).toEqual(["rough", "pipes", "wires", "lamps", "finish", "paint"]);
+    expect(ids(placeTaxonomyItem(list, "pipes", null))).toEqual(["rough", "wires", "finish", "paint", "lamps", "pipes"]);
+    expect(placeTaxonomyItem(list, "lamps", "rough").find((i) => i.id === "lamps")?.parentId).toBe("rough");
+  });
+
+  it("offers only main categories, never the item itself", () => {
+    expect(ids(parentChoices(list, "finish"))).toEqual(["rough", "lamps"]);
+  });
+
+  it("knows a check violation (the parent guard trigger)", () => {
+    expect(isCheckViolation({ code: "23514" })).toBe(true);
+    expect(isCheckViolation({ cause: { code: "23514" } })).toBe(true);
+    expect(isCheckViolation({ code: "23505" })).toBe(false);
+  });
+});
+
+describe("parentId in the schemas", () => {
+  const ID = "11111111-1111-4111-8111-111111111111";
+  it("is an optional uuid or null", () => {
+    expect(addTaxonomyItemSchema.safeParse({ name: "Wires", parentId: ID }).success).toBe(true);
+    expect(addTaxonomyItemSchema.safeParse({ sourceId: ID, parentId: null }).success).toBe(true);
+    expect(updateTaxonomyItemSchema.safeParse({ name: "Wires", parentId: "nope" }).success).toBe(false);
+    expect(updateTaxonomyItemSchema.parse({ name: "Wires" }).parentId).toBeUndefined();
   });
 });

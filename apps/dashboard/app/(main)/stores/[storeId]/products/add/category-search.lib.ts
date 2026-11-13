@@ -29,6 +29,18 @@ export function indexTallabyCategories(tree: CategoryOption[], locale: string): 
   });
 }
 
+/** A store category's own name in the shown language. */
+export const storeOptionOwnLabel = (option: SellerTaxonomyOption, locale: string) =>
+  locale === "ar" && option.nameAr?.trim() ? option.nameAr : option.name;
+
+/** A store category as the picker shows it: "Main › Sub" for a sub-category (0171), else its name. */
+export function storeOptionLabel(option: SellerTaxonomyOption, locale: string): string {
+  const own = storeOptionOwnLabel(option, locale);
+  if (!option.parentId || !option.parentName) return own;
+  const parent = locale === "ar" && option.parentNameAr?.trim() ? option.parentNameAr : option.parentName;
+  return `${parent} › ${own}`;
+}
+
 const tokensOf = (query: string) => normalizeSearchText(query).split(" ").filter(Boolean);
 
 /** Same name in either language, ignoring case and Arabic letter variants. */
@@ -65,12 +77,12 @@ export function searchCategoryChoices({
   const matchesAll = (text: string) => tokens.every((token) => text.includes(token));
 
   const storeRows = store
-    .filter((option) => !tokens.length || matchesAll(normalizeSearchText(`${option.name} ${option.nameAr ?? ""}`)))
-    .map((option) => ({
-      kind: "store" as const,
-      option,
-      label: locale === "ar" && option.nameAr?.trim() ? option.nameAr : option.name,
-    }));
+    .filter(
+      (option) =>
+        !tokens.length ||
+        matchesAll(normalizeSearchText(`${option.name} ${option.nameAr ?? ""} ${option.parentName ?? ""} ${option.parentNameAr ?? ""}`))
+    )
+    .map((option) => ({ kind: "store" as const, option, label: storeOptionLabel(option, locale) }));
 
   // A Tallaby category the store already copied shows once, as the store's.
   const copied = new Set(store.map((o) => o.sourceId).filter(Boolean));

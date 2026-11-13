@@ -7203,6 +7203,14 @@
     "sortAzConfirmTitle": "Sort the list A–Z?",
     "sortAzConfirmBody": "This replaces your current order.",
     "sortAzConfirm": "Sort",
+    "parentLabel": "Main category",
+    "parentNone": "None (this is a main category)",
+    "parentHint": "Pick a main category to show this as a sub-category inside it.",
+    "parentLockedHint": "It has sub-categories, so it stays a main category.",
+    "subCount": "{count, plural, one {1 sub-category} other {# sub-categories}}",
+    "subOf": "In {name}",
+    "subReorderHint": "Sub-categories move within their main category.",
+    "deleteChildrenBody": "{count, plural, one {Its sub-category becomes a main category.} other {Its # sub-categories become main categories.}}",
     "errors": {
       "invalidInput": "Check the name and try again.",
       "duplicate": "That's already in your list.",
@@ -7210,7 +7218,9 @@
       "notFound": "We couldn't find that item. Refresh and try again.",
       "readOnly": "Your account can't make changes right now.",
       "generic": "Something went wrong. Try again.",
-      "invalidImage": "That image can't be used. Upload it again."
+      "invalidImage": "That image can't be used. Upload it again.",
+      "invalidParent": "It can't go under that category. Pick a main category from this store.",
+      "childNameTaken": "One of its sub-categories has the same name as a main category. Rename it, then delete again."
     },
     "productForm": {
       "category": "My category",

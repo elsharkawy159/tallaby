@@ -17,7 +17,12 @@ export type SellerTaxonomyItem = {
   /** The pack item it was picked from; null for the seller's own. */
   sourceId: string | null;
   image: string | null;
+  /** Its main category (categories only, 0171); null for a main category and for every brand. */
+  parentId: string | null;
+  /** Products in this item, plus its sub-categories' for a main category. */
   productCount: number;
+  /** Products in this item alone (what deleting it unlinks). */
+  ownProductCount: number;
 };
 
 /** A slim item for the product form's category picker. */
@@ -27,6 +32,10 @@ export type SellerTaxonomyOption = {
   nameAr: string | null;
   /** The Tallaby category it was picked from (categories only); null for the seller's own. */
   sourceId?: string | null;
+  /** Its main category, for "Main › Sub" labels (0171); null or absent for a main category. */
+  parentId?: string | null;
+  parentName?: string | null;
+  parentNameAr?: string | null;
 };
 
 /** A Tallaby pack suggestion shown while the seller types. */
@@ -53,11 +62,17 @@ const optionalName = z
  * folder (isSellerTaxonomyImage).
  */
 const image = z.string().trim().max(TAXONOMY_IMAGE_URL_MAX).nullable().optional();
+/**
+ * The main category to file it under (categories only, two levels): an id, or
+ * null for a main category. Left out on add means a main category, on edit
+ * keeps the current one. The server checks it (same store, a main category).
+ */
+const parentId = z.uuid().nullable().optional();
 
 /** Add: either a pack item (sourceId) or the seller's own name. */
 export const addTaxonomyItemSchema = z.union([
-  z.object({ sourceId: z.uuid() }).strict(),
-  z.object({ name, nameAr: optionalName, image }).strict(),
+  z.object({ sourceId: z.uuid(), parentId }).strict(),
+  z.object({ name, nameAr: optionalName, image, parentId }).strict(),
 ]);
 
 /**
@@ -66,7 +81,7 @@ export const addTaxonomyItemSchema = z.union([
  */
 export const ensureTaxonomyItemSchema = z.union([z.object({ name }).strict(), z.object({ sourceId: z.uuid() }).strict()]);
 
-export const updateTaxonomyItemSchema =z.object({ name, nameAr: optionalName, image }).strict();
+export const updateTaxonomyItemSchema =z.object({ name, nameAr: optionalName, image, parentId }).strict();
 
 /** The full list of the seller's item ids, in the new order. */
 export const reorderTaxonomySchema = z
@@ -82,7 +97,7 @@ export const productTaxonomySchema = z
   .strict();
 
 /** Error keys live under `categoriesBrands.errors`. */
-export type TaxonomyErrorKey = "invalidInput" | "invalidImage" | "duplicate" | "limit" | "notFound" | "readOnly" | "generic";
+export type TaxonomyErrorKey = "invalidInput" | "invalidImage" | "invalidParent" | "childNameTaken" | "duplicate" | "limit" | "notFound" | "readOnly" | "generic";
 
 export type TaxonomyResult<T = undefined> =
   | ({ success: true } & (T extends undefined ? object : { data: T }))

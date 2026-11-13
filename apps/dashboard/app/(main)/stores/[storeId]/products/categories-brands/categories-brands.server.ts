@@ -46,6 +46,7 @@ import {
   TAXONOMY_PAGE_HREF,
   cleanTaxonomyName,
   escapeLike,
+  isCheckViolation,
   isSellerTaxonomyImage,
   isUniqueViolation,
   taxonomyNameKey,
@@ -79,6 +80,8 @@ function failure(error: unknown, scope: string): { success: false; error: Taxono
     return { success: false, error: readOnly ? "readOnly" : "notFound" };
   }
   if (isUniqueViolation(error)) return { success: false, error: "duplicate" };
+  // The 0171 parent guard (same store, two levels), behind the checks in `checkParent`.
+  if (isCheckViolation(error) && (scope === "add" || scope === "update")) return { success: false, error: "invalidParent" };
   console.error(`[categories-brands] ${scope} failed`, error);
   return { success: false, error: "generic" };
 }
@@ -145,6 +148,39 @@ async function requireTaxonomyStore(storeId: unknown): Promise<TaxonomyContext> 
   return { scope: taxonomyScopeOf(ctx), storeId: ctx.store.id };
 }
 
+/**
+ * Whether `parentId` may be the main category of `selfId` (or of a new item):
+ * categories only, a row of the same store's list (`taxonomyInStore`, never
+ * the client's word), itself a main category, not the item itself, and the
+ * item has no sub-categories of its own (two levels). null/undefined: nothing
+ * to check. The 0171 trigger checks the same in the database.
+ */
+async function checkParent(
+  ctx: TaxonomyContext,
+  kind: TaxonomyKind,
+  parentId: string | null | undefined,
+  selfId?: string,
+): Promise<TaxonomyErrorKey | null> {
+  if (parentId == null) return null;
+  if (kind !== "category") return "invalidInput";
+  if (parentId === selfId) return "invalidParent";
+  const [parent] = await db
+    .select({ id: sellerProductCategories.id, parentId: sellerProductCategories.parentId })
+    .from(sellerProductCategories)
+    .where(and(eq(sellerProductCategories.id, parentId), taxonomyInStore(sellerProductCategories, ctx.scope)))
+    .limit(1);
+  if (!parent || parent.parentId !== null) return "invalidParent";
+  if (selfId) {
+    const [child] = await db
+      .select({ id: sellerProductCategories.id })
+      .from(sellerProductCategories)
+      .where(and(eq(sellerProductCategories.parentId, selfId), taxonomyInStore(sellerProductCategories, ctx.scope)))
+      .limit(1);
+    if (child) return "invalidParent";
+  }
+  return null;
+}
+
 /** Purges the store's storefront entries plus the seller-wide ones (lists are shared until the split). */
 const invalidateTaxonomy = ({ scope, storeId }: TaxonomyContext) =>
   applyInvalidation(invalidateStoreProducts(scope.sellerId, storeId), { from: "dashboard", mode: "action" });
@@ -163,6 +199,11 @@ async function addItem(ctx: TaxonomyContext, kind: TaxonomyKind, input: unknown)
   const parsed = addTaxonomyItemSchema.safeParse(input);
   if (!isKind(kind) || !parsed.success) return { success: false, error: "invalidInput" };
   if ("image" in parsed.data && !isAllowedImage(parsed.data.image, scope.sellerId)) return { success: false, error: "invalidImage" };
+  // Brands have no main brand: any parentId is refused, even null.
+  if (kind !== "category" && parsed.data.parentId !== undefined) return { success: false, error: "invalidInput" };
+  const parentId = parsed.data.parentId ?? null;
+  const parentError = await checkParent(ctx, kind, parentId);
+  if (parentError) return { success: false, error: parentError };
   const { table } = tableFor(kind);
 
   // The limit counts the list the store sees: the seller's before the split, the store's after it.
@@ -183,6 +224,7 @@ async function addItem(ctx: TaxonomyContext, kind: TaxonomyKind, input: unknown)
     };
   }
 
+  // Last of the list, so also last among its siblings (the list is read in tree order, flattenCategoryTree).
   const position = sql<number>`(SELECT coalesce(max(t.position), -1) + 1 FROM ${table} t WHERE ${aliasedTaxonomyInStore("t", scope)})`;
   // store_id: the checked store, in both modes (read only after the split).
   const owner = { sellerId: scope.sellerId, storeId: taxonomyStoreIdForWrite(scope) };
@@ -190,7 +232,7 @@ async function addItem(ctx: TaxonomyContext, kind: TaxonomyKind, input: unknown)
     kind === "category"
       ? await db
           .insert(sellerProductCategories)
-          .values({ ...owner, name: values.name, nameAr: values.nameAr, sourceCategoryId: values.sourceId, imageUrl: values.image, position })
+          .values({ ...owner, parentId, name: values.name, nameAr: values.nameAr, sourceCategoryId: values.sourceId, imageUrl: values.image, position })
           .returning({ id: sellerProductCategories.id })
       : await db
           .insert(sellerProductBrands)
@@ -200,8 +242,9 @@ async function addItem(ctx: TaxonomyContext, kind: TaxonomyKind, input: unknown)
   revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
   // A category picked from a Tallaby one takes in that category's unlinked products on the storefront (storeCategoryGroups).
   // A new brand shows in the store's brands section at once.
-  if (kind === "brand" || values.sourceId) await invalidateTaxonomy(ctx);
-  return { success: true, data: { id: row!.id, ...values, productCount: 0 } };
+  // A new sub-category shows under its main category on the storefront.
+  if (kind === "brand" || values.sourceId || parentId) await invalidateTaxonomy(ctx);
+  return { success: true, data: { id: row!.id, ...values, parentId, productCount: 0, ownProductCount: 0 } };
 }
 
 /**
@@ -229,14 +272,33 @@ export async function ensureTaxonomyItem(storeId: string, kind: TaxonomyKind, in
         sql`lower(btrim(${table.name})) = ${key}`,
         sql`lower(btrim(${table.nameAr})) = ${key}`,
       ]);
+      // Categories (0171): a name can be on a main category and on sub-categories; the main one wins, then the first by position.
+      const isCategory = kind === "category";
       const [row] = await db
-        .select({ id: table.id, name: table.name, nameAr: table.nameAr, sourceId: sourceColumn })
+        .select({
+          id: table.id,
+          name: table.name,
+          nameAr: table.nameAr,
+          sourceId: sourceColumn,
+          ...(isCategory
+            ? {
+                parentId: sellerProductCategories.parentId,
+                // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
+                parentName: sql<string | null>`${sql`(SELECT p.name FROM ${sellerProductCategories} p WHERE p.id = ${sellerProductCategories.parentId})`}`,
+                parentNameAr: sql<string | null>`${sql`(SELECT p.name_ar FROM ${sellerProductCategories} p WHERE p.id = ${sellerProductCategories.parentId})`}`,
+              }
+            : {}),
+        })
         .from(table)
         .where(and(taxonomyInStore(table, ctx.scope), or(...(sourceId ? [eq(sourceColumn, sourceId)] : []), ...byName)))
         // The item copied from this Tallaby one first, then a same-named one.
-        .orderBy(sourceId ? sql`(${sourceColumn} IS NOT DISTINCT FROM ${sourceId}::uuid) DESC` : asc(table.position))
+        .orderBy(
+          ...(sourceId ? [sql`(${sourceColumn} IS NOT DISTINCT FROM ${sourceId}::uuid) DESC`] : []),
+          ...(isCategory ? [sql`(${sellerProductCategories.parentId} IS NULL) DESC`] : []),
+          asc(table.position),
+        )
         .limit(1);
-      return row;
+      return row as SellerTaxonomyOption | undefined;
     };
 
     const existing = await findExisting();
@@ -274,26 +336,39 @@ async function loadPackItem(kind: TaxonomyKind, id: string) {
   return row ? { name: cleanTaxonomyName(row.name), nameAr: null, sourceId: id, image: row.image } : null;
 }
 
-/** Rename an item in the store's list, and set or remove its image. */
+/** Rename an item in the store's list, set or remove its image, and (categories) file it under a main category or none. */
 export async function updateTaxonomyItem(storeId: string, kind: TaxonomyKind, id: string, input: unknown): Promise<TaxonomyResult> {
   try {
     const ctx = await requireTaxonomyStore(storeId);
     const { scope } = ctx;
     const parsed = updateTaxonomyItemSchema.safeParse(input);
     if (!isKind(kind) || !parsed.success || typeof id !== "string") return { success: false, error: "invalidInput" };
-    const { image } = parsed.data;
+    const { image, parentId } = parsed.data;
     if (!isAllowedImage(image, scope.sellerId)) return { success: false, error: "invalidImage" };
+    if (parentId !== undefined && kind !== "category") return { success: false, error: "invalidInput" };
+    const parentError = await checkParent(ctx, kind, parentId, id);
+    if (parentError) return { success: false, error: parentError };
     const patch = {
       name: cleanTaxonomyName(parsed.data.name),
       nameAr: parsed.data.nameAr ? cleanTaxonomyName(parsed.data.nameAr) : null,
       updatedAt: sql`now()`,
     };
+    // `parentId` left out keeps the current main category; null makes it a main category. A move puts
+    // it last (last main category, or last sub-category of its new main one), as the client shows it.
+    const categoryPatch =
+      parentId === undefined
+        ? patch
+        : {
+            ...patch,
+            parentId,
+            position: sql<number>`(SELECT coalesce(max(t.position), -1) + 1 FROM ${sellerProductCategories} t WHERE ${aliasedTaxonomyInStore("t", scope)})`,
+          };
     // `image` left out keeps the current one (e.g. a pack image path).
     const updated =
       kind === "category"
         ? await db
             .update(sellerProductCategories)
-            .set(image === undefined ? patch : { ...patch, imageUrl: image })
+            .set(image === undefined ? categoryPatch : { ...categoryPatch, imageUrl: image })
             .where(and(eq(sellerProductCategories.id, id), taxonomyInStore(sellerProductCategories, scope)))
             .returning({ id: sellerProductCategories.id })
         : await db
@@ -312,7 +387,11 @@ export async function updateTaxonomyItem(storeId: string, kind: TaxonomyKind, id
   }
 }
 
-/** Remove an item; products that used it keep everything else (the link is set to null). */
+/**
+ * Remove an item; products that used it keep everything else (the link is set
+ * to null). A main category's sub-categories become main categories (0171 FK
+ * ON DELETE SET NULL); nothing else is deleted.
+ */
 export async function deleteTaxonomyItem(storeId: string, kind: TaxonomyKind, id: string): Promise<TaxonomyResult> {
   try {
     const ctx = await requireTaxonomyStore(storeId);
@@ -327,6 +406,8 @@ export async function deleteTaxonomyItem(storeId: string, kind: TaxonomyKind, id
     await invalidateTaxonomy(ctx);
     return { success: true };
   } catch (error) {
+    // A sub-category that becomes a main category may share a main category's name (0171 sibling-unique index).
+    if (isUniqueViolation(error)) return { success: false, error: "childNameTaken" };
     return failure(error, "delete");
   }
 }

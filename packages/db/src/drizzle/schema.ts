@@ -1472,13 +1472,17 @@ export const sellerProductCategories = pgTable("seller_product_categories", {
 	nameAr: text("name_ar"),
 	/** The pack item it was picked from; null for the seller's own. */
 	sourceCategoryId: uuid("source_category_id"),
+	/** Its main category (0171, F-95); null = a main category. Two levels only (trigger `seller_product_categories_parent_guard`): same store, the parent has no parent. Deleting the parent makes it a main category. */
+	parentId: uuid("parent_id"),
 	imageUrl: text("image_url"),
 	position: integer().default(0).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	// One list per store since 0163 (were per seller: seller_product_categories_name_key / _source_key).
-	uniqueIndex("seller_product_categories_store_name_key").using("btree", table.storeId, sql`lower(btrim(${table.name}))`),
+	// One list per store since 0163 (were per seller: seller_product_categories_name_key / _source_key);
+	// names unique among siblings since 0171 (was seller_product_categories_store_name_key).
+	uniqueIndex("seller_product_categories_store_parent_name_key").using("btree", table.storeId, sql`coalesce(${table.parentId}, '00000000-0000-0000-0000-000000000000'::uuid)`, sql`lower(btrim(${table.name}))`),
+	index("seller_product_categories_parent_idx").using("btree", table.parentId).where(sql`parent_id IS NOT NULL`),
 	uniqueIndex("seller_product_categories_store_source_key").using("btree", table.storeId, table.sourceCategoryId).where(sql`source_category_id IS NOT NULL`),
 	index("seller_product_categories_store_idx").using("btree", table.storeId, table.position),
 	check("seller_product_categories_store_id_not_null", sql`store_id IS NOT NULL`),
@@ -1497,6 +1501,11 @@ export const sellerProductCategories = pgTable("seller_product_categories", {
 			columns: [table.sourceCategoryId],
 			foreignColumns: [categories.id],
 			name: "seller_product_categories_source_category_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.parentId],
+			foreignColumns: [table.id],
+			name: "seller_product_categories_parent_id_fkey"
 		}).onDelete("set null"),
 	check("seller_product_categories_name_check", sql`length(btrim(name)) BETWEEN 1 AND 80`),
 ]);

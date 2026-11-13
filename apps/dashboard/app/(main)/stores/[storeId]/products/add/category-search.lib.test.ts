@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { highlightMatch, indexTallabyCategories, searchCategoryChoices } from "./category-search.lib"
+import { highlightMatch, indexTallabyCategories, searchCategoryChoices, storeOptionLabel } from "./category-search.lib"
 import type { CategoryOption } from "./add-product.schema"
 
 type Node = CategoryOption & { categories?: Node[] }
@@ -65,5 +65,25 @@ describe("highlightMatch", () => {
   it("finds the query across alef forms, keeping the original letters", () => {
     expect(highlightMatch("إلكترونيات", "الكترو")).toEqual(["", "إلكترو", "نيات"])
     expect(highlightMatch("Shirts", "zz")).toBeNull()
+  })
+})
+
+describe("store sub-categories (0171)", () => {
+  const nested = [
+    { id: "m", name: "Rough-in", nameAr: "تأسيس", sourceId: null, parentId: null },
+    { id: "c", name: "Wires", nameAr: "أسلاك", sourceId: null, parentId: "m", parentName: "Rough-in", parentNameAr: "تأسيس" },
+  ]
+  const run = (query: string, locale: string) =>
+    searchCategoryChoices({ query, store: nested, tallaby: [], suggested: [], locale, allowNew: false })
+
+  it("labels a sub-category Main › Sub in the shown language", () => {
+    expect(run("", "ar").map((r) => r.label)).toEqual(["تأسيس", "تأسيس › أسلاك"])
+    expect(run("", "en").map((r) => r.label)).toEqual(["Rough-in", "Rough-in › Wires"])
+    expect(storeOptionLabel(nested[0]!, "en")).toBe("Rough-in")
+  })
+
+  it("finds sub-categories by their main category's name", () => {
+    expect(run("تأسيس", "ar").map((r) => r.label)).toEqual(["تأسيس", "تأسيس › أسلاك"])
+    expect(run("wires", "en").map((r) => r.label)).toEqual(["Rough-in › Wires"])
   })
 })

@@ -327,6 +327,14 @@ export const sellerProductCategoriesRelations = relations(sellerProductCategorie
 		fields: [sellerProductCategories.sourceCategoryId],
 		references: [categories.id]
 	}),
+	parent: one(sellerProductCategories, {
+		fields: [sellerProductCategories.parentId],
+		references: [sellerProductCategories.id],
+		relationName: "sellerProductCategories_parentId_sellerProductCategories_id"
+	}),
+	children: many(sellerProductCategories, {
+		relationName: "sellerProductCategories_parentId_sellerProductCategories_id"
+	}),
 	products: many(products),
 }));
 

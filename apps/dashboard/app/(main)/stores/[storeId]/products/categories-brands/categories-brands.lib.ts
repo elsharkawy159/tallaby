@@ -78,3 +78,103 @@ export function sortTaxonomyByLabel<T extends { name: string; nameAr: string | n
   const collator = new Intl.Collator(locale, { sensitivity: "base", numeric: true });
   return [...items].sort((a, b) => collator.compare(taxonomyLabel(a, locale), taxonomyLabel(b, locale)));
 }
+
+/** Postgres check violation (23514): the 0171 parent guard trigger, also when wrapped. */
+export function isCheckViolation(error: unknown): boolean {
+  for (let e = error, depth = 0; e && typeof e === "object" && depth < 4; depth++) {
+    if ((e as { code?: unknown }).code === "23514") return true;
+    e = (e as { cause?: unknown }).cause;
+  }
+  return false;
+}
+
+type TreeNode = { id: string; parentId: string | null };
+
+/**
+ * The list (already in tree order, as `loadSellerTaxonomyList` returns it) as
+ * main rows with their sub-categories. A row whose parent isn't a main row of
+ * this list shows as a main row, so nothing is ever hidden. Brands: every row
+ * is a main row.
+ */
+export function groupTaxonomyTree<T extends TreeNode>(items: T[]): Array<{ item: T; children: T[] }> {
+  const mainIds = new Set(items.filter((i) => !i.parentId || !items.some((p) => p.id === i.parentId && !p.parentId)).map((i) => i.id));
+  const groups: Array<{ item: T; children: T[] }> = [];
+  const byId = new Map<string, { item: T; children: T[] }>();
+  for (const item of items) {
+    if (!mainIds.has(item.id)) continue;
+    const group = { item, children: [] as T[] };
+    groups.push(group);
+    byId.set(item.id, group);
+  }
+  for (const item of items) if (!mainIds.has(item.id)) byId.get(item.parentId!)!.children.push(item);
+  return groups;
+}
+
+/** Back to one list: each main row, then its sub-categories (what `reorderTaxonomyItems` takes). */
+export function flattenTaxonomyGroups<T>(groups: Array<{ item: T; children: T[] }>): T[] {
+  return groups.flatMap((g) => [g.item, ...g.children]);
+}
+
+function moveInArray<T>(list: T[], from: number, to: number): T[] {
+  const next = [...list];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved!);
+  return next;
+}
+
+/**
+ * Drag `activeId` onto `overId`. Only siblings move: a main row among main
+ * rows (it carries its sub-categories), a sub-category within its own main
+ * category. Anything else (a sub-category onto another main row…) returns
+ * null and nothing moves.
+ */
+export function moveTaxonomyItem<T extends TreeNode>(items: T[], activeId: string, overId: string): T[] | null {
+  if (activeId === overId) return null;
+  const groups = groupTaxonomyTree(items);
+  const from = groups.findIndex((g) => g.item.id === activeId);
+  const to = groups.findIndex((g) => g.item.id === overId);
+  if (from >= 0 && to >= 0) return flattenTaxonomyGroups(moveInArray(groups, from, to));
+  for (const group of groups) {
+    const a = group.children.findIndex((c) => c.id === activeId);
+    const b = group.children.findIndex((c) => c.id === overId);
+    if (a >= 0 && b >= 0) {
+      return flattenTaxonomyGroups(groups.map((g) => (g === group ? { ...g, children: moveInArray(g.children, a, b) } : g)));
+    }
+  }
+  return null;
+}
+
+/** "Sort A–Z" for a tree: main rows A–Z, and the sub-categories A–Z inside each. */
+export function sortTaxonomyTreeByLabel<T extends TreeNode & { name: string; nameAr: string | null }>(items: T[], locale: string): T[] {
+  const groups = groupTaxonomyTree(items);
+  const sortedMains = sortTaxonomyByLabel(
+    groups.map((g) => g.item),
+    locale,
+  );
+  const childrenOf = new Map(groups.map((g) => [g.item.id, sortTaxonomyByLabel(g.children, locale)]));
+  return flattenTaxonomyGroups(sortedMains.map((item) => ({ item, children: childrenOf.get(item.id) ?? [] })));
+}
+
+/** Main categories a category may be filed under: main rows, never itself. */
+export function parentChoices<T extends TreeNode>(items: T[], selfId?: string): T[] {
+  return groupTaxonomyTree(items)
+    .map((g) => g.item)
+    .filter((item) => item.id !== selfId && !item.parentId);
+}
+
+/**
+ * File `id` under `parentId` (or make it a main category with null), where the
+ * server puts it: after the last sub-category of its new main category, or at
+ * the end of the list (`updateTaxonomyItem` gives it the next position).
+ */
+export function placeTaxonomyItem<T extends TreeNode>(items: T[], id: string, parentId: string | null): T[] {
+  const item = items.find((i) => i.id === id);
+  if (!item) return items;
+  const moved = { ...item, parentId };
+  const rest = items.filter((i) => i.id !== id);
+  if (!parentId) return [...rest, moved];
+  const groups = groupTaxonomyTree(rest);
+  const group = groups.find((g) => g.item.id === parentId);
+  if (!group) return [...rest, moved];
+  return flattenTaxonomyGroups(groups.map((g) => (g === group ? { ...g, children: [...g.children, moved] } : g)));
+}

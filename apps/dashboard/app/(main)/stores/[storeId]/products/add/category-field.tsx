@@ -14,6 +14,8 @@ import {
   indexTallabyCategories,
   sameCategoryName,
   searchCategoryChoices,
+  storeOptionLabel,
+  storeOptionOwnLabel,
   type CategoryChoice,
 } from "./category-search.lib";
 import { useFieldError } from "./sections/fields";
@@ -67,7 +69,7 @@ export function CategoryField({ categories }: CategoryFieldProps) {
   const selection: Selection = useMemo(() => {
     if (sellerCategoryName?.trim()) return { kind: "new", label: sellerCategoryName.trim() };
     const option = sellerCategoryId ? store.find((o) => o.id === sellerCategoryId) : undefined;
-    if (option) return { kind: "store", option, label: locale === "ar" && option.nameAr?.trim() ? option.nameAr : option.name };
+    if (option) return { kind: "store", option, label: storeOptionLabel(option, locale) };
     const tl = categoryId ? byId.get(categoryId) : undefined;
     if (tl) return { kind: "tallaby", id: tl.category.id, label: tl.label, path: pathOf(tl.category.id) };
     return null;
@@ -118,7 +120,8 @@ export function CategoryField({ categories }: CategoryFieldProps) {
   useEffect(() => {
     if (!autoMatch || !selection || selection.kind === "tallaby") return;
     if (selection.kind === "store" && selection.option.sourceId) return;
-    const match = bestMatch(selection.label);
+    // A sub-category matches on its own name, not "Main › Sub".
+    const match = bestMatch(selection.kind === "store" ? storeOptionOwnLabel(selection.option, locale) : selection.label);
     if (match && match !== categoryId) form.setValue("categoryId", match, { shouldValidate: form.formState.submitCount > 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoMatch, selection, debouncedTitles]);
@@ -190,6 +193,8 @@ export function CategoryField({ categories }: CategoryFieldProps) {
         row.kind !== "new" &&
         (sameCategoryName(row.label, typed) ||
           (row.kind === "store" && sameCategoryName(row.option.name, typed)) ||
+          // A sub-category's label is "Main › Sub"; its own Arabic name still selects it.
+          (row.kind === "store" && row.option.nameAr != null && sameCategoryName(row.option.nameAr, typed)) ||
           (row.kind === "tallaby" && sameCategoryName(row.entry.category.name, typed)))
     );
     if (known) return choose(known);

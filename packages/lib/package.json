@@ -451,6 +451,10 @@
       "types": "./src/store-sites/catalog-data.lib.ts",
       "default": "./src/store-sites/catalog-data.lib.ts"
     },
+    "./store-sites/category-tree": {
+      "types": "./src/store-sites/category-tree.lib.ts",
+      "default": "./src/store-sites/category-tree.lib.ts"
+    },
     "./store-sites/preview-product": {
       "types": "./src/store-sites/preview-product.server.ts",
       "default": "./src/store-sites/preview-product.server.ts"

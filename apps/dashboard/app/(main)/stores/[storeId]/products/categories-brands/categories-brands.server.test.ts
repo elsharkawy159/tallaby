@@ -34,15 +34,26 @@ const fake = vi.hoisted(() => {
   const state = {
     wheres: [] as unknown[],
     values: [] as unknown[],
+    sets: [] as unknown[],
+    orderBys: [] as unknown[][],
     calls: [] as string[],
-    results: { select: [] as unknown[][], update: [] as unknown[][], insert: [] as unknown[][], delete: [] as unknown[][] },
+    results: {
+      select: [] as Array<unknown[] | Error>,
+      update: [] as Array<unknown[] | Error>,
+      insert: [] as Array<unknown[] | Error>,
+      delete: [] as Array<unknown[] | Error>,
+    },
   };
-  const chain = (result: unknown[]): unknown => {
+  const chain = (result: unknown[] | Error): unknown => {
     const proxy: unknown = new Proxy(() => undefined, {
       get(_t, prop) {
-        if (prop === "then") return (resolve: (v: unknown) => unknown, reject: (e: unknown) => unknown) => Promise.resolve(result).then(resolve, reject);
+        if (prop === "then")
+          return (resolve: (v: unknown) => unknown, reject: (e: unknown) => unknown) =>
+            (result instanceof Error ? Promise.reject(result) : Promise.resolve(result)).then(resolve, reject);
         if (prop === "where") return (arg: unknown) => (state.wheres.push(arg), proxy);
         if (prop === "values") return (arg: unknown) => (state.values.push(arg), proxy);
+        if (prop === "set") return (arg: unknown) => (state.sets.push(arg), proxy);
+        if (prop === "orderBy") return (...args: unknown[]) => (state.orderBys.push(args), proxy);
         return () => proxy;
       },
     });
@@ -56,6 +67,8 @@ const fake = vi.hoisted(() => {
   const reset = () => {
     state.wheres.length = 0;
     state.values.length = 0;
+    state.sets.length = 0;
+    state.orderBys.length = 0;
     state.calls.length = 0;
     for (const list of Object.values(state.results)) list.length = 0;
   };
@@ -212,5 +225,108 @@ describe("switch off: today's per-seller list", () => {
     await actions.addTaxonomyItem(STORE, "brand", { name: "Acme" });
     expect(wheres()[0]!.sql).not.toContain("store_id");
     expect(fake.state.values[0]).toMatchObject({ sellerId: SELLER_ID, storeId: STORE });
+  });
+});
+
+describe("sub-categories (0171): a main category of the same store, two levels", () => {
+  const PARENT = "66666666-6666-4666-8666-666666666666";
+  const CHILD = "77777777-7777-4777-8777-777777777777";
+  const invalidParent = { success: false, error: "invalidParent" };
+
+  it("refuses a parent from another store (not in this store's list), before counting or inserting", async () => {
+    fake.state.results.select.push([]); // the parent lookup, scoped to the checked store, finds nothing
+    expect(await actions.addTaxonomyItem(STORE, "category", { name: "Wires", parentId: PARENT })).toEqual(invalidParent);
+    const [lookup] = wheres();
+    expect(lookup!.sql).toContain(`"seller_product_categories"."store_id"`);
+    expect(lookup!.params).toEqual([PARENT, SELLER_ID, STORE]);
+    expect(fake.state.calls).toEqual(["select"]);
+  });
+
+  it("refuses a parent that is itself a sub-category", async () => {
+    fake.state.results.select.push([{ id: PARENT, parentId: OTHER }]);
+    expect(await actions.addTaxonomyItem(STORE, "category", { sourceId: ITEM, parentId: PARENT })).toEqual(invalidParent);
+    fake.state.results.select.push([{ id: PARENT, parentId: OTHER }]);
+    expect(await actions.updateTaxonomyItem(STORE, "category", ITEM, { name: "Wires", parentId: PARENT })).toEqual(invalidParent);
+    expect(fake.state.calls).not.toContain("insert");
+    expect(fake.state.calls).not.toContain("update");
+  });
+
+  it("refuses a parent for a category that has sub-categories, and the category as its own parent", async () => {
+    fake.state.results.select.push([{ id: PARENT, parentId: null }], [{ id: CHILD }]);
+    expect(await actions.updateTaxonomyItem(STORE, "category", ITEM, { name: "Rough-in", parentId: PARENT })).toEqual(invalidParent);
+    const [, children] = wheres();
+    expect(children!.sql).toContain(`"seller_product_categories"."parent_id"`);
+    expect(children!.params).toEqual([ITEM, SELLER_ID, STORE]);
+    expect(await actions.updateTaxonomyItem(STORE, "category", ITEM, { name: "Rough-in", parentId: ITEM })).toEqual(invalidParent);
+    expect(fake.state.calls).not.toContain("update");
+  });
+
+  it("refuses parentId for brands, even null, with no query", async () => {
+    const invalid = { success: false, error: "invalidInput" };
+    expect(await actions.addTaxonomyItem(STORE, "brand", { name: "Acme", parentId: PARENT })).toEqual(invalid);
+    expect(await actions.addTaxonomyItem(STORE, "brand", { name: "Acme", parentId: null })).toEqual(invalid);
+    expect(await actions.updateTaxonomyItem(STORE, "brand", ITEM, { name: "Acme", parentId: null })).toEqual(invalid);
+    expect(fake.state.calls).toEqual([]);
+  });
+
+  it("adds under a valid main category and writes parent_id", async () => {
+    fake.state.results.select.push([{ id: PARENT, parentId: null }], [{ total: 3 }]);
+    fake.state.results.insert.push([{ id: CHILD }]);
+    const result = await actions.addTaxonomyItem(STORE, "category", { name: "Wires", parentId: PARENT });
+    expect(result).toMatchObject({ success: true, data: { id: CHILD, parentId: PARENT, productCount: 0, ownProductCount: 0 } });
+    expect(fake.state.values[0]).toMatchObject({ sellerId: SELLER_ID, storeId: STORE, parentId: PARENT });
+    // A new sub-category shows under its main category on the storefront.
+    expect(mocks.invalidateStoreProducts).toHaveBeenCalledWith(SELLER_ID, STORE);
+  });
+
+  it("moving to a main category (or to none) sets parent_id and puts it last; leaving it out keeps it", async () => {
+    fake.state.results.select.push([{ id: PARENT, parentId: null }], []);
+    fake.state.results.update.push([{ id: ITEM }]);
+    expect(await actions.updateTaxonomyItem(STORE, "category", ITEM, { name: "Wires", parentId: PARENT })).toEqual({ success: true });
+    const moved = fake.state.sets[0] as { parentId: string; position: SQL };
+    expect(moved.parentId).toBe(PARENT);
+    expect(render(moved.position).sql).toContain("t.store_id");
+
+    fake.state.results.update.push([{ id: ITEM }]);
+    expect(await actions.updateTaxonomyItem(STORE, "category", ITEM, { name: "Wires", parentId: null })).toEqual({ success: true });
+    expect(fake.state.sets[1]).toMatchObject({ parentId: null });
+
+    fake.state.results.update.push([{ id: ITEM }]);
+    expect(await actions.updateTaxonomyItem(STORE, "category", ITEM, { name: "Wires" })).toEqual({ success: true });
+    expect(fake.state.sets[2]).not.toHaveProperty("parentId");
+    expect(fake.state.sets[2]).not.toHaveProperty("position");
+  });
+
+  it("maps the database guard (check violation) to invalidParent and a sibling name clash to duplicate", async () => {
+    fake.state.results.select.push([{ id: PARENT, parentId: null }], [{ total: 0 }]);
+    fake.state.results.insert.push(Object.assign(new Error("guard"), { code: "23514" }));
+    expect(await actions.addTaxonomyItem(STORE, "category", { name: "Wires", parentId: PARENT })).toEqual(invalidParent);
+    fake.state.results.select.push([{ id: PARENT, parentId: null }], []);
+    fake.state.results.update.push(Object.assign(new Error("dup"), { cause: { code: "23505" } }));
+    expect(await actions.updateTaxonomyItem(STORE, "category", ITEM, { name: "Wires", parentId: PARENT })).toEqual({
+      success: false,
+      error: "duplicate",
+    });
+  });
+
+  it("ensure prefers a main-category match, then the first by position (never adds a duplicate sibling)", async () => {
+    fake.state.results.select.push([{ id: ITEM, name: "Accessories", nameAr: null, sourceId: null, parentId: null, parentName: null, parentNameAr: null }]);
+    expect(await actions.ensureTaxonomyItem(STORE, "category", { name: "accessories" })).toMatchObject({ success: true, data: { id: ITEM } });
+    expect(fake.state.calls).toEqual(["select"]);
+    const order = fake.state.orderBys[0]!.map((part) => render(part).sql);
+    expect(order).toHaveLength(2);
+    expect(order[0]).toContain(`"seller_product_categories"."parent_id" IS NULL) DESC`);
+    expect(order[1]).toContain(`"position"`);
+    // Brands have no levels: position only.
+    fake.state.results.select.push([{ id: ITEM, name: "Acme", nameAr: null, sourceId: null }]);
+    await actions.ensureTaxonomyItem(STORE, "brand", { name: "acme" });
+    expect(fake.state.orderBys[1]!.map((part) => render(part).sql)).toHaveLength(1);
+  });
+});
+
+describe("deleting a main category (0171)", () => {
+  it("is refused with childNameTaken when a freed sub-category clashes with a main category's name", async () => {
+    fake.state.results.delete.push(Object.assign(new Error("dup"), { code: "23505" }));
+    expect(await actions.deleteTaxonomyItem(STORE, "category", ITEM)).toEqual({ success: false, error: "childNameTaken" });
   });
 });
