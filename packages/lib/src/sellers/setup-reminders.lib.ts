@@ -16,8 +16,8 @@
 
 import { isStoreSetupDone, type StoreSetupFlags } from "./store-setup.lib";
 
-/** Only sellers who signed up in the last 30 days, so old dormant accounts are never mailed. */
-export const SETUP_REMINDER_WINDOW_DAYS = 30;
+/** Every seller, old ones too (owner, 2026-11-13: "consider old sellers who didn't finish setup"); an old seller gets only the day-7 email. */
+export const SETUP_REMINDER_WINDOW_DAYS = 3650;
 export const SETUP_REMINDER_DAY1_HOURS = 24;
 export const SETUP_REMINDER_DAY7_DAYS = 7;
 /** day7 waits at least this long after day1 went out (a late day1 is not followed by day7 an hour later). */

@@ -74,8 +74,8 @@ describe("dueSetupReminder", () => {
     expect(dueSetupReminder(seller({ ageHours: 9 * 24, reminders: [row("day1", { sentAt: ago(8 * 24) }), row("day7")] }), NOW)).toBeNull();
   });
 
-  it("sends nothing to sellers older than the 30-day window", () => {
-    expect(dueSetupReminder(seller({ ageHours: 30 * 24 + 1 }), NOW)).toBeNull();
+  it("sends old sellers (within the window) only the day-7 email", () => {
+    expect(dueSetupReminder(seller({ ageHours: 400 * 24 }), NOW)?.kind).toBe("day7");
     expect(dueSetupReminder(seller({ ageHours: 30 * 24 - 1 }), NOW)?.kind).toBe("day7");
   });
 

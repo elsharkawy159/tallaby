@@ -1790,6 +1790,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-13 — F-94 live: setup reminders for old sellers too
+
+- **Owner:** "go live with it and consider old sellers who didn't finish setup". `SETUP_REMINDER_WINDOW_DAYS` 30 → 3650: every seller who never finished setup is eligible; one older than 7 days gets only the day-7 email. Same caps (10 per run, 40 per Cairo day), so the backlog drains over a few days. `0170` applied on staging, rehearsed on production (rolled back), applied on production; then main pushed.
+
 ### 2026-11-13 — F-94 Store setup reminder emails (owner request)
 
 - **Owner (§5):** remind sellers who didn't set up their store 24 hours after signing up and again after a week, with Resend (3,000 free emails), in Arabic.
