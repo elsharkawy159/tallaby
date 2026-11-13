@@ -53,7 +53,7 @@ export async function HomeHero() {
   // Prices in the home copy (and the hero demo's wallet) are `{orderFee}`-style tokens or `Money`, shown in the visitor's currency.
   const [t, locale, recent] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores()]);
   const features = t.raw("marquee") as string[];
-  const checks = [t("check1"), t("check2"), t("check3")];
+  const checks = [t("check1"), t("check2")];
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
 
   return (
