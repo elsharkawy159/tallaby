@@ -3350,6 +3350,38 @@ export const storeSizeChartTargets = pgTable("store_size_chart_targets", {
 	check("store_size_chart_targets_one_check", sql`num_nonnulls(product_id, category_id) = 1`),
 ]);
 
+/**
+ * Store setup reminder emails (0170, ROADMAP.md F-94): one row per (seller,
+ * kind), claimed before sending; `opt_out` stops later reminders. Server-only:
+ * RLS on, no policies. Rules in packages/lib/src/sellers/setup-reminders.lib.ts.
+ */
+export const sellerSetupReminders = pgTable("seller_setup_reminders", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	/** 'day1' | 'day7' | 'opt_out' */
+	kind: text().notNull(),
+	/** 'sending' | 'sent' | 'failed' | 'opted_out' */
+	status: text().default('sending').notNull(),
+	attempts: smallint().default(1).notNull(),
+	/** Opt-out link token (random hex); null on opt_out rows. */
+	token: text(),
+	resendId: text("resend_id"),
+	error: text(),
+	claimedAt: timestamp("claimed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("seller_setup_reminders_seller_kind_key").on(table.sellerId, table.kind),
+	uniqueIndex("seller_setup_reminders_token_key").using("btree", table.token).where(sql`token IS NOT NULL`),
+	index("seller_setup_reminders_claimed_idx").using("btree", table.claimedAt).where(sql`kind <> 'opt_out'`),
+	check("seller_setup_reminders_kind_check", sql`kind IN ('day1', 'day7', 'opt_out')`),
+	check("seller_setup_reminders_status_check", sql`status IN ('sending', 'sent', 'failed', 'opted_out')`),
+	check("seller_setup_reminders_attempts_check", sql`attempts BETWEEN 0 AND 100`),
+	check("seller_setup_reminders_token_check", sql`token IS NULL OR token ~ '^[0-9a-f]{32,128}$'`),
+	check("seller_setup_reminders_error_check", sql`error IS NULL OR char_length(error) <= 500`),
+]);
+
 /** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
 /** One AI credit balance per seller account (0137, ROADMAP.md F-57). Server-only: RLS on, no policies. */
 export const sellerAiCredits = pgTable("seller_ai_credits", {

@@ -3,6 +3,7 @@ import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuil
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows, agentPendingActions, agentReadCounts } from "./schema";
 import { productStoreSplit } from "./schema";
 import { storeSizeCharts, storeSizeChartTargets } from "./schema";
+import { sellerSetupReminders } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends, storeAppRequests, storeAppInstalls, themeRequests } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
@@ -1507,6 +1508,10 @@ export const storeSizeChartTargetsRelations = relations(storeSizeChartTargets, (
 	store: one(stores, { fields: [storeSizeChartTargets.storeId], references: [stores.id] }),
 	product: one(products, { fields: [storeSizeChartTargets.productId], references: [products.id] }),
 	category: one(sellerProductCategories, { fields: [storeSizeChartTargets.categoryId], references: [sellerProductCategories.id] }),
+}));
+
+export const sellerSetupRemindersRelations = relations(sellerSetupReminders, ({one}) => ({
+	seller: one(sellers, { fields: [sellerSetupReminders.sellerId], references: [sellers.id] }),
 }));
 
 export const storeDiscountRulesRelations = relations(storeDiscountRules, ({one}) => ({

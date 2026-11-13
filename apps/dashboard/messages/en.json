@@ -8684,5 +8684,12 @@
       "save": "Save changes",
       "discard": "Discard"
     }
+  },
+  "setupReminderUnsubscribe": {
+    "title": "Store setup reminders",
+    "confirm": "Stop the emails reminding you to finish your store?",
+    "button": "Yes, stop the reminders",
+    "done": "Done. You won't get more store setup reminders.",
+    "invalid": "This link doesn't work or has expired."
   }
 }

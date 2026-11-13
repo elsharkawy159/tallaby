@@ -278,6 +278,22 @@ export interface TransactionalCopy {
     design: string;
     helpCenter: string;
   };
+  /** Store setup reminders (F-94): 24 hours and 7 days after signup, while the store isn't set up. Sent in Arabic. */
+  sellerSetupReminder: {
+    day1: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    day7: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    /** "{n} steps" phrases: one, two, several ({n}). */
+    stepsLeft: { one: string; two: string; many: string };
+    stepsTitle: string;
+    done: string;
+    steps: Record<"product" | "design" | "payments" | "shipping", [string, string]>;
+    reasonsTitle: string;
+    reasons: { templates: [string, string]; ai: [string, string]; free: [string, string] };
+    /** {fee}: the free plan's order fee in EGP, already formatted. */
+    freeWithFee: string;
+    footerReason: string;
+    optOut: string;
+  };
   /** Website › Templates "Request a theme" (F-77): ready or declined. */
   sellerThemeRequest: {
     ready: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
@@ -568,6 +584,42 @@ export const transactionalEn: TransactionalCopy = {
     addProduct: "Add your first product",
     design: "Customise your store design",
     helpCenter: "Help center",
+  },
+  sellerSetupReminder: {
+    day1: {
+      subject: "Your store is waiting for you",
+      preview: "{steps} left and you're ready for your first order.",
+      pill: "Store not ready yet",
+      heading: "Your store is waiting for you",
+      lead: "Hi {name}, you started {storeName} on Tallaby. {steps} left and you're ready for your customers' first order.",
+      cta: "Finish setting up your store",
+    },
+    day7: {
+      subject: "Last reminder: your store is still waiting",
+      preview: "Finish your store in minutes. The free plan has no monthly fee.",
+      pill: "Last reminder",
+      heading: "There's still time to finish your store",
+      lead: "Hi {name}, {storeName} isn't ready yet. This is the last email we'll send you about setting it up.",
+      cta: "Finish your store now",
+    },
+    stepsLeft: { one: "One step", two: "Two steps", many: "{n} steps" },
+    stepsTitle: "What's left",
+    done: "Done",
+    steps: {
+      product: ["Add your first product", "Photos, price and stock"],
+      design: ["Choose your store design", "A ready template, your logo and colours"],
+      payments: ["Set up payments", "Cash on delivery or online payment"],
+      shipping: ["Set up shipping", "Delivery areas and prices"],
+    },
+    reasonsTitle: "Why finish now",
+    reasons: {
+      templates: ["Ready templates for your business", "Pick one and edit it, no code needed."],
+      ai: ["Products with AI", "Snap a product photo and Tallaby writes the name and description in Arabic and English."],
+      free: ["The free plan", "No monthly fee, only a small fee per order."],
+    },
+    freeWithFee: "No monthly fee, only {fee} per order.",
+    footerReason: "You get this email because you opened a seller account on Tallaby and your store isn't set up yet.",
+    optOut: "Stop these reminders",
   },
   sellerThemeRequest: {
     ready: {
@@ -872,6 +924,42 @@ export const transactionalAr: TransactionalCopy = {
     addProduct: "أضف أول منتج",
     design: "خصّص تصميم المتجر",
     helpCenter: "مركز المساعدة",
+  },
+  sellerSetupReminder: {
+    day1: {
+      subject: "متجرك مستني يكمل",
+      preview: "فاضل {steps} وتبقى جاهز تستقبل أول طلب.",
+      pill: "متجرك لسه مكملش",
+      heading: "متجرك مستني يكمل",
+      lead: "أهلاً {name}، إنت بدأت تجهّز {storeName} على طلبي. فاضل {steps} وتبقى جاهز تستقبل أول طلب من عملائك.",
+      cta: "كمّل تجهيز متجرك",
+    },
+    day7: {
+      subject: "آخر تذكير: متجرك لسه مستنيك",
+      preview: "كمّل متجرك في دقايق، والباقة المجانية من غير اشتراك شهري.",
+      pill: "آخر تذكير",
+      heading: "لسه فيه وقت تكمّل متجرك",
+      lead: "أهلاً {name}، {storeName} لسه مكملش. ده آخر إيميل هنبعتهولك عن تجهيز المتجر.",
+      cta: "كمّل متجرك دلوقتي",
+    },
+    stepsLeft: { one: "خطوة واحدة", two: "خطوتين", many: "{n} خطوات" },
+    stepsTitle: "اللي فاضل",
+    done: "تم",
+    steps: {
+      product: ["ضيف أول منتج", "الصور والسعر والكمية"],
+      design: ["اختار شكل متجرك", "قالب جاهز ولوجو وألوان متجرك"],
+      payments: ["جهّز طرق الدفع", "الدفع عند الاستلام أو أونلاين"],
+      shipping: ["جهّز الشحن", "مناطق التوصيل وأسعارها"],
+    },
+    reasonsTitle: "ليه تكمّل دلوقتي",
+    reasons: {
+      templates: ["قوالب جاهزة لنشاطك", "اختار قالب وعدّل عليه، من غير أي كود."],
+      ai: ["منتجاتك بالذكاء الاصطناعي", "صوّر المنتج وطلبي يكتبلك الاسم والوصف بالعربي والإنجليزي."],
+      free: ["الباقة المجانية", "من غير اشتراك شهري، ورسوم بسيطة على كل طلب بس."],
+    },
+    freeWithFee: "من غير اشتراك شهري، وعلى كل طلب {fee} بس.",
+    footerReason: "وصلك الإيميل ده لأنك فتحت حساب تاجر على طلبي ولسه متجرك مكملش.",
+    optOut: "مش عايز تذكيرات تاني",
   },
   sellerThemeRequest: {
     ready: {

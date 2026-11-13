@@ -13,33 +13,15 @@
  * progress keeps its meaning.
  */
 
+import { STORE_SETUP_STEP_DONE, type StoreSetupFlags } from "@workspace/lib/sellers";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 
-export type SetupFlags = {
-  /**
-   * The seller chose a template for the selected store: an install not
-   * undone, or the site was ever published (same rule as
-   * storeTemplateChosen in @workspace/lib). The new-store Classic
-   * placeholder drafts write no install, so they do not count.
-   */
-  template: boolean;
-  /**
-   * The selected store has a logo, or its design system (colours, fonts,
-   * buttons) was saved after its latest template install.
-   */
-  brand: boolean;
-  /** The seller has an active product. */
-  product: boolean;
-  /** The selected store's website is live (`site_status = 'published'`). Not a step since 2026-11-07. */
-  publish: boolean;
-  /** The selected store saved its shipping settings or has a delivery zone. */
-  shipping: boolean;
-  /**
-   * The selected store saved its payment methods (`settings.payments`, written
-   * only by a seller's save) or has a connected card gateway (Paymob, Kashier).
-   */
-  payments: boolean;
-};
+/**
+ * The setup flags of the selected store. Shared with the setup reminder emails
+ * (F-94): the type and the step predicates live in @workspace/lib/sellers
+ * (store-setup.lib.ts), the SQL in store-setup.server.ts.
+ */
+export type SetupFlags = StoreSetupFlags;
 
 // ---------------------------------------------------------------------------
 // Home setup steps (the setup-only home and the checklist card).
@@ -52,15 +34,15 @@ export type HomeStep = { key: HomeStepKey; href: string; done: boolean };
 const HOME_STORE_STEPS = new Set<HomeStepKey>(["design", "payments", "shipping"]);
 
 const HOME_STEPS: { key: HomeStepKey; done: (f: SetupFlags) => boolean; href: (storeId: string, f: SetupFlags) => string }[] = [
-  { key: "product", done: (f) => f.product, href: (id) => storeProductsHref(id || null, "/add") },
+  { key: "product", done: STORE_SETUP_STEP_DONE.product, href: (id) => storeProductsHref(id || null, "/add") },
   {
     key: "design",
-    done: (f) => f.template && f.brand,
+    done: STORE_SETUP_STEP_DONE.design,
     // No template yet: the gallery first; then the brand (logo, colours, fonts).
     href: (id, f) => (f.template ? `/stores/${id}/website/design` : `/stores/${id}/website/templates`),
   },
-  { key: "payments", done: (f) => f.payments, href: (id) => `/stores/${id}/settings/payments` },
-  { key: "shipping", done: (f) => f.shipping, href: (id) => `/stores/${id}/shipping` },
+  { key: "payments", done: STORE_SETUP_STEP_DONE.payments, href: (id) => `/stores/${id}/settings/payments` },
+  { key: "shipping", done: STORE_SETUP_STEP_DONE.shipping, href: (id) => `/stores/${id}/shipping` },
 ];
 
 export function buildHomeSteps(flags: SetupFlags, storeId: string | null): HomeStep[] {

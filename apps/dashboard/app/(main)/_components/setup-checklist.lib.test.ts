@@ -78,3 +78,15 @@ describe("buildSetupTasks (prompt steps, unchanged)", () => {
     expect(buildSetupTasks(none, STORE).filter((t) => t.optional).map((t) => t.key)).toEqual(["shipping"]);
   });
 });
+
+describe("shared setup rule (F-94 reminder emails)", () => {
+  it("is the same rule as @workspace/lib's isStoreSetupDone for every flag combination", async () => {
+    const { STORE_SETUP_STEP_KEYS, isStoreSetupDone } = await import("@workspace/lib/sellers");
+    expect(buildHomeSteps(none, STORE).map((s) => s.key)).toEqual([...STORE_SETUP_STEP_KEYS]);
+    const keys = Object.keys(none) as (keyof SetupFlags)[];
+    for (let mask = 0; mask < 1 << keys.length; mask++) {
+      const flags = Object.fromEntries(keys.map((k, i) => [k, Boolean(mask & (1 << i))])) as SetupFlags;
+      expect(isSetupDone(flags, STORE)).toBe(isStoreSetupDone(flags));
+    }
+  });
+});

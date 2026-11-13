@@ -52,6 +52,8 @@ export interface SendEmailParams {
    * returns the original send instead of delivering a second copy.
    */
   idempotencyKey?: string;
+  /** Extra headers, e.g. `List-Unsubscribe` / `List-Unsubscribe-Post` (RFC 8058). */
+  headers?: Record<string, string>;
 }
 
 export interface SendEmailResult {
@@ -67,6 +69,7 @@ export async function sendEmail({
   fromName,
   replyTo,
   idempotencyKey,
+  headers,
 }: SendEmailParams): Promise<SendEmailResult> {
   const resend = getResendClient();
   const html = await render(content);
@@ -80,6 +83,7 @@ export async function sendEmail({
       html,
       text,
       ...(replyTo ? { replyTo } : {}),
+      ...(headers && Object.keys(headers).length ? { headers } : {}),
     },
     idempotencyKey ? { idempotencyKey } : undefined
   );

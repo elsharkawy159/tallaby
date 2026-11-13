@@ -33,6 +33,7 @@ These send only for a store subscribed to the app (catalog key `customer_notific
 | --- | --- | --- |
 | "Your store is ready on Tallaby" | `seller_store_created` | The one seller email the owner kept. Always sends. |
 | Theme request ready / declined | `theme_request_ready`, `theme_request_declined` | Owner, 2026-11-06 (ROADMAP.md F-77): the seller asked for it. Always sends, once per request and outcome. |
+| Store setup reminders (Arabic) | `seller_setup_reminder_day1`, `seller_setup_reminder_day7` | Owner, 2026-11-13 (ROADMAP.md F-94): 24 hours and 7 days after signup while the store is not set up; once each per seller (own claim table `seller_setup_reminders`, 0170, not `email_deliveries`), capped 40 a Cairo day and 10 a run, one-click opt-out. Always sends. |
 
 ## Not automatic, unchanged
 

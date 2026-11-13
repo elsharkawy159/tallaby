@@ -8,6 +8,7 @@ import {
   listStoreTopUpsForAdmin,
   listStoreWalletEntriesForAdmin,
 } from "@workspace/lib/admin/server";
+import { listSetupRemindersForSeller } from "@workspace/lib/sellers/setup-reminders/server";
 
 /*
  * Per-tab loaders for the seller page (PLAN.md P9-01, P9-02; tabs from
@@ -46,6 +47,11 @@ export function getSellerWalletTab(sellerId: string) {
     ]);
     return account ? { account, entries, topUps, stores } : null;
   });
+}
+
+/** Store setup reminder emails sent to this seller (F-94, 0170). */
+export function getSellerSetupReminders(sellerId: string) {
+  return safe("setup reminders", sellerId, () => listSetupRemindersForSeller(sellerId));
 }
 
 export function getSellerAuditTab(sellerId: string) {

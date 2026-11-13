@@ -32,6 +32,9 @@ export const EMAIL_RULES = {
   // "Request a theme" outcome: ready or declined (F-77)
   theme_request_ready: "keep",
   theme_request_declined: "keep",
+  // Store setup reminders, 24 hours and 7 days after signup (F-94; own claim table, 0170)
+  seller_setup_reminder_day1: "keep",
+  seller_setup_reminder_day7: "keep",
   // Campaigns a seller sends, and their test sends
   store_campaign: "manual",
   store_campaign_test: "manual",

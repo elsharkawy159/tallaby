@@ -271,6 +271,14 @@
       "types": "./src/sellers/server.ts",
       "default": "./src/sellers/server.ts"
     },
+    "./sellers/store-setup/server": {
+      "types": "./src/sellers/store-setup.server.ts",
+      "default": "./src/sellers/store-setup.server.ts"
+    },
+    "./sellers/setup-reminders/server": {
+      "types": "./src/sellers/setup-reminders.server.ts",
+      "default": "./src/sellers/setup-reminders.server.ts"
+    },
     "./checkout-leads": {
       "types": "./src/checkout-leads/checkout-leads.lib.ts",
       "default": "./src/checkout-leads/checkout-leads.lib.ts"

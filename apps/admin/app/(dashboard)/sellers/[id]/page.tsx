@@ -22,7 +22,14 @@ import { getSellerDetail } from "../sellers.server";
 import { getSellerWhatsAppMessages } from "../seller-message.server";
 import { SellerAccountPanel } from "./seller-account.client";
 import { SellerAuditCard } from "./seller-admin.chunks";
-import { getSellerAccountTab, getSellerAuditTab, getSellerStoresTab, getSellerWalletTab } from "./seller-admin.data";
+import {
+  getSellerAccountTab,
+  getSellerAuditTab,
+  getSellerSetupReminders,
+  getSellerStoresTab,
+  getSellerWalletTab,
+} from "./seller-admin.data";
+import { SellerSetupRemindersCard } from "./seller-setup-reminders.chunks";
 import { SellerDetailContent } from "./seller-detail.client";
 import { SellerDetailSkeleton } from "./seller-detail.skeleton";
 import { SellerFulfillmentSummary } from "./seller-fulfillment.chunks";
@@ -107,7 +114,11 @@ async function SellerTabContent({
 }) {
   switch (tab) {
     case "overview": {
-      const [detail, account] = await Promise.all([getSellerDetail(sellerId), getSellerAccountTab(sellerId)]);
+      const [detail, account, setupReminders] = await Promise.all([
+        getSellerDetail(sellerId),
+        getSellerAccountTab(sellerId),
+        getSellerSetupReminders(sellerId),
+      ]);
       if (!detail.success || !detail.data) notFound();
       const whatsAppMessage = (await getSellerWhatsAppMessages([sellerId])).get(sellerId) ?? null;
       return (
@@ -117,6 +128,7 @@ async function SellerTabContent({
           ) : (
             <Unavailable what="Plan, trial and fee settings" />
           )}
+          <SellerSetupRemindersCard rows={setupReminders} />
           <SellerDetailContent detail={detail.data} account={relations} whatsAppMessage={whatsAppMessage} />
         </div>
       );

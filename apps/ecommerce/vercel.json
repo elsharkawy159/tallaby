@@ -13,6 +13,7 @@
     { "path": "/api/cron/form-submissions-retention", "schedule": "30 3 * * *" },
     { "path": "/api/cron/store-build-intakes", "schedule": "50 3 * * *" },
     { "path": "/api/cron/cod-deposits", "schedule": "25 * * * *" },
-    { "path": "/api/cron/customer-uploads", "schedule": "40 4 * * *" }
+    { "path": "/api/cron/customer-uploads", "schedule": "40 4 * * *" },
+    { "path": "/api/cron/seller-setup-reminders", "schedule": "10 * * * *" }
   ]
 }

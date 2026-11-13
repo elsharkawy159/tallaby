@@ -28,6 +28,7 @@ import {
   sendSellerWalletTopUp,
 } from "../lib/emails/seller-emails";
 import { sendFeeTrialReminder } from "../lib/fee-trial-reminder";
+import { sendSellerSetupReminder } from "../lib/emails/setup-reminder-email";
 import { sendBackInStock } from "../lib/emails/stock-alert-email";
 import {
   renderStoreCampaignPreview,
@@ -240,6 +241,31 @@ app.post("/fee-trial-reminder", async (c) => {
   } catch (error) {
     console.error("Error sending fee trial reminder:", error);
     return c.json({ error: "Failed to send fee trial reminder" }, 500);
+  }
+});
+
+const setupReminderSchema = z.object({
+  sellerId: z.string().uuid(),
+  kind: z.enum(["day1", "day7"]),
+});
+
+/**
+ * Store setup reminder, 24 hours and 7 days after signup (ROADMAP.md F-94,
+ * 0170). Called by the hourly ecommerce cron, one seller at a time. The seller
+ * is re-read, the kind must be due, and the seller_setup_reminders claim makes
+ * each kind go out once per seller.
+ */
+app.post("/seller-setup-reminder", async (c) => {
+  const parsed = setupReminderSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    const result = await sendSellerSetupReminder(parsed.data.sellerId, parsed.data.kind);
+    return c.json({ success: true, ...result });
+  } catch (error) {
+    console.error("Error sending setup reminder:", error instanceof Error ? error.message : String(error));
+    return c.json({ error: "Failed to send setup reminder" }, 500);
   }
 });
 
