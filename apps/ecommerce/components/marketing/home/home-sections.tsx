@@ -10,14 +10,17 @@ import { richTags } from "@/components/marketing/site/rich-text";
 import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
-import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
+// Grid instead of carousel on the home page (owner, 2026-11-13); the carousel file stays so it can come back.
+// import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
+import { CtaButton } from "@/components/marketing/site/cta-button";
+import { TemplateThumb } from "@/components/marketing/templates/template-thumb";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { COPY_VARS, PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { getRecentStores } from "@/lib/marketing/stores.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
-import type { GalleryEntry } from "@/lib/marketing/templates.lib";
+import { templateFrameSrc, type GalleryEntry } from "@/lib/marketing/templates.lib";
 import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
 import { AiDemo } from "./ai-demo";
 import { BuilderDemo } from "./builder-demo";
@@ -263,6 +266,61 @@ function onePerCategory(entries: readonly GalleryEntry[]): GalleryEntry[] {
   });
 }
 
+/**
+ * The home page's templates as a grid (owner, 2026-11-13: grid instead of
+ * carousel): 2 columns on phones, 3 on tablets, 4 on desktop. Each card holds
+ * what the carousel's centre card holds, with the same buttons and links; in
+ * narrow columns the category tag and the buttons stack.
+ */
+async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; locale: string }) {
+  const t = await getTranslations("templates");
+  if (!entries.length) return null;
+  return (
+    <ul className="grid grid-cols-2 gap-3 min-[641px]:grid-cols-3 min-[641px]:gap-5 min-[1081px]:grid-cols-4">
+      {entries.map((entry) => {
+        const href = entry.shot?.edition ? `/templates/${entry.id}?edition=${encodeURIComponent(entry.shot.edition)}` : `/templates/${entry.id}`;
+        return (
+          <li key={entry.id} className="min-w-0">
+            <article
+              aria-label={entry.name}
+              className="tpl-shot-trigger flex h-full flex-col overflow-hidden rounded-[20px] border border-line bg-white shadow-[0_14px_36px_rgba(13,55,67,0.09)] min-[641px]:rounded-[30px]"
+            >
+              <div className="flex flex-col items-start gap-1.5 px-3 pt-3 pb-2.5 min-[641px]:px-[18px] min-[641px]:pt-4 min-[641px]:pb-3 min-[1081px]:flex-row min-[1081px]:items-center min-[1081px]:justify-between min-[1081px]:gap-2.5">
+                <div className="w-full min-w-0">
+                  <h3 className="truncate font-latin text-[15px] font-bold text-teal-900 min-[641px]:text-base">{entry.name}</h3>
+                  <small className="line-clamp-1 text-[12px] text-ink-400 min-[641px]:text-[12.5px]">{entry.description ?? ""}</small>
+                </div>
+                <span className="max-w-full flex-none truncate rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-teal-700 min-[641px]:text-[11.5px]">
+                  {t(`categories.${entry.category}`)}
+                </span>
+              </div>
+              <div className="mx-2 overflow-hidden rounded-[14px] border border-[#edf1f2] min-[641px]:mx-3 min-[641px]:rounded-[18px]">
+                <TemplateThumb shot={entry.shot} liveSrc={templateFrameSrc(locale, entry.id, undefined, true)} sizes="(min-width: 1081px) 25vw, (min-width: 641px) 33vw, 50vw" />
+              </div>
+              {entry.palette.length ? (
+                <div className="flex items-center gap-1.5 px-3 pt-2.5 text-xs text-ink-400 min-[641px]:px-[18px] min-[641px]:pt-3">
+                  <span className="max-[640px]:sr-only">{t("colors")}</span>
+                  {entry.palette.slice(0, 4).map((color, c) => (
+                    <i key={`${c}-${color}`} className="size-3.5 rounded-full border-2 border-white shadow-[0_0_0_1px_#dfe8ea] min-[641px]:size-4" style={{ background: color }} />
+                  ))}
+                </div>
+              ) : null}
+              <div className="mt-auto flex flex-col gap-2 px-3 pt-3 pb-3 min-[641px]:px-[18px] min-[641px]:pt-3.5 min-[641px]:pb-[18px] min-[1081px]:flex-row">
+                <SignupTrigger size="sm" className="h-11 w-full flex-1 shadow-none!">
+                  {t("use")}
+                </SignupTrigger>
+                <CtaButton asChild tone="outline" size="sm" className="h-11 w-full min-[1081px]:w-auto">
+                  <Link href={href}>{t("preview")}</Link>
+                </CtaButton>
+              </div>
+            </article>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export async function TemplatesSection() {
   const locale = await getLocale();
   const [t, entries] = await Promise.all([getTranslations("home.templates"), getTemplateGallery(locale)]);
@@ -273,7 +331,11 @@ export async function TemplatesSection() {
           <SectionHeading id="templates-title" kicker={t("kicker")} title={t("title")} description={t("body", { count: entries.length })} centered />
         </Reveal>
       </Container>
-      <TemplateCarousel entries={onePerCategory(entries)} />
+      {/* Grid instead of carousel (owner, 2026-11-13). */}
+      {/* <TemplateCarousel entries={onePerCategory(entries)} /> */}
+      <Container>
+        <TemplateGrid entries={onePerCategory(entries)} locale={locale} />
+      </Container>
       <Container className="mt-6 text-center">
         <SectionLink href="/industries/clothing-store">{t("industryLink")}</SectionLink>
       </Container>
