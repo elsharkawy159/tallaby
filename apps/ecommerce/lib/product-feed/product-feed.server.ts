@@ -30,7 +30,7 @@ import {
   type Storefront,
 } from "@/lib/storefront.server";
 import { googleCategoryFor, type FeedCategoryNode } from "./google-category.lib";
-import { FEED_ITEM_LIMIT, isVideoPath, type FeedProductRow, type FeedStoreInfo, type FeedTranslation } from "./product-feed.lib";
+import { FEED_ITEM_LIMIT, feedSellerCategory, isVideoPath, type FeedProductRow, type FeedStoreInfo, type FeedTranslation } from "./product-feed.lib";
 
 /** Products per cached page. */
 const PAGE_SIZE = 100;
@@ -144,6 +144,9 @@ export async function loadFeedPage(sellerId: string, catalog: StoreCatalogScope,
       sellerBrandNameAr: sellerProductBrands.nameAr,
       sellerCategoryName: sellerProductCategories.name,
       sellerCategoryNameAr: sellerProductCategories.nameAr,
+      // A sub-category's main category (0171), for product_type "Main > Sub".
+      parentCategoryName: sql<string | null>`(SELECT pc.name FROM ${sellerProductCategories} pc WHERE pc.id = ${sellerProductCategories.parentId} AND pc.seller_id = ${sellerId})`,
+      parentCategoryNameAr: sql<string | null>`(SELECT pc.name_ar FROM ${sellerProductCategories} pc WHERE pc.id = ${sellerProductCategories.parentId} AND pc.seller_id = ${sellerId})`,
     })
     .from(products)
     .leftJoin(brands, eq(brands.id, products.brandId))
@@ -219,10 +222,10 @@ export async function loadFeedPage(sellerId: string, catalog: StoreCatalogScope,
       videos: urls(gallery.filter(isVideoPath)),
       brand: brandAr || brandEn ? { ar: brandAr ?? null, en: brandEn ?? null } : null,
       categoryId: row.categoryId,
-      sellerCategory:
-        row.sellerCategoryName || row.sellerCategoryNameAr
-          ? { ar: row.sellerCategoryNameAr || row.sellerCategoryName, en: row.sellerCategoryName || row.sellerCategoryNameAr }
-          : null,
+      sellerCategory: feedSellerCategory(
+        { name: row.sellerCategoryName, nameAr: row.sellerCategoryNameAr },
+        { name: row.parentCategoryName, nameAr: row.parentCategoryNameAr },
+      ),
       translations: byLocale,
       variants: variants
         .filter((v) => v.productId === row.id)
@@ -246,7 +249,7 @@ export async function loadFeedPage(sellerId: string, catalog: StoreCatalogScope,
 
 /** Keyed by seller, store, switch and page, so an entry never mixes stores or catalog modes. */
 export const getCachedFeedPage = createCachedQuery({
-  name: "store-feed:page:v3",
+  name: "store-feed:page:v4",
   ttl: cacheProfiles.seller,
   tags: (sellerId: string, storeId: string, _catalogSplit: boolean, _page: number) => storefrontCatalogTags(sellerId, storeId),
   query: (sellerId: string, storeId: string, catalogSplit: boolean, page: number) => loadFeedPage(sellerId, { storeId, catalogSplit }, page),

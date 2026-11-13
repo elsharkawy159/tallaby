@@ -65,6 +65,21 @@ export interface FeedProductRow {
   variants: FeedVariantRow[];
 }
 
+type CategoryNames = { name: string | null; nameAr: string | null };
+
+/**
+ * The store category for product_type, in both languages: "Main > Sub" for a
+ * product in a sub-category (0171), else the category's name; null without one.
+ */
+export function feedSellerCategory(own: CategoryNames, parent: CategoryNames | null): { ar: string | null; en: string | null } | null {
+  if (!own.name && !own.nameAr) return null;
+  const ar = own.nameAr || own.name;
+  const en = own.name || own.nameAr;
+  const parentAr = parent ? parent.nameAr || parent.name : null;
+  const parentEn = parent ? parent.name || parent.nameAr : null;
+  return { ar: parentAr ? `${parentAr} > ${ar}` : ar, en: parentEn ? `${parentEn} > ${en}` : en };
+}
+
 export interface FeedItem {
   id: string;
   itemGroupId: string | null;

@@ -1,4 +1,4 @@
-import { and, cartItems, db, eq, inArray, productQuantityOffers, products, productVariants, storeDiscountRules, stores } from "@workspace/db";
+import { and, cartItems, db, eq, inArray, productQuantityOffers, products, productVariants, sellerProductCategories, storeDiscountRules, stores } from "@workspace/db";
 import type { OrderDiscountLine } from "@workspace/db";
 import { storeSellsProduct } from "../stores/catalog.server";
 import { applyDiscountRules, invalidGiftLineIndexes, type DiscountRule, type GiftSnapshot } from "./automatic-discounts.lib";
@@ -126,11 +126,20 @@ export async function storeCartDiscounts(
   const sellerId = store?.sellerId ?? null;
   const rules = ruleRows.map(toDiscountRule);
 
-  // The seller's own category of each product, only when a rule needs it.
+  // The seller's own category of each product and, for a sub-category, its main
+  // category (0171), only when a rule needs it. One query with a join.
   const categoryByProduct = new Map<string, string | null>();
+  const categoryChainByProduct = new Map<string, string[]>();
   if (productIds.length > 0 && rules.some((rule) => rule.ruleType !== "free_gift" && rule.scope === "categories")) {
-    const rows = await db.select({ id: products.id, category: products.sellerCategoryId }).from(products).where(inArray(products.id, productIds));
-    for (const row of rows) categoryByProduct.set(row.id, row.category);
+    const rows = await db
+      .select({ id: products.id, category: products.sellerCategoryId, parent: sellerProductCategories.parentId })
+      .from(products)
+      .leftJoin(sellerProductCategories, eq(sellerProductCategories.id, products.sellerCategoryId))
+      .where(inArray(products.id, productIds));
+    for (const row of rows) {
+      categoryByProduct.set(row.id, row.category);
+      categoryChainByProduct.set(row.id, row.category ? (row.parent ? [row.category, row.parent] : [row.category]) : []);
+    }
   }
 
   const unitPiastres = paidItems.map((item) => Math.round(Number(item.price) * 100));
@@ -143,6 +152,7 @@ export async function storeCartDiscounts(
     paidItems.map((item, index) => ({
       productId: item.productId,
       categoryId: categoryByProduct.get(item.productId) ?? null,
+      categoryIds: categoryChainByProduct.get(item.productId) ?? [],
       quantity: item.quantity,
       unitPiastres: unitPiastres[index]!,
     })),

@@ -215,8 +215,9 @@ export type ProductSizeChart = { id: string; name: SizeChartName; definition: Si
 
 /**
  * The size chart of one product on its store's storefront, or null: the app
- * must be installed in this store, and the chart applied to the product or to
- * its store category. The store comes from the request host, never a client.
+ * must be installed in this store, and the chart applied to the product, to
+ * its store category or to that category's main category. The store comes
+ * from the request host, never a client.
  */
 export async function loadProductSizeChart(
   scope: Scope,
@@ -233,10 +234,19 @@ export async function loadProductSizeChart(
         or(
           eq(storeSizeChartTargets.productId, product.id),
           product.categoryId ? eq(storeSizeChartTargets.categoryId, product.categoryId) : sql`false`,
+          // Its main category when it is a sub-category (0171), in the same query.
+          product.categoryId
+            ? eq(
+                storeSizeChartTargets.categoryId,
+                sql`(select ${sellerProductCategories.parentId} from ${sellerProductCategories} where ${sellerProductCategories.id} = ${product.categoryId} and ${sellerProductCategories.storeId} = ${scope.storeId})`,
+              )
+            : sql`false`,
         ),
       ),
     );
-  const chartId = resolveSizeChartTarget(targets, product);
+  // A category target that isn't the product's own category can only be its main category.
+  const parentCategoryId = targets.find((target) => target.categoryId && target.categoryId !== product.categoryId)?.categoryId ?? null;
+  const chartId = resolveSizeChartTarget(targets, { ...product, parentCategoryId });
   if (!chartId) return null;
   const [chart] = await db.select().from(storeSizeCharts).where(ownChart(scope, chartId)).limit(1);
   const definition = chart ? parseSizeChartDefinition(chart.definition) : null;

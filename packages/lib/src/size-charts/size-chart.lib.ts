@@ -208,16 +208,21 @@ export type SizeChartTarget = { chartId: string; productId: string | null; categ
 
 /**
  * The chart a product shows: one applied to the product itself beats one
- * applied to its category. The caller passes only this store's targets.
+ * applied to its category, which beats one applied to that category's main
+ * category when it is a sub-category (0171). The caller passes only this
+ * store's targets.
  */
 export function resolveSizeChartTarget(
   targets: readonly SizeChartTarget[],
-  product: { id: string; categoryId: string | null },
+  product: { id: string; categoryId: string | null; parentCategoryId?: string | null },
 ): string | null {
   const own = targets.find((target) => target.productId === product.id);
   if (own) return own.chartId;
   if (!product.categoryId) return null;
-  return targets.find((target) => target.categoryId === product.categoryId)?.chartId ?? null;
+  const byCategory = targets.find((target) => target.categoryId === product.categoryId);
+  if (byCategory) return byCategory.chartId;
+  if (!product.parentCategoryId) return null;
+  return targets.find((target) => target.categoryId === product.parentCategoryId)?.chartId ?? null;
 }
 
 const SIZE_ALIASES: Record<string, string> = { xxl: "2xl", xxxl: "3xl", xxxxl: "4xl", xxxxxl: "5xl", xxs: "2xs" };

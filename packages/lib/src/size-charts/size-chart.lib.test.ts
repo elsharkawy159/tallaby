@@ -166,6 +166,15 @@ describe("resolveSizeChartTarget", () => {
     expect(resolveSizeChartTarget(targets, { id: "p-2", categoryId: null })).toBeNull();
     expect(resolveSizeChartTarget([], { id: "p-1", categoryId: "cat-1" })).toBeNull();
   });
+
+  it("then falls back to the main category of a sub-category (0171)", () => {
+    const withMain = [...targets, { chartId: "c-main", productId: null, categoryId: "main" }];
+    expect(resolveSizeChartTarget(withMain, { id: "p-1", categoryId: "sub", parentCategoryId: "main" })).toBe("c-prod");
+    expect(resolveSizeChartTarget(withMain, { id: "p-2", categoryId: "cat-1", parentCategoryId: "main" })).toBe("c-cat");
+    expect(resolveSizeChartTarget(withMain, { id: "p-2", categoryId: "sub", parentCategoryId: "main" })).toBe("c-main");
+    expect(resolveSizeChartTarget(withMain, { id: "p-2", categoryId: "sub" })).toBeNull();
+    expect(resolveSizeChartTarget(withMain, { id: "p-2", categoryId: "sub", parentCategoryId: "other" })).toBeNull();
+  });
 });
 
 describe("sizeLabelsMatch", () => {

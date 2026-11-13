@@ -63,6 +63,7 @@ import {
   type TaxonomyScope,
 } from "../stores/store-scope.server";
 import { isSwitchOn } from "../stores/platform-switches.server";
+import { flattenCategoryTree } from "../store-sites/category-tree.lib";
 import { isRichTextEmpty, sanitizeRichTextHtml } from "@workspace/tiptap/sanitize";
 import type { AgentCreateProductInput, AgentSearchProductsInput, AgentUpdateProductInput } from "./agent-products.dto";
 import {
@@ -267,7 +268,8 @@ async function findOrAddStoreCategory(scope: TaxonomyScope, name: { ar?: string;
           ),
         ),
       )
-      .orderBy(asc(sellerProductCategories.position))
+      // A main category first, then by position (0171, same as the dashboard's ensureTaxonomyItem).
+      .orderBy(sql`(${sellerProductCategories.parentId} IS NULL) DESC`, asc(sellerProductCategories.position))
       .limit(1);
     return row;
   };
@@ -290,7 +292,7 @@ async function findOrAddStoreCategory(scope: TaxonomyScope, name: { ar?: string;
       .returning({ id: sellerProductCategories.id, sourceCategoryId: sellerProductCategories.sourceCategoryId });
     return row!;
   } catch (error) {
-    // Added at the same moment by another call: use that one.
+    // Added at the same moment by another call (the main-category name key, 0171): use that one.
     const raced = await findExisting();
     if (raced) return raced;
     throw error;
@@ -727,7 +729,16 @@ export async function agentSearchProducts(
     storeShowsProduct(store, ctx.sellerId),
     input.status === "trash" ? isNotNull(products.deletedAt) : isNull(products.deletedAt),
     input.status === "active" || input.status === "draft" ? eq(products.status, input.status) : undefined,
-    input.storeCategoryId ? eq(products.sellerCategoryId, input.storeCategoryId) : undefined,
+    // A main category covers its sub-categories (0171).
+    input.storeCategoryId
+      ? or(
+          eq(products.sellerCategoryId, input.storeCategoryId),
+          inArray(
+            products.sellerCategoryId,
+            db.select({ id: sellerProductCategories.id }).from(sellerProductCategories).where(eq(sellerProductCategories.parentId, input.storeCategoryId)),
+          ),
+        )
+      : undefined,
     input.maxStock !== undefined ? sql`${products.trackStock} AND ${products.quantity}::numeric <= ${input.maxStock}` : undefined,
     pattern
       ? or(
@@ -809,7 +820,14 @@ export async function agentGetProduct(ctx: AgentProductContext, productId: strin
   };
   const [storeCategory] = product.sellerCategoryId
     ? await db
-        .select({ id: sellerProductCategories.id, name: sellerProductCategories.name, nameAr: sellerProductCategories.nameAr })
+        .select({
+          id: sellerProductCategories.id,
+          name: sellerProductCategories.name,
+          nameAr: sellerProductCategories.nameAr,
+          // Its main category when it is a sub-category (0171).
+          parentId: sellerProductCategories.parentId,
+          parentName: sql<string | null>`${sql`(SELECT p.name FROM ${sellerProductCategories} p WHERE p.id = ${sellerProductCategories.parentId})`}`,
+        })
         .from(sellerProductCategories)
         .where(and(eq(sellerProductCategories.id, product.sellerCategoryId), taxonomyInStore(sellerProductCategories, taxonomyOf(ctx, store))))
         .limit(1)
@@ -869,14 +887,22 @@ export async function agentListStoreCategories(ctx: AgentProductContext) {
       name: sellerProductCategories.name,
       nameAr: sellerProductCategories.nameAr,
       tallabyCategoryId: sellerProductCategories.sourceCategoryId,
+      // Null for a main category; a sub-category's main category (0171).
+      parentId: sellerProductCategories.parentId,
+      position: sellerProductCategories.position,
       // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
       products: sql<number>`${sql`(SELECT count(*)::int FROM ${products} p WHERE p.seller_category_id = ${sellerProductCategories.id} AND p.deleted_at IS NULL${inThisStore})`}`,
     })
     .from(sellerProductCategories)
     .where(taxonomyInStore(sellerProductCategories, taxonomyOf(ctx, store)))
-    .orderBy(asc(sellerProductCategories.position))
+    .orderBy(asc(sellerProductCategories.position), asc(sellerProductCategories.createdAt))
     .limit(SELLER_TAXONOMY_MAX_ITEMS);
-  return rows;
+  // Tree order: each main category, then its sub-categories. `products` counts the ones directly in it.
+  const nameOf = new Map(rows.map((row) => [row.id, row.name]));
+  return flattenCategoryTree(rows).map((row) => ({
+    ...row,
+    parentName: row.parentId ? (nameOf.get(row.parentId) ?? null) : null,
+  }));
 }
 
 /** Tallaby's category pack, searched in Arabic and English (the required categoryId on a product). */

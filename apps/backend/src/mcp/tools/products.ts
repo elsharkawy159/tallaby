@@ -43,7 +43,7 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
     name: "search_products",
     title: "Search products",
     description:
-      "Find products in a store by words in the Arabic or English name or by SKU, filtered by status (active, draft, trash), store category or low stock. Returns compact rows; use get_product for the full details. Paged: pass nextCursor back as cursor.",
+      "Find products in a store by words in the Arabic or English name or by SKU, filtered by status (active, draft, trash), store category (a main category includes its sub-categories) or low stock. Returns compact rows; use get_product for the full details. Paged: pass nextCursor back as cursor.",
     input: agentSearchProductsSchema,
     scope: "store.read",
     write: false,
@@ -66,7 +66,8 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
   registerTool(server, actor, {
     name: "list_store_categories",
     title: "List store categories",
-    description: "This store's own product categories (made by the seller and shown on the store), with ids for storeCategoryId and how many products use each. Use only these ids in this store.",
+    description:
+      "This store's own product categories (made by the seller and shown on the store), with ids for storeCategoryId and how many products are directly in each. Categories have two levels: a main category (parentId null) holds sub-categories (parentId and parentName set); listed in tree order. A product goes in one category, main or sub. Use only these ids in this store; storeCategoryName finds one by name (a main category first) or adds it as a new main category.",
     input: agentStoreRefSchema,
     scope: "store.read",
     write: false,

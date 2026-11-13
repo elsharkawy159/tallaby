@@ -87,4 +87,24 @@ describe.skipIf(!TEST_DATABASE_URL)("size charts (integration)", { timeout: 120_
     expect(await setSizeChartTargets(split, tops.data.id, { productIds: [world.productA], categoryIds: [world.categoryA] })).toEqual({ success: true, data: { moved: 1 } });
     expect((await loadProductSizeChart(scope, { id: world.productA, categoryId: world.categoryA }))?.id).toBe(tops.data.id);
   });
+
+  it("a sub-category's own chart wins, else its main category's (0171)", async () => {
+    const { createStoreSizeChart, setSizeChartTargets, loadProductSizeChart, db, sql } = await load();
+    const scope = { sellerId: sellerA, storeId: world.storeA };
+    const split = { ...scope, catalogSplit: true };
+    const sub = await db.execute(sql`
+      INSERT INTO seller_product_categories (seller_id, store_id, name, parent_id)
+      VALUES (${sellerA}, ${world.storeA}, 'QA tees', ${world.categoryA}) RETURNING id`);
+    const subId = (sub as unknown as { id: string }[])[0]!.id;
+    const product = await makeProduct(sellerA, world.storeA, subId);
+
+    // The first test put "tops" on the main category: the sub-category's product inherits it.
+    const inherited = await loadProductSizeChart(scope, { id: product, categoryId: subId });
+    expect(inherited).not.toBeNull();
+    const tees = await createStoreSizeChart({ ...scope, actorId: sellerA }, sizeChartFromTemplate("tops"));
+    if (!tees.success) throw new Error("create failed");
+    expect(await setSizeChartTargets(split, tees.data.id, { productIds: [], categoryIds: [subId] })).toEqual({ success: true, data: { moved: 0 } });
+    expect((await loadProductSizeChart(scope, { id: product, categoryId: subId }))?.id).toBe(tees.data.id);
+    expect(inherited?.id).not.toBe(tees.data.id);
+  });
 });

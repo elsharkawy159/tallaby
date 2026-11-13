@@ -44,6 +44,23 @@ describe("percent off", () => {
     const scoped = rule({ scope: "categories", categoryIds: ["c1"] });
     expect(amounts([line(1, 10000, "c1"), line(1, 10000, "c2"), line(1, 10000, null)], [scoped])).toEqual([1000, 0, 0]);
   });
+  it("a rule on a main category covers its sub-categories (0171)", () => {
+    const onMain = rule({ scope: "categories", categoryIds: ["main"] });
+    const inSub: RuleLine = { ...line(1, 10000, "sub"), categoryIds: ["sub", "main"] };
+    const inMain: RuleLine = { ...line(1, 10000, "main"), categoryIds: ["main"] };
+    expect(amounts([inSub, inMain], [onMain])).toEqual([1000, 1000]);
+  });
+  it("a rule on a sub-category doesn't cover its main category or a sibling", () => {
+    const onSub = rule({ scope: "categories", categoryIds: ["sub"] });
+    const inMain: RuleLine = { ...line(1, 10000, "main"), categoryIds: ["main"] };
+    const inSibling: RuleLine = { ...line(1, 10000, "sibling"), categoryIds: ["sibling", "main"] };
+    const inSub: RuleLine = { ...line(1, 10000, "sub"), categoryIds: ["sub", "main"] };
+    expect(amounts([inMain, inSibling, inSub], [onSub])).toEqual([0, 0, 1000]);
+  });
+  it("a line without categoryIds falls back to its categoryId", () => {
+    const onMain = rule({ scope: "categories", categoryIds: ["main"] });
+    expect(amounts([line(1, 10000, "main"), line(1, 10000, "sub"), line(1, 10000, null)], [onMain])).toEqual([1000, 0, 0]);
+  });
 });
 
 describe("buy X get Y", () => {

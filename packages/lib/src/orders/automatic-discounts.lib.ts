@@ -28,6 +28,11 @@ export type RuleLine = {
   productId: string;
   /** The seller's own category, for a rule scoped to categories. */
   categoryId: string | null;
+  /**
+   * The category and, when it is a sub-category, its main category (0171), so a
+   * rule on a main category covers its sub-categories. Missing → `[categoryId]`.
+   */
+  categoryIds?: string[];
   quantity: number;
   /** Unit price in piastres. */
   unitPiastres: number;
@@ -54,9 +59,10 @@ export function isRuleLive(rule: DiscountRule, store: { sellerId: string | null;
   return rule.endsAt === null || new Date(rule.endsAt).getTime() > now.getTime();
 }
 
-export function lineInRuleScope(rule: Pick<DiscountRule, "scope" | "categoryIds">, line: Pick<RuleLine, "categoryId">): boolean {
+export function lineInRuleScope(rule: Pick<DiscountRule, "scope" | "categoryIds">, line: Pick<RuleLine, "categoryId" | "categoryIds">): boolean {
   if (rule.scope === "all") return true;
-  return line.categoryId !== null && rule.categoryIds.includes(line.categoryId);
+  const lineCategories = line.categoryIds ?? (line.categoryId !== null ? [line.categoryId] : []);
+  return lineCategories.some((id) => rule.categoryIds.includes(id));
 }
 
 /** A percent off every unit in scope. A unit never reaches 0. */

@@ -19,6 +19,7 @@ import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { StoreGatewaysCard } from "../../settings/payments/gateways.client";
 import type { AppCenterStoreState } from "../app-center.lib";
 import type { AppCategoryOption } from "../apps.types";
+import { labelStoreCategories } from "@/lib/stores/category-labels.lib";
 import { ProductFeeds } from "../product-feeds.client";
 import { storeFeedUrls } from "../product-feeds.lib";
 import { AiAssistantsApp } from "./ai-assistants/ai-assistants.client";
@@ -117,7 +118,13 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
     const [charts, categories] = await Promise.all([
       listStoreSizeCharts(scope, locale),
       db
-        .select({ id: sellerProductCategories.id, name: sellerProductCategories.name, nameAr: sellerProductCategories.nameAr })
+        .select({
+          id: sellerProductCategories.id,
+          name: sellerProductCategories.name,
+          nameAr: sellerProductCategories.nameAr,
+          parentId: sellerProductCategories.parentId,
+          position: sellerProductCategories.position,
+        })
         .from(sellerProductCategories)
         .where(taxonomyInStore(sellerProductCategories, { ...scope, catalogSplit }))
         .orderBy(asc(sellerProductCategories.position), asc(sellerProductCategories.name))
@@ -129,7 +136,7 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
         installed={state.installs.some((install) => install.appKey === SIZE_CHART_APP)}
         readOnly={readOnly}
         charts={charts}
-        categories={categories.map((c) => ({ id: c.id, name: (locale === "ar" ? c.nameAr || c.name : c.name || c.nameAr) ?? "" }))}
+        categories={labelStoreCategories(categories, locale)}
       />
     );
   },

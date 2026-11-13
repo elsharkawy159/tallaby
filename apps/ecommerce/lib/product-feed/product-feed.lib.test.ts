@@ -11,6 +11,7 @@ import {
   feedCsvRow,
   feedLocale,
   feedPricing,
+  feedSellerCategory,
   feedXmlHeader,
   feedXmlItem,
   isVideoPath,
@@ -282,5 +283,20 @@ describe("Google category mapping", () => {
       "sports-and-outdoors", "tools-and-home-improvement", "toys-and-games",
     ];
     for (const slug of roots) expect(GOOGLE_CATEGORY_BY_SLUG[slug], slug).toBeTruthy();
+  });
+});
+
+describe("feedSellerCategory", () => {
+  it("is the category name in both languages, falling back across them", () => {
+    expect(feedSellerCategory({ name: "Lamps", nameAr: "لمبات" }, null)).toEqual({ ar: "لمبات", en: "Lamps" });
+    expect(feedSellerCategory({ name: "Lamps", nameAr: null }, { name: null, nameAr: null })).toEqual({ ar: "Lamps", en: "Lamps" });
+    expect(feedSellerCategory({ name: null, nameAr: null }, { name: "Finishing", nameAr: "تشطيب" })).toBeNull();
+  });
+  it("reads Main > Sub for a sub-category (0171)", () => {
+    expect(feedSellerCategory({ name: "Lamps", nameAr: "لمبات" }, { name: "Finishing", nameAr: "تشطيب" })).toEqual({
+      ar: "تشطيب > لمبات",
+      en: "Finishing > Lamps",
+    });
+    expect(feedSellerCategory({ name: "Lamps", nameAr: null }, { name: null, nameAr: "تشطيب" })).toEqual({ ar: "تشطيب > Lamps", en: "تشطيب > Lamps" });
   });
 });

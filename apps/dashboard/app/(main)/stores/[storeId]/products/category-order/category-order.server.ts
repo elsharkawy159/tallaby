@@ -42,7 +42,9 @@ import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
  * the split that is every product of the seller, as before). The
  * products are the ones the store's category page shows: linked to the
  * category, plus unlinked ones of the Tallaby category it was picked from
- * (same rule as `storeCategoryGroups`). Saving clears the seller's storefront
+ * (same rule as `storeCategoryGroups`), and for a main category the same for
+ * each of its sub-categories (0171). Positions stay keyed by the category the
+ * seller arranges. Saving clears the seller's storefront
  * product caches (seller-scoped tags).
  */
 
@@ -55,25 +57,43 @@ function failure(error: unknown, label: string): { success: false; error: Catego
   return { success: false, error: "generic" };
 }
 
-async function ownedCategory(ctx: ProductStoreContext, categoryId: string) {
+type ScopeCategory = { id: string; sourceId: string | null };
+/** The arranged category and, for a main category, its sub-categories (0171): their products show on its page too. */
+type OwnedCategory = ScopeCategory & { covers: ScopeCategory[] };
+
+async function ownedCategory(ctx: ProductStoreContext, categoryId: string): Promise<OwnedCategory | null> {
   const scope: TaxonomyScope = taxonomyScopeOf(ctx);
-  const [row] = await db
-    .select({ id: sellerProductCategories.id, sourceId: sellerProductCategories.sourceCategoryId })
+  // One query: the category and its sub-categories, both from the page's store list.
+  const rows = await db
+    .select({ id: sellerProductCategories.id, sourceId: sellerProductCategories.sourceCategoryId, parentId: sellerProductCategories.parentId })
     .from(sellerProductCategories)
-    .where(and(eq(sellerProductCategories.id, categoryId), taxonomyInStore(sellerProductCategories, scope)))
-    .limit(1);
-  return row ?? null;
+    .where(
+      and(
+        or(eq(sellerProductCategories.id, categoryId), eq(sellerProductCategories.parentId, categoryId)),
+        taxonomyInStore(sellerProductCategories, scope),
+      ),
+    );
+  const row = rows.find((r) => r.id === categoryId);
+  if (!row) return null;
+  const self = { id: row.id, sourceId: row.sourceId };
+  const children = row.parentId ? [] : rows.filter((r) => r.id !== categoryId).map((r) => ({ id: r.id, sourceId: r.sourceId }));
+  return { ...self, covers: [self, ...children] };
 }
 
-function inCategory(sellerId: string, inStore: SQL, category: { id: string; sourceId: string | null }) {
+function inCategory(sellerId: string, inStore: SQL, category: OwnedCategory) {
   return and(
     eq(products.sellerId, sellerId),
     inStore,
     isNull(products.deletedAt),
     isNull(products.purgedAt),
+    // Each covered category by today's rule: linked to it, or unlinked from the Tallaby category it was picked from.
     or(
-      eq(products.sellerCategoryId, category.id),
-      category.sourceId ? and(isNull(products.sellerCategoryId), eq(products.categoryId, category.sourceId)) : undefined,
+      ...category.covers.map((c) =>
+        or(
+          eq(products.sellerCategoryId, c.id),
+          c.sourceId ? and(isNull(products.sellerCategoryId), eq(products.categoryId, c.sourceId)) : undefined,
+        ),
+      ),
     ),
   );
 }

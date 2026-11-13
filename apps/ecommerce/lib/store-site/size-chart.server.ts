@@ -4,17 +4,20 @@ import { loadProductSizeChart, type ProductSizeChart } from "@workspace/lib/size
 /**
  * A product's size chart on its store's product page (ROADMAP.md F-92):
  * cached per seller, store, product and category; the store's size-chart tag
- * (chart, target and app changes), its integrations tag (app install) and the
- * product's own tag (its category changed) keep it right. The store comes from
+ * (chart, target and app changes), its integrations tag (app install), the
+ * product's own tag (its category changed) and the store's products tag (a
+ * category moved under another main category) keep it right. The store comes from
  * the request host (`resolveStorefront`), never from a client.
  */
 const cachedProductSizeChart = createCachedQuery<[sellerId: string, storeId: string, productId: string, categoryId: string | null], ProductSizeChart | null>({
-  name: "storefront:size-chart:v1",
+  name: "storefront:size-chart:v2",
   ttl: cacheProfiles.detail,
   tags: (sellerId: string, storeId: string, productId: string) => [
     storeTags.sizeCharts(sellerId, storeId),
     storeTags.integrations(sellerId, storeId),
     productTags.detail(productId),
+    // Category writes (moving a sub-category under another main one, 0171) purge the store's products.
+    productTags.store(sellerId, storeId),
   ],
   query: (sellerId: string, storeId: string, productId: string, categoryId: string | null) =>
     loadProductSizeChart({ sellerId, storeId }, { id: productId, categoryId }),

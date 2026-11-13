@@ -63,7 +63,7 @@ describe("product feed pages", { timeout: 30_000 }, () => {
     for await (const _ of feedProductPages(storefront(STORE_A))) void _;
     recorded.switchOn = true;
     for await (const _ of feedProductPages(storefront(STORE_A))) void _;
-    const pages = recorded.queries.filter((q) => q.name === "store-feed:page:v3");
+    const pages = recorded.queries.filter((q) => q.name === "store-feed:page:v4");
     expect(pages.map((q) => q.args)).toEqual([
       [SELLER, STORE_A, false, 0],
       [SELLER, STORE_A, true, 0],
@@ -74,7 +74,7 @@ describe("product feed pages", { timeout: 30_000 }, () => {
   it("tags a page with the seller, its store's products and catalog, never another store", async () => {
     const { feedProductPages } = await import("@/lib/product-feed/product-feed.server");
     for await (const _ of feedProductPages(storefront(STORE_B))) void _;
-    const page = recorded.queries.find((q) => q.name === "store-feed:page:v3")!;
+    const page = recorded.queries.find((q) => q.name === "store-feed:page:v4")!;
     expect(page.tags).toEqual(storeTagsOf(STORE_B));
     expect(page.tags).not.toContain(productTags.store(SELLER, STORE_A));
   });

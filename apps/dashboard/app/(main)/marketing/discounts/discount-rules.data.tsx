@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/seller-ui";
 import { ProductStoreProvider } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 import { DiscountRulesView } from "./discount-rules.client";
 import { listDiscountRules } from "./discount-rules.server";
+import { labelStoreCategories } from "@/lib/stores/category-labels.lib";
 
 /**
  * Automatic discounts of one store the session's seller owns (ROADMAP.md F-13a).
@@ -28,11 +29,17 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
     store ? listDiscountRules(store.id) : [],
     store ? getStore(seller.sellerId, store.id) : null,
     db
-      .select({ id: sellerProductCategories.id, name: sellerProductCategories.name, nameAr: sellerProductCategories.nameAr })
+      .select({
+        id: sellerProductCategories.id,
+        name: sellerProductCategories.name,
+        nameAr: sellerProductCategories.nameAr,
+        parentId: sellerProductCategories.parentId,
+        position: sellerProductCategories.position,
+      })
       .from(sellerProductCategories)
       // The category scope picker: the store's list (the seller's before the split, F-87d); the save checks it again.
       .where(taxonomyInStore(sellerProductCategories, { sellerId: seller.sellerId, storeId: store?.id ?? null, catalogSplit }))
-      .orderBy(asc(sellerProductCategories.position)),
+      .orderBy(asc(sellerProductCategories.position), asc(sellerProductCategories.createdAt)),
   ]);
 
   return (
@@ -46,7 +53,8 @@ export async function DiscountRulesData(props: { storeId: string | null }) {
           storeId={store?.id ?? null}
           money={parseStoreCurrency(storeRow?.settings)}
           initial={rules}
-          categories={categories.map((c) => ({ id: c.id, name: (locale === "ar" ? c.nameAr : c.name) || c.name || c.nameAr || "" }))}
+          // Tree order, a sub-category as "Main › Sub" (0171).
+          categories={labelStoreCategories(categories, locale)}
         />
       </ProductStoreProvider>
     </>
