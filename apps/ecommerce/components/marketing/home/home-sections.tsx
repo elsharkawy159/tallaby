@@ -56,7 +56,13 @@ export async function HomeHero() {
   // Prices in the home copy (and the hero demo's wallet) are `{orderFee}`-style tokens or `Money`, shown in the visitor's currency.
   const [t, locale, recent] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores()]);
   const features = t.raw("marquee") as string[];
-  const checks = [t("check1"), t("check2")];
+  // The third check is the Free plan's per-order fee (in the visitor's currency), a link to the pricing section below.
+  const checks: { key: string; label: React.ReactNode; href?: string }[] = [
+    { key: "check1", label: t("check1") },
+    { key: "check2", label: t("check2") },
+    { key: "check3", label: withPrices(t("check3", PRICE_TOKENS)), href: "#pricing" },
+  ];
+  const checkIcon = <Check className="size-4 shrink-0 text-[#16a34a]" aria-hidden />;
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
 
   return (
@@ -80,16 +86,24 @@ export async function HomeHero() {
         <SignupTrigger className="h-[58px] max-w-full px-6 text-[17px] min-[400px]:px-10">{t("cta")}</SignupTrigger>
         <ul className="m-0 mt-7 flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-ink-500 min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
           {checks.map((check) => (
-            <li key={check} className="flex items-center gap-1.5">
-              <Check className="size-4 text-[#16a34a]" aria-hidden />
-              {check}
+            <li key={check.key} className="flex items-center gap-1.5">
+              {check.href ? (
+                <a
+                  href={check.href}
+                  className="flex items-center gap-1.5 rounded-sm underline-offset-2 hover:text-teal-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                >
+                  {checkIcon}
+                  <span>{check.label}</span>
+                </a>
+              ) : (
+                <>
+                  {checkIcon}
+                  {check.label}
+                </>
+              )}
             </li>
           ))}
         </ul>
-        {/* One muted line with the Free plan's per-order fee, to the pricing section below (in the visitor's currency: EGP on Arabic pages, USD on English ones until the country is known). */}
-        <a href="#pricing" className="mt-3 max-w-[560px] text-[13px] text-balance text-ink-500 underline-offset-2 hover:text-teal-700 hover:underline min-[641px]:text-sm">
-          {withPrices(t("priceLine", PRICE_TOKENS))}
-        </a>
       </Container>
 
       {/* The first copy is a real list (visible text for readers and search engines); the second only closes the loop.
