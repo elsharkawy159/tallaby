@@ -1,23 +1,18 @@
-import { billingTags, createCachedQuery } from "@workspace/cache";
 import { db, sql } from "@workspace/db";
-import { exchangeRateSource, isProActive } from "@workspace/lib/billing";
+import { isProActive } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import {
-  FEED_MESSAGE_CURRENCIES,
   buildSellerWhatsAppMessage,
-  currencyFor,
   dialectFor,
-  messageMoney,
   resolveMessageCountry,
   sellerMessageActivation,
   sellerMessageStep,
-  type MessageRates,
 } from "./seller-message.lib";
 
 /**
  * Server side of the Admin → seller WhatsApp message (seller-message.lib.ts):
- * the per-seller facts in one batched query, and the rates read once per call.
+ * the per-seller facts in one batched query, and the billing state read once per call.
  * Server-only (not a server action): callers are Admin loaders that already
  * checked the admin session. Never throws; a seller without facts gets no
  * entry, and the caller falls back to the plain welcome message.
@@ -25,7 +20,6 @@ import {
 
 /** Seller ids per query: keeps an export of thousands of sellers to a few round trips. */
 const CHUNK = 500;
-const FEED_TIMEOUT_MS = 4000;
 
 type FactsRow = {
   id: string;
@@ -105,43 +99,9 @@ async function loadFacts(sellerIds: string[]): Promise<FactsRow[]> {
   return Array.isArray(result) ? result : ((result as { rows?: FactsRow[] }).rows ?? []);
 }
 
-/** USD→X for the Gulf and Jordanian currencies, from the billing cron's feed. Cached 3 hours, cleared with the billing rate. */
-const getCachedFeedRates = createCachedQuery({
-  name: "admin:seller-message-rates:v1",
-  ttl: 3 * 60 * 60,
-  tags: () => [billingTags.rate()],
-  query: async () => {
-    const response = await fetch(exchangeRateSource(process.env.EXCHANGE_RATE_API_KEY).url, {
-      signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
-    });
-    if (!response.ok) throw new Error(`exchange rate feed http_${response.status}`);
-    const body = (await response.json()) as { result?: string; rates?: unknown; conversion_rates?: unknown } | null;
-    const table = (body?.result === "success" ? (body.conversion_rates ?? body.rates) : null) as Record<string, unknown> | null;
-    const rates: Record<string, number> = {};
-    for (const code of FEED_MESSAGE_CURRENCIES) {
-      const rate = Number(table?.[code]);
-      // Loose sanity range: KWD ≈ 0.3, SAR ≈ 3.75 per dollar.
-      if (Number.isFinite(rate) && rate >= 0.1 && rate <= 100) rates[code] = rate;
-    }
-    // Throwing keeps a bad answer out of the cache.
-    if (Object.keys(rates).length === 0) throw new Error("exchange rate feed bad_response");
-    return rates;
-  },
-});
-
-async function feedRates(): Promise<Record<string, number>> {
-  try {
-    return await getCachedFeedRates();
-  } catch (error) {
-    console.error("[sellers] message exchange rates unavailable", error instanceof Error ? error.message : error);
-    return {};
-  }
-}
-
 /**
  * The WhatsApp message for each seller, keyed by seller id. Reads the billing
- * state once, and the exchange-rate feed only if a seller needs a Gulf or
- * Jordanian price.
+ * state once (only to tell a pending top-up apart; the message never asks for money).
  */
 export async function getSellerWhatsAppMessages(sellerIds: string[]): Promise<Map<string, string>> {
   const messages = new Map<string, string>();
@@ -153,19 +113,11 @@ export async function getSellerWhatsAppMessages(sellerIds: string[]): Promise<Ma
     // Sequential: the serverless DB pool is small.
     for (let i = 0; i < unique.length; i += CHUNK) rows.push(...(await loadFacts(unique.slice(i, i + CHUNK))));
 
-    const countries = rows.map((row) =>
-      resolveMessageCountry({ storeCurrency: row.store_currency, phones: [row.owner_phone, row.support_phone] }),
-    );
-    const needsFeed = countries.some((country) => !["EGP", "USD"].includes(currencyFor(country)));
-    const rates: MessageRates = {
-      egpPerUsd: billing?.marketRate ?? null,
-      taxEnabled: billing?.taxEnabled === true,
-      taxRateBps: billing?.taxRateBps ?? 0,
-      usd: needsFeed ? await feedRates() : {},
-    };
-
-    rows.forEach((row, i) => {
-      const country = countries[i] ?? null;
+    for (const row of rows) {
+      const country = resolveMessageCountry({
+        storeCurrency: row.store_currency,
+        phones: [row.owner_phone, row.support_phone],
+      });
       const isPro = isProActive({
         plan: row.plan,
         planExpiresAt: row.plan_expires_at,
@@ -182,20 +134,18 @@ export async function getSellerWhatsAppMessages(sellerIds: string[]): Promise<Ma
             row.store_site_status === "published" && row.store_subdomain
               ? storeUrl(row.store_subdomain, row.store_custom_domain)
               : null,
-          plan: isPro ? "pro" : "free",
           step: sellerMessageStep({ templateChosen: row.template_chosen, hasActiveProduct: row.has_active_product }),
           activation: sellerMessageActivation({
-            // No billing state: treat as before the switch, so nobody is told to top up by mistake.
+            // No billing state: treat as before the switch, so no top-up is mentioned by mistake.
             usdLive: billing?.usdLive === true,
             isPro,
             hasTopUp: row.has_top_up,
             hasHadPositiveBalance: row.had_positive_balance,
             hasPendingTopUp: row.has_pending_top_up,
           }),
-          money: messageMoney(currencyFor(country), rates),
         }),
       );
-    });
+    }
   } catch (error) {
     console.error("[sellers] WhatsApp messages failed", error);
   }
