@@ -12,7 +12,7 @@
       "cta": "Create your store in under 10 minutes",
       "check1": "Free plan, no card",
       "check2": "Signup in under a minute",
-      "priceLine": "{orderFee} per order · or Pro at {pro}/month · no cut of your sales",
+      "priceLine": "{orderFee} per order · no cut of your sales",
       "sample": "Sample data from a demo store.",
       "composer": {
         "label": "Describe your store",

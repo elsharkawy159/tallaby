@@ -83,7 +83,7 @@ export async function HomeHero() {
             </li>
           ))}
         </ul>
-        {/* One muted line with both plans' prices, to the pricing section below (English shows USD only, like its other copy). */}
+        {/* One muted line with the Free plan's per-order fee, to the pricing section below (in the visitor's currency: EGP on Arabic pages, USD on English ones until the country is known). */}
         <a href="#pricing" className="mt-3 max-w-[560px] text-[13px] text-balance text-ink-500 underline-offset-2 hover:text-teal-700 hover:underline min-[641px]:text-sm">
           {withPrices(t("priceLine", PRICE_TOKENS))}
         </a>
