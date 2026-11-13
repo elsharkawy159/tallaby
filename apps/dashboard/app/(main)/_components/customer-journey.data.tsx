@@ -71,12 +71,14 @@ export async function CustomerJourneyData({ range, channel = "all" }: { range: H
           <li key={step.key} className="flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between gap-2 text-[13px]">
               <span>{t(step.key)}</span>
-              <span>
+              {/* Flex keeps the gap between the count and the percent: in Arabic the two
+                  numbers form one left-to-right run, so a margin lands on the outer side. */}
+              <span className="inline-flex items-baseline gap-1.5">
                 <b className="font-montserrat text-sm font-bold text-(--s-ink) tabular-nums">
                   {formatNumber(step.value, locale)}
                 </b>
                 {i > 0 && hasData && (
-                  <em className="ms-1.5 font-montserrat text-xs not-italic text-(--s-subtle) tabular-nums">
+                  <em className="font-montserrat text-xs not-italic text-(--s-subtle) tabular-nums">
                     {percent(step.value / top)}
                   </em>
                 )}
