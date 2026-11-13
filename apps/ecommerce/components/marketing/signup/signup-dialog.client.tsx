@@ -77,12 +77,23 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
   }, [openSignup]);
 
   const value = React.useMemo(() => ({ openSignup }), [openSignup]);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <SignupContext.Provider value={value}>
       {children}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent closeLabel={t("close")} className="max-h-[calc(100vh-32px)] overflow-auto rounded-[20px] p-[26px] sm:max-w-[440px] sm:p-8">
+        <DialogContent
+          ref={contentRef}
+          closeLabel={t("close")}
+          // No field gets focus on open (it pops the keyboard on phones): the dialog itself
+          // takes it, so screen readers still land inside and Tab/Escape keep working.
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            contentRef.current?.focus({ preventScroll: true });
+          }}
+          className="max-h-[calc(100vh-32px)] overflow-auto rounded-[20px] p-[26px] outline-none sm:max-w-[440px] sm:p-8"
+        >
           {open ? <SignupForm key={session} initialSlug={initialSlug} initialError={initialError} intake={intake} plan={plan} /> : null}
         </DialogContent>
       </Dialog>
@@ -283,7 +294,6 @@ function SignupForm({
           onChange={(e) => onSlugChange(e.target.value)}
           autoComplete="off"
           spellCheck={false}
-          autoFocus={!initialSlug}
           placeholder="yourbrand"
           aria-describedby="signup-slug-hint"
           aria-invalid={slugBad || undefined}
@@ -303,7 +313,6 @@ function SignupForm({
           type="email"
           dir="ltr"
           autoComplete="email"
-          autoFocus={Boolean(initialSlug)}
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
