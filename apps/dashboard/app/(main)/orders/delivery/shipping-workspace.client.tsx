@@ -203,7 +203,7 @@ export function ShippingWorkspace({
           `${r.orderNumber} ${r.customerName} ${r.customerPhone ?? ""} ${r.city ?? ""}`,
         cell: ({ row }) => (
           <div className="flex flex-col gap-0.5">
-            <div className="font-montserrat font-semibold text-(--s-ink)">#{row.original.orderNumber}</div>
+            <div className="font-montserrat font-semibold text-(--s-ink)"><bdi dir="ltr">#{row.original.orderNumber}</bdi></div>
             <div className="text-xs text-(--s-subtle)">
               {formatDateTime(row.original.createdAt, locale)}
             </div>
@@ -491,7 +491,7 @@ function PhoneOrderList({
                 onChange={() => toggle(r.id)}
               />
               <span className="min-w-0">
-                <b className="block font-montserrat text-sm font-semibold text-(--s-ink)">#{r.orderNumber}</b>
+                <b className="block font-montserrat text-sm font-semibold text-(--s-ink)"><bdi dir="ltr">#{r.orderNumber}</bdi></b>
                 <small className="block text-xs text-(--s-subtle)">{formatDateTime(r.createdAt, locale)}</small>
               </span>
             </label>

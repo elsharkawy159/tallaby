@@ -75,7 +75,7 @@ export function OrderCard({
           )}
           <div className="me-auto min-w-0">
             <p className="flex flex-wrap items-center gap-1.5 font-montserrat text-sm font-bold text-(--s-ink)">
-              #{order.orderNumber}
+              <bdi dir="ltr">#{order.orderNumber}</bdi>
               {order.isTest && (
                 <span className="rounded-full bg-amber-100 px-2 py-0.5 font-sans text-[11px] font-semibold text-amber-900 dark:bg-amber-400/20 dark:text-amber-200">
                   {t("testBadge")}

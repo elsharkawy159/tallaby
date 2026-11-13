@@ -130,7 +130,7 @@ function OrdersTable({
               onClick={() => onOpen(row.original.id)}
               className="cursor-pointer rounded-sm font-montserrat font-bold text-(--s-link) hover:underline"
             >
-              #{row.original.orderNumber}
+              <bdi dir="ltr">#{row.original.orderNumber}</bdi>
             </button>
             <div className="text-xs text-(--s-subtle)">
               {formatDateTime(row.original.createdAt, locale)}

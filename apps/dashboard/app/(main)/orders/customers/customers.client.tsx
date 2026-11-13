@@ -550,7 +550,7 @@ function CustomerSheet({
                       className="flex items-center justify-between gap-3 rounded-2xl border border-(--s-line) p-3 no-underline transition-colors duration-150 hover:bg-(--s-tint)"
                     >
                       <span className="min-w-0">
-                        <span className="block truncate font-montserrat text-[13px] font-bold text-(--s-ink)">#{o.orderNumber}</span>
+                        <span className="block truncate font-montserrat text-[13px] font-bold text-(--s-ink)"><bdi dir="ltr">#{o.orderNumber}</bdi></span>
                         <span className="block text-xs text-(--s-subtle)">{formatDateTime(o.createdAt, locale)}</span>
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-1">
