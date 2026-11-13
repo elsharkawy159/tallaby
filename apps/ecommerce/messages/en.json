@@ -2247,6 +2247,10 @@
     "resendSent": "Sent. Check your inbox.",
     "changeEmail": "Use a different email",
     "errEmail": "Enter a valid email",
+    "continue": "Continue",
+    "back": "Back",
+    "editEmail": "Change",
+    "editEmailLabel": "Change email",
     "errors": {
       "invalidInput": "Check the details and try again.",
       "invalidSubdomain": "Choose a valid store link.",

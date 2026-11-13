@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, CircleAlert, CircleCheck, Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
+import { ArrowLeft, Check, CircleAlert, CircleCheck, Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { Label } from "@workspace/ui/components/label";
@@ -15,6 +15,7 @@ import { useSlugCheck, type SlugState } from "./slug-check.client";
 import { resendSignupConfirmation, signUpWithEmail, startGoogleSignup } from "./signup.server";
 import { EGYPT_MOBILE, type SignupErrorKey, type SignupIntakeRef, type SignupResult } from "./signup.dto";
 import { PRO_PLAN_PATH, type SignupPlanHint } from "./signup-hint.lib";
+import { isEmailError, isSignupEmail, type SignupStage } from "./signup-step.lib";
 
 /**
  * `intake`: the hero composer's saved brief (F-82d), claimed by the new account.
@@ -107,6 +108,8 @@ const inputBox =
   "flex h-12 items-center overflow-hidden rounded-[10px] border bg-white transition-[border-color,box-shadow] focus-within:border-teal-700 focus-within:ring-[3px] focus-within:ring-teal-700/12";
 // 16px on phones so iOS Safari does not zoom in when a field gets focus.
 const inputEl = "h-full min-w-0 flex-1 bg-transparent px-3.5 text-base outline-none sm:text-[15px]";
+// A short fade as the step changes; none with reduced motion.
+const stepIn = "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200";
 
 function SignupForm({
   initialSlug,
@@ -121,6 +124,8 @@ function SignupForm({
 }) {
   const t = useTranslations("signup");
   const [step, setStep] = React.useState<Step>({ kind: "form" });
+  const [stage, setStage] = React.useState<SignupStage>("email");
+  const [emailTouched, setEmailTouched] = React.useState(false);
   const [slug, setSlug] = React.useState(initialSlug);
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -135,12 +140,28 @@ function SignupForm({
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
   const phoneRef = React.useRef<HTMLInputElement>(null);
+  // Field to focus once the next step has rendered (only after the seller's own click).
+  const focusAfter = React.useRef<React.RefObject<HTMLInputElement | null> | null>(null);
+
+  React.useEffect(() => {
+    focusAfter.current?.current?.focus();
+    focusAfter.current = null;
+  }, [stage, step.kind]);
+
+  const goTo = (next: SignupStage, focus: React.RefObject<HTMLInputElement | null>) => {
+    if (next === stage) {
+      focus.current?.focus();
+      return;
+    }
+    focusAfter.current = focus;
+    setStage(next);
+  };
 
   const slugStatus = slugState.kind === "result" ? slugState.result.status : null;
   const slugOk = slugStatus === "available" || slugStatus === "unknown";
   const slugBad = slugState.kind === "local" || (slugState.kind === "result" && !slugOk);
   const phoneOk = EGYPT_MOBILE.test(phone.replace(/[\s-]/g, ""));
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+  const emailOk = isSignupEmail(email);
   const busy = pending || googlePending;
 
   const onSlugChange = (raw: string) => {
@@ -170,7 +191,23 @@ function SignupForm({
       setStep({ kind: "done", subdomain: result.subdomain, builderUrl: result.builderUrl });
     }
     else if (result.status === "confirm_email") setStep({ kind: "confirm", email: email.trim() });
-    else if (result.status === "error") setFormError(result.error);
+    else if (result.status === "error") {
+      setFormError(result.error);
+      // An address problem goes back to step 1, where the error sits under the address.
+      if (isEmailError(result.error)) goTo("email", emailRef);
+    }
+  };
+
+  /** Step 1 → step 2: a valid address only, no network call. */
+  const onContinue = (event: React.FormEvent) => {
+    event.preventDefault();
+    setEmailTouched(true);
+    if (!emailOk) {
+      emailRef.current?.focus();
+      return;
+    }
+    if (isEmailError(formError)) setFormError(null);
+    goTo("details", slug && slugOk ? passwordRef : slugRef);
   };
 
   const onSubmit = (event: React.FormEvent) => {
@@ -196,8 +233,10 @@ function SignupForm({
         [phoneOk, phoneRef],
       ].find(([ok]) => !ok) as [boolean, React.RefObject<HTMLInputElement | null>] | undefined;
       if (firstBad) {
-        firstBad[1].current?.focus();
         setFormError("googleNeedsStore");
+        // From step 1 the store fields are not shown yet: open the Google step with them.
+        if (stage === "email") goTo("google", firstBad[1]);
+        else firstBad[1].current?.focus();
         return;
       }
     }
@@ -258,33 +297,74 @@ function SignupForm({
   }
 
   if (step.kind === "confirm") {
-    return <ConfirmEmailStep email={step.email} onChangeEmail={() => setStep({ kind: "form" })} />;
+    return (
+      <ConfirmEmailStep
+        email={step.email}
+        onChangeEmail={() => {
+          goTo("email", emailRef);
+          setStep({ kind: "form" });
+        }}
+      />
+    );
   }
 
-  return (
-    <form onSubmit={onSubmit} noValidate>
-      <DialogHeader className="mb-[22px] text-start">
-        <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("title")}</DialogTitle>
-        <DialogDescription className="text-sm text-neutral-600">{t("subtitle")}</DialogDescription>
-      </DialogHeader>
+  const header = (
+    <DialogHeader className="mb-[22px] text-start">
+      <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("title")}</DialogTitle>
+      <DialogDescription className="text-sm text-neutral-600">{t("subtitle")}</DialogDescription>
+    </DialogHeader>
+  );
 
-      <button
-        type="button"
-        onClick={onGoogle}
-        disabled={busy}
-        className="flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 text-[15px] font-semibold hover:bg-neutral-50 disabled:opacity-60 bg-white"
-      >
-        {googlePending ? (
-          <Loader2 className="size-5 animate-spin" aria-hidden />
-        ) : (
-          <span aria-hidden className="relative size-5 rounded-full bg-[conic-gradient(#ea4335_0_25%,#fbbc05_0_50%,#34a853_0_75%,#4285f4_0)] after:absolute after:inset-1 after:rounded-full after:bg-white after:content-['']" />
-        )}
-        {t("google")}
-      </button>
-      <div className="my-[18px] flex items-center gap-3 text-[13px] text-neutral-500 before:h-px before:flex-1 before:bg-neutral-200 before:content-[''] after:h-px after:flex-1 after:bg-neutral-200 after:content-['']">
-        {t("or")}
-      </div>
+  const googleButton = (
+    <button
+      type="button"
+      onClick={onGoogle}
+      disabled={busy}
+      className="flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 text-[15px] font-semibold hover:bg-neutral-50 disabled:opacity-60 bg-white"
+    >
+      {googlePending ? (
+        <Loader2 className="size-5 animate-spin" aria-hidden />
+      ) : (
+        <span aria-hidden className="relative size-5 rounded-full bg-[conic-gradient(#ea4335_0_25%,#fbbc05_0_50%,#34a853_0_75%,#4285f4_0)] after:absolute after:inset-1 after:rounded-full after:bg-white after:content-['']" />
+      )}
+      {t("google")}
+    </button>
+  );
 
+  const errorLine = formError ? (
+    <p role="alert" className="mt-1 mb-2 flex items-start gap-1.5 text-sm text-destructive">
+      <CircleAlert className="mt-0.5 size-4 flex-none" aria-hidden />
+      <span>
+        {t.rich(`errors.${formError}`, {
+          login: (c) => (
+            <a href={LOGIN_URL} className="font-semibold underline">
+              {c}
+            </a>
+          ),
+        })}
+      </span>
+    </p>
+  ) : null;
+
+  const terms = (
+    <p className="mt-3.5 text-center text-xs text-neutral-600">
+      {t.rich("terms", {
+        terms: (chunks) => (
+          <Link href="/terms" className="text-teal-700 underline-offset-2 hover:underline">
+            {chunks}
+          </Link>
+        ),
+        privacy: (chunks) => (
+          <Link href="/privacy" className="text-teal-700 underline-offset-2 hover:underline">
+            {chunks}
+          </Link>
+        ),
+      })}
+    </p>
+  );
+
+  const slugField = (
+    <>
       <FieldLabel htmlFor="signup-slug">{t("slugLabel")}</FieldLabel>
       <div dir="ltr" className={cn(inputBox, slugBad ? "border-destructive" : "border-neutral-200")}>
         <input
@@ -302,26 +382,123 @@ function SignupForm({
         <span className="pe-3.5 font-latin text-[15px] text-neutral-500">.{ROOT_DOMAIN}</span>
       </div>
       <SlugHint id="signup-slug-hint" state={slugState} host={`${slug}.${ROOT_DOMAIN}`} onPick={setSlug} />
+    </>
+  );
 
-      <FieldLabel htmlFor="signup-email" className="mt-3.5">
-        {t("email")}
+  const phoneField = (
+    <>
+      <FieldLabel htmlFor="signup-phone" className="mt-1.5">
+        {t("phone")}
       </FieldLabel>
-      <div className={cn(inputBox, touched && !emailOk ? "border-destructive" : "border-neutral-200")}>
+      <div className={cn(inputBox, touched && !phoneOk ? "border-destructive" : "border-neutral-200")}>
         <input
-          ref={emailRef}
+          ref={phoneRef}
+          id="signup-phone"
+          type="tel"
+          dir="ltr"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="01xxxxxxxxx"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          aria-describedby="signup-phone-hint"
+          aria-invalid={(touched && !phoneOk) || undefined}
+          className={cn(inputEl, "font-latin")}
+        />
+      </div>
+      <Hint id="signup-phone-hint" tone={touched && !phoneOk ? "bad" : "muted"}>
+        {touched && !phoneOk ? t("errors.phoneInvalid") : t("phoneHint")}
+      </Hint>
+    </>
+  );
+
+  // Step 1: Google or an address. Nothing else, so a new seller starts with one choice.
+  if (stage === "email") {
+    const emailBad = emailTouched && !emailOk;
+    return (
+      <form key="email" onSubmit={onContinue} noValidate className={stepIn}>
+        {header}
+        {googleButton}
+        <div className="my-[18px] flex items-center gap-3 text-[13px] text-neutral-500 before:h-px before:flex-1 before:bg-neutral-200 before:content-[''] after:h-px after:flex-1 after:bg-neutral-200 after:content-['']">
+          {t("or")}
+        </div>
+
+        <FieldLabel htmlFor="signup-email">{t("email")}</FieldLabel>
+        <div className={cn(inputBox, emailBad || isEmailError(formError) ? "border-destructive" : "border-neutral-200")}>
+          <input
+            ref={emailRef}
+            id="signup-email"
+            type="email"
+            dir="ltr"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-describedby="signup-email-hint"
+            aria-invalid={emailBad || isEmailError(formError) || undefined}
+            className={inputEl}
+          />
+        </div>
+        <Hint id="signup-email-hint" tone={emailBad ? "bad" : "muted"}>{emailBad ? t("errEmail") : null}</Hint>
+
+        {errorLine}
+
+        <CtaButton type="submit" disabled={busy} className="mt-1.5 w-full rounded-xl">
+          {t("continue")}
+        </CtaButton>
+        {terms}
+      </form>
+    );
+  }
+
+  // Step 2 for a hero intake signing up with Google: the store fields it needs first.
+  if (stage === "google") {
+    return (
+      <div key="google" className={stepIn}>
+        {header}
+        <BackButton
+          label={t("back")}
+          onClick={() => {
+            if (formError === "googleNeedsStore") setFormError(null);
+            goTo("email", emailRef);
+          }}
+        />
+        {slugField}
+        {phoneField}
+        {errorLine}
+        <div className="mt-1.5">{googleButton}</div>
+        {terms}
+      </div>
+    );
+  }
+
+  // Step 2: the rest of the form; the address stays visible, with a way back to change it.
+  return (
+    <form key="details" onSubmit={onSubmit} noValidate className={stepIn}>
+      {header}
+
+      <FieldLabel htmlFor="signup-email">{t("email")}</FieldLabel>
+      <div className={cn(inputBox, "mb-3.5 border-neutral-200 bg-neutral-50")}>
+        <input
           id="signup-email"
           type="email"
           dir="ltr"
+          readOnly
           autoComplete="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          aria-describedby="signup-email-hint"
-          aria-invalid={(touched && !emailOk) || undefined}
-          className={inputEl}
+          value={email.trim()}
+          className={cn(inputEl, "truncate text-neutral-700")}
         />
+        <button
+          type="button"
+          onClick={() => goTo("email", emailRef)}
+          aria-label={t("editEmailLabel")}
+          className="h-full flex-none px-3.5 text-sm font-semibold text-teal-700 underline-offset-2 hover:underline"
+        >
+          {t("editEmail")}
+        </button>
       </div>
-      <Hint id="signup-email-hint" tone={touched && !emailOk ? "bad" : "muted"}>{touched && !emailOk ? t("errEmail") : null}</Hint>
+
+      {slugField}
 
       <FieldLabel htmlFor="signup-password" className="mt-1.5">
         {t("password")}
@@ -352,43 +529,9 @@ function SignupForm({
         {password.length >= 8 ? t("passwordOk") : t("passwordHint")}
       </Hint>
 
-      <FieldLabel htmlFor="signup-phone" className="mt-1.5">
-        {t("phone")}
-      </FieldLabel>
-      <div className={cn(inputBox, touched && !phoneOk ? "border-destructive" : "border-neutral-200")}>
-        <input
-          ref={phoneRef}
-          id="signup-phone"
-          type="tel"
-          dir="ltr"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="01xxxxxxxxx"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          aria-describedby="signup-phone-hint"
-          aria-invalid={(touched && !phoneOk) || undefined}
-          className={cn(inputEl, "font-latin")}
-        />
-      </div>
-      <Hint id="signup-phone-hint" tone={touched && !phoneOk ? "bad" : "muted"}>
-        {touched && !phoneOk ? t("errors.phoneInvalid") : t("phoneHint")}
-      </Hint>
+      {phoneField}
 
-      {formError ? (
-        <p role="alert" className="mt-1 mb-2 flex items-start gap-1.5 text-sm text-destructive">
-          <CircleAlert className="mt-0.5 size-4 flex-none" aria-hidden />
-          <span>
-            {t.rich(`errors.${formError}`, {
-              login: (c) => (
-                <a href={LOGIN_URL} className="font-semibold underline">
-                  {c}
-                </a>
-              ),
-            })}
-          </span>
-        </p>
-      ) : null}
+      {errorLine}
 
       <CtaButton type="submit" disabled={busy} className="mt-1.5 w-full rounded-xl">
         {pending ? (
@@ -400,20 +543,7 @@ function SignupForm({
           t("submit")
         )}
       </CtaButton>
-      <p className="mt-3.5 text-center text-xs text-neutral-600">
-        {t.rich("terms", {
-          terms: (chunks) => (
-            <Link href="/terms" className="text-teal-700 underline-offset-2 hover:underline">
-              {chunks}
-            </Link>
-          ),
-          privacy: (chunks) => (
-            <Link href="/privacy" className="text-teal-700 underline-offset-2 hover:underline">
-              {chunks}
-            </Link>
-          ),
-        })}
-      </p>
+      {terms}
     </form>
   );
 }
@@ -469,6 +599,20 @@ function ConfirmEmailStep({ email, onChangeEmail }: { email: string; onChangeEma
         {status?.text}
       </p>
     </div>
+  );
+}
+
+/** Back to step 1 (the address); the arrow points back in both directions. */
+function BackButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="-mt-2 mb-3.5 inline-flex items-center gap-1 text-sm font-semibold text-teal-700 underline-offset-2 hover:underline"
+    >
+      <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+      {label}
+    </button>
   );
 }
 
