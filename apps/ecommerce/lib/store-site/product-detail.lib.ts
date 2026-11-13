@@ -37,7 +37,9 @@ function variantDetail(product: Product, variant: NonNullable<Product["productVa
   };
 }
 
-type StoreCategoryRef = { key: string; name: string | null; nameAr: string | null };
+type CategoryName = { key: string; name: string | null; nameAr: string | null };
+/** A store category, with its main category when it is a sub-category (F-95). */
+type StoreCategoryRef = CategoryName & { parent?: CategoryName };
 
 /**
  * The store category (`StorefrontCategory`, its catalog filter
@@ -46,10 +48,16 @@ type StoreCategoryRef = { key: string; name: string | null; nameAr: string | nul
  * picked from its Tallaby category, else the Tallaby root group holding it.
  * Without that list, a root category is its own key (slug, else id, no
  * name); a sub-category then has none, since its root is not known here.
+ * A store sub-category (F-95) carries its main category as `parent`.
  */
 export function storeCategoryOf(
   product: Pick<Product, "sellerCategoryId"> & { category: Pick<NonNullable<Product["category"]>, "id" | "slug" | "parentId"> | null | undefined },
-  storeCategories: readonly (StoreCategoryRef & { sellerCategoryId: string | null; sourceCategoryId: string | null; categoryIds: readonly string[] })[],
+  storeCategories: readonly (CategoryName & {
+    sellerCategoryId: string | null;
+    sourceCategoryId: string | null;
+    categoryIds: readonly string[];
+    parentKey?: string | null;
+  })[],
 ): StoreCategoryRef | null {
   const { sellerCategoryId, category } = product;
   const own = sellerCategoryId
@@ -57,7 +65,10 @@ export function storeCategoryOf(
     : category &&
       (storeCategories.find((c) => c.sellerCategoryId && c.sourceCategoryId === category.id) ??
         storeCategories.find((c) => !c.sellerCategoryId && c.categoryIds.includes(category.id)));
-  if (own) return { key: own.key, name: own.name, nameAr: own.nameAr };
+  if (own) {
+    const parent = own.parentKey ? storeCategories.find((c) => c.key === own.parentKey) : undefined;
+    return { key: own.key, name: own.name, nameAr: own.nameAr, ...(parent && { parent: { key: parent.key, name: parent.name, nameAr: parent.nameAr } }) };
+  }
   if (!category || category.parentId) return null;
   return { key: category.slug || category.id, name: null, nameAr: null };
 }
@@ -77,12 +88,16 @@ export function toProductDetail(
   const content = product.content ?? "";
   // The store category's own name when it has one, else the Tallaby category's.
   const named = storeCategory?.name || storeCategory?.nameAr ? storeCategory : product.category;
+  const pick = (c: CategoryName) => (locale === "ar" ? c.nameAr || c.name : c.name || c.nameAr) ?? "";
+  const parent = storeCategory?.parent && pick(storeCategory.parent) ? storeCategory.parent : null;
   const category = product.category
     ? {
         id: product.category.id,
         name: (named ? (locale === "ar" ? named.nameAr || named.name : named.name || named.nameAr) : null) ?? "",
         // The storefront catalog filtered to it, as the store's category lists link (catalog.server.ts).
         ...(storeCategory && { href: `/products?category=${encodeURIComponent(storeCategory.key)}` }),
+        // Store › main category › sub-category (F-95).
+        ...(parent && { parent: { name: pick(parent), href: `/products?category=${encodeURIComponent(parent.key)}` } }),
       }
     : null;
 

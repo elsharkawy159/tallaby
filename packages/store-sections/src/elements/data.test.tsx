@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { ComponentNode } from "../config/schema";
 import { collectCatalogQueries, collectContentQueries, collectFormIds } from "../core/registry";
 import { DEMO_PRODUCT } from "../core/demo-product";
-import type { RenderContext } from "../core/types";
+import type { CategorySummary, RenderContext } from "../core/types";
 import { storeSectionRegistry } from "../sections";
 import { customSection } from "../sections/custom";
 import { CATALOG_LIST_ID, boundValue, listRecords, nodeCatalogQuery, nodeContentQuery, nodeFormId, productCatalogSection, treeDataNeeds } from "./data";
@@ -139,6 +139,49 @@ describe("bindings", () => {
     const more = node("categoryList", { limit: 6, offset: 1 });
     expect(nodeCatalogQuery(more)).toEqual({ kind: "categories", limit: 7 });
     expect(listRecords(more, ctx({ catalog: { products: {}, categories } })).map((r) => r.record.id)).toEqual(["b", "c"]);
+  });
+});
+
+describe("category list levels (F-95)", () => {
+  // Store order is the flattened tree: rough, its pipes and wires, then lamps.
+  const tree = [
+    { id: "rough", parentKey: null, childCount: 2 },
+    { id: "pipes", parentKey: "rough", childCount: 0 },
+    { id: "wires", parentKey: "rough", childCount: 0 },
+    { id: "lamps", parentKey: null, childCount: 0 },
+  ].map((c) => ({ ...c, key: c.id, name: c.id, href: `/c/${c.id}`, image: null }));
+  const flat = ["a", "b", "c"].map((id) => ({ id, key: id, name: id, href: `/c/${id}`, image: null }));
+  const ids = (props: Record<string, unknown>, categories: CategorySummary[] = tree) =>
+    listRecords(node("categoryList", props), ctx({ catalog: { products: {}, categories } })).map((r) => r.record.id);
+
+  it("shows every category, flat, without a level (today's lists)", () => {
+    expect(ids({})).toEqual(["rough", "pipes", "wires", "lamps"]);
+    expect(ids({ level: "all", limit: 2, offset: 1 })).toEqual(["pipes", "wires"]);
+    expect(ids({}, flat)).toEqual(["a", "b", "c"]);
+    expect(ids({ level: "nonsense" }, flat)).toEqual(["a", "b", "c"]);
+    expect(nodeCatalogQuery(node("categoryList", { limit: 4 }))).toEqual({ kind: "categories", limit: 4 });
+  });
+
+  it("shows main categories only for top", () => {
+    expect(ids({ level: "top" })).toEqual(["rough", "lamps"]);
+    // A store with no main categories: every category is a main one.
+    expect(ids({ level: "top" }, flat)).toEqual(["a", "b", "c"]);
+    expect(ids({ level: "top", limit: 1, offset: 1 })).toEqual(["lamps"]);
+  });
+
+  it("shows one main category's sub-categories for children, none without a parent", () => {
+    expect(ids({ level: "children", parentCategoryId: "rough" })).toEqual(["pipes", "wires"]);
+    expect(ids({ level: "children", parentCategoryId: "lamps" })).toEqual([]);
+    expect(ids({ level: "children" })).toEqual([]);
+  });
+
+  it("keeps hand-picked categories first, whatever the level", () => {
+    expect(ids({ level: "top", categoryIds: ["wires", "lamps"] })).toEqual(["wires", "lamps"]);
+  });
+
+  it("loads the whole list when a level filters it", () => {
+    expect(nodeCatalogQuery(node("categoryList", { level: "top", limit: 4 }))).toEqual({ kind: "categories", limit: 200 });
+    expect(nodeCatalogQuery(node("categoryList", { level: "children", parentCategoryId: "rough" }))).toEqual({ kind: "categories", limit: 200 });
   });
 });
 

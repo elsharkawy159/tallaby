@@ -42,6 +42,8 @@ export async function ProductStructuredData({ product, locale, homeLabel, store 
   // The store category's own name when it has one, else the Tallaby category's (as the visible breadcrumb).
   const named = storeCategory?.name || storeCategory?.nameAr ? storeCategory : product.category;
   const categoryName = named ? (locale === "ar" ? named.nameAr || named.name : named.name || named.nameAr) : null;
+  const parent = storeCategory?.parent;
+  const parentName = parent ? (locale === "ar" ? parent.nameAr || parent.name : parent.name || parent.nameAr) : null;
 
   const shippingDetails = shipping
     ? offerShippingDetails({
@@ -66,6 +68,7 @@ export async function ProductStructuredData({ product, locale, homeLabel, store 
       productUrl,
       productTitle: product.title,
       category: storeCategory && categoryName ? { key: storeCategory.key, name: categoryName } : null,
+      parentCategory: parent && parentName ? { key: parent.key, name: parentName } : null,
     }),
   );
 

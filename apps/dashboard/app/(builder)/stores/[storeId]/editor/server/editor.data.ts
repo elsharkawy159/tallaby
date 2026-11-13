@@ -219,6 +219,7 @@ export async function loadEditorCatalog(
 
   // The store's categories as the storefront shows them (seller categories, else Tallaby roots), in its order.
   const groups = await storeCategoryGroups(sellerId, catalog);
+  // A main category's productIds hold its sub-categories' too (F-95); those come later in the list, so each product ends on its own category.
   const groupOf = new Map(groups.flatMap((g) => g.productIds.map((id) => [id, g.key] as const)));
   for (const product of list) {
     product.relatedCategoryId = product.categoryId;
@@ -236,6 +237,9 @@ export async function loadEditorCatalog(
         // The seller's own category photo first, else the best-rated product's.
         image: publicImage(g.ownImage, "categories") ?? publicImage(cover),
         productCount: g.productCount,
+        // Main and sub-categories (F-95): category lists' "Show" option and pickers.
+        parentId: g.parentKey,
+        childCount: g.childKeys.length,
       };
     }),
   };

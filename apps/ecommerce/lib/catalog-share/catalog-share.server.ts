@@ -57,10 +57,11 @@ export async function resolveSharedCatalog(store: Storefront, token: string, loc
     rows = orderCatalogRows(found, payload.source.productIds);
   } else if (payload.source.kind === "category") {
     const key = payload.source.categoryKey;
-    const category = (await getStorefrontCategories(store.id, store.storeId)).find((c) => c.key === key);
+    const categories = await getStorefrontCategories(store.id, store.storeId);
+    const category = categories.find((c) => c.key === key);
     if (category) {
       categoryName = (locale === "ar" ? category.nameAr || category.name : category.name || category.nameAr) ?? null;
-      const result = await getProducts({ ...base, storeCategory: storeCategoryFilter(category), sortBy: "newest" });
+      const result = await getProducts({ ...base, storeCategory: storeCategoryFilter(category, categories), sortBy: "newest" });
       rows = result.success ? (result.data ?? []) : [];
     }
   } else {

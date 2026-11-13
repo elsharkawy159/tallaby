@@ -123,7 +123,16 @@ export type EditorStoreData = {
   failed: ("sales" | "brands" | "reviews" | "coupons" | "posts")[];
 };
 
-export type EditorCategory = { id: string; name: { ar: string; en: string }; image: string | null; productCount: number };
+export type EditorCategory = {
+  id: string;
+  name: { ar: string; en: string };
+  image: string | null;
+  productCount: number;
+  /** Its main category's id when it is a sub-category (F-95); optional for older snapshots. */
+  parentId?: string | null;
+  /** How many sub-categories it has (F-95); optional for older snapshots. */
+  childCount?: number;
+};
 
 /** Everything the canvas draws from the store (initial load and refresh). */
 export type EditorCatalogSnapshot = {

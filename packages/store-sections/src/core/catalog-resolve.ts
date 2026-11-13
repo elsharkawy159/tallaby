@@ -58,9 +58,16 @@ export function isDiscounted(product: Pick<ProductCandidate, "price" | "compareA
 /**
  * The products a query shows, in display order, at most `limit`.
  * `categoryOrder` is the store's category ids in display order, for a
- * `category` query by position (`categoryIndex`).
+ * `category` query by position (`categoryIndex`). `categoryParents` maps a
+ * sub-category to its main category (F-95): a main category's query also
+ * shows its sub-categories' products, as on the storefront.
  */
-export function selectProducts<T extends ProductCandidate>(query: ProductQuery, candidates: readonly T[], categoryOrder: readonly string[] = []): T[] {
+export function selectProducts<T extends ProductCandidate>(
+  query: ProductQuery,
+  candidates: readonly T[],
+  categoryOrder: readonly string[] = [],
+  categoryParents?: ReadonlyMap<string, string>,
+): T[] {
   let list: T[];
   switch (query.source) {
     case "selected": {
@@ -76,7 +83,8 @@ export function selectProducts<T extends ProductCandidate>(query: ProductQuery, 
       break;
     case "category": {
       const categoryId = query.categoryId ?? (query.categoryIndex ? categoryOrder[query.categoryIndex - 1] : undefined);
-      list = categoryId ? candidates.filter((p) => p.categoryId === categoryId).sort(newestFirst) : [];
+      const inCategory = (key: string | null) => key === categoryId || (key != null && categoryParents?.get(key) === categoryId);
+      list = categoryId ? candidates.filter((p) => inCategory(p.categoryId)).sort(newestFirst) : [];
       break;
     }
     case "best-sellers":

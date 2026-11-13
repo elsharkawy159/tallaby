@@ -2036,6 +2036,8 @@
     "openMenu": "Open menu",
     "menuNote": "{store} store links",
     "categoriesLabel": "Shop by category",
+    "subCategoriesLabel": "Sub-categories",
+    "allInCategory": "All {category}",
     "allProducts": "Everything",
     "productsHeading": "Products",
     "catalogMetaDescription": "Browse all of {store}'s products and order online in a few simple steps.",

@@ -98,3 +98,13 @@ describe("selectProducts", () => {
     expect(ids(selectProducts(q("newest", { sort: "rating", limit: 2 }), all))).toEqual(["c", "e"]);
   });
 });
+
+describe("selectProducts main categories (F-95)", () => {
+  it("shows a main category's own and its sub-categories' products; a sub-category only its own", () => {
+    const parents = new Map([["c2", "c1"]]);
+    expect(ids(selectProducts(q("category", { categoryId: "c1" }), all, ["c1", "c2"], parents))).toEqual(["e", "d", "c", "b", "a"]);
+    expect(ids(selectProducts(q("category", { categoryId: "c2" }), all, ["c1", "c2"], parents))).toEqual(["c"]);
+    // Without the map (a store with no main categories), as before.
+    expect(ids(selectProducts(q("category", { categoryId: "c1" }), all, ["c1", "c2"]))).toEqual(["e", "d", "b", "a"]);
+  });
+});

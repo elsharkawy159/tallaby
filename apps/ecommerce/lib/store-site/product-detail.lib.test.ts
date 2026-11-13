@@ -129,6 +129,23 @@ describe("breadcrumb category link", () => {
     expect(storeCategoryOf(product(null, null), storeCategories)).toBeNull();
   });
 
+  it("carries the main category of a sub-category, for Store › Main › Sub (F-95)", () => {
+    const tree = [
+      { ...own("rough", null), name: "Rough-in", nameAr: "تأسيس", parentKey: null },
+      { ...own("wires", null), name: "Wires", nameAr: "أسلاك", parentKey: "rough" },
+    ];
+    const ref = storeCategoryOf(product("wires", { id: "c-1", slug: "shirts", parentId: "root-1" }), tree);
+    expect(ref).toEqual({ key: "wires", name: "Wires", nameAr: "أسلاك", parent: { key: "rough", name: "Rough-in", nameAr: "تأسيس" } });
+    expect(toProductDetail(base as unknown as Product, "ar", { storeCategory: ref }).category).toEqual({
+      id: "c-1",
+      name: "أسلاك",
+      href: "/products?category=wires",
+      parent: { name: "تأسيس", href: "/products?category=rough" },
+    });
+    // A main category has no parent part.
+    expect(storeCategoryOf(product("rough", null), tree)).toEqual({ key: "rough", name: "Rough-in", nameAr: "تأسيس" });
+  });
+
   it("has no link without a key", () => {
     expect(toProductDetail(base as unknown as Product, "en").category).toEqual({ id: "c-1", name: "Shirts" });
   });

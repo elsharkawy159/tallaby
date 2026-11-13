@@ -138,14 +138,17 @@ const listProducts = createCachedQuery({
       }
 
       if (filters.storeCategory) {
-        const { sellerCategoryId, sourceCategoryId, categoryIds } = filters.storeCategory;
+        const { sellerCategoryId, sourceCategoryId, categoryIds, children = [] } = filters.storeCategory;
         // Its own products, plus unlinked ones of the Tallaby category it was picked from;
+        // a main category's sub-categories match by the same rule (F-95);
         // a Tallaby root group holds only unlinked products (its ids leave out picked categories).
+        const own = sellerCategoryId ? [{ sellerCategoryId, sourceCategoryId }, ...children] : [];
+        const sources = own.flatMap((c) => (c.sourceCategoryId ? [c.sourceCategoryId] : []));
         conditions.push(
           sellerCategoryId
             ? (or(
-                eq(products.sellerCategoryId, sellerCategoryId),
-                sourceCategoryId ? and(isNull(products.sellerCategoryId), eq(products.categoryId, sourceCategoryId)) : undefined,
+                inArray(products.sellerCategoryId, own.map((c) => c.sellerCategoryId)),
+                sources.length ? and(isNull(products.sellerCategoryId), inArray(products.categoryId, sources)) : undefined,
               ) ?? sql`false`)
             : (and(
                 isNull(products.sellerCategoryId),
@@ -277,6 +280,8 @@ const listProducts = createCachedQuery({
           orderBy.push(desc(products.reviewCount));
           break;
         case "featured": {
+          // A main category's own manual order (positions are per category); its sub-categories'
+          // products it has no position for follow, newest first (F-95).
           const sellerCategoryId = filters.storeCategory?.sellerCategoryId;
           if (sellerCategoryId) {
             orderBy.push(

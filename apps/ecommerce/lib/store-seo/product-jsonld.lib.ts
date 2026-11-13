@@ -76,10 +76,15 @@ export function productBreadcrumb(input: {
   productUrl: string;
   productTitle: string;
   category?: { key: string; name: string } | null;
+  /** The category's main category when it is a sub-category (F-95). */
+  parentCategory?: { key: string; name: string } | null;
 }): { name: string; url: string }[] {
-  const { home, homeLabel, productUrl, productTitle, category } = input;
+  const { home, homeLabel, productUrl, productTitle, category, parentCategory } = input;
   return [
     { name: homeLabel, url: home },
+    ...(category?.name && parentCategory?.name
+      ? [{ name: parentCategory.name, url: `${home}/products?category=${encodeURIComponent(parentCategory.key)}` }]
+      : []),
     ...(category?.name ? [{ name: category.name, url: `${home}/products?category=${encodeURIComponent(category.key)}` }] : []),
     { name: productTitle, url: productUrl },
   ];

@@ -385,7 +385,8 @@ function Rating({ product, props, attrs, ctx }: StillProps) {
 }
 
 /**
- * Breadcrumbs: Home › the product's category › the product (current page).
+ * Breadcrumbs: Home › the product's category › the product (current page);
+ * Home › main category › sub-category › product for a sub-category (F-95).
  * The product title keeps to one line on phones; the chevrons turn with the
  * reading direction.
  */
@@ -406,10 +407,20 @@ function Breadcrumbs({ product, props, attrs, ctx }: StillProps) {
             {home}
           </StoreLink>
         </li>
+        {category?.parent?.name.trim() && (
+          <>
+            {sep}
+            <li className="min-w-0 max-w-[25%] shrink-0 truncate">
+              <StoreLink ctx={ctx} href={category.parent.href} className={link}>
+                {category.parent.name}
+              </StoreLink>
+            </li>
+          </>
+        )}
         {category && (
           <>
             {sep}
-            <li className="min-w-0 max-w-[40%] shrink-0 truncate">
+            <li className={category.parent?.name.trim() ? "min-w-0 max-w-[25%] shrink-0 truncate" : "min-w-0 max-w-[40%] shrink-0 truncate"}>
               <StoreLink ctx={ctx} href={categoryHref(category)} className={link}>
                 {category.name}
               </StoreLink>

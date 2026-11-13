@@ -336,6 +336,14 @@ describe("product page upgrade (breadcrumbs, meta row, perks, delivery)", () => 
     expect(draw(node("productBreadcrumbs", { showCategory: false }), withCategory, { mode: "public" })).not.toContain("Audio");
     // The editor draws the trail as plain text.
     expect(draw(node("productBreadcrumbs"), withCategory)).not.toContain("href=");
+    // A sub-category (F-95): home › main category › sub-category › product.
+    const sub = draw(
+      node("productBreadcrumbs"),
+      { ...product, category: { id: "c", name: "Wires", href: "/products?category=wires", parent: { name: "Rough-in", href: "/products?category=rough" } } },
+      { mode: "public" },
+    );
+    expect(sub.indexOf('href="/products?category=rough"')).toBeGreaterThan(-1);
+    expect(sub.indexOf("Rough-in")).toBeLessThan(sub.indexOf("Wires"));
   });
 
   it("productRating shows the category badge, also before any review", () => {

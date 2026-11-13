@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { PackageSearch, Search } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
+import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { getProducts } from "@/lib/products/product-list.server";
 import ProductCard from "@/components/product-page/ProductCard";
@@ -48,6 +49,10 @@ export async function StorefrontCatalog({
     ? ((locale === "ar" ? active.nameAr || active.name : active.name || active.nameAr) ?? "")
     : t("productsHeading");
   const Heading = basePath === "/" ? "h2" : "h1";
+  // A main category (F-95) lists its sub-categories; a sub-category, its main category and its siblings.
+  const main = active?.parentKey ? categories.find((c) => c.key === active.parentKey) : active;
+  const subCategories = main?.childKeys.flatMap((key) => categories.filter((c) => c.key === key)) ?? [];
+  const name = (c: StorefrontCategory) => (locale === "ar" ? c.nameAr || c.name : c.name || c.nameAr) ?? "";
 
   return (
     <section id="products" className="scroll-mt-20">
@@ -85,12 +90,40 @@ export async function StorefrontCatalog({
         </div>
       </div>
 
+      {main && subCategories.length > 0 && (
+        <nav aria-label={t("subCategoriesLabel")} className="-mt-2 mb-6">
+          <ul className="flex flex-wrap gap-2">
+            {[main, ...subCategories].map((category) => {
+              const current = category.key === active?.key;
+              return (
+                <li key={category.key}>
+                  <Link
+                    href={storeQueryHref(basePath, { sort: query.sort, category: category.key })}
+                    scroll={false}
+                    aria-current={current ? "true" : undefined}
+                    className={cn(
+                      "inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--sf-brand) motion-reduce:transition-none",
+                      current
+                        ? "border-(--sf-brand) bg-(--sf-brand) text-(--sf-brand-ink)"
+                        : "border-(--sf-line) bg-(--sf-paper) text-(--sf-ink) hover:border-(--sf-brand) hover:text-(--sf-brand)",
+                    )}
+                  >
+                    {category.key === main.key ? t("allInCategory", { category: name(main) }) : name(category)}
+                    <span className={cn("tabular-nums text-xs", current ? "opacity-80" : "text-(--sf-muted)")}>{category.productCount}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      )}
+
       <Suspense key={JSON.stringify(query)} fallback={<ProductsGridSkeleton />}>
         <CatalogGrid
           sellerId={sellerId}
           storeId={storeId}
           locale={locale}
-          storeCategory={active ? storeCategoryFilter(active) : undefined}
+          storeCategory={active ? storeCategoryFilter(active, categories) : undefined}
           query={query}
           basePath={basePath}
           renderProducts={renderProducts}

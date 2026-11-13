@@ -116,6 +116,9 @@ function categorySummary(category: StorefrontCategory, locale: string): Category
     href: `/products?category=${encodeURIComponent(category.key)}`,
     image: category.coverImage,
     productCount: category.productCount,
+    // Main and sub-categories (F-95), for category lists' "Show" option.
+    parentKey: category.parentKey,
+    childCount: category.childKeys.length,
   };
 }
 
@@ -226,7 +229,7 @@ export async function resolveStoreCatalog(
           products[instanceId] = [];
           return;
         }
-        storeCategory = storeCategoryFilter(category);
+        storeCategory = storeCategoryFilter(category, storeCategories);
       }
       const result = await fetchPage(
         {

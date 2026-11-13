@@ -72,6 +72,15 @@ const idsOf = (value: unknown) =>
 /** A list's "Nth category of the store" (1–8), or null. */
 const categoryIndexOf = (value: unknown) => (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 8 ? value : null);
 
+/**
+ * Which categories a category list shows (F-95): `all` (absent, the flat
+ * store list as before), `top` (main categories only) or `children` (the
+ * sub-categories of `parentCategoryId`).
+ */
+export const CATEGORY_LIST_LEVELS = ["all", "top", "children"] as const;
+export type CategoryListLevel = (typeof CATEGORY_LIST_LEVELS)[number];
+export const categoryListLevel = (value: unknown): CategoryListLevel => CATEGORY_LIST_LEVELS.find((l) => l === value) ?? "all";
+
 /** Records a list skips first (a "lead and list" design shows the first record once). */
 const offsetOf = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? Math.min(10, Math.max(0, Math.round(value))) : 0);
 
@@ -117,8 +126,9 @@ export function nodeCatalogQuery(node: ComponentNode, opts?: { product?: Product
     return index ? { kind: "products", source: "newest", sort: "default", limit: index } : null;
   }
   if (node.type === "categoryList") {
-    // Picked categories may sit anywhere in the store's list: load them all.
-    return { kind: "categories", limit: idsOf(props.categoryIds).length ? 200 : clampLimit(props.limit, 8) + offsetOf(props.offset) };
+    // Picked categories, main categories or one's sub-categories may sit anywhere in the store's list: load them all.
+    const wide = idsOf(props.categoryIds).length > 0 || categoryListLevel(props.level) !== "all";
+    return { kind: "categories", limit: wide ? 200 : clampLimit(props.limit, 8) + offsetOf(props.offset) };
   }
   return null;
 }
@@ -229,18 +239,34 @@ export function listRecords(node: ComponentNode, ctx: RenderContext): DataRecord
     return (ctx.catalog.products[node.id] ?? []).slice(offset, offset + clampLimit(props.limit, 8)).map((record) => ({ kind: "productList", record, hoverImage: props.hoverSecondImage !== false }));
   }
   if (node.type === "categoryList") {
-    const picked = idsOf(props.categoryIds);
-    const all = ctx.catalog.categories ?? [];
-    const list = picked.length
-      ? picked.map((id) => all.find((c) => c.id === id)).filter((c): c is CategorySummary => Boolean(c))
-      : all.slice(offsetOf(props.offset), offsetOf(props.offset) + clampLimit(props.limit, 8));
-    return list.map((record) => ({ kind: "categoryList", record }));
+    return categoryListRecords(props, ctx.catalog.categories ?? []).map((record) => ({ kind: "categoryList", record }));
   }
   if (node.type === "postList") {
     const offset = offsetOf(props.offset);
     return (ctx.content?.items[node.id] ?? []).slice(offset, offset + clampLimit(props.limit, 3)).map((record) => ({ kind: "postList", record }));
   }
   return [];
+}
+
+/**
+ * The categories a category list shows, in order: hand-picked ones (in the
+ * seller's order) win; else the store's list filtered by `level` (F-95),
+ * then `offset` and `limit`. Without `level` this is the flat list as before.
+ */
+export function categoryListRecords(props: Record<string, unknown>, all: readonly CategorySummary[]): CategorySummary[] {
+  const picked = idsOf(props.categoryIds);
+  if (picked.length) return picked.map((id) => all.find((c) => c.id === id)).filter((c): c is CategorySummary => Boolean(c));
+  const level = categoryListLevel(props.level);
+  const parentId = idOf(props.parentCategoryId);
+  const shown =
+    level === "top"
+      ? all.filter((c) => !c.parentKey)
+      : level === "children"
+        ? parentId
+          ? all.filter((c) => c.parentKey === parentId)
+          : []
+        : all;
+  return shown.slice(offsetOf(props.offset), offsetOf(props.offset) + clampLimit(props.limit, 8));
 }
 
 /** An amount without its currency, in western digits like the host's prices (`formatPricePlain`). */

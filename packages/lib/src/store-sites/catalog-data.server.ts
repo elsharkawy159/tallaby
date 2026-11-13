@@ -13,6 +13,7 @@ import { isNotNull } from "drizzle-orm";
 import { isCouponPopupTrigger, type StoreCouponOfferCandidate } from "../orders/coupon-popup.lib";
 import { getCouponChannels, getCouponProductIds } from "../orders/coupon-scope.lib";
 import { aliasedProductShownInStore, couponInStore, productShownInStore, taxonomyInStore, type StoreCatalogScope } from "../stores/store-scope.server";
+import { shapeStoreCategoryGroups, type CategoryGroupRow, type StoreCategoryGroup } from "./category-groups.lib";
 import { BEST_SELLER_DAYS, SOLD_ORDER_STATUSES, UNSOLD_ITEM_STATUSES, couponDiscountType, isCouponLive, type CouponDiscountType, ratingStats, reviewAuthorName, type RatingStats } from "./catalog-data.lib";
 
 /** Units sold per product in this store's orders over the last `days` days. */
@@ -59,24 +60,7 @@ export async function sellerBrandList(sellerId: string, catalog: StoreCatalogSco
     .limit(Math.min(Math.max(limit, 1), 100));
 }
 
-export type StoreCategoryGroup = {
-  /** Catalog filter key: the seller category id, else the Tallaby root's slug (or id). */
-  key: string;
-  /** The seller's own category (0068); null for a Tallaby root group. */
-  sellerCategoryId: string | null;
-  /** The Tallaby category the seller category was picked from. */
-  sourceCategoryId: string | null;
-  name: string | null;
-  nameAr: string | null;
-  productCount: number;
-  /** The Tallaby categories (`products.category_id`) of the products in it. */
-  categoryIds: string[];
-  productIds: string[];
-  /** Storage path in the `categories` bucket: the seller's own category photo. */
-  ownImage: string | null;
-  /** First image entry (a path or `{ url }`) of the best-rated product in it. */
-  productImage: unknown;
-};
+export type { StoreCategoryGroup };
 
 /**
  * The store's categories, as its category lists and catalog filter show them
@@ -90,7 +74,10 @@ export type StoreCategoryGroup = {
  * products); null is the seller's whole account catalog. After the split a
  * product's seller category is one of its own store's (F-87d): the join also
  * needs `spc.store_id = p.store_id`, so another store's pick of the same
- * Tallaby category never claims the product.
+ * Tallaby category never claims the product. Seller categories come in tree
+ * order, and a main category covers its sub-categories' products too (F-95,
+ * `shapeStoreCategoryGroups`); a store with no main categories gets its list
+ * exactly as before.
  */
 export async function storeCategoryGroups(
   sellerId: string,
@@ -109,11 +96,15 @@ export async function storeCategoryGroups(
     items AS (
       SELECT p.id, p.category_id, p.images, p.average_rating, p.created_at,
              spc.id AS spc_id, spc.source_category_id, spc.name AS spc_name, spc.name_ar AS spc_name_ar,
-             spc.image_url, spc.position, spc.created_at AS spc_created_at,
+             spc.image_url, spc.position, spc.created_at AS spc_created_at, spc.parent_id AS spc_parent_id,
+             pc.source_category_id AS pc_source_category_id, pc.name AS pc_name, pc.name_ar AS pc_name_ar,
+             pc.image_url AS pc_image_url, pc.position AS pc_position, pc.created_at AS pc_created_at,
              r.id AS root_id, r.slug AS root_slug, r.name AS root_name, r.name_ar AS root_name_ar
       FROM products p
       LEFT JOIN seller_product_categories spc ON spc.seller_id = p.seller_id ${sameStore}
         AND (spc.id = p.seller_category_id OR (p.seller_category_id IS NULL AND spc.source_category_id = p.category_id))
+      -- Its main category (0171, F-95; the trigger keeps both in one store): lists a main category whose products all sit in sub-categories.
+      LEFT JOIN seller_product_categories pc ON pc.id = spc.parent_id AND pc.seller_id = spc.seller_id
       LEFT JOIN ancestry a ON spc.id IS NULL AND a.id = p.category_id AND a.parent_id IS NULL
       LEFT JOIN categories r ON r.id = a.root_id
       WHERE p.seller_id = ${sellerId} AND p.status = 'active' AND (spc.id IS NOT NULL OR r.id IS NOT NULL) ${selected}
@@ -129,16 +120,34 @@ export async function storeCategoryGroups(
            min(nullif(btrim(image_url), '')) AS "ownImage",
            (array_agg(images -> 0 ORDER BY average_rating DESC NULLS LAST, created_at DESC)
               FILTER (WHERE jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0))[1]
-             AS "productImage"
+             AS "productImage",
+           (array_agg(average_rating ORDER BY average_rating DESC NULLS LAST, created_at DESC)
+              FILTER (WHERE jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0))[1]
+             AS "bestRating",
+           (array_agg(extract(epoch FROM created_at)::float8 ORDER BY average_rating DESC NULLS LAST, created_at DESC)
+              FILTER (WHERE jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0))[1]
+             AS "bestCreatedAt",
+           min(spc_parent_id::text) AS "parentId",
+           min(position) AS position,
+           extract(epoch FROM min(spc_created_at))::float8 AS "createdAt",
+           min(pc_source_category_id::text) AS "parentSourceCategoryId",
+           min(pc_name) AS "parentName",
+           min(pc_name_ar) AS "parentNameAr",
+           min(pc_image_url) AS "parentImage",
+           min(pc_position) AS "parentPosition",
+           extract(epoch FROM min(pc_created_at))::float8 AS "parentCreatedAt"
     FROM items
     GROUP BY 1, 2
     ORDER BY (spc_id IS NULL), min(position), min(spc_created_at), count(*) DESC, name
   `);
-  return [...rows] as StoreCategoryGroup[];
+  return shapeStoreCategoryGroups([...rows] as unknown as CategoryGroupRow[]);
 }
 
 /** What a product listing needs to show one store category's products, by the same rule. */
-export type StoreCategoryFilter = Pick<StoreCategoryGroup, "sellerCategoryId" | "sourceCategoryId" | "categoryIds">;
+export type StoreCategoryFilter = Pick<StoreCategoryGroup, "sellerCategoryId" | "sourceCategoryId" | "categoryIds"> & {
+  /** A main category's sub-categories (F-95): their products match by the same rule. Empty for the rest. */
+  children: Array<{ sellerCategoryId: string; sourceCategoryId: string | null }>;
+};
 
 export type StoreReviewRow = {
   id: string;

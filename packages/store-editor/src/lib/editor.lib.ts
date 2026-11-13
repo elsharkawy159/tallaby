@@ -260,12 +260,15 @@ export function resolveCanvasCatalog(
   const reviews: Record<string, ReviewSummary[]> = {};
   const coupons: Record<string, CouponSummary> = {};
   const name = (value: { ar: string; en: string }) => value[locale] || value.ar || value.en;
+  // A main category's product lists also show its sub-categories' products (F-95).
+  const categoryParents = new Map(catalog.categories.flatMap((c) => (c.parentId ? [[c.id, c.parentId] as const] : [])));
   for (const [instanceId, query] of Object.entries(queries)) {
     if (query.kind === "products") {
       products[instanceId] = selectProducts(
         query,
         catalog.products,
         catalog.categories.map((c) => c.id),
+        categoryParents,
       ).map((p) => toSummary(p, locale));
     } else if (query.kind === "reviews") {
       reviews[instanceId] = (catalog.reviews ?? [])
@@ -305,6 +308,8 @@ export function resolveCanvasCatalog(
       href: "#",
       image: c.image,
       productCount: c.productCount,
+      ...(c.parentId !== undefined && { parentKey: c.parentId }),
+      ...(c.childCount !== undefined && { childCount: c.childCount }),
     })),
     ...(catalog.brands && { brands: catalog.brands.map((b) => ({ id: b.id, name: name(b.name), logo: b.logo, href: null })) }),
     reviews,

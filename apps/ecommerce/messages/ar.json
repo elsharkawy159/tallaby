@@ -2036,6 +2036,8 @@
     "openMenu": "افتح القائمة",
     "menuNote": "روابط متجر {store}",
     "categoriesLabel": "تسوق حسب القسم",
+    "subCategoriesLabel": "الأقسام الفرعية",
+    "allInCategory": "كل {category}",
     "allProducts": "كل المنتجات",
     "productsHeading": "المنتجات",
     "catalogMetaDescription": "تصفح كل منتجات {store} واطلب أونلاين بخطوات بسيطة.",

@@ -350,6 +350,10 @@ export type StorefrontCategory = {
   productCount: number;
   /** The Tallaby categories (`products.category_id`) of its products; filter with `storeCategoryFilter`. */
   categoryIds: string[];
+  /** Its main category's key when it is a sub-category (F-95); null otherwise. */
+  parentKey: string | null;
+  /** Its sub-categories' keys (with products), in tree order; empty for the rest. A main category's count includes theirs. */
+  childKeys: string[];
   /**
    * Public URL of the category photo: the seller's own category image when
    * they added one, else the first image of their best-rated product in it.
@@ -357,9 +361,20 @@ export type StorefrontCategory = {
   coverImage: string | null;
 };
 
-/** The `getProducts` filter for one store category's products. */
-export function storeCategoryFilter(category: StorefrontCategory): StoreCategoryFilter {
-  return { sellerCategoryId: category.sellerCategoryId, sourceCategoryId: category.sourceCategoryId, categoryIds: category.categoryIds };
+/**
+ * The `getProducts` filter for one store category's products: a main
+ * category's also match its sub-categories (F-95), looked up in `categories`
+ * (the same `getStorefrontCategories` list).
+ */
+export function storeCategoryFilter(
+  category: StorefrontCategory,
+  categories: readonly Pick<StorefrontCategory, "key" | "sellerCategoryId" | "sourceCategoryId">[],
+): StoreCategoryFilter {
+  const children = category.childKeys.flatMap((key) => {
+    const child = categories.find((c) => c.key === key);
+    return child?.sellerCategoryId ? [{ sellerCategoryId: child.sellerCategoryId, sourceCategoryId: child.sourceCategoryId }] : [];
+  });
+  return { sellerCategoryId: category.sellerCategoryId, sourceCategoryId: category.sourceCategoryId, categoryIds: category.categoryIds, children };
 }
 
 /**
@@ -432,8 +447,9 @@ export async function getStorefrontCategories(sellerId: string, storeId: string)
         return [] as StorefrontCategory[];
       }
     },
-    // v3: always per store and catalog mode (F-87c). v2: seller categories (storeCategoryGroups); never read a cached root-only list.
-    [`storefront-categories-v3-${sellerId}-${storeId}-${splitKey(catalogSplit)}`],
+    // v4: main and sub-categories (F-95: parentKey, childKeys, rolled-up counts). v3: always per store and catalog
+    // mode (F-87c). v2: seller categories (storeCategoryGroups); never read a cached root-only list.
+    [`storefront-categories-v4-${sellerId}-${storeId}-${splitKey(catalogSplit)}`],
     {
       tags: [...storefrontCatalogTags(sellerId, storeId), categoryTags.all()],
       revalidate: 3600,

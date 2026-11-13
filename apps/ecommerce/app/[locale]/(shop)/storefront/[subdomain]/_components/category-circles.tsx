@@ -14,6 +14,9 @@ import s from "../storefront.module.css";
 /**
  * The seller's categories as round thumbnails, each showing one of the
  * seller's own products from that category (as on the tallaby.com home).
+ * Only main categories (F-95): a main category's circle counts its
+ * sub-categories' products and stays current while one of them is open; the
+ * catalog shows its sub-categories as chips.
  */
 export async function CategoryCircles({
   categories,
@@ -29,11 +32,14 @@ export async function CategoryCircles({
     getTranslations("storefront"),
     getLocale(),
   ]);
-  if (categories.length < 2) return null;
+  const mains = categories.filter((c) => !c.parentKey);
+  if (mains.length < 2) return null;
+  const activeKey = categories.find((c) => c.key === query.category)?.parentKey ?? query.category;
 
   const label = (c: StorefrontCategory) =>
     (locale === "ar" ? c.nameAr || c.name : c.name || c.nameAr) ?? "";
-  const total = categories.reduce((sum, c) => sum + c.productCount, 0);
+  // Main categories already count their sub-categories' products.
+  const total = mains.reduce((sum, c) => sum + c.productCount, 0);
   const href = (category?: string) =>
     storeQueryHref(basePath, { sort: query.sort, category });
 
@@ -60,13 +66,13 @@ export async function CategoryCircles({
           <span className={s.circleName}>{t("allProducts")}</span>
           <span className={s.circleCount}>{total}</span>
         </Link>
-        {categories.map((category) => (
+        {mains.map((category) => (
           <Link
             key={category.key}
             href={href(category.key)}
             scroll={false}
             className={s.circleLink}
-            aria-current={query.category === category.key ? "true" : undefined}
+            aria-current={activeKey === category.key ? "true" : undefined}
           >
             <span className={s.circle}>
               {category.coverImage ? (

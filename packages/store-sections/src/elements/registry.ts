@@ -995,6 +995,27 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     defaultChildren: () => [categoryCardTemplate()],
     fields: [
       { key: "categoryIds", label: L("أقسام مختارة (فارغة = كل الأقسام)", "Chosen categories (empty = all)"), type: "categories", group: "data" },
+      {
+        // F-95: absent = "all" (the store's flat list, as before).
+        key: "level",
+        label: L("اعرض", "Show"),
+        type: "select",
+        group: "data",
+        options: [
+          { value: "all", label: L("كل الأقسام", "All categories") },
+          { value: "top", label: L("الأقسام الرئيسية", "Main categories") },
+          { value: "children", label: L("الأقسام الفرعية لقسم…", "Sub-categories of…") },
+        ],
+        hint: L("لا يُستخدم لو اخترت أقسامًا بنفسك.", "Not used while you choose categories yourself."),
+      },
+      {
+        key: "parentCategoryId",
+        label: L("القسم الرئيسي", "Main category"),
+        type: "mainCategory",
+        group: "data",
+        hint: L("تظهر هنا الأقسام التي بداخلها أقسام فرعية بها منتجات.", "Lists the categories whose sub-categories have products."),
+        showWhen: { key: "level", equals: ["children"] },
+      },
       { key: "limit", label: L("أقصى عدد", "Maximum"), type: "number", group: "data", min: 1, max: 24 },
       { key: "mobileRail", label: L("صف يُسحب على الجوال", "Swipe row on phones"), type: "switch", group: "layout", hint: L("على الجوال تصطف البطاقات في صف واحد يُسحب جانبيًا، ويظهر طرف البطاقة التالية.", "On phones the cards sit in one row that swipes sideways, with the next card peeking in.") },
     ],

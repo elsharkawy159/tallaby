@@ -54,6 +54,13 @@ const InspectorStore = createContext<{ storeId: string; readOnly: boolean } | nu
 
 const label = (value: Localized, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 
+/** A category's picker label: "Main › Sub" for a sub-category (F-95), else its name. */
+function categoryLabel(category: EditorCategory, all: readonly EditorCategory[], locale: string): string {
+  const own = label(category.name, locale);
+  const parent = category.parentId ? all.find((c) => c.id === category.parentId) : undefined;
+  return parent ? `${label(parent.name, locale)} › ${own}` : own;
+}
+
 const SELECT_CLASS =
   "h-9 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -171,9 +178,23 @@ export function Field({
           <option value="">{t("chooseCategory")}</option>
           {catalog.categories.map((category) => (
             <option key={category.id} value={category.id}>
-              {label(category.name, uiLocale)} ({category.productCount})
+              {categoryLabel(category, catalog.categories, uiLocale)} ({category.productCount})
             </option>
           ))}
+        </select>
+      );
+    case "mainCategory":
+      // Main categories with sub-categories (F-95): a category list's "Sub-categories of…".
+      return (
+        <select id={id} className={SELECT_CLASS} value={text} onChange={(e) => onChange(e.target.value || null)}>
+          <option value="">{t("chooseCategory")}</option>
+          {catalog.categories
+            .filter((category) => !category.parentId && (category.childCount ?? 0) > 0)
+            .map((category) => (
+              <option key={category.id} value={category.id}>
+                {label(category.name, uiLocale)} ({category.childCount})
+              </option>
+            ))}
         </select>
       );
     case "product":
@@ -214,7 +235,7 @@ export function Field({
           id={id}
           value={Array.isArray(value) ? (value as string[]) : []}
           onChange={onChange}
-          options={catalog.categories.map((c) => ({ id: c.id, label: label(c.name, uiLocale) }))}
+          options={catalog.categories.map((c) => ({ id: c.id, label: categoryLabel(c, catalog.categories, uiLocale) }))}
           placeholder={t("searchCategories")}
           missing={t("missingCategory")}
         />

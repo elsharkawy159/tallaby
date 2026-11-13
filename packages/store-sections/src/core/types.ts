@@ -35,6 +35,8 @@ export type PropFieldType =
   | "products"
   /** One category of this store's catalog. */
   | "category"
+  /** One main category (one with sub-categories, F-95) of this store's catalog. */
+  | "mainCategory"
   /** One form of this store (`store_forms`, P4-10 picker). */
   | "form"
   /** Several categories of this store's catalog, ordered. */
@@ -241,8 +243,11 @@ export type ProductDetail = ProductSummary & {
   /** Public questions on the product (the reviews element lists them too); absent counts as none. */
   questionCount?: number;
   brand: string | null;
-  /** `href`: the storefront link to the category (the host fills it); without it, `/products?category=<id>`. */
-  category: { id: string; name: string; href?: string } | null;
+  /**
+   * `href`: the storefront link to the category (the host fills it); without it, `/products?category=<id>`.
+   * `parent`: its main category when the product sits in a sub-category (F-95), for the breadcrumb.
+   */
+  category: { id: string; name: string; href?: string; parent?: { name: string; href: string } } | null;
   seller: { name: string; rating: number | null; ratingCount: number; freeDelivery: boolean };
 };
 
@@ -256,6 +261,10 @@ export type CategorySummary = {
   href: string;
   image: string | null;
   productCount?: number;
+  /** Its main category's key when it is a sub-category (F-95); null or absent for a main category. */
+  parentKey?: string | null;
+  /** How many sub-categories it has in this list (F-95); absent or 0 for the rest. */
+  childCount?: number;
 };
 
 export type BrandSummary = { id: string; name: string; logo: string | null; href: string | null };

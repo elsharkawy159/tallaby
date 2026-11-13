@@ -63,6 +63,17 @@ describe("productBreadcrumb", () => {
     ]);
   });
 
+  it("is Home › Main › Sub › Product for a sub-category (F-95)", () => {
+    expect(
+      productBreadcrumb({ ...base, category: { key: "wires", name: "Wires" }, parentCategory: { key: "rough", name: "Rough-in" } }),
+    ).toEqual([
+      { name: "Home", url: "https://shop.com/en" },
+      { name: "Rough-in", url: "https://shop.com/en/products?category=rough" },
+      { name: "Wires", url: "https://shop.com/en/products?category=wires" },
+      { name: "Mug", url: "https://shop.com/en/products/mug" },
+    ]);
+  });
+
   it("is Home › Product without one", () => {
     expect(productBreadcrumb(base).map((c) => c.name)).toEqual(["Home", "Mug"]);
   });
