@@ -190,3 +190,33 @@ export function isPlatformHost(host: string | null | undefined): boolean {
 export function isMarketplaceHost(host: string | null | undefined): boolean {
   return isPlatformHost(host) && !storeSubdomainFromHost(host);
 }
+
+/* Store languages (owner, 2026-11-14): a store's unprefixed address shows its
+   default language; the other language lives under its prefix (`/ar` or `/en`). */
+
+export type StorefrontLocale = "ar" | "en";
+
+/** The language a store's unprefixed address shows: its default language (Arabic unless English). */
+export function storeBaseLocale(defaultLocale: string | null | undefined): StorefrontLocale {
+  return defaultLocale === "en" ? "en" : "ar";
+}
+
+/**
+ * The path prefix of `locale` on a store whose default language is
+ * `defaultLocale`: "" for the default language, else "/ar" or "/en".
+ * An Arabic-default store keeps the old rule (Arabic "", English "/en").
+ */
+export function storeLocalePrefix(locale: string, defaultLocale: string | null | undefined): string {
+  const target: StorefrontLocale = locale === "en" ? "en" : "ar";
+  return target === storeBaseLocale(defaultLocale) ? "" : `/${target}`;
+}
+
+/**
+ * `path` ("/products/x", "" or "/") in `locale` on that store: "/en/products/x",
+ * "/ar", "/" … Never empty, so it is always a usable relative link.
+ */
+export function storeLocalePath(locale: string, path: string, defaultLocale: string | null | undefined): string {
+  const prefix = storeLocalePrefix(locale, defaultLocale);
+  const rest = path === "/" ? "" : path;
+  return `${prefix}${rest}` || "/";
+}

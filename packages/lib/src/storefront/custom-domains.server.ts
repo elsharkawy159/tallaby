@@ -65,6 +65,68 @@ export async function findActiveCustomDomainForSubdomain(
   return row?.domain ?? null;
 }
 
+/**
+ * What the ecommerce proxy needs to route a store host, in one query: the
+ * store's subdomain, its active custom domain, and its languages (the default
+ * language is what an unprefixed address shows). Only active, non-deleted
+ * stores of approved sellers, as the lookups above.
+ */
+export type StoreHostInfo = {
+  subdomain: string;
+  customDomain: string | null;
+  defaultLocale: string;
+  supportedLocales: string[];
+};
+
+const storeHostColumns = {
+  subdomain: stores.subdomain,
+  customDomain: sellerCustomDomains.domain,
+  defaultLocale: stores.defaultLocale,
+  supportedLocales: stores.supportedLocales,
+};
+
+/** The store at `subdomain`, with its active custom domain (if any) and its languages, or null. */
+export async function findStoreHostBySubdomain(subdomain: string, q: Queryable = db): Promise<StoreHostInfo | null> {
+  const [row] = await q
+    .select(storeHostColumns)
+    .from(stores)
+    .innerJoin(sellers, eq(sellers.id, stores.sellerId))
+    .leftJoin(
+      sellerCustomDomains,
+      and(eq(sellerCustomDomains.storeId, stores.id), eq(sellerCustomDomains.status, "active")),
+    )
+    .where(
+      and(
+        eq(stores.subdomain, subdomain),
+        eq(stores.status, "active"),
+        isNull(stores.deletedAt),
+        eq(sellers.status, "approved"),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
+/** The store an active custom domain serves, with its languages, or null. */
+export async function findStoreHostByCustomDomain(domain: string, q: Queryable = db): Promise<StoreHostInfo | null> {
+  const [row] = await q
+    .select(storeHostColumns)
+    .from(sellerCustomDomains)
+    .innerJoin(stores, eq(stores.id, sellerCustomDomains.storeId))
+    .innerJoin(sellers, eq(sellers.id, stores.sellerId))
+    .where(
+      and(
+        eq(sellerCustomDomains.domain, domain),
+        eq(sellerCustomDomains.status, "active"),
+        eq(stores.status, "active"),
+        isNull(stores.deletedAt),
+        eq(sellers.status, "approved"),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
 /** True when `domain` is an active custom domain (any approved seller). */
 export async function isActiveCustomDomain(domain: string): Promise<boolean> {
   return (await findSubdomainForCustomDomain(domain)) !== null;

@@ -33,8 +33,11 @@ export function emailDateLocale(locale: EmailLocale): string {
 /**
  * Locale prefix for storefront links. The site's default locale is Arabic
  * (`localePrefix: "as-needed"`), so Arabic links carry no prefix and English
- * ones need `/en` — independent of the email fallback locale above.
+ * ones need `/en` — independent of the email fallback locale above. On a
+ * store whose default language is English (`siteDefaultLocale`), the prefixes
+ * swap: English has none and Arabic is `/ar` (owner, 2026-11-14).
  */
-export function emailPathPrefix(locale: EmailLocale): string {
-  return locale === "ar" ? "" : `/${locale}`;
+export function emailPathPrefix(locale: EmailLocale, siteDefaultLocale?: string | null): string {
+  const unprefixed: EmailLocale = siteDefaultLocale === "en" ? "en" : "ar";
+  return locale === unprefixed ? "" : `/${locale}`;
 }

@@ -65,7 +65,7 @@ async function loadCampaignProducts(sellerId: string, ids: readonly string[], st
     out.push({
       name,
       imageUrl: resolveImageUrl(p.images),
-      url: joinUrl(store.url, `${emailPathPrefix(locale)}${slug ? `/products/${encodeURIComponent(slug)}` : "/products"}`),
+      url: joinUrl(store.url, `${emailPathPrefix(locale, store.defaultLocale)}${slug ? `/products/${encodeURIComponent(slug)}` : "/products"}`),
     });
   }
   return out;
@@ -108,7 +108,7 @@ function buildEmail(params: {
     body: params.body,
     ctaLabel: params.ctaLabel,
     products: params.products,
-    links: { shop: joinUrl(params.store.url, emailPathPrefix(params.locale) || "/"), unsubscribe: params.unsubscribeUrl },
+    links: { shop: joinUrl(params.store.url, emailPathPrefix(params.locale, params.store.defaultLocale) || "/"), unsubscribe: params.unsubscribeUrl },
     test: params.test ?? false,
   });
 }

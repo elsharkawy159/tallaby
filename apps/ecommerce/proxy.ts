@@ -17,10 +17,11 @@ import {
   isInternalStorefrontPath,
   routeStoreCrawlFile,
   routeStorefrontRequest,
+  storeLocalesOf,
 } from "@/lib/storefront-routing";
 import {
-  customDomainForSubdomain,
-  subdomainForCustomDomain,
+  storeHostForCustomDomain,
+  storeHostForSubdomain,
 } from "@/lib/custom-domain-lookup";
 import { updateSession } from "./supabase/middleware";
 
@@ -45,9 +46,12 @@ export async function proxy(request: NextRequest) {
   // Seller storefronts: {subdomain}.tallaby.com
   const storeSubdomain = storeSubdomainFromHost(host);
   if (storeSubdomain) {
+    // One cached lookup per store (custom-domain-lookup.ts): its own domain
+    // and its languages, which decide what an unprefixed address shows.
+    const storeHost = await storeHostForSubdomain(storeSubdomain);
     // A store that has its own domain lives there; the subdomain forwards
     // (not in local development: the custom domain is production).
-    const customDomain = isLocalHost(host) ? null : await customDomainForSubdomain(storeSubdomain);
+    const customDomain = isLocalHost(host) ? null : storeHost?.customDomain;
     if (customDomain) {
       const { pathname, search } = request.nextUrl;
       return NextResponse.redirect(`https://${customDomain}${pathname}${search}`, 308);
@@ -55,16 +59,17 @@ export async function proxy(request: NextRequest) {
     // The store's own robots.txt / sitemap.xml (P5-04); no session needed.
     const crawlFile = routeStoreCrawlFile(request, storeSubdomain);
     if (crawlFile) return crawlFile;
-    const storefront = routeStorefrontRequest(request, storeSubdomain);
+    const storefront = routeStorefrontRequest(request, storeSubdomain, storeLocalesOf(storeHost));
     if (storefront) return markStorePreview(request, await updateSession(request, storefront));
   } else if (!isPlatformHost(host)) {
     // A seller's own domain (faster-eg.com). Vercel only routes domains we
     // attached, but an inactive or removed one must not show anything.
-    const subdomain = await subdomainForCustomDomain(hostnameOf(host));
-    if (!subdomain) return new NextResponse(null, { status: 404 });
+    const storeHost = await storeHostForCustomDomain(hostnameOf(host));
+    if (!storeHost) return new NextResponse(null, { status: 404 });
+    const subdomain = storeHost.subdomain;
     const crawlFile = routeStoreCrawlFile(request, subdomain);
     if (crawlFile) return crawlFile;
-    const storefront = routeStorefrontRequest(request, subdomain);
+    const storefront = routeStorefrontRequest(request, subdomain, storeLocalesOf(storeHost));
     if (storefront) return markStorePreview(request, await updateSession(request, storefront));
   } else if (isInternalStorefrontPath(request.nextUrl.pathname)) {
     // Storefront pages only exist on their own subdomain, where the cart is

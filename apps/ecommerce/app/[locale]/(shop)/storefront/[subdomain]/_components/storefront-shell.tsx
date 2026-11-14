@@ -3,6 +3,7 @@ import { SITE_ROOT_CLASS, SiteTheme, bottomNavOn, chromeHasThemeToggle, designSy
 import { CarouselRuntime, MotionRuntime, PhotoToolsRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
+import { StoreDefaultLocaleProvider } from "@/i18n/navigation";
 import type { Storefront } from "@/lib/storefront.server";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
@@ -58,12 +59,14 @@ export async function StorefrontShell({
   // draft preview still renders the store below.
   if (await isStoreOfflineForRequest(store)) {
     return (
+      <StoreDefaultLocaleProvider locale={store.defaultLocale}>
       <CurrencyLabelProvider label={store.currencyLabel} currency={store.currency}>
         <div className={cn(storefrontFont.variable, s.root)}>
           {preview && <StorePreviewBanner state={preview} />}
           {shared ? <main className="flex-1">{children}</main> : <StoreOffline store={store} />}
         </div>
       </CurrencyLabelProvider>
+      </StoreDefaultLocaleProvider>
     );
   }
 
@@ -84,6 +87,8 @@ export async function StorefrontShell({
   const offer = popupCoupons ? pickStoreCouponOffer(popupCoupons) : null;
 
   return (
+    // Links follow the store's default language: on an English store "/x" is English, "/ar/x" Arabic.
+    <StoreDefaultLocaleProvider locale={store.defaultLocale}>
     <CurrencyLabelProvider label={store.currencyLabel} currency={store.currency}>
     <StoreOfferProvider offer={offer}>
       {/* The theme toggle's init script may set `data-sf-theme` before hydration. */}
@@ -118,5 +123,6 @@ export async function StorefrontShell({
       </div>
     </StoreOfferProvider>
     </CurrencyLabelProvider>
+    </StoreDefaultLocaleProvider>
   );
 }

@@ -29,8 +29,10 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
   hostnameOf,
   isPlatformHost,
+  storeBaseLocale,
   storeSubdomainFromHost,
   storeUrl,
+  type StorefrontLocale,
 } from "@workspace/lib/storefront";
 import { findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
 import { normalizeGovernorate } from "@workspace/lib/shipping";
@@ -141,6 +143,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
           settings: stores.settings,
           siteStatus: stores.siteStatus,
           supportedLocales: stores.supportedLocales,
+          defaultLocale: stores.defaultLocale,
           sellerId: sellers.id,
           slug: sellers.slug,
           storeRating: sellers.storeRating,
@@ -226,10 +229,12 @@ export function getStorefrontBySubdomain(subdomain: string) {
         siteStatus: row.siteStatus as StoreSiteStatus,
         /** Store settings › Languages: more than one means the header gets a language switcher. */
         supportedLocales: row.supportedLocales,
+        /** Store settings › General: the language of the store's unprefixed address ("ar" or "en"). */
+        defaultLocale: storeBaseLocale(row.defaultLocale),
       };
     },
-    // v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v16-${subdomain}`],
+    // v17: + defaultLocale (unprefixed address language). v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v17-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
@@ -249,6 +254,17 @@ export function getRenamedStoreSubdomain(oldSubdomain: string) {
     [`storefront-redirect-v2-${oldSubdomain}`],
     { tags: ["sellers", sellerTags.subdomain(oldSubdomain)], revalidate: 3600 },
   )();
+}
+
+/**
+ * The default language of the store this request's host belongs to (what its
+ * unprefixed address shows), or null on tallaby.com and unknown hosts. From
+ * the cached storefront profile, never from the request body.
+ */
+export async function getRequestStoreDefaultLocale(): Promise<StorefrontLocale | null> {
+  const subdomain = await getRequestStoreSubdomain();
+  if (!subdomain) return null;
+  return (await getStorefrontBySubdomain(subdomain))?.defaultLocale ?? null;
 }
 
 /** The storefront a cart belongs to: the store, and the seller who owns it. */

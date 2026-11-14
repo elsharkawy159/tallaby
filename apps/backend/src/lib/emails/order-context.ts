@@ -91,7 +91,7 @@ export async function loadOrderEmailContext(orderId: string): Promise<OrderEmail
     store: brandStore,
     brand: brandStore?.brand ?? PLATFORM_BRAND,
     siteUrl,
-    orderUrl: joinUrl(siteUrl, `${emailPathPrefix(locale)}${buildOrderPagePath(order.id)}`),
+    orderUrl: joinUrl(siteUrl, `${emailPathPrefix(locale, brandStore?.defaultLocale)}${buildOrderPagePath(order.id)}`),
     address: address
       ? {
           fullName: address.fullName,

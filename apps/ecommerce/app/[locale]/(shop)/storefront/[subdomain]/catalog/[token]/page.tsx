@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { formatPriceMarked } from "@workspace/lib";
-import { storeUrl } from "@workspace/lib/storefront";
+import { storeLocalePrefix, storeUrl } from "@workspace/lib/storefront";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { PriceText } from "@/components/storefront/price-text";
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
   const description = t("ogDescription", { count: catalog.products.length, store: store.displayName });
   const images = catalog.products.map((p) => p.image).filter((url): url is string => Boolean(url)).slice(0, 4);
   const base = storeUrl(store.subdomain, store.customDomain).replace(/\/$/, "");
-  const url = `${base}${locale === "en" ? "/en" : ""}/catalog/${token}`;
+  const url = `${base}${storeLocalePrefix(locale, store.defaultLocale)}/catalog/${token}`;
   return {
     title,
     description,
@@ -136,7 +136,7 @@ export default async function SharedCatalogPage({ params, searchParams }: Catalo
                   </div>
                   <span className="catalog-print-only text-muted-foreground text-[10px]" dir="ltr">
                     {host}
-                    {locale === "en" ? "/en" : ""}
+                    {storeLocalePrefix(locale, store.defaultLocale)}
                     {product.href}
                   </span>
                   <div className="catalog-noprint mt-auto [&_a]:w-full [&_button]:w-full [&>div]:w-full">

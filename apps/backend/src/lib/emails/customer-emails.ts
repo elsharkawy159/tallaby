@@ -201,7 +201,7 @@ export async function sendOrderDelivered(orderId: string): Promise<SendOnceResul
       returnWindowDays: RETURN_WINDOW_DAYS,
       links: {
         order: ctx.orderUrl,
-        returns: joinUrl(ctx.siteUrl, `${emailPathPrefix(ctx.locale)}/returns`),
+        returns: joinUrl(ctx.siteUrl, `${emailPathPrefix(ctx.locale, ctx.store?.defaultLocale)}/returns`),
       },
     }),
     ...customerSender(ctx),
@@ -270,7 +270,7 @@ export async function sendRefundIssued(
         return { name: line.name, imageUrl: line.imageUrl, amount: line.price };
       }),
       links: {
-        wallet: refund.method === "wallet" ? joinUrl(ctx.siteUrl, `${emailPathPrefix(ctx.locale)}/profile/wallet`) : null,
+        wallet: refund.method === "wallet" ? joinUrl(ctx.siteUrl, `${emailPathPrefix(ctx.locale, ctx.store?.defaultLocale)}/profile/wallet`) : null,
         order: ctx.orderUrl,
       },
     }),
@@ -337,7 +337,7 @@ export async function sendAbandonedCart(cartId: string): Promise<SendOnceResult>
         };
       }),
       subtotal: formatMoney(subtotal, locale, currency),
-      links: { cart: joinUrl(siteUrl, `${emailPathPrefix(locale)}/cart`) },
+      links: { cart: joinUrl(siteUrl, `${emailPathPrefix(locale, store?.defaultLocale)}/cart`) },
     }),
     from: ORDERS_FROM_ADDRESS,
     ...(store ? { fromName: store.name } : {}),

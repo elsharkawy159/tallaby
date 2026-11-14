@@ -1,4 +1,4 @@
-import { storeUrl } from "@workspace/lib/storefront";
+import { storeLocalePrefix, storeUrl } from "@workspace/lib/storefront";
 import { JsonLd } from "@/components/seo/json-ld";
 import { generateBreadcrumbStructuredData, generateProductStructuredData } from "@/lib/structured-data";
 import { offerShippingDetails } from "@/lib/store-seo/offer-shipping.lib";
@@ -15,7 +15,7 @@ interface ProductStructuredDataProps {
   /** Localized "Home" label for the breadcrumb trail. */
   homeLabel: string;
   /** The store the request host resolved: every URL, the seller name, its zones and categories come from it. */
-  store: Pick<Storefront, "id" | "storeId" | "subdomain" | "customDomain" | "displayName" | "currency" | "catalogMode">;
+  store: Pick<Storefront, "id" | "storeId" | "subdomain" | "customDomain" | "displayName" | "currency" | "catalogMode" | "defaultLocale">;
 }
 
 /**
@@ -25,7 +25,8 @@ interface ProductStructuredDataProps {
  */
 export async function ProductStructuredData({ product, locale, homeLabel, store }: ProductStructuredDataProps) {
   // The store's canonical host: its live custom domain, else <sub>.tallaby.com (as storePageMetadata).
-  const home = `${storeUrl(store.subdomain, store.customDomain)}${locale === "ar" ? "" : `/${locale}`}`;
+  // The store's default language has no prefix (an English store: "/x" is English, "/ar/x" Arabic).
+  const home = `${storeUrl(store.subdomain, store.customDomain)}${storeLocalePrefix(locale, store.defaultLocale)}`;
   const productUrl = `${home}/products/${product.slug}`;
 
   const [shipping, categories] = await Promise.all([

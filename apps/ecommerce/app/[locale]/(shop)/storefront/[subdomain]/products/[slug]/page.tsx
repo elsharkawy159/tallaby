@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cacheProfiles, createCachedQuery, productTags, storeTags } from "@workspace/cache";
 import { redirect } from "next/navigation";
+import { storeLocalePath } from "@workspace/lib/storefront";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
 import { productPageOf } from "@workspace/store-sections/config";
@@ -79,8 +80,9 @@ async function resolveStoreProduct(locale: string, subdomain: string, slug: stri
   const result = await getProductBySlug(store.id, store.storeId, slug, locale as ProductLocale);
   const product = result.success ? (result.data as Product | undefined) : undefined;
 
-  if (!product) redirect(locale === "ar" ? "/" : `/${locale}`);
-  if (product.sellerId !== store.id) redirect(locale === "ar" ? "/" : `/${locale}`);
+  // The store's home in this language ("/" in its default language).
+  if (!product) redirect(storeLocalePath(locale, "/", store.defaultLocale));
+  if (product.sellerId !== store.id) redirect(storeLocalePath(locale, "/", store.defaultLocale));
   return { store, product };
 }
 

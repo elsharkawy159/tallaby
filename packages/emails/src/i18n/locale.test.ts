@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { interpolate } from "./interpolate.js";
-import { resolveEmailLocale } from "./locale.js";
+import { emailPathPrefix, resolveEmailLocale } from "./locale.js";
 
 describe("resolveEmailLocale", () => {
   it("defaults to English", () => {
@@ -22,5 +22,19 @@ describe("resolveEmailLocale", () => {
 describe("interpolate", () => {
   it("replaces named placeholders", () => {
     expect(interpolate("Hi {name}", { name: "Omar" })).toBe("Hi Omar");
+  });
+});
+
+describe("emailPathPrefix", () => {
+  it("keeps Arabic unprefixed by default (tallaby.com, Arabic-default stores)", () => {
+    expect(emailPathPrefix("ar")).toBe("");
+    expect(emailPathPrefix("en")).toBe("/en");
+    expect(emailPathPrefix("en", "ar")).toBe("/en");
+    expect(emailPathPrefix("en", null)).toBe("/en");
+  });
+
+  it("swaps the prefixes on an English-default store", () => {
+    expect(emailPathPrefix("en", "en")).toBe("");
+    expect(emailPathPrefix("ar", "en")).toBe("/ar");
   });
 });

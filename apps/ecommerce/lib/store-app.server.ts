@@ -17,6 +17,7 @@ export async function getRequestStoreApp() {
     store,
     image,
     iconVersion: appIconVersion(image, store.displayName),
-    locale: store.supportedLocales?.[0] === "en" ? ("en" as const) : ("ar" as const),
+    // start_url "/" opens the store's default language (owner, 2026-11-14).
+    locale: store.defaultLocale,
   };
 }

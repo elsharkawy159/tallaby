@@ -21,3 +21,17 @@ export const routing = defineRouting({
 });
 
 export type AppLocale = (typeof routing.locales)[number];
+
+/**
+ * The same routing seen from an English-default store's host, where the
+ * unprefixed address is English and Arabic lives under /ar (owner,
+ * 2026-11-14; lib/storefront-routing.ts). Only used to build links on such a
+ * store (i18n/navigation.ts); the proxy routes store hosts itself.
+ */
+export const storeEnglishRouting = defineRouting({
+  locales: ["en", "ar"],
+  defaultLocale: "en",
+  localePrefix: "as-needed",
+  localeDetection: false,
+  localeCookie: { name: LOCALE_COOKIE, maxAge: 60 * 60 * 24 * 365, sameSite: "lax" },
+});

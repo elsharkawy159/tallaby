@@ -12,19 +12,24 @@ export const PRIVATE_PATHS = ["/cart", "/profile", "/onboarding", "/auth", "/wis
 /** Model-training crawlers (not search). */
 export const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot"] as const;
 
-// The default locale (ar) is unprefixed; every other locale lives under
-// /{locale} ("as-needed"), so those are the prefixed copies to block.
-const prefixedLocales = routing.locales.filter((l) => l !== routing.defaultLocale);
+// The default locale (ar; a store's own default language on its host) is
+// unprefixed; every other locale lives under /{locale} ("as-needed"), so those
+// are the prefixed copies to block.
 
-/** The same crawl rules on every host (store paths are a subset of these). */
-export function crawlRules(): MetadataRoute.Robots["rules"] {
+/**
+ * The same crawl rules on every host (store paths are a subset of these).
+ * `defaultLocale`: the host's unprefixed language; an English-default store
+ * blocks the /ar copies instead of the /en ones.
+ */
+export function crawlRules(defaultLocale: string = routing.defaultLocale): MetadataRoute.Robots["rules"] {
+  const prefixed = routing.locales.filter((l) => l !== defaultLocale);
   return [
     {
       userAgent: "*",
       allow: "/",
       disallow: [
         ...PRIVATE_PATHS,
-        ...prefixedLocales.flatMap((l) => PRIVATE_PATHS.map((p) => `/${l}${p}`)),
+        ...prefixed.flatMap((l) => PRIVATE_PATHS.map((p) => `/${l}${p}`)),
         "/admin/",
         "/dashboard/",
         "/api/",
@@ -52,8 +57,11 @@ export function marketplaceRobots(baseUrl: string): MetadataRoute.Robots {
  * sitemap; its pages carry `noindex`, which crawlers can only see when the
  * pages stay crawlable, so nothing extra is disallowed.
  */
-export function storeRobots(baseUrl: string, { indexable }: { indexable: boolean }): MetadataRoute.Robots {
-  return { rules: crawlRules(), ...(indexable && { sitemap: `${baseUrl}/sitemap.xml` }), host: baseUrl };
+export function storeRobots(
+  baseUrl: string,
+  { indexable, defaultLocale }: { indexable: boolean; defaultLocale?: string },
+): MetadataRoute.Robots {
+  return { rules: crawlRules(defaultLocale), ...(indexable && { sitemap: `${baseUrl}/sitemap.xml` }), host: baseUrl };
 }
 
 const list = <T>(value: T | T[] | undefined): T[] => (value === undefined ? [] : Array.isArray(value) ? value : [value]);

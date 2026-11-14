@@ -3,11 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { cookieDomainForHost } from "./cookie-domain";
 
-/** Strips a leading `/ar` (or any configured non-default locale) prefix so
- * path checks below work the same under both `/onboarding` and `/ar/onboarding`. */
+/** Strips a leading locale prefix (`/en`, or `/ar`: the prefixed language of an
+ * English-default store) so path checks below work the same under `/auth`,
+ * `/en/auth` and `/ar/auth`. Redirects keep the prefix the visitor used. */
 function stripLocalePrefix(pathname: string): string {
   for (const locale of routing.locales) {
-    if (locale === routing.defaultLocale) continue;
     if (pathname === `/${locale}`) return "/";
     if (pathname.startsWith(`/${locale}/`)) return pathname.slice(locale.length + 1);
   }

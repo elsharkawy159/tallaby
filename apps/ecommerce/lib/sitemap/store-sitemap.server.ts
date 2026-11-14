@@ -117,6 +117,7 @@ export async function getStoreSitemapDataset(subdomain: string): Promise<StoreSi
       // One category is the whole catalog again, and the page shows no link to it.
       categoryKeys: withProducts.length > 1 ? withProducts.map((category) => category.key) : [],
       locales: storeIndexLocales(store.supportedLocales),
+      defaultLocale: store.defaultLocale,
     }),
   };
 }

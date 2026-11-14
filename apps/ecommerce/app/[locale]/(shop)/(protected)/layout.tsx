@@ -1,4 +1,4 @@
-import { redirect } from "@/i18n/navigation";
+import { storeRedirect } from "@/i18n/store-navigation.server";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/supabase/server";
 
@@ -15,7 +15,7 @@ export default async function ProtectedLayout({
 
   if (!data?.user) {
     const locale = await getLocale();
-    redirect({ href: "/login", locale });
+    await storeRedirect({ href: "/login", locale });
   }
 
   return <>{children}</>;

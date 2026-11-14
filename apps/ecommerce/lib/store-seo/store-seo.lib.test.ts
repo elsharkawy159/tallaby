@@ -348,3 +348,39 @@ describe("store and page keywords (Website › SEO)", () => {
     expect(storeHomeMetadata(store({}), "ar", {})).toEqual({});
   });
 });
+
+describe("storeAlternates on an English-default store (owner, 2026-11-14)", () => {
+  const english = { ...store({}), defaultLocale: "en" };
+
+  it("leaves English unprefixed, puts Arabic under /ar and makes English the x-default", () => {
+    expect(storeAlternates(english, "en", "/about")).toEqual({
+      canonical: "https://shop.com/about",
+      languages: { en: "https://shop.com/about", ar: "https://shop.com/ar/about", "x-default": "https://shop.com/about" },
+    });
+    expect(storeAlternates(english, "ar", "/about").canonical).toBe("https://shop.com/ar/about");
+    expect(storeAlternates(english, "en", "").canonical).toBe("https://shop.com");
+    expect(storeAlternates(english, "ar", "").canonical).toBe("https://shop.com/ar");
+  });
+
+  it("uses each language's own slug", () => {
+    const alternates = storeAlternates(english, "ar", { ar: "/products/kob", en: "/products/mug" });
+    expect(alternates.canonical).toBe("https://shop.com/ar/products/kob");
+    expect(alternates.languages).toEqual({
+      en: "https://shop.com/products/mug",
+      ar: "https://shop.com/ar/products/kob",
+      "x-default": "https://shop.com/products/mug",
+    });
+  });
+
+  it("an English-only store: no hreflang, and an Arabic URL names the English one", () => {
+    const enOnly = { ...english, supportedLocales: ["en"] };
+    expect(storeAlternates(enOnly, "ar", "")).toEqual({ canonical: "https://shop.com" });
+    expect(storeAlternates(enOnly, "en", "/products/mug")).toEqual({ canonical: "https://shop.com/products/mug" });
+  });
+
+  it("puts the canonical in Open Graph too", () => {
+    const meta = buildStoreMetadata(english, "en", { indexable: true });
+    expect(meta.alternates?.canonical).toBe("https://shop.com");
+    expect((meta.openGraph as { url?: string }).url).toBe("https://shop.com");
+  });
+});

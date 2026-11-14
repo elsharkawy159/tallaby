@@ -85,6 +85,7 @@ export async function createCatalogLinkAction(input: unknown): Promise<CatalogLi
         siteStatus: stores.siteStatus,
         catalogMode: stores.catalogMode,
         supportedLocales: stores.supportedLocales,
+        defaultLocale: stores.defaultLocale,
       })
       .from(stores)
       .where(ownActiveStore(sellerId, storeId))
@@ -133,7 +134,7 @@ export async function createCatalogLinkAction(input: unknown): Promise<CatalogLi
     }
     const token = signCatalogShare({ storeId: store.id, title: normalizeCatalogTitle(parsed.data.title), source: signedSource }, sellerId, key);
     const customDomain = await findActiveCustomDomainForSubdomain(store.subdomain);
-    const urls = catalogShareUrls(storeUrl(store.subdomain, customDomain), token, store.supportedLocales);
+    const urls = catalogShareUrls(storeUrl(store.subdomain, customDomain), token, store.supportedLocales, store.defaultLocale);
     return {
       success: true,
       ...urls,

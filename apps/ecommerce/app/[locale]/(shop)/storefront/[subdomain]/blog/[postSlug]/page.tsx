@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { storeUrl } from "@workspace/lib/storefront";
-import { routing } from "@/i18n/routing";
+import { storeLocalePrefix, storeUrl } from "@workspace/lib/storefront";
 import { Link } from "@/i18n/navigation";
 import { cmsImageUrl, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedBlogPage, getCachedCmsItem } from "@/lib/store-cms/cms.server";
@@ -28,8 +27,9 @@ async function loadPost(subdomain: string, postSlug: string) {
   return { store, item, post: toContentSummary(item) };
 }
 
-function postUrl(base: string, locale: string, slug: string) {
-  return `${base}${locale === routing.defaultLocale ? "" : `/${locale}`}/blog/${slug}`;
+/** The post's address in `locale`; the store's default language has no prefix. */
+function postUrl(base: string, locale: string, slug: string, storeDefaultLocale: string) {
+  return `${base}${storeLocalePrefix(locale, storeDefaultLocale)}/blog/${slug}`;
 }
 
 export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
@@ -61,7 +61,7 @@ export default async function StoreBlogPostPage({ params }: BlogPostProps) {
     getCachedBlogPage(store.id, store.storeId, 1, null),
   ]);
   const base = storeUrl(store.subdomain, store.customDomain);
-  const url = postUrl(base, locale, item.slug);
+  const url = postUrl(base, locale, item.slug, store.defaultLocale);
   const image = cmsImageUrl(item.seo.ogImage || post.image);
   const minutesLabel = (n: number) => t("minutesRead", { n });
   const more = recent.items

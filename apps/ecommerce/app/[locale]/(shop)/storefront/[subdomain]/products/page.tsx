@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { storeLocalePath } from "@workspace/lib/storefront";
 import { getTranslations } from "next-intl/server";
 import { productCatalogSection } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
@@ -70,7 +71,7 @@ export default async function StoreProductsPage({ params, searchParams }: StoreP
   const { site } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   if (!site) {
     // The classic storefront's home is its catalog.
-    redirect(`${storeQueryHref(locale === "en" ? "/en" : "/", query)}#products`);
+    redirect(`${storeQueryHref(storeLocalePath(locale, "/", store.defaultLocale), query)}#products`);
   }
   // Products in the template's own card: the item template of the site's first product list.
   const grid = productCatalogSection(site.pages);

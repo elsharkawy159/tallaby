@@ -63,7 +63,7 @@ export async function sendBackInStock(subscriptionId: string): Promise<SendOnceR
         imageUrl: resolveImageUrl(sub.variant?.imageUrl) ?? resolveImageUrl(sub.product.images),
       },
       links: {
-        product: joinUrl(store.url, `${emailPathPrefix(locale)}${productPath}`),
+        product: joinUrl(store.url, `${emailPathPrefix(locale, store.defaultLocale)}${productPath}`),
         unsubscribe: stockAlertUnsubscribeUrl(store.url, sub.unsubscribeToken),
       },
     }),

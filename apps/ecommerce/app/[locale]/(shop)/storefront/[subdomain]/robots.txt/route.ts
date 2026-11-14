@@ -20,7 +20,7 @@ export async function GET(
   const info = await getStoreCrawlInfo(subdomain);
   if (!info) return renamedStoreFileResponse(subdomain, "/robots.txt");
 
-  return new Response(serializeRobots(storeRobots(info.baseUrl, { indexable: info.indexable })), {
+  return new Response(serializeRobots(storeRobots(info.baseUrl, { indexable: info.indexable, defaultLocale: info.store.defaultLocale })), {
     headers: { "Content-Type": "text/plain; charset=utf-8" },
   });
 }

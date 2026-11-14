@@ -1,7 +1,8 @@
 /**
  * Store-host sitemap building blocks (PLAN.md §10.4, P5-04). Pure, like
  * sitemap.lib.ts, whose URL, hreflang and XML rules it reuses: a store host
- * serves the same locales the same way ("as-needed", ar unprefixed).
+ * serves the same locales the same way ("as-needed"), with the store's
+ * default language unprefixed (Arabic unless the store's default is English).
  */
 import {
   buildAlternates,
@@ -53,15 +54,17 @@ export interface StoreSitemapInput {
   categoryKeys?: string[];
   /** The languages the store offers; both when not given. */
   locales?: readonly SitemapLocale[];
+  /** The store's default language: its URLs carry no prefix, and it is the x-default. Arabic when not given. */
+  defaultLocale?: SitemapLocale;
 }
 
 /** Only the store's languages, each entry's hreflang included. */
-function inLocales(entries: SitemapEntry[], locales: readonly SitemapLocale[]): SitemapEntry[] {
+function inLocales(entries: SitemapEntry[], locales: readonly SitemapLocale[], defaultLocale?: SitemapLocale): SitemapEntry[] {
   return entries
     .filter((entry) => locales.includes(entry.locale))
     .map((entry) => {
       const urls = Object.fromEntries(locales.flatMap((l) => (entry.alternates[l] ? [[l, entry.alternates[l]]] : [])));
-      return { ...entry, alternates: Object.keys(urls).length > 1 ? buildAlternates(urls) : {} };
+      return { ...entry, alternates: Object.keys(urls).length > 1 ? buildAlternates(urls, "", defaultLocale) : {} };
     });
 }
 
@@ -76,9 +79,9 @@ const SAFE_PATH = /^(?:\/[a-z0-9][a-z0-9-]*){1,4}$/;
  */
 export function buildStoreSitemapEntries(input: StoreSitemapInput): SitemapEntry[] {
   if (!input.indexable) return [];
-  const { baseUrl } = input;
+  const { baseUrl, defaultLocale } = input;
   const page = (path: string, fields: Pick<SitemapEntry, "lastModified" | "changeFrequency" | "priority">, label: string | null = null) =>
-    sharedPathEntries(baseUrl, path, { type: "page", ...fields }, () => label);
+    sharedPathEntries(baseUrl, path, { type: "page", ...fields }, () => label, defaultLocale);
 
   const pageEntries = input.pages
     .filter((p) => !p.isHome && p.kind !== "product" && !p.seo?.noindex && isValidSlug(p.slug) && SAFE_PATH.test(`/${p.slug}`))
@@ -107,8 +110,8 @@ export function buildStoreSitemapEntries(input: StoreSitemapInput): SitemapEntry
     ...page("", { lastModified: null, changeFrequency: "daily", priority: 1 }),
     ...pageEntries,
     ...catalogEntries,
-    ...buildProductEntries(baseUrl, input.products).entries,
+    ...buildProductEntries(baseUrl, input.products, defaultLocale).entries,
     ...extraEntries,
   ]);
-  return input.locales ? inLocales(entries, input.locales) : entries;
+  return input.locales ? inLocales(entries, input.locales, defaultLocale) : entries;
 }

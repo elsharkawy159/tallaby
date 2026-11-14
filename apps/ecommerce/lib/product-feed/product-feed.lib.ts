@@ -9,6 +9,7 @@
  * discounted one when the seller set a higher list price.
  */
 import { parsePriceJson } from "@workspace/lib";
+import { storeLocalePrefix } from "@workspace/lib/storefront";
 import { getVariantDisplayFields } from "@/lib/variant-localized";
 import { parseVariantOption } from "@/lib/variant-utils";
 
@@ -107,6 +108,8 @@ export interface FeedStoreInfo {
   description: string | null;
   /** ISO code of the store's currency (Store settings › General). */
   currency: string;
+  /** The store's default language, whose links carry no prefix. Arabic when not given. */
+  defaultLocale?: FeedLocale;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -168,9 +171,13 @@ export function cleanText(value: string | null | undefined, max: number): string
   return chars.length > max ? chars.slice(0, max).join("").trimEnd() : text;
 }
 
-/** The product page on this store host: Arabic unprefixed, English under /en (as the store sitemap). */
-export function feedProductUrl(baseUrl: string, locale: FeedLocale, slug: string): string {
-  return `${baseUrl}${locale === "en" ? "/en" : ""}/products/${encodeURIComponent(slug)}`;
+/**
+ * The product page on this store host, as the store sitemap: the store's
+ * default language unprefixed (Arabic unless the store is English-default),
+ * the other under its prefix.
+ */
+export function feedProductUrl(baseUrl: string, locale: FeedLocale, slug: string, defaultLocale?: FeedLocale): string {
+  return `${baseUrl}${storeLocalePrefix(locale, defaultLocale)}/products/${encodeURIComponent(slug)}`;
 }
 
 const COLOR_TYPES = new Set(["color", "colour", "اللون", "لون"]);
@@ -218,7 +225,7 @@ export function buildProductItems(product: FeedProductRow, locale: FeedLocale, s
 
   const images = product.images.filter((url) => url && !isVideoPath(url));
   const title = cleanText(translation.title, TITLE_MAX);
-  const link = feedProductUrl(store.baseUrl, contentLocale, translation.slug);
+  const link = feedProductUrl(store.baseUrl, contentLocale, translation.slug, store.defaultLocale);
   const shared = {
     description: cleanText(translation.description || translation.title, DESCRIPTION_MAX),
     videoLink: product.videos[0] ?? null,

@@ -1,4 +1,5 @@
-import { Link, redirect } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { storeRedirect } from "@/i18n/store-navigation.server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
@@ -40,7 +41,7 @@ export default async function CheckoutPaymentPage({
   const locale = await getLocale();
 
   if (!orderId) {
-    redirect({ href: "/cart/checkout", locale });
+    await storeRedirect({ href: "/cart/checkout", locale });
   }
 
   const result = await getPaymentOrder(orderId as string);
@@ -69,7 +70,7 @@ export default async function CheckoutPaymentPage({
   const deposit = order.paymentMethod === "cash_on_delivery" ? readOrderDeposit(order) : null;
   if (deposit) {
     if (deposit.status === "paid" || order.status === "cancelled") {
-      redirect({ href: buildOrderPagePath(order.id), locale });
+      await storeRedirect({ href: buildOrderPagePath(order.id), locale });
     }
     const snapshot = (order.metadata as { deposit?: { transfers?: unknown[] } } | null)?.deposit;
     const transfers: DepositTransferOption[] = (snapshot?.transfers ?? []).flatMap((raw) => {
@@ -101,7 +102,7 @@ export default async function CheckoutPaymentPage({
   }
 
   if (order.paymentStatus === "paid" || order.status === "confirmed") {
-    redirect({ href: buildOrderPagePath(order.id), locale });
+    await storeRedirect({ href: buildOrderPagePath(order.id), locale });
   }
 
   if (isManualPaymentMethod(order.paymentMethod)) {
@@ -142,7 +143,7 @@ export default async function CheckoutPaymentPage({
   }
 
   if (order.paymentMethod !== "online_payment") {
-    redirect({ href: buildOrderPagePath(order.id), locale });
+    await storeRedirect({ href: buildOrderPagePath(order.id), locale });
   }
 
   const checkout = await createPaymentCheckoutUrl(order.id);

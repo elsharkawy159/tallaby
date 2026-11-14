@@ -51,23 +51,30 @@ export function normalizeBaseUrl(raw: string): string {
   return raw.trim().replace(/\/+$/, "");
 }
 
-/** Absolute, locale-prefixed URL ("as-needed": default locale unprefixed). */
+/**
+ * Absolute, locale-prefixed URL ("as-needed": default locale unprefixed).
+ * `defaultLocale`: the unprefixed language of the site, Arabic on tallaby.com;
+ * a store passes its own default language (an English store: "/x" is English).
+ */
 export function buildLocalizedUrl(
   baseUrl: string,
   locale: SitemapLocale,
-  path: string
+  path: string,
+  defaultLocale: SitemapLocale = SITEMAP_DEFAULT_LOCALE
 ): string {
-  const prefix = locale === SITEMAP_DEFAULT_LOCALE ? "" : `/${locale}`;
+  const prefix = locale === defaultLocale ? "" : `/${locale}`;
   return `${normalizeBaseUrl(baseUrl)}${prefix}${path}`;
 }
 
 /**
  * hreflang map for a page that exists in the given locales. `x-default`
- * points at the default-locale URL when it exists, else the first available.
+ * points at the default-locale (unprefixed) URL when it exists, else the
+ * first available.
  */
 export function buildAlternates(
   urls: Partial<Record<SitemapLocale, string>>,
-  fallback = ""
+  fallback = "",
+  defaultLocale: SitemapLocale = SITEMAP_DEFAULT_LOCALE
 ): Record<string, string> {
   const languages: Record<string, string> = {};
   for (const locale of SITEMAP_LOCALES) {
@@ -75,7 +82,7 @@ export function buildAlternates(
     if (url) languages[locale] = url;
   }
   languages["x-default"] =
-    urls[SITEMAP_DEFAULT_LOCALE] ?? Object.values(languages)[0] ?? fallback;
+    urls[defaultLocale] ?? Object.values(languages)[0] ?? fallback;
   return languages;
 }
 
@@ -141,12 +148,13 @@ export function sharedPathEntries(
   baseUrl: string,
   path: string,
   fields: Pick<SitemapEntry, "type" | "lastModified" | "changeFrequency" | "priority">,
-  labelFor: (locale: SitemapLocale) => string | null
+  labelFor: (locale: SitemapLocale) => string | null,
+  defaultLocale: SitemapLocale = SITEMAP_DEFAULT_LOCALE
 ): SitemapEntry[] {
   const urls = Object.fromEntries(
-    SITEMAP_LOCALES.map((l) => [l, buildLocalizedUrl(baseUrl, l, path)])
+    SITEMAP_LOCALES.map((l) => [l, buildLocalizedUrl(baseUrl, l, path, defaultLocale)])
   ) as Record<SitemapLocale, string>;
-  const alternates = buildAlternates(urls);
+  const alternates = buildAlternates(urls, "", defaultLocale);
   return SITEMAP_LOCALES.map((locale) => ({
     ...fields,
     url: urls[locale],
@@ -282,7 +290,8 @@ type ClaimedRow = ProductTranslationRow & { locale: SitemapLocale; slug: string 
  */
 export function buildProductEntries(
   baseUrl: string,
-  rows: ProductTranslationRow[]
+  rows: ProductTranslationRow[],
+  defaultLocale: SitemapLocale = SITEMAP_DEFAULT_LOCALE
 ): { entries: SitemapEntry[]; stats: ProductBuildStats } {
   const stats: ProductBuildStats = { accepted: 0, invalidSlug: 0, slugCollisions: 0 };
 
@@ -308,7 +317,7 @@ export function buildProductEntries(
   const byProduct = new Map<string, Partial<Record<SitemapLocale, string>>>();
   for (const row of claims.values()) {
     const urls = byProduct.get(row.productId) ?? {};
-    urls[row.locale] ??= buildLocalizedUrl(baseUrl, row.locale, slugPath("/products", row.slug));
+    urls[row.locale] ??= buildLocalizedUrl(baseUrl, row.locale, slugPath("/products", row.slug), defaultLocale);
     byProduct.set(row.productId, urls);
   }
 
@@ -316,7 +325,7 @@ export function buildProductEntries(
   for (const row of claims.values()) {
     const urls = byProduct.get(row.productId)!;
     const path = slugPath("/products", row.slug);
-    const url = buildLocalizedUrl(baseUrl, row.locale, path);
+    const url = buildLocalizedUrl(baseUrl, row.locale, path, defaultLocale);
     if (urls[row.locale] !== url) continue;
     stats.accepted++;
     entries.push({
@@ -328,7 +337,7 @@ export function buildProductEntries(
       lastModified: row.updatedAt,
       changeFrequency: "weekly",
       priority: 0.7,
-      alternates: buildAlternates(urls),
+      alternates: buildAlternates(urls, "", defaultLocale),
     });
   }
 

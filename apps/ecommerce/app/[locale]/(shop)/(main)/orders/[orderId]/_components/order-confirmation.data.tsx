@@ -1,7 +1,7 @@
 import { db, eq, orders } from "@workspace/db";
 import { isAwaitingCustomer } from "@workspace/lib/orders/manual";
 import { OrderLinkConfirm } from "./order-link-confirm.client";
-import { redirect } from "@/i18n/navigation";
+import { storeRedirect } from "@/i18n/store-navigation.server";
 import { getOrderConfirmationData } from "./order-confirmation.server";
 import { OrderConfirmationContent } from "./order-confirmation.chunks";
 import { OrderRealtime } from "./order-realtime";
@@ -54,7 +54,7 @@ export async function OrderConfirmationData({
 
   if (!result.success || !result.data) {
     if (result.error === "Order not found" && authUser?.id) {
-      redirect({ href: "/profile/orders", locale });
+      await storeRedirect({ href: "/profile/orders", locale });
     }
 
     return (

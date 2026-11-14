@@ -9,6 +9,13 @@
  *   faster.tallaby.com/cart             → /ar/storefront/faster/cart
  *   faster.tallaby.com/products?q=x     → /ar/storefront/faster/products?q=x
  *
+ * An unprefixed address shows the store's DEFAULT language (owner,
+ * 2026-11-14). Arabic-default stores route as above, as before. On an
+ * English-default store the prefixes swap: "/" is English, "/ar/..." is
+ * Arabic, and "/en/..." permanently redirects to the unprefixed address. A
+ * store that offers one language only redirects the other prefix the same
+ * way. The full table is on `storeLocaleDecision`.
+ *
  * Checkout, sign-in, orders and the cookies page run as-is on the store host
  * (cart actions are scoped by host, so they act on the storefront cart).
  * Anything else is the store's own 404: a store host never redirects to
@@ -16,6 +23,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { storeBaseLocale } from "@workspace/lib/storefront";
 import { routing, type AppLocale } from "@/i18n/routing";
 
 const STOREFRONT_SEGMENT = "storefront";
@@ -77,29 +85,96 @@ const PASS_THROUGH = [
   "/cookies",
 ];
 
-function splitLocale(pathname: string): { locale: AppLocale; path: string } {
+/** A store's languages as the proxy routes them (Store settings › General). */
+export type StoreLocales = {
+  /** What an unprefixed address shows. */
+  defaultLocale: AppLocale;
+  /** Always includes `defaultLocale`. */
+  supportedLocales: readonly AppLocale[];
+};
+
+/** A store with no known languages (unknown subdomain, failed lookup): Arabic unprefixed, both offered, as before. */
+export const DEFAULT_STORE_LOCALES: StoreLocales = { defaultLocale: "ar", supportedLocales: ["ar", "en"] };
+
+/** The stored `default_locale` / `supported_locales`, made safe: unknown values dropped, the default always offered. */
+export function storeLocalesOf(
+  store: { defaultLocale?: string | null; supportedLocales?: readonly string[] | null } | null | undefined,
+): StoreLocales {
+  if (!store) return DEFAULT_STORE_LOCALES;
+  const defaultLocale = storeBaseLocale(store.defaultLocale);
+  const listed = routing.locales.filter((l) => store.supportedLocales?.includes(l));
+  const supported = listed.length ? listed : [...routing.locales];
+  return {
+    defaultLocale,
+    supportedLocales: supported.includes(defaultLocale) ? supported : [defaultLocale, ...supported],
+  };
+}
+
+function splitLocale(pathname: string): { prefix: AppLocale | null; path: string } {
   for (const locale of routing.locales) {
-    if (pathname === `/${locale}`) return { locale, path: "/" };
+    if (pathname === `/${locale}`) return { prefix: locale, path: "/" };
     if (pathname.startsWith(`/${locale}/`)) {
-      return { locale, path: pathname.slice(locale.length + 1) };
+      return { prefix: locale, path: pathname.slice(locale.length + 1) };
     }
   }
-  return { locale: routing.defaultLocale, path: pathname };
+  return { prefix: null, path: pathname };
+}
+
+export type StoreLocaleDecision =
+  /** Render `path` in `locale`. */
+  | { action: "serve"; locale: AppLocale; path: string }
+  /** 308 to `path` (unprefixed), keeping the query string. */
+  | { action: "redirect"; path: string };
+
+/**
+ * Which language a store-host path shows, or where it moved for good:
+ *
+ *   default │ offers  │ "/x"     │ "/ar/x"      │ "/en/x"
+ *   ────────┼─────────┼──────────┼──────────────┼─────────────
+ *   Arabic  │ ar + en │ Arabic   │ Arabic (*)   │ English
+ *   Arabic  │ ar      │ Arabic   │ Arabic (*)   │ 308 → "/x"
+ *   English │ en + ar │ English  │ Arabic       │ 308 → "/x"
+ *   English │ en      │ English  │ 308 → "/x"   │ 308 → "/x"
+ *
+ * (*) as before this change: storefront pages answer "/ar/x" too, and on
+ * shared pages (checkout, sign-in…) next-intl redirects it to "/x".
+ */
+export function storeLocaleDecision(pathname: string, store: StoreLocales): StoreLocaleDecision {
+  const { prefix, path } = splitLocale(pathname);
+  if (!prefix) return { action: "serve", locale: store.defaultLocale, path };
+  // An English store's own language has no prefix (old /en links land here).
+  if (prefix === store.defaultLocale && prefix !== routing.defaultLocale) return { action: "redirect", path };
+  // A language the store doesn't offer: its one language, unprefixed.
+  if (!store.supportedLocales.includes(prefix)) return { action: "redirect", path };
+  return { action: "serve", locale: prefix, path };
 }
 
 /**
  * The storefront response for a store-host request, or null when the path
- * should go through the regular i18n routing (PASS_THROUGH).
+ * should go through the regular i18n routing (PASS_THROUGH on an
+ * Arabic-default store, exactly as before).
  */
 export function routeStorefrontRequest(
   request: NextRequest,
   subdomain: string,
+  store: StoreLocales = DEFAULT_STORE_LOCALES,
 ): NextResponse | null {
   const { pathname, search } = request.nextUrl;
-  const { locale, path } = splitLocale(pathname);
+  const decision = storeLocaleDecision(pathname, store);
+  if (decision.action === "redirect") {
+    // A fresh URL, not nextUrl.clone() (see rewrite below).
+    return NextResponse.redirect(new URL(`${decision.path}${search}`, request.url), 308);
+  }
+  const { locale, path } = decision;
 
   if (PASS_THROUGH.some((p) => path === p || path.startsWith(`${p}/`))) {
-    return null;
+    // next-intl's routing takes an unprefixed address as Arabic, so an
+    // English store's shared pages are rewritten here instead.
+    if (store.defaultLocale === routing.defaultLocale) return null;
+    const url = new URL(`/${locale}${path}${search}`, request.url);
+    const headers = new Headers(request.headers);
+    headers.set("X-NEXT-INTL-LOCALE", locale);
+    return NextResponse.rewrite(url, { request: { headers } });
   }
 
   const rewrite = (target: string) => {

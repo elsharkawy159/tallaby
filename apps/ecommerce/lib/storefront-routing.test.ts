@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { routeStoreCrawlFile, routeStorefrontRequest } from "./storefront-routing";
+import {
+  DEFAULT_STORE_LOCALES,
+  routeStoreCrawlFile,
+  routeStorefrontRequest,
+  storeLocaleDecision,
+  storeLocalesOf,
+  type StoreLocales,
+} from "./storefront-routing";
 
 const req = (path: string) => new NextRequest(new URL(`https://sara.tallaby.com${path}`));
 const rewriteOf = (path: string) => routeStorefrontRequest(req(path), "sara")?.headers.get("x-middleware-rewrite");
@@ -105,5 +112,94 @@ describe("store crawl files (P5-04)", () => {
 
   it("serves the sitemap stylesheet per store, so its page carries the store's name", () => {
     expect(crawlRewrite("/sitemap.xsl")).toMatch(/\/ar\/storefront\/sara\/sitemap-xsl$/);
+  });
+});
+
+describe("store default language routing (owner, 2026-11-14)", () => {
+  const AR_BOTH = storeLocalesOf({ defaultLocale: "ar", supportedLocales: ["ar", "en"] });
+  const AR_ONLY = storeLocalesOf({ defaultLocale: "ar", supportedLocales: ["ar"] });
+  const EN_BOTH = storeLocalesOf({ defaultLocale: "en", supportedLocales: ["ar", "en"] });
+  const EN_ONLY = storeLocalesOf({ defaultLocale: "en", supportedLocales: ["en"] });
+  const route = (path: string, store: StoreLocales) => routeStorefrontRequest(req(path), "sara", store);
+  const rewrite = (path: string, store: StoreLocales) => route(path, store)?.headers.get("x-middleware-rewrite");
+  const redirect = (path: string, store: StoreLocales) => {
+    const res = route(path, store);
+    return res ? { status: res.status, location: res.headers.get("location") } : null;
+  };
+
+  it("decides every cell of the table", () => {
+    const cases: [StoreLocales, string, ReturnType<typeof storeLocaleDecision>][] = [
+      [AR_BOTH, "/x", { action: "serve", locale: "ar", path: "/x" }],
+      [AR_BOTH, "/ar/x", { action: "serve", locale: "ar", path: "/x" }],
+      [AR_BOTH, "/en/x", { action: "serve", locale: "en", path: "/x" }],
+      [AR_ONLY, "/x", { action: "serve", locale: "ar", path: "/x" }],
+      [AR_ONLY, "/ar/x", { action: "serve", locale: "ar", path: "/x" }],
+      [AR_ONLY, "/en/x", { action: "redirect", path: "/x" }],
+      [EN_BOTH, "/x", { action: "serve", locale: "en", path: "/x" }],
+      [EN_BOTH, "/ar/x", { action: "serve", locale: "ar", path: "/x" }],
+      [EN_BOTH, "/en/x", { action: "redirect", path: "/x" }],
+      [EN_ONLY, "/x", { action: "serve", locale: "en", path: "/x" }],
+      [EN_ONLY, "/ar/x", { action: "redirect", path: "/x" }],
+      [EN_ONLY, "/en/x", { action: "redirect", path: "/x" }],
+    ];
+    for (const [store, path, expected] of cases) expect(storeLocaleDecision(path, store)).toEqual(expected);
+    // A bare prefix is the home page.
+    expect(storeLocaleDecision("/en", EN_BOTH)).toEqual({ action: "redirect", path: "/" });
+    expect(storeLocaleDecision("/ar", EN_BOTH)).toEqual({ action: "serve", locale: "ar", path: "/" });
+    // "/english" is a page slug, not a prefix.
+    expect(storeLocaleDecision("/english", EN_BOTH)).toEqual({ action: "serve", locale: "en", path: "/english" });
+  });
+
+  it("leaves Arabic-default stores exactly as before", () => {
+    for (const path of ["/", "/products/bag", "/en/products/bag", "/ar/about", "/blog?page=2", "/en/search?q=coat"]) {
+      expect(rewrite(path, AR_BOTH)).toBe(rewriteOf(path));
+    }
+    expect(route("/cart/checkout", AR_BOTH)).toBeNull();
+    expect(route("/en/orders/1", AR_BOTH)).toBeNull();
+    expect(route("/ar/auth", AR_BOTH)).toBeNull();
+    // No languages known (lookup failed): the Arabic-default rules.
+    expect(rewrite("/products/bag", DEFAULT_STORE_LOCALES)).toBe(rewriteOf("/products/bag"));
+  });
+
+  it("serves an English store's unprefixed address in English and /ar in Arabic", () => {
+    expect(rewrite("/", EN_BOTH)).toMatch(/\/en\/storefront\/sara(?:\?|$)/);
+    expect(rewrite("/products/bag", EN_BOTH)).toContain("/en/storefront/sara/products/bag");
+    expect(rewrite("/blog/size-guide/", EN_BOTH)).toContain("/en/storefront/sara/blog/size-guide");
+    expect(rewrite("/products?category=dresses&sort=newest", EN_BOTH)).toContain("/en/storefront/sara/products?category=dresses&sort=newest");
+    expect(rewrite("/ar", EN_BOTH)).toMatch(/\/ar\/storefront\/sara(?:\?|$)/);
+    expect(rewrite("/ar/products/bag", EN_BOTH)).toContain("/ar/storefront/sara/products/bag");
+    expect(rewrite("/ar/lookbook/summer-2026", EN_BOTH)).toContain("/ar/storefront/sara/cms/lookbook/summer-2026");
+    expect(route("/products/bag", EN_BOTH)?.headers.get("x-middleware-request-x-next-intl-locale")).toBe("en");
+    expect(route("/ar/products/bag", EN_BOTH)?.headers.get("x-middleware-request-x-next-intl-locale")).toBe("ar");
+  });
+
+  it("308s an English store's /en links to the unprefixed address, query kept", () => {
+    expect(redirect("/en", EN_BOTH)).toEqual({ status: 308, location: "https://sara.tallaby.com/" });
+    expect(redirect("/en/products/bag?color=red&size=m", EN_BOTH)).toEqual({ status: 308, location: "https://sara.tallaby.com/products/bag?color=red&size=m" });
+    expect(redirect("/en/blog/size-guide/", EN_BOTH)).toEqual({ status: 308, location: "https://sara.tallaby.com/blog/size-guide/" });
+    expect(redirect("/en/cart/checkout?step=2", EN_BOTH)).toEqual({ status: 308, location: "https://sara.tallaby.com/cart/checkout?step=2" });
+  });
+
+  it("308s the prefix of a language a one-language store doesn't offer", () => {
+    expect(redirect("/ar/products/bag?x=1", EN_ONLY)).toEqual({ status: 308, location: "https://sara.tallaby.com/products/bag?x=1" });
+    expect(redirect("/en/about", AR_ONLY)).toEqual({ status: 308, location: "https://sara.tallaby.com/about" });
+    expect(redirect("/en/orders/1", AR_ONLY)).toEqual({ status: 308, location: "https://sara.tallaby.com/orders/1" });
+    expect(rewrite("/products/bag", EN_ONLY)).toContain("/en/storefront/sara/products/bag");
+  });
+
+  it("rewrites an English store's shared pages itself, in the right language", () => {
+    const shared = (path: string) => route(path, EN_BOTH);
+    expect(shared("/cart/checkout")?.headers.get("x-middleware-rewrite")).toBe("https://sara.tallaby.com/en/cart/checkout");
+    expect(shared("/cart/checkout/payment?orderId=1")?.headers.get("x-middleware-rewrite")).toBe("https://sara.tallaby.com/en/cart/checkout/payment?orderId=1");
+    expect(shared("/ar/orders/1?t=abc")?.headers.get("x-middleware-rewrite")).toBe("https://sara.tallaby.com/ar/orders/1?t=abc");
+    expect(shared("/auth")?.headers.get("x-middleware-request-x-next-intl-locale")).toBe("en");
+    expect(shared("/ar/profile/orders")?.headers.get("x-middleware-request-x-next-intl-locale")).toBe("ar");
+  });
+
+  it("makes stored languages safe", () => {
+    expect(storeLocalesOf(null)).toEqual(DEFAULT_STORE_LOCALES);
+    expect(storeLocalesOf({ defaultLocale: "fr", supportedLocales: ["fr"] })).toEqual({ defaultLocale: "ar", supportedLocales: ["en", "ar"] });
+    expect(storeLocalesOf({ defaultLocale: "en", supportedLocales: ["ar"] })).toEqual({ defaultLocale: "en", supportedLocales: ["en", "ar"] });
+    expect(storeLocalesOf({ defaultLocale: "en", supportedLocales: ["en"] })).toEqual({ defaultLocale: "en", supportedLocales: ["en"] });
   });
 });

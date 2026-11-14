@@ -89,6 +89,18 @@ describe("catalog share helpers", () => {
     expect(catalogShareUrls("https://x.com", "t.k", null).url).toBe("https://x.com/catalog/t.k");
   });
 
+  it("on an English-default store, English is unprefixed (and first) and Arabic is /ar", () => {
+    expect(catalogShareUrls("https://x.com", "t.k", ["ar", "en"], "en")).toEqual({
+      url: "https://x.com/catalog/t.k",
+      altUrl: "https://x.com/ar/catalog/t.k",
+      altLocale: "ar",
+      printUrl: "https://x.com/catalog/t.k?print=1",
+    });
+    expect(catalogShareUrls("https://x.com", "t.k", ["en"], "en")).toMatchObject({ url: "https://x.com/catalog/t.k", altUrl: null });
+    // Arabic-default stores: as before.
+    expect(catalogShareUrls("https://x.com", "t.k", ["ar", "en"], "ar").altUrl).toBe("https://x.com/en/catalog/t.k");
+  });
+
   it("builds a WhatsApp share link", () => {
     expect(catalogWhatsAppHref("شوف المنتجات", "https://x.com/catalog/a.b")).toBe(
       `https://wa.me/?text=${encodeURIComponent("شوف المنتجات\nhttps://x.com/catalog/a.b")}`,

@@ -52,3 +52,23 @@ describe("buildStoreSitemapEntries", () => {
     expect(buildStoreSitemapEntries({ ...base, indexable: false, catalogPage: true, categoryKeys: ["mugs"], extra: [{ path: "/blog", lastModified: null }] })).toEqual([]);
   });
 });
+
+describe("buildStoreSitemapEntries on an English-default store (owner, 2026-11-14)", () => {
+  const base = { baseUrl: "https://shop.com", indexable: true, pages: [{ slug: "about", isHome: false }], products: [], defaultLocale: "en" as const };
+
+  it("lists English unprefixed, Arabic under /ar, with English as x-default", () => {
+    const entries = buildStoreSitemapEntries(base);
+    expect(entries.map((e) => e.url)).toEqual(
+      expect.arrayContaining(["https://shop.com", "https://shop.com/ar", "https://shop.com/about", "https://shop.com/ar/about"]),
+    );
+    expect(entries.some((e) => e.url.includes("/en"))).toBe(false);
+    const about = entries.find((e) => e.url === "https://shop.com/ar/about")!;
+    expect(about.alternates).toEqual({ en: "https://shop.com/about", ar: "https://shop.com/ar/about", "x-default": "https://shop.com/about" });
+  });
+
+  it("an English-only store lists only its unprefixed English URLs, with no hreflang", () => {
+    const entries = buildStoreSitemapEntries({ ...base, locales: ["en"] });
+    expect(entries.map((e) => e.url).sort()).toEqual(["https://shop.com", "https://shop.com/about"]);
+    expect(entries.every((e) => Object.keys(e.alternates).length === 0)).toBe(true);
+  });
+});

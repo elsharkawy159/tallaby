@@ -10,6 +10,7 @@ import {
   feedCsvHeader,
   feedCsvRow,
   feedLocale,
+  feedProductUrl,
   feedPricing,
   feedSellerCategory,
   feedXmlHeader,
@@ -298,5 +299,17 @@ describe("feedSellerCategory", () => {
       en: "Finishing > Lamps",
     });
     expect(feedSellerCategory({ name: "Lamps", nameAr: null }, { name: null, nameAr: "تشطيب" })).toEqual({ ar: "تشطيب > Lamps", en: "تشطيب > Lamps" });
+  });
+});
+
+describe("feedProductUrl and the store's default language (owner, 2026-11-14)", () => {
+  it("keeps Arabic unprefixed on an Arabic-default store", () => {
+    expect(feedProductUrl("https://x.com", "ar", "kob")).toBe("https://x.com/products/kob");
+    expect(feedProductUrl("https://x.com", "en", "mug", "ar")).toBe("https://x.com/en/products/mug");
+  });
+
+  it("puts Arabic under /ar on an English-default store", () => {
+    expect(feedProductUrl("https://x.com", "en", "mug", "en")).toBe("https://x.com/products/mug");
+    expect(feedProductUrl("https://x.com", "ar", "كوب", "en")).toBe(`https://x.com/ar/products/${encodeURIComponent("كوب")}`);
   });
 });

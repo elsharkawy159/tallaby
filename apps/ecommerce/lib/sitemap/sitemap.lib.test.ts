@@ -311,3 +311,29 @@ describe("chunkEntries", () => {
     expect(latestModified([e(null)])).toBeNull();
   });
 });
+
+describe("a site whose default language is English (an English-default store)", () => {
+  it("leaves English unprefixed and prefixes Arabic", () => {
+    expect(buildLocalizedUrl(BASE, "en", "/products/x", "en")).toBe(`${BASE}/products/x`);
+    expect(buildLocalizedUrl(BASE, "ar", "/products/x", "en")).toBe(`${BASE}/ar/products/x`);
+    expect(buildLocalizedUrl(BASE, "en", "", "en")).toBe(BASE);
+    expect(buildLocalizedUrl(BASE, "ar", "", "en")).toBe(`${BASE}/ar`);
+  });
+
+  it("points x-default at the English (unprefixed) URL", () => {
+    expect(buildAlternates({ en: "e", ar: "a" }, "", "en")).toEqual({ en: "e", ar: "a", "x-default": "e" });
+    expect(buildAlternates({ ar: "a" }, "", "en")).toEqual({ ar: "a", "x-default": "a" });
+  });
+
+  it("builds product entries with English unprefixed", () => {
+    const { entries } = buildProductEntries(
+      BASE,
+      [row({ locale: "en", slug: "mug" }), row({ locale: "ar", slug: "كوب" })],
+      "en",
+    );
+    const en = entries.find((e) => e.locale === "en")!;
+    expect(en.url).toBe(`${BASE}/products/mug`);
+    expect(en.alternates["x-default"]).toBe(`${BASE}/products/mug`);
+    expect(entries.find((e) => e.locale === "ar")!.url).toBe(`${BASE}/ar/products/${encodeURIComponent("كوب")}`);
+  });
+});

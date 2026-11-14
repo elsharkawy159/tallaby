@@ -5,6 +5,8 @@ import { Globe } from "lucide-react";
 import { useLocale } from "next-intl";
 import { resolveProductSlugForLocale } from "@/actions/i18n";
 import { updatePreferences } from "@/actions/customer";
+import { storeLocalePath } from "@workspace/lib/storefront";
+import { useStoreDefaultLocale } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import type { ProductLocale } from "@/lib/product-translations";
 import s from "../storefront.module.css";
@@ -16,7 +18,7 @@ const PRODUCT_PATH = /^\/products\/([^/]+)\/?$/;
 
 /**
  * Switches the storefront to the other language. Works from the address-bar
- * path (`/`, `/en/products/x`), not the rewritten internal one, so it uses a
+ * path (`/`, `/en/products/x`, `/ar/products/x` on an English store), not the rewritten internal one, so it uses a
  * full navigation: the page's `lang`/`dir` change with it.
  *
  * `site`: inside a builder header (`languageSwitcher` node), it takes the
@@ -26,6 +28,8 @@ const PRODUCT_PATH = /^\/products\/([^/]+)\/?$/;
 export function StorefrontLanguageSwitcher({ variant = "chrome" }: { variant?: "chrome" | "site" }) {
   const locale = useLocale() as ProductLocale;
   const target: ProductLocale = locale === "ar" ? "en" : "ar";
+  // The store's unprefixed language: "/x" is English on an English store, Arabic otherwise.
+  const storeDefault = useStoreDefaultLocale();
   const [isPending, startTransition] = useTransition();
 
   function switchLocale() {
@@ -34,7 +38,8 @@ export function StorefrontLanguageSwitcher({ variant = "chrome" }: { variant?: "
 
     startTransition(async () => {
       const { pathname, search, hash } = window.location;
-      let path = pathname.replace(new RegExp(`^/${locale}(?=/|$)`), "") || "/";
+      // Either prefix may be in the address ("/en/x" on an Arabic store, "/ar/x" on an English one).
+      let path = pathname.replace(new RegExp(`^/(?:${routing.locales.join("|")})(?=/|$)`), "") || "/";
 
       const product = path.match(PRODUCT_PATH);
       if (product?.[1]) {
@@ -42,9 +47,7 @@ export function StorefrontLanguageSwitcher({ variant = "chrome" }: { variant?: "
         path = slug ? `/products/${encodeURIComponent(slug)}` : "/";
       }
 
-      const prefix = target === routing.defaultLocale ? "" : `/${target}`;
-      const next = prefix ? `${prefix}${path === "/" ? "" : path}` : path;
-      window.location.assign(`${next}${search}${hash}`);
+      window.location.assign(`${storeLocalePath(target, path, storeDefault)}${search}${hash}`);
     });
   }
 

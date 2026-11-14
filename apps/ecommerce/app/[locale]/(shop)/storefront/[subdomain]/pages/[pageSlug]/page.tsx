@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { isProductPage } from "@workspace/store-sections/config";
-import { routing } from "@/i18n/routing";
+import { storeLocalePrefix } from "@workspace/lib/storefront";
 import { getTranslations } from "next-intl/server";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { storePageFallback } from "@/lib/store-site/store-policy.lib";
@@ -33,7 +33,7 @@ async function resolvePage(locale: string, subdomain: string, pageSlug: string) 
   // The product page is a template for /products/{slug}, never a page of its own.
   if (page && isProductPage(page)) notFound();
   if (!site || !page) {
-    const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
+    const prefix = storeLocalePrefix(locale, store.defaultLocale);
     const fallback = storePageFallback(pageSlug);
     if (fallback === "home") redirect(prefix || "/");
     if (fallback) return { store, policy: fallback.policy, preview } as const;

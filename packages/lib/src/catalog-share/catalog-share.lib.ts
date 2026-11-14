@@ -1,4 +1,5 @@
 import { createHmac, hkdfSync, timingSafeEqual } from "node:crypto";
+import { storeLocalePrefix } from "../storefront";
 
 /**
  * Shareable catalog links (ROADMAP.md F-11c "Easy Catalog"). A catalog is not
@@ -185,14 +186,21 @@ export type CatalogShareUrls = {
 
 /**
  * The catalog addresses on the store's live origin (`storeUrl`: its custom
- * domain, else its subdomain). Arabic is the unprefixed default on a store host.
+ * domain, else its subdomain). The store's default language is unprefixed on
+ * its host (Arabic unless `defaultLocale` is English; owner, 2026-11-14).
  */
-export function catalogShareUrls(origin: string, token: string, supportedLocales: readonly string[] | null | undefined): CatalogShareUrls {
+export function catalogShareUrls(
+  origin: string,
+  token: string,
+  supportedLocales: readonly string[] | null | undefined,
+  defaultLocale?: string | null,
+): CatalogShareUrls {
   const base = origin.replace(/\/$/, "");
   const locales = supportedLocales?.length ? supportedLocales : ["ar"];
-  const main = locales[0] === "en" ? "en" : "ar";
+  // An English-default store shares its English (unprefixed) link first.
+  const main = locales[0] === "en" || (defaultLocale === "en" && locales.includes("en")) ? "en" : "ar";
   const alt = main === "ar" ? (locales.includes("en") ? "en" : null) : locales.includes("ar") ? "ar" : null;
-  const at = (locale: "ar" | "en") => `${base}${locale === "en" ? "/en" : ""}/catalog/${token}`;
+  const at = (locale: "ar" | "en") => `${base}${storeLocalePrefix(locale, defaultLocale)}/catalog/${token}`;
   return { url: at(main), altUrl: alt ? at(alt) : null, altLocale: alt, printUrl: `${at(main)}?print=1` };
 }
 

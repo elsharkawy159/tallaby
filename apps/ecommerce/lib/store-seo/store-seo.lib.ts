@@ -3,7 +3,7 @@
  * §10.4, P4-14, P5-04). Pure, so the layout and the tests share one rule set.
  */
 import type { Metadata } from "next";
-import { storeUrl } from "@workspace/lib/storefront";
+import { storeBaseLocale, storeUrl } from "@workspace/lib/storefront";
 import { appIconVersion, appShortName } from "@workspace/lib/stores/app";
 import {
   FACEBOOK_DOMAIN_VERIFICATION_RE,
@@ -33,6 +33,8 @@ export type StoreMetadataInput = {
   seo: StoreSeo;
   /** Store settings › Languages. A language the store doesn't offer gets no hreflang and no sitemap URL. */
   supportedLocales?: readonly string[] | null;
+  /** Store settings › General: the language of the unprefixed address (and x-default). Arabic when not given. */
+  defaultLocale?: string | null;
   /** Enabled social links (Website › Social media); an X link gives the `twitter:site` handle. */
   social?: readonly { platform: string; url: string }[] | null;
   /** The store's category (Store settings), for the default keywords. */
@@ -104,23 +106,26 @@ export function storeIndexLocales(supported: readonly string[] | null | undefine
  * Canonical and hreflang of one store page. `paths` is the path in every
  * language, or per language where they differ (product slugs). A page opened
  * in a language the store doesn't offer names the offered one as canonical,
- * so it never competes with it. One language means no hreflang at all.
+ * so it never competes with it. One language means no hreflang at all. The
+ * store's default language is unprefixed and is the x-default.
  */
 export function storeAlternates(
-  store: Pick<StoreMetadataInput, "subdomain" | "customDomain" | "supportedLocales">,
+  store: Pick<StoreMetadataInput, "subdomain" | "customDomain" | "supportedLocales" | "defaultLocale">,
   locale: string,
   paths: string | Partial<Record<StoreLocale, string>>,
 ): { canonical: string; languages?: Record<string, string> } {
   const base = storeUrl(store.subdomain, store.customDomain);
+  const first = storeBaseLocale(store.defaultLocale);
+  const other: StoreLocale = first === "ar" ? "en" : "ar";
   const urls: Partial<Record<StoreLocale, string>> = {};
   for (const l of storeIndexLocales(store.supportedLocales)) {
     const path = typeof paths === "string" ? paths : paths[l];
-    if (path !== undefined) urls[l] = buildLocalizedUrl(base, l, path);
+    if (path !== undefined) urls[l] = buildLocalizedUrl(base, l, path, first);
   }
   const current = locale === "ar" || locale === "en" ? urls[locale] : undefined;
-  const anyPath = typeof paths === "string" ? paths : (paths.ar ?? paths.en ?? "");
-  const canonical = current ?? urls.ar ?? urls.en ?? buildLocalizedUrl(base, locale === "en" ? "en" : "ar", anyPath);
-  return { canonical, ...(Object.keys(urls).length > 1 && { languages: buildAlternates(urls) }) };
+  const anyPath = typeof paths === "string" ? paths : (paths[first] ?? paths[other] ?? "");
+  const canonical = current ?? urls[first] ?? urls[other] ?? buildLocalizedUrl(base, locale === "en" ? "en" : "ar", anyPath, first);
+  return { canonical, ...(Object.keys(urls).length > 1 && { languages: buildAlternates(urls, "", first) }) };
 }
 
 /**

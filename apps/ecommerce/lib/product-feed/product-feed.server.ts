@@ -64,6 +64,7 @@ export async function getRequestFeedStore(): Promise<{ subdomain: string; feed: 
         name: store.displayName,
         description: store.description,
         currency: await getStoreCurrency(store.id, store.storeId, store.subdomain),
+        defaultLocale: store.defaultLocale,
       },
     },
   };
