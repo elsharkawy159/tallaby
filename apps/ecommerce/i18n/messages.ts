@@ -25,6 +25,7 @@ const MARKETING_GROUPS = [
   "industries",
   "keywords",
   "followUs",
+  "stores",
 ] as const;
 
 export async function loadBaseMessages(locale: string): Promise<Messages> {

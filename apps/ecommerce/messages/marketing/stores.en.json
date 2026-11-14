@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "stores": {
+      "title": "Online store directory: shops in Egypt",
+      "description": "A directory of the online stores selling on Tallaby. Browse the list and visit any store on its own website."
+    },
+    "storesPage": {
+      "title": "Online store directory, page {page}",
+      "description": "A directory of the online stores selling on Tallaby, page {page}. Browse the list and visit any store on its own website."
+    }
+  },
+  "storesDirectory": {
+    "eyebrow": "Store directory",
+    "title": "Stores on Tallaby",
+    "lead": "Every store here is a real online store running on Tallaby with products for sale right now. Pick one to visit its website.",
+    "listLabel": "Stores",
+    "products": "{count, plural, one {# product} other {# products}}",
+    "empty": "There are no stores to show yet. Check back soon.",
+    "pagination": "Directory pages",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {pages}",
+    "breadcrumb": "Stores",
+    "ctaTitle": "Want your store here?",
+    "ctaBody": "Create your store on Tallaby for free, add your products and publish your website.",
+    "cta": "Create your free store"
+  }
+}

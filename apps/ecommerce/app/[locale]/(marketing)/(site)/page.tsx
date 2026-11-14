@@ -12,13 +12,14 @@ import {
   PricingTeaser,
   ShippingSection,
   TemplatesSection,
+  TrustedStoresSection,
   WhatIsTallabySection,
 } from "@/components/marketing/home/home-sections";
 import { StickyCta } from "@/components/marketing/home/sticky-cta.client";
 import { ProductJsonLd } from "@/components/marketing/site/json-ld";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
-// The hero's live store line reads the database, so the static page is rebuilt at most once a minute.
+// The hero's live store line and the store logos read the database, so the static page is rebuilt at most once a minute.
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -31,6 +32,7 @@ export default function HomePage() {
     <>
       <ProductJsonLd page="home" path="/" />
       <HomeHero />
+      <TrustedStoresSection />
       <WhatIsTallabySection />
       <FeaturesSection />
       <AiSection />

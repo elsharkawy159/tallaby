@@ -18,7 +18,8 @@ import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { COPY_VARS, PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
-import { getRecentStores } from "@/lib/marketing/stores.server";
+import { selectLogoStrip } from "@/lib/marketing/store-directory.lib";
+import { getDirectoryStores, getRecentStores } from "@/lib/marketing/stores.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { templateFrameSrc, type GalleryEntry } from "@/lib/marketing/templates.lib";
 import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
@@ -29,6 +30,7 @@ import { LiveStoreLine } from "./live-store-line.client";
 import { MarketingTools } from "./marketing-tools.client";
 import { McpChatDemo } from "./mcp-chat-demo";
 import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos";
+import { StoreLogoStrip } from "./store-logo-strip";
 
 /** A small text link from a home section to its deeper page. */
 function SectionLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
@@ -135,6 +137,14 @@ export async function HomeHero() {
       </Container>
     </section>
   );
+}
+
+/** Real store logos right after the hero (owner, 2026-11-14); hidden until enough stores qualify (selectLogoStrip). */
+export async function TrustedStoresSection() {
+  const stores = selectLogoStrip(await getDirectoryStores());
+  if (stores.length === 0) return null;
+  const [t, locale] = await Promise.all([getTranslations("home.trusted"), getLocale()]);
+  return <StoreLogoStrip stores={stores} labels={{ title: t("title"), all: t("all"), listLabel: t("listLabel") }} rtl={locale === "ar"} />;
 }
 
 /** "What is Tallaby?" right after the hero: one plain sentence, who it is for, and four facts (owner, 2026-11-08). */

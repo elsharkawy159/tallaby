@@ -31,3 +31,18 @@ describe.skipIf(!isStaging)("recent stores (integration)", { timeout: 60_000 }, 
     console.log("line on staging now:", JSON.stringify(selectStoreLine(week, now)), "wider window rows:", wide.length);
   });
 });
+
+describe.skipIf(!isStaging)("store directory (integration)", { timeout: 60_000 }, () => {
+  it("reads only public store fields, live stores with products, in both catalog modes", async () => {
+    const { readDirectoryStores } = await import("./stores.server");
+    for (const catalogSplit of [true, false]) {
+      const stores = await readDirectoryStores(catalogSplit);
+      for (const store of stores) {
+        expect(Object.keys(store).sort()).toEqual(["industry", "logoUrl", "name", "productCount", "url"]);
+        expect(store.productCount).toBeGreaterThanOrEqual(1);
+        expect(store.url).toMatch(/^https?:\/\//);
+      }
+      console.log("directory on staging:", catalogSplit ? "split" : "shared", stores.length, "stores");
+    }
+  });
+});

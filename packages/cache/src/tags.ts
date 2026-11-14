@@ -129,9 +129,14 @@ export const marketingBlogTags = {
   posts: () => "marketing-blog:posts",
 } as const;
 
-/** The tallaby.com home live line: the newest published stores across sellers. Public names and times only. */
+/**
+ * tallaby.com's public store lists: the home live line (newest stores, no names) and
+ * the directory (home logo strip, /stores and the sitemap: live, indexable stores
+ * across sellers; public store name, logo, address and product count only).
+ */
 export const marketingStoreTags = {
   recent: () => "marketing-stores:recent",
+  directory: () => "marketing-stores:directory",
 } as const;
 
 /**

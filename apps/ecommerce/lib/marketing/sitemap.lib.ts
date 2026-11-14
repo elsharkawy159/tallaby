@@ -9,7 +9,7 @@ import type { MarketingSitemapEntry } from "./seo.lib";
  * deploy, so search engines can trust it.
  */
 export const STATIC_PAGE_LASTMOD: Record<string, string> = {
-  "/": "2026-11-09",
+  "/": "2026-11-14",
   "/templates": "2026-11-06",
   "/pricing": "2026-11-08",
   "/affiliates": "2026-11-04",

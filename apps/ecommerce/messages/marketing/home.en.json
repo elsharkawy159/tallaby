@@ -111,6 +111,11 @@
         "Import from Shopify"
       ]
     },
+    "trusted": {
+      "title": "Stores selling on Tallaby",
+      "all": "See all stores",
+      "listLabel": "Logos of stores on Tallaby"
+    },
     "what": {
       "kicker": "Meet Tallaby",
       "title": "What is Tallaby?",

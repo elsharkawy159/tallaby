@@ -55,6 +55,7 @@ export async function SiteFooter() {
       links: [
         { href: "/about", label: t("aboutUs") },
         { href: "/blog", label: t("blog") },
+        { href: "/stores", label: t("stores") },
         { href: "/careers", label: t("careers") },
         { href: "/contact", label: t("contactUs") },
       ],

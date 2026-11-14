@@ -23,7 +23,7 @@ For anyone building a page in `apps/ecommerce/app/[locale]/(marketing)`. The des
 
 ## Messages
 
-- Strings go in `messages/marketing/<group>.ar.json` and `.en.json`, in your page's group: `site`, `home`, `pricing`, `templates`, `blog`, `about`, `careers`, `contact`, `faq`, `legal`, `features`, `integrations`, `compare`, `tools`, `industries`, `keywords`, `followUs`. Edit only your own group. Both files always get the same keys.
+- Strings go in `messages/marketing/<group>.ar.json` and `.en.json`, in your page's group: `site`, `home`, `pricing`, `templates`, `blog`, `about`, `careers`, `contact`, `faq`, `legal`, `features`, `integrations`, `compare`, `tools`, `industries`, `keywords`, `followUs`, `stores`. Edit only your own group. Both files always get the same keys.
 - They merge key by key over `messages/ar.json` and `en.json`, and a marketing key wins. Use them with `useTranslations` and `getTranslations` as usual, on server and client, under `(marketing)`.
 - Only `(marketing)` sends these to the browser, so a component also used in `(shop)` must keep its strings in the base files. Leave base strings in place: other pages may use them.
 

@@ -277,6 +277,10 @@
   .store-marquee:focus-within .store-marquee-track {
     animation-play-state: paused;
   }
+  /* Home store logos: the same loop, sized by its content. */
+  .logo-marquee-track {
+    width: max-content;
+  }
 }
 @keyframes store-marquee {
   to {
@@ -301,6 +305,22 @@
   }
   .store-marquee [data-marquee-copy] {
     display: none;
+  }
+  /* Store logos: one static row that wraps, centred, with no fade at the edges. */
+  .logo-marquee {
+    overflow: visible;
+    mask-image: none;
+  }
+  .logo-marquee-track {
+    width: auto;
+    justify-content: center;
+    padding-inline: 16px;
+  }
+  .logo-marquee ul {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-inline-end: 0;
   }
   html {
     scroll-behavior: auto;
