@@ -310,6 +310,7 @@ export function DiscountRulesView({
       >
         {rules.length === 0 ? (
           <EmptyState
+            image="/illustrations/empty/discounts.png"
             title={t("empty")}
             action={
               !draft ? (

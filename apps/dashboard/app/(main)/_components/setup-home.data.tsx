@@ -1,10 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Check } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SellerButton, SellerCard } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
 import type { HomeSnapshot } from "./home.queries";
-import { HOME_STEP_ICONS } from "./setup-checklist.data";
+import { HOME_STEP_ICONS, HOME_STEP_IMAGES } from "./setup-checklist.data";
 import { buildHomeSteps } from "./setup-checklist.lib";
 
 /** Length of the progress ring's circle (r = 26). */
@@ -62,6 +63,7 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
       <ol className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2 max-[600px]:grid-cols-1">
         {steps.map((step, i) => {
           const Icon = HOME_STEP_ICONS[step.key];
+          const image = HOME_STEP_IMAGES[step.key];
           const next = step.key === nextKey;
           return (
             <li key={step.key} className="flex">
@@ -73,15 +75,19 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span
-                    className={cn(
-                      "grid size-11 place-items-center rounded-[14px] bg-(--s-fill) text-(--s-ink) [&_svg]:size-5",
-                      next && "bg-accent-soft text-accent-ink",
-                      step.done && "bg-success-soft text-success",
-                    )}
-                  >
-                    <Icon aria-hidden />
-                  </span>
+                  {image ? (
+                    <Image src={image} alt="" aria-hidden width={88} height={88} loading="eager" className="size-[88px] select-none" />
+                  ) : (
+                    <span
+                      className={cn(
+                        "grid size-11 place-items-center rounded-[14px] bg-(--s-fill) text-(--s-ink) [&_svg]:size-5",
+                        next && "bg-accent-soft text-accent-ink",
+                        step.done && "bg-success-soft text-success",
+                      )}
+                    >
+                      <Icon aria-hidden />
+                    </span>
+                  )}
                   {next ? (
                     <span className="whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-accent-foreground">
                       {tSetup("nextStep")}

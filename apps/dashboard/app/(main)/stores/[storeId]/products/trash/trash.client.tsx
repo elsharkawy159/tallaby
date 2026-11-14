@@ -79,7 +79,7 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
       </div>
 
       {items.length === 0 ? (
-        <EmptyState icon={Trash2} title={t("emptyTitle")} description={t("emptyDescription")} />
+        <EmptyState icon={Trash2} image="/illustrations/empty/trash.png" title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2">

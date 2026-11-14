@@ -273,6 +273,7 @@ export function EmailCampaignsView({ stores, storeId, storeLive, limits, allowan
           {data.campaigns.length === 0 ? (
             <EmptyState
               icon={Mail}
+              image="/illustrations/empty/email-campaigns.png"
               title={t("list.emptyTitle")}
               description={
                 <ol className="list-inside list-decimal">

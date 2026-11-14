@@ -407,7 +407,7 @@ export function MediaManager({ initial, readOnly, children }: { initial: MediaLi
 
       {assets.length === 0 && !loading ? (
         <div className="rounded-[20px] border border-(--s-line) bg-(--s-surface)">
-          <EmptyState icon={Images} title={needle ? tw("noMatches") : t(folderId ? "emptyFolder" : "empty")} />
+          <EmptyState icon={Images} image={needle ? undefined : "/illustrations/empty/media.png"} title={needle ? tw("noMatches") : t(folderId ? "emptyFolder" : "empty")} />
         </div>
       ) : view === "grid" ? (
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3 max-[480px]:grid-cols-2">

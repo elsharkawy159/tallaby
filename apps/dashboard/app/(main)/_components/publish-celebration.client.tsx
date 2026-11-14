@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Copy, ExternalLink, PartyPopper } from "lucide-react";
+import { Copy, ExternalLink } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -50,9 +51,14 @@ export function PublishCelebration({ live, onClose }: { live: LiveSite | null; o
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="items-center text-center sm:text-center">
-            <span className="mb-1 flex size-14 items-center justify-center rounded-2xl bg-accent/15 text-accent motion-safe:animate-bounce">
-              <PartyPopper className="size-7" aria-hidden />
-            </span>
+            <Image
+              src="/illustrations/onboarding/store-published.png"
+              alt=""
+              aria-hidden
+              width={112}
+              height={112}
+              className="mb-1 size-28 select-none motion-safe:animate-bounce"
+            />
             <DialogTitle className="text-xl">{t("successTitle")}</DialogTitle>
             <DialogDescription>{t("successBody")}</DialogDescription>
           </DialogHeader>

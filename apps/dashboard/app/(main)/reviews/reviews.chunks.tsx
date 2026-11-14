@@ -126,7 +126,7 @@ function VendorReviewsList({ rows, reviewType }: { rows: VendorReviewRow[]; revi
 
       {visible.length === 0 ? (
         <SellerCard>
-          <EmptyState icon={Star} title={t(rows.length ? "noMatch" : "empty")} />
+          <EmptyState icon={Star} image={rows.length ? undefined : "/illustrations/empty/reviews.png"} title={t(rows.length ? "noMatch" : "empty")} />
         </SellerCard>
       ) : (
         <ul className="overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-surface)">

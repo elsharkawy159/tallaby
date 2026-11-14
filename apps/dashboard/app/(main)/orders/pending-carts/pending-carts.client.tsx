@@ -50,7 +50,7 @@ export function PendingCartsView({
 
       {list.carts.length === 0 ? (
         <SellerCard>
-          <EmptyState icon={ShoppingCart} title={t("empty.title")} description={t("empty.body")} />
+          <EmptyState icon={ShoppingCart} image="/illustrations/empty/pending-carts.png" title={t("empty.title")} description={t("empty.body")} />
         </SellerCard>
       ) : (
         <ul className="grid grid-cols-2 gap-3.5 max-[1020px]:grid-cols-1 max-[600px]:gap-2.5">

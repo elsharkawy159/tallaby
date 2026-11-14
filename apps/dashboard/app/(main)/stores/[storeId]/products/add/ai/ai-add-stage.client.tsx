@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
+import Image from "next/image"
 import { useLocale, useTranslations } from "next-intl"
 import { ArrowLeft, ArrowUp, Check, FileText, ImagePlus, Sparkles, Wand2, X } from "lucide-react"
 import { Checkbox } from "@workspace/ui/components/checkbox"
@@ -11,7 +12,7 @@ import { SellerButton } from "@/components/seller-ui"
 import { cn } from "@/lib/utils"
 import { formatMoneyMarked, formatNumber } from "@/lib/i18n/format"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
-import { BackIcon, backClassName, FlowIntro, FlowOrb, FlowStage, GenCard, GenFoot, PILL_BUTTON_CLASS, type GenStep } from "../add-flow.client"
+import { BackIcon, backClassName, FlowIntro, FlowStage, GenCard, GenFoot, PILL_BUTTON_CLASS, type GenStep } from "../add-flow.client"
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
 import { AUTOFILL_LIMITS, type ProductAutofillOutput } from "./ai-autofill.dto"
 import { checkComposer } from "./ai-composer.lib"
@@ -301,7 +302,9 @@ export function AiAddStage ({
     >
       {/* Stays mounted through a run: a failed send puts the seller back here with everything intact. */}
       <div className={cn("flex flex-col gap-[22px]", run && "hidden")}>
-        <FlowIntro orb={<FlowOrb icon={Sparkles} amber />} title={t("title")} titleId="ai-stage-title" body={t("body")}>
+        <FlowIntro
+          orb={<Image src="/illustrations/features/add-ai.png" alt="" aria-hidden width={72} height={72} className="size-[72px] select-none" />}
+          title={t("title")} titleId="ai-stage-title" body={t("body")}>
           <ul className="mt-1 grid w-full grid-cols-2 gap-2 text-start max-[640px]:grid-cols-1">
             {REQUIREMENTS.map((item) => (
               <li

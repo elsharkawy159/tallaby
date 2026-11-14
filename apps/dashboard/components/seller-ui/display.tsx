@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Info, TrendingDown, TrendingUp } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { IconTile, SellerCard, type Tone } from "./layout";
@@ -190,15 +191,21 @@ export function Segmented<T extends string>({
   );
 }
 
-/** Nothing here yet (`.empty`): icon, title, one line, one action. */
+/**
+ * Nothing here yet (`.empty`): picture or icon, title, one line, one action.
+ * `image` is a decorative `/illustrations/empty/*.png` path shown in place of `icon`
+ * (docs/dashboard-photos.md). Pass it only for "nothing yet"; search/filter "no matches" keeps the icon.
+ */
 export function EmptyState({
   icon,
+  image,
   title,
   description,
   action,
   className,
 }: {
   icon?: LucideIcon;
+  image?: string;
   title: React.ReactNode;
   description?: React.ReactNode;
   action?: React.ReactNode;
@@ -206,7 +213,11 @@ export function EmptyState({
 }) {
   return (
     <div className={cn("flex flex-col items-center gap-1.5 px-[22px] pb-6 pt-[26px] text-center", className)}>
-      {icon && <IconTile icon={icon} className="size-10 rounded-[13px] [&_svg]:size-[19px]" />}
+      {image ? (
+        <Image src={image} alt="" aria-hidden width={120} height={120} className="size-[120px] select-none" />
+      ) : (
+        icon && <IconTile icon={icon} className="size-10 rounded-[13px] [&_svg]:size-[19px]" />
+      )}
       <b className="mt-1.5 text-sm font-bold text-(--s-ink)">{title}</b>
       {description && (
         <div className="max-w-[320px] text-pretty text-[12.5px] leading-[1.7] text-(--s-subtle)">{description}</div>

@@ -124,7 +124,7 @@ export async function EarnSection({ sellerId }: { sellerId: string }) {
 
       <SectionCard icon={Users} title={t("referrals.title")}>
         {overview.referrals.length === 0 ? (
-          <EmptyState icon={UserPlus} title={t("referrals.empty")} action={<CopyLinkButton url={shareUrl} />} />
+          <EmptyState icon={UserPlus} image="/illustrations/empty/referrals.png" title={t("referrals.empty")} action={<CopyLinkButton url={shareUrl} />} />
         ) : (
           <ResponsiveTable
             label={t("referrals.title")}

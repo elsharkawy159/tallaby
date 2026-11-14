@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { ArrowLeft, Check, CreditCard, FileText, Package, Palette, Truck } from "lucide-react";
@@ -17,6 +18,14 @@ export const HOME_STEP_ICONS: Record<HomeStepKey, LucideIcon> = {
   design: Palette,
   payments: CreditCard,
   shipping: Truck,
+};
+
+/** Decorative step pictures (docs/dashboard-photos.md §3.1); a key without one keeps its icon. */
+export const HOME_STEP_IMAGES: Partial<Record<HomeStepKey, string>> = {
+  product: "/illustrations/onboarding/setup-product.png",
+  design: "/illustrations/onboarding/setup-design.png",
+  payments: "/illustrations/onboarding/setup-payments.png",
+  shipping: "/illustrations/onboarding/setup-shipping.png",
 };
 
 /** Length of the progress ring's circle (r = 36). */
@@ -47,6 +56,7 @@ export async function SetupChecklistData() {
   const TASKS = buildHomeSteps(snapshot.setup, snapshot.setupStoreId).map((task) => ({
     ...task,
     icon: HOME_STEP_ICONS[task.key],
+    image: HOME_STEP_IMAGES[task.key],
   }));
   const required = TASKS;
   const doneCount = required.filter((task) => task.done).length;
@@ -131,15 +141,19 @@ export async function SetupChecklistData() {
                     </span>
                   )}
                   <div className="flex items-center justify-between">
-                    <span
-                      className={cn(
-                        "grid size-[38px] place-items-center rounded-xl bg-white/10 text-white [&_svg]:size-[18px]",
-                        done && "bg-[#16a34a]/20 text-[#86efac]",
-                        next && "bg-accent-soft text-accent-ink",
-                      )}
-                    >
-                      <task.icon aria-hidden />
-                    </span>
+                    {task.image ? (
+                      <Image src={task.image} alt="" aria-hidden width={88} height={88} className="size-[88px] select-none" />
+                    ) : (
+                      <span
+                        className={cn(
+                          "grid size-[38px] place-items-center rounded-xl bg-white/10 text-white [&_svg]:size-[18px]",
+                          done && "bg-[#16a34a]/20 text-[#86efac]",
+                          next && "bg-accent-soft text-accent-ink",
+                        )}
+                      >
+                        <task.icon aria-hidden />
+                      </span>
+                    )}
                     {next ? null : (
                       <span
                         className={cn(

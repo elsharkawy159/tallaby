@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, BellOff, Check, CheckCheck, Settings2, X } from "lucide-react";
+import { Bell, Check, CheckCheck, Settings2, X } from "lucide-react";
 import { AnchoredSheet, IconButton, IconTile } from "@/components/seller-ui";
 import {
   notificationText,
@@ -163,9 +164,7 @@ export function NotificationBell() {
           <p className="px-4 py-10 text-center text-[13px] text-(--s-subtle)">{t("loading")}</p>
         ) : feed.items.length === 0 ? (
           <div className="flex flex-col items-center gap-1.5 px-5 py-10 text-center">
-            <span className="grid size-12 place-items-center rounded-2xl bg-(--s-fill) text-(--s-faint)">
-              <BellOff aria-hidden className="size-5" />
-            </span>
+            <Image src="/illustrations/empty/notifications.png" alt="" aria-hidden width={64} height={64} className="size-16 select-none" />
             <b className="mt-1 text-sm font-bold text-(--s-ink)">{t("emptyTitle")}</b>
             <p className="text-[12.5px] text-(--s-subtle)">{t("empty")}</p>
           </div>

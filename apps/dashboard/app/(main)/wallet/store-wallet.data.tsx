@@ -231,7 +231,7 @@ export async function StoreWalletSection({
                 }
               />
               {entries.length === 0 ? (
-                <EmptyState icon={ReceiptText} title={t("empty")} />
+                <EmptyState icon={ReceiptText} image={filter === "all" && !before ? "/illustrations/empty/wallet.png" : undefined} title={t("empty")} />
               ) : (
                 <ul className="flex flex-col px-3 pb-3.5 pt-2.5">
                   {entries.map((entry) => {

@@ -240,7 +240,7 @@ export function CustomersView({
       </div>
 
       {stats.customers === 0 ? (
-        <EmptyCard title={t("empty.title")} body={t("empty.body")} />
+        <EmptyCard title={t("empty.title")} body={t("empty.body")} image="/illustrations/empty/customers.png" />
       ) : customers.length === 0 ? (
         <EmptyCard title={t("noMatch.title")} body={t("noMatch.body")} />
       ) : (
@@ -372,10 +372,10 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function EmptyCard({ title, body }: { title: string; body: string }) {
+function EmptyCard({ title, body, image }: { title: string; body: string; image?: string }) {
   return (
     <SellerCard>
-      <EmptyState icon={Users} title={title} description={body} />
+      <EmptyState icon={Users} image={image} title={title} description={body} />
     </SellerCard>
   );
 }

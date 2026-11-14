@@ -142,7 +142,7 @@ export function FinancialDashboardContent({
         <SellerCard aria-labelledby="financial-activity-title" className="overflow-hidden">
           <SellerCardHeader id="financial-activity-title" title={t("recentActivity")} className="pb-3.5" />
           {transactions.length === 0 ? (
-            <EmptyState icon={ReceiptText} title={t("noTransactions")} />
+            <EmptyState icon={ReceiptText} image="/illustrations/empty/wallet.png" title={t("noTransactions")} />
           ) : (
             <ResponsiveTable
               label={t("recentActivity")}

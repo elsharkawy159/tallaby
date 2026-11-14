@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -322,6 +323,7 @@ function TaxonomyList({
     >
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
+          <Image src={`/illustrations/empty/${k}.png`} alt="" aria-hidden width={120} height={120} className="size-[120px] select-none" />
           <p className="max-w-sm text-sm text-muted-foreground text-pretty">{t(`${k}.empty`)}</p>
           <Button type="button" variant="outline" className={BUTTON_CLASS} onClick={() => setAdding(true)}>
             <Plus className="size-4" />

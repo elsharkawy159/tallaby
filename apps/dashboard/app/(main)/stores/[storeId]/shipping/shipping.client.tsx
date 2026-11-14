@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -170,6 +171,7 @@ export function StoreShippingSettings({
       >
         {zones.length === 0 ? (
           <div className="flex flex-col gap-3.5 rounded-[20px] border-[1.5px] border-dashed border-(--s-field-strong) bg-linear-[160deg,var(--s-tint),var(--s-surface)_70%] p-5 max-[720px]:p-4">
+            <Image src="/illustrations/empty/shipping-zones.png" alt="" aria-hidden width={96} height={96} className="size-24 select-none" />
             <p className="text-pretty text-[13px] text-(--s-muted)">{t("noZones")}</p>
             {addActions}
           </div>

@@ -44,7 +44,7 @@ export function InventoryPage({ lowStock, selected }: { lowStock: InventoryLine[
           {t("lowStockTitle", { count: lowStock.length })}
         </h2>
         {lowStock.length === 0 ? (
-          <EmptyState icon={Boxes} title={t("emptyTitle")} description={t("emptyDescription")} />
+          <EmptyState icon={Boxes} image="/illustrations/empty/low-stock.png" title={t("emptyTitle")} description={t("emptyDescription")} />
         ) : (
           <Rows>
             {lowStock.map((line) => (

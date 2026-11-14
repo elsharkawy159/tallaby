@@ -104,6 +104,7 @@ export function CouponsView({ coupons: initialCoupons, storeHost, stores }: Sell
         <SellerCard>
           <EmptyState
             icon={TicketPercent}
+            image="/illustrations/empty/coupons.png"
             title={t("empty.title")}
             description={t("empty.body")}
             action={

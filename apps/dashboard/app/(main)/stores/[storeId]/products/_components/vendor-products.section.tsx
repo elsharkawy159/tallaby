@@ -423,6 +423,7 @@ export function VendorProductsSection({
         counts.all === 0 ? (
           <EmptyState
             icon={PackagePlus}
+            image="/illustrations/empty/products.png"
             title={t("noProductsTitle")}
             description={t("noProductsDescription")}
             action={

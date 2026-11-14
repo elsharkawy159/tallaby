@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link2, LoaderCircle } from "lucide-react";
 import { Note, SellerButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
-import { BackIcon, backClassName, FlowIntro, FlowOrb, FlowStage } from "./add-flow.client";
+import { BackIcon, backClassName, FlowIntro, FlowStage } from "./add-flow.client";
 import { TEXTAREA_CLASS } from "./form-kit";
 import { useProductImport } from "./use-product-import";
 import { parseProductUrlList } from "./product-url-list.lib";
@@ -62,7 +63,12 @@ export function UrlAddStage ({
       icon={Link2}
       label={t("mode")}
     >
-      <FlowIntro orb={<FlowOrb icon={Link2} />} title={t("title")} titleId="url-stage-title" body={t("body")} />
+      <FlowIntro
+        orb={<Image src="/illustrations/features/add-url.png" alt="" aria-hidden width={72} height={72} className="size-[72px] select-none" />}
+        title={t("title")}
+        titleId="url-stage-title"
+        body={t("body")}
+      />
 
       <form
         className="flex flex-col gap-3"

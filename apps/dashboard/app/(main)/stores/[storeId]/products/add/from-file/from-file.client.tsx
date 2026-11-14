@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
-import { ArrowLeft, ChevronDown, Download, FileSpreadsheet, HardDrive, RotateCcw, Sparkles, UploadCloud, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, Download, FileSpreadsheet, HardDrive, RotateCcw, Sparkles, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 import { formatNumber } from "@/lib/i18n/format";
@@ -465,9 +466,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
           )}
         >
           <input {...dropzone.getInputProps()} accept={ACCEPTED_FILE_TYPES} aria-label={t("pickButton")} />
-          <span className={cn("mb-1.5 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary-ink", dropzone.isDragActive && "bg-(--s-surface)")}>
-            <UploadCloud className="size-[26px]" aria-hidden />
-          </span>
+          <Image src="/illustrations/features/add-file.png" alt="" aria-hidden width={72} height={72} className="mb-1.5 size-[72px] select-none" />
           <b className="text-base font-semibold text-(--s-ink)">{t("stage.drop")}</b>
           <small className="text-xs text-(--s-faint)">{t("stage.dropTypes", { pages: BULK_LIMITS.maxPdfPages })}</small>
           {readError && (

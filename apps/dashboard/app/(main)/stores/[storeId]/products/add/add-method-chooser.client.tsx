@@ -1,9 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, FileSpreadsheet, Link2, PencilLine, Sparkles, type LucideIcon } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Note, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { BULK_LIMITS } from "./from-file/from-file.dto";
@@ -15,23 +16,16 @@ const CARD =
 const CARD_ACTIVE =
   "cursor-pointer transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-(--s-primary) hover:shadow-[0_12px_32px_rgba(20,81,99,.10)] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-(--s-focus)";
 
-const ICON_TONE = {
-  amber: "bg-accent-soft text-accent-ink",
-  primary: "bg-primary-soft text-primary-ink",
-  neutral: "bg-(--s-surface-2) text-(--s-muted)",
-} as const;
-
 function CardBody({
-  icon: Icon,
-  tone,
+  image,
   title,
   body,
   meta,
   badge,
   arrow = true,
 }: {
-  icon: LucideIcon;
-  tone: keyof typeof ICON_TONE;
+  /** Decorative card picture (docs/dashboard-photos.md §3.2). */
+  image: string;
   title: string;
   body: string;
   meta?: string;
@@ -41,9 +35,7 @@ function CardBody({
   return (
     <>
       {badge && <span className="absolute end-5 top-5">{badge}</span>}
-      <span className={cn("mb-1.5 grid size-12 place-items-center rounded-[14px] [&_svg]:size-[22px]", ICON_TONE[tone])}>
-        <Icon aria-hidden />
-      </span>
+      <Image src={image} alt="" aria-hidden width={72} height={72} className="mb-1.5 size-[72px] select-none" />
       <b className="text-base font-bold text-(--s-ink)">{title}</b>
       <small className="flex-1 text-[13px] leading-[1.75] text-pretty text-(--s-muted)">{body}</small>
       {meta && (
@@ -98,8 +90,7 @@ export function AddMethodChooser({
             {aiEnabled ? (
               <button type="button" className={cn(CARD, CARD_ACTIVE, "border-(--s-primary)/40")} onClick={() => onPick("ai")}>
                 <CardBody
-                  icon={Sparkles}
-                  tone="amber"
+                  image="/illustrations/features/add-ai.png"
                   title={t("aiTitle")}
                   body={t("aiBody")}
                   meta={t("aiMeta")}
@@ -109,8 +100,7 @@ export function AddMethodChooser({
             ) : (
               <div className={cn(CARD, "opacity-80")}>
                 <CardBody
-                  icon={Sparkles}
-                  tone="neutral"
+                  image="/illustrations/features/add-ai.png"
                   title={t("aiTitle")}
                   body={t("aiOffBody")}
                   badge={<Tag tone="muted">{t("aiOffTag")}</Tag>}
@@ -121,17 +111,17 @@ export function AddMethodChooser({
           </li>
           <li>
             <button type="button" className={cn(CARD, CARD_ACTIVE, "[animation-delay:60ms]")} onClick={() => onPick("url")}>
-              <CardBody icon={Link2} tone="primary" title={t("urlTitle")} body={t("urlBody")} meta={t("urlMeta", { max: MAX_BULK_IMPORT_URLS })} />
+              <CardBody image="/illustrations/features/add-url.png" title={t("urlTitle")} body={t("urlBody")} meta={t("urlMeta", { max: MAX_BULK_IMPORT_URLS })} />
             </button>
           </li>
           <li>
             <Link href={productsHref("/add/from-file")} className={cn(CARD, CARD_ACTIVE, "[animation-delay:120ms]")}>
-              <CardBody icon={FileSpreadsheet} tone="primary" title={t("fileTitle")} body={t("fileBody")} meta={t("fileMeta", { products: BULK_LIMITS.maxProducts })} />
+              <CardBody image="/illustrations/features/add-file.png" title={t("fileTitle")} body={t("fileBody")} meta={t("fileMeta", { products: BULK_LIMITS.maxProducts })} />
             </Link>
           </li>
           <li>
             <button type="button" className={cn(CARD, CARD_ACTIVE, "[animation-delay:180ms]")} onClick={() => onPick("manual")}>
-              <CardBody icon={PencilLine} tone="neutral" title={t("manualTitle")} body={t("manualBody")} meta={t("manualMeta")} />
+              <CardBody image="/illustrations/features/add-manual.png" title={t("manualTitle")} body={t("manualBody")} meta={t("manualMeta")} />
             </button>
           </li>
         </ul>

@@ -71,6 +71,7 @@ export async function RecentOrdersData() {
       {orders.length === 0 ? (
         <EmptyState
           icon={ShoppingBag}
+          image="/illustrations/empty/orders.png"
           title={t("emptyTitle")}
           description={t("emptyDescription")}
           // No orders means nobody to email yet, so this opens the shareable catalog (F-65a).

@@ -190,6 +190,7 @@ export function AppCenter({ storeId, store, items, readOnly }: { storeId: string
           ) : tab === "installed" ? (
             <EmptyState
               icon={PackageCheck}
+              image="/illustrations/empty/apps-installed.png"
               title={t("empty.installedTitle")}
               description={t("empty.installedBody")}
               action={

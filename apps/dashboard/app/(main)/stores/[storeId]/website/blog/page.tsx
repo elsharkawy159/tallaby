@@ -141,6 +141,7 @@ export default async function StoreBlogPage({
         <SellerCard className="sui-rise">
           <EmptyState
             icon={FileText}
+            image={untouched ? "/illustrations/empty/blog.png" : undefined}
             title={untouched ? t("emptyTitle") : t("noMatches")}
             description={untouched ? t("emptyText") : undefined}
             action={

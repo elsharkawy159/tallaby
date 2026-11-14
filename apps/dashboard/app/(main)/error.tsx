@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { RotateCw, TriangleAlert } from "lucide-react";
+import { RotateCw } from "lucide-react";
 import { EmptyState, PageContainer, SellerButton, SellerCard } from "@/components/seller-ui";
 
 /** A page that throws while rendering: the shell stays, with a retry, instead of Next's English fallback. */
@@ -17,8 +18,16 @@ export default function DashboardError({ error, retry }: { error: Error & { dige
   return (
     <PageContainer narrow>
       <SellerCard>
+        <Image
+          src="/illustrations/status/error.png"
+          alt=""
+          aria-hidden
+          width={160}
+          height={160}
+          className="mx-auto mt-[26px] block size-40 select-none"
+        />
         <EmptyState
-          icon={TriangleAlert}
+          className="pt-0"
           title={<h1 className="text-[17px]">{t("errorTitle")}</h1>}
           description={t("errorBody")}
           action={

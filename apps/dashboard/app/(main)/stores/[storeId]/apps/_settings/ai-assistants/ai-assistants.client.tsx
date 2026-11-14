@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Check, Clock, Copy, Link2, MessageSquareText, ShieldCheck } from "lucide-react";
 import { Note, PageTabs, SectionCard, SellerButton, TwoColumns } from "@/components/seller-ui";
@@ -83,6 +84,15 @@ export function AiAssistantsApp({
           {t("soonBody")}
         </Note>
       )}
+
+      <Image
+        src="/illustrations/features/ai-assistants.png"
+        alt=""
+        aria-hidden
+        width={120}
+        height={120}
+        className="mx-auto size-[120px] select-none"
+      />
 
       <SectionCard icon={Link2} title={t("urlLabel")} description={t("urlHelp")}>
         <CopyBox value={mcpUrl} />

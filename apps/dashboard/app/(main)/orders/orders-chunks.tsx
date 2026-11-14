@@ -533,6 +533,7 @@ export function VendorOrdersTable({
         <SellerCard>
           <EmptyState
             icon={PackageSearch}
+            image={overview.orders === 0 ? "/illustrations/empty/orders.png" : undefined}
             title={overview.orders === 0 ? t("empty.title") : t("empty.tab")}
             description={overview.orders === 0 ? t("empty.description") : undefined}
           />
