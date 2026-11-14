@@ -39,7 +39,7 @@ export default async function AuthorizePage({
   const t = await getTranslations("agentConsent");
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-muted/40 px-4 py-6 sm:py-10">
+    <div data-clarity-mask="true" className="flex min-h-screen flex-col items-center bg-muted/40 px-4 py-6 sm:py-10">
       <div className="flex w-full max-w-lg items-center justify-between">
         <Image src="/logo/logo.png" alt="Tallaby" width={40} height={40} className="rounded-lg" />
         <LanguageSwitcher compact />

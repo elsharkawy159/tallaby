@@ -230,7 +230,7 @@ export function TopUpPanel({
   const walletCurrency = usd ? "USD" : "EGP";
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_360px] grid-rows-[auto_1fr] items-start gap-x-5 gap-y-4 max-[1180px]:grid-cols-1 max-[1180px]:grid-rows-none">
+    <div data-clarity-mask="true" className="grid grid-cols-[minmax(0,1fr)_360px] grid-rows-[auto_1fr] items-start gap-x-5 gap-y-4 max-[1180px]:grid-cols-1 max-[1180px]:grid-rows-none">
       <SellerCard
         id="topup"
         aria-labelledby={`${ids}-title`}

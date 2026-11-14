@@ -238,7 +238,7 @@ function GatewaySheet({
 
   return (
     <Sheet open onOpenChange={(open) => !open && !pending && onClose()}>
-      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
+      <SheetContent data-clarity-mask="true" side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
         <SheetHeader className="border-b border-(--s-line-soft) px-[18px] py-4 pe-14">
           <div className="flex items-center gap-3">
             <AppLogo app={provider} className="size-11 rounded-[14px]" />

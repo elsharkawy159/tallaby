@@ -23,7 +23,7 @@ export default async function OrdersPage({
   const [params, graceStoreReady] = await Promise.all([searchParams, currentGraceNoticeStoreReady(lock)]);
 
   return (
-    <PageContainer>
+    <PageContainer data-clarity-mask="true">
       {lock.ordersLocked ? (
         <div className="mb-4">
           <OrdersLockedNotice lock={lock} />

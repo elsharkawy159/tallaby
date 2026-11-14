@@ -13,6 +13,10 @@ import { getSellerStores } from "@/lib/stores/current-store.server";
 import { SetupPrompts } from "./_components/setup-prompts.client";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { getSessionUser } from "@/lib/auth/session.server";
+import { loadSeller } from "@/lib/auth/require-seller.server";
+import { ClarityIdentify } from "@/components/clarity.client";
+import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
+import { resolvePlanId } from "@workspace/lib/plans";
 import { AccountMoneyProvider } from "@/components/account-money.client";
 import { loadAccountMoney } from "@/lib/stores/account-money.server";
 import { EGP_ACCOUNT } from "@/lib/stores/account-money.lib";
@@ -65,6 +69,8 @@ export default async function DashboardLayout({
     getEgpPerUsd(),
   ]);
   const walletBalance = wallet?.balance ?? null;
+  // Clarity session tag: internal seller id + plan only (loadSeller is per-request cached; getSellerAccess already read it).
+  const clarityPlan = user && enabledClarityProjectId() ? resolvePlanId((await loadSeller(user.id))?.plan) : null;
 
   return (
     // .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched.
@@ -108,6 +114,7 @@ export default async function DashboardLayout({
           }
         />
         <WelcomeGiftDialog initial={welcomeGift} />
+        {user && clarityPlan && <ClarityIdentify sellerId={user.id} plan={clarityPlan} />}
       </div>
       </EgpRateProvider>
     </SiteDataProvider>

@@ -24,7 +24,7 @@ export function OrderPaymentProof({ orderId }: { orderId: string }) {
 
   if (!proof) return null;
   return (
-    <div className="border-t border-(--s-line-soft) pt-2">
+    <div data-clarity-mask="true" className="border-t border-(--s-line-soft) pt-2">
       <p className="mb-2 flex flex-wrap items-center gap-x-1.5 text-[13px] font-semibold text-(--s-text)">
         <ImageIcon className="size-4 text-(--s-subtle)" aria-hidden />
         {t("title")}

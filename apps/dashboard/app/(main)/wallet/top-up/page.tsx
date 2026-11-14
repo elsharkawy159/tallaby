@@ -35,7 +35,7 @@ export default async function TopUpReturnPage({
   const creditText = walletMoney(Number(credit.amount), credit.currency, locale);
 
   return (
-    <PageContainer className="max-w-[480px]">
+    <PageContainer data-clarity-mask="true" className="max-w-[480px]">
       <SellerCard>
         <div className="flex flex-col items-center gap-2.5 px-[22px] py-8 text-center">
           <IconTile

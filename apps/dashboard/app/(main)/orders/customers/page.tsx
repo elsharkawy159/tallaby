@@ -16,7 +16,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
-    <PageContainer>
+    <PageContainer data-clarity-mask="true">
       <Suspense fallback={<ListPageSkeleton />}>
         <CustomersData storeId={typeof params.store === "string" ? params.store : null} searchParams={params} />
       </Suspense>

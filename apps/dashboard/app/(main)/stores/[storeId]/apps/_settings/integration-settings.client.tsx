@@ -94,7 +94,7 @@ export function IntegrationSettings({
   const onClose = () => router.refresh();
 
   return (
-    <SellerCard className="flex flex-col overflow-hidden">
+    <SellerCard data-clarity-mask="true" className="flex flex-col overflow-hidden">
       {provider === "meta_capi" ? (
         <MetaCapiPanel
           storeId={storeId}

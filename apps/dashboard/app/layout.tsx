@@ -10,6 +10,8 @@ import { ZodLocale } from "@/lib/i18n/zod-locale.client";
 import { ThemeProvider } from "@/providers/theme";
 import QueryProvider from "@/providers/use-query";
 import { MetaPixel } from "@/components/meta-pixel.client";
+import { ClarityScript } from "@/components/clarity.client";
+import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -59,6 +61,8 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const direction = locale === "ar" ? "rtl" : "ltr";
+  // Microsoft Clarity: Vercel production only (lib/analytics/clarity.lib.ts).
+  const clarityId = enabledClarityProjectId();
 
   return (
     // Smooth in-page scrolling; data-scroll-behavior makes Next jump instantly on route changes.
@@ -74,6 +78,7 @@ export default async function RootLayout({
         className={`${locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable} antialiased`}
       >
         <MetaPixel />
+        {clarityId && <ClarityScript projectId={clarityId} />}
         <DirectionProvider dir={direction}>
           <NextIntlClientProvider>
             <ZodLocale />

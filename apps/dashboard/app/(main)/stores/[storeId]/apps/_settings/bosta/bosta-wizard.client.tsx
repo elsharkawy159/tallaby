@@ -86,7 +86,7 @@ export function BostaWizard({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div data-clarity-mask="true" className="flex flex-col gap-4">
       <ol className="grid grid-cols-4 gap-1.5" aria-label={t("wizard.progress")}>
         {STEPS.map((key, index) => {
           const state = index < step ? "done" : index === step ? "current" : "todo";

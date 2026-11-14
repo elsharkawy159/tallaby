@@ -19,7 +19,7 @@ export default async function MissedOrdersPage({
   if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
   const params = await searchParams;
   return (
-    <PageContainer>
+    <PageContainer data-clarity-mask="true">
       <Suspense fallback={<ListPageSkeleton />}>
         <MissedOrdersData
           storeId={typeof params.store === "string" ? params.store : null}

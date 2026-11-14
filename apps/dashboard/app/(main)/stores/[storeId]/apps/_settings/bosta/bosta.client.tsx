@@ -124,7 +124,7 @@ function BostaSettingsView({
     });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div data-clarity-mask="true" className="flex flex-col gap-4">
       <SellerCard className="p-5 max-[600px]:p-4">
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0 flex-1">
