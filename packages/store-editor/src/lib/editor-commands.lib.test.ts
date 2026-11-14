@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type { ComponentNode } from "@workspace/store-sections";
 import { LAYOUT_PRESETS, designSlotTree, getDesign, getPreset, storeSectionRegistry } from "@workspace/store-sections/render";
 import { presetInstance } from "./editor-library.lib";
 import { createEditorCommands } from "./editor-commands.lib";
 import { createEditorStore } from "../state/editor.store";
 
-function setup() {
+function setup(defaultLocale: "ar" | "en" = "ar") {
   const store = createEditorStore({
     pages: [{ id: "p1", slug: "", isHome: true, name: { ar: "الرئيسية" }, seo: {}, showInNav: true, content: { sections: [] }, version: 1 }],
     header: null,
@@ -12,7 +13,7 @@ function setup() {
     designSystem: { colors: {}, typography: {}, spacing: {} },
     designVersion: 1,
     chromeVersion: 1,
-    defaultLocale: "ar",
+    defaultLocale,
   });
   const sections = () => store.getState().pages[0]!.content.sections;
   return { store, commands: createEditorCommands(store), sections };
@@ -135,5 +136,46 @@ describe("canvas drops through commands (P4B-12)", () => {
     expect(image().props).toMatchObject({ src: "https://cdn/new.jpg", alt: "New" });
     expect(image().style).toEqual(style);
     expect(sections()).toHaveLength(1);
+  });
+});
+
+describe("new elements in the store's default language", () => {
+  const added = (locale: "ar" | "en", run: (commands: ReturnType<typeof setup>["commands"]) => unknown) => {
+    const { store, commands, sections } = setup(locale);
+    run(commands);
+    const nodeId = (store.getState().selection as { nodeId?: string }).nodeId;
+    const root = sections()[0]!.componentTree![0]!;
+    return nodeId ? root.children.find((n) => n.id === nodeId)! : root;
+  };
+
+  it("adds an element with English text and the Arabic overlay in an English store", () => {
+    expect(added("en", (c) => c.addElement("heading")).props).toMatchObject({ text: "New heading", translations: { ar: { text: "عنوان جديد" } } });
+    expect(added("en", (c) => c.addElement("button")).props).toMatchObject({ label: "Shop now", translations: { ar: { label: "تسوّق الآن" } } });
+  });
+
+  it("keeps an Arabic store's new element exactly as before", () => {
+    const heading = added("ar", (c) => c.addElement("heading"));
+    expect(heading.props.text).toBe("عنوان جديد");
+    expect(heading.props.translations).toBeUndefined();
+  });
+
+  it("drops an element from the add panel in the store's default language", () => {
+    const heading = added("en", (c) => c.applyDrop({ kind: "element", elementType: "heading" }, { kind: "new-section", index: 0 }));
+    expect(heading.props).toMatchObject({ text: "New heading", translations: { ar: { text: "عنوان جديد" } } });
+    const arabic = added("ar", (c) => c.applyDrop({ kind: "element", elementType: "heading" }, { kind: "new-section", index: 0 }));
+    expect(arabic.props.text).toBe("عنوان جديد");
+  });
+
+  it("inserts a library design with an English base in an English store", () => {
+    const { commands, sections } = setup("en");
+    expect(commands.applyDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.classic" }, { kind: "insert-section", index: 0 })).toBe(true);
+    const texts: string[] = [];
+    const walk = (node: ComponentNode) => {
+      for (const value of [node.props.text, node.props.label]) if (typeof value === "string" && value.trim()) texts.push(value);
+      node.children.forEach(walk);
+    };
+    sections()[0]!.componentTree!.forEach(walk);
+    expect(texts.length).toBeGreaterThan(0);
+    expect(texts.filter((text) => /[؀-ۿ]/.test(text))).toEqual([]);
   });
 });

@@ -928,7 +928,7 @@ export function ElementInspector({
               size="sm"
               className="w-full"
               disabled={readOnly || locale !== defaultLocale}
-              onClick={() => onChange({ ...node, children: [...node.children, createNode(itemType, () => newId("n"))] })}
+              onClick={() => onChange({ ...node, children: [...node.children, createNode(itemType, () => newId("n"), defaultLocale)] })}
             >
               <Plus aria-hidden />
               {t("addChild", { name: label(itemDefinition.label, uiLocale) })}

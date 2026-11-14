@@ -34,6 +34,11 @@ function swapBase(base: Record<string, unknown>, overlays: Overlays | undefined,
   return { base: mergeRecord(base, overlay), overlays: Object.keys(next).length ? next : undefined };
 }
 
+/** One element (and its children) with `to` as its base language. */
+export function rebaseNodeLocale(node: ComponentNode, from: SiteLocale, to: SiteLocale): ComponentNode {
+  return from === to ? node : rebaseNode(node, from, to);
+}
+
 function rebaseNode(node: ComponentNode, from: SiteLocale, to: SiteLocale): ComponentNode {
   const children = node.children.map((child) => rebaseNode(child, from, to));
   const childrenChanged = children.some((child, i) => child !== node.children[i]);

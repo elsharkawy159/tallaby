@@ -29,6 +29,7 @@
 import type { ComponentNode, PageContent, SectionInstance, SiteLocale } from "../config/schema";
 import type { Localized } from "../core/types";
 import { DESIGNS, treeBuilder } from "../designs";
+import { ELEMENT_PLACEHOLDERS } from "../elements/placeholders";
 import { ELEMENT_DEFINITIONS, getElementDefinition } from "../elements/registry";
 import type { NodeTemplate } from "../elements/tree";
 import { CODE_TEMPLATES } from "./catalog";
@@ -61,23 +62,6 @@ export function textScript(text: string): SiteLocale | "neutral" {
 }
 
 const other = (locale: SiteLocale): SiteLocale => (locale === "ar" ? "en" : "ar");
-
-/**
- * Element placeholders (`elements/registry.ts` defaultProps) with no English overlay:
- * their English, so a new element's text can be filled too.
- */
-const ELEMENT_PLACEHOLDERS: readonly (readonly [string, string])[] = [
-  ["سؤال جديد؟", "New question?"],
-  ["عنوان جديد", "New heading"],
-  ["اكتب هنا نصًا يشرح فكرتك للعملاء.", "Write a short text here that explains your idea to customers."],
-  ["نص قصير", "Short text"],
-  ["اقتباس ملهم من عميل سعيد.", "An inspiring quote from a happy customer."],
-  ["تسوّق الآن", "Shop now"],
-  ["فيديو جديد", "New video"],
-  ["جديد", "New"],
-  ["عنصر", "Item"],
-  ["اعرف المزيد", "Learn more"],
-];
 
 const emptyPairs = (firstWins = false): Pairs => ({ arToEn: new Map(), enToAr: new Map(), firstWins });
 

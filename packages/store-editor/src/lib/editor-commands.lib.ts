@@ -260,7 +260,7 @@ export function createEditorCommands(store: EditorStore) {
       return insertSectionInstance(createInstance(definition), index);
     },
     addElement(type: ElementType) {
-      return placeNodes([createNode(type, makeNodeId)]);
+      return placeNodes([createNode(type, makeNodeId, state().defaultLocale)]);
     },
     addPreset(preset: LayoutPreset) {
       return placeNodes(preset.nodes.map((template) => fromTemplate(template, makeNodeId)));
@@ -478,7 +478,7 @@ export function createEditorCommands(store: EditorStore) {
         return;
       }
       state().setImagePreview(null);
-      const image = createNode("image", makeNodeId);
+      const image = createNode("image", makeNodeId, state().defaultLocale);
       placeNodes([{ ...image, props: { ...image.props, src } }]);
     },
 
@@ -545,6 +545,7 @@ export function createEditorCommands(store: EditorStore) {
       const result = applyDropPlan(page.content, plan, payload, {
         makeNodeId,
         maxSections: state().maxSections,
+        defaultLocale: state().defaultLocale,
         makeSection: (sectionId, presetId) => {
           const preset = payloadPreset(sectionId, presetId, state().presets);
           if (preset) return presetInstance(preset, newId(), state().defaultLocale, state().industry);

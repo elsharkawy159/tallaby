@@ -3,18 +3,26 @@
  * every function returns a new tree and leaves its input untouched. The
  * editor store calls these; ids come from the caller's `makeId`.
  */
-import type { ComponentNode } from "../config/schema";
+import { rebaseNodeLocale } from "../config/locale-rebase";
+import type { ComponentNode, SiteLocale } from "../config/schema";
 import { isDataList } from "./data";
+import { withPlaceholderEnglish } from "./placeholders";
 import { LINK_TYPES, MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION, getElementDefinition, type ElementType } from "./registry";
 
 export type MakeId = () => string;
 export type NodeTemplate = Omit<ComponentNode, "id" | "children"> & { children?: NodeTemplate[] };
 
-/** A new node of `type` with its default props, styles and children. */
-export function createNode(type: ElementType, makeId: MakeId): ComponentNode {
+/**
+ * A new node of `type` with its default props, styles and children.
+ * `defaultLocale`: the store's default language. Element defaults are written
+ * Arabic-first (Arabic in `props`, English in `translations.en`); in an
+ * English-default store the new node's text is rebased like an inserted
+ * design, English in `props` and Arabic in `translations.ar`.
+ */
+export function createNode(type: ElementType, makeId: MakeId, defaultLocale: SiteLocale = "ar"): ComponentNode {
   const definition = getElementDefinition(type);
   if (!definition) throw new Error(`Unknown element type: ${type}`);
-  return {
+  const node: ComponentNode = {
     id: makeId(),
     type,
     props: structuredClone(definition.defaultProps),
@@ -22,6 +30,7 @@ export function createNode(type: ElementType, makeId: MakeId): ComponentNode {
     ...(definition.defaultStyle && { style: { ...definition.defaultStyle } }),
     ...(definition.defaultBreakpointStyles && { breakpointStyles: structuredClone(definition.defaultBreakpointStyles) }),
   };
+  return defaultLocale === "ar" ? node : rebaseNodeLocale(withPlaceholderEnglish(node), "ar", defaultLocale);
 }
 
 /** A node from a template (presets), with fresh ids all the way down. */

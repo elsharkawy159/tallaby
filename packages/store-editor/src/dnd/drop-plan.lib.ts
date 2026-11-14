@@ -8,7 +8,7 @@
  * `applyDropPlan` turns a plan into new page content; both run on every
  * drop with the page as it is at that moment, so a stale plan can't corrupt it.
  */
-import { MAX_SECTIONS_PER_PAGE, type ComponentNode, type PageContent, type SectionInstance } from "@workspace/store-sections";
+import { MAX_SECTIONS_PER_PAGE, type ComponentNode, type PageContent, type SectionInstance, type SiteLocale } from "@workspace/store-sections";
 import {
   LAYOUT_PRESETS,
   createNode,
@@ -42,17 +42,17 @@ type Source = {
 const CUSTOM = "custom-section";
 
 /** The new elements a payload adds, with ids from `makeId` (empty when it adds none). */
-export function payloadNodes(payload: CanvasPayload, makeId: MakeId, options: { src?: string } = {}): ComponentNode[] {
+export function payloadNodes(payload: CanvasPayload, makeId: MakeId, options: { src?: string; defaultLocale?: SiteLocale } = {}): ComponentNode[] {
   switch (payload.kind) {
     case "element":
-      return [createNode(payload.elementType, makeId)];
+      return [createNode(payload.elementType, makeId, options.defaultLocale)];
     case "preset": {
       const preset = LAYOUT_PRESETS.find((p) => p.id === payload.presetId);
       return preset ? preset.nodes.map((template) => fromTemplate(template, makeId)) : [];
     }
     case "photo":
     case "media": {
-      const image = createNode("image", makeId);
+      const image = createNode("image", makeId, options.defaultLocale);
       const src = payload.kind === "media" ? payload.src : (options.src ?? "");
       const alt = payload.kind === "media" ? payload.alt : payload.photo.alt;
       return [{ ...image, props: { ...image.props, src, alt: alt.slice(0, 160) } }];
@@ -245,6 +245,8 @@ export type DropDeps = {
   src?: string;
   /** Same as Source.maxSections. */
   maxSections?: number;
+  /** The store's default language: new elements start with their text in it (Arabic when unset). */
+  defaultLocale?: SiteLocale;
 };
 
 const withSections = (content: PageContent, sections: SectionInstance[]): PageContent => ({ ...content, sections });
@@ -292,14 +294,14 @@ export function applyDropPlan(
     }
     case "insert-nodes": {
       const section = sections.find((s) => s.id === plan.sectionInstanceId);
-      const nodes = payloadNodes(payload, deps.makeNodeId, { src: deps.src });
+      const nodes = payloadNodes(payload, deps.makeNodeId, { src: deps.src, defaultLocale: deps.defaultLocale });
       if (section?.sectionId !== CUSTOM || !nodes.length) return null;
       const tree = insertAll(section.componentTree ?? [], plan.parentId, plan.index, nodes);
       if (!tree) return null;
       return { content: setTree(content, section.id, tree), select: { target: "page", sectionId: section.id, nodeId: nodes[0]!.id } };
     }
     case "new-section": {
-      const nodes = payloadNodes(payload, deps.makeNodeId, { src: deps.src });
+      const nodes = payloadNodes(payload, deps.makeNodeId, { src: deps.src, defaultLocale: deps.defaultLocale });
       const instance = room ? deps.makeSection(CUSTOM) : null;
       const loose = instance && nodes.length ? insertAll([], null, 0, nodes) : null;
       // A new element section is a tree section (section root), like every inserted design.
