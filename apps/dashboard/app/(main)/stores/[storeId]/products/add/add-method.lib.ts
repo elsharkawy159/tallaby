@@ -1,5 +1,5 @@
 /** How the seller adds a product. File is its own page (/products/add/from-file), so it isn't a view here. */
-export type AddView = "pending" | "choose" | "ai" | "manual";
+export type AddView = "pending" | "choose" | "ai" | "url" | "manual";
 
 /** What the page found when it opened: "pending" until the browser can read the stored draft. */
 export type AddEntry = "pending" | "draft" | "fresh";
@@ -11,6 +11,7 @@ export type AddEntry = "pending" | "draft" | "fresh";
  */
 export function resolveAddView(param: string | null, entry: AddEntry, aiEnabled: boolean): AddView {
   if (param === "manual") return "manual";
+  if (param === "url") return "url";
   if (param === "ai") return aiEnabled ? "ai" : "choose";
   if (param === "choose") return "choose";
   if (entry === "pending") return "pending";

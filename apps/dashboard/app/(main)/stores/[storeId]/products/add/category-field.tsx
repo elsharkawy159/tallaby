@@ -10,8 +10,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { FieldError, FieldHint, FieldLabel } from "@/app/(main)/stores/[storeId]/products/add/form-kit";
 import { suggestCategories } from "./add-product.lib";
 import {
+  fallbackTallabyCategoryId,
   highlightMatch,
   indexTallabyCategories,
+  matchTallabyCategoryId,
   sameCategoryName,
   searchCategoryChoices,
   storeOptionLabel,
@@ -51,6 +53,8 @@ export function CategoryField({ categories }: CategoryFieldProps) {
   const store = useMemo(() => taxonomy?.categories ?? [], [taxonomy?.categories]);
   const isMobile = useIsMobile();
   const listId = useId();
+  // Unique per box: the bulk list shows one per product.
+  const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -97,25 +101,10 @@ export function CategoryField({ categories }: CategoryFieldProps) {
       .filter((c): c is NonNullable<typeof c> => Boolean(c));
   }, [categories, debouncedTitles, byId]);
 
-  /** Catch-all Tallaby category ("Other", "Misc"…), else the first leaf: the match of last resort. */
-  const fallbackId = useMemo(() => {
-    const leaves = tallaby.filter((c) => c.isLeaf);
-    const catchAll = leaves.find((c) =>
-      /\b(other|others|misc|miscellaneous|general)\b|أخرى|اخرى|متنوع/i.test(
-        `${c.category.name} ${c.category.nameAr ?? ""} ${c.category.slug}`
-      )
-    );
-    return (catchAll ?? leaves[0] ?? tallaby[0])?.category.id;
-  }, [tallaby]);
+  const fallbackId = useMemo(() => fallbackTallabyCategoryId(tallaby), [tallaby]);
 
   /** Closest Tallaby category for a store/new category name plus the product name. */
-  const bestMatch = (name: string) => {
-    const [en, ar] = debouncedTitles.split("\u0000");
-    return (
-      suggestCategories(categories, { titles: [name] }, 1)[0] ??
-      suggestCategories(categories, { titles: [name, en, ar] }, 1)[0]
-    )?.category.id;
-  };
+  const bestMatch = (name: string) => matchTallabyCategoryId(categories, name, debouncedTitles.split("\u0000"));
 
   useEffect(() => {
     if (!autoMatch || !selection || selection.kind === "tallaby") return;
@@ -231,7 +220,7 @@ export function CategoryField({ categories }: CategoryFieldProps) {
 
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <FieldLabel htmlFor="product-category" required>
+      <FieldLabel htmlFor={inputId} required>
         {t("label")}
       </FieldLabel>
 
@@ -268,7 +257,7 @@ export function CategoryField({ categories }: CategoryFieldProps) {
             <Search className="ms-3 size-4 shrink-0 text-muted-foreground" aria-hidden />
             <input
               ref={inputRef}
-              id="product-category"
+              id={inputId}
               role="combobox"
               aria-expanded={open}
               aria-controls={listId}

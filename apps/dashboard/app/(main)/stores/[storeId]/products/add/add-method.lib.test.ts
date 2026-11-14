@@ -15,6 +15,7 @@ describe("resolveAddView", () => {
     expect(resolveAddView("manual", "pending", true)).toBe("manual");
     expect(resolveAddView("ai", "fresh", true)).toBe("ai");
     expect(resolveAddView("choose", "draft", true)).toBe("choose");
+    expect(resolveAddView("url", "draft", false)).toBe("url");
   });
   it("never opens AI when AI is off", () => {
     expect(resolveAddView("ai", "fresh", false)).toBe("choose");

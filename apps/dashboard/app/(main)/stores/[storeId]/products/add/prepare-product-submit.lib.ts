@@ -1,6 +1,14 @@
+import slugify from "slugify"
 import type { AddProductFormData, LocalizedFields } from "./add-product.schema"
 import { richTextToPlainText } from "@workspace/tiptap/plain-text"
 import { cleanKeywords } from "./meta-keywords.lib"
+import { splitSellerTaxonomy } from "../categories-brands/categories-brands.lib"
+
+export const toSlug = (value: string) => slugify(value, { lower: true, strict: true })
+
+/** The automatic link: from the English name, else the Arabic name (slugify writes it in Latin letters). */
+export const slugFromNames = (localized: { en?: { title?: string }; ar?: { title?: string } }) =>
+  toSlug(localized.en?.title?.trim() || localized.ar?.title?.trim() || "")
 
 /** Search-engine limits for the meta title and description. */
 export const META_TITLE = { min: 50, max: 60 }
@@ -84,4 +92,25 @@ export function prepareProductForSubmit (data: AddProductFormData): AddProductFo
       ar,
     },
   }
+}
+
+/**
+ * Product fields for createProduct / updateProduct. The store category, the
+ * reviews, live views, stock tracking and customer fields are saved by their
+ * own actions, never written to the row from the form.
+ */
+export function toProductPayload (data: AddProductFormData) {
+  const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
+  const {
+    sellerCategoryName: _typedCategory,
+    showLiveViews: _liveViews,
+    trackStock: _trackStock,
+    showLowStockBadge: _lowStockBadge,
+    lowStockThreshold: _lowStockThreshold,
+    minOrderQuantity: _minOrderQuantity,
+    sellerReviews: _reviews,
+    customerFields: _customerFields,
+    ...payload
+  } = rest
+  return { payload, taxonomy }
 }

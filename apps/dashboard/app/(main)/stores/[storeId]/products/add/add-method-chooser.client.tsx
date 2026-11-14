@@ -3,10 +3,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, FileSpreadsheet, PencilLine, Sparkles, type LucideIcon } from "lucide-react";
+import { ArrowLeft, FileSpreadsheet, Link2, PencilLine, Sparkles, type LucideIcon } from "lucide-react";
 import { Note, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { BULK_LIMITS } from "./from-file/from-file.dto";
+import { MAX_BULK_IMPORT_URLS } from "./parse-product-import.types";
 import { useProductsHref } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
 
 const CARD =
@@ -60,7 +61,7 @@ function CardBody({
   );
 }
 
-/** First step of adding a product: AI, a file, or the form by hand. Layout only; useAddMethod holds the behaviour. */
+/** First step of adding a product: AI, product links, a file, or the form by hand. Layout only; useAddMethod holds the behaviour. */
 export function AddMethodChooser({
   aiEnabled,
   draftStored,
@@ -68,14 +69,14 @@ export function AddMethodChooser({
 }: {
   aiEnabled: boolean;
   draftStored: boolean;
-  onPick: (method: "ai" | "manual") => void;
+  onPick: (method: "ai" | "url" | "manual") => void;
 }) {
   const t = useTranslations("productForm.method");
   const productsHref = useProductsHref();
 
   return (
     <div className="flex min-h-[calc(100dvh-68px)] flex-col max-[600px]:min-h-[calc(100dvh-60px)]">
-      <div className="m-auto flex w-full max-w-[1000px] flex-col gap-8 px-6 py-12 max-[900px]:gap-[22px] max-[900px]:px-4 max-[900px]:py-7">
+      <div className="m-auto flex w-full max-w-[1160px] flex-col gap-8 px-6 py-12 max-[900px]:gap-[22px] max-[900px]:px-4 max-[900px]:py-7">
         <div className="flex flex-col items-center gap-2.5 text-center motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           <h1 id="add-method-title" tabIndex={-1} className="text-[26px] leading-normal font-bold text-balance text-(--s-ink) outline-none max-[640px]:text-[21px]">
             {t("title")}
@@ -92,7 +93,7 @@ export function AddMethodChooser({
           </Note>
         )}
 
-        <ul aria-label={t("label")} className="grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
+        <ul aria-label={t("label")} className="grid grid-cols-4 gap-4 max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
           <li>
             {aiEnabled ? (
               <button type="button" className={cn(CARD, CARD_ACTIVE, "border-(--s-primary)/40")} onClick={() => onPick("ai")}>
@@ -119,12 +120,17 @@ export function AddMethodChooser({
             )}
           </li>
           <li>
-            <Link href={productsHref("/add/from-file")} className={cn(CARD, CARD_ACTIVE, "[animation-delay:60ms]")}>
+            <button type="button" className={cn(CARD, CARD_ACTIVE, "[animation-delay:60ms]")} onClick={() => onPick("url")}>
+              <CardBody icon={Link2} tone="primary" title={t("urlTitle")} body={t("urlBody")} meta={t("urlMeta", { max: MAX_BULK_IMPORT_URLS })} />
+            </button>
+          </li>
+          <li>
+            <Link href={productsHref("/add/from-file")} className={cn(CARD, CARD_ACTIVE, "[animation-delay:120ms]")}>
               <CardBody icon={FileSpreadsheet} tone="primary" title={t("fileTitle")} body={t("fileBody")} meta={t("fileMeta", { products: BULK_LIMITS.maxProducts })} />
             </Link>
           </li>
           <li>
-            <button type="button" className={cn(CARD, CARD_ACTIVE, "[animation-delay:120ms]")} onClick={() => onPick("manual")}>
+            <button type="button" className={cn(CARD, CARD_ACTIVE, "[animation-delay:180ms]")} onClick={() => onPick("manual")}>
               <CardBody icon={PencilLine} tone="neutral" title={t("manualTitle")} body={t("manualBody")} meta={t("manualMeta")} />
             </button>
           </li>

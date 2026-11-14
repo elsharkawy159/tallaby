@@ -25,14 +25,6 @@ export function SellerTaxonomyProvider({ value, children }: { value: SellerTaxon
   return <SellerTaxonomyContext.Provider value={context}>{children}</SellerTaxonomyContext.Provider>;
 }
 
-/**
- * Hides the list from what's inside: bulk import sends form values straight
- * to the server, so its category box offers Tallaby categories only.
- */
-export function WithoutSellerTaxonomy({ children }: { children: React.ReactNode }) {
-  return <SellerTaxonomyContext.Provider value={null}>{children}</SellerTaxonomyContext.Provider>;
-}
-
 /** The seller's category list, or null outside a provider. */
 export function useSellerTaxonomy(): SellerTaxonomyContextValue | null {
   return useContext(SellerTaxonomyContext);

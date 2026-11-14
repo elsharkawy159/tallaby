@@ -11,6 +11,7 @@ const subscribeNever = () => () => {};
 const FOCUS_TARGET = {
   choose: "add-method-title",
   ai: "ai-stage-title",
+  url: "url-stage-title",
   manual: "add-product-title",
 } as const;
 
@@ -31,7 +32,7 @@ export function useAddMethod(aiEnabled: boolean) {
   // Once open, the form stays mounted (hidden) so its values, a running AI fill
   // and the autosave timer all survive a visit to the choice.
   const [formOpened, setFormOpened] = useState(false);
-  if (!formOpened && (view === "ai" || view === "manual")) setFormOpened(true);
+  if (!formOpened && (view === "ai" || view === "url" || view === "manual")) setFormOpened(true);
 
   // A draft opened the form on its own: name that in the URL, so a reload stays there.
   const resumedDraft = !param && view === "manual";
@@ -48,7 +49,7 @@ export function useAddMethod(aiEnabled: boolean) {
     document.getElementById(FOCUS_TARGET[view])?.focus({ preventScroll: true });
   }, [view]);
 
-  const pick = useCallback((method: "ai" | "manual" | "choose") => {
+  const pick = useCallback((method: "ai" | "url" | "manual" | "choose") => {
     window.history.pushState(null, "", `?method=${method}`);
   }, []);
 

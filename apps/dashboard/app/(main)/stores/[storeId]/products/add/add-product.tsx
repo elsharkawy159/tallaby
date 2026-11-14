@@ -62,15 +62,13 @@ import {
 import { ImportDialog } from "./import-dialog";
 import { BulkUrlImport } from "./bulk-url-import.client";
 import { useProductDraft, type DraftStatus } from "./use-product-draft";
-import { prepareProductForSubmit } from "./prepare-product-submit.lib";
+import { toProductPayload } from "./prepare-product-submit.lib";
 import {
   ensureTaxonomyItem,
   setProductSellerTaxonomy,
 } from "../categories-brands/categories-brands.server";
-import { splitSellerTaxonomy } from "../categories-brands/categories-brands.lib";
 import {
   SellerTaxonomyProvider,
-  WithoutSellerTaxonomy,
   useSellerTaxonomy,
 } from "../categories-brands/seller-taxonomy-fields.client";
 import { ProductLinkHostProvider } from "./product-link-host.client";
@@ -80,6 +78,7 @@ import { AiFillBanner } from "./ai/ai-fill-banner.client";
 import { undoAutofill, type AutofillReview } from "./ai/use-ai-autofill";
 import { markProductAiAssisted } from "./ai/ai-source.server";
 import { AddMethodChooser } from "./add-method-chooser.client";
+import { UrlAddStage } from "./url-add-stage.client";
 import { AddMethodSkeleton } from "./add-method-skeleton";
 import { useAddMethod } from "./use-add-method";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
@@ -133,7 +132,7 @@ function NewProduct(props: AddProductProps) {
       )}
       {formOpened && (
         <div className={cn((view === "choose" || view === "pending") && "hidden")}>
-          <AddProductForm {...props} aiStageOpen={view === "ai"} onPickMethod={pick} />
+          <AddProductForm {...props} aiStageOpen={view === "ai"} urlStageOpen={view === "url"} onPickMethod={pick} />
         </div>
       )}
     </>
@@ -149,10 +148,13 @@ function AddProductForm({
   aiEnabled = false,
   afterForm,
   aiStageOpen = false,
+  urlStageOpen = false,
   onPickMethod,
 }: AddProductProps & {
   /** The AI screen shows instead of the form; both stay mounted, so a running fill and its result survive. */
   aiStageOpen?: boolean;
+  /** The product-link screen (?method=url) shows instead of the form. */
+  urlStageOpen?: boolean;
   /** Back to the choice, or on to the form, for a new product. */
   onPickMethod?: (method: "choose" | "manual") => void;
 }) {
@@ -259,23 +261,7 @@ function AddProductForm({
   };
 
   /** Product fields for createProduct / updateProduct: the store category, reviews and live views are saved separately. */
-  const toPayload = (data: AddProductFormData) => {
-    const { rest, taxonomy } = splitSellerTaxonomy(
-      prepareProductForSubmit(data),
-    );
-    const {
-      sellerCategoryName: _typedCategory,
-      showLiveViews: _liveViews,
-      trackStock: _trackStock,
-      showLowStockBadge: _lowStockBadge,
-      lowStockThreshold: _lowStockThreshold,
-      minOrderQuantity: _minOrderQuantity,
-      sellerReviews: _reviews,
-      customerFields: _customerFields,
-      ...payload
-    } = rest;
-    return { payload, taxonomy };
-  };
+  const toPayload = toProductPayload;
 
   const saveSocialProof = async (
     productId: string,
@@ -424,18 +410,16 @@ function AddProductForm({
   };
 
   if (mode === "bulk") {
+    // Inside the store's category list: each row and "apply to all" offer the
+    // store's own categories first, and saving links them (bulk-url-save.client.ts).
     return (
-      <WithoutSellerTaxonomy>
-        <BulkUrlImport
-          urls={bulkUrls}
-          categories={categories}
-          sellerPricing={sellerPricing}
-          onExit={() => {
-            setMode("single");
-            setBulkUrls([]);
-          }}
-        />
-      </WithoutSellerTaxonomy>
+      <BulkUrlImport
+        urls={bulkUrls}
+        categories={categories}
+        sellerPricing={sellerPricing}
+        // Back to where the links came from; the link screen shows them again.
+        onExit={() => setMode("single")}
+      />
     );
   }
 
@@ -511,7 +495,20 @@ function AddProductForm({
             />
           </div>
         )}
-        <div className={cn("pb-32 lg:pb-24", aiStageOpen && "hidden")}>
+        {!isEdit && urlStageOpen && (
+          <UrlAddStage
+            categories={categories}
+            sellerPricing={sellerPricing}
+            initialText={bulkUrls.join("\n")}
+            onBack={() => onPickMethod?.("choose")}
+            onSingleImported={() => onPickMethod?.("manual")}
+            onBulk={(urls) => {
+              setBulkUrls(urls);
+              setMode("bulk");
+            }}
+          />
+        )}
+        <div className={cn("pb-32 lg:pb-24", (aiStageOpen || urlStageOpen) && "hidden")}>
           {/* Page header. Sits under the top bar: 68px tall, 60px on phones. */}
           <div
             data-sticky-head

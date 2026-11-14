@@ -280,11 +280,13 @@ export async function buildFormValuesFromImport (
     if (!fields) continue
 
     if (fields.title) {
-      values.localized[locale].title = fields.title
-      values.localized[locale].slug = slugify(fields.title, {
+      // Shop pages often have longer names than the form's 255 characters.
+      const title = fields.title.slice(0, 255).trim()
+      values.localized[locale].title = title
+      values.localized[locale].slug = slugify(title, {
         lower: true,
         strict: true,
-      })
+      }).slice(0, 255)
     }
 
     if (fields.description) {

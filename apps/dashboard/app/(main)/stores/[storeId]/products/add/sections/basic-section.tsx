@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { Check, Info, Link2, Pencil, RotateCcw, Tag, X } from "lucide-react";
-import slugify from "slugify";
 import { Input } from "@workspace/ui/components/input";
 import { RichTextEditor } from "@workspace/tiptap/editor";
 import { plainTextToRichText } from "@workspace/tiptap/plain-text";
@@ -14,7 +13,7 @@ import { ImageUpload } from "@/components/inputs/image-upload";
 import { useProductLinkHost } from "../product-link-host.client";
 import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SectionCard } from "@/app/(main)/stores/[storeId]/products/add/form-kit";
 import { CategoryField } from "../category-field";
-import { isEmptyHtml } from "../prepare-product-submit.lib";
+import { isEmptyHtml, slugFromNames, toSlug } from "../prepare-product-submit.lib";
 import { EDITOR_PHONE_TOOLBAR_CLASS, useFieldError } from "./fields";
 import { useContentImageUpload } from "./use-content-image-upload";
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema";
@@ -22,11 +21,6 @@ import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add
 const TITLE_MAX = 255;
 export const MAX_PRODUCT_IMAGES = 8;
 
-const toSlug = (value: string) => slugify(value, { lower: true, strict: true });
-
-/** The automatic link: from the English name, else the Arabic name (slugify writes it in Latin letters). */
-const slugFromNames = (localized: { en?: { title?: string }; ar?: { title?: string } }) =>
-  toSlug(localized.en?.title?.trim() || localized.ar?.title?.trim() || "");
 
 interface BasicSectionProps {
   id?: string;

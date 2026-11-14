@@ -290,7 +290,7 @@ export const defaultValues = {
   productUrl: "",
   categoryId: "",
   brandId: undefined,
-  // sellerCategoryId / sellerBrandId stay unset: bulk import sends these values straight to createProduct.
+  // sellerCategoryId / sellerBrandId stay unset until picked; toProductPayload keeps them out of createProduct.
   sku: "",
   quantity: 12,
   maxOrderQuantity: undefined,

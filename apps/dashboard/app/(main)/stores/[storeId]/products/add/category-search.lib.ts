@@ -1,4 +1,4 @@
-import { flattenCategoryTree, normalizeSearchText, type CategoryPathEntry } from "./add-product.lib";
+import { flattenCategoryTree, normalizeSearchText, suggestCategories, type CategoryPathEntry } from "./add-product.lib";
 import type { CategoryOption } from "./add-product.schema";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
 
@@ -39,6 +39,47 @@ export function storeOptionLabel(option: SellerTaxonomyOption, locale: string): 
   if (!option.parentId || !option.parentName) return own;
   const parent = locale === "ar" && option.parentNameAr?.trim() ? option.parentNameAr : option.parentName;
   return `${parent} › ${own}`;
+}
+
+/** Catch-all Tallaby category ("Other", "Misc"…), else the first leaf: the match of last resort. */
+export function fallbackTallabyCategoryId(tallaby: TallabyCategory[]): string | undefined {
+  const leaves = tallaby.filter((c) => c.isLeaf);
+  const catchAll = leaves.find((c) =>
+    /\b(other|others|misc|miscellaneous|general)\b|أخرى|اخرى|متنوع/i.test(
+      `${c.category.name} ${c.category.nameAr ?? ""} ${c.category.slug}`
+    )
+  );
+  return (catchAll ?? leaves[0] ?? tallaby[0])?.category.id;
+}
+
+/** Closest Tallaby category for a store/new category name, then that name plus the product names. */
+export function matchTallabyCategoryId(
+  categories: CategoryOption[],
+  name: string,
+  titles: (string | undefined)[] = []
+): string | undefined {
+  return (
+    suggestCategories(categories, { titles: [name] }, 1)[0] ??
+    suggestCategories(categories, { titles: [name, ...titles] }, 1)[0]
+  )?.category.id;
+}
+
+/**
+ * The Tallaby category (`products.category_id`, still required) behind a store
+ * or new category, picked without asking as the product form does: the one the
+ * store category was copied from, else the closest match, else `current`, else
+ * the catch-all.
+ */
+export function tallabyCategoryFor(
+  pick: { kind: "store"; option: SellerTaxonomyOption } | { kind: "new"; name: string },
+  ctx: { categories: CategoryOption[]; tallaby: TallabyCategory[]; titles?: (string | undefined)[]; current?: string; locale?: string }
+): string | undefined {
+  if (pick.kind === "store" && pick.option.sourceId && ctx.tallaby.some((c) => c.category.id === pick.option.sourceId)) {
+    return pick.option.sourceId;
+  }
+  // A sub-category matches on its own name, not "Main › Sub".
+  const name = pick.kind === "store" ? storeOptionOwnLabel(pick.option, ctx.locale ?? "en") : pick.name;
+  return matchTallabyCategoryId(ctx.categories, name, ctx.titles) ?? (ctx.current || fallbackTallabyCategoryId(ctx.tallaby));
 }
 
 const tokensOf = (query: string) => normalizeSearchText(query).split(" ").filter(Boolean);
