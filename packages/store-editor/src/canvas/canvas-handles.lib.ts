@@ -11,7 +11,17 @@ import type { Rect } from "../dnd/canvas-geometry.lib";
 export type GapLine = { axis: "x" | "y"; x: number; y: number; length: number };
 
 /** What the canvas measures for the selection; divider positions are in canvas coordinates. */
-export type SelectionHandles = { gaps: GapLine[]; gap: number; radius: number; rtl: boolean; bordered: boolean };
+export type SelectionHandles = {
+  gaps: GapLine[];
+  gap: number;
+  radius: number;
+  rtl: boolean;
+  bordered: boolean;
+  /** A selected image or store logo gets resize handles (resize-handles.lib): its drawn size and the widest it may be. */
+  resize?: ResizeTarget | null;
+};
+
+export type ResizeTarget = { kind: "image" | "logo"; width: number; height: number; maxWidth: number };
 
 /** Radius dots only show on elements that already have a border or rounded corners, and are big enough. */
 export const showsRadiusDots = (handles: Pick<SelectionHandles, "radius" | "bordered">, width: number, height: number) =>

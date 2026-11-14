@@ -86,11 +86,65 @@ function slotIn(parent: HTMLElement, section: HTMLElement, point: Point, rtl: bo
   };
 }
 
+/** The nearest element of `el` (itself included) that is a saved node, inside `within`. */
+function savedNodeOf(el: Element | null, within: HTMLElement, saved: ReadonlySet<string>): HTMLElement | null {
+  let node = el?.closest<HTMLElement>("[data-node-id]") ?? null;
+  while (node && within.contains(node)) {
+    if (saved.has(node.dataset.nodeId!)) return node;
+    node = node.parentElement?.closest<HTMLElement>("[data-node-id]") ?? null;
+  }
+  return null;
+}
+
+/** Saved nodes whose nearest saved ancestor is `parent` (drawn wrappers, such as the phone cells, are see-through). */
+function savedChildren(parent: HTMLElement, within: HTMLElement, saved: ReadonlySet<string>): HTMLElement[] {
+  return Array.from(parent.querySelectorAll<HTMLElement>("[data-node-id]")).filter(
+    (el) => saved.has(el.dataset.nodeId!) && savedNodeOf(el.parentElement, within, saved) === parent && visible(el),
+  );
+}
+
+/**
+ * Slots for a header or footer element dragged inside its own tree: the
+ * containers under the pointer, innermost first, as `NodeSlot`s of the saved
+ * tree. Elements the chrome draws but never saves (the store logo, the
+ * language switch, the phone burger and cells) are skipped, so every slot
+ * names saved nodes only. Never the tree's root level (the root section).
+ */
+function chromeSlots(doc: Document, part: "header" | "footer", point: Point, rtl: boolean, saved: ReadonlySet<string>): { slots: NodeSlot[]; geometry: CanvasGeometry["slots"] } {
+  const slots: NodeSlot[] = [];
+  const geometry: CanvasGeometry["slots"] = [];
+  const chrome = doc.querySelector<HTMLElement>(`[data-editor-chrome="${part}"]`);
+  const top = doc.elementsFromPoint(point.x, point.y)[0] ?? null;
+  if (!chrome || !top || !chrome.contains(top)) return { slots, geometry };
+  const add = (parent: HTMLElement) => {
+    const kids = savedChildren(parent, chrome, saved);
+    const rects = kids.map(rectOf);
+    const index = insertionIndex(rects, point, rtl);
+    const container = rectOf(parent);
+    slots.push({ parentId: parent.dataset.nodeId!, beforeId: kids[index]?.dataset.nodeId ?? null });
+    geometry.push({ line: insertionLine(rects, index, container, rtl), container });
+  };
+  let node = savedNodeOf(top, chrome, saved);
+  while (node) {
+    const parent = savedNodeOf(node.parentElement, chrome, saved);
+    const isContainer = Boolean(getElementDefinition(node.dataset.nodeType ?? "")?.container);
+    const nearEdge = edgeDistance(rectOf(node), point) <= EDGE;
+    // Near a container's edge the drop goes next to it; otherwise inside it.
+    if (isContainer && !nearEdge) add(node);
+    if (parent) add(parent);
+    if (isContainer && nearEdge) add(node);
+    node = parent;
+  }
+  return { slots, geometry };
+}
+
 /**
  * Samples the frame at `point` (frame viewport coordinates). A dragged part
- * or item (`payload`) also gets its target inside its own section.
+ * or item (`payload`) also gets its target inside its own section; a dragged
+ * header or footer element, its slots in that tree (`chromeIds`: the ids of
+ * its saved nodes).
  */
-export function sampleCanvas(doc: Document, point: Point, payload?: CanvasPayload | null): CanvasSample {
+export function sampleCanvas(doc: Document, point: Point, payload?: CanvasPayload | null, chromeIds?: ReadonlySet<string>): CanvasSample {
   const rtl = doc.documentElement.dir === "rtl";
   const width = doc.documentElement.clientWidth;
 
@@ -159,6 +213,10 @@ export function sampleCanvas(doc: Document, point: Point, payload?: CanvasPayloa
     const target = probePartSlot(doc, payload.ref, point);
     probe.part = target?.hit ?? null;
     geometry.part = target && { line: target.line, container: target.container };
+  } else if (payload?.kind === "move-chrome-node" && chromeIds) {
+    const target = chromeSlots(doc, payload.part, point, rtl, chromeIds);
+    probe.slots = target.slots;
+    geometry.slots = target.geometry;
   } else if (payload?.kind === "move-item") {
     const target = probeItem(doc, payload.ref, payload.collection, point);
     probe.itemInsertAt = target?.insertAt ?? null;

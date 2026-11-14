@@ -27,6 +27,8 @@ export type DragPayload =
   | { kind: "move-section"; instanceId: string }
   /** An existing element of a custom section, moved from the canvas toolbar handle. */
   | { kind: "move-node"; sectionInstanceId: string; nodeId: string }
+  /** An element of the header or footer (logo, menu links, cart, icons), moved inside its own tree. */
+  | { kind: "move-chrome-node"; part: "header" | "footer"; nodeId: string }
   /** A part of a pre-built section (title, text, button, image), moved among the slots of its section (P4B-16). */
   | { kind: "move-part"; ref: SectionRef; part: string }
   /** An item of a section's collection (a highlight card), moved among its siblings (P4B-16). */
@@ -63,7 +65,10 @@ export type CanvasProbe = {
   overSectionId: string | null;
   /** Images under the pointer, topmost first. */
   images: ImageCandidate[];
-  /** Element slots in the custom section under the pointer, innermost first (the root last). */
+  /**
+   * Element slots in the custom section under the pointer, innermost first (the root last). For a
+   * dragged header or footer element: the slots of its own tree under the pointer (saved elements only).
+   */
   slots: NodeSlot[];
   /** For a dragged part: the slot of its section under (or nearest to) the pointer. */
   part?: PartSlotHit | null;
@@ -82,6 +87,8 @@ export type DropPlan =
   | { kind: "new-section"; index: number }
   | { kind: "move-node"; fromSectionId: string; nodeId: string; sectionInstanceId: string; parentId: string | null; index: number; slot: number }
   | { kind: "move-node-new-section"; fromSectionId: string; nodeId: string; index: number }
+  /** A header or footer element to `index` inside `parentId` of the same tree (index counted after taking it out). */
+  | { kind: "move-chrome-node"; part: "header" | "footer"; nodeId: string; parentId: string; index: number; slot: number }
   /**
    * The dragged image goes in place of the image under the pointer: only its
    * picture changes (layout, size and the rest stay). For an Image element

@@ -1,4 +1,4 @@
-import { and, db, desc, eq, productTranslations, products, sql } from "@workspace/db";
+import { and, db, desc, eq, isNull, productTranslations, products, sql, stores } from "@workspace/db";
 import { productShownInStore, type StoreCatalogScope } from "@workspace/lib/stores/scope/server";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { parsePriceJson } from "@workspace/lib";
@@ -100,6 +100,20 @@ export async function loadEditorSnapshot(sellerId: string, storeId: string): Pro
     ...extra,
     failed: [...extra.failed, ...postsFailed, ...(products.salesFailed ? (["sales"] as const) : [])],
   };
+}
+
+/**
+ * The store's logo now (path or URL; null = none), for the editor's refresh:
+ * a logo set in Website › Design in another tab shows on the canvas when the
+ * seller comes back. Scoped to the session seller's store.
+ */
+export async function loadEditorLogo(sellerId: string, storeId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ logoUrl: stores.logoUrl })
+    .from(stores)
+    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)))
+    .limit(1);
+  return row?.logoUrl ?? null;
 }
 
 /** Runs a loader, turning a failure into `null` plus a `failed` entry (logged, never thrown). */

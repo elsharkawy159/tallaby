@@ -267,6 +267,12 @@ export const sitePageSchema = z.object({
   slug: slugFormatSchema,
   isHome: z.boolean().default(false),
   name: z.string().trim().min(1).max(80),
+  /**
+   * The page's name in each language it has, so live menus name it in the
+   * visitor's language (`name` is the default language's). Absent from
+   * revisions published before 2026-11-14: menus then use `name`.
+   */
+  names: z.object({ ar: z.string().trim().min(1).max(80).optional(), en: z.string().trim().min(1).max(80).optional() }).optional(),
   showInNav: z.boolean().optional(),
   seo: pageSeoSchema.default({}),
   content: pageContentSchema,

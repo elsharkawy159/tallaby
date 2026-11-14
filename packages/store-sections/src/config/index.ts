@@ -8,3 +8,4 @@ export * from "./validate";
 export { hasDangerousScheme, isHttpOrRelativeUrl } from "./url";
 export * from "./product-page.lib";
 export * from "./seo-keywords";
+export * from "./locale-rebase";

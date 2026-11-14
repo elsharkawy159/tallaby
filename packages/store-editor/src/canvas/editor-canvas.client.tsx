@@ -26,7 +26,7 @@ import {
 import { replayReveal, replayScrollEffect } from "@workspace/store-sections/client";
 import { motionSnapshot, replayTargets, scrollReplays, type MotionSnapshot } from "../lib/editor-motion.lib";
 import { cn } from "@workspace/ui/lib/utils";
-import { gapLines, type SelectionHandles } from "./canvas-handles.lib";
+import { gapLines, type ResizeTarget, type SelectionHandles } from "./canvas-handles.lib";
 import { EditorOverlay, elementDragKey, type CanvasBox, type CanvasBoxes } from "./editor-overlay.client";
 import { DEVICE_TONE } from "../lib/editor-devices.lib";
 import { styleKindOf } from "../lib/editor-style.lib";
@@ -146,7 +146,32 @@ function handlesOf(selection: Selection, element: HTMLElement | null, frame: HTM
     rtl: cs.direction === "rtl",
     // A border of none or hidden computes to 0px wide.
     bordered: [cs.borderTopWidth, cs.borderRightWidth, cs.borderBottomWidth, cs.borderLeftWidth].some((w) => Number.parseFloat(w) > 0),
+    resize: resizeTargetOf(selection, target, view),
   };
+}
+
+/**
+ * Resize handles for a selected Image element or the drawn store logo (an
+ * `<img>`, not its uploader). An image may be as wide as its parent's
+ * content box; the logo, half the header or footer.
+ */
+function resizeTargetOf(selection: NonNullable<Selection>, target: HTMLElement, view: Window): ResizeTarget | null {
+  const type = target.dataset.nodeType;
+  if (!selection.nodeId || target.tagName !== "IMG" || (type !== "image" && type !== "storeLogo")) return null;
+  const r = target.getBoundingClientRect();
+  if (r.width < 1 || r.height < 1) return null;
+  let maxWidth: number;
+  if (type === "storeLogo") {
+    const chrome = target.closest<HTMLElement>("[data-editor-chrome]");
+    if (!chrome) return null;
+    maxWidth = chrome.clientWidth / 2;
+  } else {
+    const parent = target.parentElement;
+    if (!parent) return null;
+    const pcs = view.getComputedStyle(parent);
+    maxWidth = parent.clientWidth - (Number.parseFloat(pcs.paddingLeft) || 0) - (Number.parseFloat(pcs.paddingRight) || 0);
+  }
+  return { kind: type === "storeLogo" ? "logo" : "image", width: Math.round(r.width), height: Math.round(r.height), maxWidth: Math.max(0, Math.floor(maxWidth)) };
 }
 
 const sameBox = (a: CanvasBox | null, b: CanvasBox | null) =>
@@ -379,7 +404,12 @@ export function EditorCanvas({
       }
       const target = event.target as HTMLElement | null;
       // Editor actions inside empty states (open a management page, retry) do act, and select nothing.
-      if (target?.closest("[data-editor-action]")) return;
+      // A button action never follows a link around it (the logo's place sits in the header's logo link).
+      const action = target?.closest("[data-editor-action]");
+      if (action) {
+        if (action.tagName !== "A") event.preventDefault();
+        return;
+      }
       // Links, buttons and form labels never act in the editor (FAQ <summary> still opens).
       if (target?.closest("a, button, label")) event.preventDefault();
       if (target?.isContentEditable) return;
@@ -597,7 +627,7 @@ export function EditorCanvas({
             <style>{`[data-section-id],[data-part],[data-node-id]{cursor:default}[contenteditable]{cursor:text;caret-color:var(--sf-brand)}`}</style>
             {/* The section or element being moved stays in place, faded, until it is dropped. */}
             {canvasDrag?.kind === "move-section" && <style>{`main [data-section-id="${esc(canvasDrag.instanceId)}"]{opacity:.35}`}</style>}
-            {canvasDrag?.kind === "move-node" && <style>{`[data-node-id="${esc(canvasDrag.nodeId)}"]{opacity:.35}`}</style>}
+            {(canvasDrag?.kind === "move-node" || canvasDrag?.kind === "move-chrome-node") && <style>{`[data-node-id="${esc(canvasDrag.nodeId)}"]{opacity:.35}`}</style>}
             {canvasDrag?.kind === "move-part" && (
               <style>{`[data-part="${esc(`${instanceIdOf(canvasDrag.ref)}::${canvasDrag.part}`)}"]{opacity:.35}`}</style>
             )}

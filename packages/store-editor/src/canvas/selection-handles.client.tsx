@@ -9,6 +9,7 @@ import { setStyle } from "../lib/editor-style.lib";
 import type { EditorStore, Selection } from "../state/editor.store";
 import { CORNERS, draggedGap, showsRadiusDots, draggedRadius, radiusDot, type Corner, type GapLine, type SelectionHandles } from "./canvas-handles.lib";
 import type { CanvasBox } from "./editor-overlay.client";
+import { ResizeHandlesLayer } from "./resize-handles.client";
 
 /** Hit area across a gap divider, in pixels. */
 const GRIP = 10;
@@ -94,6 +95,7 @@ export function SelectionHandlesLayer({
 
   return (
     <>
+      {handles.resize && <ResizeHandlesLayer store={store} selection={selection} box={box} frame={frame} target={handles.resize} rtl={handles.rtl} />}
       {handles.gaps.map((line, index) => {
         const id = `gap-${index}`;
         const vertical = line.axis === "x";

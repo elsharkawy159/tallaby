@@ -13,6 +13,7 @@ import {
   Eye,
   FileText,
   Grid3x3,
+  Languages,
   LoaderCircle,
   Monitor,
   Redo2,
@@ -74,6 +75,7 @@ export function EditorTopbar({
   hasChanges,
   onPublish,
   onShowShortcuts,
+  fillTranslations,
 }: {
   store: EditorStore;
   storeId: string;
@@ -91,6 +93,8 @@ export function EditorTopbar({
   hasChanges: boolean;
   onPublish: () => void;
   onShowShortcuts: () => void;
+  /** More › Fill missing translations (hosts with store drafts only). */
+  fillTranslations?: { run: () => void; running: boolean };
 }) {
   const t = useTranslations("storeEditor");
   const { capabilities } = useEditorAdapter();
@@ -231,6 +235,15 @@ export function EditorTopbar({
                 </DropdownMenuRadioGroup>
                 <DropdownMenuSeparator />
               </div>
+            )}
+            {fillTranslations && (
+              <>
+                <DropdownMenuItem onSelect={fillTranslations.run} disabled={fillTranslations.running || readOnly || saveStatus === "conflict"}>
+                  {fillTranslations.running ? <LoaderCircle className="animate-spin" aria-hidden /> : <Languages aria-hidden />}
+                  {t("fillTranslations.action")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
             )}
             <DropdownMenuCheckboxItem checked={gridOverlay} onCheckedChange={() => state.toggleGridOverlay()}>
               <Grid3x3 aria-hidden />

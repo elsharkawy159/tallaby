@@ -5,7 +5,6 @@ import type { EditorAdapter, EditorCapabilities } from "@workspace/store-editor"
 import { sellerMediaAdapter } from "@/components/media/media-adapter.client";
 import { createFormFromTemplate } from "@/app/(main)/stores/[storeId]/website/forms/forms.server";
 import { applyTemplate, templatePreview, undoTemplate } from "@/app/(main)/stores/[storeId]/website/templates/templates.server";
-import { saveStoreGeneral } from "@/app/(main)/stores/[storeId]/settings/store-settings.server";
 import {
   createPage,
   deletePage,
@@ -17,6 +16,7 @@ import {
   publish,
   refreshEditorData,
   draftVersions,
+  fillTranslations,
   reorderPages,
   restoreRevision,
   saveChrome,
@@ -65,16 +65,12 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       draftVersions: () => draftVersions(storeId),
       refreshData: () => refreshEditorData(storeId),
       previewProduct: (productId, locale) => previewProduct(storeId, productId, locale),
+      fillTranslations: () => fillTranslations(storeId),
       publish: async () => {
         const result = await publish(storeId);
         // A new seller may have just earned the welcome gift (0119).
         if (result.success) requestWelcomeGiftCheck();
         return result;
-      },
-      // Same save as Website › Design's logo field (store data, so the live site shows it too).
-      saveLogo: async (logoUrl) => {
-        const result = await saveStoreGeneral(storeId, { logoUrl });
-        return result.success ? { success: true, data: null } : result;
       },
       pages: {
         create: (input) => createPage(storeId, input),

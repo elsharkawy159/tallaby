@@ -31,7 +31,6 @@ import { offersProductParts } from "./lib/editor-pages.lib";
 import { usePreviewProduct } from "./state/use-preview-product.client";
 import { EditorCanvas } from "./canvas/editor-canvas.client";
 import { LogoUploader } from "./canvas/logo-uploader.client";
-import { useLogoUpload } from "./media/use-logo-upload.client";
 import { createEditorCommands } from "./lib/editor-commands.lib";
 import { QuickInsertDialog, ShortcutsDialog } from "./shell/editor-dialogs.client";
 import { EditorRail } from "./shell/editor-rail.client";
@@ -46,7 +45,7 @@ import { useEditorData } from "./state/use-editor-data.client";
 import { getInstance, imageSpotOf, isImageSelection, refOf, setImageAt } from "./lib/editor-selection.lib";
 import { storeDataCounts } from "./lib/editor-library.lib";
 import { dropUnknownSections, resolveCanvasCatalog, resolveCanvasContent } from "./lib/editor.lib";
-import { EditorAdapterProvider, useEditorAdapter } from "./adapter.client";
+import { EditorAdapterProvider, useEditorAdapter, useEditorLinks } from "./adapter.client";
 import type { EditorAdapter } from "./adapter.types";
 import { createEditorStore, type EditorPage, type EditorStore, type Rail } from "./state/editor.store";
 import { AddPanel } from "./panels/add/add-panel.client";
@@ -295,10 +294,12 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   };
   const dataStore = { id: initial.storeId, catalogMode: initial.catalogMode };
   const libraryWide = useStore(store, (s) => s.libraryWide && s.rail === "add" && s.addTab === "sections");
-  // The store logo: uploaded from the canvas header/footer while there is none, then drawn there at once.
-  const logo = useLogoUpload(initial.store.logoUrl);
-  const profile = useMemo(() => ({ ...initial.store, logoUrl: logo.logoUrl }), [initial.store, logo.logoUrl]);
-  const canUploadLogo = logo.enabled && !initial.readOnly;
+  // The store logo is set in Brand identity (Website › Design), which the canvas opens in a new tab while
+  // there is none; the store data refresh on coming back carries the new one (for hosts that report it).
+  const logoUrl = catalog.logoUrl !== undefined ? catalog.logoUrl : (initial.store.logoUrl ?? null);
+  const profile = useMemo(() => ({ ...initial.store, logoUrl }), [initial.store, logoUrl]);
+  const designHref = useEditorLinks(initial.storeId).design;
+  const brandHref = designHref && !initial.readOnly ? `${designHref}#brand` : null;
 
   // What does not change with page edits (also used by the Add panel's section previews).
   const baseCtx = useMemo<Omit<RenderContext, "pages" | "catalog">>(
@@ -325,13 +326,11 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       forms: Object.fromEntries(forms.map((f) => [f.id, f.form])),
       ...(slotIndustry && { industry: slotIndustry }),
       ...(product && { product }),
-      ...(canUploadLogo && {
-        renderLogoUploader: (size: "md" | "lg") => (
-          <LogoUploader size={size} label={t(logo.uploading ? "logo.uploading" : "logo.upload")} uploading={logo.uploading} onFile={(file) => void logo.upload(file)} />
-        ),
+      ...(brandHref && {
+        renderLogoUploader: (size: "md" | "lg") => <LogoUploader size={size} label={t("logo.upload")} href={brandHref} />,
       }),
     }),
-    [locale, forms, profile, t, slotIndustry, product, canUploadLogo, logo.uploading, logo.upload],
+    [locale, forms, profile, t, slotIndustry, product, brandHref],
   );
 
   const ctx = useMemo<RenderContext>(() => {
@@ -383,6 +382,35 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       setPublishing(false);
     }
   };
+
+  // More › Fill missing translations: saves first, fills the drafts on the server, then reloads them.
+  const [filling, setFilling] = useState(false);
+  const onFillTranslations = adapter.fillTranslations
+    ? async () => {
+        setFilling(true);
+        try {
+          if (!(await flush())) {
+            toast.error(t(store.getState().saveStatus === "conflict" ? "errors.versionConflict" : "errors.saveFirst"));
+            return;
+          }
+          const result = await adapter.fillTranslations!();
+          if (!result.success) {
+            toast.error(t(`errors.${result.error}`));
+            return;
+          }
+          const { filled, repaired, missing } = result.data;
+          if (filled + repaired === 0) {
+            toast.info(t(missing ? "fillTranslations.nothingFound" : "fillTranslations.nothingMissing", { missing }));
+            return;
+          }
+          toast.success(t("fillTranslations.done", { count: filled + repaired, missing }));
+          // A moment to read the message, then the editor loads the filled drafts.
+          window.setTimeout(() => window.location.reload(), 1500);
+        } finally {
+          setFilling(false);
+        }
+      }
+    : undefined;
 
   // Selecting an image opens Explore, so a photo can be dropped onto it right away
   // (not on small screens: the inspector sheet opens there instead).
@@ -464,7 +492,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       catalog={catalog}
       uiLocale={uiLocale}
       translated={new Set(initial.locales).size > 1}
-      hasLogo={Boolean(logo.logoUrl)}
+      hasLogo={Boolean(logoUrl)}
       onAddSection={railEnabled("add", capabilities) ? () => {
         store.getState().setRail("add");
         setPanelOpen(true);
@@ -492,6 +520,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         hasChanges={hasChanges}
         onPublish={() => void onPublish()}
         onShowShortcuts={() => setShortcutsOpen(true)}
+        fillTranslations={onFillTranslations && { run: () => void onFillTranslations(), running: filling }}
       />
 
       {saveStatus === "conflict" && (

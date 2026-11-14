@@ -25,6 +25,7 @@ import { Link } from "@/i18n/navigation";
 import { formatContentDate, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedSectionContent } from "@/lib/store-cms/cms.server";
 import { getCachedPublicStoreForms } from "@/lib/store-forms/public-forms.server";
+import { localizeStarterForm } from "@workspace/lib/store-forms/starter";
 import { resolveStoreCatalog, toProductSummaries, type ResolvedCatalog } from "@/lib/store-site/catalog.server";
 import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { siteNavPages } from "@/lib/store-site/site-nav.lib";
@@ -197,7 +198,8 @@ async function buildContext(
       <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={catalog.withVariants.has(product.id)} />
     ),
     renderWishlistButton: (product) => <StoreWishlistButton productId={product.id} />,
-    forms,
+    // A starter form made in the store's first language reads in the page's language.
+    forms: Object.fromEntries(Object.entries(forms as Awaited<ReturnType<typeof getCachedPublicStoreForms>>).map(([id, form]) => [id, localizeStarterForm(form, locale)])),
     renderForm: (form, instanceId, options) => <StoreForm form={form} instanceId={instanceId} layout={options?.layout} />,
     // A seller-placed low-stock badge (F-34d) takes the alert over from the stock line.
     ...(product && { product, ...PRODUCT_HOOKS, stockBadgeOnPage: pageHasStockBadge(sections), crossSellOnPage: pageHasCrossSell(sections) }),

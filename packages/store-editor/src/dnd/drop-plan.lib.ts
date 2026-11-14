@@ -158,6 +158,20 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
       : { kind: "move-item", ref: payload.ref, collection: payload.collection, from: payload.index, to };
   }
 
+  // Header and footer elements stay in their own tree (the logo, links, cart and icons rearranged).
+  if (payload.kind === "move-chrome-node") {
+    const tree = (payload.part === "header" ? source.header : source.footer)?.componentTree ?? [];
+    if (!findNode(tree, payload.nodeId)) return null;
+    for (const [i, slot] of probe.slots.entries()) {
+      if (slot.parentId === null) continue;
+      const moved = moveWithin(tree, payload.nodeId, slot);
+      // Hovering its own place: stop here rather than fall back to an outer slot.
+      if (moved === "same") return { kind: "invalid", reason: "noop", index: at };
+      if (moved !== null) return { kind: "move-chrome-node", part: payload.part, nodeId: payload.nodeId, parentId: slot.parentId, index: moved, slot: i };
+    }
+    return { kind: "invalid", reason: "unsupported", index: at };
+  }
+
   if (payload.kind === "move-node") {
     const from = sections.find((s) => s.id === payload.sectionInstanceId);
     const node = from ? findNode(from.componentTree ?? [], payload.nodeId) : null;
@@ -211,6 +225,16 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
     }
   }
   return full ? { kind: "invalid", reason: limit, index: at } : { kind: "new-section", index: at };
+}
+
+/** The header or footer after a `move-chrome-node` drop; null when the plan no longer fits its tree. */
+export function applyChromeMove(instance: SectionInstance, plan: Extract<DropPlan, { kind: "move-chrome-node" }>): SectionInstance | null {
+  const tree = instance.componentTree ?? [];
+  if (!findNode(tree, plan.nodeId)) return null;
+  const next = moveNode(tree, plan.nodeId, plan.parentId, plan.index);
+  const place = findParent(next, plan.nodeId);
+  if (!place || place.parentId !== plan.parentId || place.index !== plan.index) return null;
+  return { ...instance, componentTree: next };
 }
 
 export type DropDeps = {

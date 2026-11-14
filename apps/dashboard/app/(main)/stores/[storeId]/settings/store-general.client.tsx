@@ -134,6 +134,8 @@ export function StoreGeneralForm({
         toast.error(catalogInvalid);
         return;
       }
+      // A new default language moves the website drafts to it (stores/server.ts): say what to do next.
+      const localeChanged = Boolean(form.formState.dirtyFields.defaultLocale);
       if (form.formState.isDirty) {
         const result = await saveStoreGeneral(storeId, toGeneralPatch(values, { brand: brandInSettings }));
         if (!result.success) {
@@ -144,6 +146,7 @@ export function StoreGeneralForm({
       }
       const catalogError = await catalog.save();
       if (catalogError) toast.error(catalogError);
+      else if (localeChanged) toast.success(t("savedLocaleChanged"), { duration: 12_000 });
       else toast.success(t("saved"));
       router.refresh();
     });

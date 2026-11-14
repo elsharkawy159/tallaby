@@ -13,6 +13,7 @@
  */
 import type { SectionInstance } from "./schema";
 import { applyMobileMenu, mobileMenuEntries, readMobileMenu, type MobileMenuConfig, type MobileMenuEntry } from "./mobile-menu";
+import { readLogoHeights, type LogoDevice } from "./logo-size";
 
 const FLUSH = { paddingTop: 0, paddingBottom: 0 };
 
@@ -188,9 +189,15 @@ function replaceFirst(nodes: Node[], match: (node: Node) => boolean, replace: (n
   return null;
 }
 
-function withStoreLogo(tree: Node[], id: string, part: ChromePart, showName: boolean): Node[] {
+function withStoreLogo(tree: Node[], id: string, part: ChromePart, showName: boolean, heights: Partial<Record<LogoDevice, number>>): Node[] {
   if (contains(tree, (node) => node.type === "storeLogo")) return tree;
-  const logo: Node = { id: `${id}-logo`, type: "storeLogo", props: { size: part === "footer" ? "lg" : "md" }, children: [] };
+  // The seller's logo height (config/logo-size.ts) goes on the drawn node only when set, so other logos draw as before.
+  const props = {
+    size: part === "footer" ? "lg" : "md",
+    ...(heights.desktop !== undefined && { height: heights.desktop }),
+    ...(heights.mobile !== undefined && { heightMobile: heights.mobile }),
+  };
+  const logo: Node = { id: `${id}-logo`, type: "storeLogo", props, children: [] };
   // The header's logo link first; else the first store name (a footer's heading).
   return (
     replaceFirst(tree, hasRole("logo"), (link) => ({ ...link, children: placeLogo(link.children, logo, showName) ?? [logo, ...link.children] })) ??
@@ -678,8 +685,8 @@ export function drawChrome(
   if (!instance || !tree?.length) return instance;
   const on = (option: ChromeOption) => chromeOptionOn(instance, part, option);
   let nodes = tree;
-  if (opts.hasLogo && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, on("storeName"));
-  else if (opts.logoPlaceholder && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, true);
+  if (opts.hasLogo && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, on("storeName"), readLogoHeights(instance));
+  else if (opts.logoPlaceholder && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, true, {});
   else nodes = withoutMark(nodes);
   const tools: Node[] = [];
   const tool = (type: Node["type"], suffix: string) => {

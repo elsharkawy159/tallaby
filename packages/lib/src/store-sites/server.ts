@@ -32,6 +32,8 @@ import {
   RESERVED_PAGE_SLUGS,
   designSystemSchema,
   pageSeoSchema,
+  rebasePageContentLocale,
+  rebaseSectionLocale,
   type SiteConfig,
   type SiteConfigIssue,
   siteConfigSchema,
@@ -44,6 +46,8 @@ import { designSystemColumns, withStoredMotion } from "./design-system.lib";
 import { updateTouchesLockedProductFields } from "./product-page-guard.lib";
 import { storeDraftKey } from "./preview-token";
 import { storeTemplateChosen } from "./template-choice.server";
+
+export { fillStoreSiteTranslations, type FillTranslationsResult } from "./site-locale.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -186,6 +190,16 @@ export async function saveStorePageDraft(
 
 type LocalizedName = { ar?: string; en?: string };
 
+/** A page's stored name in each language it has (trimmed, at most 80 characters), or undefined when it has none. */
+function pageNames(name: LocalizedName): LocalizedName | undefined {
+  const out: LocalizedName = {};
+  for (const locale of ["ar", "en"] as const) {
+    const value = typeof name[locale] === "string" ? name[locale]!.trim().slice(0, 80) : "";
+    if (value) out[locale] = value;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 /** The draft SiteConfig of a store, as stored (not yet validated). */
 async function buildDraftSiteConfig(
   q: Queryable,
@@ -214,6 +228,8 @@ async function buildDraftSiteConfig(
         slug: page.slug,
         isHome: page.isHome,
         name: (name[store.defaultLocale as keyof LocalizedName] ?? name.ar ?? name.en ?? page.slug).slice(0, 80),
+        // Both languages, so the live menus name the page in the visitor's language.
+        ...(pageNames(name) && { names: pageNames(name) }),
         showInNav: page.showInNav,
         ...(page.kind === "product" && { kind: "product" as const }),
         seo: page.seo ?? {},
@@ -342,7 +358,15 @@ export async function restoreRevisionToDraft(
       if (!revision) throw new SiteError("not_found");
       const parsed = siteConfigSchema.safeParse(revision.snapshot);
       if (!parsed.success) throw new SiteError("invalid_site");
-      const config = parsed.data;
+      // A revision published before the store's default language changed holds the old base language.
+      const from = parsed.data.settings.defaultLocale;
+      const to = store.defaultLocale === "en" ? "en" : "ar";
+      const config = {
+        ...parsed.data,
+        header: parsed.data.header && rebaseSectionLocale(parsed.data.header, from, to),
+        footer: parsed.data.footer && rebaseSectionLocale(parsed.data.footer, from, to),
+        pages: parsed.data.pages.map((page) => ({ ...page, content: rebasePageContentLocale(page.content, from, to) })),
+      };
 
       await tx
         .update(storeDesignSystems)
@@ -381,7 +405,7 @@ export async function restoreRevisionToDraft(
             slug: page.slug,
             // Keep the one-home-page rule: a restored home page only lands on a free slot.
             isHome: false,
-            name: { [store.defaultLocale]: page.name },
+            name: page.names ?? { [store.defaultLocale]: page.name },
             seo: page.seo,
             showInNav: page.showInNav ?? true,
             kind: page.kind ?? "page",
@@ -817,8 +841,11 @@ export async function getStoreSiteStatus(sellerId: string, storeId: string, q: Q
 
   const draft = validateSiteConfig(await buildDraftSiteConfig(q, store));
   const live = row?.snapshot ? siteConfigSchema.safeParse(row.snapshot) : null;
+  // A revision published before page names were kept in both languages has no `names`: not a change by itself.
+  const liveHasNames = Boolean(live?.success && live.data.pages.some((page) => page.names));
+  const comparable = (config: SiteConfig) => (liveHasNames ? config : { ...config, pages: config.pages.map(({ names: _names, ...page }) => page) });
   const hasUnpublishedChanges =
-    !live?.success || !draft.success || stableStringify(draft.data) !== stableStringify(live.data);
+    !live?.success || !draft.success || stableStringify(comparable(draft.data)) !== stableStringify(comparable(live.data));
 
   return {
     siteStatus: row!.siteStatus as "draft" | "published" | "unpublished",

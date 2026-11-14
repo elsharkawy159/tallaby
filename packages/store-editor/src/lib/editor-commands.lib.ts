@@ -43,7 +43,7 @@ import type { EditorStore, SectionRef, Selection } from "../state/editor.store";
 import { instantiateTemplatePage } from "./editor-templates.lib";
 import { partAfterItemMove, placeItem, placePart, stepMovable } from "./editor-slots.lib";
 import type { CanvasPayload, DropPlan, ImageCandidate } from "../dnd/dnd.types";
-import { applyDropPlan, isImageTarget } from "../dnd/drop-plan.lib";
+import { applyChromeMove, applyDropPlan, isImageTarget } from "../dnd/drop-plan.lib";
 
 type Clip = { kind: "section"; instance: SectionInstance } | { kind: "nodes"; nodes: ComponentNode[] };
 
@@ -495,6 +495,16 @@ export function createEditorCommands(store: EditorStore) {
      */
     applyDrop(payload: CanvasPayload, plan: DropPlan, options: { src?: string; pageId?: string } = {}): boolean {
       const pageId = options.pageId ?? state().activePageId;
+      if (plan.kind === "move-chrome-node") {
+        // The header and footer are shared by every page: one edit of that instance, then the moved element is selected.
+        const ref = { target: plan.part } as const;
+        const instance = getInstance(source(), ref);
+        const next = instance && applyChromeMove(instance, plan);
+        if (!next) return false;
+        state().editSection(ref, () => next);
+        state().select({ ...ref, nodeId: plan.nodeId });
+        return true;
+      }
       if (plan.kind === "replace-chrome") {
         const preset = payload.kind === "section" ? payloadPreset(payload.sectionId, payload.presetId, state().presets) : undefined;
         return Boolean(preset && presetChromePart(preset) === plan.part && replaceChrome(plan.part, preset));

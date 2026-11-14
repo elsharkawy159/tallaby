@@ -24,6 +24,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { getEventCoordinates } from "@dnd-kit/utilities";
 import { createStore, type StoreApi } from "zustand/vanilla";
+import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
 import type { ElementType } from "@workspace/store-sections/render";
 import type { EditorCommands } from "../lib/editor-commands.lib";
 import { ELEMENT_ICONS } from "../lib/editor-icons.lib";
@@ -75,7 +76,8 @@ function markerOf(plan: DropPlan, sample: CanvasSample): DropMarker | null {
     case "move-node-new-section":
       return { kind: "line", line: geometry.sectionLine, note: "newSection" };
     case "insert-nodes":
-    case "move-node": {
+    case "move-node":
+    case "move-chrome-node": {
       const slot = geometry.slots[plan.slot];
       return slot ? { kind: "slot", line: slot.line, container: slot.container } : null;
     }
@@ -93,6 +95,19 @@ function markerOf(plan: DropPlan, sample: CanvasSample): DropMarker | null {
     case "invalid":
       return plan.reason === "noop" ? null : { kind: "invalid", line: geometry.sectionLine, reason: plan.reason };
   }
+}
+
+/** Every node id of a header or footer tree (its saved elements). */
+function treeIds(instance: SectionInstance | null): Set<string> {
+  const ids = new Set<string>();
+  const walk = (nodes: readonly ComponentNode[]) => {
+    for (const node of nodes) {
+      ids.add(node.id);
+      walk(node.children);
+    }
+  };
+  walk(instance?.componentTree ?? []);
+  return ids;
 }
 
 /** Keys for "Recent" / "Most used" in the Add panel. */
@@ -165,8 +180,9 @@ export function EditorDndProvider({
     // The frame's document starts inside its border.
     const local = { x: pointer.x - f.left - canvas.frame.clientLeft, y: pointer.y - f.top - canvas.frame.clientTop };
     if (local.x < 0 || local.y < 0 || local.x > f.width || local.y > f.height) return null;
-    const sample = sampleCanvas(canvas.doc, local, payload);
-    const plan = planDrop(payload, sample.probe, source());
+    const from = source();
+    const sample = sampleCanvas(canvas.doc, local, payload, payload.kind === "move-chrome-node" ? treeIds(payload.part === "header" ? from.header : from.footer) : undefined);
+    const plan = planDrop(payload, sample.probe, from);
     return plan ? { plan, sample } : null;
   };
 
@@ -238,7 +254,7 @@ export function EditorDndProvider({
     setOverlay(data);
     // An element, part or item dragged on the canvas shows itself under the pointer.
     const kind = data.payload.kind;
-    const element = kind === "move-node" || kind === "move-part" || kind === "move-item" ? value.canvas.current?.pressedElement() : null;
+    const element = kind === "move-node" || kind === "move-chrome-node" || kind === "move-part" || kind === "move-item" ? value.canvas.current?.pressedElement() : null;
     if (element?.isConnected) {
       const rect = element.getBoundingClientRect();
       setGhost({ node: ghostCopy(element), width: rect.width, height: rect.height, dir: element.ownerDocument.documentElement.dir });
@@ -352,6 +368,7 @@ export function EditorDndProvider({
         return t("announce.newSection", { position: plan.index + 1 });
       case "insert-nodes":
       case "move-node":
+      case "move-chrome-node":
         return t("announce.intoSection", { position: plan.index + 1 });
       case "move-part":
         return t("announce.movePart", { position: plan.index + 1 });

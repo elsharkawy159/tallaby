@@ -4621,6 +4621,7 @@
   "storeSettings": {
     "save": "Save changes",
     "saved": "Store settings saved",
+    "savedLocaleChanged": "Store settings saved. Your website pages in the editor now use your new default language. Open the website editor, choose More › Fill missing translations if some text is in one language only, then publish so your customers see it.",
     "readOnly": "This store is archived or suspended, so its settings are read-only. Restore it from My stores to edit.",
     "readOnlyBadge": "Read-only",
     "identity": {

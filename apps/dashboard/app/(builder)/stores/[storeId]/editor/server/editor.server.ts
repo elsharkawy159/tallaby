@@ -7,6 +7,8 @@ import {
   createStorePage,
   deleteStorePage,
   discardStoreDrafts,
+  fillStoreSiteTranslations,
+  type FillTranslationsResult,
   getStoreDraftVersions,
   getStoreSiteStatus,
   listStoreRevisions,
@@ -32,7 +34,7 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { listStoreForms } from "@workspace/lib/store-forms/server";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
-import { loadEditorForms, loadEditorSnapshot, type EditorCatalogSnapshot, type EditorForm } from "./editor.data";
+import { loadEditorForms, loadEditorLogo, loadEditorSnapshot, type EditorCatalogSnapshot, type EditorForm } from "./editor.data";
 import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "@workspace/store-editor/editor.dto";
 
 /**
@@ -89,6 +91,19 @@ export async function saveDraft(storeId: string, pageId: string, content: unknow
   });
 }
 
+/**
+ * More › Fill missing translations: the drafts' template text gets the
+ * language it is missing from the code templates (free, no AI). Drafts only;
+ * the seller reviews and publishes.
+ */
+export async function fillTranslations(storeId: string) {
+  return withStore<FillTranslationsResult>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
+    const result = await fillStoreSiteTranslations(seller.sellerId, store.id);
+    return result.success ? result : fail(result.error);
+  });
+}
+
 export async function saveDesignSystem(storeId: string, designSystem: unknown, clientVersion: number) {
   return withStore<{ version: number }>(storeId, { forWrite: true }, async ({ seller, store }) => {
     if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
@@ -125,7 +140,9 @@ export async function refreshEditorData(storeId: string) {
     if (!refreshLimiter.check(`${seller.sellerId}:${store.id}`)) return fail("rateLimited");
     const catalog = await getStoreCatalog(seller.sellerId, store.id);
     if (!catalog) return fail("notFound");
-    return { success: true, data: await loadEditorSnapshot(seller.sellerId, store.id) };
+    // The logo too: the canvas's "Upload logo" opens Brand identity in another tab.
+    const [snapshot, logoUrl] = await Promise.all([loadEditorSnapshot(seller.sellerId, store.id), loadEditorLogo(seller.sellerId, store.id)]);
+    return { success: true, data: { ...snapshot, logoUrl } };
   });
 }
 

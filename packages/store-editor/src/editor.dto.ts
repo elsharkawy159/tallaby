@@ -141,6 +141,12 @@ export type EditorCatalogSnapshot = {
   forms: EditorForm[];
   /** Published blog posts; null when they failed to load. */
   posts: ContentItemSummary[] | null;
+  /**
+   * The store logo now (path or URL; null = none), so a logo set in another
+   * tab shows when the seller comes back. Left out by hosts that don't report
+   * it: the editor then keeps the logo it opened with.
+   */
+  logoUrl?: string | null;
 } & EditorStoreData;
 
 // Media library (dashboard components/media/media.dto.ts re-exports these)

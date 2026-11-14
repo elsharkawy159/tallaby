@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { MAX_SECTIONS_PER_PAGE, type ComponentNode, type PageContent, type SectionInstance } from "@workspace/store-sections";
 import { findNode, findParent } from "@workspace/store-sections/render";
 import type { CanvasPayload, CanvasProbe, DropPlan } from "./dnd.types";
-import { applyDropPlan, planDrop, sectionMoveTarget } from "./drop-plan.lib";
+import { applyChromeMove, applyDropPlan, planDrop, sectionMoveTarget } from "./drop-plan.lib";
+import { chromeDragNodeId } from "../canvas/editor-overlay.client";
 
 const node = (id: string, type: string, children: ComponentNode[] = [], props: Record<string, unknown> = {}): ComponentNode =>
   ({ id, type, props, children }) as ComponentNode;
@@ -233,3 +234,64 @@ describe("image onto image", () => {
   });
 });
 
+
+describe("header element drops", () => {
+  /** header [bar [logo link [mark, name], menu [a, b], cart]] */
+  const header = (): SectionInstance =>
+    section("hdr", "custom-section", [
+      node("root", "section", [
+        node("bar", "hFlex", [
+          node("logo", "linkBlock", [node("mark", "icon"), node("name", "text", [], { role: "storeName" })], { role: "logo", href: "/" }),
+          node("menu", "hFlex", [node("a", "textLink", [], { href: "/a" }), node("b", "textLink", [], { href: "/b" })], { role: "menu" }),
+          node("cart", "linkBlock", [node("cart-icon", "icon")], { role: "cart", href: "/cart" }),
+        ]),
+      ]),
+    ]);
+  const chrome = (h: SectionInstance) => ({ content: page(), header: h, footer: null });
+  const childIds = (instance: SectionInstance, parent: string) => findNode(instance.componentTree ?? [], parent)!.children.map((c) => c.id);
+
+  it("moves the cart before the logo in its row, as one header edit", () => {
+    const h = header();
+    const payload: CanvasPayload = { kind: "move-chrome-node", part: "header", nodeId: "cart" };
+    const plan = planDrop(payload, probe({ slots: [{ parentId: "bar", beforeId: "logo" }] }), chrome(h));
+    expect(plan).toEqual({ kind: "move-chrome-node", part: "header", nodeId: "cart", parentId: "bar", index: 0, slot: 0 });
+    expect(childIds(applyChromeMove(h, plan as Extract<DropPlan, { kind: "move-chrome-node" }>)!, "bar")).toEqual(["cart", "logo", "menu"]);
+  });
+
+  it("reorders menu links and moves a link out of the menu", () => {
+    const h = header();
+    const swap = planDrop({ kind: "move-chrome-node", part: "header", nodeId: "b" }, probe({ slots: [{ parentId: "menu", beforeId: "a" }] }), chrome(h));
+    expect(childIds(applyChromeMove(h, swap as Extract<DropPlan, { kind: "move-chrome-node" }>)!, "menu")).toEqual(["b", "a"]);
+    const out = planDrop({ kind: "move-chrome-node", part: "header", nodeId: "a" }, probe({ slots: [{ parentId: "bar", beforeId: "cart" }] }), chrome(h));
+    const moved = applyChromeMove(h, out as Extract<DropPlan, { kind: "move-chrome-node" }>)!;
+    expect(childIds(moved, "bar")).toEqual(["logo", "menu", "a", "cart"]);
+    expect(childIds(moved, "menu")).toEqual(["b"]);
+  });
+
+  it("does nothing over its own place, never goes into itself or to the tree's root level", () => {
+    const h = header();
+    const same = planDrop({ kind: "move-chrome-node", part: "header", nodeId: "menu" }, probe({ slots: [{ parentId: "bar", beforeId: "cart" }] }), chrome(h));
+    expect(same).toMatchObject({ kind: "invalid", reason: "noop" });
+    const inside = planDrop(
+      { kind: "move-chrome-node", part: "header", nodeId: "menu" },
+      probe({ slots: [{ parentId: "menu", beforeId: null }, { parentId: null, beforeId: null }] }),
+      chrome(h),
+    );
+    expect(inside).toMatchObject({ kind: "invalid", reason: "unsupported" });
+  });
+
+  it("refuses a node that is not in the header and a stale plan", () => {
+    const h = header();
+    expect(planDrop({ kind: "move-chrome-node", part: "header", nodeId: "gone" }, probe({ slots: [{ parentId: "bar", beforeId: null }] }), chrome(h))).toBeNull();
+    expect(applyChromeMove(h, { kind: "move-chrome-node", part: "header", nodeId: "cart", parentId: "missing", index: 0, slot: 0 })).toBeNull();
+  });
+
+  it("drags the logo link when the drawn store logo is pressed, and never the root or drawn tools", () => {
+    const h = header();
+    expect(chromeDragNodeId(h, "hdr-logo")).toBe("logo");
+    expect(chromeDragNodeId(h, "cart")).toBe("cart");
+    expect(chromeDragNodeId(h, "root")).toBeNull();
+    expect(chromeDragNodeId(h, "hdr-language")).toBeNull();
+    expect(chromeDragNodeId(null, "cart")).toBeNull();
+  });
+});

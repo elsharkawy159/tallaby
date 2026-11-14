@@ -80,11 +80,11 @@ export type EditorAdapter = {
   previewProduct?(productId: string | undefined, locale: SiteLocale): Promise<EditorResult<ProductDetail | null>>;
   publish(): Promise<EditorResult<{ revisionId: string; revisionNumber: number }>>;
   /**
-   * Saves an uploaded media URL as the store's logo (the one every header and
-   * footer shows). Hosts without a store profile (template and section editing)
-   * leave it out, and the canvas then shows no logo uploader.
+   * More › Fill missing translations: the host fills the drafts' template text
+   * in the language it is missing (from the code templates) and the editor
+   * reloads. Hosts without store drafts leave it out.
    */
-  saveLogo?(logoUrl: string): Promise<EditorResult<null>>;
+  fillTranslations?(): Promise<EditorResult<{ filled: number; repaired: number; missing: number; pages: number }>>;
 
   // Optional groups; present iff the matching capability is true.
   pages?: {

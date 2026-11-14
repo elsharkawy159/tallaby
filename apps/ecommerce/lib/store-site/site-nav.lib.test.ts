@@ -21,4 +21,10 @@ describe("siteNavPages", () => {
     ]);
     expect(siteNavPages(site, "ar").map((p) => p.href)).toEqual(["/", "/about"]);
   });
+
+  it("names each page in the visitor's language when the revision has both", () => {
+    const site = { pages: [page({ name: "من نحن", names: { ar: "من نحن", en: "About us" }, slug: "about" }), page({ name: "تواصل", names: { ar: "تواصل" }, slug: "contact" })] };
+    expect(siteNavPages(site, "en").map((p) => p.name)).toEqual(["About us", "تواصل"]);
+    expect(siteNavPages(site, "ar").map((p) => p.name)).toEqual(["من نحن", "تواصل"]);
+  });
 });

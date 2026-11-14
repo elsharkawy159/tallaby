@@ -4,7 +4,7 @@
  * through `SmartLink`/`safeHref` and images through `ctx.imageUrl`. Text is
  * always printed as text, never parsed as HTML.
  */
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   ArrowLeft,
   Award,
@@ -53,6 +53,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { MOBILE_COLLAPSE, MOBILE_GROUP, MOBILE_SPLIT } from "../config/header";
+import { clampLogoHeight, defaultLogoHeight, logoMaxWidth } from "../config/logo-size";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
 import { IMAGE_SIZES, imageLoading, imageSource, type RenderContext } from "../core/types";
@@ -153,6 +154,28 @@ const BIND_TARGET: Partial<Record<string, string>> = {
 const recordKey = (scope: DataRecord) => scope.record.id;
 
 /** Props of a node inside a list template: bound fields come from the record (`null`: draw nothing). */
+/**
+ * A `storeLogo` node's seller height (`drawChrome` sets `height` and
+ * `heightMobile` only when the seller changed one): the CSS variables and the
+ * image `sizes`. Null when neither is set, so the logo keeps its old classes.
+ */
+function logoSizeStyle(props: Record<string, unknown>): { style: CSSProperties; sizes: string } | null {
+  const desktop = clampLogoHeight(props.height, "desktop");
+  const mobile = clampLogoHeight(props.heightMobile, "mobile");
+  if (desktop === null && mobile === null) return null;
+  const part = props.size === "lg" ? "footer" : "header";
+  const h = desktop ?? defaultLogoHeight(part, "desktop");
+  const hm = mobile ?? defaultLogoHeight(part, "mobile");
+  const style = {
+    "--sf-logo-h": `${h}px`,
+    "--sf-logo-w": `${logoMaxWidth(h)}px`,
+    "--sf-logo-hm": `${hm}px`,
+    // Phones: never wider than half the bar (burger and cart sit beside it).
+    "--sf-logo-wm": `min(${logoMaxWidth(hm)}px,50vw)`,
+  } as CSSProperties;
+  return { style, sizes: `${logoMaxWidth(Math.max(h, hm))}px` };
+}
+
 function scopedProps(node: ComponentNode, ctx: RenderContext, scope: DataRecord | undefined): Record<string, unknown> | null {
   const props = node.props ?? {};
   const target = BIND_TARGET[node.type];
@@ -1109,6 +1132,21 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
             {uploader}
           </div>
         ) : null;
+      }
+      const sized = logoSizeStyle(props);
+      if (sized) {
+        // The seller's height (header/footer options, config/logo-size.ts): per device through CSS variables.
+        return (
+          // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
+          <img
+            {...attrs}
+            {...imageSource(ctx, url, sized.sizes)}
+            alt={ctx.store.name}
+            className="block h-(--sf-logo-h) w-auto max-w-(--sf-logo-w) shrink-0 object-contain max-md:h-(--sf-logo-hm) max-md:max-w-(--sf-logo-wm)"
+            style={sized.style}
+            decoding="async"
+          />
+        );
       }
       return (
         // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage

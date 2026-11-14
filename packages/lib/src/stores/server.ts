@@ -45,6 +45,7 @@ import {
 import { parseStoreCurrency } from "../utils/formatPrice";
 import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { seedStarterSite } from "./starter-site.server";
+import { rebaseStoreDraftsLocale } from "../store-sites/site-locale.server";
 import { toShippingZone, type StoreShippingZone } from "./shipping-context.server";
 import { canCreateStore } from "../plans";
 import { isSwitchOn } from "./platform-switches.server";
@@ -367,21 +368,37 @@ export async function updateStoreSettings(
     nextContact = { ...rest, ...contact };
   }
 
-  const updated = await q
-    .update(stores)
-    .set({
-      ...fields,
-      ...(nextContact && { contact: nextContact }),
-      // Other settings keys (payments, …) are kept.
-      ...(currency &&
-        currencyLabel && {
-          settings: sql`coalesce(${stores.settings}, '{}'::jsonb) || jsonb_build_object('currency', ${currency}::text, 'currencyLabel', ${currencyLabel}::text)`,
-        }),
-      updatedAt: sql`now()`,
-    })
-    .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
-    .returning({ id: stores.id });
-  return updated.length ? { success: true, data: updated[0]! } : { success: false, error: "store_read_only" };
+  const write = (tx: Queryable) =>
+    tx
+      .update(stores)
+      .set({
+        ...fields,
+        ...(nextContact && { contact: nextContact }),
+        // Other settings keys (payments, …) are kept.
+        ...(currency &&
+          currencyLabel && {
+            settings: sql`coalesce(${stores.settings}, '{}'::jsonb) || jsonb_build_object('currency', ${currency}::text, 'currencyLabel', ${currencyLabel}::text)`,
+          }),
+        updatedAt: sql`now()`,
+      })
+      .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
+      .returning({ id: stores.id });
+
+  if (defaultLocale === store.defaultLocale) {
+    const updated = await write(q);
+    return updated.length ? { success: true, data: updated[0]! } : { success: false, error: "store_read_only" };
+  }
+  // A new default language: the website drafts move to it as their base
+  // language in the same transaction (site-locale.server.ts), so the builder
+  // and the next publish show each language's own text.
+  return q.transaction(async (tx) => {
+    const [locked] = await tx.select({ defaultLocale: stores.defaultLocale }).from(stores).where(ownStore(sellerId, storeId)).for("update");
+    if (!locked) return { success: false as const, error: "not_found" as const };
+    const updated = await write(tx);
+    if (!updated.length) return { success: false as const, error: "store_read_only" as const };
+    await rebaseStoreDraftsLocale(tx, storeId, locked.defaultLocale, defaultLocale);
+    return { success: true as const, data: updated[0]! };
+  });
 }
 
 /** Archive (soft, seller-side). The primary store cannot be archived. */

@@ -28,12 +28,21 @@
       "reload": "Reload now"
     },
     "reload": "Reload",
+    "fillTranslations": {
+      "action": "Fill missing translations",
+      "done": "{count, plural, one {Added # translation} other {Added # translations}} from Tallaby's templates.{missing, plural, =0 {} other { # texts you wrote yourself still need translating.}} Check your site, then publish.",
+      "nothingMissing": "Every text on your site is in both languages.",
+      "nothingFound": "{missing, plural, one {# text you wrote has} other {# texts you wrote have}} no translation and no match in the templates. Translate {missing, plural, one {it} other {them}} by switching the editing language."
+    },
     "canvas": {
       "addToCart": "Add to cart",
       "dragGap": "Drag to change the gap",
       "dragRadius": "Drag to round the corners",
       "gapValue": "Gap {value}",
       "radiusValue": "Radius {value}",
+      "dragResize": "Drag to resize. Arrow keys change the size, Shift for bigger steps",
+      "dragResizeLogo": "Drag to resize the logo. Arrow keys change the size, Shift for bigger steps",
+      "sizeValue": "{width} × {height}",
       "selectParent": "Select parent",
       "moveUp": "Move up",
       "moveDown": "Move down",
@@ -339,6 +348,14 @@
         "header": "Header options",
         "footer": "Footer options",
         "openDesign": "Website › Design",
+        "logoSize": {
+          "title": "Logo size",
+          "desktop": "Computer and tablet",
+          "mobile": "Phone",
+          "value": "{value} px",
+          "reset": "Default size",
+          "hint": "You can also drag the logo's corners on the canvas."
+        },
         "options": {
           "logo": "Store logo",
           "storeName": "Store name next to the logo",
@@ -864,10 +881,7 @@
       "hint": "Only changes the photos on this canvas. The section keeps its photo slots and each store gets photos for its own industry."
     },
     "logo": {
-      "upload": "Upload logo",
-      "uploading": "Uploading…",
-      "saved": "Logo saved. It now shows in your header and footer.",
-      "failed": "The logo couldn't be saved. Try again."
+      "upload": "Upload logo"
     }
   },
   "mediaLibrary": {

@@ -33,6 +33,7 @@ export {
 } from "./bottom-nav";
 export * from "../config/bottom-nav";
 export * from "../config/mobile-menu";
+export * from "../config/logo-size";
 export * from "../core/catalog-resolve";
 export * from "../designs";
 export * from "../elements/data";

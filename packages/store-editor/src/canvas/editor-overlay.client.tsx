@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ClipboardPaste, Copy, CopyPlus, Eye, GripVertical, Paintbrush, Plus, Scissors, Trash2 } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
 import { useStore } from "zustand";
-import type { SectionInstance } from "@workspace/store-sections";
+import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -213,12 +213,36 @@ function Clip({ frame, children }: { frame: CanvasBox; children: ReactNode }) {
 /** What dragging an element or part moves: an element of a custom section, a part or an item of a pre-built one (P4B-16). */
 export function elementDragPayload(target: NonNullable<Selection> | null, instance: SectionInstance | null): DragPayload | null {
   if (!target) return null;
-  if (target.nodeId) return target.target === "page" ? { kind: "move-node", sectionInstanceId: target.sectionId, nodeId: target.nodeId } : null;
+  if (target.nodeId) {
+    if (target.target === "page") return { kind: "move-node", sectionInstanceId: target.sectionId, nodeId: target.nodeId };
+    const nodeId = chromeDragNodeId(instance, target.nodeId);
+    return nodeId ? { kind: "move-chrome-node", part: target.target, nodeId } : null;
+  }
   const movable = target.part ? movableOf(instance, target.part) : null;
   if (!movable) return null;
   return movable.kind === "part"
     ? { kind: "move-part", ref: refOf(target), part: movable.part }
     : { kind: "move-item", ref: refOf(target), collection: movable.collection, index: movable.index };
+}
+
+/**
+ * The header or footer element a press drags: any saved element but the root
+ * section. The store logo is drawn into the logo link (never saved), so a
+ * press on it drags that link; the other drawn pieces (language switch, theme
+ * toggle, sign-in, phone burger) follow the seller's options and don't drag.
+ */
+export function chromeDragNodeId(instance: SectionInstance | null, nodeId: string): string | null {
+  const tree = instance?.componentTree ?? [];
+  const find = (nodes: readonly ComponentNode[], match: (node: ComponentNode) => boolean): ComponentNode | null => {
+    for (const node of nodes) {
+      if (match(node)) return node;
+      const found = find(node.children, match);
+      if (found) return found;
+    }
+    return null;
+  };
+  const own = find(tree, (node) => node.id === nodeId) ?? (instance && nodeId === `${instance.id}-logo` ? find(tree, (node) => node.props.role === "logo") : null);
+  return own && own.id !== tree[0]?.id ? own.id : null;
 }
 
 /** Matches a pressed frame element to its drag source. */
