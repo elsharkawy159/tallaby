@@ -36,7 +36,7 @@ export type SectionIconProp = LucideIcon | ReactElement<{ className?: string }>;
 export function SectionIcon({ icon: Icon }: { icon: SectionIconProp; compact?: boolean }) {
   const className = "size-[18px]";
   return (
-    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary-ink max-[600px]:size-9">
+    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary-ink max-[600px]:size-8 max-[600px]:rounded-[10px]">
       {isValidElement(Icon) ? cloneElement(Icon, { className }) : <Icon className={className} />}
     </span>
   );
@@ -68,16 +68,16 @@ export function SectionCard({
     <section
       id={id}
       className={cn(
-        "flex flex-col gap-4 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) transition-colors max-[600px]:rounded-[20px] max-[600px]:p-4",
+        "flex flex-col gap-4 rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) transition-colors max-[600px]:gap-3.5 max-[600px]:rounded-[20px] max-[600px]:p-3.5",
         invalid && "border-destructive/45",
         className,
       )}
     >
-      <header className="flex flex-wrap items-start gap-3">
+      <header className="flex flex-wrap items-start gap-3 max-[600px]:gap-2.5">
         <SectionIcon icon={icon} />
         <div className="min-w-0 flex-1 basis-40">
-          <h2 className="text-[16.5px] font-bold leading-normal text-(--s-ink)">{title}</h2>
-          <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted)">{description}</p>
+          <h2 className="text-[16.5px] font-bold leading-normal text-(--s-ink) max-[600px]:text-[15px]">{title}</h2>
+          <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted) max-[600px]:text-[12.5px] max-[600px]:leading-normal">{description}</p>
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </header>

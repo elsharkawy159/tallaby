@@ -11,8 +11,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="dark"
       position="bottom-center"
       offset={24}
-      mobileOffset={16}
+      // Above the iPhone home indicator; env() is 0 where there is no inset.
+      mobileOffset={{ top: 16, right: 16, left: 16, bottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}
       gap={8}
+      // Sonner's phone CSS (≤600px) sets the list to left/right 16px AND width 100%,
+      // so it is a viewport wider than the room left: in RTL it hangs 16px off the
+      // left edge, in LTR off the right, and the centred toast sits 16px off-centre.
+      // Width auto lets left/right size it, so toasts centre in both directions.
+      className="max-[600px]:!w-auto"
       style={
         {
           "--normal-bg": "#1f2a2e",

@@ -82,7 +82,7 @@ function ViewsBadgeInner({ stats, productId }: { stats: Promise<ProductViewStats
   const percent = resolved.ordersHidden ? null : viewsToOrdersPercent(stat.views, stat.orders);
   return (
     <div
-      className="flex h-[42px] items-center gap-2 rounded-full border border-(--s-line) bg-(--s-surface-2) px-3.5 text-xs text-(--s-muted)"
+      className="flex h-[42px] items-center gap-2 rounded-full border border-(--s-line) bg-(--s-surface-2) px-3.5 text-xs text-(--s-muted) max-[600px]:h-9 max-[600px]:gap-1.5 max-[600px]:px-3"
       title={`${t("title", { days: resolved.days })} · ${t("hint")}`}
     >
       <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden />

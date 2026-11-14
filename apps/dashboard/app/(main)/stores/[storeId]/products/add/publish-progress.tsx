@@ -111,7 +111,10 @@ function StatusDot({ section }: { section: SectionProgress }) {
   );
 }
 
-/** Mobile: horizontally scrolling section chips under the page header. */
+/**
+ * Tablets (md to lg): horizontally scrolling section chips under the page header.
+ * Hidden on phones, where the sticky header can't spare the row; desktop has the aside checklist.
+ */
 export function SectionChips({
   sections,
   activeId,
@@ -136,7 +139,7 @@ export function SectionChips({
   return (
     <nav
       ref={navRef}
-      className="flex gap-1.5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] max-[600px]:px-3 max-[600px]:pb-2.5 lg:hidden"
+      className="hidden gap-1.5 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:flex lg:hidden"
     >
       {sections.map((section) => (
         <a

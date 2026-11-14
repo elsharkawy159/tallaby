@@ -24,6 +24,15 @@ const BUTTON_SIZES = {
   xs: "h-[34px] gap-1.5 px-3 text-[12.5px] max-[600px]:h-10 [&_svg]:size-[15px]",
 } as const;
 
+/**
+ * Put on a header's actions row: at 600px and below every SellerButton in it
+ * drops to 36px tall with tighter padding and text. A button marked
+ * `data-phone-icon` turns into a 36px square there; wrap its label in
+ * `max-[600px]:sr-only` so it keeps its accessible name. Desktop is unchanged.
+ */
+export const PHONE_COMPACT_ACTIONS =
+  "max-[600px]:[&_[data-sui-button]]:h-9 max-[600px]:[&_[data-sui-button]]:gap-1.5 max-[600px]:[&_[data-sui-button]]:px-3.5 max-[600px]:[&_[data-sui-button]]:text-[12.5px] max-[600px]:[&_[data-sui-button]_svg]:size-4 max-[600px]:[&_[data-sui-button][data-phone-icon]]:w-9 max-[600px]:[&_[data-sui-button][data-phone-icon]]:px-0";
+
 export type SellerButtonVariant = keyof typeof BUTTON_VARIANTS;
 export type SellerButtonSize = keyof typeof BUTTON_SIZES;
 

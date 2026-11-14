@@ -694,6 +694,7 @@
     "productSavedAsDraft": "Product saved as a draft. Add an image to publish it.",
     "failedToUpdateProductStatus": "Failed to update product status",
     "productUpdatedSuccessfully": "Product updated successfully!",
+    "viewOnStore": "View",
     "failedToUpdateProduct": "Failed to update product",
     "somethingWentWrong": "Something went wrong. Please try again.",
     "pleaseFillRequiredFields": "Please fill in all required fields",

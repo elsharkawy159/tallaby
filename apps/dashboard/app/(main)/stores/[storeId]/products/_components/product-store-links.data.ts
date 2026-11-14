@@ -2,6 +2,36 @@ import { and, db, eq, inArray, sellerCustomDomains, storeProducts, stores as sto
 import { storeUrl } from "@workspace/lib/storefront";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
+import { isStoreSiteLive, productPageUrl, type ProductViewTarget } from "@/lib/products/product-view-url.lib";
+
+/**
+ * Address and liveness of the store a product form saves into, for the
+ * saved toast's "View" link. `storeId` must already be checked against the
+ * session (loadProductStorePage); the query is still filtered by the seller.
+ * null when the store isn't the seller's.
+ */
+export async function loadProductViewTarget(sellerId: string, storeId: string): Promise<ProductViewTarget | null> {
+  const [[store], [domain]] = await Promise.all([
+    db
+      .select({ subdomain: storesTable.subdomain, status: storesTable.status, siteStatus: storesTable.siteStatus })
+      .from(storesTable)
+      .where(and(eq(storesTable.id, storeId), eq(storesTable.sellerId, sellerId)))
+      .limit(1),
+    db
+      .select({ domain: sellerCustomDomains.domain })
+      .from(sellerCustomDomains)
+      .where(
+        and(
+          eq(sellerCustomDomains.sellerId, sellerId),
+          eq(sellerCustomDomains.storeId, storeId),
+          eq(sellerCustomDomains.status, "active"),
+        ),
+      )
+      .limit(1),
+  ]);
+  if (!store) return null;
+  return { storeBaseUrl: storeUrl(store.subdomain, domain?.domain ?? null), siteLive: isStoreSiteLive(store) };
+}
 
 /**
  * Where "Open product" goes for each product: the product page on the
@@ -56,7 +86,7 @@ export async function loadProductStoreLinks(
     const store = candidates.find((s) => !selectedMode.has(s.id) || picked.has(`${s.id}:${product.id}`));
     if (!store) continue;
     const base = storeUrl(store.subdomain, domainByStore.get(store.id) ?? null);
-    links.set(product.id, `${base}/products/${encodeURIComponent(product.slug)}`);
+    links.set(product.id, productPageUrl(base, product.slug));
   }
   return links;
 }

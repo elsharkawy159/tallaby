@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
-import { IconButton, SellerButton } from "@/components/seller-ui";
+import { IconButton, PHONE_COMPACT_ACTIONS, SellerButton } from "@/components/seller-ui";
 import { Form } from "@workspace/ui/components/form";
 import { createProduct, updateProduct } from "@/actions/products";
 import { cn } from "@/lib/utils";
@@ -83,6 +83,7 @@ import { AddMethodSkeleton } from "./add-method-skeleton";
 import { useAddMethod } from "./use-add-method";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
 import { useProductStoreId, useProductsHref } from "@/app/(main)/stores/[storeId]/products/_components/product-store.client";
+import { queueProductCreatedToast, showProductSavedToast } from "../_components/product-saved-toast.client";
 
 interface AddProductProps {
   categories: CategoryOption[];
@@ -322,7 +323,9 @@ function AddProductForm({
             toast.info(tToast("productSavedAsDraft"));
             window.location.reload();
           } else {
-            toast.success(tToast("productCreatedSuccessfully"));
+            // The toast (with "View" on the live store) shows on the products page after the full load.
+            const queued = Boolean(result.data?.id) && queueProductCreatedToast(productStoreId, result.data!.id);
+            if (!queued) toast.success(tToast("productCreatedSuccessfully"));
             window.location.assign(productsHref());
           }
         } else {
@@ -351,7 +354,11 @@ function AddProductForm({
           await saveSocialProof(productId, data);
           if (aiFills.current > 0)
             await markProductAiAssisted(productStoreId, productId, "edit");
-          toast.success(tToast("productUpdatedSuccessfully"));
+          await showProductSavedToast(tToast("productUpdatedSuccessfully"), {
+            storeId: productStoreId,
+            productId,
+            viewLabel: tToast("viewOnStore"),
+          });
           router.push(productsHref());
         } else {
           toast.error(result.error || tToast("failedToUpdateProduct"));
@@ -524,11 +531,11 @@ function AddProductForm({
             data-sticky-head
             className="sticky top-[68px] z-20 border-b border-(--s-line) bg-(--s-glass) backdrop-blur-md max-[600px]:top-[60px]"
           >
-            <div className={cn(COLUMN, "flex flex-wrap items-center gap-x-4 gap-y-2.5 py-3.5 max-[600px]:py-2.5")}>
+            <div className={cn(COLUMN, "flex flex-wrap items-center gap-x-4 gap-y-2.5 py-3.5 max-[600px]:gap-x-3 max-[600px]:gap-y-2 max-[600px]:py-2")}>
               {onPickMethod && (
                 <IconButton
                   type="button"
-                  className="-me-1.5"
+                  className="-me-1.5 max-[600px]:size-9"
                   aria-label={tMethod("change")}
                   title={tMethod("change")}
                   onClick={() => {
@@ -543,7 +550,7 @@ function AddProductForm({
               <h1
                 id="add-product-title"
                 tabIndex={-1}
-                className="text-[20px] font-bold leading-[1.4] text-(--s-ink) outline-none max-[600px]:text-[17px]"
+                className="text-[20px] font-bold leading-[1.4] text-(--s-ink) outline-none max-[600px]:text-[15.5px]"
               >
                 {isEdit ? t("editTitle") : t("newTitle")}
               </h1>
@@ -553,7 +560,7 @@ function AddProductForm({
                 {!isEdit && (
                   <IconButton
                     type="button"
-                    className="max-[600px]:order-1"
+                    className="max-[600px]:order-1 max-[600px]:size-9"
                     aria-label={t("importProduct")}
                     title={t("importProduct")}
                     onClick={() => setImportOpen(true)}
@@ -567,11 +574,16 @@ function AddProductForm({
                   </SellerButton>
                 )}
                 {!isEdit && draft.hasDraft && (
-                  <ClearDraftButton className="inline-flex max-[600px]:ms-auto sm:max-lg:hidden" disabled={isPending} onConfirm={clearDraft} />
+                  <ClearDraftButton className="inline-flex max-[600px]:ms-auto max-[600px]:h-9 sm:max-lg:hidden" disabled={isPending} onConfirm={clearDraft} />
                 )}
                 {/* One scrolling line on phones: this bar is sticky, and two rows of buttons cost a quarter of the screen. */}
                 {headerActions && (
-                  <div className="contents max-[600px]:flex max-[600px]:w-full max-[600px]:gap-2 max-[600px]:overflow-x-auto max-[600px]:[scrollbar-width:none] max-[600px]:[&>*]:shrink-0">
+                  <div
+                    className={cn(
+                      "contents max-[600px]:flex max-[600px]:w-full max-[600px]:gap-1.5 max-[600px]:overflow-x-auto max-[600px]:[scrollbar-width:none] max-[600px]:[&>*]:shrink-0",
+                      PHONE_COMPACT_ACTIONS,
+                    )}
+                  >
                     {headerActions}
                   </div>
                 )}
@@ -581,8 +593,8 @@ function AddProductForm({
             <ProgressChips activeSection={activeSection} />
           </div>
 
-          <div className={cn(COLUMN, "grid grid-cols-1 items-start gap-6 pt-6 max-[600px]:pt-4 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]")}>
-            <div className="flex min-w-0 flex-col gap-4">
+          <div className={cn(COLUMN, "grid grid-cols-1 items-start gap-6 pt-6 max-[600px]:pt-3 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]")}>
+            <div className="flex min-w-0 flex-col gap-4 max-[600px]:gap-3">
               <form
                 id={isEdit ? "edit-product-form" : "add-product-form"}
                 // Bubble, not capture: a state update in the capture phase makes React put the
@@ -593,7 +605,7 @@ function AddProductForm({
                   e.preventDefault();
                   void publish();
                 }}
-                className="flex min-w-0 flex-col gap-4"
+                className="flex min-w-0 flex-col gap-4 max-[600px]:gap-3"
               >
                 {aiEnabled && isEdit && (
                   <AiAutofillCard
@@ -837,7 +849,7 @@ function LocaleSwitch({
           aria-checked={value === locale}
           onClick={() => onChange(locale)}
           className={cn(
-            "flex h-[34px] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors duration-150 max-[600px]:h-10 min-[601px]:flex-none",
+            "flex h-[34px] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors duration-150 max-[600px]:h-8 max-[600px]:text-[12.5px] min-[601px]:flex-none",
             value === locale
               ? "bg-(--s-solid) text-(--s-solid-fg)"
               : "text-(--s-muted) hover:text-(--s-ink)",

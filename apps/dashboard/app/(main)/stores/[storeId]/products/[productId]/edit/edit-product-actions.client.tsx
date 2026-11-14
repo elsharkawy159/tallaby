@@ -60,15 +60,15 @@ export function EditProductActions({
       <span title={previewTitle} className="inline-flex">
         {canPreview ? (
           <SellerButton asChild variant="outline">
-            <a href={previewUrl!} target="_blank" rel="noopener noreferrer">
+            <a href={previewUrl!} target="_blank" rel="noopener noreferrer" data-phone-icon>
               <ExternalLink />
-              {t("previewOnStore")}
+              <span className="max-[600px]:sr-only">{t("previewOnStore")}</span>
             </a>
           </SellerButton>
         ) : (
-          <SellerButton type="button" variant="outline" disabled>
+          <SellerButton type="button" variant="outline" disabled data-phone-icon>
             <ExternalLink />
-            {t("previewOnStore")}
+            <span className="max-[600px]:sr-only">{t("previewOnStore")}</span>
           </SellerButton>
         )}
       </span>

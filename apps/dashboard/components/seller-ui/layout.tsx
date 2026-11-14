@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { PHONE_COMPACT_ACTIONS } from "./buttons";
 import { cn } from "@/lib/utils";
 
 /* Page frame, cards and section headers: the design's `.pg`, `.hd`, `.card`, `.ch`, `.sec`, `.shd`. Server-safe. */
@@ -56,7 +57,7 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-[clamp(22px,2.4vw,28px)] font-bold leading-[1.35] text-(--s-ink)">{title}</h1>
+        <h1 className="text-[clamp(22px,2.4vw,28px)] font-bold leading-[1.35] text-(--s-ink) max-[600px]:text-[19px]">{title}</h1>
         {description && (
           <div className="mt-0.5 text-pretty text-[14.5px] leading-[1.7] text-(--s-muted) max-[600px]:text-[13.5px]">
             {description}
@@ -64,7 +65,12 @@ export function PageHeader({
         )}
       </div>
       {actions && (
-        <div className="flex flex-wrap items-center gap-2 max-[720px]:w-full max-[720px]:[&>[data-sui-button=amber]]:flex-[1_1_auto]">
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-2 max-[720px]:w-full max-[720px]:[&>[data-sui-button=amber]]:flex-[1_1_auto]",
+            PHONE_COMPACT_ACTIONS,
+          )}
+        >
           {actions}
         </div>
       )}
