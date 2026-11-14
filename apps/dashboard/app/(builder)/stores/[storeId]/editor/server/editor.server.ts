@@ -8,7 +8,6 @@ import {
   deleteStorePage,
   discardStoreDrafts,
   fillStoreSiteTranslations,
-  type FillTranslationsResult,
   getStoreDraftVersions,
   getStoreSiteStatus,
   listStoreRevisions,
@@ -35,7 +34,11 @@ import { listStoreForms } from "@workspace/lib/store-forms/server";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
 import { loadEditorForms, loadEditorLogo, loadEditorSnapshot, type EditorCatalogSnapshot, type EditorForm } from "./editor.data";
-import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "@workspace/store-editor/editor.dto";
+import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult, type FillTranslationsSummary } from "@workspace/store-editor/editor.dto";
+import { aiConfigured } from "@workspace/ai";
+import { getAiCreditStatus } from "@workspace/lib/billing/credits";
+import { getBillingState } from "@workspace/lib/billing/server";
+import { SITE_TRANSLATE_CREDITS_PER_RUN } from "@workspace/lib/store-sites/ai-translate";
 
 /**
  * Website editor actions (PLAN.md P4-04). Every action takes the store id
@@ -94,14 +97,27 @@ export async function saveDraft(storeId: string, pageId: string, content: unknow
 /**
  * More › Fill missing translations: the drafts' template text gets the
  * language it is missing from the code templates (free, no AI). Drafts only;
- * the seller reviews and publishes.
+ * the seller reviews and publishes. When text is still untranslated, `ai`
+ * offers the AI step (`translateSiteWithAi`) with the seller's credits.
  */
 export async function fillTranslations(storeId: string) {
-  return withStore<FillTranslationsResult>(storeId, { forWrite: true }, async ({ seller, store }) => {
+  return withStore<FillTranslationsSummary>(storeId, { forWrite: true }, async ({ seller, store }) => {
     if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
     const result = await fillStoreSiteTranslations(seller.sellerId, store.id);
-    return result.success ? result : fail(result.error);
+    if (!result.success) return fail(result.error);
+    const ai = result.data.untranslated > 0 ? await aiTranslateOffer(seller.sellerId) : null;
+    return { success: true, data: { ...result.data, ai } };
   });
+}
+
+/** The AI step's price and the seller's credits (null when credits don't apply); null when AI is off. Not exported: never a client-callable action. */
+async function aiTranslateOffer(sellerId: string): Promise<{ credits: number | null; cost: number } | null> {
+  if (!aiConfigured()) return null;
+  const billing = await getBillingState().catch(() => null);
+  if (!billing) return null;
+  if (!billing.usdLive) return { credits: null, cost: SITE_TRANSLATE_CREDITS_PER_RUN };
+  const status = await getAiCreditStatus(sellerId).catch(() => null);
+  return status ? { credits: status.total, cost: SITE_TRANSLATE_CREDITS_PER_RUN } : null;
 }
 
 export async function saveDesignSystem(storeId: string, designSystem: unknown, clientVersion: number) {

@@ -38,6 +38,7 @@ import { EditorSheet } from "./shell/editor-sheet.client";
 import { PhoneActionBar } from "./shell/phone-action-bar.client";
 import { EditorSidebar } from "./inspector/editor-sidebar.client";
 import { EditorTopbar } from "./shell/editor-topbar.client";
+import { AiTranslateDialog, type AiTranslateOffer } from "./shell/ai-translate-dialog.client";
 import type { EditorCatalogSnapshot } from "./editor.dto";
 import { DataActionButton, DataRetryButton } from "./canvas/data-action.client";
 import { failedNeeds } from "./lib/editor-data.lib";
@@ -383,8 +384,21 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     }
   };
 
-  // More › Fill missing translations: saves first, fills the drafts on the server, then reloads them.
+  // More › Fill missing translations: saves first, fills the drafts on the server from the
+  // templates (free), offers AI for the rest when the host has it, then reloads the drafts.
   const [filling, setFilling] = useState(false);
+  const [aiOffer, setAiOffer] = useState<(AiTranslateOffer & { fromTemplates: number; missing: number }) | null>(null);
+  const [aiRunning, setAiRunning] = useState(false);
+  // A moment to read the message, then the editor loads the filled drafts.
+  const reloadSoon = () => window.setTimeout(() => window.location.reload(), 1500);
+  const finishTemplatesOnly = (fromTemplates: number, missing: number) => {
+    if (fromTemplates === 0) {
+      toast.info(t(missing ? "fillTranslations.nothingFound" : "fillTranslations.nothingMissing", { missing }));
+      return;
+    }
+    toast.success(t("fillTranslations.done", { count: fromTemplates, missing }));
+    reloadSoon();
+  };
   const onFillTranslations = adapter.fillTranslations
     ? async () => {
         setFilling(true);
@@ -398,19 +412,48 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
             toast.error(t(`errors.${result.error}`));
             return;
           }
-          const { filled, repaired, missing } = result.data;
-          if (filled + repaired === 0) {
-            toast.info(t(missing ? "fillTranslations.nothingFound" : "fillTranslations.nothingMissing", { missing }));
+          const { filled, repaired, missing, untranslated = 0, ai } = result.data;
+          if (untranslated > 0 && ai && adapter.translateWithAi) {
+            setAiOffer({ untranslated, credits: ai.credits, cost: ai.cost, fromTemplates: filled + repaired, missing });
             return;
           }
-          toast.success(t("fillTranslations.done", { count: filled + repaired, missing }));
-          // A moment to read the message, then the editor loads the filled drafts.
-          window.setTimeout(() => window.location.reload(), 1500);
+          finishTemplatesOnly(filled + repaired, missing);
         } finally {
           setFilling(false);
         }
       }
     : undefined;
+  const onSkipAi = () => {
+    const offer = aiOffer;
+    setAiOffer(null);
+    if (offer) finishTemplatesOnly(offer.fromTemplates, offer.missing);
+  };
+  const onTranslateWithAi = async () => {
+    const offer = aiOffer;
+    if (!offer || !adapter.translateWithAi) return;
+    setAiRunning(true);
+    try {
+      const result = await adapter.translateWithAi();
+      setAiOffer(null);
+      if (!result.success) {
+        toast.error(t(`errors.${result.error}`));
+        if (offer.fromTemplates > 0) reloadSoon();
+        return;
+      }
+      const { translated, left, stoppedBy } = result.data;
+      toast.success(
+        [
+          t("fillTranslations.aiDone", { templates: offer.fromTemplates, ai: translated, left }),
+          ...(stoppedBy ? [t(`fillTranslations.stopped.${stoppedBy}`)] : []),
+          t("fillTranslations.aiReview"),
+        ].join(" "),
+        { duration: 8000 },
+      );
+      if (offer.fromTemplates + translated > 0) reloadSoon();
+    } finally {
+      setAiRunning(false);
+    }
+  };
 
   // Selecting an image opens Explore, so a photo can be dropped onto it right away
   // (not on small screens: the inspector sheet opens there instead).
@@ -520,8 +563,11 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         hasChanges={hasChanges}
         onPublish={() => void onPublish()}
         onShowShortcuts={() => setShortcutsOpen(true)}
-        fillTranslations={onFillTranslations && { run: () => void onFillTranslations(), running: filling }}
+        fillTranslations={onFillTranslations && { run: () => void onFillTranslations(), running: filling || aiRunning }}
       />
+      {adapter.translateWithAi && (
+        <AiTranslateDialog offer={aiOffer} running={aiRunning} onTranslate={() => void onTranslateWithAi()} onSkip={onSkipAi} />
+      )}
 
       {saveStatus === "conflict" && (
         <div role="alert" className="flex items-center justify-between gap-3 bg-accent-soft px-4 py-2 text-sm text-accent-ink">

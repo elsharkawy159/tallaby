@@ -41,9 +41,43 @@ export type EditorErrorKey =
   | "templateNotChosen"
   /** The host cancelled the publish (e.g. its confirmation dialog); no message is shown. */
   | "cancelled"
+  /** AI steps (Fill missing translations): out of AI credits, over today's limit, AI not set up, the AI call failed. */
+  | "aiNoCredits"
+  | "aiDailyLimit"
+  | "aiUnavailable"
+  | "aiFailed"
   | "generic";
 
 export type EditorResult<T> = { success: true; data: T } | { success: false; error: EditorErrorKey };
+
+/**
+ * More › Fill missing translations, the free template step.
+ * `untranslated`: distinct texts still missing the other language that AI
+ * could translate; `ai`: null when the host offers no AI step, else the
+ * seller's AI credits (null when credits don't apply) and what a run costs.
+ */
+export type FillTranslationsSummary = {
+  filled: number;
+  repaired: number;
+  missing: number;
+  pages: number;
+  untranslated?: number;
+  ai?: { credits: number | null; cost: number } | null;
+};
+
+/**
+ * The AI step: `translated` values written into the drafts (each text counts
+ * once wherever it is used), `left` texts not translated this run (over the
+ * caps, or an answer that failed the checks), `stoppedBy` why a run stopped
+ * early, `creditsRemaining` after the run (null when credits don't apply).
+ */
+export type AiTranslateSummary = {
+  translated: number;
+  applied: number;
+  left: number;
+  stoppedBy?: "aiDailyLimit" | "aiNoCredits";
+  creditsRemaining: number | null;
+};
 
 /** lib error codes → message keys. */
 export const EDITOR_ERRORS: Record<string, EditorErrorKey> = {

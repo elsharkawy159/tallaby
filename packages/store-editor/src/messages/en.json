@@ -32,7 +32,21 @@
       "action": "Fill missing translations",
       "done": "{count, plural, one {Added # translation} other {Added # translations}} from Tallaby's templates.{missing, plural, =0 {} other { # texts you wrote yourself still need translating.}} Check your site, then publish.",
       "nothingMissing": "Every text on your site is in both languages.",
-      "nothingFound": "{missing, plural, one {# text you wrote has} other {# texts you wrote have}} no translation and no match in the templates. Translate {missing, plural, one {it} other {them}} by switching the editing language."
+      "nothingFound": "{missing, plural, one {# text you wrote has} other {# texts you wrote have}} no translation and no match in the templates. Translate {missing, plural, one {it} other {them}} by switching the editing language.",
+      "aiTitle": "Translate the rest with AI?",
+      "aiBody": "{count, plural, one {# text you wrote still has} other {# texts you wrote still have}} no translation. AI can translate {count, plural, one {it} other {them}} into your site's other language. Only empty translations are filled; nothing you wrote changes.",
+      "aiCost": "This uses {cost, plural, one {# AI credit} other {# AI credits}}. You have {credits}.",
+      "aiCostFree": "This doesn't use any credits.",
+      "aiNoCredits": "You're out of AI credits this month. Fill from templates only, or get more credits from the wallet.",
+      "aiReview": "Check the AI translations on your site before you publish.",
+      "aiRun": "Translate with AI",
+      "aiRunning": "Translating…",
+      "templatesOnly": "Templates only",
+      "aiDone": "{templates, plural, =0 {} one {Added # translation from Tallaby's templates.} other {Added # translations from Tallaby's templates.}} {ai, plural, =0 {AI translated nothing.} one {AI translated # text.} other {AI translated # texts.}}{left, plural, =0 {} one { # text is left for another run.} other { # texts are left for another run.}}",
+      "stopped": {
+        "aiDailyLimit": "You reached today's AI translation limit.",
+        "aiNoCredits": "You're out of AI credits."
+      }
     },
     "canvas": {
       "addToCart": "Add to cart",
@@ -187,7 +201,11 @@
       "previewUnavailable": "Preview on your store isn't available right now.",
       "nothingToPublish": "Nothing to publish: there are no unpublished changes.",
       "templateNotChosen": "Choose your store's template first (Website › Templates), then publish.",
-      "cancelled": "Publishing was cancelled."
+      "cancelled": "Publishing was cancelled.",
+      "aiNoCredits": "You're out of AI credits. Get more from the wallet, or fill from templates only.",
+      "aiDailyLimit": "You reached today's AI limit. Try again tomorrow.",
+      "aiUnavailable": "AI isn't available right now.",
+      "aiFailed": "AI couldn't translate right now. Try again in a moment."
     },
     "previewOnStore": "Preview on store",
     "managePages": "Manage pages…",

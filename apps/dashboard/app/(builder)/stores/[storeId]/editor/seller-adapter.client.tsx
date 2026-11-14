@@ -27,6 +27,7 @@ import {
   updatePage,
 } from "./server/editor.server";
 import { importStockPhoto, searchStockPhotos } from "./server/explore.server";
+import { translateSiteWithAi } from "./server/ai-translate.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 
 /** The seller's editor has everything. */
@@ -66,6 +67,7 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       refreshData: () => refreshEditorData(storeId),
       previewProduct: (productId, locale) => previewProduct(storeId, productId, locale),
       fillTranslations: () => fillTranslations(storeId),
+      translateWithAi: () => translateSiteWithAi(storeId),
       publish: async () => {
         const result = await publish(storeId);
         // A new seller may have just earned the welcome gift (0119).

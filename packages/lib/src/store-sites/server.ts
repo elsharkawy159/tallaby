@@ -47,7 +47,13 @@ import { updateTouchesLockedProductFields } from "./product-page-guard.lib";
 import { storeDraftKey } from "./preview-token";
 import { storeTemplateChosen } from "./template-choice.server";
 
-export { fillStoreSiteTranslations, type FillTranslationsResult } from "./site-locale.server";
+export {
+  applyStoreSiteAiTranslations,
+  collectStoreSiteUntranslated,
+  fillStoreSiteTranslations,
+  type FillTranslationsResult,
+  type StoreSiteUntranslated,
+} from "./site-locale.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;

@@ -11,14 +11,26 @@
  * - `fillStoreSiteTranslations`: builder › More › Fill missing translations.
  *   Fills, in the DRAFTS only, the language template text is missing, from the
  *   code templates (`fillPageTranslations`, free, never AI), and the missing
- *   language of page names. The seller reviews it and publishes.
+ *   language of page names. The seller reviews it and publishes. It also
+ *   counts what is still untranslated after that (`untranslated`), for the
+ *   AI step.
+ * - `collectStoreSiteUntranslated` / `applyStoreSiteAiTranslations`: the AI
+ *   step (the dashboard runs the model, credits and caps between them, outside
+ *   any transaction). Apply re-reads the drafts under the row lock and writes
+ *   only into values that are still empty, so an edit made in between wins.
  *
  * Both run in the caller's transaction or their own, with the store row
  * locked; callers check that the store is the session seller's.
  */
 import { and, asc, db, eq, isNull, sql, storePages, stores } from "@workspace/db";
 import {
+  applyPageAiTranslations,
+  applyPageNameAiTranslation,
+  applySectionAiTranslations,
   codeTranslationDictionary,
+  collectPageNameUntranslated,
+  collectPageUntranslated,
+  collectSectionUntranslated,
   fillPageName,
   fillPageTranslations,
   fillSectionTranslations,
@@ -30,10 +42,14 @@ import {
   type PageContent,
   type SectionInstance,
   type SiteLocale,
+  type UntranslatedCollection,
+  type UntranslatedText,
 } from "@workspace/store-sections";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
+
+type PageName = { ar?: string; en?: string };
 
 const asLocale = (value: string): SiteLocale => (value === "en" ? "en" : "ar");
 
@@ -99,7 +115,8 @@ export async function rebaseStoreDraftsLocale(tx: Tx, storeId: string, from: str
   return { pages, chrome: chromeChanged };
 }
 
-export type FillTranslationsResult = FillStats & { pages: number };
+/** `untranslated`: distinct texts still missing the other language that AI could translate. */
+export type FillTranslationsResult = FillStats & { pages: number; untranslated: number };
 
 /**
  * Builder › Fill missing translations for one of the seller's stores: the
@@ -115,7 +132,7 @@ export async function fillStoreSiteTranslations(
   const dictionary = codeTranslationDictionary();
   return q.transaction(async (tx) => {
     const [store] = await tx
-      .select({ status: stores.status, defaultLocale: stores.defaultLocale, header: stores.sharedHeader, footer: stores.sharedFooter })
+      .select({ status: stores.status, name: stores.name, defaultLocale: stores.defaultLocale, header: stores.sharedHeader, footer: stores.sharedFooter })
       .from(stores)
       .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)))
       .for("update");
@@ -125,6 +142,8 @@ export async function fillStoreSiteTranslations(
     const defaultLocale = asLocale(store.defaultLocale);
     const stats: FillStats = { filled: 0, repaired: 0, missing: 0 };
     let pages = 0;
+    // The drafts as they are after the fill, for the untranslated count.
+    const after: SitePart[] = [];
 
     const rows = await tx
       .select({ id: storePages.id, name: storePages.name, draftContent: storePages.draftContent })
@@ -137,6 +156,7 @@ export async function fillStoreSiteTranslations(
       // Filled text comes from the templates, so it fits; a page that would not validate is left as it was.
       const contentChanged = Boolean(content && filled && filled !== content && validatePageContent(filled).success);
       const name = fillPageName((row.name ?? {}) as { ar?: string; en?: string }, dictionary);
+      after.push({ content: contentChanged ? filled : content, name: name ?? ((row.name ?? {}) as PageName) });
       if (!contentChanged && !name) continue;
       await tx
         .update(storePages)
@@ -164,6 +184,128 @@ export async function fillStoreSiteTranslations(
         })
         .where(eq(stores.id, storeId));
     }
-    return { success: true as const, data: { ...stats, pages } };
+    const untranslated = collectSiteUntranslated(nextHeader, after, nextFooter, { defaultLocale, storeNames: [store.name] }).size;
+    return { success: true as const, data: { ...stats, pages, untranslated } };
+  });
+}
+
+type SitePart = { content: PageContent | null; name: PageName };
+
+/** Every draft text AI could translate, deduped, in site order: header, pages (by order), footer. */
+function collectSiteUntranslated(
+  header: SectionInstance | null,
+  pages: readonly SitePart[],
+  footer: SectionInstance | null,
+  ctx: { defaultLocale: SiteLocale; storeNames: string[] },
+): UntranslatedCollection {
+  const into: UntranslatedCollection = new Map();
+  if (header) collectSectionUntranslated(header, ctx, into);
+  for (const page of pages) {
+    collectPageNameUntranslated(page.name, ctx, into);
+    if (page.content) collectPageUntranslated(page.content, ctx, into);
+  }
+  if (footer) collectSectionUntranslated(footer, ctx, into);
+  return into;
+}
+
+export type StoreSiteUntranslated = { defaultLocale: SiteLocale; storeName: string; texts: UntranslatedText[] };
+
+/**
+ * The AI step's input: every draft text of one of the seller's stores that is
+ * still missing the other language (the rules: `ai-translate.ts` in
+ * @workspace/store-sections). Read-only.
+ */
+export async function collectStoreSiteUntranslated(
+  sellerId: string,
+  storeId: string,
+  q: Queryable = db,
+): Promise<{ success: true; data: StoreSiteUntranslated } | { success: false; error: "not_found" | "store_read_only" }> {
+  const [store] = await q
+    .select({ status: stores.status, name: stores.name, defaultLocale: stores.defaultLocale, header: stores.sharedHeader, footer: stores.sharedFooter })
+    .from(stores)
+    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)));
+  if (!store) return { success: false, error: "not_found" };
+  if (store.status !== "active") return { success: false, error: "store_read_only" };
+  const defaultLocale = asLocale(store.defaultLocale);
+  const rows = await q
+    .select({ name: storePages.name, draftContent: storePages.draftContent })
+    .from(storePages)
+    .where(eq(storePages.storeId, storeId))
+    .orderBy(asc(storePages.orderIndex));
+  const pages = rows.map((row) => ({ content: storedContent(row.draftContent), name: (row.name ?? {}) as PageName }));
+  const texts = collectSiteUntranslated(storedSection(store.header), pages, storedSection(store.footer), { defaultLocale, storeNames: [store.name] });
+  return { success: true, data: { defaultLocale, storeName: store.name, texts: [...texts.values()] } };
+}
+
+/**
+ * Writes AI translations (trimmed source → translation) into the drafts of
+ * one of the seller's stores, only where the other language is still empty,
+ * with the store row locked, bumping the versions it changes so an open
+ * editor reloads. `locale_changed` when the store's default language is no
+ * longer `from` (the translations would land on the wrong side).
+ */
+export async function applyStoreSiteAiTranslations(
+  sellerId: string,
+  storeId: string,
+  from: SiteLocale,
+  translations: ReadonlyMap<string, string>,
+  q: Queryable = db,
+): Promise<{ success: true; data: { applied: number; pages: number } } | { success: false; error: "not_found" | "store_read_only" | "locale_changed" }> {
+  return q.transaction(async (tx) => {
+    const [store] = await tx
+      .select({ status: stores.status, name: stores.name, defaultLocale: stores.defaultLocale, header: stores.sharedHeader, footer: stores.sharedFooter })
+      .from(stores)
+      .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), isNull(stores.deletedAt)))
+      .for("update");
+    if (!store) return { success: false as const, error: "not_found" as const };
+    if (store.status !== "active") return { success: false as const, error: "store_read_only" as const };
+    if (asLocale(store.defaultLocale) !== from) return { success: false as const, error: "locale_changed" as const };
+    if (!translations.size) return { success: true as const, data: { applied: 0, pages: 0 } };
+
+    const ctx = { defaultLocale: from, storeNames: [store.name], translations };
+    let applied = 0;
+    let pages = 0;
+    const rows = await tx
+      .select({ id: storePages.id, name: storePages.name, draftContent: storePages.draftContent })
+      .from(storePages)
+      .where(eq(storePages.storeId, storeId));
+    for (const row of rows) {
+      const content = storedContent(row.draftContent);
+      const result = content ? applyPageAiTranslations(content, ctx) : null;
+      // Every value was checked against its field's limit; a page that would not validate is left as it was.
+      const contentChanged = Boolean(content && result && result.content !== content && validatePageContent(result.content).success);
+      const name = applyPageNameAiTranslation((row.name ?? {}) as PageName, ctx);
+      if (!contentChanged && !name) continue;
+      applied += (contentChanged ? result!.applied : 0) + (name ? 1 : 0);
+      await tx
+        .update(storePages)
+        .set({
+          ...(contentChanged && { draftContent: result!.content, draftVersion: sql`${storePages.draftVersion} + 1` }),
+          ...(name && { name }),
+          updatedAt: sql`now()`,
+        })
+        .where(and(eq(storePages.id, row.id), eq(storePages.storeId, storeId)));
+      pages += 1;
+    }
+
+    const header = storedSection(store.header);
+    const footer = storedSection(store.footer);
+    const nextHeader = header && applySectionAiTranslations(header, ctx);
+    const nextFooter = footer && applySectionAiTranslations(footer, ctx);
+    const headerChanged = Boolean(nextHeader && nextHeader.instance !== header);
+    const footerChanged = Boolean(nextFooter && nextFooter.instance !== footer);
+    if (headerChanged || footerChanged) {
+      applied += (headerChanged ? nextHeader!.applied : 0) + (footerChanged ? nextFooter!.applied : 0);
+      await tx
+        .update(stores)
+        .set({
+          ...(headerChanged && { sharedHeader: nextHeader!.instance }),
+          ...(footerChanged && { sharedFooter: nextFooter!.instance }),
+          chromeVersion: sql`${stores.chromeVersion} + 1`,
+          updatedAt: sql`now()`,
+        })
+        .where(eq(stores.id, storeId));
+    }
+    return { success: true as const, data: { applied, pages } };
   });
 }

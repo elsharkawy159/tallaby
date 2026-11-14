@@ -459,6 +459,10 @@
       "types": "./src/store-sites/preview-product.server.ts",
       "default": "./src/store-sites/preview-product.server.ts"
     },
+    "./store-sites/ai-translate": {
+      "types": "./src/store-sites/site-ai-translate.lib.ts",
+      "default": "./src/store-sites/site-ai-translate.lib.ts"
+    },
     "./store-sites/preview": {
       "types": "./src/store-sites/preview-token.ts",
       "default": "./src/store-sites/preview-token.ts"

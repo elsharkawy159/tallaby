@@ -18,3 +18,4 @@ export * from "./library-ref";
 export * from "./library-fields";
 export { codeLibraryDesign, codeLibraryTree, designRef, hasPatchRefs, storedTemplateRefConfig, templateRefConfig, toLibraryRefs, type ToRefsOptions } from "./ref-config";
 export * from "./fill-translations";
+export * from "./ai-translate";

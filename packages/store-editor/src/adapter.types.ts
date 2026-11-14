@@ -1,9 +1,11 @@
 import type {
+  AiTranslateSummary,
   EditorCatalogSnapshot,
   EditorForm,
   EditorFormSummary,
   EditorResult,
   ExploreResult,
+  FillTranslationsSummary,
   FormsActionResult,
   MediaAssetView,
   MediaFolderView,
@@ -84,7 +86,13 @@ export type EditorAdapter = {
    * in the language it is missing (from the code templates) and the editor
    * reloads. Hosts without store drafts leave it out.
    */
-  fillTranslations?(): Promise<EditorResult<{ filled: number; repaired: number; missing: number; pages: number }>>;
+  fillTranslations?(): Promise<EditorResult<FillTranslationsSummary>>;
+  /**
+   * The AI step after it, offered when `fillTranslations` reports `untranslated`
+   * texts and `ai`: the host translates them with AI, charging the seller's AI
+   * credits, and writes them into the empty language of the drafts only.
+   */
+  translateWithAi?(): Promise<EditorResult<AiTranslateSummary>>;
 
   // Optional groups; present iff the matching capability is true.
   pages?: {

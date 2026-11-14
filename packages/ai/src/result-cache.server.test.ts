@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { clearResultCache, readCachedResult, resultCacheKey, writeCachedResult } from "./result-cache.server"
+import { clearResultCache, createResultCache, readCachedResult, resultCacheKey, writeCachedResult } from "./result-cache.server"
 
 describe("result cache", () => {
   beforeEach(() => clearResultCache())
@@ -20,5 +20,18 @@ describe("result cache", () => {
     for (let i = 0; i < 201; i++) writeCachedResult(`k${i}`, i, 60_000, 0)
     expect(readCachedResult("k0", 1)).toBeUndefined()
     expect(readCachedResult("k200", 1)).toBe(200)
+  })
+})
+
+describe("createResultCache", () => {
+  it("is separate from the shared cache and keeps its own limit", () => {
+    const own = createResultCache(2)
+    own.write("a", 1, 60_000, 0)
+    own.write("b", 2, 60_000, 0)
+    own.write("c", 3, 60_000, 0)
+    expect(own.read("a", 1)).toBeUndefined()
+    expect(own.read("c", 1)).toBe(3)
+    expect(readCachedResult("c", 1)).toBeUndefined()
+    expect(own.read("c", 60_000)).toBeUndefined()
   })
 })
