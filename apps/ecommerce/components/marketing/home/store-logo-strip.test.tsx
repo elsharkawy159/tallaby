@@ -39,7 +39,9 @@ describe("StoreLogoStrip", () => {
     expect(html).toContain('href="https://alpha.tallaby.com"');
     expect(html).toContain('alt="Alpha"');
     expect(html).toContain('loading="lazy"');
-    expect(html).not.toContain("target=");
+    // Store logos open in a new tab (owner, 2026-11-15); "all stores" stays in this tab.
+    expect(html.match(/target="_blank" rel="noopener noreferrer"/g)).toHaveLength(8);
+    expect(html).not.toMatch(/href="\/stores"[^>]*target=/);
   });
 
   it("is a marquee with a hidden, untabbable second copy that reduced motion removes", () => {

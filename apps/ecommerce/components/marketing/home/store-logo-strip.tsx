@@ -50,6 +50,9 @@ export function StoreLogoStrip({ stores, labels, rtl }: { stores: readonly Direc
                 <li key={store.url}>
                   <a
                     href={store.url}
+                    // Opens the store in a new tab so tallaby.com stays open (owner, 2026-11-15).
+                    target="_blank"
+                    rel="noopener noreferrer"
                     tabIndex={copy === 1 ? -1 : undefined}
                     title={store.name}
                     className="group flex h-[76px] w-[156px] items-center justify-center rounded-2xl border border-line bg-white px-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
