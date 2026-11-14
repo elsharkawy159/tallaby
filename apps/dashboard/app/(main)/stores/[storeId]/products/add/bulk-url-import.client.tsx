@@ -39,6 +39,7 @@ import {
   applyBulkOptions,
   checkBulkValues,
   completeBulkValues,
+  isBulkListDone,
   type BulkApplyContext,
 } from "./bulk-apply.lib";
 import { BulkApplyPanel, type BulkApplyChoice } from "./bulk-apply-panel.client";
@@ -57,6 +58,8 @@ interface BulkUrlImportProps {
   categories: CategoryOption[]
   sellerPricing: SellerPricingSettings
   onExit: () => void
+  /** Every row is saved: the page goes back to where the links came from. Without it the list stays with "View products". */
+  onAllSaved?: (count: number) => void
 }
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
@@ -178,6 +181,7 @@ export function BulkUrlImport ({
   categories,
   sellerPricing,
   onExit,
+  onAllSaved,
 }: BulkUrlImportProps) {
   const isSidebarCollapsed = useSidebarStore((state) => state.isCollapsed);
   const t = useTranslations("productForm.bulk");
@@ -393,6 +397,20 @@ export function BulkUrlImport ({
       setSaveProgress({ done: index + 1, total: good.length });
     }
     setSaveProgress(null);
+
+    const total = items.length;
+    const done =
+      onAllSaved &&
+      isBulkListDone({ total, savedBefore: savedCount, needFixes: bad.length, attempted: good.length, inserted });
+    if (done) {
+      // One toast for the whole list; the page goes back to an empty link box.
+      toast.success(t("allSaved", { count: total }), {
+        action: { label: t("viewProducts"), onClick: () => window.location.assign(productsHref()) },
+      });
+      if (warnings > 0) toast.warning(t("savedWithWarnings", { count: warnings }));
+      onAllSaved(total);
+      return;
+    }
 
     if (inserted > 0) toast.success(t("created", { inserted, total: good.length }));
     if (inserted < good.length) toast.error(t("createFailedSome", { count: good.length - inserted }));

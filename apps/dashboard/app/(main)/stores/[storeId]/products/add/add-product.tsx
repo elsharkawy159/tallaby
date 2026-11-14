@@ -419,6 +419,16 @@ function AddProductForm({
         sellerPricing={sellerPricing}
         // Back to where the links came from; the link screen shows them again.
         onExit={() => setMode("single")}
+        // From the Product URL method: once every row is saved, back to an empty link box for the next batch.
+        // From the import dialog it stays on the list with "View products".
+        onAllSaved={
+          urlStageOpen
+            ? () => {
+                setBulkUrls([]);
+                setMode("single");
+              }
+            : undefined
+        }
       />
     );
   }

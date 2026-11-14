@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/actions/brands", () => ({ searchBrands: async () => ({ success: true, data: [] }) }));
 
-import { applyBulkOptions, checkBulkValues, completeBulkValues, type BulkApplyContext } from "./bulk-apply.lib";
+import { applyBulkOptions, checkBulkValues, completeBulkValues, isBulkListDone, type BulkApplyContext } from "./bulk-apply.lib";
 import { buildFormValuesFromImport } from "./build-form-values-from-import.lib";
 import { buildParsedImportFromScrape } from "./parse-product-import.lib";
 import { indexTallabyCategories } from "./category-search.lib";
@@ -147,5 +147,33 @@ describe("applyBulkOptions", () => {
     expect(applied.localized).toBe(values.localized);
     const withVariants = { ...values, variants: [{ title: "Red", sku: "R", price: 10, stock: 3 }] } as AddProductFormData;
     expect(applyBulkOptions(withVariants, undefined, { quantity: 9 }, ctx).quantity).toBe(values.quantity);
+  });
+});
+
+describe("isBulkListDone", () => {
+  const run = { total: 3, savedBefore: 0, needFixes: 0, attempted: 3, inserted: 3 };
+
+  it("is done when every row is saved in one run", () => {
+    expect(isBulkListDone(run)).toBe(true);
+  });
+
+  it("counts rows saved by an earlier run", () => {
+    expect(isBulkListDone({ ...run, savedBefore: 2, attempted: 1, inserted: 1 })).toBe(true);
+  });
+
+  it("is not done when a save failed", () => {
+    expect(isBulkListDone({ ...run, inserted: 2 })).toBe(false);
+  });
+
+  it("is not done when a row needs fixes", () => {
+    expect(isBulkListDone({ ...run, needFixes: 1, attempted: 2, inserted: 2 })).toBe(false);
+  });
+
+  it("is not done while other rows are not saved (failed fetches)", () => {
+    expect(isBulkListDone({ ...run, total: 4 })).toBe(false);
+  });
+
+  it("is not done when nothing was saved", () => {
+    expect(isBulkListDone({ total: 0, savedBefore: 0, needFixes: 0, attempted: 0, inserted: 0 })).toBe(false);
   });
 });

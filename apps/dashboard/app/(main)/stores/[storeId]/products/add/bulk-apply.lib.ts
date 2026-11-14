@@ -164,3 +164,28 @@ export function checkBulkValues (values: AddProductFormData): BulkCheck {
     locale: locales.size === 1 && locales.has("en") ? "en" : undefined,
   };
 }
+
+/** One Save all run, counted as it went (React state is not updated inside the loop). */
+export interface BulkSaveRun {
+  /** Rows in the list. */
+  total: number
+  /** Rows already saved before this run. */
+  savedBefore: number
+  /** Rows that failed the checks in this run. */
+  needFixes: number
+  /** Rows this run tried to save. */
+  attempted: number
+  /** Rows this run saved. */
+  inserted: number
+}
+
+/** True when the run left nothing to do: no row needs fixes, every save worked and every row of the list is saved. */
+export function isBulkListDone (run: BulkSaveRun): boolean {
+  return (
+    run.total > 0 &&
+    run.needFixes === 0 &&
+    run.attempted > 0 &&
+    run.inserted === run.attempted &&
+    run.savedBefore + run.inserted === run.total
+  );
+}
