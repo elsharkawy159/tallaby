@@ -1,9 +1,9 @@
 import { storeLocalePrefix, storeUrl } from "@workspace/lib/storefront";
 import { JsonLd } from "@/components/seo/json-ld";
-import { generateBreadcrumbStructuredData, generateProductStructuredData } from "@/lib/structured-data";
+import { generateBreadcrumbStructuredData, generateStoreProductStructuredData } from "@/lib/structured-data";
 import { offerShippingDetails } from "@/lib/store-seo/offer-shipping.lib";
 import { storeShippingForJsonLd } from "@/lib/store-seo/offer-shipping.server";
-import { productBreadcrumb, productJsonLdInput, productOfferPrice } from "@/lib/store-seo/product-jsonld.lib";
+import { productBreadcrumb, productJsonLdInput } from "@/lib/store-seo/product-jsonld.lib";
 import { storeCategoryOf } from "@/lib/store-site/product-detail.lib";
 import { getStorefrontCategories, type Storefront } from "@/lib/storefront.server";
 import type { ProductLocale } from "@/lib/product-translations";
@@ -46,19 +46,21 @@ export async function ProductStructuredData({ product, locale, homeLabel, store 
   const parent = storeCategory?.parent;
   const parentName = parent ? (locale === "ar" ? parent.nameAr || parent.name : parent.name || parent.nameAr) : null;
 
-  const shippingDetails = shipping
-    ? offerShippingDetails({
-        settings: shipping.settings,
-        zones: shipping.zones,
-        currency: store.currency,
-        price: productOfferPrice(product).final,
-        sellerFreeDelivery: product.seller?.freeDelivery === true,
-        digital: product.productType === "digital",
-      })
-    : [];
+  // What checkout charges one unit at this price (a variant's price can cross a free-over).
+  const shippingFor = (price: number) =>
+    shipping
+      ? offerShippingDetails({
+          settings: shipping.settings,
+          zones: shipping.zones,
+          currency: store.currency,
+          price,
+          sellerFreeDelivery: product.seller?.freeDelivery === true,
+          digital: product.productType === "digital",
+        })
+      : [];
 
-  const structuredData = generateProductStructuredData(
-    productJsonLdInput(product, locale, { categoryName, shippingDetails }),
+  const structuredData = generateStoreProductStructuredData(
+    productJsonLdInput(product, locale, { categoryName, shippingFor }),
     { home, sellerName: store.displayName, currency: store.currency },
   );
 

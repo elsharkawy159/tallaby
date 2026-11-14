@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { generateProductStructuredData, type ProductJsonLdInput } from "./structured-data";
+import {
+  generateProductGroupStructuredData,
+  generateProductStructuredData,
+  generateStoreProductStructuredData,
+  type ProductJsonLdInput,
+} from "./structured-data";
 
 const product: ProductJsonLdInput = {
   id: "1",
@@ -93,5 +98,63 @@ describe("store product structured data", () => {
     );
     const shippingDetails = [{ "@type": "OfferShippingDetails" }];
     expect(generateProductStructuredData({ ...product, shippingDetails }, store).offers.shippingDetails).toBe(shippingDetails);
+  });
+});
+
+describe("store product with variants at different prices", () => {
+  const grouped: ProductJsonLdInput = {
+    ...product,
+    images: ["https://img/bag.jpg"],
+    reviews: [{ rating: 4, source: "customer", authorName: "Mona" }],
+    variants: [
+      { id: "v1", label: "Red / S", sku: "BAG-R-S", images: ["https://img/red.jpg", "https://img/bag.jpg"], price: { final: 100, list: 120 }, inStock: true, color: "Red", size: "S", shippingDetails: [{ "@type": "OfferShippingDetails" }] },
+      { id: "v2", label: "Blue / L", images: [], price: { final: 140 }, inStock: false, color: "Blue", size: "L" },
+    ],
+  };
+
+  it("is a ProductGroup with one Product and Offer per variant, linked as the feed links them", () => {
+    const data = generateStoreProductStructuredData(grouped, store) as ReturnType<typeof generateProductGroupStructuredData>;
+    expect(data).toMatchObject({
+      "@type": "ProductGroup",
+      name: "Bag",
+      url: "https://sara.tallaby.com/en/products/bag",
+      productGroupID: "1",
+      variesBy: ["https://schema.org/color", "https://schema.org/size"],
+      aggregateRating: { ratingValue: 4, reviewCount: 1 },
+    });
+    expect(data).not.toHaveProperty("offers");
+    const [red, blue] = data.hasVariant;
+    expect(red).toMatchObject({
+      "@type": "Product",
+      name: "Bag - Red / S",
+      sku: "BAG-R-S",
+      color: "Red",
+      size: "S",
+      image: ["https://img/red.jpg", "https://img/bag.jpg"],
+      url: "https://sara.tallaby.com/en/products/bag?variant=v1",
+      offers: {
+        "@type": "Offer",
+        price: 100,
+        priceCurrency: "EGP",
+        priceSpecification: { priceType: "https://schema.org/StrikethroughPrice", price: 120 },
+        availability: "https://schema.org/InStock",
+        url: "https://sara.tallaby.com/en/products/bag?variant=v1",
+        shippingDetails: [{ "@type": "OfferShippingDetails" }],
+        seller: { "@type": "Organization", name: "Sara" },
+      },
+    });
+    expect(blue?.offers).toMatchObject({ price: 140, availability: "https://schema.org/OutOfStock" });
+    expect(blue).not.toHaveProperty("sku");
+    expect(blue).not.toHaveProperty("image");
+    expect(blue?.offers).not.toHaveProperty("shippingDetails");
+  });
+
+  it("keeps one Offer on a Product without variants, and no variesBy for options that aren't colour or size", () => {
+    expect(generateStoreProductStructuredData(product, store)).toMatchObject({ "@type": "Product", offers: { "@type": "Offer", price: 100 } });
+    const plain = generateProductGroupStructuredData(
+      { ...grouped, variants: grouped.variants!.map((v) => ({ ...v, color: null, size: null })) },
+      store,
+    );
+    expect(plain).not.toHaveProperty("variesBy");
   });
 });

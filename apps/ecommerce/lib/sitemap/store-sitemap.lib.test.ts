@@ -72,3 +72,51 @@ describe("buildStoreSitemapEntries on an English-default store (owner, 2026-11-1
     expect(entries.every((e) => Object.keys(e.alternates).length === 0)).toBe(true);
   });
 });
+
+describe("buildStoreSitemapEntries lastmod and images", () => {
+  const product = (over: Record<string, unknown>) => ({
+    productId: "p1",
+    locale: "ar",
+    slug: "mug",
+    title: "Mug",
+    updatedAt: "2026-11-01T10:00:00Z",
+    createdAt: "2026-01-01T00:00:00.000000Z",
+    ...over,
+  });
+  const base = {
+    baseUrl: "https://shop.com",
+    indexable: true,
+    pages: [{ slug: "home", isHome: true }, { slug: "about", isHome: false }],
+    products: [product({}), product({ productId: "p2", slug: "cup", updatedAt: "2026-11-05T08:00:00Z", images: ["https://img/cup-1.jpg", "https://img/cup-2.jpg"] })],
+    catalogPage: true,
+    categoryKeys: ["mugs", "cups"],
+    categoryLastModified: { mugs: "2026-11-01T10:00:00Z", cups: null },
+    locales: ["ar"] as const,
+  };
+  const byUrl = (input: Parameters<typeof buildStoreSitemapEntries>[0]) =>
+    new Map(buildStoreSitemapEntries(input).map((entry) => [entry.url, entry]));
+
+  it("dates the home, the catalog, its categories and builder pages", () => {
+    const entries = byUrl({ ...base, publishedAt: "2026-11-03T12:00:00Z" });
+    // The home: the later of the publish and the newest product.
+    expect(entries.get("https://shop.com")?.lastModified).toBe("2026-11-05T08:00:00Z");
+    expect(entries.get("https://shop.com/products")?.lastModified).toBe("2026-11-05T08:00:00Z");
+    expect(entries.get("https://shop.com/products?category=mugs")?.lastModified).toBe("2026-11-01T10:00:00Z");
+    expect(entries.get("https://shop.com/products?category=cups")?.lastModified).toBeNull();
+    expect(entries.get("https://shop.com/about")?.lastModified).toBe("2026-11-03T12:00:00Z");
+  });
+
+  it("dates the home by its site when it is newer, and leaves builder pages undated without a publish time", () => {
+    const entries = byUrl({ ...base, publishedAt: "2026-11-10T00:00:00Z" });
+    expect(entries.get("https://shop.com")?.lastModified).toBe("2026-11-10T00:00:00Z");
+    expect(byUrl(base).get("https://shop.com/about")?.lastModified).toBeNull();
+    expect(byUrl({ ...base, products: [] }).get("https://shop.com")?.lastModified).toBeNull();
+  });
+
+  it("lists a product's photos on its URL only", () => {
+    const entries = byUrl(base);
+    expect(entries.get("https://shop.com/products/cup")?.images).toEqual(["https://img/cup-1.jpg", "https://img/cup-2.jpg"]);
+    expect(entries.get("https://shop.com/products/mug")).not.toHaveProperty("images");
+    expect(entries.get("https://shop.com")).not.toHaveProperty("images");
+  });
+});

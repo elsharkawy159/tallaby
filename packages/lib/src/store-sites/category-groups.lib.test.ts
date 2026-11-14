@@ -138,3 +138,21 @@ describe("shapeStoreCategoryGroups", () => {
     expect(groups[1]!.parentKey).toBeNull();
   });
 });
+
+describe("shapeStoreCategoryGroups lastProductUpdatedAt", () => {
+  it("keeps each category's latest product time and rolls the latest up to a main category", () => {
+    const rows = [
+      row("main", 0, ["p1"], { lastProductUpdatedAt: "2026-11-01T00:00:00Z" }),
+      row("sub", 1, ["p2"], { parentId: "main", parentName: "main", lastProductUpdatedAt: "2026-11-09T00:00:00Z" }),
+      row("other", 2, ["p3"], { lastProductUpdatedAt: "2026-10-01T00:00:00Z" }),
+    ];
+    const groups = shapeStoreCategoryGroups(rows);
+    const at = Object.fromEntries(groups.map((g) => [g.key, g.lastProductUpdatedAt]));
+    expect(at).toEqual({ main: "2026-11-09T00:00:00Z", sub: "2026-11-09T00:00:00Z", other: "2026-10-01T00:00:00Z" });
+  });
+
+  it("gives a main category with no products of its own its sub-categories' latest time", () => {
+    const rows = [row("sub", 1, ["p2"], { parentId: "main", parentName: "Main", lastProductUpdatedAt: "2026-11-09T00:00:00Z" })];
+    expect(shapeStoreCategoryGroups(rows).find((g) => g.key === "main")?.lastProductUpdatedAt).toBe("2026-11-09T00:00:00Z");
+  });
+});

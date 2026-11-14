@@ -23,7 +23,7 @@ vi.mock("@workspace/cache", async (original) => {
       (cfg: { name: string; tags: (...args: unknown[]) => readonly string[] }) =>
       async (...args: unknown[]) => {
         recorded.queries.push({ name: cfg.name, args, tags: [...cfg.tags(...args)] });
-        if (cfg.name === "store-sitemap:products:v1") return recorded.pages.shift() ?? { rows: [], next: null };
+        if (cfg.name === "store-sitemap:products:v2") return recorded.pages.shift() ?? { rows: [], next: null };
         return [];
       },
   };

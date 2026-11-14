@@ -51,7 +51,7 @@ describe("offerShippingDetails", () => {
     ];
     const [detail] = offerShippingDetails({ ...base, zones });
     expect(detail?.shippingRate.value).toBe(70);
-    expect(detail?.deliveryTime.transitTime).toMatchObject({ minValue: 2, maxValue: 6 });
+    expect(detail?.deliveryTime?.transitTime).toMatchObject({ minValue: 2, maxValue: 6 });
   });
 
   it("lists nothing when some region has no zone (Tallaby's rates or refused there)", () => {
@@ -73,5 +73,30 @@ describe("offerShippingDetails", () => {
     expect(details.map((d) => [d.shippingDestination.addressCountry, d.shippingRate.value, d.shippingRate.currency])).toEqual([["SA", 25, "SAR"]]);
     expect(offerShippingDetails({ ...base, digital: true, zones })).toEqual([]);
     expect(offerShippingDetails({ ...base, settings: { ...settings, method: "tallaby" }, zones })).toEqual([]);
+  });
+
+  it("lists Egypt free with no delivery days when Tallaby's rates bill it and the seller delivers free", () => {
+    const free = { ...base, sellerFreeDelivery: true };
+    const egyptFree = [
+      {
+        "@type": "OfferShippingDetails",
+        shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "EGP" },
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: "EG" },
+      },
+    ];
+    // No zones: every Egyptian address bills Tallaby's rates, waived by the seller.
+    expect(offerShippingDetails(free)).toEqual(egyptFree);
+    expect(offerShippingDetails({ ...free, settings: { ...settings, method: "tallaby" } })).toEqual(egyptFree);
+    // A zone for part of Egypt, Tallaby's rates for the rest: one price (0), but the rest has no delivery days.
+    expect(offerShippingDetails({ ...free, zones: [zone("cairo", ["EG/CAIRO"], 50)] })).toEqual(egyptFree);
+    // The rest refused: Egypt is not wholly covered.
+    expect(offerShippingDetails({ ...free, settings: { ...settings, otherPlaces: "refuse" }, zones: [zone("cairo", ["EG/CAIRO"], 50)] })).toEqual([]);
+  });
+
+  it("lists nothing at Tallaby's rates without seller free delivery (per governorate and kilo), abroad or for digital goods", () => {
+    expect(offerShippingDetails(base)).toEqual([]);
+    expect(offerShippingDetails({ ...base, settings: { ...settings, method: "tallaby" } })).toEqual([]);
+    expect(offerShippingDetails({ ...base, sellerFreeDelivery: true, currency: "SAR" })).toEqual([]);
+    expect(offerShippingDetails({ ...base, sellerFreeDelivery: true, digital: true })).toEqual([]);
   });
 });

@@ -370,6 +370,8 @@ export type StorefrontCategory = {
   parentKey: string | null;
   /** Its sub-categories' keys (with products), in tree order; empty for the rest. A main category's count includes theirs. */
   childKeys: string[];
+  /** Latest `updated_at` of its products (UTC, "YYYY-MM-DDTHH:MM:SSZ"): its sitemap lastmod. */
+  lastProductUpdatedAt?: string | null;
   /**
    * Public URL of the category photo: the seller's own category image when
    * they added one, else the first image of their best-rated product in it.
@@ -463,9 +465,9 @@ export async function getStorefrontCategories(sellerId: string, storeId: string)
         return [] as StorefrontCategory[];
       }
     },
-    // v4: main and sub-categories (F-95: parentKey, childKeys, rolled-up counts). v3: always per store and catalog
-    // mode (F-87c). v2: seller categories (storeCategoryGroups); never read a cached root-only list.
-    [`storefront-categories-v4-${sellerId}-${storeId}-${splitKey(catalogSplit)}`],
+    // v5: lastProductUpdatedAt (store sitemap lastmod). v4: main and sub-categories (F-95: parentKey, childKeys, rolled-up
+    // counts). v3: always per store and catalog mode (F-87c). v2: seller categories (storeCategoryGroups); never read a cached root-only list.
+    [`storefront-categories-v5-${sellerId}-${storeId}-${splitKey(catalogSplit)}`],
     {
       tags: [...storefrontCatalogTags(sellerId, storeId), categoryTags.all()],
       revalidate: 3600,

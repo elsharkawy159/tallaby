@@ -78,3 +78,51 @@ describe("productBreadcrumb", () => {
     expect(productBreadcrumb(base).map((c) => c.name)).toEqual(["Home", "Mug"]);
   });
 });
+
+describe("productJsonLdInput variants", () => {
+  const variant = (id: string, final: number, over: Record<string, unknown> = {}) => ({
+    id,
+    title: id,
+    price: { final },
+    stock: 0,
+    option1: "Color: Red",
+    option2: `Size: ${id.toUpperCase()}`,
+    option3: null,
+    images: [`${id}.jpg`],
+    sku: `SKU-${id}`,
+    isDefault: id === "s",
+    position: 1,
+    ...over,
+  });
+
+  it("lists variants at different prices with their own price, stock, colour, size and shipping", () => {
+    const shippingFor = (price: number) => [{ "@type": "OfferShippingDetails", price }];
+    const input = productJsonLdInput(
+      product({ price: { final: 100 }, productVariants: [variant("s", 100, { stock: 2 }), variant("l", 150)] }),
+      "en",
+      { shippingFor },
+    );
+    expect(input.variants).toEqual([
+      expect.objectContaining({ id: "s", label: "Red / S", sku: "SKU-s", color: "Red", size: "S", inStock: true, price: expect.objectContaining({ final: 100 }), images: ["s.jpg", "a.jpg"], shippingDetails: [{ "@type": "OfferShippingDetails", price: 100 }] }),
+      expect.objectContaining({ id: "l", size: "L", inStock: false, price: expect.objectContaining({ final: 150 }), shippingDetails: [{ "@type": "OfferShippingDetails", price: 150 }] }),
+    ]);
+    // The product-level price stays the default variant's.
+    expect(input.price.final).toBe(100);
+    expect(input.shippingDetails).toEqual([{ "@type": "OfferShippingDetails", price: 100 }]);
+  });
+
+  it("counts untracked stock as in stock on every variant", () => {
+    const input = productJsonLdInput(product({ trackStock: false, productVariants: [variant("s", 100), variant("l", 150)] }), "en");
+    expect(input.variants?.every((v) => v.inStock)).toBe(true);
+  });
+
+  it("keeps one Offer for one variant or variants at one price", () => {
+    expect(productJsonLdInput(product({ productVariants: [variant("s", 100)] }), "en")).not.toHaveProperty("variants");
+    expect(productJsonLdInput(product({ productVariants: [variant("s", 100), variant("l", 100)] }), "en")).not.toHaveProperty("variants");
+  });
+
+  it("marks every variant out of stock on a product that isn't active", () => {
+    const input = productJsonLdInput(product({ status: "draft", productVariants: [variant("s", 100, { stock: 5 }), variant("l", 150, { stock: 5 })] }), "en");
+    expect(input.variants?.some((v) => v.inStock)).toBe(false);
+  });
+});

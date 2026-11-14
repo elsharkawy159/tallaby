@@ -1,4 +1,4 @@
-import { childrenOf } from "@workspace/lib/places";
+import { childrenOf, EGYPT } from "@workspace/lib/places";
 import { zoneCountries } from "@workspace/lib/shipping/store-quote";
 import { findZoneForPlace, quoteZone, type StoreShippingSettings, type ZoneForQuote } from "@workspace/lib/shipping/store-zones";
 
@@ -20,13 +20,20 @@ import { findZoneForPlace, quoteZone, type StoreShippingSettings, type ZoneForQu
  * The price is what checkout charges one unit (`resolveStorefrontShipping`):
  * the zone's flat price, free at or over its own free-over, else the store-wide
  * free delivery; free everywhere when the seller has free delivery on.
+ *
+ * Egyptian places billed at Tallaby's rates (a store with no zones, places no
+ * zone covers with `otherPlaces: "tallaby_rates"`, or Tallaby delivery) cost
+ * per governorate and per kilo, so they have one price only when the seller
+ * has free delivery on (`sellers.free_delivery` waives the whole shipment at
+ * checkout): Egypt is then listed free. Those places have no delivery days,
+ * so such an entry has no `deliveryTime` rather than made-up days.
  */
 
 export type OfferShippingDetails = {
   "@type": "OfferShippingDetails";
   shippingRate: { "@type": "MonetaryAmount"; value: number; currency: string };
   shippingDestination: { "@type": "DefinedRegion"; addressCountry: string };
-  deliveryTime: {
+  deliveryTime?: {
     "@type": "ShippingDeliveryTime";
     handlingTime: { "@type": "QuantitativeValue"; minValue: number; maxValue: number; unitCode: "DAY" };
     transitTime: { "@type": "QuantitativeValue"; minValue: number; maxValue: number; unitCode: "DAY" };
@@ -51,9 +58,18 @@ const day = (minValue: number, maxValue: number) =>
 
 export function offerShippingDetails(input: OfferShippingInput): OfferShippingDetails[] {
   const { settings, currency, price, sellerFreeDelivery, digital } = input;
-  if (digital || settings.method !== "own") return [];
+  if (digital) return [];
+  // Tallaby's rates are for Egypt in EGP; only the seller's free delivery gives them one price (0).
+  const freeAtTallabyRates = sellerFreeDelivery && currency === "EGP";
+  const freeEgypt = (): OfferShippingDetails => ({
+    "@type": "OfferShippingDetails",
+    shippingRate: { "@type": "MonetaryAmount", value: 0, currency },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: EGYPT },
+  });
+  if (settings.method !== "own") return freeAtTallabyRates ? [freeEgypt()] : [];
   const zones = input.zones.filter((z) => z.enabled);
-  if (!zones.length) return [];
+  // No zones: checkout bills Tallaby's rates for every Egyptian address.
+  if (!zones.length) return freeAtTallabyRates ? [freeEgypt()] : [];
 
   const ratePiastres = (zone: ZoneForQuote) =>
     sellerFreeDelivery ? 0 : quoteZone({ price: zone.price, freeOver: zone.freeOver ?? settings.freeShippingOver }, price).amountPiastres;
@@ -63,14 +79,21 @@ export function offerShippingDetails(input: OfferShippingInput): OfferShippingDe
     const regions = childrenOf(country).filter((p) => p.level === "region").map((p) => p.key);
     const targets = regions.length ? regions : [country];
     const used = new Set<ZoneForQuote>();
+    // Some region no zone covers bills Tallaby's rates, waived by the seller's free delivery.
+    let atTallabyRates = false;
     let covered = true;
     for (const target of targets) {
       const found = findZoneForPlace(zones, target);
-      if (!found) {
-        covered = false;
-        break;
+      if (found) {
+        used.add(found.zone);
+        continue;
       }
-      used.add(found.zone);
+      if (country === EGYPT && settings.otherPlaces === "tallaby_rates" && freeAtTallabyRates) {
+        atTallabyRates = true;
+        continue;
+      }
+      covered = false;
+      break;
     }
     if (!covered) continue;
     // Zones for a smaller part of the country (a city, or a region of a
@@ -79,6 +102,7 @@ export function offerShippingDetails(input: OfferShippingInput): OfferShippingDe
       if (zone.places.some((p) => p.startsWith(`${country}/`) && !targets.includes(p))) used.add(zone);
     }
     const rates = new Set([...used].map(ratePiastres));
+    if (atTallabyRates) rates.add(0);
     if (rates.size !== 1) continue;
     const [rate] = rates;
     const list = [...used];
@@ -86,11 +110,15 @@ export function offerShippingDetails(input: OfferShippingInput): OfferShippingDe
       "@type": "OfferShippingDetails",
       shippingRate: { "@type": "MonetaryAmount", value: rate! / 100, currency },
       shippingDestination: { "@type": "DefinedRegion", addressCountry: country },
-      deliveryTime: {
-        "@type": "ShippingDeliveryTime",
-        handlingTime: day(settings.handlingDays, settings.handlingDays),
-        transitTime: day(Math.min(...list.map((z) => z.deliveryDaysMin)), Math.max(...list.map((z) => z.deliveryDaysMax))),
-      },
+      ...(atTallabyRates
+        ? {}
+        : {
+            deliveryTime: {
+              "@type": "ShippingDeliveryTime" as const,
+              handlingTime: day(settings.handlingDays, settings.handlingDays),
+              transitTime: day(Math.min(...list.map((z) => z.deliveryDaysMin)), Math.max(...list.map((z) => z.deliveryDaysMax))),
+            },
+          }),
     });
   }
   return details;

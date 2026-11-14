@@ -4,12 +4,14 @@ import { cacheProfiles, createCachedQuery } from "@workspace/cache";
 import { productShownInStore, type StoreCatalogScope } from "@workspace/lib/stores/scope/server";
 import { storefrontCatalogTags } from "@/lib/storefront.server";
 import { notAStoreCopy } from "@/lib/products/product-list.server";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { SITEMAP_BASE_URL } from "@/lib/constants";
 import {
   buildProductEntries,
   buildSharedSlugEntries,
   buildStaticEntries,
   dedupeEntries,
+  sitemapImageUrls,
   type ProductTranslationRow,
   type SharedSlugRow,
   type SitemapEntry,
@@ -44,9 +46,17 @@ function productScopeFilter(scope: ProductScope | undefined) {
 
 type TranslationPage = { rows: ProductTranslationRow[]; next: string | null };
 
-/** One keyset page (translation ids after `cursor`). */
-async function loadTranslationPage(scope: ProductScope | undefined, cursor: string | null, size: number): Promise<TranslationPage> {
-  const page: Array<ProductTranslationRow & { id: string }> = await db
+/**
+ * One keyset page (translation ids after `cursor`). `withImages`: each row
+ * also carries the product's first photos as public URLs (store sitemaps).
+ */
+async function loadTranslationPage(
+  scope: ProductScope | undefined,
+  cursor: string | null,
+  size: number,
+  { withImages = false }: { withImages?: boolean } = {},
+): Promise<TranslationPage> {
+  const page = await db
       .select({
         id: productTranslations.id,
         productId: productTranslations.productId,
@@ -55,6 +65,7 @@ async function loadTranslationPage(scope: ProductScope | undefined, cursor: stri
         title: productTranslations.title,
         updatedAt: sql<string | null>`to_char(${products.updatedAt} at time zone 'UTC', ${ISO_SECONDS})`,
         createdAt: sql<string | null>`to_char(${products.createdAt} at time zone 'UTC', ${ISO_MICROS})`,
+        gallery: withImages ? products.images : sql<null>`null`,
       })
       .from(productTranslations)
       .innerJoin(products, eq(products.id, productTranslations.productId))
@@ -70,7 +81,9 @@ async function loadTranslationPage(scope: ProductScope | undefined, cursor: stri
       .limit(size);
 
   return {
-    rows: page.map(({ id: _id, ...row }) => row),
+    rows: page.map(({ id: _id, gallery, ...row }): ProductTranslationRow =>
+      withImages ? { ...row, images: sitemapImageUrls(gallery, (path) => getPublicUrl(path, "products")) } : row,
+    ),
     next: page.length < size ? null : page[page.length - 1]!.id,
   };
 }
@@ -92,8 +105,11 @@ export async function fetchActiveProductTranslations(scope?: ProductScope): Prom
   }
 }
 
-/** Rows per cached page of a store sitemap: small enough for the Data Cache's 2 MB entry limit. */
-const STORE_PAGE_SIZE = 2_000;
+/**
+ * Rows per cached page of a store sitemap: small enough for the Data Cache's
+ * 2 MB entry limit with up to five photo URLs on every row.
+ */
+const STORE_PAGE_SIZE = 1_000;
 
 /**
  * One cached page of a store's sitemap product rows (rule 8): keyed by
@@ -103,11 +119,12 @@ const STORE_PAGE_SIZE = 2_000;
  * product edit or a change of picks refreshes it.
  */
 export const getCachedStoreTranslationPage = createCachedQuery({
-  name: "store-sitemap:products:v1",
+  // v2: rows carry the product's photos (`images`); pages of 1,000 rows.
+  name: "store-sitemap:products:v2",
   ttl: cacheProfiles.seller,
   tags: (sellerId: string, storeId: string, _catalogSplit: boolean, _cursor: string | null) => storefrontCatalogTags(sellerId, storeId),
   query: (sellerId: string, storeId: string, catalogSplit: boolean, cursor: string | null) =>
-    loadTranslationPage({ sellerId, catalog: { storeId, catalogSplit } }, cursor, STORE_PAGE_SIZE),
+    loadTranslationPage({ sellerId, catalog: { storeId, catalogSplit } }, cursor, STORE_PAGE_SIZE, { withImages: true }),
 });
 
 /** The store sitemap's product rows: every cached page in order. `catalog` comes from the request host (`storefrontCatalog`). */

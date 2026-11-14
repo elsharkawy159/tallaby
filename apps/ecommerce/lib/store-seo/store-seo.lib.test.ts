@@ -384,3 +384,20 @@ describe("storeAlternates on an English-default store (owner, 2026-11-14)", () =
     expect((meta.openGraph as { url?: string }).url).toBe("https://shop.com");
   });
 });
+
+describe("storeStructuredData search action", () => {
+  const input = { displayName: "Shop", subdomain: "shop", customDomain: "shop.com", logoUrl: null, description: null };
+
+  it("searches the catalog in the store's default language, with no prefix", () => {
+    const [, website] = storeStructuredData(input, "en");
+    expect(website?.potentialAction).toEqual({
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: "https://shop.com/products?q={search_term_string}" },
+      "query-input": "required name=search_term_string",
+    });
+    const [, english] = storeStructuredData({ ...input, defaultLocale: "en" }, "ar");
+    expect((english?.potentialAction as { target: { urlTemplate: string } }).target.urlTemplate).toBe(
+      "https://shop.com/products?q={search_term_string}",
+    );
+  });
+});

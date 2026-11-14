@@ -11,6 +11,7 @@ import {
   latestModified,
   serializeSitemapIndex,
   serializeUrlset,
+  sitemapImageUrls,
   STATIC_PAGES,
   type ProductTranslationRow,
   type SitemapEntry,
@@ -335,5 +336,46 @@ describe("a site whose default language is English (an English-default store)", 
     expect(en.url).toBe(`${BASE}/products/mug`);
     expect(en.alternates["x-default"]).toBe(`${BASE}/products/mug`);
     expect(entries.find((e) => e.locale === "ar")!.url).toBe(`${BASE}/ar/products/${encodeURIComponent("كوب")}`);
+  });
+});
+
+describe("product images", () => {
+  const toUrl = (path: string) => (path.startsWith("http") ? path : `https://cdn.test/products/${path}`);
+
+  it("keeps the first photos as absolute URLs: paths resolved, videos, duplicates and relative ones dropped", () => {
+    expect(
+      sitemapImageUrls(["a.jpg", { url: "https://x/b.png" }, "clip.mp4", "a.jpg", { path: "c.webp" }, "d.jpg", "e.jpg", "f.jpg"], toUrl),
+    ).toEqual(["https://cdn.test/products/a.jpg", "https://x/b.png", "https://cdn.test/products/c.webp", "https://cdn.test/products/d.jpg", "https://cdn.test/products/e.jpg"]);
+    expect(sitemapImageUrls(["a.jpg"], (path) => path)).toEqual([]);
+    expect(sitemapImageUrls(null, toUrl)).toEqual([]);
+    expect(sitemapImageUrls("https://x/only.jpg", toUrl)).toEqual(["https://x/only.jpg"]);
+  });
+
+  it("writes <image:image> entries under the image namespace, escaped", () => {
+    const [entry] = buildProductEntries(BASE, [row({ images: ["https://x/a.jpg?w=1&h=2", "https://x/b.jpg"] })]).entries;
+    expect(entry?.images).toEqual(["https://x/a.jpg?w=1&h=2", "https://x/b.jpg"]);
+    const xml = serializeUrlset([entry!]);
+    expect(xml).toContain('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
+    expect(xml).toContain("<image:image><image:loc>https://x/a.jpg?w=1&amp;h=2</image:loc></image:image>");
+    expect(xml.match(/<image:image>/g)).toHaveLength(2);
+    // After the sitemap's own elements, inside <url>.
+    expect(xml.indexOf("<priority>")).toBeLessThan(xml.indexOf("<image:image>"));
+    expect(xml.indexOf("<image:image>")).toBeLessThan(xml.indexOf("</url>"));
+  });
+
+  it("writes no image element for a product without photos", () => {
+    expect(serializeUrlset(buildProductEntries(BASE, [row({})]).entries)).not.toContain("<image:image>");
+  });
+
+  it("splits by bytes counting the image elements, without losing any", () => {
+    const withImages = buildProductEntries(
+      BASE,
+      Array.from({ length: 12 }, (_, i) => row({ productId: `p${i}`, slug: `s${i}`, images: [`https://x/${i}-1.jpg`, `https://x/${i}-2.jpg`] })),
+    ).entries;
+    const one = new TextEncoder().encode(serializeUrlset(withImages.slice(0, 1))).length;
+    const chunks = chunkEntries(withImages, { maxBytes: one * 3 });
+    expect(chunks.length).toBeGreaterThan(1);
+    for (const chunk of chunks) expect(new TextEncoder().encode(serializeUrlset(chunk)).length).toBeLessThanOrEqual(one * 3);
+    expect(chunks.flat()).toEqual(withImages);
   });
 });

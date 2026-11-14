@@ -1,3 +1,6 @@
+import { and, db, eq, sql } from "@workspace/db";
+import { stores, storeSiteRevisions } from "@workspace/db/schema";
+import { cacheProfiles, createCachedQuery, storeTags } from "@workspace/cache";
 import { listPublicCmsUrls } from "@workspace/lib/cms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { storeIndexLocales } from "@/lib/store-seo/store-seo.lib";
@@ -77,6 +80,27 @@ export async function renamedStoreFileResponse(subdomain: string, path: string):
   return Response.redirect(`${storeUrl(store.subdomain, store.customDomain)}${path}`, 308);
 }
 
+/**
+ * When the store's live site was published (its published revision's
+ * `created_at`, UTC ISO), or null. Owner-checked: the store must belong to
+ * the seller. Cached per seller and store with the site tag, so a publish
+ * refreshes it as it does the site itself.
+ */
+const getCachedSitePublishedAt = createCachedQuery({
+  name: "store-sitemap:published-at:v1",
+  ttl: cacheProfiles.seller,
+  tags: (sellerId: string, storeId: string) => [storeTags.site(sellerId, storeId)],
+  query: async (sellerId: string, storeId: string): Promise<string | null> => {
+    const [row] = await db
+      .select({ at: sql<string>`to_char(${storeSiteRevisions.createdAt} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')` })
+      .from(stores)
+      .innerJoin(storeSiteRevisions, and(eq(storeSiteRevisions.id, stores.publishedRevisionId), eq(storeSiteRevisions.storeId, stores.id)))
+      .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId)))
+      .limit(1);
+    return row?.at ?? null;
+  },
+});
+
 export interface StoreSitemapDataset {
   baseUrl: string;
   indexable: boolean;
@@ -96,11 +120,16 @@ export async function getStoreSitemapDataset(subdomain: string): Promise<StoreSi
   const scope: StoreSitemapStore = { sellerId: store.id, storeId: store.storeId, subdomain: store.subdomain };
   // The host's store and the switch (read once, outside every cache): products and categories are what this store shows.
   const catalog = await storefrontCatalog(store);
-  const [site, products, extra, categories] = await Promise.all([
+  const [site, products, extra, categories, publishedAt] = await Promise.all([
     getCachedPublishedSite(store.id, store.storeId, store.subdomain),
     fetchStoreProductTranslations(store.id, catalog),
     extraUrls(scope),
     getStorefrontCategories(store.id, store.storeId),
+    // Only a lastmod: a failed read leaves it out rather than the sitemap.
+    getCachedSitePublishedAt(store.id, store.storeId).catch((error: unknown) => {
+      console.error("[sitemap] store publish time failed", error);
+      return null;
+    }),
   ]);
   const withProducts = categories.filter((category) => category.productCount > 0);
 
@@ -116,6 +145,9 @@ export async function getStoreSitemapDataset(subdomain: string): Promise<StoreSi
       catalogPage: Boolean(site),
       // One category is the whole catalog again, and the page shows no link to it.
       categoryKeys: withProducts.length > 1 ? withProducts.map((category) => category.key) : [],
+      categoryLastModified: Object.fromEntries(withProducts.map((category) => [category.key, category.lastProductUpdatedAt ?? null])),
+      // A store with no live site has no builder pages; its home is the classic catalog.
+      publishedAt: site ? publishedAt : null,
       locales: storeIndexLocales(store.supportedLocales),
       defaultLocale: store.defaultLocale,
     }),

@@ -27,6 +27,11 @@ export type StoreCategoryGroup = {
    * order ends on the product's own category).
    */
   productIds: string[];
+  /**
+   * The latest `updated_at` of its products (and its sub-categories'), as
+   * UTC "YYYY-MM-DDTHH:MM:SSZ": the store sitemap's lastmod for its page.
+   */
+  lastProductUpdatedAt?: string | null;
   /** Storage path in the `categories` bucket: the seller's own category photo. */
   ownImage: string | null;
   /** First image entry (a path or `{ url }`) of the best-rated product in it (or in its sub-categories). */
@@ -88,6 +93,7 @@ function strip(item: CategoryGroupRow, parentKey: string | null, childKeys: stri
     productCount: item.productCount,
     categoryIds: item.categoryIds,
     productIds: item.productIds,
+    lastProductUpdatedAt: item.lastProductUpdatedAt,
     ownImage: item.ownImage,
     productImage: item.productImage,
     parentKey,
@@ -156,10 +162,13 @@ export function shapeStoreCategoryGroups(rows: readonly CategoryGroupRow[]): Sto
     const productIds = [...new Set([...item.productIds, ...children.flatMap((c) => c.productIds)])];
     const categoryIds = [...new Set([...item.categoryIds, ...children.flatMap((c) => c.categoryIds)])];
     const best = children.reduce(betterImage, item);
+    // Fixed-width UTC strings: the greatest one is the latest.
+    const updated = [item, ...children].map((c) => c.lastProductUpdatedAt).filter((t): t is string => Boolean(t));
     out.push({
       ...strip(item, null, children.map((c) => c.key)),
       productCount: productIds.length,
       productIds,
+      lastProductUpdatedAt: updated.length ? updated.reduce((a, b) => (b > a ? b : a)) : undefined,
       categoryIds,
       productImage: best.productImage ?? null,
     });

@@ -45,6 +45,28 @@ export interface ProductJsonLdInput {
   reviews: ProductJsonLdReview[];
   /** `OfferShippingDetails` entries (store-seo/offer-shipping.lib.ts). */
   shippingDetails?: readonly object[];
+  /**
+   * Variants at different prices: the product is then a `ProductGroup` whose
+   * variants each carry their own Offer. Absent (or empty) for a single-price
+   * product, which keeps one Offer.
+   */
+  variants?: ProductJsonLdVariant[];
+}
+
+/** One variant of a `ProductGroup`, as the store product feed lists it (product-feed.lib.ts). */
+export interface ProductJsonLdVariant {
+  /** `product_variants.id`: `?variant=<id>` preselects it on the product page. */
+  id: string;
+  /** "Red / XL": the variant's values (its title when it has no options). */
+  label: string;
+  sku?: string | null;
+  /** The variant's own photos first, then the product's (paths or URLs). */
+  images: string[];
+  price: ProductJsonLdInput["price"];
+  inStock: boolean;
+  color?: string | null;
+  size?: string | null;
+  shippingDetails?: readonly object[];
 }
 
 interface Category {
@@ -119,23 +141,25 @@ function customerReviews(reviews: readonly ProductJsonLdReview[]) {
  * whole country (store-seo/offer-shipping.lib.ts). Returns are left out: a
  * return policy needs the owner's decision on what each store promises.
  */
-export function generateProductStructuredData(
-  product: ProductJsonLdInput,
-  store: { home: string; sellerName: string; currency?: string },
-) {
-  const productUrl = `${store.home}/products/${product.slug}`;
-  const currency = store.currency ?? DEFAULT_CURRENCY;
-  const images = (product.images ?? [])
-    .filter((image) => image?.trim())
-    .map(absoluteProductImageUrl);
-  const list = product.price.list;
+type JsonLdStore = { home: string; sellerName: string; currency?: string };
 
-  const offers = {
+const jsonLdImages = (images: readonly string[] | null | undefined) =>
+  [...new Set((images ?? []).filter((image) => image?.trim()).map(absoluteProductImageUrl))];
+
+/** One Offer: price, Google's strikethrough compare-at price, availability, shipping and the store as seller. */
+function productOffer(
+  offer: { price: ProductJsonLdInput["price"]; inStock: boolean; url: string; shippingDetails?: readonly object[] },
+  condition: string | null | undefined,
+  store: JsonLdStore,
+) {
+  const currency = store.currency ?? DEFAULT_CURRENCY;
+  const list = offer.price.list;
+  return {
     "@type": "Offer",
-    price: product.price.final,
+    price: offer.price.final,
     priceCurrency: currency,
     // Google merchant listings: the compare-at price as a strikethrough price.
-    ...(list != null && list > product.price.final
+    ...(list != null && list > offer.price.final
       ? {
           priceSpecification: {
             "@type": "UnitPriceSpecification",
@@ -145,16 +169,27 @@ export function generateProductStructuredData(
           },
         }
       : {}),
-    availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-    itemCondition: schemaItemCondition(product.condition),
-    priceValidUntil: product.price.validUntil || priceValidUntil(),
-    url: productUrl,
-    ...(product.shippingDetails?.length ? { shippingDetails: product.shippingDetails } : {}),
+    availability: offer.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    itemCondition: schemaItemCondition(condition),
+    priceValidUntil: offer.price.validUntil || priceValidUntil(),
+    url: offer.url,
+    ...(offer.shippingDetails?.length ? { shippingDetails: offer.shippingDetails } : {}),
     seller: {
       "@type": "Organization",
       name: store.sellerName,
     },
   };
+}
+
+export function generateProductStructuredData(product: ProductJsonLdInput, store: JsonLdStore) {
+  const productUrl = `${store.home}/products/${product.slug}`;
+  const images = jsonLdImages(product.images);
+
+  const offers = productOffer(
+    { price: product.price, inStock: product.inStock, url: productUrl, shippingDetails: product.shippingDetails },
+    product.condition,
+    store,
+  );
 
   const aggregateRating = customerAggregateRating(product.reviews);
   const review = aggregateRating ? customerReviews(product.reviews) : [];
@@ -173,6 +208,66 @@ export function generateProductStructuredData(
     ...(aggregateRating ? { aggregateRating } : {}),
     ...(review.length ? { review } : {}),
   };
+}
+
+/**
+ * A product whose variants sell at different prices, as Google's variant
+ * markup (ProductGroup + hasVariant): one Product per variant with its own
+ * Offer (price, stock, shipping), `?variant=<id>` URL, SKU and colour/size.
+ * The group id is the product id, as the store feed's `item_group_id`, and
+ * every variant URL is the one the feed links, so Search and Merchant Center
+ * see the same items. Ratings belong to the group.
+ */
+export function generateProductGroupStructuredData(product: ProductJsonLdInput, store: JsonLdStore) {
+  const productUrl = `${store.home}/products/${product.slug}`;
+  const variants = product.variants ?? [];
+  const images = jsonLdImages(product.images);
+  const variesBy = [
+    ...(variants.some((v) => v.color) ? ["https://schema.org/color"] : []),
+    ...(variants.some((v) => v.size) ? ["https://schema.org/size"] : []),
+  ];
+  const aggregateRating = customerAggregateRating(product.reviews);
+  const review = aggregateRating ? customerReviews(product.reviews) : [];
+
+  const hasVariant = variants.map((variant) => {
+    const url = `${productUrl}?variant=${encodeURIComponent(variant.id)}`;
+    const variantImages = jsonLdImages(variant.images);
+    return {
+      "@type": "Product",
+      name: variant.label ? `${product.title} - ${variant.label}` : product.title,
+      ...(variant.sku ? { sku: variant.sku } : {}),
+      ...(variantImages.length ? { image: variantImages } : {}),
+      url,
+      ...(variant.color ? { color: variant.color } : {}),
+      ...(variant.size ? { size: variant.size } : {}),
+      offers: productOffer(
+        { price: variant.price, inStock: variant.inStock, url, shippingDetails: variant.shippingDetails },
+        product.condition,
+        store,
+      ),
+    };
+  });
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProductGroup",
+    name: product.title,
+    description: product.description,
+    ...(images.length > 0 ? { image: images } : {}),
+    url: productUrl,
+    productGroupID: product.id,
+    ...(product.brand?.name ? { brand: { "@type": "Brand", name: product.brand.name } } : {}),
+    ...(product.categoryName ? { category: product.categoryName } : {}),
+    ...(variesBy.length ? { variesBy } : {}),
+    hasVariant,
+    ...(aggregateRating ? { aggregateRating } : {}),
+    ...(review.length ? { review } : {}),
+  };
+}
+
+/** The store product page's JSON-LD: a ProductGroup for variants at different prices, else a Product with one Offer. */
+export function generateStoreProductStructuredData(product: ProductJsonLdInput, store: JsonLdStore) {
+  return product.variants?.length ? generateProductGroupStructuredData(product, store) : generateProductStructuredData(product, store);
 }
 
 export function generateCategoryStructuredData(

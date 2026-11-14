@@ -52,6 +52,10 @@ export interface StoreSitemapInput {
   catalogPage?: boolean;
   /** Store category keys, each a landing page at /products?category=. */
   categoryKeys?: string[];
+  /** Each category's lastmod: the latest `updated_at` of its products. */
+  categoryLastModified?: Readonly<Record<string, string | null | undefined>>;
+  /** When the live builder site was published: the lastmod of its pages (and part of the home's). */
+  publishedAt?: string | null;
   /** The languages the store offers; both when not given. */
   locales?: readonly SitemapLocale[];
   /** The store's default language: its URLs carry no prefix, and it is the x-default. Arabic when not given. */
@@ -66,6 +70,15 @@ function inLocales(entries: SitemapEntry[], locales: readonly SitemapLocale[], d
       const urls = Object.fromEntries(locales.flatMap((l) => (entry.alternates[l] ? [[l, entry.alternates[l]]] : [])));
       return { ...entry, alternates: Object.keys(urls).length > 1 ? buildAlternates(urls, "", defaultLocale) : {} };
     });
+}
+
+/** The latest of some ISO timestamps, as given; null when none parses. */
+function latestOf(times: readonly (string | null | undefined)[]): string | null {
+  let latest: string | null = null;
+  for (const time of times) {
+    if (time && Number.isFinite(Date.parse(time)) && (!latest || Date.parse(time) > Date.parse(latest))) latest = time;
+  }
+  return latest;
 }
 
 /** One or more lowercase path segments, nothing that could leave the host. */
@@ -83,9 +96,14 @@ export function buildStoreSitemapEntries(input: StoreSitemapInput): SitemapEntry
   const page = (path: string, fields: Pick<SitemapEntry, "lastModified" | "changeFrequency" | "priority">, label: string | null = null) =>
     sharedPathEntries(baseUrl, path, { type: "page", ...fields }, () => label, defaultLocale);
 
+  const publishedAt = input.publishedAt ?? null;
+  // The catalog changes with its newest product; the home shows products and the published site.
+  const latestProduct = latestOf(input.products.map((row) => row.updatedAt));
+  const homeModified = latestOf([publishedAt, latestProduct]);
+
   const pageEntries = input.pages
     .filter((p) => !p.isHome && p.kind !== "product" && !p.seo?.noindex && isValidSlug(p.slug) && SAFE_PATH.test(`/${p.slug}`))
-    .flatMap((p) => page(`/${p.slug}`, { lastModified: null, changeFrequency: "weekly", priority: 0.6 }));
+    .flatMap((p) => page(`/${p.slug}`, { lastModified: publishedAt, changeFrequency: "weekly", priority: 0.6 }));
 
   const extraEntries = (input.extra ?? [])
     .filter((u) => SAFE_PATH.test(u.path))
@@ -99,15 +117,19 @@ export function buildStoreSitemapEntries(input: StoreSitemapInput): SitemapEntry
 
   const catalogEntries = input.catalogPage
     ? [
-        ...page("/products", { lastModified: null, changeFrequency: "daily", priority: 0.8 }),
+        ...page("/products", { lastModified: latestProduct, changeFrequency: "daily", priority: 0.8 }),
         ...(input.categoryKeys ?? []).flatMap((key) =>
-          page(`/products?category=${encodeURIComponent(key)}`, { lastModified: null, changeFrequency: "weekly", priority: 0.7 }),
+          page(`/products?category=${encodeURIComponent(key)}`, {
+            lastModified: input.categoryLastModified?.[key] ?? null,
+            changeFrequency: "weekly",
+            priority: 0.7,
+          }),
         ),
       ]
     : [];
 
   const { entries } = dedupeEntries([
-    ...page("", { lastModified: null, changeFrequency: "daily", priority: 1 }),
+    ...page("", { lastModified: homeModified, changeFrequency: "daily", priority: 1 }),
     ...pageEntries,
     ...catalogEntries,
     ...buildProductEntries(baseUrl, input.products, defaultLocale).entries,

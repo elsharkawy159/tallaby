@@ -38,6 +38,36 @@ export interface SitemapEntry {
   priority: number;
   /** hreflang -> absolute URL, including x-default. Only real translations. */
   alternates: Record<string, string>;
+  /** Absolute public image URLs written as `<image:image>` (products on store hosts), at most MAX_SITEMAP_IMAGES. */
+  images?: string[];
+}
+
+/** Images listed per URL: the first few photos of a product's gallery. */
+export const MAX_SITEMAP_IMAGES = 5;
+
+const SITEMAP_VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv)(?:[?#].*)?$/i;
+
+/**
+ * The first `max` photos of a gallery as absolute http(s) URLs. Entries are
+ * storage paths, URLs or `{ url | path | src }`; `toUrl` resolves a path to
+ * its public URL. Videos and anything that stays relative are left out.
+ */
+export function sitemapImageUrls(gallery: unknown, toUrl: (path: string) => string, max = MAX_SITEMAP_IMAGES): string[] {
+  const list = typeof gallery === "string" ? [gallery] : Array.isArray(gallery) ? gallery : [];
+  const urls: string[] = [];
+  for (const entry of list) {
+    if (urls.length >= max) break;
+    const value =
+      typeof entry === "string"
+        ? entry
+        : entry && typeof entry === "object"
+          ? ((entry as { url?: unknown }).url ?? (entry as { path?: unknown }).path ?? (entry as { src?: unknown }).src)
+          : null;
+    if (typeof value !== "string" || !value.trim() || SITEMAP_VIDEO_EXT.test(value.trim())) continue;
+    const url = toUrl(value.trim());
+    if (/^https?:\/\//i.test(url) && !urls.includes(url)) urls.push(url);
+  }
+  return urls;
 }
 
 /** Sitemap protocol limits (sitemaps.org): per file, uncompressed. */
@@ -244,6 +274,8 @@ export interface ProductTranslationRow {
    * the slug-collision tie-breaker.
    */
   createdAt: string | null;
+  /** Public photo URLs of the product (store sitemaps only), see `sitemapImageUrls`. */
+  images?: string[];
 }
 
 export interface ProductBuildStats {
@@ -338,6 +370,7 @@ export function buildProductEntries(
       changeFrequency: "weekly",
       priority: 0.7,
       alternates: buildAlternates(urls, "", defaultLocale),
+      ...(row.images?.length ? { images: row.images.slice(0, MAX_SITEMAP_IMAGES) } : {}),
     });
   }
 
@@ -388,13 +421,17 @@ export function serializeUrlEntry(entry: SitemapEntry): string {
   if (entry.lastModified) lines.push(`<lastmod>${escapeXml(entry.lastModified)}</lastmod>`);
   lines.push(`<changefreq>${entry.changeFrequency}</changefreq>`);
   lines.push(`<priority>${entry.priority.toFixed(1)}</priority>`);
+  // Google image sitemap extension: after the sitemap elements, one per photo.
+  for (const image of entry.images ?? []) {
+    lines.push(`<image:image><image:loc>${escapeXml(image)}</image:loc></image:image>`);
+  }
   lines.push("</url>");
   return lines.join("\n");
 }
 
 // Crawlers ignore the stylesheet instruction; browsers use it to render.
 const XML_HEAD = `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/xsl" href="${SITEMAP_STYLESHEET_PATH}"?>\n`;
-const URLSET_OPEN = `${XML_HEAD}<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n`;
+const URLSET_OPEN = `${XML_HEAD}<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
 const URLSET_CLOSE = "\n</urlset>\n";
 
 const encoder = new TextEncoder();

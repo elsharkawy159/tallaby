@@ -94,7 +94,7 @@ export async function storeCategoryGroups(
       FROM ancestry a JOIN categories c ON c.id = a.parent_id
     ),
     items AS (
-      SELECT p.id, p.category_id, p.images, p.average_rating, p.created_at,
+      SELECT p.id, p.category_id, p.images, p.average_rating, p.created_at, p.updated_at,
              spc.id AS spc_id, spc.source_category_id, spc.name AS spc_name, spc.name_ar AS spc_name_ar,
              spc.image_url, spc.position, spc.created_at AS spc_created_at, spc.parent_id AS spc_parent_id,
              pc.source_category_id AS pc_source_category_id, pc.name AS pc_name, pc.name_ar AS pc_name_ar,
@@ -117,6 +117,7 @@ export async function storeCategoryGroups(
            count(*)::int AS "productCount",
            json_agg(DISTINCT category_id) AS "categoryIds",
            json_agg(id) AS "productIds",
+           to_char(max(updated_at) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "lastProductUpdatedAt",
            min(nullif(btrim(image_url), '')) AS "ownImage",
            (array_agg(images -> 0 ORDER BY average_rating DESC NULLS LAST, created_at DESC)
               FILTER (WHERE jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0))[1]

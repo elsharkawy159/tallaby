@@ -3,7 +3,7 @@
  * §10.4, P4-14, P5-04). Pure, so the layout and the tests share one rule set.
  */
 import type { Metadata } from "next";
-import { storeBaseLocale, storeUrl } from "@workspace/lib/storefront";
+import { storeBaseLocale, storeLocalePath, storeUrl } from "@workspace/lib/storefront";
 import { appIconVersion, appShortName } from "@workspace/lib/stores/app";
 import {
   FACEBOOK_DOMAIN_VERIFICATION_RE,
@@ -245,7 +245,7 @@ export function storeCatalogSeo(query: { category?: string; search?: string; pag
 
 /** The store's own identity for search engines, on its home page. */
 export function storeStructuredData(
-  store: Pick<StoreMetadataInput, "displayName" | "subdomain" | "customDomain" | "logoUrl" | "description"> & {
+  store: Pick<StoreMetadataInput, "displayName" | "subdomain" | "customDomain" | "logoUrl" | "description" | "defaultLocale"> & {
     social?: readonly { url: string }[] | null;
     supportEmail?: string | null;
     supportPhone?: string | null;
@@ -275,6 +275,15 @@ export function storeStructuredData(
       url,
       inLanguage: locale,
       publisher: { "@id": `${url}/#store` },
+      // The catalog search (`?q=`, as marketplace search links use), in the store's default language: no prefix.
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${url}${storeLocalePath(storeBaseLocale(store.defaultLocale), "/products", store.defaultLocale)}?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
     },
   ];
 }
