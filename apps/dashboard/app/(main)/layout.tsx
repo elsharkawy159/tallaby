@@ -13,7 +13,8 @@ import { getSellerStores } from "@/lib/stores/current-store.server";
 import { SetupPrompts } from "./_components/setup-prompts.client";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { getSessionUser } from "@/lib/auth/session.server";
-import { loadSeller } from "@/lib/auth/require-seller.server";
+import { loadOrderLock, loadSeller } from "@/lib/auth/require-seller.server";
+import { storeMayBeBillingOffline } from "@workspace/lib/billing/order-lock";
 import { ClarityIdentify } from "@/components/clarity.client";
 import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
 import { resolvePlanId } from "@workspace/lib/plans";
@@ -71,6 +72,10 @@ export default async function DashboardLayout({
   const walletBalance = wallet?.balance ?? null;
   // Clarity session tag: internal seller id + plan only (loadSeller is per-request cached; getSellerAccess already read it).
   const clarityPlan = user && enabledClarityProjectId() ? resolvePlanId((await loadSeller(user.id))?.plan) : null;
+  // A 7-day seller still not activated has every store offline (owner, 2026-11-15): the header dot says so.
+  // The lock is read only once the sign-up date says it can apply; older sellers skip it.
+  const billingOffline =
+    user && storeMayBeBillingOffline((await loadSeller(user.id))?.createdAt) ? (await loadOrderLock(user.id)).storeOffline : false;
 
   return (
     // .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched.
@@ -87,7 +92,7 @@ export default async function DashboardLayout({
             walletBalance={walletBalance}
             walletCurrency={wallet?.currency ?? "EGP"}
             storeLink={storeLink}
-            siteLive={selected?.siteStatus === "published"}
+            siteLive={selected?.siteStatus === "published" && !billingOffline}
             storeId={selected?.id ?? null}
           />
           {access.status === "restricted" && (

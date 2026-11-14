@@ -24,7 +24,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
   getRequestStoreSubdomain,
   getStorefrontBySubdomain,
-  isStorefrontOffline,
+  isStorefrontOfflineForVisitors,
   storefrontCatalog,
   storefrontCatalogTags,
   type Storefront,
@@ -54,7 +54,7 @@ export async function getRequestFeedStore(): Promise<{ subdomain: string; feed: 
   const subdomain = await getRequestStoreSubdomain();
   if (!subdomain) return null;
   const store = await getStorefrontBySubdomain(subdomain);
-  if (!store || isStorefrontOffline(store)) return { subdomain, feed: null };
+  if (!store || (await isStorefrontOfflineForVisitors(store))) return { subdomain, feed: null };
   return {
     subdomain,
     feed: {

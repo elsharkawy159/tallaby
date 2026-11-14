@@ -2,16 +2,21 @@ import { describe, expect, it } from "vitest";
 import {
   ORDER_GRACE_START_FLOOR,
   ORDERS_UNLOCKED,
+  SHORT_GRACE_FROM,
+  daysUntilOffline,
   graceDaysLeft,
   isActivated,
+  isShortGraceSeller,
+  orderGraceDays,
   orderGraceStart,
   orderLockState,
+  storeMayBeBillingOffline,
 } from "./order-lock.lib";
 
 const DAY = 86_400_000;
 const FLOOR = new Date(ORDER_GRACE_START_FLOOR).getTime();
-/** A seller who signed up after the floor, so their own sign-up starts the window. */
-const SIGNUP = "2026-11-20T10:00:00.000Z";
+/** A seller who signed up after the floor and before SHORT_GRACE_FROM: their own sign-up starts a 14-day window. */
+const SIGNUP = "2026-11-12T10:00:00.000Z";
 const SIGNUP_MS = Date.parse(SIGNUP);
 const iso = (ms: number) => new Date(ms).toISOString();
 
@@ -37,7 +42,8 @@ describe("activation", () => {
     const lock = orderLockState(base);
     expect(lock.activated).toBe(false);
     expect(lock.ordersLocked).toBe(false);
-    expect(lock.grace).toEqual({ endsAt: iso(SIGNUP_MS + 14 * DAY), firstOrderReceived: false, endedBy: null });
+    expect(lock.grace).toEqual({ endsAt: iso(SIGNUP_MS + 14 * DAY), firstOrderReceived: false, endedBy: null, offlineAt: null });
+    expect(lock.storeOffline).toBe(false);
   });
 
   it("activates for good after one approved top-up, even past the window", () => {
@@ -95,7 +101,7 @@ describe("grace window", () => {
     const second = SIGNUP_MS + 2 * DAY;
     const lock = orderLockState({ ...base, firstOrders: [order("first", SIGNUP_MS + DAY), order("second", second)] });
     expect(lock).toMatchObject({ activated: false, ordersLocked: true, firstOrderId: "first" });
-    expect(lock.grace).toEqual({ endsAt: iso(second), firstOrderReceived: true, endedBy: "second_order" });
+    expect(lock.grace).toEqual({ endsAt: iso(second), firstOrderReceived: true, endedBy: "second_order", offlineAt: null });
   });
 
   it("after day 14, the first order is still the one shown", () => {
@@ -124,5 +130,75 @@ describe("grace window", () => {
     expect(lock).toMatchObject({ ordersLocked: false, firstOrderId: null });
     expect(lock.grace?.endsAt).toBe(iso(FLOOR + 14 * DAY));
     expect(orderLockState({ ...base, seller: old, at: new Date(FLOOR + 14 * DAY) }).ordersLocked).toBe(true);
+  });
+});
+
+describe("short window (sellers from SHORT_GRACE_FROM)", () => {
+  const CUTOFF = Date.parse(SHORT_GRACE_FROM);
+  const NEW_SIGNUP = CUTOFF + 3 * 3_600_000;
+  const fresh = { ...free, createdAt: iso(NEW_SIGNUP) };
+  const at = (ms: number) => new Date(ms);
+  const state = (overrides: Partial<typeof base> = {}) => orderLockState({ ...base, seller: fresh, ...overrides });
+
+  it("a seller from before the cutoff keeps 14 days and never goes offline", () => {
+    expect(isShortGraceSeller(SIGNUP)).toBe(false);
+    expect(orderGraceDays(SIGNUP)).toBe(14);
+    const day8 = orderLockState({ ...base, at: at(SIGNUP_MS + 8 * DAY) });
+    expect(day8).toMatchObject({ ordersLocked: false, storeOffline: false });
+    const day40 = orderLockState({ ...base, at: at(SIGNUP_MS + 40 * DAY) });
+    expect(day40).toMatchObject({ ordersLocked: true, storeOffline: false });
+    expect(day40.grace?.offlineAt).toBeNull();
+    expect(storeMayBeBillingOffline(SIGNUP, at(SIGNUP_MS + 40 * DAY))).toBe(false);
+  });
+
+  it("an unknown sign-up time is the old rule", () => {
+    expect(isShortGraceSeller(null)).toBe(false);
+    expect(isShortGraceSeller("not a date")).toBe(false);
+    expect(storeMayBeBillingOffline(null, at(CUTOFF + 40 * DAY))).toBe(false);
+  });
+
+  it("a seller created exactly at the cutoff is on the short rule; a millisecond earlier is not", () => {
+    expect(isShortGraceSeller(iso(CUTOFF))).toBe(true);
+    expect(isShortGraceSeller(iso(CUTOFF - 1))).toBe(false);
+    const lock = orderLockState({ ...base, seller: { ...free, createdAt: iso(CUTOFF) }, at: at(CUTOFF + 7 * DAY) });
+    expect(lock).toMatchObject({ ordersLocked: true, storeOffline: true });
+  });
+
+  it("is online through day 7 and offline once 7 days have passed", () => {
+    const day6 = state({ at: at(NEW_SIGNUP + 7 * DAY - 1) });
+    expect(day6).toMatchObject({ activated: false, ordersLocked: false, storeOffline: false });
+    expect(day6.grace).toEqual({ endsAt: iso(NEW_SIGNUP + 7 * DAY), firstOrderReceived: false, endedBy: null, offlineAt: iso(NEW_SIGNUP + 7 * DAY) });
+    expect(graceDaysLeft(day6.grace!, at(NEW_SIGNUP + 3 * DAY))).toBe(4);
+    expect(storeMayBeBillingOffline(iso(NEW_SIGNUP), at(NEW_SIGNUP + 7 * DAY - 1))).toBe(false);
+
+    const day7 = state({ at: at(NEW_SIGNUP + 7 * DAY) });
+    expect(day7).toMatchObject({ ordersLocked: true, storeOffline: true });
+    expect(day7.grace?.endedBy).toBe("days");
+    expect(storeMayBeBillingOffline(iso(NEW_SIGNUP), at(NEW_SIGNUP + 7 * DAY))).toBe(true);
+  });
+
+  it("the second order on day 2 hides orders but keeps the store online until the days run out", () => {
+    const firstOrders = [order("first", NEW_SIGNUP + DAY), order("second", NEW_SIGNUP + 2 * DAY)];
+    const day3 = state({ firstOrders, at: at(NEW_SIGNUP + 3 * DAY) });
+    expect(day3).toMatchObject({ ordersLocked: true, storeOffline: false, firstOrderId: "first" });
+    expect(day3.grace).toMatchObject({ endedBy: "second_order", offlineAt: iso(NEW_SIGNUP + 7 * DAY) });
+    expect(daysUntilOffline(day3.grace!, at(NEW_SIGNUP + 3 * DAY))).toBe(4);
+    expect(state({ firstOrders, at: at(NEW_SIGNUP + 7 * DAY) }).storeOffline).toBe(true);
+  });
+
+  it("activation brings the store back online", () => {
+    const late = at(NEW_SIGNUP + 20 * DAY);
+    expect(state({ at: late, hasTopUp: true })).toEqual(ORDERS_UNLOCKED);
+    expect(state({ at: late, hasHadPositiveBalance: true }).storeOffline).toBe(false);
+    expect(state({ at: late, seller: { ...fresh, plan: "pro" } }).storeOffline).toBe(false);
+  });
+
+  it("a manual top-up in review keeps the store online (orders stay hidden)", () => {
+    const lock = state({ at: at(NEW_SIGNUP + 20 * DAY), hasPendingManualTopUp: true });
+    expect(lock).toMatchObject({ ordersLocked: true, pendingReview: true, storeOffline: false });
+  });
+
+  it("nothing applies before the USD switch", () => {
+    expect(state({ usdLive: false, at: at(NEW_SIGNUP + 20 * DAY) })).toEqual(ORDERS_UNLOCKED);
   });
 });

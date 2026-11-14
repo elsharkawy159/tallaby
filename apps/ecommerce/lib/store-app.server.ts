@@ -1,5 +1,5 @@
 import { appIconVersion } from "@workspace/lib/stores/app";
-import { getRequestStoreSubdomain, getStorefrontBySubdomain, isStorefrontOffline } from "@/lib/storefront.server";
+import { getRequestStoreSubdomain, getStorefrontBySubdomain, isStorefrontOfflineForVisitors } from "@/lib/storefront.server";
 
 /**
  * The store app (PWA, ROADMAP.md F-36) of the request's host: the published
@@ -10,7 +10,7 @@ export async function getRequestStoreApp() {
   const subdomain = await getRequestStoreSubdomain();
   if (!subdomain) return null;
   const store = await getStorefrontBySubdomain(subdomain);
-  if (!store || isStorefrontOffline(store)) return null;
+  if (!store || (await isStorefrontOfflineForVisitors(store))) return null;
   // The icon is the favicon (owner, 2026-10-29), else the logo, else initials.
   const image = store.faviconUrl || store.logoUrl || null;
   return {

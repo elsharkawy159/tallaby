@@ -54,6 +54,7 @@ export const loadSeller = cache(async (userId: string) => {
       status: sellers.status,
       plan: sellers.plan,
       maxStoresOverride: sellers.maxStoresOverride,
+      createdAt: sellers.createdAt,
     })
     .from(sellers)
     .where(eq(sellers.id, userId))

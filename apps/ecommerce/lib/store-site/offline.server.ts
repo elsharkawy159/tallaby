@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { isStorefrontOffline, resolveStorefront, type Storefront } from "@/lib/storefront.server";
+import { isStorefrontOfflineForVisitors, resolveStorefront, type Storefront } from "@/lib/storefront.server";
 import { getStorefrontSite } from "./preview.server";
 
 /**
@@ -11,7 +11,11 @@ import { getStorefrontSite } from "./preview.server";
  * the store is offline.
  *
  * A published store is public for everyone, whether or not its seller is
- * activated (ROADMAP.md F-84, owner 2026-11-09; the private store of F-76 is gone).
+ * activated (ROADMAP.md F-84, owner 2026-11-09; the private store of F-76 is gone),
+ * with one exception: a seller who signed up on or after SHORT_GRACE_FROM and is
+ * still not activated when their 7 days run out has every store offline the same
+ * way (`isStoreBillingOffline`, owner 2026-11-15). Shoppers see the same generic
+ * offline page either way; nothing about billing is shown to them.
  */
 
 /** Robots for an offline store: kept out of search entirely. */
@@ -22,9 +26,9 @@ export const STORE_OFFLINE_METADATA: Metadata = { robots: STORE_OFFLINE_ROBOTS }
 
 /** Whether this request must show the store-offline page instead of the store. */
 export async function isStoreOfflineForRequest(
-  store: Pick<Storefront, "id" | "storeId" | "subdomain" | "siteStatus">,
+  store: Pick<Storefront, "id" | "storeId" | "subdomain" | "siteStatus" | "sellerCreatedAt">,
 ): Promise<boolean> {
-  if (!isStorefrontOffline(store)) return false;
+  if (!(await isStorefrontOfflineForVisitors(store))) return false;
   const { preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   return preview !== "active";
 }

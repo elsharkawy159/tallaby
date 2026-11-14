@@ -5,7 +5,7 @@ import { getBillingState } from "./billing.server";
 import { ORDERS_UNLOCKED, isActivated, orderGraceStart, orderLockState, type OrderLock } from "./order-lock.lib";
 
 export type { OrderLock, OrderGrace } from "./order-lock.lib";
-export { ORDER_GRACE_DAYS, graceDaysLeft } from "./order-lock.lib";
+export { ORDER_GRACE_DAYS, ORDER_GRACE_DAYS_SHORT, daysUntilOffline, graceDaysLeft, storeMayBeBillingOffline } from "./order-lock.lib";
 
 /**
  * This seller's activation and grace window (ROADMAP.md F-68, F-84; order-lock.lib.ts

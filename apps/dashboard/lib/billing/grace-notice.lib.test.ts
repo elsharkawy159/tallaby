@@ -7,7 +7,8 @@ const grace = (firstOrderReceived: boolean): OrderLock => ({
   ordersLocked: false,
   firstOrderId: firstOrderReceived ? "order-1" : null,
   pendingReview: false,
-  grace: { endsAt: "2026-11-27T00:00:00Z", firstOrderReceived, endedBy: null },
+  grace: { endsAt: "2026-11-27T00:00:00Z", firstOrderReceived, endedBy: null, offlineAt: null },
+  storeOffline: false,
 });
 
 describe("grace notice", () => {
@@ -25,7 +26,7 @@ describe("grace notice", () => {
   it("never shows when activated, locked or outside a grace window", () => {
     expect(showGraceNotice(ORDERS_UNLOCKED, true)).toBe(false);
     expect(graceNoticeNeedsStoreCheck(ORDERS_UNLOCKED)).toBe(false);
-    const locked: OrderLock = { ...grace(true), ordersLocked: true, grace: { endsAt: "2026-11-01T00:00:00Z", firstOrderReceived: true, endedBy: "days" } };
+    const locked: OrderLock = { ...grace(true), ordersLocked: true, grace: { endsAt: "2026-11-01T00:00:00Z", firstOrderReceived: true, endedBy: "days", offlineAt: null } };
     expect(showGraceNotice(locked, true)).toBe(false);
     expect(graceNoticeNeedsStoreCheck(locked)).toBe(false);
     expect(showGraceNotice({ ...grace(false), grace: null }, true)).toBe(false);

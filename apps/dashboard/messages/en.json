@@ -195,6 +195,11 @@
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
     "viewWallet": "View wallet",
+    "offlineTitle": "Your store is offline: top up to bring it back",
+    "offlineBody": "Your {days} free days are over, so your store is closed to visitors and takes no new orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} and your store comes back online at once.",
+    "bodySecondOrderShort": "Your second order has arrived. Your first order stays visible; top up your wallet to see the new ones. Top up within {days, plural, one {# day} other {# days}} or your store goes offline.",
+    "graceBodyShort": "Your store is live and takes orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} within {total} days of signing up or your store goes offline. Once your second order arrives, new orders stay hidden until you top up.",
+    "graceFirstOrderBodyShort": "Your next order stays hidden until you top up your wallet{amount, select, none {} other {, starting from {amount} only}}. Top up within {days, plural, one {# day} other {# days}} or your store goes offline. This first order always stays visible.",
     "sidebar": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}, to see your orders"
   },
   "bulkFileImport": {

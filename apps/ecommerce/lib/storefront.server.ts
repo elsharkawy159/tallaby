@@ -24,7 +24,8 @@ import {
   isNull,
   sql,
 } from "@workspace/db";
-import { categoryTags, productTags, sellerTags, storeTags } from "@workspace/cache";
+import { categoryTags, createCachedQuery, productTags, sellerTags, storeTags } from "@workspace/cache";
+import { getOrderLock, storeMayBeBillingOffline } from "@workspace/lib/billing/order-lock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
   hostnameOf,
@@ -99,6 +100,46 @@ export function isStorefrontOffline(store: Pick<Storefront, "siteStatus">): bool
   return store.siteStatus !== "published";
 }
 
+/**
+ * One seller's stores are offline for billing (ROADMAP.md F-84 follow-up, owner
+ * 2026-11-15; `storeOffline` in @workspace/lib/billing/order-lock): signed up on or
+ * after SHORT_GRACE_FROM, the 7 days are over, not activated and no top-up in
+ * review. Cached 30 s per seller (the boolean only, never a balance). Activation
+ * is for good, so a stale "online" is harmless; a stale "offline" after a top-up
+ * clears within 30 s. getOrderLock fails open (online) on any error.
+ */
+const getSellerBillingOffline = createCachedQuery({
+  name: "storefront:billing-offline:v1",
+  ttl: 30,
+  tags: (sellerId: string) => [sellerTags.detail(sellerId)],
+  query: async (sellerId: string) => (await getOrderLock(sellerId)).storeOffline,
+});
+
+/**
+ * Whether the store's seller has it offline for billing. Runs on every
+ * storefront request, so the common cases cost no query: a seller created
+ * before SHORT_GRACE_FROM, or still inside the 7 days, is online from the
+ * cached profile's `sellerCreatedAt` alone. `fresh` skips the 30 s cache (placing an order).
+ */
+export async function isStoreBillingOffline(
+  store: { id: string; sellerCreatedAt: string | null },
+  { fresh = false }: { fresh?: boolean } = {},
+): Promise<boolean> {
+  if (!storeMayBeBillingOffline(store.sellerCreatedAt)) return false;
+  try {
+    return fresh ? (await getOrderLock(store.id)).storeOffline : await getSellerBillingOffline(store.id);
+  } catch {
+    return false;
+  }
+}
+
+/** Offline for visitors for any reason: the site isn't published, or billing (`isStoreBillingOffline`). */
+export async function isStorefrontOfflineForVisitors(
+  store: Pick<Storefront, "id" | "siteStatus" | "sellerCreatedAt">,
+): Promise<boolean> {
+  return isStorefrontOffline(store) || (await isStoreBillingOffline(store));
+}
+
 export type Storefront = NonNullable<
   Awaited<ReturnType<typeof getStorefrontBySubdomain>>
 >;
@@ -145,6 +186,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
           supportedLocales: stores.supportedLocales,
           defaultLocale: stores.defaultLocale,
           sellerId: sellers.id,
+          sellerCreatedAt: sellers.createdAt,
           slug: sellers.slug,
           storeRating: sellers.storeRating,
           positiveRatingPercent: sellers.positiveRatingPercent,
@@ -178,6 +220,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
       const state = (row.legalAddress as { state?: string } | null)?.state;
       return {
         id: row.sellerId,
+        /** When the seller signed up: the no-query fast path of `isStoreBillingOffline`. */
+        sellerCreatedAt: row.sellerCreatedAt ?? null,
         storeId: row.storeId,
         isPrimaryStore: row.isPrimaryStore,
         catalogMode: row.catalogMode,
@@ -233,8 +277,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         defaultLocale: storeBaseLocale(row.defaultLocale),
       };
     },
-    // v17: + defaultLocale (unprefixed address language). v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v17-${subdomain}`],
+    // v18: + sellerCreatedAt (billing offline fast path). v17: + defaultLocale (unprefixed address language). v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v18-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
@@ -291,18 +335,22 @@ export async function getCartStoreSellerId(): Promise<string | null> {
 }
 
 /**
- * Whether this cart belongs to a store whose website is offline. Checked
- * from the cart row (not the request host), so an offline store takes no
- * orders whatever host the request comes from. Read fresh, never cached.
+ * Whether this cart belongs to a store whose website is offline, or whose
+ * seller has it offline for billing. Checked from the cart row (not the
+ * request host), so an offline store takes no orders whatever host the
+ * request comes from. Read fresh, never cached.
  */
 export async function isCartStoreOffline(cartId: string): Promise<boolean> {
   const [row] = await db
-    .select({ siteStatus: stores.siteStatus })
+    .select({ siteStatus: stores.siteStatus, sellerId: sellers.id, sellerCreatedAt: sellers.createdAt })
     .from(carts)
     .innerJoin(stores, eq(stores.id, carts.storeId))
+    .innerJoin(sellers, eq(sellers.id, stores.sellerId))
     .where(eq(carts.id, cartId))
     .limit(1);
-  return row ? isStorefrontOffline({ siteStatus: row.siteStatus as StoreSiteStatus }) : false;
+  if (!row) return false;
+  if (isStorefrontOffline({ siteStatus: row.siteStatus as StoreSiteStatus })) return true;
+  return isStoreBillingOffline({ id: row.sellerId, sellerCreatedAt: row.sellerCreatedAt }, { fresh: true });
 }
 
 /**
@@ -313,7 +361,7 @@ export async function isRequestStoreOffline(): Promise<boolean> {
   const subdomain = await getRequestStoreSubdomain();
   if (!subdomain) return false;
   const store = await getStorefrontBySubdomain(subdomain);
-  return store ? isStorefrontOffline(store) : false;
+  return store ? isStorefrontOfflineForVisitors(store) : false;
 }
 
 /**
@@ -434,9 +482,9 @@ export async function storeHasProducts(store: Pick<Storefront, "id" | "storeId">
  * and something to sell. An offline store gets noindex and an empty sitemap.
  */
 export async function isStorefrontIndexable(
-  store: Pick<Storefront, "id" | "storeId" | "seo" | "siteStatus">,
+  store: Pick<Storefront, "id" | "storeId" | "seo" | "siteStatus" | "sellerCreatedAt">,
 ): Promise<boolean> {
-  if (isStorefrontOffline(store)) return false;
+  if (await isStorefrontOfflineForVisitors(store)) return false;
   return store.seo.indexing && (await storeHasProducts(store));
 }
 
