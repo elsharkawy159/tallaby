@@ -111,8 +111,11 @@ describe("storefront.server caches", { timeout: 30_000 }, () => {
     expect(keys[0]).toContain("shared");
     expect(keys[1]).toContain("split");
     expect(recorded.unstable[2]!.tags).toEqual(
-      expect.arrayContaining([productTags.seller(SELLER), productTags.store(SELLER, STORE_B), storeTags.catalog(SELLER, STORE_B), categoryTags.all()]),
+      expect.arrayContaining([productTags.seller(SELLER), productTags.store(SELLER, STORE_B), storeTags.catalog(SELLER, STORE_B), categoryTags.taxonomy()]),
     );
+    // Not the platform-wide tag every seller's product write purges.
+    expect(recorded.unstable[2]!.tags).not.toContain(categoryTags.all());
+    expect(recorded.unstable[2]!.tags).not.toContain(productTags.store(SELLER, STORE_A));
   });
 
   it("storeHasProducts keys by store and catalog mode", async () => {

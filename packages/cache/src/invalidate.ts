@@ -150,9 +150,12 @@ export function invalidateProduct(
     tags.add(productTags.all());
   }
 
-  // Ecommerce category queries cache active product counts (top categories,
-  // showcase empty-state filters, breadcrumb counts). Purge on approval
-  // (pending→active), delete, create, or moving a visible product A→B.
+  // Platform-wide (tallaby.com) category queries cache active product counts
+  // (top categories, showcase empty-state filters, breadcrumb counts). Purge on
+  // approval (pending→active), delete, create, or moving a visible product A→B.
+  // Store hosts' category lists don't read these tags: they carry the product's
+  // own store and seller tags (added above) plus categoryTags.taxonomy(), which
+  // a product write never purges.
   if (categoryCountsChanged) {
     tags.add(categoryTags.all());
     tags.add(categoryTags.tree());
@@ -241,6 +244,7 @@ export function invalidateCategory(id: string, slug?: string): CacheInvalidation
     categoryTags.all(),
     categoryTags.tree(),
     categoryTags.top(),
+    categoryTags.taxonomy(),
   ];
   if (slug) tags.push(categoryTags.slug(slug));
   return inv(tags);
@@ -248,7 +252,7 @@ export function invalidateCategory(id: string, slug?: string): CacheInvalidation
 
 /** Full taxonomy purge — used by admin's manual "Refresh" control. */
 export function invalidateAllCategories(): CacheInvalidation {
-  return inv([categoryTags.all(), categoryTags.tree(), categoryTags.top()]);
+  return inv([categoryTags.all(), categoryTags.tree(), categoryTags.top(), categoryTags.taxonomy()]);
 }
 
 export function invalidateBrand(id: string, slug?: string): CacheInvalidation {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   invalidateAllCategories,
   invalidateBillingRate,
+  invalidateCategory,
   invalidateFulfillmentPlans,
   invalidateMarketingBlog,
   invalidateSellerCoupons,
@@ -365,11 +366,52 @@ describe("mergeInvalidations", () => {
   });
 });
 
+describe("invalidateProduct: store hosts vs platform readers", () => {
+  // A store host's category list is tagged with its store, its seller and the
+  // Tallaby taxonomy (apps/ecommerce/lib/storefront.server.ts getStorefrontCategories).
+  const storefrontCategoryTags = (sellerId: string, storeId: string) => [
+    productTags.seller(sellerId),
+    productTags.store(sellerId, storeId),
+    storeTags.catalog(sellerId, storeId),
+    categoryTags.taxonomy(),
+  ];
+  const purges = (tags: string[], readerTags: string[]) => readerTags.some((t) => tags.includes(t));
+
+  const inStoreA = { sellerId: "seller-a", storeId: "store-a" };
+  const cases: [string, ProductCacheSnapshot | null, ProductCacheSnapshot | null][] = [
+    ["create", null, snapshot(inStoreA)],
+    ["delete", snapshot(inStoreA), null],
+    ["visibility flip", snapshot({ ...inStoreA, status: "draft" }), snapshot(inStoreA)],
+    ["category move", snapshot(inStoreA), snapshot({ ...inStoreA, categoryId: "cat-2" })],
+  ];
+
+  for (const [name, before, after] of cases) {
+    it(`${name} in store A purges A's storefront categories, not store B's`, () => {
+      const { tags } = invalidateProduct(before, after);
+      expect(purges(tags, storefrontCategoryTags("seller-a", "store-a"))).toBe(true);
+      expect(purges(tags, storefrontCategoryTags("seller-b", "store-b"))).toBe(false);
+      // Another store of the same seller: only the seller-wide tag (kept while a product could show in several stores).
+      expect(tags).not.toContain(productTags.store("seller-a", "store-a2"));
+      expect(tags).not.toContain(categoryTags.taxonomy());
+    });
+
+    it(`${name} still purges the platform-wide (marketplace) category and listing readers`, () => {
+      const { tags } = invalidateProduct(before, after);
+      expect(tags).toEqual(expect.arrayContaining([categoryTags.all(), categoryTags.tree(), categoryTags.top()]));
+    });
+  }
+
+  it("an Admin category edit purges every store host's category list through the taxonomy tag", () => {
+    expect(invalidateCategory("cat-1", "home").tags).toContain(categoryTags.taxonomy());
+    expect(invalidateAllCategories().tags).toContain(categoryTags.taxonomy());
+  });
+});
+
 describe("invalidateAllCategories", () => {
   it("emits the shared taxonomy tags used by ecommerce and dashboard", () => {
     const { tags } = invalidateAllCategories();
     expect(tags).toEqual(
-      expect.arrayContaining([categoryTags.all(), categoryTags.tree(), categoryTags.top()])
+      expect.arrayContaining([categoryTags.all(), categoryTags.tree(), categoryTags.top(), categoryTags.taxonomy()])
     );
     assertNoForbiddenTags(tags);
   });

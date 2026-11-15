@@ -51,6 +51,13 @@ export const categoryTags = {
   tree: () => "category:tree",
   /** Homepage / showcase ranking by active product count (ecommerce getTopCategories). */
   top: () => "category:top",
+  /**
+   * The Tallaby category rows themselves (names, slugs, tree), never product
+   * counts: purged only by Admin category edits, never by a product write. A
+   * store host's category list carries it next to its own store tags, so one
+   * seller's product change doesn't purge every store's categories.
+   */
+  taxonomy: () => "category:taxonomy",
 } as const;
 
 export const brandTags = {

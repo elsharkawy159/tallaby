@@ -524,7 +524,9 @@ export async function getStorefrontCategories(sellerId: string, storeId: string)
     // counts). v3: always per store and catalog mode (F-87c). v2: seller categories (storeCategoryGroups); never read a cached root-only list.
     [`storefront-categories-v5-${sellerId}-${storeId}-${splitKey(catalogSplit)}`],
     {
-      tags: [...storefrontCatalogTags(sellerId, storeId), categoryTags.all()],
+      // The store's own tags (every product write purges its store and seller) plus the Tallaby
+      // taxonomy (root names and slugs); never categoryTags.all(), which any seller's product write purges.
+      tags: [...storefrontCatalogTags(sellerId, storeId), categoryTags.taxonomy()],
       revalidate: 3600,
     },
   )();

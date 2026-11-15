@@ -128,7 +128,7 @@ Expected: from about 10 MB × hundreds a day down to about 10 MB × (deploys + a
 - `getProducts` always carries the global `productTags.listing()` tag, which is
   bumped by any seller's product create, delete, price change or out-of-stock
   order (`packages/cache/src/invalidate.ts:140,157,204`).
-- `getStorefrontCategories` is tagged `categoryTags.all()`.
+- `getStorefrontCategories` was tagged `categoryTags.all()`; since 2026-11-15 it carries its store's tags plus `categoryTags.taxonomy()` (purged only by Admin category edits), so this part is fixed.
 - So one seller's change refills every storefront's listings.
 - Fix: seller-scoped tags only (`productTags.seller`, `storeTags.catalog`).
 
