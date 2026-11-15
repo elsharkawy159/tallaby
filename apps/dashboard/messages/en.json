@@ -8832,6 +8832,65 @@
       "discard": "Discard"
     }
   },
+  "storeWelcome": {
+    "title": "Set up your store",
+    "description": "A few short steps to get your store ready for its first order.",
+    "welcomeTitle": "Welcome to Tallaby! Your store is ready",
+    "welcomeDescription": "Set it up in minutes: follow the steps below in order.",
+    "skip": "Go to dashboard",
+    "progress": "Steps done: {done} of {total}",
+    "progressLabel": "Setup progress",
+    "readOnly": "This store is read-only, so its setup can't be changed.",
+    "done": "Done",
+    "main": {
+      "title": "Main setup",
+      "description": "What you sell, your theme, your brand and your first product.",
+      "count": "{done} of {total}"
+    },
+    "steps": {
+      "industry": {
+        "title": "What do you sell?",
+        "description": "We suggest the themes that fit what you sell.",
+        "empty": "Not chosen yet",
+        "choose": "Choose",
+        "edit": "Edit",
+        "modalTitle": "What does your store sell?",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saved": "Saved."
+      },
+      "theme": {
+        "title": "Choose your theme",
+        "description": "The best fit for your store comes first. You can change it any time.",
+        "current": "Your theme: {name}",
+        "change": "Change theme",
+        "hide": "Hide themes",
+        "seeAll": "See all themes"
+      },
+      "brand": {
+        "title": "Your brand",
+        "description": "Your logo, browser icon, main color and website language.",
+        "color": "Main color",
+        "colorHint": "Used for buttons and links.",
+        "colorCustom": "Another color",
+        "colorDraft": "The color is saved to your website draft and shows to visitors after you publish from <link>Website › Design</link>.",
+        "colorLocked": "Choose a theme first. Each theme comes with its own colors.",
+        "language": "Main website language",
+        "languageHint": "The language visitors see first.",
+        "save": "Save brand",
+        "saved": "Brand saved."
+      },
+      "product": {
+        "title": "Add your first product",
+        "description": "Check the details and publish it, then you come back here.",
+        "aiHint": "Describe your product and upload a photo, and we write the title and description for you.",
+        "cta": "Add a product with AI",
+        "ctaManual": "Add a product",
+        "doneNote": "Your first product is in your store.",
+        "viewProducts": "View products"
+      }
+    }
+  },
   "setupReminderUnsubscribe": {
     "title": "Store setup reminders",
     "confirm": "Stop the emails reminding you to finish your store?",

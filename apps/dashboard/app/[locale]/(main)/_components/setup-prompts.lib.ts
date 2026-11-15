@@ -97,12 +97,14 @@ export function decideSetupPrompt(
 }
 
 const BUILDER_ROUTE = /^\/stores\/[^/]+\/editor(\/|$)/;
+// The welcome page walks the seller through every step itself (docs/plans/seller-welcome.md).
+const WELCOME_ROUTE = /^\/stores\/[^/]+\/welcome(\/|$)/;
 // The product form, under its store since F-87c (the old /products paths only redirect).
 const PRODUCT_FORM_ROUTE = /^(\/stores\/[^/]+)?\/products\/(add|[^/]+\/edit)(\/|$)/;
 
-/** Prompts stay out of the builder and off the page where the seller is doing that very step. */
+/** Prompts stay out of the builder and the welcome page, and off the page where the seller is doing that very step. */
 export function isPromptBlockedRoute(pathname: string, step: { key: SetupKey; href: string }): boolean {
-  if (BUILDER_ROUTE.test(pathname)) return true;
+  if (BUILDER_ROUTE.test(pathname) || WELCOME_ROUTE.test(pathname)) return true;
   if (step.key === "product" && PRODUCT_FORM_ROUTE.test(pathname)) return true;
   if (pathname === step.href) return true;
   // The publish step's page is the website overview; its sub-pages are other work.

@@ -33,8 +33,6 @@ import {
 } from "@workspace/ui/components/select";
 import {
   CheckRow,
-  Chip,
-  Chips,
   Field,
   FieldRow,
   Note,
@@ -49,7 +47,8 @@ import {
 } from "@/components/seller-ui";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
-import { STORE_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
+import { IndustryNichePicker } from "@/components/stores/industry-niche-picker.client";
+import { findIndustry } from "@/lib/stores/industries.lib";
 import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 import { cn } from "@/lib/utils";
 import { StoreCatalogSections, useStoreCatalog, type StoreCatalogProps } from "./catalog.client";
@@ -221,43 +220,19 @@ export function StoreGeneralForm({
             {...form.register("description")}
           />
         </Field>
-        <Field label={t("fields.industry")} note={t("fields.industryHint")}>
-          <Chips role="group" aria-label={t("fields.industry")}>
-            {STORE_INDUSTRIES.map((option) => (
-              <Chip
-                key={option.id}
-                pressed={industry?.id === option.id}
-                disabled={disabled}
-                className="disabled:opacity-50"
-                onClick={() => {
-                  // Another industry has other niches: the niche starts again.
-                  if (industry?.id !== option.id) form.setValue("niche", "", { shouldDirty: true });
-                  form.setValue("storeCategory", option.en, { shouldDirty: true });
-                  form.setValue("storeCategoryAr", option.ar, { shouldDirty: true });
-                }}
-              >
-                {uiLocale === "en" ? option.en : option.ar}
-              </Chip>
-            ))}
-          </Chips>
-        </Field>
-        {niches.length > 0 && (
-          <Field label={t("fields.niche")} note={t("fields.nicheHint")}>
-            <Chips role="group" aria-label={t("fields.niche")}>
-              {[...niches, { id: "", name: t("fields.nicheNone") }].map((option) => (
-                <Chip
-                  key={option.id || "none"}
-                  pressed={option.id ? niche === option.id : !niches.some((choice) => choice.id === niche)}
-                  disabled={disabled}
-                  className="disabled:opacity-50"
-                  onClick={() => form.setValue("niche", option.id, { shouldDirty: true })}
-                >
-                  {option.name}
-                </Chip>
-              ))}
-            </Chips>
-          </Field>
-        )}
+        <IndustryNichePicker
+          industryId={industry?.id ?? null}
+          nicheId={niche}
+          niches={niches}
+          disabled={disabled}
+          onIndustryChange={(option) => {
+            // Another industry has other niches: the niche starts again.
+            if (industry?.id !== option.id) form.setValue("niche", "", { shouldDirty: true });
+            form.setValue("storeCategory", option.en, { shouldDirty: true });
+            form.setValue("storeCategoryAr", option.ar, { shouldDirty: true });
+          }}
+          onNicheChange={(id) => form.setValue("niche", id, { shouldDirty: true })}
+        />
         <FieldRow>
           {text("storeCategoryAr", t("fields.categoryAr"), { placeholder: t("fields.categoryArPlaceholder") })}
           {text("storeCategory", t("fields.categoryEn"), { placeholder: t("fields.categoryEnPlaceholder"), dir: "ltr" })}

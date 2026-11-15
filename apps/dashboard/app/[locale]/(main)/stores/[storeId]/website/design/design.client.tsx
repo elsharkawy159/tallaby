@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -8,7 +8,6 @@ import {
   BadgeCheck,
   Check,
   Hourglass,
-  ImagePlus,
   LayoutTemplate,
   LoaderCircle,
   Monitor,
@@ -17,7 +16,6 @@ import {
   RotateCcw,
   Save,
   Smartphone,
-  Trash2,
   Type,
   UploadCloud,
   type LucideIcon,
@@ -27,10 +25,8 @@ import type { StoreLoadingScreen } from "@workspace/lib/stores/loading-screen";
 import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "@workspace/store-sections/fonts";
 import type { StoreProfile } from "@workspace/store-sections/render";
 import { IconButton, Note, PageHeader, PageTabs, Segmented, SellerButton, SellerCard } from "@/components/seller-ui";
-import { SELLER_IMAGE_ACCEPT_ATTR, useSellerUpload } from "@/components/inputs/use-seller-upload";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
-import { LogoField } from "@/components/stores/brand-image-fields.client";
-import { storeLogoSrc } from "@/components/stores/store-logo.client";
+import { FaviconField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { cn } from "@/lib/utils";
 import { publish, saveDesignSystem, saveDraft } from "@/app/[locale]/(builder)/stores/[storeId]/editor/server/editor.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
@@ -589,74 +585,6 @@ function ChoiceRow<V extends number | undefined>({
             {option.label}
           </button>
         ))}
-      </div>
-    </div>
-  );
-}
-
-/** Square favicon picker (same upload as the logo; shown in browser tabs). */
-function FaviconField({ value, onChange, disabled }: { value: string; onChange: (value: string) => void; disabled?: boolean }) {
-  const t = useTranslations("websiteDesign.brand");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const { upload, isUploading } = useSellerUpload({ folder: "logos" });
-  const src = storeLogoSrc(value);
-
-  return (
-    <UploadRow
-      media={
-        <span className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-(--s-fill) text-(--s-subtle)">
-          {src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt={t("favicon")} className="size-8 object-contain" />
-          ) : (
-            <ImagePlus className="size-5" aria-hidden />
-          )}
-          {isUploading && (
-            <span className="absolute inset-0 grid place-items-center bg-black/40">
-              <LoaderCircle className="size-4 animate-spin text-white" aria-hidden />
-            </span>
-          )}
-        </span>
-      }
-      title={t("favicon")}
-      hint={t("faviconHint")}
-    >
-      <SellerButton variant="mini" size="xs" disabled={disabled || isUploading} onClick={() => inputRef.current?.click()}>
-        <UploadCloud aria-hidden />
-        {value ? t("changeFavicon") : t("uploadFavicon")}
-      </SellerButton>
-      {value && (
-        <SellerButton variant="mini" size="xs" className="text-destructive [&_svg]:text-destructive" disabled={disabled || isUploading} onClick={() => onChange("")}>
-          <Trash2 aria-hidden />
-          {t("remove")}
-        </SellerButton>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept={SELLER_IMAGE_ACCEPT_ATTR}
-        className="hidden"
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          e.target.value = "";
-          if (!file) return;
-          const url = await upload(file);
-          if (url) onChange(url);
-        }}
-      />
-    </UploadRow>
-  );
-}
-
-/** The design's upload row (`.up`): image, title, hint and small actions. */
-function UploadRow({ media, title, hint, children }: { media: ReactNode; title: string; hint: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center gap-4 rounded-[20px] border border-(--s-line) bg-(--s-surface) p-3.5">
-      {media}
-      <div className="min-w-0 flex-1">
-        <b className="block text-sm font-bold text-(--s-ink)">{title}</b>
-        <small className="block text-xs leading-[1.6] text-(--s-subtle)">{hint}</small>
-        <div className="mt-2 flex flex-wrap gap-1.5">{children}</div>
       </div>
     </div>
   );
