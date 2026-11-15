@@ -96,6 +96,7 @@ import { SPORTS_LUXE } from "./sports-luxe";
 import { WASLA } from "./wasla";
 import { VELLA } from "./vella";
 import { templateRefConfig } from "./ref-config";
+import { shotPreview } from "./preview";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 /**
@@ -125,7 +126,18 @@ export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [STREETWEAR, KAS
   VELLA,
 ];
 
-export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ...LIBRARY_TEMPLATES];
+/**
+ * Gallery screenshots taken after a template was written (`preview-shots.generated.ts`) reach it
+ * here, so its definition needn't change. Set on the definition itself, once at load, so a template
+ * stays the same object everywhere it is imported.
+ */
+function withShots(template: TemplateDefinition): TemplateDefinition {
+  const preview = template.preview ? undefined : shotPreview(template.key, undefined);
+  if (preview) template.preview = preview;
+  return template;
+}
+
+export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ...LIBRARY_TEMPLATES].map(withShots);
 
 /** The default template: a new store's starting site (`templates.is_default`). */
 export const DEFAULT_TEMPLATE: TemplateDefinition = CLASSIC;

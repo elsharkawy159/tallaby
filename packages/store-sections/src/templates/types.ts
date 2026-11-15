@@ -79,7 +79,20 @@ export type TemplateDefinition = {
  * `/template-previews/vella.ar.webp`; the dashboard and Admin prefix the
  * tallaby.com origin.
  */
-export type TemplatePreviewShot = { src: string; width: number; height: number };
+export type TemplatePreviewShot = {
+  src: string;
+  width: number;
+  height: number;
+  /**
+   * The same page shot on a phone (400 px wide, owner 2026-11-15), shown
+   * instead on small screens (`TEMPLATE_PREVIEW_MOBILE_MEDIA`); unset: the
+   * desktop shot everywhere.
+   */
+  mobile?: TemplatePreviewImage;
+};
+
+/** One stored screenshot file: its public path and pixel size. */
+export type TemplatePreviewImage = { src: string; width: number; height: number };
 
 /**
  * A template's gallery card screenshots (owner, 2026-11-12): its home page
@@ -87,3 +100,18 @@ export type TemplatePreviewShot = { src: string; width: number; height: number }
  * per language.
  */
 export type TemplatePreview = { edition: string | null; ar: TemplatePreviewShot; en: TemplatePreviewShot };
+
+/** One stored screenshot's pixel size. */
+export type TemplatePreviewSize = { width: number; height: number };
+
+/**
+ * A template's generated screenshot sizes (`preview-shots.generated.ts`,
+ * written by `scripts/template-shots.mjs`): the edition it was drawn with
+ * (null: its own content) and, per language, the desktop shot and, when
+ * taken, the phone shot.
+ */
+export type TemplatePreviewShots = {
+  edition: string | null;
+  ar: { desktop: TemplatePreviewSize; mobile?: TemplatePreviewSize };
+  en: { desktop: TemplatePreviewSize; mobile?: TemplatePreviewSize };
+};

@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils";
 import { TemplateShot } from "@workspace/ui/components/template-shot";
-import type { PreviewShot } from "@workspace/store-sections/template-preview";
+import { TEMPLATE_PREVIEW_MOBILE_MEDIA, type PreviewShot } from "@workspace/store-sections/template-preview";
 import { TemplateLiveThumb } from "./template-live-thumb.client";
 
 /** A live frame's height for a 3:4 box at the 1280 px frame width. */
@@ -14,7 +14,7 @@ const TALL_FRAME_HEIGHT = 1707;
  */
 export function TemplateThumb({ shot, liveSrc, className, sizes }: { shot: PreviewShot | null; liveSrc: string; className?: string; sizes?: string }) {
   return shot ? (
-    <TemplateShot src={shot.src} width={shot.width} height={shot.height} sizes={sizes} className={className} />
+    <TemplateShot src={shot.src} width={shot.width} height={shot.height} mobile={shot.mobile} mobileMedia={TEMPLATE_PREVIEW_MOBILE_MEDIA} sizes={sizes} className={className} />
   ) : (
     <TemplateLiveThumb src={liveSrc} className={cn("aspect-[3/4]", className)} frameHeight={TALL_FRAME_HEIGHT} />
   );

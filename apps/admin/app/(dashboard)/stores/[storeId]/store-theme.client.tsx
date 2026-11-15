@@ -15,7 +15,7 @@ import { templatePreviewPageUrl } from "@workspace/store-editor/lib/template-edi
 import { TemplateLiveThumbnail } from "@workspace/store-editor/preview/template-live-thumbnail.client";
 import type { TemplatePreviewView } from "@workspace/store-editor/templates.dto";
 import { TemplateShot } from "@workspace/ui/components/template-shot";
-import { previewShot, templatePreviewUrl } from "@workspace/store-sections/template-preview";
+import { TEMPLATE_PREVIEW_MOBILE_MEDIA, previewShot, templatePreviewUrl } from "@workspace/store-sections/template-preview";
 import { RemoteImage } from "@/components/media/remote-image";
 import { BuilderIntl } from "@/app/(builder)/builder-intl.client";
 import { templatePreview } from "@/app/(builder)/stores/[storeId]/editor/admin-store-editor.server";
@@ -261,7 +261,15 @@ export function ChangeThemeButton({
                       >
                         <div className="relative w-full bg-muted">
                           {shot ? (
-                            <TemplateShot src={templatePreviewUrl(shot.src, PREVIEW_ORIGIN)} width={shot.width} height={shot.height} sizes="(min-width: 1024px) 240px, 45vw" className="border-b bg-muted" />
+                            <TemplateShot
+                              src={templatePreviewUrl(shot.src, PREVIEW_ORIGIN)}
+                              width={shot.width}
+                              height={shot.height}
+                              mobile={shot.mobile && { ...shot.mobile, src: templatePreviewUrl(shot.mobile.src, PREVIEW_ORIGIN) }}
+                              mobileMedia={TEMPLATE_PREVIEW_MOBILE_MEDIA}
+                              sizes="(min-width: 1024px) 240px, 45vw"
+                              className="border-b bg-muted"
+                            />
                           ) : theme.thumbnailUrl && !edition ? (
                             <div className="relative aspect-[3/4] w-full border-b">
                               <RemoteImage src={theme.thumbnailUrl} alt="" fill sizes="(min-width: 1024px) 240px, 45vw" className="object-cover object-top" />

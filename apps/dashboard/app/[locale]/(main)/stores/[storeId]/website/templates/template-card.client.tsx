@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Check, Eye, LayoutTemplate, Lock, RotateCcw, Sparkles } from "lucide-react";
 import { TemplateShot } from "@workspace/ui/components/template-shot";
-import { previewShot, templatePreviewUrl } from "@workspace/store-sections/template-preview";
+import { TEMPLATE_PREVIEW_MOBILE_MEDIA, previewShot, templatePreviewUrl } from "@workspace/store-sections/template-preview";
 import { RemoteImage } from "@/components/media/remote-image";
 import { SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
@@ -57,7 +57,15 @@ export function TemplateCard({
       <div className={cn("relative overflow-hidden rounded-2xl border border-(--s-line) bg-(--s-surface) shadow-(--s-shadow-card) transition-shadow duration-200 group-hover:shadow-(--s-shadow-hover)", current && "outline-2 outline-offset-2 outline-(--s-primary)")}>
         <button type="button" className="block w-full cursor-pointer text-start" onClick={onPreview} aria-label={t("preview.open", { name })}>
           {shot ? (
-            <TemplateShot src={templatePreviewUrl(shot.src, TEMPLATE_PREVIEW_ORIGIN)} width={shot.width} height={shot.height} sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 92vw" className="bg-(--s-fill)" />
+            <TemplateShot
+              src={templatePreviewUrl(shot.src, TEMPLATE_PREVIEW_ORIGIN)}
+              width={shot.width}
+              height={shot.height}
+              mobile={shot.mobile && { ...shot.mobile, src: templatePreviewUrl(shot.mobile.src, TEMPLATE_PREVIEW_ORIGIN) }}
+              mobileMedia={TEMPLATE_PREVIEW_MOBILE_MEDIA}
+              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 92vw"
+              className="bg-(--s-fill)"
+            />
           ) : template.thumbnailUrl ? (
             <span className="relative block aspect-[3/4] w-full">
               <RemoteImage src={template.thumbnailUrl} alt="" fill sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw" className="object-cover object-top" />
