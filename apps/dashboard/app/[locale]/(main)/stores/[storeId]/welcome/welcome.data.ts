@@ -1,31 +1,37 @@
 import { getTranslations } from "next-intl/server";
 import { aiConfigured } from "@workspace/ai";
-import { db, eq, storeDesignSystems } from "@workspace/db";
+import { db, eq, sellers, storeDesignSystems } from "@workspace/db";
 import { parseStoreCurrency } from "@workspace/lib";
+import { isProActive } from "@workspace/lib/billing";
+import { getBillingState } from "@workspace/lib/billing/server";
 import { placeLabel } from "@workspace/lib/places";
 import { gatewaySupportsCurrency, parseStorePayments } from "@workspace/lib/payments/store-methods";
 import { STORE_GATEWAY_PROVIDERS } from "@workspace/lib/payments/store-gateways";
 import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
+import { storeUrl } from "@workspace/lib/storefront";
+import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { getStoreShipping } from "@workspace/lib/stores/server";
 import { effectiveStoreNiche, industryOfCategory, nicheForIndustry, parseStoreNiche } from "@workspace/lib/stores/niche";
 import type { StoreRow } from "@workspace/lib/stores/server";
 import { designSystemSchema } from "@workspace/store-sections";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
+import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { findIndustry, STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { nicheChoices } from "@/lib/stores/niche-choices.lib";
 import { getSetupPromptRow } from "../../../_components/home.queries";
-import { welcomeShippingDefault } from "./welcome.lib";
+import { welcomeShippingDefault, welcomeWallet } from "./welcome.lib";
 import type { WelcomeData } from "./welcome.types";
 
 /**
  * Read-only loader of the welcome page, for a store `loadStorePage` already
  * checked (rule 5: it belongs to the session seller). Never `getStoreForEditor`,
  * which writes the site scaffold. One round of queries; nothing cached (rule 8).
- * P3 adds the order lock and the store link here.
+ * The order lock and billing state are the seller's (session) ones, never a
+ * client value.
  */
 export async function loadWelcomeData(store: StoreRow, locale: string): Promise<WelcomeData | null> {
   const themesAvailable = storeBuilderEnabled(store.sellerId);
-  const [promptRow, designRows, shipping, gateways, tAr, tEn] = await Promise.all([
+  const [promptRow, designRows, shipping, gateways, tAr, tEn, lock, billing, planRows, customDomain] = await Promise.all([
     getSetupPromptRow(store.sellerId, store.id),
     themesAvailable
       ? db
@@ -45,6 +51,15 @@ export async function loadWelcomeData(store: StoreRow, locale: string): Promise<
     // Zone names are saved in both languages, as the shipping page builds them.
     getTranslations({ locale: "ar" }),
     getTranslations({ locale: "en" }),
+    currentOrderLock(),
+    getBillingState(),
+    db
+      .select({ plan: sellers.plan, planExpiresAt: sellers.planExpiresAt, planGraceUntil: sellers.planGraceUntil })
+      .from(sellers)
+      .where(eq(sellers.id, store.sellerId))
+      .limit(1),
+    // The link to share: the store's own domain once it is live. A failed read falls back to the Tallaby address.
+    findActiveCustomDomainForSubdomain(store.subdomain).catch(() => null),
   ]);
   if (!promptRow || !shipping) return null;
 
@@ -77,6 +92,8 @@ export async function loadWelcomeData(store: StoreRow, locale: string): Promise<
     : null;
   const designSystem = row && parsed?.success ? { value: parsed.data, version: row.version } : null;
 
+  const planRow = planRows[0];
+
   const locales = store.supportedLocales.filter((l): l is "ar" | "en" => l === "ar" || l === "en");
 
   return {
@@ -103,6 +120,13 @@ export async function loadWelcomeData(store: StoreRow, locale: string): Promise<
       supportedLocales: locales.length ? locales : [store.defaultLocale === "en" ? "en" : "ar"],
       designSystem,
     },
+    share: {
+      url: storeUrl(store.subdomain, customDomain),
+      subdomain: store.subdomain,
+      customDomain,
+      siteStatus: store.siteStatus,
+    },
+    wallet: welcomeWallet({ lock, usdLive: billing.usdLive, isPro: planRow ? isProActive(planRow) : false }),
     delivery: {
       money,
       shipping: {

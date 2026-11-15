@@ -69,8 +69,9 @@ export function CurrencyInput({
         aria-invalid={invalid || undefined}
         value={value}
         onChange={(e) => {
-          // Arabic-Indic digits typed on an Arabic keyboard count as digits.
-          let next = toAsciiDigits(e.target.value).replace(decimals ? /[^\d.]/g : /\D/g, "");
+          // Arabic-Indic digits typed on an Arabic keyboard count as digits, and the
+          // Arabic decimal separator (٫) as the dot.
+          let next = toAsciiDigits(decimals ? e.target.value.replace(/\u066B/g, ".") : e.target.value).replace(decimals ? /[^\d.]/g : /\D/g, "");
           if (decimals) next = next.replace(/(\..*)\./g, "$1");
           onChange(next);
         }}

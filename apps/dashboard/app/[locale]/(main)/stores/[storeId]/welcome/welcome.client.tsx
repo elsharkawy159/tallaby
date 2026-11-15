@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, LoaderCircle, Pencil, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, LoaderCircle, PartyPopper, Pencil, Sparkles } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@workspace/ui/components/accordion";
 import { Link, useRouter } from "@/i18n/navigation";
 import { IconButton, Modal, Note, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
@@ -15,13 +15,16 @@ import { requestSetupPromptCheck } from "../../../_components/setup-prompts.lib"
 import { saveStoreGeneral } from "../settings/store-settings.server";
 import { WelcomeBrandStep } from "./welcome-brand.client";
 import { WelcomePaymentsStep, WelcomeShippingStep } from "./welcome-delivery.client";
+import { WelcomeShareStep } from "./welcome-share.client";
 import { WelcomeThemeStep } from "./welcome-theme.client";
+import { WelcomeTopUpStep } from "./welcome-top-up.client";
 import {
   initialWelcomeSection,
   nextWelcomeStep,
   welcomeDeliverySteps,
   welcomeProductHref,
   welcomeProgress,
+  welcomeReady,
   welcomeSetupSteps,
   type WelcomeDeliveryStepKey,
   type WelcomeSetupStepKey,
@@ -62,6 +65,8 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
   return (
     <>
       {data.readOnly && <Note tone="amber">{t("readOnly")}</Note>}
+
+      {welcomeReady(data.flags) && <ReadyCard />}
 
       <div className="flex flex-col gap-2" role="group" aria-label={t("progressLabel")}>
         <p className="text-[13px] font-semibold text-(--s-muted)">{t("progress", { done: progress.done, total: progress.total })}</p>
@@ -161,8 +166,64 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
             </AccordionContent>
           </AccordionItem>
         </SellerCard>
+
+        <SellerCard id="welcome-share" className="scroll-mt-24 overflow-hidden">
+          <AccordionItem value="share">
+            <AccordionTrigger className="items-center rounded-none bg-transparent px-5 py-4! hover:bg-(--s-fill)/40 max-[600px]:px-4">
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="flex flex-wrap items-center gap-2 text-[16px] font-bold text-(--s-ink)">
+                  {t("share.title")}
+                  {data.flags.publish && <Tag tone="success">{t("share.live")}</Tag>}
+                </span>
+                <span className="text-[13px] font-normal text-(--s-subtle)">{t("share.description")}</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-1 pb-5 max-[600px]:px-0">
+              <WelcomeShareStep data={data} />
+            </AccordionContent>
+          </AccordionItem>
+        </SellerCard>
+
+        <SellerCard id="welcome-topUp" className="scroll-mt-24 overflow-hidden">
+          <AccordionItem value="topUp">
+            <AccordionTrigger className="items-center rounded-none bg-transparent px-5 py-4! hover:bg-(--s-fill)/40 max-[600px]:px-4">
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="flex flex-wrap items-center gap-2 text-[16px] font-bold text-(--s-ink)">
+                  {t("topUp.title")}
+                  {data.wallet.status.kind === "activated" && <Tag tone="success">{t("done")}</Tag>}
+                </span>
+                <span className="text-[13px] font-normal text-(--s-subtle)">{t("topUp.description")}</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-1 pb-5 max-[600px]:px-0">
+              <WelcomeTopUpStep wallet={data.wallet} />
+            </AccordionContent>
+          </AccordionItem>
+        </SellerCard>
       </Accordion>
     </>
+  );
+}
+
+/** Every progress step is done: the store is ready, and the dashboard is next. */
+function ReadyCard() {
+  const t = useTranslations("storeWelcome");
+  return (
+    <SellerCard className="flex items-center gap-4 border-success p-5 max-[600px]:flex-col max-[600px]:items-stretch max-[600px]:p-4">
+      <span className="grid size-11 shrink-0 place-items-center rounded-[14px] bg-success-soft text-success [&_svg]:size-5 max-[600px]:self-start">
+        <PartyPopper aria-hidden />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-[16px] font-bold text-(--s-ink)">{t("ready.title")}</h2>
+        <p className="text-pretty text-[13px] text-(--s-muted)">{t("ready.description")}</p>
+      </div>
+      <SellerButton asChild className="max-[600px]:w-full">
+        <Link href="/">
+          {t("skip")}
+          <ArrowLeft className="ltr:rotate-180" aria-hidden />
+        </Link>
+      </SellerButton>
+    </SellerCard>
   );
 }
 

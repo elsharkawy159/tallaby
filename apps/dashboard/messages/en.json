@@ -1224,7 +1224,8 @@
     "setupHome": {
       "title": "Let’s set up your store",
       "description": "Four quick steps and your store is ready for its first order.",
-      "edit": "Edit"
+      "edit": "Edit",
+      "openGuide": "Open setup guide"
     },
     "kpis": {
       "currency": "EGP",
@@ -8923,6 +8924,46 @@
         "cardsLink": "Payment settings",
         "listSeparator": " or "
       }
+    },
+    "share": {
+      "title": "Share your store",
+      "description": "Send your store link to your first customers.",
+      "live": "Live",
+      "offlineLink": "Go to the Website page",
+      "tipsTitle": "Ways to share it",
+      "tips": {
+        "bio": "Put the link in your social media bio.",
+        "family": "Share it with friends and family.",
+        "status": "Post it in your WhatsApp status."
+      },
+      "messageTitle": "A message for your customers",
+      "messageHint": "Copy it or send it on WhatsApp. You can edit it before you send it.",
+      "message": "We’ve opened our new store, {storeName}! You can order now here: {url}",
+      "copy": "Copy message",
+      "copied": "Message copied.",
+      "copyFailed": "Couldn’t copy the message.",
+      "whatsapp": "Send via WhatsApp"
+    },
+    "topUp": {
+      "title": "Top up your wallet",
+      "description": "How your wallet works and when to top up.",
+      "body": "Your balance stays in your wallet and doesn’t expire.",
+      "fee": "Only {fee} is taken per order.",
+      "status": {
+        "activated": "Your wallet is active.",
+        "review": "Your top-up is being reviewed. We’ll let you know once it’s approved.",
+        "offlineNow": "Your store is offline. Top up to bring it back.",
+        "offlineIn": "Top up within {days, plural, one {# day} other {# days}} or your store goes offline.",
+        "graceLeft": "{days, plural, one {# day left} other {# days left}} to top up and keep seeing your orders.",
+        "locked": "New orders are hidden until you top up.",
+        "topUp": "Top up to keep seeing your orders."
+      },
+      "cta": "Top up your wallet",
+      "ctaWallet": "Open wallet"
+    },
+    "ready": {
+      "title": "Your store is ready to sell",
+      "description": "You finished every step. Run your store from your dashboard."
     }
   },
   "setupReminderUnsubscribe": {

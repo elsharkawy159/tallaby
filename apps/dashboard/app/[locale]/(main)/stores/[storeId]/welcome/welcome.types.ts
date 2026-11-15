@@ -6,7 +6,7 @@ import type { StoreShippingZone } from "@workspace/lib/stores/server";
 import type { DesignSystem } from "@workspace/store-sections";
 import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 import type { SetupFlags } from "../../../_components/setup-checklist.lib";
-import type { WelcomeShippingDefault } from "./welcome.lib";
+import type { WelcomeShippingDefault, WelcomeWallet } from "./welcome.lib";
 
 /** What the welcome page's loader (`welcome.data.ts`) hands the client. */
 export type WelcomeData = {
@@ -36,6 +36,17 @@ export type WelcomeData = {
     /** The design-system DRAFT and its version (saveDesignSystem's optimistic check); null without the builder. */
     designSystem: { value: DesignSystem; version: number } | null;
   };
+  /** Section 3, sharing the store. */
+  share: {
+    /** The link customers open: the live custom domain, else the Tallaby address. */
+    url: string;
+    subdomain: string;
+    customDomain: string | null;
+    /** `stores.site_status`: `draft` (never published) and `unpublished` are offline. */
+    siteStatus: string;
+  };
+  /** Section 4, the top-up step: built on the server from the order lock (`welcomeWallet`). */
+  wallet: WelcomeWallet;
   /** Section 2, shipping and payments. Every amount is in the store's currency. */
   delivery: {
     money: { currency: StoreCurrency; label: CurrencyLabel };
