@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { and, db, eq, sql, stores } from "@workspace/db";
 import { blockPhoneSchema, normalizeBlockedPhone } from "@workspace/lib/stores/blocked-phones";
 import {
@@ -27,8 +27,8 @@ function accessErrorKey(error: unknown): BlockedCustomersErrorKey | null {
 }
 
 function revalidate(storeId: string) {
-  revalidatePath(`/stores/${storeId}/settings/protection`);
-  revalidatePath("/orders");
+  revalidateDashboardPath(`/stores/${storeId}/settings/protection`);
+  revalidateDashboardPath("/orders");
 }
 
 export async function blockCustomerPhone(

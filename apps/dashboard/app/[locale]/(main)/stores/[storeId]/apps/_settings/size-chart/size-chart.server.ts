@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreIntegrations, invalidateStoreSizeCharts } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import { installStoreApp, uninstallStoreApp } from "@workspace/lib/billing/apps";
@@ -28,9 +28,9 @@ import type { SizeChartActionResult } from "./size-chart.dto";
 async function afterChange(sellerId: string, storeId: string, app = false) {
   await applyInvalidation(invalidateStoreSizeCharts(sellerId, storeId), { from: "dashboard", mode: "action" });
   if (app) await applyInvalidation(invalidateStoreIntegrations(sellerId, storeId), { from: "dashboard", mode: "action" });
-  revalidatePath(`/stores/${storeId}/apps/size-chart`);
-  revalidatePath(`/stores/${storeId}/apps/size-chart/settings`);
-  if (app) revalidatePath(`/stores/${storeId}/apps`);
+  revalidateDashboardPath(`/stores/${storeId}/apps/size-chart`);
+  revalidateDashboardPath(`/stores/${storeId}/apps/size-chart/settings`);
+  if (app) revalidateDashboardPath(`/stores/${storeId}/apps`);
 }
 
 function failure(error: unknown, what: string, storeId: unknown): SizeChartActionResult<never> {

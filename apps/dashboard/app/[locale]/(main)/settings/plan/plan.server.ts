@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { buyAiCreditPacks } from "@workspace/lib/billing/credits";
 import { setProCancelAtPeriodEnd, startProPlan } from "@workspace/lib/billing/plans";
 import { getBillingState } from "@workspace/lib/billing/server";
@@ -21,8 +21,8 @@ async function run(action: (seller: { sellerId: string; userId: string }) => Pro
     if (!(await getBillingState()).usdLive) return { success: false, error: "not_live" };
     const result = await action(seller);
     if (result.success) {
-      revalidatePath("/settings/plan");
-      revalidatePath("/wallet");
+      revalidateDashboardPath("/settings/plan");
+      revalidateDashboardPath("/wallet");
     }
     return result;
   } catch (error) {

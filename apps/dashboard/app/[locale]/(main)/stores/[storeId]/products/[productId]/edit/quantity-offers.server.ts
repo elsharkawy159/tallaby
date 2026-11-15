@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateProductQuantityOffers } from "@workspace/cache";
 import { and, asc, db, eq, isNull, productQuantityOffers, products, productVariants } from "@workspace/db";
 import { getPriceFinal } from "@workspace/lib";
@@ -98,7 +98,7 @@ export async function saveQuantityOffers(input: {
     });
 
     await applyInvalidation(invalidateProductQuantityOffers(sellerId, productId), { from: "dashboard", mode: "action" });
-    revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
+    revalidateDashboardPath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
     return { success: true, tiers: await listQuantityOffers(ctx.store.id, productId) };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: "notFound" };

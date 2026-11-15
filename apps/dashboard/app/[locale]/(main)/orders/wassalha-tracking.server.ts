@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import {
   cleanTrackingEntries,
   WASSALHA_TRACKING_MAX_ROWS,
@@ -47,7 +47,7 @@ async function save(storeId: string, raw: RawTrackingEntry[], replace: boolean):
 
     const { entries, problems } = cleanTrackingEntries(raw);
     const applied = await applyWassalhaTracking(seller.sellerId, store.id, entries, { replace });
-    if (applied.saved > 0) revalidatePath("/orders");
+    if (applied.saved > 0) revalidateDashboardPath("/orders");
     return {
       success: true,
       data: {

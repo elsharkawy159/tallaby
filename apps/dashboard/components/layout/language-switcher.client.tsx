@@ -1,11 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import { Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { setLocale } from "@/actions/locale";
+import { useSwitchLocale } from "./use-switch-locale.client";
 
 interface LanguageSwitcherProps {
   compact?: boolean;
@@ -14,15 +12,10 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ compact, className }: LanguageSwitcherProps) {
   const locale = useLocale();
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { switchTo, isPending } = useSwitchLocale();
   const next = locale === "ar" ? "en" : "ar";
 
-  const onClick = () =>
-    startTransition(async () => {
-      await setLocale(next);
-      router.refresh();
-    });
+  const onClick = () => switchTo(next);
 
   return (
     <button

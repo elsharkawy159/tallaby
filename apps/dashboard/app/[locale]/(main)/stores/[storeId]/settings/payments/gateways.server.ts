@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import {
   connectStoreGateway,
@@ -61,9 +61,9 @@ export async function connectGateway(
 
     const result = await connectStoreGateway(seller.sellerId, seller.userId, store.id, String(provider), clean);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(`/stores/${store.id}/settings/payments`);
-    revalidatePath(`/stores/${store.id}/apps/${provider}`);
-    revalidatePath(`/stores/${store.id}/apps/${provider}/settings`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/payments`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/${provider}`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/${provider}/settings`);
     // Website footers show the gateway's card logos (cached storefront profile).
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, data: result.data };
@@ -81,9 +81,9 @@ export async function disconnectGateway(storeId: string, provider: string): Prom
     if (!disconnectLimiter.check(`gateway-disconnect:${store.id}`)) return { success: false, error: "rateLimited" };
     const result = await disconnectStoreGateway(seller.sellerId, seller.userId, store.id, String(provider));
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(`/stores/${store.id}/settings/payments`);
-    revalidatePath(`/stores/${store.id}/apps/${provider}`);
-    revalidatePath(`/stores/${store.id}/apps/${provider}/settings`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/payments`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/${provider}`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/${provider}/settings`);
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, data: null };
   } catch (error) {

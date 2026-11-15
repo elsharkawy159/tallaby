@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreForms } from "@workspace/cache";
 import { getTranslations } from "next-intl/server";
 import {
@@ -50,7 +50,7 @@ export async function createForm(storeId: string, input: unknown): Promise<Forms
     if (!writeLimiter.check(seller.sellerId)) return { success: false, error: "rateLimited" };
     const result = await createStoreForm(seller.sellerId, store.id, input as never);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(formsPath(store.id));
+    revalidateDashboardPath(formsPath(store.id));
     return { success: true, data: result.data };
   } catch (error) {
     const key = accessError(error);
@@ -77,7 +77,7 @@ export async function saveForm(storeId: string, formId: string, input: unknown):
     if (!writeLimiter.check(seller.sellerId)) return { success: false, error: "rateLimited" };
     const result = await updateStoreForm(seller.sellerId, store.id, String(formId), input as never);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(formsPath(store.id));
+    revalidateDashboardPath(formsPath(store.id));
     await refreshPublicForms(seller.sellerId, store.id);
     return { success: true, data: undefined };
   } catch (error) {
@@ -93,7 +93,7 @@ export async function deleteForm(storeId: string, formId: string): Promise<Forms
     const { seller, store } = await requireStore(String(storeId), { forWrite: true });
     const result = await deleteStoreForm(seller.sellerId, store.id, String(formId));
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(formsPath(store.id));
+    revalidateDashboardPath(formsPath(store.id));
     await refreshPublicForms(seller.sellerId, store.id);
     return { success: true, data: undefined };
   } catch (error) {
@@ -111,7 +111,7 @@ export async function updateSubmissionsStatus(storeId: string, ids: unknown, sta
     if (!Array.isArray(ids) || !INBOX_STATUSES.includes(status as never)) return { success: false, error: "invalidInput" };
     const result = await setSubmissionStatus(seller.sellerId, store.id, ids.map(String), status as (typeof INBOX_STATUSES)[number]);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(formsPath(store.id), "layout");
+    revalidateDashboardPath("/stores/[storeId]/website/forms", "layout");
     return { success: true, data: result.data };
   } catch (error) {
     const key = accessError(error);
@@ -127,7 +127,7 @@ export async function deleteSubmissions(storeId: string, ids: unknown): Promise<
     if (!Array.isArray(ids)) return { success: false, error: "invalidInput" };
     const result = await deleteFormSubmissions(seller.sellerId, store.id, ids.map(String));
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(formsPath(store.id), "layout");
+    revalidateDashboardPath("/stores/[storeId]/website/forms", "layout");
     return { success: true, data: result.data };
   } catch (error) {
     const key = accessError(error);

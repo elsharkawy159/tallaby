@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreSite } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import {
@@ -239,7 +239,7 @@ export async function publish(storeId: string) {
     // A new seller who just finished setup gets the welcome gift (0119); never fails the publish.
     await grantWelcomeGiftSafely(access.seller.sellerId);
     await invalidateStore(access);
-    revalidatePath(`/stores/${access.store.id}/website`);
+    revalidateDashboardPath(`/stores/${access.store.id}/website`);
     return result;
   });
 }
@@ -249,7 +249,7 @@ export async function unpublish(storeId: string) {
     const result = await unpublishStoreSite(access.seller.sellerId, access.store.id);
     if (!result.success) return fail(result.error);
     await invalidateStore(access);
-    revalidatePath(`/stores/${access.store.id}/website`);
+    revalidateDashboardPath(`/stores/${access.store.id}/website`);
     return result;
   });
 }

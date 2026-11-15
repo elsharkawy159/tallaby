@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { db, eq, users } from "@workspace/db";
@@ -91,7 +91,7 @@ export async function submitManualTopUp(input: {
       },
     });
     if (!result.success) return result;
-    revalidatePath("/wallet");
+    revalidateDashboardPath("/wallet");
     return { success: true, amount: result.amount };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: "notAllowed" };

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import { and, db, eq, sql, stores } from "@workspace/db";
 import { MEDIA_BUCKET, checkMediaPath } from "@workspace/lib/media";
@@ -62,7 +62,7 @@ export async function saveLoadingScreen(storeId: string, input: unknown): Promis
       })
       .where(and(eq(stores.id, store.id), eq(stores.sellerId, seller.sellerId)));
 
-    revalidatePath(`/stores/${store.id}/website/design`);
+    revalidateDashboardPath(`/stores/${store.id}/website/design`);
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, settings };
   } catch (error) {

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateProductInventory } from "@workspace/cache";
 import { and, db, eq, isNotNull, isNull, productVariants, products, sql } from "@workspace/db";
 import { setStockContext } from "@workspace/db/inventory";
@@ -86,7 +86,7 @@ export async function restockAction(storeId: string, input: unknown): Promise<Re
       ]),
       { from: "dashboard", mode: "action" },
     );
-    revalidatePath(`${STORE_PRODUCTS_PATTERN}/inventory`, "page");
+    revalidateDashboardPath(`${STORE_PRODUCTS_PATTERN}/inventory`, "page");
     return { success: true, stock: outcome.stock };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: accessErrorCode(error.code) };

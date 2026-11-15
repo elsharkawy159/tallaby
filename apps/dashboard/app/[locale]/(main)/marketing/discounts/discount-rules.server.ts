@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { and, db, desc, eq, inArray, isNull, products, sellerProductCategories, storeDiscountRules } from "@workspace/db";
 import { parseDiscountRule, type DiscountRule, type DiscountRuleError } from "@workspace/lib/orders/automatic-discounts";
 import { toDiscountRule } from "@workspace/lib/orders/line-discounts/server";
@@ -40,7 +40,7 @@ function failure(error: unknown): RuleResult {
 }
 
 async function after(storeId: string): Promise<RuleResult> {
-  revalidatePath("/marketing/discounts");
+  revalidateDashboardPath("/marketing/discounts");
   return { success: true, rules: await listDiscountRules(storeId) };
 }
 

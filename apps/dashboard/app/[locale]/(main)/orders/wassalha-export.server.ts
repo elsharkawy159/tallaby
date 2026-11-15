@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { exportWassalhaOrders } from "@workspace/lib/shipping/wassalha-export";
 import type { EgyptPostRow } from "@workspace/lib/shipping";
 import type { WassalhaSkipReason } from "@workspace/lib/shipping/wassalha-export";
@@ -33,7 +33,7 @@ export async function exportForWassalha(storeId: string, orderIds: string[]): Pr
     const result = await exportWassalhaOrders(seller.sellerId, store.id, ids);
     if (!result.success) return { success: false, error: ERRORS[result.error] };
 
-    revalidatePath("/orders");
+    revalidateDashboardPath("/orders");
     return {
       success: true,
       data: {

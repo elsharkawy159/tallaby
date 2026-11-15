@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { FULFILLMENT_SERVICE_TYPES, TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import { upsertSellerFulfillmentRequest } from "@workspace/lib/fulfillment/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
@@ -47,7 +47,7 @@ export async function requestFulfillmentServices(input: unknown): Promise<Fulfil
       return { success: false, error: "forbidden" };
     }
 
-    if (result.changed) revalidatePath("/settings/fulfillment");
+    if (result.changed) revalidateDashboardPath("/settings/fulfillment");
     return { success: true, changed: result.changed, needsContact: result.needsContact };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: "forbidden" };

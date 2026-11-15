@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { and, db, eq, sql, stores } from "@workspace/db";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -38,7 +38,7 @@ export async function saveStoreCheckoutSettings(storeId: string, input: unknown)
       })
       .where(and(eq(stores.id, store.id), eq(stores.sellerId, seller.sellerId)));
 
-    revalidatePath(`/stores/${store.id}/settings/checkout`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/checkout`);
     return { success: true, settings };
   } catch (error) {
     if (isAccessError(error)) {

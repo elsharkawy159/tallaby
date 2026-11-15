@@ -19,7 +19,7 @@ import {
   type CouponPopupTrigger,
 } from "@workspace/lib/orders/coupon-popup";
 import { and, desc, eq, exists, ilike, inArray, isNull, or, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { getUser } from "./auth";
@@ -134,7 +134,7 @@ async function invalidateStoreCoupons(sellerId: string) {
     from: "dashboard",
     mode: "action",
   });
-  revalidatePath("/coupons");
+  revalidateDashboardPath("/coupons");
 }
 
 async function getSellerId() {

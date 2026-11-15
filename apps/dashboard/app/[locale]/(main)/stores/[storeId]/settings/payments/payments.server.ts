@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import type { StorePayments } from "@workspace/lib/payments/store-methods";
 import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
@@ -47,7 +47,7 @@ export async function saveStorePaymentMethod(
       ...(typeof change?.note === "string" && { note: change.note }),
     });
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(`/stores/${store.id}/settings/payments`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/payments`);
     // Website footers list the store's payment methods (cached storefront profile).
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, data: result.data };
@@ -75,7 +75,7 @@ export async function saveDefaultPaymentMethod(storeId: string, method: string |
       gateway,
     );
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(`/stores/${store.id}/settings/payments`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/payments`);
     return { success: true, data: result.data };
   } catch (error) {
     if (isAccessError(error)) {
@@ -104,7 +104,7 @@ export async function saveCodDeposit(storeId: string, percent: number | null): P
       gateway,
     );
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(`/stores/${store.id}/settings/payments`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/payments`);
     return { success: true, data: result.data };
   } catch (error) {
     if (isAccessError(error)) {

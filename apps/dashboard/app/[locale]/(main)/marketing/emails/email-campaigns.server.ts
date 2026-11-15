@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { after } from "next/server";
 import { and, db, eq, isNull, stores } from "@workspace/db";
 import {
@@ -80,7 +80,7 @@ export async function createCampaign(input: { storeId: string }): Promise<Campai
     if (!(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     const id = await createCampaignDraft(seller.sellerId, store.id, seller.userId);
     if (!id) return fail("notFound");
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: { id } };
   } catch (error) {
     return failure(error, "create");
@@ -95,7 +95,7 @@ export async function saveCampaign(input: { storeId: string; campaignId: string;
     if (!content.ok) return fail(content.error);
     const saved = await saveCampaignDraft(seller.sellerId, store.id, String(input?.campaignId ?? ""), content.value);
     if (!saved) return fail("notDraft");
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: null };
   } catch (error) {
     return failure(error, "save");
@@ -107,7 +107,7 @@ export async function deleteCampaign(input: { storeId: string; campaignId: strin
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
     const ok = await deleteCampaignDraft(seller.sellerId, store.id, String(input?.campaignId ?? ""));
     if (!ok) return fail("notDraft");
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: null };
   } catch (error) {
     return failure(error, "delete");
@@ -146,7 +146,7 @@ export async function buyEmails(input: { packs: number }): Promise<CampaignActio
     if (allowance.locked) return fail("activationRequired");
     const result = await buyEmailPacks(sellerId, userId, Number(input?.packs));
     if (!result.success) return fail(result.error === "insufficient_balance" ? "insufficientBalance" : "generic");
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: { emails: result.emails } };
   } catch (error) {
     return failure(error, "buy");
@@ -191,7 +191,7 @@ export async function sendCampaign(input: {
         }
       });
     }
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: { recipients: result.recipients, scheduled: Boolean(scheduledAt) } };
   } catch (error) {
     return failure(error, "send");
@@ -203,7 +203,7 @@ export async function cancelCampaignAction(input: { storeId: string; campaignId:
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
     const ok = await cancelCampaign(seller.sellerId, store.id, String(input?.campaignId ?? ""));
     if (!ok) return fail("notFound");
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: null };
   } catch (error) {
     return failure(error, "cancel");
@@ -234,7 +234,7 @@ export async function sendCampaignTest(input: { storeId: string; campaignId: str
       await releaseCampaignTestSend(seller.sellerId, campaignId);
       return fail(backendError(res.error));
     }
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: null };
   } catch (error) {
     return failure(error, "test");
@@ -273,7 +273,7 @@ export async function saveWinback(input: { storeId: string; settings: unknown })
     // Turning it off stays possible; turning it on waits for activation.
     if (parsed.value.enabled && !(await getOrderLock(seller.sellerId)).activated) return fail("activationRequired");
     if (!(await saveStoreWinback(seller.sellerId, store.id, parsed.value))) return fail("notFound");
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, data: null };
   } catch (error) {
     return failure(error, "winback");

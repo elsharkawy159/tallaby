@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { saveStoreLeadTemplate, setStoreCheckoutLeadContacted } from "@workspace/lib/checkout-leads/server";
 import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 
@@ -30,7 +30,7 @@ export async function setLeadContacted(input: { storeId: string; leadId: string;
       userId: seller.userId,
     });
     if (!ok) return { success: false, error: "notFound" };
-    revalidatePath("/orders/missed");
+    revalidateDashboardPath("/orders/missed");
     return { success: true };
   } catch (error) {
     return accessResult(error);
@@ -43,7 +43,7 @@ export async function saveLeadTemplate(input: { storeId: string; template: strin
     const template = typeof input?.template === "string" ? input.template : null;
     const result = await saveStoreLeadTemplate(seller.sellerId, { storeId: store.id, template });
     if (!result.success) return { success: false, error: result.error === "too_long" ? "tooLong" : "notFound" };
-    revalidatePath("/orders/missed");
+    revalidateDashboardPath("/orders/missed");
     return { success: true };
   } catch (error) {
     return accessResult(error);

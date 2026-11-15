@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreProducts } from "@workspace/cache";
 import {
   and,
@@ -239,7 +239,7 @@ async function addItem(ctx: TaxonomyContext, kind: TaxonomyKind, input: unknown)
           .values({ ...owner, name: values.name, nameAr: values.nameAr, sourceBrandId: values.sourceId, logoUrl: values.image, position })
           .returning({ id: sellerProductBrands.id });
 
-  revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
+  revalidateDashboardPath(TAXONOMY_PAGE_HREF[kind], "page");
   // A category picked from a Tallaby one takes in that category's unlinked products on the storefront (storeCategoryGroups).
   // A new brand shows in the store's brands section at once.
   // A new sub-category shows under its main category on the storefront.
@@ -377,7 +377,7 @@ export async function updateTaxonomyItem(storeId: string, kind: TaxonomyKind, id
             .where(and(eq(sellerProductBrands.id, id), taxonomyInStore(sellerProductBrands, scope)))
             .returning({ id: sellerProductBrands.id });
     if (!updated.length) return { success: false, error: "notFound" };
-    revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
+    revalidateDashboardPath(TAXONOMY_PAGE_HREF[kind], "page");
     // Storefront category tiles show this image (getStorefrontCategories); brands show in the store's brands
     // section (getCachedSellerBrands). Both carry the seller and store tags.
     await invalidateTaxonomy(ctx);
@@ -402,7 +402,7 @@ export async function deleteTaxonomyItem(storeId: string, kind: TaxonomyKind, id
       .where(and(eq(table.id, id), taxonomyInStore(table, ctx.scope)))
       .returning({ id: table.id });
     if (!deleted.length) return { success: false, error: "notFound" };
-    revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
+    revalidateDashboardPath(TAXONOMY_PAGE_HREF[kind], "page");
     await invalidateTaxonomy(ctx);
     return { success: true };
   } catch (error) {
@@ -438,7 +438,7 @@ export async function reorderTaxonomyItems(storeId: string, kind: TaxonomyKind, 
       .set({ position, updatedAt: sql`now()` })
       .where(and(taxonomyInStore(table, ctx.scope), inArray(table.id, order)));
 
-    revalidatePath(TAXONOMY_PAGE_HREF[kind], "page");
+    revalidateDashboardPath(TAXONOMY_PAGE_HREF[kind], "page");
     // The first category photo by position is the storefront tile photo; brands show in their order.
     await invalidateTaxonomy(ctx);
     return { success: true };
@@ -473,8 +473,8 @@ export async function setProductSellerTaxonomy(storeId: string, productId: strin
       .where(and(eq(products.id, productId), eq(products.sellerId, scope.sellerId), ctx.inStore))
       .returning({ id: products.id });
     if (!updated.length) return { success: false, error: "notFound" };
-    revalidatePath(TAXONOMY_PAGE_HREF.category, "page");
-    revalidatePath(TAXONOMY_PAGE_HREF.brand, "page");
+    revalidateDashboardPath(TAXONOMY_PAGE_HREF.category, "page");
+    revalidateDashboardPath(TAXONOMY_PAGE_HREF.brand, "page");
     // The product's category can change which photo its storefront category tile shows.
     await invalidateTaxonomy({ scope, storeId: ctx.store.id });
     return { success: true };

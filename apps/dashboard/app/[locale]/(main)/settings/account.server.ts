@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import { listStores } from "@workspace/lib/stores/server";
 import { updateSellerLegalDetails, updateSellerPayoutDetails } from "@workspace/lib/sellers/server";
@@ -19,7 +20,7 @@ async function run(action: (sellerId: string) => Promise<{ success: boolean; err
     const seller = await requireSeller({ forWrite: true });
     const result = await action(seller.sellerId);
     if (!result.success) return { success: false, error: result.error === "invalid_input" ? "invalidInput" : "generic" };
-    revalidatePath("/settings");
+    revalidateDashboardPath("/settings");
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {

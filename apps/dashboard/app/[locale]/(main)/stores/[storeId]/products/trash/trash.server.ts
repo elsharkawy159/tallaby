@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation } from "@workspace/cache";
 import { deleteTrashedProductsForever, restoreProducts, trashProducts } from "@workspace/lib/products/trash/server";
 import { isAccessError } from "@/lib/auth/require-seller.server";
@@ -34,7 +34,7 @@ export async function trashProductsAction(storeId: unknown, ids: unknown): Promi
     const { seller, inStore } = await requireProductStore(storeId);
     const { trashed, invalidation } = await trashProducts(seller.sellerId, seller.userId, ids, { inStore });
     await applyInvalidation(invalidation, { from: "dashboard", mode: "action" });
-    revalidatePath(STORE_PRODUCTS_PATTERN, "layout");
+    revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
     return { success: true, count: trashed.length, ids: trashed };
   } catch (error) {
     return failure(error, "trash");
@@ -47,7 +47,7 @@ export async function restoreProductsAction(storeId: unknown, ids: unknown): Pro
     // Same rule as the Publish switch: only approved sellers make products live.
     const { restored, invalidation } = await restoreProducts(seller.sellerId, ids, { canPublish: seller.status === "approved", inStore });
     await applyInvalidation(invalidation, { from: "dashboard", mode: "action" });
-    revalidatePath(STORE_PRODUCTS_PATTERN, "layout");
+    revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
     return { success: true, count: restored.length, ids: restored };
   } catch (error) {
     return failure(error, "restore");
@@ -58,7 +58,7 @@ export async function deleteProductsForeverAction(storeId: unknown, ids: unknown
   try {
     const { seller, inStore } = await requireProductStore(storeId);
     const { deleted } = await deleteTrashedProductsForever(seller.sellerId, ids, { inStore });
-    revalidatePath(STORE_PRODUCTS_PATTERN, "layout");
+    revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
     return { success: true, count: deleted.length, ids: deleted };
   } catch (error) {
     return failure(error, "delete forever");

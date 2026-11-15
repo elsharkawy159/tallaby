@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import { updateStoreSeo } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -21,7 +21,7 @@ export async function saveStoreSeo(storeId: string, input: unknown): Promise<Dom
       return { success: false, error: map[result.error] };
     }
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
-    revalidatePath(`/stores/${store.id}/website/seo`, "layout");
+    revalidateDashboardPath("/stores/[storeId]/website/seo", "layout");
     return { success: true };
   } catch (error) {
     if (isAccessError(error)) {

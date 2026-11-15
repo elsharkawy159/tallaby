@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -79,7 +79,7 @@ export async function addBatchAction(storeId: unknown, input: unknown): Promise<
     if (!batchLimiter.check(seller.sellerId)) return { ok: false, error: "rateLimited" };
     const result = await runBulkBatch(seller.sellerId, parsed.data, { storeId: store.id });
     // Each createProduct refreshes its own product's caches; this is the seller's list.
-    revalidatePath(STORE_PRODUCTS_PATTERN, "page");
+    revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "page");
     return result;
   } catch (error) {
     return accessFailure(error);

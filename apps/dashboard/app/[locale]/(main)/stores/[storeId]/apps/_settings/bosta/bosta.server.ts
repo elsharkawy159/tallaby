@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { logServerError } from "@workspace/db/log";
 import {
   listStoreBostaPickupLocations,
@@ -41,9 +41,9 @@ const ERRORS: Record<string, StoreAppsErrorKey> = {
 
 async function afterBostaChange(sellerId: string, storeId: string): Promise<void> {
   await afterAppChange(sellerId, storeId);
-  revalidatePath(`/stores/${storeId}/apps/bosta`);
-  revalidatePath(`/stores/${storeId}/apps/bosta/settings`);
-  revalidatePath(`/stores/${storeId}/shipping`);
+  revalidateDashboardPath(`/stores/${storeId}/apps/bosta`);
+  revalidateDashboardPath(`/stores/${storeId}/apps/bosta/settings`);
+  revalidateDashboardPath(`/stores/${storeId}/shipping`);
 }
 
 export type BostaKeyResult = { overview: BostaOverview; pickupLocations: BostaPickupLocation[] };

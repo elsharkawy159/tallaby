@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { z } from "zod";
 import { updateSellerProfile } from "@/actions/seller";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
@@ -21,7 +21,7 @@ export async function savePolicies(input: unknown): Promise<SavePoliciesResult> 
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const result = await updateSellerProfile(parsed.data);
     if (!result.success) return { success: false, error: "generic" };
-    revalidatePath("/settings");
+    revalidateDashboardPath("/settings");
     return { success: true };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: "forbidden" };

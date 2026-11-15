@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { sendStoreCreatedEmail } from "@workspace/lib/orders";
 import { cookies, headers } from "next/headers";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
@@ -39,7 +40,7 @@ async function refresh(subdomain?: string) {
   if (subdomain) {
     await applyInvalidation(invalidateStorefront([subdomain]), { from: "dashboard", mode: "action" });
   }
-  revalidatePath("/stores");
+  revalidateDashboardPath("/stores");
   // The sidebar switcher lives in the (main) layout.
   revalidatePath("/", "layout");
 }

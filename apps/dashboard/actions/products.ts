@@ -9,7 +9,7 @@ import {
   db,
 } from "@workspace/db";
 import { eq, and, desc, asc, sql, inArray, isNull } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getUser } from "./auth";
 import slugify from "slugify";
 import { cleanKeywords } from "@/app/[locale]/(main)/stores/[storeId]/products/add/meta-keywords.lib";
@@ -855,7 +855,7 @@ export async function bulkInsertProductsAction(storeId: string, records: ParsedB
 
     // Each createProduct() call above already invalidates and broadcasts
     // its own product's caches; only the local (uncached) dashboard list needs a nudge.
-    revalidatePath(STORE_PRODUCTS_PATTERN, "page");
+    revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "page");
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -918,7 +918,7 @@ export async function bulkCreateProductsAction(
       }
     }
 
-    revalidatePath(STORE_PRODUCTS_PATTERN, "page");
+    revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "page");
     return { success: true as const, ...results };
   } catch (error) {
     console.error("bulkCreateProductsAction error:", error);
@@ -1608,8 +1608,8 @@ export async function updateProduct(
       return updated;
     });
 
-    revalidatePath(STORE_PRODUCTS_PATTERN, "page");
-    revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
+    revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "page");
+    revalidateDashboardPath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
 
     const after = await toSnapshot(productId);
     if (before.categoryId && after?.categoryId) {
@@ -1937,7 +1937,7 @@ export async function answerProductQuestionAction(formData: FormData) {
     }
     const res = await answerProductQuestion({ storeId, questionId, answer });
     if (productId) {
-      revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
+      revalidateDashboardPath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
     }
     return res;
   } catch (error) {
@@ -1960,7 +1960,7 @@ export async function updateProductAnswerAction(formData: FormData) {
     }
     const res = await updateProductAnswer({ storeId, answerId, answer });
     if (productId) {
-      revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
+      revalidateDashboardPath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
     }
     return res;
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import { db, sellerCustomDomains } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateCustomDomain } from "@workspace/cache";
 import {
   normalizeCustomDomain,
@@ -102,8 +102,8 @@ async function invalidate(store: CurrentStore, domain: string) {
     from: "dashboard",
     mode: "action",
   });
-  revalidatePath("/settings");
-  revalidatePath(`/stores/${store.storeId}/website/domain`, "layout");
+  revalidateDashboardPath("/settings");
+  revalidateDashboardPath("/stores/[storeId]/website/domain", "layout");
 }
 
 function vercelFailure(error: unknown): CustomDomainResult {

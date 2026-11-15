@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { type NextRequest, NextResponse } from "next/server";
 import { exchangeGoogleCode } from "@workspace/lib/integrations";
 import { nonceMatches, saveGoogleSheetsConnection, verifyOAuthState } from "@workspace/lib/integrations/server";
@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
     });
     if (!saved.success) return finish(`${appsPath}?google=failed`);
 
-    revalidatePath(appsPath);
-    revalidatePath(`/stores/${state.storeId}/apps`);
+    revalidateDashboardPath(appsPath);
+    revalidateDashboardPath(`/stores/${state.storeId}/apps`);
     return finish(`${appsPath}?google=connected`);
   } catch (error) {
     if (isAccessError(error)) return finish("/?google=invalid");

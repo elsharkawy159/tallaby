@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import { and, db, eq, sql, stores } from "@workspace/db";
 import type { StoreMinOrder } from "@workspace/lib/stores/min-order";
@@ -39,7 +39,7 @@ export async function saveStoreMinOrder(storeId: string, input: unknown): Promis
       })
       .where(and(eq(stores.id, store.id), eq(stores.sellerId, seller.sellerId)));
 
-    revalidatePath(`/stores/${store.id}/settings/checkout`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/checkout`);
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, minOrder };
   } catch (error) {

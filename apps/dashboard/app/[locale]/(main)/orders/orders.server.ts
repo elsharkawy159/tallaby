@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { after } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
@@ -544,7 +544,7 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
       throw error;
     }
 
-    revalidatePath("/orders", "layout");
+    revalidateDashboardPath("/orders", "layout");
     return { success: true };
   } catch (error) {
     if (error instanceof OrderActionError) return { success: false, error: t(error.key) };
@@ -585,7 +585,7 @@ export async function restockReturnedOrder(input: unknown): Promise<ActionResult
     });
 
     await invalidateOrderStock(order, stockResults);
-    revalidatePath("/orders", "layout");
+    revalidateDashboardPath("/orders", "layout");
     return { success: true };
   } catch (error) {
     if (error instanceof OrderActionError) return { success: false, error: t(error.key) };
@@ -626,7 +626,7 @@ export async function bulkUpdateSellerOrders(input: unknown): Promise<BulkResult
       }
     }
 
-    if (done > 0) revalidatePath("/orders", "layout");
+    if (done > 0) revalidateDashboardPath("/orders", "layout");
     return { success: true, done, skipped };
   } catch (error) {
     if (error instanceof AccessError) return { success: false, error: t("unauthorized") };

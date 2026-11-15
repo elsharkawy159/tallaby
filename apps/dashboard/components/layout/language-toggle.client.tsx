@@ -1,11 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { Languages, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { setLocale } from "@/actions/locale";
+import { useSwitchLocale } from "./use-switch-locale.client";
 
 /** Each option is labelled in its own language so it's readable by whoever needs it. */
 const TARGET = {
@@ -17,15 +15,10 @@ const TARGET = {
 export function LanguageToggle({ row = false }: { row?: boolean }) {
   const t = useTranslations("header");
   const locale = useLocale() === "ar" ? "ar" : "en";
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { switchTo, isPending } = useSwitchLocale();
   const target = TARGET[locale];
 
-  const onClick = () =>
-    startTransition(async () => {
-      await setLocale(target.value);
-      router.refresh();
-    });
+  const onClick = () => switchTo(target.value);
 
   return (
     <button

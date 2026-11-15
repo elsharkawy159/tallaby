@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import {
   applyInvalidation,
   invalidateProduct,
@@ -235,7 +235,7 @@ async function afterWrite(changes: { row: LoadedRow; before: ProductValues; afte
   if (invalidations.length) {
     await applyInvalidation(mergeInvalidations(...invalidations), { from: "dashboard", mode: "action" });
   }
-  revalidatePath(STORE_PRODUCTS_PATTERN, "layout");
+  revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
 }
 
 const undoKey = () => deriveUndoKey(parseIntegrationKey());

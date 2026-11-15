@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreViews } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import { STORE_VIEWS_REFRESH_COOLDOWN_MS } from "@/lib/analytics/store-views.lib";
@@ -23,7 +23,7 @@ export async function refreshStoreViews(storeId: string): Promise<RefreshStoreVi
     if (!refreshLimiter.check(`store-views:${seller.sellerId}:${store.id}`)) return { success: false, error: "rateLimited" };
 
     await applyInvalidation(invalidateStoreViews(seller.sellerId, store.id), { from: "dashboard", mode: "action" });
-    revalidatePath(`/stores/${store.id}/analytics`);
+    revalidateDashboardPath(`/stores/${store.id}/analytics`);
     return { success: true };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: "notFound" };

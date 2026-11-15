@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreCrossSells } from "@workspace/cache";
 import { and, db, eq, stores } from "@workspace/db";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -14,7 +14,7 @@ export async function saveStoreCrossSell(storeId: string, enabled: boolean): Pro
       .set({ crossSellEnabled: enabled === true, updatedAt: new Date().toISOString() })
       .where(and(eq(stores.id, store.id), eq(stores.sellerId, seller.sellerId)));
     await applyInvalidation(invalidateStoreCrossSells(seller.sellerId, [store.id]), { from: "dashboard", mode: "action" });
-    revalidatePath(`/stores/${store.id}/settings/checkout`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/checkout`);
     return { success: true };
   } catch (error) {
     if (!isAccessError(error)) console.error("[cross-sell] switch failed", (error as Error)?.name);

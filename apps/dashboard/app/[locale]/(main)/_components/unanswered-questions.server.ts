@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { z } from "zod";
 import { answerProductQuestion } from "@/actions/products";
 
@@ -16,6 +16,6 @@ export async function handleAnswerQuestion(input: { storeId: string | null; ques
   // Ownership is checked inside answerProductQuestion: the store against the session, the question's product against the store (F-87c).
   const res = await answerProductQuestion({ ...parsed.data, storeId: typeof input?.storeId === "string" ? input.storeId : null });
   // Refresh the home counters (attention list, badge).
-  revalidatePath("/");
+  revalidateDashboardPath("/");
   return res;
 }

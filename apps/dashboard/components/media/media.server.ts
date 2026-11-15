@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { MEDIA_BUCKET, buildMediaPath, checkMediaPath, isMediaMimeType } from "@workspace/lib/media";
 import {
   countMediaUsage,
@@ -54,7 +54,7 @@ async function removeObject(bucket: string, path: string) {
   if (error) throw new Error(`storage remove failed: ${error.message}`);
 }
 
-const refresh = (storeId: string) => revalidatePath(`/stores/${storeId}/website/media`);
+const refresh = (storeId: string) => revalidateDashboardPath(`/stores/${storeId}/website/media`);
 
 export async function listMedia(storeId: string, query: { folderId?: string | null; scope?: "all" | "store" | "shared" } = {}) {
   return withStore<MediaLibraryView>(storeId, false, async ({ seller, store }) => {

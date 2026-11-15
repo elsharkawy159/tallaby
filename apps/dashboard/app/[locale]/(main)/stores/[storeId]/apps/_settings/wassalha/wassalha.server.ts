@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { logServerError } from "@workspace/db/log";
 import { saveWassalhaSettings as save, type WassalhaOverview } from "@workspace/lib/integrations/server";
 import { requireStore } from "@/lib/auth/require-seller.server";
@@ -44,9 +44,9 @@ export async function saveWassalha(storeId: string, input: WassalhaForm): Promis
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
 
     await afterAppChange(seller.sellerId, store.id);
-    revalidatePath(`/stores/${store.id}/apps/wassalha`);
-    revalidatePath(`/stores/${store.id}/apps/wassalha/settings`);
-    revalidatePath(`/stores/${store.id}/shipping`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/wassalha`);
+    revalidateDashboardPath(`/stores/${store.id}/apps/wassalha/settings`);
+    revalidateDashboardPath(`/stores/${store.id}/shipping`);
     return { success: true, data: result.data };
   } catch (error) {
     const denied = appsAccessError(error);

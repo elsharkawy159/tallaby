@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import { updateStoreSettings } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -16,7 +17,7 @@ async function afterSave(storeId: string, subdomain: string) {
   // The storefront caches the store profile by subdomain; the primary store's
   // values reach it through the 0050 sellers mirror.
   await applyInvalidation(invalidateStorefront([subdomain]), { from: "dashboard", mode: "action" });
-  revalidatePath(`/stores/${storeId}/settings`, "layout");
+  revalidateDashboardPath("/stores/[storeId]/settings", "layout");
   revalidatePath("/", "layout");
 }
 

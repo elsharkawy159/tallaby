@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { DEFAULT_CURRENCY, parseStoreCurrency } from "@workspace/lib";
 import type { ShippingTemplate, StoreShippingSettings as Settings } from "@workspace/lib/shipping/store-zones";
 import {
@@ -44,7 +44,7 @@ async function run<T>(
     if (!limiter.check(`shipping:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
     const result = await fn(seller.sellerId, seller.userId, store.id);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
-    revalidatePath(`/stores/${store.id}/shipping`);
+    revalidateDashboardPath(`/stores/${store.id}/shipping`);
     return { success: true, data: result.data };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };

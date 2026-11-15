@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getLocale } from "next-intl/server";
 import { applyInvalidation, invalidateProductInventory } from "@workspace/cache";
 import { and, db, desc, eq, exists, ilike, inArray, isNull, or, productTranslations, products, productVariants, sql } from "@workspace/db";
@@ -171,7 +171,7 @@ export async function createManualOrderAction(storeId: string, input: unknown): 
     if (result.inventoryItems.length) {
       await applyInvalidation(invalidateProductInventory(result.inventoryItems), { from: "dashboard", mode: "action" });
     }
-    revalidatePath("/orders");
+    revalidateDashboardPath("/orders");
 
     let linkUrl: string | null = null;
     if (result.awaitingCustomer) {

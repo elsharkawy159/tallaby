@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getTranslations } from "next-intl/server";
 import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
 import { applyInvalidation, invalidateStoreSite } from "@workspace/cache";
@@ -74,8 +74,8 @@ async function withStore<T>(storeId: string, run: (access: Access) => Promise<Te
     if (!limiter.check(`templates:${access.seller.sellerId}`)) return { success: false, error: "rateLimited" };
     const result = await run(access);
     if (result.success) {
-      revalidatePath(`/stores/${access.store.id}/website`, "layout");
-      revalidatePath(`/stores/${access.store.id}/editor`);
+      revalidateDashboardPath("/stores/[storeId]/website", "layout");
+      revalidateDashboardPath(`/stores/${access.store.id}/editor`);
     }
     return result;
   } catch (error) {

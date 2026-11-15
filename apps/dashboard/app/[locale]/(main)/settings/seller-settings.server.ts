@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getTranslations } from "next-intl/server";
 import {
   getSellerDocuments,
@@ -42,7 +43,7 @@ export async function handleUpdateSellerProfile(input: unknown) {
         message: t("updateFailed"),
       } as const;
     }
-    revalidatePath("/settings");
+    revalidateDashboardPath("/settings");
     revalidatePath("/", "layout");
     return { success: true, message: t("profileUpdated") } as const;
   } catch (error) {
@@ -91,7 +92,7 @@ export async function handleUploadDocument(input: unknown) {
         message: t("uploadFailed"),
       } as const;
     }
-    revalidatePath("/settings");
+    revalidateDashboardPath("/settings");
     return {
       success: true,
       message: t("documentUploaded"),

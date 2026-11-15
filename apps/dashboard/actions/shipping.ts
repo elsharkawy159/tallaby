@@ -2,7 +2,7 @@
 
 import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { randomUUID } from "node:crypto";
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import {
@@ -82,7 +82,7 @@ async function message(key: string, values?: Record<string, string | number>) {
 
 function refresh() {
   // Delivery tracking + riders live under Orders & Shipping (P3-06).
-  revalidatePath("/orders", "layout");
+  revalidateDashboardPath("/orders", "layout");
 }
 
 const ELIGIBLE_ORDER_STATUSES = [

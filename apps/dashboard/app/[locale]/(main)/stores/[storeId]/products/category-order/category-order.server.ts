@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getLocale } from "next-intl/server";
 import { applyInvalidation, invalidateStoreProducts } from "@workspace/cache";
 import {
@@ -159,7 +159,7 @@ export async function loadCategoryProductOrder(storeId: string, categoryId: unkn
 async function afterChange(sellerId: string, storeId: string) {
   // This store's grids (productTags.store), and still every grid of the seller until the catalog split (F-87c).
   await applyInvalidation(invalidateStoreProducts(sellerId, storeId), { from: "dashboard", mode: "action" });
-  revalidatePath(`${STORE_PRODUCTS_PATTERN}/categories`, "page");
+  revalidateDashboardPath(`${STORE_PRODUCTS_PATTERN}/categories`, "page");
 }
 
 /** Saves the order: the listed products get positions 0..n-1, the rest of the category follows newest first. */

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { confirmOrderDeposit, rejectOrderDeposit } from "@workspace/lib/orders/cod-deposit/server";
@@ -27,7 +27,7 @@ export async function decideOrderDeposit(input: unknown): Promise<DepositResult>
     const result =
       decision === "received" ? await confirmOrderDeposit(sellerId, orderId) : await rejectOrderDeposit(sellerId, orderId);
     if (!result.success) return { success: false, error: t(result.error) };
-    revalidatePath("/orders", "layout");
+    revalidateDashboardPath("/orders", "layout");
     return { success: true };
   } catch (error) {
     if (error instanceof AccessError) return { success: false, error: t("not_found") };

@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { sellers, sellerDocuments, sellerCustomDomains } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import {
   applyInvalidation,
   invalidateCustomDomain,
@@ -229,8 +230,8 @@ export async function updateStoreSubdomain(storeId: string, input: string): Prom
         { from: "dashboard", mode: "action" },
       );
     }
-    revalidatePath("/settings");
-    revalidatePath(`/stores/${store.id}`, "layout");
+    revalidateDashboardPath("/settings");
+    revalidateDashboardPath("/stores/[storeId]", "layout");
     // The sidebar store switcher shows store addresses.
     revalidatePath("/", "layout");
     return { success: true, subdomain };

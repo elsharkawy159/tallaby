@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreIntegrations, invalidateStoreSizeCharts } from "@workspace/cache";
 import { getApp } from "@workspace/apps";
 import { isAccessError } from "@/lib/auth/require-seller.server";
@@ -22,10 +22,10 @@ export function appsAccessError(error: unknown): StoreAppsResult<never> | null {
 export async function afterAppChange(sellerId: string, storeId: string, appKey?: string): Promise<void> {
   await applyInvalidation(invalidateStoreIntegrations(sellerId, storeId), { from: "dashboard", mode: "action" });
   if (appKey === "size_chart") await applyInvalidation(invalidateStoreSizeCharts(sellerId, storeId), { from: "dashboard", mode: "action" });
-  revalidatePath(`/stores/${storeId}/apps`);
+  revalidateDashboardPath(`/stores/${storeId}/apps`);
   const app = appKey ? getApp(appKey) : null;
   if (app) {
-    revalidatePath(`/stores/${storeId}/apps/${app.slug}`);
-    revalidatePath(`/stores/${storeId}/apps/${app.slug}/settings`);
+    revalidateDashboardPath(`/stores/${storeId}/apps/${app.slug}`);
+    revalidateDashboardPath(`/stores/${storeId}/apps/${app.slug}/settings`);
   }
 }

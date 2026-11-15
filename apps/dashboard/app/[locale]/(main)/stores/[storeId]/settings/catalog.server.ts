@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreCatalog } from "@workspace/cache";
 import { setStoreCatalog } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -28,7 +28,7 @@ export async function saveStoreCatalog(storeId: string, input: unknown): Promise
       from: "dashboard",
       mode: "action",
     });
-    revalidatePath(`/stores/${store.id}/settings`);
+    revalidateDashboardPath(`/stores/${store.id}/settings`);
     return { success: true };
   } catch (error) {
     if (isAccessError(error)) {

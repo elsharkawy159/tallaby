@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getLocale } from "next-intl/server";
 import { logServerError } from "@workspace/db/log";
 import {
@@ -71,7 +71,7 @@ export async function shipWithBosta(
       sellerId: seller.sellerId,
       overrides: { districtId: typeof overrides.districtId === "string" ? overrides.districtId : null, size },
     });
-    revalidatePath("/orders", "layout");
+    revalidateDashboardPath("/orders", "layout");
     if (!result.ok) {
       return { success: false, error: result.error, message: result.message, cityIds: result.cityIds };
     }
@@ -103,7 +103,7 @@ export async function cancelShipmentWithBosta(storeId: string, orderId: string):
     const { seller, store } = await requireOrdersStore(String(storeId), { forWrite: true });
     if (!shipLimiter.check(`bosta-ship:${seller.sellerId}`)) return { success: false, error: "rate_limited" };
     const result = await cancelBostaShipment(seller.sellerId, store.id, String(orderId));
-    revalidatePath("/orders", "layout");
+    revalidateDashboardPath("/orders", "layout");
     return result.ok ? { success: true, data: null } : { success: false, error: result.error, message: result.message };
   } catch (error) {
     const blocked = denied(error);

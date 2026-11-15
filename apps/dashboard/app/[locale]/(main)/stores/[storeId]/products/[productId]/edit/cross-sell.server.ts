@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreCrossSells } from "@workspace/cache";
 import { and, asc, db, eq, inArray, isNull, productCrossSells, products, productTranslations, stores } from "@workspace/db";
 import { parseCrossSellDiscount } from "@workspace/lib/orders/cross-sell";
@@ -68,7 +68,7 @@ export async function listCrossSells(storeId: string, productId: string): Promis
 async function afterChange(storeId: string, sellerId: string, productId: string): Promise<CrossSellRow[]> {
   const own = await db.select({ id: stores.id }).from(stores).where(eq(stores.sellerId, sellerId));
   await applyInvalidation(invalidateStoreCrossSells(sellerId, own.map((store) => store.id)), { from: "dashboard", mode: "action" });
-  revalidatePath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
+  revalidateDashboardPath(`${STORE_PRODUCTS_PATTERN}/[productId]/edit`, "page");
   return listCrossSells(storeId, productId);
 }
 

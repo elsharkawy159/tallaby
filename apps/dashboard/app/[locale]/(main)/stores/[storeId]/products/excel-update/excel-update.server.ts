@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getLocale } from "next-intl/server";
 import * as XLSX from "xlsx";
 import { z } from "zod";
@@ -313,7 +313,7 @@ async function afterWrite(edits: { row: LoadedProduct; before: ProductWrite; aft
   if (invalidations.length) {
     await applyInvalidation(mergeInvalidations(...invalidations), { from: "dashboard", mode: "action" });
   }
-  revalidatePath(STORE_PRODUCTS_PATTERN, "layout");
+  revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
 }
 
 /** Applies the sheet in one transaction (rows locked, re-planned) and clears caches. */

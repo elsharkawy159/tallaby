@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { parseSubscriberFilter, type StoreSubscriber } from "@workspace/lib/store-forms/subscribers";
 import {
   deleteStoreSubscribers,
@@ -40,7 +40,7 @@ export async function setSubscribersStatus(input: {
     const status = input?.status === "subscribed" ? "subscribed" : "unsubscribed";
     const result = await setStoreSubscribersStatus(seller.sellerId, store.id, Array.isArray(input?.ids) ? input.ids : [], status);
     if (!result.success) return { success: false, error: "notFound" };
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, count: result.count };
   } catch (error) {
     return failure(error);
@@ -52,7 +52,7 @@ export async function deleteSubscribers(input: { storeId: string; ids: string[] 
     const { seller, store } = await requireStore(String(input?.storeId ?? ""), { forWrite: true });
     const result = await deleteStoreSubscribers(seller.sellerId, store.id, Array.isArray(input?.ids) ? input.ids : []);
     if (!result.success) return { success: false, error: "notFound" };
-    revalidatePath(PATH);
+    revalidateDashboardPath(PATH);
     return { success: true, count: result.count };
   } catch (error) {
     return failure(error);

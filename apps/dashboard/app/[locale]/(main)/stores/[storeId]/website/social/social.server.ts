@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import { updateStoreSocialLinks } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -25,7 +25,7 @@ export async function saveStoreSocial(storeId: string, links: unknown): Promise<
       return { success: false, error: result.error === "invalid_input" ? "invalidInput" : result.error === "store_read_only" ? "readOnly" : "notFound" };
     }
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
-    revalidatePath(`/stores/${store.id}/website/social`);
+    revalidateDashboardPath(`/stores/${store.id}/website/social`);
     return { success: true };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };

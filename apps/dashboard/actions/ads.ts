@@ -9,7 +9,7 @@ import {
 } from "@workspace/db/wallet";
 import { uniqueViolationConstraint } from "@workspace/lib/fulfillment/server";
 import { and, desc, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { getUser } from "./auth";
@@ -230,8 +230,8 @@ export async function createAdRequest(input: {
       return row!;
     });
 
-    revalidatePath("/marketing");
-    revalidatePath("/financial");
+    revalidateDashboardPath("/marketing");
+    revalidateDashboardPath("/financial");
     return { success: true, data: { id: created.id } };
   } catch (error) {
     if (error instanceof StoreWalletLimitError) return { success: false, error: "insufficient_balance" };

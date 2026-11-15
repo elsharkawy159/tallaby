@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { MEDIA_BUCKET, MEDIA_MAX_BYTES, buildMediaPath, isMediaMimeType } from "@workspace/lib/media";
 import { recordMediaAsset } from "@workspace/lib/media/server";
 import { toAssetView } from "@workspace/store-editor/media/media.lib";
@@ -87,7 +87,7 @@ export async function importStockPhoto(storeId: string, photoId: string): Promis
       await supabase.storage.from(MEDIA_BUCKET).remove([path]).catch(() => undefined);
       return { success: false, error: result.error === "too_many" ? "tooMany" : result.error === "too_large" ? "tooLarge" : "generic" };
     }
-    revalidatePath(`/stores/${store.id}/website/media`);
+    revalidateDashboardPath(`/stores/${store.id}/website/media`);
     return { success: true, data: toAssetView(result.data, 0) };
   });
 }

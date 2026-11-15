@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { requestReferralPayout } from "@workspace/lib/referrals/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -20,7 +20,7 @@ export async function requestWithdrawal(input: unknown): Promise<WithdrawActionR
     if (!withdrawLimiter.check(`referral-withdraw:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
     const result = await requestReferralPayout(seller.sellerId, input);
     if (!result.success) return { success: false, error: result.error };
-    revalidatePath("/earn");
+    revalidateDashboardPath("/earn");
     return { success: true, amount: result.amount };
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: "suspended" };

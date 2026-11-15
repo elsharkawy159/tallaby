@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import { and, db, eq, sql, stores } from "@workspace/db";
 import { normalizeSalesPopupInput, type StoreSalesPopupSettings } from "@workspace/lib/stores/sales-popup";
@@ -34,7 +34,7 @@ export async function saveStoreSalesPopup(storeId: string, input: unknown): Prom
       })
       .where(and(eq(stores.id, store.id), eq(stores.sellerId, seller.sellerId)));
 
-    revalidatePath(`/stores/${store.id}/settings/sales-popup`);
+    revalidateDashboardPath(`/stores/${store.id}/settings/sales-popup`);
     await applyInvalidation(invalidateStorefront([store.subdomain]), { from: "dashboard", mode: "action" });
     return { success: true, settings };
   } catch (error) {

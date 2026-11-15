@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { applyInvalidation, invalidateStoreCms } from "@workspace/cache";
 import {
   deleteCmsItem,
@@ -37,7 +37,7 @@ async function withStore<T>(storeId: string, forWrite: boolean, run: (access: Ac
 
 async function purge(access: Access) {
   await applyInvalidation(invalidateStoreCms(access.seller.sellerId, access.store.id), { from: "dashboard", mode: "action" });
-  revalidatePath(`/stores/${access.store.id}/website/blog`);
+  revalidateDashboardPath(`/stores/${access.store.id}/website/blog`);
 }
 
 /** The post must be in this store's blog (not another collection). */
