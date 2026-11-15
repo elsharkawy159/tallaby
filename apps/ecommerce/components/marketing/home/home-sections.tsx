@@ -1,5 +1,37 @@
 import * as React from "react";
-import { BellRing, Bike, BookOpen, Check, ChartNoAxesCombined, FileUp, ShieldCheck, Sparkles, Star, Store, Timer, Palette, Rocket, Truck, Users, Wallet } from "lucide-react";
+import {
+  Activity,
+  Banknote,
+  BellRing,
+  Bike,
+  BookOpen,
+  Bot,
+  Check,
+  ChartNoAxesCombined,
+  CreditCard,
+  FileUp,
+  Globe,
+  Import,
+  LayoutTemplate,
+  Mail,
+  MessageCircle,
+  MousePointerClick,
+  PackageOpen,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Star,
+  Store,
+  TicketPercent,
+  Timer,
+  Palette,
+  Rocket,
+  Truck,
+  Users,
+  Wallet,
+  WandSparkles,
+  type LucideIcon,
+} from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { CtaBand } from "@/components/marketing/site/cta-band";
@@ -53,6 +85,26 @@ function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string;
     </>
   );
 }
+
+/** One icon per `home.hero.marquee` item, by position (same order in ar and en; keep in step with the JSON). */
+const MARQUEE_ICONS: readonly LucideIcon[] = [
+  MousePointerClick, // Drag & Drop builder
+  WandSparkles, // Tallaby AI writes your products
+  Bot, // Claude and ChatGPT
+  LayoutTemplate, // 100+ templates
+  Banknote, // Cash on delivery
+  CreditCard, // Paymob and Kashier
+  Truck, // Bosta
+  Mail, // Email campaigns
+  MessageCircle, // WhatsApp follow-up
+  ShoppingCart, // Unfinished orders
+  ShieldCheck, // Fake order protection
+  TicketPercent, // Discount codes
+  Activity, // Meta Pixel and Conversions API
+  PackageOpen, // Meta and Google catalogs
+  Globe, // Your own domain
+  Import, // Import from Shopify
+];
 
 export async function HomeHero() {
   // Prices in the home copy (and the hero demo's wallet) are `{orderFee}`-style tokens or `Money`, shown in the visitor's currency.
@@ -109,8 +161,13 @@ export async function HomeHero() {
       </Container>
 
       {/* The first copy is a real list (visible text for readers and search engines); the second only closes the loop.
-          Arabic pages move right, English left (owner, F-73). */}
-      <div className="store-marquee mt-5 overflow-hidden min-[641px]:mt-7" dir="ltr" data-direction={locale === "ar" ? "rtl" : "ltr"}>
+          Arabic pages move right, English left (owner, F-73). 120s (was the 60s default) so each item is easy to read. */}
+      <div
+        className="store-marquee mt-5 overflow-hidden min-[641px]:mt-7"
+        dir="ltr"
+        data-direction={locale === "ar" ? "rtl" : "ltr"}
+        style={{ "--marquee-duration": "120s" } as React.CSSProperties}
+      >
         <div className="store-marquee-track flex w-max">
           {[0, 1].map((copy) => (
             <ul
@@ -120,12 +177,15 @@ export async function HomeHero() {
               data-marquee-copy={copy === 1 ? "" : undefined}
               className="m-0 flex flex-none list-none gap-2.5 p-0 pe-2.5"
             >
-              {features.map((label) => (
-                <li key={label} dir={locale === "ar" ? "rtl" : "ltr"} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-ink-700">
-                  <i aria-hidden className="size-[7px] rounded-full bg-amber-600" />
-                  {label}
-                </li>
-              ))}
+              {features.map((label, index) => {
+                const Icon = MARQUEE_ICONS[index] ?? Sparkles;
+                return (
+                  <li key={label} dir={locale === "ar" ? "rtl" : "ltr"} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-ink-700">
+                    <Icon aria-hidden className="size-4 shrink-0 text-amber-600" strokeWidth={2} />
+                    {label}
+                  </li>
+                );
+              })}
             </ul>
           ))}
         </div>
