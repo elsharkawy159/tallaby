@@ -64,6 +64,8 @@ export const SELLER_NOTIFICATION_TYPES = [
   // COD deposit (0166, F-21): the customer sent a transfer / the seller's gateway paid it. `data` = { orderId, orderNumber }
   "deposit_reported",
   "deposit_paid",
+  // 24 hours after the first store, a seller who isn't activated is asked to top up (0172). `data` = {}
+  "top_up_reminder",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -167,6 +169,8 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     }
     case "first_order_top_up":
       return "/wallet/top-up";
+    case "top_up_reminder":
+      return "/wallet?topup=1";
     case "top_up_approved":
     case "top_up_rejected":
     case "welcome_gift_granted":

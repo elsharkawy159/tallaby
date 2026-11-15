@@ -575,6 +575,10 @@
       "types": "./src/billing/order-lock.server.ts",
       "default": "./src/billing/order-lock.server.ts"
     },
+    "./billing/top-up-reminder/server": {
+      "types": "./src/billing/top-up-reminder.server.ts",
+      "default": "./src/billing/top-up-reminder.server.ts"
+    },
     "./billing/order-grace": {
       "types": "./src/billing/order-lock.lib.ts",
       "default": "./src/billing/order-lock.lib.ts"

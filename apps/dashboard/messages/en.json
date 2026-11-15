@@ -7433,6 +7433,10 @@
         "title": "You got your first order!",
         "body": "Order #{orderNumber} arrived. Top up your wallet to keep seeing new orders."
       },
+      "top_up_reminder": {
+        "title": "Please top up your Tallaby wallet",
+        "body": "Top up to keep seeing your new orders. Your balance stays in your wallet and doesn’t expire."
+      },
       "deposit_reported": {
         "title": "Deposit sent",
         "body": "The customer says they sent the deposit for order #{orderNumber}. Check your account and confirm it."

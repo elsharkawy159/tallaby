@@ -58,6 +58,8 @@ const PUSH_TYPE_CATEGORY: Readonly<Record<string, PushCategory>> = {
   theme_request_updated: "account",
   // Not an order row: it asks for a top-up, so it is pushed even while orders are locked (F-84).
   first_order_top_up: "account",
+  // The 24-hour top-up reminder (0172): an account row, pushed while orders are locked too.
+  top_up_reminder: "account",
 };
 
 /** Messages from the Tallaby team (Admin › Sellers, 0131): pushed to every device, no switch. */

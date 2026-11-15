@@ -3690,7 +3690,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) | deposit_reported, deposit_paid (0166, F-21: `data` = { orderId, orderNumber }) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) | deposit_reported, deposit_paid (0166, F-21: `data` = { orderId, orderNumber }) | top_up_reminder (0172: `data` = {}, the 24-hour top-up reminder) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3713,7 +3713,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended', 'app_renewed', 'app_renewal_failed', 'app_ended', 'deposit_reported', 'deposit_paid')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended', 'app_renewed', 'app_renewal_failed', 'app_ended', 'deposit_reported', 'deposit_paid', 'top_up_reminder')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
