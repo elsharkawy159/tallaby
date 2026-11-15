@@ -14,6 +14,8 @@ const DISABLE_FLAG = `ga-disable-${MEASUREMENT_ID}`
  * unloaded, so a decline sets Google's own off switch: no more hits from this
  * page, and the tag doesn't load at all on the next one. Accepting again turns
  * it back on; next/script doesn't run the same id twice, so no second page view.
+ * `lazyOnload` waits for the page's `load` event and then an idle moment, so
+ * gtag.js stays off first paint and hydration (owner, 2026-11-15).
  */
 export function GoogleAnalytics () {
   const isMarketplace = useIsMarketplaceHost()
@@ -32,12 +34,12 @@ export function GoogleAnalytics () {
     <>
       <Script
         id="ga4-loader"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
         src={`https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`}
       />
       <Script
         id="ga4-init"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{
           __html: `
 window.dataLayer = window.dataLayer || [];
