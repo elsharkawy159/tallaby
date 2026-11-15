@@ -1,7 +1,6 @@
 import { mkdir, writeFile, rm } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { spawnSync } from 'node:child_process'
 import * as esbuild from 'esbuild'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -9,15 +8,8 @@ const root = path.resolve(__dirname, '..')
 const outputRoot = path.join(root, '.vercel', 'output')
 const functionDir = path.join(outputRoot, 'functions', 'index.func')
 
-const tsc = spawnSync(
-  process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
-  ['exec', 'tsc', '--noEmit'],
-  { cwd: root, stdio: 'inherit', shell: process.platform === 'win32' }
-)
-
-if (tsc.status !== 0) {
-  process.exit(tsc.status ?? 1)
-}
+// No type check here: the Vercel build only bundles (like the Next apps'
+// ignoreBuildErrors). Type-check locally with `pnpm --filter backend typecheck`.
 
 await rm(outputRoot, { recursive: true, force: true })
 await mkdir(functionDir, { recursive: true })

@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": { "main": true, "stage": true, "**": false }
+  },
   "ignoreCommand": "npx turbo-ignore",
   "crons": [
     { "path": "/api/cron/admin-push", "schedule": "50 4 * * *" }
