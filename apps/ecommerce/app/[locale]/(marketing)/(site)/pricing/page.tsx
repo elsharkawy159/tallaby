@@ -67,7 +67,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         <PageHero eyebrow={t("hero.eyebrow")} title={t("hero.title")} lead={t("hero.lead")} centered className="pb-10 sm:pb-12" />
         <Container className="pb-14 min-[861px]:pb-[72px]">
           <h2 className="sr-only">{t("plans.heading")}</h2>
-          <PlanCards />
+          {/* Above the fold: no fade-in, so the cards paint with the server HTML (a late reveal was the LCP). */}
+          <PlanCards reveal={false} />
           <Reveal className="mx-auto mt-7 flex max-w-[880px] flex-wrap justify-center gap-x-[22px] gap-y-2.5 text-sm text-[#3f5358]">
             {included.map((item) => (
               <span key={item.label} className="inline-flex items-center gap-1.5">

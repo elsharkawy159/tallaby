@@ -16,8 +16,12 @@ import { withPrices } from "./with-prices";
  * server render (the dashboard wallet's live rate and rounding), USD on the
  * English one, then the visitor's own currency when we have a rate for it.
  * The pages stay static.
+ *
+ * `reveal={false}` where the cards are above the fold (/pricing): a `Reveal`
+ * keeps them at opacity 0 until hydration, which made them the page's late LCP.
  */
-export async function PlanCards() {
+export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
+  const Card = reveal ? Reveal : "article";
   const t = await getTranslations("pricing.plans");
   const { free, pro } = PLAN_PRICES;
 
@@ -74,8 +78,8 @@ export async function PlanCards() {
     <>
       <div className="mx-auto grid max-w-[520px] gap-5 min-[861px]:max-w-[880px] min-[861px]:grid-cols-2">
         {cards.map((card) => (
-          <Reveal
-            as="article"
+          <Card
+            {...(reveal ? { as: "article" } : {})}
             key={card.name}
             className={cn(
               "relative flex flex-col gap-3.5 rounded-card border border-line bg-white p-6 shadow-soft min-[641px]:rounded-card-lg min-[641px]:p-8",
@@ -107,7 +111,7 @@ export async function PlanCards() {
                 </li>
               ))}
             </ul>
-          </Reveal>
+          </Card>
         ))}
       </div>
       <p className="mx-auto mt-6 max-w-[720px] text-center text-xs text-pretty text-ink-400">

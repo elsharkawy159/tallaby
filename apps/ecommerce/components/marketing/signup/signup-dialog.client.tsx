@@ -10,7 +10,6 @@ import { Link } from "@/i18n/navigation";
 import { DASHBOARD_URL, LOGIN_URL, ROOT_DOMAIN, hasArabic, slugify } from "@/lib/marketing/site.lib";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { trackSignupComplete } from "@/lib/meta/meta.client";
-import { createClient } from "@/supabase/client";
 import { useSlugCheck, type SlugState } from "./slug-check.client";
 import { resendSignupConfirmation, signUpWithEmail, startGoogleSignup } from "./signup.server";
 import { EGYPT_MOBILE, type SignupErrorKey, type SignupIntakeRef, type SignupResult } from "./signup.dto";
@@ -248,7 +247,14 @@ function SignupForm({
       handleResult(result);
       return;
     }
-    const { error } = await createClient().auth.signInWithOAuth({
+    // Loaded on this click only: supabase-js stays out of every marketing page's first load.
+    const supabase = await import("@/supabase/client").catch(() => null);
+    if (!supabase) {
+      setGooglePending(false);
+      setFormError("generic");
+      return;
+    }
+    const { error } = await supabase.createClient().auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/api/auth/signup-callback` },
     });
