@@ -9,13 +9,20 @@
  *
  * Photos and video: Pexels, each checked by eye (2026-10-28): furniture and
  * interiors only, no people, no brand labels, none used twice.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Marmar itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { categoryRows } from "../_category-rows";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels, pexelsVideo, pexelsVideoPoster } from "../library-template";
+import { copyrightLine, editionTemplate, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels, pexelsVideo, pexelsVideoPoster } from "../library-template";
 
 export const FURNITURE_LUXE_KEY = "furniture-luxe";
 
@@ -43,104 +50,214 @@ const PHOTOS = {
 
 const NAME = L("مرمر", "Marmar");
 
-const header = lib("header-topbar", {
-  text: {
-    "توصيل سريع لكل محافظات مصر": L("توصيل وتركيب لحد البيت في كل محافظات مصر", "Delivery and assembly at home, across Egypt"),
-    "الدفع عند الاستلام": L("ادفع عند الاستلام", "Pay on delivery"),
-    "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل القطع", "Shop all"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("الأكثر طلبًا", "Best sellers"),
-    "من نحن": L("المعرض", "Our showroom"),
+/**
+ * Marmar's own content: what the look is built with when no edition is
+ * applied (the template `furniture-luxe` has always meant). The store name
+ * and description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The top bar: two short lines (a third, "Track your order", stays the look's).
+  announcement: [L("توصيل وتركيب لحد البيت في كل محافظات مصر", "Delivery and assembly at home, across Egypt"), L("ادفع عند الاستلام", "Pay on delivery")],
+  // The video hero (without a video file it shows its poster, `photos.hero.wide`). Its button goes to the whole catalog.
+  hero: {
+    alt: L("صالة بالرخام والنحاس", "A marble and brass living room"),
+    eyebrow: L("مجموعة الخريف ٢٠٢٦", "The Autumn 2026 collection"),
+    title: L("أثاث يعيش معاك سنين", "Furniture made to stay for years"),
+    line: L(
+      "خشب زان مجفف، قماش مقاوم للبقع وتركيب في البيت. كل قطعة متشطبة يدويًا في ورشتنا في دمياط.",
+      "Kiln-dried beech, stain-resistant fabrics and assembly at home. Every piece is hand-finished in our Damietta workshop.",
+    ),
+    cta: L("اكتشف المجموعة", "Explore the collection"),
   },
-  links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
-});
-
-const footer = lib("footer-wordmark", {
-  text: {
-    "تسوّق": L("تسوّق", "Shop"),
-    "كل المنتجات": L("كل القطع", "All pieces"),
-    "العروض": L("الأعلى تقييمًا", "Top rated"),
-    "المساعدة": L("المساعدة", "Help"),
-    "من نحن": L("عن مرمر", "About Marmar"),
-    "٠١٠٠ ١٢٣ ٤٥٦٧": L("٠١٢٢ ٤٨٦ ٣٩٠٥", "+20 122 486 3905"),
-    "‏hello@store.com": L("‏hello@marmar.eg", "hello@marmar.eg"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ مرمر. كل الحقوق محفوظة.", "© 2026 Marmar. All rights reserved."),
+  categories: { title: L("تسوّق حسب الغرفة", "Shop by room") },
+  // The tabbed product block's title (its tabs are best sellers, new in and top rated).
+  products: { primary: { title: L("القطع الأكثر طلبًا", "Our most-loved pieces") } },
+  // The showroom block on the home page: an eyebrow, a title, a short text and a button to the about page.
+  story: {
+    alt: L("صالون بسقف عالي وكراسي حمرا", "A high-ceilinged salon with red armchairs"),
+    eyebrow: L("من ١٩٩٨", "Since 1998"),
+    title: L("ثلاث أجيال في صناعة الأثاث", "Three generations of furniture makers"),
+    text: L(
+      "بدأنا ورشة صغيرة في دمياط، واليوم عندنا معرض في التجمع الخامس. كل قطعة بتتقص وتتنجد وتتشطب عندنا، وبنضمن الهيكل ٥ سنين.",
+      "We started as a small Damietta workshop and now have a showroom in New Cairo. Every piece is cut, upholstered and finished by us, with a five-year frame guarantee.",
+    ),
+    cta: L("زور المعرض", "Visit the showroom"),
   },
-  links: { "/products": [SHOP, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-video", {
-    photo: [PHOTOS.heroPoster],
-    nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 30 } } },
-    text: {
-      "فيديو الواجهة": L("صالة بالرخام والنحاس", "A marble and brass living room"),
-      "المجموعة الجديدة": L("مجموعة الخريف ٢٠٢٦", "The Autumn 2026 collection"),
-      "مساحتك، بطريقتك": L("أثاث يعيش معاك سنين", "Furniture made to stay for years"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "خشب زان مجفف، قماش مقاوم للبقع وتركيب في البيت. كل قطعة متشطبة يدويًا في ورشتنا في دمياط.",
-        "Kiln-dried beech, stain-resistant fabrics and assembly at home. Every piece is hand-finished in our Damietta workshop.",
-      ),
-      "تسوّق الآن": L("اكتشف المجموعة", "Explore the collection"),
-      "شوف الجديد": L("وصل حديثًا", "New in"),
-    },
-    links: { "/products": SHOP, "/products?sort=newest": NEW },
-  }),
-  lib("categories-photo-tiles", {
-    text: { "تسوّق حسب القسم": L("تسوّق حسب الغرفة", "Shop by room") },
-  }),
-  lib("products-minimal", {
-    text: {
-      "الأكثر طلباً": L("القطع الأكثر طلبًا", "Our most-loved pieces"),
-      "الأكثر مبيعاً": L("الأكثر مبيعًا", "Best sellers"),
-      "الجديد": L("وصل حديثًا", "New in"),
-      "الأعلى تقييمًا": L("الأعلى تقييمًا", "Top rated"),
-      "عرض الكل": L("كل القطع", "Shop all"),
-    },
-  }),
-  lib("about-overlap", {
-    person: [undefined, undefined, undefined, undefined, PHOTOS.palaceLounge],
-    text: {
-      "صورة المتجر": L("صالون بسقف عالي وكراسي حمرا", "A high-ceilinged salon with red armchairs"),
-      "من داخل المتجر": L("من ١٩٩٨", "Since 1998"),
-      "بدأنا من محل صغير": L("ثلاث أجيال في صناعة الأثاث", "Three generations of furniture makers"),
-      "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.": L(
-        "بدأنا ورشة صغيرة في دمياط، واليوم عندنا معرض في التجمع الخامس. كل قطعة بتتقص وتتنجد وتتشطب عندنا، وبنضمن الهيكل ٥ سنين.",
-        "We started as a small Damietta workshop and now have a showroom in New Cairo. Every piece is cut, upholstered and finished by us, with a five-year frame guarantee.",
-      ),
-      "اعرف أكثر": L("زور المعرض", "Visit the showroom"),
-    },
-  }),
-  ...categoryRows(lib, { viewAll: L("عرض الكل", "View all"), muted: [1, 3] }),
-  lib("newsletter-centered", {
-    text: {
-      "النشرة": L("نشرة مرمر", "The Marmar letter"),
-      "خد ١٠٪ خصم على أول طلب": L("كن أول من يشوف المجموعات الجديدة", "See new collections first"),
-      "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": L(
-        "رسالة واحدة في الشهر: قطع جديدة، أفكار لتنسيق البيت ومواعيد افتتاح المجموعات في المعرض.",
-        "One letter a month: new pieces, styling ideas and collection openings at the showroom.",
-      ),
-      "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن مرمر", "About Marmar"), L("أثاث متشطب يدويًا من دمياط، من ١٩٩٨.", "Hand-finished furniture from Damietta, since 1998.")),
-  aboutStory(lib, {
-    photo: PHOTOS.greyLounge,
+  newsletter: {
+    eyebrow: L("نشرة مرمر", "The Marmar letter"),
+    title: L("كن أول من يشوف المجموعات الجديدة", "See new collections first"),
+    line: L(
+      "رسالة واحدة في الشهر: قطع جديدة، أفكار لتنسيق البيت ومواعيد افتتاح المجموعات في المعرض.",
+      "One letter a month: new pieces, styling ideas and collection openings at the showroom.",
+    ),
+    note: L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."),
+  },
+  about: {
+    line: L("أثاث متشطب يدويًا من دمياط، من ١٩٩٨.", "Hand-finished furniture from Damietta, since 1998."),
     alt: L("صالة بكنبة بني وستائر خضرا", "A living room with a brown sofa and green curtains"),
     eyebrow: L("الورشة والمعرض", "Workshop and showroom"),
     title: L("كل قطعة معمولة عندنا", "Every piece is made by us"),
     text: L("من اختيار الخشب لحد آخر غرزة في التنجيد، الشغل كله بيتعمل في ورشتنا.", "From choosing the wood to the last upholstery stitch, all the work happens in our workshop."),
     more: L("وبنضمن الهيكل ٥ سنين، والتركيب في البيت علينا.", "Frames carry a five-year guarantee, and assembly at home is on us."),
-    button: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    // Goes to the best sellers.
+    cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
+  },
+  contact: {
+    title: L("زورنا أو كلمنا", "Visit or call us"),
+    line: L("المعرض: ٩٠ شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة.", "Showroom: 90 North 90th St, Fifth Settlement, New Cairo."),
+    heading: L("احجز زيارة للمعرض", "Book a showroom visit"),
+  },
+  faq: {
+    line: L("التوصيل والتركيب والضمان.", "Delivery, assembly and guarantee."),
+    question: L("التركيب عليكم؟", "Do you assemble the furniture?"),
+    answer: L(
+      "أيوه، فريقنا بيوصل القطعة ويركبها في مكانها وياخد الكرتون معاه. التوصيل في القاهرة والجيزة خلال ٥ لـ ٧ أيام عمل.",
+      "Yes. Our team delivers, assembles the piece in place and takes the packaging away. Cairo and Giza delivery takes 5 to 7 working days.",
+    ),
+  },
+  custom: {
+    // The header's link to the about page, one or two words.
+    "about-label": L("المعرض", "Our showroom"),
+    // The link to the whole catalog (the header, the footer and the tabbed block), two words.
+    "shop-all": L("كل القطع", "Shop all"),
+    // The footer's phone and email: the same string on both sides (a seller replaces them).
+    "contact-phone": L("٠١٢٢ ٤٨٦ ٣٩٠٥", "+20 122 486 3905"),
+    "contact-email": L("‏hello@marmar.eg", "hello@marmar.eg"),
+  },
+  // hero.wide is the video's poster and hero.video the video (optional); story: the home's showroom block; about: the about page.
+  photos: {
+    hero: { wide: PHOTOS.heroPoster, video: PHOTOS.heroVideo },
+    story: PHOTOS.palaceLounge,
+    about: PHOTOS.greyLounge,
+  },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (New in, Best sellers, Top rated, Track your order, Help) and the layout
+ * stay here.
+ */
+function look(c: LookContent, _journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  const shopAll = x["shop-all"]!;
+
+  const header = lib("header-topbar", {
+    text: {
+      "توصيل سريع لكل محافظات مصر": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
+      "اسم متجرك": name,
+      "المتجر": shopAll,
+      "العروض": L("وصل حديثًا", "New in"),
+      "المدونة": L("الأكثر طلبًا", "Best sellers"),
+      "من نحن": x["about-label"]!,
+    },
+    links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
+  });
+
+  const footer = lib("footer-wordmark", {
+    text: {
+      "تسوّق": L("تسوّق", "Shop"),
+      "كل المنتجات": L(shopAll.ar, "All pieces"),
+      "العروض": L("الأعلى تقييمًا", "Top rated"),
+      "المساعدة": L("المساعدة", "Help"),
+      "من نحن": aboutName,
+      "٠١٠٠ ١٢٣ ٤٥٦٧": x["contact-phone"]!,
+      "‏hello@store.com": x["contact-email"]!,
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "/products": [SHOP, NEW, BEST, RATED] },
+  });
+
+  const video = c.photos.hero.video;
+  const home: Design[] = [
+    lib("hero-video", {
+      photo: [c.photos.hero.wide],
+      // Without a video the design shows its poster alone.
+      nodes: { ...(video && { "الفيديو": { props: { url: video } } }), "التعتيم": { style: { opacity: 30 } } },
+      text: {
+        "فيديو الواجهة": c.hero.alt,
+        "المجموعة الجديدة": c.hero.eyebrow,
+        "مساحتك، بطريقتك": c.hero.title,
+        "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تسوّق الآن": c.hero.cta,
+        "شوف الجديد": L("وصل حديثًا", "New in"),
+      },
+      links: { "/products": SHOP, "/products?sort=newest": NEW },
+    }),
+    lib("categories-photo-tiles", {
+      text: { "تسوّق حسب القسم": c.categories.title },
+    }),
+    lib("products-minimal", {
+      text: {
+        "الأكثر طلباً": c.products.primary.title,
+        "الأكثر مبيعاً": L("الأكثر مبيعًا", "Best sellers"),
+        "الجديد": L("وصل حديثًا", "New in"),
+        "الأعلى تقييمًا": L("الأعلى تقييمًا", "Top rated"),
+        "عرض الكل": shopAll,
+      },
+    }),
+    lib("about-overlap", {
+      person: [undefined, undefined, undefined, undefined, c.photos.story],
+      text: {
+        "صورة المتجر": c.story.alt,
+        "من داخل المتجر": c.story.eyebrow,
+        "بدأنا من محل صغير": c.story.title,
+        "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.": c.story.text,
+        "اعرف أكثر": c.story.cta,
+      },
+    }),
+    // Four category rows, places 1 to 4 in order (`journey.rows` is [1, 2, 3, 4]).
+    ...categoryRows(lib, { viewAll: L("عرض الكل", "View all"), muted: [1, 3] }),
+    lib("newsletter-centered", {
+      text: {
+        "النشرة": c.newsletter.eyebrow,
+        "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
+        "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": c.newsletter.line,
+        "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": c.newsletter.note,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -203,7 +320,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const FURNITURE_LUXE = libraryTemplate({
+export const FURNITURE_LUXE = editionTemplate({
   key: FURNITURE_LUXE_KEY,
   version: 1,
   name: L("مرمر", "Marmar"),
@@ -227,35 +344,35 @@ export const FURNITURE_LUXE = libraryTemplate({
   fonts: { heading: "Amiri", body: "IBM Plex Sans Arabic" },
   radius: 0,
   containerMaxWidth: 1440,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن مرمر", "About"), seo: { title: L("عن مرمر", "About Marmar") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("زورنا أو كلمنا", "Visit or call us"),
-        text: L("المعرض: ٩٠ شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة.", "Showroom: 90 North 90th St, Fifth Settlement, New Cairo."),
-        heading: L("احجز زيارة للمعرض", "Book a showroom visit"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("التوصيل والتركيب والضمان.", "Delivery, assembly and guarantee."),
-        question: L("التركيب عليكم؟", "Do you assemble the furniture?"),
-        answer: L(
-          "أيوه، فريقنا بيوصل القطعة ويركبها في مكانها وياخد الكرتون معاه. التوصيل في القاهرة والجيزة خلال ٥ لـ ٧ أيام عمل.",
-          "Yes. Our team delivers, assembles the piece in place and takes the packaging away. Cairo and Giza delivery takes 5 to 7 working days.",
-        ),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "hero",
+    "categories.title",
+    "products.primary.title",
+    "story",
+    "newsletter.eyebrow",
+    "newsletter.title",
+    "newsletter.line",
+    "newsletter.note",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
+    "custom.about-label",
+    "custom.shop-all",
+    "custom.contact-phone",
+    "custom.contact-email",
   ],
+  // `photos.hero.video`: without it the hero shows its poster; `photos.about`: the about page's photo (falls back to the story's).
+  // The tabbed block has its own tabs, so `primary` is not read; four category rows, places 1 to 4 (`categoryRows`).
+  optional: ["photos.hero.video", "photos.about"],
+  journey: { primary: "best-sellers", rows: [1, 2, 3, 4] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {
     thumbs: "bottom",

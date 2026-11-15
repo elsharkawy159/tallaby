@@ -138,7 +138,7 @@ Synced with `.editions-inbox/` on 2026-11-15 (file dates). _Have/need_ counts th
 | chargers-cables     | `kabl`         | 5 / 5       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 | lighting-smart-home | `zaki`         | 6 / 6       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 
-**Waves 2–13**: wave 2 (beauty) is in progress (2026-11-15: skincare and mens-grooming are in their templates; makeup, perfumes and haircare are waiting on the images listed in their sections). Waves 3–5 are received but not yet built; the rest are _Not started_.
+**Waves 2–13**: wave 2 (beauty) is in progress (2026-11-15: skincare and mens-grooming are in their templates; makeup, perfumes and haircare are waiting on the images listed in their sections). Wave 3 (home, 2026-11-15): bedding-textiles, decor, furniture and home-organisation are in their templates; plants-garden is waiting on its twelve product photos. Waves 4–5 are received but not yet built; the rest are _Not started_.
 
 | Wave | Industry              | Niche (template, essential photos)                                                                                                                                      | Essential |
 | ---- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -1804,11 +1804,13 @@ Scenes
 
 ## Wave 3: Home (5 niches)
 
-### furniture, template furniture-luxe — Not started
+### furniture, template furniture-luxe — Done
 
 **Save to: `.editions-inbox/03-wave-3-home/furniture/`**
 
-**Essential: 24 images** (8 scenes, 16 products: the template shows a row of four per category). Nothing in the inbox yet.
+**Essential: 24 images** (8 scenes, 16 products: the template shows a row of four per category).
+
+**Status: Done, in the template 2026-11-15 (24 of 24).**
 
 Palette for scenes: _warm walnut, oatmeal bouclé, travertine beige, deep forest green._ Add: _"Furniture: one piece alone, three-quarter view from slightly above, the whole piece in frame, no cushions with prints, no objects on it unless stated, unbranded."_
 
@@ -1840,11 +1842,13 @@ Scenes
 
 ---
 
-### bedding-textiles, template mafrash — Not started
+### bedding-textiles, template mafrash — Done
 
 **Save to: `.editions-inbox/03-wave-3-home/bedding-textiles/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _crisp white, dusty blue, sand linen, soft sage._ Add: _"Textiles: neatly folded and stacked, or laid flat seen from straight above, edges straight, no labels or tags, no prints with words."_
 
@@ -1880,11 +1884,13 @@ Scenes
 
 ---
 
-### decor, template rokn — Not started
+### decor, template rokn — Done
 
 **Save to: `.editions-inbox/03-wave-3-home/decor/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _terracotta, ivory plaster, black iron, dried-grass gold._ Add: _"Decor: unbranded objects; wall art shows abstract shapes or landscapes only, no faces, no letters or calligraphy; mirrors reflect only plain white; clocks have plain faces with simple marks, no numbers."_
 
@@ -1920,11 +1926,13 @@ Scenes
 
 ---
 
-### plants-garden, template zarea — Not started
+### plants-garden, template zarea — Partial
 
 **Save to: `.editions-inbox/03-wave-3-home/plants-garden/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Partial (8 of 20, received 2026-11-15).** The 8 scenes are fine, but **all twelve product photos must be made again**: each came back with extra things around the product (bags of soil and pebbles, seed packets, other plants or tools). Send each prompt again in a fresh chat with "only this one product on white, nothing else in the frame".
 
 Palette for scenes: _leaf green, sun-baked terracotta, whitewash, warm sand._ Add: _"Plants: healthy, real, shown in a plain pot fully in frame; seed packets, soil and fertiliser in plain unlabelled paper or clear bags with no text."_
 
@@ -1960,11 +1968,13 @@ Scenes
 
 ---
 
-### home-organisation, template tanzim — Not started
+### home-organisation, template tanzim — Done
 
 **Save to: `.editions-inbox/03-wave-3-home/home-organisation/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _clean white, pale grey, light birch, soft butter._ Add: _"Storage: unbranded, empty unless stated, shown closed and square to the camera at a slight angle, no labels or label holders with writing."_
 

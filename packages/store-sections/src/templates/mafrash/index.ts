@@ -9,12 +9,19 @@
  * Photos: Pexels, each checked by eye (2026-10-21): made and unmade beds,
  * linen sets, folded duvets, knitted throws and cushions. No people, no
  * hands, no logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Mafrash Home itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const MAFRASH_KEY = "mafrash";
 
@@ -48,99 +55,210 @@ const PHOTOS = {
 
 const NAME = L("مفرش هوم", "Mafrash Home");
 
-const header = lib("header-announcement", {
-  text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("جرّب ٣٠ ليلة · استرجاع ببلاش على المفارش", "Try for 30 nights · Free returns on bedding"),
-    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
-    "م": L("م", "M"),
-    "اسم متجرك": NAME,
-    "المتجر": L("المفارش", "Bedding"),
-    "العروض": L("الأكثر مبيعاً", "Best sellers"),
-    "المدونة": L("الأسئلة", "FAQ"),
-    "من نحن": L("عن مفرش", "About"),
+/**
+ * Mafrash Home's own content: what the look is built with when no edition
+ * is applied (the template `mafrash` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header bar: two short lines.
+  announcement: [L("جرّب ٣٠ ليلة · استرجاع ببلاش على المفارش", "Try for 30 nights · Free returns on bedding"), L("الدفع عند الاستلام", "Cash on delivery")],
+  // The header's first link, one or two words: the store's main category. The hero's button goes there too.
+  nav: [{ label: L("المفارش", "Bedding"), href: search("طقم") }],
+  hero: {
+    alt: L("سرير بمفرش ورق شجر جنب كومودينو وورد", "A bed with leaf-print bedding beside a nightstand with flowers"),
+    eyebrow: L("تجربة ٣٠ ليلة", "30-night trial"),
+    title: L("نام عليها الأول", "Sleep on it first"),
+    line: L("لو ما حبيتش الملايات بعد ٣٠ ليلة، بنرجّعها ببلاش.", "If you do not love the sheets after 30 nights, we collect them for free."),
+    // Goes to `nav.0`; also the reviews wall's button.
+    cta: L("تسوق المفارش", "Shop bedding"),
   },
-  links: { "/products": [search("طقم"), BEST, undefined, search("طقم"), BEST], "/blog": "/faq" },
-});
-
-const footer = lib("footer-signup", {
-  text: {
-    "اشترك في النشرة": L("ألوان جديدة كل موسم", "New colours every season"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("اعرف الألوان الجديدة قبل الكل، ونصايح غسيل القطن.", "Hear about new colours first, plus cotton washing tips."),
-    "م": L("م", "M"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ مفرش هوم. كل الحقوق محفوظة.", "© 2026 Mafrash Home. All rights reserved."),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
+  categories: { title: L("جهّز سريرك", "Make your bed") },
+  // A rail of eight of what `journey.primary` shows: a small eyebrow over the title.
+  products: { primary: { eyebrow: L("وصل جديد", "New in"), title: L("ألوان جديدة", "New colours") } },
+  // Four promises, a title of one or two words and a short line each.
+  trust: [
+    { title: L("قطن مصري", "Egyptian cotton"), line: L("قطن جيزة طويل التيلة", "Long-staple Giza cotton") },
+    { title: L("مغسول", "Pre-washed"), line: L("ناعم من أول ليلة", "Soft from the first night") },
+    { title: L("٣٠ ليلة", "30 nights"), line: L("استرجاع ببلاش على المفارش", "Free returns on bedding") },
+    { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("أو بالبطاقة والمحفظة", "Or by card and wallet") },
+  ],
+  // Optional: a wall of six short buyer quotes under a title (no names shown). Without them the home page ends on the promises.
+  reviews: {
+    title: L("ناموا عليها", "Slept on it"),
+    items: [
+      { quote: L("الملايات ناعمة من أول غسلة وما كرمشتش زي اللي كانت عندي.", "The sheets were soft from the first wash and do not crease like my old ones.") },
+      { quote: L("تاني طقم أطلبه، المرة دي الكتان البيج.", "My second set; this time the beige linen.") },
+      { quote: L("طلبت مقاس غلط، جم أخدوه وبعتولي الصح في يومين.", "I ordered the wrong size; they collected it and sent the right one in two days.") },
+      { quote: L("البطانية الوافل خفيفة ومناسبة للصيف بالظبط.", "The waffle throw is light and just right for summer.") },
+      { quote: L("جربتها ٣٠ ليلة وما رجعتهاش طبعاً.", "I tried them for 30 nights and of course kept them.") },
+      { quote: L("ساعدوني أختار اللون اللي يمشي مع الحيطة.", "They helped me pick a colour that suits the wall.") },
+    ],
   },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.leafBedroom],
-    text: {
-      "كوليكشن الموسم": L("تجربة ٣٠ ليلة", "30-night trial"),
-      "صوت أنقى، كل يوم": L("نام عليها الأول", "Sleep on it first"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "لو ما حبيتش الملايات بعد ٣٠ ليلة، بنرجّعها ببلاش.",
-        "If you do not love the sheets after 30 nights, we collect them for free.",
-      ),
-      "تسوق الآن": L("تسوق المفارش", "Shop bedding"),
-      "العروض": L("الأكثر مبيعاً", "Best sellers"),
-      "صورة الحملة": L("سرير بمفرش ورق شجر جنب كومودينو وورد", "A bed with leaf-print bedding beside a nightstand with flowers"),
-    },
-    links: { "/products": [search("طقم"), BEST] },
-  }),
-  lib("categories-captioned", { text: { "اكتشف الأقسام": L("جهّز سريرك", "Make your bed"), "كل الأقسام": L("كل المفروشات", "All bedding") } }),
-  lib("products-rail", {
-    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("ألوان جديدة", "New colours") },
-    links: { "/products": NEW },
-    lists: [{ source: "newest", limit: 8 }],
-  }),
-  lib("features-ruled", {
-    text: {
-      "توصيل سريع": L("قطن مصري", "Egyptian cotton"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("قطن جيزة طويل التيلة", "Long-staple Giza cotton"),
-      "الدفع عند الاستلام": L("مغسول", "Pre-washed"),
-      "أو ادفع بالبطاقة والمحفظة": L("ناعم من أول ليلة", "Soft from the first night"),
-      "استرجاع سهل": L("٣٠ ليلة", "30 nights"),
-      "١٤ يومًا لتغيّر رأيك": L("استرجاع ببلاش على المفارش", "Free returns on bedding"),
-      "دعم على واتساب": L("الدفع عند الاستلام", "Cash on delivery"),
-      "أشخاص حقيقيون طوال الأسبوع": L("أو بالبطاقة والمحفظة", "Or by card and wallet"),
-    },
-  }),
-  lib("testimonials-wall", {
-    text: {
-      "ماذا يقولون عنا": L("ناموا عليها", "Slept on it"),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "الملايات ناعمة من أول غسلة وما كرمشتش زي اللي كانت عندي.",
-        "The sheets were soft from the first wash and do not crease like my old ones.",
-      ),
-      "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L("تاني طقم أطلبه، المرة دي الكتان البيج.", "My second set; this time the beige linen."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "طلبت مقاس غلط، جم أخدوه وبعتولي الصح في يومين.",
-        "I ordered the wrong size; they collected it and sent the right one in two days.",
-      ),
-      "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": L("البطانية الوافل خفيفة ومناسبة للصيف بالظبط.", "The waffle throw is light and just right for summer."),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("جربتها ٣٠ ليلة وما رجعتهاش طبعاً.", "I tried them for 30 nights and of course kept them."),
-      "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": L("ساعدوني أختار اللون اللي يمشي مع الحيطة.", "They helped me pick a colour that suits the wall."),
-      "كل الآراء": L("تسوق المفارش", "Shop bedding"),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن مفرش", "About Mafrash"), L("ملايات قطن مصري، مغسولة وناعمة.", "Egyptian cotton sheets, washed soft.")),
-  aboutStory(lib, {
-    photo: PHOTOS.basketThrow,
+  // The footer's sign-up: a title and one line.
+  newsletter: {
+    title: L("ألوان جديدة كل موسم", "New colours every season"),
+    line: L("اعرف الألوان الجديدة قبل الكل، ونصايح غسيل القطن.", "Hear about new colours first, plus cotton washing tips."),
+  },
+  about: {
+    line: L("ملايات قطن مصري، مغسولة وناعمة.", "Egyptian cotton sheets, washed soft."),
     alt: L("بطانية تريكو في سبت خوص", "A knitted throw in a wicker basket"),
     eyebrow: L("من المحلة", "From El Mahalla"),
     title: L("قطن جيزة من المصنع لسريرك", "Giza cotton from the mill to your bed"),
     text: L("بننسج ملاياتنا من قطن جيزة طويل التيلة في المحلة، وبنغسلها قبل ما تتغلف عشان تبقى ناعمة من أول ليلة.", "We weave our sheets from long-staple Giza cotton in El Mahalla and wash them before packing, so they are soft from the first night."),
     more: L("وعندك ٣٠ ليلة تجربها قبل ما تقرر.", "And you have 30 nights to try them before you decide."),
-    button: L("تسوق المفارش", "Shop bedding"),
-    href: SHOP,
-  }),
-];
+    // Goes to the whole catalog.
+    cta: L("تسوق المفارش", "Shop bedding"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("اسألنا عن المقاسات والألوان والتجربة.", "Ask us about sizes, colours and the trial."),
+    heading: L("اسأل عن مقاس سريرك", "Ask about your bed size"),
+  },
+  faq: {
+    line: L("المقاسات والغسيل وتجربة ٣٠ ليلة.", "Sizes, washing and the 30-night trial."),
+    question: L("تجربة الـ٣٠ ليلة بتشتغل إزاي؟", "How does the 30-night trial work?"),
+    answer: L("نام على المفارش ٣٠ ليلة، ولو ما حبيتهاش اطلب استرجاع وبنيجي ناخدها ببلاش.", "Sleep on the bedding for 30 nights; if you do not love it, request a return and we collect it free."),
+  },
+  custom: {
+    // The store's short name inside "About …" (header and about page).
+    "store-short": L("مفرش", "Mafrash"),
+    // The categories section's link to the whole catalog, two words.
+    "shop-all": L("كل المفروشات", "All bedding"),
+  },
+  // hero.tall: the split hero's photo (square on desktop, so the subject sits in the middle); story: the about page (4:5).
+  photos: { hero: { tall: PHOTOS.leafBedroom }, story: PHOTOS.basketThrow },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Best sellers, FAQ, Top rated) and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const initial = initialOf(name);
+  const short = c.custom["store-short"]!;
+  const aboutShort = L(`عن ${short.ar}`, `About ${short.en}`);
+  const main = c.nav[0]!;
+  const tiles = c.photos.tiles.length;
+
+  const header = lib("header-announcement", {
+    text: {
+      "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "م": initial,
+      "اسم متجرك": name,
+      "المتجر": main.label,
+      "العروض": L("الأكثر مبيعاً", "Best sellers"),
+      "المدونة": L("الأسئلة", "FAQ"),
+      "من نحن": L(aboutShort.ar, "About"),
+    },
+    links: { "/products": [main.href, BEST, undefined, main.href, BEST], "/blog": "/faq" },
+  });
+
+  const footer = lib("footer-signup", {
+    text: {
+      "اشترك في النشرة": c.newsletter.title,
+      "عروض ومنتجات جديدة، مرة في الأسبوع.": c.newsletter.line,
+      "م": initial,
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  // Absent in an edition without buyer quotes: the section is left out.
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
+  const home: Design[] = [
+    lib("hero-halves", {
+      photo: [undefined, c.photos.hero.tall],
+      text: {
+        "كوليكشن الموسم": c.hero.eyebrow,
+        "صوت أنقى، كل يوم": c.hero.title,
+        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+        "تسوق الآن": c.hero.cta,
+        "العروض": L("الأكثر مبيعاً", "Best sellers"),
+        "صورة الحملة": c.hero.alt,
+      },
+      links: { "/products": [main.href, BEST] },
+    }),
+    lib("categories-captioned", {
+      text: { "اكتشف الأقسام": c.categories.title, "كل الأقسام": c.custom["shop-all"]! },
+      // Five across by design; a store with another number of categories gets one full row of them (phones swipe).
+      ...(tiles !== 5 && { nodes: { "الأقسام": { style: { columns: tiles }, tablet: { columns: tiles } } } }),
+    }),
+    lib("products-rail", {
+      text: { "بيحبوها": c.products.primary.eyebrow, "الأكثر مبيعًا": c.products.primary.title },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary, limit: 8 }],
+    }),
+    lib("features-ruled", {
+      text: {
+        "توصيل سريع": c.trust[0]!.title,
+        "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+        "الدفع عند الاستلام": c.trust[1]!.title,
+        "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
+        "استرجاع سهل": c.trust[2]!.title,
+        "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+        "دعم على واتساب": c.trust[3]!.title,
+        "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+      },
+    }),
+    ...(reviews
+      ? [
+          lib("testimonials-wall", {
+            text: {
+              "ماذا يقولون عنا": reviews.title,
+              "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
+              "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[1]!.quote,
+              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[2]!.quote,
+              "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": reviews.items[3]!.quote,
+              "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[4]!.quote,
+              "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": reviews.items[5]!.quote,
+              "كل الآراء": c.hero.cta,
+            },
+          }),
+        ]
+      : []),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutShort, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: SHOP,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutShort.ar, "About"), seo: { title: aboutShort }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -168,7 +286,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const MAFRASH = libraryTemplate({
+export const MAFRASH = editionTemplate({
   key: MAFRASH_KEY,
   version: 3,
   changelog: "Mafrash v3: categories, section order",
@@ -193,31 +311,32 @@ export const MAFRASH = libraryTemplate({
   },
   fonts: { heading: "Noto Kufi Arabic", body: "Noto Kufi Arabic" },
   radius: 14,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن مفرش", "About"), seo: { title: L("عن مفرش", "About Mafrash") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("اسألنا عن المقاسات والألوان والتجربة.", "Ask us about sizes, colours and the trial."),
-        heading: L("اسأل عن مقاس سريرك", "Ask about your bed size"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("المقاسات والغسيل وتجربة ٣٠ ليلة.", "Sizes, washing and the 30-night trial."),
-        question: L("تجربة الـ٣٠ ليلة بتشتغل إزاي؟", "How does the 30-night trial work?"),
-        answer: L("نام على المفارش ٣٠ ليلة، ولو ما حبيتهاش اطلب استرجاع وبنيجي ناخدها ببلاش.", "Sleep on the bedding for 30 nights; if you do not love it, request a return and we collect it free."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "nav.0",
+    "hero",
+    "categories.title",
+    "products.primary.eyebrow",
+    "products.primary.title",
+    "trust",
+    "newsletter.title",
+    "newsletter.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.tall",
+    "photos.story",
+    "custom.store-short",
+    "custom.shop-all",
   ],
+  // Buyer quotes are demo claims: a pack writes real ones or leaves the group out (the section is then not built).
+  // A rail of eight newest products; no category rows.
+  optional: ["reviews"],
+  journey: { primary: "newest", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

@@ -9,12 +9,19 @@
  * Photos: Pexels, each checked by eye (2026-10-21): jars in cupboards,
  * canisters, woven baskets on shelves and open shelf units. No people, no
  * hands, no logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Tanzim Home itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const TANZIM_KEY = "tanzim";
 
@@ -45,88 +52,34 @@ const PHOTOS = {
 
 const NAME = L("تنظيم هوم", "Tanzim Home");
 
-const header = lib("header-chips", {
-  text: { "م": L("ت", "T"), "اسم متجرك": NAME, "ابحث عن منتج…": L("ابحث عن برطمان، سلة، رف…", "Search jars, baskets, shelves…") },
-});
-
-const footer = lib("footer-signup", {
-  text: {
-    "اشترك في النشرة": L("أفكار تنظيم على إيميلك", "Organising ideas in your inbox"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("فكرة تنظيم وعرض كل أسبوع.", "One organising idea and one offer every week."),
-    "م": L("ت", "T"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ تنظيم هوم. كل الحقوق محفوظة.", "© 2026 Tanzim Home. All rights reserved."),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
+/**
+ * Tanzim Home's own content: what the look is built with when no edition is
+ * applied (the template `tanzim` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header search placeholder: three things a buyer types.
+  labels: { search: L("ابحث عن برطمان، سلة، رف…", "Search jars, baskets, shelves…") },
+  // Only `nav.0.href` is read: where the hero's and the about page's buttons go (the store's main category).
+  nav: [{ label: L("برطمانات", "Jars"), href: search("برطمان") }],
+  hero: {
+    alt: L("دولاب مطبخ فيه برطمانات حبوب مترتبة", "A kitchen cupboard with neatly lined jars of grains"),
+    eyebrow: L("تنظيم النملية", "Pantry reset"),
+    title: L("مكان لكل حاجة", "A place for everything"),
+    line: L("برطمانات محكمة وسلال وعلب رفوف. باقات على مقاس المطبخ المصري.", "Airtight jars, baskets and shelf boxes. Bundles sized for Egyptian kitchens."),
+    // Goes to `nav.0.href`; the second button is `custom.best-label` (the best sellers).
+    cta: L("جهّز نمليتك", "Build your pantry"),
   },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-halves", {
-    photo: [undefined, PHOTOS.jarCupboard],
-    text: {
-      "كوليكشن الموسم": L("تنظيم النملية", "Pantry reset"),
-      "صوت أنقى، كل يوم": L("مكان لكل حاجة", "A place for everything"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "برطمانات محكمة وسلال وعلب رفوف. باقات على مقاس المطبخ المصري.",
-        "Airtight jars, baskets and shelf boxes. Bundles sized for Egyptian kitchens.",
-      ),
-      "تسوق الآن": L("جهّز نمليتك", "Build your pantry"),
-      "العروض": L("الأكتر طلباً", "Most ordered"),
-      "صورة الحملة": L("دولاب مطبخ فيه برطمانات حبوب مترتبة", "A kitchen cupboard with neatly lined jars of grains"),
-    },
-    links: { "/products": [search("برطمان"), BEST] },
-  }),
-  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("هتنظم إيه النهارده؟", "What are you organising today?") } }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("الأكتر إعادة طلب", "Most reordered") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 6 }],
-  }),
-  lib("pay-days", {
-    text: {
-      "القاهرة، الجيزة": L("القاهرة والجيزة، تاني يوم", "Cairo and Giza, next day"),
-      "الإسكندرية، الدلتا، مدن القناة": L("إسكندرية والدلتا", "Alexandria and Delta"),
-      "٤–٦": L("٤–٥", "4–5"),
-      "الصعيد، البحر الأحمر، سيناء": L("الصعيد وسينا", "Upper Egypt and Sinai"),
-    },
-  }),
-  lib("faq-columns", {
-    as: "faq-home",
-    text: {
-      "أسئلة شائعة": L("أسئلة", "Questions"),
-      "كيف أعرف أن طلبي وصل إليكم؟": L("البرطمانات محكمة فعلاً؟", "Are the jars really airtight?"),
-      "ستظهر لك صفحة تأكيد وتصلك رسالة، ونتصل بك لتأكيد طلبات الدفع عند الاستلام.": L(
-        "أيوه، الغطا فيه جلدة سيليكون والبن والسكر بيفضلوا ناشفين.",
-        "Yes, each lid has a silicone seal, so coffee and sugar stay dry.",
-      ),
-      "هل يمكنني تعديل طلبي أو إلغاؤه؟": L("ينفع أغير برطمانات الطقم؟", "Can I swap the jars in a kit?"),
-      "نعم، حتى يتم شحنه. تواصل معنا بأسرع وقت.": L("أيوه، كلمنا قبل الشحن ونبدّل المقاسات.", "Yes, message us before it ships and we change the sizes."),
-      "كم يستغرق التوصيل؟": L("التوصيل بياخد قد إيه؟", "How long does delivery take?"),
-      "القاهرة والجيزة من يوم إلى يومين، وباقي المحافظات من ٢ إلى ٦ أيام.": L(
-        "القاهرة والجيزة تاني يوم، وباقي المحافظات من ٢ لـ ٥ أيام.",
-        "Cairo and Giza next day, other governorates in 2 to 5 days.",
-      ),
-      "هل التوصيل متاح لكل المحافظات؟": L("الزجاج بيوصل سليم؟", "Does the glass arrive safely?"),
-      "نعم، نوصل لكل محافظات مصر.": L("كل برطمان متغلف لوحده، ولو اتكسر حاجة بنبدّلها.", "Every jar is wrapped on its own, and we replace anything broken."),
-      "ما طرق الدفع المتاحة؟": L("بتعملوا مقاسات للدولاب؟", "Do you size baskets for my cupboard?"),
-      "الدفع عند الاستلام، والبطاقات، والمحافظ الإلكترونية، وإنستاباي.": L(
-        "ابعتلنا مقاس الرف ونقولك أنهي سلال تدخل.",
-        "Send us your shelf size and we tell you which baskets fit.",
-      ),
-      "ما سياسة الاسترجاع؟": L("ينفع أرجّع؟", "Can I return things?"),
-      "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": L(
-        "أيوه، خلال ١٤ يوم لو المنتج متستعملش.",
-        "Yes, within 14 days if it is unused.",
-      ),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن تنظيم هوم", "About Tanzim Home"), L("برطمانات وعلب ورفوف لمطبخ أهدى.", "Jars, boxes and shelves for a calmer kitchen.")),
-  aboutStory(lib, {
-    photo: PHOTOS.basketMugs,
+  categories: { title: L("هتنظم إيه النهارده؟", "What are you organising today?") },
+  // Six compact rows of what `journey.primary` shows: the title must say the same.
+  products: { primary: { title: L("الأكتر إعادة طلب", "Most reordered") } },
+  // The footer's sign-up: a title and one line.
+  newsletter: {
+    title: L("أفكار تنظيم على إيميلك", "Organising ideas in your inbox"),
+    line: L("فكرة تنظيم وعرض كل أسبوع.", "One organising idea and one offer every week."),
+  },
+  about: {
+    line: L("برطمانات وعلب ورفوف لمطبخ أهدى.", "Jars, boxes and shelves for a calmer kitchen."),
     alt: L("سلة خوص ومجات بيضا على رف", "A woven basket and white mugs on a shelf"),
     eyebrow: L("حكايتنا", "Our story"),
     title: L("بدأنا بنملية واحدة", "It started with one pantry"),
@@ -135,10 +88,150 @@ const about: Design[] = [
       "We sorted our own pantry, shared a photo and everyone asked where the jars came from. So we made kits sized for Egyptian kitchen cupboards.",
     ),
     more: L("والتوصيل تاني يوم في القاهرة والجيزة.", "With next-day delivery in Cairo and Giza."),
-    button: L("جهّز نمليتك", "Build your pantry"),
-    href: search("برطمان"),
-  }),
-];
+    // Goes to `nav.0.href`.
+    cta: L("جهّز نمليتك", "Build your pantry"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("ابعتلنا صورة دولابك ومقاسه ونقترح عليك طقم.", "Send us a photo and the size of your cupboard and we suggest a kit."),
+    heading: L("عن مقاس أو طقم", "About a size or a kit"),
+  },
+  faq: {
+    line: L("الأطقم والمقاسات والتوصيل.", "Kits, sizes and delivery."),
+    question: L("ينفع أرجّع جزء من الطقم؟", "Can I return part of a kit?"),
+    answer: L("أيوه، خلال ١٤ يوم، وبنرجّعلك تمن القطعة بسعر الطقم.", "Yes, within 14 days; we refund the piece at its kit price."),
+  },
+  custom: {
+    // The label of the hero's second button (the best sellers), two words.
+    "best-label": L("الأكتر طلباً", "Most ordered"),
+    // The home page's six questions, in two columns: each a short question and a one-line answer.
+    "faq-1-question": L("البرطمانات محكمة فعلاً؟", "Are the jars really airtight?"),
+    "faq-1-answer": L("أيوه، الغطا فيه جلدة سيليكون والبن والسكر بيفضلوا ناشفين.", "Yes, each lid has a silicone seal, so coffee and sugar stay dry."),
+    "faq-2-question": L("ينفع أغير برطمانات الطقم؟", "Can I swap the jars in a kit?"),
+    "faq-2-answer": L("أيوه، كلمنا قبل الشحن ونبدّل المقاسات.", "Yes, message us before it ships and we change the sizes."),
+    "faq-3-question": L("التوصيل بياخد قد إيه؟", "How long does delivery take?"),
+    "faq-3-answer": L("القاهرة والجيزة تاني يوم، وباقي المحافظات من ٢ لـ ٥ أيام.", "Cairo and Giza next day, other governorates in 2 to 5 days."),
+    "faq-4-question": L("الزجاج بيوصل سليم؟", "Does the glass arrive safely?"),
+    "faq-4-answer": L("كل برطمان متغلف لوحده، ولو اتكسر حاجة بنبدّلها.", "Every jar is wrapped on its own, and we replace anything broken."),
+    "faq-5-question": L("بتعملوا مقاسات للدولاب؟", "Do you size baskets for my cupboard?"),
+    "faq-5-answer": L("ابعتلنا مقاس الرف ونقولك أنهي سلال تدخل.", "Send us your shelf size and we tell you which baskets fit."),
+    "faq-6-question": L("ينفع أرجّع؟", "Can I return things?"),
+    "faq-6-answer": L("أيوه، خلال ١٤ يوم لو المنتج متستعملش.", "Yes, within 14 days if it is unused."),
+  },
+  // hero.tall: the split hero's photo (square on desktop, so the subject sits in the middle); story: the about page (4:5).
+  photos: { hero: { tall: PHOTOS.jarCupboard }, story: PHOTOS.basketMugs },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Top rated, Questions), the delivery days and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const initial = initialOf(name);
+  const x = c.custom;
+  const main = c.nav[0]!.href;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-chips", {
+    text: { "م": initial, "اسم متجرك": name, "ابحث عن منتج…": c.labels.search },
+  });
+
+  const footer = lib("footer-signup", {
+    text: {
+      "اشترك في النشرة": c.newsletter.title,
+      "عروض ومنتجات جديدة، مرة في الأسبوع.": c.newsletter.line,
+      "م": initial,
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  const home: Design[] = [
+    lib("hero-halves", {
+      photo: [undefined, c.photos.hero.tall],
+      text: {
+        "كوليكشن الموسم": c.hero.eyebrow,
+        "صوت أنقى، كل يوم": c.hero.title,
+        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+        "تسوق الآن": c.hero.cta,
+        "العروض": x["best-label"]!,
+        "صورة الحملة": c.hero.alt,
+      },
+      links: { "/products": [main, BEST] },
+    }),
+    lib("categories-chips", { text: { "إيه اللي في بالك؟": c.categories.title } }),
+    lib("products-rows", {
+      text: { "إكسسوارات بسعر حلو": c.products.primary.title },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary, limit: 6 }],
+    }),
+    lib("pay-days", {
+      text: {
+        "القاهرة، الجيزة": L("القاهرة والجيزة، تاني يوم", "Cairo and Giza, next day"),
+        "الإسكندرية، الدلتا، مدن القناة": L("إسكندرية والدلتا", "Alexandria and Delta"),
+        "٤–٦": L("٤–٥", "4–5"),
+        "الصعيد، البحر الأحمر، سيناء": L("الصعيد وسينا", "Upper Egypt and Sinai"),
+      },
+    }),
+    lib("faq-columns", {
+      as: "faq-home",
+      text: {
+        "أسئلة شائعة": L("أسئلة", "Questions"),
+        "كيف أعرف أن طلبي وصل إليكم؟": x["faq-1-question"]!,
+        "ستظهر لك صفحة تأكيد وتصلك رسالة، ونتصل بك لتأكيد طلبات الدفع عند الاستلام.": x["faq-1-answer"]!,
+        "هل يمكنني تعديل طلبي أو إلغاؤه؟": x["faq-2-question"]!,
+        "نعم، حتى يتم شحنه. تواصل معنا بأسرع وقت.": x["faq-2-answer"]!,
+        "كم يستغرق التوصيل؟": x["faq-3-question"]!,
+        "القاهرة والجيزة من يوم إلى يومين، وباقي المحافظات من ٢ إلى ٦ أيام.": x["faq-3-answer"]!,
+        "هل التوصيل متاح لكل المحافظات؟": x["faq-4-question"]!,
+        "نعم، نوصل لكل محافظات مصر.": x["faq-4-answer"]!,
+        "ما طرق الدفع المتاحة؟": x["faq-5-question"]!,
+        "الدفع عند الاستلام، والبطاقات، والمحافظ الإلكترونية، وإنستاباي.": x["faq-5-answer"]!,
+        "ما سياسة الاسترجاع؟": x["faq-6-question"]!,
+        "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": x["faq-6-answer"]!,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: main,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -168,7 +261,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const TANZIM = libraryTemplate({
+export const TANZIM = editionTemplate({
   key: TANZIM_KEY,
   version: 3,
   changelog: "Tanzim v3: categories, section order",
@@ -193,31 +286,39 @@ export const TANZIM = libraryTemplate({
   },
   fonts: { heading: "Alexandria", body: "Alexandria" },
   radius: 16,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عننا", "About"), seo: { title: L("عن تنظيم هوم", "About Tanzim Home") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("ابعتلنا صورة دولابك ومقاسه ونقترح عليك طقم.", "Send us a photo and the size of your cupboard and we suggest a kit."),
-        heading: L("عن مقاس أو طقم", "About a size or a kit"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("الأطقم والمقاسات والتوصيل.", "Kits, sizes and delivery."),
-        question: L("ينفع أرجّع جزء من الطقم؟", "Can I return part of a kit?"),
-        answer: L("أيوه، خلال ١٤ يوم، وبنرجّعلك تمن القطعة بسعر الطقم.", "Yes, within 14 days; we refund the piece at its kit price."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "labels.search",
+    "nav.0.href",
+    "hero",
+    "categories.title",
+    "products.primary.title",
+    "newsletter.title",
+    "newsletter.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.tall",
+    "photos.story",
+    "custom.best-label",
+    "custom.faq-1-question",
+    "custom.faq-1-answer",
+    "custom.faq-2-question",
+    "custom.faq-2-answer",
+    "custom.faq-3-question",
+    "custom.faq-3-answer",
+    "custom.faq-4-question",
+    "custom.faq-4-answer",
+    "custom.faq-5-question",
+    "custom.faq-5-answer",
+    "custom.faq-6-question",
+    "custom.faq-6-answer",
   ],
+  // Six best sellers in compact rows; no category rows.
+  optional: [],
+  journey: { primary: "best-sellers", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });
