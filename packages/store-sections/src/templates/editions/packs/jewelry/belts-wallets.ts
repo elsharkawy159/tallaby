@@ -63,6 +63,12 @@
  * 34443363, 35222039, 35322142, 35322147, 37326646, 37326652, 37326694.
  * Checked and clean but not used: 6653230, 4452502, 4452511.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) now replace every Pexels photo
+ * `jewelry-warm` draws: the hero, the four tiles, the workshop banner and
+ * the story (also the about page). Still Pexels, drawn by no look: hero
+ * tall 4452397.
+ *
  * No buyer quotes (`reviews`): a pack holds no invented reviews.
  *
  * No hero video: jewelry-warm plays none.
@@ -74,8 +80,14 @@ import type { Edition } from "../../types";
 
 const NICHE = "belts-wallets";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(31323080, 1200), pexels(6127090, 1200), pexels(4452516, 1200), pexels(37326800, 1200)];
+const TILES = [
+  scene("tile-1"), // black, brown and tan braided belts rolled on canvas grey
+  scene("tile-2"), // a tan bifold and a navy zip wallet on black cloth
+  scene("tile-3"), // green and brown card holders and a tan money clip on cordovan leather
+  scene("tile-4"), // a black key case, a brown key ring and a black coin pouch on light wood
+];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -121,10 +133,13 @@ export const BELTS_WALLETS: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(6653239, 1920), tall: pexels(4452397, 1200) },
+    // A leatherworker's bench, a finished belt and wallet among the tools (wide); the tall one, drawn by no look, is Pexels.
+    hero: { wide: scene("hero-wide"), tall: pexels(4452397, 1200) },
     tiles: TILES,
-    banner: pexels(4452611, 2000),
-    story: pexels(4452395, 1200),
+    // Leather tools, waxed thread and cut wallet pieces on a green cutting mat under a brass lamp.
+    banner: scene("banner"),
+    // A brown belt and a black wallet beside a tin of balm, a cloth and a brush (the care block and the about page).
+    story: scene("story"),
   },
   copy: {
     announcement: [
@@ -134,7 +149,7 @@ export const BELTS_WALLETS: Edition = {
     ],
     labels: { about: L("حكايتنا", "Our story"), search: L("دوّر على حزام، محفظة، كارد هولدر…", "Search belts, wallets, card holders…") },
     hero: {
-      alt: L("عِدّة شغل الجلد: سكينة ومخرز وعجلة تقسيم الغُرز على جلد هافان", "Leather tools: a knife, an awl and a stitch wheel on a tan hide"),
+      alt: L("حزام ومحفظة جلد بني وسط عِدّة الشغل على جلد هافان", "A brown belt and a wallet among leather tools on a tan hide"),
       eyebrow: L("جلد طبيعي", "Genuine leather"),
       title: L("جلد يعيش معاك سنين", "Leather that lasts for years"),
       line: L(
@@ -151,7 +166,7 @@ export const BELTS_WALLETS: Edition = {
       },
     },
     story: {
-      alt: L("جلد هافان مفرود فوق جلود أغمق على ترابيزة خشب", "A cognac hide laid over darker hides on a wooden table"),
+      alt: L("حزام بني ومحفظة سودا جنب علبة ورنيش جلد وفوطة وفرشة", "A brown belt and a black wallet beside leather balm, a cloth and a brush"),
       eyebrow: L("الجلد بيحلو مع الوقت", "Leather gets better with time"),
       title: L("قطعة بتاخد شكلك", "A piece that takes your shape"),
       text: L(
@@ -173,7 +188,7 @@ export const BELTS_WALLETS: Edition = {
     footer: { line: L("جلد بيكبر معاك", "Leather that ages with you") },
     about: {
       line: L("جلديات صغيرة من الجلد الطبيعي، تنفع لك وتنفع هدية.", "Small leather goods in genuine leather, for you or as a gift."),
-      alt: L("جلد هافان مفرود فوق جلود أغمق على ترابيزة خشب", "A cognac hide laid over darker hides on a wooden table"),
+      alt: L("حزام بني ومحفظة سودا جنب علبة ورنيش جلد وفوطة وفرشة", "A brown belt and a black wallet beside leather balm, a cloth and a brush"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("كل حاجة بتبدأ من سَيْر", "It all starts with a strap"),
       text: L(
@@ -198,7 +213,7 @@ export const BELTS_WALLETS: Edition = {
     },
     custom: {
       // jewelry-warm: the workshop band's wide photo (`photos.banner`), its alt text.
-      "banner-alt": L("عِدّة شغل الجلد وبكرة خيط مشمّع وقطع جلد على مفرش القص", "Leather tools, waxed thread and cut pieces on a cutting mat"),
+      "banner-alt": L("عِدّة شغل الجلد وبكرة خيط مشمّع وقطع محفظة على مفرش القص", "Leather tools, waxed thread and cut wallet pieces on a cutting mat"),
       // jewelry-warm's care block, beside the story photo: a title, one line and four short care steps.
       "care-title": L("اعتني بيه، يعيش أكتر", "Look after it, it lasts"),
       "care-text": L("الجلد الطبيعي محتاج حاجات بسيطة عشان يفضل طري ولونه يحلو مع الوقت.", "Genuine leather needs a few simple habits to stay supple and age well."),

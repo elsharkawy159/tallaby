@@ -41,6 +41,11 @@
  * used by a template: 374117, 374140, 1670768, 7742552, 7742554, 8156983,
  * 7538510, 3042448, 7360460, 19557526, 6214362.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) now replace the Pexels photos
+ * `volt` draws: the four tiles and the story. Still Pexels, drawn by no look:
+ * the heroes 2718446 and 11059612 and the banner 1350462.
+ *
  * Look: `volt` (its other planned look, `wasla`, is not edition-ready). No
  * category rows; the best sellers in compact rows. Four featured products:
  * `volt`'s hero shows the first featured one (the clear magnetic case). No
@@ -55,13 +60,14 @@ import type { Edition } from "../../types";
 
 const NICHE = "phone-cases";
 const shot = (slug: string) => editionPhoto(NICHE, slug);
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(13780411, 1200), // a clear case on a blush phone, dark granite
-  pexels(32912373, 1200), // purple, blue and white silicone cases on black
-  pexels(19784109, 1200), // a black rugged case with a ring stand on a desk
-  pexels(11028408, 1200), // a phone with a glass protector under a palm shadow
+  scene("tile-1"), // a clear magnetic case on a navy phone, back up on white, an electric-blue shadow
+  scene("tile-2"), // sage, pink, navy and black silicone cases fanned on white and lime paper
+  scene("tile-3"), // a brown leather case, an open wallet flip case and a rugged case on its stand, navy cloth
+  scene("tile-4"), // tempered glass in its fitting frame, a lens protector and a beaded strap beside a phone
 ];
 
 export const PHONE_CASES: Edition = {
@@ -108,8 +114,8 @@ export const PHONE_CASES: Edition = {
     tiles: TILES,
     // A phone on dark grained leather: it sits in the middle band, so a 21:9 crop keeps it.
     banner: pexels(1350462, 1920),
-    // `volt`'s about page (4:5): a phone in a white bumper case, glasses and a notebook on black linen.
-    story: pexels(8100970, 1200),
+    // `volt`'s about page (4:5): a phone in a white bumper case, glasses and a notebook on navy linen.
+    story: scene("story"),
   },
   copy: {
     announcement: [
@@ -139,7 +145,7 @@ export const PHONE_CASES: Edition = {
       },
     },
     story: {
-      alt: L("موبايل في جراب أبيض جنب نضارة وكشكول على قماش أسود", "A phone in a white case beside glasses and a notebook on black linen"),
+      alt: L("موبايل في جراب أبيض جنب نضارة وكشكول على قماش كحلي", "A phone in a white case beside glasses and a notebook on navy linen"),
       eyebrow: L("إزاي بنختار", "How we pick"),
       title: L("بنجرّب المقاس قبل ما نبيع", "We check the fit before we sell"),
       text: L(

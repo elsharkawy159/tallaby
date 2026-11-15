@@ -53,6 +53,13 @@
  * plan for `saat` v3 was dropped with its v4 redesign. No `reviews`: a pack
  * holds no invented buyer quotes.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) replace the Pexels hero,
+ * men's tile, banner, story and about. Still Pexels: the women's (34833638)
+ * and smart (13610157) tiles and the classic tile (5058216), whose generated
+ * files came back as a round picture on white (to be made again), and the
+ * hero tall 8327595, drawn by no look.
+ *
  * Saat v4 photos (2026-11-12, checked by eye): classic and dress tile
  * 5058216 (a white-dial watch on a brown strap on an oak bench, in place of
  * 1228514, a pink flat lay that fought the midnight and steel palette);
@@ -69,11 +76,12 @@ import { editionPhoto } from "../../media";
 import type { Edition } from "../../types";
 
 const shot = (slug: string) => editionPhoto("watches", slug);
+const scene = (slot: string) => editionPhoto("watches", `scene-${slot}`);
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(34069486, 1200), // a steel watch with a speckled navy dial on a block stand, window shadows on wood
+  scene("tile-1"), // a steel watch with a speckled navy dial on a steel block, window-blind shadows on oak
   pexels(34833638, 1200), // a small rose-gold square watch on a pearl bracelet among white petals
   pexels(13610157, 1200), // a rose-gold smartwatch with a sand strap on a quilted cream bag
   pexels(5058216, 1200), // a white-dial watch with rose-gold hands on a brown leather strap, on an oak bench
@@ -121,14 +129,14 @@ export const WATCHES: Edition = {
   photos: {
     // `saat` shows the wide one: the chronograph sits near the middle, so square and 4:5 crops keep it.
     // `saat` does not show `tall` (tweezers and a case knife on a white bench, an open pocket watch out of focus).
-    hero: { wide: pexels(190819, 1920), tall: pexels(8327595, 1200) },
+    hero: { wide: scene("hero-wide"), tall: pexels(8327595, 1200) },
     tiles: TILES,
-    // `saat`'s smartwatch campaign: a black smartwatch with an analogue face on pale grey (wide on desktop, tall on phones; centred).
-    banner: pexels(437037, 1920),
+    // `saat`'s smartwatch campaign: a black smartwatch, screen off, beside a steel watch with a midnight dial on pale stone (wide on desktop, tall on phones; centred).
+    banner: scene("banner"),
     // An open pocket watch movement and the bench tools on white (`saat`'s wide story photo).
-    story: pexels(8327593, 1600),
+    story: scene("story"),
     // A staking set on a worn wooden bench (`jewelry-luxe`'s about page).
-    about: pexels(8327579, 1200),
+    about: scene("about"),
   },
   copy: {
     announcement: [
@@ -194,7 +202,7 @@ export const WATCHES: Edition = {
     },
     about: {
       line: L("ساعات حلوة بأسعار معقولة، من غير ما تدفع تمن اسم.", "Good-looking watches at fair prices, without paying for a name."),
-      alt: L("طقم أدوات لتركيب المسامير على ترابيزة صيانة خشب", "A staking set on a worn wooden workbench"),
+      alt: L("طقم أدوات لتركيب المسامير وعدسة مكبّرة على ترابيزة صيانة خشب", "A staking set and a loupe on a worn wooden workbench"),
       eyebrow: L("مين إحنا", "Who we are"),
       title: L("ساعات بنختارها ونظبطها بنفسنا", "Watches we choose and set ourselves"),
       text: L(
@@ -247,7 +255,7 @@ export const WATCHES: Edition = {
       "service-3-2-name": L("صيانة ماكينة كوارتز", "Quartz movement service"),
       "service-3-2-price": L("٣٥٠ جنيه", "EGP 350"),
       // `saat`: the campaign beside the smart and sport row, on `photos.banner`; its button goes to `nav.1` (the smartwatches).
-      "banner-alt": L("ساعة سمارت سودا شاشتها عليها وش بعقارب، على سطح رمادي فاتح", "A black smartwatch showing a face with hands, on pale grey"),
+      "banner-alt": L("ساعة سمارت سودا جنب ساعة ستيل مينا كحلي على حجر رمادي فاتح", "A black smartwatch beside a steel watch with a midnight dial on pale stone"),
       "banner-eyebrow": L("عقارب ولا سمارت؟", "Hands or smart?"),
       "banner-title": L("سمارت وشكلها ساعة", "Smart, and still a watch"),
       "banner-line": L("وشها بعقارب لو حبيت، بتعد خطواتك، وبطاريتها بتكفي ٥ أيام.", "A face with hands if you like, a step counter, and a battery that lasts five days."),

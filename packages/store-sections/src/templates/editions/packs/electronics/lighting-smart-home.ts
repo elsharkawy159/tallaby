@@ -50,6 +50,7 @@ import type { Edition } from "../../types";
 
 const NICHE = "lighting-smart-home";
 const shot = (slug: string) => editionPhoto(NICHE, slug);
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
 /** Category tiles, 3:4, in the categories' order. */
@@ -392,15 +393,17 @@ const LIGHTING_SMART_HOME_BASE: Edition = {
           ),
         },
       },
-      // Pexels, checked by eye at 1600px 2026-11-11 (no people, hands, logos or lettering): bright daytime rooms
-      // and white kitchens, apart from nour's lamps after dark.
+      // Generated 2026-11-15 (`docs/systems/editions-photos.md`, checked by eye: no people, hands, logos or
+      // lettering; `scene-<slot>` in the bucket): bright daytime rooms in a Cairo flat. Still Pexels, drawn by
+      // no look: hero tall 6508354 and banner 5849392.
       photos: {
-        hero: { wide: pexels(6283972, 1920), tall: pexels(6508354, 1200) },
-        // Pendants (clear glass pendants lit over a kitchen), floor lamps (a pale floor lamp by a blue panelled
-        // wall), table and desk (a wooden desk lamp in sunlit leaf shadows), smart (bulbs, a plug and a camera on white).
-        tiles: [pexels(12202390, 1200), pexels(11545385, 1200), pexels(31410610, 1200), pexels(28940512, 1200)],
+        hero: { wide: scene("hero-wide"), tall: pexels(6508354, 1200) },
+        // Pendants (glass globes and a rattan dome over a dining table), floor lamps (a wooden tripod lamp by a green
+        // armchair), table and desk (a black desk lamp and a terracotta mushroom lamp in leaf shadows), smart (an LED
+        // strip under a shelf, a smart bulb in a ceramic lamp, a phone face down).
+        tiles: [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")],
         banner: pexels(5849392, 1920),
-        story: pexels(32543097, 1200),
+        story: scene("story"),
       },
     },
   },

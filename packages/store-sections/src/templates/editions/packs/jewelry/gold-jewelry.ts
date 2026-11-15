@@ -51,6 +51,12 @@
  * (37401771), 34399145 (34399114), 29502933 (29502931), 20493840 (the
  * hero's own shoot).
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) now replace every Pexels photo
+ * `jewelry-luxe` draws: the hero, the four tiles, the story, the about page
+ * and the spotlight. Still Pexels, drawn by no look: hero tall 3266700 and
+ * banner 4295007.
+ *
  * Looks: `jewelry-luxe` only, the niche's template (one template per niche;
  * `mahr` was deleted with the accessories switch, 2026-11-12). Four products per category, so each `jewelry-luxe`
  * category row is one full row of four. The three featured pieces (the
@@ -63,13 +69,14 @@ import { editionPhoto } from "../../media";
 import type { Edition } from "../../types";
 
 const shot = (slug: string) => editionPhoto("gold-jewelry", slug);
+const scene = (slot: string) => editionPhoto("gold-jewelry", `scene-${slot}`);
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(34372573, 1200), // two thin gold bands on white pebbles beside linen
-  pexels(29013500, 1200), // a bust hung with rope chains in a shop window
-  pexels(40315331, 1200), // woven gold bangles stacked in a tray
-  pexels(16935587, 1200), // twisted gold hoops on rippled white
+  scene("tile-1"), // two plain gold bands and a twisted ring on a white stone block
+  scene("tile-2"), // a rope chain with a disc pendant and a Cuban chain on black velvet
+  scene("tile-3"), // three bangles and a link bracelet in a black lacquer tray
+  scene("tile-4"), // small hoops and crescent earrings on a rippled white dish
 ];
 
 export const GOLD_JEWELRY: Edition = {
@@ -113,17 +120,17 @@ export const GOLD_JEWELRY: Edition = {
   }),
   photos: {
     // `jewelry-luxe` shows the wide one: the bangles sit low in the middle, so a square crop on phones keeps them.
-    hero: { wide: pexels(20493839, 1920), tall: pexels(3266700, 1200) },
+    hero: { wide: scene("hero-wide"), tall: pexels(3266700, 1200) },
     tiles: TILES,
     // A three-row coin necklace on a black bust, black all round: a 21:9 crop keeps the necklace in the middle.
     banner: pexels(4295007, 1920),
-    // A beam balance with a black weight on grey (`jewelry-luxe`'s story block: gold is weighed in front of you).
-    story: pexels(8431786, 1200),
-    // Wedding bands in a red box among rose petals (`jewelry-luxe`'s about page).
-    about: pexels(29612233, 1200),
+    // A brass beam balance, a black weight in one pan and a small gold chain in the other (`jewelry-luxe`'s story block: gold is weighed in front of you).
+    story: scene("story"),
+    // Two wedding bands in a black velvet box on ivory silk, three red petals beside it (`jewelry-luxe`'s about page).
+    about: scene("about"),
     custom: {
-      // `jewelry-luxe` spotlight, 4:5: a gold bangle, a ring and a ring box on red and white.
-      "spot-photo": pexels(30311749, 1200),
+      // `jewelry-luxe` spotlight, 4:5: a gold bangle, a ring and an open black ring box on champagne silk.
+      "spot-photo": scene("spot-photo"),
     },
   },
   copy: {
@@ -134,7 +141,7 @@ export const GOLD_JEWELRY: Edition = {
     ],
     labels: { about: L("عن الصايغ", "About El Sayegh"), search: L("دوّر على قطعة دهب", "Search for a gold piece") },
     hero: {
-      alt: L("غويشتين دهب مخرّمين بحجر أخضر على قماش غامق", "Two granulated gold bangles with a green stone on dark cloth"),
+      alt: L("غويشتين دهب مخرّمين وسلسلة مبرومة على حرير أسود", "Two granulated gold bangles and a rope chain on black silk"),
       eyebrow: L("دهب عيار ١٨ و٢١", "18K and 21K gold"),
       title: L("دهب بالوزن وبالفاتورة", "Gold by weight, with an invoice"),
       line: L(
@@ -146,7 +153,7 @@ export const GOLD_JEWELRY: Edition = {
     categories: { title: L("اختار قطعتك", "Choose your piece") },
     products: {
       primary: {
-        alt: L("غويشة دهب وخاتم وعلبة دبل على أحمر وأبيض", "A gold bangle, a ring and a ring box on red and white"),
+        alt: L("غويشة دهب وخاتم وعلبة دبل سودا على حرير شامبين", "A gold bangle, a ring and a black ring box on champagne silk"),
         eyebrow: L("الأكتر طلبًا", "Most asked for"),
         title: L("قطع الشبكة اللي الكل بيسأل عليها", "The pieces everyone asks about"),
         line: L(
@@ -157,7 +164,7 @@ export const GOLD_JEWELRY: Edition = {
       },
     },
     story: {
-      alt: L("ميزان بكفتين وعليه سنجة سودا على خلفية رمادي", "A beam balance with a black weight on a grey background"),
+      alt: L("ميزان بكفتين، في كفة سنجة سودا وفي التانية سلسلة دهب", "A beam balance with a black weight in one pan and a gold chain in the other"),
       eyebrow: L("قبل ما تدفع", "Before you pay"),
       title: L("بنوزن كل قطعة قدامك", "Every piece is weighed in front of you"),
       text: L(
@@ -185,7 +192,7 @@ export const GOLD_JEWELRY: Edition = {
     },
     about: {
       line: L("محل دهب بيبيع بالوزن، والوزن مكتوب.", "A gold shop that sells by weight, and writes the weight down."),
-      alt: L("دبلتين دهب في علبة حمرا وسط ورد", "Two gold wedding bands in a red box among rose petals"),
+      alt: L("دبلتين دهب في علبة قطيفة سودا جنب ورق ورد أحمر", "Two gold wedding bands in a black velvet box beside red rose petals"),
       eyebrow: L("مين إحنا", "Who we are"),
       title: L("الدهب أمانة، والفاتورة كلمة", "Gold is trust, and the invoice is our word"),
       text: L(

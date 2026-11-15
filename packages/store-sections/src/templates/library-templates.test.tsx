@@ -130,9 +130,11 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
   });
 
   it("uses its own checked photos, never library stock photos", () => {
+    // A checked Pexels photo, or a generated one from the editions folder of `library-media` (docs/systems/editions-photos.md).
+    const ownPhoto = new RegExp(`^https://(images\\.pexels\\.com/photos/\\d+/|${EDITION_MEDIA_HOST.replace(/\./g, "\\.")}/storage/v1/object/public/library-media/editions/)`);
     for (const node of sections(config).flatMap((s) => walk(s.componentTree))) {
       if (node.type === "image" && !node.props.bind) {
-        expect(node.props.src, node.id).toMatch(/^https:\/\/images\.pexels\.com\/photos\/\d+\//);
+        expect(node.props.src, node.id).toMatch(ownPhoto);
         expect(STOCK.has(node.props.src as string), `${node.id} is a stock photo`).toBe(false);
       }
     }

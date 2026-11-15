@@ -44,6 +44,13 @@
  * 2026-11-11, no people or lettering, used nowhere else). Its dots: the
  * plating, the chain, the stones, care.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) now replace every Pexels photo
+ * `zahra` draws: the hero, the four tiles, the story, the about page and the
+ * anatomy photo (made so the four dots land on the clasp, the chain, the
+ * crystals and the polishing cloth). Still Pexels, drawn by no look: hero
+ * tall 9430468 and banner 11185142.
+ *
  * Looks: `zahra` only (the niche's template, one template per niche; the
  * accessories switch, 2026-11-12, took `karat` and `jewelry-luxe` off). Four
  * products per category. No `reviews`: a pack holds no invented buyer quotes.
@@ -54,13 +61,14 @@ import { editionPhoto } from "../../media";
 import type { Edition } from "../../types";
 
 const shot = (slug: string) => editionPhoto("fashion-jewelry", slug);
+const scene = (slot: string) => editionPhoto("fashion-jewelry", `scene-${slot}`);
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(4735887, 1200), // two gold coin necklaces on white marble
-  pexels(13081070, 1200), // chunky gold hoops on white satin
-  pexels(36823002, 1200), // a pearl bracelet on a white cloud dish
-  pexels(9714276, 1200), // rings in a pearly clay dish on white sheets
+  scene("tile-1"), // a coin necklace and a herringbone chain on white marble
+  scene("tile-2"), // chunky gold hoops and pearl drops on white satin
+  scene("tile-3"), // a paperclip chain, a pink beaded and a crystal tennis bracelet on a cloud dish
+  scene("tile-4"), // a signet ring, a pearl ring and thin silver rings in a pearly dish
 ];
 
 export const FASHION_JEWELRY: Edition = {
@@ -102,18 +110,18 @@ export const FASHION_JEWELRY: Edition = {
     ],
   }),
   photos: {
-    // One shoot: silver pieces, speckled stones and dried flowers on blush paper.
-    hero: { wide: pexels(9430992, 1920), tall: pexels(9430468, 1200) },
+    // Gold-tone rings, a layered coin necklace and pearl drops on blush plaster (the wide one); the tall one, drawn by no look, is Pexels.
+    hero: { wide: scene("hero-wide"), tall: pexels(9430468, 1200) },
     tiles: TILES,
     // Five stone-bead bracelets on white painted boards (a calm field for copy).
     banner: pexels(11185142, 1920),
-    // Vintage earrings, a velvet ring box and silk ribbon spools on linen (the gift wrapping story).
-    story: pexels(4714615, 1200),
-    // Silver rings and a chain around a shell on blush (landscape, the about page).
-    about: pexels(9430429, 1200),
+    // A blush gift box tied with dusty-rose ribbon, a petrol velvet ring box and ribbon spools on linen (the gift wrapping story).
+    story: scene("story"),
+    // Silver and gold rings and a fine chain around a shell on blush (landscape, the about page).
+    about: scene("about"),
     // `zahra`: one piece with four note dots (not shop the look), in percent from the photo's left and top on its 4:5 crop: the plating, the chain, the stones, care.
     look: {
-      src: pexels(27357178, 1200),
+      src: scene("anatomy"),
       dots: [
         { x: 51, y: 27 },
         { x: 35, y: 43 },
@@ -130,7 +138,7 @@ export const FASHION_JEWELRY: Edition = {
     ],
     labels: { about: L("عن حِلية", "About Hilya"), search: L("دوّري على قطعة", "Search for a piece") },
     hero: {
-      alt: L("خواتم فضي وأحجار صغيرة وورد مجفف على ورق وردي", "Silver rings, small stones and dried flowers on blush paper"),
+      alt: L("خواتم دهبي وسلسلة عملات وحلق لولي على خلفية وردي", "Gold-tone rings, a coin necklace and pearl drops on blush plaster"),
       eyebrow: L("وصل جديد", "Just landed"),
       title: L("إكسسوار يكمّل لبسك", "Jewelry that finishes your outfit"),
       line: L(
@@ -152,7 +160,7 @@ export const FASHION_JEWELRY: Edition = {
       },
     },
     story: {
-      alt: L("حلق قديم الطراز وعلبة خاتم قطيفة وبكر شرايط حرير على قماش", "Vintage-style earrings, a velvet ring box and silk ribbon spools on linen"),
+      alt: L("علبة هدية بشريطة وردي وعلبة خاتم قطيفة وبكر شرايط على قماش", "A gift box with a pink ribbon, a velvet ring box and ribbon spools on linen"),
       eyebrow: L("جاهزة للهدية", "Ready to gift"),
       title: L("كل قطعة بتوصل متغلفة", "Every piece arrives wrapped"),
       text: L(
@@ -163,7 +171,7 @@ export const FASHION_JEWELRY: Edition = {
     },
     // `zahra`: the heading over the anatomy photo (its notes are `custom.anatomy-N-*`).
     look: {
-      alt: L("سلسلة دهبي بفصوص كريستال على حجر صغير قدام لفة ورق وردي", "A gold-tone crystal necklace on a small pebble before a roll of pink paper"),
+      alt: L("سلسلة دهبي بفصوص كريستال على حجر قدام لفة ورق وردي", "A gold-tone crystal necklace on a pale stone before a roll of pink paper"),
       eyebrow: L("من قريب", "Up close"),
       title: L("اعرفي القطعة قبل ما تلبسيها", "Know the piece before you wear it"),
       text: L("دوسي على أي نقطة في الصورة وشوفي خامتها وطولها وإزاي تحافظي عليها.", "Tap a dot on the photo for its material, its length and how to care for it."),
@@ -190,7 +198,7 @@ export const FASHION_JEWELRY: Edition = {
     },
     about: {
       line: L("إكسسوارات حلوة تتلبس كل يوم، من غير ما تفكري في السعر.", "Pretty jewelry to wear every day, without thinking twice about the price."),
-      alt: L("خواتم فضي وسلسلة حوالين صدفة على ورق وردي", "Silver rings and a chain around a shell on blush paper"),
+      alt: L("خواتم فضي ودهبي وسلسلة حوالين صدفة على ورق وردي", "Silver and gold rings and a chain around a shell on blush paper"),
       eyebrow: L("مين إحنا", "Who we are"),
       title: L("قطع صغيرة تفرق في اليوم", "Small pieces that lift your day"),
       text: L(

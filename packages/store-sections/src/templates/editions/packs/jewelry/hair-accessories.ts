@@ -39,6 +39,12 @@
  * Already used by a template: 20166054, 20166056, 8468177, 7123549,
  * 18421514, 31854724.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) now replace every Pexels photo
+ * `kholkhal` draws: the three hero slides, the four tiles, the banner, the
+ * story and the about page. Still Pexels, drawn by no look: hero tall
+ * 4515450.
+ *
  * Looks: `kholkhal`, the niche's template (one template per niche, ROADMAP
  * F-90): its default content and demo are this pack, so the template and the
  * edition are one shop. It is the pack's only look (the accessories switch,
@@ -59,13 +65,14 @@ import { editionPhoto } from "../../media";
 import type { Edition } from "../../types";
 
 const shot = (slug: string) => editionPhoto("hair-accessories", slug);
+const scene = (slot: string) => editionPhoto("hair-accessories", `scene-${slot}`);
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(20166053, 1200), // an amber claw clip on white fur
-  pexels(6044137, 1200), // satin scrunchies on a round linen box with limonium
-  pexels(27592172, 1200), // a fluffy teddy headband on butter yellow
-  pexels(9750766, 1200), // a mother-of-pearl hair slide on blush sand
+  scene("tile-1"), // an amber tortoise claw clip on white faux fur
+  scene("tile-2"), // ivory, blush and champagne satin scrunchies stacked on a round lilac box
+  scene("tile-3"), // a padded black velvet headband and a pearl headband on butter yellow
+  scene("tile-4"), // a pearl barrette, a black bow barrette and crystal slides on blush sand
 ];
 
 export const HAIR_ACCESSORIES: Edition = {
@@ -107,19 +114,19 @@ export const HAIR_ACCESSORIES: Edition = {
     ],
   }),
   photos: {
-    // Pastel snap clips scattered on white, peach and pink paper (wide), pearl hair pins and peonies (tall).
-    hero: { wide: pexels(8468179, 1920), tall: pexels(4515450, 1200) },
+    // Pastel snap clips and small claw clips on white and lilac paper, a cherry clip as the accent (wide); pearl hair pins and peonies (tall, Pexels, drawn by no look).
+    hero: { wide: scene("hero-wide"), tall: pexels(4515450, 1200) },
     tiles: TILES,
-    // Three spools of silk ribbon beside a white rose, a calm grey field.
-    banner: pexels(15130427, 1920),
-    // A cream satin bow on white paper (the gift wrapping story).
-    story: pexels(30056548, 1200),
-    // A flower crown on gold polka-dot gift paper (landscape, the about page).
-    about: pexels(4491555, 1200),
+    // A soft pile of velvet and satin scrunchies on pale lilac fabric, in the middle (it carries the Scrunchies row).
+    banner: scene("banner"),
+    // A white box tied with a cherry satin bow, a cream claw clip on the lid (the gift wrapping story).
+    story: scene("story"),
+    // A shop table with clips, scrunchies and headbands sorted into lilac trays, gift boxes beside them (landscape, the about page).
+    about: scene("about"),
     custom: {
       // `kholkhal`: the hero carousel's second and third slides (wide, cropped tall on phones; subject centred).
-      "hero-2": pexels(20178660, 1920), // a gold shell claw clip on a white knit in window light
-      "hero-3": pexels(31702117, 1920), // embroidered snap clips laid in two rows on white
+      "hero-2": scene("hero-2"), // a tortoise, a matte black and a cream claw clip in a row on a white knit
+      "hero-3": scene("hero-3"), // an open lilac gift box with scrunchies, a pearl barrette and gold pins, a cherry ribbon beside it
     },
   },
   copy: {
@@ -130,7 +137,7 @@ export const HAIR_ACCESSORIES: Edition = {
     ],
     labels: { about: L("عن فيونكة", "About Fyonka"), search: L("دوّري على توكة أو سكرانشي", "Search clips and scrunchies") },
     hero: {
-      alt: L("توك شعر صغيرة بألوان باستيل على ورق أبيض وخوخي وبمبي", "Pastel snap clips scattered on white, peach and pink paper"),
+      alt: L("توك شعر صغيرة وكلبسات باستيل على ورق أبيض وليلكي", "Pastel snap clips and small claw clips on white and lilac paper"),
       eyebrow: L("وصل جديد", "Just landed"),
       title: L("توك وسكرانشي لكل يوم", "Clips and scrunchies for every day"),
       line: L(
@@ -152,7 +159,7 @@ export const HAIR_ACCESSORIES: Edition = {
       },
     },
     story: {
-      alt: L("فيونكة ساتان كريمي على ورق أبيض", "A cream satin bow on white paper"),
+      alt: L("علبة بيضا بفيونكة ساتان حمرا وفوقها توكة كلبس كريمي", "A white box tied with a red satin bow, a cream claw clip on the lid"),
       eyebrow: L("جاهزة للهدية", "Ready to gift"),
       title: L("كل طلب بيتغلف بفيونكة", "Every order is tied with a bow"),
       text: L(
@@ -183,7 +190,7 @@ export const HAIR_ACCESSORIES: Edition = {
     },
     about: {
       line: L("توكة حلوة تفرق في يومك، من غير ما تفكري في السعر.", "A pretty clip can make your day, without thinking twice about the price."),
-      alt: L("تاج ورد على ورق هدايا أبيض بنقط دهبي", "A flower crown on white gift paper with gold dots"),
+      alt: L("ترابيزة عليها توك وسكرانشي وتوكات راس مترتبة في صواني ليلكي", "A table of clips, scrunchies and headbands sorted into lilac trays"),
       eyebrow: L("مين إحنا", "Who we are"),
       title: L("بدأت بفيونكة واحدة", "It started with one bow"),
       text: L(
@@ -234,11 +241,11 @@ export const HAIR_ACCESSORIES: Edition = {
         "Then it goes into a little pouch tied with a bow, and if it is a gift, send us your message and we write it on a card.",
       ),
       // `kholkhal`: hero slides 2 and 3 (`photos.custom.hero-2`, `-3`). Titles of at most 6 words; slide 2's button is `nav.0`, slide 3's opens the shop from the lowest price.
-      "hero-2-alt": L("توكة كلبس دهبي على شكل صدفة فوق بلوفر أبيض", "A gold shell claw clip on a white knit"),
+      "hero-2-alt": L("تلات توك كلبس تورتواز وأسود وكريمي فوق بلوفر أبيض", "Tortoise, black and cream claw clips on a white knit"),
       "hero-2-eyebrow": L("كلبس بكل المقاسات", "Claw clips in every size"),
       "hero-2-title": L("شعرك فوق في ثانية", "Hair up in a second"),
       "hero-2-line": L("كلبس يمسك الشعر التقيل من غير ما يوجع، وصغير للشعر الخفيف.", "Claw clips that hold thick hair without pinching, and small ones for fine hair."),
-      "hero-3-alt": L("توك صغيرة متطرزة بورد على خلفية بيضا", "Embroidered snap clips on white"),
+      "hero-3-alt": L("علبة هدية ليلكي فيها سكرانشي وتوكة لولي وبنس دهبي", "A lilac gift box with scrunchies, a pearl barrette and gold pins"),
       "hero-3-eyebrow": L("هدية صغيرة", "A little gift"),
       "hero-3-title": L("هدايا تحت ٢٥٠ جنيه", "Gifts under EGP 250"),
       "hero-3-line": L("توك وبنس تتهادى في أي مناسبة، وكلها بتتغلف بفيونكة.", "Clips and pins to give for any occasion, each one wrapped with a bow."),
@@ -251,7 +258,7 @@ export const HAIR_ACCESSORIES: Edition = {
       "finder-3-for": L("شعر خفيف", "fine hair"),
       "finder-3-under": L("٢٠٠ جنيه", "EGP 200"),
       // `kholkhal`: the campaign beside the scrunchie row, on `photos.banner` (landscape on desktop, tall on phones).
-      "banner-alt": L("تلات بكر شريط حرير جنب وردة بيضا", "Three spools of silk ribbon beside a white rose"),
+      "banner-alt": L("كومة سكرانشي قطيفة وساتان على قماش ليلكي", "A pile of velvet and satin scrunchies on lilac fabric"),
       "banner-eyebrow": L("ساتان وقطيفة وقطن", "Satin, velvet and cotton"),
       "banner-title": L("سكرانشي مش بيشد الشعر", "Scrunchies that never pull"),
       "banner-line": L("من غير معدن، فمش بيكسر الشعر ولا بيعمل علامة.", "No metal parts, so they never snap hair or leave a dent."),

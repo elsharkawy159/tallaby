@@ -33,7 +33,9 @@
  * deliberate redesign, so its fixture is a new capture (`zahra.v3.json`) and
  * the v2 one is deleted (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's (see its header), plus the anatomy necklace 27357178.
+ * Photos: the pack's (see its header), generated (2026-11-15,
+ * `editions/fashion-jewelry/scene-*`), the anatomy necklace included; the
+ * fixture was recaptured at v3 for the photo and alt swap only.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";

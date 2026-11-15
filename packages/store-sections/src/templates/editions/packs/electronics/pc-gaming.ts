@@ -44,6 +44,12 @@
  * 20510003, 5931186, 18295023, 11945638, 15372898, 5269752, 30836158,
  * 33456959, 9785238, 17895080, 7862496.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) now replace every Pexels photo
+ * `arena` draws: the hero, the four tiles, the dark story and the video
+ * poster. Still Pexels, drawn by no look: hero tall 13728045, banner
+ * 14205160 and the light story 28350931.
+ *
  * Looks: `arena` (dark page: its about photo comes from `photos.dark.story`),
  * then `volt`. Neither has category rows. Four featured products: `volt`'s
  * hero shows the first featured one (the full-size keyboard, wide, so it
@@ -59,13 +65,14 @@ import type { Edition } from "../../types";
 
 const NICHE = "pc-gaming";
 const shot = (slug: string) => editionPhoto(NICHE, slug);
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(37722338, 1200), // black keycaps lit blue to pink
-  pexels(19120448, 1200), // a black mouse side-on, red monitor glow behind
-  pexels(7858756, 1200), // a black and red headset on a dark desk
-  pexels(27271924, 1200), // a pale grey controller on a dark desk mat
+  scene("tile-1"), // a black mechanical keyboard lit violet to lime on a dark mat
+  scene("tile-2"), // a black honeycomb mouse side-on, a violet glow behind
+  scene("tile-3"), // a black headset with a boom mic on a stand, violet rim light
+  scene("tile-4"), // a black gamepad and a desk microphone on a dark mat, a lime edge
 ];
 
 export const PC_GAMING: Edition = {
@@ -107,17 +114,17 @@ export const PC_GAMING: Edition = {
     ],
   }),
   photos: {
-    // `arena`'s full-bleed hero (dark page): three monitors with a mountain dawn; the desk sits in the lower third, so the copy reads over the dark wall.
-    hero: { wide: pexels(1820328, 1920), tall: pexels(13728045, 1200) },
+    // `arena`'s full-bleed hero (dark page): a dark desk, a curved monitor that is off and a violet wall glow; the desk sits in the lower third, so the copy reads over the dark wall.
+    hero: { wide: scene("hero-wide"), tall: pexels(13728045, 1200) },
     tiles: TILES,
     // A black controller in low red light (it sits in the middle band, so a 21:9 crop keeps it).
     banner: pexels(14205160, 1920),
     // `volt`'s about page (4:5, white page): a light corner desk by the window.
     story: pexels(28350931, 1200),
-    // `arena`'s video block poster (16:9): a white wireless mouse on black.
-    custom: { "video-poster": pexels(17821147, 1920) },
+    // `arena`'s video block poster (16:9): a white mouse and a compact white keyboard on a black mat.
+    custom: { "video-poster": scene("video-poster") },
     // `arena`'s page is dark: its about page shows an empty dark game lounge instead.
-    dark: { story: pexels(7862237, 1200) },
+    dark: { story: scene("story-dark") },
   },
   copy: {
     announcement: [
@@ -127,7 +134,7 @@ export const PC_GAMING: Edition = {
     ],
     labels: { search: L("دوّر على كيبورد، ماوس، سماعة…", "Search keyboards, mice, headsets…") },
     hero: {
-      alt: L("تلات شاشات عليها جبال وقت الفجر فوق مكتب ضلمة", "Three monitors showing mountains at dawn on a dark desk"),
+      alt: L("مكتب جيمنج ضلمة عليه شاشة منحنية مطفية ونور بنفسجي على الحيطة", "A dark gaming desk with a curved monitor that is off and a violet wall glow"),
       eyebrow: L("متجرب قبل ما يوصلك", "Tested before it ships"),
       title: L("جهّز السيت أب بتاعك", "Build your setup"),
       line: L(
@@ -210,7 +217,7 @@ export const PC_GAMING: Edition = {
       // `arena`: the video block over a row of products.
       "video-eyebrow": L("تسوق السيت أب", "Shop the setup"),
       "video-title": L("كل اللي على المكتب", "Everything on the desk"),
-      "video-alt": L("ماوس وايرلس أبيض على خلفية سودا", "A white wireless mouse on black"),
+      "video-alt": L("ماوس وكيبورد صغير أبيض على ماوس باد أسود", "A white mouse and a compact white keyboard on a black desk mat"),
       // `arena`: the sign-up's four chips, answers to "What do you play on?".
       "newsletter-interest-1": L("كمبيوتر", "PC"),
       "newsletter-interest-2": L("كونسول", "Console"),

@@ -39,10 +39,11 @@
  * fixture is a new capture (`kholkhal.v3.json`) and the v2 one is deleted
  * (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's (see its header): hero 8468179, slides 20178660 and
- * 31702117, tiles 20166053, 6044137, 27592172, 9750766, campaign 15130427,
- * story 30056548, about page 4491555; products are the pack's white
- * packshots. No people, hair on a head, hands, logos or lettering.
+ * Photos: the pack's (see its header): the generated hero slides, tiles,
+ * campaign, story and about page (2026-11-15,
+ * `editions/hair-accessories/scene-*`; the fixture was recaptured at v3 for
+ * the photo and alt swap only); products are the pack's white packshots. No
+ * people, hair on a head, hands, logos or lettering.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";

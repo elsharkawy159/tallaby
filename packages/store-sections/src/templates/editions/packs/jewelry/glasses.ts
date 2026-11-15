@@ -6,14 +6,11 @@
  * Packshots: the generated white-background set in the `library-media`
  * bucket (`editionPhoto("glasses", <slug>)`), square, one angle.
  *
- * Art-directed photos: Pexels, each checked by eye (2026-11-11): glasses on
- * pink, peach, red and pale paper, no people or hands, no lettering on the
- * temples, none used by a template or another pack, none twice. Hero
- * 26682030 (wide) and 12693047 (tall); tiles 20093375, 13697735, 35597800,
- * 5713793; banner 1313064 (karat shows none); story 10154994 (the about
- * page). Left out after the check: 9328548 and 26050118 (brand and model
- * lettering on the temples), 5465834 (a mark on the lens), 23962110 (barcode
- * tags), 28834289 and 5706223 (lettering on a temple and a book cover).
+ * Art-directed photos: generated from `docs/systems/editions-photos.md`
+ * (received 2026-11-15, checked by eye: no people, hands, lettering or
+ * logos), in the same bucket as `scene-<slot>`: hero, tiles, story, the
+ * lookbook and story rings 5 to 8. Still Pexels, drawn by no look: hero tall
+ * 12693047 and banner 1313064 (karat shows neither).
  *
  * Looks: `karat` only, the niche's template (one template per niche). The
  * accessories switch (2026-11-12) took `jewelry-luxe` off and folded karat's
@@ -27,9 +24,10 @@ import { editionPhoto } from "../../media";
 import type { Edition } from "../../types";
 
 const shot = (slug: string) => editionPhoto("glasses", slug);
+const scene = (slot: string) => editionPhoto("glasses", `scene-${slot}`);
 
 /** Category tiles, 3:4, in the categories' order. */
-const TILES = [pexels(20093375, 1200), pexels(13697735, 1200), pexels(35597800, 1200), pexels(5713793, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 export const GLASSES: Edition = {
   niche: "glasses",
@@ -67,24 +65,24 @@ export const GLASSES: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(26682030, 1920), tall: pexels(12693047, 1200) },
+    hero: { wide: scene("hero-wide"), tall: pexels(12693047, 1200) },
     tiles: TILES,
     // Karat shows no banner; the pack still holds one.
     banner: pexels(1313064, 1920),
     // The about page.
-    story: pexels(10154994, 1200),
+    story: scene("story"),
     custom: {
       // `karat` lookbook, square: one large photo, then four small ones (subjects centred: the bento and the rings crop to the middle).
-      "lookbook-1": pexels(7602873, 1200), // black round glasses on a beige chair
-      "lookbook-2": pexels(25389282, 900), // a black rectangular frame on white
-      "lookbook-3": pexels(32398468, 900), // a black double-bridge frame on grey paper
-      "lookbook-4": pexels(5752242, 900), // a black cat-eye frame on white
-      "lookbook-5": pexels(4696100, 900), // mirrored lenses reflecting clouds
+      "lookbook-1": scene("lookbook-1"), // black round glasses on a beige upholstered chair, a plum cushion edge
+      "lookbook-2": scene("lookbook-2"), // a black rectangular frame on a mustard plinth against blush
+      "lookbook-3": scene("lookbook-3"), // a black double-bridge frame on pale pink paper, a window shadow
+      "lookbook-4": scene("lookbook-4"), // a black cat-eye frame on deep plum paper
+      "lookbook-5": scene("lookbook-5"), // mirrored lenses reflecting a blue sky, on sand
       // `karat` story rings 5 to 8 (rings 1 to 4 show the category tiles).
-      "stories-5": pexels(36090899, 900), // round sunglasses with blue mirrored lenses on pink
-      "stories-6": pexels(30336929, 900), // a dark round frame on pale linen
-      "stories-7": pexels(7602881, 900), // round black glasses on a beige seat, from above
-      "stories-8": pexels(7107485, 900), // a thin frame on a desk, the keyboard out of focus
+      "stories-5": scene("stories-5"), // round sunglasses with blue mirrored lenses on blush
+      "stories-6": scene("stories-6"), // a dark round frame on pale linen
+      "stories-7": scene("stories-7"), // round black glasses on a beige seat
+      "stories-8": scene("stories-8"), // a thin gold frame on a wood desk beside a notebook and a pencil
     },
   },
   copy: {
@@ -95,7 +93,7 @@ export const GLASSES: Edition = {
     ],
     labels: { about: L("عن بُصّة", "About Bossa"), search: L("دوّر على نظارة", "Search for a pair") },
     hero: {
-      alt: L("إطارين نظارة تورتواز على خلفية وردي", "Two tortoiseshell frames on a pink backdrop"),
+      alt: L("تلات نظارات تورتواز ودهبي وموف على ورق وردي", "Three frames, tortoiseshell, gold and plum, on blush paper"),
       eyebrow: L("نظارات بمزاج", "Glasses with a mood"),
       title: L("بُص للدنيا بلون", "See the world in colour"),
       line: L("شمس وطبي وبلو لايت، وكلها أقل من ٧٠٠ جنيه.", "Sunglasses, optical and blue-light frames, all under EGP 700."),

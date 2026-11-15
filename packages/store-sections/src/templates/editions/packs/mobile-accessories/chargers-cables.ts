@@ -42,6 +42,11 @@
  * 5961044, 5083490, 5083410, 7742585, 7742588, 5948344, 5083411, 5208826,
  * 5208832, 34338614, 5208772, 5208777, 37475662.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene-<slot>` in the same bucket) now replace the Pexels photos
+ * `kabl` draws: the four tiles and the story. Still Pexels, drawn by no look:
+ * the heroes 5208870 and 6373172 and the banner 1028674.
+ *
  * Looks: `kabl`, then `volt`. Neither has category rows; both show the best
  * sellers in compact rows (`kabl` six). Four featured products: `volt`'s
  * hero shows the first featured one (the 65 W charger). No `reviews`: a pack
@@ -55,14 +60,15 @@ import type { Edition } from "../../types";
 
 const NICHE = "chargers-cables";
 const shot = (slug: string) => editionPhoto(NICHE, slug);
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
 /** Category tiles, 3:4, in the categories' order. */
 const TILES = [
-  pexels(16886336, 1200), // white wall chargers in a power strip
-  pexels(5208819, 1200), // two white chargers with coiled cables on beige
-  pexels(947407, 1200), // a black battery with a white cable on red leather
-  pexels(5083491, 1200), // a phone on a round white charging pad
+  scene("tile-1"), // a black GaN charger, a white charger and a car charger in a row on cool grey
+  scene("tile-2"), // a black braided, a white and a 3-in-1 cable coiled side by side on navy cloth
+  scene("tile-3"), // a black, a white magnetic and a pink power bank stacked on grey stone
+  scene("tile-4"), // a phone on a round white pad beside a 3-in-1 stand on a soft-yellow desk
 ];
 
 export const CHARGERS_CABLES: Edition = {
@@ -110,7 +116,7 @@ export const CHARGERS_CABLES: Edition = {
     // Two phones charging side by side: the phones and plugs sit in the middle band, so a 21:9 crop keeps them.
     banner: pexels(1028674, 1920),
     // The about page of both looks (4:5): a charger, a braided cable and a power bank on marble.
-    story: pexels(3921706, 1200),
+    story: scene("story"),
   },
   copy: {
     announcement: [

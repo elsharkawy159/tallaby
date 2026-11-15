@@ -48,10 +48,12 @@
  * v4 is a deliberate redesign, so its fixture is a new capture
  * (`saat.v4.json`) and the v3 one is deleted (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's (see its header): hero 190819, tiles 34069486,
- * 34833638, 13610157, 5058216, story 8327593, campaign 437037, about page
- * 8327579; products are the pack's white packshots. No people, wrists,
- * hands, logos or brand names on dials.
+ * Photos: the pack's (see its header): the generated hero, men's tile,
+ * campaign, story and about page (2026-11-15, `editions/watches/scene-*`;
+ * the fixture was recaptured at v4 for the photo and alt swap only), and
+ * Pexels tiles 34833638, 13610157 and 5058216 until theirs are made again;
+ * products are the pack's white packshots. No people, wrists, hands, logos
+ * or brand names on dials.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";

@@ -6,15 +6,20 @@
  * ruled reviews and a letter from the bench. Built from section
  * library designs (`fromLibrary`).
  *
- * Photos: Pexels, each checked by eye (2026-10-20): silver rings, stacks
- * and bands on surfaces and in boxes. No hands, ears, necks, busts or
- * brand marks.
+ * Photos: generated from `docs/systems/editions-photos.md` (received
+ * 2026-11-15, checked by eye: no people, hands, lettering, hallmarks or
+ * logos) in the public `library-media` bucket, `editions/silver-jewelry/`:
+ * the hero, one tile per category and the about bench as `scene-<slot>`,
+ * and the eight products as white-background packshots named by slug (they
+ * replace the Pexels photos, one of which was the hero, a tile and a
+ * product at once).
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { editionPhoto } from "../editions/media";
+import { demoStore, libraryTemplate } from "../library-template";
 
 export const FADDA_KEY = "fadda";
 
@@ -23,17 +28,23 @@ const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(FADDA_
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 
+const photo = (name: string) => editionPhoto("silver-jewelry", name);
+
 const PHOTOS = {
-  sculpted: pexels(1378705, 900),
-  stack: pexels(1378706, 900),
-  leaf: pexels(6545018, 900),
-  velvet: pexels(20507408, 900),
-  tray: pexels(16063791, 900),
-  bands: pexels(35205571, 900),
-  promise: pexels(19525067, 900),
-  engagement: pexels(27405174, 900),
-  bench: pexels(33873069),
+  /** A sculpted ring standing on graphite stone (square, the split hero). */
+  hero: photo("scene-hero"),
+  /** Category tiles, 3:4. */
+  rings: photo("scene-tile-1"),
+  stacks: photo("scene-tile-2"),
+  bridal: photo("scene-tile-3"),
+  bands: photo("scene-tile-4"),
+  sets: photo("scene-tile-5"),
+  /** A silversmith's bench by a tall window in Downtown Cairo (the about page). */
+  bench: photo("scene-about"),
 };
+
+/** The demo products' white-background packshots, by slug. */
+const shot = (slug: string) => photo(slug);
 
 const NAME = L("فضة ستوديو", "Fadda Studio");
 
@@ -66,7 +77,7 @@ const footer = lib("footer-links", {
  */
 const home: Design[] = [
   lib("hero-split", {
-    photo: [PHOTOS.sculpted],
+    photo: [PHOTOS.hero],
     text: {
       "المجموعة الجديدة": L("فضة استرليني ٩٢٥", "925 sterling silver"),
       "معمول بكميات صغيرة": L("فضة متشطبة باليد", "Silver, finished by hand"),
@@ -158,21 +169,21 @@ const DEMO = demoStore({
   name: NAME,
   description: L("فضة استرليني بكميات صغيرة في القاهرة.", "Sterling silver, made in small runs in Cairo."),
   categories: [
-    ["rings", "خواتم", "Rings", PHOTOS.sculpted],
-    ["stacks", "ستاكات", "Stacks", PHOTOS.stack],
-    ["bridal", "زفاف", "Bridal", PHOTOS.engagement],
+    ["rings", "خواتم", "Rings", PHOTOS.rings],
+    ["stacks", "ستاكات", "Stacks", PHOTOS.stacks],
+    ["bridal", "زفاف", "Bridal", PHOTOS.bridal],
     ["bands", "دبل", "Bands", PHOTOS.bands],
-    ["sets", "تشكيلات", "Selections", PHOTOS.tray],
+    ["sets", "تشكيلات", "Selections", PHOTOS.sets],
   ],
   products: [
-    ["sculpted-silver-ring", "rings", "خاتم فضة منحوت", "Sculpted Silver Ring", PHOTOS.sculpted, 950, { isFeatured: true, rating: 4.9, sold90: 180 }],
-    ["leaf-pair-rings", "rings", "زوج خواتم فضة", "Silver Ring Pair", PHOTOS.leaf, 1150, { sold90: 60 }],
-    ["everyday-stack", "stacks", "ستاك ٥ خواتم", "Everyday Stack of Five", PHOTOS.stack, 1650, { rating: 4.8, sold90: 96 }],
-    ["eternity-stack", "stacks", "ستاك بأحجار", "Stone-set Stack", PHOTOS.velvet, 2100, { sold90: 40 }],
-    ["promise-ring", "bridal", "خاتم وعد بحجر", "Gem-set Promise Ring", PHOTOS.promise, 2400, { isFeatured: true, sold90: 44 }],
-    ["engagement-ring-box", "bridal", "خاتم خطوبة في علبة", "Engagement Ring in a Box", PHOTOS.engagement, 2900, { sold90: 30 }],
-    ["engraved-bands", "bands", "دبلتين محفورتين", "Engraved Band Pair", PHOTOS.bands, 1250, { sold90: 71 }],
-    ["ring-tray-set", "sets", "تشكيلة خواتم", "Ring Selection", PHOTOS.tray, 1100, { compareAtPrice: 1290, inStock: false, sold90: 58 }],
+    ["sculpted-silver-ring", "rings", "خاتم فضة منحوت", "Sculpted Silver Ring", shot("sculpted-silver-ring"), 950, { isFeatured: true, rating: 4.9, sold90: 180 }],
+    ["leaf-pair-rings", "rings", "زوج خواتم فضة", "Silver Ring Pair", shot("leaf-pair-rings"), 1150, { sold90: 60 }],
+    ["everyday-stack", "stacks", "ستاك ٥ خواتم", "Everyday Stack of Five", shot("everyday-stack"), 1650, { rating: 4.8, sold90: 96 }],
+    ["eternity-stack", "stacks", "ستاك بأحجار", "Stone-set Stack", shot("eternity-stack"), 2100, { sold90: 40 }],
+    ["promise-ring", "bridal", "خاتم وعد بحجر", "Gem-set Promise Ring", shot("promise-ring"), 2400, { isFeatured: true, sold90: 44 }],
+    ["engagement-ring-box", "bridal", "خاتم خطوبة في علبة", "Engagement Ring in a Box", shot("engagement-ring-box"), 2900, { sold90: 30 }],
+    ["engraved-bands", "bands", "دبلتين محفورتين", "Engraved Band Pair", shot("engraved-bands"), 1250, { sold90: 71 }],
+    ["ring-tray-set", "sets", "تشكيلة خواتم", "Ring Selection", shot("ring-tray-set"), 1100, { compareAtPrice: 1290, inStock: false, sold90: 58 }],
   ],
 });
 
@@ -200,6 +211,8 @@ export const FADDA = libraryTemplate({
   },
   fonts: { heading: "Readex Pro", body: "Readex Pro" },
   radius: 12,
+  // White-background packshots: a square white stage shows each ring whole.
+  productStage: { ratio: "1:1", fit: "contain", background: "#ffffff" },
   header,
   footer,
   pages: [
