@@ -46,12 +46,12 @@ export const heroSplit = defineDesign({
                   t.stack(
                     [
                       t.text(L("المجموعة الجديدة", "New collection"), { role: "eyebrow", style: { ...HERO_EYEBROW, color: "muted" } }),
-                      t.heading(L("معمول بكميات صغيرة", "Made in small batches"), "h1", {
+                      t.heading(L("مختارة بعناية", "Carefully chosen"), "h1", {
                         role: "title",
                         style: { fontSize: "display-lg", fontWeight: "semibold", lineHeight: "tight", letterSpacing: "tight" },
                         tablet: { fontSize: "display-md" },
                       }),
-                      t.paragraph(L("قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.", "Carefully chosen pieces, made in small runs so each one stays special."), {
+                      t.paragraph(L("قطع مختارة بعناية، لكل قطعة تفاصيلها المميزة.", "Carefully chosen pieces, each with its own details."), {
                         role: "subtitle",
                         style: { fontSize: "lg", lineHeight: "relaxed", maxWidth: "440px" },
                         mobile: { fontSize: "md" },

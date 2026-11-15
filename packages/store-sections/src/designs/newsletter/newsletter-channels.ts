@@ -54,11 +54,11 @@ export const newsletterChannels = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("العروض توصلك زي ما تحب", "Get our offers your way"), "h2", {
+                  t.heading(L("الجديد يصلك بالطريقة التي تفضّلها", "New arrivals, your way"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("على واتساب أو على الإيميل، رسالة واحدة في الأسبوع ومن غير إزعاج.", "On WhatsApp or by email, one message a week and no spam."), {
+                  t.paragraph(L("عبر واتساب أو البريد الإلكتروني، وبدون رسائل مزعجة.", "On WhatsApp or by email, with no spam."), {
                     role: "subtitle",
                     style: { maxWidth: "460px" },
                   }),
@@ -69,13 +69,13 @@ export const newsletterChannels = defineDesign({
                 [
                   t.grid(
                     [
-                      channel(t, "chat", L("واتساب", "WhatsApp"), L("على رقم موبايلك", "To your mobile"), true),
-                      channel(t, "mail", L("إيميل", "Email"), L("على بريدك", "To your inbox"), false),
+                      channel(t, "chat", L("واتساب", "WhatsApp"), L("على رقم هاتفك", "To your phone"), true),
+                      channel(t, "mail", L("البريد الإلكتروني", "Email"), L("على بريدك", "To your inbox"), false),
                     ],
                     { label: L("القنوات", "Channels"), role: "items", columns: { desktop: 2 }, style: { gap: 10 } },
                   ),
                   t.storeForm(),
-                  t.text(L("تقدر تلغي الاشتراك في أي وقت.", "You can unsubscribe at any time."), {
+                  t.text(L("يمكنك إلغاء الاشتراك في أي وقت.", "You can unsubscribe at any time."), {
                     role: "note",
                     style: { fontSize: "xs", color: "muted" },
                   }),

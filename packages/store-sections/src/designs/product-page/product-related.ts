@@ -26,7 +26,7 @@ export const productRelated = defineDesign({
         t.container(
           [
             sectionHead(t, {
-              title: L("ممكن يعجبك كمان", "You may also like"),
+              title: L("قد يعجبك أيضًا", "You may also like"),
               link: { href: SHOP_LINK },
               size: "3xl",
             }),

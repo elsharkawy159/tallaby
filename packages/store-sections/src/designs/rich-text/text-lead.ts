@@ -20,8 +20,8 @@ export const textLead = defineDesign({
         [
           t.paragraph(
             L(
-              "بدأنا المتجر عشان نلاقي منتجات أصلية بسعر عادل، من غير لف على المحلات.",
-              "We started this store to find genuine products at a fair price, without walking from shop to shop.",
+              "بدأنا المتجر لنجمع منتجات جيدة بسعر عادل في مكان واحد.",
+              "We started this store to bring good products at a fair price into one place.",
             ),
             {
               role: "lead",
@@ -43,8 +43,8 @@ export const textLead = defineDesign({
             [
               t.paragraph(
                 L(
-                  "النهارده بنشحن لكل المحافظات، وكل منتج بيتراجع قبل ما يخرج.",
-                  "Today we ship to every governorate, and every product is checked before it leaves.",
+                  "نختار كل منتج بعناية، ونعرض تفاصيله ومقاساته بوضوح.",
+                  "We choose every product with care and show its details and sizes clearly.",
                 ),
                 {
                   style: { fontSize: "lg", lineHeight: "relaxed" },
@@ -52,8 +52,8 @@ export const textLead = defineDesign({
               ),
               t.paragraph(
                 L(
-                  "بنشتغل مع موردين معتمدين بس، وكل طلب معاه فاتورة رسمية.",
-                  "We work only with trusted suppliers, and every order comes with an official invoice.",
+                  "وإذا كان لديك أي سؤال، تواصل معنا.",
+                  "And if you have any question, contact us.",
                 ),
                 {
                   style: { fontSize: "lg", lineHeight: "relaxed" },

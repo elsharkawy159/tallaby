@@ -58,7 +58,7 @@ const NAME = L("عطار الحي", "Attar El Hay");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header bar: two short lines.
-  announcement: [L("بتتطحن طازة بالطلب · توصيل مجاني فوق ٣٥٠ ج.م", "Ground fresh on order · Free delivery over EGP 350"), L("بيتطحن طازة", "Ground fresh")],
+  announcement: [L("توابل وأعشاب وحبوب في مكان واحد", "Spices, herbs and grains in one place"), L("توابل صحيحة ومطحونة", "Whole and ground spices")],
   // The header's two links (one word each): the main shelf and a second one; the hero's second button goes to `nav.1`.
   nav: [
     { label: L("التوابل", "Spices"), href: SHOP },
@@ -66,38 +66,38 @@ const DEFAULT_CONTENT: LookDefaults = {
   ],
   // The split hero: its first button goes to the whole catalog, the second (`custom.hero-cta-2`) to `nav.1`.
   hero: {
-    alt: L("طواجن توابل مطحونة وعيدان قرفة", "Bowls of ground spices and cinnamon sticks"),
-    eyebrow: L("بيتطحن طازة", "Ground fresh"),
-    title: L("توابل ريحتها توابل", "Spices that smell like spices"),
-    line: L("بذور صحيحة من الصعيد، بتتطحن وتتقفل يوم ما تطلب.", "Whole seeds from Upper Egypt, ground and sealed the day you order."),
+    alt: L("أطباق توابل مطحونة وعيدان قرفة", "Bowls of ground spices and cinnamon sticks"),
+    eyebrow: L("توابل صحيحة ومطحونة", "Whole and ground spices"),
+    title: L("توابل بنكهة أصيلة", "Spices full of flavour"),
+    line: L("توابل صحيحة ومطحونة وخلطات جاهزة للمطبخ.", "Whole and ground spices and ready blends for the kitchen."),
     cta: L("تسوق التوابل", "Shop spices"),
   },
   categories: { title: L("تسوّق بالرف", "Shop by shelf") },
   // A numbered list of four of what `journey.primary` shows: an eyebrow, a title and a line.
   products: {
     primary: {
-      eyebrow: L("أحسن ٤", "Top 4"),
-      title: L("الأكتر إعادة طلب", "Most reordered"),
-      line: L("اللي الجيران بيرجعوا يطلبوه كل شهر.", "What the neighbours reorder every month."),
+      eyebrow: L("الأكثر طلبًا", "Best sellers"),
+      title: L("الأكثر طلبًا", "Most ordered"),
+      line: L("التوابل الأكثر طلبًا في المتجر.", "The store's most ordered spices."),
     },
   },
   // Optional, with `custom.reviews-city-1..3`: three short buyer quotes (no names shown) under a title. Without them the home page ends on the lead text.
   reviews: {
-    title: L("الجيران", "Neighbours"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
-      { quote: L("الكمون ريحته ملت المطبخ أول ما فتحت الكيس.", "The cumin filled the kitchen the moment I opened the bag.") },
-      { quote: L("رجّعت البرطمانات الفاضية وملوها بنص التمن.", "I brought back my empty jars and they refilled them for half the price.") },
-      { quote: L("خلطة البيت بقت أساسية في كل أكلة عندنا.", "The house blend is now in everything we cook.") },
+      { quote: L("الكمون برائحة قوية ونكهة واضحة.", "The cumin has a strong aroma and clear flavour.") },
+      { quote: L("البرطمانات محكمة الغلق وتحفظ التوابل جيدًا.", "The jars close tightly and keep spices well.") },
+      { quote: L("خلطة البهارات مناسبة لأطباق كثيرة.", "The spice blend suits many dishes.") },
     ],
   },
-  footer: { line: L("توابل صحيحة، بتتطحن يوم ما تطلب.", "Whole spices, ground on the day you order.") },
+  footer: { line: L("توابل صحيحة ومطحونة وأعشاب وحبوب.", "Whole and ground spices, herbs and grains.") },
   about: {
-    line: L("عطارة الحي من ١٩٦٢.", "The neighbourhood attar since 1962."),
+    line: L("توابل وأعشاب وحبوب للمطبخ.", "Spices, herbs and grains for the kitchen."),
     alt: L("رفوف فواكه مجففة ومكسرات", "Shelves of dried fruit and nuts"),
-    eyebrow: L("السيدة زينب", "Sayeda Zeinab"),
-    title: L("نفس الهون من ٣ أجيال", "The same mortar for three generations"),
-    text: L("جدنا كان بيطحن التوابل بالهون قدام الزبون، وإحنا لسه بنطحن بالطلب بس بماكينة حجر.", "Our grandfather ground spices by mortar in front of each customer; we still grind to order, on a stone mill."),
-    more: L("ورجّع برطمانك الفاضي وخد ريفيل بنص التمن.", "Bring back your empty jar for a refill at half the price."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("توابل مختارة بعناية", "Spices chosen with care"),
+    text: L("نختار التوابل والأعشاب بعناية، ونعرض الوزن والمكونات بوضوح لكل منتج.", "We choose spices and herbs with care and show the weight and ingredients of every product."),
+    more: L("تواصل معنا لأي سؤال عن منتج أو كمية.", "Contact us with any question about a product or a quantity."),
     // Goes to the whole catalog.
     cta: L("تسوق التوابل", "Shop spices"),
   },
@@ -107,9 +107,9 @@ const DEFAULT_CONTENT: LookDefaults = {
     heading: L("اسأل عن خلطة أو كمية", "Ask about a blend or a quantity"),
   },
   faq: {
-    line: L("الطحن والتخزين والريفيل.", "Grinding, storage and refills."),
-    question: L("أخزن التوابل إزاي؟", "How should I store spices?"),
-    answer: L("في برطمان مقفول بعيد عن النور والحرارة، وجددها كل ٣ شهور.", "In a closed jar away from light and heat, and restock every three months."),
+    line: L("التخزين والأوزان والطلب.", "Storage, weights and ordering."),
+    question: L("كيف أحفظ التوابل؟", "How should I store spices?"),
+    answer: L("في برطمان محكم الغلق بعيدًا عن الضوء والحرارة.", "In a closed jar away from light and heat."),
   },
   custom: {
     // The hero's second button (to `nav.1`), two words.
@@ -118,11 +118,11 @@ const DEFAULT_CONTENT: LookDefaults = {
     "categories-eyebrow": L("الرفوف", "The shelves"),
     // The lead text: three short paragraphs about how the shop works.
     "lead-1": L(
-      "التوابل المطحونة بتفقد نص ريحتها في ٣ شهور. عشان كده مفيش حاجة عندنا بتتطحن قبل الطلب.",
-      "Ground spice loses half its smell in three months. That is why nothing on our shelf is ground in advance.",
+      "نجمع التوابل الصحيحة والمطحونة والأعشاب في مكان واحد.",
+      "We bring whole and ground spices and herbs together in one place.",
     ),
-    "lead-2": L("كل طلب بيتوزن ويتطحن ويتقفل فاكيوم قدام كاميرا تقدر تشوفها.", "Every order is weighed, ground and vacuum-sealed in front of a camera you can watch."),
-    "lead-3": L("وبنكتب على كل كيس يوم الطحن، عشان تعرف إمتى تجدد.", "And every bag carries its grinding date, so you know when to restock."),
+    "lead-2": L("لكل منتج وزنه ومكوناته موضحة في صفحته.", "Every product shows its weight and ingredients on its page."),
+    "lead-3": L("وإذا كان لديك أي سؤال، تواصل معنا.", "And if you have any question, contact us."),
     // With `reviews`: each quote's area.
     "reviews-city-1": L("السيدة زينب", "Sayeda Zeinab"),
     "reviews-city-2": L("المنيل", "Manial"),
@@ -150,7 +150,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const header = lib("header-announcement", {
     text: {
-      "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+      "تشكيلة الموسم الجديد وصلت": c.announcement[0]!,
       "الدفع عند الاستلام": c.announcement[1]!,
       "م": initial,
       "اسم متجرك": name,
@@ -165,7 +165,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     text: {
       "م": initial,
       "اسم متجرك": name,
-      "منتجات أصلية بضمان، توصلك لحد البيت.": c.footer.line,
+      "منتجات مختارة بعناية لكل يوم.": c.footer.line,
       "العروض": L("الأعلى تقييماً", "Top rated"),
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
     },
@@ -179,9 +179,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("hero-halves", {
       photo: [undefined, c.photos.hero.tall],
       text: {
-        "كوليكشن الموسم": c.hero.eyebrow,
+        "مجموعة الموسم": c.hero.eyebrow,
         "صوت أنقى، كل يوم": c.hero.title,
-        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+        "منتجات مختارة بمواصفات واضحة لكل يوم.": c.hero.line,
         "تسوق الآن": c.hero.cta,
         "العروض": x["hero-cta-2"]!,
         "صورة الحملة": c.hero.alt,
@@ -197,16 +197,16 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "الكتالوج": c.products.primary.eyebrow,
         "كل الإكسسوارات": c.products.primary.title,
-        "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": c.products.primary.line,
+        "كل ما تحتاجه في مكان واحد.": c.products.primary.line,
       },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 4 }],
     }),
     lib("text-lead", {
       text: {
-        "بدأنا المتجر عشان نلاقي منتجات أصلية بسعر عادل، من غير لف على المحلات.": x["lead-1"]!,
-        "النهارده بنشحن لكل المحافظات، وكل منتج بيتراجع قبل ما يخرج.": x["lead-2"]!,
-        "بنشتغل مع موردين معتمدين بس، وكل طلب معاه فاتورة رسمية.": x["lead-3"]!,
+        "بدأنا المتجر لنجمع منتجات جيدة بسعر عادل في مكان واحد.": x["lead-1"]!,
+        "نختار كل منتج بعناية، ونعرض تفاصيله ومقاساته بوضوح.": x["lead-2"]!,
+        "وإذا كان لديك أي سؤال، تواصل معنا.": x["lead-3"]!,
       },
     }),
     ...(reviews && city
@@ -214,9 +214,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           lib("testimonials-ruled", {
             text: {
               "آراء العملاء": L("الآراء", "Reviews"),
-              "قالوا عننا": reviews.title,
+              "قالوا عنا": reviews.title,
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[2]!.quote,
               "القاهرة": city,
               "الإسكندرية": x["reviews-city-2"]!,
@@ -265,7 +265,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("توابل صحيحة، بتتطحن يوم ما تطلب.", "Whole spices, ground on the day you order."),
+  description: L("توابل صحيحة ومطحونة وأعشاب وحبوب.", "Whole and ground spices, herbs and grains."),
   categories: [
     ["spices", "توابل", "Spices", PHOTOS.groundBowls],
     ["pantry", "بقالة", "Pantry", PHOTOS.pantryJars],
@@ -278,12 +278,12 @@ const DEMO = demoStore({
   ],
   products: [
     ["spice-starter-set", "spices", "طقم توابل للمبتدئين", "Spice Starter Set", PHOTOS.wholeSpices, 210, { isFeatured: true, rating: 4.8, sold90: 180 }],
-    ["rice-lentils-pasta", "pantry", "رز وعدس ومكرونة", "Rice, Lentils & Pasta", PHOTOS.pantryJars, 280, { isFeatured: true, sold90: 96 }],
-    ["refill-jars", "jars", "برطمانات ريفيل", "Refill Jars", PHOTOS.refillShelf, 160, { isFeatured: true, sold90: 40 }],
+    ["rice-lentils-pasta", "pantry", "أرز وعدس ومعكرونة", "Rice, Lentils & Pasta", PHOTOS.pantryJars, 280, { isFeatured: true, sold90: 96 }],
+    ["refill-jars", "jars", "برطمانات قابلة لإعادة التعبئة", "Refill Jars", PHOTOS.refillShelf, 160, { isFeatured: true, sold90: 40 }],
     ["baharat-mix", "spices", "بهارات مشكلة ٢٥٠ جم", "Baharat Mix, 250 g", PHOTOS.groundBowls, 95, { compareAtPrice: 120, sold90: 210 }],
     ["cinnamon-sticks", "whole-spices", "قرفة عيدان ١٠٠ جم", "Cinnamon Sticks, 100 g", PHOTOS.cinnamon, 60, { sold90: 150 }],
     ["whole-cloves", "whole-spices", "قرنفل صحيح ٥٠ جم", "Whole Cloves, 50 g", PHOTOS.cloves, 55, { sold90: 90 }],
-    ["dried-thyme", "herbs", "زعتر ناشف ١٠٠ جم", "Dried Thyme, 100 g", PHOTOS.thyme, 45, { rating: 4.9, sold90: 120 }],
+    ["dried-thyme", "herbs", "زعتر مجفف ١٠٠ جم", "Dried Thyme, 100 g", PHOTOS.thyme, 45, { rating: 4.9, sold90: 120 }],
     ["grain-sampler", "grains", "حبوب مشكلة", "Grain Sampler", PHOTOS.grains, 150, { sold90: 44 }],
     ["herbal-tea", "herbal-tea", "شاي أعشاب مشكل", "Herbal Tea Mix", PHOTOS.herbalTea, 85, { sold90: 70 }],
     ["dried-fruit", "dried-fruit", "فواكه مجففة ومكسرات", "Dried Fruit & Nuts", PHOTOS.driedFruit, 240, { inStock: false, sold90: 60 }],
@@ -292,9 +292,9 @@ const DEMO = demoStore({
 
 export const ATARA = editionTemplate({
   key: ATARA_KEY,
-  version: 3,
+  version: 4,
   changelog: "Atara v3: categories, no coupon, section order",
-  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رأي الجيران", "The neighbours say"), related: L("يتحط جنبه في المطبخ", "Pair it in your kitchen") } },
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("عطارة", "Atara"),
   description: L(
     "توابل وأعشاب: بيتطحن طازة، الأكتر إعادة طلب وآراء الجيران. أربع صفحات جاهزة.",

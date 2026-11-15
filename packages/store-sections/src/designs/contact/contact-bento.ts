@@ -36,11 +36,11 @@ export const contactBento = defineDesign({
                           dotLabel(t, L("واتساب", "WhatsApp"), {
                             onBrand: true,
                           }),
-                          t.heading(L("كلمنا دلوقتي", "Message us now"), "h2", {
+                          t.heading(L("راسلنا الآن", "Message us now"), "h2", {
                             role: "title",
                             style: { fontSize: "display-sm", ...ON_BRAND },
                           }),
-                          t.text(L("بنرد في ١٢ دقيقة في المتوسط", "Average reply: 12 minutes"), { style: ON_BRAND_BODY }),
+                          t.text(L("تواصل معنا لأي سؤال", "Contact us with any question"), { style: ON_BRAND_BODY }),
                           t.text(CHANNELS[0]!.value, {
                             style: {
                               fontWeight: "bold",

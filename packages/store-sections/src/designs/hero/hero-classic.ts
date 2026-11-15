@@ -29,15 +29,15 @@ export const heroClassic = defineDesign({
                   }),
                   t.paragraph(
                     L(
-                      "منتجات مختارة بعناية بضمان وتوصيل لكل المحافظات والدفع عند الاستلام.",
-                      "Carefully picked products with warranty, delivery everywhere and cash on delivery.",
+                      "منتجات مختارة بعناية، بصور ومواصفات واضحة.",
+                      "Carefully picked products with clear photos and specs.",
                     ),
                     { role: "subtitle", style: { fontSize: "lg", maxWidth: "520px" } },
                   ),
                   t.row(
                     [
                       t.button(L("تسوّق الآن", "Shop now"), "/products", "solid", { role: "cta" }),
-                      t.button(L("شوف العروض", "See offers"), "/products", "outline", { role: "secondaryCta" }),
+                      t.button(L("تصفّح المنتجات", "Browse products"), "/products", "outline", { role: "secondaryCta" }),
                     ],
                     { label: L("الأزرار", "Buttons"), style: { gap: 12, marginTop: 8 } },
                   ),

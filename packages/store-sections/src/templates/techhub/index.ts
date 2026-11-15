@@ -51,10 +51,10 @@ const header = lib("header-search", {
   text: {
     "م": L("ف", "V"),
     "اسم متجرك": NAME,
-    "ابحث عن منتج…": L("ابحث عن موبايل، لابتوب، سماعة…", "Search phones, laptops, headphones…"),
-    "العروض": L("موبايلات", "Phones"),
-    "هدايا": L("لابتوب", "Laptops"),
-    "توصيل خلال ٤٨ ساعة": L("توصيل خلال ٢٤ ساعة في القاهرة والجيزة", "Delivery in 24 hours in Cairo and Giza"),
+    "ابحث عن منتج…": L("ابحث عن هاتف، حاسوب محمول، سماعة…", "Search phones, laptops, headphones…"),
+    "العروض": L("هواتف", "Phones"),
+    "هدايا": L("حواسيب محمولة", "Laptops"),
+    "صور ومواصفات لكل منتج": L("صور ومواصفات لكل منتج", "Photos and specs for every product"),
   },
   links: { "/products": [undefined, NEW, BEST, search("موبايل"), search("لابتوب"), SHOP] },
 });
@@ -72,8 +72,8 @@ const footer = lib("footer-help", {
 const home: Design[] = [
   lib("hero-search", {
     text: {
-      "بتدور على إيه النهارده؟": L("بتدوّر على إيه النهارده؟", "What are you shopping for today?"),
-      "اكتب اسم المنتج": L("اسم المنتج أو الماركة أو الموديل", "Product, brand or model number"),
+      "عمّ تبحث اليوم؟": L("عمّ تبحث اليوم؟", "What are you shopping for today?"),
+      "اكتب اسم المنتج": L("اسم المنتج أو العلامة التجارية أو الموديل", "Product, brand or model number"),
     },
   }),
   lib("categories-ruled", {
@@ -81,7 +81,7 @@ const home: Design[] = [
   }),
   lib("products-tabbed", {
     text: {
-      "منتجاتنا": L("الأكثر طلباً الأسبوع ده", "Top picks this week"),
+      "منتجاتنا": L("الأكثر طلبًا هذا الأسبوع", "Top picks this week"),
       "وصل جديد": L("وصل حديثاً", "New arrivals"),
       "العروض": L("الأعلى تقييماً", "Top rated"),
     },
@@ -89,7 +89,7 @@ const home: Design[] = [
   }),
   lib("products-rail", {
     as: "flagships",
-    text: { "بيحبوها": L("مختارات", "Featured"), "الأكثر مبيعًا": L("أجهزة تستاهل الترقية", "Flagships worth the upgrade") },
+    text: { "المفضلة لدى العملاء": L("مختارات", "Featured"), "الأكثر مبيعًا": L("أجهزة تستحق الترقية", "Flagships worth the upgrade") },
     links: { "/products": SHOP },
     lists: [{ source: "featured" }],
   }),
@@ -99,14 +99,14 @@ const home: Design[] = [
   }),
   lib("features-ruled", {
     text: {
-      "توصيل سريع": L("أصلي بضمان محلي", "Original, with local warranty"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("لحد سنتين، وإحنا بنخلّص الضمان.", "Up to 2 years, claims handled by us."),
-      "الدفع عند الاستلام": L("توصيل خلال ٢٤ ساعة", "Delivery in 24 hours"),
-      "أو ادفع بالبطاقة والمحفظة": L("القاهرة والجيزة، ومن ٢ لـ ٥ أيام لباقي المحافظات.", "Cairo and Giza; 2–5 days elsewhere."),
-      "استرجاع سهل": L("تقسيط متاح", "Installments available"),
-      "١٤ يومًا لتغيّر رأيك": L("valU وكروت البنوك، تختار وقت الدفع.", "valU and bank cards, chosen at checkout."),
-      "دعم على واتساب": L("استرجاع ١٤ يوم", "14-day returns"),
-      "أشخاص حقيقيون طوال الأسبوع": L("للمنتجات المقفولة، واسترداد كامل.", "Sealed items, full refund."),
+      "الشحن": L("صور ومواصفات لكل جهاز", "Photos and specs for every device"),
+      "تظهر تكلفة الشحن ومدته عند إتمام الطلب": L("المعالج والذاكرة والشاشة مكتوبة بوضوح.", "Processor, memory and screen clearly listed."),
+      "الدفع عند الاستلام": L("تشكيلة لكل الاستخدامات", "A range for every use"),
+      "أو بطرق الدفع المتاحة عند الطلب": L("هواتف وحواسيب وسماعات وملحقات.", "Phones, laptops, audio and accessories."),
+      "الاستبدال والاسترجاع": L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
+      "التفاصيل في صفحة السياسات": L("ابحث بالاسم أو العلامة التجارية أو الموديل.", "Search by name, brand or model."),
+      "تواصل معنا": L("تواصل معنا لأي سؤال", "Contact us with any question"),
+      "لأي سؤال عن طلب أو منتج": L("قبل الطلب أو بعده.", "Before or after you order."),
     },
   }),
 ];
@@ -116,22 +116,22 @@ const about: Design[] = [
     lib,
     "about-header",
     L("عن فولتا ستور", "About Volta Store"),
-    L("محل إلكترونيات في مدينة نصر بيبيع أجهزة أصلية بضمان محلي من ٢٠١٩.", "An electronics shop in Nasr City selling original devices with local warranty since 2019."),
+    L("هواتف وحواسيب وسماعات وأجهزة ذكية بمواصفات واضحة.", "Phones, laptops, audio and smart devices with clear specs."),
   ),
   aboutStory(lib, {
     photo: PHOTOS.store,
     alt: L("صالة عرض أجهزة إلكترونية", "An electronics showroom"),
-    eyebrow: L("من ٢٠١٩", "Since 2019"),
-    title: L("أجهزة أصلية، وضمان إحنا بنخلّصه", "Original devices, warranty we handle"),
-    text: L("كل جهاز بييجي من الوكيل بفاتورة، وبنجرّبه قبل ما يخرج من المحل.", "Every device comes from the dealer with an invoice, and we test it before it leaves the shop."),
-    more: L("ولو حصلت مشكلة، بنخلّص الضمان بالنيابة عنك.", "And if anything goes wrong, we handle the warranty for you."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("الجهاز المناسب لاستخدامك", "The right device for your use"),
+    text: L("نختار هواتف وحواسيب وسماعات وملحقات، ونعرض مواصفات كل جهاز بوضوح.", "We choose phones, laptops, audio and accessories, and show every device's specs clearly."),
+    more: L("تواصل معنا لأي سؤال عن جهاز قبل الشراء.", "Contact us with any question about a device before you buy."),
     button: L("تسوّق الأجهزة", "Shop devices"),
     href: SHOP,
   }),
   lib("stats-classic", {
     text: {
       "+٢٥ ألف": L("+٦٠ ألف", "60K+"),
-      "طلب تم توصيله": L("طلب اتسلّم", "Orders delivered"),
+      "طلب تم توصيله": L("طلب تم توصيله", "Orders delivered"),
       "محافظة نوصل لها": L("محافظة", "Governorates"),
       "٤٫٨": L("٤٫٧", "4.7"),
       "١٤": L("٢٤ س", "24h"),
@@ -142,32 +142,32 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("إلكترونيات أصلية بضمان محلي وتوصيل سريع.", "Original electronics with local warranty, delivered fast."),
+  description: L("هواتف وحواسيب وسماعات وأجهزة ذكية.", "Phones, laptops, audio and smart devices."),
   categories: [
     ["audio", "سماعات وصوت", "Audio", PHOTOS.headphones],
-    ["phones", "موبايلات", "Phones", PHOTOS.phonePair],
-    ["laptops", "لابتوب وتابلت", "Laptops & tablets", PHOTOS.laptop],
+    ["phones", "هواتف", "Phones", PHOTOS.phonePair],
+    ["laptops", "حواسيب محمولة وأجهزة لوحية", "Laptops & tablets", PHOTOS.laptop],
     ["wearables", "ساعات ذكية", "Wearables", PHOTOS.watch],
-    ["accessories", "كيبورد وإكسسوارات", "Keyboards & accessories", PHOTOS.keyboard],
-    ["smart-home", "بيت ذكي", "Smart home", PHOTOS.speaker],
-    ["earbuds", "إيربودز", "Earbuds", PHOTOS.buds],
-    ["tablets", "تابلت", "Tablets", PHOTOS.tablet],
+    ["accessories", "لوحات مفاتيح وإكسسوارات", "Keyboards & accessories", PHOTOS.keyboard],
+    ["smart-home", "المنزل الذكي", "Smart home", PHOTOS.speaker],
+    ["earbuds", "سماعات لاسلكية", "Earbuds", PHOTOS.buds],
+    ["tablets", "أجهزة لوحية", "Tablets", PHOTOS.tablet],
   ],
   products: [
     ["nova-anc-700", "audio", "سماعة Nova ANC 700 لاسلكية", "Nova ANC 700 Wireless Headphones", PHOTOS.headphones, 4299, { compareAtPrice: 4999, isFeatured: true, rating: 4.8, sold90: 312 }],
     ["nova-pulse-buds-pro", "earbuds", "سماعة Nova Pulse Buds Pro", "Nova Pulse Buds Pro", PHOTOS.budsBlack, 2450, { compareAtPrice: 2899, isFeatured: true, rating: 4.6, sold90: 241 }],
     ["nova-air-buds", "earbuds", "سماعة Nova Air Buds", "Nova Air Buds", PHOTOS.budsOpen, 1990, { sold90: 57 }],
-    ["arc-x14-5g", "phones", "موبايل Arc X14 5G", "Arc X14 5G Smartphone", PHOTOS.phone, 18999, { isFeatured: true, rating: 4.7, sold90: 96 }],
-    ["arc-x14-lite", "phones", "موبايل Arc X14 Lite", "Arc X14 Lite", PHOTOS.phoneSlim, 12499, { compareAtPrice: 13999, sold90: 174 }],
-    ["kite-air-14", "laptops", "لابتوب Kite Air 14", "Kite Air 14 Laptop", PHOTOS.laptop, 38500, { isFeatured: true, rating: 4.8, sold90: 63 }],
-    ["kite-pro-16", "laptops", "لابتوب Kite Pro 16", "Kite Pro 16 Laptop", PHOTOS.laptopDesk, 54900, { isFeatured: true, sold90: 21 }],
-    ["kite-tab-11", "tablets", "تابلت Kite Tab 11", "Kite Tab 11", PHOTOS.tablet, 11200, { sold90: 34 }],
+    ["arc-x14-5g", "phones", "هاتف Arc X14 5G", "Arc X14 5G Smartphone", PHOTOS.phone, 18999, { isFeatured: true, rating: 4.7, sold90: 96 }],
+    ["arc-x14-lite", "phones", "هاتف Arc X14 Lite", "Arc X14 Lite", PHOTOS.phoneSlim, 12499, { compareAtPrice: 13999, sold90: 174 }],
+    ["kite-air-14", "laptops", "حاسوب محمول Kite Air 14", "Kite Air 14 Laptop", PHOTOS.laptop, 38500, { isFeatured: true, rating: 4.8, sold90: 63 }],
+    ["kite-pro-16", "laptops", "حاسوب محمول Kite Pro 16", "Kite Pro 16 Laptop", PHOTOS.laptopDesk, 54900, { isFeatured: true, sold90: 21 }],
+    ["kite-tab-11", "tablets", "جهاز لوحي Kite Tab 11", "Kite Tab 11", PHOTOS.tablet, 11200, { sold90: 34 }],
     ["lumen-watch-5", "wearables", "ساعة Lumen Watch 5", "Lumen Watch 5", PHOTOS.watch, 6750, { isFeatured: true, rating: 4.6, sold90: 148 }],
     ["lumen-watch-lite", "wearables", "ساعة Lumen Lite", "Lumen Watch Lite", PHOTOS.watchWhite, 2299, { compareAtPrice: 2799, sold90: 88 }],
-    ["kite-mech-keyboard", "accessories", "كيبورد Kite ميكانيكال", "Kite Mechanical Keyboard", PHOTOS.keyboardColour, 2650, { isFeatured: true, sold90: 46 }],
-    ["kite-switch-kit", "accessories", "طقم سويتشات Kite", "Kite Switch Kit", PHOTOS.keyboard, 850, { sold90: 119 }],
+    ["kite-mech-keyboard", "accessories", "لوحة مفاتيح Kite ميكانيكية", "Kite Mechanical Keyboard", PHOTOS.keyboardColour, 2650, { isFeatured: true, sold90: 46 }],
+    ["kite-switch-kit", "accessories", "طقم مفاتيح تبديل Kite", "Kite Switch Kit", PHOTOS.keyboard, 850, { sold90: 119 }],
     ["lumen-mini-speaker", "smart-home", "سماعة Lumen Mini الذكية", "Lumen Mini Smart Speaker", PHOTOS.speaker, 1499, { compareAtPrice: 1799, isFeatured: true, sold90: 72 }],
-    ["lumen-home-cam", "smart-home", "كاميرا Lumen للبيت", "Lumen Home Camera", PHOTOS.homeCam, 1650, { inStock: false, sold90: 18 }],
+    ["lumen-home-cam", "smart-home", "كاميرا Lumen المنزلية", "Lumen Home Camera", PHOTOS.homeCam, 1650, { inStock: false, sold90: 18 }],
   ],
 });
 
@@ -206,8 +206,8 @@ export const TECHHUB = libraryTemplate({
       seo: { title: L("الدعم", "Support") },
       sections: contactPage(lib, {
         title: L("الدعم", "Support"),
-        text: L("نساعدك تختار الجهاز الصح، ونخلّص الضمان معاك.", "We help you pick the right device and handle the warranty with you."),
-        heading: L("اسألنا قبل ما تشتري", "Ask us before you buy"),
+        text: L("نساعدك في اختيار الجهاز المناسب.", "We help you pick the right device."),
+        heading: L("اسألنا قبل الشراء", "Ask us before you buy"),
       }),
     },
     {
@@ -215,11 +215,11 @@ export const TECHHUB = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الضمان والتوصيل والتقسيط والاسترجاع.", "Warranty, delivery, installments and returns."),
-        question: L("إزاي الضمان بيشتغل؟", "How does the warranty work?"),
+        text: L("الأجهزة والمواصفات والطلبات.", "Devices, specs and orders."),
+        question: L("كيف أختار الجهاز المناسب؟", "How do I pick the right device?"),
         answer: L(
-          "كل جهاز بضمان الوكيل المحلي لحد سنتين. ابعتلنا رقم الطلب وإحنا بنخلّص الضمان بالنيابة عنك.",
-          "Every device has the local dealer’s warranty, up to two years. Send us your order number and we handle the claim for you.",
+          "قارن المواصفات في صفحة كل منتج، وتواصل معنا لأي سؤال.",
+          "Compare the specs on each product page, and contact us with any question.",
         ),
       }),
     },

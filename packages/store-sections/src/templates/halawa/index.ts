@@ -48,7 +48,7 @@ const header = lib("header-pill", {
   text: {
     "اسم متجرك": NAME,
     "المتجر": L("الحلويات", "Sweets"),
-    "العروض": L("بوكسات الهدايا", "Gift boxes"),
+    "العروض": L("علب الهدايا", "Gift boxes"),
     "المدونة": L("حكايتنا", "Our story"),
   },
   links: { "/products": [SHOP, search("بوكس")], "/blog": "/about" },
@@ -58,8 +58,8 @@ const footer = lib("footer-signup", {
   text: {
     "م": L("ح", "H"),
     "اسم متجرك": NAME,
-    "اشترك في النشرة": L("عروض رمضان والعيد أول بأول", "Ramadan and Eid offers first"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("بوكسات المواسم قبل ما تخلص، مرة في الأسبوع.", "Seasonal boxes before they sell out, once a week."),
+    "اشترك في النشرة": L("حلويات المواسم أولًا بأول", "Seasonal sweets as they arrive"),
+    "منتجات جديدة وأخبار المتجر.": L("علب حلويات رمضان والعيد وأصناف الموسم.", "Ramadan and Eid sweet boxes and seasonal items."),
     "العروض": L("الأعلى تقييماً", "Top rated"),
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ حلاوة زمان. كل الحقوق محفوظة.", "© 2026 Halawet Zaman. All rights reserved."),
   },
@@ -67,27 +67,27 @@ const footer = lib("footer-signup", {
 });
 
 const QA = {
-  "كيف أعرف أن طلبي وصل إليكم؟": L("الحلويات بتتعمل إمتى؟", "When are the sweets made?"),
-  "ستظهر لك صفحة تأكيد وتصلك رسالة، ونتصل بك لتأكيد طلبات الدفع عند الاستلام.": L(
-    "كل يوم الصبح في فرننا في شبرا، ومفيش حاجة بتبات عندنا.",
-    "Every morning in our Shubra oven, and nothing stays overnight.",
+  "كيف أعرف أن طلبي وصل إليكم؟": L("متى تُحضَّر الحلويات؟", "When are the sweets made?"),
+  "ستظهر لك صفحة تأكيد بعد إتمام الطلب.": L(
+    "تُحضَّر الحلويات على دفعات طازجة، وتفاصيل كل صنف في صفحته.",
+    "Sweets are made in fresh batches, with each item’s details on its page.",
   ),
-  "هل يمكنني تعديل طلبي أو إلغاؤه؟": L("بتقعد كام يوم؟", "How long do they keep?"),
-  "نعم، حتى يتم شحنه. تواصل معنا بأسرع وقت.": L(
-    "البسبوسة والكنافة ٣ أيام في التلاجة، والغريبة والكحك أسبوعين في علبة مقفولة.",
+  "هل يمكنني تعديل طلبي أو إلغاؤه؟": L("كم مدة حفظ الحلويات؟", "How long do they keep?"),
+  "تواصل معنا في أقرب وقت لنراجع طلبك.": L(
+    "البسبوسة والكنافة ٣ أيام في الثلاجة، والغريبة والكحك أسبوعان في علبة مغلقة.",
     "Basbousa and konafa 3 days in the fridge; ghorayeba and kahk two weeks in a closed tin.",
   ),
-  "كم يستغرق التوصيل؟": L("التوصيل بياخد قد إيه؟", "How long does delivery take?"),
-  "القاهرة والجيزة من يوم إلى يومين، وباقي المحافظات من ٢ إلى ٦ أيام.": L(
-    "في القاهرة والجيزة نفس اليوم لو طلبت قبل ٢ الضهر.",
-    "Same day in Cairo and Giza if you order before 2 pm.",
+  "كم يستغرق التوصيل؟": L("كم يستغرق التوصيل؟", "How long does delivery take?"),
+  "تظهر تكلفة الشحن ومدته عند إتمام الطلب.": L(
+    "تظهر تكلفة الشحن ومدته عند إتمام الطلب.",
+    "Shipping cost and time are shown at checkout.",
   ),
-  "هل التوصيل متاح لكل المحافظات؟": L("بتوصلوا بره القاهرة؟", "Do you deliver outside Cairo?"),
-  "نعم، نوصل لكل محافظات مصر.": L("الغريبة والكحك والبوكسات الناشفة بس، لأنها بتستحمل السفر.", "Only ghorayeba, kahk and dry boxes, since they travel well."),
-  "ما طرق الدفع المتاحة؟": L("ينفع أكتب كارت على الهدية؟", "Can I add a card to a gift?"),
-  "الدفع عند الاستلام، والبطاقات، والمحافظ الإلكترونية، وإنستاباي.": L(
-    "أيوه، اكتب الرسالة في ملاحظات الطلب وهنكتبها بخط اليد.",
-    "Yes, write your message in the order notes and we write it by hand.",
+  "إلى أين يتوفر التوصيل؟": L("إلى أين يتوفر التوصيل؟", "Where do you deliver?"),
+  "تظهر مناطق التوصيل المتاحة عند إتمام الطلب.": L("تظهر مناطق التوصيل المتاحة عند إتمام الطلب.", "Delivery areas are shown at checkout."),
+  "ما طرق الدفع المتاحة؟": L("هل يمكنني إضافة ملاحظة على الطلب؟", "Can I add a note to my order?"),
+  "تظهر طرق الدفع المتاحة عند إتمام الطلب.": L(
+    "نعم، اكتب ملاحظتك في خانة ملاحظات الطلب عند إتمامه.",
+    "Yes, write it in the order notes at checkout.",
   ),
 } as const;
 
@@ -96,10 +96,10 @@ const home: Design[] = [
     photo: [PHOTOS.basbousaWide, PHOTOS.qatayef, PHOTOS.dates],
     text: {
       "صورة الحملة": L("صينية بسبوسة بالفستق", "A tray of pistachio basbousa"),
-      "مجموعة الخريف": L("من ١٩٧٥", "Since 1975"),
-      "ألوان هادئة لأيام أطول": L("بسبوسة زي بتاعة تيتا", "Basbousa like your grandmother made"),
+      "مجموعة الخريف": L("حلويات شرقية", "Oriental sweets"),
+      "ألوان هادئة لأيام أطول": L("بسبوسة وكنافة وكحك", "Basbousa, konafa and kahk"),
       "تسوّق المجموعة": L("تسوق الصواني", "Shop trays"),
-      "عروض الأسبوع": L("بوكسات لكل زيارة", "Boxes for every visit"),
+      "مختارات الأسبوع": L("علب حلويات لكل زيارة", "Boxes for every visit"),
       "هدايا مختارة": L("بلح وكحك رمضان", "Ramadan dates and kahk"),
     },
     links: { "/products": [search("صينية"), search("بوكس"), search("رمضان")] },
@@ -107,7 +107,7 @@ const home: Design[] = [
   lib("categories-stories", {
     photo: [PHOTOS.basbousa, PHOTOS.konafa, PHOTOS.qatayef, PHOTOS.maamoul, PHOTOS.cookies, PHOTOS.meshabek, PHOTOS.syrupBalls, PHOTOS.dates],
     text: {
-      "الأقسام": L("نفسك في إيه؟", "What are you craving?"),
+      "الأقسام": L("ماذا تشتهي؟", "What are you craving?"),
       "الكل": L("كل الحلويات", "All sweets"),
       "وصل حديثًا": L("بسبوسة", "Basbousa"),
       "الأكثر مبيعًا": L("كنافة", "Konafa"),
@@ -124,8 +124,8 @@ const home: Design[] = [
   }),
   lib("products-grid", {
     text: {
-      "وصل حديثًا": L("الأكتر طلباً", "Most ordered"),
-      "أحدث المنتجات اللي نزلت المتجر.": L("الصواني اللي الناس بترجعلها كل أسبوع.", "The trays people come back for every week."),
+      "وصل حديثًا": L("الأكثر طلبًا", "Most ordered"),
+      "أحدث المنتجات في المتجر.": L("الصواني التي يعود إليها عملاؤنا.", "The trays our customers come back for."),
     },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 4 }],
@@ -133,28 +133,28 @@ const home: Design[] = [
   lib("team-timeline", {
     text: {
       "رحلتنا": L("قصتنا", "Our story"),
-      "من ٢٠١٩ لحد النهارده": L("٥٠ سنة صواني", "Fifty years of trays"),
+      "من ٢٠١٩ حتى اليوم": L("حكاية صوانينا", "The story of our trays"),
       "٢٠١٩": L("١٩٧٥", "1975"),
-      "أول ١٠ طلبات على واتساب": L("أول محل في شبرا", "First shop in Shubra"),
+      "أول ١٠ طلبات": L("أول محل في شبرا", "First shop in Shubra"),
       "٢٠٢١": L("١٩٩٨", "1998"),
-      "أول مخزن في الجيزة": L("فرن تاني", "A second oven"),
+      "أول مخزن": L("فرن ثانٍ", "A second oven"),
       "٢٠٢٣": L("٢٠٢٠", "2020"),
-      "التوصيل لكل المحافظات": L("توصيل لكل القاهرة", "Delivery across Cairo"),
-      "٥٠ ألف عميل وفرعين": L("متجر أونلاين", "Online store"),
+      "أقسام جديدة وتشكيلة أوسع": L("تشكيلة أوسع", "A wider range"),
+      "متجرنا الإلكتروني الجديد": L("متجر إلكتروني", "Online store"),
     },
   }),
   lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("أسئلة", "Questions"), ...QA } }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن حلاوة زمان", "About Halawet Zaman"), L("حلويات شرقي من ١٩٧٥.", "Oriental sweets since 1975.")),
+  pageHeader(lib, "about-header", L("عن حلاوة زمان", "About Halawet Zaman"), L("حلويات شرقية: بسبوسة وكنافة وكحك.", "Oriental sweets: basbousa, konafa and kahk.")),
   aboutStory(lib, {
     photo: PHOTOS.teaWide,
     alt: L("براد شاي على مفرش خوص", "A tea pot on a woven mat"),
-    eyebrow: L("شبرا، ١٩٧٥", "Shubra, 1975"),
-    title: L("نفس الوصفة من خمسين سنة", "The same recipe for fifty years"),
-    text: L("جدنا فتح أول محل في شبرا بصينية بسبوسة واحدة، والنهارده بنخبز نفس الوصفة بالسمنة البلدي.", "Our grandfather opened in Shubra with a single tray of basbousa; today we bake the same recipe with local ghee."),
-    more: L("وكل بوكس بيتقفل بإيد العيلة قبل ما يخرج.", "And every box is closed by the family before it leaves."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("وصفات الحلويات الشرقية", "Classic oriental recipes"),
+    text: L("بسبوسة وكنافة وغريبة وكحك بالسمن البلدي، في صوانٍ وعلب بأحجام مختلفة.", "Basbousa, konafa, ghorayeba and kahk made with ghee, in trays and boxes of several sizes."),
+    more: L("تواصل معنا لأي سؤال عن أصنافنا.", "Contact us with any question about our sweets."),
     button: L("تسوق الصواني", "Shop trays"),
     href: search("صينية"),
   }),
@@ -162,21 +162,21 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("بسبوسة وكنافة وغريبة من ١٩٧٥.", "Basbousa, konafa and ghorayeba since 1975."),
+  description: L("بسبوسة وكنافة وغريبة وكحك.", "Basbousa, konafa, ghorayeba and kahk."),
   categories: [
     ["trays", "صواني", "Trays", PHOTOS.basbousa],
-    ["boxes", "بوكسات هدايا", "Gift boxes", PHOTOS.qatayef],
+    ["boxes", "علب هدايا", "Gift boxes", PHOTOS.qatayef],
     ["bakes", "مخبوزات", "Bakes", PHOTOS.cookies],
   ],
   products: [
     ["basbousa-tray", "trays", "صينية بسبوسة بالفستق", "Pistachio Basbousa Tray", PHOTOS.basbousa, 280, { isFeatured: true, rating: 4.9, sold90: 300 }],
-    ["mixed-sweets-box", "boxes", "بوكس حلويات مشكل", "Mixed Sweets Box", PHOTOS.qatayef, 450, { sold90: 180 }],
-    ["ghorayeba-500g", "bakes", "غريبة نص كيلو", "Ghorayeba, 500 g", PHOTOS.cookies, 190, { sold90: 140 }],
+    ["mixed-sweets-box", "boxes", "علبة حلويات مشكلة", "Mixed Sweets Box", PHOTOS.qatayef, 450, { sold90: 180 }],
+    ["ghorayeba-500g", "bakes", "غريبة، ٥٠٠ جم", "Ghorayeba, 500 g", PHOTOS.cookies, 190, { sold90: 140 }],
     ["konafa-cream", "trays", "كنافة بالقشطة", "Konafa with Cream", PHOTOS.konafa, 340, { compareAtPrice: 390, sold90: 96 }],
-    ["ramadan-box", "boxes", "بوكس رمضان", "Ramadan Box", PHOTOS.dates, 890, { isFeatured: true, sold90: 61 }],
+    ["ramadan-box", "boxes", "علبة رمضان", "Ramadan Box", PHOTOS.dates, 890, { isFeatured: true, sold90: 61 }],
     ["konafa-nests", "trays", "عش البلبل بالفستق", "Pistachio Konafa Nests", PHOTOS.nests, 360, { rating: 4.8, sold90: 88 }],
-    ["maamoul-kahk", "bakes", "كحك ومعمول ١ كيلو", "Kahk & Maamoul, 1 kg", PHOTOS.maamoul, 320, { sold90: 120 }],
-    ["meshabek", "bakes", "مشبك نص كيلو", "Meshabek, 500 g", PHOTOS.meshabek, 120, { sold90: 70 }],
+    ["maamoul-kahk", "bakes", "كحك ومعمول، ١ كجم", "Kahk & Maamoul, 1 kg", PHOTOS.maamoul, 320, { sold90: 120 }],
+    ["meshabek", "bakes", "مشبك، ٥٠٠ جم", "Meshabek, 500 g", PHOTOS.meshabek, 120, { sold90: 70 }],
     ["luqmet-el-adi", "trays", "لقمة القاضي", "Luqmet el Adi", PHOTOS.syrupBalls, 150, { sold90: 64 }],
     ["om-ali", "trays", "أم علي بالمكسرات", "Om Ali with Nuts", PHOTOS.pudding, 210, { inStock: false, sold90: 40 }],
   ],
@@ -186,11 +186,11 @@ export const HALAWA = libraryTemplate({
   key: HALAWA_KEY,
   version: 2,
   changelog: "Halawa v2: product page",
-  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("رأي ضيوفنا", "Our guests say"), related: L("كمّل الصينية", "Complete the tray") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل طلبك", "Complete your order") } },
   name: L("حلاوة", "Halawa"),
   description: L(
-    "حلويات شرقي: حملات الموسم، نفسك في إيه، هدايا لكل زيارة، الأكتر طلباً وحكاية ٥٠ سنة. أربع صفحات جاهزة.",
-    "Oriental sweets: seasonal campaigns, what are you craving, gifts for every visit, the most ordered and fifty years of trays. Four ready pages.",
+    "حلويات شرقية: حملات الموسم، الأصناف، هدايا لكل زيارة، الأكثر طلبًا وحكاية المتجر. أربع صفحات جاهزة.",
+    "Oriental sweets: seasonal campaigns, what are you craving, gifts for every visit, the most ordered and the shop’s story. Four ready pages.",
   ),
   category: "sweets",
   style: ["classic", "warm"],
@@ -227,9 +227,9 @@ export const HALAWA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الطزاجة والتوصيل والهدايا.", "Freshness, delivery and gifts."),
-        question: L("ينفع أرجّع صينية؟", "Can I return a tray?"),
-        answer: L("الحلويات مبتترجعش، بس لو فيها أي مشكلة صوّرها ونبدلها في نفس اليوم.", "Sweets cannot be returned, but if anything is wrong send a photo and we replace it the same day."),
+        text: L("الطزاجة والحفظ والهدايا.", "Freshness, storage and gifts."),
+        question: L("هل يمكن إرجاع الحلويات؟", "Can sweets be returned?"),
+        answer: L("راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.", "See the exchange and return policy page."),
       }),
     },
   ],

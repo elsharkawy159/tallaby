@@ -37,14 +37,14 @@ export const aboutTwoTone = defineDesign({
                   // The copy is its own box: the scroll effect moves it, never the coloured half.
                   t.stack(
                     [
-                      t.text(L("صناعة مصرية", "Made in Egypt"), { role: "eyebrow", style: { ...EYEBROW, ...ON_BRAND, opacity: 75, textAlign: "center" } }),
-                      t.heading(L("متعمول عشان يريّحك ويعيش معاك", "Made for comfort, made to last"), "h2", {
+                      t.text(L("مختارات المتجر", "Store picks"), { role: "eyebrow", style: { ...EYEBROW, ...ON_BRAND, opacity: 75, textAlign: "center" } }),
+                      t.heading(L("مصنوع ليدوم طويلًا", "Made to last"), "h2", {
                         role: "title",
                         style: { ...HEAD_TITLE.style, ...ON_BRAND, textAlign: "center", maxWidth: "440px" },
                         mobile: HEAD_TITLE.mobile,
                         motion: { reveal: "words" },
                       }),
-                      t.paragraph(L("خامات مختارة وتفاصيل متشطبة بإيدينا، عشان تفضل معاك سنين.", "Chosen materials and details finished by hand, so it stays with you for years."), {
+                      t.paragraph(L("خامات مختارة وتفاصيل متقنة تتحمّل الاستخدام اليومي.", "Chosen materials and careful details, made for everyday use."), {
                         role: "subtitle",
                         style: { ...ON_BRAND_BODY, fontSize: "md", lineHeight: "relaxed", textAlign: "center", maxWidth: "380px" },
                         mobile: { fontSize: "sm" },

@@ -40,19 +40,19 @@ const PHOTOS = {
   ladder: pexels(13204961, 900),
 };
 
-const NAME = L("كورة شوب", "Koora Shop");
+const NAME = L("متجر كورة", "Koora Shop");
 
 const header = lib("header-chips", {
-  text: { "م": L("ك", "K"), "اسم متجرك": NAME, "ابحث عن منتج…": L("ابحث عن كورة، طقم، أقماع…", "Search balls, kits, cones…") },
+  text: { "م": L("ك", "K"), "اسم متجرك": NAME, "ابحث عن منتج…": L("ابحث عن كرة، طقم، أقماع…", "Search balls, kits, cones…") },
 });
 
 const footer = lib("footer-signoff", {
   text: {
-    "شكرًا إنك عدّيت علينا": L("نتقابل في الملعب", "See you on the pitch"),
-    "كلمنا على واتساب": L("ابعت طلب الفريق على واتساب", "Send your team order on WhatsApp"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ كورة شوب. كل الحقوق محفوظة.", "© 2026 Koora Shop. All rights reserved."),
+    "شكرًا لزيارتك": L("نراك في الملعب", "See you on the pitch"),
+    "تواصل معنا على واتساب": L("تواصل معنا لأي سؤال", "Contact us with any question"),
+    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ متجر كورة. كل الحقوق محفوظة.", "© 2026 Koora Shop. All rights reserved."),
     "العروض": L("الأعلى تقييماً", "Top rated"),
-    "من نحن": L("عن كورة شوب", "About Koora Shop"),
+    "من نحن": L("عن متجر كورة", "About Koora Shop"),
   },
   links: { "/products": [undefined, NEW, BEST, RATED] },
 });
@@ -62,15 +62,15 @@ const home: Design[] = [
     photo: [undefined, undefined, PHOTOS.goal],
     text: {
       "مجموعة الموسم": L("طلبات الفرق", "Team orders"),
-      "من ١ إلى ٣٠ نوفمبر": L("أطقم بأسامي وأرقام اللعيبة", "Kits with players’ names and numbers"),
-      "صورة الحملة": L("جول في ملعب فاضي", "A goal on an empty pitch"),
-      "خصم": L("أطقم", "Kits"),
-      "٣٠٪": L("كاملة", "complete"),
-      "لفترة محدودة": L("للفرق", "for teams"),
+      "وصل حديثًا": L("أطقم وكرات وأدوات تمرين", "Kits, balls and training gear"),
+      "صورة الحملة": L("مرمى في ملعب خالٍ", "A goal on an empty pitch"),
+      "مجموعة": L("أطقم", "Kits"),
+      "٢٠٢٦": L("كاملة", "complete"),
+      "الجديدة": L("للفرق", "for teams"),
       "الموسم الجديد وصل": L("جهّز الفريق كله", "Kit out the whole team"),
-      "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
-        "طباعة الاسم والرقم ببلاش على أي طلب فريق، وتوصيل مجاني فوق ٩٠٠ ج.م.",
-        "Free name and number printing on every team order, and free delivery over EGP 900.",
+      "قطع خفيفة بخامات طبيعية ومقاسات كاملة.": L(
+        "أطقم وكرات وأقماع وشباك مرمى بمقاسات وكميات تناسب الفرق.",
+        "Kits, balls, cones and goal nets in sizes and quantities for teams.",
       ),
       "اكتشف المجموعة": L("ابدأ طلب فريق", "Start a team order"),
     },
@@ -78,45 +78,45 @@ const home: Design[] = [
   }),
   lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("جهّز الفريق", "Kit out the team") } }),
   lib("products-bento", {
-    text: { "الأكثر طلبًا": L("التمرين", "Training"), "الكل بيسأل عليهم": L("اختيارات الكوتش", "Coach picks") },
+    text: { "الأكثر طلبًا": L("التمرين", "Training"), "منتجات يكثر الطلب عليها": L("اختيارات المدرب", "Coach picks") },
     links: { "/products": BEST },
   }),
   lib("testimonials-chat", {
     text: {
       "من الواتساب": L("الآراء", "Reviews"),
-      "رسايل بتفرّحنا": L("من الكباتن", "From captains"),
+      "رسائل تسعدنا": L("من قادة الفرق", "From team captains"),
       "مريم أ.": L("كابتن أحمد", "Captain Ahmed"),
       "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "الـ ١٢ طقم وصلوا قبل الدورة بيومين، والأسامي متطبعة مظبوط.",
-        "All 12 kits arrived two days before the tournament, names printed perfectly.",
+        "الأطقم مطابقة للصور والمقاسات مضبوطة.",
+        "The kits match the photos and the sizes are right.",
       ),
-      "ده يسعدنا جدًا، شكرًا ليكي!": L("بالتوفيق في الدورة يا كابتن!", "Good luck in the tournament, captain!"),
+      "هذا يسعدنا جدًا، شكرًا لك!": L("بالتوفيق في البطولة!", "Good luck in the tournament!"),
       "عمر ك.": L("كابتن كريم", "Captain Karim"),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "بدّلنا ٣ مقاسات من غير أي تعب، وردوا علينا في دقايق.",
-        "We swapped three sizes with no hassle, and they replied in minutes.",
+      "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": L(
+        "الأقماع وسلم الرشاقة خفيفة وسهلة الحمل.",
+        "The cones and agility ladder are light and easy to carry.",
       ),
       "يوسف م.": L("كابتن يوسف", "Captain Youssef"),
       "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L(
-        "تاني موسم نطلب منهم. الكور بتستحمل النجيلة الصناعي.",
-        "Our second season ordering. The balls hold up on artificial turf.",
+        "الكرات تتحمّل اللعب على النجيل الصناعي.",
+        "The balls hold up on artificial turf.",
       ),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن كورة شوب", "About Koora Shop"), L("أدوات كورة للخماسي والأكاديميات.", "Football gear for five-a-side and academies.")),
+  pageHeader(lib, "about-header", L("عن متجر كورة", "About Koora Shop"), L("أدوات كرة القدم للفرق والأكاديميات.", "Football gear for teams and academies.")),
   aboutStory(lib, {
     photo: PHOTOS.parkGoal,
-    alt: L("جول في ملعب نجيلة", "A goal on a grass pitch"),
-    eyebrow: L("مدينة نصر", "Nasr City"),
-    title: L("بدأنا فريق خماسي", "We started as a five-a-side team"),
+    alt: L("مرمى في ملعب عشبي", "A goal on a grass pitch"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("أدوات كرة القدم للفرق", "Football gear for teams"),
     text: L(
-      "كنا بنلف على المحلات عشان نلاقي أطقم بسعر معقول للفريق، فقررنا نجيبها بنفسنا.",
-      "We kept hunting for affordable team kits, so we decided to bring them in ourselves.",
+      "أطقم وكرات وأدوات تمرين بمقاسات وكميات تناسب الفرق.",
+      "Kits, balls and training gear in sizes and quantities for teams.",
     ),
-    more: L("النهارده بنجهّز فرق وأكاديميات في كل المحافظات.", "Today we kit out teams and academies across Egypt."),
+    more: L("تواصل معنا لأي سؤال عن طلب فريقك.", "Contact us with any question about your team order."),
     button: L("ابدأ طلب فريق", "Start a team order"),
     href: search("طقم"),
   }),
@@ -124,28 +124,28 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("كور وأطقم وأدوات تمرين للخماسي.", "Balls, kits and training gear for five-a-side."),
+  description: L("كرات وأطقم وأدوات تمرين لكرة القدم.", "Balls, kits and training gear for football."),
   categories: [
     ["kits", "أطقم الفرق", "Team kits", PHOTOS.teamShirts],
-    ["balls", "كور", "Balls", PHOTOS.threeBalls],
+    ["balls", "كرات", "Balls", PHOTOS.threeBalls],
     ["training", "أدوات تمرين", "Training gear", PHOTOS.cones],
-    ["goals", "جول وشبك", "Goals & nets", PHOTOS.goalSmall],
-    ["bibs", "بيبات", "Bibs", PHOTOS.ballsBibs],
-    ["leather", "كور جلد", "Leather balls", PHOTOS.leatherBall],
+    ["goals", "مرامٍ وشباك", "Goals & nets", PHOTOS.goalSmall],
+    ["bibs", "صدريات تمرين", "Bibs", PHOTOS.ballsBibs],
+    ["leather", "كرات جلد", "Leather balls", PHOTOS.leatherBall],
     ["agility", "رشاقة", "Agility", PHOTOS.ladder],
     ["academy", "أطقم أكاديمية", "Academy sets", PHOTOS.ballsCones],
   ],
   products: [
-    ["printed-team-kit", "kits", "طقم فريق بالاسم والرقم", "Printed Team Kit", PHOTOS.teamShirts, 650, { isFeatured: true, rating: 4.8, sold90: 260 }],
-    ["training-bibs", "bibs", "طقم بيبات تمرين (١٠ قطع)", "Training Bibs (10)", PHOTOS.ballsBibs, 480, { sold90: 90 }],
-    ["match-ball-3", "balls", "كور تمرين مقاس ٥ (٣ قطع)", "Training Balls Size 5 (3)", PHOTOS.threeBalls, 1350, { compareAtPrice: 1500, rating: 4.7, sold90: 140 }],
-    ["five-a-side-ball", "balls", "كورة خماسي", "Five-a-Side Ball", PHOTOS.twoBalls, 520, { isFeatured: true, sold90: 210 }],
-    ["classic-leather-ball", "leather", "كورة جلد كلاسيك", "Classic Leather Ball", PHOTOS.leatherBall, 790, { sold90: 44 }],
+    ["printed-team-kit", "kits", "طقم فريق كامل", "Full Team Kit", PHOTOS.teamShirts, 650, { isFeatured: true, rating: 4.8, sold90: 260 }],
+    ["training-bibs", "bibs", "طقم صدريات تمرين (١٠ قطع)", "Training Bibs (10)", PHOTOS.ballsBibs, 480, { sold90: 90 }],
+    ["match-ball-3", "balls", "كرات تمرين مقاس ٥ (٣ قطع)", "Training Balls Size 5 (3)", PHOTOS.threeBalls, 1350, { compareAtPrice: 1500, rating: 4.7, sold90: 140 }],
+    ["five-a-side-ball", "balls", "كرة خماسي", "Five-a-Side Ball", PHOTOS.twoBalls, 520, { isFeatured: true, sold90: 210 }],
+    ["classic-leather-ball", "leather", "كرة جلد كلاسيكية", "Classic Leather Ball", PHOTOS.leatherBall, 790, { sold90: 44 }],
     ["marker-cones", "training", "أقماع تمرين (٥٠ قطعة)", "Marker Cones (50)", PHOTOS.cones, 320, { sold90: 170 }],
     ["agility-ladder", "agility", "سلم رشاقة ٦ متر", "Agility Ladder 6 m", PHOTOS.ladder, 390, { sold90: 120 }],
-    ["academy-set", "academy", "طقم أكاديمية كور وأقماع", "Academy Balls & Cones Set", PHOTOS.ballsCones, 2650, { compareAtPrice: 2950, sold90: 26 }],
-    ["portable-goal", "goals", "جول متنقل ٣×٢ متر", "Portable Goal 3×2 m", PHOTOS.parkGoal, 4200, { inStock: false, sold90: 8 }],
-    ["goal-net-pair", "goals", "جوز شبك جول", "Goal Net Pair", PHOTOS.goalNight, 1100, { sold90: 30 }],
+    ["academy-set", "academy", "طقم أكاديمية كرات وأقماع", "Academy Balls & Cones Set", PHOTOS.ballsCones, 2650, { compareAtPrice: 2950, sold90: 26 }],
+    ["portable-goal", "goals", "مرمى متنقل ٣×٢ متر", "Portable Goal 3×2 m", PHOTOS.parkGoal, 4200, { inStock: false, sold90: 8 }],
+    ["goal-net-pair", "goals", "زوج شباك مرمى", "Goal Net Pair", PHOTOS.goalNight, 1100, { sold90: 30 }],
   ],
 });
 
@@ -153,11 +153,11 @@ export const KOORA = libraryTemplate({
   key: KOORA_KEY,
   version: 3,
   changelog: "Koora v3: categories after the hero",
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("رسائل الكباتن", "Messages from captains"), related: L("جهّز الفريق", "Kit out the team") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الفرق", "From teams"), related: L("جهّز الفريق", "Kit out the team") } },
   name: L("كورة", "Koora"),
   description: L(
-    "أدوات كورة للفرق: طلبات الفرق، سعر الكمية، اختيارات الكوتش ورسايل الكباتن. أربع صفحات جاهزة.",
-    "Football gear for teams: team orders, quantity pricing, coach picks and notes from captains. Four ready pages.",
+    "أدوات كرة القدم للفرق: طلبات الفرق، سعر الكمية، اختيارات المدرب وآراء الفرق. أربع صفحات جاهزة.",
+    "Football gear for teams: team orders, quantity pricing, coach picks and team reviews. Four ready pages.",
   ),
   category: "sports",
   style: ["bold"],
@@ -178,15 +178,15 @@ export const KOORA = libraryTemplate({
   footer,
   pages: [
     { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن كورة شوب", "About"), seo: { title: L("عن كورة شوب", "About Koora Shop") }, sections: about },
+    { slug: "about", name: L("عن متجر كورة", "About"), seo: { title: L("عن متجر كورة", "About Koora Shop") }, sections: about },
     {
       slug: "contact",
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
         title: L("تواصل", "Contact"),
-        text: L("ابعتلنا عدد اللعيبة والمقاسات وهنبعتلك عرض سعر.", "Send us the number of players and sizes and we will send a quote."),
-        heading: L("اطلب عرض سعر لفريقك", "Ask for a team quote"),
+        text: L("تواصل معنا لأي سؤال عن منتج أو مقاس.", "Contact us with any question about a product or size."),
+        heading: L("اسأل عن مقاس أو منتج", "Ask about a size or product"),
       }),
     },
     {
@@ -194,11 +194,11 @@ export const KOORA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("طلبات الفرق والطباعة والتوصيل.", "Team orders, printing and delivery."),
-        question: L("أطبع الأسامي والأرقام إزاي؟", "How do I get names and numbers printed?"),
+        text: L("طلبات الفرق والمقاسات والكميات.", "Team orders, sizes and quantities."),
+        question: L("كيف أطلب لفريق كامل؟", "How do I order for a whole team?"),
         answer: L(
-          "اكتب اسم ورقم كل لعيب في ملاحظة الطلب، والطباعة ببلاش على طلبات الفرق.",
-          "Write each player’s name and number in the order note; printing is free on team orders.",
+          "أضف المقاسات والكميات إلى السلة، واكتب أي تفاصيل في ملاحظة الطلب.",
+          "Add the sizes and quantities to the cart and write any details in the order note.",
         ),
       }),
     },

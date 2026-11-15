@@ -124,8 +124,8 @@ function hero(c: LookContent): Design {
     text: {
       "صورة الواجهة": c.hero.alt,
       "المجموعة الجديدة": c.hero.eyebrow,
-      "معمول بكميات صغيرة": c.hero.title,
-      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": c.hero.line,
+      "مختارة بعناية": c.hero.title,
+      "قطع مختارة بعناية، لكل قطعة تفاصيلها المميزة.": c.hero.line,
       "تسوّق المجموعة": c.hero.cta,
       حكايتنا: c.labels.about,
     },
@@ -154,17 +154,17 @@ function anatomy(c: LookContent): Design {
       photo: [undefined, c.photos.look.src],
       text: {
         التفاصيل: c.look.eyebrow,
-        "اللي بيفرق في كل جزء": c.look.title,
-        "دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.": c.look.text,
+        "ما يميّز كل جزء": c.look.title,
+        "اضغط على أي نقطة في الصورة لتقرأ تفاصيل هذا الجزء.": c.look.text,
         "صورة المنتج": c.look.alt,
         الخامة: notes[0]!.title,
-        "خامة متينة تستحمل الاستخدام اليومي.": notes[0]!.line,
+        "خامة متينة تتحمّل الاستخدام اليومي.": notes[0]!.line,
         التشطيب: notes[1]!.title,
-        "تشطيب نضيف في كل تفصيلة، من أول نظرة.": notes[1]!.line,
+        "تشطيب نظيف في كل تفصيلة.": notes[1]!.line,
         المقاس: notes[2]!.title,
         "مقاس عملي يناسب أغلب الاستخدامات.": notes[2]!.line,
         العناية: notes[3]!.title,
-        "سهل التنضيف، ويفضل زي ما هو مع الوقت.": notes[3]!.line,
+        "سهل التنظيف، ويحافظ على شكله مع الوقت.": notes[3]!.line,
       },
       nodes: { الصورة: { style: { maxWidth: "480px" } } },
     }),
@@ -191,7 +191,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const header = retouch(
     lib("header-classic", {
       text: {
-        "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+        "تشكيلة الموسم الجديد وصلت": c.announcement[0]!,
         م: initialOf(name),
         "اسم متجرك": name,
         الرئيسية: L("الرئيسية", "Home"),
@@ -211,7 +211,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const footer = lib("footer-signoff", {
     text: {
-      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "شكرًا لزيارتك": c.footer.line,
       "كل المنتجات": shopAll ?? L("كل المنتجات", "All products"),
       العروض: L("الأعلى تقييمًا", "Top rated"),
       "من نحن": aboutName,
@@ -253,10 +253,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         photo: [undefined, undefined, c.photos.story],
         text: {
           "صورة القصة": c.story.alt,
-          "من ورشتنا": c.story.eyebrow,
-          "متصمم عشانك ومعمول في القاهرة": c.story.title,
-          "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": c.story.text,
-          "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": c.custom["story-more"]!,
+          "عن المتجر": c.story.eyebrow,
+          "تصميم مدروس وخامات مختارة": c.story.title,
+          "نختار كل قطعة بعناية لتبقى مميزة.": c.story.text,
+          "ونعرض لكل قطعة صورًا ومقاسات واضحة.": c.custom["story-more"]!,
           حكايتنا: c.story.cta,
         },
         links: { "/about": NEW },
@@ -270,14 +270,14 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         lib("features-icon-cards", {
           text: {
             "تسوّق وأنت مطمئن": c.custom["trust-title"]!,
-            "توصيل سريع": c.trust[0]!.title,
-            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "الشحن": c.trust[0]!.title,
+            "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
             "الدفع عند الاستلام": c.trust[1]!.title,
-            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-            "استرجاع سهل": c.trust[2]!.title,
-            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-            "دعم على واتساب": c.trust[3]!.title,
-            "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+            "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+            "الاستبدال والاسترجاع": c.trust[2]!.title,
+            "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+            "تواصل معنا": c.trust[3]!.title,
+            "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
           },
         }),
         undefined,
@@ -311,8 +311,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("newsletter-classic", {
         text: {
-          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-          "اشترك وأول ما يوصل جديد أو عرض للمشتركين هتعرف.": c.newsletter.line,
+          "اشترك في نشرتنا البريدية": c.newsletter.title,
+          "اشترك لتصلك أخبار المنتجات الجديدة.": c.newsletter.line,
         },
         nodes: {
           اللوحة: { style: { background: "secondary", color: "foreground" } },
@@ -377,7 +377,7 @@ export const SHANTA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(SHANTA_KEY, "handbags", { ar: 2812, en: 2812 }),
   key: SHANTA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Shanta v4: the handbags template, rebuilt look-first",
   productPage: {
     gallery: "end",
@@ -385,8 +385,8 @@ export const SHANTA = editionTemplate({
     band: "shelf",
     extras: ["product-shipping"],
     copy: {
-      reviews: L("رأي اللي شالوها", "From those who carry it"),
-      related: L("تمشي معاها", "Carried together"),
+      reviews: L("آراء العملاء", "Customer reviews"),
+      related: L("تتناسق معها", "Goes well with"),
     },
   },
   name: L("شنطة", "Shanta"),

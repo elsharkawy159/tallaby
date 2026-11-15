@@ -24,7 +24,7 @@ export const videoFilm = defineDesign({
               t.stack(
                 [
                   dotLabel(t, L("دقيقتين", "Two minutes"), { onBrand: true }),
-                  t.heading(L("إزاي بنجهّز كل طلب قبل ما يخرج", "How we prepare every order before it ships"), "h2", {
+                  t.heading(L("كيف نجهّز كل طلب قبل شحنه", "How we prepare every order before it ships"), "h2", {
                     role: "title",
                     style: {
                       fontSize: "display-sm",

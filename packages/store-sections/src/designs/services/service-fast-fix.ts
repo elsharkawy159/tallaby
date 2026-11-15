@@ -42,7 +42,7 @@ export const serviceFastFix = defineDesign({
               [
                 t.stack(
                   [
-                    t.heading(L("الشاشة اتكسرت؟", "Cracked screen?"), "h2", {
+                    t.heading(L("انكسرت الشاشة؟", "Cracked screen?"), "h2", {
                       role: "title",
                       style: {
                         fontSize: "display-lg",
@@ -53,7 +53,7 @@ export const serviceFastFix = defineDesign({
                     }),
                     t.paragraph(
                       L(
-                        "بنغيرها وانت مستني، بقطع أصلية وضمان.",
+                        "نغيّرها أثناء انتظارك، بقطع أصلية وضمان.",
                         "We replace it while you wait, with genuine parts and a warranty.",
                       ),
                       {
@@ -91,7 +91,7 @@ export const serviceFastFix = defineDesign({
                         marginTop: -8,
                       },
                     }),
-                    pillButton(t, L("احجز دلوقتي", "Book now"), WHATSAPP_LINK, {
+                    pillButton(t, L("احجز الآن", "Book now"), WHATSAPP_LINK, {
                       tone: "ink",
                       style: { marginTop: 12 },
                     }),

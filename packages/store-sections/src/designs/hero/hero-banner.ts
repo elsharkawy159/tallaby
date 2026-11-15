@@ -46,7 +46,7 @@ export const heroBanner = defineDesign({
                     role: "title",
                     style: { color: "white", fontSize: "display-lg", fontWeight: "bold", lineHeight: "tight" },
                   }),
-                  t.paragraph(L("قطع مريحة وطبقات سهلة تتلبس كل يوم.", "Easy layers and comfortable pieces for every day."), {
+                  t.paragraph(L("قطع مريحة وطبقات سهلة للارتداء اليومي.", "Easy layers and comfortable pieces for every day."), {
                     role: "subtitle",
                     style: { color: "white", fontSize: "lg", opacity: 90, maxWidth: "520px" },
                     mobile: { fontSize: "md" },
@@ -82,8 +82,8 @@ export const heroBanner = defineDesign({
                 [
                   t.stack(
                     [
-                      t.text(L("الإطلاق الجاي", "The next drop"), { role: "label", style: { fontWeight: "bold", fontSize: "lg", color: "primaryInk" } }),
-                      t.text(L("قطع جديدة بتنزل كل خميس، كن أول من يشوفها.", "New pieces land every Thursday. Be the first to see them."), {
+                      t.text(L("الإطلاق القادم", "The next drop"), { role: "label", style: { fontWeight: "bold", fontSize: "lg", color: "primaryInk" } }),
+                      t.text(L("قطع جديدة قريبًا، كن أول من يراها.", "New pieces soon. Be the first to see them."), {
                         role: "text",
                         style: { color: "primaryInk", opacity: 85, fontSize: "sm" },
                       }),
@@ -91,7 +91,7 @@ export const heroBanner = defineDesign({
                     { label: L("نص الشريط", "Strip copy"), style: { gap: 4, maxWidth: "420px" } },
                   ),
                   t.countdown({ label: L("العداد", "Countdown"), style: { color: "primaryInk" } }),
-                  t.button(L("شوف الجديد", "See what's new"), "/products?sort=newest", "light", { role: "cta3" }),
+                  t.button(L("اكتشف الجديد", "See what's new"), "/products?sort=newest", "light", { role: "cta3" }),
                 ],
                 {
                   label: L("الشريط", "Strip row"),

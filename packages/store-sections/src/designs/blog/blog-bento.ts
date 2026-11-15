@@ -22,7 +22,7 @@ export const blogBento = defineDesign({
         [
           modHead(t, {
             label: L("المدونة", "Journal"),
-            title: L("اقرأ قبل ما تشتري", "Read before you buy"),
+            title: L("اقرأ قبل أن تشتري", "Read before you buy"),
           }),
           t.grid(
             [
@@ -77,7 +77,7 @@ export const blogBento = defineDesign({
                   ),
                   t.stack(
                     [
-                      t.heading(L("مقال جديد كل أسبوع", "A new article every week"), "h3", { style: { fontSize: "2xl", ...ON_BRAND } }),
+                      t.heading(L("مقالات وأدلة للتسوق", "Articles and shopping guides"), "h3", { style: { fontSize: "2xl", ...ON_BRAND } }),
                       pillButton(t, L("كل المقالات", "All articles"), BLOG_LINK, { tone: "on-brand" }),
                     ],
                     {

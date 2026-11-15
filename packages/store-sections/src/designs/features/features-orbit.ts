@@ -10,20 +10,20 @@ import { L, N } from "../_kit";
 
 const POINTS = [
   {
-    title: L("خامة تعيش", "Built to last"),
-    text: L("مختارة عشان تستحمل الاستخدام اليومي", "Chosen for everyday use"),
+    title: L("خامة تدوم", "Built to last"),
+    text: L("مختارة لتتحمّل الاستخدام اليومي", "Chosen for everyday use"),
   },
   {
     title: L("خفيف وعملي", "Light and handy"),
-    text: L("سهل تشيله معاك في أي مكان", "Easy to take anywhere"),
+    text: L("سهل الحمل إلى أي مكان", "Easy to take anywhere"),
   },
   {
-    title: L("ضمان محلي", "Local warranty"),
-    text: L("بفاتورة رسمية من المتجر", "With an official store invoice"),
+    title: L("تفاصيل واضحة", "Clear details"),
+    text: L("مواصفات كاملة لكل منتج", "Full specs for every product"),
   },
   {
-    title: L("تغليف هدية", "Gift wrapping"),
-    text: L("مجانًا لو طلبت", "Free on request"),
+    title: L("هدية مناسبة", "A good gift"),
+    text: L("اختيار مناسب للإهداء", "A thoughtful pick to give"),
   },
 ];
 
@@ -72,7 +72,7 @@ export const featuresOrbit = defineDesign({
     t.section({ label: L("مميزات المنتج", "Product features") }, [
       t.container(
         [
-          t.heading(L("ليه هتحبه", "Why you will love it"), "h2", {
+          t.heading(L("لماذا ستحبه", "Why you will love it"), "h2", {
             role: "title",
             style: {
               fontSize: "display-sm",

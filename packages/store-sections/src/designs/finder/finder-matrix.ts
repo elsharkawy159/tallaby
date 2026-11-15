@@ -15,9 +15,9 @@ import { productName, productPhoto, SHOP_LINK } from "../products/_shared";
 const ROWS = [
   { label: L("لاسلكي", "Wireless"), marks: [1, 1, 1, 1] },
   { label: L("عزل الضوضاء", "Noise cancelling"), marks: [1, 0, 0, 1] },
-  { label: L("مقاوم للمية", "Water resistant"), marks: [1, 1, 0, 1] },
+  { label: L("مقاوم للماء", "Water resistant"), marks: [1, 1, 0, 1] },
   { label: L("شحن سريع", "Fast charging"), marks: [0, 1, 1, 1] },
-  { label: L("ضمان سنتين", "2-year warranty"), marks: [1, 1, 1, 0] },
+  { label: L("تصميم خفيف", "Lightweight design"), marks: [1, 1, 1, 0] },
 ];
 
 const CELL = {
@@ -56,7 +56,7 @@ function mark(t: TreeBuilder, yes: boolean): NodeTemplate {
               },
             },
           )
-        : t.text(L("لأ", "No"), { style: { color: "muted", fontSize: "sm" } }),
+        : t.text(L("لا", "No"), { style: { color: "muted", fontSize: "sm" } }),
     ],
     {
       label: L("الخانة", "Cell"),

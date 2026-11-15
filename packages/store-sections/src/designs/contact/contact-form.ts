@@ -8,9 +8,9 @@ import { defineDesign } from "../builder";
 import { L, PAPER_CARD, iconTile } from "../_kit";
 
 const POINTS = [
-  { icon: "chat", text: L("بنرد على كل رسالة بأنفسنا", "We answer every message ourselves") },
-  { icon: "clock", text: L("الرد عادةً خلال يوم عمل", "Replies usually within one working day") },
-  { icon: "shield", text: L("بياناتك عندنا بس، ومش بنشاركها", "Your details stay with us and are never shared") },
+  { icon: "chat", text: L("نقرأ كل رسالة تصلنا", "We read every message we get") },
+  { icon: "clock", text: L("نرد في أقرب وقت ممكن", "We reply as soon as we can") },
+  { icon: "shield", text: L("نستخدم بياناتك للرد عليك فقط", "Your details are only used to reply to you") },
 ] as const;
 
 export const contactForm = defineDesign({
@@ -33,8 +33,8 @@ export const contactForm = defineDesign({
               t.stack(
                 [
                   t.badge(L("راسلنا", "Write to us"), { role: "eyebrow", style: { color: "primary" } }),
-                  t.heading(L("ابعتلنا وهنرجعلك", "Send us a message"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
-                  t.paragraph(L("املا البيانات وهنتواصل معاك في أقرب وقت.", "Fill in your details and we'll get back to you soon."), {
+                  t.heading(L("أرسل رسالتك", "Send us a message"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
+                  t.paragraph(L("املأ البيانات وسنتواصل معك في أقرب وقت.", "Fill in your details and we'll get back to you soon."), {
                     role: "subtitle",
                   }),
                   t.stack(

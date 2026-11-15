@@ -11,7 +11,7 @@ import { RULED, RULED_CELL, chip, modHead, pillButton } from "../_modular";
 import { productName, productPhoto } from "../products/_shared";
 import { BUNDLE_LINK, BUNDLE_PCT, BUNDLE_PRICE, BUNDLE_WAS } from "./_shared";
 
-const KITS = [L("طقم المشاوير", "Commuter kit"), L("طقم الجيم", "Gym kit"), L("طقم البيت", "Home kit")];
+const KITS = [L("طقم التنقل", "Commuter kit"), L("طقم الرياضة", "Sports kit"), L("طقم البيت", "Home kit")];
 
 export const bundleTabs = defineDesign({
   id: "bundle-tabs",

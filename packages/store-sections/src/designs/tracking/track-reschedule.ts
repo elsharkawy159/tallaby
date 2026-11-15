@@ -42,18 +42,18 @@ export const trackReschedule = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("مش هتكون موجود؟", "Won't be home?"), "h2", {
+              t.heading(L("لن تكون موجودًا؟", "Won't be home?"), "h2", {
                 role: "title",
                 style: { fontSize: "display-sm", letterSpacing: "tight" },
               }),
               t.paragraph(
                 L(
-                  "كلمنا قبل ما المندوب يتحرك ونتفق على يوم ومعاد يناسبك.",
+                  "تواصل معنا قبل خروج المندوب لنتفق على يوم وموعد يناسبانك.",
                   "Message us before the courier sets off and we'll agree a day and time that suit you.",
                 ),
                 { role: "subtitle" },
               ),
-              t.text(L("مواعيد التوصيل عندنا", "Our delivery windows"), {
+              t.text(L("مواعيد التوصيل لدينا", "Our delivery windows"), {
                 style: {
                   fontSize: "sm",
                   fontWeight: "semibold",
@@ -93,7 +93,7 @@ export const trackReschedule = defineDesign({
               ),
               pillButton(
                 t,
-                L("غيّر المعاد على واتساب", "Change the time on WhatsApp"),
+                L("غيّر الموعد على واتساب", "Change the time on WhatsApp"),
                 `${WA}?text=I%20need%20to%20change%20my%20delivery%20time`,
                 {
                   icon: "chat",

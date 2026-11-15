@@ -59,7 +59,7 @@ export const heroFullbleed = defineDesign({
                     role: "title",
                     style: { color: "white", fontSize: "display-lg", fontWeight: "bold", lineHeight: "tight", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.", "Chosen materials, quiet details and fast delivery to your door."), {
+                  t.paragraph(L("خامات مختارة وتفاصيل هادئة لكل يوم.", "Chosen materials and quiet details for every day."), {
                     role: "subtitle",
                     style: { color: "white", fontSize: "lg", opacity: 90, maxWidth: "480px" },
                     mobile: { fontSize: "md" },
@@ -67,7 +67,7 @@ export const heroFullbleed = defineDesign({
                   t.row(
                     [
                       t.button(L("تسوّق الآن", "Shop now"), "/products", "light", { role: "cta" }),
-                      t.button(L("شوف الجديد", "See what’s new"), "/products?sort=newest", "outline", { role: "cta2", style: QUIET_LINK }),
+                      t.button(L("اكتشف الجديد", "See what’s new"), "/products?sort=newest", "outline", { role: "cta2", style: QUIET_LINK }),
                     ],
                     { label: L("الأزرار", "Buttons"), style: { gap: 8, paddingTop: 12, alignItems: "center" } },
                   ),

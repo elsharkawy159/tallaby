@@ -25,7 +25,7 @@ export const categoriesChips = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("إيه اللي في بالك؟", "What are you after?"), "h2", {
+              t.heading(L("عمّ تبحث؟", "What are you after?"), "h2", {
                 role: "title",
                 style: {
                   fontSize: "display-sm",

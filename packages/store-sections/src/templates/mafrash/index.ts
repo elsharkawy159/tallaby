@@ -62,63 +62,63 @@ const NAME = L("مفرش هوم", "Mafrash Home");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header bar: two short lines.
-  announcement: [L("جرّب ٣٠ ليلة · استرجاع ببلاش على المفارش", "Try for 30 nights · Free returns on bedding"), L("الدفع عند الاستلام", "Cash on delivery")],
+  announcement: [L("مفارش وملايات وبطاطين ومخدات", "Bedding, sheets, throws and cushions"), L("مقاسات وخامات واضحة لكل منتج", "Clear sizes and materials for every product")],
   // The header's first link, one or two words: the store's main category. The hero's button goes there too.
   nav: [{ label: L("المفارش", "Bedding"), href: search("طقم") }],
   hero: {
-    alt: L("سرير بمفرش ورق شجر جنب كومودينو وورد", "A bed with leaf-print bedding beside a nightstand with flowers"),
-    eyebrow: L("تجربة ٣٠ ليلة", "30-night trial"),
-    title: L("نام عليها الأول", "Sleep on it first"),
-    line: L("لو ما حبيتش الملايات بعد ٣٠ ليلة، بنرجّعها ببلاش.", "If you do not love the sheets after 30 nights, we collect them for free."),
+    alt: L("سرير بمفرش بنقشة أوراق الشجر بجوار كومودينو وورد", "A bed with leaf-print bedding beside a nightstand with flowers"),
+    eyebrow: L("مفروشات قطن وكتان", "Cotton and linen bedding"),
+    title: L("مفارش وملايات لكل سرير", "Bedding and sheets for every bed"),
+    line: L("ملايات قطن وأطقم كتان ولحف بكل المقاسات.", "Cotton sheets, linen sets and duvets in every size."),
     // Goes to `nav.0`; also the reviews wall's button.
     cta: L("تسوق المفارش", "Shop bedding"),
   },
-  categories: { title: L("جهّز سريرك", "Make your bed") },
+  categories: { title: L("تسوّق حسب القسم", "Shop by section") },
   // A rail of eight of what `journey.primary` shows: a small eyebrow over the title.
-  products: { primary: { eyebrow: L("وصل جديد", "New in"), title: L("ألوان جديدة", "New colours") } },
+  products: { primary: { eyebrow: L("وصل حديثًا", "New in"), title: L("ألوان جديدة", "New colours") } },
   // Four promises, a title of one or two words and a short line each.
   trust: [
     { title: L("قطن مصري", "Egyptian cotton"), line: L("قطن جيزة طويل التيلة", "Long-staple Giza cotton") },
-    { title: L("مغسول", "Pre-washed"), line: L("ناعم من أول ليلة", "Soft from the first night") },
-    { title: L("٣٠ ليلة", "30 nights"), line: L("استرجاع ببلاش على المفارش", "Free returns on bedding") },
-    { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("أو بالبطاقة والمحفظة", "Or by card and wallet") },
+    { title: L("مغسول", "Pre-washed"), line: L("أقمشة ناعمة الملمس", "Soft-finish fabrics") },
+    { title: L("مقاسات واضحة", "Clear sizes"), line: L("مقاس كل طقم موضح في صفحته", "Every set's size is on its page") },
+    { title: L("تواصل معنا", "Contact us"), line: L("لأي سؤال عن المقاسات أو الألوان", "With any question about sizes or colours") },
   ],
   // Optional: a wall of six short buyer quotes under a title (no names shown). Without them the home page ends on the promises.
   reviews: {
-    title: L("ناموا عليها", "Slept on it"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
-      { quote: L("الملايات ناعمة من أول غسلة وما كرمشتش زي اللي كانت عندي.", "The sheets were soft from the first wash and do not crease like my old ones.") },
-      { quote: L("تاني طقم أطلبه، المرة دي الكتان البيج.", "My second set; this time the beige linen.") },
-      { quote: L("طلبت مقاس غلط، جم أخدوه وبعتولي الصح في يومين.", "I ordered the wrong size; they collected it and sent the right one in two days.") },
-      { quote: L("البطانية الوافل خفيفة ومناسبة للصيف بالظبط.", "The waffle throw is light and just right for summer.") },
-      { quote: L("جربتها ٣٠ ليلة وما رجعتهاش طبعاً.", "I tried them for 30 nights and of course kept them.") },
-      { quote: L("ساعدوني أختار اللون اللي يمشي مع الحيطة.", "They helped me pick a colour that suits the wall.") },
+      { quote: L("الملايات ناعمة من أول غسلة ولا تتجعد بسهولة.", "The sheets were soft from the first wash and do not crease easily.") },
+      { quote: L("طقم الكتان البيج بلون هادئ وخامة جيدة.", "The beige linen set has a calm colour and good fabric.") },
+      { quote: L("المقاسات مطابقة للموضح في صفحة المنتج.", "The sizes match the product page.") },
+      { quote: L("البطانية الوافل خفيفة ومناسبة للصيف.", "The waffle throw is light and good for summer.") },
+      { quote: L("كفر اللحاف سهل الغسيل ولونه ثابت.", "The duvet cover is easy to wash and holds its colour.") },
+      { quote: L("المخدات القطيفة بألوان جميلة.", "The velvet cushions come in lovely colours.") },
     ],
   },
   // The footer's sign-up: a title and one line.
   newsletter: {
     title: L("ألوان جديدة كل موسم", "New colours every season"),
-    line: L("اعرف الألوان الجديدة قبل الكل، ونصايح غسيل القطن.", "Hear about new colours first, plus cotton washing tips."),
+    line: L("اعرف الألوان الجديدة أولًا، مع نصائح لغسيل القطن.", "Hear about new colours first, plus cotton washing tips."),
   },
   about: {
     line: L("ملايات قطن مصري، مغسولة وناعمة.", "Egyptian cotton sheets, washed soft."),
     alt: L("بطانية تريكو في سبت خوص", "A knitted throw in a wicker basket"),
-    eyebrow: L("من المحلة", "From El Mahalla"),
-    title: L("قطن جيزة من المصنع لسريرك", "Giza cotton from the mill to your bed"),
-    text: L("بننسج ملاياتنا من قطن جيزة طويل التيلة في المحلة، وبنغسلها قبل ما تتغلف عشان تبقى ناعمة من أول ليلة.", "We weave our sheets from long-staple Giza cotton in El Mahalla and wash them before packing, so they are soft from the first night."),
-    more: L("وعندك ٣٠ ليلة تجربها قبل ما تقرر.", "And you have 30 nights to try them before you decide."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("مفروشات من قطن جيزة", "Bedding in Giza cotton"),
+    text: L("نختار ملايات من قطن جيزة طويل التيلة، ونعرض المقاسات والخامات لكل طقم بوضوح.", "We choose sheets in long-staple Giza cotton and show every set's sizes and materials clearly."),
+    more: L("تواصل معنا لأي سؤال عن المقاسات أو الألوان.", "Contact us with any question about sizes or colours."),
     // Goes to the whole catalog.
     cta: L("تسوق المفارش", "Shop bedding"),
   },
   contact: {
     title: L("تواصل", "Contact"),
-    line: L("اسألنا عن المقاسات والألوان والتجربة.", "Ask us about sizes, colours and the trial."),
+    line: L("اسألنا عن المقاسات والألوان والخامات.", "Ask us about sizes, colours and materials."),
     heading: L("اسأل عن مقاس سريرك", "Ask about your bed size"),
   },
   faq: {
-    line: L("المقاسات والغسيل وتجربة ٣٠ ليلة.", "Sizes, washing and the 30-night trial."),
-    question: L("تجربة الـ٣٠ ليلة بتشتغل إزاي؟", "How does the 30-night trial work?"),
-    answer: L("نام على المفارش ٣٠ ليلة، ولو ما حبيتهاش اطلب استرجاع وبنيجي ناخدها ببلاش.", "Sleep on the bedding for 30 nights; if you do not love it, request a return and we collect it free."),
+    line: L("المقاسات والغسيل والعناية.", "Sizes, washing and care."),
+    question: L("كيف أغسل الملايات القطن؟", "How should I wash cotton sheets?"),
+    answer: L("اغسلها بماء فاتر على دورة هادئة، وجففها في الظل للحفاظ على لونها.", "Wash in lukewarm water on a gentle cycle and dry in the shade to keep the colour."),
   },
   custom: {
     // The store's short name inside "About …" (header and about page).
@@ -145,7 +145,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const header = lib("header-announcement", {
     text: {
-      "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+      "تشكيلة الموسم الجديد وصلت": c.announcement[0]!,
       "الدفع عند الاستلام": c.announcement[1]!,
       "م": initial,
       "اسم متجرك": name,
@@ -160,7 +160,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const footer = lib("footer-signup", {
     text: {
       "اشترك في النشرة": c.newsletter.title,
-      "عروض ومنتجات جديدة، مرة في الأسبوع.": c.newsletter.line,
+      "منتجات جديدة وأخبار المتجر.": c.newsletter.line,
       "م": initial,
       "اسم متجرك": name,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
@@ -175,9 +175,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("hero-halves", {
       photo: [undefined, c.photos.hero.tall],
       text: {
-        "كوليكشن الموسم": c.hero.eyebrow,
+        "مجموعة الموسم": c.hero.eyebrow,
         "صوت أنقى، كل يوم": c.hero.title,
-        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+        "منتجات مختارة بمواصفات واضحة لكل يوم.": c.hero.line,
         "تسوق الآن": c.hero.cta,
         "العروض": L("الأكثر مبيعاً", "Best sellers"),
         "صورة الحملة": c.hero.alt,
@@ -190,20 +190,20 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       ...(tiles !== 5 && { nodes: { "الأقسام": { style: { columns: tiles }, tablet: { columns: tiles } } } }),
     }),
     lib("products-rail", {
-      text: { "بيحبوها": c.products.primary.eyebrow, "الأكثر مبيعًا": c.products.primary.title },
+      text: { "المفضلة لدى العملاء": c.products.primary.eyebrow, "الأكثر مبيعًا": c.products.primary.title },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 8 }],
     }),
     lib("features-ruled", {
       text: {
-        "توصيل سريع": c.trust[0]!.title,
-        "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+        "الشحن": c.trust[0]!.title,
+        "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
         "الدفع عند الاستلام": c.trust[1]!.title,
-        "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-        "استرجاع سهل": c.trust[2]!.title,
-        "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-        "دعم على واتساب": c.trust[3]!.title,
-        "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+        "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+        "الاستبدال والاسترجاع": c.trust[2]!.title,
+        "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+        "تواصل معنا": c.trust[3]!.title,
+        "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
       },
     }),
     ...(reviews
@@ -213,10 +213,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
               "ماذا يقولون عنا": reviews.title,
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
               "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[1]!.quote,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[2]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[2]!.quote,
               "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": reviews.items[3]!.quote,
               "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[4]!.quote,
-              "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": reviews.items[5]!.quote,
+              "خدمة العملاء محترمة جدًا وساعدوني في اختيار المنتج المناسب.": reviews.items[5]!.quote,
               "كل الآراء": c.hero.cta,
             },
           }),
@@ -273,24 +273,24 @@ const DEMO = demoStore({
   products: [
     ["cotton-sheet-set", "sheets", "طقم ملايات قطن", "Cotton Sheet Set", PHOTOS.cottonSheets, 1450, { isFeatured: true, rating: 4.8, sold90: 210 }],
     ["waffle-knit-throw", "throws", "بطانية وافل", "Waffle Knit Throw", PHOTOS.waffleThrow, 890, { rating: 4.7, sold90: 96 }],
-    ["velvet-cushion-pair", "cushions", "مخدتين قطيفة", "Velvet Cushion Pair", PHOTOS.velvetCushions, 650, { sold90: 120 }],
+    ["velvet-cushion-pair", "cushions", "مخدتان من القطيفة", "Velvet Cushion Pair", PHOTOS.velvetCushions, 650, { sold90: 120 }],
     ["beige-linen-set", "bedding", "طقم كتان بيج", "Beige Linen Set", PHOTOS.beigeLinen, 1750, { sold90: 48 }],
     ["olive-linen-set", "bedding", "طقم كتان زيتي", "Olive Linen Set", PHOTOS.oliveLinen, 1750, { sold90: 31 }],
     ["grey-linen-set", "bedding", "طقم كتان رمادي", "Grey Linen Set", PHOTOS.greyLinen, 1890, { sold90: 40 }],
     ["gingham-bedding", "sheets", "طقم ملايات كاروهات", "Gingham Sheet Set", PHOTOS.gingham, 1290, { sold90: 27 }],
     ["duvet-cover", "duvets", "كفر لحاف", "Duvet Cover", PHOTOS.duvetCover, 1190, { compareAtPrice: 1390, sold90: 41 }],
     ["light-duvet", "duvets", "لحاف خفيف", "Light Duvet", PHOTOS.folded, 1690, { inStock: false, sold90: 22 }],
-    ["chunky-knit-blanket", "throws", "بطانية تريكو تقيلة", "Chunky Knit Blanket", PHOTOS.chunkyKnit, 1150, { isFeatured: true, sold90: 35 }],
-    ["red-knit-throw", "throws", "بطانية تريكو حمرا", "Red Knit Throw", PHOTOS.redKnit, 950, { compareAtPrice: 1100, sold90: 19 }],
-    ["blush-pillow", "cushions", "مخدة بينك فاتح", "Blush Pillow", PHOTOS.blushPillow, 390, { sold90: 64 }],
+    ["chunky-knit-blanket", "throws", "بطانية تريكو سميكة", "Chunky Knit Blanket", PHOTOS.chunkyKnit, 1150, { isFeatured: true, sold90: 35 }],
+    ["red-knit-throw", "throws", "بطانية تريكو حمراء", "Red Knit Throw", PHOTOS.redKnit, 950, { compareAtPrice: 1100, sold90: 19 }],
+    ["blush-pillow", "cushions", "مخدة وردي فاتح", "Blush Pillow", PHOTOS.blushPillow, 390, { sold90: 64 }],
   ],
 });
 
 export const MAFRASH = editionTemplate({
   key: MAFRASH_KEY,
-  version: 3,
+  version: 4,
   changelog: "Mafrash v3: categories, section order",
-  productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي اللي نام عليها", "From people who slept on it"), related: L("يكمّل السرير", "Finish the bed") } },
+  productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("مفرش", "Mafrash"),
   description: L(
     "مفارش وملايات: تجربة ٣٠ ليلة، طقم السرير، قطن مصري، ألوان جديدة وشارك نومة حلوة. أربع صفحات جاهزة.",

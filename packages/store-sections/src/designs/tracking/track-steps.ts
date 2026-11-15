@@ -21,18 +21,18 @@ const STAGES: {
 }[] = [
   {
     icon: "check",
-    title: L("اتأكد", "Confirmed"),
+    title: L("تم التأكيد", "Confirmed"),
     text: L(
-      "بنكلمك أو نبعتلك رسالة نأكد الطلب والعنوان.",
+      "نتصل بك أو نرسل إليك رسالة لتأكيد الطلب والعنوان.",
       "We call or message you to confirm the order and address.",
     ),
     time: L("خلال ساعات", "Within hours"),
   },
   {
     icon: "package",
-    title: L("اتجهز", "Packed"),
+    title: L("تم التجهيز", "Packed"),
     text: L(
-      "بنفحص المنتجات ونغلّفها كويس.",
+      "نفحص المنتجات ونغلّفها جيدًا.",
       "We check your items and pack them with care.",
     ),
     time: L("خلال يوم", "Within a day"),
@@ -41,7 +41,7 @@ const STAGES: {
     icon: "truck",
     title: L("مع المندوب", "With the courier"),
     text: L(
-      "شركة الشحن استلمت الطلب وهو في الطريق ليك.",
+      "استلمت شركة الشحن الطلب وهو في الطريق إليك.",
       "The courier has your order and it is on the way.",
     ),
     time: L("١–٣ أيام", "1–3 days"),
@@ -50,7 +50,7 @@ const STAGES: {
     icon: "map-pin",
     title: L("وصل", "Delivered"),
     text: L(
-      "الطلب وصلك. لو في أي مشكلة كلمنا.",
+      "وصلك الطلب. إذا واجهت أي مشكلة تواصل معنا.",
       "Your order is with you. Any problem, message us.",
     ),
     time: L("وصلك", "Done"),
@@ -89,7 +89,7 @@ export const trackSteps = defineDesign({
                     [
                       dotLabel(t, L("حالة الطلب", "Order status")),
                       t.heading(
-                        L("طلبك بيمشي إزاي؟", "How your order moves"),
+                        L("كيف يسير طلبك؟", "How your order moves"),
                         "h2",
                         {
                           role: "title",
@@ -226,7 +226,7 @@ export const trackSteps = defineDesign({
               arrowLink(
                 t,
                 L(
-                  "عامل حساب؟ شوف حالة طلبك",
+                  "لديك حساب؟ تابع حالة طلبك",
                   "Signed in? See your order's status",
                 ),
                 ORDERS_HREF,

@@ -26,7 +26,7 @@ export const footerSignup = defineDesign({
               t.stack(
                 [
                   t.heading(L("اشترك في النشرة", "Join the newsletter"), "h3", { role: "title", style: { fontSize: "2xl" } }),
-                  t.paragraph(L("عروض ومنتجات جديدة، مرة في الأسبوع.", "Offers and new arrivals, once a week."), { role: "subtitle" }),
+                  t.paragraph(L("منتجات جديدة وأخبار المتجر.", "New products and store news."), { role: "subtitle" }),
                 ],
                 { label: L("النص", "Copy"), style: { gap: 6 } },
               ),

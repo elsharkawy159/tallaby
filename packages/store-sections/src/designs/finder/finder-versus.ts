@@ -22,8 +22,8 @@ const SPECS = [
   },
   {
     label: L("عزل الضوضاء", "Noise cancelling"),
-    a: L("أيوه", "Yes"),
-    b: L("لأ", "No"),
+    a: L("نعم", "Yes"),
+    b: L("لا", "No"),
     win: "a",
   },
   {
@@ -33,7 +33,7 @@ const SPECS = [
     win: "b",
   },
   {
-    label: L("مقاومة المية", "Water resistance"),
+    label: L("مقاومة الماء", "Water resistance"),
     a: L("IPX٤", "IPX4"),
     b: L("IPX٥", "IPX5"),
     win: "b",
@@ -58,7 +58,7 @@ function side(t: TreeBuilder, offset: number): NodeTemplate {
     ],
     {
       label: offset
-        ? L("المنتج التاني", "Second product")
+        ? L("المنتج الثاني", "Second product")
         : L("المنتج الأول", "First product"),
       role: offset ? "productB" : "productA",
       source: "best-sellers",
@@ -130,7 +130,7 @@ export const finderVersus = defineDesign({
         [
           t.stack(
             [
-              centredTitle(t, L("تختار مين؟", "Which one?"), {
+              centredTitle(t, L("أيهما تختار؟", "Which one?"), {
                 marginBottom: 32,
               }),
               t.row([side(t, 0), versusDisc(t, L("ضد", "vs")), side(t, 1)], {

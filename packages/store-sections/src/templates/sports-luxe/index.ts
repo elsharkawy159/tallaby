@@ -141,9 +141,9 @@ function hero(c: LookContent): Design {
         "صورة الواجهة": c.hero.alt,
         "المجموعة الجديدة": c.hero.eyebrow,
         "صُنعت لتدوم معك": c.hero.title,
-        "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "خامات مختارة وتفاصيل هادئة لكل يوم.": c.hero.line,
         "تسوّق الآن": c.hero.cta,
-        "شوف الجديد": L("الأكثر طلبًا", "Best sellers"),
+        "اكتشف الجديد": L("الأكثر طلبًا", "Best sellers"),
       },
       links: { "/products?sort=newest": BEST },
     }),
@@ -194,9 +194,9 @@ function categories(c: LookContent): Design {
 function grid(c: LookContent, journey: LookJourney): Design {
   const tabs = lib("products-category-tabs", {
     text: {
-      "لحق قبل ما يخلص": c.products.primary.eyebrow ?? c.products.primary.title,
+      "مختارات المتجر": c.products.primary.eyebrow ?? c.products.primary.title,
       "وصل حديثًا": c.products.primary.title,
-      "أحدث القطع اللي نزلت المتجر الأسبوع ده.": c.products.primary.line!,
+      "أحدث القطع التي وصلت إلى المتجر.": c.products.primary.line!,
     },
     lists: [undefined, { source: journey.primary, limit: 10 }],
   });
@@ -222,13 +222,13 @@ function fabrics(c: LookContent): Design {
     text: {
       "٠١": x["fabric-1-pieces"]!,
       نختار: x["fabric-1-name"]!,
-      "نشتري من الموزعين المعتمدين فقط، ونرفض أي منتج مشكوك فيه.": x["fabric-1-text"]!,
+      "نختار كل منتج بعناية قبل عرضه في المتجر.": x["fabric-1-text"]!,
       "٠٢": x["fabric-2-pieces"]!,
-      نجرّب: x["fabric-2-name"]!,
-      "كل منتج يُفتح ويُجرَّب قبل أن يُعرض في المتجر.": x["fabric-2-text"]!,
+      نوضّح: x["fabric-2-name"]!,
+      "نعرض صورًا ومواصفات ومقاسات واضحة لكل منتج.": x["fabric-2-text"]!,
       "٠٣": x["fabric-3-pieces"]!,
-      نغلّف: x["fabric-3-name"]!,
-      "تغليف محكم ومعه الفاتورة والضمان.": x["fabric-3-text"]!,
+      نساعدك: x["fabric-3-name"]!,
+      "تواصل معنا لأي سؤال قبل الطلب أو بعده.": x["fabric-3-text"]!,
     },
   });
   // The pieces made of the fabric where the design has a big step number: a small line in cobalt. Each photo's alt is its row's title, the fabric's name.
@@ -288,9 +288,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         person: [c.photos.story],
         text: {
           "صورة الفريق": c.story.alt,
-          "إحنا مين": c.story.eyebrow,
-          "فريق صغير بيحب اللي بيعمله": c.story.title,
-          "بنرد على كل رسالة بنفسنا، وبنختار كل منتج كأننا هنستخدمه.": c.story.text,
+          "من نحن": c.story.eyebrow,
+          "فريق يختار منتجات المتجر بعناية": c.story.title,
+          "نختار كل منتج كأنه لنا، ونوضّح تفاصيله ومقاساته.": c.story.text,
           "قابل الفريق": c.story.cta,
         },
       }),
@@ -299,14 +299,14 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("features-ruled", {
         text: {
-          "توصيل سريع": c.trust[0]!.title,
-          "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+          "الشحن": c.trust[0]!.title,
+          "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
           "الدفع عند الاستلام": c.trust[1]!.title,
-          "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-          "استرجاع سهل": c.trust[2]!.title,
-          "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-          "دعم على واتساب": c.trust[3]!.title,
-          "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+          "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+          "الاستبدال والاسترجاع": c.trust[2]!.title,
+          "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+          "تواصل معنا": c.trust[3]!.title,
+          "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
         },
       }),
       "text",
@@ -320,9 +320,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           text: {
             "صورة من المتجر": x["newsletter-alt"]!,
             للمشتركين: c.newsletter.eyebrow!,
-            "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-            "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": c.newsletter.line,
-            "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": c.newsletter.note!,
+            "اشترك في نشرتنا البريدية": c.newsletter.title,
+            "اشترك لتصلك أخبار المنتجات الجديدة.": c.newsletter.line,
+            "بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.": c.newsletter.note!,
           },
         }),
       ),
@@ -383,7 +383,7 @@ export const SPORTS_LUXE = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(SPORTS_LUXE_KEY, "sportswear", { ar: 2812, en: 2812 }),
   key: SPORTS_LUXE_KEY,
-  version: 2,
+  version: 3,
   changelog: "Madar v2: the sportswear template, rebuilt look-first",
   name: L("مدار", "Madar"),
   description: L(
@@ -458,6 +458,6 @@ export const SPORTS_LUXE = editionTemplate({
     thumbs: "bottom",
     band: "paper",
     extras: ["product-perks"],
-    copy: SPORTSWEAR.productPage?.copy ?? { reviews: L("آراء اللي اتمرّنوا بيه", "From people who train in it"), related: L("قطع ممكن تعجبك", "Pieces you may like") },
+    copy: SPORTSWEAR.productPage?.copy ?? { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") },
   },
 });

@@ -12,7 +12,7 @@ const WORDS: { text: ReturnType<typeof L>; mark?: boolean }[] = [
   { text: L("٢٥ ألف", "25,000"), mark: true },
   { text: L("طلب لـ", "orders to") },
   { text: L("٢٧", "27"), mark: true },
-  { text: L("محافظة، وعملاءنا مدّيين متوسط", "governorates, rated") },
+  { text: L("محافظة، ومتوسط تقييم عملائنا", "governorates, rated") },
   { text: L("٤٫٨", "4.8"), mark: true },
   { text: L("من ٥.", "out of 5.") },
 ];

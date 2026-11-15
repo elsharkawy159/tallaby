@@ -22,8 +22,8 @@ export const textColumns = defineDesign({
               t.heading(L("عن متجرنا", "About our store"), "h2", { role: "title", style: { fontSize: "display-md", fontWeight: "extrabold" } }),
               t.paragraph(
                 L(
-                  "بدأنا بهدف واحد: منتجات أصلية بسعر عادل، يختارها أشخاص يستخدمونها فعلًا.",
-                  "We started with one goal: genuine products at a fair price, picked by people who actually use them.",
+                  "بدأنا بهدف واحد: منتجات جيدة بسعر عادل، يختارها أشخاص يستخدمونها فعلًا.",
+                  "We started with one goal: good products at a fair price, picked by people who actually use them.",
                 ),
                 {
                   role: "body",
@@ -32,8 +32,8 @@ export const textColumns = defineDesign({
               ),
               t.paragraph(
                 L(
-                  "اليوم نشحن لكل المحافظات ونجرّب كل منتج قبل أن يصل إليك.",
-                  "Today we ship to every governorate and test every product before it reaches you.",
+                  "ونعرض لكل منتج صورًا ومواصفات واضحة لتختار بثقة.",
+                  "And every product has photos and clear specs, so you can choose with confidence.",
                 ),
                 {
                   role: "body",

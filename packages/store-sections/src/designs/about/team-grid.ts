@@ -34,7 +34,7 @@ export const teamGrid = aboutDesign({
     t.section({ label: L("الفريق", "Team") }, [
       t.container(
         [
-          modHead(t, { label: L("الفريق", "Team"), title: L("الناس اللي ورا المحل", "The people behind the store") }),
+          modHead(t, { label: L("الفريق", "Team"), title: L("الفريق وراء المتجر", "The people behind the store") }),
           t.grid(
             TEAM.map((p, i) => {
               const tone = TONES[i % TONES.length]!;

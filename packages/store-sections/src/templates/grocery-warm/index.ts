@@ -56,12 +56,12 @@ const tel = (number: string) => phone(number).replace(/ /g, "\u00a0");
 
 const header = lib("header-centered-ticker", {
   text: {
-    "توصيل لكل محافظات مصر": L("من غيطنا في الفيوم لبيتك في القاهرة", "From our Fayoum farm to your Cairo home"),
-    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
-    "استبدال سهل خلال ١٤ يوم": L("تتبّع طلبك من صفحة طلباتي", "Track your order from My orders"),
+    "تفاصيل ومقاسات واضحة لكل منتج": L("خضار وفاكهة ومخبوزات وعسل", "Produce, bakes and honey"),
+    "الدفع عند الاستلام": L("أوزان وتفاصيل واضحة لكل منتج", "Clear weights and details for every product"),
+    "تسوّق سهل من هاتفك": L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المنتجات", "Shop all"),
-    "العروض": L("حصاد الأسبوع", "This week’s harvest"),
+    "العروض": L("وصل حديثًا", "New in"),
     "المدونة": L("الأكثر طلبًا", "Best sellers"),
     "من نحن": L("حكايتنا", "Our story"),
     "تواصل معنا": L("تتبّع طلبك", "Track order"),
@@ -72,7 +72,7 @@ const header = lib("header-centered-ticker", {
 const footer = lib("footer-classic", {
   text: {
     "اسم متجرك": NAME,
-    "أساسيات كل يوم، مختارة بعناية.": L("خضار وفاكهة من غيطنا، وعيش وعسل وجبن من جيرانا في الفيوم.", "Produce from our farm, with bread, honey and cheese from our Fayoum neighbours."),
+    "أساسيات كل يوم، مختارة بعناية.": L("خضار وفاكهة موسمية، وخبز وعسل وجبن ومؤن.", "Seasonal produce, bread, honey, cheese and pantry goods."),
     "تسوّق": L("تسوّق", "Shop"),
     "كل المنتجات": L("كل المنتجات", "All products"),
     "العروض": L("الأعلى تقييمًا", "Top rated"),
@@ -82,7 +82,7 @@ const footer = lib("footer-classic", {
     "٠١٠٠ ١٢٣ ٤٥٦٧": L(tel("٠١١٢ ٥٨٣ ٤٠٦٧"), tel("+20 112 583 4067")),
     "‏hello@store.com": L("‏hello@gheit.eg", "hello@gheit.eg"),
     "١٢ شارع النيل، الزمالك، القاهرة": L("٣١ شارع ٢٣١، دجلة، المعادي، القاهرة", "31 Road 231, Degla, Maadi, Cairo"),
-    "السبت إلى الخميس، ١٠ ص – ١٠ م": L("كل يوم من ٨ الصبح لـ ١٠ بالليل", "Daily, 8am to 10pm"),
+    "السبت إلى الخميس، ١٠ ص – ١٠ م": L("يوميًا من ٨ صباحًا حتى ١٠ مساءً", "Daily, 8am to 10pm"),
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ غيط. كل الحقوق محفوظة.", "© 2026 Gheit. All rights reserved."),
     // The storefront adds its own "Powered by" line, so the design's credit stays empty.
     "بواسطة طلبي": L("", ""),
@@ -94,27 +94,27 @@ const home: Design[] = [
   lib("hero-banner", {
     photo: [PHOTOS.hero],
     text: {
-      "صورة الواجهة": L("غيط زيتون قديم في نور العصر", "An old olive grove in the afternoon light"),
-      "موسم جديد": L("من الغيط", "From the farm"),
-      "ادخل الموسم الجديد بخطوة واثقة": L("أكل بيتي، من أرض بنعرفها", "Home food, from land we know"),
-      "قطع مريحة وطبقات سهلة تتلبس كل يوم.": L(
-        "خضار وفاكهة بتتقطف يوم ما بتتشحن، وعيش بلدي وعسل وجبن من جيرانا في الفيوم.",
-        "Produce picked the day it ships, with country bread, honey and cheese from our Fayoum neighbours.",
+      "صورة الواجهة": L("بستان زيتون في ضوء العصر", "An old olive grove in the afternoon light"),
+      "موسم جديد": L("من المزرعة", "From the farm"),
+      "ادخل الموسم الجديد بخطوة واثقة": L("خضار وفاكهة ومؤن طبيعية", "Fresh produce and pantry goods"),
+      "قطع مريحة وطبقات سهلة للارتداء اليومي.": L(
+        "خضار وفاكهة موسمية، وخبز بلدي وعسل وجبن ومؤن.",
+        "Seasonal fruit and vegetables, country bread, honey, cheese and pantry goods.",
       ),
       "تسوّق المجموعة": L("تسوّق الحصاد", "Shop the harvest"),
-      "الجديد": L("وصل النهارده", "Fresh today"),
-      "الإطلاق الجاي": L("يوم الحصاد الجاي", "The next harvest day"),
-      "قطع جديدة بتنزل كل خميس، كن أول من يشوفها.": L(
-        "بنقطف كل خميس الفجر. اطلب من دلوقتي وخلّي سلتك أول سلة تخرج.",
-        "We harvest every Thursday at dawn. Order now and your basket leaves first.",
+      "الجديد": L("وصل حديثًا", "New in"),
+      "الإطلاق القادم": L("منتجات الموسم القادم", "Next season’s produce"),
+      "قطع جديدة قريبًا، كن أول من يراها.": L(
+        "تصل خضار وفاكهة الموسم الجديد قريبًا، فتابع الجديد.",
+        "The new season’s fruit and vegetables arrive soon. Keep an eye on new in.",
       ),
-      "شوف الجديد": L("احجز سلتك", "Reserve your basket"),
+      "اكتشف الجديد": L("اكتشف الجديد", "See new in"),
     },
     links: { "/products": SHOP },
   }),
   lib("categories-feature-list", {
     text: {
-      "الأقسام": L("من الغيط والفرن والمخزن", "From the field, the oven and the larder"),
+      "الأقسام": L("خضار وفاكهة ومخبوزات ومؤن", "Produce, bakes and pantry"),
       "كل الأقسام": L("كل المنتجات", "All"),
       "منتج": L("منتجات", "items"),
     },
@@ -124,8 +124,8 @@ const home: Design[] = [
   }),
   lib("products-classic", {
     text: {
-      "جديدنا": L("بيتطلب كل أسبوع", "Ordered every week"),
-      "وصل حديثًا": L("المفضّل في بيوت عملائنا", "Favourites in our customers’ homes"),
+      "جديدنا": L("الأكثر طلبًا", "Best sellers"),
+      "وصل حديثًا": L("المفضّل عند عملائنا", "Our customers’ favourites"),
     },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers" }],
@@ -135,14 +135,14 @@ const home: Design[] = [
   lib("about-overlap", {
     person: [undefined, undefined, undefined, undefined, PHOTOS.breadShelves],
     text: {
-      "صورة المتجر": L("أرفف خشب مليانة أرغفة خبز طازة", "Wooden shelves stacked with freshly baked loaves"),
-      "من داخل المتجر": L("من ٢٠١٤", "Since 2014"),
-      "بدأنا من محل صغير": L("بدأنا بفرن وغيط صغير", "We began with an oven and a small field"),
-      "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.": L(
-        "عيلة واحدة في قرية تونس بالفيوم، بتزرع من غير كيماويات وبتخبز العيش في فرن طين. النهارده بنوصل لـ +٦٠٠٠ بيت في القاهرة كل أسبوع.",
-        "One family in Tunis village, Fayoum, farming without chemicals and baking in a clay oven. Today we reach 6,000+ Cairo homes every week.",
+      "صورة المتجر": L("رفوف خشبية عليها أرغفة خبز طازج", "Wooden shelves stacked with freshly baked loaves"),
+      "من داخل المتجر": L("من داخل المتجر", "Inside the shop"),
+      "منتجات نختارها بعناية": L("خبز وخضار ومؤن مختارة", "Chosen bread, produce and pantry goods"),
+      "نختار كل منتج بعناية، ونعرض صوره وتفاصيله بوضوح.": L(
+        "خضار وفاكهة موسمية، وخبز ومخبوزات، وعسل وجبن ومؤن، مع الوزن والتفاصيل لكل منتج.",
+        "Seasonal produce, bread and bakes, honey, cheese and pantry goods, with the weight and details for every product.",
       ),
-      "اعرف أكثر": L("اقرا حكايتنا", "Read our story"),
+      "اعرف أكثر": L("اقرأ حكايتنا", "Read our story"),
     },
   }),
   ...categoryRows(lib, {
@@ -152,30 +152,30 @@ const home: Design[] = [
   lib("newsletter-photo", {
     photo: [undefined, undefined, undefined, PHOTOS.newsletter],
     text: {
-      "صورة من المتجر": L("شجرة فاكهة في غيط مشمس", "A fruit tree in a sunny field"),
-      "للمشتركين": L("جواب الغيط", "Letters from the farm"),
-      "خد ١٠٪ خصم على أول طلب": L("اعرف إيه اللي هيتقطف الأسبوع ده", "Know what’s being picked this week"),
-      "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": L(
-        "رسالة كل يوم أربع: إيه اللي نضج في الغيط، وصفة بيتي من ستّنا، ومواعيد زيارات المزرعة.",
-        "A letter every Wednesday: what ripened in the field, a home recipe from our grandmother and farm visit dates.",
+      "صورة من المتجر": L("شجرة فاكهة في حقل مشمس", "A fruit tree in a sunny field"),
+      "للمشتركين": L("النشرة البريدية", "Our newsletter"),
+      "اشترك في نشرتنا البريدية": L("اعرف منتجات الموسم أولًا", "Hear about seasonal produce first"),
+      "اشترك لتصلك أخبار المنتجات الجديدة.": L(
+        "أخبار منتجات الموسم الجديدة ووصفات بسيطة.",
+        "News of new seasonal products and simple recipes.",
       ),
-      "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."),
+      "بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.": L("بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.", "No spam. Unsubscribe any time."),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("حكايتنا", "Our story"), L("أكل بيتي من غيطنا في الفيوم، من ٢٠١٤.", "Home food from our Fayoum farm, since 2014.")),
+  pageHeader(lib, "about-header", L("حكايتنا", "Our story"), L("خضار وفاكهة وخبز وعسل ومؤن طبيعية.", "Produce, bread, honey and natural pantry goods.")),
   aboutStory(lib, {
     photo: PHOTOS.honeyTable,
-    alt: L("برطمانات عسل بالمكسرات وأقراص شمع العسل", "Jars of honey with nuts and honeycomb"),
-    eyebrow: L("من قرية تونس", "From Tunis village"),
-    title: L("الأرض بتدّي اللي تاخده", "The land gives back what it’s given"),
+    alt: L("أوعية عسل بالمكسرات وأقراص شمع العسل", "Jars of honey with nuts and honeycomb"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("منتجات موسمية مختارة", "Chosen seasonal products"),
     text: L(
-      "بنزرع بالسماد البلدي، وبنسيب الأرض ترتاح كل موسم، وبنقطف على مهلنا عشان الطعم يفضل زي زمان.",
-      "We farm with natural compost, rest the land every season and pick slowly, so the taste stays the way it used to be.",
+      "خضار وفاكهة حسب الموسم، وخبز ومخبوزات، وعسل وجبن ومؤن، بأوزان وتفاصيل واضحة.",
+      "Seasonal produce, bread and bakes, honey, cheese and pantry goods, with clear weights and details.",
     ),
-    more: L("والعسل والجبن والعيش من جيرانا في القرية، بنعرف كل واحد فيهم بالاسم.", "The honey, cheese and bread come from our village neighbours, and we know each of them by name."),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
     button: L("تسوّق المفضّل", "Shop favourites"),
     href: BEST,
   }),
@@ -183,7 +183,7 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("أكل بيتي من غيطنا في الفيوم: خضار وفاكهة وعيش وعسل.", "Home food from our Fayoum farm: produce, bread and honey."),
+  description: L("خضار وفاكهة وخبز وعسل ومؤن طبيعية.", "Produce, bread, honey and natural pantry goods."),
   categories: [
     ["fruits", "فواكه", "Fruits", PHOTOS.catFruits],
     ["vegetables", "خضار", "Vegetables", PHOTOS.catVegetables],
@@ -212,17 +212,17 @@ const DEMO = demoStore({
     ["sweet-potatoes", "vegetables", "بطاطا، ١ كجم", "Sweet Potatoes, 1 kg", P(7456548), 25, { compareAtPrice: 30, rating: 4.8, sold90: 102 }],
     ["baladi-carrots", "vegetables", "جزر بلدي بالعرش، ١ كجم", "Baladi Carrots with Tops, 1 kg", P(1306559), 18, { rating: 4.7, sold90: 94 }],
     // Bakery
-    ["sourdough-loaf", "bakery", "عيش ساوردو، رغيف كبير", "Sourdough Loaf", P(11842163), 85, { isFeatured: true, rating: 4.9, sold90: 158 }],
+    ["sourdough-loaf", "bakery", "خبز العجين المخمّر، رغيف كبير", "Sourdough Loaf", P(11842163), 85, { isFeatured: true, rating: 4.9, sold90: 158 }],
     ["artisan-baguettes", "bakery", "باجيت فرن طين، ٢ قطعة", "Clay-Oven Baguettes, 2 pcs", P(30926138), 45, { rating: 4.7, sold90: 121 }],
     ["butter-cookies", "bakery", "بسكويت زبدة، ٥٠٠ جم", "Butter Cookies, 500 g", P(797761), 140, { rating: 4.8, sold90: 97 }],
     ["baklava", "bakery", "بقلاوة بالفستق، ٥٠٠ جم", "Pistachio Baklava, 500 g", P(5323489), 320, { compareAtPrice: 360, rating: 4.9, sold90: 84 }],
     ["focaccia", "bakery", "فوكاتشيا بالزعتر وزيت الزيتون", "Thyme & Olive Oil Focaccia", P(30666814), 75, { rating: 4.6, sold90: 57 }],
     ["sesame-bagels", "bakery", "بيغل بالسمسم، ٤ قطع", "Sesame Bagels, 4 pcs", P(11599632), 70, { rating: 4.5, sold90: 43 }],
-    ["rye-loaf", "bakery", "عيش شعير، رغيف", "Rye Loaf", P(2661996), 80, { rating: 4.6, sold90: 49 }],
+    ["rye-loaf", "bakery", "خبز شعير، رغيف", "Rye Loaf", P(2661996), 80, { rating: 4.6, sold90: 49 }],
     ["croissants", "bakery", "كرواسون بالكريمة، ٤ قطع", "Cream Croissants, 4 pcs", P(10641331), 110, { rating: 4.7, sold90: 76 }],
     // Pantry, nuts & honey
     ["siwa-dates", "pantry", "بلح سيوي، ١ كجم", "Siwa Dates, 1 kg", P(15913423), 150, { rating: 4.8, sold90: 143 }],
-    ["walnuts", "pantry", "عين جمل بقشره، ٥٠٠ جم", "Walnuts in Shell, 500 g", P(14655679), 180, { rating: 4.6, sold90: 61 }],
+    ["walnuts", "pantry", "عين الجمل بقشره، ٥٠٠ جم", "Walnuts in Shell, 500 g", P(14655679), 180, { rating: 4.6, sold90: 61 }],
     ["almonds", "pantry", "لوز محمص، ٢٥٠ جم", "Roasted Almonds, 250 g", P(6802627), 175, { rating: 4.7, sold90: 79 }],
     ["pistachios", "pantry", "فستق بقشره، ٢٥٠ جم", "Pistachios in Shell, 250 g", P(6086412), 240, { rating: 4.8, sold90: 88 }],
     ["wild-honey", "pantry", "عسل نحل جبلي، ٥٠٠ جم", "Wild Mountain Honey, 500 g", P(13246534), 280, { isFeatured: true, rating: 5, sold90: 126 }],
@@ -247,8 +247,8 @@ export const GROCERY_WARM = libraryTemplate({
   version: 1,
   name: L("غيط", "Gheit"),
   description: L(
-    "بقالة دافية من المزرعة: صورة غيط كبيرة، يوم الحصاد، وحكاية الفرن. لمتاجر الأكل البيتي والمنتجات الطبيعية.",
-    "A warm farm-to-table grocer: a big field photo, harvest day and the bakery story. For home-food and natural produce stores.",
+    "بقالة دافئة بروح المزرعة: صورة حقل كبيرة، منتجات الموسم وحكاية المتجر. لمتاجر الأكل البيتي والمنتجات الطبيعية.",
+    "A warm farm-to-table grocer: a big field photo, the season’s produce and the shop’s story. For home-food and natural produce stores.",
   ),
   category: "pets",
   style: ["warm"],
@@ -276,9 +276,9 @@ export const GROCERY_WARM = libraryTemplate({
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("تعالى زورنا", "Come and visit"),
-        text: L("محلنا: ٣١ شارع ٢٣١، دجلة، المعادي، القاهرة. والمزرعة في قرية تونس، الفيوم، بالحجز.", "Our shop: 31 Road 231, Degla, Maadi, Cairo. The farm is in Tunis village, Fayoum, by booking."),
-        heading: L("احجز زيارة للغيط أو اسألنا عن أي منتج", "Book a farm visit or ask us about anything"),
+        title: L("تواصل معنا", "Contact us"),
+        text: L("٣١ شارع ٢٣١، دجلة، المعادي، القاهرة.", "31 Road 231, Degla, Maadi, Cairo."),
+        heading: L("اسألنا عن أي منتج", "Ask us about any product"),
       }),
     },
     {
@@ -286,11 +286,11 @@ export const GROCERY_WARM = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الحصاد والتوصيل والسلال الأسبوعية.", "Harvest, delivery and weekly baskets."),
-        question: L("الخضار بيتقطف إمتى؟", "When is the produce picked?"),
+        text: L("المنتجات والأوزان والطلبات.", "Products, weights and orders."),
+        question: L("كيف أحفظ الخضار والفاكهة؟", "How should I store fruit and vegetables?"),
         answer: L(
-          "بنقطف الخميس الفجر وبنوصل القاهرة والجيزة نفس اليوم. ولو اشتركت في السلة الأسبوعية، بتوصلك كل خميس من غير ما تطلب.",
-          "We pick on Thursday at dawn and deliver across Cairo and Giza the same day. Subscribe to the weekly basket and it arrives every Thursday without reordering.",
+          "احفظ الخضار الورقية في الثلاجة، واترك الفاكهة غير الناضجة في مكان جاف حتى تنضج.",
+          "Keep leafy greens in the fridge and leave unripe fruit somewhere dry until it ripens.",
         ),
       }),
     },
@@ -300,6 +300,6 @@ export const GROCERY_WARM = libraryTemplate({
     thumbs: "bottom",
     band: "shelf",
     extras: ["product-perks"],
-    copy: { reviews: L("من سفرة عملائنا", "From our customers’ tables"), related: L("يحلى معاه", "Goes well with") },
+    copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("يتناسب معه", "Goes well with") },
   },
 });

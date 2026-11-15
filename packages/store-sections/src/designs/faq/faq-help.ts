@@ -20,7 +20,7 @@ export const faqHelp = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("كيف نقدر نساعدك؟", "How can we help?"), "h2", {
+              t.heading(L("كيف يمكننا مساعدتك؟", "How can we help?"), "h2", {
                 role: "title",
                 style: { fontSize: "display-md", fontWeight: "extrabold", textAlign: "center" },
               }),

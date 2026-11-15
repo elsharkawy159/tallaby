@@ -40,11 +40,11 @@ export const aboutSplitStory = defineDesign({
               ),
               t.stack(
                 [
-                  t.text(L("من ورشتنا", "From our workshop"), {
+                  t.text(L("عن المتجر", "About the store"), {
                     role: "eyebrow",
                     style: { fontSize: "sm", fontWeight: "semibold", color: "primary" },
                   }),
-                  t.heading(L("متصمم عشانك ومعمول في القاهرة", "Designed for you, made in Cairo"), "h2", {
+                  t.heading(L("تصميم مدروس وخامات مختارة", "Thoughtful design, chosen materials"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", lineHeight: "tight" },
                   }),
@@ -52,13 +52,13 @@ export const aboutSplitStory = defineDesign({
                     [
                       t.paragraph(
                         L(
-                          "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.",
-                          "We make small runs so every piece stays special and nothing goes to waste.",
+                          "نختار كل قطعة بعناية لتبقى مميزة.",
+                          "We choose every piece with care so it stays special.",
                         ),
                         { role: "body", style: { fontSize: "lg", lineHeight: "relaxed", maxWidth: "520px" }, mobile: { fontSize: "md" } },
                       ),
                       t.paragraph(
-                        L("كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.", "Each one is cut and sewn by our team in Maadi."),
+                        L("ونعرض لكل قطعة صورًا ومقاسات واضحة.", "Each piece comes with photos and clear sizes."),
                         { role: "body", style: { fontSize: "lg", lineHeight: "relaxed", maxWidth: "520px" }, mobile: { fontSize: "md" } },
                       ),
                     ],

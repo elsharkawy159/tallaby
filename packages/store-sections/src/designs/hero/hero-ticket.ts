@@ -88,7 +88,7 @@ export const heroTicket = defineDesign({
                   mobile: { minHeight: 360, colSpan: 1 },
                 },
               ),
-              t.stack([side(t, 1, L("٠٢", "02"), L("عروض الأسبوع", "This week's offers")), side(t, 2, L("٠٣", "03"), L("هدايا مختارة", "Picked gifts"))], {
+              t.stack([side(t, 1, L("٠٢", "02"), L("مختارات الأسبوع", "This week's picks")), side(t, 2, L("٠٣", "03"), L("هدايا مختارة", "Picked gifts"))], {
                 label: L("الحملات التالية", "Next campaigns"),
                 style: { gap: 20 },
                 mobile: { direction: "row", gap: 12 },

@@ -8,9 +8,9 @@ import { L, sectionHead } from "../_kit";
 
 const STEPS = [
   { no: L("١", "1"), title: L("اختر", "Choose"), text: L("أضف ما يعجبك إلى السلة", "Add what you like to the cart") },
-  { no: L("٢", "2"), title: L("اطلب", "Order"), text: L("عنوانك ورقم موبايلك فقط", "Just your address and number") },
-  { no: L("٣", "3"), title: L("نؤكد", "Confirm"), text: L("نتواصل معك على واتساب للتأكيد", "We confirm on WhatsApp") },
-  { no: L("٤", "4"), title: L("استلم", "Receive"), text: L("وادفع عند الاستلام", "And pay when it arrives") },
+  { no: L("٢", "2"), title: L("اطلب", "Order"), text: L("عنوانك ورقم هاتفك فقط", "Just your address and number") },
+  { no: L("٣", "3"), title: L("نؤكد", "Confirm"), text: L("نؤكد طلبك معك", "We confirm your order with you") },
+  { no: L("٤", "4"), title: L("استلم", "Receive"), text: L("يصلك الطلب على عنوانك", "Your order comes to your address") },
 ];
 
 export const featuresSteps = defineDesign({

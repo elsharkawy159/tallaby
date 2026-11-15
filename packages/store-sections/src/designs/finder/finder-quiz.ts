@@ -16,8 +16,8 @@ const LETTERS = [L("أ", "A"), L("ب", "B"), L("ج", "C"), L("د", "D")];
 const ANSWERS = [
   L("أقل من ٨ ساعات", "Under 8 hours"),
   L("يوم كامل", "A full day"),
-  L("أكتر من يوم", "More than a day"),
-  L("مش فارقة معايا", "I don't mind"),
+  L("أكثر من يوم", "More than a day"),
+  L("لا يهم", "I don't mind"),
 ];
 
 export const finderQuiz = defineDesign({
@@ -71,7 +71,7 @@ export const finderQuiz = defineDesign({
                   ),
                   t.heading(
                     L(
-                      "البطارية لازم تكفي قد إيه؟",
+                      "كم يجب أن تدوم البطارية؟",
                       "How long should the battery last?",
                     ),
                     "h2",
@@ -157,7 +157,7 @@ export const finderQuiz = defineDesign({
                   ),
                   t.text(
                     L(
-                      "كل إجابة بتوديك على المنتجات المناسبة ليها.",
+                      "كل إجابة تأخذك إلى المنتجات المناسبة لها.",
                       "Each answer takes you to the products that fit it.",
                     ),
                     {

@@ -33,7 +33,7 @@ export const finderBudget = defineDesign({
                 [
                   dotLabel(t, L("ميزانيتك", "Your budget")),
                   t.heading(
-                    L("ابدأ من الأوفر", "Start with the best value"),
+                    L("ابدأ بالأقل سعرًا", "Start with the best value"),
                     "h2",
                     {
                       role: "title",
@@ -47,7 +47,7 @@ export const finderBudget = defineDesign({
                   ),
                   t.paragraph(
                     L(
-                      "رتبنالك المنتجات من الأقل سعرًا. عايز تشوف الأغلى الأول؟ اختار من الزراير.",
+                      "رتّبنا لك المنتجات من الأقل سعرًا. تريد رؤية الأعلى سعرًا أولًا؟ اختر من الأزرار.",
                       "Products sorted from the lowest price. Want the premium ones first? Use the buttons.",
                     ),
                     {

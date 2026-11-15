@@ -43,8 +43,8 @@ export const newsletterCoupon = defineDesign({
               ),
               t.stack(
                 [
-                  t.heading(L("خصم الترحيب ليك", "Your welcome discount"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
-                  t.paragraph(L("اشترك وهيظهرلك الكود على طول.", "Subscribe and the code shows right away."), {
+                  t.heading(L("خصم الترحيب لك", "Your welcome discount"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
+                  t.paragraph(L("اشترك ليظهر لك الكود فورًا.", "Subscribe and the code shows right away."), {
                     role: "subtitle",
                     style: { color: "foreground" },
                   }),

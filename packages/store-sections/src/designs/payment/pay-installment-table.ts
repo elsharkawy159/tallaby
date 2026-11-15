@@ -13,7 +13,7 @@ import { RULED, RULED_CELL, dotLabel } from "../_modular";
 import { INSTALLMENT_PROVIDERS, payTitle } from "./_shared";
 
 const TERMS = [L("٦ شهور", "6 mo"), L("١٢ شهر", "12 mo"), L("١٨ شهر", "18 mo"), L("٢٤ شهر", "24 mo")];
-const NO_FEES = L("بدون فوايد", "No interest");
+const NO_FEES = L("بدون فوائد", "No interest");
 const RATES = [
   [NO_FEES, NO_FEES, L("٥٪", "5%"), L("٨٪", "8%")],
   [NO_FEES, L("٤٪", "4%"), L("٧٪", "7%"), L("١٠٪", "10%")],
@@ -38,7 +38,7 @@ export const payInstallmentTable = defineDesign({
         [
           t.stack(
             [
-              t.stack([dotLabel(t, L("التقسيط", "Installments")), payTitle(t, L("قسّط على راحتك", "Pay in installments"))], {
+              t.stack([dotLabel(t, L("التقسيط", "Installments")), payTitle(t, L("ادفع بالتقسيط", "Pay in installments"))], {
                 label: L("العنوان", "Heading"),
                 role: "intro",
                 style: { gap: 12 },
@@ -84,7 +84,7 @@ export const payInstallmentTable = defineDesign({
                 ],
                 { label: L("الجدول", "Table"), role: "items", style: RULED },
               ),
-              t.text(L("النسب تقريبية وبتتأكد عند الدفع.", "Rates are estimates, confirmed at checkout."), {
+              t.text(L("النسب تقريبية وتُؤكَّد عند الدفع.", "Rates are estimates, confirmed at checkout."), {
                 role: "note",
                 style: { fontSize: "sm", color: "muted" },
               }),

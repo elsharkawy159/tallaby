@@ -24,7 +24,7 @@ export const textBrandStatement = defineDesign({
                 role: "eyebrow",
                 style: { fontSize: "sm", fontWeight: "semibold", color: "muted", textAlign: "center" },
               }),
-              t.heading(L("ألوان جريئة وقصّات مريحة، معمولة تتلبس كل يوم.", "Bold colour, easy cuts, made to be worn every day."), "h2", {
+              t.heading(L("منتجات مختارة بعناية لكل يوم، بتصميم بسيط وخامات جيدة.", "Carefully chosen products for every day, simple in design and good in material."), "h2", {
                 role: "title",
                 style: { fontSize: "display-sm", fontWeight: "medium", lineHeight: "snug", textAlign: "center", maxWidth: "980px" },
               }),

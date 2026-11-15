@@ -61,54 +61,54 @@ const NAME = L("فيلا", "Vella");
 const DEFAULT_CONTENT: LookDefaults = {
   // The black strip's three sliding messages, two to five words each.
   announcement: [
-    L("أهلًا بيك في فيلا", "Welcome to Vella"),
-    L("شحن مجاني للطلبات فوق ٧٥٠٠ جنيه", "Free shipping above 7,500 EGP"),
-    L("تفاصيل بتفرق", "Details that make a difference"),
+    L("أهلًا بك في فيلا", "Welcome to Vella"),
+    L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
+    L("تفاصيل تصنع الفرق", "Details that make a difference"),
   ],
-  footer: { line: L("فيلا: أزياء نسائية عصرية، صُممت عشانك.", "Vella: contemporary women's fashion, designed for you.") },
+  footer: { line: L("فيلا: أزياء نسائية عصرية مختارة بعناية.", "Vella: contemporary women's fashion, chosen with care.") },
   hero: {
-    alt: L("شماعة عليها قطع شتوية بنقوش", "A rail of patterned winter pieces"),
+    alt: L("علّاقة ملابس عليها قطع شتوية منقوشة", "A rail of patterned winter pieces"),
     eyebrow: L("مجموعة الشتاء", "Winter collection"),
-    title: L("أناقة معمولة ليكِ", "Elegance made for you"),
-    line: L("تفاصيل بتفرق، وستايل يبدأ من هنا.", "Details that make a difference. Your look starts here."),
-    cta: L("تسوّقي الآن", "Shop now"),
+    title: L("أزياء نسائية للشتاء", "Women's winter fashion"),
+    line: L("قطع مختارة بتفاصيل تصنع الفرق.", "Chosen pieces with details that make a difference."),
+    cta: L("تسوّق الآن", "Shop now"),
   },
   categories: { title: L("المجموعات", "Collections") },
   // The full-width band between the first and second category rows. Its button goes to the newest products.
   story: {
-    alt: L("شماعة صغيرة عليها ثلاث قطع على حيطة رمادي فاتح", "A small rail with three pieces on a pale grey wall"),
-    eyebrow: L("انضمي لينا", "Join us"),
-    title: L("كوني من اللي بيعرفوا يلبسوا", "Be one of the women who wear it well"),
-    text: L("اكتشفي قطعتك المفضلة الجاية، من تشكيلة مختارة بعناية كل أسبوع.", "Discover your next favorite piece, from a range chosen with care every week."),
-    cta: L("تسوّقي الجديد", "Shop new in"),
+    alt: L("علّاقة صغيرة عليها ثلاث قطع أمام جدار رمادي فاتح", "A small rail with three pieces on a pale grey wall"),
+    eyebrow: L("وصل حديثًا", "New in"),
+    title: L("أحدث القطع في المتجر", "The latest pieces in store"),
+    text: L("اكتشف تشكيلة مختارة من الفساتين والبلوزات والهوديز.", "Discover a chosen range of dresses, blouses and hoodies."),
+    cta: L("تسوّق الجديد", "Shop new in"),
   },
   newsletter: {
-    title: L("اشتركي في نشرتنا", "Subscribe to our newsletter"),
-    line: L("تابعي جديد القطع وتحديثات المخزون وأكتر.", "Follow for tailored new arrivals, stock updates and more."),
+    title: L("اشترك في نشرتنا", "Subscribe to our newsletter"),
+    line: L("تابع جديد القطع وتحديثات المخزون.", "Get new arrivals and stock updates."),
   },
   about: {
-    line: L("أزياء نسائية عصرية، صُممت عشانك.", "Contemporary women's fashion, designed for you."),
-    alt: L("تريكو بألوان الكريمي والتوبي بإضاءة ناعمة", "Cream and taupe knits in soft light"),
+    line: L("أزياء نسائية عصرية مختارة بعناية.", "Contemporary women's fashion, chosen with care."),
+    alt: L("قطع تريكو بلون كريمي وبيج في إضاءة هادئة", "Cream and taupe knits in soft light"),
     eyebrow: L("حكايتنا", "Our story"),
-    title: L("الموضة تعبير عن نفسك", "Fashion is how you express yourself"),
+    title: L("أزياء عصرية مختارة بعناية", "Modern fashion, chosen with care"),
     text: L(
-      "بدأت فيلا بشغف للستايل العصري والأناقة. بنختار قطعنا بعناية عشان تجمع بين أحدث الترندات والراحة اللي بتدوم.",
-      "Vella began with a passion for modern style. We choose every piece to mix the latest trends with comfort that lasts.",
+      "تقدّم فيلا أزياء نسائية عصرية. نختار كل قطعة بعناية لتجمع بين التصميم الحديث والخامة المريحة.",
+      "Vella offers contemporary women's fashion. We choose every piece to pair a modern design with a comfortable fabric.",
     ),
-    more: L("وأي قطعة مش مظبوطة عليكي، بنبدلها خلال ١٤ يوم.", "And if a piece does not suit you, we exchange it within 14 days."),
+    more: L("وفي كل صفحة منتج تفاصيل المقاسات والخامات بوضوح.", "Every product page shows sizes and fabrics clearly."),
     // The button goes to the best sellers.
-    cta: L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
+    cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
   },
   contact: {
-    title: L("كلمينا", "Talk to us"),
+    title: L("تواصل معنا", "Contact us"),
     line: L(`القاهرة، مصر، ${phone("٠١٢٣ ٤٥٦ ٧٨٩٠")}، ${handle("vella@vella.eg")}`, "Cairo, Egypt | +20 123 456 7890 | vella@vella.eg"),
-    heading: L("محتاجة مساعدة في المقاس؟ اسألينا", "Need help with sizing? Ask us"),
+    heading: L("هل تحتاج مساعدة في المقاس؟ اسألنا", "Need help with sizing? Ask us"),
   },
   faq: {
-    line: L("المقاسات والشحن والاستبدال.", "Sizing, shipping and exchanges."),
-    question: L("إزاي أعرف مقاسي؟", "How do I find my size?"),
+    line: L("المقاسات والخامات والطلبات.", "Sizes, fabrics and orders."),
+    question: L("كيف أعرف مقاسي؟", "How do I find my size?"),
     answer: L(
-      "جدول المقاسات موجود في كل صفحة منتج بالسنتيمتر. ولو بين مقاسين، اختاري الأكبر لقصة مريحة أكتر.",
+      "جدول المقاسات بالسنتيمتر موجود في كل صفحة منتج. وإذا كان مقاسك بين مقاسين، فاختر الأكبر لقصّة أكثر راحة.",
       "A size guide in centimetres is on every product page. If you are between sizes, size up for a more relaxed fit.",
     ),
   },
@@ -147,9 +147,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const header = lib("header-announcement-strip", {
     text: {
       "اسم متجرك": name,
-      "أهلًا بيك في متجرنا": c.announcement[0]!,
-      "شحن مجاني للطلبات الكبيرة": c.announcement[1]!,
-      "تفاصيل بتفرق": c.announcement[2]!,
+      "أهلًا بك في متجرنا": c.announcement[0]!,
+      "تسوّق سهل من هاتفك": c.announcement[1]!,
+      "تفاصيل تصنع الفرق": c.announcement[2]!,
       "العروض": L("وصل حديثًا", "New in"),
       "المدونة": L("الأكثر طلبًا", "Best sellers"),
     },
@@ -188,15 +188,15 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "فيديو الواجهة": c.hero.alt,
         "المجموعة الجديدة": c.hero.eyebrow,
-        "مساحتك، بطريقتك": c.hero.title,
-        "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تصميم هادئ لكل يوم": c.hero.title,
+        "قطع مختارة بعناية لكل يوم.": c.hero.line,
         "تسوّق الآن": c.hero.cta,
-        "شوف الجديد": L("وصل حديثًا", "New in"),
+        "اكتشف الجديد": L("وصل حديثًا", "New in"),
       },
       links: { "/products": SHOP, "/products?sort=newest": NEW },
     }),
     lib("categories-portrait-labels", {
-      text: { "المجموعات": c.categories.title, "تسوّق الآن": c.custom["categories-cta"] ?? L("تسوّقي الآن", "Shop now") },
+      text: { "المجموعات": c.categories.title, "تسوّق الآن": c.custom["categories-cta"] ?? L("تسوّق الآن", "Shop now") },
     }),
     lib("text-big-marquee"),
     rows[0]!,
@@ -206,7 +206,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "صورة القصة": c.story.alt,
         "حكايتنا": c.story.eyebrow,
         "تفاصيل صغيرة تصنع الفرق": c.story.title,
-        "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.": c.story.text,
+        "بدأنا بفكرة بسيطة: منتجات نحب استخدامها بأنفسنا، بجودة جيدة وسعر عادل. نختار كل قطعة بعناية ونعرض تفاصيلها بوضوح.": c.story.text,
         "اعرف أكثر": c.story.cta,
       },
       links: { "/about": NEW },
@@ -214,8 +214,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     ...rows.slice(1),
     lib("newsletter-centered", {
       text: {
-        "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-        "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": c.newsletter.line,
+        "اشترك في نشرتنا البريدية": c.newsletter.title,
+        "اشترك لتصلك أخبار المنتجات الجديدة.": c.newsletter.line,
       },
     }),
   ];
@@ -258,40 +258,40 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("أزياء نسائية عصرية، صُممت عشانك.", "Contemporary women's fashion, designed for you."),
+  description: L("أزياء نسائية عصرية مختارة بعناية.", "Contemporary women's fashion, chosen with care."),
   categories: [
     ["hoodies", "هوديز", "Hoodies", PHOTOS.catHoodies],
     ["blouses-dresses", "بلوزات وفساتين", "Blouses & Dresses", PHOTOS.catDresses],
-    ["sweatpants", "سويت بانتس", "Sweatpants", PHOTOS.catSweatpants],
+    ["sweatpants", "بناطيل قطنية مريحة", "Sweatpants", PHOTOS.catSweatpants],
     ["sports-wear", "ملابس رياضية", "Sports Wear", PHOTOS.catSports],
   ],
   products: [
     // Hoodies
     ["rainbow-fleece-hoodie", "hoodies", "هودي فليس ملون", "Rainbow Fleece Hoodie", P(17076381), 1150, { isFeatured: true, rating: 4.8, sold90: 82 }],
-    ["colour-block-sweatshirt", "hoodies", "سويت شيرت كولور بلوك", "Colour-Block Sweatshirt", P(4192904), 999, { compareAtPrice: 1200, rating: 4.7, sold90: 61 }],
-    ["sage-oversized-sweatshirt", "hoodies", "سويت شيرت أوفر سايز أخضر", "Sage Oversized Sweatshirt", P(9594694), 1050, { rating: 4.6, sold90: 44 }],
-    ["colour-block-zip-sweatshirt", "hoodies", "سويت شيرت بسوستة", "Colour-Block Zip Sweatshirt", P(18904630), 1100, { rating: 4.7, sold90: 38 }],
+    ["colour-block-sweatshirt", "hoodies", "سويت شيرت بألوان متداخلة", "Colour-Block Sweatshirt", P(4192904), 999, { compareAtPrice: 1200, rating: 4.7, sold90: 61 }],
+    ["sage-oversized-sweatshirt", "hoodies", "سويت شيرت أخضر بمقاس واسع", "Sage Oversized Sweatshirt", P(9594694), 1050, { rating: 4.6, sold90: 44 }],
+    ["colour-block-zip-sweatshirt", "hoodies", "سويت شيرت بسحّاب", "Colour-Block Zip Sweatshirt", P(18904630), 1100, { rating: 4.7, sold90: 38 }],
     ["grey-hoodie-pair", "hoodies", "هودي رمادي", "Grey Hoodie", P(34460035), 1025, { rating: 4.5, sold90: 52 }],
     ["green-chunky-pullover", "hoodies", "بلوفر تريكو أخضر غامق", "Forest Green Chunky Pullover", P(3353621), 1333, { compareAtPrice: 1730, rating: 4.8, sold90: 27 }],
     // Blouses & dresses
     ["pastel-floral-tunic", "blouses-dresses", "فستان تونيك باستيل", "Pastel Floral Tunic Dress", P(19895950), 2766, { rating: 4.7, sold90: 40 }],
     ["midnight-floral-mini", "blouses-dresses", "فستان ميني بورود", "Midnight Floral Mini Dress", P(19895953), 3499, { isFeatured: true, rating: 4.8, sold90: 55 }],
-    ["bohemian-print-dress", "blouses-dresses", "فستان بوهو مطبوع", "Bohemian Print Dress", P(19895954), 4200, { rating: 4.6, sold90: 31 }],
+    ["bohemian-print-dress", "blouses-dresses", "فستان بنقوش بوهيمية", "Bohemian Print Dress", P(19895954), 4200, { rating: 4.6, sold90: 31 }],
     ["cream-puff-sleeve-blouse", "blouses-dresses", "بلوزة كريمي بأكمام منفوخة", "Cream Puff-Sleeve Blouse", P(23495731), 1899, { rating: 4.8, sold90: 66 }],
-    ["ivory-cropped-blouse", "blouses-dresses", "بلوزة كروب عاجي", "Ivory Cropped Blouse", P(5204832), 1450, { rating: 4.5, sold90: 48 }],
+    ["ivory-cropped-blouse", "blouses-dresses", "بلوزة قصيرة عاجية", "Ivory Cropped Blouse", P(5204832), 1450, { rating: 4.5, sold90: 48 }],
     ["white-tiered-midi", "blouses-dresses", "فستان ميدي أبيض", "White Tiered Midi Dress", P(7417471), 5200, { compareAtPrice: 5900, rating: 4.9, sold90: 36 }],
-    ["black-floral-slip", "blouses-dresses", "فستان سليب أسود", "Black Floral Slip Dress", P(18984545), 3800, { rating: 4.7, sold90: 29 }],
+    ["black-floral-slip", "blouses-dresses", "فستان أسود بحمّالات", "Black Floral Slip Dress", P(18984545), 3800, { rating: 4.7, sold90: 29 }],
     ["paisley-print-blouse", "blouses-dresses", "بلوزة بيزلي", "Paisley Print Blouse", P(38194953), 2200, { rating: 4.6, sold90: 24 }],
     // Sweatpants
     ["grey-fleece-joggers", "sweatpants", "جوجر فليس رمادي", "Grey Fleece Joggers", P(31961166), 799, { isFeatured: true, rating: 4.8, sold90: 91 }],
     ["rust-wide-leg-trousers", "sweatpants", "بنطلون واسع صدئي", "Rust Wide-Leg Trousers", P(4458521), 1099, { rating: 4.6, sold90: 43 }],
     ["olive-cargo-trousers", "sweatpants", "بنطلون كارجو زيتي", "Olive Cargo Trousers", P(20094389), 999, { rating: 4.7, sold90: 35 }],
-    ["two-tone-lounge-pants", "sweatpants", "بنطلون بيت بلونين", "Two-Tone Lounge Pants", P(6046228), 599, { compareAtPrice: 898, rating: 4.5, sold90: 58 }],
+    ["two-tone-lounge-pants", "sweatpants", "بنطلون مريح بلونين", "Two-Tone Lounge Pants", P(6046228), 599, { compareAtPrice: 898, rating: 4.5, sold90: 58 }],
     // Sports wear
-    ["mauve-seamless-set", "sports-wear", "طقم سيملس موف", "Mauve Seamless Sports Set", P(3927384), 1250, { isFeatured: true, rating: 4.8, sold90: 47 }],
+    ["mauve-seamless-set", "sports-wear", "طقم رياضي موف بدون خياطة", "Mauve Seamless Sports Set", P(3927384), 1250, { isFeatured: true, rating: 4.8, sold90: 47 }],
     ["mauve-leggings-set", "sports-wear", "طقم موف بليجنز", "Mauve Set with Leggings", P(3927383), 1450, { rating: 4.7, sold90: 33 }],
     ["mauve-training-set", "sports-wear", "طقم تمرين موف", "Mauve Training Set", P(3927388), 1350, { rating: 4.6, sold90: 25 }],
-    ["white-ribbed-sports-bra", "sports-wear", "سبورت برا أبيض ريب", "White Ribbed Sports Bra", P(4397836), 450, { rating: 4.5, sold90: 62 }],
+    ["white-ribbed-sports-bra", "sports-wear", "صدرية رياضية بيضاء مضلّعة", "White Ribbed Sports Bra", P(4397836), 450, { rating: 4.5, sold90: 62 }],
   ],
 });
 
@@ -299,7 +299,7 @@ export const VELLA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(VELLA_KEY, "lingerie-sleepwear", { ar: 2682, en: 2691 }),
   key: VELLA_KEY,
-  version: 1,
+  version: 2,
   name: NAME,
   description: L(
     "أزياء نسائية بأسلوب نضيف: شريط رسائل أسود متحرك، فيديو بعرض الشاشة، أقسام بصور طولية وصف منتجات لكل قسم. لمتاجر الملابس النسائية.",
@@ -345,7 +345,7 @@ export const VELLA = editionTemplate({
     "photos.banner",
     "photos.story",
   ],
-  // `custom.categories-cta`: the small link under each category photo (default "تسوّقي الآن / Shop now").
+  // `custom.categories-cta`: the small link under each category photo (default "تسوّق الآن / Shop now").
   // `custom.footer-offers`: the label of the footer's "العروض / Offers" link, which goes to the whole catalog (a pack should rename it: an edition shows no offers).
   optional: ["photos.hero.video", "custom.categories-cta", "custom.footer-offers"],
   // No main product section: the home page is one row per category (`primary` is not read). The rows hold 4, 8, 4 and 4 products.
@@ -357,6 +357,6 @@ export const VELLA = editionTemplate({
     surface: "flat",
     band: "paper",
     extras: ["product-perks", "product-shipping"],
-    copy: { reviews: L("آراء عميلاتنا", "Customer reviews"), related: L("كمّلي اللوك", "Complete the look") },
+    copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") },
   },
 });

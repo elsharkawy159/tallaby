@@ -10,8 +10,8 @@ import type { SiteLocale } from "../config/schema";
 import type { TemplateDemo } from "./types";
 
 const DESCRIPTION: Record<SiteLocale, string> = {
-  ar: "منتج من مجموعتنا، مصنوع بعناية وجاهز للشحن.",
-  en: "A piece from our collection, made with care and ready to ship.",
+  ar: "منتج من مجموعتنا، مصنوع بعناية.",
+  en: "A piece from our collection, made with care.",
 };
 
 /** Extra gallery shots taken from other demo products. */

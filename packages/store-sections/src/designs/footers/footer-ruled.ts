@@ -40,7 +40,7 @@ export const footerRuled = defineDesign({
                 t.stack(
                   [
                     logo(t, { size: "lg" }),
-                    t.paragraph(L("منتجات أصلية بضمان، توصلك لحد البيت.", "Genuine products with warranty, delivered to your door."), {
+                    t.paragraph(L("منتجات مختارة بعناية لكل يوم.", "Carefully chosen products for every day."), {
                       style: { fontSize: "sm" },
                     }),
                   ],

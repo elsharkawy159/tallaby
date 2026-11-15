@@ -7,7 +7,7 @@
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
 
-const TOPICS = [L("وصل حديثًا", "New in"), L("العروض", "Offers"), L("هدايا", "Gifts"), L("نصايح", "Tips")];
+const TOPICS = [L("وصل حديثًا", "New in"), L("العروض", "Offers"), L("هدايا", "Gifts"), L("نصائح", "Tips")];
 
 export const newsletterInterests = defineDesign({
   id: "newsletter-interests",
@@ -23,7 +23,7 @@ export const newsletterInterests = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("إيه اللي يهمك؟", "What are you into?"), "h2", {
+              t.heading(L("ما الذي يهمك؟", "What are you into?"), "h2", {
                 role: "title",
                 style: {
                   fontSize: "display-sm",
@@ -31,7 +31,7 @@ export const newsletterInterests = defineDesign({
                   textAlign: "center",
                 },
               }),
-              t.paragraph(L("هنبعتلك اللي يخصك بس، مرة في الأسبوع.", "We only send what is relevant, once a week."), {
+              t.paragraph(L("سنرسل إليك ما يهمك فقط.", "We only send what is relevant to you."), {
                 role: "subtitle",
                 style: { textAlign: "center" },
               }),

@@ -30,7 +30,7 @@ export const promoShipping = defineDesign({
                 t.row(
                   [
                     iconDisc(t, "truck"),
-                    t.paragraph(L("اطلب بـ ١٥٠٠ ج.م أو أكتر والتوصيل عليك ببلاش", "Order EGP 1,500 or more and delivery is on us"), {
+                    t.paragraph(L("اطلب بقيمة ١٥٠٠ ج.م أو أكثر واحصل على توصيل مجاني", "Order EGP 1,500 or more and delivery is on us"), {
                       role: "title",
                       style: { color: "foreground", fontWeight: "medium" },
                     }),
@@ -40,7 +40,7 @@ export const promoShipping = defineDesign({
                     style: { gap: 14, wrap: false },
                   },
                 ),
-                arrowLink(t, L("منتجات تكمل بيها", "Small add-ons"), "/products"),
+                arrowLink(t, L("منتجات تكمل بها طلبك", "Small add-ons"), "/products"),
               ],
               {
                 label: L("الشريط", "Strip"),

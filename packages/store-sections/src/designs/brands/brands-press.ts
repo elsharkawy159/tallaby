@@ -24,7 +24,7 @@ export const brandsPress = defineDesign({
                 [
                   t.icon("quote", { style: { fontSize: "4xl", color: "primary" } }),
                   t.heading(
-                    L("«من أكثر المتاجر اهتمامًا بالمنتج الأصلي والضمان.»", "“One of the stores that cares most about genuine products and warranty.”"),
+                    L("«من أكثر المتاجر اهتمامًا بتفاصيل المنتج.»", "“One of the stores that cares most about product details.”"),
                     "h2",
                     { role: "quote", style: { fontSize: "display-sm", fontWeight: "semibold", lineHeight: "snug" } },
                   ),

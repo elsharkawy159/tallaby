@@ -53,7 +53,7 @@ export const rewardsGift = defineDesign({
                       t.icon("gift", {
                         style: { fontSize: "2xl", color: "primaryInk" },
                       }),
-                      t.text(L("هدية من عندنا", "A gift from us"), {
+                      t.text(L("هدية منّا", "A gift from us"), {
                         style: { fontWeight: "semibold", color: "primaryInk" },
                       }),
                     ],
@@ -77,7 +77,7 @@ export const rewardsGift = defineDesign({
                           opacity: 85,
                         },
                       }),
-                      t.text(L("هدية تفرّح", "A gift they'll love"), {
+                      t.text(L("هدية مميزة", "A special gift"), {
                         role: "value",
                         style: {
                           fontSize: "5xl",
@@ -126,7 +126,7 @@ export const rewardsGift = defineDesign({
                   dotLabel(t, L("الهدايا", "Gifts")),
                   t.heading(
                     L(
-                      "دوّر على هدية لحد بتحبه",
+                      "ابحث عن هدية لمن تحب",
                       "Find a gift for someone you love",
                     ),
                     "h2",
@@ -137,7 +137,7 @@ export const rewardsGift = defineDesign({
                   ),
                   t.paragraph(
                     L(
-                      "اختار المناسبة وشوف أفكار تناسب كل ميزانية.",
+                      "اختر المناسبة وتصفّح أفكارًا تناسب كل ميزانية.",
                       "Pick the occasion and browse ideas for every budget.",
                     ),
                     { role: "subtitle" },

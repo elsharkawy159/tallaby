@@ -16,20 +16,20 @@ const PLANS = [
     price: L("١٩٩ ج.م", "EGP 199"),
     perks: [
       L("إصلاح الأعطال", "Fault repair"),
-      L("فني في البيت", "Home visit"),
+      L("زيارة فني منزلية", "Home visit"),
     ],
   },
   {
-    name: L("سنتين", "2 years"),
+    name: L("سنتان", "2 years"),
     price: L("٣٤٩ ج.م", "EGP 349"),
     perks: [
       L("إصلاح الأعطال", "Fault repair"),
-      L("فني في البيت", "Home visit"),
+      L("زيارة فني منزلية", "Home visit"),
       L("جهاز بديل وقت الصيانة", "Loan device during repair"),
     ],
   },
   {
-    name: L("٣ سنين", "3 years"),
+    name: L("٣ سنوات", "3 years"),
     price: L("٤٧٩ ج.م", "EGP 479"),
     perks: [
       L("كل مزايا السنتين", "Everything in 2 years"),
@@ -64,7 +64,7 @@ export const servicePlans = defineDesign({
         [
           sectionHead(t, {
             eyebrow: L("الضمان", "Warranty"),
-            title: L("احمي جهازك أكتر", "Protect it for longer"),
+            title: L("احمِ جهازك لمدة أطول", "Protect it for longer"),
             align: "center",
           }),
           t.grid(
@@ -75,7 +75,7 @@ export const servicePlans = defineDesign({
                 [
                   ...(on
                     ? [
-                        t.badge(L("الأكتر طلبًا", "Most picked"), {
+                        t.badge(L("الأكثر طلبًا", "Most picked"), {
                           style: {
                             background: "accent",
                             color: "foreground",
@@ -112,7 +112,7 @@ export const servicePlans = defineDesign({
                     [
                       pillButton(
                         t,
-                        L("اختار الباقة", "Choose plan"),
+                        L("اختر الباقة", "Choose plan"),
                         WHATSAPP_LINK,
                         { tone: on ? "ink" : "outline" },
                       ),

@@ -61,52 +61,52 @@ const NAME = L("ليفل أب", "Level Up");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header search placeholder: three things a buyer types.
-  labels: { search: L("ابحث عن كيبورد، ماوس، سماعة…", "Search keyboards, mice, headsets…") },
+  labels: { search: L("ابحث عن لوحة مفاتيح، ماوس، سماعة…", "Search keyboards, mice, headsets…") },
   // Copy over a full-bleed photo. The second button is always "Best sellers".
   hero: {
-    alt: L("مكتب جيمنج بإضاءة برتقالي", "A gaming desk in orange light"),
-    eyebrow: L("متجرب من ١٠ لعيبة", "Tested by ten players"),
-    title: L("العب على مستوى تاني", "Play on another level"),
-    line: L("كيبوردات وماوسات وسماعات بضمان محلي سنتين، وتوصيل القاهرة في يوم.", "Keyboards, mice and headsets with a 2-year local warranty and next-day Cairo delivery."),
+    alt: L("مكتب ألعاب بإضاءة برتقالية", "A gaming desk in orange light"),
+    eyebrow: L("أدوات الألعاب", "Gaming gear"),
+    title: L("العب بمستوى أعلى", "Play at a higher level"),
+    line: L("لوحات مفاتيح وماوس وسماعات وأذرع تحكم لكل منصة.", "Keyboards, mice, headsets and controllers for every platform."),
     cta: L("تسوق الأدوات", "Shop the gear"),
   },
-  categories: { title: L("اختار سلاحك", "Choose your gear") },
+  categories: { title: L("اختر أدواتك", "Choose your gear") },
   // A brand-coloured panel beside a rail of what `journey.primary` shows: `eyebrow` names what the rail shows (two words), then the panel's title and line.
   products: {
     primary: {
       eyebrow: L("الأكثر مبيعاً", "Best sellers"),
-      title: L("اختيارات اللعيبة", "Players’ picks"),
-      line: L("متجرب من فريقنا من ١٠ لعيبة.", "Tested by our team of ten players."),
+      title: L("اختيارات اللاعبين", "Players’ picks"),
+      line: L("الأدوات الأكثر طلبًا في المتجر.", "The most ordered gear in the store."),
     },
   },
   // The sign-up: a question whose answers are the four `custom.newsletter-interest-N` chips.
   newsletter: {
-    title: L("بتلعب إيه؟", "What do you play?"),
-    line: L("اختار وهنبعتلك الجديد اللي يخص السيت أب بتاعك بس.", "Pick and we will only send drops for your setup."),
+    title: L("ماذا تلعب؟", "What do you play?"),
+    line: L("اختر اهتمامك لتصلك أخبار المنتجات الجديدة التي تناسبه.", "Pick your interest and get news of new gear for it."),
   },
   // The footer's sign-off, a few words in the trade's voice.
-  footer: { line: L("GG. نتقابل الماتش الجاي", "GG. See you next match") },
+  footer: { line: L("نراك في المباراة القادمة", "See you next match") },
   about: {
-    line: L("محل جيمنج في سيتي ستارز بيديره ١٠ لعيبة.", "A gaming shop in City Stars run by ten players."),
-    alt: L("شاشة وسماعة جيمنج على مكتب", "A monitor and gaming headset on a desk"),
-    eyebrow: L("سيتي ستارز", "City Stars"),
-    title: L("متجرب من لعيبة قبل ما يوصلك", "Tested by players before it reaches you"),
-    text: L("كل كيبورد وماوس وسماعة بيعدّي على فريقنا قبل ما ينزل المحل.", "Every keyboard, mouse and headset goes through our team before it reaches the shelf."),
-    more: L("وضمانه المحلي سنتين، وإحنا بنخلّصه.", "With a 2-year local warranty that we handle."),
+    line: L("أدوات ألعاب الفيديو للكمبيوتر والكونسول.", "Gaming gear for PC and console."),
+    alt: L("شاشة وسماعة ألعاب على مكتب", "A monitor and gaming headset on a desk"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("أدوات مختارة للاعبين", "Gear chosen for players"),
+    text: L("لوحات مفاتيح وماوس وسماعات بمواصفات واضحة لكل منتج.", "Keyboards, mice and headsets with clear specs for every product."),
+    more: L("تواصل معنا لأي سؤال عن المواصفات أو التوافق.", "Contact us with any question about specs or compatibility."),
     // Goes to the whole catalog.
     cta: L("تسوق كل الأدوات", "Shop all gear"),
   },
   contact: {
     title: L("تواصل", "Contact"),
     line: L("سيتي ستارز، مدينة نصر، القاهرة.", "City Stars Mall, Nasr City, Cairo."),
-    heading: L("اسأل لعيب", "Ask a player"),
+    heading: L("اسأل فريقنا", "Ask our team"),
   },
   faq: {
-    line: L("الضمان والتوصيل والدفع والاسترجاع.", "Warranty, delivery, payment and returns."),
-    question: L("الضمان بيغطي إيه؟", "What does the warranty cover?"),
+    line: L("المواصفات والتوافق والطلب والشحن.", "Specs, compatibility, ordering and shipping."),
+    question: L("كيف أعرف أن المنتج يناسب جهازي؟", "How do I know a product fits my setup?"),
     answer: L(
-      "سنتين على السويتشات والسنسور والبطاريات والكابلات. الوقعات والسوائل مش داخلين.",
-      "Two years on switches, sensors, batteries and cables. Drops and liquid damage are not covered.",
+      "تجد المواصفات والتوافق في صفحة كل منتج، ويمكنك التواصل معنا لأي سؤال.",
+      "Specs and compatibility are on every product page, and you can contact us with any question.",
     ),
   },
   custom: {
@@ -121,16 +121,16 @@ const DEFAULT_CONTENT: LookDefaults = {
     "stats-2-value": L("٢٤ س", "24 h"),
     "stats-2-label": L("توصيل القاهرة", "Cairo delivery"),
     "stats-3-value": L("١٢ ألف", "12K"),
-    "stats-3-label": L("لعيب اتعامل معانا", "Players served"),
+    "stats-3-label": L("لاعب تعامل معنا", "Players served"),
     // The video block over a row of products: a small label, a title and the poster's alt text.
-    "video-eyebrow": L("تسوق السيت أب", "Shop the setup"),
-    "video-title": L("جوه مكتب الستريمر بتاعنا", "Inside our streamer’s desk"),
-    "video-alt": L("فيديو: مكتب الستريمر", "Video: the streamer’s desk"),
+    "video-eyebrow": L("تسوّق التجهيزات", "Shop the setup"),
+    "video-title": L("مكتب بث متكامل", "A full streaming desk"),
+    "video-alt": L("فيديو: مكتب بث", "Video: a streaming desk"),
     // The sign-up's four interest chips, one word each: answers to `newsletter.title`.
     "newsletter-interest-1": L("كمبيوتر", "PC"),
     "newsletter-interest-2": L("كونسول", "Console"),
-    "newsletter-interest-3": L("موبايل", "Mobile"),
-    "newsletter-interest-4": L("ستريم", "Streaming"),
+    "newsletter-interest-3": L("الهاتف", "Mobile"),
+    "newsletter-interest-4": L("البث", "Streaming"),
   },
   photos: {
     // Full-bleed behind the hero copy (16:9), on a dark page.
@@ -170,7 +170,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const footer = lib("footer-signoff", {
     text: {
-      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "شكرًا لزيارتك": c.footer.line,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
       "العروض": L("الأعلى تقييماً", "Top rated"),
       "من نحن": aboutName,
@@ -189,9 +189,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "المجموعة الجديدة": c.hero.eyebrow,
         "صُنعت لتدوم معك": c.hero.title,
-        "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "خامات مختارة وتفاصيل هادئة لكل يوم.": c.hero.line,
         "تسوّق الآن": c.hero.cta,
-        "شوف الجديد": L("الأكثر مبيعاً", "Best sellers"),
+        "اكتشف الجديد": L("الأكثر مبيعاً", "Best sellers"),
         "صورة الواجهة": c.hero.alt,
       },
       links: { "/products?sort=newest": BEST },
@@ -203,7 +203,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "هدايا": c.products.primary.eyebrow,
         "هدايا تحت ١٠٠٠ جنيه": c.products.primary.title,
-        "اختيارات مضمونة لأي مناسبة.": c.products.primary.line,
+        "أفكار هدايا لكل مناسبة.": c.products.primary.line,
       },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary }],
@@ -241,21 +241,21 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       photo: [undefined, c.photos.custom["video-poster"]!],
       text: {
         "تسوق من الفيديو": x("video-eyebrow"),
-        "كل اللي في الفيديو": x("video-title"),
+        "كل ما في الفيديو": x("video-title"),
         "فيديو المنتجات": x("video-alt"),
       },
     }),
     lib("faq-topics", {
-      text: { "بتسأل عن إيه؟": L("محتاج مساعدة في إيه؟", "What do you need help with?") },
+      text: { "عمّ تسأل؟": L("كيف يمكننا مساعدتك؟", "How can we help?") },
     }),
     lib("newsletter-interests", {
       text: {
-        "إيه اللي يهمك؟": c.newsletter.title,
-        "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": c.newsletter.line,
+        "ما الذي يهمك؟": c.newsletter.title,
+        "سنرسل إليك ما يهمك فقط.": c.newsletter.line,
         "وصل حديثًا": x("newsletter-interest-1"),
         "العروض": x("newsletter-interest-2"),
         "هدايا": x("newsletter-interest-3"),
-        "نصايح": x("newsletter-interest-4"),
+        "نصائح": x("newsletter-interest-4"),
       },
     }),
   ];
@@ -279,7 +279,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("faq-columns", {
       text: {
         "ما سياسة الاسترجاع؟": c.faq.question,
-        "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": c.faq.answer,
+        "راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.": c.faq.answer,
       },
     }),
   ];
@@ -289,7 +289,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     footer,
     pages: [
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      { slug: "about", name: L("من نحن", "About"), seo: { title: aboutName }, sections: about },
       {
         slug: "contact",
         name: L("تواصل", "Contact"),
@@ -303,26 +303,26 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("أدوات جيمنج متجربة من لعيبة.", "Gaming gear tested by players."),
+  description: L("أدوات ألعاب الفيديو للاعبين.", "Gaming gear for players."),
   categories: [
-    ["keyboards", "كيبوردات", "Keyboards", PHOTOS.rgbKeyboard],
+    ["keyboards", "لوحات مفاتيح", "Keyboards", PHOTOS.rgbKeyboard],
     ["mice", "ماوسات", "Mice", PHOTOS.mouseTop],
     ["audio", "سماعات", "Headsets", PHOTOS.headset],
-    ["setups", "سيت أب كامل", "Full setups", PHOTOS.pcDesk],
-    ["power", "باور", "Power", PHOTOS.cable],
-    ["controllers", "دراعات", "Controllers", PHOTOS.glowControllers],
-    ["switches", "سويتشات", "Switches", PHOTOS.switches],
+    ["setups", "تجهيزات كاملة", "Full setups", PHOTOS.pcDesk],
+    ["power", "شواحن وبطاريات", "Power", PHOTOS.cable],
+    ["controllers", "أذرع تحكم", "Controllers", PHOTOS.glowControllers],
+    ["switches", "مفاتيح ميكانيكية", "Switches", PHOTOS.switches],
     ["cables", "كابلات", "Cables", PHOTOS.cable],
   ],
   products: [
-    ["mechanical-rgb-keyboard", "keyboards", "كيبورد ميكانيكال RGB", "Mechanical RGB Keyboard", PHOTOS.rgbKeyboard, 3450, { isFeatured: true, rating: 4.8, sold90: 212 }],
-    ["switch-tester-kit", "switches", "طقم سويتشات للتجربة", "Switch Tester Kit", PHOTOS.switches, 690, { sold90: 73 }],
+    ["mechanical-rgb-keyboard", "keyboards", "لوحة مفاتيح ميكانيكية RGB", "Mechanical RGB Keyboard", PHOTOS.rgbKeyboard, 3450, { isFeatured: true, rating: 4.8, sold90: 212 }],
+    ["switch-tester-kit", "switches", "طقم تجربة مفاتيح ميكانيكية", "Switch Tester Kit", PHOTOS.switches, 690, { sold90: 73 }],
     ["ultralight-wireless-mouse", "mice", "ماوس لاسلكي خفيف", "Ultralight Wireless Mouse", PHOTOS.mouseDesk, 1890, { isFeatured: true, rating: 4.7, sold90: 164 }],
-    ["pro-gaming-headset", "audio", "سماعة جيمنج برو", "Pro Gaming Headset", PHOTOS.headset, 2650, { isFeatured: true, sold90: 98 }],
-    ["streamer-desk-bundle", "setups", "باقة مكتب الستريمر", "Streamer Desk Bundle", PHOTOS.editDesk, 9900, { compareAtPrice: 11400, isFeatured: true, sold90: 22 }],
+    ["pro-gaming-headset", "audio", "سماعة ألعاب احترافية", "Pro Gaming Headset", PHOTOS.headset, 2650, { isFeatured: true, sold90: 98 }],
+    ["streamer-desk-bundle", "setups", "باقة مكتب البث", "Streamer Desk Bundle", PHOTOS.editDesk, 9900, { compareAtPrice: 11400, isFeatured: true, sold90: 22 }],
     ["console-corner-kit", "setups", "باقة ركن الكونسول", "Console Corner Kit", PHOTOS.neonController, 4200, { sold90: 17 }],
-    ["glow-controller", "controllers", "دراع بإضاءة", "Glow Controller", PHOTOS.glowControllers, 1590, { compareAtPrice: 1790, sold90: 40 }],
-    ["fast-power-bank", "power", "باور بانك سريع", "Fast Power Bank", PHOTOS.powerBank, 890, { inStock: false, rating: 4.6, sold90: 140 }],
+    ["glow-controller", "controllers", "ذراع تحكم بإضاءة", "Glow Controller", PHOTOS.glowControllers, 1590, { compareAtPrice: 1790, sold90: 40 }],
+    ["fast-power-bank", "power", "شاحن متنقل سريع", "Fast Power Bank", PHOTOS.powerBank, 890, { inStock: false, rating: 4.6, sold90: 140 }],
     ["braided-usb-c-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cable, 190, { sold90: 210 }],
   ],
 });
@@ -331,7 +331,7 @@ export const ARENA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ARENA_KEY, "pc-gaming", { ar: 1836, en: 1835 }),
   key: ARENA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Arena v4: hero, categories, section order",
   name: L("أرينا", "Arena"),
   description: L(
@@ -399,5 +399,5 @@ export const ARENA = editionTemplate({
   journey: { primary: "best-sellers", rows: [] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
-  productPage: { thumbs: "bottom", surface: "shelf", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي جربوا", "From players who tried it"), related: L("معدات تكمّل السيتاب", "Gear to finish the setup") } },
+  productPage: { thumbs: "bottom", surface: "shelf", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
 });

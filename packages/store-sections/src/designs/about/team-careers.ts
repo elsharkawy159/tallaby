@@ -12,8 +12,8 @@ const EMAIL = "mailto:jobs@store.com";
 
 const ROLES = [
   { title: L("مندوب توصيل", "Delivery rider"), meta: L("التوصيل · الجيزة", "Delivery · Giza"), type: L("دوام كامل", "Full time") },
-  { title: L("خدمة عملاء", "Customer care agent"), meta: L("العملاء · من البيت", "Care · Remote"), type: L("دوام جزئي", "Part time") },
-  { title: L("مصور منتجات", "Product photographer"), meta: L("التسويق · الدقي", "Marketing · Dokki"), type: L("فريلانس", "Freelance") },
+  { title: L("خدمة عملاء", "Customer care agent"), meta: L("العملاء · عن بُعد", "Care · Remote"), type: L("دوام جزئي", "Part time") },
+  { title: L("مصور منتجات", "Product photographer"), meta: L("التسويق · الدقي", "Marketing · Dokki"), type: L("عمل حر", "Freelance") },
 ];
 
 export const teamCareers = aboutDesign({
@@ -32,11 +32,11 @@ export const teamCareers = aboutDesign({
             [
               t.stack(
                 [
-                  t.heading(L("اشتغل معانا", "Work with us"), "h2", {
+                  t.heading(L("انضم إلى فريقنا", "Work with us"), "h2", {
                     role: "title",
                     style: { fontSize: "display-lg", letterSpacing: "tight", lineHeight: "tight" },
                   }),
-                  t.paragraph(L("فريق صغير بيحب اللي بيعمله. لو شايف نفسك هنا، ابعتلنا.", "A small team that loves what it does. If you see yourself here, write to us."), {
+                  t.paragraph(L("فريق صغير يحب عمله. إن وجدت مكانك هنا، راسلنا.", "A small team that loves its work. If you see your place here, write to us."), {
                     role: "subtitle",
                     style: { fontSize: "lg", maxWidth: "32ch" },
                   }),
@@ -81,8 +81,8 @@ export const teamCareers = aboutDesign({
                   t.row(
                     [
                       t.icon("mail", { style: { fontSize: "md", color: "muted" } }),
-                      t.text(L("مش لاقي دورك؟", "Don't see your role?"), { style: { color: "muted" } }),
-                      t.textLink(L("ابعتلنا على jobs@store.com", "Write to jobs@store.com"), EMAIL, { style: { fontWeight: "semibold", underline: true, color: "foreground" } }),
+                      t.text(L("لم تجد الوظيفة المناسبة؟", "Don't see your role?"), { style: { color: "muted" } }),
+                      t.textLink(L("راسلنا على jobs@store.com", "Write to jobs@store.com"), EMAIL, { style: { fontWeight: "semibold", underline: true, color: "foreground" } }),
                     ],
                     { label: L("الإيميل", "Email"), style: { gap: 8 } },
                   ),

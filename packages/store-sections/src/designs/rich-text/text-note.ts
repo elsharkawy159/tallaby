@@ -32,7 +32,7 @@ export const textNote = defineDesign({
                       shadow: "sm",
                     },
                   }),
-                  t.heading(L("ملحوظة صغيرة", "A small note"), "h2", {
+                  t.heading(L("ملاحظة قصيرة", "A small note"), "h2", {
                     role: "title",
                     style: {
                       fontSize: "2xl",
@@ -42,15 +42,15 @@ export const textNote = defineDesign({
                   }),
                   t.paragraph(
                     L(
-                      "الشحنات هتتأخر يوم واحد الأسبوع ده بسبب الإجازة. شكرًا على صبركم!",
-                      "Shipments are one day late this week because of the holiday. Thank you for your patience!",
+                      "تتأخر الشحنات يومًا واحدًا هذا الأسبوع بسبب الإجازة. شكرًا لتفهّمكم.",
+                      "Shipments are one day late this week because of the holiday. Thank you for your patience.",
                     ),
                     {
                       role: "body",
                       style: { color: "foreground", textAlign: "center" },
                     },
                   ),
-                  t.text(L("— فريق المتجر", "— The store team"), {
+                  t.text(L("فريق المتجر", "The store team"), {
                     style: { fontSize: "sm", color: "foreground", opacity: 70 },
                   }),
                 ],

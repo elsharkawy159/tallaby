@@ -63,7 +63,7 @@ export const faqClassic = defineDesign({
                       t.stack(
                         [
                           t.heading(L("ما زال لديك سؤال؟", "Still have a question?"), "h4", { style: { fontSize: "lg" } }),
-                          t.paragraph(L("راسلنا وسيرد عليك شخص حقيقي.", "Message us and a real person will reply.")),
+                          t.paragraph(L("راسلنا وسنرد عليك.", "Message us and we will reply.")),
                         ],
                         {
                           label: L("النص", "Copy"),

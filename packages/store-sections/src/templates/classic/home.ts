@@ -110,8 +110,8 @@ export const classicHero = defineDesign({
             [
               heroSlide(t, 0, {
                 tone: "shelf",
-                title: L("كل اللي محتاجه في مكان واحد", "Everything you need, one place"),
-                text: L("منتجات مختارة بعناية، وتوصيل لكل المحافظات.", "Carefully picked products, delivered to every governorate."),
+                title: L("كل ما تحتاجه في مكان واحد", "Everything you need, one place"),
+                text: L("منتجات مختارة بعناية بتفاصيل واضحة.", "Carefully picked products with clear details."),
                 button: L("تسوّق الآن", "Shop now"),
                 href: LINKS.shop,
                 image: CLASSIC_PHOTOS.giftStack,
@@ -119,9 +119,9 @@ export const classicHero = defineDesign({
               }),
               heroSlide(t, 1, {
                 tone: "brand",
-                title: L("وصل جديد الأسبوع ده", "New in this week"),
-                text: L("أحدث المنتجات أول ما توصل المخزن.", "The latest products, as soon as they reach us."),
-                button: L("شوف الجديد", "See what's new"),
+                title: L("وصل جديد هذا الأسبوع", "New in this week"),
+                text: L("أحدث المنتجات فور وصولها.", "The latest products, as soon as they arrive."),
+                button: L("تصفّح الجديد", "See what's new"),
                 href: LINKS.newest,
                 image: CLASSIC_PHOTOS.paperBags,
                 alt: L("أكياس تسوق ملونة", "Colourful shopping bags"),
@@ -129,8 +129,8 @@ export const classicHero = defineDesign({
               heroSlide(t, 2, {
                 tone: "amber",
                 title: L("الأكثر طلبًا عند عملائنا", "Our customers' favourites"),
-                text: L("المنتجات اللي الناس بترجع تطلبها تاني.", "The products people come back to order again."),
-                button: L("شوف الأكثر مبيعًا", "See best sellers"),
+                text: L("المنتجات الأكثر طلبًا في المتجر.", "The most-ordered products in the store."),
+                button: L("تصفّح الأكثر مبيعًا", "See best sellers"),
                 href: LINKS.bestSellers,
                 image: CLASSIC_PHOTOS.parcelShelf,
                 alt: L("طرود مغلفة على رف خشب", "Wrapped parcels on a wooden shelf"),
@@ -227,7 +227,7 @@ export const classicOffers = defineDesign({
   subcategory: "banner-products",
   name: L("كلاسيك: العروض", "Classic: offers"),
   description: L(
-    "بانر عرض داكن بصورة وزر، وتحته المنتجات اللي عليها خصم. يختفي القسم لو مفيش خصومات.",
+    "بانر عرض داكن بصورة وزر، وتحته المنتجات التي عليها خصم. يختفي القسم إذا لم توجد خصومات.",
     "A dark offer banner with a photo and a button, above the discounted products. Hidden while nothing is discounted.",
   ),
   keywords: ["promotions", "offers", "sale", "discount", "classic", "tallaby", "عروض", "خصم", "كلاسيك"],
@@ -243,7 +243,7 @@ export const classicOffers = defineDesign({
                     role: "title",
                     style: { fontSize: "display-sm", fontWeight: "extrabold", lineHeight: "tight", color: "background" },
                   }),
-                  t.paragraph(L("أسعار أقل على منتجات مختارة، لحد ما الكمية تخلص.", "Lower prices on picked products, while stocks last."), {
+                  t.paragraph(L("أسعار أقل على منتجات مختارة، حتى نفاد الكمية.", "Lower prices on picked products, while stocks last."), {
                     role: "subtitle",
                     style: { color: "background", opacity: 85 },
                   }),
@@ -312,10 +312,10 @@ export const classicNewArrivals = defineDesign({
 });
 
 const PERKS: { icon: ElementIconName; title: DesignText; text: DesignText }[] = [
-  { icon: "truck", title: L("توصيل سريع", "Fast delivery"), text: L("من يوم لـ ٤ أيام لكل المحافظات", "1 to 4 days, all governorates") },
-  { icon: "credit-card", title: L("الدفع عند الاستلام", "Cash on delivery"), text: L("أو ادفع بالكارت والمحفظة", "Or pay by card and wallet") },
-  { icon: "rotate", title: L("استرجاع سهل", "Easy returns"), text: L("١٤ يوم تغيّر رأيك", "14 days to change your mind") },
-  { icon: "chat", title: L("دعم على واتساب", "WhatsApp support"), text: L("ناس حقيقية، ٧ أيام في الأسبوع", "Real people, 7 days a week") },
+  { icon: "truck", title: L("الشحن", "Shipping"), text: L("تظهر تكلفة الشحن ومدته عند إتمام الطلب", "Cost and time shown at checkout") },
+  { icon: "credit-card", title: L("الدفع عند الاستلام", "Cash on delivery"), text: L("أو بطرق الدفع المتاحة عند الطلب", "Or other methods shown at checkout") },
+  { icon: "rotate", title: L("الاستبدال والاسترجاع", "Exchanges and returns"), text: L("التفاصيل في صفحة السياسات", "Details on the policy page") },
+  { icon: "chat", title: L("تواصل معنا", "Contact us"), text: L("لأي سؤال عن طلب أو منتج", "With any question about an order or a product") },
 ];
 
 /** An icon on a soft brand-tinted square. */
@@ -394,11 +394,11 @@ export const classicNewsletter = defineDesign({
               }),
               t.stack(
                 [
-                  t.heading(L("خليك أول من يعرف", "Be the first to know"), "h2", {
+                  t.heading(L("كن أول من يعرف", "Be the first to know"), "h2", {
                     role: "title",
                     style: { ...ON_BRAND, fontSize: "display-sm", fontWeight: "extrabold", lineHeight: "tight" },
                   }),
-                  t.paragraph(L("اشترك وأول ما يوصل منتج جديد هتعرف.", "Join the list and hear about new arrivals first."), {
+                  t.paragraph(L("اشترك ليصلك خبر المنتجات الجديدة أولًا.", "Join the list and hear about new arrivals first."), {
                     role: "subtitle",
                     style: ON_BRAND_BODY,
                   }),

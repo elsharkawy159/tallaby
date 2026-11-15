@@ -25,20 +25,20 @@ export const classicHomeHero = classicLib("hero-carousel", {
   photo: [CLASSIC_PHOTOS.heroGifts, CLASSIC_PHOTOS.heroParcel, CLASSIC_PHOTOS.heroBoxes],
   text: {
     "صورة الحملة الأولى": L("علب هدايا بشرايط على خلفية بيج", "Gift boxes with ribbons on a beige background"),
-    "وصل حديثًا": L("أهلًا بيك", "Welcome"),
-    "الموسم الجديد وصل": L("كل اللي محتاجه في مكان واحد", "Everything you need, one place"),
-    "قطع مختارة بعناية، وتوصيل لحد باب البيت.": L("منتجات مختارة بعناية، توصلك لحد باب البيت.", "Carefully picked products, delivered to your door."),
+    "وصل حديثًا": L("أهلًا بك", "Welcome"),
+    "الموسم الجديد وصل": L("كل ما تحتاجه في مكان واحد", "Everything you need, one place"),
+    "قطع مختارة بعناية لكل يوم.": L("منتجات مختارة بعناية بتفاصيل واضحة.", "Carefully picked products with clear details."),
     "تسوّق الجديد": L("تسوّق الآن", "Shop now"),
-    "صورة الحملة الثانية": L("كرتونة مفتوحة على ترابيزة خشب", "An open cardboard box on a wooden table"),
+    "صورة الحملة الثانية": L("صندوق كرتون مفتوح على طاولة خشبية", "An open cardboard box on a wooden table"),
     "الأكثر مبيعًا": L("وصل حديثًا", "Just in"),
     "المفضّلة عند عملائنا": L("جديدنا وصل", "New arrivals are here"),
-    "القطع اللي بترجع لها كل مرة.": L("أحدث المنتجات أول ما توصل عندنا.", "The latest products, as soon as they reach us."),
-    "شوف الأكثر مبيعًا": L("شوف الجديد", "See what's new"),
-    "صورة الحملة الثالثة": L("علب هدايا ملونة على خلفية بيضا", "Colourful gift boxes on a white background"),
-    "عروض الأسبوع": L("الأكثر طلبًا", "Most wanted"),
-    "خصومات لفترة محدودة": L("اختيارات عملائنا", "Our customers' favourites"),
-    "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": L("المنتجات اللي الناس بترجع تطلبها تاني.", "The products people come back to order again."),
-    "تسوّق العروض": L("شوف الأكثر مبيعًا", "See best sellers"),
+    "القطع الأكثر طلبًا في المتجر.": L("أحدث المنتجات فور وصولها.", "The latest products, as soon as they arrive."),
+    "تصفّح الأكثر مبيعًا": L("تصفّح الجديد", "See what's new"),
+    "صورة الحملة الثالثة": L("علب هدايا ملونة على خلفية بيضاء", "Colourful gift boxes on a white background"),
+    "مختارات الأسبوع": L("الأكثر طلبًا", "Most wanted"),
+    "قطع مختارة لهذا الأسبوع": L("اختيارات عملائنا", "Our customers' favourites"),
+    "تشكيلة مختارة من أحدث القطع في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The most-ordered products in the store."),
+    "تسوّق المختارات": L("تصفّح الأكثر مبيعًا", "See best sellers"),
   },
   links: { "/products": [LINKS.shop, LINKS.newest, LINKS.bestSellers] },
 });
@@ -51,7 +51,7 @@ export const classicHomeBestSellers = classicLib("products-grid", {
   as: "best-sellers",
   text: {
     "وصل حديثًا": L("الأكثر مبيعًا", "Best sellers"),
-    "أحدث المنتجات اللي نزلت المتجر.": L("المنتجات اللي عملاءنا بيطلبوها أكتر.", "The products our customers order most."),
+    "أحدث المنتجات في المتجر.": L("المنتجات التي يطلبها عملاؤنا أكثر.", "The products our customers order most."),
   },
   links: { "/products": LINKS.bestSellers },
   lists: [{ source: "best-sellers" }],
@@ -63,13 +63,10 @@ export const classicHomeStory = classicLib("about-two-tone", {
   photo: [undefined, undefined, CLASSIC_PHOTOS.parcelShelf],
   text: {
     "صورة البانر": L("طرود مغلفة على رف خشب", "Wrapped parcels on a wooden shelf"),
-    "صناعة مصرية": L("من متجرنا", "From our shop"),
-    "متعمول عشان يريّحك ويعيش معاك": L("بنهتم بكل طلب كأنه لينا", "We treat every order as our own"),
-    "خامات مختارة وتفاصيل متشطبة بإيدينا، عشان تفضل معاك سنين.": L(
-      "بنختار كل منتج بعناية، وبنرد على كل رسالة بنفسنا قبل الطلب وبعده.",
-      "We choose every product with care and answer every message ourselves, before and after you order.",
-    ),
-    "تسوّق الآن": L("اعرف عنّا أكتر", "More about us"),
+    "مختارات المتجر": L("من متجرنا", "From our shop"),
+    "مصنوع ليدوم طويلًا": L("منتجات مختارة بعناية", "Products picked with care"),
+    "خامات مختارة وتفاصيل متقنة تتحمّل الاستخدام اليومي.": L("نختار كل منتج بعناية ونعرض تفاصيله بوضوح. تواصل معنا لأي سؤال.", "We choose every product with care and show its details clearly. Contact us with any question."),
+    "تسوّق الآن": L("تعرّف علينا أكثر", "More about us"),
   },
   links: { "/products": LINKS.about },
 });
@@ -77,7 +74,7 @@ export const classicHomeStory = classicLib("about-two-tone", {
 export const classicHomeNewArrivals = classicLib("products-rail", {
   as: "new-arrivals",
   text: {
-    "بيحبوها": L("جديد", "New"),
+    "المفضلة لدى العملاء": L("جديد", "New"),
     "الأكثر مبيعًا": L("وصل حديثًا", "New arrivals"),
   },
   links: { "/products": LINKS.newest },
@@ -86,12 +83,12 @@ export const classicHomeNewArrivals = classicLib("products-rail", {
 
 export const classicHomePromises = classicLib("features-icon-cards", {
   text: {
-    "لماذا تشتري منا": L("ليه تشتري مننا", "Why shop with us"),
-    "تسوّق وأنت مطمئن": L("اطلب وإنت مطمّن", "Shop with peace of mind"),
-    "من يوم إلى ٤ أيام لكل المحافظات": L("من يوم لـ ٤ أيام لكل المحافظات", "1 to 4 days, all governorates"),
-    "أو ادفع بالبطاقة والمحفظة": L("أو ادفع بالكارت والمحفظة", "Or pay by card and wallet"),
-    "١٤ يومًا لتغيّر رأيك": L("١٤ يوم تغيّر رأيك", "14 days to change your mind"),
-    "أشخاص حقيقيون طوال الأسبوع": L("ناس حقيقية، ٧ أيام في الأسبوع", "Real people, 7 days a week"),
+    "لماذا تشتري منا": L("لماذا تتسوّق معنا", "Why shop with us"),
+    "تسوّق وأنت مطمئن": L("تسوّق وأنت مطمئن", "Shop with peace of mind"),
+    "تظهر تكلفة الشحن ومدته عند إتمام الطلب": L("تظهر تكلفة الشحن ومدته عند إتمام الطلب", "Cost and time shown at checkout"),
+    "أو بطرق الدفع المتاحة عند الطلب": L("أو بطرق الدفع المتاحة عند الطلب", "Or other methods shown at checkout"),
+    "التفاصيل في صفحة السياسات": L("التفاصيل في صفحة السياسات", "Details on the policy page"),
+    "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن طلب أو منتج", "With any question about an order or a product"),
   },
 });
 
@@ -106,8 +103,8 @@ export const classicHomeNewsletter = classicLib("newsletter-big", {
   // A calm pale panel (the library's is the accent colour), and no space under it: Classic's footer brings its own.
   nodes: { "اللوحة": { style: { background: "secondary" } }, "النشرة": { style: { paddingBottom: 0 }, mobile: { paddingBottom: 0 } } },
   text: {
-    "خد ١٠٪ خصم على أول طلب": L("خليك أول من يعرف", "Be the first to know"),
-    "عروض للمشتركين بس، مرة في الأسبوع.": L("اشترك وأول ما يوصل منتج جديد هتعرف.", "Join the list and hear about new arrivals first."),
+    "اشترك في نشرتنا البريدية": L("كن أول من يعرف", "Be the first to know"),
+    "كن أول من يعرف بالمنتجات الجديدة.": L("اشترك ليصلك خبر المنتجات الجديدة أولًا.", "Join the list and hear about new arrivals first."),
   },
 });
 

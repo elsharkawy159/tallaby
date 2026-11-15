@@ -23,7 +23,7 @@ export const footerCentered = defineDesign({
           t.stack(
             [
               logo(t, { size: "2xl", onBrand: true }),
-              t.paragraph(L("مختارات بعناية منذ ٢٠١٨، لكل بيت في مصر.", "Carefully curated since 2018, for every home in Egypt."), {
+              t.paragraph(L("مختارات بعناية لكل يوم.", "Carefully curated for every day."), {
                 role: "body",
                 style: { ...ON_BRAND_BODY, textAlign: "center", maxWidth: "480px" },
               }),

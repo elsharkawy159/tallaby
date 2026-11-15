@@ -52,14 +52,14 @@ const NAME = L("توت", "Toot");
 
 const header = lib("header-topbar", {
   text: {
-    "توصيل سريع لكل محافظات مصر": L("ألعاب خشب وقطن آمنة", "Safe wood and cotton toys"),
-    "الدفع عند الاستلام": L("تغليف هدايا مجاني", "Free gift wrapping"),
+    "تسوّق سهل من هاتفك": L("ألعاب من الخشب والقطن", "Wood and cotton toys"),
+    "الدفع عند الاستلام": L("العمر المناسب لكل لعبة", "The right age for every toy"),
     "تتبّع طلبك": L("تتبّع", "Track order"),
     "اسم متجرك": NAME,
     "المتجر": L("كل الألعاب", "Shop all"),
     "العروض": L("وصل حديثًا", "New in"),
     "المدونة": L("الأكثر طلبًا", "Best sellers"),
-    "من نحن": L("البوتيك", "Our boutique"),
+    "من نحن": L("من نحن", "About"),
   },
   links: { "/products": [undefined, NEW, undefined], "/blog": BEST },
 });
@@ -84,15 +84,15 @@ const home: Design[] = [
     photo: [PHOTOS.heroPoster],
     nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 30 } } },
     text: {
-      "فيديو الواجهة": L("ألعاب خشب على رف هادي", "Wooden toys on a quiet shelf"),
-      "المجموعة الجديدة": L("مجموعة الشتا ٢٠٢٦", "The Winter 2026 collection"),
-      "مساحتك، بطريقتك": L("ألعاب تكبر مع طفلك", "Toys that grow with your child"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "خشب زان، ألوان مائية آمنة وقطن عضوي. كل لعبة مختارة عشان تتلعب سنين وتتورث.",
-        "Beech wood, child-safe water-based paints and organic cotton. Every toy is chosen to be played with for years, then handed down.",
+      "فيديو الواجهة": L("ألعاب خشبية على رف هادئ", "Wooden toys on a quiet shelf"),
+      "المجموعة الجديدة": L("مجموعة الشتاء", "The winter collection"),
+      "تصميم هادئ لكل يوم": L("ألعاب من الخشب والقطن", "Wooden and cotton toys"),
+      "قطع مختارة بعناية لكل يوم.": L(
+        "ألعاب من خشب الزان بألوان مائية، ودمى من القطن العضوي، لكل عمر.",
+        "Beech wood toys with water-based paints and organic cotton soft toys, for every age.",
       ),
       "تسوّق الآن": L("تسوّق", "Shop now"),
-      "شوف الجديد": L("الجديد", "New in"),
+      "اكتشف الجديد": L("الجديد", "New in"),
     },
     links: { "/products": SHOP, "/products?sort=newest": NEW },
   }),
@@ -107,7 +107,7 @@ const home: Design[] = [
   }),
   lib("products-tabs-grid", {
     text: {
-      "وصل حديثاً": L("الألعاب الأكثر حبًا", "Our most-loved toys"),
+      "وصل حديثاً": L("الألعاب الأكثر طلبًا", "Our most-loved toys"),
       "الجديد": L("وصل حديثًا", "New in"),
       "الأكثر مبيعاً": L("الأكثر مبيعًا", "Best sellers"),
       "الأعلى تقييمًا": L("الأعلى تقييمًا", "Top rated"),
@@ -118,85 +118,85 @@ const home: Design[] = [
   lib("about-split-story", {
     photo: [undefined, undefined, PHOTOS.shelves],
     text: {
-      "صورة القصة": L("رفوف خشب عليها ألعاب مونتيسوري مرتبة", "Wooden shelves of neatly arranged Montessori toys"),
-      "من ورشتنا": L("من الزمالك، من ٢٠١٩", "From Zamalek, since 2019"),
-      "متصمم عشانك ومعمول في القاهرة": L("لعب أقل، لعب أحلى", "Fewer toys, better play"),
-      "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": L(
-        "بدأنا توت لما دوّرنا لبنتنا على ألعاب هادية من غير بلاستيك ولا أصوات عالية. كل لعبة عندنا بتتجرب في البوتيك قبل ما تنزل الموقع.",
-        "We started Toot while looking for calm toys for our daughter, with no plastic and no loud noises. Every toy is tried in the boutique before it reaches the site.",
+      "صورة القصة": L("رفوف خشبية عليها ألعاب مونتيسوري مرتبة", "Wooden shelves of neatly arranged Montessori toys"),
+      "عن المتجر": L("عن المتجر", "About the shop"),
+      "تصميم مدروس وخامات مختارة": L("ألعاب هادئة ومختارة", "Calm, chosen toys"),
+      "نختار كل قطعة بعناية لتبقى مميزة.": L(
+        "ألعاب هادئة من الخشب والقطن، بلا أصوات عالية، مع العمر المناسب لكل لعبة.",
+        "Calm wooden and cotton toys with no loud noises, each with its suitable age.",
       ),
-      "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": L(
-        "خشب زان ودهانات مائية آمنة، وقطن عضوي في كل العرايس. والتغليف هدية من غير ما تطلب.",
-        "Beech wood and child-safe water-based paints, with organic cotton in every soft toy. Gift wrapping comes without asking.",
+      "ونعرض لكل قطعة صورًا ومقاسات واضحة.": L(
+        "خشب زان ودهانات مائية، وقطن عضوي في الدمى، مع صور وتفاصيل واضحة.",
+        "Beech wood, water-based paints and organic cotton soft toys, with clear photos and details.",
       ),
-      "حكايتنا": L("زور البوتيك", "Visit the boutique"),
+      "حكايتنا": L("حكايتنا", "Our story"),
     },
   }),
   ...categoryRows(lib, { viewAll: L("عرض الكل", "View all") }),
   lib("newsletter-ruled", {
     text: {
-      "خد ١٠٪ خصم على أول طلب": L("رسالة توت الشهرية", "The monthly Toot letter"),
-      "عروض للمشتركين بس، مرة في الأسبوع.": L(
-        "لعبة جديدة، فكرة لعب في البيت ونصيحة حسب سن طفلك، مرة في الشهر.",
-        "A new toy, an idea for play at home and a tip for your child’s age, once a month.",
+      "اشترك في نشرتنا البريدية": L("اشترك في نشرتنا البريدية", "Join our newsletter"),
+      "كن أول من يعرف بالمنتجات الجديدة.": L(
+        "ألعاب جديدة وأفكار للعب ونصائح حسب عمر الطفل.",
+        "New toys, play ideas and tips by age.",
       ),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن توت", "About Toot"), L("ألعاب خشب وقطن طبيعي، مختارة في الزمالك.", "Natural wood and cotton toys, chosen in Zamalek.")),
+  pageHeader(lib, "about-header", L("عن توت", "About Toot"), L("ألعاب من الخشب والقطن الطبيعي.", "Natural wood and cotton toys.")),
   aboutStory(lib, {
     photo: PHOTOS.playCorner,
-    alt: L("ركن لعب هادي بألعاب تعليمية خشب", "A calm play corner of wooden learning toys"),
-    eyebrow: L("البوتيك", "The boutique"),
-    title: L("كل لعبة اتجربت قبل ما توصلك", "Every toy is tried before it reaches you"),
+    alt: L("ركن لعب هادئ بألعاب تعليمية خشبية", "A calm play corner of wooden learning toys"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("ألعاب مختارة لكل عمر", "Toys chosen for every age"),
     text: L(
-      "في البوتيك عندنا ركن لعب صغير. أي لعبة جديدة بتقعد فيه أسبوعين، ولو الأطفال رجعولها تاني، بتنزل الموقع.",
-      "Our boutique has a small play corner. Every new toy spends two weeks there, and if children keep coming back to it, it goes on the site.",
+      "ألعاب خشب ودمى قطن وبازل وأدوات رسم، مع العمر المناسب والخامة لكل منتج.",
+      "Wooden toys, cotton soft toys, puzzles and art supplies, each with its age and material.",
     ),
-    more: L("وبنرد على أي سؤال عن السن المناسب أو الخامة بنفسنا على واتساب.", "And we answer every question about the right age or material ourselves on WhatsApp."),
-    button: L("تسوّق الأكثر حبًا", "Shop the favourites"),
+    more: L("تواصل معنا لأي سؤال عن العمر المناسب أو الخامة.", "Contact us with any question about the right age or material."),
+    button: L("تسوّق الأكثر طلبًا", "Shop the favourites"),
     href: BEST,
   }),
 ];
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("ألعاب خشب وقطن طبيعي، مختارة في الزمالك.", "Natural wood and cotton toys, chosen in Zamalek."),
+  description: L("ألعاب من الخشب والقطن الطبيعي.", "Natural wood and cotton toys."),
   categories: [
     ["wooden-toys", "ألعاب خشب", "Wooden toys", PHOTOS.catWooden],
-    ["plush-toys", "عرايس ودباديب", "Soft toys", PHOTOS.catPlush],
+    ["plush-toys", "دمى ودباديب", "Soft toys", PHOTOS.catPlush],
     ["puzzles-games", "بازل وألعاب ذكاء", "Puzzles & games", PHOTOS.catPuzzles],
     ["arts-crafts", "رسم وتلوين", "Arts & crafts", PHOTOS.catArts],
     ["building-blocks", "مكعبات وتركيب", "Building blocks", PHOTOS.catBlocks],
-    ["baby-nursery", "أوضة البيبي", "Baby & nursery", PHOTOS.catNursery],
+    ["baby-nursery", "غرفة الرضيع", "Baby & nursery", PHOTOS.catNursery],
   ],
   products: [
     // Wooden toys
     ["safari-trio", "wooden-toys", "طقم حيوانات سفاري خشب", "Wooden Safari Trio", P(3661222), 890, { isFeatured: true, rating: 4.9, sold90: 74 }],
-    ["birthday-train", "wooden-toys", "قطر عيد ميلاد خشب بحوامل شمع", "Wooden Birthday Train with Candle Holders", P(32720286), 950, { rating: 4.8, sold90: 52 }],
+    ["birthday-train", "wooden-toys", "قطار عيد ميلاد خشبي بحوامل شموع", "Wooden Birthday Train with Candle Holders", P(32720286), 950, { rating: 4.8, sold90: 52 }],
     ["whale-octopus", "wooden-toys", "حوت وأخطبوط خشب ملون", "Whale and Octopus Set", P(3663056), 720, { rating: 4.7, sold90: 38 }],
-    ["rocking-horse", "wooden-toys", "حصان هزاز خشب كلاسيك", "Classic Wooden Rocking Horse", P(19612921), 3450, { rating: 4.9, sold90: 21 }],
-    ["pull-along-mouse", "wooden-toys", "فار خشب بعربية للشد", "Wooden Pull-Along Mouse", P(7663985), 520, { compareAtPrice: 620, rating: 4.8, sold90: 33 }],
-    ["ring-stacker", "wooden-toys", "حلقات تركيب خشب هادية", "Wooden Ring Stacker", P(9271757), 450, { rating: 4.7, sold90: 47 }],
+    ["rocking-horse", "wooden-toys", "حصان هزاز خشبي كلاسيكي", "Classic Wooden Rocking Horse", P(19612921), 3450, { rating: 4.9, sold90: 21 }],
+    ["pull-along-mouse", "wooden-toys", "فأر خشبي بعجلات للسحب", "Wooden Pull-Along Mouse", P(7663985), 520, { compareAtPrice: 620, rating: 4.8, sold90: 33 }],
+    ["ring-stacker", "wooden-toys", "حلقات تركيب خشبية بألوان هادئة", "Wooden Ring Stacker", P(9271757), 450, { rating: 4.7, sold90: 47 }],
     ["rainbow-xylophone", "wooden-toys", "إكسيليفون قوس قزح", "Rainbow Xylophone", P(6743164), 640, { rating: 4.6, sold90: 29 }],
     ["bead-abacus", "wooden-toys", "عدّاد خرز خشب", "Wooden Bead Abacus", P(8923958), 760, { rating: 4.8, sold90: 24 }],
     // Soft toys
     ["cream-teddy", "plush-toys", "دبدوب كريمي بفيونكة", "Cream Teddy Bear", P(6792048), 690, { isFeatured: true, rating: 4.9, sold90: 66 }],
     ["white-bear", "plush-toys", "دبدوب أبيض ناعم", "Soft White Bear", P(10581600), 590, { rating: 4.7, sold90: 41 }],
-    ["linen-bunny", "plush-toys", "أرنوبة كتان بفستان منقط", "Linen Bunny Doll", P(19314757), 820, { rating: 5, sold90: 35 }],
+    ["linen-bunny", "plush-toys", "دمية أرنب كتان بفستان منقط", "Linen Bunny Doll", P(19314757), 820, { rating: 5, sold90: 35 }],
     ["knitted-bunny", "plush-toys", "أرنب تريكو يدوي", "Hand-Knitted Bunny", P(5581171), 750, { rating: 4.8, sold90: 18, inStock: false }],
     ["grey-elephant", "plush-toys", "فيل قطيفة رمادي", "Grey Elephant Plush", P(14495298), 540, { rating: 4.6, sold90: 27 }],
-    ["grey-mouse", "plush-toys", "فار قطيفة رمادي", "Grey Mouse Plush", P(5895046), 420, { rating: 4.5, sold90: 22 }],
+    ["grey-mouse", "plush-toys", "فأر قطيفة رمادي", "Grey Mouse Plush", P(5895046), 420, { rating: 4.5, sold90: 22 }],
     ["white-rabbit", "plush-toys", "أرنب أبيض صغير", "Little White Rabbit", P(6017186), 480, { compareAtPrice: 560, rating: 4.7, sold90: 30 }],
-    ["ballerina-bunny", "plush-toys", "أرنوبة باليرينا", "Ballerina Bunny Doll", P(4886921), 870, { rating: 4.8, sold90: 20 }],
+    ["ballerina-bunny", "plush-toys", "دمية أرنب باليرينا", "Ballerina Bunny Doll", P(4886921), 870, { rating: 4.8, sold90: 20 }],
     // Puzzles & games
     ["wooden-jigsaw", "puzzles-games", "بازل خشب ١٠٠ قطعة", "Wooden Jigsaw, 100 Pieces", P(3852577), 560, { rating: 4.7, sold90: 34 }],
     ["puzzle-board", "puzzles-games", "لوحة بازل خشب كبيرة", "Large Wooden Puzzle Board", P(6275821), 480, { rating: 4.6, sold90: 21 }],
     ["ivory-chess", "puzzles-games", "شطرنج عاجي للمبتدئين", "Ivory Chess Set for Beginners", P(30182768), 1250, { rating: 4.9, sold90: 16 }],
     ["ivory-dominoes", "puzzles-games", "دومينو عاجي في علبة", "Ivory Domino Set", P(8102734), 650, { rating: 4.8, sold90: 25 }],
-    ["classic-dominoes", "puzzles-games", "دومينو كلاسيك", "Classic Dominoes", P(10622582), 390, { rating: 4.5, sold90: 31 }],
+    ["classic-dominoes", "puzzles-games", "دومينو كلاسيكي", "Classic Dominoes", P(10622582), 390, { rating: 4.5, sold90: 31 }],
     ["walnut-dominoes", "puzzles-games", "دومينو خشب جوز", "Walnut Wooden Dominoes", P(38977743), 720, { compareAtPrice: 850, rating: 4.8, sold90: 19 }],
     ["blank-jigsaw", "puzzles-games", "بازل أبيض تلوّنه بنفسك", "Blank Colour-Your-Own Jigsaw", P(17770333), 290, { rating: 4.4, sold90: 28 }],
     ["domino-blocks", "puzzles-games", "قطع دومينو خشب للرص", "Wooden Domino Run Blocks", P(353641), 540, { rating: 4.6, sold90: 14 }],
@@ -205,7 +205,7 @@ const DEMO = demoStore({
     ["pastel-pencils", "arts-crafts", "ألوان خشب باستيل ٢٤ لون", "Pastel Pencils, 24 Colours", P(9282312), 380, { isFeatured: true, rating: 4.9, sold90: 58 }],
     ["oil-pastels", "arts-crafts", "ألوان باستيل زيت", "Oil Pastel Set", P(2237106), 290, { rating: 4.6, sold90: 26 }],
     ["sharpened-pencils", "arts-crafts", "علبة ألوان خشب مبرية", "Coloured Pencil Tin", P(7054405), 320, { rating: 4.7, sold90: 37 }],
-    ["watercolour-palette", "arts-crafts", "باليتة ألوان مائية", "Watercolour Palette", P(1576210), 450, { rating: 4.8, sold90: 29 }],
+    ["watercolour-palette", "arts-crafts", "لوحة ألوان مائية", "Watercolour Palette", P(1576210), 450, { rating: 4.8, sold90: 29 }],
     ["watercolour-tray", "arts-crafts", "علبة ألوان مائية ١٢ لون", "Watercolour Tray, 12 Colours", P(31251949), 390, { rating: 4.5, sold90: 23 }],
     ["artist-brushes", "arts-crafts", "طقم فرش رسم للأطفال", "Kids’ Artist Brush Set", P(7257019), 240, { rating: 4.6, sold90: 32 }],
     ["brush-holder", "arts-crafts", "فرش رسم مع حامل", "Brush Set with Holder", P(38807889), 340, { rating: 4.5, sold90: 12 }],
@@ -217,7 +217,7 @@ const DEMO = demoStore({
     // Baby & nursery
     ["crib-mobile", "baby-nursery", "معلقة سرير خشب بنجوم", "Wooden Star Crib Mobile", P(11369154), 980, { rating: 4.9, sold90: 18 }],
     ["teddy-mobile", "baby-nursery", "معلقة سرير بدباديب", "Teddy Bear Crib Mobile", P(36276498), 1150, { rating: 4.7, sold90: 12 }],
-    ["moses-basket", "baby-nursery", "سلة نوم بيبي", "Baby Moses Basket", P(12056684), 3200, { rating: 4.8, sold90: 9 }],
+    ["moses-basket", "baby-nursery", "سلة نوم للرضيع", "Baby Moses Basket", P(12056684), 3200, { rating: 4.8, sold90: 9 }],
     ["elephant-blanket", "baby-nursery", "بطانية سرير بأفيال", "Elephant Crib Blanket", P(4964488), 850, { rating: 4.6, sold90: 21 }],
   ],
 });
@@ -227,7 +227,7 @@ export const KIDS_LUXE = libraryTemplate({
   version: 1,
   name: L("توت", "Toot"),
   description: L(
-    "بوتيك ألعاب هادي: فيديو ألعاب خشب، أقسام بخطوط رفيعة وأربع صفوف للأقسام. لمحلات ألعاب المونتيسوري والهدايا الراقية.",
+    "متجر ألعاب هادئ: فيديو ألعاب خشبية، أقسام بخطوط رفيعة وأربعة صفوف للأقسام. لمتاجر ألعاب المونتيسوري والهدايا الراقية.",
     "A calm toy boutique: a wooden-toy video, hairline category cells and four category rows. For Montessori and premium gift toy shops.",
   ),
   category: "books",
@@ -256,8 +256,8 @@ export const KIDS_LUXE = libraryTemplate({
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("زورنا أو كلمنا", "Visit or call us"),
-        text: L("البوتيك: ١٤ شارع البرازيل، الزمالك، القاهرة. من ١١ الصبح لـ ٩ بالليل.", "Boutique: 14 Brazil St, Zamalek, Cairo. Open 11am to 9pm."),
+        title: L("تواصل معنا", "Contact us"),
+        text: L("١٤ شارع البرازيل، الزمالك، القاهرة. من ١١ صباحًا حتى ٩ مساءً.", "14 Brazil St, Zamalek, Cairo. Open 11am to 9pm."),
         heading: L("اسألنا عن لعبة مناسبة لسن طفلك", "Ask us about the right toy for your child’s age"),
       }),
     },
@@ -266,11 +266,11 @@ export const KIDS_LUXE = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الأمان والخامات والتوصيل.", "Safety, materials and delivery."),
-        question: L("الألعاب آمنة للأطفال الصغيرين؟", "Are the toys safe for young children?"),
+        text: L("الخامات والأعمار والطلبات.", "Materials, ages and orders."),
+        question: L("ما العمر المناسب لكل لعبة؟", "What age does each toy suit?"),
         answer: L(
-          "أيوه، كل الألعاب الخشب مدهونة بألوان مائية آمنة، والعرايس محشية قطن. وعلى كل منتج السن المناسب ليه.",
-          "Yes. All our wooden toys use child-safe water-based paints and the soft toys are cotton-filled. Every product shows the age it suits.",
+          "العمر المناسب والخامة مكتوبان في تفاصيل كل منتج.",
+          "Every product shows the age it suits and its materials.",
         ),
       }),
     },
@@ -281,6 +281,6 @@ export const KIDS_LUXE = libraryTemplate({
     surface: "flat",
     band: "paper",
     extras: ["product-perks"],
-    copy: { reviews: L("آراء الأهالي", "What parents say"), related: L("ألعاب تكمّل الركن", "Toys that complete the corner") },
+    copy: { reviews: L("آراء الأهل", "What parents say"), related: L("ألعاب قد تعجبك", "Toys that complete the corner") },
   },
 });

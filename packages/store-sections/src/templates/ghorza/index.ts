@@ -142,18 +142,18 @@ function hero(c: LookContent): Design {
       "الأكثر مبيعًا": c.hero.eyebrow,
       "اسم المنتج المميز هنا": c.hero.title,
       "اكتب هنا ما يميز المنتج في سطرين: الخامة، والمدة، ولماذا سيحبه العميل.": c.hero.line,
-      "٤٨ ساعة": x["stats-1-value"]!,
-      توصيل: x["stats-1-label"]!,
-      سنتين: x["stats-2-value"]!,
-      ضمان: x["stats-2-label"]!,
-      "١٤ يومًا": x["stats-3-value"]!,
-      استرجاع: x["stats-3-label"]!,
+      "٣ ألوان": x["stats-1-value"]!,
+      الألوان: x["stats-1-label"]!,
+      "٢٠٢٦": x["stats-2-value"]!,
+      الإصدار: x["stats-2-label"]!,
+      "خفيف": x["stats-3-value"]!,
+      الوزن: x["stats-3-label"]!,
       "اطلب الآن": c.hero.cta,
       "كل التفاصيل": x["hero-cta-2"]!,
       "صورة المنتج": c.hero.alt,
-      "عرض الإطلاق": x["hero-tag-label"]!,
-      "خصم ٢٠٪": x["hero-tag-price"]!,
-      "لأول ١٠٠ طلب": x["hero-tag-line"]!,
+      "جديد": x["hero-tag-label"]!,
+      "وصل حديثًا": x["hero-tag-price"]!,
+      "متوفر الآن": x["hero-tag-line"]!,
     },
     links: { "/products": [SHOP, "/faq"] },
     nodes: {
@@ -172,12 +172,12 @@ function story(c: LookContent): Design {
     photo: [undefined, undefined, undefined, undefined, undefined, c.photos.story],
     text: {
       "صورة المتجر": c.story.alt,
-      "مع كل طلب": c.story.eyebrow,
-      "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
-      "فاتورة رسمية وضمان": c.custom["story-point-1"]!,
-      "تغليف محمي من الصدمات": c.custom["story-point-2"]!,
-      "رقم تتبع على واتساب": c.custom["story-point-3"]!,
-      "اعرف أكتر": c.story.cta,
+      "مع كل منتج": c.story.eyebrow,
+      "تفاصيل واضحة لكل منتج": c.story.title,
+      "صور ومواصفات لكل منتج": c.custom["story-point-1"]!,
+      "تفاصيل ومقاسات واضحة": c.custom["story-point-2"]!,
+      "تواصل معنا لأي سؤال": c.custom["story-point-3"]!,
+      "اعرف أكثر": c.story.cta,
     },
   });
   return calm(
@@ -197,20 +197,20 @@ function bench(c: LookContent): Design {
   const s = (key: string) => c.custom[`service-${key}`]!;
   const cards = lib("service-cards", {
     text: {
-      الخدمات: L("بعد ما تشتري", "After you buy"),
+      الخدمات: L("بعد الشراء", "After you buy"),
       "خدمات بعد البيع": s("title"),
-      "عشان جهازك يفضل شغال زي الجديد.": s("line"),
-      "تركيب في البيت": s("1-title"),
-      "نركّب الشاشة أو الرسيفر ونظبط القنوات.": s("1-line"),
+      "ليبقى جهازك يعمل كالجديد.": s("line"),
+      "تركيب في المنزل": s("1-title"),
+      "نركّب الشاشة أو جهاز الاستقبال ونضبط القنوات.": s("1-line"),
       "من ٢٥٠ ج.م": s("1-price"),
       "صيانة وإصلاح": s("2-title"),
       "تغيير بطارية أو شاشة في نفس اليوم.": s("2-line"),
       "من ١٥٠ ج.م": s("2-price"),
       "استبدل القديم": s("3-title"),
-      "جيب جهازك القديم وخد خصم على الجديد.": s("3-line"),
+      "أحضر جهازك القديم واحصل على خصم على الجديد.": s("3-line"),
       مجانًا: s("3-price"),
-      "مد الضمان": s("4-title"),
-      "سنة أو سنتين زيادة على ضمان الوكيل.": s("4-line"),
+      "تمديد الضمان": s("4-title"),
+      "سنة أو سنتان إضافيتان على ضمان الوكيل.": s("4-line"),
       "من ١٩٩ ج.م": s("4-price"),
     },
   });
@@ -231,7 +231,7 @@ function spotlight(c: LookContent, place: number): Design {
       "صورة المجموعة": x["banner-alt"]!,
       مجموعة: x["banner-eyebrow"]!,
       "مجموعة الموسم": x["banner-title"]!,
-      "قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.": x["banner-line"]!,
+      "قطع مختارة بعناية، بخامات جيدة وتفاصيل هادئة.": x["banner-line"]!,
       "تسوّق المجموعة": x["banner-cta"]!,
       "من المجموعة": L("من القسم", "From the range"),
     },
@@ -259,7 +259,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const header = lib("header-centered", {
     text: {
       "اسم متجرك": name,
-      "مختارات بعناية منذ ٢٠١٨": c.footer.line,
+      "مختارات بعناية": c.footer.line,
       المتجر: L("كل الأحذية", "All shoes"),
       العروض: L("وصل حديثًا", "New in"),
       المدونة: L("الأسئلة", "FAQ"),
@@ -285,7 +285,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         text: {
           "اكتشف الأقسام": c.categories.title,
           "كل الأقسام": L("كل الأحذية", "All shoes"),
-          منتج: L("جوز", "pairs"),
+          منتج: L("زوج", "pairs"),
         },
         lists: [{ limit: 4 }],
       }),
@@ -299,7 +299,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("products-grid", {
       text: {
         "وصل حديثًا": c.products.primary.title,
-        "أحدث المنتجات اللي نزلت المتجر.": c.products.primary.line,
+        "أحدث المنتجات في المتجر.": c.products.primary.line,
       },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 8 }],
@@ -311,14 +311,14 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     icons(
       lib("features-trust-band", {
         text: {
-          "توصيل سريع": c.trust[0]!.title,
-          "من ٢ لـ ٤ أيام لكل المحافظات": c.trust[0]!.line,
+          "الشحن": c.trust[0]!.title,
+          "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
           "الدفع عند الاستلام": c.trust[1]!.title,
-          "أو ادفع بالمحافظ وإنستاباي": c.trust[1]!.line,
-          "استبدال سهل": c.trust[2]!.title,
-          "خلال ١٤ يوم": c.trust[2]!.line,
-          "مساعدة على واتساب": c.trust[3]!.title,
-          "كل يوم من ١٠ ص لـ ١٠ م": c.trust[3]!.line,
+          "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+          "الاستبدال والاسترجاع": c.trust[2]!.title,
+          "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+          "تواصل معنا": c.trust[3]!.title,
+          "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
         },
       }),
       // The promises' own icons: delivery, size exchange, sizing help, pay on delivery.
@@ -328,8 +328,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("newsletter-strip", {
         text: {
-          "اعرف الجديد الأول": c.newsletter.title,
-          "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": c.newsletter.line,
+          "اعرف الجديد أولًا": c.newsletter.title,
+          "أحدث المجموعات في بريدك الإلكتروني.": c.newsletter.line,
         },
       }),
       "storeForm",
@@ -390,7 +390,7 @@ export const GHORZA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(GHORZA_KEY, "mens-shoes", { ar: 2694, en: 2694 }),
   key: GHORZA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Ghorza v4: the men's shoes template, rebuilt look-first",
   productPage: {
     surface: "flat",
@@ -398,7 +398,7 @@ export const GHORZA = editionTemplate({
     button: "outline",
     band: "shelf",
     extras: ["product-perks"],
-    copy: { reviews: L("رأي اللي لبسوها", "From those who wear them"), related: L("تمشي معاها", "Goes well with") },
+    copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("تتناسق معها", "Goes well with") },
   },
   name: L("غُرزة", "Ghorza"),
   description: L(

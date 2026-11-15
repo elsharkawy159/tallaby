@@ -17,7 +17,7 @@ export const videoWide = defineDesign({
     t.section({ label: L("فيديو", "Video") }, [
       t.container(
         [
-          sectionHead(t, { title: L("شاهد المنتج على الحقيقة", "See the product for real"), link: { href: "/products", text: L("تسوّق الآن", "Shop now") } }),
+          sectionHead(t, { title: L("شاهد المنتج على حقيقته", "See the product for real"), link: { href: "/products", text: L("تسوّق الآن", "Shop now") } }),
           t.video(0, L("فيديو المنتج", "Product video"), {
             label: L("المشغل", "Player"),
             role: "video",

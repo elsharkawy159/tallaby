@@ -34,7 +34,7 @@ export const productsPanelRail = defineDesign({
                       ...ON_BRAND,
                     },
                   }),
-                  t.paragraph(L("اختيارات مضمونة لأي مناسبة.", "Safe picks for any occasion."), { role: "subtitle", style: ON_BRAND_BODY }),
+                  t.paragraph(L("أفكار هدايا لكل مناسبة.", "Gift ideas for every occasion."), { role: "subtitle", style: ON_BRAND_BODY }),
                   t.spacer(8),
                   pillButton(t, L("عرض الكل", "View all"), SHOP_LINK, {
                     tone: "on-brand",

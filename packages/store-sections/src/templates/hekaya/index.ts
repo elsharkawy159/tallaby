@@ -36,20 +36,20 @@ const PHOTOS = {
   animalsSmall: pexels(3661201, 900),
 };
 
-const NAME = L("حكاية بوكس", "Hekaya Books");
+const NAME = L("مكتبة حكاية", "Hekaya Books");
 
 const header = lib("header-pill", {
-  text: { "اسم متجرك": NAME, "المتجر": L("كل الكتب", "All books"), "العروض": L("الأكثر مبيعاً", "Best sellers"), "المدونة": L("عننا", "About") },
+  text: { "اسم متجرك": NAME, "المتجر": L("كل الكتب", "All books"), "العروض": L("الأكثر مبيعاً", "Best sellers"), "المدونة": L("من نحن", "About") },
   links: { "/products": [SHOP, BEST], "/blog": "/about" },
 });
 
 const footer = lib("footer-signup", {
   text: {
-    "اشترك في النشرة": L("حكاية كل جمعة", "A story every Friday"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("حكاية قصيرة ببلاش على الإيميل قبل النوم.", "A free short story by email for bedtime."),
+    "اشترك في النشرة": L("كتب وقصص جديدة", "New books and stories"),
+    "منتجات جديدة وأخبار المتجر.": L("أخبار الكتب الجديدة لكل عمر.", "News of new books for every age."),
     "م": L("ح", "H"),
     "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ حكاية بوكس. كل الحقوق محفوظة.", "© 2026 Hekaya Books. All rights reserved."),
+    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ مكتبة حكاية. كل الحقوق محفوظة.", "© 2026 Hekaya Books. All rights reserved."),
     "العروض": L("الأعلى تقييماً", "Top rated"),
   },
   links: { "/products": [undefined, NEW, BEST, RATED] },
@@ -60,47 +60,47 @@ const home: Design[] = [
     photo: [PHOTOS.animalsOnBooks],
     text: {
       "صورة الواجهة": L("حيوانات خشب فوق كومة كتب", "Wooden animals on a stack of books"),
-      "المجموعة الجديدة": L("جديد الشهر ده", "New this month"),
-      "معمول بكميات صغيرة": L("حكايات هيطلبوها تاني", "Stories they will ask for again"),
-      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
-        "كتب مصورة عربي وإنجليزي مختارة من مدرّستين، بتغليف هدية مجاني.",
-        "Arabic and English picture books picked by two teachers, with free gift wrap.",
+      "المجموعة الجديدة": L("جديد الشهر", "New this month"),
+      "مختارة بعناية": L("قصص مصورة للأطفال", "Picture books for kids"),
+      "قطع مختارة بعناية، لكل قطعة تفاصيلها المميزة.": L(
+        "كتب مصورة بالعربية والإنجليزية لكل عمر.",
+        "Arabic and English picture books for every age.",
       ),
       "تسوّق المجموعة": L("تسوق الكتب الجديدة", "Shop new books"),
-      "حكايتنا": L("مين إحنا", "Who we are"),
+      "حكايتنا": L("من نحن", "Who we are"),
     },
     links: { "/products": NEW },
   }),
   lib("categories-captioned", { text: { "اكتشف الأقسام": L("رفوف حكاية", "Hekaya shelves"), "كل الأقسام": L("كل الكتب", "All books") } }),
   lib("products-shelf", {
-    text: { "تسوّق حسب مزاجك": L("الرف", "The shelf"), "وصل جديد": L("جديد", "New"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
+    text: { "تسوّق حسب اختيارك": L("الرف", "The shelf"), "وصل جديد": L("جديد", "New"), "عليه خصم": L("الأعلى تقييماً", "Top rated") },
     links: { "/products": [NEW, BEST, RATED, SHOP] },
   }),
   lib("features-bento", {
     text: {
-      "وعدنا ليك": L("ليه حكاية", "Why Hekaya"),
-      "نشتري لك كأننا بنشتري لنفسنا": L("كتب مختارة من مدرسين", "Books picked by teachers"),
-      "اعرف أكتر": L("اعرف الفريق", "Meet the team"),
-      "توصيل سريع": L("متراجعة حسب السن", "Age-checked"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("كل كتاب بيتقري قبل ما يتعرض.", "Every book is read before it is listed."),
-      "الدفع عند الاستلام": L("تغليف مجاني", "Free gift wrap"),
-      "أو ادفع بالبطاقة والمحفظة": L("ومعاه كارت بالاسم.", "With a name card."),
-      "استرجاع سهل": L("استبدال لو مقفول", "Swap unopened"),
-      "١٤ يومًا لتغيّر رأيك": L("خلال ١٤ يوم.", "Within 14 days."),
+      "وعدنا لك": L("لماذا حكاية", "Why Hekaya"),
+      "نختار كل منتج كأننا نختاره لأنفسنا": L("كتب مختارة بعناية", "Carefully chosen books"),
+      "اعرف أكثر": L("تعرّف علينا", "About us"),
+      "الشحن": L("حسب العمر", "By age"),
+      "تظهر تكلفة الشحن ومدته عند إتمام الطلب": L("العمر المناسب مكتوب لكل كتاب.", "The suitable age is shown for every book."),
+      "الدفع عند الاستلام": L("بالعربية والإنجليزية", "Arabic and English"),
+      "أو بطرق الدفع المتاحة عند الطلب": L("كتب مصورة وقصص وألعاب تعليمية.", "Picture books, stories and learning toys."),
+      "الاستبدال والاسترجاع": L("تفاصيل واضحة", "Clear details"),
+      "التفاصيل في صفحة السياسات": L("صور وتفاصيل لكل كتاب.", "Photos and details for every book."),
     },
   }),
   lib("stats-sentence", {
     text: {
-      "وصّلنا": L("قرّاءنا خلّصوا", "Our readers finished"),
+      "وصّلنا": L("قرأ عملاؤنا", "Our readers finished"),
       "٢٥ ألف": L("٦٢ ألف", "62,000"),
-      "طلب لـ": L("كتاب السنة دي في", "books this year across"),
-      "محافظة، وعملاءنا مدّيين متوسط": L("محافظة، وتقييم الأهالي", "governorates, and parents rate us"),
+      "طلب لـ": L("كتاب هذا العام في", "books this year across"),
+      "محافظة، ومتوسط تقييم عملائنا": L("محافظة، ومتوسط تقييم الأهل", "governorates, and parents rate us"),
     },
   }),
   lib("brands-bubbles", {
-    name: L("دور نشر بنحبها", "Publishers we love"),
+    name: L("دور نشر نحبها", "Publishers we love"),
     text: {
-      "ماركات بنحبها": L("دور نشر بنحبها", "Publishers we love"),
+      "ماركات نحبها": L("دور نشر نحبها", "Publishers we love"),
       "فولتا": "Dar Hekaya",
       "نورو": "Kalimat",
       "كيان": "Little Owl",
@@ -113,18 +113,18 @@ const home: Design[] = [
       "/products": [search("Dar Hekaya"), search("Kalimat"), search("Little Owl"), search("Nahdet"), search("Story Kite"), search("Bookling"), search("Al Fanous")],
     },
   }),
-  lib("faq-chat", { text: { "سألتونا كتير…": L("الأهالي بيسألونا…", "Parents ask us…") } }),
+  lib("faq-chat", { text: { "أسئلتكم المتكررة": L("أسئلة الأهل", "Parents ask us…") } }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن حكاية", "About Hekaya"), L("مكتبة أطفال في المعادي بدأتها مدرّستين.", "A children’s bookshop in Maadi started by two teachers.")),
+  pageHeader(lib, "about-header", L("عن حكاية", "About Hekaya"), L("مكتبة أطفال بكتب عربية وإنجليزية.", "A children’s bookshop of Arabic and English books.")),
   aboutStory(lib, {
     photo: PHOTOS.bookcase,
-    alt: L("رفوف مليانة كتب ملوّنة", "Shelves full of colourful books"),
-    eyebrow: L("المعادي", "Maadi"),
-    title: L("كل كتاب بيتقري قبل ما يتعرض", "Every book is read before it is listed"),
-    text: L("إحنا مدرّستين بنختار كتب عربي وإنجليزي مناسبة لكل سن، برسومات حلوة.", "We are two teachers choosing well-illustrated Arabic and English books for every age."),
-    more: L("واشتري ٣ كتب والرابع ببلاش.", "And buy three books, get the fourth free."),
+    alt: L("رفوف مليئة بكتب ملوّنة", "Shelves full of colourful books"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("كتب لكل عمر", "Books for every age"),
+    text: L("نختار كتبًا بالعربية والإنجليزية مناسبة لكل عمر، برسوم جميلة.", "Well-illustrated Arabic and English books for every age."),
+    more: L("تواصل معنا لأي سؤال عن كتاب.", "Contact us with any question about a book."),
     button: L("تسوق الكتب", "Shop books"),
     href: SHOP,
   }),
@@ -132,19 +132,19 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("حكايات عربي وإنجليزي للقرّاء الصغيرين.", "Arabic and English stories for little readers."),
+  description: L("قصص بالعربية والإنجليزية للقرّاء الصغار.", "Arabic and English stories for little readers."),
   categories: [
-    ["arabic", "حكايات عربي", "Arabic stories", PHOTOS.shelfBooks],
-    ["english", "كتب إنجليزي", "English books", PHOTOS.bookcase],
-    ["play", "اتعلم والعب", "Learn & play", PHOTOS.alphabet],
+    ["arabic", "قصص عربية", "Arabic stories", PHOTOS.shelfBooks],
+    ["english", "كتب إنجليزية", "English books", PHOTOS.bookcase],
+    ["play", "تعلّم والعب", "Learn & play", PHOTOS.alphabet],
     ["blocks", "مكعبات", "Blocks", PHOTOS.numberBlocks],
     ["animals", "حكايات الحيوانات", "Animal tales", PHOTOS.animalsOnBooks],
   ],
   products: [
-    ["bedtime-stories-box", "arabic", "بوكس حكايات قبل النوم", "Bedtime Stories Box", PHOTOS.shelfBooks, 650, { isFeatured: true, rating: 4.9, sold90: 340 }],
+    ["bedtime-stories-box", "arabic", "علبة قصص قبل النوم", "Bedtime Stories Box", PHOTOS.shelfBooks, 650, { isFeatured: true, rating: 4.9, sold90: 340 }],
     ["animal-stories-set", "animals", "طقم حكايات الحيوانات", "Animal Stories Set", PHOTOS.animalsSmall, 520, { sold90: 120 }],
     ["first-readers-set", "english", "طقم القارئ الأول", "First Readers Set", PHOTOS.bookcase, 780, { rating: 4.8, sold90: 186 }],
-    ["story-bin-mixed-ages", "english", "صندوق حكايات مشكل", "Story Bin, Mixed Ages", PHOTOS.shelfBooks, 990, { compareAtPrice: 1250, sold90: 41 }],
+    ["story-bin-mixed-ages", "english", "صندوق قصص لأعمار متنوعة", "Story Bin, Mixed Ages", PHOTOS.shelfBooks, 990, { compareAtPrice: 1250, sold90: 41 }],
     ["arabic-letters-blocks", "play", "مكعبات الحروف", "Arabic Letters Blocks", PHOTOS.alphabet, 590, { isFeatured: true, sold90: 72 }],
     ["counting-blocks", "blocks", "مكعبات العد", "Rainbow Counting Blocks", PHOTOS.numberBlocks, 520, { compareAtPrice: 620, sold90: 118 }],
     ["shape-sorter", "play", "لعبة الأشكال", "Shape Sorter", PHOTOS.sorter, 320, { sold90: 41 }],
@@ -158,7 +158,7 @@ export const HEKAYA = libraryTemplate({
   changelog: "Hekaya v4: new hero, categories, section order",
   name: L("حكاية", "Hekaya"),
   description: L(
-    "كتب أطفال: جديد الشهر، اختار سن القارئ، ليه حكاية ودور النشر. أربع صفحات جاهزة.",
+    "كتب أطفال: جديد الشهر، اختيار عمر القارئ، لماذا حكاية ودور النشر. أربع صفحات جاهزة.",
     "Children’s books: new this month, pick your reader’s age, why Hekaya and publishers. Four ready pages.",
   ),
   category: "books",
@@ -188,7 +188,7 @@ export const HEKAYA = libraryTemplate({
       sections: contactPage(lib, {
         title: L("تواصل", "Contact"),
         text: L("١٤ شارع ٩، المعادي، القاهرة.", "14 Road 9, Maadi, Cairo."),
-        heading: L("اسألنا عن كتاب لسن معين", "Ask us for a book for any age"),
+        heading: L("اسألنا عن كتاب لعمر معين", "Ask us for a book for any age"),
       }),
     },
     {
@@ -196,12 +196,12 @@ export const HEKAYA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الكتب والتغليف والتوصيل.", "Books, gift wrap and delivery."),
-        question: L("بتغلفوا الكتب هدية؟", "Do you gift-wrap books?"),
-        answer: L("أيوه، اكتبلنا في ملاحظات الطلب وبنغلفه ونحط كارت باسمك.", "Yes. Add a note to your order and we wrap it with a card in your name."),
+        text: L("الكتب والأعمار والطلبات.", "Books, ages and orders."),
+        question: L("كيف أختار كتابًا يناسب العمر؟", "How do I choose a book for the right age?"),
+        answer: L("العمر المناسب مكتوب في تفاصيل كل كتاب، ويمكنك التصفح حسب القسم.", "Each book shows its suitable age, and you can browse by shelf."),
       }),
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", band: "shelf", copy: { reviews: L("رأي القرّاء الصغار وأهاليهم", "Readers and parents say"), related: L("كتب بعدها", "Books to read next") } },
+  productPage: { surface: "shelf", thumbs: "side", band: "shelf", copy: { reviews: L("آراء القرّاء الصغار وأهلهم", "Readers and parents say"), related: L("كتب قد تعجبك", "Books to read next") } },
 });

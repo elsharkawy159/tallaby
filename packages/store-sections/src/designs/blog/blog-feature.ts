@@ -25,7 +25,7 @@ export const blogFeature = defineDesign({
                 [
                   t.stack(
                     [
-                      t.badge(L("اقرأ الأسبوع ده", "Read this week"), { role: "eyebrow", style: { background: "background", color: "primary" } }),
+                      t.badge(L("مقال الأسبوع", "This week's read"), { role: "eyebrow", style: { background: "background", color: "primary" } }),
                       t.heading(POST_TITLE, "h2", { bind: "title", style: { fontSize: "display-sm" } }),
                       t.paragraph(L("سطر قصير من المقال يشرح موضوعه.", "A short line from the post about what it covers."), { bind: "excerpt" }),
                       t.button(L("اقرأ المقال", "Read the article"), BLOG_LINK, "solid", { bind: "href", role: "cta", style: { marginTop: 8 } }),

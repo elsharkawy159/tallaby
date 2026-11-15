@@ -14,25 +14,25 @@ import { FINDER_LINK } from "./_shared";
 
 const SENTENCES = [
   [
-    L("عايز", "I want"),
+    L("أريد", "I want"),
     L("سماعة", "earbuds"),
-    L("عشان", "for"),
-    L("الجيم", "workouts"),
+    L("من أجل", "for"),
+    L("الرياضة", "workouts"),
     L("بأقل من", "under"),
     L("١٠٠٠ ج.م", "EGP 1,000"),
   ],
   [
-    L("عايز", "I want"),
+    L("أريد", "I want"),
     L("ساعة ذكية", "a smartwatch"),
-    L("عشان", "for"),
+    L("من أجل", "for"),
     L("الجري", "running"),
     L("بأقل من", "under"),
     L("٢٠٠٠ ج.م", "EGP 2,000"),
   ],
   [
-    L("عايز", "I want"),
+    L("أريد", "I want"),
     L("شاحن", "a charger"),
-    L("عشان", "for"),
+    L("من أجل", "for"),
     L("السفر", "travel"),
     L("بأقل من", "under"),
     L("٥٠٠ ج.م", "EGP 500"),
@@ -94,7 +94,7 @@ export const finderSentence = defineDesign({
           t.stack(
             [
               dotLabel(t, L("ساعدني أختار", "Help me choose")),
-              t.heading(L("قول إنت عايز إيه", "Say what you are after"), "h2", {
+              t.heading(L("قل ما تريد", "Say what you are after"), "h2", {
                 role: "title",
                 style: { fontSize: "display-sm", letterSpacing: "tight" },
               }),

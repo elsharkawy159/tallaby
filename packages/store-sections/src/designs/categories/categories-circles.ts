@@ -31,7 +31,7 @@ export const categoriesCircles = defineDesign({
         [
           t.stack(
             [
-              categoryHead(t, { title: L("بتدوّر على إيه؟", "What are you shopping for?"), link: { href: CATEGORY_LINK }, spaced: false }),
+              categoryHead(t, { title: L("ما الذي تبحث عنه؟", "What are you shopping for?"), link: { href: CATEGORY_LINK }, spaced: false }),
               t.categoryList(
                 [
                   t.link(

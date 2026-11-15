@@ -8,11 +8,11 @@ import { L } from "../_kit";
 import { FLUSH, modHead } from "../_modular";
 
 const LOOKS = [
-  { title: L("إطلالة الشغل", "Office look"), line: L("٣ منتجات", "3 items") },
-  { title: L("المشوار", "Errands"), line: L("٤ منتجات", "4 items") },
-  { title: L("الويكند", "Weekend"), line: L("٢ منتج", "2 items") },
+  { title: L("إطلالة العمل", "Office look"), line: L("٣ منتجات", "3 items") },
+  { title: L("الخروج اليومي", "Errands"), line: L("٤ منتجات", "4 items") },
+  { title: L("نهاية الأسبوع", "Weekend"), line: L("منتجان", "2 items") },
   { title: L("السفر", "Travel"), line: L("٥ منتجات", "5 items") },
-  { title: L("الجيم", "Gym"), line: L("٣ منتجات", "3 items") },
+  { title: L("الرياضة", "Gym"), line: L("٣ منتجات", "3 items") },
   { title: L("السهرة", "Evening"), line: L("٤ منتجات", "4 items") },
 ];
 
@@ -30,7 +30,7 @@ export const galleryCaptioned = defineDesign({
         [
           modHead(t, {
             label: L("لوك بوك", "Lookbook"),
-            title: L("كل يوم بشكل", "A look for every day"),
+            title: L("إطلالة لكل يوم", "A look for every day"),
           }),
           t.grid(
             LOOKS.map((look, i) =>

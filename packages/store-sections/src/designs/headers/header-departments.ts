@@ -10,7 +10,7 @@ import { FLUSH } from "../_modular";
 import { cartLink, logo, searchLink } from "./_shared";
 
 const DEPARTMENTS = [L("نساء", "Women"), L("رجال", "Men"), L("أطفال", "Kids")];
-const LINKS = [L("وصل حديثًا", "New in"), L("ملابس", "Clothing"), L("أحذية", "Shoes"), L("شنط", "Bags"), L("العروض", "Offers")];
+const LINKS = [L("وصل حديثًا", "New in"), L("ملابس", "Clothing"), L("أحذية", "Shoes"), L("حقائب", "Bags"), L("العروض", "Offers")];
 
 export const headerDepartments = defineDesign({
   id: "header-departments",

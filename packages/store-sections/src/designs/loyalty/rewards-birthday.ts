@@ -96,7 +96,7 @@ export const rewardsBirthday = defineDesign({
               t.stack(
                 [
                   t.heading(
-                    L("عيد ميلادك عندنا هدية", "A gift on your birthday"),
+                    L("هدية في عيد ميلادك", "A gift on your birthday"),
                     "h2",
                     {
                       role: "title",
@@ -105,7 +105,7 @@ export const rewardsBirthday = defineDesign({
                   ),
                   t.paragraph(
                     L(
-                      "سيبلنا تاريخ ميلادك، وفي أسبوع عيد ميلادك هنبعتلك هدية مننا في رسالة.",
+                      "اترك لنا تاريخ ميلادك، وسنرسل إليك هدية في أسبوع عيد ميلادك.",
                       "Leave us your birthday and we'll message you a gift from us in your birthday week.",
                     ),
                     { role: "subtitle", style: { fontSize: "lg" } },

@@ -121,7 +121,7 @@ const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
 
-const VIEW_ALL = L("شوف الكل", "See all");
+const VIEW_ALL = L("عرض الكل", "View all");
 
 /** Alwan's own content is the pants-jeans pack's shop (Qassa): one source for the template and its edition. */
 const DEFAULT_CONTENT: LookDefaults = {
@@ -163,7 +163,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const header = lib("header-topbar", {
     text: {
-      "توصيل سريع لكل محافظات مصر": c.announcement[0]!,
+      "تسوّق سهل من هاتفك": c.announcement[0]!,
       "الدفع عند الاستلام": c.announcement[1]!,
       "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
       "اسم متجرك": name,
@@ -199,18 +199,18 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           "صورة الحملة الأولى": c.hero.alt,
           "وصل حديثًا": c.hero.eyebrow,
           "الموسم الجديد وصل": c.hero.title,
-          "قطع مختارة بعناية، وتوصيل لحد باب البيت.": c.hero.line,
+          "قطع مختارة بعناية لكل يوم.": c.hero.line,
           "تسوّق الجديد": c.hero.cta,
           "صورة الحملة الثانية": s(2, "alt"),
           "الأكثر مبيعًا": s(2, "eyebrow"),
           "المفضّلة عند عملائنا": s(2, "title"),
-          "القطع اللي بترجع لها كل مرة.": s(2, "line"),
-          "شوف الأكثر مبيعًا": s(2, "cta"),
+          "القطع الأكثر طلبًا في المتجر.": s(2, "line"),
+          "تصفّح الأكثر مبيعًا": s(2, "cta"),
           "صورة الحملة الثالثة": s(3, "alt"),
-          "عروض الأسبوع": s(3, "eyebrow"),
-          "خصومات لفترة محدودة": s(3, "title"),
-          "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": s(3, "line"),
-          "تسوّق العروض": s(3, "cta"),
+          "مختارات الأسبوع": s(3, "eyebrow"),
+          "قطع مختارة لهذا الأسبوع": s(3, "title"),
+          "تشكيلة مختارة من أحدث القطع في المتجر.": s(3, "line"),
+          "تسوّق المختارات": s(3, "cta"),
         },
         links: { "/products": [SHOP, BEST, NEW] },
       }),
@@ -253,10 +253,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
             c.photos.story,
           ],
           text: {
-            "إزاي بنشتغل": c.story.eyebrow,
-            "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
-            "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": c.story.text,
-            "اعرف أكتر": c.story.cta,
+            "كيف نعمل": c.story.eyebrow,
+            "تفاصيل واضحة لكل منتج": c.story.title,
+            "نعرض لكل منتج صورًا ومواصفات ومقاسات واضحة.": c.story.text,
+            "اعرف أكثر": c.story.cta,
             "صورة المتجر": c.story.alt,
           },
           links: { "/about": NEW },
@@ -285,17 +285,17 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           c.photos.custom["fit-3"]!,
         ],
         text: {
-          "إزاي بنشتغل": c.custom["fit-eyebrow"]!,
-          "من الخامة لحد بابك": c.custom["fit-title"]!,
+          "كيف نعمل": c.custom["fit-eyebrow"]!,
+          "من الخامة إلى طلبك": c.custom["fit-title"]!,
           "نختار الخامة": fit(1, "title"),
-          "نجرّب كل خامة بنفسنا قبل ما تدخل المتجر.": fit(1, "line"),
+          "نختار كل خامة بعناية قبل أن تصل إلى المتجر.": fit(1, "line"),
           "خامات مختارة": fit(1, "alt"),
           "نجهّز طلبك بعناية": fit(2, "title"),
-          "كل طلب بيتراجع ويتغلّف كويس عشان يوصل سليم.": fit(2, "line"),
-          "طلب متغلّف": fit(2, "alt"),
-          "يوصلك لحد الباب": fit(3, "title"),
-          "توصيل لكل المحافظات، وتدفع عند الاستلام لو تحب.": fit(3, "line"),
-          "طلب جاهز للتوصيل": fit(3, "alt"),
+          "نراجع كل طلب ونجهّزه بعناية.": fit(2, "line"),
+          "طلب جاهز": fit(2, "alt"),
+          "نشحن طلبك": fit(3, "title"),
+          "تظهر تكلفة الشحن ومدته عند إتمام الطلب.": fit(3, "line"),
+          "طلب جاهز للشحن": fit(3, "alt"),
         },
       }),
     ),
@@ -303,16 +303,16 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("features-side-title", {
         text: {
-          "ليه الناس بترجع لنا تاني": L(`ليه ${short.ar}؟`, `Why ${short.en}?`),
-          "أربع حاجات بنلتزم بيها في كل طلب.": c.custom["promises-line"]!,
-          "توصيل سريع": c.trust[0]!.title,
-          "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+          "لماذا تتسوق معنا": L(`لماذا ${short.ar}؟`, `Why ${short.en}?`),
+          "أربعة أمور نهتم بها في كل طلب.": c.custom["promises-line"]!,
+          "الشحن": c.trust[0]!.title,
+          "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
           "الدفع عند الاستلام": c.trust[1]!.title,
-          "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-          "استرجاع سهل": c.trust[2]!.title,
-          "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-          "دعم على واتساب": c.trust[3]!.title,
-          "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+          "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+          "الاستبدال والاسترجاع": c.trust[2]!.title,
+          "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+          "تواصل معنا": c.trust[3]!.title,
+          "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
         },
         nodes: { المميزات: { style: { background: "secondary" } } },
       }),
@@ -327,8 +327,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     ),
     lib("newsletter-strip", {
       text: {
-        "اعرف الجديد الأول": c.newsletter.title,
-        "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": c.newsletter.line,
+        "اعرف الجديد أولًا": c.newsletter.title,
+        "أحدث المجموعات في بريدك الإلكتروني.": c.newsletter.line,
       },
     }),
   ];
@@ -390,7 +390,7 @@ export const FASHION_BOLD = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(FASHION_BOLD_KEY, "pants-jeans", { ar: 2812, en: 2812 }),
   key: FASHION_BOLD_KEY,
-  version: 2,
+  version: 3,
   changelog:
     "Alwan v2: the pants and jeans template, rebuilt look-first around denim",
   name: L("ألوان", "Alwan"),
@@ -420,8 +420,8 @@ export const FASHION_BOLD = editionTemplate({
     band: "brand",
     extras: ["product-perks"],
     copy: PANTS_JEANS.productPage?.copy ?? {
-      reviews: L("آراء اللي لبسوه", "From people who wear it"),
-      related: L("بناطيل ممكن تعجبك", "Trousers you may like"),
+      reviews: L("آراء العملاء", "Customer reviews"),
+      related: L("بناطيل قد تعجبك", "Trousers you may like"),
     },
   },
   lib,

@@ -23,16 +23,16 @@ export const popupExit = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("استنى!", "Wait!"), "h2", {
+              t.heading(L("انتظر!", "Wait!"), "h2", {
                 role: "title",
                 style: { ...ON_BRAND, fontSize: "display-lg", letterSpacing: "tight", lineHeight: "tight", textAlign: "center" },
               }),
-              t.paragraph(L("سلتك لسه مستنياك، والتوصيل مجاني لو كملت دلوقتي.", "Your cart is still here, and delivery is free if you finish now."), {
+              t.paragraph(L("سلتك ما زالت بانتظارك، والتوصيل مجاني إذا أكملت الطلب الآن.", "Your cart is still here, and delivery is free if you finish now."), {
                 role: "subtitle",
                 style: { ...ON_BRAND_BODY, fontSize: "lg", textAlign: "center", maxWidth: "520px" },
                 mobile: { fontSize: "md" },
               }),
-              t.button(L("كمّل الطلب", "Finish my order"), "/cart", "light", { role: "cta", style: { marginTop: 8 } }),
+              t.button(L("أكمل الطلب", "Finish my order"), "/cart", "light", { role: "cta", style: { marginTop: 8 } }),
             ],
             {
               label: L("اللوحة", "Panel"),

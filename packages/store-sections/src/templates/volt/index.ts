@@ -49,7 +49,7 @@ const PHOTOS = {
   carMount: pexels(7738878, 900),
 };
 
-const NAME = L("شحن موبايل", "Shahn Mobile");
+const NAME = L("شحن", "Shahn");
 
 /**
  * Shahn Mobile's own content: what the look is built with when no edition is
@@ -59,57 +59,57 @@ const NAME = L("شحن موبايل", "Shahn Mobile");
 const DEFAULT_CONTENT: LookDefaults = {
   // The header search placeholder: three things a buyer types.
   labels: { search: L("ابحث عن شاحن، كابل، سماعة…", "Search chargers, cables, earbuds…") },
-  categories: { title: L("بتدور على إيه؟", "What are you after?") },
+  categories: { title: L("عمّ تبحث؟", "What are you looking for?") },
   // Compact quick-buy rows of what `journey.primary` shows.
   products: { primary: { title: L("إكسسوارات بأسعار عادلة", "Accessories at fair prices") } },
   // Optional, with `custom.reviews-reply`: three WhatsApp-style messages from buyers, each with a name.
   reviews: {
-    title: L("رسايل من عملائنا", "Messages from our customers"),
+    title: L("رسائل من عملائنا", "Messages from our customers"),
     items: [
       {
-        quote: L("الباور بانك وصل تاني يوم الصبح وبيشحن بالسرعة الكاملة فعلاً.", "The power bank arrived the next morning and it really charges at full speed."),
+        quote: L("الشاحن المتنقل يشحن بالسرعة المكتوبة عليه فعلًا.", "The power bank really charges at the speed on its label."),
         name: L("أحمد س.", "Ahmed S."),
       },
       {
-        quote: L("السماعة كان فيها تشويش، بدّلوها في يومين من غير نقاش.", "The earbuds had a crackle; they swapped them in two days without arguing."),
+        quote: L("السماعة صوتها نقي وبطاريتها تدوم طويلًا.", "The earbuds sound clear and the battery lasts."),
         name: L("منى ك.", "Mona K."),
       },
       {
-        quote: L("حامل العربية كويس. الشفاط ماسك حتى والتابلوه سخن.", "Good car mount. The suction holds on a hot dashboard too."),
+        quote: L("حامل السيارة ممتاز، والشفاط يثبت حتى على التابلوه الساخن.", "Good car mount. The suction holds on a hot dashboard too."),
         name: L("عمر ف.", "Omar F."),
       },
     ],
   },
   about: {
-    line: L("محل إكسسوارات صغير في مدينة نصر بيجرّب كل حاجة بيبيعها.", "A small accessories shop in Nasr City that tests everything it sells."),
-    alt: L("شاحن وكابل على رخامة", "A charger and cable on marble"),
-    eyebrow: L("مدينة نصر", "Nasr City"),
-    title: L("بنجرّب كل شاحن قبل ما نبيعه", "We test every charger before we sell it"),
-    text: L("بنقيس سرعة الشحن الحقيقية لكل باور بانك وكابل، ومش بنبيع حاجة مش بتوصل للرقم اللي مكتوب عليها.", "We measure the real charging speed of every power bank and cable, and never sell anything that misses its label."),
-    more: L("وضمان الاستبدال سنة كاملة على كل حاجة.", "And every item has a full 1-year replacement warranty."),
+    line: L("متجر إكسسوارات للهواتف: شواحن وكابلات وسماعات.", "A phone accessories shop: chargers, cables and audio."),
+    alt: L("شاحن وكابل على سطح رخامي", "A charger and cable on marble"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("مواصفات واضحة لكل شاحن", "Clear specs for every charger"),
+    text: L("نعرض قدرة الشحن ونوع المنفذ والتوافق لكل شاحن متنقل وكابل وشاحن.", "We list the output, port and compatibility of every power bank, cable and charger."),
+    more: L("تواصل معنا لمعرفة المنتج المناسب لهاتفك.", "Contact us to find the right product for your phone."),
     // Goes to the best sellers.
     cta: L("تسوّق الأكثر مبيعاً", "Shop best sellers"),
   },
   contact: {
     title: L("الدعم", "Support"),
-    line: L("اسألنا أنهي كابل أو شاحن يناسب موبايلك.", "Ask us which cable or charger fits your phone."),
-    heading: L("ابعتلنا موديل موبايلك", "Send us your phone model"),
+    line: L("اسألنا عن الكابل أو الشاحن المناسب لهاتفك.", "Ask us which cable or charger fits your phone."),
+    heading: L("أرسل لنا طراز هاتفك", "Send us your phone model"),
   },
   faq: {
-    line: L("الضمان والتوصيل والاستبدال.", "Warranty, delivery and replacements."),
-    question: L("إيه ضمان الاستبدال؟", "What is the replacement warranty?"),
+    line: L("التوافق والشحن والاستبدال.", "Compatibility, shipping and exchanges."),
+    question: L("كيف أعرف أن الشاحن يناسب هاتفي؟", "How do I know a charger fits my phone?"),
     answer: L(
-      "أي منتج فيه عيب صناعة خلال سنة بنبدّله بجديد. ابعتلنا رقم الطلب وصورة للمشكلة.",
-      "Any item with a manufacturing fault within a year is replaced with a new one. Send us the order number and a photo of the problem.",
+      "نوع المنفذ والأجهزة المتوافقة مكتوبة في صفحة كل منتج. وإذا لم تكن متأكدًا، تواصل معنا.",
+      "The port type and compatible devices are on every product page. If you are unsure, contact us.",
     ),
   },
   custom: {
     // The hero's giant word behind the store's first featured product: ONE short word (Latin capitals in English), never a phrase.
     "hero-word": L("طاقة", "POWER"),
     // The second of the comparison's five rows, ticked for the store AND for other shops: a promise other shops make too. The other four rows are the library's (genuine with an invoice, 14-day returns, cash on delivery, WhatsApp reply in minutes).
-    "compare-row-2": L("ضمان استبدال سنة", "1-year replacement warranty"),
+    "compare-row-2": L("مواصفات واضحة لكل منتج", "Clear specs for every product"),
     // Optional, with `reviews`: the store's short answer under the first message.
-    "reviews-reply": L("مبسوطين إنه وصلك بسرعة، استمتع بيه.", "Glad it reached you fast, enjoy it."),
+    "reviews-reply": L("سعداء بأن المنتج أعجبك، شكرًا لك.", "Glad you like it, thank you."),
   },
   // The look's only photo block is the about page's (4:5). The hero shows the first featured product's own photo.
   photos: { story: PHOTOS.charger },
@@ -145,30 +145,30 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const reply: LookContent["custom"][string] | undefined = c.custom["reviews-reply"];
   const home: Design[] = [
     lib("hero-big-word", { text: { "جديد": c.custom["hero-word"]! } }),
-    lib("categories-chips", { text: { "إيه اللي في بالك؟": c.categories.title } }),
+    lib("categories-chips", { text: { "عمّ تبحث؟": c.categories.title } }),
     lib("products-rows", {
-      text: { "إكسسوارات بسعر حلو": c.products.primary.title },
+      text: { "إكسسوارات بأسعار مناسبة": c.products.primary.title },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary }],
     }),
     lib("features-compare", {
       text: {
-        "إحنا ولا غيرنا؟": L("ليه تشتري مننا؟", "Why buy from us?"),
+        "نحن أم غيرنا؟": L("لماذا تشتري منا؟", "Why buy from us?"),
         "متجرنا": name,
-        "غيرنا": L("محلات تانية", "Other shops"),
-        "ضمان محلي": c.custom["compare-row-2"]!,
+        "غيرنا": L("متاجر أخرى", "Other shops"),
+        "تفاصيل واضحة": c.custom["compare-row-2"]!,
       },
     }),
     ...(reviews && reply
       ? [
           lib("testimonials-chat", {
             text: {
-              "رسايل بتفرّحنا": reviews.title,
+              "رسائل تسعدنا": reviews.title,
               "مريم أ.": reviews.items[0]!.name,
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
-              "ده يسعدنا جدًا، شكرًا ليكي!": reply,
+              "هذا يسعدنا جدًا، شكرًا لك!": reply,
               "عمر ك.": reviews.items[1]!.name,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "يوسف م.": reviews.items[2]!.name,
               "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[2]!.quote,
             },
@@ -196,7 +196,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     footer,
     pages: [
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      { slug: "about", name: L("من نحن", "About"), seo: { title: aboutName }, sections: about },
       {
         slug: "contact",
         name: L("الدعم", "Support"),
@@ -215,31 +215,31 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("شواحن وكابلات وسماعات بتشتغل من غير وجع دماغ.", "Chargers, cables and audio that just work."),
+  description: L("شواحن وكابلات وسماعات بمواصفات واضحة.", "Chargers, cables and audio with clear specs."),
   categories: [
-    ["power", "باور بانك", "Power banks", PHOTOS.powerBank],
+    ["power", "شواحن متنقلة", "Power banks", PHOTOS.powerBank],
     ["audio", "سماعات", "Earbuds & audio", PHOTOS.buds],
     ["wearables", "ساعات ذكية", "Smartwatches", PHOTOS.watch],
     ["cables", "كابلات وشواحن", "Cables & chargers", PHOTOS.cable],
-    ["car", "إكسسوارات عربية", "Car accessories", PHOTOS.carMount],
-    ["headphones", "سماعات راس", "Headphones", PHOTOS.headphones],
+    ["car", "إكسسوارات السيارة", "Car accessories", PHOTOS.carMount],
+    ["headphones", "سماعات رأس", "Headphones", PHOTOS.headphones],
     ["chargers", "شواحن", "Chargers", PHOTOS.charger],
     ["bundles", "باقات", "Bundles", PHOTOS.powerBankSilver],
   ],
   products: [
     // The first featured product fills hero-big-word: a wide landscape photo (template-rules, owner 2026-10-27).
-    ["magsnap-10k", "power", "باور بانك ماج سناب 10K", "MagSnap 10K Power Bank", PHOTOS.powerBankWide, 1290, { compareAtPrice: 1490, isFeatured: true, rating: 4.8, sold90: 412 }],
-    ["slim-20k", "power", "باور بانك سليم 20K", "Slim 20K Power Bank", PHOTOS.powerBank, 990, { rating: 4.7, sold90: 263 }],
-    ["mini-power-stick", "power", "باور ستيك ميني", "Mini Power Stick", PHOTOS.powerBankSmall, 390, { sold90: 150 }],
-    ["pulse-buds-pro", "audio", "سماعة بالس برو", "Pulse Buds Pro", PHOTOS.budsOpen, 1590, { compareAtPrice: 1890, rating: 4.6, sold90: 198 }],
-    ["air-buds-4", "audio", "سماعة إير 4", "Air Buds 4", PHOTOS.buds, 1190, { sold90: 121 }],
-    ["night-buds", "audio", "سماعة نايت", "Night Buds", PHOTOS.budsCase, 790, { compareAtPrice: 890, sold90: 88 }],
-    ["studio-headphones", "headphones", "سماعة ستوديو", "Studio Headphones", PHOTOS.headphones, 890, { sold90: 64 }],
-    ["ultra-3-watch", "wearables", "ساعة ألترا 3", "Ultra 3 Smartwatch", PHOTOS.watch, 1450, { isFeatured: true, rating: 4.4, sold90: 92 }],
+    ["magsnap-10k", "power", "شاحن متنقل MagSnap 10K", "MagSnap 10K Power Bank", PHOTOS.powerBankWide, 1290, { compareAtPrice: 1490, isFeatured: true, rating: 4.8, sold90: 412 }],
+    ["slim-20k", "power", "شاحن متنقل نحيف 20K", "Slim 20K Power Bank", PHOTOS.powerBank, 990, { rating: 4.7, sold90: 263 }],
+    ["mini-power-stick", "power", "شاحن متنقل صغير", "Mini Power Stick", PHOTOS.powerBankSmall, 390, { sold90: 150 }],
+    ["pulse-buds-pro", "audio", "سماعة Pulse Buds Pro", "Pulse Buds Pro", PHOTOS.budsOpen, 1590, { compareAtPrice: 1890, rating: 4.6, sold90: 198 }],
+    ["air-buds-4", "audio", "سماعة Air Buds 4", "Air Buds 4", PHOTOS.buds, 1190, { sold90: 121 }],
+    ["night-buds", "audio", "سماعة Night Buds", "Night Buds", PHOTOS.budsCase, 790, { compareAtPrice: 890, sold90: 88 }],
+    ["studio-headphones", "headphones", "سماعة رأس للاستوديو", "Studio Headphones", PHOTOS.headphones, 890, { sold90: 64 }],
+    ["ultra-3-watch", "wearables", "ساعة Ultra 3 الذكية", "Ultra 3 Smartwatch", PHOTOS.watch, 1450, { isFeatured: true, rating: 4.4, sold90: 92 }],
     ["usb-c-braided-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cable, 190, { rating: 4.6, sold90: 330 }],
-    ["fast-wall-charger", "chargers", "شاحن حيطة سريع", "Fast Wall Charger", PHOTOS.charger, 350, { sold90: 120 }],
-    ["car-mount-360", "car", "حامل موبايل للعربية 360°", "360° Car Mount", PHOTOS.carMount, 350, { inStock: false, rating: 4.5, sold90: 330 }],
-    ["travel-power-bundle", "bundles", "باقة السفر: باور بانك وكابل", "Travel Bundle: Power Bank & Cable", PHOTOS.powerBankSilver, 1390, { compareAtPrice: 1580, sold90: 47 }],
+    ["fast-wall-charger", "chargers", "شاحن جداري سريع", "Fast Wall Charger", PHOTOS.charger, 350, { sold90: 120 }],
+    ["car-mount-360", "car", "حامل هاتف للسيارة 360°", "360° Car Mount", PHOTOS.carMount, 350, { inStock: false, rating: 4.5, sold90: 330 }],
+    ["travel-power-bundle", "bundles", "باقة السفر: شاحن متنقل وكابل", "Travel Bundle: Power Bank & Cable", PHOTOS.powerBankSilver, 1390, { compareAtPrice: 1580, sold90: 47 }],
   ],
 });
 
@@ -247,7 +247,7 @@ export const VOLT = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(VOLT_KEY, "phone-cases", { ar: 1683, en: 1683 }),
   key: VOLT_KEY,
-  version: 4,
+  version: 5,
   changelog: "Volt v4: wide hero photo",
   name: L("فولت", "Volt"),
   description: L(
@@ -289,5 +289,5 @@ export const VOLT = editionTemplate({
   journey: { primary: "best-sellers", rows: [] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء الزباين", "What buyers say"), related: L("اشتريها معاها", "Grab it with") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
 });

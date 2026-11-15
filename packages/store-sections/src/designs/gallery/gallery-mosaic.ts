@@ -28,10 +28,10 @@ export const galleryMosaic = defineDesign({
               }),
               t.stack(
                 [
-                  t.badge(L("لوكبوك", "Lookbook"), { role: "eyebrow", style: { background: "background", color: "primary" } }),
-                  t.heading(L("لوكبوك الموسم", "The season lookbook"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
-                  t.paragraph(L("ستة إطلالات من مجموعتنا الجديدة.", "Six looks from our new collection."), { role: "body" }),
-                  arrowLink(t, L("تسوّق اللوك", "Shop the look"), "/products"),
+                  t.badge(L("دليل الإطلالات", "Lookbook"), { role: "eyebrow", style: { background: "background", color: "primary" } }),
+                  t.heading(L("إطلالات الموسم", "The season lookbook"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
+                  t.paragraph(L("ست إطلالات من مجموعتنا الجديدة.", "Six looks from our new collection."), { role: "body" }),
+                  arrowLink(t, L("تسوّق الإطلالة", "Shop the look"), "/products"),
                 ],
                 {
                   label: L("بطاقة العنوان", "Caption card"),

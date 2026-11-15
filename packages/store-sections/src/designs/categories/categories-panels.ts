@@ -12,7 +12,7 @@ import { L } from "../_kit";
 type Panel = { label: DesignText; title: DesignText; cta: DesignText; photo: number; solid: boolean; span: number };
 
 const PANELS: Panel[] = [
-  { label: L("جديد تمامًا", "Brand new"), title: L("جرابات للموبايل", "Phone cases"), cta: L("تسوّق", "Shop"), photo: 0, solid: true, span: 2 },
+  { label: L("جديد تمامًا", "Brand new"), title: L("جرابات للهواتف", "Phone cases"), cta: L("تسوّق", "Shop"), photo: 0, solid: true, span: 2 },
   { label: L("للساعة الذكية", "For your smartwatch"), title: L("أساور بكل الألوان", "Straps in every colour"), cta: L("تسوّق", "Shop"), photo: 1, solid: false, span: 3 },
   { label: L("مختارات", "Picks"), title: L("حوامل بألوان مبهجة", "Colourful grips and stands"), cta: L("اكتشف", "Discover"), photo: 2, solid: false, span: 3 },
   { label: L("شحن أسرع", "Faster charging"), title: L("شواحن لاسلكية", "Wireless chargers"), cta: L("تسوّق", "Shop"), photo: 3, solid: true, span: 2 },

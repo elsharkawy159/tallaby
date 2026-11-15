@@ -65,86 +65,86 @@ const home: Design[] = [
   lib("hero-fullbleed", {
     photo: [PHOTOS.heroRoaster],
     text: {
-      "المجموعة الجديدة": L("محمصة العيلة من ١٩٨٧", "A family roaster since 1987"),
-      "صُنعت لتدوم معك": L("بن طازة كل اتنين", "Fresh beans every Monday"),
-      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
-        "بنحمص كميات صغيرة من ٥ مزارع، وبيوصلك قبل الأربع.",
-        "Small batches from five farms, at your door by Wednesday.",
+      "المجموعة الجديدة": L("بن محمص", "Roasted coffee"),
+      "صُنعت لتدوم معك": L("بن حبوب ومطحون", "Whole bean and ground coffee"),
+      "خامات مختارة وتفاصيل هادئة لكل يوم.": L(
+        "بن تركي وإسبريسو وبن أخضر، مع درجة التحميص لكل منتج.",
+        "Turkish, espresso and green coffee, with the roast level of each product.",
       ),
-      "تسوّق الآن": L("تسوق تحميص الأسبوع", "Shop this week’s roast"),
-      "شوف الجديد": L("الأكثر طلباً", "Most ordered"),
-      "صورة الواجهة": L("بن بيتقلّب في المحمصة", "Beans turning in the roaster"),
+      "تسوّق الآن": L("تسوّق البن", "Shop coffee"),
+      "اكتشف الجديد": L("الأكثر طلباً", "Most ordered"),
+      "صورة الواجهة": L("بن داخل المحمصة", "Beans in the roaster"),
     },
     links: { "/products?sort=newest": BEST },
   }),
   lib("categories-circles", {
-    text: { "بتدوّر على إيه؟": L("قهوتك إيه النهارده؟", "What are you brewing today?") },
+    text: { "ما الذي تبحث عنه؟": L("اختر قهوتك", "Choose your coffee") },
   }),
   lib("products-panel-rail", {
     text: {
-      "هدايا": L("تحميص الأسبوع", "This week’s roast"),
-      "هدايا تحت ١٠٠٠ جنيه": L("لسه طالع من المحمصة", "Fresh out of the roaster"),
-      "اختيارات مضمونة لأي مناسبة.": L("اتحمص الاتنين واتشحن التلات.", "Roasted Monday, shipped Tuesday."),
+      "هدايا": L("مختارات البن", "Coffee picks"),
+      "هدايا تحت ١٠٠٠ جنيه": L("من المحمصة", "From the roaster"),
+      "أفكار هدايا لكل مناسبة.": L("حبوب ومطحون بدرجات تحميص مختلفة.", "Whole and ground, in different roast levels."),
     },
     links: { "/products": SHOP },
     lists: [{ source: "best-sellers" }],
   }),
   lib("features-ticker", {
     text: {
-      "توصيل سريع": L("بيتحمص كل اتنين", "Roasted every Monday"),
-      "الدفع عند الاستلام": L("يوصل قبل الأربع", "Delivered by Wednesday"),
-      "استرجاع سهل": L("تاريخ التحميص على كل كيس", "Roast date on every bag"),
-      "دعم على واتساب": L("ادفع عند الاستلام", "Pay on delivery"),
+      "الشحن": L("درجة التحميص لكل منتج", "Roast level for every product"),
+      "الدفع عند الاستلام": L("بن حبوب أو مطحون", "Whole bean or ground"),
+      "الاستبدال والاسترجاع": L("صور ومواصفات لكل منتج", "Photos and specs for every product"),
+      "تواصل معنا": L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
     },
   }),
   lib("about-stories", {
     photo: [undefined, PHOTOS.greenHalves, PHOTOS.roasterTop, PHOTOS.scoop],
     text: {
-      "إزاي بنشتغل": L("من الحباية للفنجان", "Bean to cup"),
-      "من المخزن لإيدك": L("قهوتك بتوصلك إزاي", "How your coffee gets to you"),
-      "بنختار": L("بنختار", "We source"),
-      "من موردين معتمدين بس.": L("بن أخضر من ٥ مزارع.", "Green beans from five farms."),
-      "بنراجع": L("بنحمص", "We roast"),
-      "كل منتج قبل ما يتغلّف.": L("كل اتنين في وسط البلد.", "Every Monday in Downtown."),
-      "بنوصّل": L("بنعبّي", "We pack"),
-      "لحد باب البيت خلال أيام.": L("أكياس بصمام، متقفلة في نفس اليوم.", "Valve bags, sealed the same day."),
+      "كيف نعمل": L("من الحبة إلى الفنجان", "Bean to cup"),
+      "من اختيارنا إلى طلبك": L("كيف تختار قهوتك", "How to choose your coffee"),
+      "نختار": L("المنشأ", "Origin"),
+      "كل منتج بعناية.": L("بلد البن ومنطقته في وصف كل منتج.", "Each coffee lists its country and region."),
+      "نراجع": L("التحميص", "Roast"),
+      "تفاصيل كل منتج قبل عرضه.": L("درجة التحميص مذكورة لكل بن.", "Each coffee lists its roast level."),
+      "نساعدك": L("الطحن", "Grind"),
+      "في أي سؤال عن منتجاتنا.": L("حبوب كاملة، أو مطحون للتركي والإسبريسو.", "Whole beans, or ground for Turkish and espresso."),
     },
   }),
   lib("gallery-side", {
     photo: [PHOTOS.beansDark, PHOTOS.beansClose, PHOTOS.cezve, PHOTOS.sandCezve, PHOTOS.greenBeans, PHOTOS.roasterDrop],
     text: {
-      "صوّر واعمل منشن": L("صوّر فنجان الصبح", "Share your morning cup"),
-      "استخدم #اسم_متجرك وممكن صورتك تظهر هنا.": L("حط على صورتك ‎#bunnhouse وممكن تظهر هنا.", "Tag your photo with #bunnhouse to appear here."),
+      "صوّر وأشِر إلينا": L("شاركنا صورة قهوتك", "Share your coffee photo"),
+      "استخدم #اسم_متجرك وقد تظهر صورتك هنا.": L("استخدم ‎#bunnhouse وقد تظهر صورتك هنا.", "Tag your photo with #bunnhouse to appear here."),
       "صورة إنستجرام": L("صورة قهوة من إنستجرام", "A coffee photo from Instagram"),
     },
   }),
   lib("faq-numbered", {
     text: {
-      "أسئلة مهمة": L("حاجات تهمك", "Good to know"),
-      "كم يستغرق التوصيل؟": L("البن بيوصل إمتى؟", "When does the coffee arrive?"),
-      "القاهرة والجيزة من يوم إلى يومين، وباقي المحافظات من ٢ إلى ٦ أيام.": L(
-        "بنحمص الاتنين ونشحن التلات، فيوصلك قبل الأربع في القاهرة والجيزة.",
-        "We roast on Monday and ship on Tuesday, so it reaches Cairo and Giza by Wednesday.",
+      "أسئلة مهمة": L("أسئلة مهمة", "Good to know"),
+      "كم يستغرق التوصيل؟": L("كم يستغرق التوصيل؟", "How long does delivery take?"),
+      "تظهر تكلفة الشحن ومدته عند إتمام الطلب.": L(
+        "تظهر تكلفة الشحن ومدته عند إتمام الطلب.",
+        "Shipping cost and time are shown at checkout.",
       ),
     },
   }),
   lib("newsletter-big", {
     text: {
-      "خد ١٠٪ خصم على أول طلب": L("ملاحظات التحميص أول بأول", "Roast notes as they happen"),
-      "عروض للمشتركين بس، مرة في الأسبوع.": L("المحاصيل الجديدة وطرق التحضير كل اتنين.", "New harvests and brew guides every Monday."),
+      "اشترك في نشرتنا البريدية": L("اشترك ليصلك جديد البن", "Subscribe for new coffees"),
+      "كن أول من يعرف بالمنتجات الجديدة.": L("محاصيل جديدة وطرق تحضير القهوة.", "New harvests and brewing guides."),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن بيت البن", "About Bunn House"), L("محمصة بن عائلية في طلعت حرب من ١٩٨٧.", "A family coffee roaster on Talaat Harb since 1987.")),
+  pageHeader(lib, "about-header", L("عن بيت البن", "About Bunn House"), L("بن محمص وبن أخضر وأدوات تحضير القهوة.", "Roasted coffee, green beans and brewing tools.")),
   aboutStory(lib, {
     photo: PHOTOS.roasterDrop,
-    alt: L("بن طالع من المحمصة", "Beans pouring out of the roaster"),
-    eyebrow: L("من ١٩٨٧", "Since 1987"),
-    title: L("محمصة العيلة", "The family roastery"),
-    text: L("جدّي فتح محل البن في طلعت حرب، والنهارده بنحمص لكل مصر بنفس الطريقة: كميات صغيرة كل اتنين.", "Grandfather opened the shop on Talaat Harb; today we roast for all of Egypt the same way, in small batches every Monday."),
-    more: L("وكل كيس عليه تاريخ التحميص.", "And every bag carries its roast date."),
+    alt: L("بن يخرج من المحمصة", "Beans pouring out of the roaster"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("بن بدرجات تحميص مختلفة", "Coffee in every roast level"),
+    text: L("بن حبوب ومطحون، تركي وإسبريسو وبن أخضر، مع المنشأ ودرجة التحميص لكل منتج.", "Whole bean and ground, Turkish, espresso and green coffee, with the origin and roast level of each product."),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
     button: L("تسوق كل البن", "Shop all coffee"),
     href: SHOP,
   }),
@@ -152,14 +152,14 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("بن متحمص الاتنين وعلى بابك الأربع.", "Coffee roasted on Monday, at your door by Wednesday."),
+  description: L("بن حبوب ومطحون وأدوات تحضير القهوة.", "Whole bean and ground coffee and brewing tools."),
   categories: [
     ["beans", "بن حبوب", "Whole beans", PHOTOS.beansClose],
     ["turkish", "بن تركي", "Turkish coffee", PHOTOS.cezve],
     ["green", "بن أخضر", "Green beans", PHOTOS.greenHalves],
     ["pantry", "بهارات وأدوات", "Spices & tools", PHOTOS.spices],
     ["espresso", "إسبريسو", "Espresso", PHOTOS.beansDark],
-    ["boxes", "بوكسات", "Boxes", PHOTOS.roasterTop],
+    ["boxes", "علب القهوة", "Coffee boxes", PHOTOS.roasterTop],
   ],
   products: [
     ["ethiopia-sidamo", "beans", "إثيوبيا سيدامو ٢٥٠ جرام", "Ethiopia Sidamo, 250 g", PHOTOS.beansClose, 420, { isFeatured: true, rating: 4.9, sold90: 410 }],
@@ -169,7 +169,7 @@ const DEMO = demoStore({
     ["green-arabica", "green", "أرابيكا أخضر كيلو", "Green Arabica, 1 kg", PHOTOS.greenBeans, 650, { sold90: 24 }],
     ["copper-cezve", "pantry", "كنكة نحاس", "Copper Cezve", PHOTOS.sandCezve, 450, { isFeatured: true, sold90: 61 }],
     ["spice-jar-set", "pantry", "طقم برطمانات بهارات", "Spice Jar Set", PHOTOS.spices, 220, { compareAtPrice: 260, sold90: 61 }],
-    ["roasters-box", "boxes", "بوكس المحمصة", "The Roaster’s Box", PHOTOS.roasterTop, 890, { compareAtPrice: 1020, inStock: false, sold90: 73 }],
+    ["roasters-box", "boxes", "علبة المحمصة", "The Roaster’s Box", PHOTOS.roasterTop, 890, { compareAtPrice: 1020, inStock: false, sold90: 73 }],
   ],
 });
 
@@ -179,7 +179,7 @@ export const ROAST = libraryTemplate({
   changelog: "Roast v4: hero, categories, section order",
   name: L("روست", "Roast"),
   description: L(
-    "محمصة بن: صورة المحمصة بعرض الشاشة، تحميص الأسبوع، وعود يوم التحميص ومن الحباية للفنجان. أربع صفحات جاهزة.",
+    "محمصة بن: صورة المحمصة بعرض الشاشة، تحميص الأسبوع، وعود يوم التحميص ومن الحبة إلى الفنجان. أربع صفحات جاهزة.",
     "Coffee roaster: a full-bleed roaster hero, this week’s roast, roast-day promises and bean to cup. Four ready pages.",
   ),
   category: "sweets",
@@ -208,8 +208,8 @@ export const ROAST = libraryTemplate({
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
         title: L("تواصل", "Contact"),
-        text: L("١٢ شارع طلعت حرب، وسط البلد، القاهرة.", "12 Talaat Harb St, Downtown, Cairo."),
-        heading: L("عن طحنة أو طلب كافيه", "About a grind or a café order"),
+        text: L("تواصل معنا لأي سؤال عن منتج أو طلب.", "Contact us with any question about a product or an order."),
+        heading: L("اسأل عن نوع بن أو منتج", "Ask about a coffee or a product"),
       }),
     },
     {
@@ -217,15 +217,15 @@ export const ROAST = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("التحميص والطحن والتوصيل.", "Roasting, grinding and delivery."),
-        question: L("بتطحنوا البن؟", "Do you grind the coffee?"),
+        text: L("التحميص والطحن والطلب.", "Roasting, grinding and ordering."),
+        question: L("هل يتوفر البن مطحونًا؟", "Is the coffee available ground?"),
         answer: L(
-          "أيوه، اكتب الطحنة في ملاحظات الطلب: تركي أو إسبريسو أو فلتر، أو سيبه حبوب.",
-          "Yes. Write the grind in the order notes: Turkish, espresso or filter, or leave it whole.",
+          "يذكر وصف كل منتج إن كان حبوبًا كاملة أو مطحونًا، ونوع الطحنة.",
+          "Each product says whether it is whole bean or ground, and which grind.",
         ),
       }),
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي شاربي القهوة", "What coffee drinkers say"), related: L("محاصيل تانية للتجربة", "More roasts to try") } },
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي شاربي القهوة", "What coffee drinkers say"), related: L("أنواع أخرى للتجربة", "More coffees to try") } },
 });

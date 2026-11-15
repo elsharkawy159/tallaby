@@ -51,13 +51,13 @@ const NAME = L("صفا", "Safa");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("أهلًا بيكي في صفا · توصيل لكل محافظات مصر", "Welcome to Safa · Delivery across Egypt"),
-    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
+    "تشكيلة الموسم الجديد وصلت": L("منتجات العناية بالبشرة والشعر", "Skin and hair care products"),
+    "الدفع عند الاستلام": L("تفاصيل واضحة لكل منتج", "Clear details for every product"),
     "م": L("ص", "S"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المنتجات", "Shop all"),
     "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("تتبّعي طلبك", "Track order"),
+    "المدونة": L("تتبّع طلبك", "Track order"),
     "من نحن": L("عن صفا", "About Safa"),
   },
   links: { "/products": [undefined, NEW, undefined, undefined, NEW], "/blog": "/profile/orders" },
@@ -66,9 +66,9 @@ const header = lib("header-announcement", {
 const footer = lib("footer-centered-light", {
   text: {
     "اسم متجرك": NAME,
-    "قطع مختارة بعناية، بتوصل لحد باب البيت.": L(
-      `عناية بالبشرة بتركيبات هادية ونتايج واضحة. ١٤ شارع البرازيل، الزمالك، القاهرة · ${phone("٠١٢٨ ٣٤٥ ٩٠٦٢")} · ${handle("hello@safa.eg")}`,
-      "Gentle formulas, visible results. 14 Brazil St, Zamalek, Cairo · +20 128 345 9062 · hello@safa.eg",
+    "قطع مختارة بعناية لكل يوم.": L(
+      `منتجات العناية بالبشرة والشعر والجسم. ١٤ شارع البرازيل، الزمالك، القاهرة · ${phone("٠١٢٨ ٣٤٥ ٩٠٦٢")} · ${handle("hello@safa.eg")}`,
+      "Skin, hair and body care. 14 Brazil St, Zamalek, Cairo · +20 128 345 9062 · hello@safa.eg",
     ),
     "المتجر": L("كل المنتجات", "Shop all"),
     "من نحن": L("عن صفا", "About Safa"),
@@ -84,13 +84,13 @@ const home: Design[] = [
     text: {
       "فيديو الواجهة": L("زجاجات عناية بيضاء على سطح أبيض", "White skincare bottles on a white surface"),
       "المجموعة الجديدة": L("روتين صفا الجديد", "The new Safa ritual"),
-      "مساحتك، بطريقتك": L("بشرة صافية، بخطوات أقل", "Clearer skin, fewer steps"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "سيرومات وكريمات بتركيبات قصيرة ومكونات واضحة، متجربة على البشرة المصرية في جو القاهرة.",
-        "Serums and creams with short, honest formulas, tested on Egyptian skin in Cairo weather.",
+      "تصميم هادئ لكل يوم": L("سيرومات وكريمات وغسول", "Serums, creams and cleansers"),
+      "قطع مختارة بعناية لكل يوم.": L(
+        "سيرومات وكريمات بمكونات واضحة مكتوبة على كل عبوة.",
+        "Serums and creams with clear ingredients on every pack.",
       ),
-      "تسوّق الآن": L("ابدئي روتينك", "Start your ritual"),
-      "شوف الجديد": L("وصل حديثًا", "New in"),
+      "تسوّق الآن": L("تسوّق الآن", "Shop now"),
+      "اكتشف الجديد": L("وصل حديثًا", "New in"),
     },
     links: { "/products": SHOP, "/products?sort=newest": NEW },
   }),
@@ -104,14 +104,14 @@ const home: Design[] = [
   lib("products-spotlight", {
     photo: [undefined, undefined, PHOTOS.spotlight],
     text: {
-      "صورة المجموعة": L("أنابيب بيضا وليفة ومنشفة على سطح أبيض", "White tubes, a sponge and a towel on a white surface"),
+      "صورة المجموعة": L("أنابيب بيضاء وليفة ومنشفة على سطح أبيض", "White tubes, a sponge and a towel on a white surface"),
       "مجموعة": L("اختيارات صفا", "Safa picks"),
-      "مجموعة الموسم": L("الأساسيات اللي بنرجعلها", "The essentials we return to"),
-      "قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.": L(
-        "التلات منتجات اللي فريقنا بيستخدمها كل يوم، صبح وليل.",
-        "The three products our team uses every day, morning and night.",
+      "مجموعة الموسم": L("أساسيات العناية اليومية", "Daily care essentials"),
+      "قطع مختارة بعناية، بخامات جيدة وتفاصيل هادئة.": L(
+        "ثلاثة منتجات للعناية اليومية صباحًا ومساءً.",
+        "Three products for daily care, morning and night.",
       ),
-      "تسوّق المجموعة": L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
+      "تسوّق المجموعة": L("تسوّق الأكثر طلبًا", "Shop best sellers"),
       "من المجموعة": L("من الاختيارات", "From the picks"),
       "عرض الكل": L("كل المنتجات", "Shop all"),
     },
@@ -122,13 +122,13 @@ const home: Design[] = [
     photo: [undefined, undefined, PHOTOS.spa],
     text: {
       "صورة القصة": L("زجاجة كريم وعلبة على رخام أبيض", "A cream bottle and jar on white marble"),
-      "حكايتنا": L("معمل صفا", "The Safa lab"),
-      "تفاصيل صغيرة تصنع الفرق": L("تركيبات أقل، نتايج أوضح", "Fewer ingredients, clearer results"),
-      "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.": L(
-        "بدأت صفا في ٢٠١٩ من معمل صغير في الزمالك مع صيدلانية واحدة. كل تركيبة بتتجرب ٨ أسابيع على متطوعات قبل ما تنزل، ومن غير عطور مضافة ولا بارابين.",
-        "Safa began in 2019 in a small Zamalek lab with one pharmacist. Every formula is tested for eight weeks on volunteers before launch, with no added fragrance and no parabens.",
+      "حكايتنا": L("حكايتنا", "Our story"),
+      "تفاصيل صغيرة تصنع الفرق": L("مكونات واضحة لكل منتج", "Clear ingredients for every product"),
+      "بدأنا بفكرة بسيطة: منتجات نحب استخدامها بأنفسنا، بجودة جيدة وسعر عادل. نختار كل قطعة بعناية ونعرض تفاصيلها بوضوح.": L(
+        "نختار منتجات العناية بالبشرة والشعر بعناية، ونعرض مكونات كل منتج وطريقة استخدامه بوضوح.",
+        "We choose skin and hair care with care, and show each product's ingredients and use clearly.",
       ),
-      "اعرف أكثر": L("اعرفي حكايتنا", "Our story"),
+      "اعرف أكثر": L("تعرّف علينا", "About us"),
     },
   }),
   ...categoryRows(lib, {
@@ -138,39 +138,39 @@ const home: Design[] = [
   }),
   lib("newsletter-interests", {
     text: {
-      "إيه اللي يهمك؟": L("إيه اللي بشرتك محتاجاه؟", "What does your skin need?"),
-      "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": L(
-        "اختاري نوع بشرتك، وهنبعتلك روتين يناسبك ومنتجات جديدة مرة في الشهر.",
-        "Pick your skin type and we will send a routine that suits you, plus new launches, once a month.",
+      "ما الذي يهمك؟": L("ما نوع بشرتك؟", "What is your skin type?"),
+      "سنرسل إليك ما يهمك فقط.": L(
+        "اختر نوع بشرتك ليصلك جديد المنتجات المناسبة له.",
+        "Pick your skin type to get new products that suit it.",
       ),
       "وصل حديثًا": L("وصل حديثًا", "New in"),
       "العروض": L("بشرة جافة", "Dry skin"),
       "هدايا": L("بشرة دهنية", "Oily skin"),
-      "نصايح": L("روتين ونصايح", "Routines and tips"),
+      "نصائح": L("روتين ونصائح", "Routines and tips"),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن صفا", "About Safa"), L("عناية بالبشرة من معمل صغير في الزمالك.", "Skincare from a small lab in Zamalek.")),
+  pageHeader(lib, "about-header", L("عن صفا", "About Safa"), L("منتجات العناية بالبشرة والشعر والجسم.", "Skin, hair and body care products.")),
   aboutStory(lib, {
     photo: PHOTOS.aboutPage,
     alt: L("برطمانات كريم وناشر عطر على رخام أبيض", "Cream jars and a reed diffuser on white marble"),
-    eyebrow: L("المعمل", "The lab"),
-    title: L("كل تركيبة بتتجرب قبل ما تتباع", "Every formula is tested before it is sold"),
+    eyebrow: L("منتجاتنا", "Our products"),
+    title: L("مكونات واضحة على كل عبوة", "Clear ingredients on every pack"),
     text: L(
-      "بنختار كل مكوّن بنسبة واضحة مكتوبة على العلبة، وبنجرب على كل أنواع البشرة في جو مصر الحر.",
-      "Every ingredient is chosen at a clear percentage printed on the box, and tested on every skin type in Egypt’s heat.",
+      "نعرض المكونات وطريقة الاستخدام ونوع البشرة المناسب لكل منتج.",
+      "We list the ingredients, how to use it and the right skin type for every product.",
     ),
-    more: L("ولو المنتج ما ناسبكيش، بنستبدله خلال ١٤ يوم.", "If a product doesn’t suit you, we exchange it within 14 days."),
-    button: L("تسوّقي الأكثر طلبًا", "Shop best sellers"),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
+    button: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
     href: BEST,
   }),
 ];
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("عناية بالبشرة بتركيبات هادية من معمل في الزمالك.", "Gentle skincare from a Zamalek lab."),
+  description: L("منتجات العناية بالبشرة والشعر والجسم.", "Skin, hair and body care."),
   categories: [
     ["serums", "السيرومات", "Serums", PHOTOS.catSerums],
     ["moisturizers", "المرطبات", "Moisturizers", PHOTOS.catMoisturizers],
@@ -185,18 +185,18 @@ const DEMO = demoStore({
     // Serums
     ["vitamin-c-glow-serum", "serums", "سيروم فيتامين سي للنضارة", "Vitamin C Glow Serum", P(35899861), 1150, { isFeatured: true, rating: 4.9, sold90: 132 }],
     ["hydra-plump-serum", "serums", "سيروم هيالورونيك للترطيب", "Hyaluronic Plump Serum", P(8101529), 890, { rating: 4.8, sold90: 98 }],
-    ["hydrating-essence", "serums", "إيسنس الترطيب العميق", "Deep Hydration Essence", P(15369086), 890, { compareAtPrice: 1100, rating: 4.7, sold90: 64 }],
+    ["hydrating-essence", "serums", "خلاصة الترطيب العميق", "Deep Hydration Essence", P(15369086), 890, { compareAtPrice: 1100, rating: 4.7, sold90: 64 }],
     ["daily-serum-trio", "serums", "ثلاثي السيروم اليومي", "Daily Serum Trio", P(8101511), 2350, { rating: 4.8, sold90: 41 }],
-    ["pure-squalane-drops", "serums", "نقط سكوالين نقي", "Pure Squalane Drops", P(6914588), 780, { isFeatured: true, rating: 4.8, sold90: 37 }],
+    ["pure-squalane-drops", "serums", "قطرات سكوالين نقي", "Pure Squalane Drops", P(6914588), 780, { isFeatured: true, rating: 4.8, sold90: 37 }],
     ["peptide-firming-serum", "serums", "سيروم ببتيد لشد البشرة", "Peptide Firming Serum", P(8101673), 1350, { rating: 4.7, sold90: 29 }],
-    ["golden-face-oil", "serums", "زيت الوش الذهبي", "Golden Face Oil", P(6800936), 980, { rating: 5, sold90: 22 }],
+    ["golden-face-oil", "serums", "زيت الوجه الذهبي", "Golden Face Oil", P(6800936), 980, { rating: 5, sold90: 22 }],
     ["amber-niacinamide-serum", "serums", "سيروم نياسيناميد ١٠٪", "10% Niacinamide Serum", P(30229021), 720, { rating: 4.5, sold90: 55, inStock: false }],
     // Moisturizers
     ["rose-whipped-cream", "moisturizers", "كريم الورد المخفوق", "Rose Whipped Cream", P(4857800), 620, { isFeatured: true, rating: 4.8, sold90: 117 }],
-    ["soft-cloud-cream", "moisturizers", "كريم سوفت كلاود", "Soft Cloud Cream", P(7691166), 780, { rating: 4.7, sold90: 73 }],
+    ["soft-cloud-cream", "moisturizers", "كريم السحابة الناعم", "Soft Cloud Cream", P(7691166), 780, { rating: 4.7, sold90: 73 }],
     ["rich-night-cream", "moisturizers", "كريم ليلي مغذي", "Rich Night Cream", P(18350286), 940, { rating: 4.8, sold90: 51 }],
     ["silk-barrier-cream", "moisturizers", "كريم الحرير للحاجز", "Silk Barrier Cream", P(19644201), 860, { compareAtPrice: 990, rating: 4.6, sold90: 44 }],
-    ["velvet-cream-jar", "moisturizers", "كريم فيلفت المخملي", "Velvet Cream", P(18350885), 1050, { rating: 4.9, sold90: 26 }],
+    ["velvet-cream-jar", "moisturizers", "الكريم المخملي", "Velvet Cream", P(18350885), 1050, { rating: 4.9, sold90: 26 }],
     ["eye-cream-trio", "moisturizers", "ثلاثي كريم العين", "Eye Cream Trio", P(36437998), 1450, { rating: 4.7, sold90: 19 }],
     ["botanical-day-cream", "moisturizers", "كريم نهاري بالأعشاب", "Botanical Day Cream", P(8490112), 690, { rating: 4.5, sold90: 31 }],
     ["hydrating-cream-tube", "moisturizers", "كريم ترطيب أنبوبة", "Hydrating Cream Tube", P(8015900), 480, { rating: 4.6, sold90: 58 }],
@@ -213,8 +213,8 @@ const DEMO = demoStore({
     ["silk-shampoo", "hair-care", "شامبو الحرير", "Silk Shampoo", P(8054407), 420, { rating: 4.7, sold90: 61 }],
     ["travel-conditioner-set", "hair-care", "طقم بلسم للسفر", "Travel Conditioner Set", P(8015465), 340, { rating: 4.5, sold90: 24 }],
     ["travel-shampoo-tube", "hair-care", "شامبو أنبوبة للسفر", "Travel Shampoo Tube", P(8533266), 220, { rating: 4.4, sold90: 18 }],
-    ["leave-in-hair-mist", "hair-care", "سبراي شعر بدون شطف", "Leave-in Hair Mist", P(8167156), 380, { rating: 4.8, sold90: 45 }],
-    ["scalp-mist-duo", "hair-care", "ثنائي سبراي فروة الراس", "Scalp Mist Duo", P(8166777), 560, { rating: 4.6, sold90: 22 }],
+    ["leave-in-hair-mist", "hair-care", "بخاخ للشعر دون شطف", "Leave-in Hair Mist", P(8167156), 380, { rating: 4.8, sold90: 45 }],
+    ["scalp-mist-duo", "hair-care", "ثنائي بخاخ فروة الرأس", "Scalp Mist Duo", P(8166777), 560, { rating: 4.6, sold90: 22 }],
     ["shampoo-conditioner-pumps", "hair-care", "شامبو وبلسم بمضخة", "Shampoo and Conditioner Pumps", P(11753640), 690, { compareAtPrice: 780, rating: 4.7, sold90: 39 }],
     ["travel-shampoo-bottles", "hair-care", "عبوات شامبو للسفر", "Travel Shampoo Bottles", P(8015461), 260, { rating: 4.8, sold90: 16 }],
     ["nourishing-hair-wash", "hair-care", "غسول شعر مغذي", "Nourishing Hair Wash", P(8167172), 450, { rating: 4.6, sold90: 28 }],
@@ -231,7 +231,7 @@ const DEMO = demoStore({
     // Tools
     ["rose-quartz-roller-set", "tools", "رولر وجوا شا كوارتز وردي", "Rose Quartz Roller and Gua Sha", P(6963143), 650, { rating: 4.8, sold90: 36 }],
     ["white-jade-gua-sha", "tools", "طقم جوا شا يشم أبيض", "White Jade Gua Sha Set", P(5928037), 590, { rating: 4.7, sold90: 21 }],
-    ["pink-roller-pouch", "tools", "رولر وردي بشنطة كتان", "Pink Roller with Pouch", P(8015883), 480, { rating: 4.6, sold90: 14 }],
+    ["pink-roller-pouch", "tools", "رولر وردي بحقيبة كتان", "Pink Roller with Pouch", P(8015883), 480, { rating: 4.6, sold90: 14 }],
     ["green-jade-set", "tools", "طقم رولر وجوا شا يشم أخضر", "Green Jade Roller Set", P(22481971), 720, { rating: 4.9, sold90: 27 }],
     // Travel sets
     ["silicone-travel-trio", "sets", "ثلاثي عبوات سفر سيليكون", "Silicone Travel Trio", P(6690238), 260, { rating: 4.6, sold90: 34 }],
@@ -244,7 +244,7 @@ export const BEAUTY_LUXE = libraryTemplate({
   version: 1,
   name: L("صفا", "Safa"),
   description: L(
-    "عناية بالبشرة بهدوء: فيديو زجاجات بيضا، فهرس أقسام وأربع صفوف بكروت طولية. لماركات السكين كير الراقية.",
+    "عناية بالبشرة بهدوء: فيديو زجاجات بيضاء، فهرس أقسام وأربعة صفوف ببطاقات طولية. لعلامات العناية بالبشرة الراقية.",
     "Quiet, clinical skincare: a white-bottle video, a ruled category index and four rows of tall cards. For premium skincare brands.",
   ),
   category: "health",
@@ -273,9 +273,9 @@ export const BEAUTY_LUXE = libraryTemplate({
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("استشارة بشرة مجانية", "A free skin consultation"),
-        text: L("المعمل والمعرض: ١٤ شارع البرازيل، الزمالك، القاهرة.", "Lab and studio: 14 Brazil St, Zamalek, Cairo."),
-        heading: L("احكيلنا عن بشرتك", "Tell us about your skin"),
+        title: L("تواصل معنا", "Contact us"),
+        text: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
+        heading: L("أرسل سؤالك", "Send your question"),
       }),
     },
     {
@@ -283,11 +283,11 @@ export const BEAUTY_LUXE = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("التركيبات والتوصيل والاستبدال.", "Formulas, delivery and exchanges."),
+        text: L("المكونات والاستخدام والطلب.", "Ingredients, use and ordering."),
         question: L("المنتجات مناسبة للبشرة الحساسة؟", "Are the products suitable for sensitive skin?"),
         answer: L(
-          "كل تركيباتنا من غير عطور مضافة، ومتجربة على البشرة الحساسة. لو عندك حساسية معينة، ابعتيلنا على واتساب ونرشحلك الأنسب.",
-          "All our formulas are fragrance-free and tested on sensitive skin. If you have a specific allergy, message us on WhatsApp and we will suggest the right one.",
+          "المكونات مذكورة في وصف كل منتج. لأي سؤال عن حساسية معينة، تواصل معنا.",
+          "Each product lists its ingredients. For a specific allergy, contact us.",
         ),
       }),
     },
@@ -298,6 +298,6 @@ export const BEAUTY_LUXE = libraryTemplate({
     surface: "flat",
     band: "paper",
     extras: ["product-perks"],
-    copy: { reviews: L("تجارب عميلاتنا", "What our customers say"), related: L("يكمّل روتينك", "Completes your ritual") },
+    copy: { reviews: L("آراء العملاء", "What our customers say"), related: L("يكمّل روتينك", "Completes your ritual") },
   },
 });

@@ -9,7 +9,7 @@ export const CHANNELS: Channel[] = [
     icon: "chat",
     label: L("واتساب", "WhatsApp"),
     value: L("٠١٠٠ ١٢٣ ٤٥٦٧", "+20 100 123 4567"),
-    note: L("أسرع رد", "Fastest reply"),
+    note: L("للأسئلة والطلبات", "For questions and orders"),
     href: "https://wa.me/201001234567",
   },
   {
@@ -23,7 +23,7 @@ export const CHANNELS: Channel[] = [
     icon: "mail",
     label: L("البريد", "Email"),
     value: L("‏hello@store.com", "hello@store.com"),
-    note: L("نرد خلال يوم", "Reply within a day"),
+    note: L("نرد في أقرب وقت", "We reply as soon as we can"),
     href: "mailto:hello@store.com",
   },
   {

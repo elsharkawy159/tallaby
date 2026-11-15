@@ -47,14 +47,14 @@ const header = lib("header-chips", {
   text: {
     "م": L("س", "S"),
     "اسم متجرك": NAME,
-    "ابحث عن منتج…": L("ابحث عن خيمة، شنطة، كشاف…", "Search tents, packs, lanterns…"),
+    "ابحث عن منتج…": L("ابحث عن خيمة، حقيبة، كشاف…", "Search tents, packs, lanterns…"),
   },
 });
 
 const footer = lib("footer-panel", {
   text: {
     "اسم متجرك": NAME,
-    "اشترك وخد العروض قبل أي حد.": L("اشترك وخد مواعيد الرحلات والعروض قبل أي حد.", "Sign up for trip dates and offers before anyone else."),
+    "اشترك ليصلك جديدنا أولًا.": L("اشترك ليصلك جديد معدات الرحلات أولًا.", "Sign up to hear about new trip gear first."),
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ سفر جير. كل الحقوق محفوظة.", "© 2026 Safar Gear. All rights reserved."),
     "العروض": L("الأعلى تقييمًا", "Top rated"),
   },
@@ -66,22 +66,22 @@ const home: Design[] = [
     photo: [undefined, undefined, PHOTOS.lakeTent],
     text: {
       "مجموعة الموسم": L("موسم الرحلات", "Road trip season"),
-      "من ١ إلى ٣٠ نوفمبر": L("بيتشحن في ٢٤ ساعة", "Ships in 24 h"),
-      "صورة الحملة": L("خيمة حمرا وبيضا على شط بحيرة", "A red and white tent on a lake shore"),
-      "خصم": L("باكدجات من", "Kits from"),
-      "٣٠٪": L("٣٩٠٠", "3,900"),
-      "لفترة محدودة": L("جنيه", "EGP"),
-      "الموسم الجديد وصل": L("جهّز العربية ومتشلش هم", "Pack the car, not the worry"),
-      "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
-        "خيم وشنط وطاقة للصحرا والساحل، وكله بيتشحن في ٢٤ ساعة.",
-        "Tents, packs and power for the desert and the coast, all shipped within 24 hours.",
+      "وصل حديثًا": L("وصل حديثًا", "New in"),
+      "صورة الحملة": L("خيمة حمراء وبيضاء على شاطئ بحيرة", "A red and white tent on a lake shore"),
+      "مجموعة": L("أطقم من", "Kits from"),
+      "٢٠٢٦": L("٣٩٠٠", "3,900"),
+      "الجديدة": L("جنيه", "EGP"),
+      "الموسم الجديد وصل": L("معدات الرحلات والتخييم", "Camping and trip gear"),
+      "قطع خفيفة بخامات طبيعية ومقاسات كاملة.": L(
+        "خيام وحقائب وإضاءة للرحلات في الصحراء والساحل.",
+        "Tents, packs and lights for desert and coast trips.",
       ),
-      "اكتشف المجموعة": L("تسوق الباكدجات", "Shop kits"),
+      "اكتشف المجموعة": L("تسوق الأطقم", "Shop kits"),
     },
   }),
-  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("تصفح", "Browse") } }),
+  lib("categories-chips", { text: { "عمّ تبحث؟": L("تصفح", "Browse") } }),
   lib("products-rail", {
-    text: { "بيحبوها": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("أدوات جديدة", "Fresh gear") },
+    text: { "المفضلة لدى العملاء": L("وصل جديد", "New in"), "الأكثر مبيعًا": L("أدوات جديدة", "Fresh gear") },
     links: { "/products": NEW },
     lists: [{ source: "newest", limit: 8 }],
   }),
@@ -89,41 +89,41 @@ const home: Design[] = [
     text: {
       "١": L("٢٤", "24"),
       "يوم": L("ساعة", "hours"),
-      "القاهرة، الجيزة": L("الباكدجات بتتشحن", "Kits ship"),
-      "الإسكندرية، الدلتا، مدن القناة": L("القاهرة وإسكندرية", "Cairo and Alexandria"),
+      "القاهرة، الجيزة": L("تُشحن الأطقم", "Kits ship"),
+      "الإسكندرية، الدلتا، مدن القناة": L("القاهرة والإسكندرية", "Cairo and Alexandria"),
       "٤–٦": L("٤", "4"),
-      "الصعيد، البحر الأحمر، سيناء": L("سيوة وسينا", "Siwa and Sinai"),
+      "الصعيد، البحر الأحمر، سيناء": L("سيوة وسيناء", "Siwa and Sinai"),
     },
   }),
   lib("testimonials-chat", {
     text: {
-      "رسايل بتفرّحنا": L("من الطريق", "From the road"),
+      "رسائل تسعدنا": L("من الطريق", "From the road"),
       "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "الخيمة اتنصبت في ٥ دقايق فعلًا، وقعدنا ليلتين في سيوة من غير مشاكل.",
-        "The tent really went up in five minutes, and we spent two nights in Siwa without a problem.",
+        "الخيمة سهلة التركيب، وخامتها قوية كما في الوصف.",
+        "The tent is easy to pitch, and the material is as strong as described.",
       ),
-      "ده يسعدنا جدًا، شكرًا ليكي!": L("مبسوطين إنها عجبتكم، ابعتولنا صور!", "So glad you liked it, send us photos!"),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "الكشاف الـLED نوّر الكامب كله ليلتين على شحنة واحدة.",
-        "The LED lantern lit the whole camp for two nights on one charge.",
+      "هذا يسعدنا جدًا، شكرًا لك!": L("يسعدنا أنها أعجبتكم، شكرًا لكم!", "So glad you liked it, thank you!"),
+      "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": L(
+        "كشاف LED قوي الإضاءة وبطاريته تدوم طويلًا.",
+        "The LED lantern is bright and its battery lasts a long time.",
       ),
       "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L(
-        "تاني باكدج أطلبه. وصل دهب قبل الرحلة بيوم.",
-        "My second kit. It reached Dahab a day before the trip.",
+        "ثاني طقم أطلبه، والمنتجات كما في الصور تمامًا.",
+        "My second kit, and everything is just like the photos.",
       ),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن سفر جير", "About Safar Gear"), L("كل اللي تحتاجه لطريق سيوة ورجوع.", "Everything for the road to Siwa and back.")),
+  pageHeader(lib, "about-header", L("عن سفر جير", "About Safar Gear"), L("خيام وحقائب وإضاءة وأدوات طهي للرحلات.", "Tents, packs, lights and cookware for trips.")),
   aboutStory(lib, {
     photo: PHOTOS.tentView,
     alt: L("منظر بحيرة من باب خيمة", "A lake seen from a tent door"),
     eyebrow: L("على الطريق", "On the road"),
-    title: L("بنجرّب كل حاجة في الرحلة الأول", "We test everything on a trip first"),
-    text: L("بدأنا جروب رحلات للصحرا والساحل، وبقينا نجهّز أصحابنا بالخيم والكشافات.", "We started as a desert and coast trip group, then began kitting out our friends with tents and lanterns."),
-    more: L("النهارده الباكدجات بتتشحن في ٢٤ ساعة لأي مكان في مصر.", "Today our kits ship within 24 hours anywhere in Egypt."),
+    title: L("معدات لكل رحلة", "Gear for every trip"),
+    text: L("نختار خيامًا وحقائب وكشافات وأدوات طهي للرحلات، ونعرض مواصفات كل منتج بوضوح.", "We choose tents, packs, lanterns and camp cookware, and show every product's specs clearly."),
+    more: L("تواصل معنا لأي سؤال عن منتج أو مقاس.", "Contact us with any question about a product or size."),
     button: L("تسوق الخيم", "Shop tents"),
     href: search("خيمة"),
   }),
@@ -131,28 +131,28 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("كل اللي تحتاجه لطريق سيوة ورجوع.", "Everything for the road to Siwa and back."),
+  description: L("خيام وحقائب وإضاءة وأدوات طهي للرحلات.", "Tents, packs, lights and cookware for trips."),
   categories: [
     ["camp", "تخييم", "Camp", PHOTOS.forestTent],
     ["cook", "طبخ ورحلة", "Cook & carry", PHOTOS.kettleStove],
-    ["packs-light", "شنط وإضاءة", "Packs & light", PHOTOS.pack],
+    ["packs-light", "حقائب وإضاءة", "Packs & light", PHOTOS.pack],
     ["lanterns", "كشافات", "Lanterns", PHOTOS.ledLantern],
     ["coffee", "قهوة الرحلة", "Trip coffee", PHOTOS.coffeeStove],
-    ["sleep", "نوم", "Sleep", PHOTOS.airPillow],
+    ["sleep", "لوازم النوم", "Sleep", PHOTOS.airPillow],
     ["chairs", "كراسي", "Chairs", PHOTOS.chair],
-    ["coolers", "شنط تبريد", "Cooler bags", PHOTOS.beachBags],
+    ["coolers", "حقائب تبريد", "Cooler bags", PHOTOS.beachBags],
   ],
   products: [
     ["two-person-dome-tent", "camp", "خيمة قبة لفردين", "Two-Person Dome Tent", PHOTOS.forestTent, 4200, { isFeatured: true, rating: 4.8, sold90: 96 }],
-    ["trekking-pack-45l", "packs-light", "شنطة ٤٥ لتر", "45 L Trekking Pack", PHOTOS.pack, 2650, { rating: 4.7, sold90: 60 }],
-    ["gas-camp-lantern", "lanterns", "كشاف جاز للكامب", "Gas Camp Lantern", PHOTOS.gasLantern, 950, { sold90: 84 }],
-    ["rechargeable-led-lantern", "lanterns", "كشاف LED بيتشحن", "Rechargeable LED Lantern", PHOTOS.ledLantern, 1250, { compareAtPrice: 1450, isFeatured: true, sold90: 120 }],
-    ["camp-stove-kettle", "cook", "بوتاجاز رحلات وكاتل", "Camp Stove and Kettle", PHOTOS.kettleStove, 1800, { rating: 4.6, sold90: 48 }],
+    ["trekking-pack-45l", "packs-light", "حقيبة ظهر ٤٥ لتر", "45 L Trekking Pack", PHOTOS.pack, 2650, { rating: 4.7, sold90: 60 }],
+    ["gas-camp-lantern", "lanterns", "كشاف غاز للتخييم", "Gas Camp Lantern", PHOTOS.gasLantern, 950, { sold90: 84 }],
+    ["rechargeable-led-lantern", "lanterns", "كشاف LED قابل للشحن", "Rechargeable LED Lantern", PHOTOS.ledLantern, 1250, { compareAtPrice: 1450, isFeatured: true, sold90: 120 }],
+    ["camp-stove-kettle", "cook", "موقد رحلات وغلاية", "Camp Stove and Kettle", PHOTOS.kettleStove, 1800, { rating: 4.6, sold90: 48 }],
     ["trip-coffee-set", "coffee", "طقم قهوة الرحلة", "Trip Coffee Set", PHOTOS.coffeeStove, 1100, { sold90: 66 }],
-    ["camp-cook-set", "cook", "طقم حلل للكامب", "Camp Cook Set", PHOTOS.cookSet, 890, { sold90: 52 }],
-    ["air-pillow-pad", "sleep", "مخدة نفخ ومرتبة", "Air Pillow and Sleeping Pad", PHOTOS.airPillow, 1350, { sold90: 40 }],
-    ["folding-camp-chair", "chairs", "كرسي رحلات بيتطبق", "Folding Camp Chair", PHOTOS.chair, 780, { compareAtPrice: 900, sold90: 110 }],
-    ["beach-cooler-bag", "coolers", "شنطة تبريد للبحر", "Beach Cooler Bag", PHOTOS.beachBags, 650, { inStock: false, sold90: 70 }],
+    ["camp-cook-set", "cook", "طقم أواني طهي للتخييم", "Camp Cook Set", PHOTOS.cookSet, 890, { sold90: 52 }],
+    ["air-pillow-pad", "sleep", "وسادة هوائية ومرتبة نوم", "Air Pillow and Sleeping Pad", PHOTOS.airPillow, 1350, { sold90: 40 }],
+    ["folding-camp-chair", "chairs", "كرسي رحلات قابل للطي", "Folding Camp Chair", PHOTOS.chair, 780, { compareAtPrice: 900, sold90: 110 }],
+    ["beach-cooler-bag", "coolers", "حقيبة تبريد للشاطئ", "Beach Cooler Bag", PHOTOS.beachBags, 650, { inStock: false, sold90: 70 }],
   ],
 });
 
@@ -192,8 +192,8 @@ export const SAFAR = libraryTemplate({
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
         title: L("تواصل", "Contact"),
-        text: L("قولنا رايح فين وإمتى، ونجهزلك الباكدج.", "Tell us where and when, and we pack your kit."),
-        heading: L("اسأل عن باكدج لرحلتك", "Ask about a kit for your trip"),
+        text: L("اسأل عن خيمة أو طقم لرحلتك.", "Ask about a tent or a kit for your trip."),
+        heading: L("اسأل عن طقم لرحلتك", "Ask about a kit for your trip"),
       }),
     },
     {
@@ -201,9 +201,9 @@ export const SAFAR = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الباكدجات والتوصيل والاسترجاع.", "Kits, delivery and returns."),
-        question: L("ينفع أرجّع الخيمة بعد الرحلة؟", "Can I return the tent after a trip?"),
-        answer: L("بنرجّع أي حاجة مش مستعملة خلال ١٤ يوم في كيسها الأصلي.", "We take back anything unused within 14 days in its original bag."),
+        text: L("الأطقم والمقاسات والطلبات.", "Kits, sizes and orders."),
+        question: L("هل يمكن إرجاع الخيمة؟", "Can I return the tent?"),
+        answer: L("راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.", "See the exchange and return policy page."),
       }),
     },
   ],

@@ -88,7 +88,7 @@ export const classicProductContent = defineDesign({
   category: "product-page",
   subcategory: "details",
   name: L("كلاسيك: محتوى المنتج", "Classic: product content"),
-  description: L("الوصف المنسّق اللي كتبته للمنتج، في عمود سهل القراءة.", "The formatted content you wrote for the product, in an easy-to-read column."),
+  description: L("الوصف المنسّق الذي كتبته للمنتج، في عمود سهل القراءة.", "The formatted content you wrote for the product, in an easy-to-read column."),
   keywords: ["product page", "classic", "tallaby", "content", "description", "صفحة المنتج", "كلاسيك", "وصف"],
   tree: (t) =>
     t.section({ label: L("محتوى المنتج", "Product content"), ...SECTION }, [
@@ -119,7 +119,7 @@ export const classicProductReviews = defineDesign({
           [
             t.stack(
               [
-                sectionHead(t, { eyebrow: L("آراء العملاء", "Reviews"), title: L("رأي اللي جربوه", "What buyers say") }),
+                sectionHead(t, { eyebrow: L("آراء العملاء", "Reviews"), title: L("آراء المشترين", "What buyers say") }),
                 t.productReviews({ label: L("التقييمات والأسئلة", "Reviews and questions") }),
               ],
               { label: L("العمود", "Column"), style: { gap: 8 } },
@@ -143,7 +143,7 @@ export const classicProductRelated = defineDesign({
     t.section({ label: L("منتجات مشابهة", "Related products"), style: { paddingTop: 72, paddingBottom: 72 }, mobile: { paddingTop: 48, paddingBottom: 48 } }, [
       t.container(
         [
-          sectionHead(t, { eyebrow: L("من نفس القسم", "From the same aisle"), title: L("ممكن يعجبك كمان", "You may also like"), link: { text: L("عرض الكل", "View all"), href: LINKS.shop } }),
+          sectionHead(t, { eyebrow: L("من نفس القسم", "From the same aisle"), title: L("قد يعجبك أيضًا", "You may also like"), link: { text: L("عرض الكل", "View all"), href: LINKS.shop } }),
           t.productList([productCard(t)], {
             label: L("المنتجات", "Products"),
             role: "items",

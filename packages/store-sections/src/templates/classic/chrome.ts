@@ -101,7 +101,7 @@ export const classicHeader = defineDesign({
     t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "surface" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.box(
         [
-          t.text(L("توصيل لكل المحافظات، والدفع عند الاستلام", "Delivery to every governorate, with cash on delivery"), {
+          t.text(L("صور وتفاصيل واضحة لكل منتج", "Clear photos and details for every product"), {
             role: "announcement",
             style: { color: "background", fontSize: "sm", fontWeight: "medium", textAlign: "center" },
           }),

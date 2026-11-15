@@ -54,12 +54,12 @@ const tel = (number: string) => phone(number).replace(/ /g, "\u00a0");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("توصيل مبرّد في نفس اليوم داخل القاهرة والجيزة", "Same-day chilled delivery across Cairo and Giza"),
-    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
+    "تشكيلة الموسم الجديد وصلت": L("فاكهة وخضار وجبن وعسل مختار", "Chosen fruit, vegetables, cheese and honey"),
+    "الدفع عند الاستلام": L("أوزان وتفاصيل واضحة لكل منتج", "Clear weights and details for every product"),
     "م": L("م", "M"),
     "اسم متجرك": NAME,
     "المتجر": L("كل المنتجات", "Shop all"),
-    "العروض": L("وصل النهارده", "Fresh today"),
+    "العروض": L("وصل حديثًا", "New in"),
     "المدونة": L("تتبّع طلبك", "Track order"),
     "من نحن": L("عن مذاق", "About"),
   },
@@ -70,9 +70,9 @@ const footer = lib("footer-ruled", {
   text: {
     "م": L("م", "M"),
     "اسم متجرك": NAME,
-    "منتجات أصلية بضمان، توصلك لحد البيت.": L(
-      `بقالة فاخرة من الزمالك: فاكهة مختارة، جبن وعسل من مزارع صغيرة. ٨ شارع البرازيل، الزمالك، القاهرة | ${tel("٠١٢٧ ٣٩٤ ٥١٨٠")} | hello@mazaq.eg`,
-      `A fine grocer in Zamalek: hand-picked fruit, cheese and honey from small farms. 8 Brazil St, Zamalek, Cairo | ${tel("+20 127 394 5180")} | hello@mazaq.eg`,
+    "منتجات مختارة بعناية لكل يوم.": L(
+      `بقالة فاخرة: فاكهة مختارة وجبن وعسل ومخبوزات. ٨ شارع البرازيل، الزمالك، القاهرة | ${tel("٠١٢٧ ٣٩٤ ٥١٨٠")} | hello@mazaq.eg`,
+      `A fine grocer: chosen fruit, cheese, honey and bakes. 8 Brazil St, Zamalek, Cairo | ${tel("+20 127 394 5180")} | hello@mazaq.eg`,
     ),
     "تسوق": L("تسوّق", "Shop"),
     "كل المنتجات": L("كل المنتجات", "All products"),
@@ -89,20 +89,20 @@ const home: Design[] = [
     photo: [PHOTOS.heroPoster],
     nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 35 } } },
     text: {
-      "فيديو الواجهة": L("طماطم وفلفل وثوم وبروكلي طازة بقطرات مية", "Wet tomatoes, peppers, garlic and broccoli up close"),
-      "المجموعة الجديدة": L("حصاد الأسبوع", "This week’s harvest"),
-      "مساحتك، بطريقتك": L("أطيب ما في السوق، على سفرتك", "The best of the market, at your table"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "خضار وفاكهة بتتقطف الفجر، جبن وعسل من مزارع صغيرة، ومخبوزات بتطلع من الفرن كل صبح.",
-        "Produce picked at dawn, cheese and honey from small farms, and bakes out of the oven every morning.",
+      "فيديو الواجهة": L("طماطم وفلفل وثوم وبروكلي طازج بقطرات الماء", "Wet tomatoes, peppers, garlic and broccoli up close"),
+      "المجموعة الجديدة": L("تشكيلة الموسم", "The season’s selection"),
+      "تصميم هادئ لكل يوم": L("خضار وفاكهة وجبن وعسل", "Produce, cheese and honey"),
+      "قطع مختارة بعناية لكل يوم.": L(
+        "خضار وفاكهة موسمية، وجبن وعسل ومكسرات، ومخبوزات وقهوة وشاي.",
+        "Seasonal fruit and vegetables, cheese, honey and nuts, bakes, coffee and tea.",
       ),
       "تسوّق الآن": L("تسوّق المختارات", "Shop the selection"),
-      "شوف الجديد": L("وصل النهارده", "Fresh today"),
+      "اكتشف الجديد": L("وصل حديثًا", "New in"),
     },
     links: { "/products": SHOP, "/products?sort=newest": NEW },
   }),
   lib("categories-photo-tiles", {
-    text: { "تسوّق حسب القسم": L("تسوّق حسب الركن", "Shop by aisle") },
+    text: { "تسوّق حسب القسم": L("تسوّق حسب القسم", "Shop by aisle") },
     // All six aisles in one row (the design shows five).
     lists: [{ limit: 6 }],
     nodes: { "الأقسام": { style: { columns: 6 } } },
@@ -115,14 +115,14 @@ const home: Design[] = [
   lib("about-inset", {
     photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, PHOTOS.cheeseBoard],
     text: {
-      "إزاي بنشتغل": L("إزاي بنختار", "How we choose"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("كل حاجة بتتذاق قبل ما تنزل الرف", "Everything is tasted before it reaches the shelf"),
-      "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.": L(
-        "+٤٠ مزرعة صغيرة من الفيوم لسيوة. بنزور المزارع بنفسنا، وبنستلم الجبن والعسل والفاكهة كل صبح، وبنرجّع أي حاجة مش على مستوانا.",
-        "40+ small farms from Fayoum to Siwa. We visit them ourselves, take in cheese, honey and fruit every morning, and send back anything below our standard.",
+      "كيف نعمل": L("كيف نختار", "How we choose"),
+      "تفاصيل واضحة لكل منتج": L("منتجات مختارة بعناية", "Products chosen with care"),
+      "نعرض لكل منتج صورًا ومواصفات ومقاسات واضحة.": L(
+        "فاكهة وخضار موسمية، وجبن وعسل ومكسرات، مع الوزن والتفاصيل واضحة لكل منتج.",
+        "Seasonal produce, cheese, honey and nuts, with the weight and details clear for every product.",
       ),
-      "اعرف أكتر": L("اعرف حكايتنا", "Our story"),
-      "صورة المتجر": L("لوح جبن وعنب ومكسرات متنسّق على ترابيزة", "A cheese board with grapes, nuts and charcuterie"),
+      "اعرف أكثر": L("اعرف حكايتنا", "Our story"),
+      "صورة المتجر": L("لوح جبن وعنب ومكسرات على طاولة", "A cheese board with grapes, nuts and charcuterie"),
     },
   }),
   ...categoryRows(lib, {
@@ -131,27 +131,27 @@ const home: Design[] = [
   }),
   lib("newsletter-classic", {
     text: {
-      "خد ١٠٪ خصم على أول طلب": L("مائدة مذاق، كل خميس", "The Mazaq table, every Thursday"),
-      "اشترك وأول ما يوصل جديد أو عرض للمشتركين هتعرف.": L(
-        "اللي وصل من المزارع الأسبوع ده، وصفة موسمية بسيطة، ومواعيد التذوق في المحل.",
-        "What arrived from the farms this week, a simple seasonal recipe and tasting dates at the shop.",
+      "اشترك في نشرتنا البريدية": L("اشترك في نشرتنا البريدية", "Join our newsletter"),
+      "اشترك لتصلك أخبار المنتجات الجديدة.": L(
+        "أخبار المنتجات الموسمية الجديدة ووصفات بسيطة.",
+        "News of new seasonal products and simple recipes.",
       ),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن مذاق", "About Mazaq"), L("بقالة فاخرة في الزمالك من ٢٠٠٩.", "A fine grocer in Zamalek since 2009.")),
+  pageHeader(lib, "about-header", L("عن مذاق", "About Mazaq"), L("بقالة فاخرة ومنتجات مختارة.", "A fine grocer of chosen products.")),
   aboutStory(lib, {
     photo: PHOTOS.honeyJars,
-    alt: L("برطمانين عسل طبيعي على صينية خشب", "Two jars of natural honey on a wooden tray"),
-    eyebrow: L("من ٢٠٠٩", "Since 2009"),
-    title: L("بنعرف كل مزرعة بالاسم", "We know every farm by name"),
+    alt: L("وعاءان من العسل الطبيعي على صينية خشبية", "Two jars of natural honey on a wooden tray"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("منتجات مختارة من السوق", "Chosen from the market"),
     text: L(
-      "بدأنا رف صغير للعسل والجبن البلدي، ودلوقتي بنتعامل مع ٤٠ مزرعة من الفيوم لسيوة.",
-      "We began with one shelf of honey and farm cheese; today we work with 40 farms from Fayoum to Siwa.",
+      "فاكهة وخضار ومخبوزات وجبن وعسل ومكسرات وقهوة، بأوزان وتفاصيل واضحة.",
+      "Fruit, vegetables, bakes, cheese, honey, nuts and coffee, with clear weights and details.",
     ),
-    more: L("كل حاجة بتتذاق عندنا قبل ما تنزل الرف، وبتتغلف مبرّدة لحد باب بيتك.", "Everything is tasted before it reaches the shelf, and packed chilled all the way to your door."),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
     button: L("تسوّق المفضّل", "Shop favourites"),
     href: BEST,
   }),
@@ -159,7 +159,7 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("بقالة فاخرة في الزمالك: فاكهة مختارة، جبن وعسل من مزارع صغيرة.", "A Zamalek fine grocer: hand-picked fruit, cheese and honey from small farms."),
+  description: L("بقالة فاخرة: فاكهة مختارة وجبن وعسل ومخبوزات.", "A fine grocer: chosen fruit, cheese, honey and bakes."),
   categories: [
     ["fruits", "فواكه", "Fruits", PHOTOS.catFruits],
     ["vegetables", "خضار", "Vegetables", PHOTOS.catVegetables],
@@ -170,7 +170,7 @@ const DEMO = demoStore({
   ],
   products: [
     // Fruits
-    ["fresh-figs", "fruits", "تين طازة، علبة ٥٠٠ جم", "Fresh Figs, 500 g", P(5475178), 185, { isFeatured: true, rating: 4.9, sold90: 142 }],
+    ["fresh-figs", "fruits", "تين طازج، علبة ٥٠٠ جم", "Fresh Figs, 500 g", P(5475178), 185, { isFeatured: true, rating: 4.9, sold90: 142 }],
     ["pomegranates", "fruits", "رمان منفلوطي، ١ كجم", "Manfalouty Pomegranates, 1 kg", P(6956386), 65, { rating: 4.8, sold90: 118 }],
     ["lemons", "fruits", "ليمون أضاليا، ١ كجم", "Adalia Lemons, 1 kg", P(37654710), 45, { rating: 4.7, sold90: 96 }],
     ["cherries", "fruits", "كريز أحمر، علبة ٢٥٠ جم", "Red Cherries, 250 g", P(109274), 240, { compareAtPrice: 280, rating: 4.9, sold90: 74 }],
@@ -184,20 +184,20 @@ const DEMO = demoStore({
     ["beetroot", "vegetables", "بنجر بالعرش، ١ كجم", "Beetroot with Leaves, 1 kg", P(5758605), 35, { rating: 4.6, sold90: 47 }],
     ["purple-eggplant", "vegetables", "باذنجان رومي، ١ كجم", "Purple Eggplant, 1 kg", P(5644866), 30, { rating: 4.5, sold90: 71 }],
     ["baby-spinach", "vegetables", "سبانخ صغيرة، ٢٠٠ جم", "Baby Spinach, 200 g", P(4506881), 40, { compareAtPrice: 48, rating: 4.7, sold90: 84 }],
-    ["sweet-corn", "vegetables", "درة سكري، ٢ كوز", "Sweet Corn, 2 cobs", P(38519270), 30, { rating: 4.6, sold90: 58 }],
-    ["red-chilies", "vegetables", "شطة حمرا، ١٠٠ جم", "Red Chilies, 100 g", P(5957547), 20, { rating: 4.4, sold90: 42 }],
+    ["sweet-corn", "vegetables", "ذرة حلوة، ٢ كوز", "Sweet Corn, 2 cobs", P(38519270), 30, { rating: 4.6, sold90: 58 }],
+    ["red-chilies", "vegetables", "فلفل حار أحمر، ١٠٠ جم", "Red Chilies, 100 g", P(5957547), 20, { rating: 4.4, sold90: 42 }],
     ["mini-bell-peppers", "vegetables", "فلفل ألوان ميني، ٥٠٠ جم", "Mini Bell Peppers, 500 g", P(7657012), 70, { rating: 4.8, sold90: 66 }],
     // Bakery
-    ["french-macarons", "bakery", "ماكرون فرنساوي، ١٢ قطعة", "French Macarons, 12 pcs", P(15779770), 360, { isFeatured: true, rating: 4.9, sold90: 77 }],
+    ["french-macarons", "bakery", "ماكرون فرنسي، ١٢ قطعة", "French Macarons, 12 pcs", P(15779770), 360, { isFeatured: true, rating: 4.9, sold90: 77 }],
     ["hazelnut-eclairs", "bakery", "إكلير بالبندق، ٤ قطع", "Hazelnut Éclairs, 4 pcs", P(5978248), 220, { rating: 4.8, sold90: 64 }],
     ["berry-tart", "bakery", "تارت التوت", "Berry Tart", P(38673820), 95, { rating: 4.7, sold90: 38 }],
-    ["butter-croissant", "bakery", "كرواسون زبدة فرنساوي", "French Butter Croissant", P(15023803), 45, { rating: 4.9, sold90: 212 }],
+    ["butter-croissant", "bakery", "كرواسون فرنسي بالزبدة", "French Butter Croissant", P(15023803), 45, { rating: 4.9, sold90: 212 }],
     ["pistachio-baklava", "bakery", "بقلاوة بالفستق، ٥٠٠ جم", "Pistachio Baklava, 500 g", P(33066196), 420, { compareAtPrice: 470, rating: 4.9, sold90: 93 }],
     ["cheesecake-slice", "bakery", "تشيز كيك بالتوت", "Berry Cheesecake Slice", P(1126359), 110, { rating: 4.6, sold90: 45 }],
     ["bagels", "bakery", "بيغل سادة، ٤ قطع", "Plain Bagels, 4 pcs", P(8599524), 80, { rating: 4.5, sold90: 29 }],
     ["pretzels", "bakery", "بريتزل بالملح، ٦ قطع", "Salted Pretzels, 6 pcs", P(18354020), 90, { rating: 4.4, sold90: 24 }],
     // Pantry
-    ["raw-almonds", "pantry", "لوز ني، ٥٠٠ جم", "Raw Almonds, 500 g", P(57042), 340, { rating: 4.8, sold90: 81 }],
+    ["raw-almonds", "pantry", "لوز نيء، ٥٠٠ جم", "Raw Almonds, 500 g", P(57042), 340, { rating: 4.8, sold90: 81 }],
     ["pistachios", "pantry", "فستق حلبي محمص، ٥٠٠ جم", "Roasted Pistachios, 500 g", P(1799307), 480, { isFeatured: true, rating: 4.9, sold90: 97 }],
     ["walnut-halves", "pantry", "عين جمل أنصاف، ٢٥٠ جم", "Walnut Halves, 250 g", P(34415576), 230, { rating: 4.7, sold90: 55 }],
     ["blossom-honey", "pantry", "عسل زهر البرسيم، ٥٠٠ جم", "Clover Blossom Honey, 500 g", P(5634212), 260, { rating: 5, sold90: 124 }],
@@ -208,7 +208,7 @@ const DEMO = demoStore({
     // Dairy & cheese
     ["camembert", "dairy-cheese", "جبنة كممبير، ٢٥٠ جم", "Camembert, 250 g", P(5202250), 290, { rating: 4.8, sold90: 41 }],
     ["farm-butter", "dairy-cheese", "زبدة فلاحي، ٢٥٠ جم", "Farm Butter, 250 g", P(10165696), 140, { rating: 4.9, sold90: 87 }],
-    ["fresh-milk", "dairy-cheese", "لبن بقري طازة، ١ لتر", "Fresh Cow’s Milk, 1 L", P(5946755), 45, { rating: 4.7, sold90: 156 }],
+    ["fresh-milk", "dairy-cheese", "حليب بقري طازج، ١ لتر", "Fresh Cow’s Milk, 1 L", P(5946755), 45, { rating: 4.7, sold90: 156 }],
     ["feta", "dairy-cheese", "جبنة فيتا، ٤٠٠ جم", "Feta, 400 g", P(6128854), 110, { rating: 4.6, sold90: 68 }],
     // Coffee & tea
     ["roasted-coffee-beans", "coffee-tea", "بن محمص وسط، ٢٥٠ جم", "Medium Roast Coffee Beans, 250 g", P(12007828), 260, { rating: 4.8, sold90: 79 }],
@@ -223,7 +223,7 @@ export const GROCERY_LUXE = libraryTemplate({
   version: 1,
   name: L("مذاق", "Mazaq"),
   description: L(
-    "بقالة فاخرة بهدوء: فيديو خضار طازة، صور أقسام طويلة وأربع صفوف للأقسام. لمحلات الأكل الراقي والمنتجات المختارة.",
+    "بقالة فاخرة بهدوء: فيديو خضار طازج، صور أقسام طويلة وأربعة صفوف للأقسام. لمتاجر الأكل الراقي والمنتجات المختارة.",
     "A quiet fine-food store: a fresh-produce video, tall aisle photos and four category rows. For gourmet grocers and curated food shops.",
   ),
   category: "sweets",
@@ -252,9 +252,9 @@ export const GROCERY_LUXE = libraryTemplate({
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("زورنا في الزمالك", "Visit us in Zamalek"),
-        text: L("٨ شارع البرازيل، الزمالك، القاهرة. مفتوح كل يوم من ٨ الصبح لـ ١١ بالليل.", "8 Brazil St, Zamalek, Cairo. Open daily from 8am to 11pm."),
-        heading: L("عايز سلة هدية أو طلب خاص؟", "Need a gift hamper or a special order?"),
+        title: L("تواصل معنا", "Contact us"),
+        text: L("٨ شارع البرازيل، الزمالك، القاهرة. يوميًا من ٨ صباحًا حتى ١١ مساءً.", "8 Brazil St, Zamalek, Cairo. Open daily from 8am to 11pm."),
+        heading: L("لديك سؤال عن منتج؟", "A question about a product?"),
       }),
     },
     {
@@ -262,11 +262,11 @@ export const GROCERY_LUXE = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("التوصيل والتبريد والطلبات الخاصة.", "Delivery, chilling and special orders."),
-        question: L("الجبن والألبان بتوصل إزاي؟", "How do cheese and dairy arrive?"),
+        text: L("المنتجات والأوزان والطلبات.", "Products, weights and orders."),
+        question: L("كيف أحفظ الجبن والألبان؟", "How should I store cheese and dairy?"),
         answer: L(
-          "بتتغلف في شنط مبرّدة بثلج جاف وبتوصل في نفس اليوم لو طلبت قبل ٢ الضهر، داخل القاهرة والجيزة.",
-          "They are packed in chilled bags with dry ice and arrive the same day if you order before 2pm, across Cairo and Giza.",
+          "احفظها في الثلاجة فور الاستلام، وراجع تاريخ الصلاحية المكتوب على كل عبوة.",
+          "Keep them in the fridge once they arrive and check the date on each pack.",
         ),
       }),
     },
@@ -277,6 +277,6 @@ export const GROCERY_LUXE = libraryTemplate({
     surface: "flat",
     band: "paper",
     extras: ["product-perks"],
-    copy: { reviews: L("آراء عملائنا", "What our customers say"), related: L("يتقدّم معاه", "Serve it with") },
+    copy: { reviews: L("آراء عملائنا", "What our customers say"), related: L("يُقدَّم معه", "Serve it with") },
   },
 });

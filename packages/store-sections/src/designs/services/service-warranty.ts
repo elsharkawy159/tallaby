@@ -10,9 +10,9 @@ import { BRAND_TILE, TILE_MOBILE } from "../_modular";
 import { tickLine } from "./_shared";
 
 const BENEFITS = [
-  L("مش محتاج تحتفظ بالفاتورة", "No need to keep the receipt"),
-  L("تتابع طلب الصيانة أونلاين", "Track repair requests online"),
-  L("تنبيه قبل ما الضمان يخلص", "A reminder before it expires"),
+  L("لا حاجة للاحتفاظ بالفاتورة", "No need to keep the receipt"),
+  L("تابع طلب الصيانة عبر الإنترنت", "Track repair requests online"),
+  L("تنبيه قبل انتهاء الضمان", "A reminder before it expires"),
 ];
 
 export const serviceWarranty = defineDesign({

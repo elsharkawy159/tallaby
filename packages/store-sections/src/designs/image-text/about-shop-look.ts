@@ -58,7 +58,7 @@ export const aboutShopLook = defineDesign({
             [
               t.box(
                 [
-                  t.photo(0, L("صورة اللوك", "Look photo"), {
+                  t.photo(0, L("صورة الإطلالة", "Look photo"), {
                     role: "image",
                     style: { aspectRatio: "portrait", objectFit: "cover", width: "100%", radius: 0 },
                   }),
@@ -70,8 +70,8 @@ export const aboutShopLook = defineDesign({
                 [
                   t.stack(
                     [
-                      t.text(L("اللوك", "The look"), { role: "eyebrow", style: { fontSize: "sm", fontWeight: "semibold", color: "primary" } }),
-                      t.heading(L("عاجي من فوق لتحت", "Ivory, head to toe"), "h2", {
+                      t.text(L("الإطلالة", "The look"), { role: "eyebrow", style: { fontSize: "sm", fontWeight: "semibold", color: "primary" } }),
+                      t.heading(L("إطلالة باللون العاجي", "An ivory look"), "h2", {
                         role: "title",
                         style: { fontSize: "display-sm", lineHeight: "tight" },
                       }),

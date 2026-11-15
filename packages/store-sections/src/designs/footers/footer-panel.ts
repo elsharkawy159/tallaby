@@ -42,7 +42,7 @@ export const footerPanel = defineDesign({
                             color: "background",
                           },
                         }),
-                        t.text(L("اشترك وخد العروض قبل أي حد.", "Subscribe for offers before anyone else."), { style: { color: "background", opacity: 75 } }),
+                        t.text(L("اشترك ليصلك جديدنا أولًا.", "Subscribe to hear what's new first."), { style: { color: "background", opacity: 75 } }),
                       ],
                       { label: L("المتجر", "Store"), style: { gap: 6 } },
                     ),

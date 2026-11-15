@@ -161,13 +161,13 @@ function hero(c: LookContent): Design {
       photo: [undefined, undefined, c.photos.hero.wide],
       text: {
         "مجموعة الموسم": c.hero.eyebrow,
-        "من ١ إلى ٣٠ نوفمبر": c.announcement[0]!,
+        "وصل حديثًا": c.announcement[0]!,
         "صورة الحملة": c.hero.alt,
-        خصم: x["hero-sticker-1"]!,
-        "٣٠٪": x["hero-sticker-2"]!,
-        "لفترة محدودة": x["hero-sticker-3"]!,
+        مجموعة: x["hero-sticker-1"]!,
+        "٢٠٢٦": x["hero-sticker-2"]!,
+        "الجديدة": x["hero-sticker-3"]!,
         "الموسم الجديد وصل": c.hero.title,
-        "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": c.hero.line,
+        "قطع خفيفة بخامات طبيعية ومقاسات كاملة.": c.hero.line,
         "اكتشف المجموعة": c.hero.cta,
       },
       links: { "/products": NEW },
@@ -204,12 +204,12 @@ function finder(c: LookContent): Design {
     lib("finder-use", {
       text: {
         "ساعدني أختار": L("ساعدني أختار", "Help me choose"),
-        "هتستخدمها في إيه؟": c.finder.title,
-        "اختار استخدامك ونوديك على المنتجات المناسبة ليه.": c.finder.line,
-        المشاوير: beach!.label,
+        "فيمَ ستستخدمها؟": c.finder.title,
+        "اختر الاستخدام، ونعرض لك المنتجات المناسبة له.": c.finder.line,
+        التنقل: beach!.label,
         الرياضة: pool!.label,
         المكالمات: errands!.label,
-        "الشغل من البيت": home!.label,
+        "العمل من المنزل": home!.label,
       },
       links: { "/products": [beach!.href, pool!.href, errands!.href, home!.href] },
       nodes: {
@@ -223,7 +223,7 @@ function finder(c: LookContent): Design {
   );
   return retouch(band, undefined, (node) => {
     if (node.type === "section") return { ...node, style: { ...node.style, background: "secondary" } };
-    if (node.type === "productList" || (node.type === "text" && node.props?.text === "الأكثر طلبًا دلوقتي")) return hide(node);
+    if (node.type === "productList" || (node.type === "text" && node.props?.text === "الأكثر طلبًا الآن")) return hide(node);
     return node;
   });
 }
@@ -254,7 +254,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     text: {
       م: initialOf(name),
       "اسم متجرك": name,
-      "مختارات بعناية منذ ٢٠١٨، لكل بيت في مصر.": c.footer.line,
+      "مختارات بعناية لكل يوم.": c.footer.line,
       "من نحن": c.labels.about,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
     },
@@ -272,7 +272,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     // The pick of the week (the newest featured pair) large on the white stage, and four of the main list beside it.
     calm(
       lib("products-feature", {
-        text: { "اختيارنا ليك": c.products.primary.title },
+        text: { "اختيارنا لك": c.products.primary.title },
         lists: [undefined, { source: journey.primary, limit: 4 }],
       }),
     ),
@@ -285,9 +285,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           photo: [undefined, undefined, c.photos.banner],
           text: {
             "صورة البانر": x["banner-alt"]!,
-            "صناعة مصرية": c.story.eyebrow,
-            "متعمول عشان يريّحك ويعيش معاك": c.story.title,
-            "خامات مختارة وتفاصيل متشطبة بإيدينا، عشان تفضل معاك سنين.": c.story.text,
+            "مختارات المتجر": c.story.eyebrow,
+            "مصنوع ليدوم طويلًا": c.story.title,
+            "خامات مختارة وتفاصيل متقنة تتحمّل الاستخدام اليومي.": c.story.text,
             "تسوّق الآن": c.story.cta,
           },
           links: { "/products": "/about" },
@@ -301,14 +301,14 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       retouch(
         lib("features-classic", {
           text: {
-            "توصيل سريع": c.trust[0]!.title,
-            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "الشحن": c.trust[0]!.title,
+            "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
             "الدفع عند الاستلام": c.trust[1]!.title,
-            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-            "استرجاع سهل": c.trust[2]!.title,
-            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-            "دعم على واتساب": c.trust[3]!.title,
-            "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+            "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+            "الاستبدال والاسترجاع": c.trust[2]!.title,
+            "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+            "تواصل معنا": c.trust[3]!.title,
+            "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
           },
         }),
         "icon",
@@ -320,8 +320,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     calm(
       lib("newsletter-ruled", {
         text: {
-          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-          "عروض للمشتركين بس، مرة في الأسبوع.": c.newsletter.line,
+          "اشترك في نشرتنا البريدية": c.newsletter.title,
+          "كن أول من يعرف بالمنتجات الجديدة.": c.newsletter.line,
         },
       }),
     ),
@@ -372,7 +372,7 @@ export const TASFYA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(TASFYA_KEY, "slippers-clogs", { ar: 2535, en: 2558 }),
   key: TASFYA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Tasfya v4: the slippers-clogs template, rebuilt look-first",
   name: L("تصفية", "Tasfya"),
   description: L(
@@ -442,8 +442,8 @@ export const TASFYA = editionTemplate({
     band: "brand",
     extras: ["product-perks"],
     copy: SLIPPERS_CLOGS.productPage?.copy ?? {
-      reviews: L("آراء اللي لبسوه", "From people who wear them"),
-      related: L("موديلات ممكن تعجبك", "Pairs you may like"),
+      reviews: L("آراء العملاء", "Customer reviews"),
+      related: L("قد يعجبك أيضًا", "You may also like"),
     },
   },
 });

@@ -8,7 +8,7 @@ import { L } from "../_kit";
 import { chip, modHead } from "../_modular";
 import { BLOG_LINK, postCover, postDate, postExcerpt, postTitle } from "./_shared";
 
-const TOPICS = [L("الكل", "All"), L("مراجعات", "Reviews"), L("نصايح", "Guides"), L("أخبار", "News")];
+const TOPICS = [L("الكل", "All"), L("مراجعات", "Reviews"), L("نصائح", "Guides"), L("أخبار", "News")];
 
 export const blogTabbed = defineDesign({
   id: "blog-tabbed",

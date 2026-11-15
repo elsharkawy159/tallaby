@@ -23,7 +23,7 @@ export const textCentered = defineDesign({
               t.heading(L("مواعيد شهر رمضان", "Ramadan opening hours"), "h2", { role: "title", style: { fontSize: "display-sm", textAlign: "center" } }),
               t.paragraph(
                 L(
-                  "طوال الشهر نعمل من ٨ مساءً حتى ٢ صباحًا، والطلبات أونلاين مستمرة كالمعتاد.",
+                  "طوال الشهر نعمل من ٨ مساءً حتى ٢ صباحًا، والطلبات عبر الإنترنت مستمرة كالمعتاد.",
                   "Throughout the month we open 8pm to 2am. Online orders run as usual.",
                 ),
                 { role: "body", style: { textAlign: "center", fontSize: "lg", maxWidth: "640px" } },

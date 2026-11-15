@@ -13,7 +13,7 @@ import { smallLabel } from "./_shared";
 
 const TIERS = [
   { qty: L("قطعة واحدة", "1 piece"), note: L("السعر العادي", "Regular price"), save: null },
-  { qty: L("قطعتين", "2 pieces"), note: L("على القطعة التانية", "On the second piece"), save: L("وفّر ١٠٪", "Save 10%") },
+  { qty: L("قطعتان", "2 pieces"), note: L("على القطعة الثانية", "On the second piece"), save: L("وفّر ١٠٪", "Save 10%") },
   { qty: L("٣ قطع", "3 pieces"), note: L("على الطلب كله", "On the whole order"), save: L("وفّر ١٨٪", "Save 18%") },
 ];
 
@@ -64,7 +64,7 @@ export const bundleQuantity = defineDesign({
                               ...(tier.save ? [t.badge(tier.save, { style: { background: "accent", color: "foreground", fontWeight: "semibold", marginStart: 8 } })] : []),
                               ...(on
                                 ? [
-                                    t.badge(L("الأكتر طلبًا", "Most picked"), {
+                                    t.badge(L("الأكثر طلبًا", "Most picked"), {
                                       style: { position: "absolute", insetTop: "-11px", insetEnd: "20px", background: "primary", color: "primaryInk", fontWeight: "semibold" },
                                     }),
                                   ]
@@ -93,7 +93,7 @@ export const bundleQuantity = defineDesign({
                         }),
                         { label: L("الشرائح", "Tiers"), role: "items", style: { gap: 12, marginTop: 8 } },
                       ),
-                      t.text(L("اختار عدد القطع من السلة.", "Choose how many pieces in your cart."), {
+                      t.text(L("اختر عدد القطع من السلة.", "Choose how many pieces in your cart."), {
                         style: { color: "muted", fontSize: "sm" },
                       }),
                       t.addToCart({ label: L("أضف للسلة", "Add to cart") }),

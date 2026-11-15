@@ -65,7 +65,7 @@ const DEFAULT_CONTENT: LookDefaults = {
   products: {
     primary: {
       title: L("هدايا لعشاق القهوة", "Gifts for coffee people"),
-      line: L("كوبايات وبن وصواني تحت ٩٠٠ ج.م.", "Mugs, beans and trays under EGP 900."),
+      line: L("أكواب وبن وصوانٍ للتقديم.", "Mugs, beans and serving trays."),
     },
   },
   // Optional, with `custom.reviews-rating`, `custom.reviews-count` and `custom.reviews-city-1..3`: three buyer quotes with names and cities, and the rating summary. Without them the home page ends on the rail.
@@ -73,41 +73,41 @@ const DEFAULT_CONTENT: LookDefaults = {
     title: L("آراء العملاء", "Reviews"),
     items: [
       {
-        quote: L("الكنكة النحاس تقيلة ومطروقة باليد، والقهوة بقت بوش من أول مرة.", "The copper cezve is heavy and hand-hammered, and the coffee had foam from the first try."),
+        quote: L("الكنكة النحاس ثقيلة ومطروقة يدويًا، والقهوة تخرج بوجه من أول مرة.", "The copper cezve is heavy and hand-hammered, and the coffee had foam from the first try."),
         name: L("ياسر ع.", "Yasser A."),
       },
       {
-        quote: L("البن متحمص الأسبوع ده فعلاً، وعينة القهوة اللي جت مع الطلب حلوة جداً.", "The beans really were roasted that week, and the free sample was lovely."),
+        quote: L("البن طازج ورائحته قوية.", "The beans are fresh with a strong aroma."),
         name: L("رنا م.", "Rana M."),
       },
       {
-        quote: L("الكاتل مظبوط للدريب، والتقسيط سهّل عليّا.", "The kettle pours perfectly for drip, and the instalments helped."),
+        quote: L("الغلاية مناسبة تمامًا لتحضير القهوة المقطّرة.", "The kettle pours perfectly for drip coffee."),
         name: L("شريف ن.", "Sherif N."),
       },
     ],
   },
   about: {
-    line: L("كوبايات وكتل وألواح لفنجان الصبح.", "Mugs, kettles and boards for your morning cup."),
-    alt: L("كنكتين موكا ستانلس على رف", "Two steel moka pots on a shelf"),
+    line: L("أكواب وغلايات وصوانٍ لتحضير القهوة وتقديمها.", "Mugs, kettles and trays for making and serving coffee."),
+    alt: L("إبريقا موكا من الستانلس على رف", "Two steel moka pots on a shelf"),
     eyebrow: L("حكايتنا", "Our story"),
-    title: L("فنجان الصبح يستاهل", "Your morning cup deserves it"),
+    title: L("أدوات لتحضير القهوة", "Tools for making coffee"),
     text: L(
-      "بنجمع أدوات قهوة بنستخدمها في البيت: كنك نحاس، موكا، كتل للدريب وكوبايات بتحافظ على السخونية.",
-      "We gather the coffee tools we use at home: copper cezves, moka pots, pour-over kettles and mugs that keep the heat.",
+      "نختار أدوات القهوة بعناية: كنك نحاس، أباريق موكا، غلايات للقهوة المقطّرة وأكواب تحافظ على الحرارة.",
+      "We pick coffee tools with care: copper cezves, moka pots, pour-over kettles and mugs that keep the heat.",
     ),
-    more: L("ومع كل طلب عينة بن ببلاش، والتقسيط متاح على ٦ شهور.", "Every order comes with a free coffee sample, and you can pay over six months."),
+    more: L("ولكل أداة صور ومواصفات واضحة في صفحتها.", "Every tool has clear photos and specs on its page."),
     // Goes to the whole catalog.
     cta: L("تسوق الأدوات", "Shop the gear"),
   },
   contact: {
     title: L("تواصل", "Contact"),
-    line: L("محتار تختار موكا ولا دريب؟ ابعتلنا.", "Not sure between a moka pot and pour-over? Ask us."),
+    line: L("لا تعرف هل تختار الموكا أم القهوة المقطّرة؟ تواصل معنا.", "Not sure between a moka pot and pour-over? Ask us."),
     heading: L("عن أداة أو طلب", "About a tool or an order"),
   },
   faq: {
-    line: L("البن والأدوات والتقسيط.", "Beans, gear and instalments."),
-    question: L("البن بيتطحن قبل الشحن؟", "Do you grind the beans before shipping?"),
-    answer: L("لو عايز، اكتب في الملاحظات: تركي، موكا أو دريب، وبنطحنه يوم الشحن.", "If you like: write Turkish, moka or drip in the notes and we grind on the day it ships."),
+    line: L("البن والأدوات والطلبات.", "Beans, gear and orders."),
+    question: L("كيف أختار درجة طحن البن؟", "How do I choose the grind?"),
+    answer: L("اختر الطحن الناعم للقهوة التركية، والمتوسط للموكا، والأخشن قليلًا للقهوة المقطّرة.", "Fine for Turkish coffee, medium for a moka pot and a little coarser for pour-over."),
   },
   custom: {
     // The header's links to the whole catalog and to the best sellers, two words each.
@@ -153,12 +153,12 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const reviews: LookContent["reviews"] | undefined = c.reviews;
   const rating: LookContent["custom"][string] | undefined = x["reviews-rating"];
   const home: Design[] = [
-    lib("hero-big-word", { text: { "جديد": c.hero.title, "اطلبها": L("ضيفها للسلة", "Add to cart") } }),
-    lib("categories-chips", { text: { "إيه اللي في بالك؟": c.categories.title } }),
+    lib("hero-big-word", { text: { "جديد": c.hero.title, "اطلبها": L("أضف إلى السلة", "Add to cart") } }),
+    lib("categories-chips", { text: { "عمّ تبحث؟": c.categories.title } }),
     lib("products-panel-rail", {
       text: {
         "هدايا تحت ١٠٠٠ جنيه": c.products.primary.title,
-        "اختيارات مضمونة لأي مناسبة.": c.products.primary.line,
+        "أفكار هدايا لكل مناسبة.": c.products.primary.line,
       },
       links: { "/products": SHOP },
     }),
@@ -172,7 +172,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
               "م": initialOf(reviews.items[0]!.name),
               "مريم أ.": reviews.items[0]!.name,
               "القاهرة": x["reviews-city-1"]!,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "ع": initialOf(reviews.items[1]!.name),
               "عمر ك.": reviews.items[1]!.name,
               "الإسكندرية": x["reviews-city-2"]!,
@@ -224,37 +224,37 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("كوبايات وكتل وألواح لفنجان الصبح.", "Mugs, kettles and boards for your morning cup."),
+  description: L("أكواب وغلايات وصوانٍ لتحضير القهوة وتقديمها.", "Mugs, kettles and trays for making and serving coffee."),
   categories: [
-    ["mugs", "كوبايات وفناجين", "Mugs & cups", PHOTOS.cupRoses],
+    ["mugs", "أكواب وفناجين", "Mugs & cups", PHOTOS.cupRoses],
     ["brewing", "أدوات التحضير", "Brewing", PHOTOS.mokaShelf],
     ["beans", "بن", "Beans", PHOTOS.beansJar],
     ["turkish", "تركي", "Turkish", PHOTOS.turkishBlend],
     ["cezves", "كنك", "Cezves", PHOTOS.cezve],
     ["moka", "موكا", "Moka pots", PHOTOS.moka],
-    ["kettles", "كاتل", "Kettles", PHOTOS.gooseneck],
+    ["kettles", "غلايات", "Kettles", PHOTOS.gooseneck],
     ["trays", "صواني", "Trays", PHOTOS.woodTray],
   ],
   products: [
-    ["white-mug-set", "mugs", "٤ مجات بيضا مشغولة", "Set of 4 Sculpted White Mugs", PHOTOS.whiteMugs, 680, { rating: 4.8, sold90: 150 }],
+    ["white-mug-set", "mugs", "٤ أكواب بيضاء منقوشة", "Set of 4 Sculpted White Mugs", PHOTOS.whiteMugs, 680, { rating: 4.8, sold90: 150 }],
     ["ethiopia-sidamo", "beans", "إثيوبيا سيدامو ٢٥٠ جم", "Ethiopia Sidamo, 250 g", PHOTOS.sidamo, 420, { isFeatured: true, rating: 4.9, sold90: 120 }],
-    ["olive-wood-tray", "trays", "صينية خشب بإيدين", "Wooden Serving Tray", PHOTOS.woodTray, 690, { compareAtPrice: 820, sold90: 44 }],
-    ["house-turkish-blend", "turkish", "خلطة البيت التركي ٢٥٠ جم", "House Turkish Blend, 250 g", PHOTOS.turkishBlend, 360, { isFeatured: true, sold90: 200 }],
+    ["olive-wood-tray", "trays", "صينية خشب بمقبضين", "Wooden Serving Tray", PHOTOS.woodTray, 690, { compareAtPrice: 820, sold90: 44 }],
+    ["house-turkish-blend", "turkish", "خلطة تركية خاصة ٢٥٠ جم", "House Turkish Blend, 250 g", PHOTOS.turkishBlend, 360, { isFeatured: true, sold90: 200 }],
     ["copper-cezve", "cezves", "كنكة نحاس مطروق", "Hammered Copper Cezve", PHOTOS.cezve, 550, { isFeatured: true, rating: 4.9, sold90: 96 }],
     ["moka-pot", "moka", "موكا ستانلس ٦ فناجين", "Steel Moka Pot, 6 Cups", PHOTOS.moka, 950, { sold90: 70 }],
-    ["gooseneck-kettle", "kettles", "كاتل رقبة طويلة بترمومتر", "Gooseneck Kettle with Thermometer", PHOTOS.gooseneck, 1350, { compareAtPrice: 1550, sold90: 38 }],
-    ["ceramic-dripper", "brewing", "دريبر سيراميك أسود", "Black Ceramic Dripper", PHOTOS.dripper, 480, { sold90: 52 }],
-    ["gold-rim-cups", "mugs", "فناجين بحافة دهب ٦ قطع", "Gold-Rim Cups, Set of 6", PHOTOS.goldCups, 890, { sold90: 29 }],
-    ["turkish-cup-tray-set", "mugs", "فنجانين تركي وصينية", "Turkish Cup Pair & Tray", PHOTOS.trayPair, 620, { sold90: 61 }],
+    ["gooseneck-kettle", "kettles", "غلاية بصنبور طويل وميزان حرارة", "Gooseneck Kettle with Thermometer", PHOTOS.gooseneck, 1350, { compareAtPrice: 1550, sold90: 38 }],
+    ["ceramic-dripper", "brewing", "قمع تقطير سيراميك أسود", "Black Ceramic Dripper", PHOTOS.dripper, 480, { sold90: 52 }],
+    ["gold-rim-cups", "mugs", "فناجين بحافة ذهبية ٦ قطع", "Gold-Rim Cups, Set of 6", PHOTOS.goldCups, 890, { sold90: 29 }],
+    ["turkish-cup-tray-set", "mugs", "فنجانان تركيان وصينية", "Turkish Cup Pair & Tray", PHOTOS.trayPair, 620, { sold90: 61 }],
     ["brazil-dark-roast", "beans", "برازيل تحميص غامق ٢٥٠ جم", "Brazil Dark Roast, 250 g", PHOTOS.darkRoast, 390, { inStock: false, sold90: 84 }],
   ],
 });
 
 export const QAHWA = editionTemplate({
   key: QAHWA_KEY,
-  version: 3,
+  version: 4,
   changelog: "Qahwa v3: wide hero photo, no coupon",
-  productPage: { thumbs: "bottom", band: "brand", copy: { reviews: L("رأي أهل القهوة", "From regulars"), related: L("جنب فنجانك", "Beside your cup") } },
+  productPage: { thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("قهوة", "Qahwa"),
   description: L(
     "أدوات القهوة في البيت: الكلمة الكبيرة وهدايا لعشاق القهوة. أربع صفحات جاهزة.",

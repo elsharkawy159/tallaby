@@ -12,9 +12,9 @@ import { CONTACT_LINK } from "./_shared";
 const SERVICES = [
   {
     icon: "package",
-    name: L("تركيب في البيت", "Home installation"),
+    name: L("تركيب في المنزل", "Home installation"),
     text: L(
-      "نركّب الشاشة أو الرسيفر ونظبط القنوات.",
+      "نركّب الشاشة أو جهاز الاستقبال ونضبط القنوات.",
       "We mount your TV or box and set up the channels.",
     ),
     price: L("من ٢٥٠ ج.م", "From EGP 250"),
@@ -32,16 +32,16 @@ const SERVICES = [
     icon: "rotate",
     name: L("استبدل القديم", "Trade-in"),
     text: L(
-      "جيب جهازك القديم وخد خصم على الجديد.",
+      "أحضر جهازك القديم واحصل على خصم على الجديد.",
       "Bring your old device, get credit on a new one.",
     ),
     price: L("مجانًا", "Free"),
   },
   {
     icon: "shield",
-    name: L("مد الضمان", "Extended warranty"),
+    name: L("تمديد الضمان", "Extended warranty"),
     text: L(
-      "سنة أو سنتين زيادة على ضمان الوكيل.",
+      "سنة أو سنتان إضافيتان على ضمان الوكيل.",
       "One or two extra years on top of the brand warranty.",
     ),
     price: L("من ١٩٩ ج.م", "From EGP 199"),
@@ -75,7 +75,7 @@ export const serviceCards = defineDesign({
             eyebrow: L("الخدمات", "Services"),
             title: L("خدمات بعد البيع", "After-sales services"),
             subtitle: L(
-              "عشان جهازك يفضل شغال زي الجديد.",
+              "ليبقى جهازك يعمل كالجديد.",
               "To keep your device working like new.",
             ),
           }),

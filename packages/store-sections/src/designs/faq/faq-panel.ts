@@ -25,10 +25,10 @@ export const faqPanel = defineDesign({
             [
               t.stack(
                 [
-                  dotLabel(t, L("محتاج مساعدة؟", "Need help?"), {
+                  dotLabel(t, L("هل تحتاج إلى مساعدة؟", "Need help?"), {
                     onBrand: true,
                   }),
-                  t.heading(L("إحنا هنا", "We are here"), "h2", {
+                  t.heading(L("نحن هنا", "We are here"), "h2", {
                     role: "title",
                     style: {
                       fontSize: "display-sm",
@@ -39,7 +39,7 @@ export const faqPanel = defineDesign({
                   t.row(
                     [
                       t.icon("clock", { style: { color: "primaryInk" } }),
-                      t.text(L("بنرد في ١٢ دقيقة في المتوسط", "Average reply: 12 minutes"), { style: ON_BRAND_BODY }),
+                      t.text(L("تواصل معنا لأي سؤال", "Contact us with any question"), { style: ON_BRAND_BODY }),
                     ],
                     {
                       label: L("وقت الرد", "Reply time"),

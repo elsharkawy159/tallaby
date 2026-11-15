@@ -29,7 +29,7 @@ export const teamScenes = aboutDesign({
               t.stack(
                 [
                   dotLabel(t, L("ورا الكواليس", "Behind the scenes")),
-                  t.heading(L("كل طلب بيتغلّف بإيد", "Every order packed by hand"), "h2", {
+                  t.heading(L("جولة خلف الكواليس", "A look behind the scenes"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
@@ -46,7 +46,7 @@ export const teamScenes = aboutDesign({
               }),
               t.photo(1, L("صورة التغليف", "A photo of the packing table"), { style: { ...PHOTO, aspectRatio: "square" } }),
               t.photo(2, L("صورة من الفريق", "A photo of the team"), { style: { ...PHOTO, aspectRatio: "square" } }),
-              t.photo(3, L("صورة من الشغل", "A photo of the work"), {
+              t.photo(3, L("صورة من العمل", "A photo of the work"), {
                 style: { ...PHOTO, aspectRatio: "square" },
                 tablet: { aspectRatio: "wide", colSpan: 2 },
               }),

@@ -9,7 +9,7 @@ import { modHead } from "../_modular";
 
 const VIDEOS = [
   { title: L("فتح العلبة", "Unboxing"), poster: 0 },
-  { title: L("إزاي تختار المقاس", "How to pick a size"), poster: 1 },
+  { title: L("كيف تختار المقاس", "How to pick a size"), poster: 1 },
   { title: L("مقارنة سريعة", "A quick comparison"), poster: 2 },
 ];
 
@@ -27,7 +27,7 @@ export const videoGrid = defineDesign({
         [
           modHead(t, {
             label: L("يوتيوب", "YouTube"),
-            title: L("شوف قبل ما تشتري", "Watch before you buy"),
+            title: L("شاهد قبل أن تشتري", "Watch before you buy"),
             link: {
               text: L("القناة", "Channel"),
               href: "https://www.youtube.com/",

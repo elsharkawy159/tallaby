@@ -19,12 +19,12 @@ import {
 import { WHATSAPP_LINK } from "./_shared";
 
 const CONDITIONS = [
-  { label: L("زي الجديد", "Like new"), share: L("لحد ١٠٠٪", "Up to 100%") },
-  { label: L("كويس", "Good"), share: L("لحد ٨٠٪", "Up to 80%") },
-  { label: L("عليه خدوش", "Scratched"), share: L("لحد ٦٠٪", "Up to 60%") },
+  { label: L("كالجديد", "Like new"), share: L("حتى ١٠٠٪", "Up to 100%") },
+  { label: L("جيد", "Good"), share: L("حتى ٨٠٪", "Up to 80%") },
+  { label: L("به خدوش", "Scratched"), share: L("حتى ٦٠٪", "Up to 60%") },
   {
     label: L("الشاشة مكسورة", "Cracked screen"),
-    share: L("لحد ٣٥٪", "Up to 35%"),
+    share: L("حتى ٣٥٪", "Up to 35%"),
   },
 ];
 
@@ -58,7 +58,7 @@ export const serviceTradeIn = defineDesign({
                   dotLabel(t, L("استبدل القديم", "Trade-in")),
                   t.heading(
                     L(
-                      "جهازك القديم يساوي كام؟",
+                      "كم يساوي جهازك القديم؟",
                       "What is your old device worth?",
                     ),
                     "h2",
@@ -74,7 +74,7 @@ export const serviceTradeIn = defineDesign({
                   ),
                   t.heading(
                     L(
-                      "الرصيد على حسب حالته",
+                      "الرصيد حسب حالته",
                       "Credit depends on its condition",
                     ),
                     "h3",
@@ -140,7 +140,7 @@ export const serviceTradeIn = defineDesign({
               ),
               t.stack(
                 [
-                  t.text(L("رصيد لحد", "Credit up to"), {
+                  t.text(L("رصيد حتى", "Credit up to"), {
                     style: { color: "primaryInk" },
                   }),
                   t.text(L("٩٬٤٠٠ ج.م", "EGP 9,400"), {
@@ -155,7 +155,7 @@ export const serviceTradeIn = defineDesign({
                   }),
                   t.paragraph(
                     L(
-                      "لموبايل iPhone 12 بحالة زي الجديد. بيتخصم من طلبك الجاي، والسعر النهائي بعد فحص الجهاز في الفرع.",
+                      "لهاتف iPhone 12 بحالة كالجديد. يُخصم من طلبك القادم، ويُحدَّد السعر النهائي بعد فحص الجهاز في الفرع.",
                       "For an iPhone 12 in like-new condition. Taken off your next order; the final value is set after an in-store check.",
                     ),
                     {

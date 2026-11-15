@@ -37,7 +37,7 @@ export const payZones = defineDesign({
               t.stack(
                 [
                   dotLabel(t, L("التوصيل", "Delivery")),
-                  payTitle(t, L("بنوصل لكل مصر", "We deliver across Egypt")),
+                  payTitle(t, L("نوصّل إلى كل مصر", "We deliver across Egypt")),
                   t.paragraph(L("المدة والمصاريف حسب محافظتك.", "Time and fee depend on your governorate.")),
                   t.row(
                     [

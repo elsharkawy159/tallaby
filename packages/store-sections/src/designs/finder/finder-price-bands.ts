@@ -22,7 +22,7 @@ import { CHEAPEST_FIRST, DEAREST_FIRST, FINDER_LINK } from "./_shared";
 const BANDS = [
   { band: L("أقل من ٦٠٠", "Under 600"), href: CHEAPEST_FIRST },
   { band: L("٦٠٠ – ١٬٥٠٠", "600 – 1,500"), href: FINDER_LINK },
-  { band: L("أكتر من ١٬٥٠٠", "Over 1,500"), href: DEAREST_FIRST },
+  { band: L("أكثر من ١٬٥٠٠", "Over 1,500"), href: DEAREST_FIRST },
 ];
 
 export const finderPriceBands = defineDesign({
@@ -82,7 +82,7 @@ export const finderPriceBands = defineDesign({
                           }),
                           arrowText(
                             t,
-                            L("تسوق الشريحة دي", "Shop this band"),
+                            L("تسوّق هذه الفئة", "Shop this band"),
                             ink,
                           ),
                         ],

@@ -9,18 +9,18 @@ import { modHead } from "../_modular";
 
 const STEPS = [
   {
-    title: L("بنختار", "We pick"),
-    text: L("من موردين معتمدين بس.", "Only from trusted suppliers."),
+    title: L("نختار", "We pick"),
+    text: L("كل منتج بعناية.", "Every product with care."),
     photo: 1,
   },
   {
-    title: L("بنراجع", "We check"),
-    text: L("كل منتج قبل ما يتغلّف.", "Every product before packing."),
+    title: L("نراجع", "We check"),
+    text: L("تفاصيل كل منتج قبل عرضه.", "Every product's details before listing."),
     photo: 2,
   },
   {
-    title: L("بنوصّل", "We deliver"),
-    text: L("لحد باب البيت خلال أيام.", "To your door within days."),
+    title: L("نساعدك", "We help"),
+    text: L("في أي سؤال عن منتجاتنا.", "With any question about our products."),
     photo: 3,
   },
 ];
@@ -38,8 +38,8 @@ export const aboutStories = defineDesign({
       t.container(
         [
           modHead(t, {
-            label: L("إزاي بنشتغل", "How it works"),
-            title: L("من المخزن لإيدك", "From our shelf to your hands"),
+            label: L("كيف نعمل", "How it works"),
+            title: L("من اختيارنا إلى طلبك", "From our pick to your order"),
           }),
           t.grid(
             STEPS.map((s, i) =>

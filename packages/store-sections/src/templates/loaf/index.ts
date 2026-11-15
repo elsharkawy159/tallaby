@@ -52,74 +52,74 @@ const NAME = L("لوف آند كو", "Loaf & Co.");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The big-word hero: `title` is the one big word (the trade), `cta` the button under the first featured product.
-  hero: { title: L("عيش", "BREAD"), cta: L("اطلب الرغيف", "Order the loaf") },
-  categories: { title: L("طالع من الفرن", "Out of the oven") },
+  hero: { title: L("خبز", "BREAD"), cta: L("اطلب الرغيف", "Order the loaf") },
+  categories: { title: L("من الفرن", "Out of the oven") },
   // The shelf's title over its tabs (new, `custom.shelf-best-label` for the best sellers, top rated).
-  products: { primary: { title: L("طازة النهارده", "Fresh today") } },
+  products: { primary: { title: L("مخبوزات طازجة", "Fresh bakes") } },
   // The photo-and-checklist block: an eyebrow, a title, a text, four points (`custom.story-point-1..4`) and a button to the catalog.
   story: {
     alt: L("رغيف ساوردو على كتان", "Sourdough on linen"),
     eyebrow: L("الاشتراكات", "Subscriptions"),
-    title: L("عيش طازة كل جمعة", "Fresh bread every Friday"),
-    text: L("اختار رغيفك مرة وإحنا نجيبه كل أسبوع.", "Pick your loaf once and we bring it every week."),
+    title: L("اشتراك الخبز الأسبوعي", "The weekly bread subscription"),
+    text: L("اختر رغيفك المفضل واشترك فيه أسبوعيًا.", "Choose your favourite loaf and subscribe weekly."),
     cta: L("اشترك", "Subscribe"),
   },
   // Optional, with `custom.reviews-city-1..6`: a wall of six buyer quotes with names under a title. Without them the home page goes from the note to the questions.
   reviews: {
-    title: L("من زباينا", "From our regulars"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
-      { quote: L("ساوردو الجمعة بقى طقس عيلة.", "Friday sourdough is now a family ritual."), name: L("هبة م.", "Heba M.") },
-      { quote: L("الكرواسون أحلى من باريس بجد.", "The croissants are better than in Paris, honestly."), name: L("عمرو س.", "Amr S.") },
-      { quote: L("بحب الشوفان. نفسي التوصيل يبقى أبدر.", "Love the rye. The delivery window could be earlier."), name: L("داليا ك.", "Dalia K.") },
-      { quote: L("الرغيف بيوصل سخن لسه، والريحة بتملى البيت.", "The loaf still arrives warm and fills the house with its smell."), name: L("نهى ر.", "Noha R.") },
-      { quote: L("البريوش طري جداً والولاد بيحبوه.", "The brioche is so soft; the kids love it."), name: L("مي ح.", "Mai H.") },
-      { quote: L("الاشتراك مريح، بوقّفه لما بسافر.", "The subscription is easy; I pause it when I travel."), name: L("طارق ع.", "Tarek A.") },
+      { quote: L("خبز الساوردو بقشرة مقرمشة ولب طري.", "The sourdough has a crisp crust and a soft crumb."), name: L("هبة م.", "Heba M.") },
+      { quote: L("الكرواسون هش وبطعم الزبدة.", "The croissants are flaky and buttery."), name: L("عمرو س.", "Amr S.") },
+      { quote: L("خبز الشوفان بطعم ممتاز.", "The rye loaf tastes great."), name: L("داليا ك.", "Dalia K.") },
+      { quote: L("الرغيف الريفي طازج ورائحته جميلة.", "The rustic loaf is fresh and smells lovely."), name: L("نهى ر.", "Noha R.") },
+      { quote: L("البريوش طري جدًا.", "The brioche is very soft."), name: L("مي ح.", "Mai H.") },
+      { quote: L("خبز السمسم مناسب للإفطار.", "The sesame buns are good for breakfast."), name: L("طارق ع.", "Tarek A.") },
     ],
   },
   // The footer's sign-up: a title and one line.
-  newsletter: { title: L("أخبار العيش مرة في الأسبوع", "Bread news, once a week"), line: L("العيش الجديد وقائمة مخبوزات الويك إند.", "New loaves and the weekend pastry list.") },
+  newsletter: { title: L("أخبار المخبز مرة في الأسبوع", "Bakery news, once a week"), line: L("الأرغفة الجديدة وقائمة مخبوزات نهاية الأسبوع.", "New loaves and the weekend pastry list.") },
   about: {
-    line: L("مخبز ساوردو صغير في الكوربة.", "A small sourdough bakery in Korba."),
-    alt: L("أرغفة ساوردو وعيش طازة", "Sourdough loaves and fresh rolls"),
-    eyebrow: L("من ٢٠١٨", "Since 2018"),
-    title: L("يومين لكل رغيف", "Two days for every loaf"),
-    text: L("بنعجن بالليل ونسيب العجينة تتخمّر ٤٨ ساعة، وبنخبز قبل الشروق عشان يوصلك سخن.", "We mix at night, let the dough ferment for 48 hours and bake before sunrise so it reaches you warm."),
-    more: L("دقيق ومية وملح، ومفيش أي حاجة تانية.", "Flour, water and salt, and nothing else."),
+    line: L("مخبز ساوردو ومخبوزات طازجة.", "A sourdough bakery with fresh pastries."),
+    alt: L("أرغفة ساوردو وخبز طازج", "Sourdough loaves and fresh rolls"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("خبز مخمّر ببطء", "Slowly fermented bread"),
+    text: L("نخمّر العجين ببطء ونخبز الأرغفة والمخبوزات بمكونات بسيطة.", "We ferment slowly and bake loaves and pastries with simple ingredients."),
+    more: L("تجد مكونات كل منتج في صفحته.", "Every product's ingredients are on its page."),
     // Goes to the whole catalog.
-    cta: L("اطلب دلوقتي", "Order now"),
+    cta: L("اطلب الآن", "Order now"),
   },
   contact: {
     title: L("تواصل", "Contact"),
     line: L("٥ شارع بغداد، الكوربة، مصر الجديدة.", "5 Baghdad St, Korba, Heliopolis."),
-    heading: L("عن اشتراك أو طلب كبير", "About a subscription or a large order"),
+    heading: L("اسأل عن اشتراك أو طلب كبير", "Ask about a subscription or a large order"),
   },
   // The FAQ page shows its header line and the numbered questions of the design (`question` and `answer` are not shown).
-  faq: { line: L("الاشتراكات والتوصيل والعيش.", "Subscriptions, delivery and bread.") },
+  faq: { line: L("الاشتراكات والطلب والخبز.", "Subscriptions, ordering and bread.") },
   custom: {
     // The header's line under the store name, a few words.
-    tagline: L("اشتراكات ساوردو من مصر الجديدة", "Sourdough subscriptions from Heliopolis"),
+    tagline: L("خبز ساوردو ومخبوزات", "Sourdough and pastries"),
     // The header's link to the best sellers, and the about page's name (header, footer, page title).
-    "best-label": L("الأكثر طلباً", "Most ordered"),
+    "best-label": L("الأكثر طلبًا", "Most ordered"),
     "about-label": L("المخبز", "The bakery"),
     // The shelf's best-sellers tab, one word.
-    "shelf-best-label": L("العيش", "Bread"),
+    "shelf-best-label": L("الخبز", "Bread"),
     // The checklist's four points, three to five words each.
-    "story-point-1": L("وقّف أو فوّت أي أسبوع", "Pause or skip any week"),
-    "story-point-2": L("يوصل قبل ٩ الصبح", "Delivered before 9am"),
-    "story-point-3": L("غيّر الرغيف في أي وقت", "Change your loaf anytime"),
-    "story-point-4": L("من ٣٨٠ ج.م في الشهر", "From EGP 380 a month"),
+    "story-point-1": L("خبز ومخبوزات طازجة", "Fresh bread and pastries"),
+    "story-point-2": L("مكونات واضحة لكل منتج", "Clear ingredients for every product"),
+    "story-point-3": L("أوزان وأسعار واضحة", "Clear weights and prices"),
+    "story-point-4": L("تواصل معنا لأي سؤال", "Contact us with any question"),
     // The centred note: an eyebrow, a title and a text.
-    "note-eyebrow": L("من ٢٠١٨", "Since 2018"),
-    "note-title": L("دقيق ومية وملح ويومين", "Flour, water, salt and two days"),
+    "note-eyebrow": L("من المخبز", "From the bakery"),
+    "note-title": L("دقيق وماء وملح", "Flour, water and salt"),
     "note-text": L(
-      "من غير محسنات ولا اختصارات. كل رغيف بيتخمّر ٤٨ ساعة وبيتخبز قبل الشروق.",
-      "No improvers, no shortcuts. Every loaf ferments for 48 hours and is baked before sunrise.",
+      "مكونات بسيطة وتخمير بطيء لكل رغيف.",
+      "Simple ingredients and a slow ferment for every loaf.",
     ),
     // The home page's two questions, each a short question and a one-line answer.
-    "faq-1-question": L("العيش بيوصل إمتى؟", "When does the bread arrive?"),
-    "faq-1-answer": L("بنخبز قبل الشروق ونوصّل من ٧ لـ ٩ الصبح في مصر الجديدة ومدينة نصر.", "We bake before sunrise and deliver from 7 to 9am in Heliopolis and Nasr City."),
-    "faq-2-question": L("أوقف الاشتراك إزاي؟", "How do I pause my subscription?"),
-    "faq-2-answer": L("ابعتلنا قبل الأربع بالليل وإحنا نوقّف أسبوع الجمعة اللي جاية.", "Message us before Wednesday night and we pause the coming Friday."),
+    "faq-1-question": L("كم يستغرق التوصيل؟", "How long does delivery take?"),
+    "faq-1-answer": L("تظهر تكلفة الشحن ومدته عند إتمام الطلب.", "Shipping cost and time are shown at checkout."),
+    "faq-2-question": L("كيف أوقف الاشتراك؟", "How do I pause my subscription?"),
+    "faq-2-answer": L("تواصل معنا قبل موعد الطلب التالي لإيقاف الاشتراك.", "Contact us before your next order to pause it."),
     // With `reviews`: each quote's city.
     "reviews-city-1": L("مصر الجديدة", "Heliopolis"),
     "reviews-city-2": L("مدينة نصر", "Nasr City"),
@@ -149,7 +149,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       "المتجر": L("اطلب", "Order"),
       "العروض": x["best-label"]!,
       "اسم متجرك": name,
-      "مختارات بعناية منذ ٢٠١٨": x.tagline!,
+      "مختارات بعناية": x.tagline!,
       "المدونة": L("الأسئلة", "FAQ"),
       "من نحن": aboutLabel,
     },
@@ -159,7 +159,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const footer = lib("footer-signup", {
     text: {
       "اشترك في النشرة": c.newsletter.title,
-      "عروض ومنتجات جديدة، مرة في الأسبوع.": c.newsletter.line,
+      "منتجات جديدة وأخبار المتجر.": c.newsletter.line,
       "م": initialOf(name),
       "اسم متجرك": name,
       // A name that ends with a full stop ("Loaf & Co.") keeps one.
@@ -177,13 +177,13 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const home: Design[] = [
     lib("hero-big-word", { text: { "جديد": c.hero.title, "اطلبها": c.hero.cta } }),
     lib("categories-circles", {
-      text: { "بتدوّر على إيه؟": c.categories.title },
+      text: { "ما الذي تبحث عنه؟": c.categories.title },
       // Six across by design; a store with another number of categories gets one full row of them (phones swipe).
       ...(tiles !== 6 && { nodes: { "الأقسام": { style: { columns: tiles }, tablet: { columns: tiles } } } }),
     }),
     lib("products-shelf", {
       text: {
-        "تسوّق حسب مزاجك": c.products.primary.title,
+        "تسوّق حسب اختيارك": c.products.primary.title,
         "وصل جديد": L("جديد", "New"),
         "الأكثر مبيعًا": x["shelf-best-label"]!,
         "عليه خصم": L("الأعلى تقييماً", "Top rated"),
@@ -195,12 +195,12 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: {
         "فريق يجهز الطلبات": c.story.alt,
         "كيف نعمل": c.story.eyebrow,
-        "كل طلب يُراجع مرتين": c.story.title,
-        "قبل أن يخرج من المخزن نراجع المنتج والتغليف والفاتورة.": c.story.text,
-        "كل منتج يُفحص قبل الشحن": x["story-point-1"]!,
-        "تغليف محكم ومبطّن": x["story-point-2"]!,
-        "فاتورة وضمان داخل العلبة": x["story-point-3"]!,
-        "رقم تتبع على واتساب": x["story-point-4"]!,
+        "كل التفاصيل قبل أن تطلب": c.story.title,
+        "نعرض صور كل منتج ومواصفاته وسعره بوضوح، لتطلب وأنت مطمئن.": c.story.text,
+        "صور واضحة لكل منتج": x["story-point-1"]!,
+        "مواصفات ومقاسات مفصّلة": x["story-point-2"]!,
+        "أسعار واضحة على كل منتج": x["story-point-3"]!,
+        "تواصل معنا لأي سؤال": x["story-point-4"]!,
         "اعرف أكثر": c.story.cta,
       },
       links: { "/about": SHOP },
@@ -209,8 +209,8 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: {
         "ملاحظة": x["note-eyebrow"]!,
         "مواعيد شهر رمضان": x["note-title"]!,
-        "طوال الشهر نعمل من ٨ مساءً حتى ٢ صباحًا، والطلبات أونلاين مستمرة كالمعتاد.": x["note-text"]!,
-        "تسوّق الآن": L("اطلب دلوقتي", "Order now"),
+        "طوال الشهر نعمل من ٨ مساءً حتى ٢ صباحًا، والطلبات عبر الإنترنت مستمرة كالمعتاد.": x["note-text"]!,
+        "تسوّق الآن": L("اطلب الآن", "Order now"),
       },
     }),
     ...(r && city
@@ -226,7 +226,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
               "ي": initialOf(r[1]!.name),
               "يوسف م.": r[1]!.name,
               "المنصورة": x["reviews-city-2"]!,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": r[2]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": r[2]!.quote,
               "ع": initialOf(r[2]!.name),
               "عمر ك.": r[2]!.name,
               "الإسكندرية": x["reviews-city-3"]!,
@@ -238,11 +238,11 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
               "ن": initialOf(r[4]!.name),
               "نور ح.": r[4]!.name,
               "الجيزة": x["reviews-city-5"]!,
-              "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": r[5]!.quote,
+              "خدمة العملاء محترمة جدًا وساعدوني في اختيار المنتج المناسب.": r[5]!.quote,
               "ك": initialOf(r[5]!.name),
               "كريم ع.": r[5]!.name,
               "طنطا": x["reviews-city-6"]!,
-              "كل الآراء": L("اطلب دلوقتي", "Order now"),
+              "كل الآراء": L("اطلب الآن", "Order now"),
             },
             links: { "/products": SHOP },
           }),
@@ -251,11 +251,11 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
     lib("faq-columns", {
       as: "home-faq",
       text: {
-        "أسئلة شائعة": L("حاجات تهمك", "Good to know"),
+        "أسئلة شائعة": L("معلومات تهمك", "Good to know"),
         "كم يستغرق التوصيل؟": x["faq-1-question"]!,
-        "القاهرة والجيزة من يوم إلى يومين، وباقي المحافظات من ٢ إلى ٦ أيام.": x["faq-1-answer"]!,
+        "تظهر تكلفة الشحن ومدته عند إتمام الطلب.": x["faq-1-answer"]!,
         "ما سياسة الاسترجاع؟": x["faq-2-question"]!,
-        "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": x["faq-2-answer"]!,
+        "راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.": x["faq-2-answer"]!,
       },
     }),
   ];
@@ -298,14 +298,14 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("اشتراكات ساوردو، متخبزة في مصر الجديدة.", "Sourdough subscriptions, baked in Heliopolis."),
+  description: L("خبز ساوردو ومخبوزات طازجة.", "Sourdough bread and fresh pastries."),
   categories: [
-    ["bread", "عيش", "Bread", PHOTOS.rustic],
+    ["bread", "خبز", "Bread", PHOTOS.rustic],
     ["pastry", "مخبوزات", "Pastry", PHOTOS.croissants],
-    ["buns", "بريوش وعيش صغير", "Brioche & rolls", PHOTOS.sesameBuns],
+    ["buns", "بريوش وخبز صغير", "Brioche & rolls", PHOTOS.sesameBuns],
     ["sourdough", "ساوردو", "Sourdough", PHOTOS.sourdough],
     ["subscriptions", "اشتراكات", "Subscriptions", PHOTOS.loavesBuns],
-    ["breakfast", "فطار", "Breakfast", PHOTOS.croissantCoffee],
+    ["breakfast", "إفطار", "Breakfast", PHOTOS.croissantCoffee],
   ],
   products: [
     // The first featured product fills hero-big-word: a wide landscape photo (template-rules, owner 2026-10-27).
@@ -314,15 +314,15 @@ const DEMO = demoStore({
     ["rustic-white", "bread", "رغيف أبيض ريفي", "Rustic White Loaf", PHOTOS.rustic, 110, { sold90: 150 }],
     ["weekly-loaf-subscription", "subscriptions", "اشتراك رغيف أسبوعي", "Weekly Loaf Subscription", PHOTOS.loavesBuns, 380, { isFeatured: true, sold90: 110 }],
     ["butter-croissant", "pastry", "كرواسون زبدة", "Butter Croissant", PHOTOS.croissants, 45, { rating: 4.9, sold90: 520 }],
-    ["croissant-breakfast", "breakfast", "فطار كرواسون وقهوة", "Croissant Breakfast", PHOTOS.croissantCoffee, 95, { sold90: 90 }],
-    ["brioche-box", "buns", "بوكس بريوش", "Brioche Box", PHOTOS.briocheBoard, 180, { compareAtPrice: 210, sold90: 90 }],
-    ["sesame-buns", "buns", "عيش سمسم", "Sesame Buns, 6", PHOTOS.sesameBuns, 75, { inStock: false, sold90: 70 }],
+    ["croissant-breakfast", "breakfast", "إفطار كرواسون وقهوة", "Croissant Breakfast", PHOTOS.croissantCoffee, 95, { sold90: 90 }],
+    ["brioche-box", "buns", "علبة بريوش", "Brioche Box", PHOTOS.briocheBoard, 180, { compareAtPrice: 210, sold90: 90 }],
+    ["sesame-buns", "buns", "خبز سمسم", "Sesame Buns, 6", PHOTOS.sesameBuns, 75, { inStock: false, sold90: 70 }],
   ],
 });
 
 export const LOAF = editionTemplate({
   key: LOAF_KEY,
-  version: 4,
+  version: 5,
   changelog: "Loaf v4: categories, section order, wide hero photo",
   name: L("لوف", "Loaf"),
   description: L(
@@ -381,5 +381,5 @@ export const LOAF = editionTemplate({
   journey: { primary: "newest", rows: [] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { reviews: L("اللي ذاقوه قالوا", "From our regulars"), related: L("من رف النهارده", "From today's shelf") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
 });

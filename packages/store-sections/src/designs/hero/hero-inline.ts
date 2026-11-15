@@ -51,8 +51,8 @@ export const heroInline = defineDesign({
                 [
                   t.paragraph(
                     L(
-                      "نختار كل منتج بأنفسنا ونجرّبه قبل أن يصل إليك، بضمان وتوصيل سريع.",
-                      "We pick and test every product before it reaches you, with warranty and fast delivery.",
+                      "نختار كل منتج بعناية ونعرض تفاصيله كاملة.",
+                      "We choose every product with care and show its full details.",
                     ),
                     { role: "subtitle", style: { fontSize: "lg", maxWidth: "520px" } },
                   ),

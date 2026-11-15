@@ -24,7 +24,7 @@ export const brandsTiles = defineDesign({
               t.link(
                 "/products",
                 [
-                  t.stack([wordmark(t, i), t.text(L("وكيل معتمد", "Authorised dealer"), { style: { color: "muted", fontSize: "xs", textAlign: "center" } })], {
+                  t.stack([wordmark(t, i), t.text(L("تسوّق المنتجات", "Shop products"), { style: { color: "muted", fontSize: "xs", textAlign: "center" } })], {
                     label: L("المحتوى", "Content"),
                     style: { gap: 8, alignItems: "center" },
                   }),

@@ -11,7 +11,7 @@ import type { NodeTemplate } from "../../elements/tree";
 import { L } from "../_kit";
 import { EGP, payTitle } from "./_shared";
 
-const LINES = [L("المندوب معاه فكة", "The courier carries change"), L("افتح الطلب قبل ما تدفع", "Open the order before you pay")];
+const LINES = [L("المندوب معه فكّة", "The courier carries change"), L("افتح الطلب قبل الدفع", "Open the order before you pay")];
 
 function line(t: TreeBuilder, label: DesignText, value: DesignText): NodeTemplate {
   return t.row([t.text(label), t.text(value, { style: { fontWeight: "medium" } })], {
@@ -36,7 +36,7 @@ export const payReceipt = defineDesign({
             [
               t.stack(
                 [
-                  payTitle(t, L("مش هتدفع حاجة غير لما يوصلك", "You pay nothing until it arrives")),
+                  payTitle(t, L("لن تدفع شيئًا قبل أن يصلك طلبك", "You pay nothing until it arrives")),
                   t.stack(
                     LINES.map((l) =>
                       t.row([t.icon("check", { style: { fontSize: "lg", color: "primary" } }), t.text(l, { style: { fontSize: "lg" }, mobile: { fontSize: "md" } })], {
@@ -58,7 +58,7 @@ export const payReceipt = defineDesign({
                   t.divider({ style: { marginTop: 4, marginBottom: 4 } }),
                   t.row(
                     [
-                      t.text(L("هتدفع على الباب", "Pay at the door"), { style: { fontWeight: "semibold" } }),
+                      t.text(L("ستدفع عند الاستلام", "Pay at the door"), { style: { fontWeight: "semibold" } }),
                       t.text(EGP("١٬٧٨٠", "1,780"), { role: "value", style: { fontSize: "3xl", fontWeight: "bold" }, mobile: { fontSize: "2xl" } }),
                     ],
                     { label: L("الإجمالي", "Total"), style: { justifyContent: "between", alignItems: "center", gap: 12 } },

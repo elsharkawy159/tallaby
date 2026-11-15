@@ -278,12 +278,12 @@ describe("trade-fixed labels are optional slots", () => {
   it("vella: custom.categories-cta and custom.footer-offers", () => {
     const footerOf = (site: string) => JSON.stringify((JSON.parse(site) as SiteConfig).footer);
     for (const site of [own("vella"), json("vella")]) {
-      expect(site).toContain("تسوّقي الآن");
+      expect(site).toContain("تسوّق الآن");
       expect(footerOf(site)).toContain('"text":"العروض"');
       expect(footerOf(site)).toContain("Offers");
     }
     const site = json("vella", { "categories-cta": L("شوف القسم", "See the range"), "footer-offers": L("كل المنتجات", "All products") });
-    expect(site.includes("تسوّقي الآن")).toBe(false);
+    expect(site.includes("تسوّق الآن")).toBe(false);
     expect(site).toContain("See the range");
     expect(footerOf(site).includes("العروض") || footerOf(site).includes("Offers")).toBe(false);
     expect(footerOf(site)).toContain("All products");
@@ -295,10 +295,10 @@ describe("trade-fixed labels are optional slots", () => {
     const photos = Object.fromEntries([1, 2, 3, 4].map((n) => [`reviews-${n}`, pexels(800000 + n, 800)]));
     const site = (custom: Record<string, { ar: string; en: string }>) =>
       JSON.stringify(build("karat", { ...pack, copy: { ...pack.copy, reviews, custom: { ...pack.copy.custom, ...custom } }, photos: { ...pack.photos, custom: { ...pack.photos.custom, ...photos } } }));
-    expect(site({})).toContain("اشترت من المتجر");
-    expect(site({})).toContain("The product she bought");
+    expect(site({})).toContain("اشترى من المتجر");
+    expect(site({})).toContain("The product photo");
     const neutral = site({ "reviews-photo-alt": L("المنتج اللي في الطلب", "The product in the order"), "reviews-verified": L("طلب مؤكد", "Confirmed order") });
-    for (const gone of ["اشترت من المتجر", "The product she bought", "المنتج اللي اشترته", "Verified buyer"]) expect(neutral.includes(gone), gone).toBe(false);
+    for (const gone of ["اشترى من المتجر", "The product photo", "المنتج اللي اشترته", "Verified buyer"]) expect(neutral.includes(gone), gone).toBe(false);
     expect(neutral).toContain("Confirmed order");
     expect(neutral).toContain("The product in the order");
   });

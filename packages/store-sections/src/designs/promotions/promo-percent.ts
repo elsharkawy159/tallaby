@@ -41,8 +41,8 @@ export const promoPercent = defineDesign({
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("لحد آخر الشهر أو لحد ما الكمية تخلص.", "Until the end of the month or while stock lasts."), { role: "subtitle" }),
-                  pillButton(t, L("تسوق العرض", "Shop the offer"), "/products"),
+                  t.paragraph(L("حتى نهاية الشهر أو حتى نفاد الكمية.", "Until the end of the month or while stock lasts."), { role: "subtitle" }),
+                  pillButton(t, L("تسوّق العرض", "Shop the offer"), "/products"),
                 ],
                 {
                   label: L("النص", "Copy"),

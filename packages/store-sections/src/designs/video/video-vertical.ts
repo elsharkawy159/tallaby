@@ -10,7 +10,7 @@ import { dotLabel, pillButton } from "../_modular";
 const POINTS = [
   L("الخامة عن قرب", "The material up close"),
   L("المقاسات على الطبيعة", "Real-life sizing"),
-  L("إزاي تستخدمه كل يوم", "How to use it every day"),
+  L("كيف تستخدمه كل يوم", "How to use it every day"),
 ];
 
 export const videoVertical = defineDesign({
@@ -29,7 +29,7 @@ export const videoVertical = defineDesign({
             [
               t.stack(
                 [
-                  t.video(2, L("شوفها في دقيقة", "See it in a minute"), {
+                  t.video(2, L("شاهدها في دقيقة", "See it in a minute"), {
                     label: L("المشغل", "Player"),
                     role: "video",
                     style: {
@@ -49,8 +49,8 @@ export const videoVertical = defineDesign({
               ),
               t.stack(
                 [
-                  dotLabel(t, L("شوفها في دقيقة", "See it in a minute")),
-                  t.heading(L("جربناه قبل ما نبيعه", "We tried it before selling it"), "h2", {
+                  dotLabel(t, L("شاهدها في دقيقة", "See it in a minute")),
+                  t.heading(L("تعرّف عليه عن قرب", "Get to know it up close"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
@@ -75,7 +75,7 @@ export const videoVertical = defineDesign({
                       style: { gap: 12 },
                     },
                   ),
-                  pillButton(t, L("اطلبه دلوقتي", "Order now"), "/products", {
+                  pillButton(t, L("اطلبه الآن", "Order now"), "/products", {
                     icon: "shopping-bag",
                   }),
                 ],

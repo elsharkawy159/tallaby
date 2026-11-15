@@ -38,8 +38,8 @@ export const aboutFullbleed = defineDesign({
                   }),
                   t.paragraph(
                     L(
-                      "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.",
-                      "We started with a simple idea: things we love to use ourselves, at a quality we can stand behind and a fair price. We choose every piece with care and follow it all the way to you.",
+                      "بدأنا بفكرة بسيطة: منتجات نحب استخدامها بأنفسنا، بجودة جيدة وسعر عادل. نختار كل قطعة بعناية ونعرض تفاصيلها بوضوح.",
+                      "We started with a simple idea: products we like to use ourselves, in good quality at a fair price. We choose every piece with care and show its details clearly.",
                     ),
                     { role: "body", style: { fontSize: "lg", lineHeight: "relaxed", maxWidth: "520px" }, mobile: { fontSize: "md" } },
                   ),

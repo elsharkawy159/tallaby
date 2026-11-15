@@ -52,7 +52,7 @@ export const footerCenteredLight = defineDesign({
                   role: "logo",
                   style: { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0 },
                 }),
-                t.paragraph(L("قطع مختارة بعناية، بتوصل لحد باب البيت.", "Carefully chosen pieces, delivered to your door."), {
+                t.paragraph(L("قطع مختارة بعناية لكل يوم.", "Carefully chosen pieces for every day."), {
                   role: "body",
                   style: { color: "muted", textAlign: "center", maxWidth: "440px" },
                 }),

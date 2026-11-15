@@ -13,7 +13,7 @@ import { WHATSAPP_LINK } from "./_shared";
 
 const WINDOWS = [
   L("١٠ ص", "10 am"),
-  L("١٢ الضهر", "12 pm"),
+  L("١٢ ظهرًا", "12 pm"),
   L("٢ م", "2 pm"),
   L("٤ م", "4 pm"),
   L("٦ م", "6 pm"),
@@ -48,7 +48,7 @@ export const serviceBooking = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("احجز معاد الفني", "Book a technician"), "h2", {
+                  t.heading(L("احجز موعد الفني", "Book a technician"), "h2", {
                     role: "title",
                     style: { fontSize: "4xl", letterSpacing: "tight" },
                     mobile: { fontSize: "3xl" },
@@ -104,7 +104,7 @@ export const serviceBooking = defineDesign({
                           t.icon("clock", {
                             style: { fontSize: "lg", color: "muted" },
                           }),
-                          t.text(L("من السبت للخميس", "Saturday to Thursday"), {
+                          t.text(L("من السبت إلى الخميس", "Saturday to Thursday"), {
                             style: { fontWeight: "semibold" },
                           }),
                         ],

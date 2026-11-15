@@ -46,7 +46,7 @@ export const bundleBox = defineDesign({
               t.stack(
                 [
                   dotLabel(t, L("علبة الهدية", "Gift box")),
-                  t.heading(L("إيه اللي في العلبة؟", "What's in the box?"), "h2", { role: "title", style: { fontSize: "display-sm", letterSpacing: "tight" } }),
+                  t.heading(L("ماذا في العلبة؟", "What's in the box?"), "h2", { role: "title", style: { fontSize: "display-sm", letterSpacing: "tight" } }),
                   t.stack(
                     [
                       t.divider({ style: { marginTop: 0, marginBottom: 0 } }),
@@ -88,7 +88,7 @@ export const bundleBox = defineDesign({
                       ),
                       t.stack(
                         [
-                          t.text(L("هتدفع", "You pay"), { style: { color: "muted", fontSize: "xs" } }),
+                          t.text(L("ستدفع", "You pay"), { style: { color: "muted", fontSize: "xs" } }),
                           t.text(BUNDLE_PRICE, { role: "value", style: { fontSize: "3xl", fontWeight: "bold", letterSpacing: "tight" } }),
                         ],
                         { label: L("السعر", "Price"), style: { gap: 2 } },

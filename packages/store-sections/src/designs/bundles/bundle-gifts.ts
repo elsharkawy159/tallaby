@@ -10,7 +10,7 @@ import { L } from "../_kit";
 import { FLUSH, modHead } from "../_modular";
 import { BUNDLE_LINK } from "./_shared";
 
-const PEOPLE = [L("ليه", "For him"), L("ليها", "For her"), L("للطلبة", "For students"), L("للجيمرز", "For gamers")];
+const PEOPLE = [L("له", "For him"), L("لها", "For her"), L("للطلبة", "For students"), L("لمحبي الألعاب", "For gamers")];
 
 export const bundleGifts = defineDesign({
   id: "bundle-gifts",
@@ -24,7 +24,7 @@ export const bundleGifts = defineDesign({
     t.section({ label: L("هدايا", "Gifts") }, [
       t.container(
         [
-          modHead(t, { label: L("هدايا", "Gifts"), title: L("هدية لمين؟", "Who is it for?") }),
+          modHead(t, { label: L("هدايا", "Gifts"), title: L("لمن الهدية؟", "Who is it for?") }),
           t.grid(
             PEOPLE.map((who, i) =>
               t.link(

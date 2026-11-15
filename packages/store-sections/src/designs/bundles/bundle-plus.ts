@@ -23,7 +23,7 @@ export const bundlePlus = defineDesign({
     t.section({ label: L("الباقة", "Bundle") }, [
       t.container(
         [
-          modHead(t, { label: L("باقة", "Bundle"), title: L("اشتريهم مع بعض ووفّر", "Buy them together and save") }),
+          modHead(t, { label: L("باقة", "Bundle"), title: L("اشترها معًا ووفّر", "Buy them together and save") }),
           t.grid(
             [
               t.productList(

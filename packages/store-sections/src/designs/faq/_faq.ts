@@ -8,13 +8,13 @@ export const FAQ_GROUPS = [
       {
         title: L("كيف أعرف أن طلبي وصل إليكم؟", "How do I know my order went through?"),
         body: L(
-          "ستظهر لك صفحة تأكيد وتصلك رسالة، ونتصل بك لتأكيد طلبات الدفع عند الاستلام.",
-          "You see a confirmation page and get a message; we also call to confirm cash orders.",
+          "ستظهر لك صفحة تأكيد بعد إتمام الطلب.",
+          "You see a confirmation page once the order is placed.",
         ),
       },
       {
         title: L("هل يمكنني تعديل طلبي أو إلغاؤه؟", "Can I change or cancel my order?"),
-        body: L("نعم، حتى يتم شحنه. تواصل معنا بأسرع وقت.", "Yes, until it ships. Message us as soon as you can."),
+        body: L("تواصل معنا في أقرب وقت لنراجع طلبك.", "Contact us as soon as you can so we can check your order."),
       },
     ],
   },
@@ -23,11 +23,11 @@ export const FAQ_GROUPS = [
     items: [
       {
         title: L("كم يستغرق التوصيل؟", "How long does delivery take?"),
-        body: L("القاهرة والجيزة من يوم إلى يومين، وباقي المحافظات من ٢ إلى ٦ أيام.", "Cairo and Giza in 1 to 2 days, other governorates in 2 to 6 days."),
+        body: L("تظهر تكلفة الشحن ومدته عند إتمام الطلب.", "Shipping cost and time are shown at checkout."),
       },
       {
-        title: L("هل التوصيل متاح لكل المحافظات؟", "Do you deliver everywhere?"),
-        body: L("نعم، نوصل لكل محافظات مصر.", "Yes, we deliver to every governorate in Egypt."),
+        title: L("إلى أين يتوفر التوصيل؟", "Where do you deliver?"),
+        body: L("تظهر مناطق التوصيل المتاحة عند إتمام الطلب.", "Delivery areas are shown at checkout."),
       },
     ],
   },
@@ -36,11 +36,11 @@ export const FAQ_GROUPS = [
     items: [
       {
         title: L("ما طرق الدفع المتاحة؟", "Which payment methods do you accept?"),
-        body: L("الدفع عند الاستلام، والبطاقات، والمحافظ الإلكترونية، وإنستاباي.", "Cash on delivery, cards, mobile wallets and InstaPay."),
+        body: L("تظهر طرق الدفع المتاحة عند إتمام الطلب.", "Available payment methods are shown at checkout."),
       },
       {
         title: L("ما سياسة الاسترجاع؟", "What is your return policy?"),
-        body: L("يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.", "Return any unused item within 14 days in its original box."),
+        body: L("راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.", "See the exchange and return policy page."),
       },
     ],
   },

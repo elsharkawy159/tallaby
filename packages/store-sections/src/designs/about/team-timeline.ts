@@ -9,10 +9,10 @@ import { L } from "../_kit";
 import { BIG_NUMBER, modHead } from "../_modular";
 
 const MILESTONES = [
-  { year: L("٢٠١٩", "2019"), text: L("أول ١٠ طلبات على واتساب", "First 10 orders on WhatsApp") },
-  { year: L("٢٠٢١", "2021"), text: L("أول مخزن في الجيزة", "First warehouse in Giza") },
-  { year: L("٢٠٢٣", "2023"), text: L("التوصيل لكل المحافظات", "Delivery to every governorate") },
-  { year: L("٢٠٢٦", "2026"), text: L("٥٠ ألف عميل وفرعين", "50,000 customers and two branches") },
+  { year: L("٢٠١٩", "2019"), text: L("أول ١٠ طلبات", "Our first 10 orders") },
+  { year: L("٢٠٢١", "2021"), text: L("أول مخزن", "Our first warehouse") },
+  { year: L("٢٠٢٣", "2023"), text: L("أقسام جديدة وتشكيلة أوسع", "New categories and a wider range") },
+  { year: L("٢٠٢٦", "2026"), text: L("متجرنا الإلكتروني الجديد", "Our new online store") },
 ];
 
 export const teamTimeline = aboutDesign({
@@ -27,7 +27,7 @@ export const teamTimeline = aboutDesign({
     t.section({ label: L("رحلتنا", "Our journey") }, [
       t.container(
         [
-          modHead(t, { label: L("رحلتنا", "Our journey"), title: L("من ٢٠١٩ لحد النهارده", "From 2019 to today") }),
+          modHead(t, { label: L("رحلتنا", "Our journey"), title: L("من ٢٠١٩ حتى اليوم", "From 2019 to today") }),
           t.grid(
             MILESTONES.map((m, i) => {
               const now = i === MILESTONES.length - 1;

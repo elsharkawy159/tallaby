@@ -43,7 +43,7 @@ export const contactWhatsapp = defineDesign({
                   t.row(
                     [
                       t.icon("clock", { style: { color: "primary" } }),
-                      t.text(L("متوسط الرد ١٢ دقيقة", "Average reply in 12 minutes"), { style: { fontSize: "md" } }),
+                      t.text(L("تواصل معنا لأي سؤال", "Contact us with any question"), { style: { fontSize: "md" } }),
                     ],
                     {
                       label: L("وقت الرد", "Reply time"),
@@ -57,8 +57,8 @@ export const contactWhatsapp = defineDesign({
               t.stack(
                 [
                   bubble(t, L("أهلًا، هل المنتج متاح باللون الأبيض؟", "Hi, is it available in white?"), true),
-                  bubble(t, L("نعم متاح، ويصلك غدًا 👌", "Yes it is, and it can reach you tomorrow"), false),
-                  bubble(t, L("تمام، سأطلبه الآن", "Great, ordering now"), true),
+                  bubble(t, L("نعم، متاح باللون الأبيض.", "Yes, it is available in white."), false),
+                  bubble(t, L("رائع، سأطلبه الآن", "Great, ordering now"), true),
                 ],
                 { label: L("المحادثة", "Chat"), style: { gap: 10 } },
               ),

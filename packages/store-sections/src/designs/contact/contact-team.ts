@@ -48,7 +48,7 @@ export const contactTeam = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("ناس حقيقية بترد عليك", "Real people answer you"), "h2", {
+              t.heading(L("فريق يرد على أسئلتك", "A team that answers your questions"), "h2", {
                 role: "title",
                 style: {
                   fontSize: "display-sm",
@@ -131,7 +131,7 @@ export const contactTeam = defineDesign({
                   mobile: { gap: 8 },
                 },
               ),
-              pillButton(t, L("كلمنا على واتساب", "Message us on WhatsApp"), CHANNELS[0]!.href, { icon: "chat" }),
+              pillButton(t, L("تواصل معنا على واتساب", "Message us on WhatsApp"), CHANNELS[0]!.href, { icon: "chat" }),
             ],
             {
               label: L("المحتوى", "Content"),

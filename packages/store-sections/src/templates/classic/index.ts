@@ -116,11 +116,11 @@ export function classicConfig(): SiteConfig {
       page("home", "الرئيسية", CLASSIC_HOME, {}, { isHome: true }),
       page("about", "من نحن", [classicAboutHeader, classicAboutStory, classicAboutStats, classicAboutValues, classicAboutVisit], {
         title: "من نحن",
-        description: "فريق صغير بيختار منتجات إحنا نفسنا نشتريها.",
+        description: "فريق صغير يختار منتجات نشتريها نحن أنفسنا.",
       }),
       page("contact", "تواصل معنا", [classicContactHeader, classicContact], {
         title: "تواصل معنا",
-        description: "بنرد على واتساب خلال ساعة في مواعيد العمل.",
+        description: "تواصل معنا لأي سؤال عن منتج أو طلب.",
       }),
       page("faq", "الأسئلة الشائعة", [classicFaqHeader, classicFaq], {
         title: "الأسئلة الشائعة",

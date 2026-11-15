@@ -12,7 +12,7 @@ const STEPS = [
   { year: L("٢٠١٨", "2018"), text: L("أول محل صغير", "Our first small shop") },
   {
     year: L("٢٠٢٠", "2020"),
-    text: L("بدأنا البيع أونلاين", "Started selling online"),
+    text: L("بدأنا البيع عبر الإنترنت", "Started selling online"),
   },
   {
     year: L("٢٠٢٣", "2023"),
@@ -35,7 +35,7 @@ export const statsMilestones = defineDesign({
         [
           modHead(t, {
             label: L("حكايتنا", "Our story"),
-            title: L("من محل صغير لكل مصر", "From one shop to all of Egypt"),
+            title: L("من محل صغير إلى كل مصر", "From one shop to all of Egypt"),
           }),
           t.divider({
             label: L("المحور", "Axis"),

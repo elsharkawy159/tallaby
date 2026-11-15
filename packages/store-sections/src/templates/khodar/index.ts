@@ -58,65 +58,65 @@ const NAME = L("خضار إكسبريس", "Khodar Express");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header's delivery chip: one short line.
-  announcement: [L("نفس اليوم قبل ٣ العصر", "Same-day before 3 pm")],
+  announcement: [L("خضار وفاكهة وورقيات", "Fruit, veg and greens")],
   // The header search placeholder: three things a buyer types.
-  labels: { search: L("ابحث عن طماطم، مانجا، ورقيات…", "Search tomatoes, mango, greens…") },
+  labels: { search: L("ابحث عن طماطم، مانجو، ورقيات…", "Search tomatoes, mango, greens…") },
   // Four header links (one or two words each) to catalog routes; the about page's button goes to `nav.2`.
   nav: [
     { label: L("خضار وفاكهة", "Fruit & veg"), href: search("خضار") },
     { label: L("ورقيات", "Greens"), href: search("ورقيات") },
-    { label: L("بوكسات", "Boxes"), href: search("بوكس") },
-    { label: L("عصاير", "Juicing"), href: search("عصير") },
+    { label: L("صناديق", "Boxes"), href: search("بوكس") },
+    { label: L("عصائر", "Juicing"), href: search("عصير") },
   ],
   // A search hero: `title` is the question over the search box, `line` its placeholder.
-  hero: { title: L("محتاج إيه النهارده؟", "What do you need today?"), line: L("طماطم، مانجا، ورقيات", "Tomatoes, mango, greens") },
-  categories: { title: L("طازة النهارده", "Fresh today") },
+  hero: { title: L("ماذا تحتاج اليوم؟", "What do you need today?"), line: L("طماطم، مانجو، ورقيات", "Tomatoes, mango, greens") },
+  categories: { title: L("تسوّق حسب القسم", "Shop by section") },
   // Six compact rows of what `journey.primary` shows: the title must say the same.
-  products: { primary: { title: L("الأكتر طلباً كل يوم", "Most ordered, every day") } },
+  products: { primary: { title: L("الأكثر طلبًا", "Most ordered") } },
   // Optional, with `custom.reviews-city`: one buyer quote under a title, its name and city. Without them the home page ends on the delivery promise.
   reviews: {
-    title: L("من زباينّا", "From our regulars"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
       {
         quote: L(
-          "«طلبت قبل ٣ والخضار وصل نفس اليوم، والمانجا كانت مستوية بالظبط زي ما طلبت.»",
-          "«I ordered before 3 and it came the same day. The mangoes were exactly as ripe as I asked.»",
+          "«الخضار طازج والمانجو ناضجة كما توقعت.»",
+          "«The veg was fresh and the mangoes were as ripe as I hoped.»",
         ),
         name: L("سارة ح.", "Sara H."),
       },
     ],
   },
   about: {
-    line: L("خضار وفاكهة متقطفة امبارح.", "Fruit and veg picked yesterday."),
+    line: L("خضار وفاكهة طازجة.", "Fresh fruit and veg."),
     alt: L("سلال خضار في السوق", "Baskets of vegetables at the market"),
-    eyebrow: L("من الغيط", "From the field"),
-    title: L("متقطف امبارح، على بابك النهارده", "Picked yesterday, at your door today"),
-    text: L("بنشتري كل يوم الفجر من مزارعين في القليوبية والفيوم، ونفرز الخضار بإيدينا قبل ما يتغلف.", "We buy every dawn from farmers in Qalyubia and Fayoum, and sort the produce before it is packed."),
-    more: L("ولو حاجة مش عاجباك، بنرجعلك فلوسها من غير أسئلة.", "And if anything is not right, we refund it, no questions asked."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("خضار وفاكهة مختارة بعناية", "Fruit and veg chosen with care"),
+    text: L("نفرز الخضار والفاكهة بعناية، ونعرض الوزن والنوع لكل منتج بوضوح.", "We sort fruit and veg with care and show every product's weight and variety clearly."),
+    more: L("تواصل معنا لأي سؤال عن منتج أو طلب.", "Contact us with any question about a product or an order."),
     // Goes to `nav.2`.
-    cta: L("تسوق البوكسات", "Shop boxes"),
+    cta: L("تسوّق الصناديق", "Shop boxes"),
   },
   contact: {
     title: L("تواصل", "Contact"),
-    line: L("بنرد من ٨ الصبح لـ ١٠ بالليل.", "We reply from 8 am to 10 pm."),
-    heading: L("اسأل عن طلب أو بوكس", "Ask about an order or a box"),
+    line: L("يوميًا من ٨ ص حتى ١٠ م.", "Every day, 8 am to 10 pm."),
+    heading: L("اسأل عن طلب أو صندوق", "Ask about an order or a box"),
   },
   faq: {
-    line: L("التوصيل والبوكسات والاسترجاع.", "Delivery, boxes and refunds."),
-    question: L("لو حاجة وصلت مش طازة؟", "What if something arrives not fresh?"),
-    answer: L("صوّرها وابعتهالنا في نفس اليوم ونرجعلك تمنها أو نبدلها.", "Send us a photo the same day and we refund or replace it."),
+    line: L("الطلب والصناديق والشحن.", "Ordering, boxes and shipping."),
+    question: L("كيف أحفظ الخضار والفاكهة؟", "How should I store fruit and veg?"),
+    answer: L("احفظ الورقيات في الثلاجة، والطماطم والموز في مكان بارد بعيدًا عن الشمس.", "Keep greens in the fridge, and tomatoes and bananas somewhere cool, out of the sun."),
   },
   custom: {
     // The header's link to the best sellers, two words.
-    "best-label": L("الأكتر طلباً", "Most ordered"),
+    "best-label": L("الأكثر طلبًا", "Most ordered"),
     // The delivery promise: a title, then three steps, each a time (or a day) and a short label.
-    "promise-title": L("اطلب قبل ٣، اطبخ بالليل", "Order by 3 pm, cook it tonight"),
+    "promise-title": L("اطلب قبل ٣ عصرًا", "Order by 3 pm"),
     "promise-time-1": L("٣:٠٠ م", "3:00 pm"),
-    "promise-step-1": L("آخر ميعاد للطلب", "Order cut-off"),
+    "promise-step-1": L("آخر موعد للطلب", "Order cut-off"),
     "promise-time-2": L("٥:٠٠ م", "5:00 pm"),
-    "promise-step-2": L("بيتغلف بارد", "Packed cold"),
+    "promise-step-2": L("يُغلّف مبردًا", "Packed cold"),
     "promise-time-3": L("٨:٠٠ م", "8:00 pm"),
-    "promise-step-3": L("على بابك", "At your door"),
+    "promise-step-3": L("يصلك", "Delivered"),
     // With `reviews`: the quote's city.
     "reviews-city": L("المعادي", "Maadi"),
   },
@@ -146,7 +146,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       "العروض": nav[1]!.label,
       "هدايا": nav[2]!.label,
       "إكسسوارات": nav[3]!.label,
-      "توصيل خلال ٤٨ ساعة": c.announcement[0]!,
+      "صور ومواصفات لكل منتج": c.announcement[0]!,
     },
     links: { "/products": [undefined, nav[0]!.href, BEST, nav[1]!.href, nav[2]!.href, nav[3]!.href] },
   });
@@ -167,25 +167,25 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const home: Design[] = [
     lib("hero-search", {
       text: {
-        "بتدور على إيه النهارده؟": c.hero.title,
+        "عمّ تبحث اليوم؟": c.hero.title,
         "اكتب اسم المنتج": c.hero.line,
       },
     }),
     lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
     lib("products-rows", {
-      text: { "إكسسوارات بسعر حلو": c.products.primary.title },
+      text: { "إكسسوارات بأسعار مناسبة": c.products.primary.title },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 6 }],
     }),
     lib("pay-promise", {
       text: {
-        "اطلب قبل ٢ الضهر، يوصلك بكره": x["promise-title"]!,
+        "اطلب قبل ٢ ظهرًا ليصلك غدًا": x["promise-title"]!,
         "٢:٠٠ م": x["promise-time-1"]!,
-        "بتطلب النهارده": x["promise-step-1"]!,
+        "تطلب اليوم": x["promise-step-1"]!,
         "٦:٠٠ م": x["promise-time-2"]!,
-        "بيتشحن": x["promise-step-2"]!,
-        "بكره": x["promise-time-3"]!,
-        "بيوصلك": x["promise-step-3"]!,
+        "يُشحن": x["promise-step-2"]!,
+        "غدًا": x["promise-time-3"]!,
+        "يصلك": x["promise-step-3"]!,
       },
     }),
     ...(reviews && city
@@ -193,7 +193,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           lib("testimonials-quote", {
             text: {
               "آراء العملاء": reviews.title,
-              "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": reviews.items[0]!.quote,
+              "«من أفضل تجارب الشراء عبر الإنترنت. الطلب وصل بسرعة، والتغليف أنيق، والمنتج أفضل من الصور.»": reviews.items[0]!.quote,
               "مريم أ.": reviews.items[0]!.name,
               "القاهرة": city,
             },
@@ -240,13 +240,13 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("خضار وفاكهة طازة بتوصل في نفس اليوم.", "Fresh fruit and veg, delivered the same day."),
+  description: L("خضار وفاكهة وورقيات طازجة.", "Fresh fruit, veg and greens."),
   categories: [
     ["produce", "خضار وفاكهة", "Fruit & veg", PHOTOS.tomatoes],
     ["greens", "ورقيات", "Greens", PHOTOS.herbs],
-    ["boxes", "بوكسات", "Boxes", PHOTOS.market],
+    ["boxes", "صناديق", "Boxes", PHOTOS.market],
     ["citrus", "موالح", "Citrus", PHOTOS.oranges],
-    ["juice", "عصاير", "Juice", PHOTOS.juicer],
+    ["juice", "عصائر", "Juice", PHOTOS.juicer],
   ],
   products: [
     ["weekly-veg-box", "boxes", "بوكس خضار الأسبوع", "Weekly Veg Box", PHOTOS.market, 260, { isFeatured: true, rating: 4.8, sold90: 320 }],
@@ -254,8 +254,8 @@ const DEMO = demoStore({
     ["greens-bundle", "greens", "باقة ورقيات", "Greens Bundle", PHOTOS.herbs, 140, { sold90: 96 }],
     ["juice-box", "juice", "بوكس العصير", "Juice Box", PHOTOS.juicer, 290, { compareAtPrice: 340, sold90: 41 }],
     ["tomatoes-1kg", "produce", "طماطم بلدي ١ كيلو", "Local Tomatoes, 1 kg", PHOTOS.tomatoes, 25, { sold90: 410 }],
-    ["mango-1kg", "produce", "مانجا عويس ١ كيلو", "Awees Mango, 1 kg", PHOTOS.mango, 70, { rating: 4.9, sold90: 230 }],
-    ["oranges-3kg", "citrus", "برتقان بصرة ٣ كيلو", "Navel Oranges, 3 kg", PHOTOS.oranges, 60, { sold90: 180 }],
+    ["mango-1kg", "produce", "مانجو عويس ١ كيلو", "Awees Mango, 1 kg", PHOTOS.mango, 70, { rating: 4.9, sold90: 230 }],
+    ["oranges-3kg", "citrus", "برتقال أبو سُرة ٣ كيلو", "Navel Oranges, 3 kg", PHOTOS.oranges, 60, { sold90: 180 }],
     ["bananas-1kg", "produce", "موز ١ كيلو", "Bananas, 1 kg", PHOTOS.bananas, 35, { sold90: 260 }],
     ["potatoes-2kg", "produce", "بطاطس ٢ كيلو", "Potatoes, 2 kg", PHOTOS.potatoes, 40, { sold90: 200 }],
     ["aubergines-peppers", "produce", "باذنجان وفلفل رومي", "Aubergines & Peppers", PHOTOS.aubergines, 45, { inStock: false, sold90: 70 }],
@@ -265,9 +265,9 @@ const DEMO = demoStore({
 
 export const KHODAR = editionTemplate({
   key: KHODAR_KEY,
-  version: 3,
+  version: 4,
   changelog: "Khodar v3: hero first, categories, section order",
-  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("اللي طلبوا قالوا", "From people who ordered"), related: L("كمّل سلتك", "Fill your basket") } },
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("خضار", "Khodar"),
   description: L(
     "خضار وفاكهة طازة: هدف التوصيل المجاني، بحث سريع، بوكس الأسبوع، آخر ميعاد ٣ العصر وتتبع الطلب. أربع صفحات جاهزة.",

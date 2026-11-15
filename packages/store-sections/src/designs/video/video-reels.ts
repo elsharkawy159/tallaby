@@ -20,7 +20,7 @@ export const videoReels = defineDesign({
     t.section({ label: L("ريلز", "Reels") }, [
       t.container(
         [
-          sectionHead(t, { title: L("من على تيك توك", "From TikTok"), link: { href: "https://www.tiktok.com/", text: L("تابعنا", "Follow us") } }),
+          sectionHead(t, { title: L("من تيك توك", "From TikTok"), link: { href: "https://www.tiktok.com/", text: L("تابعنا", "Follow us") } }),
           t.grid(
             CAPTIONS.map((caption, i) =>
               t.stack(

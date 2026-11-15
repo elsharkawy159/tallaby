@@ -194,7 +194,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     text: {
       م: initialOf(name),
       "اسم متجرك": name,
-      "منتجات أصلية بضمان، توصلك لحد البيت.": c.footer.line,
+      "منتجات مختارة بعناية لكل يوم.": c.footer.line,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
       العروض: L("الأعلى تقييماً", "Top rated"),
     },
@@ -210,9 +210,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           lib("hero-halves", {
             photo: [undefined, c.photos.hero.wide],
             text: {
-              "كوليكشن الموسم": c.hero.eyebrow,
+              "مجموعة الموسم": c.hero.eyebrow,
               "صوت أنقى، كل يوم": c.hero.title,
-              "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+              "منتجات مختارة بمواصفات واضحة لكل يوم.": c.hero.line,
               "تسوق الآن": c.hero.cta,
               العروض: x["hero-cta-2"]!,
               "صورة الحملة": c.hero.alt,
@@ -237,7 +237,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     // Round bezel rings, four across: the library's six-column row would leave two empty places for a four-category shop.
     retouch(
       lib("categories-circles", {
-        text: { "بتدوّر على إيه؟": c.categories.title, "عرض الكل": VIEW_ALL },
+        text: { "ما الذي تبحث عنه؟": c.categories.title, "عرض الكل": VIEW_ALL },
         nodes: { الحلقة: { style: { maxWidth: "240px" } } },
         lists: [{ limit: 4 }],
       }),
@@ -270,11 +270,11 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         c.photos.story,
       ],
       text: {
-        "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
+        "تفاصيل واضحة لكل منتج": c.story.title,
         "صورة المتجر": c.story.alt,
-        "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف، عشان تفتح العلبة وانت مطمن.":
+        "نعرض لكل منتج صورًا ومواصفات واضحة لتختار وأنت مطمئن.":
           c.story.text,
-        "شوف إزاي بنشتغل": c.story.cta,
+        "تعرّف على طريقة عملنا": c.story.cta,
       },
     }),
     lib("products-category-carousel", {
@@ -291,20 +291,20 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         text: {
           "أسعار الخدمات": x["service-title"]!,
           "الأسعار شاملة قطع الغيار الأصلية والضمان.": x["service-line"]!,
-          الموبايل: x["service-1-title"]!,
+          الهواتف: x["service-1-title"]!,
           "تغيير بطارية": x["service-1-1-name"]!,
           "٦٥٠ ج.م": x["service-1-1-price"]!,
           "تغيير شاشة": x["service-1-2-name"]!,
           "٢٤٠٠ ج.م": x["service-1-2-price"]!,
-          "سوكت الشحن": x["service-1-3-name"]!,
+          "منفذ الشحن": x["service-1-3-name"]!,
           "٤٥٠ ج.م": x["service-1-3-price"]!,
-          "الشاشات والبيت": x["service-2-title"]!,
+          "الشاشات والمنزل": x["service-2-title"]!,
           "تركيب حائط": x["service-2-1-name"]!,
           "٣٥٠ ج.م": x["service-2-1-price"]!,
-          "ضبط رسيفر": x["service-2-2-name"]!,
+          "ضبط جهاز الاستقبال": x["service-2-2-name"]!,
           "١٥٠ ج.م": x["service-2-2-price"]!,
           السماعات: x["service-3-title"]!,
-          "تغيير وسايد": x["service-3-1-name"]!,
+          "تغيير وسائد الأذن": x["service-3-1-name"]!,
           "١٢٠ ج.م": x["service-3-1-price"]!,
           "تنظيف وفحص": x["service-3-2-name"]!,
           "٨٠ ج.م": x["service-3-2-price"]!,
@@ -323,8 +323,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         text: {
           "صورة الحملة": x["banner-alt"]!,
           "الخط الجديد": x["banner-eyebrow"]!,
-          "اختارناها لك بعناية": x["banner-title"]!,
-          "قطع جديدة من خطنا الجديد، معمولة عشان تعيش معاك.": x["banner-line"]!,
+          "اخترناها لك بعناية": x["banner-title"]!,
+          "قطع جديدة من خطنا الجديد، مصنوعة لتدوم.": x["banner-line"]!,
           "تسوّق المجموعة": x["banner-cta"]!,
         },
         links: { "/products": c.nav[1]!.href },
@@ -337,16 +337,16 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       calm(
         lib("features-icon-cards", {
           text: {
-            "لماذا تشتري منا": L("وعدنا ليك", "Our promise"),
-            "تسوّق وأنت مطمئن": L("اشتري وانت مطمن", "Buy with confidence"),
-            "توصيل سريع": c.trust[0]!.title,
-            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "لماذا تشتري منا": L("وعدنا لك", "Our promise"),
+            "تسوّق وأنت مطمئن": L("تسوّق وأنت مطمئن", "Buy with confidence"),
+            "الشحن": c.trust[0]!.title,
+            "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
             "الدفع عند الاستلام": c.trust[1]!.title,
-            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-            "استرجاع سهل": c.trust[2]!.title,
-            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-            "دعم على واتساب": c.trust[3]!.title,
-            "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+            "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+            "الاستبدال والاسترجاع": c.trust[2]!.title,
+            "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+            "تواصل معنا": c.trust[3]!.title,
+            "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
           },
         }),
       ),
@@ -358,8 +358,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     ),
     lib("newsletter-ruled", {
       text: {
-        "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-        "عروض للمشتركين بس، مرة في الأسبوع.": c.newsletter.line,
+        "اشترك في نشرتنا البريدية": c.newsletter.title,
+        "كن أول من يعرف بالمنتجات الجديدة.": c.newsletter.line,
       },
     }),
   ];
@@ -385,7 +385,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
       {
         slug: "about",
-        name: L("عننا", "About"),
+        name: L("من نحن", "About"),
         seo: { title: aboutName },
         sections: about,
       },
@@ -417,7 +417,7 @@ export const SAAT = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(SAAT_KEY, "watches", { ar: 2812, en: 2812 }),
   key: SAAT_KEY,
-  version: 4,
+  version: 5,
   changelog: "Saat v4: the watches template, rebuilt look-first",
   productPage: {
     surface: "flat",
@@ -426,8 +426,8 @@ export const SAAT = editionTemplate({
     band: "paper",
     extras: ["product-perks"],
     copy: {
-      reviews: L("رأي اللي لبسوها", "From people who wear it"),
-      related: L("ساعات تانية هتعجبك", "More watches you may like"),
+      reviews: L("آراء العملاء", "Customer reviews"),
+      related: L("ساعات أخرى قد تعجبك", "More watches you may like"),
     },
   },
   name: L("ساعات", "Saat"),

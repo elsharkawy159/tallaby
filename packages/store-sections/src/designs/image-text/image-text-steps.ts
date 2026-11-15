@@ -22,23 +22,23 @@ const STEPS = [
   {
     no: N("01"),
     title: L("نختار الخامة", "We choose the material"),
-    text: L("نجرّب كل خامة بنفسنا قبل ما تدخل المتجر.", "We try every material ourselves before it reaches the shop."),
+    text: L("نختار كل خامة بعناية قبل أن تصل إلى المتجر.", "We choose every material with care before it reaches the shop."),
     photo: 4,
     alt: L("خامات مختارة", "Chosen materials"),
   },
   {
     no: N("02"),
     title: L("نجهّز طلبك بعناية", "We prepare your order with care"),
-    text: L("كل طلب بيتراجع ويتغلّف كويس عشان يوصل سليم.", "Every order is checked and packed well so it arrives intact."),
+    text: L("نراجع كل طلب ونجهّزه بعناية.", "We check every order and prepare it with care."),
     photo: 5,
-    alt: L("طلب متغلّف", "A packed order"),
+    alt: L("طلب جاهز", "A prepared order"),
   },
   {
     no: N("03"),
-    title: L("يوصلك لحد الباب", "It reaches your door"),
-    text: L("توصيل لكل المحافظات، وتدفع عند الاستلام لو تحب.", "Delivery to every governorate, and pay on delivery if you like."),
+    title: L("نشحن طلبك", "We ship your order"),
+    text: L("تظهر تكلفة الشحن ومدته عند إتمام الطلب.", "Shipping cost and time are shown at checkout."),
     photo: 6,
-    alt: L("طلب جاهز للتوصيل", "An order ready for delivery"),
+    alt: L("طلب جاهز للشحن", "An order ready to ship"),
   },
 ] as const;
 
@@ -79,8 +79,8 @@ export const imageTextSteps = defineDesign({
       t.container(
         [
           sectionHead(t, {
-            eyebrow: L("إزاي بنشتغل", "How we work"),
-            title: L("من الخامة لحد بابك", "From the material to your door"),
+            eyebrow: L("كيف نعمل", "How we work"),
+            title: L("من الخامة إلى طلبك", "From the material to your order"),
             titleMotion: { reveal: "words" },
           }),
           t.grid(

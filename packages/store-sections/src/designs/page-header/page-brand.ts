@@ -48,7 +48,7 @@ export const pageBrand = defineDesign({
                       role: "count",
                       style: { fontWeight: "bold", ...ON_BRAND },
                     }),
-                    t.paragraph(L("منتجات أصلية بضمان محلي.", "Genuine products with local warranty."), { role: "subtitle", style: ON_BRAND_BODY }),
+                    t.paragraph(L("تشكيلة لكل الاستخدامات.", "A range for every use."), { role: "subtitle", style: ON_BRAND_BODY }),
                   ],
                   {
                     label: L("الوصف", "Description"),

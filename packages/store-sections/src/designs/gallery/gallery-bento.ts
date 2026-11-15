@@ -84,7 +84,7 @@ export const galleryBento = defineDesign({
                     role: "title",
                     style: { fontWeight: "bold", fontSize: "2xl", ...ON_BRAND },
                   }),
-                  t.text(L("صور جديدة كل أسبوع", "New photos every week"), {
+                  t.text(L("تابع أحدث صورنا", "Our latest photos"), {
                     style: { fontSize: "sm", ...ON_BRAND_BODY },
                   }),
                   pillButton(t, L("تابعنا", "Follow"), PROFILE, {

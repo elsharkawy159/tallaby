@@ -14,8 +14,8 @@ const FILL = { position: "absolute", insetTop: "0px", insetBottom: "0px", insetS
 type Tile = { photo: number; eyebrow: DesignText; title: DesignText; cta: DesignText; href: string };
 
 const TILES: Tile[] = [
-  { photo: 0, eyebrow: L("وصل حالاً", "Just arrived"), title: L("بدل وتفصيل", "Tailoring"), cta: L("تسوّق الآن", "Shop now"), href: "/products" },
-  { photo: 1, eyebrow: L("صناعة القاهرة", "Made in Cairo"), title: L("شنط جلد", "Leather bags"), cta: L("تسوّق الآن", "Shop now"), href: "/products" },
+  { photo: 0, eyebrow: L("وصل حديثًا", "Just arrived"), title: L("المجموعة الجديدة", "The new collection"), cta: L("تسوّق الآن", "Shop now"), href: "/products" },
+  { photo: 1, eyebrow: L("مختارات المتجر", "Store picks"), title: L("الأكثر مبيعًا", "Best sellers"), cta: L("تسوّق الآن", "Shop now"), href: "/products" },
 ];
 
 function tile(t: TreeBuilder, o: Tile): NodeTemplate {

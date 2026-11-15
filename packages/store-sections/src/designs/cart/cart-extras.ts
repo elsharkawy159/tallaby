@@ -23,7 +23,7 @@ export const cartExtras = defineDesign({
         [
           t.row(
             [
-              t.heading(L("ينفع معاها", "Goes well with it"), "h2", {
+              t.heading(L("يناسبه أيضًا", "Goes well with it"), "h2", {
                 role: "title",
                 style: { fontSize: "2xl", fontWeight: "bold" },
               }),

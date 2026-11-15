@@ -34,13 +34,13 @@ export const aboutClassic = defineDesign({
                   }),
                   t.paragraph(
                     L(
-                      "فتحنا متجرنا بعد أن تعبنا من منتجات لا تعيش. كل ما نبيعه نجربه نحن أولًا.",
-                      "We opened after too many products stopped working. Everything we sell, we test ourselves first.",
+                      "نختار منتجات تتحمّل الاستخدام اليومي، ونعرض تفاصيل كل منتج بوضوح.",
+                      "We choose products made for everyday use and show each one's details clearly.",
                     ),
                     { role: "body" },
                   ),
                   t.paragraph(
-                    L("اليوم نشحن لكل المحافظات ونرد على كل رسالة بأنفسنا.", "Today we ship to every governorate and answer every message ourselves."),
+                    L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
                     { role: "body" },
                   ),
                   t.button(L("تعرّف علينا", "Get to know us"), "/about", "solid", { role: "cta", style: { marginTop: 8 } }),

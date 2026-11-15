@@ -27,12 +27,12 @@ export const newsletterPhoto = defineDesign({
               t.stack(
                 [
                   t.badge(L("للمشتركين", "Members"), { role: "eyebrow", style: { color: "primary", background: "secondary" } }),
-                  t.heading(L("خد ١٠٪ خصم على أول طلب", "Get 10% off your first order"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
-                  t.paragraph(L("اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.", "Join the list for new arrivals and members-only offers."), {
+                  t.heading(L("اشترك في نشرتنا البريدية", "Join our newsletter"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
+                  t.paragraph(L("اشترك لتصلك أخبار المنتجات الجديدة.", "Subscribe to hear about new arrivals."), {
                     role: "subtitle",
                   }),
                   t.storeForm(),
-                  t.text(L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."), { style: { color: "muted", fontSize: "xs" } }),
+                  t.text(L("بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.", "No spam. Unsubscribe any time."), { style: { color: "muted", fontSize: "xs" } }),
                 ],
                 {
                   label: L("النص", "Copy"),

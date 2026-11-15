@@ -7,10 +7,10 @@ import { defineDesign } from "../builder";
 import { L } from "../_kit";
 
 const POINTS = [
-  L("كل منتج يُفحص قبل الشحن", "Every product is checked before shipping"),
-  L("تغليف محكم ومبطّن", "Sealed, padded packaging"),
-  L("فاتورة وضمان داخل العلبة", "Invoice and warranty in the box"),
-  L("رقم تتبع على واتساب", "Tracking number on WhatsApp"),
+  L("صور واضحة لكل منتج", "Clear photos of every product"),
+  L("مواصفات ومقاسات مفصّلة", "Detailed specs and sizes"),
+  L("أسعار واضحة على كل منتج", "Clear prices on every product"),
+  L("تواصل معنا لأي سؤال", "Contact us with any question"),
 ];
 
 export const featuresChecklist = defineDesign({
@@ -35,9 +35,9 @@ export const featuresChecklist = defineDesign({
               t.stack(
                 [
                   t.badge(L("كيف نعمل", "How we work"), { role: "eyebrow", style: { color: "primary" } }),
-                  t.heading(L("كل طلب يُراجع مرتين", "Every order is checked twice"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
+                  t.heading(L("كل التفاصيل قبل أن تطلب", "Every detail before you order"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
                   t.paragraph(
-                    L("قبل أن يخرج من المخزن نراجع المنتج والتغليف والفاتورة.", "Before it leaves the warehouse we check the product, packing and invoice."),
+                    L("نعرض صور كل منتج ومواصفاته وسعره بوضوح، لتطلب وأنت مطمئن.", "Every product shows its photos, specs and price clearly, so you can order with confidence."),
                     {
                       role: "body",
                     },

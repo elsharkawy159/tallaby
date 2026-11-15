@@ -48,7 +48,7 @@ export const heroCollage = defineDesign({
                       role: "body",
                     },
                   ),
-                  t.button(L("تسوّق اللوك", "Shop the look"), "/products", "solid", { role: "cta" }),
+                  t.button(L("تسوّق الإطلالة", "Shop the look"), "/products", "solid", { role: "cta" }),
                   t.stack([figure(t, 2, L("٠٣", "03"), L("القطعة الثالثة", "The third piece"), "landscape")], {
                     label: L("الصورة العريضة", "Landscape photo"),
                     style: { marginTop: 24 },

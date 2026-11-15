@@ -25,7 +25,7 @@ export const productsList = defineDesign({
                 [
                   t.badge(L("الكتالوج", "Catalogue"), { role: "eyebrow", style: { color: "primary", background: "secondary" } }),
                   t.heading(L("كل الإكسسوارات", "All accessories"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
-                  t.paragraph(L("كل اللي تحتاجه في مكان واحد، أصلي وبضمان.", "Everything you need in one place, genuine and guaranteed."), {
+                  t.paragraph(L("كل ما تحتاجه في مكان واحد.", "Everything you need in one place."), {
                     role: "subtitle",
                   }),
                   arrowLink(t, L("عرض الكل", "View all"), SHOP_LINK),

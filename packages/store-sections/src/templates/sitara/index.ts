@@ -51,20 +51,20 @@ const NAME = L("ستارة", "Sitara");
 const header = lib("header-centered", {
   text: {
     "اسم متجرك": NAME,
-    "مختارات بعناية منذ ٢٠١٨": L("قصات طويلة وأقمشة ناعمة", "Long cuts, soft fabrics"),
+    "مختارات بعناية": L("قصات طويلة وأقمشة ناعمة", "Long cuts, soft fabrics"),
     "المتجر": L("المتجر", "Shop"),
     "العروض": L("الأكثر مبيعاً", "Best sellers"),
     "المدونة": L("الأسئلة", "FAQ"),
     "من نحن": L("عن ستارة", "About"),
-    "تواصل معنا": L("تواصلي معانا", "Contact"),
+    "تواصل معنا": L("تواصلي معنا", "Contact"),
   },
   links: { "/products": [undefined, BEST, undefined, undefined, BEST], "/blog": "/faq" },
 });
 
 const footer = lib("footer-signup", {
   text: {
-    "اشترك في النشرة": L("اعرفي الجديد قبل الكل", "Hear about new pieces first"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("إيميل واحد في الأسبوع فيه القطع الجديدة وأكواد للمشتركات.", "One email a week with new pieces and subscriber codes."),
+    "اشترك في النشرة": L("اعرفي الجديد أولًا", "Hear about new pieces first"),
+    "منتجات جديدة وأخبار المتجر.": L("القطع الجديدة وأخبار المتجر في بريدك الإلكتروني.", "New pieces and store news in your inbox."),
     "م": L("س", "S"),
     "اسم متجرك": NAME,
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ ستارة. كل الحقوق محفوظة.", "© 2026 Sitara. All rights reserved."),
@@ -78,12 +78,12 @@ const home: Design[] = [
   lib("hero-ticket", {
     photo: [PHOTOS.dressRail, PHOTOS.blouseRail, PHOTOS.giftBag],
     text: {
-      "صورة الحملة": L("فساتين سهرة وكاجوال على راك أسود", "Evening and day dresses on a black rail"),
+      "صورة الحملة": L("فساتين سهرة ويومية على حامل أسود", "Evening and day dresses on a black rail"),
       "مجموعة الخريف": L("الموسم الجديد", "New season"),
-      "ألوان هادئة لأيام أطول": L("طويل وخفيف ومريح", "Long, light, easy"),
+      "ألوان هادئة لأيام أطول": L("فساتين وأطقم بقصات طويلة", "Long-cut dresses and sets"),
       "تسوّق المجموعة": L("تسوقي الفساتين", "Shop dresses"),
-      "عروض الأسبوع": L("طقم واحد ولبسات كتير", "One set, many looks"),
-      "هدايا مختارة": L("كروت هدية من ٥٠٠ ج.م", "Gift cards from EGP 500"),
+      "مختارات الأسبوع": L("أطقم تُنسّق بأكثر من طريقة", "Sets to style many ways"),
+      "هدايا مختارة": L("اسألي عن مقاس أو طول", "Ask about a size or length"),
     },
     links: { "/products": [search("فستان"), search("طقم"), "/contact"] },
   }),
@@ -107,39 +107,39 @@ const home: Design[] = [
       "هدايا": L("أطقم", "Sets"),
       "إكسسوارات": L("طبقات", "Layers"),
       "أساسيات": L("طرح وشيلان", "Scarves"),
-      "مجموعات": L("شنط", "Bags"),
-      "الموسم الجديد": L("كروت هدية", "Gift cards"),
+      "مجموعات": L("حقائب", "Bags"),
+      "الموسم الجديد": L("تواصلي معنا", "Contact us"),
     },
     links: {
       "/products": [SHOP, NEW, BEST, search("فستان"), search("طقم"), search("كارديجان"), search("طرحة"), search("شنطة"), "/contact"],
     },
   }),
   lib("products-feature", {
-    text: { "اختيارنا ليك": L("الأكتر حباً", "Most loved"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
+    text: { "اختيارنا لك": L("الأكثر طلبًا", "Most loved"), "اختيار الأسبوع": L("الأكثر مبيعاً", "Best seller") },
     lists: [undefined, { source: "best-sellers" }],
   }),
   lib("pay-methods", {
     text: {
-      "ادفع بالطريقة اللي تريحك": L("ادفعي بالطريقة اللي تريحك", "Pay the way that suits you"),
-      "ادفع للمندوب بعد ما تفتح الطلب.": L("ادفعي للمندوب بعد ما تفتحي الطلب.", "Pay the courier after you open the order."),
-      "لحد ٢٤ شهر من غير مقدم.": L("قسّطي على ٤ شهور من غير مقدم.", "Split it over 4 months, no down payment."),
-      "حوّل من موبايلك في ثانية.": L("حوّلي من موبايلك في ثانية.", "Transfer from your phone in seconds."),
+      "ادفع بالطريقة التي تناسبك": L("ادفعي بالطريقة التي تناسبك", "Pay the way that suits you"),
+      "ادفع للمندوب بعد فتح الطلب.": L("ادفعي للمندوب بعد فتح الطلب.", "Pay the courier after you open the order."),
+      "حتى ٢٤ شهرًا بدون مقدّم.": L("قسّطي على ٤ أشهر بدون مقدّم.", "Split it over 4 months, no down payment."),
+      "حوّل من هاتفك في ثوانٍ.": L("حوّلي من هاتفك في ثوانٍ.", "Transfer from your phone in seconds."),
     },
   }),
   lib("testimonials-ruled", {
     text: {
       "آراء العملاء": L("الآراء", "Reviews"),
-      "قالوا عننا": L("من عميلاتنا", "From our customers"),
+      "قالوا عنا": L("من عميلاتنا", "From our customers"),
       "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "الفستان الماكسي طويل بجد ومش شفاف، والأكمام لحد الرسغ زي ما كنت عايزة.",
-        "The maxi dress is truly long and not see-through, with sleeves to the wrist as I wanted.",
+        "الفستان الماكسي طويل فعلًا وقماشه غير شفاف، والأكمام طويلة كما أردت.",
+        "The maxi dress is truly long and not see-through, with long sleeves as I wanted.",
       ),
       "م": L("ر", "R"),
       "مريم أ.": L("رحمة ع.", "Rahma A."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("بدّلت مقاس الطقم ببلاش، وردّوا عليا في دقايق.", "Swapped the set’s size for free and they replied in minutes."),
+      "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": L("جدول المقاسات واضح، واخترت مقاس الطقم المناسب بسهولة.", "The size chart is clear, and I picked the right size for the set easily."),
       "ع": L("ه", "H"),
       "عمر ك.": L("هاجر م.", "Hagar M."),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("بعت كارت هدية لأختي ووصلها في نفس اليوم.", "I sent my sister a gift card and she had it the same day."),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("الخامة أفضل مما توقعت، والألوان كما في الصور.", "The fabric is better than I expected, and the colours match the photos."),
       "ن": L("ش", "S"),
       "نور ح.": L("شهد ك.", "Shahd K."),
     },
@@ -147,14 +147,14 @@ const home: Design[] = [
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن ستارة", "About Sitara"), L("لبس محتشم بقصات طويلة وأقمشة ناعمة، صنع في القاهرة.", "Modest wear in long cuts and soft fabrics, made in Cairo.")),
+  pageHeader(lib, "about-header", L("عن ستارة", "About Sitara"), L("ملابس محتشمة بقصات طويلة وأقمشة ناعمة.", "Modest wear in long cuts and soft fabrics.")),
   aboutStory(lib, {
     photo: PHOTOS.goldRail,
-    alt: L("بلوزات وتريكو بألوان هادية على راك دهبي", "Soft-coloured blouses and knits on a gold rail"),
-    eyebrow: L("من ٢٠١٨", "Since 2018"),
-    title: L("طويل، ومريح، وشيك", "Long, easy and elegant"),
-    text: L("بدأنا عشان نلاقي فساتين وأطقم طويلة بأكمام من غير ما نضطر نفصّل كل حاجة.", "We started to find long dresses and sets with sleeves without having everything made to order."),
-    more: L("كل قطعة بتتجرب على ٣ أطوال قبل ما تنزل.", "Every piece is tried at three heights before it goes on sale."),
+    alt: L("بلوزات وتريكو بألوان هادئة على حامل ذهبي", "Soft-coloured blouses and knits on a gold rail"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("قصات طويلة وتصميم أنيق", "Long cuts, elegant design"),
+    text: L("نختار فساتين وأطقمًا طويلة بأكمام، ونكتب الطول والمقاس في صفحة كل قطعة.", "We choose long dresses and sets with sleeves, and list the length and size on every piece's page."),
+    more: L("تواصلي معنا لأي سؤال عن مقاس أو طول.", "Contact us with any question about a size or length."),
     button: L("تسوقي الجديد", "Shop new in"),
     href: NEW,
   }),
@@ -162,12 +162,12 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("قصات طويلة وأقمشة ناعمة، صنع في القاهرة.", "Long cuts, soft fabrics, made in Cairo."),
+  description: L("قصات طويلة وأقمشة ناعمة.", "Long cuts, soft fabrics."),
   categories: [
     ["dresses", "فساتين", "Dresses", PHOTOS.roseDresses],
     ["sets", "أطقم", "Sets", PHOTOS.neutralRack],
     ["layers", "طبقات وطرح", "Layers & scarves", PHOTOS.knitHangers],
-    ["bags", "شنط", "Bags", PHOTOS.whiteBag],
+    ["bags", "حقائب", "Bags", PHOTOS.whiteBag],
   ],
   products: [
     ["rose-pleated-maxi", "dresses", "فستان ماكسي بليسيه وردي", "Rose Pleated Maxi Dress", PHOTOS.roseDresses, 2400, { isFeatured: true, rating: 4.9, sold90: 140 }],
@@ -178,8 +178,8 @@ const DEMO = demoStore({
     ["ribbed-cardigan", "layers", "كارديجان تريكو مضلّع", "Ribbed Knit Cardigan", PHOTOS.knitHangers, 1150, { sold90: 33 }],
     ["soft-pashmina", "layers", "شال باشمينا", "Soft Pashmina Scarf", PHOTOS.scarvesLadder, 450, { rating: 4.7, sold90: 90 }],
     ["wool-scarf-trio", "layers", "٣ طرح صوف", "Wool Scarf Trio", PHOTOS.scarfStack, 690, { compareAtPrice: 850, sold90: 52 }],
-    ["white-flap-bag", "bags", "شنطة بيضا بقفل", "White Flap Bag", PHOTOS.whiteBag, 1850, { rating: 4.8, sold90: 58 }],
-    ["taupe-evening-bag", "bags", "شنطة سهرة بني فاتح", "Taupe Evening Bag", PHOTOS.taupeBag, 1490, { inStock: false, sold90: 20 }],
+    ["white-flap-bag", "bags", "حقيبة بيضاء بقفل", "White Flap Bag", PHOTOS.whiteBag, 1850, { rating: 4.8, sold90: 58 }],
+    ["taupe-evening-bag", "bags", "حقيبة سهرة بني فاتح", "Taupe Evening Bag", PHOTOS.taupeBag, 1490, { inStock: false, sold90: 20 }],
   ],
 });
 
@@ -187,11 +187,11 @@ export const SITARA = libraryTemplate({
   key: SITARA_KEY,
   version: 2,
   changelog: "Sitara v2: product page",
-  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي صاحباتنا", "What our customers say"), related: L("تنسيقات تكمّلها", "Styles to go with it") } },
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("تنسيقات تكمّلها", "Styles to go with it") } },
   name: L("سِتارة", "Sitara"),
   description: L(
-    "لبس محتشم للستات: سلايدات الموسم، دواير الأقسام، الأكتر حباً، كروت هدية، طرق الدفع وآراء العميلات. أربع صفحات جاهزة.",
-    "Modest womenswear: season slides, category rings, most loved, gift cards, ways to pay and reviews. Four ready pages.",
+    "ملابس محتشمة للنساء: شرائح الموسم، دوائر الأقسام، الأكثر طلبًا، طرق الدفع وآراء العميلات. أربع صفحات جاهزة.",
+    "Modest womenswear: season slides, category rings, most loved, ways to pay and reviews. Four ready pages.",
   ),
   category: "fashion",
   style: ["classic", "warm"],
@@ -216,11 +216,11 @@ export const SITARA = libraryTemplate({
     {
       slug: "contact",
       name: L("تواصل", "Contact"),
-      seo: { title: L("تواصلي معانا", "Contact us") },
+      seo: { title: L("تواصلي معنا", "Contact us") },
       sections: contactPage(lib, {
-        title: L("تواصلي معانا", "Contact us"),
-        text: L("كل يوم من ١٢ الضهر لـ ١٠ بالليل. ولطلب كارت هدية ابعتيلنا هنا.", "Every day, 12 pm to 10 pm. To order a gift card, write to us here."),
-        heading: L("عن مقاس أو طول أو كارت هدية", "About a size, a length or a gift card"),
+        title: L("تواصلي معنا", "Contact us"),
+        text: L("اسألي عن مقاس أو طول، وسنرد عليك.", "Ask about a size or length, and we will reply."),
+        heading: L("عن مقاس أو طول", "About a size or a length"),
       }),
     },
     {
@@ -228,9 +228,9 @@ export const SITARA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الأطوال والمقاسات والتقسيط.", "Lengths, sizes and installments."),
-        question: L("الفساتين طولها قد إيه؟", "How long are the dresses?"),
-        answer: L("الماكسي ١٤٥ سم من الكتف، ومكتوب الطول في صفحة كل منتج. ولو محتاجة تقصير بنعمله ببلاش.", "Maxi dresses are 145 cm from the shoulder; each product page lists the length. We shorten for free if needed."),
+        text: L("الأطوال والمقاسات والخامات.", "Lengths, sizes and fabrics."),
+        question: L("ما طول الفساتين؟", "How long are the dresses?"),
+        answer: L("يظهر طول كل فستان في صفحة المنتج.", "Each dress's length is shown on its product page."),
       }),
     },
   ],

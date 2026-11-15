@@ -18,7 +18,7 @@ export const headerClassic = defineDesign({
   keywords: ["header", "navigation", "menu", "classic", "هيدر", "قائمة", "كلاسيك"],
   tree: (t) =>
     t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
-      t.text(L("توصيل مجاني للطلبات فوق ١٥٠٠ ج.م", "Free delivery on orders over EGP 1,500"), {
+      t.text(L("تشكيلة الموسم الجديد وصلت", "The new season range is here"), {
         role: "announcement",
         style: {
           background: "foreground",

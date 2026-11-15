@@ -42,11 +42,11 @@ export const productsCampaign = defineDesign({
                   t.stack(
                     [
                       t.text(L("الخط الجديد", "The new line"), { role: "eyebrow", style: { color: "white", fontSize: "sm", fontWeight: "semibold", opacity: 85 } }),
-                      t.heading(L("اختارناها لك بعناية", "Chosen with care"), "h2", {
+                      t.heading(L("اخترناها لك بعناية", "Chosen with care"), "h2", {
                         role: "title",
                         style: { color: "white", fontSize: "display-sm", fontWeight: "semibold", lineHeight: "tight" },
                       }),
-                      t.paragraph(L("قطع جديدة من خطنا الجديد، معمولة عشان تعيش معاك.", "New pieces from our latest line, made to last."), {
+                      t.paragraph(L("قطع جديدة من خطنا الجديد، مصنوعة لتدوم.", "New pieces from our latest line, made to last."), {
                         role: "subtitle",
                         style: { color: "white", opacity: 90, maxWidth: "420px" },
                       }),

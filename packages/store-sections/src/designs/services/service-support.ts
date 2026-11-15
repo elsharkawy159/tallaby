@@ -14,25 +14,25 @@ const CHANNELS = [
     icon: "chat",
     name: L("واتساب", "WhatsApp"),
     detail: L("٠١٠ ١٢٣٤ ٥٦٧٨", "010 1234 5678"),
-    reply: L("بنرد في أقل من ساعة", "Replies within an hour"),
+    reply: L("نرد خلال أقل من ساعة", "Replies within an hour"),
     href: WHATSAPP_LINK,
     tile: BRAND_TILE,
     ink: "primaryInk",
   },
   {
     icon: "phone",
-    name: L("اتصل بينا", "Call us"),
+    name: L("اتصل بنا", "Call us"),
     detail: L("١٩١٢٣", "19123"),
-    reply: L("من ١٠ ص لـ ١٠ م", "10 am – 10 pm"),
+    reply: L("من ١٠ ص إلى ١٠ م", "10 am – 10 pm"),
     href: PHONE_LINK,
     tile: SUN_TILE,
     ink: "foreground",
   },
   {
     icon: "map-pin",
-    name: L("زور فرع", "Visit a branch"),
+    name: L("زُر أحد فروعنا", "Visit a branch"),
     detail: L("٣ فروع في القاهرة", "3 branches in Cairo"),
-    reply: L("من غير معاد", "No appointment"),
+    reply: L("بدون موعد", "No appointment"),
     href: "/contact",
     tile: TILE,
     ink: "foreground",
@@ -65,7 +65,7 @@ export const serviceSupport = defineDesign({
         [
           sectionHead(t, {
             eyebrow: L("الدعم", "Support"),
-            title: L("محتاج مساعدة؟", "Need a hand?"),
+            title: L("هل تحتاج إلى مساعدة؟", "Need a hand?"),
           }),
           t.grid(
             CHANNELS.map((c) =>

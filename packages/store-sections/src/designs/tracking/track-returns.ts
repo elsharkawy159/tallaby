@@ -20,7 +20,7 @@ const OPTIONS: {
 }[] = [
   {
     icon: "truck",
-    title: L("المندوب ياخده", "Courier pickup"),
+    title: L("يستلمه المندوب", "Courier pickup"),
     note: L("من عنوانك خلال يومين", "From your address within 2 days"),
   },
   {
@@ -106,7 +106,7 @@ export const trackReturns = defineDesign({
           t.stack(
             [
               t.heading(
-                L("رجّع أو بدّل منتج", "Return or exchange an item"),
+                L("أرجع منتجًا أو استبدله", "Return or exchange an item"),
                 "h2",
                 {
                   role: "title",
@@ -115,7 +115,7 @@ export const trackReturns = defineDesign({
               ),
               t.paragraph(
                 L(
-                  "عندك ١٤ يوم من الاستلام ترجّع أو تبدّل أي منتج بحالته.",
+                  "لديك ١٤ يومًا من الاستلام لإرجاع أي منتج أو استبداله بحالته الأصلية.",
                   "You have 14 days from delivery to return or exchange any unused item.",
                 ),
                 {
@@ -128,10 +128,10 @@ export const trackReturns = defineDesign({
                   step(
                     t,
                     "1",
-                    L("ابعتلنا الطلب", "Send us a request"),
+                    L("أرسل لنا الطلب", "Send us a request"),
                     t.paragraph(
                       L(
-                        "املا النموذج اللي تحت برقم الطلب والسبب.",
+                        "املأ النموذج أدناه برقم الطلب والسبب.",
                         "Fill in the form below with your order number and the reason.",
                       ),
                     ),
@@ -140,10 +140,10 @@ export const trackReturns = defineDesign({
                   step(
                     t,
                     "2",
-                    L("هنأكد معاك", "We confirm with you"),
+                    L("سنؤكد معك", "We confirm with you"),
                     t.paragraph(
                       L(
-                        "هنكلمك خلال يوم عمل نتفق على الاسترجاع أو الاستبدال.",
+                        "سنتواصل معك خلال يوم عمل للاتفاق على الإرجاع أو الاستبدال.",
                         "We contact you within a working day to agree the return or exchange.",
                       ),
                     ),
@@ -152,7 +152,7 @@ export const trackReturns = defineDesign({
                   step(
                     t,
                     "3",
-                    L("إزاي ترجّعه", "How to send it back"),
+                    L("كيف ترجعه", "How to send it back"),
                     t.grid(
                       OPTIONS.map((o) =>
                         t.row(

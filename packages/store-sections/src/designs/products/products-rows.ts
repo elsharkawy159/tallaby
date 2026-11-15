@@ -22,7 +22,7 @@ export const productsRows = defineDesign({
       t.container(
         [
           modHead(t, {
-            title: L("إكسسوارات بسعر حلو", "Accessories at good prices"),
+            title: L("إكسسوارات بأسعار مناسبة", "Accessories at good prices"),
             link: { text: L("عرض الكل", "View all"), href: SHOP_LINK },
           }),
           t.productList(

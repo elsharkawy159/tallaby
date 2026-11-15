@@ -171,11 +171,11 @@ function hero(c: LookContent): Design {
     text: {
       "وصل جديد": c.hero.eyebrow,
       "صوت أنقى، كل يوم": c.hero.title,
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+      "منتجات مختارة بمواصفات واضحة لكل يوم.": c.hero.line,
       "تسوق الآن": c.hero.cta,
       "صورة الحملة": c.hero.alt,
       "٤٫٨": x["hero-sticker-2"]!,
-      "من ١٢ ألف تقييم": x["hero-sizes-line"]!,
+      "تقييم العملاء": x["hero-sizes-line"]!,
     },
     links: { "/products": SHOP },
   });
@@ -220,7 +220,7 @@ function hero(c: LookContent): Design {
 function categories(c: LookContent): Design {
   const circles = lib("categories-circles", {
     text: {
-      "بتدوّر على إيه؟": c.categories.title,
+      "ما الذي تبحث عنه؟": c.categories.title,
       "عرض الكل": c.custom["shop-all"]!,
     },
     lists: [{ limit: 4 }],
@@ -256,19 +256,19 @@ function versus(c: LookContent, a: number, b: number): Design {
   const v = (key: string) => c.custom[`versus-${key}`]!;
   return lib("finder-versus", {
     text: {
-      "تختار مين؟": v("title"),
-      ضد: L("ولا", "or"),
-      "اشتري ده": L("اختار ده", "Pick this"),
+      "أيهما تختار؟": v("title"),
+      ضد: L("أم", "or"),
+      "اشتري ده": L("اختر هذا", "Pick this"),
       البطارية: v("1-label"),
       "٣٠ ساعة": v("1-a"),
       "٢٤ ساعة": v("1-b"),
       "عزل الضوضاء": v("2-label"),
-      أيوه: v("2-a"),
-      لأ: v("2-b"),
+      نعم: v("2-a"),
+      لا: v("2-b"),
       الوزن: v("3-label"),
       "٥٫٢ جم": v("3-a"),
       "٤٫٨ جم": v("3-b"),
-      "مقاومة المية": v("4-label"),
+      "مقاومة الماء": v("4-label"),
       "IPX٤": v("4-a"),
       "IPX٥": v("4-b"),
     },
@@ -286,7 +286,7 @@ function panel(c: LookContent, place: number): Design {
     text: {
       هدايا: x["panel-eyebrow"]!,
       "هدايا تحت ١٠٠٠ جنيه": x["panel-title"]!,
-      "اختيارات مضمونة لأي مناسبة.": x["panel-line"]!,
+      "أفكار هدايا لكل مناسبة.": x["panel-line"]!,
       "عرض الكل": x["panel-cta"]!,
     },
     links: { "/products": c.nav[0]!.href },
@@ -358,8 +358,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         text: {
           "صورة المتجر": x["banner-alt"]!,
           "من داخل المتجر": c.story.eyebrow,
-          "بدأنا من محل صغير": c.story.title,
-          "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.": c.story.text,
+          "منتجات نختارها بعناية": c.story.title,
+          "نختار كل منتج بعناية، ونعرض صوره وتفاصيله بوضوح.": c.story.text,
           "اعرف أكثر": c.story.cta,
         },
       }),
@@ -369,15 +369,15 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       calm(
         lib("features-columns", {
           text: {
-            "ليه تشتري مننا": L(`ليه ${name.ar}؟`, `Why ${name.en}`),
-            "بنوفّر لك منتجات بجودة عالية": x["trust-title"]!,
-            "التفاصيل اللي بتفرق في كل طلب.": x["trust-line"]!,
-            "توصيل سريع": c.trust[0]!.title,
-            "من يوم لـ ٤ أيام لكل المحافظات، وتتبّع طلبك خطوة بخطوة.": c.trust[0]!.line,
-            "جودة مضمونة": c.trust[1]!.title,
-            "كل منتج بيتراجع قبل ما يتغلف، ومعاه ضمان.": c.trust[1]!.line,
-            "استرجاع سهل": c.trust[2]!.title,
-            "١٤ يوم تغيّر فيهم رأيك من غير أسئلة كتير.": c.trust[2]!.line,
+            "لماذا تشتري منا": L(`لماذا ${name.ar}؟`, `Why ${name.en}`),
+            "منتجات مختارة بعناية": x["trust-title"]!,
+            "التفاصيل التي تصنع الفرق في كل طلب.": x["trust-line"]!,
+            "الشحن": c.trust[0]!.title,
+            "تظهر تكلفة الشحن ومدته عند إتمام الطلب.": c.trust[0]!.line,
+            "منتجات مختارة": c.trust[1]!.title,
+            "نختار كل منتج بعناية ونعرض مواصفاته كاملة.": c.trust[1]!.line,
+            "الاستبدال والاسترجاع": c.trust[2]!.title,
+            "التفاصيل في صفحة السياسات.": c.trust[2]!.line,
           },
         }),
       ),
@@ -388,12 +388,12 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("newsletter-interests", {
         text: {
-          "إيه اللي يهمك؟": c.newsletter.title,
-          "هنبعتلك اللي يخصك بس، مرة في الأسبوع.": c.newsletter.line,
+          "ما الذي يهمك؟": c.newsletter.title,
+          "سنرسل إليك ما يهمك فقط.": c.newsletter.line,
           "وصل حديثًا": x["newsletter-interest-1"]!,
           العروض: x["newsletter-interest-2"]!,
           هدايا: x["newsletter-interest-3"]!,
-          نصايح: x["newsletter-interest-4"]!,
+          نصائح: x["newsletter-interest-4"]!,
         },
       }),
       "storeForm",
@@ -453,7 +453,7 @@ export const SPORTS_BOLD = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(SPORTS_BOLD_KEY, "sneakers", { ar: 2812, en: 2812 }),
   key: SPORTS_BOLD_KEY,
-  version: 2,
+  version: 3,
   changelog: "Nabd v2: the sneakers template, rebuilt look-first",
   name: L("نبض", "Nabd"),
   description: L(
@@ -551,6 +551,6 @@ export const SPORTS_BOLD = editionTemplate({
     surface: "shelf",
     band: "paper",
     extras: ["product-perks"],
-    copy: SNEAKERS.productPage?.copy ?? { reviews: L("آراء اللي لبسوه", "From people who wear them"), related: L("موديلات ممكن تعجبك", "Pairs you may like") },
+    copy: SNEAKERS.productPage?.copy ?? { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") },
   },
 });

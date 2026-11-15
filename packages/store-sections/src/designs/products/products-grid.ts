@@ -26,7 +26,7 @@ export const productsGrid = defineDesign({
         [
           productsHead(t, {
             title: L("وصل حديثًا", "Just landed"),
-            subtitle: L("أحدث المنتجات اللي نزلت المتجر.", "The newest products in the store."),
+            subtitle: L("أحدث المنتجات في المتجر.", "The newest products in the store."),
             link: { href: SHOP_LINK },
           }),
           t.productList([premiumCard(t, { ratio: "square" })], {

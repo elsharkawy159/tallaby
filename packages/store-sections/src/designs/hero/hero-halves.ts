@@ -32,7 +32,7 @@ export const heroHalves = defineDesign({
               [
                 t.stack(
                   [
-                    dotLabel(t, L("كوليكشن الموسم", "Season collection"), {
+                    dotLabel(t, L("مجموعة الموسم", "Season collection"), {
                       onBrand: true,
                     }),
                     t.heading(L("صوت أنقى، كل يوم", "Cleaner sound, every day"), "h1", {
@@ -44,7 +44,7 @@ export const heroHalves = defineDesign({
                         ...ON_BRAND,
                       },
                     }),
-                    t.paragraph(L("منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.", "Genuine products with local warranty, delivered in 48 hours."), {
+                    t.paragraph(L("منتجات مختارة بمواصفات واضحة لكل يوم.", "Chosen products with clear specs, for every day."), {
                       role: "subtitle",
                       style: {
                         fontSize: "lg",

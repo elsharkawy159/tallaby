@@ -44,15 +44,15 @@ export const aboutCircle = defineDesign({
               ),
               t.stack(
                 [
-                  dotLabel(t, L("إحنا مين", "Who we are")),
-                  t.heading(L("فريق صغير بيحب اللي بيعمله", "A small team that loves what it does"), "h2", {
+                  dotLabel(t, L("من نحن", "Who we are")),
+                  t.heading(L("فريق يختار منتجات المتجر بعناية", "A team that picks every product with care"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
                   t.paragraph(
                     L(
-                      "بنرد على كل رسالة بنفسنا، وبنختار كل منتج كأننا هنستخدمه.",
-                      "We answer every message ourselves and pick every product as if it were for us.",
+                      "نختار كل منتج كأنه لنا، ونوضّح تفاصيله ومقاساته.",
+                      "We pick every product as if it were for us, with clear details and sizes.",
                     ),
                     {
                       role: "body",

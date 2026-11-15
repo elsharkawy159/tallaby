@@ -21,7 +21,7 @@ export const faqNumbered = defineDesign({
       t.container(
         [
           modHead(t, {
-            label: L("قبل ما تطلب", "Before you order"),
+            label: L("قبل أن تطلب", "Before you order"),
             title: L("أسئلة مهمة", "Good to know"),
           }),
           t.stack(

@@ -10,9 +10,9 @@ import { L, N } from "../_kit";
 import { payTitle } from "./_shared";
 
 const STEPS = [
-  { title: L("المندوب يوصل", "The courier arrives"), text: L("بنكلمك قبلها بساعة.", "We call you an hour before.") },
-  { title: L("افتح واتأكد", "Open and check"), text: L("جرّب المنتج قدام المندوب.", "Try the product in front of the courier.") },
-  { title: L("ادفع وبس", "Then pay"), text: L("كاش أو كارت على الباب.", "Cash or card at the door.") },
+  { title: L("وصول المندوب", "The courier arrives"), text: L("نتصل بك قبل الوصول بساعة.", "We call you an hour before.") },
+  { title: L("افتح وتأكّد", "Open and check"), text: L("جرّب المنتج أمام المندوب.", "Try the product in front of the courier.") },
+  { title: L("ثم ادفع", "Then pay"), text: L("نقدًا أو بالبطاقة عند الاستلام.", "Cash or card at the door.") },
 ];
 
 export const payOpenBox = defineDesign({
@@ -27,7 +27,7 @@ export const payOpenBox = defineDesign({
     t.section({ label: L("افتح قبل ما تدفع", "Open before you pay") }, [
       t.container(
         [
-          t.box([payTitle(t, L("افتح الطلب قبل ما تدفع", "Open your order before you pay"), true)], {
+          t.box([payTitle(t, L("افتح الطلب قبل الدفع", "Open your order before you pay"), true)], {
             label: L("العنوان", "Heading"),
             style: { marginBottom: 32 },
             mobile: { marginBottom: 22 },
@@ -71,7 +71,7 @@ export const payOpenBox = defineDesign({
           t.row(
             [
               t.icon("shield", { style: { fontSize: "lg", color: "muted" } }),
-              t.text(L("لو فيه أي مشكلة رجّعه للمندوب ومتدفعش حاجة.", "If anything is wrong, hand it back and pay nothing."), { style: { fontSize: "md" } }),
+              t.text(L("إذا وجدت أي مشكلة، أعد الطلب للمندوب دون أن تدفع شيئًا.", "If anything is wrong, hand it back and pay nothing."), { style: { fontSize: "md" } }),
             ],
             { label: L("الملاحظة", "Note"), style: { gap: 10, justifyContent: "center", marginTop: 20 }, mobile: { justifyContent: "start", wrap: false } },
           ),

@@ -115,17 +115,17 @@ function anatomy(c: LookContent): Design {
       photo: [undefined, c.photos.look.src],
       text: {
         التفاصيل: c.look.eyebrow,
-        "اللي بيفرق في كل جزء": c.look.title,
-        "دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.": c.look.text,
+        "ما يميّز كل جزء": c.look.title,
+        "اضغط على أي نقطة في الصورة لتقرأ تفاصيل هذا الجزء.": c.look.text,
         "صورة المنتج": c.look.alt,
         الخامة: notes[0]!.title,
-        "خامة متينة تستحمل الاستخدام اليومي.": notes[0]!.line,
+        "خامة متينة تتحمّل الاستخدام اليومي.": notes[0]!.line,
         التشطيب: notes[1]!.title,
-        "تشطيب نضيف في كل تفصيلة، من أول نظرة.": notes[1]!.line,
+        "تشطيب نظيف في كل تفصيلة.": notes[1]!.line,
         المقاس: notes[2]!.title,
         "مقاس عملي يناسب أغلب الاستخدامات.": notes[2]!.line,
         العناية: notes[3]!.title,
-        "سهل التنضيف، ويفضل زي ما هو مع الوقت.": notes[3]!.line,
+        "سهل التنظيف، ويحافظ على شكله مع الوقت.": notes[3]!.line,
       },
       nodes: { الصورة: { style: { maxWidth: "480px" } } },
     }),
@@ -148,9 +148,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const header = lib("header-announcement-strip", {
     text: {
-      "أهلًا بيك في متجرنا": c.announcement[0]!,
-      "شحن مجاني للطلبات الكبيرة": c.announcement[1]!,
-      "تفاصيل بتفرق": c.announcement[2]!,
+      "أهلًا بك في متجرنا": c.announcement[0]!,
+      "تسوّق سهل من هاتفك": c.announcement[1]!,
+      "تفاصيل تصنع الفرق": c.announcement[2]!,
       "اسم متجرك": name,
       المتجر: shopAll ?? L("كل القطع", "Shop all"),
       العروض: L("وصل حديثًا", "New in"),
@@ -182,9 +182,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           "صورة الواجهة": c.hero.alt,
           "المجموعة الجديدة": c.hero.eyebrow,
           "صُنعت لتدوم معك": c.hero.title,
-          "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
+          "خامات مختارة وتفاصيل هادئة لكل يوم.": c.hero.line,
           "تسوّق الآن": c.hero.cta,
-          "شوف الجديد": L("الأكثر طلبًا", "Best sellers"),
+          "اكتشف الجديد": L("الأكثر طلبًا", "Best sellers"),
         },
         links: { "/products": NEW, "/products?sort=newest": BEST },
       }),
@@ -217,7 +217,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           "صورة القصة": c.story.alt,
           حكايتنا: c.story.eyebrow,
           "تفاصيل صغيرة تصنع الفرق": c.story.title,
-          "بدأنا بفكرة بسيطة: منتجات نحب نستخدمها بنفسنا، بجودة نقدر نضمنها وسعر عادل. كل قطعة بنختارها بعناية وبنتابعها لحد ما توصلك.":
+          "بدأنا بفكرة بسيطة: منتجات نحب استخدامها بأنفسنا، بجودة جيدة وسعر عادل. نختار كل قطعة بعناية ونعرض تفاصيلها بوضوح.":
             c.story.text,
           "اعرف أكثر": c.story.cta,
         },
@@ -229,14 +229,14 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("features-trust-band", {
         text: {
-          "توصيل سريع": c.trust[0]!.title,
-          "من ٢ لـ ٤ أيام لكل المحافظات": c.trust[0]!.line,
+          "الشحن": c.trust[0]!.title,
+          "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
           "الدفع عند الاستلام": c.trust[1]!.title,
-          "أو ادفع بالمحافظ وإنستاباي": c.trust[1]!.line,
-          "استبدال سهل": c.trust[2]!.title,
-          "خلال ١٤ يوم": c.trust[2]!.line,
-          "مساعدة على واتساب": c.trust[3]!.title,
-          "كل يوم من ١٠ ص لـ ١٠ م": c.trust[3]!.line,
+          "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+          "الاستبدال والاسترجاع": c.trust[2]!.title,
+          "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+          "تواصل معنا": c.trust[3]!.title,
+          "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
         },
       }),
       "icon",
@@ -245,8 +245,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     ),
     lib("newsletter-strip", {
       text: {
-        "اعرف الجديد الأول": c.newsletter.title,
-        "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": c.newsletter.line,
+        "اعرف الجديد أولًا": c.newsletter.title,
+        "أحدث المجموعات في بريدك الإلكتروني.": c.newsletter.line,
       },
     }),
   ];
@@ -291,14 +291,14 @@ export const ZAHRA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ZAHRA_KEY, "fashion-jewelry", { ar: 2812, en: 2812 }),
   key: ZAHRA_KEY,
-  version: 3,
+  version: 4,
   changelog: "Zahra v3: the fashion-jewelry template, rebuilt look-first",
   productPage: {
     surface: "flat",
     thumbs: "bottom",
     band: "paper",
     extras: ["product-perks"],
-    copy: { reviews: L("قالوا إيه عن القطعة دي", "What buyers say"), related: L("تتلبس معاها", "Wear it with") },
+    copy: { reviews: L("آراء العملاء", "What buyers say"), related: L("تتناسق معها", "Wear it with") },
   },
   name: L("زهرة", "Zahra"),
   description: L(

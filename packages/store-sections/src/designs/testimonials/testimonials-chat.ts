@@ -70,7 +70,7 @@ export const testimonialsChat = defineDesign({
               t.stack(
                 [
                   dotLabel(t, L("من الواتساب", "From WhatsApp")),
-                  t.heading(L("رسايل بتفرّحنا", "Messages that made our day"), "h2", {
+                  t.heading(L("رسائل تسعدنا", "Messages that made our day"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
@@ -85,7 +85,7 @@ export const testimonialsChat = defineDesign({
                     time: L("١٠:٢٤ ص", "10:24"),
                   }),
                   bubble(t, {
-                    text: L("ده يسعدنا جدًا، شكرًا ليكي!", "So happy to hear that, thank you!"),
+                    text: L("هذا يسعدنا جدًا، شكرًا لك!", "So happy to hear that, thank you!"),
                     time: L("١٠:٢٦ ص", "10:26"),
                     me: true,
                   }),

@@ -32,7 +32,7 @@ export const headerCentered = defineDesign({
                         style: { fontWeight: "extrabold", fontSize: "3xl", textAlign: "center", letterSpacing: "tight" },
                         mobile: { fontSize: "xl" },
                       }),
-                      t.text(L("مختارات بعناية منذ ٢٠١٨", "Carefully curated since 2018"), {
+                      t.text(L("مختارات بعناية", "Carefully curated"), {
                         style: { color: "muted", fontSize: "xs", textAlign: "center", letterSpacing: "wide" },
                       }),
                     ],

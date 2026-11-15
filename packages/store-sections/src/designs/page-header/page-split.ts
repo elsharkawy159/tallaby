@@ -25,11 +25,11 @@ export const pageSplit = defineDesign({
               t.stack(
                 [
                   crumbs(t, [], L("هدايا", "Gifts")),
-                  t.heading(L("هدايا بتفرّح", "Gifts that land"), "h1", {
+                  t.heading(L("هدايا مميزة", "Gifts that stand out"), "h1", {
                     role: "title",
                     style: { fontSize: "display-md", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("اختارنا لك أحسن المنتجات للهدايا، كلها بتغليف هدية ببلاش.", "We picked the best gifts, all with free gift wrapping."), {
+                  t.paragraph(L("اخترنا لك منتجات مناسبة للهدايا في كل مناسبة.", "We picked products that make good gifts for every occasion."), {
                     role: "subtitle",
                     style: { fontSize: "lg" },
                   }),

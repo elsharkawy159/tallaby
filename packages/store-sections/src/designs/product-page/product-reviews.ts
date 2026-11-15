@@ -26,8 +26,8 @@ export const productReviews = defineDesign({
             t.stack(
               [
                 sectionHead(t, {
-                  title: L("رأي اللي جربوه", "What buyers say"),
-                  subtitle: L("تقييمات وأسئلة العملاء عن المنتج ده.", "Customer reviews and questions about this product."),
+                  title: L("آراء المشترين", "What buyers say"),
+                  subtitle: L("تقييمات العملاء وأسئلتهم عن هذا المنتج.", "Customer reviews and questions about this product."),
                   size: "3xl",
                 }),
                 t.productReviews({ label: L("التقييمات والأسئلة", "Reviews and questions") }),

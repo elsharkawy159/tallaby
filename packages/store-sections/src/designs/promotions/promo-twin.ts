@@ -93,7 +93,7 @@ export const promoTwin = defineDesign({
               }),
               offer(t, {
                 label: L("باقة", "Bundle"),
-                title: L("اشتري ٢ والتالت هدية", "Buy 2, get the third free"),
+                title: L("اشترِ ٢ والثالث هدية", "Buy 2, get the third free"),
                 photo: 3,
                 brand: false,
               }),

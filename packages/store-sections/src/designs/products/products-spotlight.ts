@@ -54,7 +54,7 @@ export const productsSpotlight = defineDesign({
                         mobile: { fontSize: "2xl" },
                         motion: { reveal: "words" },
                       }),
-                      t.paragraph(L("قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.", "Hand-picked pieces in good materials and quiet details."), {
+                      t.paragraph(L("قطع مختارة بعناية، بخامات جيدة وتفاصيل هادئة.", "Hand-picked pieces in good materials and quiet details."), {
                         role: "subtitle",
                         style: { color: "white", opacity: 90, maxWidth: "360px" },
                       }),

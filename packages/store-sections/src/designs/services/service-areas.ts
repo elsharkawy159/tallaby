@@ -70,7 +70,7 @@ export const serviceAreas = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("بنوصلك فين؟", "Where do we visit?"), "h2", {
+                  t.heading(L("أين نصل إليك؟", "Where do we visit?"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
@@ -86,7 +86,7 @@ export const serviceAreas = defineDesign({
                   ),
                   arrowLink(
                     t,
-                    L("منطقتك مش موجودة؟ كلمنا", "Area not listed? Message us"),
+                    L("منطقتك غير موجودة؟ تواصل معنا", "Area not listed? Message us"),
                     WHATSAPP_LINK,
                     { style: { marginTop: 8 } },
                   ),

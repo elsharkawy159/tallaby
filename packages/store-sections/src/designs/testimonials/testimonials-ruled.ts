@@ -22,7 +22,7 @@ export const testimonialsRuled = defineDesign({
         [
           modHead(t, {
             label: L("آراء العملاء", "Reviews"),
-            title: L("قالوا عننا", "What customers say"),
+            title: L("قالوا عنا", "What customers say"),
           }),
           t.grid(
             REVIEWS.slice(0, 3).map((r, i) =>

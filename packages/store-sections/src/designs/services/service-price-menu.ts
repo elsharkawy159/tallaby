@@ -10,24 +10,24 @@ import { L } from "../_kit";
 
 const GROUPS = [
   {
-    title: L("الموبايل", "Phones"),
+    title: L("الهواتف", "Phones"),
     rows: [
       [L("تغيير بطارية", "Battery replacement"), L("٦٥٠ ج.م", "EGP 650")],
       [L("تغيير شاشة", "Screen replacement"), L("٢٤٠٠ ج.م", "EGP 2,400")],
-      [L("سوكت الشحن", "Charging port"), L("٤٥٠ ج.م", "EGP 450")],
+      [L("منفذ الشحن", "Charging port"), L("٤٥٠ ج.م", "EGP 450")],
     ],
   },
   {
-    title: L("الشاشات والبيت", "TV & home"),
+    title: L("الشاشات والمنزل", "TV & home"),
     rows: [
       [L("تركيب حائط", "Wall mounting"), L("٣٥٠ ج.م", "EGP 350")],
-      [L("ضبط رسيفر", "Box setup"), L("١٥٠ ج.م", "EGP 150")],
+      [L("ضبط جهاز الاستقبال", "Box setup"), L("١٥٠ ج.م", "EGP 150")],
     ],
   },
   {
     title: L("السماعات", "Audio"),
     rows: [
-      [L("تغيير وسايد", "Ear cushions"), L("١٢٠ ج.م", "EGP 120")],
+      [L("تغيير وسائد الأذن", "Ear cushions"), L("١٢٠ ج.م", "EGP 120")],
       [L("تنظيف وفحص", "Clean and check"), L("٨٠ ج.م", "EGP 80")],
     ],
   },

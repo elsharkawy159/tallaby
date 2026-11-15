@@ -27,9 +27,9 @@ export const productsCategoryTabs = defineDesign({
           t.stack(
             [
               centeredHead(t, {
-                eyebrow: L("لحق قبل ما يخلص", "Hurry up to buy"),
+                eyebrow: L("مختارات المتجر", "Store picks"),
                 title: L("وصل حديثًا", "New arrivals"),
-                subtitle: L("أحدث القطع اللي نزلت المتجر الأسبوع ده.", "The newest pieces in the store this week."),
+                subtitle: L("أحدث القطع التي وصلت إلى المتجر.", "The newest pieces in the store."),
               }),
               t.categoryList(
                 [

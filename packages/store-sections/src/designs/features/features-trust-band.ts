@@ -12,10 +12,10 @@ import { L } from "../_kit";
 type TrustItem = { icon: ElementIconName; title: DesignText; text: DesignText };
 
 const PROMISES: TrustItem[] = [
-  { icon: "truck", title: L("توصيل سريع", "Fast delivery"), text: L("من ٢ لـ ٤ أيام لكل المحافظات", "2 to 4 days, all over Egypt") },
-  { icon: "credit-card", title: L("الدفع عند الاستلام", "Cash on delivery"), text: L("أو ادفع بالمحافظ وإنستاباي", "Or pay with wallets and InstaPay") },
-  { icon: "rotate", title: L("استبدال سهل", "Easy exchange"), text: L("خلال ١٤ يوم", "Within 14 days") },
-  { icon: "chat", title: L("مساعدة على واتساب", "Help on WhatsApp"), text: L("كل يوم من ١٠ ص لـ ١٠ م", "Every day, 10am to 10pm") },
+  { icon: "truck", title: L("الشحن", "Shipping"), text: L("تظهر تكلفة الشحن ومدته عند إتمام الطلب", "Cost and time shown at checkout") },
+  { icon: "credit-card", title: L("الدفع عند الاستلام", "Cash on delivery"), text: L("أو بطرق الدفع المتاحة عند الطلب", "Or other methods shown at checkout") },
+  { icon: "rotate", title: L("الاستبدال والاسترجاع", "Exchanges and returns"), text: L("التفاصيل في صفحة السياسات", "Details on the policy page") },
+  { icon: "chat", title: L("تواصل معنا", "Contact us"), text: L("لأي سؤال عن طلب أو منتج", "With any question about an order or a product") },
 ];
 
 function promise(t: TreeBuilder, p: TrustItem): NodeTemplate {

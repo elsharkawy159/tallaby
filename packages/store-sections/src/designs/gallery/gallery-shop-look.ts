@@ -55,7 +55,7 @@ export const galleryShopLook = defineDesign({
             [
               t.box(
                 [
-                  t.photo(0, L("صورة اللوك", "Look photo"), {
+                  t.photo(0, L("صورة الإطلالة", "Look photo"), {
                     role: "image",
                     style: { objectFit: "cover", width: "100%", aspectRatio: "portrait", radius: 0 },
                     mobile: { aspectRatio: "square" },
@@ -66,9 +66,9 @@ export const galleryShopLook = defineDesign({
               ),
               t.stack(
                 [
-                  t.text(L("تسوّق اللوك", "Shop the look"), { role: "eyebrow", style: EYEBROW }),
-                  t.heading(L("كل اللي في الصورة", "Everything in the photo"), "h2", { role: "title", ...HEAD_TITLE, motion: { reveal: "words" } }),
-                  t.paragraph(L("دوس على أي نقطة في الصورة وشوف القطعة وسعرها، وضيفها للسلة على طول.", "Tap any dot on the photo to see the piece and its price, and add it straight to your cart."), {
+                  t.text(L("تسوّق الإطلالة", "Shop the look"), { role: "eyebrow", style: EYEBROW }),
+                  t.heading(L("كل ما في الصورة", "Everything in the photo"), "h2", { role: "title", ...HEAD_TITLE, motion: { reveal: "words" } }),
+                  t.paragraph(L("اضغط على أي نقطة في الصورة لترى القطعة وسعرها، وأضفها إلى السلة مباشرة.", "Tap any dot on the photo to see the piece and its price, and add it straight to your cart."), {
                     role: "subtitle",
                     style: { fontSize: "md", lineHeight: "relaxed", maxWidth: "440px" },
                     mobile: { fontSize: "sm" },

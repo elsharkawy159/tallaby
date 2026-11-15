@@ -58,77 +58,77 @@ const NAME = L("كابل ستور", "Kabl Store");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header's delivery chip: one short line.
-  announcement: [L("توصيل في نفس اليوم في القاهرة", "Same-day delivery in Cairo")],
+  announcement: [L("شواحن وكابلات لكل الأجهزة", "Chargers and cables for every device")],
   // The header search placeholder: three things a buyer types.
-  labels: { search: L("ابحث عن USB-C، ٦٥ وات، شاحن عربية…", "Search USB-C, 65W, car charger…") },
+  labels: { search: L("ابحث عن USB-C، ٦٥ وات، شاحن سيارة…", "Search USB-C, 65W, car charger…") },
   // The header's three trade links, one or two words each. The about page's button goes to the first one.
   nav: [
     { label: L("شواحن", "Chargers"), href: search("شاحن") },
-    { label: L("باور بانك", "Power banks"), href: search("باور بانك") },
+    { label: L("شواحن متنقلة", "Power banks"), href: search("باور بانك") },
     { label: L("كابلات", "Cables"), href: search("كابل") },
   ],
   // A search hero: `title` is the question over the search box, `line` its placeholder.
   hero: {
-    title: L("عايز تشحن إيه؟", "What do you need to charge?"),
-    line: L("موديل الموبايل أو الوات أو نوع الكابل", "Phone model, watts or cable type"),
+    title: L("ماذا تريد أن تشحن؟", "What do you need to charge?"),
+    line: L("موديل الهاتف أو الوات أو نوع الكابل", "Phone model, watts or cable type"),
   },
-  categories: { title: L("تسوق بالنوع", "Shop by type") },
+  categories: { title: L("تسوّق حسب النوع", "Shop by type") },
   // Six compact rows of what `journey.primary` shows: the title must say the same.
   products: { primary: { title: L("الأكثر مبيعاً", "Best sellers") } },
   // Three contact cards (WhatsApp, phone, visit). `line` is the WhatsApp card's promise; `points.0` is where the shop is and `points.1` why to come, both on the "Visit the shop" card.
   help: {
-    title: L("مش متأكد أنهي يناسب؟", "Not sure which one fits?"),
-    line: L("ابعت موديل موبايلك ونقولك", "Send your phone model and we tell you"),
-    points: [L("وسط البلد، القاهرة", "Downtown Cairo"), L("جرّب الشاحن قبل ما تشتري", "Try a charger before you buy")],
+    title: L("لست متأكدًا من المنتج المناسب؟", "Not sure which one fits?"),
+    line: L("أرسل لنا موديل هاتفك لنساعدك", "Send us your phone model and we will help"),
+    points: [L("وسط البلد، القاهرة", "Downtown Cairo"), L("السبت إلى الخميس، ١٠ ص – ١٠ م", "Saturday to Thursday, 10am to 10pm")],
   },
   // Four tiles of two or three words, each to a catalog route, over a row of the newest products.
   finder: {
-    title: L("بتشحن فين أكتر؟", "Where do you charge most?"),
-    line: L("اختار المكان ونوريك الشاحن اللي يناسبه.", "Pick the place and we show you the charger that fits."),
+    title: L("أين تشحن أجهزتك غالبًا؟", "Where do you charge most?"),
+    line: L("اختر المكان لتجد الشاحن المناسب له.", "Pick the place to find the charger that fits."),
     options: [
-      { label: L("في البيت", "At home"), href: search("شاحن") },
-      { label: L("في الشارع", "On the go"), href: search("باور بانك") },
-      { label: L("في العربية", "In the car"), href: search("عربية") },
+      { label: L("في المنزل", "At home"), href: search("شاحن") },
+      { label: L("أثناء التنقل", "On the go"), href: search("باور بانك") },
+      { label: L("في السيارة", "In the car"), href: search("عربية") },
       { label: L("على المكتب", "At the desk"), href: search("كابل") },
     ],
   },
   // Optional: three buyer quotes with their names (the avatar letter is the name's first letter). Without them the home page ends on the finder.
   reviews: {
-    title: L("قالوا عن كابل", "What buyers say"),
+    title: L("آراء العملاء", "What buyers say"),
     items: [
       {
-        quote: L("الشاحن ٦٥ وات بيشحن اللابتوب والموبايل مع بعض ومش بيسخن.", "The 65 W charger runs my laptop and phone together and stays cool."),
+        quote: L("الشاحن ٦٥ وات يشحن اللابتوب والهاتف معًا.", "The 65 W charger runs my laptop and phone together."),
         name: L("ياسمين ع.", "Yasmin A."),
       },
       {
-        quote: L("بعتلهم موديل الموبايل وقالولي الكابل الصح في دقايق.", "I sent my phone model and they told me the right cable in minutes."),
+        quote: L("الكابل المضفّر متين ومناسب لهاتفي.", "The braided cable is sturdy and fits my phone."),
         name: L("حسام ر.", "Hossam R."),
       },
       {
-        quote: L("الباور بانك خفيف ويكفي يومين سفر.", "The power bank is light and lasts two travel days."),
+        quote: L("الشاحن المتنقل خفيف ومناسب للسفر.", "The power bank is light and good for travel."),
         name: L("دينا م.", "Dina M."),
       },
     ],
   },
   about: {
-    line: L("شواحن وكابلات بتعيش أكتر من شهر.", "Chargers and cables that last more than a month."),
+    line: L("شواحن وكابلات بمواصفات واضحة.", "Chargers and cables with clear specs."),
     alt: L("شاحن أبيض وكابل USB-C على رخام", "A white charger and a USB-C cable on marble"),
-    eyebrow: L("وسط البلد", "Downtown"),
-    title: L("تعبنا من الكابل اللي بيبوظ في شهر", "Tired of cables that die in a month"),
-    text: L("بدأنا بنجرّب الشواحن بنفسنا ونقيس الوات الحقيقي، وبنبيع بس اللي بيعدّي الاختبار.", "We started testing chargers ourselves and measuring the real watts, and we only sell what passes."),
-    more: L("وكل منتج عليه استبدال لمدة سنة لو بطّل يشحن.", "And every product has a 1-year replacement if it stops charging."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("شواحن وكابلات مختارة بعناية", "Chargers and cables chosen with care"),
+    text: L("نعرض لكل شاحن وكابل قدرته بالوات ونوع المنفذ والأجهزة التي تناسبه.", "Every charger and cable shows its watts, port type and the devices it suits."),
+    more: L("تواصل معنا لأي سؤال عن التوافق.", "Contact us with any question about compatibility."),
     // Goes to the first header link (`nav.0`), so it names that category.
     cta: L("تسوق الشواحن", "Shop chargers"),
   },
   contact: {
     title: L("تواصل", "Contact"),
-    line: L("ابعتلنا موديل موبايلك ونقولك الشاحن المناسب.", "Send us your phone model and we tell you the right charger."),
+    line: L("أرسل لنا موديل هاتفك لنساعدك في اختيار الشاحن المناسب.", "Send us your phone model and we will help you pick the right charger."),
     heading: L("اسأل عن شاحن أو كابل", "Ask about a charger or cable"),
   },
   faq: {
-    line: L("الوات والتوافق والاستبدال.", "Watts, compatibility and replacement."),
-    question: L("لو الكابل بطّل يشحن أعمل إيه؟", "What if a cable stops charging?"),
-    answer: L("ابعتلنا رقم الطلب خلال سنة ونبدّله لك ببلاش.", "Send us your order number within a year and we replace it for free."),
+    line: L("الوات والتوافق والطلب.", "Watts, compatibility and ordering."),
+    question: L("كيف أعرف أن الشاحن يناسب هاتفي؟", "How do I know a charger fits my phone?"),
+    answer: L("تجد نوع المنفذ والقدرة بالوات في صفحة كل منتج، ويمكنك التواصل معنا لأي سؤال.", "The port type and watts are on every product page, and you can contact us with any question."),
   },
   // The look's only photo block is the about page's (4:5).
   photos: { story: PHOTOS.flatLay },
@@ -152,7 +152,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       "العروض": c.nav[0]!.label,
       "هدايا": c.nav[1]!.label,
       "إكسسوارات": c.nav[2]!.label,
-      "توصيل خلال ٤٨ ساعة": c.announcement[0]!,
+      "صور ومواصفات لكل منتج": c.announcement[0]!,
     },
     links: { "/products": [undefined, NEW, BEST, c.nav[0]!.href, c.nav[1]!.href, c.nav[2]!.href] },
   });
@@ -172,34 +172,34 @@ function look(c: LookContent, journey: LookJourney): LookParts {
   const home: Design[] = [
     lib("hero-search", {
       text: {
-        "بتدور على إيه النهارده؟": c.hero.title,
+        "عمّ تبحث اليوم؟": c.hero.title,
         "اكتب اسم المنتج": c.hero.line,
       },
     }),
     lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
     lib("products-rows", {
-      text: { "إكسسوارات بسعر حلو": c.products.primary.title },
+      text: { "إكسسوارات بأسعار مناسبة": c.products.primary.title },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 6 }],
     }),
     lib("service-support", {
       text: {
-        "محتاج مساعدة؟": c.help.title,
-        "بنرد في أقل من ساعة": c.help.line,
-        "زور فرع": L("زور المحل", "Visit the shop"),
+        "هل تحتاج إلى مساعدة؟": c.help.title,
+        "نرد خلال أقل من ساعة": c.help.line,
+        "زُر أحد فروعنا": L("زُر المتجر", "Visit the store"),
         "٣ فروع في القاهرة": c.help.points[0]!,
-        "من غير معاد": c.help.points[1]!,
+        "بدون موعد": c.help.points[1]!,
       },
     }),
     lib("finder-use", {
       text: {
-        "هتستخدمها في إيه؟": c.finder.title,
-        "اختار استخدامك ونوديك على المنتجات المناسبة ليه.": c.finder.line,
-        "المشاوير": c.finder.options[0]!.label,
+        "فيمَ ستستخدمها؟": c.finder.title,
+        "اختر الاستخدام، ونعرض لك المنتجات المناسبة له.": c.finder.line,
+        "التنقل": c.finder.options[0]!.label,
         "الرياضة": c.finder.options[1]!.label,
         "المكالمات": c.finder.options[2]!.label,
-        "الشغل من البيت": c.finder.options[3]!.label,
-        "الأكثر طلبًا دلوقتي": L("وصل حديثاً", "Just in"),
+        "العمل من المنزل": c.finder.options[3]!.label,
+        "الأكثر طلبًا الآن": L("وصل حديثاً", "Just in"),
       },
       links: { "/products": [c.finder.options[0]!.href, c.finder.options[1]!.href, c.finder.options[2]!.href, c.finder.options[3]!.href] },
       lists: [{ source: "newest" }],
@@ -212,7 +212,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
               "م": initialOf(reviews.items[0]!.name),
               "مريم أ.": reviews.items[0]!.name,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "ع": initialOf(reviews.items[1]!.name),
               "عمر ك.": reviews.items[1]!.name,
               "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[2]!.quote,
@@ -262,13 +262,13 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("شواحن وكابلات بتعيش أكتر من شهر.", "Chargers and cables that last more than a month."),
+  description: L("شواحن وكابلات بمواصفات واضحة.", "Chargers and cables with clear specs."),
   categories: [
     ["chargers", "شواحن", "Chargers", PHOTOS.dualCharger],
-    ["power", "باور بانك", "Power banks", PHOTOS.slimBank],
-    ["car", "للعربية", "For the car", PHOTOS.dashMount],
+    ["power", "شواحن متنقلة", "Power banks", PHOTOS.slimBank],
+    ["car", "للسيارة", "For the car", PHOTOS.dashMount],
     ["cables", "كابلات", "Cables", PHOTOS.cableOrange],
-    ["kits", "باكدجات", "Bundles", PHOTOS.flatLay],
+    ["kits", "أطقم", "Bundles", PHOTOS.flatLay],
   ],
   products: [
     ["dual-usb-c-charger-35w", "chargers", "شاحن USB-C مزدوج ٣٥ وات", "Dual USB-C Charger 35W", PHOTOS.dualCharger, 390, { isFeatured: true, rating: 4.8, sold90: 410 }],
@@ -282,7 +282,7 @@ const DEMO = demoStore({
     ["braided-usb-c-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cableC, 260, { isFeatured: true, rating: 4.9, sold90: 260 }],
     ["usb-cable-2m", "cables", "كابل USB برتقالي ٢ متر", "2 m Orange USB Cable", PHOTOS.cableOrange, 180, { sold90: 120 }],
     ["usb-cable-1m", "cables", "كابل USB أبيض ١ متر", "1 m White USB Cable", PHOTOS.cableWhite, 120, { inStock: false, sold90: 70 }],
-    ["charger-cable-bundle", "kits", "باكدج شاحن وكابل", "Charger & Cable Bundle", PHOTOS.flatLay, 490, { compareAtPrice: 580, sold90: 86 }],
+    ["charger-cable-bundle", "kits", "طقم شاحن وكابل", "Charger & Cable Bundle", PHOTOS.flatLay, 490, { compareAtPrice: 580, sold90: 86 }],
   ],
 });
 
@@ -290,9 +290,9 @@ export const KABL = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KABL_KEY, "chargers-cables", { ar: 1625, en: 1625 }),
   key: KABL_KEY,
-  version: 3,
+  version: 4,
   changelog: "Kabl v3: category data tiles, section order, reviews to close",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي اللي شحنوا بيه", "From people who charge with it"), related: L("يشتغل معاه", "Works with") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("كابل", "Kabl"),
   description: L(
     "شواحن وكابلات: بحث بالموديل أو الوات، الأكثر مبيعاً واختيار حسب المكان. أربع صفحات جاهزة.",

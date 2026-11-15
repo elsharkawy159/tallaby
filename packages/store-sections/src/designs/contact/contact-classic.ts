@@ -27,11 +27,11 @@ export const contactClassic = defineDesign({
               t.stack(
                 [
                   t.badge(L("تواصل معنا", "Get in touch"), { role: "eyebrow", style: { color: "primary" } }),
-                  t.heading(L("راسلنا، نرد عليك بأنفسنا", "Message us, we reply ourselves"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
+                  t.heading(L("راسلنا لأي سؤال", "Message us with any question"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
                   t.paragraph(
                     L(
-                      "لأي سؤال عن طلب أو منتج أو استرجاع، أسرع طريق هو واتساب.",
-                      "For any question about an order, a product or a return, WhatsApp is the fastest way.",
+                      "لأي سؤال عن طلب أو منتج، تواصل معنا على واتساب.",
+                      "For any question about an order or a product, contact us on WhatsApp.",
                     ),
                     { role: "body" },
                   ),

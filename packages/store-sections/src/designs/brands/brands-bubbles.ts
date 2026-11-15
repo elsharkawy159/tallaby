@@ -23,7 +23,7 @@ export const brandsBubbles = defineDesign({
     t.section({ label: L("الماركات", "Brands") }, [
       t.container(
         [
-          t.heading(L("ماركات بنحبها", "Brands we love"), "h2", {
+          t.heading(L("ماركات نحبها", "Brands we love"), "h2", {
             role: "title",
             style: {
               fontSize: "display-sm",

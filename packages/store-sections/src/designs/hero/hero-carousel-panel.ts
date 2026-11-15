@@ -78,23 +78,23 @@ export const heroCarouselPanel = defineDesign({
       t.carousel(
         [
           slide(t, 0, {
-            title: L("اشحن موبايلك بأمان", "Charge your phone safely"),
-            text: L("شواحن وكابلات أصلية بتحمي البطارية، وتوصيل لحد باب البيت.", "Genuine chargers and cables that protect the battery, delivered to your door."),
+            title: L("اشحن هاتفك بأمان", "Charge your phone safely"),
+            text: L("شواحن وكابلات بمواصفات واضحة لكل هاتف.", "Chargers and cables with clear specs for every phone."),
             cta: L("تسوّق الآن", "Shop now"),
-            more: L("اعرف أكتر", "Learn more"),
+            more: L("اعرف أكثر", "Learn more"),
             alt: L("صورة الشريحة الأولى", "First slide photo"),
           }),
           slide(t, 1, {
-            title: L("لكل موبايل جرابه", "A case for every phone"),
-            text: L("اختار موديل موبايلك وشوف كل الجرابات اللي بتناسبه.", "Pick your phone model and see every case that fits it."),
+            title: L("لكل هاتف جرابه", "A case for every phone"),
+            text: L("اختر طراز هاتفك واكتشف كل الجرابات المناسبة له.", "Pick your phone model and see every case that fits it."),
             cta: L("تسوّق الجرابات", "Shop cases"),
             more: L("كل الأقسام", "All departments"),
             alt: L("صورة الشريحة الثانية", "Second slide photo"),
           }),
           slide(t, 2, {
             title: L("إكسسوارات مختارة", "Picked accessories"),
-            text: L("الحاجات الصغيرة اللي بتسهّل يومك، بأسعار معقولة.", "The small things that make your day easier, at fair prices."),
-            cta: L("شوف المختار", "See the picks"),
+            text: L("إكسسوارات عملية للاستخدام اليومي.", "Practical accessories for everyday use."),
+            cta: L("تصفّح المختارات", "See the picks"),
             more: L("عن المتجر", "About the store"),
             alt: L("صورة الشريحة الثالثة", "Third slide photo"),
           }),

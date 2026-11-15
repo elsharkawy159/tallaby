@@ -76,7 +76,7 @@ function imageText(
 export const classicAboutHeader = pageHeader({
   id: "tallaby-about-header",
   title: L("من نحن", "About us"),
-  text: L("فريق صغير بيختار منتجات إحنا نفسنا نشتريها.", "A small team choosing products we would buy ourselves."),
+  text: L("فريق صغير يختار منتجات نشتريها نحن أنفسنا.", "A small team choosing products we would buy ourselves."),
 });
 
 export const classicAboutStory = defineDesign({
@@ -95,13 +95,10 @@ export const classicAboutStory = defineDesign({
             image: CLASSIC_PHOTOS.parcelShelf,
             alt: L("طرود مغلّفة على رف خشب", "Wrapped parcels on a wooden shelf"),
             eyebrow: L("حكايتنا", "Our story"),
-            title: L("بدأنا بسؤال واحد: هيعيش ولا لأ؟", "It started with one question: will it last?"),
+            title: L("بدأنا بسؤال واحد: هل سيدوم؟", "It started with one question: will it last?"),
             paragraphs: [
-              L(
-                "بدأنا لأننا تعبنا من منتجات شكلها حلو وبتبوظ بسرعة. كل حاجة بنبيعها بنجربها إحنا الأول.",
-                "We started because we were tired of things that look good and break fast. We try everything we sell ourselves first.",
-              ),
-              L("النهارده بنشحن لكل المحافظات وبنرد على كل رسالة بنفسنا.", "Today we ship to every governorate and answer every message ourselves."),
+              L("نختار منتجات تتحمّل الاستخدام اليومي، ونعرض تفاصيل كل منتج بوضوح.", "We choose products made for everyday use and show every product's details clearly."),
+              L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
             ],
           }),
         ],
@@ -111,10 +108,10 @@ export const classicAboutStory = defineDesign({
 });
 
 const STATS: { value: DesignText; label: DesignText }[] = [
-  { value: N("25K+"), label: L("طلب اتسلّم", "Orders delivered") },
+  { value: N("25K+"), label: L("طلب تم توصيله", "Orders delivered") },
   { value: N("27"), label: L("محافظة", "Governorates") },
   { value: N("4.8"), label: L("متوسط التقييم", "Average rating") },
-  { value: N("14"), label: L("يوم استرجاع", "Day returns") },
+  { value: N("14"), label: L("يومًا للاسترجاع", "Day returns") },
 ];
 
 export const classicAboutStats = defineDesign({
@@ -151,10 +148,10 @@ export const classicAboutStats = defineDesign({
 });
 
 const VALUES: { icon: ElementIconName; title: DesignText; text: DesignText }[] = [
-  { icon: "award", title: L("منتجات أصلية", "Original products"), text: L("من الموزعين الرسميين", "From official distributors") },
-  { icon: "tag", title: L("أسعار عادلة", "Fair prices"), text: L("من غير خصومات وهمية", "No fake discounts") },
-  { icon: "shield", title: L("ضمان حقيقي", "Real warranty"), text: L("إحنا بنخلّص الضمان بدالك", "We handle claims for you") },
-  { icon: "chat", title: L("نصيحة بأمانة", "Honest advice"), text: L("اسألنا قبل ما تشتري", "Ask us before you buy") },
+  { icon: "award", title: L("منتجات مختارة", "Picked products"), text: L("بمواصفات واضحة لكل منتج", "Clear specs for every product") },
+  { icon: "tag", title: L("أسعار واضحة", "Clear prices"), text: L("السعر ظاهر على كل منتج", "The price is shown on every product") },
+  { icon: "shield", title: L("تفاصيل دقيقة", "Accurate details"), text: L("صور ومواصفات لكل منتج", "Photos and specs for every product") },
+  { icon: "chat", title: L("نصيحة بأمانة", "Honest advice"), text: L("اسألنا قبل أن تشتري", "Ask us before you buy") },
 ];
 
 export const classicAboutValues = defineDesign({
@@ -167,7 +164,7 @@ export const classicAboutValues = defineDesign({
   keywords: ["features", "values", "classic", "tallaby", "قيم", "كلاسيك"],
   tree: (t) =>
     t.section({ label: L("اللي يهمنا", "What we care about"), ...SECTION }, [
-      t.container([sectionHead(t, { title: L("اللي يهمنا", "What we care about") }), perkGrid(t, VALUES, L("القيم", "Values"))], {
+      t.container([sectionHead(t, { title: L("ما يهمنا", "What we care about") }), perkGrid(t, VALUES, L("القيم", "Values"))], {
         label: L("الحاوية", "Container"),
       }),
     ]),
@@ -188,9 +185,9 @@ export const classicAboutVisit = defineDesign({
           imageText(t, {
             image: CLASSIC_PHOTOS.shopFront,
             alt: L("واجهة محل صغير", "A small shop front"),
-            eyebrow: L("زورنا", "Visit us"),
-            title: L("جرّب قبل ما تشتري", "Try before you buy"),
-            paragraphs: [L("المعرض مفتوح كل يوم ماعدا الجمعة. تعالى شوف المنتجات بنفسك.", "Our showroom is open every day except Friday. Come and see the products yourself.")],
+            eyebrow: L("زُرنا", "Visit us"),
+            title: L("شاهد المنتجات بنفسك", "See the products yourself"),
+            paragraphs: [L("تواصل معنا لمعرفة العنوان ومواعيد الزيارة.", "Contact us for the address and visiting hours.")],
             button: { text: L("اعرف العنوان", "Get directions"), href: LINKS.contact },
             reverse: true,
           }),
@@ -203,14 +200,14 @@ export const classicAboutVisit = defineDesign({
 export const classicContactHeader = pageHeader({
   id: "tallaby-contact-header",
   title: L("تواصل معنا", "Contact us"),
-  text: L("بنرد على واتساب خلال ساعة في مواعيد العمل.", "We reply on WhatsApp within an hour during working hours."),
+  text: L("تواصل معنا لأي سؤال عن منتج أو طلب.", "Contact us with any question about a product or an order."),
 });
 
 const CONTACT_LINES: { icon: ElementIconName; label: DesignText; value: DesignText; href?: string }[] = [
   { icon: "chat", label: L("واتساب", "WhatsApp"), value: "+20 100 000 0000", href: "https://wa.me/201000000000" },
-  { icon: "phone", label: L("اتصل بينا", "Call us"), value: "+20 100 000 0000", href: "tel:+201000000000" },
+  { icon: "phone", label: L("اتصل بنا", "Call us"), value: "+20 100 000 0000", href: "tel:+201000000000" },
   { icon: "mail", label: L("البريد الإلكتروني", "Email"), value: "hello@example.com", href: "mailto:hello@example.com" },
-  { icon: "clock", label: L("مواعيد العمل", "Working hours"), value: L("السبت للخميس، ١٠ ص لـ ١٠ م", "Sat to Thu, 10am to 10pm") },
+  { icon: "clock", label: L("مواعيد العمل", "Working hours"), value: L("السبت إلى الخميس، ١٠ ص – ١٠ م", "Sat to Thu, 10am to 10pm") },
   { icon: "map-pin", label: L("العنوان", "Address"), value: L("١٢ شارع النيل، الزمالك، القاهرة", "12 Nile St, Zamalek, Cairo") },
 ];
 
@@ -239,7 +236,7 @@ export const classicContact = defineDesign({
   category: "contact",
   subcategory: "form",
   name: L("كلاسيك: النموذج والبيانات", "Classic: form and details"),
-  description: L("نموذج التواصل في كارت، وبجانبه واتساب والتليفون والبريد والمواعيد والعنوان.", "The contact form in a card, beside WhatsApp, phone, email, hours and address."),
+  description: L("نموذج التواصل في بطاقة، وبجانبه واتساب والهاتف والبريد والمواعيد والعنوان.", "The contact form in a card, beside WhatsApp, phone, email, hours and address."),
   keywords: ["contact", "form", "classic", "tallaby", "تواصل", "نموذج", "كلاسيك"],
   tree: (t) =>
     t.section({ label: L("التواصل", "Contact"), style: { paddingTop: 28, paddingBottom: 0 } }, [
@@ -248,7 +245,7 @@ export const classicContact = defineDesign({
           t.grid(
             [
               t.stack(
-                [t.heading(L("ابعتلنا رسالة", "Send us a message"), "h2", { style: { fontSize: "2xl", fontWeight: "extrabold" } }), t.storeForm({ formTemplate: "contact" })],
+                [t.heading(L("أرسل لنا رسالة", "Send us a message"), "h2", { style: { fontSize: "2xl", fontWeight: "extrabold" } }), t.storeForm({ formTemplate: "contact" })],
                 {
                   label: L("النموذج", "Form"),
                   style: { ...CARD, gap: 14, paddingTop: 24, paddingBottom: 24, paddingStart: 24, paddingEnd: 24 },
@@ -285,12 +282,12 @@ const FAQ_GROUPS: { title: DesignText; items: { title: DesignText; body: DesignT
     title: L("الطلبات", "Orders"),
     items: [
       {
-        title: L("أعرف إزاي إن طلبي وصل؟", "How do I know my order went through?"),
-        body: L("هتشوف صفحة تأكيد وتوصلك رسالة. وبنكلمك نأكد الطلبات الكاش.", "You see a confirmation page and get a message. We also call to confirm cash orders."),
+        title: L("كيف أعرف أن طلبي وصل؟", "How do I know my order went through?"),
+        body: L("ستظهر لك صفحة تأكيد بعد إتمام الطلب.", "You see a confirmation page after you place your order."),
       },
       {
-        title: L("أقدر أعدّل أو ألغي طلبي؟", "Can I change or cancel my order?"),
-        body: L("أيوه، لحد ما يتشحن. ألغيه من صفحة الطلب أو كلمنا.", "Yes, until it ships. Cancel from your order page or message us."),
+        title: L("هل يمكنني تعديل طلبي أو إلغاؤه؟", "Can I change or cancel my order?"),
+        body: L("تواصل معنا قبل شحن الطلب لتعديله أو إلغائه.", "Contact us before your order ships to change or cancel it."),
       },
     ],
   },
@@ -298,11 +295,11 @@ const FAQ_GROUPS: { title: DesignText; items: { title: DesignText; body: DesignT
     title: L("التوصيل", "Delivery"),
     items: [
       {
-        title: L("التوصيل بياخد قد إيه؟", "How long does delivery take?"),
-        body: L("القاهرة والجيزة من يوم ليومين، وباقي المحافظات من ٢ لـ ٦ أيام.", "Cairo and Giza in 1 to 2 days, other governorates in 2 to 6 days."),
+        title: L("كم تستغرق مدة التوصيل؟", "How long does delivery take?"),
+        body: L("تظهر تكلفة الشحن ومدته عند إتمام الطلب.", "Shipping cost and time are shown at checkout."),
       },
       {
-        title: L("أتابع طلبي إزاي؟", "How do I track my order?"),
+        title: L("كيف أتابع طلبي؟", "How do I track my order?"),
         body: L("من صفحة طلباتي بعد تسجيل الدخول، أو من الرابط في رسالة التأكيد.", "From My orders after you sign in, or from the link in your confirmation message."),
       },
     ],
@@ -311,12 +308,12 @@ const FAQ_GROUPS: { title: DesignText; items: { title: DesignText; body: DesignT
     title: L("الاسترجاع والدفع", "Returns and payment"),
     items: [
       {
-        title: L("سياسة الاسترجاع إيه؟", "What is your return policy?"),
-        body: L("تقدر ترجع أي منتج مش مستخدم خلال ١٤ يوم في علبته الأصلية.", "Return any unused item within 14 days in its original box."),
+        title: L("ما سياسة الاسترجاع؟", "What is your return policy?"),
+        body: L("راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.", "See the exchange and return policy page."),
       },
       {
-        title: L("بتقبلوا إيه في الدفع؟", "Which payment methods do you accept?"),
-        body: L("الدفع عند الاستلام والكارت والمحافظ الإلكترونية، حسب اللي يظهر في صفحة الدفع.", "Cash on delivery, card and mobile wallets, as shown at checkout."),
+        title: L("ما طرق الدفع المتاحة؟", "Which payment methods do you accept?"),
+        body: L("تظهر طرق الدفع المتاحة في صفحة الدفع.", "Available payment methods are shown at checkout."),
       },
     ],
   },
@@ -349,8 +346,8 @@ export const classicFaq = defineDesign({
                 [
                   t.stack(
                     [
-                      t.heading(L("لسه عندك سؤال؟", "Still have a question?"), "h3", { style: { fontSize: "lg", fontWeight: "bold" } }),
-                      t.paragraph(L("ابعتلنا وهيرد عليك شخص حقيقي.", "Message us and a real person will reply."), { style: { color: "muted" } }),
+                      t.heading(L("هل لديك سؤال آخر؟", "Still have a question?"), "h3", { style: { fontSize: "lg", fontWeight: "bold" } }),
+                      t.paragraph(L("أرسل لنا رسالة وسنرد عليك.", "Message us and we will reply."), { style: { color: "muted" } }),
                     ],
                     { label: L("النص", "Copy"), style: { gap: 4 } },
                   ),
@@ -413,16 +410,16 @@ export const classicPrivacy = policy({
   id: "tallaby-privacy",
   name: L("كلاسيك: سياسة الخصوصية", "Classic: privacy policy"),
   blocks: [
-    { h: L("بنجمع إيه", "What we collect"), p: L("اسمك وموبايلك وإيميلك وعنوانك عشان نوصلك الطلب.", "Your name, phone, email and address so we can deliver your order.") },
+    { h: L("ما البيانات التي نجمعها", "What we collect"), p: L("اسمك ورقم هاتفك وبريدك الإلكتروني وعنوانك لتوصيل طلبك.", "Your name, phone, email and address so we can deliver your order.") },
     {
-      h: L("بنستخدمها إزاي", "How we use it"),
-      p: L("بس عشان ننفذ الطلبات ونساعدك، ولو وافقت نبعتلك عروض.", "Only to process orders, provide support and, if you agree, send offers."),
+      h: L("كيف نستخدمها", "How we use it"),
+      p: L("فقط لتنفيذ الطلبات ومساعدتك، ولإرسال العروض إذا وافقت.", "Only to process orders, provide support and, if you agree, send offers."),
     },
     {
       h: L("الدفع", "Payments"),
-      p: L("بيانات الكارت بيتعامل معاها شريك الدفع. إحنا عمرنا ما بنشوفها أو نحفظها.", "Card details are handled by our payment partner. We never see or store them."),
+      p: L("يتعامل شريك الدفع مع بيانات البطاقة، ولا نطّلع عليها أو نحفظها.", "Card details are handled by our payment partner. We never see or store them."),
     },
-    { h: L("اختياراتك", "Your choices"), p: L("تقدر تطلب مننا في أي وقت نعدّل أو نمسح بياناتك.", "Ask us anytime to update or delete your data.") },
+    { h: L("اختياراتك", "Your choices"), p: L("يمكنك أن تطلب منا في أي وقت تعديل بياناتك أو حذفها.", "Ask us anytime to update or delete your data.") },
   ],
 });
 
@@ -434,18 +431,15 @@ export const classicTerms = policy({
   blocks: [
     {
       h: L("استخدام المتجر", "Using this store"),
-      p: L("لما تعمل طلب يبقى انت موافق على الشروط دي. من فضلك اقراها قبل الشراء.", "By placing an order you agree to these terms. Please read them before you buy."),
+      p: L("بإتمام الطلب فإنك توافق على هذه الشروط. يُرجى قراءتها قبل الشراء.", "By placing an order you agree to these terms. Please read them before you buy."),
     },
     {
       h: L("الأسعار والتوفر", "Prices and availability"),
-      p: L(
-        "الأسعار ممكن تتغير. لو منتج خلص بعد طلبك هنكلمك ونرجعلك أي مبلغ دفعته.",
-        "Prices may change. If an item sells out after you order, we contact you and refund any payment.",
-      ),
+      p: L("قد تتغير الأسعار. إذا نفد منتج بعد طلبك فسنتواصل معك ونرد أي مبلغ دفعته.", "Prices may change. If an item sells out after you order, we contact you and refund any payment."),
     },
     {
       h: L("الطلبات", "Orders"),
-      p: L("بنأكد كل طلب بمكالمة أو رسالة. ممكن نلغي الطلبات اللي مانقدرش نأكدها.", "We confirm every order by phone or message. We may cancel orders that cannot be confirmed."),
+      p: L("قد نؤكد الطلب بمكالمة أو رسالة، وقد نلغي الطلبات التي يتعذر تأكيدها.", "We may confirm orders by phone or message, and may cancel orders that cannot be confirmed."),
     },
     {
       h: L("الشحن والاسترجاع", "Shipping and returns"),

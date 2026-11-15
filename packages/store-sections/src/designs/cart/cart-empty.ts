@@ -31,11 +31,11 @@ export const cartEmpty = defineDesign({
                 style: { background: "secondary", radius: 999, width: "128px", paddingTop: 34, paddingBottom: 30, textAlign: "center" },
                 mobile: { width: "104px", paddingTop: 26, paddingBottom: 22 },
               }),
-              t.heading(L("السلة لسه فاضية", "Your cart is empty"), "h2", {
+              t.heading(L("سلتك فارغة", "Your cart is empty"), "h2", {
                 role: "title",
                 style: { fontSize: "display-sm", letterSpacing: "tight", textAlign: "center" },
               }),
-              t.paragraph(L("يلا نملاها بحاجات حلوة.", "Let's fill it with something good."), {
+              t.paragraph(L("تصفّح المنتجات وأضف ما يعجبك.", "Browse the products and add what you like."), {
                 role: "subtitle",
                 style: { textAlign: "center" },
               }),

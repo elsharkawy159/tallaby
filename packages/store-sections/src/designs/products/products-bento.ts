@@ -22,7 +22,7 @@ export const productsBento = defineDesign({
         [
           modHead(t, {
             label: L("الأكثر طلبًا", "Most wanted"),
-            title: L("الكل بيسأل عليهم", "Everyone is asking for these"),
+            title: L("منتجات يكثر الطلب عليها", "Most requested products"),
             link: { text: L("عرض الكل", "View all"), href: SHOP_LINK },
           }),
           t.grid(

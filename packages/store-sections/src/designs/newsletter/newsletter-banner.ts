@@ -43,18 +43,18 @@ export const newsletterBanner = defineDesign({
                         [
                           t.stack(
                             [
-                              t.text(L("خليك قريب", "Stay in the loop"), { role: "eyebrow", style: { color: "primary", fontWeight: "semibold", fontSize: "sm", textAlign: "center" } }),
-                              t.heading(L("اعرف المجموعة الجديدة قبل الكل", "Get the new drop first"), "h2", {
+                              t.text(L("ابقَ على اطّلاع", "Stay in the loop"), { role: "eyebrow", style: { color: "primary", fontWeight: "semibold", fontSize: "sm", textAlign: "center" } }),
+                              t.heading(L("اعرف المجموعة الجديدة أولًا", "Get the new collection first"), "h2", {
                                 role: "title",
                                 style: { fontSize: "3xl", lineHeight: "tight", textAlign: "center" },
                                 mobile: { fontSize: "2xl" },
                               }),
-                              t.paragraph(L("إيميل واحد في الأسبوع فيه القطع الجديدة والعروض الخاصة.", "One email a week with new pieces and members-only offers."), {
+                              t.paragraph(L("رسالة على بريدك الإلكتروني بأحدث المنتجات.", "An email with our newest products."), {
                                 role: "subtitle",
                                 style: { textAlign: "center" },
                               }),
                               t.storeForm({ formTemplate: "newsletter", style: { width: "100%" } }),
-                              t.text(L("من غير رسائل مزعجة، وتقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."), {
+                              t.text(L("بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.", "No spam. Unsubscribe any time."), {
                                 style: { color: "muted", fontSize: "xs", textAlign: "center" },
                               }),
                             ],

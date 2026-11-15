@@ -64,58 +64,58 @@ const NAME = L("ركن ستوديو", "Rokn Studio");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   hero: {
-    alt: L("فازتين سيراميك منقوشين", "Two dotted ceramic vases"),
-    eyebrow: L("محل هدايا", "Gift shop"),
-    title: L("حاجات صغيرة وفرق كبير", "Small things, big difference"),
-    line: L("فازات وبراويز ومنسوجات متختارة تمشي مع بعض، ومتغلفة هدية ببلاش.", "Vases, frames and textiles chosen to work together, gift-wrapped for free."),
+    alt: L("مزهريتان من السيراميك المنقوش", "Two dotted ceramic vases"),
+    eyebrow: L("ديكور وهدايا", "Decor and gifts"),
+    title: L("قطع صغيرة بأثر كبير", "Small pieces, big difference"),
+    line: L("مزهريات وإطارات ومنسوجات مختارة لتتناسق معًا.", "Vases, frames and textiles chosen to work together."),
     // Goes to the whole catalog; the second button is `custom.best-label` (the best sellers).
     cta: L("تسوق الديكور", "Shop decor"),
   },
-  categories: { title: L("هتزيّن إيه؟", "What are you decorating?") },
+  categories: { title: L("تسوّق حسب القسم", "Shop by category") },
   // A numbered list of six of what `journey.primary` shows: an eyebrow, a title and a line.
   products: {
     primary: {
-      eyebrow: L("أحسن ٥", "Top 5"),
-      title: L("الأكتر إهداءً", "Given most"),
-      line: L("الهدايا اللي الناس بترجع تطلبها لحبايبهم.", "The gifts people come back to order for the people they love."),
+      eyebrow: L("مختاراتنا", "Our picks"),
+      title: L("الأكثر إهداءً", "Most gifted"),
+      line: L("هدايا يكثر طلبها.", "The gifts people order most."),
     },
   },
   // Optional, with `custom.reviews-city`: one large buyer quote, its name (the avatar letter is the name's first letter) and city. Without them the home page ends on the list.
   reviews: {
-    title: L("قالوا عننا", "What they say"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
       {
         quote: L(
-          "«طلبت فازة وبرواز هدية بيت جديد، ووصلوا متغلفين بكارت مكتوب بخط الإيد. صاحبتي فرحت جداً.»",
-          "“I ordered a vase and a frame as a housewarming gift; they arrived wrapped with a handwritten card. My friend loved it.”",
+          "«طلبت مزهرية وإطارًا هدية، وكانا أجمل من الصور.»",
+          "“I ordered a vase and a frame as a gift, and they looked even better than the photos.”",
         ),
         name: L("نادين س.", "Nadine S."),
       },
     ],
   },
   about: {
-    line: L("ستوديو ديكور وهدايا صغير في المعادي.", "A small decor and gift studio in Maadi."),
+    line: L("متجر ديكور وهدايا بقطع مختارة.", "A decor and gift shop with chosen pieces."),
     alt: L("صينية خشب عليها شمعة وقواعد أكواب", "A wooden tray with a candle jar and coasters"),
-    eyebrow: L("المعادي", "Maadi"),
-    title: L("بنختار حاجات تمشي مع بعض", "We choose things that go together"),
-    text: L("كل فازة وبرواز ومفرش في الستوديو متختار عشان يمشي مع الباقي، فتقدر تكمّل ركن كامل من مكان واحد.", "Every vase, frame and textile in the studio is chosen to go with the rest, so you can finish a whole corner in one place."),
-    more: L("وكل طلب بيتغلف هدية ببلاش.", "And every order is gift-wrapped for free."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("قطع تتناسق معًا", "Pieces that go together"),
+    text: L("نختار كل مزهرية وإطار ومفرش لتتناسق مع بقية القطع، لتكمل ركنًا كاملًا من مكان واحد.", "Every vase, frame and textile is chosen to go with the rest, so you can finish a whole corner in one place."),
+    more: L("ولكل قطعة صور ومقاسات واضحة في صفحتها.", "And every piece has clear photos and sizes on its page."),
     // Goes to the whole catalog.
     cta: L("تسوق الديكور", "Shop decor"),
   },
   contact: {
     title: L("تواصل", "Contact"),
     line: L("٧ شارع ٩، المعادي.", "7 Road 9, Maadi."),
-    heading: L("اطلب كارت هدية أو اسأل عن هدية", "Order a gift card or ask about a gift"),
+    heading: L("اسألنا عن أي قطعة أو هدية", "Ask us about any piece or gift"),
   },
   faq: {
-    line: L("التغليف والتوصيل والاسترجاع.", "Gift wrap, delivery and returns."),
-    question: L("ينفع أبعت الهدية لعنوان تاني؟", "Can I send the gift to another address?"),
-    answer: L("أيوه، اكتب عنوان الشخص في الطلب ومش هنحط فاتورة جوه العلبة.", "Yes, add their address to the order and we leave the invoice out of the box."),
+    line: L("الهدايا والطلبات.", "Gifts and orders."),
+    question: L("هل يمكن إرسال الهدية إلى عنوان آخر؟", "Can I send the gift to another address?"),
+    answer: L("نعم، اكتب عنوان المستلم عند إتمام الطلب.", "Yes, enter the recipient's address at checkout."),
   },
   custom: {
     // The header's line under the store name, a few words.
-    tagline: L("حاجات صغيرة بتكمّل الأوضة", "Small things that finish a room"),
+    tagline: L("قطع صغيرة تكمل المكان", "Small pieces that finish a room"),
     // The label of the link to the best sellers (header and the hero's second button), two words.
     "best-label": L("الأكثر إهداءً", "Most gifted"),
     // The about page's name (header, footer, page title), one or two words.
@@ -124,7 +124,7 @@ const DEFAULT_CONTENT: LookDefaults = {
     "price-title": L("حسب ميزانيتك", "Shop by budget"),
     "price-band-1": L("أقل من ٥٠٠", "Under 500"),
     "price-band-2": L("٥٠٠ – ٧٠٠", "500 – 700"),
-    "price-band-3": L("أكتر من ٧٠٠", "Over 700"),
+    "price-band-3": L("أكثر من ٧٠٠", "Over 700"),
     // The quote's city (with `reviews`).
     "reviews-city": L("مصر الجديدة", "Heliopolis"),
   },
@@ -148,7 +148,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       "المتجر": L("الجديد", "New in"),
       "العروض": x["best-label"]!,
       "اسم متجرك": name,
-      "مختارات بعناية منذ ٢٠١٨": x.tagline!,
+      "مختارات بعناية": x.tagline!,
       "المدونة": L("الأسئلة", "FAQ"),
       "من نحن": aboutLabel,
     },
@@ -172,9 +172,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("hero-halves", {
       photo: [undefined, c.photos.hero.tall],
       text: {
-        "كوليكشن الموسم": c.hero.eyebrow,
+        "مجموعة الموسم": c.hero.eyebrow,
         "صوت أنقى، كل يوم": c.hero.title,
-        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+        "منتجات مختارة بمواصفات واضحة لكل يوم.": c.hero.line,
         "تسوق الآن": c.hero.cta,
         "العروض": x["best-label"]!,
         "صورة الحملة": c.hero.alt,
@@ -182,7 +182,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       links: { "/products": [SHOP, BEST] },
     }),
     lib("categories-circles", {
-      text: { "بتدوّر على إيه؟": c.categories.title },
+      text: { "ما الذي تبحث عنه؟": c.categories.title },
       // Six across by design; a store with another number of categories gets one full row of them (phones swipe).
       ...(tiles !== 6 && { nodes: { "الأقسام": { style: { columns: tiles }, tablet: { columns: tiles } } } }),
     }),
@@ -192,14 +192,14 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "تسوق حسب ميزانيتك": x["price-title"]!,
         "أقل من ٦٠٠": x["price-band-1"]!,
         "٦٠٠ – ١٬٥٠٠": x["price-band-2"]!,
-        "أكتر من ١٬٥٠٠": x["price-band-3"]!,
+        "أكثر من ١٬٥٠٠": x["price-band-3"]!,
       },
     }),
     lib("products-list", {
       text: {
         "الكتالوج": c.products.primary.eyebrow,
         "كل الإكسسوارات": c.products.primary.title,
-        "كل اللي تحتاجه في مكان واحد، أصلي وبضمان.": c.products.primary.line,
+        "كل ما تحتاجه في مكان واحد.": c.products.primary.line,
       },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 6 }],
@@ -208,7 +208,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       ? [
           lib("testimonials-spotlight", {
             text: {
-              "«من أفضل تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف أنيق، والمنتج أفضل من الصور.»": reviews.items[0]!.quote,
+              "«من أفضل تجارب الشراء عبر الإنترنت. الطلب وصل بسرعة، والتغليف أنيق، والمنتج أفضل من الصور.»": reviews.items[0]!.quote,
               "م": initialOf(reviews.items[0]!.name),
               "مريم أ.": reviews.items[0]!.name,
               "القاهرة": city,
@@ -256,37 +256,37 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("حاجات صغيرة بتكمّل الأوضة.", "Small things that finish a room."),
+  description: L("قطع ديكور صغيرة تكمل المكان.", "Small decor pieces that finish a room."),
   categories: [
-    ["vases", "فازات", "Vases", PHOTOS.vaseShelf],
-    ["frames", "براويز", "Frames", PHOTOS.frameRoom],
+    ["vases", "مزهريات", "Vases", PHOTOS.vaseShelf],
+    ["frames", "إطارات", "Frames", PHOTOS.frameRoom],
     ["candles", "شموع", "Candles", PHOTOS.candleCorner],
     ["textiles", "منسوجات", "Textiles", PHOTOS.featherHanging],
-    ["cushions", "مخدات", "Cushions", PHOTOS.cushions],
+    ["cushions", "وسائد", "Cushions", PHOTOS.cushions],
     ["trays", "صواني", "Trays", PHOTOS.woodTray],
   ],
   products: [
-    ["donut-stoneware-vase", "vases", "فازة دونات ستون وير", "Stoneware Donut Vase", PHOTOS.donutVase, 450, { isFeatured: true, rating: 4.8, sold90: 140 }],
-    ["two-tone-vases", "vases", "فازتين على صينية خشب", "Two-Tone Vase Pair", PHOTOS.twoToneVases, 590, { rating: 4.7, sold90: 88 }],
-    ["white-amphora-pair", "vases", "زلعتين بيض", "White Amphora Pair", PHOTOS.whiteAmphoras, 650, { sold90: 46 }],
-    ["pink-vase-tray", "vases", "فازة بينك على صينية", "Pink Vase on a Tray", PHOTOS.pinkVase, 480, { sold90: 52 }],
-    ["oak-frame-vase-set", "frames", "برواز أرو وفازة", "Oak Frame & Vase Set", PHOTOS.oakFrame, 690, { isFeatured: true, sold90: 61 }],
-    ["black-frame", "frames", "برواز أسود", "Black Frame", PHOTOS.blackFrame, 320, { sold90: 70 }],
-    ["washed-wood-frame", "frames", "برواز خشب مغسول", "Washed Wood Frame", PHOTOS.woodFrame, 280, { sold90: 34 }],
-    ["black-vase-candle-tray", "candles", "صينية شمع وفازة سودا", "Black Vase & Candle Tray", PHOTOS.blackVaseTray, 540, { sold90: 39 }],
-    ["amber-candle-jar", "candles", "شمعة في برطمان عنبري", "Amber Candle Jar", PHOTOS.candleJar, 260, { sold90: 95 }],
+    ["donut-stoneware-vase", "vases", "مزهرية دائرية من الخزف الحجري", "Stoneware Donut Vase", PHOTOS.donutVase, 450, { isFeatured: true, rating: 4.8, sold90: 140 }],
+    ["two-tone-vases", "vases", "مزهريتان على صينية خشب", "Two-Tone Vase Pair", PHOTOS.twoToneVases, 590, { rating: 4.7, sold90: 88 }],
+    ["white-amphora-pair", "vases", "جرّتان بيضاوان", "White Amphora Pair", PHOTOS.whiteAmphoras, 650, { sold90: 46 }],
+    ["pink-vase-tray", "vases", "مزهرية وردية على صينية", "Pink Vase on a Tray", PHOTOS.pinkVase, 480, { sold90: 52 }],
+    ["oak-frame-vase-set", "frames", "إطار من خشب البلوط ومزهرية", "Oak Frame & Vase Set", PHOTOS.oakFrame, 690, { isFeatured: true, sold90: 61 }],
+    ["black-frame", "frames", "إطار أسود", "Black Frame", PHOTOS.blackFrame, 320, { sold90: 70 }],
+    ["washed-wood-frame", "frames", "إطار خشب مغسول", "Washed Wood Frame", PHOTOS.woodFrame, 280, { sold90: 34 }],
+    ["black-vase-candle-tray", "candles", "صينية شموع ومزهرية سوداء", "Black Vase & Candle Tray", PHOTOS.blackVaseTray, 540, { sold90: 39 }],
+    ["amber-candle-jar", "candles", "شمعة في وعاء زجاجي عنبري", "Amber Candle Jar", PHOTOS.candleJar, 260, { sold90: 95 }],
     ["macrame-wall-hanging", "textiles", "معلقة مكرمية", "Macrame Wall Hanging", PHOTOS.macrame, 420, { inStock: false, sold90: 21 }],
     ["waffle-throw", "textiles", "بطانية وافل", "Waffle Throw", PHOTOS.waffleThrow, 890, { compareAtPrice: 1050, sold90: 40 }],
-    ["cushion-set", "cushions", "طقم مخدات ألوان", "Cushion Set", PHOTOS.cushions, 650, { sold90: 22 }],
+    ["cushion-set", "cushions", "طقم وسائد ملونة", "Cushion Set", PHOTOS.cushions, 650, { sold90: 22 }],
     ["wooden-serving-tray", "trays", "صينية خشب", "Wooden Serving Tray", PHOTOS.woodTray, 380, { sold90: 48 }],
   ],
 });
 
 export const ROKN = editionTemplate({
   key: ROKN_KEY,
-  version: 3,
+  version: 4,
   changelog: "Rokn v3: categories, section order",
-  productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("كلمات عملائنا", "Customers' words"), related: L("هدايا صغيرة معاه", "Small gifts to go with it") } },
+  productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("ركن", "Rokn"),
   description: L(
     "ديكور وهدايا: هدايا حسب الشخص، حسب الميزانية، الأكتر إهداءً وكارت هدية. أربع صفحات جاهزة.",

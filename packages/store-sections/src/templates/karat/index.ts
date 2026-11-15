@@ -67,69 +67,69 @@ const STORIES = [1, 2, 3, 4, 5, 6, 7, 8] as const;
  */
 const DEFAULT_CONTENT: LookDefaults = {
   hero: {
-    eyebrow: L("مجموعة اللمعة", "The shine edit"),
-    alt: L("علبة مجوهرات مفتوحة فيها سلاسل", "An open jewellery box with chains"),
-    title: L("لمعة كل يوم", "Everyday shine"),
-    line: L("إكسسوارات دهبي وساعات وشنط، كلها أقل من ٢٬٠٠٠ ج.م.", "Gold-tone jewellery, watches and bags, all under EGP 2,000."),
+    eyebrow: L("المجموعة الجديدة", "New collection"),
+    alt: L("علبة مجوهرات مفتوحة بداخلها سلاسل", "An open jewellery box with chains"),
+    title: L("إكسسوارات لكل يوم", "Accessories for every day"),
+    line: L("إكسسوارات بلون ذهبي وساعات وحقائب.", "Gold-tone jewellery, watches and bags."),
     // The button goes to the newest products.
-    cta: L("تسوقي الجديد", "Shop new in"),
+    cta: L("تسوّق الجديد", "Shop new in"),
   },
-  categories: { title: L("تسوقي بالقسم", "Shop by category") },
+  categories: { title: L("تسوّق حسب القسم", "Shop by category") },
   // The shelf's title, over its tabs (new, best sellers, top rated).
-  products: { primary: { title: L("اختاري مزاجك", "Pick your mood") } },
+  products: { primary: { title: L("اختر ما يناسبك", "Find your pick") } },
   // Optional, with `photos.custom.reviews-1..4` (all four, or leave `reviews` out). A pack may also set `custom.reviews-photo-alt`
-  // (the review photo's alt, default "The product she bought") and `custom.reviews-verified` (the line under each name, default
-  // "اشترت من المتجر / Verified buyer"). Four photo reviews. Each card shows the first letter of the name, and a square photo of what was bought (`photos.custom.reviews-N`).
+  // (the review photo's alt, default "The product photo") and `custom.reviews-verified` (the line under each name, default
+  // "اشترى من المتجر / Verified buyer"). Four photo reviews. Each card shows the first letter of the name, and a square photo of what was bought (`photos.custom.reviews-N`).
   reviews: {
-    title: L("من عميلاتنا", "From our customers"),
+    title: L("آراء العملاء", "From our customers"),
     items: [
-      { quote: L("الهوب لسه بيلمع بعد ٣ شهور لبس كل يوم.", "The hoops still shine after three months of daily wear."), name: L("جنى ك.", "Jana K.") },
-      { quote: L("بوكس هدية مثالي، أختي حبت الغويشة.", "A perfect gift box; my sister loved the bracelet."), name: L("فرح ع.", "Farah A.") },
-      { quote: L("الساعة حلوة، الأبلكيشن خد وقت عشان يتظبط.", "The watch is pretty; the app took a while to set up."), name: L("ليلى ر.", "Laila R.") },
-      { quote: L("الشنطة جلدها حلو والمقاس عملي جداً.", "The bag’s leather is lovely and the size is very practical."), name: L("سلمى ط.", "Salma T.") },
+      { quote: L("حلق الهوب خفيف وتصميمه أنيق.", "The hoops are light and elegant."), name: L("جنى ك.", "Jana K.") },
+      { quote: L("الإسورة أنيقة وتصميمها بسيط.", "The bracelet is elegant and simple."), name: L("فرح ع.", "Farah A.") },
+      { quote: L("الساعة أنيقة وإعدادها سهل.", "The watch looks good and is easy to set up."), name: L("ليلى ر.", "Laila R.") },
+      { quote: L("جلد الحقيبة جميل ومقاسها عملي.", "The bag’s leather is lovely and the size is practical."), name: L("سلمى ط.", "Salma T.") },
     ],
   },
   about: {
-    line: L("إكسسوارات بأسعار حلوة بتختارها أختين في مدينة نصر.", "Affordable accessories picked by two sisters in Nasr City."),
+    line: L("إكسسوارات وساعات وحقائب مختارة بعناية.", "Accessories, watches and bags chosen with care."),
     alt: L("خواتم في أطباق خزف ملوّنة", "Rings in colourful ceramic dishes"),
-    eyebrow: L("سيتي ستارز", "City Stars"),
-    title: L("لمعة كل يوم بسعر حلو", "Everyday shine at a fair price"),
-    text: L("بنختار كل قطعة بنفسنا: ستانلس مطلي دهب ضد المية ومضاد للحساسية.", "We pick every piece ourselves: water-resistant, hypoallergenic gold-plated steel."),
-    more: L("وكل طلب بيوصل في علبة هدية.", "And every order arrives in a gift box."),
+    eyebrow: L("من نحن", "About us"),
+    title: L("إكسسوارات يومية بتصميم بسيط", "Everyday accessories, simply designed"),
+    text: L("نختار كل قطعة بعناية، مع وصف واضح للخامة في صفحة كل منتج.", "We choose every piece with care, with a clear material description on every product page."),
+    more: L("تشكيلة من الحلقان والأساور والخواتم والساعات.", "Earrings, bracelets, rings and watches in one place."),
     // The button goes to the newest products.
-    cta: L("تسوقي الجديد", "Shop new in"),
+    cta: L("تسوّق الجديد", "Shop new in"),
   },
   contact: {
-    title: L("تواصلي معانا", "Contact us"),
+    title: L("تواصل معنا", "Contact us"),
     line: L("سيتي ستارز، كشك ٢٢، مدينة نصر.", "City Stars, Kiosk 22, Nasr City."),
-    heading: L("عن هدية أو طلب", "About a gift or an order"),
+    heading: L("لأي سؤال عن منتج أو طلب", "About a product or an order"),
   },
   faq: {
-    line: L("الخامات والتوصيل والهدايا.", "Materials, delivery and gifts."),
-    question: L("الإكسسوارات بتسوّد؟", "Does the jewellery tarnish?"),
-    answer: L("لأ. كلها ستانلس مطلي دهب ضد المية ومضاد للحساسية.", "No. Everything is water-resistant, hypoallergenic gold-plated steel."),
+    line: L("الخامات والعناية والطلبات.", "Materials, care and orders."),
+    question: L("هل يتغير لون الإكسسوارات؟", "Does the jewellery tarnish?"),
+    answer: L("يختلف ذلك حسب الخامة، وستجد نوعها وطريقة العناية بها في صفحة كل منتج.", "It depends on the material; each product page lists the material and its care."),
   },
   custom: {
     // The store's short name, as it reads inside a sentence: "About Zeina", "A photo from Zeina's Instagram".
     "store-short": L("زينة", "Zeina"),
     // The hero's small line beside its eyebrow (a season, a date, "this week").
-    "hero-note": L("الأسبوع ده بس", "This week only"),
+    "hero-note": L("وصل حديثًا", "New in"),
     // The hero's round sticker, three short lines: a word, one big figure (at most 4 characters), a word.
-    "hero-sticker-1": L("اشتري", "Buy"),
-    "hero-sticker-2": L("٢+١", "2+1"),
-    "hero-sticker-3": L("حلقان", "earrings"),
+    "hero-sticker-1": L("مجموعة", "The"),
+    "hero-sticker-2": L("٢٠٢٦", "2026"),
+    "hero-sticker-3": L("الجديدة", "collection"),
     // The eight story rings: a product type each, one or two words. They all open the categories page.
     "stories-1": L("هوب", "Hoops"),
     "stories-2": L("حلق صغير", "Studs"),
     "stories-3": L("أساور", "Bracelets"),
     "stories-4": L("خواتم", "Rings"),
-    "stories-5": L("ستاكات", "Stacks"),
+    "stories-5": L("طبقات", "Stacks"),
     "stories-6": L("سلاسل", "Necklaces"),
     "stories-7": L("ساعات", "Watches"),
-    "stories-8": L("شنط", "Bags"),
+    "stories-8": L("حقائب", "Bags"),
     // The Instagram bento's brand tile: the store's handle, then one short line under it.
     "lookbook-handle": L(handle("@zeina.shop"), handle("@zeina.shop")),
-    "lookbook-line": L("٦٤ ألف متابع", "64K followers"),
+    "lookbook-line": L("تابع أحدث صورنا", "Follow our latest photos"),
   },
   photos: {
     // The poster's photo, 16:9, with the copy over a dark fade.
@@ -178,7 +178,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const withReviews = reviews !== undefined && reviewPhotos.every(Boolean);
 
   const header = lib("header-pill", {
-    text: { "اسم متجرك": name, "المتجر": L("الجديد", "New"), "العروض": L("الأكثر مبيعاً", "Best sellers"), "المدونة": L("عننا", "About") },
+    text: { "اسم متجرك": name, "المتجر": L("الجديد", "New"), "العروض": L("الأكثر مبيعاً", "Best sellers"), "المدونة": L("من نحن", "About") },
     links: { "/products": [NEW, BEST], "/blog": "/about" },
   });
 
@@ -196,13 +196,13 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       photo: [undefined, undefined, c.photos.hero.wide],
       text: {
         "مجموعة الموسم": c.hero.eyebrow,
-        "من ١ إلى ٣٠ نوفمبر": c.custom["hero-note"]!,
+        "وصل حديثًا": c.custom["hero-note"]!,
         "صورة الحملة": c.hero.alt,
-        "خصم": c.custom["hero-sticker-1"]!,
-        "٣٠٪": c.custom["hero-sticker-2"]!,
-        "لفترة محدودة": c.custom["hero-sticker-3"]!,
+        "مجموعة": c.custom["hero-sticker-1"]!,
+        "٢٠٢٦": c.custom["hero-sticker-2"]!,
+        "الجديدة": c.custom["hero-sticker-3"]!,
         "الموسم الجديد وصل": c.hero.title,
-        "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": c.hero.line,
+        "قطع خفيفة بخامات طبيعية ومقاسات كاملة.": c.hero.line,
         "اكتشف المجموعة": c.hero.cta,
       },
       links: { "/products": NEW },
@@ -222,7 +222,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       },
     }),
     lib("products-shelf", {
-      text: { "تسوّق حسب مزاجك": c.products.primary.title, "عليه خصم": L("الأعلى تقييماً", "Top rated") },
+      text: { "تسوّق حسب اختيارك": c.products.primary.title, "عليه خصم": L("الأعلى تقييماً", "Top rated") },
       links: { "/products": [NEW, BEST, RATED, SHOP] },
     }),
     ...(withReviews
@@ -231,11 +231,11 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
             photo: [undefined, undefined, ...reviewPhotos],
             text: {
               "من عملائنا": reviews.title,
-              "صورة العميل": c.custom["reviews-photo-alt"] ?? L("المنتج اللي اشترته", "The product she bought"),
+              "صورة العميل": c.custom["reviews-photo-alt"] ?? L("صورة المنتج", "The product photo"),
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
               "م": initialOf(reviews.items[0]!.name),
               "مريم أ.": reviews.items[0]!.name,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "ع": initialOf(reviews.items[1]!.name),
               "عمر ك.": reviews.items[1]!.name,
               "الإسكندرية": L("الجيزة", "Giza"),
@@ -247,7 +247,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
               "ي": initialOf(reviews.items[3]!.name),
               "يوسف م.": reviews.items[3]!.name,
               "المنصورة": L("القاهرة", "Cairo"),
-              "اشترى من المتجر": c.custom["reviews-verified"] ?? L("اشترت من المتجر", "Verified buyer"),
+              "اشترى من المتجر": c.custom["reviews-verified"] ?? L("اشترى من المتجر", "Verified buyer"),
             },
           }),
         ]
@@ -263,7 +263,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: {
         "صورة إنستجرام": L(`صورة من إنستجرام ${short.ar}`, `A photo from ${short.en}’s Instagram`),
         "@اسم_متجرك": oneString(c.custom["lookbook-handle"]!),
-        "صور جديدة كل أسبوع": c.custom["lookbook-line"]!,
+        "تابع أحدث صورنا": c.custom["lookbook-line"]!,
       },
     }),
   ];
@@ -287,7 +287,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
     footer,
     pages: [
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      { slug: "about", name: L("من نحن", "About"), seo: { title: aboutName }, sections: about },
       {
         slug: "contact",
         name: L("تواصل", "Contact"),
@@ -306,25 +306,25 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("لمعة كل يوم بأقل من ٢٬٠٠٠ ج.م.", "Everyday shine under EGP 2,000."),
+  description: L("إكسسوارات وساعات وحقائب لكل يوم.", "Accessories, watches and bags for every day."),
   categories: [
     ["earrings", "حلقان", "Earrings", PHOTOS.hoops],
     ["bracelets", "أساور", "Bracelets", PHOTOS.chain],
     ["rings", "خواتم", "Rings", PHOTOS.colourRings],
     ["watches", "ساعات", "Watches", PHOTOS.watch],
-    ["bags", "شنط", "Bags", PHOTOS.tote],
+    ["bags", "حقائب", "Bags", PHOTOS.tote],
   ],
   products: [
-    ["gold-tone-hoops", "earrings", "حلق هوب دهبي", "Gold-tone Hoops", PHOTOS.hoops, 390, { isFeatured: true, rating: 4.8, sold90: 410 }],
-    ["mini-studs", "earrings", "حلق صغير دهبي", "Mini Studs", PHOTOS.studs, 290, { sold90: 120 }],
-    ["chain-bracelet", "bracelets", "غويشة سلسلة", "Chain Bracelet", PHOTOS.chain, 450, { rating: 4.7, sold90: 260 }],
-    ["braided-bracelet", "bracelets", "غويشة مضفّرة", "Braided Bracelet", PHOTOS.braided, 490, { sold90: 80 }],
-    ["colour-stack-rings", "rings", "ستاك خواتم ألوان", "Colour Stack Rings", PHOTOS.colourRings, 520, { sold90: 98 }],
+    ["gold-tone-hoops", "earrings", "حلق هوب ذهبي اللون", "Gold-tone Hoops", PHOTOS.hoops, 390, { isFeatured: true, rating: 4.8, sold90: 410 }],
+    ["mini-studs", "earrings", "حلق صغير ذهبي اللون", "Mini Studs", PHOTOS.studs, 290, { sold90: 120 }],
+    ["chain-bracelet", "bracelets", "إسورة سلسلة", "Chain Bracelet", PHOTOS.chain, 450, { rating: 4.7, sold90: 260 }],
+    ["braided-bracelet", "bracelets", "إسورة مضفّرة", "Braided Bracelet", PHOTOS.braided, 490, { sold90: 80 }],
+    ["colour-stack-rings", "rings", "مجموعة خواتم ملوّنة", "Colour Stack Rings", PHOTOS.colourRings, 520, { sold90: 98 }],
     ["ring-box-set", "rings", "طقم خواتم بالعلبة", "Ring Set with Box", PHOTOS.ringBox, 690, { sold90: 44 }],
     ["layered-necklaces", "rings", "سلاسل طبقات", "Layered Necklaces", PHOTOS.necklaceRack, 560, { sold90: 70 }],
     ["everyday-smartwatch", "watches", "ساعة ذكية يومية", "Everyday Smartwatch", PHOTOS.watch, 1450, { compareAtPrice: 1690, isFeatured: true, sold90: 132 }],
-    ["tan-tote", "bags", "شنطة توت جملي", "Tan Tote", PHOTOS.tote, 1850, { sold90: 44 }],
-    ["buckle-shoulder-bag", "bags", "شنطة كتف بأبزيم", "Buckle Shoulder Bag", PHOTOS.buckleBag, 1600, { compareAtPrice: 1900, inStock: false, sold90: 37 }],
+    ["tan-tote", "bags", "حقيبة توت بلون جملي", "Tan Tote", PHOTOS.tote, 1850, { sold90: 44 }],
+    ["buckle-shoulder-bag", "bags", "حقيبة كتف بأبزيم", "Buckle Shoulder Bag", PHOTOS.buckleBag, 1600, { compareAtPrice: 1900, inStock: false, sold90: 37 }],
   ],
 });
 
@@ -332,7 +332,7 @@ export const KARAT = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KARAT_KEY, "glasses", { ar: 1682, en: 1694 }),
   key: KARAT_KEY,
-  version: 3,
+  version: 4,
   changelog: "Karat v3: product page",
   name: L("قيراط", "Karat"),
   description: L(
@@ -396,5 +396,5 @@ export const KARAT = editionTemplate({
   journey: { primary: "newest", rows: [] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { reviews: L("بنات قالوا إيه", "What you said"), related: L("كمل الإطلالة", "Finish the look") } },
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
 });

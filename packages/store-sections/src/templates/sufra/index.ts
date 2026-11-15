@@ -61,7 +61,7 @@ const NAME = L("سفرة تيتا", "Sufret Teta");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header bar: two short lines.
-  announcement: [L("افتح الطلب قبل ما تدفع", "Open your order before you pay"), L("التوصيل تاني يوم في القاهرة", "Next-day delivery in Cairo")],
+  announcement: [L("أطباق وسلطانيات ومفارش", "Plates, bowls and table linen"), L("تفاصيل ومقاسات واضحة لكل قطعة", "Clear details and sizes for every piece")],
   // The header's two trade links, one or two words each, to catalog routes. The hero's button goes to the first.
   nav: [
     { label: L("أدوات السفرة", "Tableware"), href: TABLEWARE },
@@ -69,24 +69,24 @@ const DEFAULT_CONTENT: LookDefaults = {
   ],
   // A full-bleed hero (the copy sits on the photo; phones crop it from the centre).
   hero: {
-    alt: L("سفرة متجهزة بأطباق وسلطانيات", "A laid table of plates and bowls"),
-    eyebrow: L("موسم العزايم", "Feast season"),
-    title: L("جهّز السفرة لـ١٢", "Set the table for twelve"),
-    line: L("ستون وير بيدخل الفرن ويطلع على السفرة، وكتان بيستحمل الغسيل.", "Stoneware that goes from oven to table, and linen that survives the wash."),
+    alt: L("مائدة مجهزة بأطباق وسلطانيات", "A laid table of plates and bowls"),
+    eyebrow: L("مجموعة السفرة", "Tableware collection"),
+    title: L("أطباق وأدوات لكل سفرة", "Plates and tools for every table"),
+    line: L("أطباق من الخزف الحجري تتحمّل الفرن، ومفارش كتان تتحمّل الغسيل.", "Stoneware that goes from oven to table, and linen that survives the wash."),
     cta: L("تسوق أدوات السفرة", "Shop tableware"),
   },
   categories: { title: L("جهّز سفرتك", "Set your table") },
   // The featured block: its title and the small badge on the featured product.
-  products: { primary: { title: L("طقم العزومة", "The feast set"), eyebrow: L("اختيار تيتا", "Teta’s pick") } },
+  products: { primary: { title: L("أطقم السفرة", "Table sets"), eyebrow: L("اختيارنا", "Our pick") } },
   // The footer's sign-up: a title and one line.
-  newsletter: { title: L("وصفات وقطع جديدة", "Recipes and new pieces"), line: L("إيميل واحد قبل كل موسم عزايم.", "One email before every feast season.") },
+  newsletter: { title: L("وصفات وقطع جديدة", "Recipes and new pieces"), line: L("رسالة بأحدث القطع عند وصولها.", "A note when new pieces arrive.") },
   about: {
-    line: L("أدوات سفرة بتختارها عيلة بتعزم كل جمعة.", "Tableware chosen by a family that hosts every Friday."),
-    alt: L("ستون وير وألواح خشب على رخامة المطبخ", "Stoneware and wooden boards on a kitchen counter"),
+    line: L("أدوات سفرة مختارة للاستخدام اليومي والعزائم.", "Tableware chosen for everyday meals and gatherings."),
+    alt: L("أطباق خزفية وألواح خشب على سطح المطبخ", "Stoneware and wooden boards on a kitchen counter"),
     eyebrow: L("حكايتنا", "Our story"),
-    title: L("عيلة بتعزم كل جمعة", "A family that hosts every Friday"),
-    text: L("بنختار الأطباق اللي بتستحمل عزومة ١٢ نفر والغسيل بعدها، والكتان اللي بيعيش سنين.", "We pick plates that survive lunch for twelve and the washing-up after, and linen that lasts for years."),
-    more: L("بنوصل تاني يوم في القاهرة، وتفتح الطلب قدام المندوب قبل ما تدفع.", "We deliver next day in Cairo, and you open the order in front of the courier before you pay."),
+    title: L("أدوات تتحمّل الاستخدام", "Tools made to be used"),
+    text: L("نختار أطباقًا تتحمّل الاستخدام والغسيل، ومفارش كتان تدوم طويلًا.", "We pick plates that stand up to use and washing, and linen that lasts."),
+    more: L("ولكل قطعة صور ومقاسات واضحة في صفحتها.", "And every piece has clear photos and sizes on its page."),
     // Goes to the whole catalog.
     cta: L("كل المنتجات", "Shop all"),
   },
@@ -97,8 +97,8 @@ const DEFAULT_CONTENT: LookDefaults = {
   },
   faq: {
     line: L("التوصيل والدفع والاسترجاع.", "Delivery, payment and returns."),
-    question: L("لو طبق وصل مكسور؟", "What if a plate arrives chipped?"),
-    answer: L("افتح العلبة قدام المندوب. لو فيه حاجة مكسورة رجّعها معاه وبنبدلها تاني يوم.", "Open the box in front of the courier. If anything is chipped, send it back with him and we replace it the next day."),
+    question: L("ماذا لو وصل طبق مكسور؟", "What if a plate arrives chipped?"),
+    answer: L("تواصل معنا عند الاستلام، وراجع سياسة الاستبدال والاسترجاع في صفحة السياسات.", "Contact us when it arrives, and see the exchange and return policy page."),
   },
   // hero.wide: the full-bleed hero; story: the about page (4:5).
   photos: { hero: { wide: PHOTOS.tableFlatLay }, story: PHOTOS.counter },
@@ -119,7 +119,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
   const header = lib("header-announcement", {
     text: {
-      "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+      "تشكيلة الموسم الجديد وصلت": c.announcement[0]!,
       "الدفع عند الاستلام": c.announcement[1]!,
       "م": initial,
       "اسم متجرك": name,
@@ -133,7 +133,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const footer = lib("footer-signup", {
     text: {
       "اشترك في النشرة": c.newsletter.title,
-      "عروض ومنتجات جديدة، مرة في الأسبوع.": c.newsletter.line,
+      "منتجات جديدة وأخبار المتجر.": c.newsletter.line,
       "م": initial,
       "اسم متجرك": name,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
@@ -149,15 +149,15 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
         "صورة الواجهة": c.hero.alt,
         "المجموعة الجديدة": c.hero.eyebrow,
         "صُنعت لتدوم معك": c.hero.title,
-        "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "خامات مختارة وتفاصيل هادئة لكل يوم.": c.hero.line,
         "تسوّق الآن": c.hero.cta,
-        "شوف الجديد": L("وصل جديد", "New in"),
+        "اكتشف الجديد": L("وصل جديد", "New in"),
       },
       links: { "/products": first.href },
     }),
     lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
     lib("products-feature", {
-      text: { "اختيارنا ليك": c.products.primary.title, "اختيار الأسبوع": c.products.primary.eyebrow },
+      text: { "اختيارنا لك": c.products.primary.title, "اختيار الأسبوع": c.products.primary.eyebrow },
     }),
     lib("pay-open-box"),
     lib("finder-budget"),
@@ -202,32 +202,32 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("أدوات سفرة للعزومات الكبيرة.", "Tableware for big family lunches."),
+  description: L("أدوات سفرة للاستخدام اليومي والعزائم.", "Tableware for everyday meals and gatherings."),
   categories: [
     ["tableware", "أدوات السفرة", "Tableware", PHOTOS.colourPlates],
     ["prep", "ألواح وتحضير", "Boards & prep", PHOTOS.boards],
     ["storage", "التخزين", "Storage", PHOTOS.pantry],
     ["linen", "مفارش", "Table linen", PHOTOS.linenCloth],
-    ["mugs", "مجات وكوبايات", "Mugs & cups", PHOTOS.mugPair],
+    ["mugs", "أكواب وفناجين", "Mugs & cups", PHOTOS.mugPair],
   ],
   products: [
-    ["stoneware-dinner-set", "tableware", "طقم أطباق عشا ستون وير لـ٦", "Stoneware Dinner Set for Six", PHOTOS.dinnerSet, 2450, { isFeatured: true, rating: 4.8, sold90: 132 }],
+    ["stoneware-dinner-set", "tableware", "طقم أطباق عشاء من الخزف الحجري لستة أشخاص", "Stoneware Dinner Set for Six", PHOTOS.dinnerSet, 2450, { isFeatured: true, rating: 4.8, sold90: 132 }],
     ["linen-tablecloth", "linen", "مفرش سفرة كتان", "Linen Tablecloth", PHOTOS.linenCloth, 450, { sold90: 47 }],
-    ["hand-painted-mug-pair", "mugs", "كوبايتين مرسومين باليد", "Hand-Painted Mug Pair", PHOTOS.mugPair, 420, { sold90: 88 }],
+    ["hand-painted-mug-pair", "mugs", "كوبان مرسومان يدويًا", "Hand-Painted Mug Pair", PHOTOS.mugPair, 420, { sold90: 88 }],
     ["olive-wood-board-set", "prep", "طقم ألواح خشب زيتون", "Olive Wood Board Set", PHOTOS.boards, 690, { sold90: 300 }],
-    ["beech-utensil-set", "prep", "طقم معالق خشب زان", "Beech Utensil Set", PHOTOS.utensils, 340, { compareAtPrice: 420, sold90: 280 }],
-    ["glass-jar-set", "storage", "٦ برطمانات إزاز", "Glass Jar Set of 6", PHOTOS.pantry, 560, { sold90: 260 }],
+    ["beech-utensil-set", "prep", "طقم ملاعق من خشب الزان", "Beech Utensil Set", PHOTOS.utensils, 340, { compareAtPrice: 420, sold90: 280 }],
+    ["glass-jar-set", "storage", "٦ برطمانات زجاج", "Glass Jar Set of 6", PHOTOS.pantry, 560, { sold90: 260 }],
     ["shelf-jar-pair", "storage", "برطمانات للرف", "Shelf Jars", PHOTOS.shelfJars, 380, { sold90: 22 }],
     ["striped-tea-towels", "linen", "فوط مطبخ مقلمة", "Striped Tea Towels", PHOTOS.teaTowels, 260, { sold90: 64 }],
-    ["colour-stoneware-plates", "tableware", "أطباق ستون وير ملونة", "Colour Stoneware Plates", PHOTOS.colourPlates, 1150, { sold90: 76 }],
+    ["colour-stoneware-plates", "tableware", "أطباق خزفية ملونة", "Colour Stoneware Plates", PHOTOS.colourPlates, 1150, { sold90: 76 }],
   ],
 });
 
 export const SUFRA = editionTemplate({
   key: SUFRA_KEY,
-  version: 3,
+  version: 4,
   changelog: "Sufra v3: full-bleed hero, categories, products high, section order",
-  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("رأي اللي جرّبوا السفرة", "From tables like yours"), related: L("يكمّل السفرة", "Set the rest of the table") } },
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("سفرة", "Sufra"),
   description: L(
     "أدوات سفرة بتركيز على التوصيل والدفع: يوصل بكره، موسم العزايم، طقم الجمعة، حسب ميزانيتك، طرق الدفع، افتح قبل ما تدفع وطقم المطبخ. أربع صفحات جاهزة.",

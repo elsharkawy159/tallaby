@@ -8,9 +8,9 @@ import { L, arrowLink } from "../_kit";
 import { dotLabel } from "../_modular";
 
 const POINTS = [
-  L("فاتورة رسمية وضمان", "Official invoice and warranty"),
-  L("تغليف محمي من الصدمات", "Shock-proof packaging"),
-  L("رقم تتبع على واتساب", "Tracking number on WhatsApp"),
+  L("صور ومواصفات لكل منتج", "Photos and specs for every product"),
+  L("تفاصيل ومقاسات واضحة", "Clear details and sizes"),
+  L("تواصل معنا لأي سؤال", "Contact us with any question"),
 ];
 
 export const aboutList = defineDesign({
@@ -39,8 +39,8 @@ export const aboutList = defineDesign({
               }),
               t.stack(
                 [
-                  dotLabel(t, L("مع كل طلب", "With every order")),
-                  t.heading(L("كل منتج بيتراجع قبل ما يوصلك", "Every product is checked before it reaches you"), "h2", {
+                  dotLabel(t, L("مع كل منتج", "With every product")),
+                  t.heading(L("تفاصيل واضحة لكل منتج", "Clear details for every product"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
@@ -73,7 +73,7 @@ export const aboutList = defineDesign({
                       style: { gap: 0 },
                     },
                   ),
-                  arrowLink(t, L("اعرف أكتر", "Learn more"), "/about"),
+                  arrowLink(t, L("اعرف أكثر", "Learn more"), "/about"),
                 ],
                 {
                   label: L("النص", "Copy"),

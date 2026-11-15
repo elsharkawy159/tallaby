@@ -48,7 +48,7 @@ export const faqChat = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("سألتونا كتير…", "You asked us a lot…"), "h2", {
+              t.heading(L("أسئلتكم المتكررة", "Your common questions"), "h2", {
                 role: "title",
                 style: {
                   fontSize: "display-sm",

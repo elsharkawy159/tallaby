@@ -11,8 +11,8 @@ import { L, ON_BRAND, ON_BRAND_BODY } from "../_kit";
 import { BIG_NUMBER } from "../_modular";
 
 const FIGURES = [
-  { value: L("٥٠ ألف", "50K"), caption: L("عميل رجعلنا تاني", "returning customers") },
-  { value: L("٢٧", "27"), caption: L("محافظة بنوصلها", "governorates served") },
+  { value: L("٥٠ ألف", "50K"), caption: L("عميل عاد للشراء", "returning customers") },
+  { value: L("٢٧", "27"), caption: L("محافظة نصل إليها", "governorates served") },
   { value: L("٤٫٨", "4.8"), caption: L("متوسط التقييم", "average rating") },
 ];
 
@@ -35,7 +35,7 @@ export const teamNumbers = aboutDesign({
     t.section({ label: L("بالأرقام", "By the numbers"), style: { background: "primary" } }, [
       t.container(
         [
-          t.text(L("٧ سنين في أرقام", "Seven years in numbers"), {
+          t.text(L("سبع سنوات في أرقام", "Seven years in numbers"), {
             role: "eyebrow",
             style: { ...ON_BRAND_BODY, fontSize: "sm", fontWeight: "semibold", marginBottom: 24 },
           }),

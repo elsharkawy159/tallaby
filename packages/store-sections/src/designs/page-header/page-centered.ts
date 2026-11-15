@@ -36,7 +36,7 @@ export const pageCentered = defineDesign({
                     textAlign: "center",
                   },
                 }),
-                t.paragraph(L("منتجات أصلية بضمان، توصلك لحد البيت.", "Genuine products with warranty, delivered to your door."), {
+                t.paragraph(L("منتجات مختارة بعناية لكل يوم.", "Carefully chosen products for every day."), {
                   role: "subtitle",
                   style: { textAlign: "center" },
                 }),

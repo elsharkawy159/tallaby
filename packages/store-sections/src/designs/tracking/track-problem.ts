@@ -19,26 +19,26 @@ const PROBLEMS: {
 }[] = [
   {
     icon: "clock",
-    label: L("الطلب اتأخر", "It is late"),
-    hint: L("عدّى المعاد المتوقع", "Past the expected time"),
+    label: L("تأخر الطلب", "It is late"),
+    hint: L("تجاوز الموعد المتوقع", "Past the expected time"),
     message: "My%20order%20is%20late",
   },
   {
     icon: "package",
-    label: L("وصل مكسور", "It arrived damaged"),
+    label: L("وصل تالفًا", "It arrived damaged"),
     hint: L("صوّر العلبة والمنتج", "Take a photo of the box and item"),
     message: "My%20order%20arrived%20damaged",
   },
   {
     icon: "rotate",
-    label: L("وصلني منتج غلط", "Wrong item"),
-    hint: L("هنبدّله مجانًا", "We swap it for free"),
+    label: L("وصلني منتج خاطئ", "Wrong item"),
+    hint: L("سنستبدله مجانًا", "We swap it for free"),
     message: "I%20received%20the%20wrong%20item",
   },
   {
     icon: "search",
-    label: L("ناقص حاجة", "Something is missing"),
-    hint: L("قولنا إيه اللي ناقص", "Tell us what is missing"),
+    label: L("ينقص الطلب منتج", "Something is missing"),
+    hint: L("أخبرنا بما ينقص", "Tell us what is missing"),
     message: "Something%20is%20missing%20from%20my%20order",
   },
 ];
@@ -70,13 +70,13 @@ export const trackProblem = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("في مشكلة؟", "Something wrong?"), "h2", {
+              t.heading(L("هل توجد مشكلة؟", "Something wrong?"), "h2", {
                 role: "title",
                 style: { fontSize: "display-sm", letterSpacing: "tight" },
               }),
               t.paragraph(
                 L(
-                  "اختار المشكلة وهنكمل معاك على واتساب. ابعت رقم الطلب في الرسالة.",
+                  "اختر المشكلة وسنكمل معك على واتساب. أرسل رقم الطلب في الرسالة.",
                   "Pick the issue and we'll take it from there on WhatsApp. Add your order number to the message.",
                 ),
                 {

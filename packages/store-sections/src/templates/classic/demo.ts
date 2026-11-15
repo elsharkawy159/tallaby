@@ -18,7 +18,7 @@ const CATEGORIES = [
   { id: "demo-earbuds", name: { ar: "سماعات أذن", en: "Earbuds" }, image: pexels(3945697, 900) },
   { id: "demo-headphones", name: { ar: "سماعات رأس", en: "Headphones" }, image: pexels(9058883, 900) },
   { id: "demo-watches", name: { ar: "ساعات ذكية", en: "Smart watches" }, image: pexels(393047, 900) },
-  { id: "demo-power", name: { ar: "شواحن وباور بانك", en: "Power & chargers" }, image: pexels(3921700, 900) },
+  { id: "demo-power", name: { ar: "شواحن وبطاريات متنقلة", en: "Power & chargers" }, image: pexels(3921700, 900) },
 ];
 
 type DemoProduct = TemplateDemo["products"][number];
@@ -53,18 +53,18 @@ const product = (
 // photos (the pink-lit watch, the power bank on concrete) sell least and are
 // the oldest, so they lead neither home row.
 const PRODUCTS: DemoProduct[] = [
-  product("snow-wireless-headphones", "demo-headphones", "سماعة سنو لاسلكي", "Snow Wireless Headphones", 3394666, 990, { rating: 4.6, sold90: 96 }),
-  product("mesh-metal-smartwatch", "demo-watches", "ساعة ميش ميتال", "Mesh Metal Smartwatch", 12307366, 1850, { rating: 4.7, sold90: 88 }),
-  product("black-buds", "demo-earbuds", "سماعة بلاك بادز", "Black Buds", 7417547, 690, { rating: 4.4, sold90: 74 }),
+  product("snow-wireless-headphones", "demo-headphones", "سماعة رأس لاسلكية بيضاء", "Snow Wireless Headphones", 3394666, 990, { rating: 4.6, sold90: 96 }),
+  product("mesh-metal-smartwatch", "demo-watches", "ساعة ذكية بسوار معدني شبكي", "Mesh Metal Smartwatch", 12307366, 1850, { rating: 4.7, sold90: 88 }),
+  product("black-buds", "demo-earbuds", "سماعة أذن لاسلكية سوداء", "Black Buds", 7417547, 690, { rating: 4.4, sold90: 74 }),
   product("wall-charger-20w", "demo-power", "شاحن حائط 20 وات", "Wall Charger 20W", 3921700, 350, { rating: 4.5, sold90: 62 }),
-  product("pure-buds", "demo-earbuds", "سماعة بيور بادز", "Pure Buds", 3825517, 1190, { rating: 4.8, sold90: 214, isFeatured: true }),
-  product("float-headphones", "demo-headphones", "سماعة هوفر", "Float Headphones", 11199906, 1250, { rating: 4.6, sold90: 188, isFeatured: true }),
-  product("rose-smartwatch", "demo-watches", "ساعة روز جولد", "Rose Smartwatch", 393047, 1650, { rating: 4.7, sold90: 163 }),
+  product("pure-buds", "demo-earbuds", "سماعة أذن لاسلكية بيضاء", "Pure Buds", 3825517, 1190, { rating: 4.8, sold90: 214, isFeatured: true }),
+  product("float-headphones", "demo-headphones", "سماعة رأس خفيفة", "Float Headphones", 11199906, 1250, { rating: 4.6, sold90: 188, isFeatured: true }),
+  product("rose-smartwatch", "demo-watches", "ساعة ذكية وردية ذهبية", "Rose Smartwatch", 393047, 1650, { rating: 4.7, sold90: 163 }),
   product("studio-headphones", "demo-headphones", "سماعة ستوديو", "Studio Headphones", 7772547, 1390, { rating: 4.5, sold90: 128 }),
-  product("cloud-buds", "demo-earbuds", "سماعة كلاود بادز", "Cloud Buds", 4812959, 1490, { rating: 4.6, sold90: 112 }),
+  product("cloud-buds", "demo-earbuds", "سماعة أذن لاسلكية خفيفة", "Cloud Buds", 4812959, 1490, { rating: 4.6, sold90: 112 }),
   product("compact-wall-charger", "demo-power", "شاحن حائط مدمج", "Compact Wall Charger", 3921699, 290, { rating: 4.3, sold90: 54 }),
-  product("pulse-smartwatch", "demo-watches", "ساعة بالس", "Pulse Smartwatch", 31406895, 1250, { rating: 4.2, sold90: 31 }),
-  product("maggo-10k", "demo-power", "باور بانك ماج 10K", "MagGo 10K Power Bank", 34338614, 1835, { rating: 4.4, sold90: 26 }),
+  product("pulse-smartwatch", "demo-watches", "ساعة ذكية رياضية", "Pulse Smartwatch", 31406895, 1250, { rating: 4.2, sold90: 31 }),
+  product("maggo-10k", "demo-power", "بطارية متنقلة مغناطيسية 10K", "MagGo 10K Power Bank", 34338614, 1835, { rating: 4.4, sold90: 26 }),
 ];
 
 export const CLASSIC_DEMO: TemplateDemo = {

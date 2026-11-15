@@ -28,7 +28,7 @@ export const contactVisit = defineDesign({
               }),
               t.stack(
                 [
-                  t.badge(L("زورنا", "Visit us"), { role: "eyebrow", style: { color: "primary" } }),
+                  t.badge(L("تفضّل بزيارتنا", "Visit us"), { role: "eyebrow", style: { color: "primary" } }),
                   t.heading(L("فرع الدقي", "Dokki branch"), "h2", { role: "title", style: { fontSize: "2xl" } }),
                   t.paragraph(L("٢٤ شارع التحرير، الدقي، الجيزة", "24 Tahrir St, Dokki, Giza"), { role: "body" }),
                   t.row([t.text(L("السبت – الخميس", "Sat – Thu"), { style: { fontWeight: "semibold" } }), t.text(L("١٠ ص – ١٠ م", "10am – 10pm"))], {

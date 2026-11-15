@@ -64,9 +64,9 @@ const NAME = L("مطبخ شوب", "Matbakh Shop");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header's delivery chip: one short line.
-  announcement: [L("توصيل مجاني فوق ٨٠٠ · افتح قبل ما تدفع", "Free delivery over EGP 800 · Open before you pay")],
+  announcement: [L("أدوات السفرة والتحضير والتخزين", "Tableware, prep and storage")],
   // The header search placeholder: three things a buyer types.
-  labels: { search: L("ابحث عن لوح، برطمان، كوباية…", "Search boards, jars, mugs…") },
+  labels: { search: L("ابحث عن لوح، برطمان، كوب…", "Search boards, jars, mugs…") },
   // Four links, one per category in the store's order (one or two words each): the header and the category tiles show them.
   nav: [
     { label: L("أدوات السفرة", "Tableware"), href: search("طقم") },
@@ -75,55 +75,55 @@ const DEFAULT_CONTENT: LookDefaults = {
     { label: L("الطاسات والحلل", "Pans & pots"), href: search("طاسة") },
   ],
   // A search hero: `title` is the question over the search box, `line` its placeholder.
-  hero: { title: L("بتطبخ إيه؟", "What are you cooking?"), line: L("لوح، برطمان، كوباية، طاسة", "Board, jar, mug, pan") },
+  hero: { title: L("ماذا تطبخ؟", "What are you cooking?"), line: L("لوح، برطمان، كوب، طاسة", "Board, jar, mug, pan") },
   categories: { title: L("الأقسام", "Departments") },
   // The tabbed block's title (its tabs are new in, best sellers and lowest price).
-  products: { primary: { title: L("الأسبوع ده", "This week") } },
+  products: { primary: { title: L("هذا الأسبوع", "This week") } },
   // Four promises with icons, a title of a few words and a short line each.
   trust: [
-    { title: L("توصيل ٢–٤ أيام", "2–4 day delivery"), line: L("لكل المحافظات.", "To every governorate.") },
-    { title: L("ادفع عند الاستلام", "Pay at the door"), line: L("كاش أو كارت لما يوصل.", "Cash or card when it arrives.") },
-    { title: L("استرجاع ١٤ يوم", "14-day returns"), line: L("المقفول بيرجع من غير أسئلة.", "Unopened items, no questions.") },
-    { title: L("تغليف بعناية", "Packed with care"), line: L("ببل وعلبة مقفولة.", "Bubble wrap and a sealed box.") },
+    { title: L("تفاصيل واضحة", "Clear details"), line: L("صور ومواصفات لكل منتج.", "Photos and specs for every product.") },
+    { title: L("مقاسات واضحة", "Clear sizes"), line: L("مقاس وسعة كل منتج في صفحته.", "Every product's size and capacity on its page.") },
+    { title: L("تشكيلة متنوعة", "A wide range"), line: L("أدوات للسفرة والتحضير والتخزين.", "Tools for the table, prep and storage.") },
+    { title: L("تواصل معنا", "Contact us"), line: L("لأي سؤال عن طلب أو منتج.", "With any question about an order or a product.") },
   ],
   about: {
-    line: L("أدوات مطبخ حلوة بسعر معقول.", "Good kitchen tools at fair prices."),
-    alt: L("أطباق وكوبايات سيراميك من فوق", "Ceramic plates, bowls and mugs from above"),
+    line: L("أدوات مطبخ عملية بأسعار مناسبة.", "Practical kitchen tools at fair prices."),
+    alt: L("أطباق وأكواب سيراميك من الأعلى", "Ceramic plates, bowls and mugs from above"),
     eyebrow: L("حكايتنا", "Our story"),
-    title: L("الأساسيات اللي بتطبخ بيها كل يوم", "The basics you cook with every day"),
+    title: L("أساسيات الطبخ اليومي", "The basics you cook with every day"),
     text: L(
-      "بنختار أطباق وألواح وبرطمانات وطاسات بتستحمل الاستعمال اليومي، وبنجربها في مطبخنا قبل ما تنزل المحل.",
-      "We pick plates, boards, jars and pans that stand up to daily use, and we try them in our own kitchen first.",
+      "نختار أطباقًا وألواحًا وبرطمانات وطاسات تتحمّل الاستخدام اليومي، ونعرض مواصفاتها بوضوح.",
+      "We pick plates, boards, jars and pans made for everyday use and show their specs clearly.",
     ),
-    more: L("والتوصيل لكل المحافظات، وتفتح الطلب قبل ما تدفع.", "We deliver to every governorate, and you open your order before you pay."),
+    more: L("تواصل معنا لأي سؤال عن منتج.", "Contact us with any question about a product."),
     // Goes to the best sellers.
-    cta: L("تسوق الأكثر مبيعاً", "Shop best sellers"),
+    cta: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
   },
   contact: {
     title: L("تواصل", "Contact"),
-    line: L("ابعتلنا على matbakh@matbakhshop.eg أو على واتساب.", "Write to matbakh@matbakhshop.eg or on WhatsApp."),
-    heading: L("عن طلب أو منتج", "About an order or a product"),
+    line: L("راسلنا على matbakh@matbakhshop.eg.", "Write to matbakh@matbakhshop.eg."),
+    heading: L("اسأل عن طلب أو منتج", "Ask about an order or a product"),
   },
   faq: {
-    line: L("التوصيل والدفع والاسترجاع.", "Delivery, payment and returns."),
-    question: L("لو طبق وصل مكسور؟", "What if a plate arrives broken?"),
-    answer: L("افتح الطلب قدام المندوب ورجّعه ومتدفعش، أو ابعتلنا صورة خلال ٤٨ ساعة ونبدّله.", "Open the order in front of the courier and hand it back unpaid, or send us a photo within 48 hours and we replace it."),
+    line: L("الخامات والعناية والطلب.", "Materials, care and ordering."),
+    question: L("هل الأطباق مناسبة لغسالة الأطباق؟", "Are the plates dishwasher safe?"),
+    answer: L("طريقة العناية بكل منتج موضحة في صفحته، ويمكنك التواصل معنا لأي سؤال.", "Each product's care is shown on its page, and you can contact us with any question."),
   },
   custom: {
     // The category tiles' line under the title.
-    "categories-line": L("من السفرة للتحضير للدولاب.", "From the table to the prep counter to the cupboard."),
+    "categories-line": L("للسفرة والتحضير والتخزين.", "For the table, prep and storage."),
     // The budget block: a title and one line (the products show lowest price first).
-    "budget-title": L("مطبخ كامل على قد ميزانيتك", "A full kitchen on your budget"),
+    "budget-title": L("أدوات مطبخ تناسب ميزانيتك", "Kitchen tools for your budget"),
     "budget-line": L(
-      "من ٢٠٠ لـ ٢٥٠٠ ج.م: رتبنالك الأدوات من الأرخص. عايز الأطقم الكبيرة الأول؟ اختار من الزراير.",
-      "From EGP 200 to 2,500: tools sorted from the lowest price. Want the big sets first? Use the buttons.",
+      "رتّبنا لك الأدوات من الأقل سعرًا. تريد الأطقم الكبيرة أولًا؟ اختر من الأزرار.",
+      "Tools sorted from the lowest price. Want the big sets first? Use the buttons.",
     ),
     // The open-box block's three steps, one line each.
-    "open-box-1": L("بنكلمك قبلها بساعة عشان تكون موجود.", "We call an hour ahead so you are home."),
-    "open-box-2": L("افتح العلبة واتأكد إن مفيش حاجة مكسورة.", "Open the box and check nothing is broken."),
-    "open-box-3": L("لو فيه طبق مشروخ رجّعه للمندوب ومتدفعش حاجة.", "If a plate is chipped, hand it back and pay nothing."),
+    "open-box-1": L("نتصل بك قبل الوصول بساعة.", "We call an hour before arrival."),
+    "open-box-2": L("افتح العلبة وتأكد من سلامة المنتجات.", "Open the box and check everything is intact."),
+    "open-box-3": L("إذا وجدت أي مشكلة، أعد الطلب للمندوب دون أن تدفع شيئًا.", "If anything is wrong, hand the order back and pay nothing."),
     // The promises' heading, a few words.
-    "trust-title": L("سهل وآمن وفي ميعاده", "Simple, safe, on time"),
+    "trust-title": L("تسوّق وأنت مطمئن", "Shop with confidence"),
   },
   // The about page's photo (4:5). The category tiles show the categories' photos (`photos.tiles`).
   photos: { story: PHOTOS.flatLay },
@@ -153,7 +153,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       "العروض": nav[2]!.label,
       "هدايا": nav[3]!.label,
       "إكسسوارات": L("الأكثر مبيعاً", "Best sellers"),
-      "توصيل خلال ٤٨ ساعة": c.announcement[0]!,
+      "صور ومواصفات لكل منتج": c.announcement[0]!,
     },
     links: { "/products": [undefined, nav[0]!.href, nav[1]!.href, nav[2]!.href, nav[3]!.href, BEST] },
   });
@@ -171,7 +171,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
   const home: Design[] = [
     lib("hero-search", {
       text: {
-        "بتدور على إيه النهارده؟": c.hero.title,
+        "عمّ تبحث اليوم؟": c.hero.title,
         "اكتب اسم المنتج": c.hero.line,
       },
     }),
@@ -199,29 +199,29 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
     }),
     lib("finder-budget", {
       text: {
-        "ابدأ من الأوفر": x["budget-title"]!,
-        "رتبنالك المنتجات من الأقل سعرًا. عايز تشوف الأغلى الأول؟ اختار من الزراير.": x["budget-line"]!,
+        "ابدأ بالأقل سعرًا": x["budget-title"]!,
+        "رتّبنا لك المنتجات من الأقل سعرًا. تريد رؤية الأعلى سعرًا أولًا؟ اختر من الأزرار.": x["budget-line"]!,
       },
     }),
     lib("pay-open-box", {
       text: {
-        "بنكلمك قبلها بساعة.": x["open-box-1"]!,
-        "جرّب المنتج قدام المندوب.": x["open-box-2"]!,
-        "لو فيه أي مشكلة رجّعه للمندوب ومتدفعش حاجة.": x["open-box-3"]!,
+        "نتصل بك قبل الوصول بساعة.": x["open-box-1"]!,
+        "جرّب المنتج أمام المندوب.": x["open-box-2"]!,
+        "إذا وجدت أي مشكلة، أعد الطلب للمندوب دون أن تدفع شيئًا.": x["open-box-3"]!,
       },
     }),
     lib("features-icon-cards", {
       text: {
-        "لماذا تشتري منا": L("ليه إحنا", "Why us"),
+        "لماذا تشتري منا": L("لماذا نحن", "Why us"),
         "تسوّق وأنت مطمئن": x["trust-title"]!,
-        "توصيل سريع": c.trust[0]!.title,
-        "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+        "الشحن": c.trust[0]!.title,
+        "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
         "الدفع عند الاستلام": c.trust[1]!.title,
-        "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-        "استرجاع سهل": c.trust[2]!.title,
-        "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
-        "دعم على واتساب": c.trust[3]!.title,
-        "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+        "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+        "الاستبدال والاسترجاع": c.trust[2]!.title,
+        "التفاصيل في صفحة السياسات": c.trust[2]!.line,
+        "تواصل معنا": c.trust[3]!.title,
+        "لأي سؤال عن طلب أو منتج": c.trust[3]!.line,
       },
     }),
   ];
@@ -245,7 +245,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
     footer,
     pages: [
       { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      { slug: "about", name: L("من نحن", "About"), seo: { title: aboutName }, sections: about },
       {
         slug: "contact",
         name: L("تواصل", "Contact"),
@@ -264,7 +264,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("أدوات مطبخ حلوة بسعر معقول.", "Good kitchen tools at fair prices."),
+  description: L("أدوات مطبخ عملية بأسعار مناسبة.", "Practical kitchen tools at fair prices."),
   categories: [
     ["tableware", "أدوات السفرة", "Tableware", PHOTOS.stackedPlates],
     ["prep", "التحضير", "Prep", PHOTOS.utensilPot],
@@ -273,11 +273,11 @@ const DEMO = demoStore({
     ["linen", "فوط ومفارش", "Linen", PHOTOS.towels],
   ],
   products: [
-    ["stoneware-dinner-set", "tableware", "طقم عشا ستون وير لـ٦ أفراد", "Stoneware Dinner Set for Six", PHOTOS.dinnerSet, 2450, { isFeatured: true, rating: 4.8, sold90: 132 }],
-    ["hand-painted-mug-pair", "tableware", "كوبايتين مرسومين", "Hand-Painted Mug Pair", PHOTOS.mugPair, 420, { rating: 4.7, sold90: 88 }],
+    ["stoneware-dinner-set", "tableware", "طقم عشاء ستون وير لـ٦ أفراد", "Stoneware Dinner Set for Six", PHOTOS.dinnerSet, 2450, { isFeatured: true, rating: 4.8, sold90: 132 }],
+    ["hand-painted-mug-pair", "tableware", "كوبان مرسومان يدويًا", "Hand-Painted Mug Pair", PHOTOS.mugPair, 420, { rating: 4.7, sold90: 88 }],
     ["olive-wood-board-set", "prep", "طقم ألواح زيتون ٣ قطع", "Olive Wood Board Set of 3", PHOTOS.boards, 690, { isFeatured: true, sold90: 104 }],
-    ["beech-utensil-set", "prep", "طقم معالق زان ٥ قطع", "Beech Utensil Set of 5", PHOTOS.utensils, 340, { compareAtPrice: 420, sold90: 61 }],
-    ["glass-jar-set", "storage", "٦ برطمانات إزاز بغطا محكم", "Glass Jar Set of 6", PHOTOS.jarRack, 560, { sold90: 39 }],
+    ["beech-utensil-set", "prep", "طقم ملاعق زان ٥ قطع", "Beech Utensil Set of 5", PHOTOS.utensils, 340, { compareAtPrice: 420, sold90: 61 }],
+    ["glass-jar-set", "storage", "٦ برطمانات زجاج بغطاء محكم", "Glass Jar Set of 6", PHOTOS.jarRack, 560, { sold90: 39 }],
     ["striped-tea-towels", "linen", "فوط مطبخ مقلمة ٤ قطع", "Striped Tea Towels, Set of 4", PHOTOS.towels, 280, { sold90: 47 }],
     ["speckled-cup-set", "tableware", "طقم فناجين منقطة", "Speckled Cup & Saucer Set", PHOTOS.speckledCups, 780, { rating: 4.8, sold90: 52 }],
     ["steel-measuring-set", "prep", "طقم مكاييل ستانلس", "Steel Measuring Set", PHOTOS.measuring, 290, { sold90: 76 }],
@@ -289,9 +289,9 @@ const DEMO = demoStore({
 
 export const MATBAKH = editionTemplate({
   key: MATBAKH_KEY,
-  version: 2,
+  version: 3,
   changelog: "Matbakh v2: product page",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رأي اللي طبخوا بيه", "From people who cook with it"), related: L("هتحتاجه كمان", "You may also need") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("مطبخ", "Matbakh"),
   description: L(
     "أساسيات مطبخ عصرية: بحث سريع، أقسام، شلف الأسبوع، على قد الميزانية وافتح قبل ما تدفع. أربع صفحات جاهزة.",

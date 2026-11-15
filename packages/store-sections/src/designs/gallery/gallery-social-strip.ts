@@ -38,11 +38,11 @@ export const gallerySocialStrip = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("عليكم أحلى", "Worn by you"), "h2", {
+                  t.heading(L("من صور عملائنا", "From our customers"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", lineHeight: "tight", textAlign: "center" },
                   }),
-                  t.paragraph(L("اعملوا لنا تاج عشان صورتكم تظهر هنا.", "Tag us to be featured."), {
+                  t.paragraph(L("أشيروا إلينا لتظهر صوركم هنا.", "Tag us to be featured."), {
                     role: "subtitle",
                     style: { textAlign: "center", maxWidth: "560px" },
                   }),

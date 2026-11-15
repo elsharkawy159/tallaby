@@ -12,10 +12,10 @@ import { productCard } from "../products/_shared";
 import { FINDER_LINK } from "./_shared";
 
 const USES = [
-  { icon: "map-pin", label: L("المشاوير", "Commuting") },
+  { icon: "map-pin", label: L("التنقل", "Commuting") },
   { icon: "heart", label: L("الرياضة", "Workouts") },
   { icon: "phone", label: L("المكالمات", "Calls") },
-  { icon: "user", label: L("الشغل من البيت", "Work from home") },
+  { icon: "user", label: L("العمل من المنزل", "Work from home") },
 ] as const;
 
 export const finderUse = defineDesign({
@@ -43,9 +43,9 @@ export const finderUse = defineDesign({
         [
           sectionHead(t, {
             eyebrow: L("ساعدني أختار", "Help me choose"),
-            title: L("هتستخدمها في إيه؟", "What will you use it for?"),
+            title: L("فيمَ ستستخدمها؟", "What will you use it for?"),
             subtitle: L(
-              "اختار استخدامك ونوديك على المنتجات المناسبة ليه.",
+              "اختر الاستخدام، ونعرض لك المنتجات المناسبة له.",
               "Pick what it is for and we take you to the products that fit.",
             ),
           }),
@@ -99,7 +99,7 @@ export const finderUse = defineDesign({
               mobile: { gap: 8, marginTop: 20 },
             },
           ),
-          t.text(L("الأكثر طلبًا دلوقتي", "Popular right now"), {
+          t.text(L("الأكثر طلبًا الآن", "Popular right now"), {
             style: {
               fontSize: "sm",
               fontWeight: "medium",

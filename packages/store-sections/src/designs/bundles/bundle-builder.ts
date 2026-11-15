@@ -15,9 +15,9 @@ import { BUNDLE_PCT } from "./_shared";
 const GROUPS = [L("القطعة الأساسية", "The main piece"), L("الإضافة", "The add-on"), L("اللمسة الأخيرة", "The finishing touch")];
 
 const STEPS = [
-  L("اختار قطعة من كل مجموعة", "Pick one piece from each group"),
-  L("ضيفهم للسلة", "Add them to your cart"),
-  L("الخصم بيتحسب على الطقم كامل", "The discount covers the whole kit"),
+  L("اختر قطعة من كل مجموعة", "Pick one piece from each group"),
+  L("أضفها إلى السلة", "Add them to your cart"),
+  L("يُحسب الخصم على الطقم كاملًا", "The discount covers the whole kit"),
 ];
 
 function option(t: TreeBuilder): NodeTemplate {
@@ -68,7 +68,7 @@ export const bundleBuilder = defineDesign({
     t.section({ label: L("اعمل طقمك", "Build your kit") }, [
       t.container(
         [
-          modHead(t, { label: L("اعمل طقمك", "Build a kit"), title: L("اختار ٣ قطع وخد خصم ١٥٪", "Pick 3 pieces, get 15% off") }),
+          modHead(t, { label: L("اعمل طقمك", "Build a kit"), title: L("اختر ٣ قطع واحصل على خصم ١٥٪", "Pick 3 pieces, get 15% off") }),
           t.grid(
             [
               t.stack(
@@ -129,7 +129,7 @@ export const bundleBuilder = defineDesign({
                     ],
                     { label: L("الخصم", "Discount"), style: { justifyContent: "between", gap: 12 } },
                   ),
-                  pillButton(t, L("روح للسلة", "Go to cart"), "/cart", { icon: "shopping-bag", style: { width: "100%" } }),
+                  pillButton(t, L("اذهب إلى السلة", "Go to cart"), "/cart", { icon: "shopping-bag", style: { width: "100%" } }),
                 ],
                 {
                   label: L("ملخص الطقم", "Kit summary"),

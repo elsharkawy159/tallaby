@@ -84,8 +84,8 @@ const NAME = L("شذا", "Shaza");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("توصيل لكل محافظات مصر · استبدال خلال ١٤ يوم", "Delivery across Egypt · 14-day exchange"),
-    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
+    "تشكيلة الموسم الجديد وصلت": L("عطور وزيوت عود وبخور", "Perfumes, oud oils and incense"),
+    "الدفع عند الاستلام": L("تفاصيل وأحجام واضحة لكل عطر", "Clear details and sizes for every scent"),
     "م": L("ش", "S"),
     "اسم متجرك": NAME,
     "المتجر": L("كل العطور", "Shop all"),
@@ -98,8 +98,8 @@ const header = lib("header-announcement", {
 
 const footer = lib("footer-signoff", {
   text: {
-    "شكرًا إنك عدّيت علينا": L("سيب أثر في كل مكان تدخله", "Leave a trail wherever you go"),
-    "كلمنا على واتساب": L("اسألنا على واتساب", "Ask us on WhatsApp"),
+    "شكرًا لزيارتك": L("عطور بتركيزات وأحجام مختلفة", "Fragrances in many concentrations and sizes"),
+    "تواصل معنا على واتساب": L("تواصل معنا لأي سؤال", "Contact us with any question"),
     "تسوق": L("تسوّق", "Shop"),
     "كل المنتجات": L("كل العطور", "All fragrances"),
     "العروض": L("الأعلى تقييمًا", "Top rated"),
@@ -125,24 +125,24 @@ function anatomy(): Design {
     lib("about-product-anatomy", {
       photo: [undefined, PHOTOS.anatomy],
       text: {
-        "التفاصيل": L("جوّه الزجاجة", "Inside the bottle"),
-        "اللي بيفرق في كل جزء": L("كل جزء في الزجاجة له شغلانة", "Every part of the bottle has a job"),
-        "دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.": L("دوس على أي نقطة وشوف إيه اللي بيخلّي العطر يعيش.", "Tap a dot to see what makes the scent last."),
-        "صورة المنتج": L("زجاجة عطر أزرق بغطا أسود على خلفية رمادي فاتح", "A blue perfume bottle with a black cap on a pale grey backdrop"),
-        "الخامة": L("الغطا والبخّاخ", "Cap & atomiser"),
-        "خامة متينة تستحمل الاستخدام اليومي.": L(
-          "غطا تقيل بيقفل بإحكام، وتحته بخّاخ ناعم بيطلّع رذاذ خفيف ومتوزّع من غير تنقيط.",
-          "A weighted cap that shuts tight over a fine-mist atomiser: an even cloud, never a drip.",
+        "التفاصيل": L("داخل الزجاجة", "Inside the bottle"),
+        "ما يميّز كل جزء": L("تفاصيل كل جزء في الزجاجة", "Every part of the bottle"),
+        "اضغط على أي نقطة في الصورة لتقرأ تفاصيل هذا الجزء.": L("اضغط على أي نقطة لتقرأ تفاصيل هذا الجزء.", "Tap a dot to read about that part."),
+        "صورة المنتج": L("زجاجة عطر زرقاء بغطاء أسود على خلفية رمادية فاتحة", "A blue perfume bottle with a black cap on a pale grey backdrop"),
+        "الخامة": L("الغطاء والبخّاخ", "Cap & atomiser"),
+        "خامة متينة تتحمّل الاستخدام اليومي.": L(
+          "غطاء محكم الإغلاق، وتحته بخّاخ يوزّع رذاذًا خفيفًا.",
+          "A tight cap over a fine-mist atomiser.",
         ),
-        "التشطيب": L("العطر نفسه", "The juice"),
-        "تشطيب نضيف في كل تفصيلة، من أول نظرة.": L(
-          "أو دو بارفان بتركيز ٢٠٪: بيعيش من ٨ لـ ١٢ ساعة على الجلد، وأكتر على الهدوم.",
-          "Eau de parfum at 20% concentration: 8 to 12 hours on skin, longer on clothes.",
+        "التشطيب": L("العطر", "The fragrance"),
+        "تشطيب نظيف في كل تفصيلة.": L(
+          "التركيز والحجم والمكونات مكتوبة في صفحة كل عطر.",
+          "Each fragrance page lists its concentration, size and notes.",
         ),
-        "المقاس": L("القاعدة الزجاج", "The glass base"),
+        "المقاس": L("القاعدة الزجاجية", "The glass base"),
         "مقاس عملي يناسب أغلب الاستخدامات.": L(
-          "زجاج سميك بقاعدة تقيلة: الزجاجة ثابتة على التسريحة، والعطر محمي من الحرارة.",
-          "Thick glass on a heavy base: steady on the dresser, and it shields the scent from heat.",
+          "زجاج سميك بقاعدة ثقيلة تُبقي الزجاجة ثابتة.",
+          "Thick glass on a heavy base keeps the bottle steady.",
         ),
       },
       nodes: { "الصورة": { style: { maxWidth: "460px" } } },
@@ -162,21 +162,21 @@ const home: Design[] = [
     photo: [PHOTOS.heroPoster],
     nodes: { "الفيديو": { props: { url: PHOTOS.heroVideo } }, "التعتيم": { style: { opacity: 28 } } },
     text: {
-      "فيديو الواجهة": L("زجاجة عطر بغطا كريستال جنب فازة زهور على حيطة حمرا", "A crystal-capped perfume bottle beside a vase of flowers against a red wall"),
+      "فيديو الواجهة": L("زجاجة عطر بغطاء كريستالي بجانب مزهرية على جدار أحمر", "A crystal-capped perfume bottle beside a vase of flowers against a red wall"),
       "المجموعة الجديدة": L("مجموعة الليل", "The After Dark collection"),
-      "مساحتك، بطريقتك": L("ريحتك أول حاجة بتوصل", "Your scent arrives before you do"),
-      "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": L(
-        "عطور بتركيز عالي بتفضل معاك طول اليوم، من العود للعنبر للورد البلدي.",
-        "High-concentration fragrances that stay with you all day, from oud to amber to Egyptian rose.",
+      "تصميم هادئ لكل يوم": L("عطور وعود وعنبر", "Perfumes, oud and amber"),
+      "قطع مختارة بعناية لكل يوم.": L(
+        "عطور بتركيزات مختلفة، من العود إلى العنبر والورد.",
+        "Fragrances in different concentrations, from oud to amber and rose.",
       ),
       "تسوّق الآن": L("تسوّق المجموعة", "Shop the collection"),
-      "شوف الجديد": L("وصل حديثًا", "New in"),
+      "اكتشف الجديد": L("وصل حديثًا", "New in"),
     },
     links: { "/products": SHOP, "/products?sort=newest": NEW },
   }),
   tweak(
     lib("categories-photo-tiles", {
-      text: { "تسوّق حسب القسم": L("اختار على مزاجك", "Shop by mood") },
+      text: { "تسوّق حسب القسم": L("تسوّق حسب القسم", "Shop by category") },
       lists: [{ limit: 5 }],
     }),
     (node) =>
@@ -194,7 +194,7 @@ const home: Design[] = [
   tweak(
     lib("products-rail", {
       text: {
-        "بيحبوها": L("اللي الكل بيسأل عليه", "The ones everyone asks about"),
+        "المفضلة لدى العملاء": L("المفضلة لدى العملاء", "Customer favourites"),
         "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
         "عرض الكل": L("عرض الكل", "View all"),
       },
@@ -210,69 +210,69 @@ const home: Design[] = [
   // The first category (women): its four leading products in one row (the demo has six, and a row never ends short).
   lib("products-category-carousel", {
     as: "category-row-1",
-    text: { "عرض الكل": L("شوف الكل", "See all") },
+    text: { "عرض الكل": L("عرض الكل", "View all") },
     lists: [{ offset: 0 }, { categoryIndex: 1, limit: 4 }],
   }),
   lib("about-two-tone", {
     photo: [undefined, undefined, PHOTOS.saffron],
     text: {
-      "صناعة مصرية": L("المكوّنات", "The ingredients"),
-      "متعمول عشان يريّحك ويعيش معاك": L("زعفران، ورد وعود. من غير اختصارات", "Saffron, rose and oud. No shortcuts"),
-      "خامات مختارة وتفاصيل متشطبة بإيدينا، عشان تفضل معاك سنين.": L(
-        "بنختار الخامة الأول وبعدين نبني عليها العطر: زعفران حقيقي، ورد بلدي مجفف ودهن عود معتّق.",
-        "We pick the raw material first, then build the scent around it: real saffron, dried Egyptian rose and aged oud oil.",
+      "مختارات المتجر": L("المكوّنات", "The ingredients"),
+      "مصنوع ليدوم طويلًا": L("زعفران وورد وعود", "Saffron, rose and oud"),
+      "خامات مختارة وتفاصيل متقنة تتحمّل الاستخدام اليومي.": L(
+        "مكونات كل عطر مكتوبة في صفحته، من الزعفران إلى الورد ودهن العود.",
+        "Each fragrance lists its notes, from saffron to rose and oud oil.",
       ),
       "تسوّق الآن": L("اعرف حكايتنا", "Our story"),
-      "صورة البانر": L("خيوط زعفران حمرا في معلقة خشب", "Red saffron threads in a wooden spoon"),
+      "صورة البانر": L("خيوط زعفران حمراء في ملعقة خشبية", "Red saffron threads in a wooden spoon"),
     },
     links: { "/products": "/about" },
   }),
   lib("products-spotlight", {
     photo: [undefined, undefined, PHOTOS.spotlight],
     text: {
-      "صورة المجموعة": L("زجاجتين عنبري على قماش دافي في ضوء دهبي", "Two amber bottles on warm fabric in golden light"),
+      "صورة المجموعة": L("زجاجتان عنبريتان على قماش دافئ في ضوء ذهبي", "Two amber bottles on warm fabric in golden light"),
       "مجموعة": L("وصل حديثًا", "New in"),
       "مجموعة الموسم": L("العطور الزيتية والعود", "Attars & oud oils"),
-      "قطع مختارة بعناية، بخامات حلوة وتفاصيل هادية.": L("نقطة واحدة تكفي. زيوت مركّزة من غير كحول، في قوارير زجاج.", "One drop is enough. Concentrated oils with no alcohol, in glass bottles."),
+      "قطع مختارة بعناية، بخامات جيدة وتفاصيل هادئة.": L("زيوت عطرية مركّزة في قوارير زجاجية.", "Concentrated perfume oils in glass bottles."),
       "تسوّق المجموعة": L("تسوّق الجديد", "Shop new in"),
-      "من المجموعة": L("آخر ما نزل", "Just landed"),
+      "من المجموعة": L("أحدث المنتجات", "Newest products"),
       "عرض الكل": L("عرض الكل", "View all"),
     },
     links: { "/products": NEW },
   }),
   lib("features-icon-cards", {
     text: {
-      "لماذا تشتري منا": L("ليه شذا", "Why Shaza"),
-      "تسوّق وأنت مطمئن": L("اطلب وانت مطمّن", "Order with peace of mind"),
-      "توصيل سريع": L("توصيل لكل المحافظات", "Delivery across Egypt"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("من يومين لـ ٤ أيام، والزجاجة متغلّفة ضد الكسر", "2 to 4 days, packed so the bottle arrives whole"),
-      "أو ادفع بالبطاقة والمحفظة": L("افتح الطرد وادفع وانت مستلم", "Pay when the parcel reaches you"),
-      "استرجاع سهل": L("استبدال خلال ١٤ يوم", "14-day exchange"),
-      "١٤ يومًا لتغيّر رأيك": L("طالما الزجاجة لسه مقفولة", "As long as the bottle is still sealed"),
-      "دعم على واتساب": L("محتار؟ نرشّحلك", "Not sure? We’ll pick with you"),
-      "أشخاص حقيقيون طوال الأسبوع": L("قولنا بتحب إيه على واتساب", "Tell us what you like on WhatsApp"),
+      "لماذا تشتري منا": L("لماذا شذا", "Why Shaza"),
+      "تسوّق وأنت مطمئن": L("تسوّق بسهولة", "Easy shopping"),
+      "الشحن": L("تفاصيل واضحة", "Clear details"),
+      "تظهر تكلفة الشحن ومدته عند إتمام الطلب": L("التركيز والحجم والمكونات لكل عطر", "Concentration, size and notes for every scent"),
+      "أو بطرق الدفع المتاحة عند الطلب": L("أو بطرق الدفع المتاحة عند الطلب", "Or other methods shown at checkout"),
+      "الاستبدال والاسترجاع": L("تشكيلة متنوعة", "A wide range"),
+      "التفاصيل في صفحة السياسات": L("عطور وزيوت وبخور ومعطّرات للمنزل", "Perfumes, oils, incense and home scents"),
+      "تواصل معنا": L("تواصل معنا", "Contact us"),
+      "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن منتج أو طلب", "With any question about a product or order"),
     },
   }),
   lib("newsletter-big", {
     text: {
-      "خد ١٠٪ خصم على أول طلب": L("اعرف الريحة الجديدة قبل الكل", "Smell the next drop first"),
-      "عروض للمشتركين بس، مرة في الأسبوع.": L("إيميل واحد في الأسبوع بالعطور الجديدة ونصيحة تخلّي عطرك يعيش أطول.", "One email a week with new scents and a tip to make yours last longer."),
+      "اشترك في نشرتنا البريدية": L("اشترك ليصلك جديد المتجر", "Subscribe for what is new"),
+      "كن أول من يعرف بالمنتجات الجديدة.": L("نرسل لك أحدث العطور على بريدك الإلكتروني.", "We send you the newest fragrances by email."),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن شذا", "About Shaza"), L("عطور تركيز عالي، متركّبة في مصر الجديدة.", "High-concentration fragrances, blended in Heliopolis.")),
+  pageHeader(lib, "about-header", L("عن شذا", "About Shaza"), L("عطور وزيوت عود وبخور بأحجام مختلفة.", "Perfumes, oud oils and incense in many sizes.")),
   aboutStory(lib, {
     photo: PHOTOS.aboutPage,
-    alt: L("طاولة تركيب العطور بزجاجات عنبرية ومكونات طبيعية", "A perfume-making table with amber bottles and natural ingredients"),
-    eyebrow: L("من ٢٠١٩", "Since 2019"),
-    title: L("العطر لازم يتحس من أول رشّة", "A scent should be felt from the first spray"),
+    alt: L("طاولة بزجاجات عنبرية ومكونات طبيعية", "A table with amber bottles and natural ingredients"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("عطور لكل مناسبة", "Fragrances for every occasion"),
     text: L(
-      "بدأنا بعطر عود واحد بعناه لأصحابنا، وطلبوه تاني بعد أسبوع. من ساعتها وإحنا بنعمل عطور جريئة وثابتة بسعر معقول.",
-      "We started with one oud fragrance sold to friends, who ordered it again a week later. We have made bold, long-lasting scents at fair prices ever since.",
+      "نجمع عطورًا وزيوتًا وبخورًا بتركيزات وأحجام مختلفة، مع وصف واضح لمكونات كل منتج.",
+      "We gather perfumes, oils and incense in different concentrations and sizes, with clear notes for each.",
     ),
-    more: L("كل زجاجة بتتعبّى وتتغلّف في معملنا بمصر الجديدة، وبتوصلك في علبة تستاهل تتهادى.", "Every bottle is filled and packed in our Heliopolis lab and arrives in a box worth gifting."),
+    more: L("تصفّح الأقسام واختر العطر الذي يناسبك.", "Browse the categories and pick the scent you like."),
     button: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
     href: BEST,
   }),
@@ -280,54 +280,54 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("عطور تركيز عالي، متركّبة في مصر الجديدة.", "High-concentration fragrances, blended in Heliopolis."),
+  description: L("عطور وزيوت عود وبخور بأحجام مختلفة.", "Perfumes, oud oils and incense in many sizes."),
   categories: [
-    ["womens-perfumes", "عطور حريمي", "Women", PHOTOS.catWomen],
-    ["mens-perfumes", "عطور رجالي", "Men", PHOTOS.catMen],
+    ["womens-perfumes", "عطور نسائية", "Women", PHOTOS.catWomen],
+    ["mens-perfumes", "عطور رجالية", "Men", PHOTOS.catMen],
     ["oud-attars", "العود والزيوت", "Oud & oils", PHOTOS.catOud],
-    ["home-fragrance", "البيت والبخور", "Home & incense", PHOTOS.catHome],
-    ["gift-sets", "الهدايا والميني", "Gifts & minis", PHOTOS.catGifts],
+    ["home-fragrance", "المنزل والبخور", "Home & incense", PHOTOS.catHome],
+    ["gift-sets", "الهدايا والأحجام الصغيرة", "Gifts & minis", PHOTOS.catGifts],
   ],
   // Newest first in the order written: the three attars lead "New in" (the spotlight).
   products: [
     // Oud & oils
-    ["ornate-glass-attar", "oud-attars", "قارورة عطر زجاج مزخرف ١٢ مل", "Ornate Glass Attar Bottle 12ml", P(36389336), 2650, { isFeatured: true, rating: 4.9, sold90: 128 }],
+    ["ornate-glass-attar", "oud-attars", "قارورة عطر زجاجية مزخرفة ١٢ مل", "Ornate Glass Attar Bottle 12ml", P(36389336), 2650, { isFeatured: true, rating: 4.9, sold90: 128 }],
     ["dropper-oud-oil", "oud-attars", "دهن عود بالقطّارة ١٠ مل", "Dropper Oud Oil 10ml", P(8054398), 2400, { rating: 4.8, sold90: 96 }],
-    ["blue-glass-attar", "oud-attars", "قارورة عطر زجاج أزرق ٦ مل", "Blue Glass Attar Bottle 6ml", P(36389333), 1450, { rating: 4.7, sold90: 41 }],
+    ["blue-glass-attar", "oud-attars", "قارورة عطر زجاجية زرقاء ٦ مل", "Blue Glass Attar Bottle 6ml", P(36389333), 1450, { rating: 4.7, sold90: 41 }],
     ["amber-oud-oil", "oud-attars", "دهن عود كهرمان ٣٠ مل", "Amber Oud Oil 30ml", P(8054396), 2950, { compareAtPrice: 3300, rating: 4.8, sold90: 38 }],
     ["amber-oil-5ml", "oud-attars", "زيت عنبر ٥ مل", "Amber Oil 5ml", P(6915311, 0.5, 0.5, 1.4), 1250, { rating: 4.6, sold90: 29 }],
     ["vintage-amber-bottle", "oud-attars", "زجاجة العنبر العتيقة ٥٠ مل", "Vintage Amber Bottle 50ml", P(5978582), 1850, { rating: 4.7, sold90: 33 }],
     // Women
-    ["rouge-sensation-edp", "womens-perfumes", "روج سنسيشن ٥٠ مل", "Rouge Sensation EDP 50ml", P(32630384), 2150, { isFeatured: true, rating: 4.9, sold90: 142 }],
-    ["pearl-clear-edp", "womens-perfumes", "بيرل كلير ١٠٠ مل", "Pearl Clear EDP 100ml", P(15574229, 0.62, 0.5, 1), 1750, { rating: 4.8, sold90: 104 }],
+    ["rouge-sensation-edp", "womens-perfumes", "عطر أحمر ٥٠ مل", "Rouge EDP 50ml", P(32630384), 2150, { isFeatured: true, rating: 4.9, sold90: 142 }],
+    ["pearl-clear-edp", "womens-perfumes", "لؤلؤ شفاف ١٠٠ مل", "Pearl Clear EDP 100ml", P(15574229, 0.62, 0.5, 1), 1750, { rating: 4.8, sold90: 104 }],
     ["dried-rose-edp", "womens-perfumes", "ورد مجفف ٧٥ مل", "Dried Rose EDP 75ml", P(1190829, 0.3, 0.5, 1), 2250, { rating: 4.8, sold90: 88 }],
-    ["rose-duo-mist-set", "womens-perfumes", "سيت رشّاشين وردي", "Rose Duo Mist Set", P(36437999, 0.42, 0.5, 1), 1450, { rating: 4.7, sold90: 76 }],
+    ["rose-duo-mist-set", "womens-perfumes", "طقم رذاذين بالورد", "Rose Duo Mist Set", P(36437999, 0.42, 0.5, 1), 1450, { rating: 4.7, sold90: 76 }],
     ["seashell-star-edp", "womens-perfumes", "نجمة الصدف ٣٠ مل", "Seashell Star EDP 30ml", P(16266295, 0.5, 0.6, 1.5), 1250, { rating: 4.6, sold90: 52 }],
-    ["rose-petal-edp", "womens-perfumes", "روز بيتال ٥٠ مل", "Rose Petal EDP 50ml", P(32645088, 0.5, 0.6, 1.4), 1850, { rating: 4.5, sold90: 27, inStock: false }],
+    ["rose-petal-edp", "womens-perfumes", "بتلات الورد ٥٠ مل", "Rose Petal EDP 50ml", P(32645088, 0.5, 0.6, 1.4), 1850, { rating: 4.5, sold90: 27, inStock: false }],
     // Men
-    ["mahogany-amber-edp", "mens-perfumes", "ماهوجني عنبر ١٠٠ مل", "Mahogany Amber EDP 100ml", P(4735929, 0.5, 0.6, 1.3), 2150, { isFeatured: true, rating: 4.9, sold90: 117 }],
+    ["mahogany-amber-edp", "mens-perfumes", "عنبر الماهوجني ١٠٠ مل", "Mahogany Amber EDP 100ml", P(4735929, 0.5, 0.6, 1.3), 2150, { isFeatured: true, rating: 4.9, sold90: 117 }],
     ["black-oud-edt", "mens-perfumes", "عود أسود ٥٠ مل", "Black Oud EDT 50ml", P(6800931, 0.5, 0.62, 2.6), 1650, { rating: 4.7, sold90: 44 }],
-    ["desert-night-edt", "mens-perfumes", "ليل الصحرا ٥٠ مل", "Desert Night EDT 50ml", P(6801173, 0.72, 0.55, 2.3), 1650, { rating: 4.6, sold90: 36 }],
-    ["mens-body-mist", "mens-perfumes", "بودي مست رجالي ١٠٠ مل", "Men’s Body Mist 100ml", P(6801177, 0.35, 0.5, 2.2), 990, { rating: 4.5, sold90: 31 }],
-    ["frost-cork-edt", "mens-perfumes", "فروست كورك ١٠٠ مل", "Frost Cork EDT 100ml", P(8776570, 0.52, 0.6, 2.2), 1450, { rating: 4.5, sold90: 22 }],
+    ["desert-night-edt", "mens-perfumes", "ليل الصحراء ٥٠ مل", "Desert Night EDT 50ml", P(6801173, 0.72, 0.55, 2.3), 1650, { rating: 4.6, sold90: 36 }],
+    ["mens-body-mist", "mens-perfumes", "رذاذ معطّر رجالي ١٠٠ مل", "Men’s Scent Mist 100ml", P(6801177, 0.35, 0.5, 2.2), 990, { rating: 4.5, sold90: 31 }],
+    ["frost-cork-edt", "mens-perfumes", "عطر الفلّين ١٠٠ مل", "Frost Cork EDT 100ml", P(8776570, 0.52, 0.6, 2.2), 1450, { rating: 4.5, sold90: 22 }],
     // Home scents & incense
     ["amber-bottle-diffuser", "home-fragrance", "معطّر الزجاجة العنبري ٢٠٠ مل", "Amber Bottle Diffuser 200ml", P(8313229), 790, { rating: 4.8, sold90: 81 }],
     ["clear-glass-diffuser", "home-fragrance", "معطّر الزجاج الشفاف", "Clear Glass Diffuser", P(18987029), 890, { rating: 4.7, sold90: 47 }],
     ["room-spray-150ml", "home-fragrance", "معطّر غرف ١٥٠ مل", "Room Spray 150ml", P(15766704), 520, { rating: 4.6, sold90: 43 }],
-    ["grey-pillar-candle", "home-fragrance", "شمعة رمادي", "Grey Pillar Candle", P(6800787, 0.5, 0.6, 1.4), 390, { rating: 4.6, sold90: 34 }],
-    ["white-candle-marble", "home-fragrance", "شمعة بيضا على رخام", "White Candle on Marble", P(7815528, 0.5, 0.65, 1.4), 450, { rating: 4.7, sold90: 39 }],
+    ["grey-pillar-candle", "home-fragrance", "شمعة رمادية", "Grey Pillar Candle", P(6800787, 0.5, 0.6, 1.4), 390, { rating: 4.6, sold90: 34 }],
+    ["white-candle-marble", "home-fragrance", "شمعة بيضاء على رخام", "White Candle on Marble", P(7815528, 0.5, 0.65, 1.4), 450, { rating: 4.7, sold90: 39 }],
     ["marble-incense-dish", "home-fragrance", "طبق بخور رخام", "Marble Incense Dish", P(17840019), 690, { rating: 4.8, sold90: 49 }],
     ["palo-santo-dish", "home-fragrance", "طبق بالو سانتو سيراميك", "Ceramic Palo Santo Dish", P(5706231, 0.7, 0.55, 1.3), 590, { rating: 4.5, sold90: 19 }],
     ["cat-incense-holder", "home-fragrance", "حامل بخور القطة", "Cat Incense Holder", P(15580445), 450, { rating: 4.7, sold90: 26 }],
     // Gifts & minis
-    ["black-gift-box-set", "gift-sets", "طقم علب الهدايا السودا", "Black Gift Box Set", P(4271698, 0.58, 0.5, 1), 3250, { rating: 4.8, sold90: 28 }],
-    ["black-gift-box-tower", "gift-sets", "برج علب الهدايا السودا", "Black Gift Box Tower", P(4271695), 2950, { rating: 4.8, sold90: 24 }],
-    ["black-box-collection", "gift-sets", "مجموعة العلب السودا", "Black Box Collection", P(4271699), 2450, { rating: 4.7, sold90: 18 }],
-    ["large-black-gift-box", "gift-sets", "علبة هدية سودا كبيرة", "Large Black Gift Box", P(4271697), 3950, { rating: 4.9, sold90: 16 }],
+    ["black-gift-box-set", "gift-sets", "طقم علب الهدايا السوداء", "Black Gift Box Set", P(4271698, 0.58, 0.5, 1), 3250, { rating: 4.8, sold90: 28 }],
+    ["black-gift-box-tower", "gift-sets", "برج علب الهدايا السوداء", "Black Gift Box Tower", P(4271695), 2950, { rating: 4.8, sold90: 24 }],
+    ["black-box-collection", "gift-sets", "مجموعة العلب السوداء", "Black Box Collection", P(4271699), 2450, { rating: 4.7, sold90: 18 }],
+    ["large-black-gift-box", "gift-sets", "علبة هدية سوداء كبيرة", "Large Black Gift Box", P(4271697), 3950, { rating: 4.9, sold90: 16 }],
     ["four-roll-ons-set", "gift-sets", "طقم ٤ رول أون", "Four Roll-ons Set", P(6707556), 990, { rating: 4.7, sold90: 58 }],
     ["five-amber-roll-ons", "gift-sets", "طقم ٥ رول أون عنبري", "Five Amber Roll-ons", P(6693894), 1250, { rating: 4.6, sold90: 32 }],
     ["dried-flower-cork-vial", "gift-sets", "قارورة فلّين بزهور مجففة", "Dried Flower Cork Vial", P(8090382), 450, { rating: 4.5, sold90: 21 }],
-    ["glass-sample-vial", "gift-sets", "عيّنة زجاج ٣ مل", "Glass Sample Vial 3ml", P(5922087, 0.47, 0.78, 3), 190, { rating: 4.6, sold90: 37 }],
+    ["glass-sample-vial", "gift-sets", "عيّنة زجاجية ٣ مل", "Glass Sample Vial 3ml", P(5922087, 0.47, 0.78, 3), 190, { rating: 4.6, sold90: 37 }],
   ],
 });
 
@@ -336,7 +336,7 @@ export const PERFUMES_BOLD = libraryTemplate({
   version: 2,
   name: L("شذا", "Shaza"),
   description: L(
-    "عطور جريئة: فيديو في الواجهة، صور أقسام دافية، زجاجة بتفاصيلها على الصورة، وكل المنتجات بشكل تصوير واحد.",
+    "عطور جريئة: فيديو في الواجهة، صور أقسام دافئة، زجاجة بتفاصيلها على الصورة، وكل المنتجات بأسلوب تصوير واحد.",
     "Bold fragrances: a video hero, warm category tiles, one bottle explained dot by dot, and every product framed as one shoot.",
   ),
   category: "beauty",
@@ -366,9 +366,9 @@ export const PERFUMES_BOLD = libraryTemplate({
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("كلمنا", "Talk to us"),
-        text: L(`٣٥ شارع الأهرام، مصر الجديدة، القاهرة · ${phone("٠١٠٩ ٨٤٣ ٦٢١٥")} · ${handle("hello@shaza.eg")}`, "35 El Ahram St, Heliopolis, Cairo · +20 109 843 6215 · hello@shaza.eg"),
-        heading: L("محتار تختار إيه؟ قولنا بتحب إيه", "Not sure what to pick? Tell us what you like"),
+        title: L("تواصل معنا", "Contact us"),
+        text: L(`تواصل معنا لأي سؤال عن منتج أو طلب · ${phone("٠١٠٩ ٨٤٣ ٦٢١٥")} · ${handle("hello@shaza.eg")}`, "Contact us with any question about a product or order · +20 109 843 6215 · hello@shaza.eg"),
+        heading: L("اسأل عن عطر أو منتج", "Ask about a scent or product"),
       }),
     },
     {
@@ -376,11 +376,11 @@ export const PERFUMES_BOLD = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الثبات والتوصيل والاستبدال.", "Longevity, delivery and exchanges."),
-        question: L("العطر بيثبت قد إيه؟", "How long does the scent last?"),
+        text: L("العطور والطلبات والشحن.", "Fragrances, orders and shipping."),
+        question: L("أين أجد تركيز العطر وحجمه؟", "Where can I find a scent's concentration and size?"),
         answer: L(
-          "عطورنا تركيزها ٢٠٪، فبتعيش من ٨ لـ ١٢ ساعة على الجلد وأكتر على الهدوم. ولو مش عاجبك استبدله خلال ١٤ يوم طالما الزجاجة مقفولة.",
-          "Our fragrances are 20% concentrate, lasting 8 to 12 hours on skin and longer on clothes. Exchange any sealed bottle within 14 days.",
+          "التركيز والحجم والمكونات مكتوبة في صفحة كل عطر. وتظهر تكلفة الشحن ومدته عند إتمام الطلب.",
+          "Each fragrance page lists its concentration, size and notes. Shipping cost and time are shown at checkout.",
         ),
       }),
     },
@@ -391,6 +391,6 @@ export const PERFUMES_BOLD = libraryTemplate({
     surface: "card",
     band: "brand",
     extras: ["product-perks", "product-shipping"],
-    copy: { reviews: L("قالوا عن ريحتنا", "What they said about it"), related: L("هتحبه برضه", "You’ll love these too") },
+    copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") },
   },
 });

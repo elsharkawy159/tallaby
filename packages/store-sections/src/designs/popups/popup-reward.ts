@@ -29,7 +29,7 @@ export const popupReward = defineDesign({
                 role: "title",
                 style: { fontSize: "display-sm", letterSpacing: "tight", textAlign: "center" },
               }),
-              t.paragraph(L("المرة دي كسبت، وده كودك.", "You won this time, and here is your code."), {
+              t.paragraph(L("لقد ربحت هذه المرة، وهذا هو الكود.", "You won this time, and here is your code."), {
                 role: "subtitle",
                 style: { textAlign: "center" },
               }),
@@ -39,7 +39,7 @@ export const popupReward = defineDesign({
                     label: L("نقط الكارت", "Card dots"),
                     style: { position: "absolute", insetTop: "0px", insetStart: "0px", insetEnd: "0px", insetBottom: "0px", opacity: 30 },
                   }),
-                  t.text(L("كسبت", "You won"), {
+                  t.text(L("ربحت", "You won"), {
                     role: "eyebrow",
                     style: { position: "relative", fontSize: "sm", fontWeight: "semibold", textAlign: "center" },
                   }),
@@ -84,7 +84,7 @@ export const popupReward = defineDesign({
                   },
                 },
               ),
-              pillButton(t, L("استخدمه دلوقتي", "Use it now"), SHOP_LINK, { style: { marginTop: 4 } }),
+              pillButton(t, L("استخدمه الآن", "Use it now"), SHOP_LINK, { style: { marginTop: 4 } }),
             ],
             { label: L("المحتوى", "Content"), style: { gap: 14, alignItems: "center" } },
           ),

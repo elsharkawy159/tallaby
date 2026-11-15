@@ -24,11 +24,11 @@ export const newsletterSticker = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("خد ١٠٪ خصم على أول طلب", "Get 10% off your first order"), "h2", {
+                  t.heading(L("اشترك في نشرتنا البريدية", "Join our newsletter"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("وكمان توصلك العروض قبل أي حد.", "And hear about deals first."), { role: "subtitle" }),
+                  t.paragraph(L("وتصلك العروض قبل الجميع.", "And hear about deals first."), { role: "subtitle" }),
                   t.box([t.storeForm()], {
                     label: L("النموذج", "Form box"),
                     style: {

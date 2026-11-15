@@ -19,9 +19,9 @@ import { MENU, QUIET_LINK, STORE_NAME, WORDMARK, cartLink, iconLink, nav, search
 
 /** Store promises that scroll in the strip (store facts only: no prices or codes). */
 const ANNOUNCEMENTS = [
-  L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
+  L("تفاصيل ومقاسات واضحة لكل منتج", "Clear details and sizes for every product"),
   L("الدفع عند الاستلام", "Cash on delivery"),
-  L("استبدال سهل خلال ١٤ يوم", "Easy exchange within 14 days"),
+  L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
 ];
 
 export const headerCenteredTicker = defineDesign({

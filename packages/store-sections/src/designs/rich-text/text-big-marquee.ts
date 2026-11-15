@@ -11,7 +11,7 @@ import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type DesignText, type TreeBuilder } from "../builder";
 import { L } from "../_kit";
 
-const WORDS = [L("ستايلك، بطريقتك", "Your style, your way"), L("لوكك يبدأ من هنا", "Your look starts here")];
+const WORDS = [L("جودة في كل تفصيلة", "Quality in every detail"), L("تسوّق الجديد", "Shop what's new")];
 
 function word(t: TreeBuilder, text: DesignText): NodeTemplate[] {
   return [

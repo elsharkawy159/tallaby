@@ -58,66 +58,66 @@ const NAME = L("الجزار", "El Gazzar");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header search placeholder: three things a buyer types.
-  labels: { search: L("ابحث عن كفتة، ريش، بوكس…", "Search kofta, chops, boxes…") },
+  labels: { search: L("ابحث عن كفتة، ريش، ستيك…", "Search kofta, chops, steak…") },
   // Only `nav.0.href` is read: where the hero's and the about page's buttons go.
-  nav: [{ label: L("بوكسات", "Boxes"), href: search("بوكس") }],
+  nav: [{ label: L("صناديق", "Boxes"), href: search("بوكس") }],
   // The poster hero: an eyebrow, a title, a line and a button (to `nav.0.href`), plus `custom.hero-note` and the round sticker (`custom.hero-sticker-1..3`, a price point, not an offer).
   hero: {
     alt: L("قطعية ريش على لوح خشب", "A rib cut on a wooden board"),
-    eyebrow: L("بوكسات العيد", "Eid boxes"),
-    title: L("من مزرعتنا لتلاجتك", "From our farm to your fridge"),
-    line: L("بيتقطع بالطلب كل يوم الصبح وبيوصل متلج في نفس اليوم.", "Cut to order every morning, delivered cold within the day."),
-    cta: L("تسوق البوكسات", "Shop boxes"),
+    eyebrow: L("صناديق العيد", "Eid boxes"),
+    title: L("قطعيات لحوم طازجة", "Fresh cuts of meat"),
+    line: L("لحم بقري وضاني ودواجن ومشويات، بوزن واضح لكل قطعية.", "Beef, lamb, chicken and grill cuts, with a clear weight for every cut."),
+    cta: L("تسوّق الصناديق", "Shop boxes"),
   },
-  categories: { title: L("هتطبخ إيه النهارده؟", "What are you cooking today?") },
+  categories: { title: L("ماذا ستطبخ اليوم؟", "What are you cooking today?") },
   // The bento block: a small eyebrow over its title.
-  products: { primary: { eyebrow: L("الأكتر طلباً", "Most ordered"), title: L("الأسبوع ده", "This week") } },
+  products: { primary: { eyebrow: L("الأكثر طلبًا", "Most ordered"), title: L("هذا الأسبوع", "This week") } },
   // Optional, with `custom.reviews-city-1..4`: a wall of six short buyer quotes under a title. Without them the home page ends on the delivery zones.
   reviews: {
-    title: L("الزباين", "Regulars"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
-      { quote: L("بوكس العيد وصل متلج ومتقطع زي ما طلبت بالظبط.", "The Eid box arrived chilled and cut exactly as I asked.") },
-      { quote: L("الكفتة متتبلة حلو ومش محتاجة أي حاجة.", "The kofta is seasoned just right and needs nothing else.") },
-      { quote: L("طلبت قطعية مخصوص للشوي والجزار نصحني بالأحسن.", "I asked for a special grilling cut and the butcher suggested a better one.") },
-      { quote: L("أول مرة أطلب لحمة أونلاين وأطمن عليها.", "The first time I have trusted meat ordered online.") },
-      { quote: L("اللحمة بلدي فعلاً وأسعارها أحسن من المحلات.", "Truly local beef, and cheaper than the shops.") },
-      { quote: L("فتحت الشنطة قدام المندوب ولقيت كل حاجة سليمة.", "I opened the bag in front of the courier and everything was right.") },
+      { quote: L("قطعيات صندوق العيد نظيفة ومقطعة جيدًا.", "The Eid box cuts were clean and well trimmed.") },
+      { quote: L("الكفتة متبلة جيدًا ولا تحتاج إلى إضافات.", "The kofta is well seasoned and needs nothing else.") },
+      { quote: L("الريش الضاني طرية ومناسبة للشوي.", "The lamb chops are tender and good for grilling.") },
+      { quote: L("اللحم المفروم طازج وجودته ممتازة.", "The minced beef is fresh and of great quality.") },
+      { quote: L("اللحم البلدي بطعم ممتاز.", "The local beef tastes great.") },
+      { quote: L("السجق البلدي متبل بشكل متوازن.", "The beef sausage is evenly seasoned.") },
     ],
   },
   // The footer's sign-off line.
-  footer: { line: L("بيتقطع طازة كل يوم الصبح", "Cut fresh, every morning") },
+  footer: { line: L("قطعيات لحوم طازجة", "Fresh cuts of meat") },
   about: {
-    line: L("مزرعة وجزارة من ١٩٨٨.", "A farm and butcher’s since 1988."),
-    alt: L("قطعيات لحمة طازة على لوح", "Fresh cuts of meat on a board"),
-    eyebrow: L("من المزرعة", "From the farm"),
-    title: L("بنربي ونقطع ونوصل بنفسنا", "We raise, cut and deliver ourselves"),
-    text: L("عجولنا بتتربى في مزرعتنا في المنوفية على علف طبيعي، وبتتدبح وتتقطع في المحل كل يوم الصبح.", "Our cattle are raised on natural feed at our farm in Menoufia, then cut at the shop every morning."),
-    more: L("وكل طلب بيخرج في شنطة مبردة لحد باب بيتك.", "And every order leaves in a chilled bag, all the way to your door."),
+    line: L("لحوم ودواجن ومشويات طازجة.", "Fresh meat, poultry and grill cuts."),
+    alt: L("قطعيات لحم طازجة على لوح", "Fresh cuts of meat on a board"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("قطعيات مختارة بعناية", "Cuts chosen with care"),
+    text: L("نختار القطعيات بعناية، ونعرض الوزن ونوع التقطيع لكل منتج بوضوح.", "We choose every cut with care and show its weight and cut type clearly."),
+    more: L("تواصل معنا لأي سؤال عن قطعية أو وزن.", "Contact us with any question about a cut or a weight."),
     // Goes to `nav.0.href`.
-    cta: L("تسوق البوكسات", "Shop boxes"),
+    cta: L("تسوّق الصناديق", "Shop boxes"),
   },
   contact: {
     title: L("تواصل", "Contact"),
-    line: L("المحل مفتوح كل يوم من ٧ الصبح لـ ١١ بالليل.", "The shop is open daily from 7 am to 11 pm."),
-    heading: L("اطلب قطعية مخصوص", "Ask for a special cut"),
+    line: L("يوميًا من ٧ ص حتى ١١ م.", "Every day, 7 am to 11 pm."),
+    heading: L("اسأل عن قطعية أو وزن", "Ask about a cut or a weight"),
   },
   faq: {
-    line: L("القطعيات والتوصيل المبرد والدفع.", "Cuts, cold-chain delivery and payment."),
-    question: L("ينفع أطلب تقطيع معين؟", "Can I ask for a specific cut?"),
-    answer: L("أيوه، اكتب طلبك في الملاحظات أو ابعتلنا على واتساب قبلها بيوم.", "Yes, write it in the order notes or message us on WhatsApp a day ahead."),
+    line: L("القطعيات والأوزان والحفظ.", "Cuts, weights and storage."),
+    question: L("كيف أحفظ اللحوم بعد الاستلام؟", "How should I store meat after delivery?"),
+    answer: L("احفظها في الثلاجة واستخدمها خلال يومين، أو في الفريزر لمدة أطول.", "Keep it in the fridge and use it within two days, or freeze it for longer."),
   },
   custom: {
     // The footer's sign-off button (WhatsApp), two or three words.
-    "footer-cta": L("اطلب على واتساب", "Order on WhatsApp"),
+    "footer-cta": L("تواصل معنا", "Contact us"),
     // The hero's small line and its round sticker (three short parts: a word, a number, a unit).
-    "hero-note": L("اطلب قبلها بـ٤٨ ساعة", "Order 48 h ahead"),
+    "hero-note": L("قطعيات لحوم مختارة", "Selected meat cuts"),
     "hero-sticker-1": L("من", "From"),
     "hero-sticker-2": L("٢٤٠٠", "2,400"),
     "hero-sticker-3": L("ج.م", "EGP"),
     // The delivery zones: an eyebrow, a title, a line, a note, then five zones, each a name, a delivery time and a fee.
     "zones-eyebrow": L("توصيل مبرد", "Cold chain"),
     "zones-title": L("توصيل مبرد", "Cold-chain delivery"),
-    "zones-line": L("عربيات مبردة من المحل لباب بيتك.", "Chilled vans from our shop to your door."),
+    "zones-line": L("سيارات مبردة من المتجر حتى عنوانك.", "Chilled vans from the shop to your address."),
     "zones-note": L("توصيل مجاني للطلبات فوق ١٬٠٠٠ ج.م", "Free delivery on orders over EGP 1,000"),
     "zone-1-name": L("وسط القاهرة", "Downtown Cairo"),
     "zone-1-time": L("نفس اليوم", "Same day"),
@@ -130,7 +130,7 @@ const DEFAULT_CONTENT: LookDefaults = {
     "zone-4-time": L("نفس اليوم", "Same day"),
     "zone-4-price": L("٥٥ ج.م", "EGP 55"),
     "zone-5-name": L("العاصمة الجديدة", "New Capital"),
-    "zone-5-time": L("تاني يوم", "Next day"),
+    "zone-5-time": L("اليوم التالي", "Next day"),
     "zone-5-price": L("٧٠ ج.م", "EGP 70"),
     // With `reviews`: four cities shown on the wall.
     "reviews-city-1": L("مدينة نصر", "Nasr City"),
@@ -168,8 +168,8 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
   const footer = lib("footer-signoff", {
     text: {
-      "شكرًا إنك عدّيت علينا": c.footer.line,
-      "كلمنا على واتساب": x["footer-cta"]!,
+      "شكرًا لزيارتك": c.footer.line,
+      "تواصل معنا على واتساب": x["footer-cta"]!,
       "العروض": L("الأعلى تقييماً", "Top rated"),
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
     },
@@ -184,33 +184,33 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       photo: [undefined, undefined, c.photos.hero.wide],
       text: {
         "مجموعة الموسم": c.hero.eyebrow,
-        "من ١ إلى ٣٠ نوفمبر": x["hero-note"]!,
+        "وصل حديثًا": x["hero-note"]!,
         "صورة الحملة": c.hero.alt,
-        "خصم": x["hero-sticker-1"]!,
-        "٣٠٪": x["hero-sticker-2"]!,
-        "لفترة محدودة": x["hero-sticker-3"]!,
+        "مجموعة": x["hero-sticker-1"]!,
+        "٢٠٢٦": x["hero-sticker-2"]!,
+        "الجديدة": x["hero-sticker-3"]!,
         "الموسم الجديد وصل": c.hero.title,
-        "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": c.hero.line,
+        "قطع خفيفة بخامات طبيعية ومقاسات كاملة.": c.hero.line,
         "اكتشف المجموعة": c.hero.cta,
       },
       links: { "/products": main },
     }),
     lib("categories-circles", {
-      text: { "بتدوّر على إيه؟": c.categories.title },
+      text: { "ما الذي تبحث عنه؟": c.categories.title },
       // Six across by design; a store with another number of categories gets one full row of them (phones swipe).
       ...(tiles !== 6 && { nodes: { "الأقسام": { style: { columns: tiles }, tablet: { columns: tiles } } } }),
     }),
     lib("products-bento", {
       text: {
         "الأكثر طلبًا": c.products.primary.eyebrow,
-        "الكل بيسأل عليهم": c.products.primary.title,
+        "منتجات يكثر الطلب عليها": c.products.primary.title,
       },
       links: { "/products": BEST },
     }),
     lib("pay-zones", {
       text: {
         "التوصيل": x["zones-eyebrow"]!,
-        "بنوصل لكل مصر": x["zones-title"]!,
+        "نوصّل إلى كل مصر": x["zones-title"]!,
         "المدة والمصاريف حسب محافظتك.": x["zones-line"]!,
         "توصيل مجاني للطلبات فوق ١٬٥٠٠ ج.م": x["zones-note"]!,
         "القاهرة والجيزة": x["zone-1-name"]!,
@@ -235,10 +235,10 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
               "ماذا يقولون عنا": reviews.title,
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
               "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[1]!.quote,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[2]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[2]!.quote,
               "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": reviews.items[3]!.quote,
               "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[4]!.quote,
-              "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": reviews.items[5]!.quote,
+              "خدمة العملاء محترمة جدًا وساعدوني في اختيار المنتج المناسب.": reviews.items[5]!.quote,
               "المنصورة": city,
               "الإسكندرية": x["reviews-city-2"]!,
               "أسيوط": x["reviews-city-3"]!,
@@ -288,19 +288,19 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("قطعيات طازة من مزرعتنا، بتوصل متلجة.", "Fresh cuts from our farm, delivered cold."),
+  description: L("قطعيات لحوم ودواجن طازجة.", "Fresh cuts of meat and poultry."),
   categories: [
-    ["beef", "لحمة بلدي", "Beef", PHOTOS.steakCut],
+    ["beef", "لحم بلدي", "Beef", PHOTOS.steakCut],
     ["grill", "مشويات", "Grill", PHOTOS.koftaGrill],
-    ["boxes", "بوكسات", "Boxes", PHOTOS.rawCuts],
+    ["boxes", "صناديق", "Boxes", PHOTOS.rawCuts],
     ["lamb", "ضاني", "Lamb", PHOTOS.lambChops],
-    ["chicken", "فراخ", "Chicken", PHOTOS.chicken],
+    ["chicken", "دجاج", "Chicken", PHOTOS.chicken],
     ["sausage", "سجق ومصنعات", "Sausage & deli", PHOTOS.sausages],
   ],
   products: [
-    ["family-meat-box", "boxes", "بوكس لحمة العيلة ٥ كيلو", "Family Meat Box, 5 kg", PHOTOS.rawCuts, 2400, { isFeatured: true, rating: 4.8, sold90: 120 }],
+    ["family-meat-box", "boxes", "بوكس لحم العائلة ٥ كيلو", "Family Meat Box, 5 kg", PHOTOS.rawCuts, 2400, { isFeatured: true, rating: 4.8, sold90: 120 }],
     ["kofta-1kg", "grill", "كفتة ١ كيلو", "Kofta Mix, 1 kg", PHOTOS.koftaGrill, 420, { sold90: 210 }],
-    ["minced-beef-1kg", "beef", "لحمة مفرومة ١ كيلو", "Minced Beef, 1 kg", PHOTOS.minced, 380, { sold90: 200 }],
+    ["minced-beef-1kg", "beef", "لحم مفروم ١ كيلو", "Minced Beef, 1 kg", PHOTOS.minced, 380, { sold90: 200 }],
     ["kofta-plate", "grill", "كفتة مشوية جاهزة", "Ready Grilled Kofta", PHOTOS.koftaPlate, 460, { compareAtPrice: 520, sold90: 190 }],
     ["rib-roast", "beef", "ريش بالعضم", "Bone-In Rib Roast", PHOTOS.ribRoast, 1350, { rating: 4.9, sold90: 44 }],
     ["steak-cut", "beef", "ستيك بلدي ١ كيلو", "Local Steak, 1 kg", PHOTOS.steakCut, 520, { sold90: 90 }],
@@ -308,15 +308,15 @@ const DEMO = demoStore({
     ["beef-sausage", "sausage", "سجق بلدي ١ كيلو", "Beef Sausage, 1 kg", PHOTOS.sausages, 340, { sold90: 110 }],
     ["pot-roast-box", "boxes", "بوكس الروستو", "Pot Roast Box", PHOTOS.potRoast, 900, { sold90: 38 }],
     ["grill-steak-box", "boxes", "بوكس الشوي", "Grill Box", PHOTOS.grilledSteak, 1500, { inStock: false, sold90: 30 }],
-    ["marinated-chicken", "chicken", "فراخ متتبلة للشوي", "Marinated Chicken", PHOTOS.chicken, 260, { sold90: 80 }],
+    ["marinated-chicken", "chicken", "دجاج متبل للشوي", "Marinated Chicken", PHOTOS.chicken, 260, { sold90: 80 }],
   ],
 });
 
 export const LAHMA = editionTemplate({
   key: LAHMA_KEY,
-  version: 3,
+  version: 4,
   changelog: "Lahma v3: categories, one delivery block, section order",
-  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("زباين الجزارة بيقولوا", "The regulars say"), related: L("حاجة تكمّل الشوي", "Goes with the grill") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("لحمة", "Lahma"),
   description: L(
     "جزارة وبوكسات لحوم: بوستر بوكسات العيد، قطعيات الأسبوع، توصيل مبرد وافتح قبل ما تدفع. أربع صفحات جاهزة.",

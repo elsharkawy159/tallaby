@@ -11,9 +11,9 @@ import { L } from "../_kit";
 import { MENU, cartLink, iconLink, logo, nav, searchLink } from "./_shared";
 
 const MESSAGES: readonly DesignText[] = [
-  L("أهلًا بيك في متجرنا", "Welcome to our store"),
-  L("شحن مجاني للطلبات الكبيرة", "Free shipping on larger orders"),
-  L("تفاصيل بتفرق", "Details that make a difference"),
+  L("أهلًا بك في متجرنا", "Welcome to our store"),
+  L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
+  L("تفاصيل تصنع الفرق", "Details that make a difference"),
 ];
 
 const message = (t: TreeBuilder, text: DesignText, i: number) =>

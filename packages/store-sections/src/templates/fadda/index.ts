@@ -51,11 +51,11 @@ const NAME = L("فضة ستوديو", "Fadda Studio");
 const header = lib("header-centered", {
   text: {
     "المتجر": L("خواتم", "Rings"),
-    "العروض": L("ستاكات", "Stacks"),
+    "العروض": L("خواتم متراكبة", "Stacks"),
     "اسم متجرك": NAME,
-    "مختارات بعناية منذ ٢٠١٨": L("فضة استرليني من وسط البلد", "Sterling silver from Downtown"),
+    "مختارات بعناية": L("خواتم فضة استرليني", "Sterling silver rings"),
     "المدونة": L("العناية", "Care"),
-    "من نحن": L("الاستوديو", "The studio"),
+    "من نحن": L("حكايتنا", "Our story"),
   },
   links: { "/products": [NEW, BEST, undefined, NEW, BEST], "/blog": "/faq" },
 });
@@ -65,7 +65,7 @@ const footer = lib("footer-links", {
     "م": L("ف", "F"),
     "اسم متجرك": NAME,
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ فضة ستوديو. كل الحقوق محفوظة.", "© 2026 Fadda Studio. All rights reserved."),
-    "من نحن": L("الاستوديو", "The studio"),
+    "من نحن": L("حكايتنا", "Our story"),
   },
   links: { "/products": [undefined, NEW, BEST] },
 });
@@ -80,26 +80,26 @@ const home: Design[] = [
     photo: [PHOTOS.hero],
     text: {
       "المجموعة الجديدة": L("فضة استرليني ٩٢٥", "925 sterling silver"),
-      "معمول بكميات صغيرة": L("فضة متشطبة باليد", "Silver, finished by hand"),
-      "قطع مختارة بعناية، بنعملها بكميات صغيرة عشان كل واحدة تفضل مميزة.": L(
-        "خواتم وستاكات بتتصب في ستوديو وسط البلد، والحفر لحد ١٢ حرف مجاناً.",
-        "Rings and stacks cast in our Downtown studio, with free engraving up to 12 letters.",
+      "مختارة بعناية": L("خواتم فضة لكل يوم", "Silver rings for every day"),
+      "قطع مختارة بعناية، لكل قطعة تفاصيلها المميزة.": L(
+        "خواتم فردية وأطقم خواتم متراكبة من فضة ٩٢٥.",
+        "Single rings and stacking sets in 925 silver.",
       ),
-      "تسوّق المجموعة": L("تسوق الجديد", "Shop new in"),
-      "حكايتنا": L("الاستوديو", "The studio"),
+      "تسوّق المجموعة": L("تسوّق الجديد", "Shop new in"),
+      "حكايتنا": L("حكايتنا", "Our story"),
       "صورة الواجهة": L("خاتم فضة منحوت على سطح غامق", "A sculpted silver ring on a dark surface"),
     },
     links: { "/products": NEW },
   }),
   lib("categories-photo-tiles", {
-    text: { "تسوّق حسب القسم": L("اختار قطعتك", "Find your piece") },
+    text: { "تسوّق حسب القسم": L("اختر قطعتك", "Find your piece") },
   }),
-  lib("products-feature", { text: { "اختيارنا ليك": L("وصل حديثاً", "New in"), "اختيار الأسبوع": L("قطعة الشهر", "Piece of the month") } }),
+  lib("products-feature", { text: { "اختيارنا لك": L("وصل حديثاً", "New in"), "اختيار الأسبوع": L("قطعة الشهر", "Piece of the month") } }),
   lib("brands-quotes", {
     text: {
-      "«واحد من أكتر المتاجر اللي ممكن تثق فيها لو بتدور على منتج أصلي.»": L(
-        "«ستوديو الفضة اللي كل وسط البلد بيتكلم عنه.»",
-        "“The silver studio everyone in Downtown is talking about.”",
+      "«من أكثر المتاجر الموثوقة للتسوق عبر الإنترنت.»": L(
+        "«تشكيلة خواتم فضة بتصاميم بسيطة.»",
+        "“A range of silver rings in simple designs.”",
       ),
       "ساحل": "Cairo Style",
       "أوربت": "Enterprise",
@@ -110,27 +110,27 @@ const home: Design[] = [
     text: {
       "شروط الضمان": L("الخامات والعناية", "Materials & care"),
       "المدة": L("المعدن", "Metal"),
-      "سنة من تاريخ الفاتورة.": L("فضة استرليني ٩٢٥ مدموغة.", "925 sterling silver, hallmarked."),
-      "بيغطي": L("التشطيب", "Finish"),
-      "عيوب الصناعة.": L("مطفي أو لامع باليد.", "Brushed or polished by hand."),
-      "مش بيغطي": L("المقاسات", "Sizing"),
-      "الكسر والمياه وسوء الاستخدام.": L("تظبيط مقاس مجاني خلال ٣٠ يوم.", "Free resizing within 30 days."),
+      "سنة من تاريخ الفاتورة.": L("فضة استرليني ٩٢٥.", "925 sterling silver."),
+      "يغطي": L("التشطيب", "Finish"),
+      "عيوب الصناعة.": L("مطفي أو لامع.", "Brushed or polished."),
+      "لا يغطي": L("المقاسات", "Sizing"),
+      "الكسر والمياه وسوء الاستخدام.": L("المقاس مذكور لكل خاتم.", "The size is listed for every ring."),
       "المطلوب": L("العناية", "Care"),
-      "الفاتورة والعلبة الأصلية.": L("امسح بالقماشة اللي في العلبة.", "Wipe with the cloth in your box."),
+      "الفاتورة والعلبة الأصلية.": L("امسحها بقطعة قماش ناعمة.", "Wipe with a soft cloth."),
     },
   }),
   lib("testimonials-ruled", {
     text: {
       "آراء العملاء": L("التقييمات", "Reviews"),
-      "قالوا عننا": L("بتتلبس كل يوم", "Worn every day"),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L("الستاك ما اسودّش بعد ٦ شهور لبس كل يوم.", "The stack has not tarnished after six months of daily wear."),
+      "قالوا عنا": L("للاستخدام اليومي", "For everyday wear"),
+      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L("طقم الخواتم حافظ على لونه مع الاستخدام اليومي.", "The stack has kept its colour with daily wear."),
       "م": L("ه", "H"),
       "مريم أ.": L("هنا ر.", "Hana R."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L("حفروا تاريخنا جوه الدبل في يومين.", "They engraved our date inside the bands in two days."),
+      "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": L("الدبل جميلة وتشطيبها ناعم.", "The bands are lovely with a smooth finish."),
       "ع": L("ي", "Y"),
       "عمر ك.": L("يوسف ك.", "Youssef K."),
       "الإسكندرية": L("الجيزة", "Giza"),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("تغليف تحفة، حسيته هدية بجد.", "Beautiful packaging; it felt like a real gift."),
+      "أسعار معقولة وجودة أفضل مما توقعت.": L("الخاتم أجمل من الصور.", "The ring looks even better than the photos."),
       "ن": L("س", "S"),
       "نور ح.": L("سارة ل.", "Sara L."),
       "الجيزة": L("الإسكندرية", "Alexandria"),
@@ -138,39 +138,39 @@ const home: Design[] = [
   }),
   lib("newsletter-letter", {
     text: {
-      "رسالة كل أسبوع": L("من على الترابيزة", "From the bench"),
+      "رسالة كل أسبوع": L("رسالة الشهر", "Monthly letter"),
       "أهلًا،": L("أهلاً،", "Hello,"),
-      "كل خميس بكتب رسالة قصيرة فيها أحسن حاجة جربناها الأسبوع ده، وعرض للمشتركين بس.": L(
-        "كل شهر بعمل قطعة واحدة ما بتتكررش. المشتركين بيشوفوها الأول.",
-        "Every month I make one piece that is never repeated. Subscribers see it first.",
+      "نكتب رسالة قصيرة عن أحدث المنتجات في المتجر.": L(
+        "نكتب رسالة قصيرة عن أحدث القطع في المتجر.",
+        "A short letter about the newest pieces in the store.",
       ),
       "أ": L("ر", "R"),
       "أحمد": L("رانيا", "Rania"),
-      "صاحب المتجر": L("صايغة، فضة ستوديو", "Silversmith, Fadda Studio"),
+      "صاحب المتجر": L("فريق فضة ستوديو", "The Fadda Studio team"),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("الاستوديو", "The studio"), L("ستوديو فضة لشخصين في وسط البلد.", "A two-person silver studio in Downtown Cairo.")),
+  pageHeader(lib, "about-header", L("حكايتنا", "Our story"), L("خواتم ودبل من الفضة الاسترليني.", "Sterling silver rings and bands.")),
   aboutStory(lib, {
     photo: PHOTOS.bench,
-    alt: L("ترابيزة صايغ عليها أدوات وأطباق", "A silversmith’s bench with tools and dishes"),
-    eyebrow: L("وسط البلد", "Downtown"),
-    title: L("فضة بكميات صغيرة", "Silver in small runs"),
-    text: L("كل خاتم بيتصب ويتشطب باليد في الاستوديو، فضة ٩٢٥ مدموغة.", "Every ring is cast and finished by hand in the studio, in hallmarked 925 silver."),
-    more: L("والحفر مجاني، لحد ١٢ حرف.", "Engraving is free, up to 12 letters."),
-    button: L("تسوق الجديد", "Shop new in"),
+    alt: L("طاولة صائغ عليها أدوات وأطباق", "A silversmith’s bench with tools and dishes"),
+    eyebrow: L("منتجاتنا", "Our pieces"),
+    title: L("خواتم من الفضة", "Silver rings"),
+    text: L("نختار خواتم ودبلًا من فضة ٩٢٥، ونعرض المقاس والخامة لكل قطعة.", "We pick rings and bands in 925 silver, with the size and metal of every piece."),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
+    button: L("تسوّق الجديد", "Shop new in"),
     href: NEW,
   }),
 ];
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("فضة استرليني بكميات صغيرة في القاهرة.", "Sterling silver, made in small runs in Cairo."),
+  description: L("خواتم ودبل من الفضة الاسترليني.", "Sterling silver rings and bands."),
   categories: [
     ["rings", "خواتم", "Rings", PHOTOS.rings],
-    ["stacks", "ستاكات", "Stacks", PHOTOS.stacks],
+    ["stacks", "خواتم متراكبة", "Stacks", PHOTOS.stacks],
     ["bridal", "زفاف", "Bridal", PHOTOS.bridal],
     ["bands", "دبل", "Bands", PHOTOS.bands],
     ["sets", "تشكيلات", "Selections", PHOTOS.sets],
@@ -178,11 +178,11 @@ const DEMO = demoStore({
   products: [
     ["sculpted-silver-ring", "rings", "خاتم فضة منحوت", "Sculpted Silver Ring", shot("sculpted-silver-ring"), 950, { isFeatured: true, rating: 4.9, sold90: 180 }],
     ["leaf-pair-rings", "rings", "زوج خواتم فضة", "Silver Ring Pair", shot("leaf-pair-rings"), 1150, { sold90: 60 }],
-    ["everyday-stack", "stacks", "ستاك ٥ خواتم", "Everyday Stack of Five", shot("everyday-stack"), 1650, { rating: 4.8, sold90: 96 }],
-    ["eternity-stack", "stacks", "ستاك بأحجار", "Stone-set Stack", shot("eternity-stack"), 2100, { sold90: 40 }],
+    ["everyday-stack", "stacks", "طقم ٥ خواتم متراكبة", "Everyday Stack of Five", shot("everyday-stack"), 1650, { rating: 4.8, sold90: 96 }],
+    ["eternity-stack", "stacks", "طقم خواتم بأحجار", "Stone-set Stack", shot("eternity-stack"), 2100, { sold90: 40 }],
     ["promise-ring", "bridal", "خاتم وعد بحجر", "Gem-set Promise Ring", shot("promise-ring"), 2400, { isFeatured: true, sold90: 44 }],
     ["engagement-ring-box", "bridal", "خاتم خطوبة في علبة", "Engagement Ring in a Box", shot("engagement-ring-box"), 2900, { sold90: 30 }],
-    ["engraved-bands", "bands", "دبلتين محفورتين", "Engraved Band Pair", shot("engraved-bands"), 1250, { sold90: 71 }],
+    ["engraved-bands", "bands", "دبلتان محفورتان", "Engraved Band Pair", shot("engraved-bands"), 1250, { sold90: 71 }],
     ["ring-tray-set", "sets", "تشكيلة خواتم", "Ring Selection", shot("ring-tray-set"), 1100, { compareAtPrice: 1290, inStock: false, sold90: 58 }],
   ],
 });
@@ -193,7 +193,7 @@ export const FADDA = libraryTemplate({
   changelog: "Fadda v4: hero, categories, section order",
   name: L("فضة", "Fadda"),
   description: L(
-    "ستوديو فضة: واجهة بخاتم واحد، الجديد، آراء الصحافة، الخامات والعناية ورسالة الصايغة. أربع صفحات جاهزة.",
+    "ستوديو فضة: واجهة بخاتم واحد، الجديد، آراء الصحافة، الخامات والعناية ورسالة المتجر. أربع صفحات جاهزة.",
     "Sterling silver studio: a one-ring hero, new in, press quotes, materials and care and the silversmith’s letter. Four ready pages.",
   ),
   category: "jewelry",
@@ -217,15 +217,15 @@ export const FADDA = libraryTemplate({
   footer,
   pages: [
     { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("الاستوديو", "The studio"), seo: { title: L("الاستوديو", "The studio") }, sections: about },
+    { slug: "about", name: L("حكايتنا", "Our story"), seo: { title: L("حكايتنا", "Our story") }, sections: about },
     {
       slug: "contact",
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("احجز مقاس", "Book a fitting"),
-        text: L("٩ شارع شامبليون، وسط البلد، القاهرة.", "9 Champollion St, Downtown, Cairo."),
-        heading: L("مقاس أو حفر أو قطعة خاصة", "A size, an engraving or a special piece"),
+        title: L("تواصل معنا", "Contact us"),
+        text: L("تواصل معنا لأي سؤال عن مقاس أو قطعة.", "Contact us with any question about a size or a piece."),
+        heading: L("سؤال عن مقاس أو قطعة", "A question about a size or a piece"),
       }),
     },
     {
@@ -234,14 +234,14 @@ export const FADDA = libraryTemplate({
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
         text: L("الفضة والمقاسات والعناية.", "Silver, sizing and care."),
-        question: L("الفضة بتسوّد؟", "Does silver tarnish?"),
+        question: L("هل تتغير الفضة مع الوقت؟", "Does silver tarnish?"),
         answer: L(
-          "الفضة بتغمق من الهوا والرطوبة. البسها كتير وامسحها بالقماشة وخلّيها في الكيس.",
-          "Silver darkens with air and moisture. Wear it often, wipe it with the cloth and keep it in its pouch.",
+          "قد تغمق الفضة بفعل الهواء والرطوبة. امسحها بقطعة قماش ناعمة واحفظها في كيس مغلق.",
+          "Silver can darken with air and humidity. Wipe it with a soft cloth and keep it in a closed pouch.",
         ),
       }),
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { reviews: L("كلمات من أصحابها", "Words from wearers"), related: L("قطع تتكدّس معها", "Pieces that stack with it") } },
+  productPage: { surface: "shelf", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء المشترين", "Buyer reviews"), related: L("قطع تُلبس معها", "Pieces that stack with it") } },
 });

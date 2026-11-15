@@ -35,7 +35,7 @@ export const finderGuides = defineDesign({
         [
           modHead(t, {
             label: L("أدلة", "Guides"),
-            title: L("قبل ما تشتري", "Before you buy"),
+            title: L("قبل أن تشتري", "Before you buy"),
             link: { text: L("كل الأدلة", "All guides"), href: BLOG_LINK },
           }),
           t.grid(

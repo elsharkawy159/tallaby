@@ -12,7 +12,7 @@ const PERKS = [
   {
     icon: "truck",
     title: L("توصيل سريع", "Fast delivery"),
-    text: L("من يوم لـ ٤ أيام", "In 1 to 4 days"),
+    text: L("من يوم إلى ٤ أيام", "In 1 to 4 days"),
   },
   {
     icon: "shield",
@@ -21,13 +21,13 @@ const PERKS = [
   },
   {
     icon: "rotate",
-    title: L("استرجاع ١٤ يوم", "14-day returns"),
-    text: L("من غير أسئلة", "No questions asked"),
+    title: L("استرجاع خلال ١٤ يومًا", "14-day returns"),
+    text: L("بدون أسئلة", "No questions asked"),
   },
   {
     icon: "credit-card",
     title: L("ادفع عند الاستلام", "Pay on delivery"),
-    text: L("كاش أو كارت", "Cash or card"),
+    text: L("نقدًا أو بالبطاقة", "Cash or card"),
   },
 ] as const;
 

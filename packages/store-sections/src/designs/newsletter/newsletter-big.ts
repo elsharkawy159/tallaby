@@ -39,7 +39,7 @@ export const newsletterBig = defineDesign({
           t.stack(
             [
               t.heading(
-                L("خد ١٠٪ خصم على أول طلب", "Get 10% off your first order"),
+                L("اشترك في نشرتنا البريدية", "Join our newsletter"),
                 "h2",
                 {
                   role: "title",
@@ -65,8 +65,8 @@ export const newsletterBig = defineDesign({
                 [
                   t.paragraph(
                     L(
-                      "عروض للمشتركين بس، مرة في الأسبوع.",
-                      "Members-only offers, once a week.",
+                      "كن أول من يعرف بالمنتجات الجديدة.",
+                      "Be the first to hear about new products.",
                     ),
                     {
                       role: "subtitle",

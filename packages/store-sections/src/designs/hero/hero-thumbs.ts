@@ -82,22 +82,22 @@ export const heroThumbs = defineDesign({
         [
           slide(t, 0, 3, {
             eyebrow: L("درجات جديدة", "New shades"),
-            title: L("لون بيتكلم عنك", "Colour that speaks for you"),
-            text: L("درجات هادية لكل يوم وألوان جريئة للمناسبات.", "Soft everyday shades and bold statement colour."),
+            title: L("ألوان لكل ذوق", "Colours for every taste"),
+            text: L("درجات هادئة لكل يوم وألوان جريئة للمناسبات.", "Soft everyday shades and bold statement colour."),
             cta: L("تسوّق الآن", "Shop now"),
             alt: L("صورة الشريحة الأولى", "First slide photo"),
           }),
           slide(t, 1, 3, {
             eyebrow: L("المجموعة الجديدة", "The new drop"),
-            title: L("جريء ومريح وليك", "Bold, easy, yours"),
-            text: L("اختيارات جديدة وصلت للموسم ده.", "Fresh picks, just in for the season."),
+            title: L("جريء ومريح", "Bold and easy"),
+            text: L("اختيارات جديدة لهذا الموسم.", "Fresh picks for this season."),
             cta: L("تسوّق الجديد", "Shop new in"),
             alt: L("صورة الشريحة الثانية", "Second slide photo"),
           }),
           slide(t, 2, 3, {
             eyebrow: L("أطقم كاملة", "Sets"),
-            title: L("قطعتين وعشر إطلالات", "Two pieces, ten looks"),
-            text: L("قطع بتتنسّق مع بعض بسهولة.", "Pieces that work together, easily."),
+            title: L("قطعتان وعشر إطلالات", "Two pieces, ten looks"),
+            text: L("قطع تتناسق معًا بسهولة.", "Pieces that work together, easily."),
             cta: L("تسوّق الأطقم", "Shop sets"),
             alt: L("صورة الشريحة الثالثة", "Third slide photo"),
           }),

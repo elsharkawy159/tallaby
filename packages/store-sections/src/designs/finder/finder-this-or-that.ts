@@ -80,7 +80,7 @@ export const finderThisOrThat = defineDesign({
         [
           t.stack(
             [
-              centredTitle(t, L("تحب أنهي؟", "Which one are you?"), {
+              centredTitle(t, L("أيهما تفضّل؟", "Which one are you?"), {
                 marginBottom: 32,
               }),
               t.row(
@@ -88,14 +88,14 @@ export const finderThisOrThat = defineDesign({
                   option(
                     t,
                     0,
-                    L("جوه الودن", "In-ear"),
-                    L("خفيفة وتتشال في الجيب", "Light, fits in a pocket"),
+                    L("داخل الأذن", "In-ear"),
+                    L("خفيفة وتناسب الجيب", "Light, fits in a pocket"),
                   ),
-                  versusDisc(t, L("ولا", "or")),
+                  versusDisc(t, L("أم", "or")),
                   option(
                     t,
                     1,
-                    L("فوق الودن", "Over-ear"),
+                    L("فوق الأذن", "Over-ear"),
                     L(
                       "صوت أعمق وراحة لساعات",
                       "Deeper sound, hours of comfort",

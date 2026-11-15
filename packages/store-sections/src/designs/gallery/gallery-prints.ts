@@ -27,7 +27,7 @@ export const galleryPrints = defineDesign({
       [
         t.container(
           [
-            t.heading(L("صوركم معانا", "Your photos with us"), "h2", {
+            t.heading(L("صوركم معنا", "Your photos with us"), "h2", {
               role: "title",
               style: {
                 fontSize: "display-sm",

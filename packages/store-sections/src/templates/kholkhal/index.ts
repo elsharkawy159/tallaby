@@ -132,14 +132,14 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const header = lib("header-classic", {
     text: {
-      "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+      "تشكيلة الموسم الجديد وصلت": c.announcement[0]!,
       م: initialOf(name),
       "اسم متجرك": name,
-      المتجر: L("كل التوك", "Shop all"),
+      المتجر: L("كل الإكسسوارات", "Shop all"),
       العروض: L("وصل جديد", "New in"),
       المدونة: L("الأكثر طلبًا", "Best sellers"),
       "من نحن": c.labels.about,
-      "تواصل معنا": L("تواصلي معانا", "Contact"),
+      "تواصل معنا": L("تواصل معنا", "Contact"),
       "ابحث عن منتج": c.labels.search,
     },
     links: { "/products": [SHOP, NEW, SHOP], "/blog": BEST },
@@ -149,7 +149,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     text: {
       م: initialOf(name),
       "اسم متجرك": name,
-      "مختارات بعناية منذ ٢٠١٨، لكل بيت في مصر.": c.footer.line,
+      "مختارات بعناية لكل يوم.": c.footer.line,
       "الشحن والتوصيل": L("الشحن والتوصيل", "Shipping"),
       "الاسترجاع والاستبدال": L("الاستبدال", "Exchanges"),
       "الأسئلة الشائعة": L("الأسئلة الشائعة", "FAQ"),
@@ -167,24 +167,24 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           "صورة الحملة الأولى": c.hero.alt,
           "وصل حديثًا": c.hero.eyebrow,
           "الموسم الجديد وصل": c.hero.title,
-          "قطع مختارة بعناية، وتوصيل لحد باب البيت.": c.hero.line,
+          "قطع مختارة بعناية لكل يوم.": c.hero.line,
           "تسوّق الجديد": c.hero.cta,
           "صورة الحملة الثانية": x["hero-2-alt"]!,
           "الأكثر مبيعًا": x["hero-2-eyebrow"]!,
           "المفضّلة عند عملائنا": x["hero-2-title"]!,
-          "القطع اللي بترجع لها كل مرة.": x["hero-2-line"]!,
-          "شوف الأكثر مبيعًا": c.nav[0]!.label,
+          "القطع الأكثر طلبًا في المتجر.": x["hero-2-line"]!,
+          "تصفّح الأكثر مبيعًا": c.nav[0]!.label,
           "صورة الحملة الثالثة": x["hero-3-alt"]!,
-          "عروض الأسبوع": x["hero-3-eyebrow"]!,
-          "خصومات لفترة محدودة": x["hero-3-title"]!,
-          "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": x["hero-3-line"]!,
-          "تسوّق العروض": x["hero-3-cta"]!,
+          "مختارات الأسبوع": x["hero-3-eyebrow"]!,
+          "قطع مختارة لهذا الأسبوع": x["hero-3-title"]!,
+          "تشكيلة مختارة من أحدث القطع في المتجر.": x["hero-3-line"]!,
+          "تسوّق المختارات": x["hero-3-cta"]!,
         },
         links: { "/products": [NEW, c.nav[0]!.href, CHEAPEST] },
       }),
     ),
     lib("categories-chips", {
-      text: { "إيه اللي في بالك؟": c.categories.title },
+      text: { "عمّ تبحث؟": c.categories.title },
       // One row of four on desktop: a store with more categories reaches them from the menu.
       lists: [{ limit: 4 }],
     }),
@@ -211,10 +211,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           photo: [undefined, undefined, c.photos.story],
           text: {
             "صورة القصة": c.story.alt,
-            "من ورشتنا": c.story.eyebrow,
-            "متصمم عشانك ومعمول في القاهرة": c.story.title,
-            "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": c.story.text,
-            "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": x["story-more"]!,
+            "عن المتجر": c.story.eyebrow,
+            "تصميم مدروس وخامات مختارة": c.story.title,
+            "نختار كل قطعة بعناية لتبقى مميزة.": c.story.text,
+            "ونعرض لكل قطعة صورًا ومقاسات واضحة.": x["story-more"]!,
             حكايتنا: c.story.cta,
           },
         }),
@@ -229,13 +229,13 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     categoryRow(journey.rows[0]!, 1),
     lib("finder-sentence", {
       text: {
-        "ساعدني أختار": L("حسب شعرك", "By hair type"),
-        "قول إنت عايز إيه": c.finder.title,
-        عايز: L("عايزة", "I want"),
-        عشان: L("عشان", "for"),
+        "ساعدني أختار": L("حسب نوع الشعر", "By hair type"),
+        "قل ما تريد": c.finder.title,
+        أريد: L("أريد", "I want"),
+        "من أجل": L("من أجل", "for"),
         "بأقل من": L("بأقل من", "under"),
         سماعة: c.finder.options[0]!.label,
-        الجيم: x["finder-1-for"]!,
+        الرياضة: x["finder-1-for"]!,
         "١٠٠٠ ج.م": x["finder-1-under"]!,
         "ساعة ذكية": c.finder.options[1]!.label,
         الجري: x["finder-2-for"]!,
@@ -252,8 +252,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "صورة الحملة": x["banner-alt"]!,
         "الخط الجديد": x["banner-eyebrow"]!,
-        "اختارناها لك بعناية": x["banner-title"]!,
-        "قطع جديدة من خطنا الجديد، معمولة عشان تعيش معاك.": x["banner-line"]!,
+        "اخترناها لك بعناية": x["banner-title"]!,
+        "قطع جديدة من خطنا الجديد، مصنوعة لتدوم.": x["banner-line"]!,
         "تسوّق المجموعة": c.nav[1]!.label,
       },
       links: { "/products": c.nav[1]!.href },
@@ -262,10 +262,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("features-ticker", {
         text: {
-          "توصيل سريع": c.trust[0]!.title,
+          "الشحن": c.trust[0]!.title,
           "الدفع عند الاستلام": c.trust[1]!.title,
-          "استرجاع سهل": c.trust[2]!.title,
-          "دعم على واتساب": c.trust[3]!.title,
+          "الاستبدال والاسترجاع": c.trust[2]!.title,
+          "تواصل معنا": c.trust[3]!.title,
         },
       }),
       "icon",
@@ -276,8 +276,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     retouch(
       lib("newsletter-classic", {
         text: {
-          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-          "اشترك وأول ما يوصل جديد أو عرض للمشتركين هتعرف.": c.newsletter.line,
+          "اشترك في نشرتنا البريدية": c.newsletter.title,
+          "اشترك لتصلك أخبار المنتجات الجديدة.": c.newsletter.line,
         },
         nodes: { اللوحة: { style: { background: "secondary" } } },
       }),
@@ -326,7 +326,7 @@ export const KHOLKHAL = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KHOLKHAL_KEY, "hair-accessories", { ar: 2729, en: 2729 }),
   key: KHOLKHAL_KEY,
-  version: 3,
+  version: 4,
   changelog: "Kholkhal v3: the hair-accessories template, rebuilt look-first",
   productPage: {
     thumbs: "side",
@@ -334,7 +334,7 @@ export const KHOLKHAL = editionTemplate({
     surface: "flat",
     band: "shelf",
     extras: ["product-perks"],
-    copy: { reviews: L("قالوا إيه عن التوكة دي", "What buyers say"), related: L("تتلبس معاها", "Wear it with") },
+    copy: { reviews: L("آراء العملاء", "What buyers say"), related: L("تتناسق معها", "Wear it with") },
   },
   name: L("خلخال", "Kholkhal"),
   description: L(

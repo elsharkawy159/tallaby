@@ -53,7 +53,7 @@ export const galleryShoppable = defineDesign({
             [
               t.box(
                 [
-                  t.photo(0, L("صورة اللوك", "Look photo"), {
+                  t.photo(0, L("صورة الإطلالة", "Look photo"), {
                     role: "image",
                     style: { objectFit: "cover", width: "100%", aspectRatio: "portrait", radius: 24 },
                   }),
@@ -65,15 +65,15 @@ export const galleryShoppable = defineDesign({
                 [
                   t.stack(
                     [
-                      t.text(L("تسوق اللوك", "Shop the look"), {
+                      t.text(L("تسوّق الإطلالة", "Shop the look"), {
                         role: "eyebrow",
                         style: { fontSize: "sm", fontWeight: "semibold", color: "primary" },
                       }),
-                      t.heading(L("كل اللي في الصورة", "Everything in the photo"), "h2", {
+                      t.heading(L("كل ما في الصورة", "Everything in the photo"), "h2", {
                         role: "title",
                         style: { fontSize: "display-sm", letterSpacing: "tight" },
                       }),
-                      t.paragraph(L("اختار القطعة اللي عجبتك وضيفها للسلة على طول.", "Pick the piece you like and add it straight to your cart."), {
+                      t.paragraph(L("اختر القطعة التي تعجبك وأضفها إلى السلة مباشرة.", "Pick the piece you like and add it straight to your cart."), {
                         role: "subtitle",
                       }),
                     ],

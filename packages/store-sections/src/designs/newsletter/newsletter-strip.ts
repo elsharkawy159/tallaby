@@ -32,12 +32,12 @@ export const newsletterStrip = defineDesign({
                     iconTile(t, "mail", { background: "background", radius: 999 }),
                     t.stack(
                       [
-                        t.heading(L("اعرف الجديد الأول", "Be the first to know"), "h2", {
+                        t.heading(L("اعرف الجديد أولًا", "Be the first to know"), "h2", {
                           role: "title",
                           style: { fontSize: "2xl", lineHeight: "tight", ...ON_BRAND },
                           mobile: { fontSize: "xl" },
                         }),
-                        t.paragraph(L("المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.", "New drops and members-only offers, once a week."), {
+                        t.paragraph(L("أحدث المجموعات في بريدك الإلكتروني.", "The newest collections in your inbox."), {
                           role: "subtitle",
                           style: { fontSize: "sm", ...ON_BRAND_BODY },
                         }),

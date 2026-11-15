@@ -26,8 +26,8 @@ export const brandsFeatured = defineDesign({
                   t.heading(BRANDS[0]!, "h2", { role: "title", style: { fontSize: "display-md", fontWeight: "extrabold", letterSpacing: "wider" } }),
                   t.paragraph(
                     L(
-                      "نحن الوكيل المعتمد لهذه الماركة، بضمان سنتين على كل منتج.",
-                      "We are this brand's authorised dealer, with a 2-year warranty on everything.",
+                      "تشكيلة من منتجات هذه الماركة بمواصفات واضحة.",
+                      "A range of this brand's products with clear specs.",
                     ),
                     { role: "body" },
                   ),

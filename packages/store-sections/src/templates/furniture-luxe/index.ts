@@ -57,15 +57,15 @@ const NAME = L("مرمر", "Marmar");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The top bar: two short lines (a third, "Track your order", stays the look's).
-  announcement: [L("توصيل وتركيب لحد البيت في كل محافظات مصر", "Delivery and assembly at home, across Egypt"), L("ادفع عند الاستلام", "Pay on delivery")],
+  announcement: [L("كنب وفوتيهات وترابيزات وإضاءة", "Sofas, armchairs, tables and lighting"), L("مقاسات وخامات واضحة لكل قطعة", "Clear sizes and materials for every piece")],
   // The video hero (without a video file it shows its poster, `photos.hero.wide`). Its button goes to the whole catalog.
   hero: {
     alt: L("صالة بالرخام والنحاس", "A marble and brass living room"),
     eyebrow: L("مجموعة الخريف ٢٠٢٦", "The Autumn 2026 collection"),
-    title: L("أثاث يعيش معاك سنين", "Furniture made to stay for years"),
+    title: L("أثاث يدوم لسنوات", "Furniture made to last"),
     line: L(
-      "خشب زان مجفف، قماش مقاوم للبقع وتركيب في البيت. كل قطعة متشطبة يدويًا في ورشتنا في دمياط.",
-      "Kiln-dried beech, stain-resistant fabrics and assembly at home. Every piece is hand-finished in our Damietta workshop.",
+      "خشب زان مجفف وأقمشة مقاومة للبقع وتشطيب يدوي لكل قطعة.",
+      "Kiln-dried beech, stain-resistant fabrics and a hand finish on every piece.",
     ),
     cta: L("اكتشف المجموعة", "Explore the collection"),
   },
@@ -74,50 +74,50 @@ const DEFAULT_CONTENT: LookDefaults = {
   products: { primary: { title: L("القطع الأكثر طلبًا", "Our most-loved pieces") } },
   // The showroom block on the home page: an eyebrow, a title, a short text and a button to the about page.
   story: {
-    alt: L("صالون بسقف عالي وكراسي حمرا", "A high-ceilinged salon with red armchairs"),
-    eyebrow: L("من ١٩٩٨", "Since 1998"),
-    title: L("ثلاث أجيال في صناعة الأثاث", "Three generations of furniture makers"),
+    alt: L("صالون بسقف عالٍ وكراسٍ حمراء", "A high-ceilinged salon with red armchairs"),
+    eyebrow: L("من داخل المتجر", "Inside the store"),
+    title: L("قطع مختارة لكل غرفة", "Pieces chosen for every room"),
     text: L(
-      "بدأنا ورشة صغيرة في دمياط، واليوم عندنا معرض في التجمع الخامس. كل قطعة بتتقص وتتنجد وتتشطب عندنا، وبنضمن الهيكل ٥ سنين.",
-      "We started as a small Damietta workshop and now have a showroom in New Cairo. Every piece is cut, upholstered and finished by us, with a five-year frame guarantee.",
+      "كنب وفوتيهات وترابيزات وإضاءة، مع صور ومقاسات وخامات واضحة لكل قطعة.",
+      "Sofas, armchairs, tables and lighting, with clear photos, sizes and materials for every piece.",
     ),
-    cta: L("زور المعرض", "Visit the showroom"),
+    cta: L("اعرف أكثر", "Learn more"),
   },
   newsletter: {
     eyebrow: L("نشرة مرمر", "The Marmar letter"),
-    title: L("كن أول من يشوف المجموعات الجديدة", "See new collections first"),
+    title: L("كن أول من يعرف بالمجموعات الجديدة", "Hear about new collections first"),
     line: L(
-      "رسالة واحدة في الشهر: قطع جديدة، أفكار لتنسيق البيت ومواعيد افتتاح المجموعات في المعرض.",
-      "One letter a month: new pieces, styling ideas and collection openings at the showroom.",
+      "رسالة واحدة في الشهر عن القطع والمجموعات الجديدة.",
+      "One letter a month about new pieces and collections.",
     ),
-    note: L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."),
+    note: L("بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.", "No spam. Unsubscribe any time."),
   },
   about: {
-    line: L("أثاث متشطب يدويًا من دمياط، من ١٩٩٨.", "Hand-finished furniture from Damietta, since 1998."),
-    alt: L("صالة بكنبة بني وستائر خضرا", "A living room with a brown sofa and green curtains"),
-    eyebrow: L("الورشة والمعرض", "Workshop and showroom"),
-    title: L("كل قطعة معمولة عندنا", "Every piece is made by us"),
-    text: L("من اختيار الخشب لحد آخر غرزة في التنجيد، الشغل كله بيتعمل في ورشتنا.", "From choosing the wood to the last upholstery stitch, all the work happens in our workshop."),
-    more: L("وبنضمن الهيكل ٥ سنين، والتركيب في البيت علينا.", "Frames carry a five-year guarantee, and assembly at home is on us."),
+    line: L("أثاث بتشطيب يدوي لكل غرف المنزل.", "Hand-finished furniture for every room."),
+    alt: L("صالة بكنبة بنية وستائر خضراء", "A living room with a brown sofa and green curtains"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("أثاث مختار بعناية", "Furniture chosen with care"),
+    text: L("نختار الخشب والأقمشة بعناية، ونعرض مقاسات وخامات كل قطعة بوضوح.", "We choose the wood and fabrics with care and show every piece's sizes and materials clearly."),
+    more: L("تواصل معنا لأي سؤال عن المقاسات أو الخامات.", "Contact us with any question about sizes or materials."),
     // Goes to the best sellers.
     cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
   },
   contact: {
-    title: L("زورنا أو كلمنا", "Visit or call us"),
-    line: L("المعرض: ٩٠ شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة.", "Showroom: 90 North 90th St, Fifth Settlement, New Cairo."),
-    heading: L("احجز زيارة للمعرض", "Book a showroom visit"),
+    title: L("تواصل معنا", "Contact us"),
+    line: L("٩٠ شارع التسعين الشمالي، التجمع الخامس، القاهرة الجديدة.", "90 North 90th St, Fifth Settlement, New Cairo."),
+    heading: L("اسألنا عن أي قطعة", "Ask us about any piece"),
   },
   faq: {
-    line: L("التوصيل والتركيب والضمان.", "Delivery, assembly and guarantee."),
-    question: L("التركيب عليكم؟", "Do you assemble the furniture?"),
+    line: L("المقاسات والخامات والعناية والطلب.", "Sizes, materials, care and ordering."),
+    question: L("كيف أعرف أن القطعة تناسب المكان؟", "How do I know a piece fits my space?"),
     answer: L(
-      "أيوه، فريقنا بيوصل القطعة ويركبها في مكانها وياخد الكرتون معاه. التوصيل في القاهرة والجيزة خلال ٥ لـ ٧ أيام عمل.",
-      "Yes. Our team delivers, assembles the piece in place and takes the packaging away. Cairo and Giza delivery takes 5 to 7 working days.",
+      "مقاسات كل قطعة بالسنتيمتر في صفحة المنتج. قِس المكان قبل الطلب، وتواصل معنا لأي سؤال.",
+      "Every piece's size in centimetres is on its product page. Measure your space before ordering, and contact us with any question.",
     ),
   },
   custom: {
     // The header's link to the about page, one or two words.
-    "about-label": L("المعرض", "Our showroom"),
+    "about-label": L("من نحن", "About us"),
     // The link to the whole catalog (the header, the footer and the tabbed block), two words.
     "shop-all": L("كل القطع", "Shop all"),
     // The footer's phone and email: the same string on both sides (a seller replaces them).
@@ -146,7 +146,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
   const header = lib("header-topbar", {
     text: {
-      "توصيل سريع لكل محافظات مصر": c.announcement[0]!,
+      "تسوّق سهل من هاتفك": c.announcement[0]!,
       "الدفع عند الاستلام": c.announcement[1]!,
       "تتبّع طلبك": L("تتبّع طلبك", "Track your order"),
       "اسم متجرك": name,
@@ -182,10 +182,10 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: {
         "فيديو الواجهة": c.hero.alt,
         "المجموعة الجديدة": c.hero.eyebrow,
-        "مساحتك، بطريقتك": c.hero.title,
-        "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تصميم هادئ لكل يوم": c.hero.title,
+        "قطع مختارة بعناية لكل يوم.": c.hero.line,
         "تسوّق الآن": c.hero.cta,
-        "شوف الجديد": L("وصل حديثًا", "New in"),
+        "اكتشف الجديد": L("وصل حديثًا", "New in"),
       },
       links: { "/products": SHOP, "/products?sort=newest": NEW },
     }),
@@ -206,8 +206,8 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: {
         "صورة المتجر": c.story.alt,
         "من داخل المتجر": c.story.eyebrow,
-        "بدأنا من محل صغير": c.story.title,
-        "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.": c.story.text,
+        "منتجات نختارها بعناية": c.story.title,
+        "نختار كل منتج بعناية، ونعرض صوره وتفاصيله بوضوح.": c.story.text,
         "اعرف أكثر": c.story.cta,
       },
     }),
@@ -216,9 +216,9 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
     lib("newsletter-centered", {
       text: {
         "النشرة": c.newsletter.eyebrow,
-        "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-        "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": c.newsletter.line,
-        "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": c.newsletter.note,
+        "اشترك في نشرتنا البريدية": c.newsletter.title,
+        "اشترك لتصلك أخبار المنتجات الجديدة.": c.newsletter.line,
+        "بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.": c.newsletter.note,
       },
     }),
   ];
@@ -261,7 +261,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("أثاث متشطب يدويًا من دمياط، من ١٩٩٨.", "Hand-finished furniture from Damietta, since 1998."),
+  description: L("أثاث بتشطيب يدوي لكل غرف المنزل.", "Hand-finished furniture for every room."),
   categories: [
     ["sofas", "الكنب والصالونات", "Sofas", PHOTOS.catSofas],
     ["armchairs", "الفوتيهات", "Armchairs", PHOTOS.catArmchairs],
@@ -322,7 +322,7 @@ const DEMO = demoStore({
 
 export const FURNITURE_LUXE = editionTemplate({
   key: FURNITURE_LUXE_KEY,
-  version: 1,
+  version: 2,
   name: L("مرمر", "Marmar"),
   description: L(
     "أثاث فاخر بهدوء: فيديو صالة بالرخام، صور غرف كبيرة وأربع صفوف للأقسام. لمعارض الأثاث الراقي.",
@@ -379,6 +379,6 @@ export const FURNITURE_LUXE = editionTemplate({
     surface: "flat",
     band: "paper",
     extras: ["product-perks"],
-    copy: { reviews: L("آراء عملائنا", "What our clients say"), related: L("قطع تكمّل المكان", "Pieces that complete the room") },
+    copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") },
   },
 });

@@ -132,127 +132,127 @@ const VIEW_ALL = L("عرض الكل", "View all");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   announcement: [
-    L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
-    L("ادفع عند الاستلام", "Pay on delivery"),
-    L("استبدال المقاس خلال ١٤ يوم", "Size exchange within 14 days"),
+    L("تفاصيل ومقاسات واضحة لكل منتج", "Clear details and sizes for every product"),
+    L("ملابس وأحذية وحقائب في مكان واحد", "Clothes, shoes and bags in one place"),
+    L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
   ],
-  labels: { about: L("الأتيليه", "Atelier") },
+  labels: { about: L("من نحن", "About") },
   hero: {
     alt: L(
-      "شماعة عليها تريكو وجنبها شنطة قش",
+      "علّاقة عليها قطع تريكو وبجانبها حقيبة من القش",
       "A rail of knits beside a straw tote",
     ),
     eyebrow: L("مجموعة خريف ٢٠٢٦", "Autumn 2026"),
-    title: L("أناقة هادية تعيش معاك", "Quiet pieces, made to last"),
+    title: L("قطع هادئة تدوم طويلًا", "Quiet pieces, made to last"),
     line: L(
-      "قطن مصري وصوف ناعم وجلد طبيعي. كل قطعة متفصلة في أتيليه حرير في جاردن سيتي.",
-      "Egyptian cotton, soft wool and real leather. Every piece is cut and sewn in our Garden City atelier.",
+      "قطن وصوف وجلد طبيعي في قطع مختارة بعناية.",
+      "Cotton, wool and real leather in carefully chosen pieces.",
     ),
     cta: L("اكتشف المجموعة", "Explore the edit"),
   },
-  categories: { title: L("الدولاب كله في مكان واحد", "The whole wardrobe") },
+  categories: { title: L("تسوّق حسب القسم", "Shop by category") },
   products: {
     primary: {
       title: L("القطع الأكثر طلبًا", "Most-loved pieces"),
       line: L(
-        "القطع اللي عملاءنا بيرجعولها كل موسم.",
-        "The pieces our clients come back to every season.",
+        "القطع التي يختارها العملاء أكثر.",
+        "The pieces customers choose most.",
       ),
     },
   },
   story: {
     alt: L(
-      "مقص وبكر خيط ومتر قياس على ترابيزة الأتيليه",
-      "Scissors, thread and a tape measure on the atelier table",
+      "مقص وبكرات خيط ومتر قياس على طاولة خياطة",
+      "Scissors, thread and a tape measure on a sewing table",
     ),
-    eyebrow: L("أتيليه حرير، من ٢٠٠٩", "The Hareer atelier, since 2009"),
-    title: L("الخياطة هي الحكاية كلها", "It is all in the tailoring"),
+    eyebrow: L("الخامات والتفاصيل", "Materials and details"),
+    title: L("التفاصيل تصنع القطعة", "It is all in the details"),
     text: L(
-      "بنقص ونخيّط كل قطعة في جاردن سيتي، بكميات قليلة وتشطيب يدوي.",
-      "Every piece is cut and sewn in Garden City, in small runs and finished by hand.",
+      "خامات مختارة وتشطيب متقن في كل قطعة.",
+      "Chosen fabrics and a careful finish on every piece.",
     ),
-    cta: L("حكاية الأتيليه", "The atelier story"),
+    cta: L("اعرف أكثر", "Learn more"),
   },
   look: {
     alt: L(
-      "بالطو وبلوفر ضفاير وجينز وشنطة مبطنة على رخام أبيض",
+      "بالطو وبلوفر بضفائر وجينز وحقيبة مبطنة على رخام أبيض",
       "A coat, a cable knit, jeans and a quilted bag laid on white marble",
     ),
-    eyebrow: L("لوك الأسبوع", "This week's look"),
-    title: L("طبقات هادية ليوم طويل", "Soft layers for a long day"),
+    eyebrow: L("إطلالة الأسبوع", "This week's look"),
+    title: L("طبقات هادئة للخريف", "Soft layers for autumn"),
     text: L(
-      "دوس على أي نقطة في الصورة وشوف القطعة اللي نسّقناها معاها من المجموعة.",
-      "Tap a dot on the photo to see the piece from the collection we styled with it.",
+      "اضغط على أي نقطة في الصورة لترى القطعة من المجموعة.",
+      "Tap a dot on the photo to see the piece from the collection.",
     ),
   },
   trust: [
     {
-      title: L("توصيل لحد الباب", "Delivered to your door"),
+      title: L("خامات مختارة", "Chosen fabrics"),
       line: L(
-        "من يوم إلى ٤ أيام لكل المحافظات",
-        "1 to 4 days to every governorate",
+        "قطن وصوف وجلد طبيعي",
+        "Cotton, wool and real leather",
       ),
     },
     {
-      title: L("استبدال المقاس", "Size exchange"),
-      line: L("خلال ١٤ يوم من الاستلام", "Within 14 days of delivery"),
+      title: L("تفاصيل ومقاسات واضحة", "Clear details and sizes"),
+      line: L("في صفحة كل منتج", "On every product page"),
     },
     {
-      title: L("تعديل في الأتيليه", "Alterations at the atelier"),
+      title: L("تواصل معنا", "Contact us"),
       line: L(
-        "نظبط القطعة عليك من غير مصاريف",
-        "We adjust your piece, free of charge",
+        "لأي سؤال عن قطعة أو مقاس",
+        "With any question about a piece or a size",
       ),
     },
   ],
   newsletter: {
-    title: L("شوف المجموعة الجديدة قبل الكل", "See each new collection first"),
+    title: L("اكتشف المجموعة الجديدة أولًا", "See each new collection first"),
     line: L(
-      "رسالة واحدة في الشهر من الأتيليه.",
-      "One letter a month from the atelier.",
+      "أخبار المجموعات الجديدة في بريدك.",
+      "New collections in your inbox.",
     ),
   },
   about: {
     line: L(
-      "ملابس متفصلة في القاهرة، من ٢٠٠٩.",
-      "Clothes tailored in Cairo, since 2009.",
+      "ملابس وأحذية وحقائب مختارة بعناية.",
+      "Clothes, shoes and bags chosen with care.",
     ),
     alt: L(
-      "أتيليه حرير: مانيكان وماكينة خياطة على جدار أبيض",
-      "The Hareer atelier: a dress form and a sewing machine by a white wall",
+      "مانيكان وماكينة خياطة أمام جدار أبيض",
+      "A dress form and a sewing machine by a white wall",
     ),
-    eyebrow: L("الأتيليه", "The atelier"),
-    title: L("قطع أقل، معمولة أحسن", "Fewer pieces, better made"),
+    eyebrow: L("من نحن", "About us"),
+    title: L("قطع أقل، بجودة أفضل", "Fewer pieces, better made"),
     text: L(
-      "بنعمل مجموعتين في السنة بس، وكل موديل بيتخيط بكميات صغيرة عشان التشطيب يفضل مظبوط.",
-      "We make two collections a year, and each style is sewn in small runs so the finish stays right.",
+      "نختار قطعًا قليلة بعناية، بخامات جيدة وتشطيب متقن.",
+      "We choose fewer pieces with care, in good fabrics with a careful finish.",
     ),
     more: L(
-      "وأي قطعة تحتاج تعديل في المقاس، بنظبطها في الأتيليه من غير مصاريف.",
-      "Any piece that needs altering is adjusted at the atelier, free of charge.",
+      "وفي كل صفحة منتج تفاصيل المقاسات والخامات.",
+      "Every product page shows the sizes and fabrics.",
     ),
     cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
   },
   contact: {
-    title: L("زورنا في الأتيليه", "Visit the atelier"),
+    title: L("تواصل معنا", "Contact us"),
     line: L(
       `١٨ شارع أحمد باشا، جاردن سيتي، القاهرة، ${phone("+20 122 740 9315")}، ${handle("atelier@hareer.eg")}`,
       `18 Ahmed Pasha St, Garden City, Cairo | ${phone("+20 122 740 9315")} | ${handle("atelier@hareer.eg")}`,
     ),
-    heading: L("احجز ميعاد قياس", "Book a fitting"),
+    heading: L("لأي سؤال عن المقاسات، راسلنا", "Questions about sizing? Write to us"),
   },
   faq: {
     line: L(
-      "المقاسات والتعديل والاستبدال.",
-      "Sizing, alterations and exchanges.",
+      "المقاسات والخامات والطلبات.",
+      "Sizes, fabrics and orders.",
     ),
     question: L(
-      "لو المقاس مش مظبوط أعمل إيه؟",
-      "What if the size is not right?",
+      "كيف أختار المقاس المناسب؟",
+      "How do I choose the right size?",
     ),
     answer: L(
-      "تقدر تستبدل المقاس خلال ١٤ يوم، أو تعدي على الأتيليه ونظبط القطعة عليك من غير مصاريف.",
-      "Exchange the size within 14 days, or drop by the atelier and we will alter the piece to fit, free of charge.",
+      "ستجد جدول المقاسات في صفحة كل منتج، ولأي سؤال تواصل معنا. وراجع سياسة الاستبدال والاسترجاع في صفحة السياسات.",
+      "Each product page has a size chart, and you can contact us with any question. See the exchange and return policy page.",
     ),
   },
   photos: {
@@ -295,9 +295,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const header = lib("header-centered-ticker", {
     text: {
-      "توصيل لكل محافظات مصر": c.announcement[0]!,
+      "تفاصيل ومقاسات واضحة لكل منتج": c.announcement[0]!,
       "الدفع عند الاستلام": c.announcement[1]!,
-      "استبدال سهل خلال ١٤ يوم": c.announcement[2]!,
+      "تسوّق سهل من هاتفك": c.announcement[2]!,
       "اسم متجرك": name,
       المتجر: shopAll ?? L("كل القطع", "Shop all"),
       العروض: L("وصل حديثًا", "New in"),
@@ -350,10 +350,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "فيديو الواجهة": c.hero.alt,
         "المجموعة الجديدة": c.hero.eyebrow,
-        "مساحتك، بطريقتك": c.hero.title,
-        "قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تصميم هادئ لكل يوم": c.hero.title,
+        "قطع مختارة بعناية لكل يوم.": c.hero.line,
         "تسوّق الآن": c.hero.cta,
-        "شوف الجديد": L("وصل حديثًا", "New in"),
+        "اكتشف الجديد": L("وصل حديثًا", "New in"),
       },
       links: { "/products": SHOP, "/products?sort=newest": NEW },
     }),
@@ -366,7 +366,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("products-grid", {
       text: {
         "وصل حديثًا": c.products.primary.title,
-        "أحدث المنتجات اللي نزلت المتجر.": c.products.primary.line,
+        "أحدث المنتجات في المتجر.": c.products.primary.line,
       },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary }],
@@ -377,9 +377,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       photo: [undefined, undefined, c.photos.banner],
       text: {
         "صورة البانر": c.story.alt,
-        "صناعة مصرية": c.story.eyebrow,
-        "متعمول عشان يريّحك ويعيش معاك": c.story.title,
-        "خامات مختارة وتفاصيل متشطبة بإيدينا، عشان تفضل معاك سنين.":
+        "مختارات المتجر": c.story.eyebrow,
+        "مصنوع ليدوم طويلًا": c.story.title,
+        "خامات مختارة وتفاصيل متقنة تتحمّل الاستخدام اليومي.":
           c.story.text,
         "تسوّق الآن": c.story.cta,
       },
@@ -392,10 +392,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         lib("gallery-shop-look", {
           photo: [c.photos.look.src],
           text: {
-            "صورة اللوك": c.look.alt,
-            "تسوّق اللوك": c.look.eyebrow,
-            "كل اللي في الصورة": c.look.title,
-            "دوس على أي نقطة في الصورة وشوف القطعة وسعرها، وضيفها للسلة على طول.":
+            "صورة الإطلالة": c.look.alt,
+            "تسوّق الإطلالة": c.look.eyebrow,
+            "كل ما في الصورة": c.look.title,
+            "اضغط على أي نقطة في الصورة لترى القطعة وسعرها، وأضفها إلى السلة مباشرة.":
               c.look.text,
             "تسوّق الكل": L("وصل حديثًا", "Shop new in"),
           },
@@ -425,20 +425,20 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     categoryRow(journey.rows[1]!),
     lib("features-classic", {
       text: {
-        "توصيل سريع": c.trust[0]!.title,
-        "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
-        "استرجاع سهل": c.trust[1]!.title,
-        "١٤ يومًا لتغيّر رأيك": c.trust[1]!.line,
-        "دعم على واتساب": c.trust[2]!.title,
-        "أشخاص حقيقيون طوال الأسبوع": c.trust[2]!.line,
+        "الشحن": c.trust[0]!.title,
+        "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
+        "الاستبدال والاسترجاع": c.trust[1]!.title,
+        "التفاصيل في صفحة السياسات": c.trust[1]!.line,
+        "تواصل معنا": c.trust[2]!.title,
+        "لأي سؤال عن طلب أو منتج": c.trust[2]!.line,
       },
     }),
     // The promises row above ends on a hairline, so the newsletter's first one is hidden.
     retouch(
       lib("newsletter-ruled", {
         text: {
-          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-          "عروض للمشتركين بس، مرة في الأسبوع.": c.newsletter.line,
+          "اشترك في نشرتنا البريدية": c.newsletter.title,
+          "كن أول من يعرف بالمنتجات الجديدة.": c.newsletter.line,
         },
       }),
       "divider",
@@ -498,21 +498,21 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 const DEMO = demoStore({
   name: NAME,
   description: L(
-    "ملابس وأحذية وشنط متفصلة في القاهرة، من ٢٠٠٩.",
-    "Clothes, shoes and bags made in Cairo, since 2009.",
+    "ملابس وأحذية وحقائب مختارة بعناية.",
+    "Clothes, shoes and bags chosen with care.",
   ),
   categories: [
     ["tops", "التيشيرتات والقمصان", "Tees & shirts", PHOTOS.catTops],
     ["knits", "التريكو والجواكت", "Knits & jackets", PHOTOS.catKnits],
     ["shoes", "الأحذية", "Shoes", PHOTOS.catShoes],
-    ["bags", "الشنط والجلود", "Bags & leather", PHOTOS.catBags],
+    ["bags", "الحقائب والجلود", "Bags & leather", PHOTOS.catBags],
   ],
   // Newest first. The first three are the shop-the-look dots: a jacket, a knit, a bag.
   products: [
     [
       "cream-overshirt",
       "knits",
-      "أوفر شيرت صوف كريمي",
+      "قميص صوف واسع كريمي",
       "Cream Wool Overshirt",
       P(4641824),
       3400,
@@ -521,7 +521,7 @@ const DEMO = demoStore({
     [
       "cable-knit-sweater",
       "knits",
-      "بلوفر ضفاير صوف",
+      "بلوفر صوف بضفائر",
       "Cable Knit Sweater",
       P(5704187),
       2650,
@@ -530,7 +530,7 @@ const DEMO = demoStore({
     [
       "beige-leather-tote",
       "bags",
-      "شنطة توت جلد بيج",
+      "حقيبة توت جلد بيج",
       "Beige Leather Tote",
       P(36365228),
       4600,
@@ -567,7 +567,7 @@ const DEMO = demoStore({
     [
       "zip-polo-knit",
       "tops",
-      "بولو تريكو بسوستة",
+      "بولو تريكو بسحّاب",
       "Zip Polo Knit",
       P(20763273),
       1650,
@@ -631,7 +631,7 @@ const DEMO = demoStore({
     [
       "ribbed-button-cardigan",
       "knits",
-      "كارديجان ريب بزراير",
+      "كارديجان مضلّع بأزرار",
       "Ribbed Button Cardigan",
       P(9603630),
       2200,
@@ -678,7 +678,7 @@ const DEMO = demoStore({
     [
       "pink-quilted-tote",
       "bags",
-      "شنطة يد وردي مبطنة",
+      "حقيبة يد وردية مبطنة",
       "Pink Quilted Tote",
       P(22432987),
       3800,
@@ -696,7 +696,7 @@ const DEMO = demoStore({
     [
       "burgundy-duffle-bag",
       "bags",
-      "شنطة دافل جلد نبيتي",
+      "حقيبة سفر جلد نبيتي",
       "Burgundy Leather Duffle",
       P(22434759),
       4400,
@@ -705,7 +705,7 @@ const DEMO = demoStore({
     [
       "burgundy-quilted-tote",
       "bags",
-      "شنطة يد نبيتي مبطنة",
+      "حقيبة يد نبيتي مبطنة",
       "Burgundy Quilted Tote",
       P(22432992),
       3900,
@@ -714,7 +714,7 @@ const DEMO = demoStore({
     [
       "floral-embroidered-handbag",
       "bags",
-      "شنطة مطرزة بالورد",
+      "حقيبة مطرزة بالورود",
       "Floral Embroidered Handbag",
       P(26610519),
       4200,
@@ -736,7 +736,7 @@ export const FASHION_LUXE = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(FASHION_LUXE_KEY, "dresses", { ar: 2812, en: 2812 }),
   key: FASHION_LUXE_KEY,
-  version: 3,
+  version: 4,
   name: L("حرير", "Hareer"),
   description: L(
     "أزياء راقية بهدوء: فيديو لشماعة الموسم، أقسام بصور طولية، لوك تتسوقه بالنقط وصفوف منتجات على خلفية واحدة. لبوتيكات الملابس الراقية.",
@@ -803,8 +803,8 @@ export const FASHION_LUXE = editionTemplate({
     band: "paper",
     extras: ["product-perks"],
     copy: {
-      reviews: L("آراء عميلاتنا", "What our clients say"),
-      related: L("قطع تكمّل اللوك", "Complete the look"),
+      reviews: L("آراء العملاء", "Customer reviews"),
+      related: L("قطع تكمّل الإطلالة", "Complete the look"),
     },
   },
 });

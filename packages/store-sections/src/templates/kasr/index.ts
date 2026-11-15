@@ -175,7 +175,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       أطفال: c.nav[0]!.label,
       ملابس: c.nav[2]!.label,
       أحذية: L("الأكثر طلبًا", "Best sellers"),
-      شنط: c.labels.about,
+      حقائب: c.labels.about,
       العروض: L("الأعلى تقييمًا", "Top rated"),
     },
     links: {
@@ -197,7 +197,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     text: {
       م: initialOf(name),
       "اسم متجرك": name,
-      "منتجات أصلية بضمان، توصلك لحد البيت.": c.footer.line,
+      "منتجات مختارة بعناية لكل يوم.": c.footer.line,
       "كل المنتجات": x["shop-all"]!,
       العروض: L("الأعلى تقييمًا", "Top rated"),
       "من نحن": c.labels.about,
@@ -225,7 +225,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
               "ألوان هادئة لأيام أطول": c.hero.title,
               "تسوّق المجموعة": c.hero.cta,
               "٠٢": x["hero-side-1-tag"]!,
-              "عروض الأسبوع": x["hero-side-1-title"]!,
+              "مختارات الأسبوع": x["hero-side-1-title"]!,
               "٠٣": x["hero-side-2-tag"]!,
               "هدايا مختارة": x["hero-side-2-title"]!,
             },
@@ -316,11 +316,11 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           c.photos.story,
         ],
         text: {
-          "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
+          "تفاصيل واضحة لكل منتج": c.story.title,
           "صورة المتجر": c.story.alt,
-          "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف، عشان تفتح العلبة وانت مطمن.":
+          "نعرض لكل منتج صورًا ومواصفات واضحة لتختار وأنت مطمئن.":
             c.story.text,
-          "شوف إزاي بنشتغل": c.story.cta,
+          "تعرّف على طريقة عملنا": c.story.cta,
         },
         links: { "/about": NEW },
       }),
@@ -332,20 +332,20 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         text: {
           "أسعار الخدمات": x["size-title"]!,
           "الأسعار شاملة قطع الغيار الأصلية والضمان.": x["size-line"]!,
-          الموبايل: x["size-group-1"]!,
+          الهواتف: x["size-group-1"]!,
           "تغيير بطارية": size(1, "name"),
           "٦٥٠ ج.م": size(1, "value"),
           "تغيير شاشة": size(2, "name"),
           "٢٤٠٠ ج.م": size(2, "value"),
-          "سوكت الشحن": size(3, "name"),
+          "منفذ الشحن": size(3, "name"),
           "٤٥٠ ج.م": size(3, "value"),
-          "الشاشات والبيت": x["size-group-2"]!,
+          "الشاشات والمنزل": x["size-group-2"]!,
           "تركيب حائط": size(4, "name"),
           "٣٥٠ ج.م": size(4, "value"),
-          "ضبط رسيفر": size(5, "name"),
+          "ضبط جهاز الاستقبال": size(5, "name"),
           "١٥٠ ج.م": size(5, "value"),
           السماعات: x["size-group-3"]!,
-          "تغيير وسايد": size(6, "name"),
+          "تغيير وسائد الأذن": size(6, "name"),
           "١٢٠ ج.م": size(6, "value"),
           "تنظيف وفحص": size(7, "name"),
           "٨٠ ج.م": size(7, "value"),
@@ -360,8 +360,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         text: {
           "صورة الحملة": x["banner-alt"]!,
           "الخط الجديد": x["banner-eyebrow"]!,
-          "اختارناها لك بعناية": x["banner-title"]!,
-          "قطع جديدة من خطنا الجديد، معمولة عشان تعيش معاك.": x["banner-line"]!,
+          "اخترناها لك بعناية": x["banner-title"]!,
+          "قطع جديدة من خطنا الجديد، مصنوعة لتدوم.": x["banner-line"]!,
           "تسوّق المجموعة": c.nav[2]!.label,
         },
         links: { "/products": c.nav[2]!.href },
@@ -374,15 +374,15 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       calm(
         lib("features-bento", {
           text: {
-            "وعدنا ليك": L("وعدنا ليكي", "Our promise"),
-            "نشتري لك كأننا بنشتري لنفسنا": x["promises-title"]!,
-            "اعرف أكتر": c.labels.about,
-            "توصيل سريع": c.trust[0]!.title,
-            "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+            "وعدنا لك": L("وعدنا لك", "Our promise"),
+            "نختار كل منتج كأننا نختاره لأنفسنا": x["promises-title"]!,
+            "اعرف أكثر": c.labels.about,
+            "الشحن": c.trust[0]!.title,
+            "تظهر تكلفة الشحن ومدته عند إتمام الطلب": c.trust[0]!.line,
             "الدفع عند الاستلام": c.trust[1]!.title,
-            "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
-            "استرجاع سهل": c.trust[2]!.title,
-            "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+            "أو بطرق الدفع المتاحة عند الطلب": c.trust[1]!.line,
+            "الاستبدال والاسترجاع": c.trust[2]!.title,
+            "التفاصيل في صفحة السياسات": c.trust[2]!.line,
           },
         }),
       ),
@@ -395,8 +395,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     calm(
       lib("newsletter-big", {
         text: {
-          "خد ١٠٪ خصم على أول طلب": c.newsletter.title,
-          "عروض للمشتركين بس، مرة في الأسبوع.": c.newsletter.line,
+          "اشترك في نشرتنا البريدية": c.newsletter.title,
+          "كن أول من يعرف بالمنتجات الجديدة.": c.newsletter.line,
         },
       }),
     ),
@@ -455,7 +455,7 @@ export const KASR = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KASR_KEY, "womens-shoes", { ar: 2812, en: 2812 }),
   key: KASR_KEY,
-  version: 5,
+  version: 6,
   changelog: "Kasr v5: the womens-shoes template, rebuilt look-first",
   name: L("قصر", "Kasr"),
   description: L(
@@ -560,8 +560,8 @@ export const KASR = editionTemplate({
     thumbs: "side",
     band: "paper",
     copy: WOMENS_SHOES.productPage?.copy ?? {
-      reviews: L("آراء عميلاتنا", "What our customers say"),
-      related: L("أحذية ممكن تعجبك", "Shoes you may like"),
+      reviews: L("آراء العملاء", "What our customers say"),
+      related: L("أحذية قد تعجبك", "Shoes you may like"),
     },
   },
 });

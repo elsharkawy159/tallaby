@@ -56,19 +56,19 @@ export const payPickup = defineDesign({
     t.section({ label: L("توصيل أو استلام", "Delivery or pickup") }, [
       t.container(
         [
-          t.box([payTitle(t, L("استلمها زي ما تحب", "Get it your way"))], { label: L("العنوان", "Heading"), style: { marginBottom: 24 } }),
+          t.box([payTitle(t, L("اختر طريقة الاستلام", "Get it your way"))], { label: L("العنوان", "Heading"), style: { marginBottom: 24 } }),
           t.grid(
             [
               t.stack(
                 [
                   panelHead(t, "truck", L("توصيل", "Delivery")),
-                  t.grid([cell(t, L("يوصلك خلال", "Arrives in"), L("١–٢ يوم", "1–2 days")), cell(t, L("مصاريف الشحن", "Delivery fee"), EGP("٥٠", "50"))], {
+                  t.grid([cell(t, L("يصلك خلال", "Arrives in"), L("١–٢ يوم", "1–2 days")), cell(t, L("مصاريف الشحن", "Delivery fee"), EGP("٥٠", "50"))], {
                     label: L("الخانات", "Cells"),
                     columns: { desktop: 2, mobile: 2 },
                     style: { gap: 12 },
                     mobile: { gap: 8 },
                   }),
-                  t.paragraph(L("هنأكد العنوان معاك على واتساب قبل الشحن.", "We confirm your address on WhatsApp before shipping."), { style: { fontSize: "sm" } }),
+                  t.paragraph(L("سنؤكد العنوان معك على واتساب قبل الشحن.", "We confirm your address on WhatsApp before shipping."), { style: { fontSize: "sm" } }),
                 ],
                 { label: L("التوصيل", "Delivery"), style: PANEL, mobile: PANEL_MOBILE },
               ),

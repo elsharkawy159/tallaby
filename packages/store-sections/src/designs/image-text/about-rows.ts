@@ -10,14 +10,14 @@ const ROWS = [
   {
     no: L("٠١", "01"),
     title: L("نختار", "We choose"),
-    text: L("نشتري من الموزعين المعتمدين فقط، ونرفض أي منتج مشكوك فيه.", "We only buy from approved distributors and turn down anything doubtful."),
+    text: L("نختار كل منتج بعناية قبل عرضه في المتجر.", "We choose every product with care before listing it."),
   },
   {
     no: L("٠٢", "02"),
-    title: L("نجرّب", "We test"),
-    text: L("كل منتج يُفتح ويُجرَّب قبل أن يُعرض في المتجر.", "Every product is opened and tested before it is listed."),
+    title: L("نوضّح", "We explain"),
+    text: L("نعرض صورًا ومواصفات ومقاسات واضحة لكل منتج.", "We show photos, specs and clear sizes for every product."),
   },
-  { no: L("٠٣", "03"), title: L("نغلّف", "We pack"), text: L("تغليف محكم ومعه الفاتورة والضمان.", "Sealed packaging with the invoice and warranty inside.") },
+  { no: L("٠٣", "03"), title: L("نساعدك", "We help"), text: L("تواصل معنا لأي سؤال قبل الطلب أو بعده.", "Contact us with any question, before or after you order.") },
 ];
 
 export const aboutRows = defineDesign({

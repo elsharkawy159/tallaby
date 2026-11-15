@@ -43,14 +43,14 @@ const PHOTOS = {
 const NAME = L("عجلة بايكس", "Darraga Bikes");
 
 const header = lib("header-ruled", {
-  text: { "م": L("ع", "D"), "اسم متجرك": NAME, "المتجر": L("العجل والأدوات", "Bikes & gear"), "العروض": L("الأكثر مبيعاً", "Best sellers") },
+  text: { "م": L("ع", "D"), "اسم متجرك": NAME, "المتجر": L("الدراجات والأدوات", "Bikes & gear"), "العروض": L("الأكثر مبيعاً", "Best sellers") },
   links: { "/products": [SHOP, BEST, SHOP, SHOP] },
 });
 
 const footer = lib("footer-panel", {
   text: {
     "اسم متجرك": NAME,
-    "اشترك وخد العروض قبل أي حد.": L("مواعيد مشاوير الجمعة وعروض الورشة أول بأول.", "Friday ride dates and workshop offers as they come."),
+    "اشترك ليصلك جديدنا أولًا.": L("اشترك ليصلك جديد الدراجات والإكسسوارات.", "Subscribe for new bikes and accessories."),
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ عجلة بايكس. كل الحقوق محفوظة.", "© 2026 Darraga Bikes. All rights reserved."),
     "العروض": L("الأعلى تقييماً", "Top rated"),
   },
@@ -61,42 +61,42 @@ const home: Design[] = [
   lib("hero-halves", {
     photo: [undefined, PHOTOS.orangeBikes],
     text: {
-      "كوليكشن الموسم": L("لف المدينة", "Ride the city"),
-      "صوت أنقى، كل يوم": L("روح الشغل بالعجلة", "Ride to work, skip the traffic"),
-      "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": L(
-        "خوذ ونور وشنط متجربة في شوارع القاهرة. أول صيانة ببلاش، وقسّط على ١٢ شهر.",
-        "Helmets, lights and packs tested on Cairo streets. Free first service, and pay over 12 months.",
+      "مجموعة الموسم": L("دراجات المدينة", "City bikes"),
+      "صوت أنقى، كل يوم": L("دراجات وخوذ وإكسسوارات", "Bikes, helmets and accessories"),
+      "منتجات مختارة بمواصفات واضحة لكل يوم.": L(
+        "خوذ وأضواء وحقائب ورفوف لدراجات المدينة.",
+        "Helmets, lights, bags and racks for city bikes.",
       ),
       "تسوق الآن": L("تسوق الأدوات", "Shop gear"),
-      "العروض": L("العجل", "Bikes"),
-      "صورة الحملة": L("عجلتين مدينة برتقالي على الرصيف", "Two orange city bikes on the pavement"),
+      "العروض": L("الدراجات", "Bikes"),
+      "صورة الحملة": L("دراجتا مدينة برتقاليتان على الرصيف", "Two orange city bikes on the pavement"),
     },
     links: { "/products": [SHOP, search("عجلة")] },
   }),
-  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("محتاج إيه للمشوار؟", "What does your ride need?") } }),
+  lib("categories-circles", { text: { "ما الذي تبحث عنه؟": L("ما الذي تبحث عنه؟", "What are you looking for?") } }),
   lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("قبل أول مشوار", "Before your first ride") },
+    text: { "إكسسوارات بأسعار مناسبة": L("أساسيات الدراجة", "Bike essentials") },
     links: { "/products": BEST },
     lists: [{ source: "best-sellers", limit: 6 }],
   }),
   lib("service-price-menu", {
     text: {
       "أسعار الخدمات": L("أسعار الورشة", "Workshop prices"),
-      "الأسعار شاملة قطع الغيار الأصلية والضمان.": L("السعر بيوصلك قبل الشغل، والقطع بتتحسب لوحدها.", "You get the price before any work; parts are charged separately."),
-      "الموبايل": L("صيانة", "Service"),
-      "تغيير بطارية": L("ظبط عادي", "Basic tune-up"),
+      "الأسعار شاملة قطع الغيار الأصلية والضمان.": L("يظهر السعر قبل بدء العمل، وتُحسب القطع منفصلة.", "You get the price before any work; parts are charged separately."),
+      "الهواتف": L("صيانة", "Service"),
+      "تغيير بطارية": L("ضبط أساسي", "Basic tune-up"),
       "٦٥٠ ج.م": L("٣٠٠ ج.م", "EGP 300"),
       "تغيير شاشة": L("صيانة كاملة", "Full service"),
       "٢٤٠٠ ج.م": L("٦٥٠ ج.م", "EGP 650"),
-      "سوكت الشحن": L("تنظيف وتشحيم الجنزير", "Chain clean and lube"),
+      "منفذ الشحن": L("تنظيف وتزييت السلسلة", "Chain clean and lube"),
       "٤٥٠ ج.م": L("١٢٠ ج.م", "EGP 120"),
-      "الشاشات والبيت": L("تصليح", "Repairs"),
-      "تركيب حائط": L("كاوتش مخروم", "Flat tyre"),
+      "الشاشات والمنزل": L("تصليح", "Repairs"),
+      "تركيب حائط": L("إطار مثقوب", "Flat tyre"),
       "٣٥٠ ج.م": L("٨٠ ج.م", "EGP 80"),
-      "ضبط رسيفر": L("تيل فرامل", "Brake pads"),
+      "ضبط جهاز الاستقبال": L("وسائد الفرامل", "Brake pads"),
       "١٥٠ ج.م": L("١٨٠ ج.م", "EGP 180"),
       "السماعات": L("تركيب", "Fitting"),
-      "تغيير وسايد": L("تركيب كشاف ونور خلفي", "Front and rear light fitting"),
+      "تغيير وسائد الأذن": L("تركيب ضوء أمامي وخلفي", "Front and rear light fitting"),
       "١٢٠ ج.م": L("٦٠ ج.م", "EGP 60"),
       "تنظيف وفحص": L("تركيب حامل أو رف", "Mount or rack fitting"),
       "٨٠ ج.م": L("٥٠ ج.م", "EGP 50"),
@@ -105,13 +105,13 @@ const home: Design[] = [
   lib("team-branches", {
     text: {
       "الفروع": L("الورشة", "Workshop"),
-      "زورنا": L("عدّي علينا", "Come by"),
+      "تفضّل بزيارتنا": L("تفضّل بزيارتنا", "Visit us"),
       "فرع الدقي": L("الورشة، الزمالك", "Workshop, Zamalek"),
       "٢٤ شارع التحرير، الدقي": L("شارع حسن صبري، الزمالك", "Hassan Sabry St, Zamalek"),
-      "يوميًا من ١٢ الضهر لـ ١١ م": L("يوميًا من ٩ ص لـ ٩ م", "Daily, 9 am – 9 pm"),
+      "يوميًا من ١٢ ظهرًا حتى ١١ م": L("يوميًا من ٩ ص حتى ٩ م", "Daily, 9 am – 9 pm"),
       "فرع مدينة نصر": L("نقطة استلام المعادي", "Maadi pick-up point"),
       "سيتي ستارز، الدور الأول": L("شارع ٩، المعادي", "Road 9, Maadi"),
-      "يوميًا من ١٠ ص لـ ١٠ م": L("يوميًا من ١٠ ص لـ ٨ م", "Daily, 10 am – 8 pm"),
+      "يوميًا من ١٠ ص حتى ١٠ م": L("يوميًا من ١٠ ص حتى ٨ م", "Daily, 10 am – 8 pm"),
       "فرع المعادي": L("نقطة استلام التجمع", "New Cairo pick-up point"),
       "شارع ٩، المعادي": L("شارع التسعين، التجمع الخامس", "90th St, Fifth Settlement"),
       "السبت – الخميس، ١٢ – ١٠ م": L("السبت – الخميس، ١٢ – ٨ م", "Sat – Thu, 12 – 8 pm"),
@@ -121,17 +121,17 @@ const home: Design[] = [
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن عجلة بايكس", "About Darraga Bikes"), L("محل عجل وورشة في الزمالك.", "A bike shop and workshop in Zamalek.")),
+  pageHeader(lib, "about-header", L("عن عجلة بايكس", "About Darraga Bikes"), L("دراجات مدينة وخوذ وإكسسوارات.", "City bikes, helmets and accessories.")),
   aboutStory(lib, {
     photo: PHOTOS.shopFloor,
-    alt: L("عجل معروضة جوه المحل", "Bikes on display inside the shop"),
-    eyebrow: L("الزمالك", "Zamalek"),
-    title: L("بنروح الشغل بالعجلة من ٢٠١٦", "Riding to work since 2016"),
+    alt: L("دراجات معروضة داخل المتجر", "Bikes on display inside the shop"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("دراجات للتنقل في المدينة", "Bikes for getting around the city"),
     text: L(
-      "بدأنا جروب مشاوير كل جمعة، وبعدين فتحنا الورشة عشان نصلّح عجل أصحابنا.",
-      "We started a Friday ride group, then opened the workshop to fix our friends’ bikes.",
+      "نختار دراجات وخوذًا وأضواء وحقائب للتنقل اليومي، ونعرض مواصفات كل منتج بوضوح.",
+      "We pick bikes, helmets, lights and bags for daily rides, with clear specs for every product.",
     ),
-    more: L("النهارده بنبيع عجل وأدوات متجربة في شوارع القاهرة.", "Today we sell bikes and gear tested on Cairo streets."),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
     button: L("تسوق الأدوات", "Shop gear"),
     href: SHOP,
   }),
@@ -139,25 +139,25 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("عجل مدينة وخوذ وورشة في الزمالك.", "City bikes, helmets and a workshop in Zamalek."),
+  description: L("دراجات مدينة وخوذ وإكسسوارات.", "City bikes, helmets and accessories."),
   categories: [
-    ["bikes", "عجل", "Bikes", PHOTOS.redBike],
+    ["bikes", "دراجات", "Bikes", PHOTOS.redBike],
     ["helmets", "خوذ", "Helmets", PHOTOS.helmetsBars],
-    ["gear", "نور وأدوات", "Lights & gear", PHOTOS.headlight],
-    ["racks", "رفوف وشيالات", "Racks & carriers", PHOTOS.rearRack],
+    ["gear", "أضواء وأدوات", "Lights & gear", PHOTOS.headlight],
+    ["racks", "رفوف وحوامل", "Racks & carriers", PHOTOS.rearRack],
     ["bells", "أجراس", "Bells", PHOTOS.bell],
-    ["bags", "شنط", "Bags", PHOTOS.pack],
+    ["bags", "حقائب", "Bags", PHOTOS.pack],
   ],
   products: [
     ["city-helmet", "helmets", "خوذة مدينة", "City Helmet", PHOTOS.helmetsBars, 1450, { isFeatured: true, rating: 4.8, sold90: 96 }],
     ["light-road-helmet", "helmets", "خوذة طريق خفيفة", "Light Road Helmet", PHOTOS.helmetsWall, 1850, { compareAtPrice: 2100, sold90: 40 }],
     ["front-headlight", "gear", "كشاف أمامي", "Front Headlight", PHOTOS.headlight, 380, { sold90: 120 }],
-    ["classic-led-lamp", "gear", "كشاف LED كلاسيك", "Classic LED Lamp", PHOTOS.ledLamp, 450, { sold90: 64 }],
+    ["classic-led-lamp", "gear", "كشاف LED كلاسيكي", "Classic LED Lamp", PHOTOS.ledLamp, 450, { sold90: 64 }],
     ["rear-rack-reflector", "racks", "رف خلفي بعاكس", "Rear Rack with Reflector", PHOTOS.rearRack, 690, { sold90: 38 }],
     ["brass-bell", "bells", "جرس نحاس", "Brass Bell", PHOTOS.bell, 150, { sold90: 150 }],
-    ["commuter-pack", "bags", "شنطة مشاوير ٢٠ لتر", "Commuter Pack 20 L", PHOTOS.pack, 1650, { sold90: 44 }],
-    ["orange-city-bike", "bikes", "عجلة سيتي برتقالي", "Orange City Bike", PHOTOS.orangeBikesSmall, 14500, { isFeatured: true, rating: 4.9, sold90: 22 }],
-    ["red-step-through", "bikes", "عجلة حمرا بدون عارضة", "Red Step-Through Bike", PHOTOS.redBike, 12900, { compareAtPrice: 13900, sold90: 18 }],
+    ["commuter-pack", "bags", "حقيبة تنقل ٢٠ لتر", "Commuter Pack 20 L", PHOTOS.pack, 1650, { sold90: 44 }],
+    ["orange-city-bike", "bikes", "دراجة مدينة برتقالية", "Orange City Bike", PHOTOS.orangeBikesSmall, 14500, { isFeatured: true, rating: 4.9, sold90: 22 }],
+    ["red-step-through", "bikes", "دراجة حمراء بإطار منخفض", "Red Step-Through Bike", PHOTOS.redBike, 12900, { compareAtPrice: 13900, sold90: 18 }],
   ],
 });
 
@@ -165,10 +165,10 @@ export const DARRAGA = libraryTemplate({
   key: DARRAGA_KEY,
   version: 3,
   changelog: "Darraga v3: categories after the hero, gear before the workshop, one price list",
-  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("رأي الراكبين", "From the riders"), related: L("جهّز قبل أول مشوار", "Gear up for your first ride") } },
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء راكبي الدراجات", "From the riders"), related: L("إكسسوارات أخرى لدراجتك", "More for your bike") } },
   name: L("عجلة", "Darraga"),
   description: L(
-    "عجل وورشة: أساسيات أول مشوار، أسعار الورشة وعنوان الورشة. أربع صفحات جاهزة.",
+    "دراجات وورشة: أساسيات الدراجة، أسعار الورشة وعنوان الورشة. أربع صفحات جاهزة.",
     "Bikes and a workshop: first-ride essentials, workshop prices and where to find us. Four ready pages.",
   ),
   category: "sports",
@@ -197,8 +197,8 @@ export const DARRAGA = libraryTemplate({
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
         title: L("تواصل", "Contact"),
-        text: L("شارع حسن صبري، الزمالك. يوميًا من ٩ ص لـ ٩ م.", "Hassan Sabry St, Zamalek. Daily, 9 am – 9 pm."),
-        heading: L("احجز صيانة أو اسأل عن مقاس", "Book a service or ask about a size"),
+        text: L("شارع حسن صبري، الزمالك. يوميًا من ٩ ص حتى ٩ م.", "Hassan Sabry St, Zamalek. Daily, 9 am – 9 pm."),
+        heading: L("اسأل عن صيانة أو مقاس", "Ask about a service or a size"),
       }),
     },
     {
@@ -206,9 +206,9 @@ export const DARRAGA = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الورشة والتقسيط والتوصيل.", "Workshop, instalments and delivery."),
-        question: L("أول صيانة ببلاش فعلاً؟", "Is the first service really free?"),
-        answer: L("أيوه، أي عجلة من عندنا ليها ظبط ببلاش خلال أول ٣ شهور.", "Yes, every bike from us gets a free tune-up within the first 3 months."),
+        text: L("الورشة والمقاسات والطلب.", "Workshop, sizes and ordering."),
+        question: L("كيف أختار مقاس الدراجة؟", "How do I choose a bike size?"),
+        answer: L("مقاس الإطار مذكور في وصف كل دراجة. لأي سؤال، تواصل معنا.", "Each bike lists its frame size. For any question, contact us."),
       }),
     },
   ],

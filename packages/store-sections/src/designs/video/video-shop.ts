@@ -23,7 +23,7 @@ export const videoShop = defineDesign({
         [
           modHead(t, {
             label: L("تسوق من الفيديو", "Shop the video"),
-            title: L("كل اللي في الفيديو", "Everything in the video"),
+            title: L("كل ما في الفيديو", "Everything in the video"),
           }),
           t.video(1, L("فيديو المنتجات", "Product video"), {
             label: L("المشغل", "Player"),

@@ -35,11 +35,11 @@ export const faqSide = defineDesign({
               t.stack(
                 [
                   t.text(L("الأسئلة الشائعة", "FAQ"), { role: "eyebrow", style: EYEBROW }),
-                  t.heading(L("عندك سؤال؟", "Got a question?"), "h2", { role: "title", ...HEAD_TITLE, motion: { reveal: "words" } }),
+                  t.heading(L("لديك سؤال؟", "Got a question?"), "h2", { role: "title", ...HEAD_TITLE, motion: { reveal: "words" } }),
                   t.paragraph(
                     L(
-                      "جمعنالك أكتر الأسئلة اللي بتتسأل عن الطلب والتوصيل والاسترجاع. ولو سؤالك مش هنا، كلمنا.",
-                      "The questions we hear most about orders, delivery and returns. If yours is not here, talk to us.",
+                      "جمعنا لك أكثر الأسئلة تكرارًا عن الطلب والشحن. وإن لم تجد سؤالك هنا، تواصل معنا.",
+                      "The questions we hear most about orders and shipping. If yours is not here, contact us.",
                     ),
                     { role: "body", style: { fontSize: "md", lineHeight: "relaxed", maxWidth: "360px" }, mobile: { fontSize: "sm" } },
                   ),

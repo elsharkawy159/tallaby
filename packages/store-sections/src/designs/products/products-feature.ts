@@ -27,7 +27,7 @@ export const productsFeature = defineDesign({
     t.section({ label: L("منتج مميز", "Featured product"), ...PRODUCTS_SECTION }, [
       t.container(
         [
-          productsHead(t, { title: L("اختيارنا ليك", "Picked for you") }),
+          productsHead(t, { title: L("اختيارنا لك", "Picked for you") }),
           t.grid(
             [
               t.productList(

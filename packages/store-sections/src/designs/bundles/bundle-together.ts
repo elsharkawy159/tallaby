@@ -22,7 +22,7 @@ export const bundleTogether = defineDesign({
     t.section({ label: L("بيتشتروا مع بعض", "Bought together") }, [
       t.container(
         [
-          t.heading(L("بيتشتروا مع بعض كتير", "Often bought together"), "h2", {
+          t.heading(L("تُشترى معًا عادةً", "Often bought together"), "h2", {
             role: "title",
             style: { fontSize: "display-sm", letterSpacing: "tight", marginBottom: 24 },
           }),

@@ -27,8 +27,8 @@ export const bundlePoster = defineDesign({
             [
               t.stack(
                 [
-                  t.text(L("طقم المشاوير", "Commuter kit"), { role: "eyebrow", style: { fontSize: "sm", fontWeight: "semibold", ...ON_BRAND } }),
-                  t.heading(L("كل اللي تحتاجه في الطريق", "Everything you need on the move"), "h2", {
+                  t.text(L("طقم التنقل", "Commuter kit"), { role: "eyebrow", style: { fontSize: "sm", fontWeight: "semibold", ...ON_BRAND } }),
+                  t.heading(L("كل ما تحتاجه في الطريق", "Everything you need on the move"), "h2", {
                     role: "title",
                     style: { fontSize: "display-lg", letterSpacing: "tight", lineHeight: "tight", maxWidth: "14ch", ...ON_BRAND },
                   }),
@@ -47,7 +47,7 @@ export const bundlePoster = defineDesign({
                     ],
                     { label: L("السعر", "Price"), style: { gap: 12, alignItems: "end" } },
                   ),
-                  pillButton(t, L("اشتري الطقم", "Get the kit"), BUNDLE_LINK, { icon: "shopping-bag", tone: "ink" }),
+                  pillButton(t, L("اشترِ الطقم", "Get the kit"), BUNDLE_LINK, { icon: "shopping-bag", tone: "ink" }),
                 ],
                 {
                   label: L("بطاقة الطقم", "Kit tile"),

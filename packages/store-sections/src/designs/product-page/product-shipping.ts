@@ -11,16 +11,16 @@ import { L } from "../_kit";
 const ROWS = [
   {
     title: L("الشحن والتوصيل", "Shipping"),
-    body: L("٤٨ ساعة للقاهرة والجيزة، ومن ٢ لـ ٤ أيام لباقي المحافظات. بنأكد الطلب بمكالمة أو رسالة قبل الشحن.", "48 hours in Cairo and Giza, 2 to 4 days elsewhere. We confirm each order by phone or message before it ships."),
+    body: L("٤٨ ساعة للقاهرة والجيزة، ومن ٢ إلى ٤ أيام لباقي المحافظات. نؤكد الطلب بمكالمة أو رسالة قبل الشحن.", "48 hours in Cairo and Giza, 2 to 4 days elsewhere. We confirm each order by phone or message before it ships."),
     open: true,
   },
   {
     title: L("الاسترجاع والاستبدال", "Returns and exchanges"),
-    body: L("تقدر ترجّع أي منتج مش مستخدم في علبته الأصلية خلال ١٤ يوم من الاستلام، وبنبدّل المقاس أو اللون مرة مجانًا.", "Return any unused item in its original box within 14 days of delivery. We swap a size or colour once for free."),
+    body: L("يمكنك إرجاع أي منتج غير مستخدم في علبته الأصلية خلال ١٤ يومًا من الاستلام، ونستبدل المقاس أو اللون مرة واحدة مجانًا.", "Return any unused item in its original box within 14 days of delivery. We swap a size or colour once for free."),
   },
   {
     title: L("طرق الدفع", "Payment"),
-    body: L("الدفع عند الاستلام، أو بالكارت والمحفظة الإلكترونية وقت الطلب.", "Cash on delivery, or pay by card or mobile wallet when you order."),
+    body: L("الدفع عند الاستلام، أو بالبطاقة والمحفظة الإلكترونية عند الطلب.", "Cash on delivery, or pay by card or mobile wallet when you order."),
   },
 ];
 
@@ -38,7 +38,7 @@ export const productShipping = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("قبل ما تطلب", "Before you order"), "h2", { role: "title", style: { fontSize: "2xl" } }),
+              t.heading(L("قبل أن تطلب", "Before you order"), "h2", { role: "title", style: { fontSize: "2xl" } }),
               t.accordion(ROWS, { label: L("الصفوف", "Rows"), role: "items", style: { width: "100%" } }),
             ],
             { label: L("العمود", "Column"), style: { gap: 16 } },

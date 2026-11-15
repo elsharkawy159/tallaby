@@ -47,7 +47,7 @@ export const trackAsk = defineDesign({
                   style: discStyle(64),
                 },
               ),
-              t.heading(L("فين طلبي؟", "Where is my order?"), "h2", {
+              t.heading(L("أين طلبي؟", "Where is my order?"), "h2", {
                 role: "title",
                 style: {
                   fontSize: "display-sm",
@@ -57,7 +57,7 @@ export const trackAsk = defineDesign({
               }),
               t.paragraph(
                 L(
-                  "لو عامل حساب، حالة طلبك موجودة في صفحة طلباتي. لو طلبت من غير حساب، ابعتلنا رقم الطلب على واتساب.",
+                  "إذا كان لديك حساب، ستجد حالة طلبك في صفحة طلباتي. وإذا طلبت بدون حساب، أرسل لنا رقم الطلب على واتساب.",
                   "Signed in? Your order's status is on your orders page. Ordered as a guest? Send us your order number on WhatsApp.",
                 ),
                 {
@@ -67,7 +67,7 @@ export const trackAsk = defineDesign({
               ),
               t.stack(
                 [
-                  pillButton(t, L("شوف طلباتي", "See my orders"), ORDERS_HREF, {
+                  pillButton(t, L("عرض طلباتي", "See my orders"), ORDERS_HREF, {
                     icon: "package",
                     style: { width: "100%", paddingTop: 15, paddingBottom: 15 },
                   }),

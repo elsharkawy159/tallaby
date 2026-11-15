@@ -17,7 +17,7 @@ export const REVIEWS = [
     name: L("عمر ك.", "Omar K."),
     city: L("الإسكندرية", "Alexandria"),
     rating: 5,
-    text: L("بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.", "Swapped a size with zero hassle, and the team replied in minutes."),
+    text: L("بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.", "Swapped a size with zero hassle, and the team replied in minutes."),
   },
   {
     initial: L("ن", "N"),
@@ -45,6 +45,6 @@ export const REVIEWS = [
     name: L("كريم ع.", "Karim A."),
     city: L("طنطا", "Tanta"),
     rating: 4,
-    text: L("خدمة العملاء محترمة جدًا وساعدوني أختار الصح.", "Very polite support; they helped me choose the right one."),
+    text: L("خدمة العملاء محترمة جدًا وساعدوني في اختيار المنتج المناسب.", "Very polite support; they helped me choose the right one."),
   },
 ];

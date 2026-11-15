@@ -61,85 +61,85 @@ const pageHeader = (as: string, title: Localized, text: Localized) =>
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header's search placeholder.
-  labels: { search: L("دوّر في الدروب", "Search the drop") },
+  labels: { search: L("ابحث في المتجر", "Search the store") },
   // The footer's large sign-off line: three to five words.
-  footer: { line: L("نتقابل في الدروب الجاي", "See you at the next drop") },
+  footer: { line: L("شكرًا لزيارتك", "Thanks for visiting") },
   hero: {
-    eyebrow: L("دروب ٠٧", "Drop 07"),
-    alt: L("شارع جانبي مليان جرافيتي", "A side street covered in graffiti"),
-    title: L("معمول في شارعنا", "Made on our street"),
-    line: L("هوديز وتيشيرتات قطن تقيل، مطبوعة باليد في شبرا بكميات ١٢٠ قطعة.", "Heavy cotton hoodies and tees, printed by hand in Shubra in runs of 120."),
+    eyebrow: L("الإصدار ٠٧", "Drop 07"),
+    alt: L("شارع جانبي مليء بالرسوم الجدارية", "A side street covered in graffiti"),
+    title: L("ملابس شارع بطباعة جريئة", "Streetwear with bold prints"),
+    line: L("هوديز وتيشيرتات من القطن الثقيل بطباعة واضحة.", "Heavy cotton hoodies and tees with bold prints."),
     // The button goes to the newest products.
-    cta: L("تسوق الدروب", "Shop the drop"),
+    cta: L("تسوّق الإصدار", "Shop the drop"),
   },
-  categories: { title: L("اختار ستايلك", "Pick your fit") },
+  categories: { title: L("تسوّق حسب القسم", "Shop by category") },
   products: {
     // The rail of the newest products. Its eyebrow is the current collection's name: it is also the footer's link to the newest products.
-    primary: { eyebrow: L("دروب ٠٧", "Drop 07"), title: L("كل حاجة في الدروب", "Everything in the drop") },
+    primary: { eyebrow: L("الإصدار ٠٧", "Drop 07"), title: L("كل قطع الإصدار", "Everything in the drop") },
   },
   // The bento of best sellers: its title, two or three words.
-  rows: [{ title: L("بيخلص بسرعة", "Going fast") }],
+  rows: [{ title: L("الأكثر طلبًا", "Most ordered") }],
   // Optional (all three quotes, or none). Three quotes on the about page. Each card shows the first letter of the name.
   reviews: {
     title: L("من عملائنا", "From our customers"),
     items: [
       {
-        quote: L("أتقل هودي عندي. اتغسل عشر مرات والطباعة لسه زي ما هي.", "Heaviest hoodie I own. Washed it ten times and the print is still sharp."),
+        quote: L("أثقل هودي عندي. غسلته عشر مرات والطباعة كما هي.", "Heaviest hoodie I own. Washed it ten times and the print is still sharp."),
         name: L("يوسف ع.", "Youssef A."),
       },
       {
-        quote: L("لحقت الدروب بعد خمس دقايق من نزوله. يستاهل السهر.", "Got the drop five minutes after it went live. Worth staying up for."),
+        quote: L("حصلت على قطعتي بعد دقائق من نزول الإصدار.", "Got my piece minutes after the drop went live."),
         name: L("ملك ر.", "Malak R."),
       },
-      { quote: L("المقاسات واسعة، انزل مقاس لو عايز قصّة عادية.", "Runs big, size down if you want a normal fit."), name: L("زياد ح.", "Ziad H.") },
+      { quote: L("المقاسات واسعة، فاختر مقاسًا أصغر إذا أردت قصة عادية.", "Runs big, size down if you want a normal fit."), name: L("زياد ح.", "Ziad H.") },
     ],
   },
   about: {
     // Also the about page's SEO description.
-    line: L("صاحبين وترابيزة طباعة وشارع في شبرا.", "Two friends, one print table and a street in Shubra."),
-    alt: L("محل لبس ستريت مليان رفوف", "A streetwear shop full of rails"),
-    eyebrow: L("من ٢٠٢٠", "Since 2020"),
-    title: L("كل دروب ١٢٠ قطعة بس", "Every drop is 120 pieces"),
+    line: L("ملابس شارع من القطن الثقيل بطباعة جريئة.", "Heavy cotton streetwear with bold prints."),
+    alt: L("متجر ملابس مليء بالرفوف", "A clothing shop full of rails"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("قطن ثقيل وطباعة واضحة", "Heavy cotton, clear prints"),
     text: L(
-      "بنطبع كل تصميم بإيدينا على قطن تقيل، وبنصوّر الدروب في شارعنا بعد ما المحلات تقفل.",
-      "We print every design by hand on heavy cotton and shoot each drop on our street after the shops close.",
+      "نختار تصميمات مطبوعة على قطن ثقيل، ونعرض المقاس والخامة لكل قطعة.",
+      "We pick designs printed on heavy cotton and show the size and fabric of every piece.",
     ),
-    more: L("ولما الدروب يخلص، مش بيرجع تاني.", "And when a drop sells out, it never comes back."),
+    more: L("تواصل معنا لأي سؤال عن المقاسات.", "Contact us with any question about sizes."),
     // The button goes to the newest products.
-    cta: L("تسوق الدروب", "Shop the drop"),
+    cta: L("تسوّق الإصدار", "Shop the drop"),
   },
   contact: {
-    title: L("كلمنا", "Talk to us"),
-    line: L("عن مقاس أو طلب أو الدروب الجاي.", "About a size, an order or the next drop."),
-    heading: L("ابعتلنا وهنرد عليك", "Send us a message"),
+    title: L("تواصل معنا", "Contact us"),
+    line: L("عن مقاس أو طلب أو منتج.", "About a size, an order or a product."),
+    heading: L("أرسل لنا رسالتك", "Send us a message"),
   },
   faq: {
-    line: L("المقاسات والدروبات والتوصيل.", "Sizes, drops and delivery."),
-    question: L("هل في ريستوك؟", "Do you restock?"),
+    line: L("المقاسات والطلبات والشحن.", "Sizes, orders and shipping."),
+    question: L("كيف أختار مقاسي؟", "How do I choose my size?"),
     answer: L(
-      "لأ. كل دروب ١٢٠ قطعة ولما يخلص مش بيرجع. الاستبدال متاح خلال ١٤ يوم لو المقاس مش مظبوط.",
-      "No. Each drop is 120 pieces and never comes back. Size exchanges are open for 14 days.",
+      "جدول المقاسات في صفحة كل منتج. والقصّات واسعة، فاختر مقاسًا أصغر إذا أردت قصة عادية.",
+      "The size chart is on every product page. Cuts run big, so size down for a regular fit.",
     ),
   },
   custom: {
     // The store's short name, as it reads inside a sentence: "About Hara", "— The Hara team", "A photo from Hara's Instagram".
     "store-short": L("حارة", "Hara"),
     // The hero's small line beside its eyebrow (a season, a date, how long it lasts).
-    "hero-note": L("متاح دلوقتي · لحد ما الكمية تخلص", "Live now · while stock lasts"),
+    "hero-note": L("متاح الآن · حتى نفاد الكمية", "Live now · while stock lasts"),
     // The hero's round sticker, three short lines: a word, one big figure (at most 4 characters), a word.
-    "hero-sticker-1": L("بس", "Only"),
-    "hero-sticker-2": L("١٢٠", "120"),
-    "hero-sticker-3": L("قطعة", "pieces"),
+    "hero-sticker-1": L("إصدار", "Drop"),
+    "hero-sticker-2": L("٠٧", "07"),
+    "hero-sticker-3": L("جديد", "new"),
     // The wide photo band after the rail: a product type as its big title (one or two words; in Arabic without "ال"), and one line of facts under it.
-    "banner-alt": L("هوديز بألوان هادية على الشماعة", "Soft-coloured hoodies on a rail"),
+    "banner-alt": L("هوديز بألوان هادئة على علّاقة", "Soft-coloured hoodies on a rail"),
     "banner-title": L("هوديز", "Hoodies"),
     "banner-line": L("قطن مشطوف ٤٥٠ جرام بقصّة واسعة.", "450 gsm brushed cotton, boxy cut."),
     // The big statement: one or two short sentences in the store's voice, signed by its team; then its link to the newest products.
-    "craft-statement": L("مفيش ريستوك. الدروب لما يخلص، يخلص.", "No restocks. When a drop is gone, it is gone."),
-    "craft-statement-cta": L("كل الدروب", "Shop the drop"),
+    "craft-statement": L("قطن ثقيل، طباعة واضحة، وقصّات واسعة.", "Heavy cotton, clear prints and boxy cuts."),
+    "craft-statement-cta": L("تسوّق الإصدار", "Shop the drop"),
     // The Instagram bento's brand tile: the store's handle, then one short line under it.
     "lookbook-handle": L(handle("@harasupply"), handle("@harasupply")),
-    "lookbook-line": L("٣٨ ألف متابع", "38K followers"),
+    "lookbook-line": L("تابع أحدث صورنا", "Follow our latest photos"),
   },
   photos: {
     // The poster's photo, 16:9, with the copy over a dark fade.
@@ -180,7 +180,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const footer = lib("footer-signoff", {
     text: {
-      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "شكرًا لزيارتك": c.footer.line,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
       "وصل حديثًا": c.products.primary.eyebrow,
       "العروض": L("الأعلى تقييماً", "Top rated"),
@@ -194,23 +194,23 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       photo: [undefined, undefined, c.photos.hero.wide],
       text: {
         "مجموعة الموسم": c.hero.eyebrow,
-        "من ١ إلى ٣٠ نوفمبر": x["hero-note"]!,
+        "وصل حديثًا": x["hero-note"]!,
         "صورة الحملة": c.hero.alt,
-        "خصم": x["hero-sticker-1"]!,
-        "٣٠٪": x["hero-sticker-2"]!,
-        "لفترة محدودة": x["hero-sticker-3"]!,
+        "مجموعة": x["hero-sticker-1"]!,
+        "٢٠٢٦": x["hero-sticker-2"]!,
+        "الجديدة": x["hero-sticker-3"]!,
         "الموسم الجديد وصل": c.hero.title,
-        "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": c.hero.line,
+        "قطع خفيفة بخامات طبيعية ومقاسات كاملة.": c.hero.line,
         "اكتشف المجموعة": c.hero.cta,
       },
       links: { "/products": NEW },
     }),
     lib("categories-chips", {
-      text: { "إيه اللي في بالك؟": c.categories.title },
+      text: { "عمّ تبحث؟": c.categories.title },
     }),
     lib("products-rail", {
       as: "drop-rail",
-      text: { "بيحبوها": c.products.primary.eyebrow, "الأكثر مبيعًا": c.products.primary.title },
+      text: { "المفضلة لدى العملاء": c.products.primary.eyebrow, "الأكثر مبيعًا": c.products.primary.title },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary }],
     }),
@@ -226,13 +226,13 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       },
     }),
     lib("products-bento", {
-      text: { "الكل بيسأل عليهم": c.rows[0]!.title },
+      text: { "منتجات يكثر الطلب عليها": c.rows[0]!.title },
       links: { "/products": BEST },
     }),
     lib("text-statement", {
       text: {
-        "كل سنة وانتم طيبين. الطلبات شغالة طول أيام العيد.": x["craft-statement"]!,
-        "— فريق المتجر": L(`— فريق ${short.ar}`, `— The ${short.en} team`),
+        "كل عام وأنتم بخير. نستقبل الطلبات طوال أيام العيد.": x["craft-statement"]!,
+        "فريق المتجر": L(`— فريق ${short.ar}`, `— The ${short.en} team`),
         "مواعيد التوصيل": x["craft-statement-cta"]!,
       },
       links: { "/shipping": NEW },
@@ -248,7 +248,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "صورة إنستجرام": L(`صورة من إنستجرام ${short.ar}`, `A photo from ${short.en}'s Instagram`),
         "@اسم_متجرك": oneString(x["lookbook-handle"]!),
-        "صور جديدة كل أسبوع": x["lookbook-line"]!,
+        "تابع أحدث صورنا": x["lookbook-line"]!,
       },
     }),
   ];
@@ -261,8 +261,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "صورة المتجر": c.about.alt,
         "حكايتنا": c.about.eyebrow,
         "بدأنا بسؤال واحد: هل سيدوم؟": c.about.title,
-        "فتحنا متجرنا بعد أن تعبنا من منتجات لا تعيش. كل ما نبيعه نجربه نحن أولًا.": c.about.text,
-        "اليوم نشحن لكل المحافظات ونرد على كل رسالة بأنفسنا.": c.about.more,
+        "نختار منتجات تتحمّل الاستخدام اليومي، ونعرض تفاصيل كل منتج بوضوح.": c.about.text,
+        "تواصل معنا لأي سؤال عن منتجاتنا.": c.about.more,
         "تعرّف علينا": c.about.cta,
       },
       links: { "/about": NEW },
@@ -275,7 +275,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
               "م": initialOf(reviews.items[0]!.name),
               "مريم أ.": reviews.items[0]!.name,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "ع": initialOf(reviews.items[1]!.name),
               "عمر ك.": reviews.items[1]!.name,
               "الإسكندرية": L("الجيزة", "Giza"),
@@ -291,7 +291,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const contact: Design[] = [
     pageHeader("contact-header", c.contact.title, c.contact.line),
-    lib("contact-form", { text: { "راسلنا": L("راسلنا", "Write to us"), "ابعتلنا وهنرجعلك": c.contact.heading } }),
+    lib("contact-form", { text: { "راسلنا": L("راسلنا", "Write to us"), "أرسل رسالتك": c.contact.heading } }),
   ];
 
   const faq: Design[] = [
@@ -299,7 +299,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("faq-columns", {
       text: {
         "ما سياسة الاسترجاع؟": c.faq.question,
-        "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": c.faq.answer,
+        "راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.": c.faq.answer,
       },
     }),
   ];
@@ -323,29 +323,29 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("قطن تقيل وطباعة عالية، معمول في شبرا.", "Heavy cotton, loud prints, made in Shubra."),
+  description: L("قطن ثقيل وطباعة جريئة.", "Heavy cotton, loud prints."),
   categories: [
     ["hoodies", "هوديز", "Hoodies", PHOTOS.pastelHoodies],
     ["tees", "تيشيرتات", "Tees", PHOTOS.teeRail],
     ["bottoms", "بناطيل", "Bottoms", PHOTOS.sweatpants],
-    ["shoes", "شوزات", "Shoes", PHOTOS.sneakers],
-    ["bags", "شنط", "Bags", PHOTOS.messenger],
+    ["shoes", "أحذية", "Shoes", PHOTOS.sneakers],
+    ["bags", "حقائب", "Bags", PHOTOS.messenger],
     ["shirts", "قمصان", "Shirts", PHOTOS.shirtRack],
     ["prints", "طباعات", "Graphic prints", PHOTOS.printTees],
     ["blanks", "سادة", "Blanks", PHOTOS.blackHoodieRack],
   ],
   products: [
-    ["drop07-heavy-hoodie", "hoodies", "هودي دروب ٠٧ تقيل", "Drop 07 Heavy Hoodie", PHOTOS.sageHoodie, 1650, { isFeatured: true, rating: 4.9, sold90: 132 }],
+    ["drop07-heavy-hoodie", "hoodies", "هودي الإصدار ٠٧ ثقيل", "Drop 07 Heavy Hoodie", PHOTOS.sageHoodie, 1650, { isFeatured: true, rating: 4.9, sold90: 132 }],
     ["washed-hoodie-duo", "hoodies", "هودي مغسول", "Washed Hoodie", PHOTOS.hoodiePair, 1450, { compareAtPrice: 1750, sold90: 58 }],
     ["black-logo-hoodie", "blanks", "هودي أسود سادة", "Black Blank Hoodie", PHOTOS.blackHoodieRack, 1550, { rating: 4.8, sold90: 44 }],
     ["camo-tee", "tees", "تيشيرت مموّه", "Camo Tee", pexels(12262102, 900), 700, { sold90: 40 }],
     ["plant-print-tee", "prints", "تيشيرت طباعة نبات", "Plant Print Tee", PHOTOS.printTees, 650, { rating: 4.7, sold90: 61 }],
-    ["heavy-tee-pair", "tees", "تيشيرتين تقال", "Heavy Tee Pair", pexels(18186105, 900), 1100, { compareAtPrice: 1300, sold90: 33 }],
+    ["heavy-tee-pair", "tees", "تيشيرتان ثقيلان", "Heavy Tee Pair", pexels(18186105, 900), 1100, { compareAtPrice: 1300, sold90: 33 }],
     ["lounge-joggers", "bottoms", "بنطلون جوجر", "Lounge Joggers", pexels(31961168, 900), 950, { rating: 4.7, sold90: 97 }],
     ["drawstring-sweatpants", "bottoms", "بنطلون سويت برباط", "Drawstring Sweatpants", PHOTOS.sweatpants, 900, { sold90: 21 }],
-    ["grey-canvas-sneakers", "shoes", "كوتشي كانفاس رمادي", "Grey Canvas Sneakers", PHOTOS.sneakers, 1300, { sold90: 18 }],
-    ["leather-messenger", "bags", "شنطة كروس جلد", "Leather Messenger", PHOTOS.messenger, 1300, { inStock: false, sold90: 39 }],
-    ["oversized-work-shirt", "shirts", "قميص أوفر سايز", "Oversized Work Shirt", PHOTOS.shirtRack, 1150, { sold90: 26 }],
+    ["grey-canvas-sneakers", "shoes", "حذاء رياضي كانفاس رمادي", "Grey Canvas Sneakers", PHOTOS.sneakers, 1300, { sold90: 18 }],
+    ["leather-messenger", "bags", "حقيبة كتف جلد", "Leather Messenger", PHOTOS.messenger, 1300, { inStock: false, sold90: 39 }],
+    ["oversized-work-shirt", "shirts", "قميص بمقاس واسع", "Oversized Work Shirt", PHOTOS.shirtRack, 1150, { sold90: 26 }],
   ],
 });
 
@@ -353,7 +353,7 @@ export const STREETWEAR = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(STREETWEAR_KEY, "tshirts", { ar: 2577, en: 2610 }),
   key: STREETWEAR_KEY,
-  version: 4,
+  version: 5,
   changelog: "Streetwear v4: categories, section order",
   name: L("ستريت وير", "Streetwear"),
   description: L(
@@ -416,5 +416,5 @@ export const STREETWEAR = editionTemplate({
   journey: { primary: "newest", rows: [] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
-  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { reviews: L("الشارع بيقول إيه", "What the street says"), related: L("كمّل اللوك", "Run the full fit") } },
+  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
 });

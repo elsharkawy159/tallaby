@@ -24,7 +24,7 @@ export const testimonialsVideos = defineDesign({
         [
           modHead(t, {
             label: L("فيديو", "Video"),
-            title: L("شوفوا بنفسكم", "See for yourself"),
+            title: L("شاهد بنفسك", "See for yourself"),
           }),
           t.grid(
             REVIEWS.slice(0, 4).map((r, i) =>

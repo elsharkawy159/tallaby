@@ -23,11 +23,11 @@ export const featuresSideTitle = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("ليه الناس بترجع لنا تاني", "Why people come back"), "h2", {
+                  t.heading(L("لماذا تتسوق معنا", "Why shop with us"), "h2", {
                     role: "title",
                     style: { fontSize: "display-md", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("أربع حاجات بنلتزم بيها في كل طلب.", "Four things we stand by on every order."), {
+                  t.paragraph(L("أربعة أمور نهتم بها في كل طلب.", "Four things we care about on every order."), {
                     role: "subtitle",
                     style: { fontSize: "lg" },
                   }),

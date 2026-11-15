@@ -19,7 +19,7 @@ export const aboutWide = defineDesign({
     t.section({ label: L("صورة ونص", "Image with text") }, [
       t.container(
         [
-          t.heading(L("كل منتج بيتراجع قبل ما يوصلك", "Every product is checked before it reaches you"), "h2", {
+          t.heading(L("تفاصيل واضحة لكل منتج", "Clear details for every product"), "h2", {
             role: "title",
             style: {
               fontSize: "display-md",
@@ -43,15 +43,15 @@ export const aboutWide = defineDesign({
             [
               t.paragraph(
                 L(
-                  "فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف، عشان تفتح العلبة وانت مطمن.",
-                  "Our team checks every product before packing, so you open the box with confidence.",
+                  "نعرض لكل منتج صورًا ومواصفات واضحة لتختار وأنت مطمئن.",
+                  "Every product has photos and clear specs, so you can choose with confidence.",
                 ),
                 {
                   role: "body",
                   style: { fontSize: "lg", maxWidth: "52ch" },
                 },
               ),
-              pillButton(t, L("شوف إزاي بنشتغل", "See how we work"), "/about"),
+              pillButton(t, L("تعرّف على طريقة عملنا", "See how we work"), "/about"),
             ],
             {
               label: L("التعليق", "Caption"),

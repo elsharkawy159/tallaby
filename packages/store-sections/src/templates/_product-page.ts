@@ -61,14 +61,14 @@ const REVIEWS_COLUMN = "العمود";
 const REVIEWS_CONTAINER = "الحاوية";
 const SECTION_TITLE = "العنوان";
 // The designs' copy the template copy replaces.
-const REVIEWS_COPY = "رأي اللي جربوه";
-const RELATED_COPY = "ممكن يعجبك كمان";
+const REVIEWS_COPY = "آراء المشترين";
+const RELATED_COPY = "قد يعجبك أيضًا";
 // The `product-perks` tiles' copy, in order (title, line).
 const PERKS_COPY: readonly (readonly [string, string])[] = [
-  ["توصيل سريع", "من يوم لـ ٤ أيام"],
+  ["توصيل سريع", "من يوم إلى ٤ أيام"],
   ["ضمان المتجر", "بفاتورة رسمية"],
-  ["استرجاع ١٤ يوم", "من غير أسئلة"],
-  ["ادفع عند الاستلام", "كاش أو كارت"],
+  ["استرجاع خلال ١٤ يومًا", "بدون أسئلة"],
+  ["ادفع عند الاستلام", "نقدًا أو بالبطاقة"],
 ];
 
 function headingStyle(spec: ProductPageSpec): StyleValues | undefined {

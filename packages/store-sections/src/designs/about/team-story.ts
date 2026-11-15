@@ -23,7 +23,7 @@ export const teamStory = aboutDesign({
           t.stack(
             [
               dotLabel(t, L("قصتنا", "Our story")),
-              t.heading(L("بدأنا من أوضة في الدقي بعشر سماعات وموبايل واحد.", "We started in a Dokki bedroom with ten earbuds and one phone."), "h2", {
+              t.heading(L("بدأنا بفكرة بسيطة: منتجات جيدة بأسعار واضحة.", "We started with a simple idea: good products at clear prices."), "h2", {
                 role: "title",
                 style: { fontSize: "display-lg", letterSpacing: "tight", lineHeight: "tight", maxWidth: "20ch" },
               }),
@@ -41,12 +41,12 @@ export const teamStory = aboutDesign({
                 [
                   t.paragraph(
                     L(
-                      "كنا بنبيع لأصحابنا على واتساب، وكل طلب كنا بنوصله بنفسنا. النهارده بقينا فريق من ١٢ شخص وبنوصل لكل محافظات مصر.",
-                      "We sold to friends on WhatsApp and delivered every order ourselves. Today we are a team of 12 delivering to every governorate.",
+                      "بدأنا صغارًا، نختار كل منتج بعناية. واليوم نقدّم تشكيلة أوسع بالطريقة نفسها.",
+                      "We started small, choosing every product with care. Today we offer a wider range, chosen the same way.",
                     ),
                     { role: "body", style: { fontSize: "lg", lineHeight: "relaxed", color: "foreground" }, mobile: { fontSize: "md" } },
                   ),
-                  t.paragraph(L("لسه بنختار كل منتج بإيدينا، ولسه بنرد على كل رسالة.", "We still pick every product by hand, and we still answer every message."), {
+                  t.paragraph(L("ما زلنا نختار كل منتج بعناية، ونهتم بكل تفاصيله.", "We still choose every product with care, down to the details."), {
                     role: "body",
                     style: { fontSize: "lg", lineHeight: "relaxed", color: "foreground" },
                     mobile: { fontSize: "md" },

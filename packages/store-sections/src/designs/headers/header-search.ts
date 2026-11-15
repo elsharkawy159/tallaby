@@ -86,7 +86,7 @@ export const headerSearch = defineDesign({
             [
               nav(t, CATEGORIES, { style: { gap: 20 } }),
               t.row(
-                [t.icon("truck", { style: { color: "primary" } }), t.text(L("توصيل خلال ٤٨ ساعة", "Delivered within 48 hours"), { style: { color: "muted" } })],
+                [t.icon("truck", { style: { color: "primary" } }), t.text(L("صور ومواصفات لكل منتج", "Photos and specs for every product"), { style: { color: "muted" } })],
                 {
                   label: L("ملاحظة التوصيل", "Delivery note"),
                   style: { gap: 8 },

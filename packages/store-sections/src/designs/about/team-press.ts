@@ -8,11 +8,11 @@ import { aboutDesign } from "./_rules";
 import { L } from "../_kit";
 
 const OUTLETS = [
-  L("ديلي نيوز", "Daily News"),
+  L("الأخبار اليومية", "Daily News"),
   L("القاهرة الأسبوعية", "Cairo Weekly"),
-  L("تِك توداي", "Tech Today"),
-  L("ستايل ماج", "Style Mag"),
-  L("بيزنس ناو", "Business Now"),
+  L("تقنية اليوم", "Tech Today"),
+  L("مجلة الأناقة", "Style Mag"),
+  L("أعمال اليوم", "Business Now"),
 ];
 
 export const teamPress = aboutDesign({
@@ -27,7 +27,7 @@ export const teamPress = aboutDesign({
     t.section({ label: L("الصحافة", "Press") }, [
       t.container(
         [
-          t.text(L("اتكلموا عننا", "As seen in"), {
+          t.text(L("كتبوا عنا", "As seen in"), {
             role: "eyebrow",
             style: { fontSize: "sm", fontWeight: "semibold", color: "muted", textAlign: "center" },
           }),
@@ -57,7 +57,7 @@ export const teamPress = aboutDesign({
                 style: { fontFamily: "heading", fontSize: "2xl", fontWeight: "medium", textAlign: "center", maxWidth: "40ch" },
                 mobile: { fontSize: "lg" },
               }),
-              t.text(L("— ديلي نيوز", "— Daily News"), { role: "source", style: { fontSize: "sm", color: "muted", textAlign: "center" } }),
+              t.text(L("— الأخبار اليومية", "— Daily News"), { role: "source", style: { fontSize: "sm", color: "muted", textAlign: "center" } }),
             ],
             { label: L("الاقتباس", "Quote"), style: { gap: 8, alignItems: "center", marginTop: 28 } },
           ),

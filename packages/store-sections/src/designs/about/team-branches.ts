@@ -12,8 +12,8 @@ const MAPS = "https://maps.google.com";
 const PHONE = "tel:+201012345678";
 
 const BRANCHES = [
-  { name: L("فرع الدقي", "Dokki"), address: L("٢٤ شارع التحرير، الدقي", "24 Tahrir St, Dokki"), hours: L("يوميًا من ١٢ الضهر لـ ١١ م", "Daily, 12 pm – 11 pm") },
-  { name: L("فرع مدينة نصر", "Nasr City"), address: L("سيتي ستارز، الدور الأول", "City Stars, level 1"), hours: L("يوميًا من ١٠ ص لـ ١٠ م", "Daily, 10 am – 10 pm") },
+  { name: L("فرع الدقي", "Dokki"), address: L("٢٤ شارع التحرير، الدقي", "24 Tahrir St, Dokki"), hours: L("يوميًا من ١٢ ظهرًا حتى ١١ م", "Daily, 12 pm – 11 pm") },
+  { name: L("فرع مدينة نصر", "Nasr City"), address: L("سيتي ستارز، الدور الأول", "City Stars, level 1"), hours: L("يوميًا من ١٠ ص حتى ١٠ م", "Daily, 10 am – 10 pm") },
   { name: L("فرع المعادي", "Maadi"), address: L("شارع ٩، المعادي", "Road 9, Maadi"), hours: L("السبت – الخميس، ١٢ – ١٠ م", "Sat – Thu, 12 – 10 pm") },
 ];
 
@@ -29,7 +29,7 @@ export const teamBranches = aboutDesign({
     t.section({ label: L("الفروع", "Branches") }, [
       t.container(
         [
-          modHead(t, { label: L("الفروع", "Branches"), title: L("زورنا", "Visit us") }),
+          modHead(t, { label: L("الفروع", "Branches"), title: L("تفضّل بزيارتنا", "Visit us") }),
           t.grid(
             BRANCHES.map((b) =>
               t.stack(

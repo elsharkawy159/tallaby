@@ -25,7 +25,7 @@ export const productsCenteredRow = defineDesign({
               centeredHead(t, {
                 eyebrow: L("اختيار عملائنا", "Our customers' picks"),
                 title: L("الأكثر مبيعًا", "Most popular products"),
-                subtitle: L("القطع اللي بترجع لها كل مرة.", "The pieces people come back for."),
+                subtitle: L("القطع الأكثر طلبًا في المتجر.", "The most-ordered pieces in the store."),
               }),
               t.productList([centeredCard(t)], {
                 label: L("المنتجات", "Products"),

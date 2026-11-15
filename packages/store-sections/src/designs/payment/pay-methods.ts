@@ -10,10 +10,10 @@ import { RULED, RULED_CELL, modHead } from "../_modular";
 import { namePill } from "./_shared";
 
 const METHODS = [
-  { icon: "truck", name: L("كاش عند الاستلام", "Cash on delivery"), note: L("ادفع للمندوب بعد ما تفتح الطلب.", "Pay the courier after you open the order."), providers: null },
-  { icon: "credit-card", name: L("كارت بنكي", "Bank card"), note: L("فيزا وماستركارد وميزة.", "Visa, Mastercard and Meeza."), providers: null },
-  { icon: "clock", name: L("تقسيط", "Installments"), note: L("لحد ٢٤ شهر من غير مقدم.", "Up to 24 months, no down payment."), providers: L("فاليو · سيمبل · سهولة", "valU · Sympl · souhoola") },
-  { icon: "phone", name: L("محافظ إلكترونية", "Wallets"), note: L("حوّل من موبايلك في ثانية.", "Transfer from your phone in seconds."), providers: L("فودافون كاش · إنستاباي", "Vodafone Cash · InstaPay") },
+  { icon: "truck", name: L("نقدًا عند الاستلام", "Cash on delivery"), note: L("ادفع للمندوب بعد فتح الطلب.", "Pay the courier after you open the order."), providers: null },
+  { icon: "credit-card", name: L("بطاقة بنكية", "Bank card"), note: L("فيزا وماستركارد وميزة.", "Visa, Mastercard and Meeza."), providers: null },
+  { icon: "clock", name: L("تقسيط", "Installments"), note: L("حتى ٢٤ شهرًا بدون مقدّم.", "Up to 24 months, no down payment."), providers: L("فاليو · سيمبل · سهولة", "valU · Sympl · souhoola") },
+  { icon: "phone", name: L("محافظ إلكترونية", "Wallets"), note: L("حوّل من هاتفك في ثوانٍ.", "Transfer from your phone in seconds."), providers: L("فودافون كاش · إنستاباي", "Vodafone Cash · InstaPay") },
 ] as const;
 
 export const payMethods = defineDesign({
@@ -28,7 +28,7 @@ export const payMethods = defineDesign({
     t.section({ label: L("طرق الدفع", "Ways to pay") }, [
       t.container(
         [
-          modHead(t, { label: L("الدفع", "Payment"), title: L("ادفع بالطريقة اللي تريحك", "Pay the way that suits you") }),
+          modHead(t, { label: L("الدفع", "Payment"), title: L("ادفع بالطريقة التي تناسبك", "Pay the way that suits you") }),
           t.grid(
             METHODS.map((m) =>
               t.stack(

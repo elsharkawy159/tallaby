@@ -53,7 +53,7 @@ export const productsDeal = defineDesign({
                         ],
                         { label: L("السعر", "Price"), style: { gap: 12, alignItems: "center" } },
                       ),
-                      t.countdown({ label: L("العداد", "Countdown"), caption: L("العرض بينتهي خلال", "Ends in"), style: { color: "foreground" } }),
+                      t.countdown({ label: L("العداد", "Countdown"), caption: L("ينتهي العرض خلال", "Ends in"), style: { color: "foreground" } }),
                       t.addToCart({ label: L("أضف للسلة", "Add to cart") }),
                     ],
                     { label: L("التفاصيل", "Details"), style: { gap: 18, justifyContent: "center" }, mobile: { gap: 14 } },

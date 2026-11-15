@@ -23,13 +23,13 @@ export const cartFreeDelivery = defineDesign({
         [
           t.row(
             [
-              t.text(L("اطلب بـ", "Order"), { style: { fontSize: "lg", ...ON_BRAND } }),
+              t.text(L("اطلب بقيمة", "Order"), { style: { fontSize: "lg", ...ON_BRAND } }),
               t.text(L("١٥٠٠ ج.م", "EGP 1,500"), {
                 role: "value",
                 style: { ...BIG_NUMBER, fontSize: "6xl", color: "accent", lineHeight: "snug" },
                 mobile: { fontSize: "5xl" },
               }),
-              t.text(L("والتوصيل عليك مجاني", "and delivery is on us"), {
+              t.text(L("واحصل على توصيل مجاني", "and get free delivery"), {
                 role: "title",
                 style: { fontSize: "2xl", fontWeight: "semibold", fontFamily: "heading", ...ON_BRAND },
                 mobile: { fontSize: "lg" },
@@ -67,7 +67,7 @@ export const cartFreeDelivery = defineDesign({
           t.row(
             [
               t.text(L("٠ ج.م", "EGP 0"), { style: { fontSize: "sm", ...ON_BRAND_BODY } }),
-              t.link("/products", [arrowText(t, L("كمّل تسوق", "Keep shopping"), "primaryInk")], {
+              t.link("/products", [arrowText(t, L("تابع التسوق", "Keep shopping"), "primaryInk")], {
                 label: L("رابط", "Link"),
                 role: "link",
                 style: { ...FLUSH, color: "primaryInk", hover: { opacity: 85 } },

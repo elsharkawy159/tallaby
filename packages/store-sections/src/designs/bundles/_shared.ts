@@ -15,7 +15,7 @@ export const BUNDLE_LINK = "/products";
 
 /** The seller-typed bundle figures. */
 export const BUNDLE_PRICE = L("١٬٢٧٠ ج.م", "EGP 1,270");
-export const BUNDLE_WAS = L("بدل ١٬٤٩٠ ج.م", "Instead of EGP 1,490");
+export const BUNDLE_WAS = L("بدلًا من ١٬٤٩٠ ج.م", "Instead of EGP 1,490");
 export const BUNDLE_SAVE = L("وفّر ٢٢٠ ج.م", "Save EGP 220");
 export const BUNDLE_PCT = L("خصم ١٥٪", "Save 15%");
 

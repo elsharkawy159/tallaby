@@ -25,7 +25,7 @@ export const textStatement = defineDesign({
           [
             t.row(
               [
-                t.paragraph(L("كل سنة وانتم طيبين. الطلبات شغالة طول أيام العيد.", "Happy holidays. Orders keep running through the break."), {
+                t.paragraph(L("كل عام وأنتم بخير. نستقبل الطلبات طوال أيام العيد.", "Happy holidays. Orders keep running through the break."), {
                   role: "title",
                   style: {
                     fontSize: "display-sm",
@@ -37,7 +37,7 @@ export const textStatement = defineDesign({
                 }),
                 t.stack(
                   [
-                    t.text(L("— فريق المتجر", "— The store team"), {
+                    t.text(L("فريق المتجر", "The store team"), {
                       style: { fontSize: "sm", ...ON_BRAND_BODY },
                     }),
                     arrowLink(t, L("مواعيد التوصيل", "Delivery times"), "/shipping", { style: { color: "primaryInk" } }),

@@ -10,14 +10,14 @@ import { modHead } from "../_modular";
 
 const ROWS = [
   {
-    text: L("منتجات أصلية بفاتورة", "Genuine, with an invoice"),
+    text: L("صور ومواصفات لكل منتج", "Photos and specs for every product"),
     others: false,
   },
-  { text: L("ضمان محلي", "Local warranty"), others: true },
-  { text: L("استرجاع خلال ١٤ يوم", "14-day returns"), others: false },
+  { text: L("تفاصيل واضحة", "Clear details"), others: true },
+  { text: L("مقاسات وتفاصيل دقيقة", "Accurate sizes and details"), others: false },
   { text: L("الدفع عند الاستلام", "Cash on delivery"), others: true },
   {
-    text: L("رد على واتساب في دقايق", "WhatsApp reply in minutes"),
+    text: L("تواصل سهل لأي سؤال", "Easy contact for any question"),
     others: false,
   },
 ];
@@ -83,7 +83,7 @@ export const featuresCompare = defineDesign({
         [
           modHead(t, {
             label: L("قارن", "Compare"),
-            title: L("إحنا ولا غيرنا؟", "Us or them?"),
+            title: L("نحن أم غيرنا؟", "Us or them?"),
           }),
           t.stack(
             [

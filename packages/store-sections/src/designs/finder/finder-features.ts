@@ -14,9 +14,9 @@ import { FINDER_LINK } from "./_shared";
 
 const FEATURES = [
   L("عزل ضوضاء", "Noise cancelling"),
-  L("مقاوم للمية", "Water resistant"),
+  L("مقاوم للماء", "Water resistant"),
   L("شحن سريع", "Fast charging"),
-  L("ضمان سنتين", "2-year warranty"),
+  L("تصميم خفيف", "Lightweight design"),
 ];
 
 export const finderFeatures = defineDesign({
@@ -47,7 +47,7 @@ export const finderFeatures = defineDesign({
               t.stack(
                 [
                   dotLabel(t, L("ساعدني أختار", "Help me choose")),
-                  t.heading(L("اللي يهمك", "What matters to you"), "h2", {
+                  t.heading(L("ما يهمك", "What matters to you"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
@@ -100,7 +100,7 @@ export const finderFeatures = defineDesign({
               ),
               t.stack(
                 [
-                  t.text(L("منتجات بنرشحها", "Products we recommend"), {
+                  t.text(L("منتجات نرشّحها", "Products we recommend"), {
                     style: {
                       fontSize: "sm",
                       fontWeight: "semibold",

@@ -17,7 +17,7 @@ const OPTIONS = [
   },
   {
     icon: "rotate",
-    text: L("أرجّع منتج", "Return a product"),
+    text: L("إرجاع منتج", "Return a product"),
     message: "Return%20a%20product",
   },
   {
@@ -25,7 +25,7 @@ const OPTIONS = [
     text: L("الضمان", "Warranty claim"),
     message: "Warranty%20claim",
   },
-  { icon: "chat", text: L("حاجة تانية", "Something else"), message: "Hello" },
+  { icon: "chat", text: L("موضوع آخر", "Something else"), message: "Hello" },
 ] as const;
 
 export const contactRouter = defineDesign({
@@ -42,7 +42,7 @@ export const contactRouter = defineDesign({
         [
           modHead(t, {
             label: L("المساعدة", "Help"),
-            title: L("محتاج إيه؟", "What do you need?"),
+            title: L("كيف نساعدك؟", "How can we help?"),
           }),
           t.grid(
             OPTIONS.map((o) =>

@@ -45,7 +45,7 @@ const PHOTOS = {
   amberMirror: pexels(7796455),
 };
 
-const NAME = L("نبتة سكين", "Nabta Skin");
+const NAME = L("نبتة", "Nabta");
 
 /**
  * Nabta Skin's own content: what the look is built with when no edition is
@@ -57,88 +57,88 @@ const DEFAULT_CONTENT: LookDefaults = {
   hero: {
     alt: L("زجاجة سيرم بقطّارة", "A serum bottle with a dropper"),
     eyebrow: L("جديد · سيرم الهيالورونيك", "New · Hyaluronic Water Serum"),
-    title: L("عناية بالبشرة من غير زيادات", "Skin care with nothing extra"),
+    title: L("عناية بالبشرة بمكونات بسيطة", "Skincare with simple ingredients"),
     line: L(
-      "مكونات قليلة، اتجربت في حر ورطوبة مصر، ولطيفة كفاية لكل يوم.",
-      "Short ingredient lists, tested in Egyptian heat and humidity, and gentle enough for every day.",
+      "مكونات قليلة وواضحة، مناسبة للاستخدام اليومي.",
+      "Short, clear ingredient lists for everyday use.",
     ),
-    cta: L("تسوقي الجديد", "Shop new in"),
+    cta: L("تسوّق الجديد", "Shop new in"),
   },
-  categories: { title: L("ابدئي من خطوة", "Start with a step") },
+  categories: { title: L("تسوّق حسب الخطوة", "Shop by step") },
   // Four products of `journey.primary` in a grid: the title must say the same.
   products: {
     primary: {
       title: L("الأكثر مبيعاً", "Best sellers"),
-      line: L("الأربع منتجات اللي معظم عميلاتنا بيبدأوا بيها.", "The four products most of our customers start with."),
+      line: L("أكثر أربعة منتجات طلبًا في المتجر.", "The four most ordered products in the store."),
     },
   },
   // The home's photo-and-list block: an eyebrow, a title, three points (`custom.story-point-1..3`, one line each) and a link to the about page.
   story: {
-    alt: L("زجاجة بقطّارة جنب فرع أوكالبتوس", "A dropper bottle beside a eucalyptus branch"),
+    alt: L("زجاجة بقطّارة بجانب فرع أوكالبتوس", "A dropper bottle beside a eucalyptus branch"),
     eyebrow: L("في كل عبوة", "In every bottle"),
-    title: L("مكونات أقل، كل واحد ليه سبب", "Fewer ingredients, chosen for a reason"),
-    cta: L("اعرفي أكتر عن نبتة", "More about Nabta"),
+    title: L("مكونات أقل، لكل منها سبب", "Fewer ingredients, chosen for a reason"),
+    cta: L("اعرف المزيد عن نبتة", "More about Nabta"),
   },
   // Optional: two buyer quotes with their names (the avatar letter is the name's first letter). Without them the home page goes from the story block to the FAQ.
   reviews: {
-    title: L("تجارب بشرة حقيقية", "Real skin, real results"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
       {
         quote: L(
-          "بشرتي بطلت تشد بعد الغسيل في أسبوع. الغسول بيقعد حوالي ٣ شهور.",
-          "My skin stopped feeling tight after washing within a week. The cleanser lasts about three months.",
+          "الغسول لطيف في الاستخدام، والعبوة تكفي حوالي ثلاثة أشهر.",
+          "The cleanser is gentle to use, and one bottle lasts about three months.",
         ),
         name: L("هدى ر.", "Hoda R."),
       },
       {
         quote: L(
-          "سيرم الهيالورونيك الوحيد اللي مش بيتكتل تحت واقي الشمس في رطوبة إسكندرية.",
-          "The hyaluronic serum is the only one that does not pill under my sunscreen in Alexandria humidity.",
+          "سيرم الهيالورونيك خفيف ولا يتكتل تحت واقي الشمس.",
+          "The hyaluronic serum is light and does not pill under sunscreen.",
         ),
         name: L("يارا إ.", "Yara E."),
       },
     ],
   },
-  footer: { line: L("مكونات قليلة، مناسبة لجو مصر.", "Short ingredient lists, made for Egyptian weather.") },
+  footer: { line: L("منتجات عناية بالبشرة بمكونات قليلة وواضحة.", "Skincare with short, clear ingredient lists.") },
   about: {
-    line: L("براند عناية بالبشرة صغير من الزمالك، تركيباته مع طبيبة جلدية.", "A small skincare brand from Zamalek, formulated with a dermatologist."),
-    alt: L("زجاجات عسلي على مراية", "Amber bottles on a mirror"),
-    eyebrow: L("من ٢٠٢١", "Since 2021"),
-    title: L("معمول لجونا", "Made for our weather"),
-    text: L("معظم منتجات العناية معمولة لجو بارد وناشف. منتجاتنا متجربة في صيف القاهرة.", "Most skincare is made for cool, dry climates. Ours is tested in Cairo summers."),
-    more: L("وكل تركيبة بتتراجع مع طبيبة جلدية قبل ما تنزل.", "And every formula is reviewed with a dermatologist before launch."),
+    line: L("متجر لمنتجات العناية بالبشرة بمكونات واضحة.", "A skincare shop with clear ingredient lists."),
+    alt: L("زجاجات عسلية على مرآة", "Amber bottles on a mirror"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("عناية بسيطة لكل يوم", "Simple care for every day"),
+    text: L("نختار منتجات العناية بالبشرة بمكونات قليلة وواضحة، ونعرض قائمة المكونات كاملة لكل منتج.", "We pick skincare with short, clear ingredient lists and show the full list for every product."),
+    more: L("ولكل منتج طريقة استخدام واضحة في صفحته.", "And every product page explains how to use it."),
     // Goes to the best sellers.
-    cta: L("تسوقي الأكثر مبيعاً", "Shop best sellers"),
+    cta: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
   },
   contact: {
-    title: L("تواصلي معانا", "Contact us"),
+    title: L("تواصل معنا", "Contact us"),
     line: L("٣١ شارع محمد مظهر، الزمالك، القاهرة.", "31 Mohamed Mazhar St, Zamalek, Cairo."),
-    heading: L("اسألي عن بشرتك", "Ask about your skin"),
+    heading: L("اسألنا عن أي منتج", "Ask us about any product"),
   },
   faq: {
     line: L("المكونات والتوصيل والاسترجاع.", "Ingredients, delivery and returns."),
     question: L("المنتجات مناسبة للبشرة الحساسة؟", "Are the products suitable for sensitive skin?"),
     answer: L(
-      "كل التركيبات من غير عطر وpH متوازن، واتجربت على ٥٠ شخص قبل النزول. ولو مش متأكدة ابعتيلنا ونرشحلك.",
-      "Every formula is fragrance free and pH balanced, and was patch tested on 50 people. If you are unsure, message us and we will suggest one.",
+      "قائمة المكونات كاملة في صفحة كل منتج. وإذا لم تكن متأكدًا، تواصل معنا لنساعدك في الاختيار.",
+      "The full ingredient list is on every product page. If you are unsure, contact us and we will help you choose.",
     ),
   },
   custom: {
     // The store's short name inside "About …" (header, footer, about page).
     "store-short": L("نبتة", "Nabta"),
     // The four-step routine: a title, then four steps of one word and one short line each.
-    "routine-title": L("مش عارفة تبدئي منين؟", "Not sure where to start?"),
-    "routine-1-title": L("نضّفي", "Cleanse"),
-    "routine-1-line": L("الصبح وبالليل، ٣٠ ثانية.", "Morning and night, 30 seconds."),
-    "routine-2-title": L("عالجي", "Treat"),
-    "routine-2-line": L("سيرم واحد لأهم مشكلة.", "One serum for your main concern."),
-    "routine-3-title": L("رطّبي", "Moisturise"),
-    "routine-3-line": L("كريم بالليل ولوشن بالنهار.", "Cream at night, lotion by day."),
-    "routine-4-title": L("احمي", "Protect"),
+    "routine-title": L("من أين تبدأ؟", "Where to start?"),
+    "routine-1-title": L("التنظيف", "Cleanse"),
+    "routine-1-line": L("صباحًا ومساءً، لمدة ٣٠ ثانية.", "Morning and night, 30 seconds."),
+    "routine-2-title": L("السيرم", "Serum"),
+    "routine-2-line": L("سيرم واحد حسب احتياجك.", "One serum for your needs."),
+    "routine-3-title": L("الترطيب", "Moisturise"),
+    "routine-3-line": L("كريم ليلًا ولوشن نهارًا.", "Cream at night, lotion by day."),
+    "routine-4-title": L("الحماية", "Protect"),
     "routine-4-line": L("واقي شمس كل صباح.", "Sunscreen every morning."),
     // The story block's three points, one line each.
-    "story-point-1": L("من غير عطر ولا زيوت عطرية", "No fragrance, no essential oils"),
-    "story-point-2": L("مختبر من طبيبة جلدية، pH متوازن", "Dermatologist tested, pH balanced"),
+    "story-point-1": L("بدون عطور أو زيوت عطرية", "No fragrance, no essential oils"),
+    "story-point-2": L("طريقة استخدام واضحة لكل منتج", "Clear directions for every product"),
     "story-point-3": L("قائمة المكونات كاملة في صفحة كل منتج", "Full ingredient list on every page"),
   },
   // hero.tall: the split hero's photo (square on desktop, so the subject sits in the middle); story: the home's list block (4:5); about: the about page (4:5).
@@ -172,7 +172,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     text: {
       "م": initial,
       "اسم متجرك": name,
-      "منتجات أصلية بضمان، توصلك لحد البيت.": c.footer.line,
+      "منتجات مختارة بعناية لكل يوم.": c.footer.line,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
       "العروض": L("الأعلى تقييماً", "Top rated"),
       "من نحن": aboutShort,
@@ -186,9 +186,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("hero-halves", {
       photo: [undefined, c.photos.hero.tall],
       text: {
-        "كوليكشن الموسم": c.hero.eyebrow,
+        "مجموعة الموسم": c.hero.eyebrow,
         "صوت أنقى، كل يوم": c.hero.title,
-        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+        "منتجات مختارة بمواصفات واضحة لكل يوم.": c.hero.line,
         "تسوق الآن": c.hero.cta,
         "العروض": L("كل المنتجات", "Shop all"),
         "صورة الحملة": c.hero.alt,
@@ -202,7 +202,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       as: "best-sellers",
       text: {
         "وصل حديثًا": c.products.primary.title,
-        "أحدث المنتجات اللي نزلت المتجر.": c.products.primary.line,
+        "أحدث المنتجات في المتجر.": c.products.primary.line,
       },
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 4 }],
@@ -213,23 +213,23 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "اختر": c.custom["routine-1-title"]!,
         "أضف ما يعجبك إلى السلة": c.custom["routine-1-line"]!,
         "اطلب": c.custom["routine-2-title"]!,
-        "عنوانك ورقم موبايلك فقط": c.custom["routine-2-line"]!,
+        "عنوانك ورقم هاتفك فقط": c.custom["routine-2-line"]!,
         "نؤكد": c.custom["routine-3-title"]!,
-        "نتواصل معك على واتساب للتأكيد": c.custom["routine-3-line"]!,
+        "نؤكد طلبك معك": c.custom["routine-3-line"]!,
         "استلم": c.custom["routine-4-title"]!,
-        "وادفع عند الاستلام": c.custom["routine-4-line"]!,
+        "يصلك الطلب على عنوانك": c.custom["routine-4-line"]!,
       },
     }),
     lib("about-list", {
       photo: [undefined, undefined, undefined, undefined, undefined, c.photos.story],
       text: {
         "صورة المتجر": c.story.alt,
-        "مع كل طلب": c.story.eyebrow,
-        "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
-        "فاتورة رسمية وضمان": c.custom["story-point-1"]!,
-        "تغليف محمي من الصدمات": c.custom["story-point-2"]!,
-        "رقم تتبع على واتساب": c.custom["story-point-3"]!,
-        "اعرف أكتر": c.story.cta,
+        "مع كل منتج": c.story.eyebrow,
+        "تفاصيل واضحة لكل منتج": c.story.title,
+        "صور ومواصفات لكل منتج": c.custom["story-point-1"]!,
+        "تفاصيل ومقاسات واضحة": c.custom["story-point-2"]!,
+        "تواصل معنا لأي سؤال": c.custom["story-point-3"]!,
+        "اعرف أكثر": c.story.cta,
       },
     }),
     ...(reviews
@@ -239,7 +239,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
               "م": initialOf(reviews.items[0]!.name),
               "مريم أ.": reviews.items[0]!.name,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "ع": initialOf(reviews.items[1]!.name),
               "عمر ك.": reviews.items[1]!.name,
               "كل التقييمات": L("المنتجات الأعلى تقييماً", "Shop top rated"),
@@ -248,7 +248,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           }),
         ]
       : []),
-    lib("faq-columns", { as: "home-faq", text: { "أسئلة شائعة": L("أسئلة بتتسأل كتير", "Questions we get a lot") } }),
+    lib("faq-columns", { as: "home-faq", text: { "أسئلة شائعة": L("أسئلة شائعة", "Common questions") } }),
   ];
 
   const about: Design[] = [
@@ -289,7 +289,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("مكونات قليلة، مناسبة لجو مصر.", "Short ingredient lists, made for Egyptian weather."),
+  description: L("منتجات عناية بالبشرة بمكونات قليلة وواضحة.", "Skincare with short, clear ingredient lists."),
   categories: [
     ["cleansers", "غسول", "Cleansers", PHOTOS.squeezeTubes],
     ["serums", "سيرم وزيوت", "Serums & oils", PHOTOS.serum],
@@ -312,7 +312,7 @@ const DEMO = demoStore({
 
 export const PURE = editionTemplate({
   key: PURE_KEY,
-  version: 4,
+  version: 5,
   changelog: "Pure v4: categories, section order",
   name: L("بيور", "Pure"),
   description: L(
@@ -373,5 +373,5 @@ export const PURE = editionTemplate({
   journey: { primary: "best-sellers", rows: [] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
-  productPage: { thumbs: "bottom", surface: "shelf", band: "paper", extras: ["product-perks"], copy: { reviews: L("تجارب بشرة حقيقية", "Real skin, real results"), related: L("تكمل روتينك", "Complete your routine") } },
+  productPage: { thumbs: "bottom", surface: "shelf", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("تكمل روتينك", "Complete your routine") } },
 });

@@ -52,11 +52,11 @@ export const heroVideo = defineDesign({
                         role: "eyebrow",
                         style: { ...HERO_EYEBROW, color: "white", opacity: 90, textAlign: "center" },
                       }),
-                      t.heading(L("مساحتك، بطريقتك", "Your space, your way"), "h1", {
+                      t.heading(L("تصميم هادئ لكل يوم", "Quiet design for every day"), "h1", {
                         role: "title",
                         style: { color: "white", fontSize: "display-lg", fontWeight: "bold", lineHeight: "tight", letterSpacing: "tight", textAlign: "center", maxWidth: "820px" },
                       }),
-                      t.paragraph(L("قطع مختارة بعناية، وتوصيل سريع لحد باب البيت.", "Carefully chosen pieces, delivered fast to your door."), {
+                      t.paragraph(L("قطع مختارة بعناية لكل يوم.", "Carefully chosen pieces for every day."), {
                         role: "subtitle",
                         style: { color: "white", fontSize: "lg", opacity: 90, maxWidth: "520px", textAlign: "center" },
                         mobile: { fontSize: "md" },
@@ -64,7 +64,7 @@ export const heroVideo = defineDesign({
                       t.row(
                         [
                           t.button(L("تسوّق الآن", "Shop now"), "/products", "light", { role: "cta" }),
-                          t.button(L("شوف الجديد", "See what’s new"), "/products?sort=newest", "outline", { role: "cta2", style: QUIET_LINK }),
+                          t.button(L("اكتشف الجديد", "See what’s new"), "/products?sort=newest", "outline", { role: "cta2", style: QUIET_LINK }),
                         ],
                         { label: L("الأزرار", "Buttons"), style: { gap: 8, paddingTop: 12, justifyContent: "center", alignItems: "center" } },
                       ),

@@ -23,7 +23,7 @@ export const productsShelf = defineDesign({
         [
           t.stack(
             [
-              t.badge(L("تسوّق حسب مزاجك", "Shop your way"), { role: "eyebrow", style: { color: "primary", background: "secondary" } }),
+              t.badge(L("تسوّق حسب اختيارك", "Shop your way"), { role: "eyebrow", style: { color: "primary", background: "secondary" } }),
               t.row(
                 PILLS.map((pill, i) =>
                   t.link(SHOP_LINK, [t.text(pill, { style: { fontWeight: "semibold", ...(i === 0 && { color: "primaryInk" }) } })], {

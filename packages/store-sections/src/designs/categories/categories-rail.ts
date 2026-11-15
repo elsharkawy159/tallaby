@@ -26,7 +26,7 @@ export const categoriesRail = defineDesign({
                 [
                   t.badge(L("اكتشف", "Discover"), { role: "eyebrow", style: { color: "primary" } }),
                   t.heading(L("عالم كامل في كل قسم", "A whole world in every aisle"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
-                  t.paragraph(L("اختر من أقسامنا؛ في كل قسم أفضل ما جربناه.", "Pick an aisle; each one holds the best we have tested."), { role: "body" }),
+                  t.paragraph(L("اختر من أقسامنا، وفي كل قسم تشكيلة مختارة.", "Pick an aisle; each one holds a chosen range."), { role: "body" }),
                   arrowLink(t, L("كل الأقسام", "All categories"), CATEGORY_LINK),
                 ],
                 { label: L("العنوان", "Heading"), style: { gap: 14, alignItems: "start", paddingTop: 16 } },

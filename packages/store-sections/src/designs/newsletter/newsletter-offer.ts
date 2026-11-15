@@ -60,12 +60,12 @@ export const newsletterOffer = defineDesign({
                       },
                     },
                   ),
-                  t.paragraph(L("اشترك والكود هيظهرلك على طول.", "Sign up and your code shows right away."), {
+                  t.paragraph(L("اشترك ليظهر لك الكود فورًا.", "Sign up and your code shows right away."), {
                     role: "body",
                     style: { textAlign: "center" },
                   }),
                   t.storeForm({ formTemplate: "newsletter", style: { width: "100%" } }),
-                  t.text(L("كود واحد لكل عميل. من غير رسائل مزعجة.", "One code per customer. No spam."), {
+                  t.text(L("كود واحد لكل عميل، وبدون رسائل مزعجة.", "One code per customer. No spam."), {
                     style: { color: "muted", fontSize: "xs", textAlign: "center" },
                   }),
                 ],

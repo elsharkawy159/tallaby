@@ -26,11 +26,11 @@ export const gallerySide = defineDesign({
               t.stack(
                 [
                   dotLabel(t, L("إنستجرام", "Instagram")),
-                  t.heading(L("صوّر واعمل منشن", "Snap it and tag us"), "h2", {
+                  t.heading(L("صوّر وأشِر إلينا", "Snap it and tag us"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("استخدم #اسم_متجرك وممكن صورتك تظهر هنا.", "Use #yourstore and your photo could appear here."), { role: "subtitle" }),
+                  t.paragraph(L("استخدم #اسم_متجرك وقد تظهر صورتك هنا.", "Use #yourstore and your photo could appear here."), { role: "subtitle" }),
                   pillButton(t, L("تابعنا", "Follow us"), PROFILE, {
                     icon: "instagram",
                   }),

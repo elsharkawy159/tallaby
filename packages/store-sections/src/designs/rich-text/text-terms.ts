@@ -12,11 +12,11 @@ const ROWS = [
     text: L("سنة من تاريخ الفاتورة.", "One year from the invoice date."),
   },
   {
-    term: L("بيغطي", "Covers"),
+    term: L("يغطي", "Covers"),
     text: L("عيوب الصناعة.", "Manufacturing defects."),
   },
   {
-    term: L("مش بيغطي", "Excludes"),
+    term: L("لا يغطي", "Excludes"),
     text: L("الكسر والمياه وسوء الاستخدام.", "Drops, water damage and misuse."),
   },
   {

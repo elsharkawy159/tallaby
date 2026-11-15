@@ -22,11 +22,11 @@ export const newsletterCentered = defineDesign({
             [
               iconTile(t, "mail", { radius: 999, background: "background" }),
               t.badge(L("النشرة", "Newsletter"), { role: "eyebrow", style: { color: "primary", background: "background" } }),
-              t.heading(L("خد ١٠٪ خصم على أول طلب", "Get 10% off your first order"), "h2", {
+              t.heading(L("اشترك في نشرتنا البريدية", "Join our newsletter"), "h2", {
                 role: "title",
                 style: { fontSize: "display-sm", textAlign: "center" },
               }),
-              t.paragraph(L("اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.", "Join the list for new arrivals and members-only offers."), {
+              t.paragraph(L("اشترك لتصلك أخبار المنتجات الجديدة.", "Subscribe to hear about new arrivals."), {
                 role: "subtitle",
                 style: { textAlign: "center" },
               }),
@@ -34,7 +34,7 @@ export const newsletterCentered = defineDesign({
                 label: L("النموذج", "Form box"),
                 style: { width: "100%", background: "transparent", paddingTop: 8, paddingBottom: 0, paddingStart: 0, paddingEnd: 0 },
               }),
-              t.text(L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."), {
+              t.text(L("بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.", "No spam. Unsubscribe any time."), {
                 style: { color: "muted", fontSize: "xs", textAlign: "center" },
               }),
             ],

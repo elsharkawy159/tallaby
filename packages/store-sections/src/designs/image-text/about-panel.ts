@@ -25,15 +25,15 @@ export const aboutPanel = defineDesign({
                 [
                   t.paragraph(
                     L(
-                      "كنا نجرب كل منتج بأنفسنا قبل أن نبيعه، وما زلنا نفعل ذلك مع كل ما يدخل المتجر.",
-                      "We tested every product ourselves before selling it, and we still do with everything that enters the store.",
+                      "نختار كل منتج يدخل المتجر بعناية، ونوضّح تفاصيله لتختار بثقة.",
+                      "We choose every product in the store with care and explain its details so you can choose with confidence.",
                     ),
                     { role: "body", style: { ...ON_BRAND_BODY, fontSize: "lg" } },
                   ),
                   t.paragraph(
                     L(
-                      "اليوم يعود إلينا آلاف العملاء، وهذا أكبر دليل على أن الطريقة صحيحة.",
-                      "Today thousands of customers come back to us, which tells us the approach works.",
+                      "هدفنا منتجات جيدة بسعر عادل وتفاصيل واضحة.",
+                      "Our aim: good products at a fair price, with clear details.",
                     ),
                     { role: "body", style: { ...ON_BRAND_BODY, fontSize: "lg" } },
                   ),

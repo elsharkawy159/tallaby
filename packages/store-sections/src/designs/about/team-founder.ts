@@ -24,7 +24,7 @@ export const teamFounder = aboutDesign({
               t.icon("quote", { style: { fontSize: "6xl", color: "accent" }, mobile: { fontSize: "4xl" } }),
               t.text(
                 L(
-                  "عايزين كل حد يشتري من عندنا مرة يرجع تاني من غير ما نفكره.",
+                  "نريد أن يعود إلينا كل من يشتري منا مرة، دون أن نذكّره.",
                   "We want everyone who buys from us once to come back without being reminded.",
                 ),
                 {

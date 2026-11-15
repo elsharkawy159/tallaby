@@ -7,9 +7,9 @@ import { defineDesign } from "../builder";
 import { L, iconTile, sectionHead } from "../_kit";
 
 const VALUES: { icon: ElementIconName; title: ReturnType<typeof L>; text: ReturnType<typeof L> }[] = [
-  { icon: "shield", title: L("أصلي فقط", "Only genuine"), text: L("لا تقليد ولا درجة ثانية، أبدًا.", "No copies and no second grade, ever.") },
-  { icon: "chat", title: L("نرد بسرعة", "We answer fast"), text: L("متوسط الرد ١٢ دقيقة على واتساب.", "Average WhatsApp reply in 12 minutes.") },
-  { icon: "rotate", title: L("استرجاع بلا أسئلة", "No-question returns"), text: L("١٤ يومًا من الاستلام.", "14 days from delivery.") },
+  { icon: "shield", title: L("تفاصيل واضحة", "Clear details"), text: L("صور ومواصفات ومقاسات لكل منتج.", "Photos, specs and sizes for every product.") },
+  { icon: "chat", title: L("تشكيلة مختارة", "A chosen range"), text: L("منتجات لكل الاستخدامات.", "Products for every use.") },
+  { icon: "rotate", title: L("نجيب عن أسئلتك", "We answer your questions"), text: L("تواصل معنا لأي سؤال.", "Contact us with any question.") },
 ];
 
 export const aboutValues = defineDesign({

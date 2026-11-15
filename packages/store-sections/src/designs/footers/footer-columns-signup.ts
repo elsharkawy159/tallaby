@@ -59,11 +59,11 @@ export const footerColumnsSignup = defineDesign({
               [
                 t.stack(
                   [
-                    t.heading(L("اعرف العروض الأول", "Get offers first"), "h3", {
+                    t.heading(L("اعرف الجديد أولًا", "Hear what's new first"), "h3", {
                       role: "title",
                       style: { fontSize: "xl", fontWeight: "semibold", color: "background" },
                     }),
-                    t.paragraph(L("إيميل واحد في الشهر، من غير إزعاج.", "One email a month, no spam."), { role: "subtitle", style: SOFT }),
+                    t.paragraph(L("رسائل قليلة بالبريد الإلكتروني عن المنتجات الجديدة.", "Occasional emails about new products."), { role: "subtitle", style: SOFT }),
                   ],
                   { label: L("النص", "Copy"), style: { gap: 4 } },
                 ),
@@ -86,7 +86,7 @@ export const footerColumnsSignup = defineDesign({
                       role: "logo",
                       style: FLUSH,
                     }),
-                    t.paragraph(L("قطع مختارة بعناية، بتوصل لحد باب البيت.", "Carefully chosen pieces, delivered to your door."), {
+                    t.paragraph(L("قطع مختارة بعناية لكل يوم.", "Carefully chosen pieces for every day."), {
                       role: "body",
                       style: { ...SOFT, maxWidth: "360px" },
                     }),

@@ -24,7 +24,7 @@ export const testimonialsSpotlight = defineDesign({
               stars(t, 5),
               t.heading(
                 L(
-                  "«من أفضل تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف أنيق، والمنتج أفضل من الصور.»",
+                  "«من أفضل تجارب الشراء عبر الإنترنت. الطلب وصل بسرعة، والتغليف أنيق، والمنتج أفضل من الصور.»",
                   "“One of the best online orders I've had. Fast delivery, lovely packaging, and the product beats the photos.”",
                 ),
                 "h2",

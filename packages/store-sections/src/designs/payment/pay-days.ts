@@ -27,7 +27,7 @@ export const payDays = defineDesign({
     t.section({ label: L("أيام التوصيل", "Delivery days") }, [
       t.container(
         [
-          t.box([payTitle(t, L("هيوصلك إمتى؟", "When will it arrive?"))], { label: L("العنوان", "Heading"), style: { marginBottom: 32 }, mobile: { marginBottom: 20 } }),
+          t.box([payTitle(t, L("متى يصلك طلبك؟", "When will it arrive?"))], { label: L("العنوان", "Heading"), style: { marginBottom: 32 }, mobile: { marginBottom: 20 } }),
           t.box([], { label: L("الخط", "Rule"), style: { background: "foreground", minHeight: 2 } }),
           t.grid(
             BANDS.map((b) =>

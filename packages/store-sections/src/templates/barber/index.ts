@@ -48,7 +48,7 @@ const PHOTOS = {
   barberKit: pexels(36305681, 900),
 };
 
-const NAME = L("مكتب باربر", "Maktab Barber");
+const NAME = L("مكتب الحلّاق", "Maktab Barber");
 
 /**
  * Maktab Barber's own content: what the look is built with when no edition
@@ -57,72 +57,72 @@ const NAME = L("مكتب باربر", "Maktab Barber");
  */
 const DEFAULT_CONTENT: LookDefaults = {
   // The header search placeholder: three things a buyer types.
-  labels: { search: L("ابحث عن زيت دقن، موس، طقم…", "Search beard oil, razors, kits…") },
+  labels: { search: L("ابحث عن زيت لحية، موس، طقم…", "Search beard oil, razors, kits…") },
   // The split hero: its first button goes to the whole catalog, the second (`custom.hero-cta-2`) to the contact page.
   hero: {
-    alt: L("كراسي حلاقة جلد في المحل", "Leather barber chairs in the shop"),
-    eyebrow: L("محل وكرسي", "Shop and chair"),
-    title: L("عدة العناية في البيت، والكرسي لما تحتاجه", "Grooming kit at home, the chair when you need it"),
-    line: L("الباربرز بتوعنا بيخلطوا الزيوت اللي بيستخدموها كل يوم.", "Our barbers blend the oils they use every day."),
+    alt: L("كراسي حلاقة جلدية في صالون", "Leather barber chairs in a barbershop"),
+    eyebrow: L("أدوات الحلاقة", "Shaving tools"),
+    title: L("أدوات الحلاقة والعناية للرجال", "Shaving and grooming tools for men"),
+    line: L("زيوت لحية وأمواس وفرش وأطقم حلاقة.", "Beard oils, razors, brushes and shaving kits."),
     cta: L("تسوق العناية", "Shop grooming"),
   },
-  categories: { title: L("دقن ولا حلاقة؟", "Beard or shave?") },
+  categories: { title: L("اللحية أم الحلاقة؟", "Beard or shave?") },
   // A grid of what `journey.primary` shows: the title must say the same.
   products: {
     primary: {
       title: L("منتجات العناية", "Grooming products"),
-      line: L("اللي بنستعمله في المحل، تاخده معاك البيت.", "What we use in the shop, to take home."),
+      line: L("زيوت وبلسم وأدوات حلاقة مختارة.", "Chosen oils, balms and shaving tools."),
     },
   },
   // Optional, with `custom.reviews-reply` (all three messages, or leave `reviews` out). Three WhatsApp-style messages, each with a name; the store answers the first one.
   reviews: {
-    title: L("الزباين", "Regulars"),
+    title: L("آراء العملاء", "Customer reviews"),
     items: [
       {
-        quote: L("زيت السيدار خلّى الدقن طرية من أول أسبوع، وريحته مش تقيلة.", "The cedar oil softened my beard in the first week, and the scent is not heavy."),
+        quote: L("رائحة زيت السيدار خفيفة واستخدامه سهل.", "The cedar oil has a light scent and is easy to use."),
         name: L("أحمد س.", "Ahmed S."),
       },
       {
-        quote: L("حجزت أونلاين ودخلت الكرسي في معادي بالظبط.", "Booked online and was in the chair right on time."),
+        quote: L("فرشاة الحلاقة متينة وخاماتها جيدة.", "The shaving brush is sturdy and well made."),
         name: L("كريم م.", "Karim M."),
       },
       {
-        quote: L("الطقم كان هدية لأخويا وعجبه جداً.", "The kit was a gift for my brother and he loved it."),
+        quote: L("الطقم كامل ومرتب في علبته.", "The kit is complete and neatly boxed."),
         name: L("مصطفى ع.", "Mostafa A."),
       },
     ],
   },
   // The footer's sign-off line (two or three words).
-  footer: { line: L("شيك كل يوم", "Sharp, every day") },
+  footer: { line: L("أدوات حلاقة وعناية للرجال", "Shaving and grooming for men") },
   about: {
-    line: L("محل حلاقة في الدقي، وعدته في بيتك.", "A barbershop in Dokki, with its kit at your home."),
-    alt: L("كرسي حلاقة جنب حيطة طوب ونباتات", "A barber chair beside a brick wall and plants"),
-    eyebrow: L("الدقي", "Dokki"),
-    title: L("من الكرسي للرف", "From the chair to the shelf"),
-    text: L("فتحنا المحل سنة ٢٠١٥، والزباين فضلوا يسألوا عن الزيت اللي بنحطه. فبقينا نعبيه.", "We opened in 2015, and customers kept asking about the oil we used. So we started bottling it."),
-    more: L("وكل منتج بيتجرب على الكرسي الأول قبل ما يتباع.", "And every product is tested in the chair before it is sold."),
+    line: L("منتجات الحلاقة والعناية باللحية والشعر.", "Shaving, beard and hair care products."),
+    alt: L("كرسي حلاقة بجانب جدار من الطوب ونباتات", "A barber chair beside a brick wall and plants"),
+    eyebrow: L("من نحن", "About us"),
+    title: L("أدوات حلاقة مختارة بعناية", "Shaving tools chosen with care"),
+    text: L("نقدّم زيوت اللحية وصابون الحلاقة والأمواس والفرش، ونختار كل منتج بعناية.", "We offer beard oils, shaving soap, razors and brushes, each chosen with care."),
+    more: L("وفي كل صفحة منتج المكونات وطريقة الاستخدام.", "Every product page lists the ingredients and how to use it."),
     // Goes to the whole catalog.
     cta: L("تسوق العناية", "Shop grooming"),
   },
   contact: {
-    title: L("تواصل واحجز", "Contact and book"),
+    title: L("تواصل معنا", "Contact us"),
     line: L("١٢ شارع مصدق، الدقي، الجيزة.", "12 Mosadak St, Dokki, Giza."),
-    heading: L("اسأل أو احجز معاد", "Ask or book a time"),
+    heading: L("لأي سؤال، تواصل معنا", "Questions? Contact us"),
   },
   faq: {
-    line: L("الحجز والمنتجات والتوصيل.", "Booking, products and delivery."),
-    question: L("لازم أحجز قبلها؟", "Do I need to book ahead?"),
-    answer: L("مش لازم، بس الحجز بيضمنلك الكرسي في المعاد. الخميس والجمعة بيبقوا زحمة.", "Not always, but booking guarantees your chair on time. Thursday and Friday get busy."),
+    line: L("المنتجات والاستخدام والطلبات.", "Products, use and orders."),
+    question: L("كيف أختار زيت اللحية المناسب؟", "How do I choose a beard oil?"),
+    answer: L("اقرأ وصف كل زيت ورائحته في صفحة المنتج، وتواصل معنا لأي سؤال.", "Read each oil's description and scent on its product page, and contact us with any question."),
   },
   custom: {
     // The store's short name inside "About …" (the about page).
     "store-short": L("مكتب", "Maktab"),
     // The hero's second button (it goes to the contact page) and the footer's sign-off button (WhatsApp), two or three words each.
-    "hero-cta-2": L("احجز حلاقة", "Book a cut"),
-    "footer-cta": L("احجز على واتساب", "Book on WhatsApp"),
+    "hero-cta-2": L("تواصل معنا", "Contact us"),
+    "footer-cta": L("راسلنا", "Message us"),
     // The price menu: a title and a line, then three groups (3, 2 and 2 items), each item a name and a price.
-    "service-title": L("على الكرسي", "In the chair"),
-    "service-line": L("الأسعار شاملة الغسيل والتصفيف، ومن غير بقشيش.", "Prices include wash and styling, no tips expected."),
+    "service-title": L("خدمات الحلاقة", "Barber services"),
+    "service-line": L("الأسعار تشمل الغسيل والتصفيف.", "Prices include wash and styling."),
     "service-1-title": L("الشعر", "Hair"),
     "service-1-1-name": L("قص", "Cut"),
     "service-1-1-price": L("٢٥٠ ج.م", "EGP 250"),
@@ -130,18 +130,18 @@ const DEFAULT_CONTENT: LookDefaults = {
     "service-1-2-price": L("٣٢٠ ج.م", "EGP 320"),
     "service-1-3-name": L("قص أطفال", "Kids' cut"),
     "service-1-3-price": L("١٨٠ ج.م", "EGP 180"),
-    "service-2-title": L("الدقن", "Beard"),
+    "service-2-title": L("اللحية", "Beard"),
     "service-2-1-name": L("تهذيب", "Trim"),
     "service-2-1-price": L("١٥٠ ج.م", "EGP 150"),
-    "service-2-2-name": L("حلاقة بالفوطة السخنة", "Hot towel shave"),
+    "service-2-2-name": L("حلاقة بالمنشفة الساخنة", "Hot towel shave"),
     "service-2-2-price": L("٢٢٠ ج.م", "EGP 220"),
-    "service-3-title": L("الباكدجات", "Packages"),
-    "service-3-1-name": L("قص ودقن", "Cut and beard"),
+    "service-3-title": L("الباقات", "Packages"),
+    "service-3-1-name": L("قص الشعر واللحية", "Cut and beard"),
     "service-3-1-price": L("٣٥٠ ج.م", "EGP 350"),
-    "service-3-2-name": L("باكدج العريس", "Groom's package"),
+    "service-3-2-name": L("باقة العريس", "Groom's package"),
     "service-3-2-price": L("٩٥٠ ج.م", "EGP 950"),
     // The store's answer to the first review.
-    "reviews-reply": L("ده يسعدنا يا باشا، مستنينك الخميس!", "Glad to hear it, see you Thursday!"),
+    "reviews-reply": L("يسعدنا ذلك، شكرًا لك!", "Glad to hear it, thank you!"),
   },
   // hero.tall: the split hero's photo (square on desktop, so the subject sits in the middle); story: the about page (4:5).
   photos: { hero: { tall: PHOTOS.shopHero }, story: PHOTOS.shopAbout },
@@ -168,8 +168,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   const footer = lib("footer-signoff", {
     text: {
-      "شكرًا إنك عدّيت علينا": c.footer.line,
-      "كلمنا على واتساب": x["footer-cta"]!,
+      "شكرًا لزيارتك": c.footer.line,
+      "تواصل معنا على واتساب": x["footer-cta"]!,
       "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
       "العروض": L("الأعلى تقييماً", "Top rated"),
     },
@@ -183,18 +183,18 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("hero-halves", {
       photo: [undefined, c.photos.hero.tall],
       text: {
-        "كوليكشن الموسم": c.hero.eyebrow,
+        "مجموعة الموسم": c.hero.eyebrow,
         "صوت أنقى، كل يوم": c.hero.title,
-        "منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.": c.hero.line,
+        "منتجات مختارة بمواصفات واضحة لكل يوم.": c.hero.line,
         "تسوق الآن": c.hero.cta,
         "العروض": x["hero-cta-2"]!,
         "صورة الحملة": c.hero.alt,
       },
       links: { "/products": [SHOP, "/contact"] },
     }),
-    lib("categories-chips", { text: { "إيه اللي في بالك؟": c.categories.title } }),
+    lib("categories-chips", { text: { "عمّ تبحث؟": c.categories.title } }),
     lib("products-grid", {
-      text: { "وصل حديثًا": c.products.primary.title, "أحدث المنتجات اللي نزلت المتجر.": c.products.primary.line },
+      text: { "وصل حديثًا": c.products.primary.title, "أحدث المنتجات في المتجر.": c.products.primary.line },
       links: { "/products": primaryHref(journey.primary) },
       // The grid shows the newest by default; another journey names its list.
       ...(journey.primary === "newest" ? {} : { lists: [{ source: journey.primary }] }),
@@ -203,20 +203,20 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       text: {
         "أسعار الخدمات": x["service-title"]!,
         "الأسعار شاملة قطع الغيار الأصلية والضمان.": x["service-line"]!,
-        "الموبايل": x["service-1-title"]!,
+        "الهواتف": x["service-1-title"]!,
         "تغيير بطارية": x["service-1-1-name"]!,
         "٦٥٠ ج.م": x["service-1-1-price"]!,
         "تغيير شاشة": x["service-1-2-name"]!,
         "٢٤٠٠ ج.م": x["service-1-2-price"]!,
-        "سوكت الشحن": x["service-1-3-name"]!,
+        "منفذ الشحن": x["service-1-3-name"]!,
         "٤٥٠ ج.م": x["service-1-3-price"]!,
-        "الشاشات والبيت": x["service-2-title"]!,
+        "الشاشات والمنزل": x["service-2-title"]!,
         "تركيب حائط": x["service-2-1-name"]!,
         "٣٥٠ ج.م": x["service-2-1-price"]!,
-        "ضبط رسيفر": x["service-2-2-name"]!,
+        "ضبط جهاز الاستقبال": x["service-2-2-name"]!,
         "١٥٠ ج.م": x["service-2-2-price"]!,
         "السماعات": x["service-3-title"]!,
-        "تغيير وسايد": x["service-3-1-name"]!,
+        "تغيير وسائد الأذن": x["service-3-1-name"]!,
         "١٢٠ ج.م": x["service-3-1-price"]!,
         "تنظيف وفحص": x["service-3-2-name"]!,
         "٨٠ ج.م": x["service-3-2-price"]!,
@@ -227,12 +227,12 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           lib("testimonials-chat", {
             text: {
               "من الواتساب": L("الآراء", "Reviews"),
-              "رسايل بتفرّحنا": reviews.title,
+              "رسائل تسعدنا": reviews.title,
               "مريم أ.": reviews.items[0]!.name,
               "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
-              "ده يسعدنا جدًا، شكرًا ليكي!": reply,
+              "هذا يسعدنا جدًا، شكرًا لك!": reply,
               "عمر ك.": reviews.items[1]!.name,
-              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "بدّلت المقاس بسهولة، والفريق ردّ عليّ خلال دقائق.": reviews.items[1]!.quote,
               "يوسف م.": reviews.items[2]!.name,
               "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[2]!.quote,
             },
@@ -279,36 +279,36 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("زيت دقن، أطقم حلاقة، وكرسي لما تحتاجه.", "Beard oil, shaving kits and a chair when you need it."),
+  description: L("زيوت لحية وأطقم وأدوات حلاقة للرجال.", "Beard oils, kits and shaving tools for men."),
   categories: [
-    ["beard", "الدقن", "Beard", PHOTOS.cedarOil],
+    ["beard", "اللحية", "Beard", PHOTOS.cedarOil],
     ["shave", "الحلاقة", "Shave", PHOTOS.safetyRazor],
     ["kits", "أطقم", "Kits", PHOTOS.barberKit],
-    ["balms", "بلسم ووكس", "Balms & wax", PHOTOS.beardBalm],
-    ["razors", "مواس", "Razors", PHOTOS.razorComb],
+    ["balms", "بلسم وشمع للشعر", "Balms & wax", PHOTOS.beardBalm],
+    ["razors", "أمواس", "Razors", PHOTOS.razorComb],
     ["brushes", "فرش حلاقة", "Brushes", PHOTOS.brushStand],
-    ["aftershave", "أفترشيف", "Aftershave", PHOTOS.aftershave],
+    ["aftershave", "كولونيا بعد الحلاقة", "Aftershave", PHOTOS.aftershave],
     ["combs", "أمشاط", "Combs", PHOTOS.beardComb],
   ],
   products: [
-    ["cedar-beard-oil", "beard", "زيت دقن سيدار", "Cedar Beard Oil", PHOTOS.cedarOil, 320, { isFeatured: true, rating: 4.8, sold90: 240 }],
-    ["beard-balm", "balms", "بلسم دقن", "Beard Balm", PHOTOS.beardBalm, 260, { compareAtPrice: 310, sold90: 88 }],
+    ["cedar-beard-oil", "beard", "زيت لحية بالسيدار", "Cedar Beard Oil", PHOTOS.cedarOil, 320, { isFeatured: true, rating: 4.8, sold90: 240 }],
+    ["beard-balm", "balms", "بلسم لحية", "Beard Balm", PHOTOS.beardBalm, 260, { compareAtPrice: 310, sold90: 88 }],
     ["shaving-soap", "shave", "صابون حلاقة", "Shaving Soap", PHOTOS.shavingSoap, 190, { rating: 4.7, sold90: 130 }],
-    ["barber-kit", "kits", "طقم الباربر", "Barber Kit", PHOTOS.barberKit, 1150, { isFeatured: true, rating: 4.9, sold90: 60 }],
-    ["sandalwood-beard-oil", "beard", "زيت دقن صندل", "Sandalwood Beard Oil", PHOTOS.sandalOil, 340, { sold90: 72 }],
+    ["barber-kit", "kits", "طقم الحلاقة", "Barber Kit", PHOTOS.barberKit, 1150, { isFeatured: true, rating: 4.9, sold90: 60 }],
+    ["sandalwood-beard-oil", "beard", "زيت لحية بالصندل", "Sandalwood Beard Oil", PHOTOS.sandalOil, 340, { sold90: 72 }],
     ["safety-razor", "razors", "موس أمان", "Safety Razor", PHOTOS.safetyRazor, 450, { sold90: 54 }],
-    ["shaving-brush-stand", "brushes", "فرشاة حلاقة وستاند", "Shaving Brush & Stand", PHOTOS.brushStand, 690, { compareAtPrice: 820, sold90: 30 }],
-    ["cooling-aftershave", "aftershave", "أفترشيف منعش", "Cooling Aftershave", PHOTOS.aftershave, 280, { sold90: 66 }],
-    ["wooden-beard-comb", "combs", "مشط دقن خشب", "Wooden Beard Comb", PHOTOS.beardComb, 120, { sold90: 110 }],
+    ["shaving-brush-stand", "brushes", "فرشاة حلاقة مع حامل", "Shaving Brush & Stand", PHOTOS.brushStand, 690, { compareAtPrice: 820, sold90: 30 }],
+    ["cooling-aftershave", "aftershave", "كولونيا منعشة بعد الحلاقة", "Cooling Aftershave", PHOTOS.aftershave, 280, { sold90: 66 }],
+    ["wooden-beard-comb", "combs", "مشط لحية خشبي", "Wooden Beard Comb", PHOTOS.beardComb, 120, { sold90: 110 }],
     ["straight-razor-comb", "razors", "موس حلاقة ومشط", "Straight Razor & Comb", PHOTOS.razorComb, 520, { sold90: 22 }],
   ],
 });
 
 export const BARBER = editionTemplate({
   key: BARBER_KEY,
-  version: 3,
+  version: 4,
   changelog: "Barber v3: categories, one service block, section order",
-  productPage: { surface: "flat", thumbs: "bottom", band: "brand", copy: { reviews: L("رأي زباين الكرسي", "From the chair"), related: L("كمّل العدّة", "Complete the kit") } },
+  productPage: { surface: "flat", thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("باربر", "Barber"),
   description: L(
     "عناية رجالي: أسعار الكرسي، احجز معاد، طقم الدقن، الباربرز وآراء الزباين. أربع صفحات جاهزة.",

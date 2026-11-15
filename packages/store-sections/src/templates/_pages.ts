@@ -25,8 +25,8 @@ export function aboutStory(
       "صورة المتجر": o.alt,
       "حكايتنا": o.eyebrow,
       "بدأنا بسؤال واحد: هل سيدوم؟": o.title,
-      "فتحنا متجرنا بعد أن تعبنا من منتجات لا تعيش. كل ما نبيعه نجربه نحن أولًا.": o.text,
-      "اليوم نشحن لكل المحافظات ونرد على كل رسالة بأنفسنا.": o.more,
+      "نختار منتجات تتحمّل الاستخدام اليومي، ونعرض تفاصيل كل منتج بوضوح.": o.text,
+      "تواصل معنا لأي سؤال عن منتجاتنا.": o.more,
       "تعرّف علينا": o.button,
     },
     links: { "/about": o.href },
@@ -35,7 +35,7 @@ export function aboutStory(
 
 /** Contact: the page header and the contact form. */
 export function contactPage(lib: Lib, o: { title: DesignText; text: DesignText; heading: DesignText }): Design[] {
-  return [pageHeader(lib, "contact-header", o.title, o.text), lib("contact-form", { text: { "ابعتلنا وهنرجعلك": o.heading } })];
+  return [pageHeader(lib, "contact-header", o.title, o.text), lib("contact-form", { text: { "أرسل رسالتك": o.heading } })];
 }
 
 /** FAQ: the page header and the two-column questions, with the template's last question. */
@@ -45,7 +45,7 @@ export function faqPage(lib: Lib, o: { text: DesignText; question: DesignText; a
     lib("faq-columns", {
       text: {
         "ما سياسة الاسترجاع؟": o.question,
-        "يمكنك إرجاع أي منتج غير مستخدم خلال ١٤ يومًا في علبته الأصلية.": o.answer,
+        "راجع سياسة الاستبدال والاسترجاع في صفحة السياسات.": o.answer,
       },
     }),
   ];

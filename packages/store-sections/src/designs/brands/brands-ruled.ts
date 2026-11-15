@@ -22,7 +22,7 @@ export const brandsRuled = defineDesign({
         [
           modHead(t, {
             label: L("موزع معتمد", "Authorised dealer"),
-            title: L("ماركات بنبيعها", "Brands we carry"),
+            title: L("ماركات نبيعها", "Brands we carry"),
           }),
           t.grid(
             BRANDS.map((_, i) =>

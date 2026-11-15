@@ -33,12 +33,12 @@ export const popupWhatsapp = defineDesign({
                       [
                         t.stack(
                           [
-                            t.text(L("أهلاً! نقدر نساعدك في إيه؟", "Hi! How can we help?"), {
+                            t.text(L("أهلًا! كيف يمكننا مساعدتك؟", "Hi! How can we help?"), {
                               role: "title",
                               style: { fontWeight: "semibold", color: "foreground" },
                               mobile: { fontSize: "sm" },
                             }),
-                            t.text(L("بنرد عادةً خلال دقايق", "Usually replies in minutes"), {
+                            t.text(L("نرد عادةً خلال دقائق", "Usually replies in minutes"), {
                               role: "subtitle",
                               style: { fontSize: "xs", color: "muted" },
                             }),

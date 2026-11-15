@@ -29,8 +29,8 @@ export const pageCount = defineDesign({
                     role: "title",
                     style: { fontSize: "display-md", letterSpacing: "tight" },
                   }),
-                  t.paragraph(L("منتجات أصلية بضمان محلي.", "Genuine products with local warranty."), { role: "subtitle" }),
-                  t.badge(L("٦ جديد الأسبوع ده", "6 new this week"), {
+                  t.paragraph(L("تشكيلة لكل الاستخدامات.", "A range for every use."), { role: "subtitle" }),
+                  t.badge(L("٦ جديدة هذا الأسبوع", "6 new this week"), {
                     style: {
                       background: "secondary",
                       color: "primary",

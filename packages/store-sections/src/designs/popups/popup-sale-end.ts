@@ -30,7 +30,7 @@ export const popupSaleEnd = defineDesign({
         [
           t.row(
             [
-              t.text(L("الأوكازيون بيخلص يوم", "Sale ends on"), { role: "title", style: { fontWeight: "bold", fontFamily: "heading" } }),
+              t.text(L("ينتهي التخفيض يوم", "Sale ends on"), { role: "title", style: { fontWeight: "bold", fontFamily: "heading" } }),
               t.row(
                 UNITS.map((u) =>
                   t.row(
@@ -47,7 +47,7 @@ export const popupSaleEnd = defineDesign({
                 ),
                 { label: L("موعد الانتهاء", "End date"), role: "items", style: { gap: 6, wrap: false } },
               ),
-              t.link("/products", [arrowText(t, L("تسوق دلوقتي", "Shop now"), "foreground")], {
+              t.link("/products", [arrowText(t, L("تسوّق الآن", "Shop now"), "foreground")], {
                 label: L("رابط", "Link"),
                 role: "link",
                 style: { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0 },

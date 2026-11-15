@@ -24,7 +24,7 @@ export const headerAnnouncement = defineDesign({
     t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.row(
         [
-          t.text(L("توصيل مجاني للطلبات فوق ١٥٠٠ ج.م", "Free delivery on orders over EGP 1,500"), {
+          t.text(L("تشكيلة الموسم الجديد وصلت", "The new season range is here"), {
             role: "announcement",
             style: { ...ON_BRAND, fontWeight: "medium", fontSize: "sm" },
             mobile: { fontSize: "xs", textAlign: "center" },

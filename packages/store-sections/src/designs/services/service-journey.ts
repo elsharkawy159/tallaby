@@ -11,21 +11,21 @@ const STEPS = [
   {
     title: L("استلام", "Drop-off"),
     text: L("في الفرع أو مع المندوب", "In store or by courier"),
-    time: L("١٠ دقايق", "10 min"),
+    time: L("١٠ دقائق", "10 min"),
   },
   {
     title: L("فحص", "Diagnosis"),
-    text: L("بنبعتلك السعر قبل أي تصليح", "We send the price before any work"),
+    text: L("نرسل إليك السعر قبل أي إصلاح", "We send the price before any work"),
     time: L("ساعتين", "2 h"),
   },
   {
-    title: L("تصليح", "Repair"),
+    title: L("إصلاح", "Repair"),
     text: L("قطع أصلية وضمان ٣ شهور", "Genuine parts, 3-month warranty"),
     time: L("٤ ساعات", "4 h"),
   },
   {
     title: L("تسليم", "Return"),
-    text: L("نكلمك يوم ما يخلص", "We call you the day it is ready"),
+    text: L("نتصل بك يوم انتهائه", "We call you the day it is ready"),
     time: L("نفس اليوم", "Same day"),
   },
 ];
@@ -56,7 +56,7 @@ export const serviceJourney = defineDesign({
         [
           sectionHead(t, {
             eyebrow: L("الصيانة", "Repair"),
-            title: L("جهازك هيرجع إمتى؟", "When do you get it back?"),
+            title: L("متى يعود جهازك؟", "When do you get it back?"),
           }),
           t.grid(
             STEPS.map((s, i) =>
@@ -127,7 +127,7 @@ export const serviceJourney = defineDesign({
               t.row(
                 [
                   t.text(
-                    L("في المتوسط بيرجعلك خلال", "On average back within"),
+                    L("يعود إليك في المتوسط خلال", "On average back within"),
                     { style: { fontSize: "sm" } },
                   ),
                   t.text(L("٢٤ ساعة", "24 hours"), {

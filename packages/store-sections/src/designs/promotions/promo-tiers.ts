@@ -27,7 +27,7 @@ export const promoTiers = defineDesign({
         [
           modHead(t, {
             label: L("عرض الشهر", "This month"),
-            title: L("كل ما تزود، توفّر أكتر", "Spend more, save more"),
+            title: L("كلما زادت مشترياتك، زاد توفيرك", "Spend more, save more"),
           }),
           t.grid(
             TIERS.map((tier, i) => {
@@ -48,7 +48,7 @@ export const promoTiers = defineDesign({
                     : []),
                   t.row(
                     [
-                      t.text(L("لما تشتري بـ", "Spend"), {
+                      t.text(L("عند الشراء بـ", "Spend"), {
                         style: { fontSize: "sm", color: ink },
                       }),
                       t.text(tier.spend, {

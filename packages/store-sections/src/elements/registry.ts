@@ -703,9 +703,9 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     defaultStyle: { gap: 40, alignItems: "center" },
     defaultChildren: () =>
       [
-        ["توصيل لكل المحافظات", "Delivery to every governorate"],
-        ["الدفع عند الاستلام", "Cash on delivery"],
-        ["استبدال خلال ١٤ يوم", "Exchange within 14 days"],
+        ["تشكيلة لكل الاستخدامات", "A range for every use"],
+        ["تفاصيل ومقاسات واضحة لكل منتج", "Clear details and sizes for every product"],
+        ["تسوّق سهل من هاتفك", "Easy shopping from your phone"],
       ].map(([ar, en]) => ({ type: "text", props: { text: ar, translations: { en: { text: en } } }, children: [] })),
     fields: [
       {

@@ -37,7 +37,7 @@ export const headerTopbar = defineDesign({
                       t.row(
                         [
                           t.icon("truck", { style: { color: "primaryInk", fontSize: "sm" } }),
-                          t.text(L("توصيل سريع لكل محافظات مصر", "Fast delivery across Egypt"), {
+                          t.text(L("تسوّق سهل من هاتفك", "Easy shopping from your phone"), {
                             label: L("رسالة", "Message"),
                             style: { color: "primaryInk", fontSize: "xs", fontWeight: "medium" },
                           }),

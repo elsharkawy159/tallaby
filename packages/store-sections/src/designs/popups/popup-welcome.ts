@@ -32,7 +32,7 @@ export const popupWelcome = defineDesign({
                   }),
                   t.stack(
                     [
-                      t.text(L("أهلاً بيك", "Welcome"), {
+                      t.text(L("أهلًا بك", "Welcome"), {
                         role: "eyebrow",
                         style: { fontSize: "sm", fontWeight: "semibold", color: "muted" },
                       }),
@@ -41,7 +41,7 @@ export const popupWelcome = defineDesign({
                         style: { fontSize: "display-md", lineHeight: "tight", letterSpacing: "tight" },
                         mobile: { fontSize: "display-sm" },
                       }),
-                      t.paragraph(L("سيب رقمك وهنبعتلك الكود على واتساب.", "Leave your number and we send the code on WhatsApp."), {
+                      t.paragraph(L("اترك رقمك وسنرسل إليك الكود على واتساب.", "Leave your number and we send the code on WhatsApp."), {
                         role: "subtitle",
                       }),
                       t.storeForm(),

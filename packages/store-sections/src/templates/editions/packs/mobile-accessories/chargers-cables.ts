@@ -80,8 +80,8 @@ export const CHARGERS_CABLES: Edition = {
   demo: demoStore({
     name: L("فيشة", "Fisha"),
     description: L(
-      "شواحن وكابلات وباور بانك وشواحن لاسلكي، بنختارها عشان تشحن صح.",
-      "Chargers, cables, power banks and wireless chargers, picked to charge right.",
+      "شواحن وكابلات وباور بانك وشواحن لاسلكية.",
+      "Chargers, cables, power banks and wireless chargers.",
     ),
     categories: [
       ["chargers", "شواحن", "Chargers", TILES[0]!],
@@ -100,13 +100,13 @@ export const CHARGERS_CABLES: Edition = {
       ["white-10000mah-power-bank", "power-banks", "باور بانك ١٠٠٠٠ مللي أمبير أبيض", "White 10000mAh Power Bank", shot("white-10000mah-power-bank"), 750, { rating: 4.6, sold90: 297 }],
       ["white-wireless-charging-pad", "wireless", "شاحن لاسلكي دائري أبيض", "White Wireless Charging Pad", shot("white-wireless-charging-pad"), 450, { rating: 4.5, sold90: 158 }],
       ["white-dual-port-charger", "chargers", "شاحن بمخرجين USB-C و USB-A أبيض", "White Dual-Port Charger (USB-C + USB-A)", shot("white-dual-port-charger"), 450, { rating: 4.6, sold90: 231 }],
-      ["white-usb-c-to-lightning-cable", "cables", "كابل USB-C لايتنينج للآيفون أبيض", "White USB-C to Lightning Cable (for iPhone)", shot("white-usb-c-to-lightning-cable"), 220, { rating: 4.6, sold90: 389 }],
-      ["white-magnetic-power-bank", "power-banks", "باور بانك مغناطيس لاسلكي أبيض", "White Magnetic Wireless Power Bank", shot("white-magnetic-power-bank"), 1350, { rating: 4.5, sold90: 96 }],
+      ["white-usb-c-to-lightning-cable", "cables", "كابل USB-C إلى Lightning للآيفون أبيض", "White USB-C to Lightning Cable (for iPhone)", shot("white-usb-c-to-lightning-cable"), 220, { rating: 4.6, sold90: 389 }],
+      ["white-magnetic-power-bank", "power-banks", "باور بانك مغناطيسي لاسلكي أبيض", "White Magnetic Wireless Power Bank", shot("white-magnetic-power-bank"), 1350, { rating: 4.5, sold90: 96 }],
       ["white-wireless-charging-stand", "wireless", "ستاند شحن لاسلكي أبيض", "White Wireless Charging Stand", shot("white-wireless-charging-stand"), 650, { rating: 4.6, sold90: 112 }],
       ["black-car-charger", "chargers", "شاحن عربية أسود", "Black Car Charger", shot("black-car-charger"), 380, { rating: 4.5, sold90: 205 }],
       ["black-3-in-1-cable", "cables", "كابل ٣ في ١ مضفّر أسود", "Black 3-in-1 Braided Cable", shot("black-3-in-1-cable"), 260, { rating: 4.4, sold90: 176 }],
-      ["pink-mini-power-bank", "power-banks", "باور بانك ميني بينك", "Pink Mini Power Bank", shot("pink-mini-power-bank"), 550, { rating: 4.5, sold90: 134 }],
-      ["black-magnetic-car-mount", "wireless", "حامل مغناطيس للعربية بشحن لاسلكي أسود", "Black Magnetic Wireless Car Mount", shot("black-magnetic-car-mount"), 850, { rating: 4.4, sold90: 88 }],
+      ["pink-mini-power-bank", "power-banks", "باور بانك صغير وردي", "Pink Mini Power Bank", shot("pink-mini-power-bank"), 550, { rating: 4.5, sold90: 134 }],
+      ["black-magnetic-car-mount", "wireless", "حامل مغناطيسي للعربية بشحن لاسلكي أسود", "Black Magnetic Wireless Car Mount", shot("black-magnetic-car-mount"), 850, { rating: 4.4, sold90: 88 }],
     ],
   }),
   photos: {
@@ -120,12 +120,12 @@ export const CHARGERS_CABLES: Edition = {
   },
   copy: {
     announcement: [
-      L("توصيل لكل محافظات مصر", "Delivery across Egypt"),
-      L("الدفع عند الاستلام", "Cash on delivery"),
-      L("ابعت موديل موبايلك ونقولك الشاحن المناسب", "Send your phone model and we suggest the right charger"),
+      L("شواحن وكابلات وباور بانك", "Chargers, cables and power banks"),
+      L("مواصفات واضحة لكل منتج", "Clear specs for every product"),
+      L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
     ],
     // `kabl` and `volt`: the header search placeholder, three things a buyer types.
-    labels: { search: L("دوّر على شاحن ٢٠ وات، كابل USB-C، باور بانك…", "Search 20W charger, USB-C cable, power bank…") },
+    labels: { search: L("ابحث عن شاحن ٢٠ وات، كابل USB-C، باور بانك…", "Search 20W charger, USB-C cable, power bank…") },
     // `kabl`: the header's three trade links. The about page's button goes to the first one.
     nav: [
       { label: L("شواحن", "Chargers"), href: search("شاحن") },
@@ -133,93 +133,93 @@ export const CHARGERS_CABLES: Edition = {
       { label: L("باور بانك", "Power banks"), href: search("باور بانك") },
     ],
     hero: {
-      alt: L("لابتوب وموبايل وشاحن أبيض بكابله على خلفية بيج", "A laptop, a phone and a white charger with its cable on beige"),
-      eyebrow: L("شحن من غير وجع دماغ", "Charging made simple"),
+      alt: L("حاسوب محمول وهاتف وشاحن أبيض بكابله على خلفية بيج", "A laptop, a phone and a white charger with its cable on beige"),
+      eyebrow: L("شحن بسهولة", "Charging made simple"),
       // `kabl`: the question over the search box.
-      title: L("موبايلك محتاج إيه النهارده؟", "What does your phone need today?"),
+      title: L("ماذا يحتاج هاتفك اليوم؟", "What does your phone need today?"),
       // `kabl`: the search box placeholder.
-      line: L("اكتب موديل موبايلك أو نوع الشاحن", "Type your phone model or the charger type"),
+      line: L("اكتب طراز هاتفك أو نوع الشاحن", "Type your phone model or the charger type"),
       cta: L("تسوّق الشواحن", "Shop chargers"),
     },
     // `kabl`: over the photo tiles; `volt`: over the category chips.
-    categories: { title: L("اختار اللي تحتاجه", "Pick what you need") },
+    categories: { title: L("اختر ما تحتاجه", "Pick what you need") },
     products: {
       primary: {
         // Both looks: best sellers in compact rows, so the title says so.
-        title: L("الأكتر طلبًا", "Most ordered"),
-        line: L("الشواحن والكابلات اللي الناس بترجع تطلبها تاني.", "The chargers and cables people order again."),
+        title: L("الأكثر طلبًا", "Most ordered"),
+        line: L("الشواحن والكابلات الأكثر طلبًا.", "Our most-ordered chargers and cables."),
       },
     },
     story: {
       alt: L("شاحن أبيض وكابل USB-C مضفّر وباور بانك على رخامة", "A white charger, a braided USB-C cable and a power bank on marble"),
-      eyebrow: L("إزاي بنختار", "How we pick"),
-      title: L("بنجرّب قبل ما نبيع", "We test before we sell"),
+      eyebrow: L("كيف نختار", "How we pick"),
+      title: L("مواصفات واضحة", "Clear specs"),
       text: L(
-        "كل شاحن وكابل بنجرّبه على أكتر من موبايل قبل ما يدخل المحل.",
-        "We try every charger and cable on more than one phone before it joins the shop.",
+        "نذكر قدرة كل شاحن ونوع منفذه وطول كل كابل في صفحته.",
+        "Each charger's wattage and port, and each cable's length, are on its page.",
       ),
-      cta: L("اعرف عننا", "About us"),
+      cta: L("من نحن", "About us"),
     },
     trust: [
-      { title: L("توصيل لحد الباب", "Delivered to your door"), line: L("بنبعت طلبك لأي محافظة", "We send your order to any governorate") },
-      { title: L("الدفع عند الاستلام", "Cash on delivery"), line: L("ادفع لما الطلب يوصلك", "Pay when your order arrives") },
-      { title: L("نساعدك تختار", "Help choosing"), line: L("ابعت موديل موبايلك ونرشّحلك", "Send your phone model and we suggest one") },
-      { title: L("استبدال سهل", "Easy exchange"), line: L("لو القطعة ما اشتغلتش مع موبايلك", "If the piece does not work with your phone") },
+      { title: L("مواصفات واضحة", "Clear specs"), line: L("القدرة ونوع المنفذ لكل منتج", "Wattage and port for every product") },
+      { title: L("تشكيلة متنوعة", "A full range"), line: L("شواحن وكابلات وباور بانك", "Chargers, cables and power banks") },
+      { title: L("تسوّق سهل", "Easy shopping"), line: L("اطلب بسهولة من هاتفك", "Order easily from your phone") },
+      { title: L("نجيب عن أسئلتك", "Here to help"), line: L("تواصل معنا لأي سؤال", "Contact us with any question") },
     ],
     newsletter: {
-      title: L("اعرف الجديد أول بأول", "Hear about new arrivals"),
-      line: L("هنبعتلك لما ينزل شاحن أو كابل جديد بس.", "We only write when a new charger or cable arrives."),
+      title: L("تعرّف على الجديد أولًا بأول", "Hear about new arrivals"),
+      line: L("نراسلك فقط عند وصول شاحن أو كابل جديد.", "We only write when a new charger or cable arrives."),
     },
     // `kabl`: the three contact cards. `points.0` is where the shop is, `points.1` why to come.
     help: {
-      title: L("مش عارف أنهي شاحن يناسبك؟", "Not sure which charger fits?"),
-      line: L("ابعتلنا موديل موبايلك على واتساب", "Send us your phone model on WhatsApp"),
-      points: [L("المهندسين، الجيزة", "Mohandessin, Giza"), L("جرّب الشاحن على موبايلك قبل ما تشتري", "Try a charger on your phone before you buy")],
+      title: L("لا تعرف أي شاحن يناسبك؟", "Not sure which charger fits?"),
+      line: L("تواصل معنا واذكر طراز هاتفك", "Contact us with your phone model"),
+      points: [L("نوع المنفذ وقدرة الشحن في صفحة كل منتج", "Port and wattage on every product page"), L("شواحن USB-C وLightning ولاسلكية", "USB-C, Lightning and wireless chargers")],
     },
     // `kabl`: four tiles of two or three words, each to a catalog search, over a row of the newest products.
     finder: {
-      title: L("بتشحن فين أكتر؟", "Where do you charge most?"),
-      line: L("اختار المكان ونوريك اللي يناسبه.", "Pick the place and we show you what fits it."),
+      title: L("أين تشحن أكثر؟", "Where do you charge most?"),
+      line: L("اختر المكان لترى ما يناسبه.", "Pick the place and we show you what fits it."),
       options: [
-        { label: L("في البيت", "At home"), href: search("شاحن") },
-        { label: L("في المشوار", "On the go"), href: search("باور بانك") },
-        { label: L("في العربية", "In the car"), href: search("عربية") },
+        { label: L("في المنزل", "At home"), href: search("شاحن") },
+        { label: L("أثناء التنقل", "On the go"), href: search("باور بانك") },
+        { label: L("في السيارة", "In the car"), href: search("عربية") },
         { label: L("على المكتب", "At the desk"), href: search("ستاند") },
       ],
     },
-    footer: { line: L("شواحن وكابلات تشحن صح.", "Chargers and cables that charge right.") },
+    footer: { line: L("شواحن وكابلات وباور بانك.", "Chargers, cables and power banks.") },
     about: {
-      line: L("محل شواحن صغير بيختار كل قطعة بيبيعها.", "A small charging shop that picks every piece it sells."),
-      alt: L("شاحن أبيض وكابل مضفّر وباور بانك على رخامة", "A white charger, a braided cable and a power bank on marble"),
+      line: L("متجر للشواحن والكابلات، نختار كل قطعة بعناية.", "A charging shop that picks every piece with care."),
+      alt: L("شاحن أبيض وكابل مضفّر وباور بانك على رخام", "A white charger, a braided cable and a power bank on marble"),
       eyebrow: L("حكايتنا", "Our story"),
-      title: L("زهقنا من الشاحن اللي بيبوظ بسرعة", "Tired of chargers that give up fast"),
+      title: L("شواحن وكابلات مختارة", "Chosen chargers and cables"),
       text: L(
-        "بدأنا لأن كل شوية كان عندنا كابل بيقطع أو شاحن بيسخن. دلوقتي بنجرّب كل حاجة بنفسنا، وبنبيع بس اللي يعجبنا.",
-        "We started because a cable kept fraying or a charger kept running hot. Now we try everything ourselves and only sell what we like.",
+        "فيشة متجر للشواحن والكابلات والباور بانك والشواحن اللاسلكية، ونذكر مواصفات كل قطعة في صفحتها.",
+        "Fisha sells chargers, cables, power banks and wireless chargers, with each piece's specs on its page.",
       ),
-      more: L("ولو محتار، ابعتلنا موديل موبايلك ونقولك تاخد إيه.", "Not sure? Send us your phone model and we tell you what to get."),
+      more: L("ولأي سؤال عن التوافق مع هاتفك، تواصل معنا.", "For any question about what works with your phone, contact us."),
       // `kabl`: to the first header link (chargers); `volt`: to the best sellers. Fits both.
       cta: L("ابدأ التسوق", "Start shopping"),
     },
     contact: {
-      title: L("كلّمنا", "Talk to us"),
-      line: L("قولنا موبايلك إيه وبتشحن فين، ونرشّحلك الشاحن أو الكابل المناسب.", "Tell us your phone and where you charge, and we suggest the right charger or cable."),
+      title: L("تواصل معنا", "Contact us"),
+      line: L("اسألنا عن الشاحن أو الكابل المناسب لهاتفك.", "Ask us about the right charger or cable for your phone."),
       heading: L("اسأل عن شاحن أو كابل", "Ask about a charger or cable"),
     },
     faq: {
-      line: L("التوافق والتوصيل والاستبدال.", "Compatibility, delivery and exchanges."),
-      question: L("إزاي أعرف الشاحن ده يناسب موبايلي؟", "How do I know a charger fits my phone?"),
+      line: L("التوافق والمواصفات وطريقة الطلب.", "Compatibility, specs and ordering."),
+      question: L("كيف أعرف أن الشاحن يناسب هاتفي؟", "How do I know a charger fits my phone?"),
       answer: L(
-        "بص على نوع المدخل في موبايلك (USB-C أو لايتنينج)، ولو مش متأكد ابعتلنا الموديل وإحنا نقولك.",
-        "Check your phone's port (USB-C or Lightning). If you are not sure, send us the model and we will tell you.",
+        "تحقق من نوع المنفذ في هاتفك (USB-C أو Lightning)، وإذا لم تكن متأكدًا تواصل معنا واذكر الطراز.",
+        "Check your phone's port (USB-C or Lightning). If you are not sure, contact us with the model.",
       ),
     },
     custom: {
       // `volt`: the hero's giant word behind the first featured product, one short word.
       "hero-word": L("شحن", "CHARGE"),
       // `volt`: the comparison's second row, a promise other shops make too.
-      "compare-row-2": L("ضمان على كل قطعة", "A warranty on every piece"),
+      "compare-row-2": L("مواصفات واضحة لكل قطعة", "Clear specs for every piece"),
     },
   },
-  productPage: { copy: { reviews: L("رأي اللي جرّبوه", "From people who use it"), related: L("يكمّل معاه", "Pairs well with") } },
+  productPage: { copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("يُستخدم معه", "Pairs well with") } },
 };

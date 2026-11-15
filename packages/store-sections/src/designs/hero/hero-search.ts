@@ -28,7 +28,7 @@ export const heroSearch = defineDesign({
           [
             t.stack(
               [
-                t.heading(L("بتدور على إيه النهارده؟", "What are you looking for today?"), "h1", {
+                t.heading(L("عمّ تبحث اليوم؟", "What are you looking for today?"), "h1", {
                   role: "title",
                   style: {
                     fontSize: "display-md",

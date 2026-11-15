@@ -11,9 +11,9 @@ import { CHANNELS } from "./_shared";
 const DAYS = [
   { day: L("السبت", "Saturday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
   { day: L("الأحد", "Sunday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
-  { day: L("الاتنين", "Monday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
-  { day: L("التلات", "Tuesday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
-  { day: L("الأربع", "Wednesday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
+  { day: L("الاثنين", "Monday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
+  { day: L("الثلاثاء", "Tuesday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
+  { day: L("الأربعاء", "Wednesday"), hours: L("١٠ ص – ١٠ م", "10am – 10pm") },
   { day: L("الخميس", "Thursday"), hours: L("١٠ ص – ١١ م", "10am – 11pm") },
   { day: L("الجمعة", "Friday"), hours: L("٢ م – ١٠ م", "2pm – 10pm") },
 ];
@@ -34,7 +34,7 @@ export const contactHours = defineDesign({
             [
               t.stack(
                 [
-                  dotLabel(t, L("زورنا", "Visit")),
+                  dotLabel(t, L("تفضّل بزيارتنا", "Visit")),
                   t.heading(L("المواعيد والعنوان", "Hours and address"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
@@ -90,7 +90,7 @@ export const contactHours = defineDesign({
                           }),
                           ...(today
                             ? [
-                                t.badge(L("النهارده", "Today"), {
+                                t.badge(L("اليوم", "Today"), {
                                   style: {
                                     background: "accent",
                                     color: "foreground",

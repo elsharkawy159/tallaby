@@ -29,10 +29,10 @@ export const aboutInset = defineDesign({
               [
                 t.stack(
                   [
-                    dotLabel(t, L("إزاي بنشتغل", "How we work"), {
+                    dotLabel(t, L("كيف نعمل", "How we work"), {
                       onBrand: true,
                     }),
-                    t.heading(L("كل منتج بيتراجع قبل ما يوصلك", "Every product is checked before it reaches you"), "h2", {
+                    t.heading(L("تفاصيل واضحة لكل منتج", "Clear details for every product"), "h2", {
                       role: "title",
                       style: {
                         fontSize: "display-sm",
@@ -40,11 +40,11 @@ export const aboutInset = defineDesign({
                         ...ON_BRAND,
                       },
                     }),
-                    t.paragraph(L("فريقنا بيراجع كل منتج ويتأكد منه قبل التغليف.", "Our team checks every product before packing."), {
+                    t.paragraph(L("نعرض لكل منتج صورًا ومواصفات ومقاسات واضحة.", "Every product comes with photos, specs and clear sizes."), {
                       role: "body",
                       style: ON_BRAND_BODY,
                     }),
-                    pillButton(t, L("اعرف أكتر", "Learn more"), "/about", {
+                    pillButton(t, L("اعرف أكثر", "Learn more"), "/about", {
                       tone: "ink",
                     }),
                   ],

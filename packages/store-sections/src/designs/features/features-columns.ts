@@ -9,9 +9,9 @@ import { L } from "../_kit";
 import { centeredHead } from "../_centered";
 
 const COLUMNS = [
-  { icon: "truck", title: L("توصيل سريع", "Fast delivery"), text: L("من يوم لـ ٤ أيام لكل المحافظات، وتتبّع طلبك خطوة بخطوة.", "One to four days to every governorate, with tracking at every step.") },
-  { icon: "shield", title: L("جودة مضمونة", "Best quality"), text: L("كل منتج بيتراجع قبل ما يتغلف، ومعاه ضمان.", "Every product is checked before it is packed, and comes with a warranty.") },
-  { icon: "rotate", title: L("استرجاع سهل", "Easy returns"), text: L("١٤ يوم تغيّر فيهم رأيك من غير أسئلة كتير.", "Fourteen days to change your mind, no fuss.") },
+  { icon: "truck", title: L("الشحن", "Shipping"), text: L("تظهر تكلفة الشحن ومدته عند إتمام الطلب.", "Shipping cost and time are shown at checkout.") },
+  { icon: "shield", title: L("منتجات مختارة", "Chosen products"), text: L("نختار كل منتج بعناية ونعرض مواصفاته كاملة.", "Every product is chosen with care, with full specs.") },
+  { icon: "rotate", title: L("الاستبدال والاسترجاع", "Exchanges and returns"), text: L("التفاصيل في صفحة السياسات.", "Details on the policy page.") },
 ] as const;
 
 export const featuresColumns = defineDesign({
@@ -29,9 +29,9 @@ export const featuresColumns = defineDesign({
           t.stack(
             [
               centeredHead(t, {
-                eyebrow: L("ليه تشتري مننا", "Why shop with us"),
-                title: L("بنوفّر لك منتجات بجودة عالية", "We provide high quality goods"),
-                subtitle: L("التفاصيل اللي بتفرق في كل طلب.", "The details that make a difference in every order."),
+                eyebrow: L("لماذا تشتري منا", "Why shop with us"),
+                title: L("منتجات مختارة بعناية", "Carefully chosen products"),
+                subtitle: L("التفاصيل التي تصنع الفرق في كل طلب.", "The details that make a difference in every order."),
               }),
               t.grid(
                 COLUMNS.map((c) =>

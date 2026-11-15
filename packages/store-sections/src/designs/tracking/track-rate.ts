@@ -58,7 +58,7 @@ export const trackRate = defineDesign({
               }),
               t.paragraph(
                 L(
-                  "التجربة كانت عاملة إزاي؟ رأيك بيفرق معانا.",
+                  "كيف كانت تجربتك؟ رأيك يهمنا.",
                   "How was everything? Your opinion helps us.",
                 ),
                 {

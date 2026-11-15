@@ -52,9 +52,9 @@ const NAME = L("فرفوش", "Farfoosh");
 
 const header = lib("header-centered-ticker", {
   text: {
-    "توصيل لكل محافظات مصر": L("توصيل خلال ٤٨ ساعة في القاهرة والجيزة", "48-hour delivery in Cairo and Giza"),
-    "الدفع عند الاستلام": L("ادفع عند الاستلام", "Pay on delivery"),
-    "استبدال سهل خلال ١٤ يوم": L("تتبّع طلبك من صفحة طلباتي", "Track your order from My orders"),
+    "تفاصيل ومقاسات واضحة لكل منتج": L("ألعاب خشب وقطيفة ومكعبات", "Wooden toys, plush and blocks"),
+    "الدفع عند الاستلام": L("العمر المناسب لكل لعبة", "The right age for every toy"),
+    "تسوّق سهل من هاتفك": L("تتبّع طلبك من صفحة طلباتي", "Track your order from My orders"),
     "اسم متجرك": NAME,
     "المتجر": L("الألعاب", "Toys"),
     "العروض": L("الجديد", "New"),
@@ -69,7 +69,7 @@ const footer = lib("footer-help", {
   text: {
     "واتساب": L("واتساب", "WhatsApp"),
     "٠١٠٠ ١٢٣ ٤٥٦٧": L(phone("٠١٠٩ ٥٥٢ ٨١٤٠"), "+20 109 552 8140"),
-    "اتصل": L("اتصل بينا", "Call us"),
+    "اتصل": L("اتصل بنا", "Call us"),
     "تتبع طلبك": L("تتبّع طلبك", "Track your order"),
     "برقم الطلب": L("من صفحة طلباتي", "From My orders"),
     "اسم متجرك": NAME,
@@ -93,28 +93,28 @@ const home: Design[] = [
     text: {
       "صورة الحملة الأولى": L("أفيال خشب على قوس قزح ملون", "Wooden elephants on a colourful rainbow stacker"),
       "وصل حديثًا": L("وصل حديثًا", "Just landed"),
-      "الموسم الجديد وصل": L("ألوان على قد الفرحة", "Big, bright fun"),
-      "قطع مختارة بعناية، وتوصيل لحد باب البيت.": L("ألعاب خشب وقطيفة ومكعبات بألوان تفرّح، توصلك خلال يومين.", "Happy-coloured toys, at your door in two days."),
+      "الموسم الجديد وصل": L("ألعاب بألوان مبهجة", "Bright, colourful toys"),
+      "قطع مختارة بعناية لكل يوم.": L("ألعاب خشب وقطيفة ومكعبات بألوان مبهجة.", "Wooden toys, plush and blocks in bright colours."),
       "تسوّق الجديد": L("الجديد", "New in"),
       "صورة الحملة الثانية": L("قطع ألعاب خشب ملونة", "Colourful wooden game pawns"),
       "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-      "المفضّلة عند عملائنا": L("الألعاب اللي الكل بيسأل عليها", "Everyone’s favourites"),
-      "القطع اللي بترجع لها كل مرة.": L("ألعاب بتعلّم وبتسلّي، والأطفال مش بيزهقوا منها.", "Toys that teach, and never get boring."),
-      "شوف الأكثر مبيعًا": L("الأشهر", "Popular"),
+      "المفضّلة عند عملائنا": L("الألعاب الأكثر طلبًا", "Everyone’s favourites"),
+      "القطع الأكثر طلبًا في المتجر.": L("ألعاب للتعلّم والتسلية.", "Toys for learning and fun."),
+      "تصفّح الأكثر مبيعًا": L("الأشهر", "Popular"),
       "صورة الحملة الثالثة": L("مسار كور خشب ملون", "A colourful wooden marble run"),
-      "عروض الأسبوع": L("ركن اللعب", "The play corner"),
-      "خصومات لفترة محدودة": L("جهّز ركن لعب كامل", "A whole play corner"),
-      "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": L("مكعبات، بازل، ألوان وعرايس، كله في طلب واحد.", "Blocks, puzzles and crayons in one order."),
-      "تسوّق العروض": L("كل الألعاب", "All toys"),
+      "مختارات الأسبوع": L("ركن اللعب", "The play corner"),
+      "قطع مختارة لهذا الأسبوع": L("جهّز ركن لعب كاملًا", "A whole play corner"),
+      "تشكيلة مختارة من أحدث القطع في المتجر.": L("مكعبات وبازل وألوان ودمى في مكان واحد.", "Blocks, puzzles, crayons and dolls in one place."),
+      "تسوّق المختارات": L("كل الألعاب", "All toys"),
     },
     links: { "/products": [NEW, BEST, SHOP] },
   }),
   lib("categories-circles", {
-    text: { "بتدوّر على إيه؟": L("عايز تلعب بإيه النهارده؟", "What shall we play today?") },
+    text: { "ما الذي تبحث عنه؟": L("بماذا تريد أن تلعب اليوم؟", "What shall we play today?") },
   }),
   lib("products-bento", {
     text: {
-      "الكل بيسأل عليهم": L("اختيارات فرفوش", "Farfoosh picks"),
+      "منتجات يكثر الطلب عليها": L("اختيارات فرفوش", "Farfoosh picks"),
       "عرض الكل": L("الكل", "All"),
     },
     links: { "/products": SHOP },
@@ -124,11 +124,11 @@ const home: Design[] = [
     person: [PHOTOS.playroom],
     text: {
       "صورة الفريق": L("ركن لعب بخشب فاتح وكور ورق ملونة", "A play corner with light wood and paper pompoms"),
-      "إحنا مين": L("من مدينة نصر", "From Nasr City"),
-      "فريق صغير بيحب اللي بيعمله": L("بنجرّب كل لعبة قبل ما تتباع", "We play with every toy before we sell it"),
-      "بنرد على كل رسالة بنفسنا، وبنختار كل منتج كأننا هنستخدمه.": L(
-        "+٢٠٠٠٠ طفل في مصر بيلعبوا بألعاب من فرفوش. بنختار ألعاب آمنة وملونة، وبنجربها مع ولادنا الأول.",
-        "20,000+ children across Egypt play with Farfoosh toys. We pick safe, colourful toys and try them with our own kids first.",
+      "من نحن": L("من نحن", "About us"),
+      "فريق يختار منتجات المتجر بعناية": L("ألعاب ملونة لكل عمر", "Colourful toys for every age"),
+      "نختار كل منتج كأنه لنا، ونوضّح تفاصيله ومقاساته.": L(
+        "نختار ألعابًا ملونة لكل عمر، ونوضّح تفاصيلها والعمر المناسب لها.",
+        "Colourful toys for every age, with their details and suitable age.",
       ),
       "قابل الفريق": L("اعرف حكايتنا", "Our story"),
     },
@@ -140,27 +140,27 @@ const home: Design[] = [
   }),
   lib("newsletter-strip", {
     text: {
-      "اعرف الجديد الأول": L("اعرف الألعاب الجديدة الأول", "Hear about new toys first"),
-      "المجموعات الجديدة والعروض الخاصة، مرة في الأسبوع.": L(
-        "ألعاب جديدة وأفكار لعب في البيت، مرة في الأسبوع.",
-        "New toys and play ideas for home, once a week.",
+      "اعرف الجديد أولًا": L("اعرف الألعاب الجديدة أولًا", "Hear about new toys first"),
+      "أحدث المجموعات في بريدك الإلكتروني.": L(
+        "ألعاب جديدة وأفكار للعب.",
+        "New toys and play ideas.",
       ),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن فرفوش", "About Farfoosh"), L("ألعاب بألوان تفرّح، من مدينة نصر لكل مصر.", "Toys in happy colours, from Nasr City to all of Egypt.")),
+  pageHeader(lib, "about-header", L("عن فرفوش", "About Farfoosh"), L("ألعاب بألوان مبهجة لكل عمر.", "Toys in bright colours for every age.")),
   aboutStory(lib, {
     photo: PHOTOS.crochetBasket,
-    alt: L("سلة مليانة عرايس كروشيه ملونة", "A basket of colourful crochet toys"),
-    eyebrow: L("من ٢٠١٧", "Since 2017"),
-    title: L("بدأنا بسلة عرايس كروشيه", "It started with a basket of crochet toys"),
+    alt: L("سلة مليئة بدمى كروشيه ملونة", "A basket of colourful crochet toys"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("ألعاب ملونة ومختارة", "Colourful, chosen toys"),
     text: L(
-      "أول طلبية كانت سلة عرايس كروشيه عملتها جدتنا، وخلصت في يوم. من ساعتها وإحنا بندوّر على ألعاب ملونة وآمنة تفرّح أي طفل.",
-      "Our first order was a basket of crochet toys our grandmother made, and it sold out in a day. Since then we have hunted for colourful, safe toys that make any child smile.",
+      "ألعاب خشب وقطيفة وكروشيه، وبازل ومكعبات وألوان، مع العمر المناسب لكل لعبة.",
+      "Wooden, plush and crochet toys, puzzles, blocks and crayons, with the right age for each.",
     ),
-    more: L("النهارده عندنا مخزن في مدينة نصر وبنوصل لكل محافظات مصر.", "Today we have a warehouse in Nasr City and deliver to every governorate in Egypt."),
+    more: L("تواصل معنا لأي سؤال عن ألعابنا.", "Contact us with any question about our toys."),
     button: L("تسوّق الأكثر مبيعًا", "Shop best sellers"),
     href: BEST,
   }),
@@ -168,41 +168,41 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("ألعاب بألوان تفرّح، من مدينة نصر لكل مصر.", "Toys in happy colours, from Nasr City to all of Egypt."),
+  description: L("ألعاب بألوان مبهجة لكل عمر.", "Toys in bright colours for every age."),
   categories: [
     ["wooden-toys", "ألعاب خشب", "Wooden toys", PHOTOS.catWooden],
-    ["plush-toys", "عرايس ودباديب", "Plush toys", PHOTOS.catPlush],
+    ["plush-toys", "دمى ودباديب", "Plush toys", PHOTOS.catPlush],
     ["puzzles-games", "بازل وألعاب ذكاء", "Puzzles & games", PHOTOS.catPuzzles],
     ["arts-crafts", "رسم وتلوين", "Arts & crafts", PHOTOS.catArts],
     ["building-blocks", "مكعبات وتركيب", "Building blocks", PHOTOS.catBlocks],
-    ["baby-nursery", "البيبي", "Baby", PHOTOS.catNursery],
+    ["baby-nursery", "الرضع", "Baby", PHOTOS.catNursery],
   ],
   products: [
     // Wooden toys
-    ["elephant-family", "wooden-toys", "عيلة أفيال خشب", "Wooden Elephant Family", P(6219057), 690, { rating: 4.9, sold90: 92 }],
+    ["elephant-family", "wooden-toys", "عائلة أفيال خشبية", "Wooden Elephant Family", P(6219057), 690, { rating: 4.9, sold90: 92 }],
     ["colour-tower", "wooden-toys", "برج تركيب ألوان وأشكال", "Colour and Shape Stacking Tower", P(33971311), 520, { rating: 4.8, sold90: 81 }],
     ["stacking-collection", "wooden-toys", "طقم ٣ ألعاب تركيب", "Stacking Toy Trio", P(33971335), 890, { compareAtPrice: 1050, rating: 4.7, sold90: 54 }],
     ["shape-sorter", "wooden-toys", "لعبة فرز الأشكال", "Wooden Shape Sorter", P(35579574), 460, { rating: 4.8, sold90: 63 }],
-    ["circle-puzzle-board", "wooden-toys", "لوحة أشكال خشب للصغيرين", "Toddler Shape Board", P(6692927), 390, { rating: 4.6, sold90: 38 }],
-    ["train-cars", "wooden-toys", "عربيات قطر خشب", "Wooden Train Cars", P(4887202), 650, { rating: 4.7, sold90: 45 }],
-    ["railway-bridge", "wooden-toys", "قطر بقضبان وكوبري", "Railway Set with Bridge", P(15250000), 1850, { rating: 4.9, sold90: 27 }],
+    ["circle-puzzle-board", "wooden-toys", "لوحة أشكال خشبية للصغار", "Toddler Shape Board", P(6692927), 390, { rating: 4.6, sold90: 38 }],
+    ["train-cars", "wooden-toys", "عربات قطار خشبية", "Wooden Train Cars", P(4887202), 650, { rating: 4.7, sold90: 45 }],
+    ["railway-bridge", "wooden-toys", "قطار بقضبان وجسر", "Railway Set with Bridge", P(15250000), 1850, { rating: 4.9, sold90: 27 }],
     ["xylophone-tractor", "wooden-toys", "إكسيليفون خشب مع جرار لعبة", "Wooden Xylophone with Toy Tractor", P(6743154), 690, { rating: 4.5, sold90: 49 }],
     // Plush toys
-    ["blue-owl", "plush-toys", "بومة قطيفة زرقا", "Blue Owl Plush", P(1364562), 380, { rating: 4.7, sold90: 58 }],
-    ["orange-crochet-cat", "plush-toys", "قطة كروشيه برتقالي", "Orange Crochet Cat", P(38707397), 450, { rating: 4.9, sold90: 47 }],
-    ["crochet-cat", "plush-toys", "قطة كروشيه بفيونكة حمرا", "Crochet Cat with Red Bow", P(38718818), 450, { rating: 4.8, sold90: 33 }],
-    ["striped-pup", "plush-toys", "كلبوب كروشيه مقلم", "Striped Crochet Pup", P(38718819), 420, { rating: 4.6, sold90: 29 }],
+    ["blue-owl", "plush-toys", "بومة قطيفة زرقاء", "Blue Owl Plush", P(1364562), 380, { rating: 4.7, sold90: 58 }],
+    ["orange-crochet-cat", "plush-toys", "قطة كروشيه برتقالية", "Orange Crochet Cat", P(38707397), 450, { rating: 4.9, sold90: 47 }],
+    ["crochet-cat", "plush-toys", "قطة كروشيه بعقدة حمراء", "Crochet Cat with Red Bow", P(38718818), 450, { rating: 4.8, sold90: 33 }],
+    ["striped-pup", "plush-toys", "جرو كروشيه مخطط", "Striped Crochet Pup", P(38718819), 420, { rating: 4.6, sold90: 29 }],
     ["crochet-sheep", "plush-toys", "خروف كروشيه", "Crochet Sheep", P(36779480), 480, { rating: 4.7, sold90: 24 }],
-    ["pink-crochet-bear", "plush-toys", "دبدوبة كروشيه بمبي", "Pink Crochet Bear", P(36619687), 520, { rating: 4.8, sold90: 31 }],
+    ["pink-crochet-bear", "plush-toys", "دبدوب كروشيه وردي", "Pink Crochet Bear", P(36619687), 520, { rating: 4.8, sold90: 31 }],
     ["white-bear", "plush-toys", "دبدوب أبيض كبير", "Big White Bear", P(6771365), 690, { compareAtPrice: 790, rating: 4.6, sold90: 42 }],
-    ["unicorn", "plush-toys", "يونيكورن قطيفة", "Unicorn Plush", P(4887163), 560, { rating: 4.9, sold90: 55, inStock: false }],
+    ["unicorn", "plush-toys", "حصان وحيد القرن من القطيفة", "Unicorn Plush", P(4887163), 560, { rating: 4.9, sold90: 55, inStock: false }],
     // Puzzles & games
-    ["classic-cube", "puzzles-games", "مكعب ألغاز كلاسيك", "Classic Puzzle Cube", P(19673918), 180, { rating: 4.7, sold90: 120 }],
+    ["classic-cube", "puzzles-games", "مكعب ألغاز كلاسيكي", "Classic Puzzle Cube", P(19673918), 180, { rating: 4.7, sold90: 120 }],
     ["meeple-set", "puzzles-games", "قطع لعب خشب ملونة ٦٠ قطعة", "Wooden Game Pieces, 60 Pieces", P(6990406), 240, { rating: 4.8, sold90: 74 }],
-    ["dice-pawns", "puzzles-games", "زهر وعساكر خشب كبيرة", "Big Wooden Dice and Pawns", P(34695098), 220, { rating: 4.6, sold90: 51 }],
-    ["shape-puzzle", "puzzles-games", "بازل أشكال خشب للصغيرين", "Toddler Wooden Shape Puzzle", P(6692950), 390, { compareAtPrice: 450, rating: 4.7, sold90: 36 }],
+    ["dice-pawns", "puzzles-games", "نرد وقطع لعب خشبية كبيرة", "Big Wooden Dice and Pawns", P(34695098), 220, { rating: 4.6, sold90: 51 }],
+    ["shape-puzzle", "puzzles-games", "بازل أشكال خشبي للصغار", "Toddler Wooden Shape Puzzle", P(6692950), 390, { compareAtPrice: 450, rating: 4.7, sold90: 36 }],
     ["colour-puzzle", "puzzles-games", "بازل ألوان ٥٠٠ قطعة", "Colour Jigsaw, 500 Pieces", P(9227217), 340, { rating: 4.8, sold90: 28 }],
-    ["games-set", "puzzles-games", "طقم ألعاب العيلة: زهر وأعواد", "Family Games Set: Dice and Pick-Up Sticks", P(5477844), 290, { rating: 4.6, sold90: 22 }],
+    ["games-set", "puzzles-games", "طقم ألعاب العائلة: نرد وأعواد", "Family Games Set: Dice and Pick-Up Sticks", P(5477844), 290, { rating: 4.6, sold90: 22 }],
     ["mixed-jigsaw", "puzzles-games", "بازل ألوان ١٠٠٠ قطعة", "Colour Jigsaw, 1,000 Pieces", P(5142463), 460, { rating: 4.7, sold90: 19 }],
     ["jigsaw-pile", "puzzles-games", "بازل أبيض وأسود", "Black and White Jigsaw", P(30708396), 380, { rating: 4.5, sold90: 14 }],
     // Arts & crafts
@@ -211,19 +211,19 @@ const DEMO = demoStore({
     ["pencil-star", "arts-crafts", "ألوان خشب ٢٤ لون", "Coloured Pencils, 24 Colours", P(3907094), 240, { rating: 4.7, sold90: 67 }],
     ["wax-crayons", "arts-crafts", "ألوان شمع قوس قزح", "Rainbow Wax Crayons", P(8605023), 140, { rating: 4.6, sold90: 73 }],
     ["crayon-tray", "arts-crafts", "صينية ألوان شمع ٤٨ لون", "Crayon Tray, 48 Colours", P(8593813), 320, { rating: 4.8, sold90: 41 }],
-    ["chunky-crayons", "arts-crafts", "ألوان شمع تخينة للصغيرين", "Chunky Toddler Crayons", P(9149206), 120, { rating: 4.7, sold90: 59 }],
+    ["chunky-crayons", "arts-crafts", "ألوان شمع سميكة للصغار", "Chunky Toddler Crayons", P(9149206), 120, { rating: 4.7, sold90: 59 }],
     ["yellow-crayons", "arts-crafts", "ألوان شمع ١٠ ألوان", "Wax Crayons, 10 Colours", P(2078147), 110, { rating: 4.5, sold90: 46 }],
     ["pencil-bundle", "arts-crafts", "حزمة ألوان خشب ٣٦ لون", "Pencil Bundle, 36 Colours", P(6978729), 290, { compareAtPrice: 340, rating: 4.7, sold90: 32 }],
     // Building blocks
     ["brick-box", "building-blocks", "علبة مكعبات تركيب ٥٠٠ قطعة", "Building Bricks Box, 500 Pieces", P(4491701), 1450, { isFeatured: true, rating: 4.8, sold90: 39 }],
     ["stacking-cylinders", "building-blocks", "أسطوانات تركيب خشب ملونة", "Colourful Wooden Stacking Cylinders", P(6188056), 650, { isFeatured: true, rating: 4.7, sold90: 31 }],
-    ["big-brick-mix", "building-blocks", "مكعبات كبيرة للصغيرين", "Big Bricks for Toddlers", P(4491711), 990, { isFeatured: true, rating: 4.9, sold90: 44 }],
+    ["big-brick-mix", "building-blocks", "مكعبات كبيرة للصغار", "Big Bricks for Toddlers", P(4491711), 990, { isFeatured: true, rating: 4.9, sold90: 44 }],
     ["pastel-blocks", "building-blocks", "مكعبات خشب باستيل", "Pastel Wooden Blocks", P(6693303), 590, { isFeatured: true, rating: 4.6, sold90: 25 }],
     // Baby
     ["cloud-mobile", "baby-nursery", "معلقة سرير سحاب", "Cloud Crib Mobile", P(11116578), 690, { rating: 4.8, sold90: 22 }],
-    ["bear-socks", "baby-nursery", "شرابات بيبي بدبدوب، جوز", "Bear Baby Socks, Two Pairs", P(14195487), 180, { rating: 4.6, sold90: 28 }],
+    ["bear-socks", "baby-nursery", "جوارب رضع بدبدوب، زوجان", "Bear Baby Socks, Two Pairs", P(14195487), 180, { rating: 4.6, sold90: 28 }],
     ["onesie-set", "baby-nursery", "٣ بودي قطن", "3 Cotton Bodysuits", P(17713240), 520, { isFeatured: true, rating: 4.9, sold90: 47 }],
-    ["pink-baby-shoes", "baby-nursery", "جزمة بيبي بمبي", "Pink Baby Shoes", P(792797), 380, { rating: 4.7, sold90: 19 }],
+    ["pink-baby-shoes", "baby-nursery", "حذاء رضع وردي", "Pink Baby Shoes", P(792797), 380, { rating: 4.7, sold90: 19 }],
   ],
 });
 
@@ -232,8 +232,8 @@ export const KIDS_BOLD = libraryTemplate({
   version: 1,
   name: L("فرفوش", "Farfoosh"),
   description: L(
-    "ألعاب بألوان جريئة: سلايدر بثلاث صور، أقسام دايرية، بينتو للأكثر مبيعًا وأربع صفوف منتجات. لمتاجر الألعاب اللي عايزة طاقة وبيع سريع.",
-    "Loud, colourful toys: a three-slide hero, round categories, a best-seller bento and four product rows. For toy shops that want energy and fast sales.",
+    "ألعاب بألوان جريئة: واجهة بثلاث صور، أقسام دائرية، شبكة للأكثر مبيعًا وأربعة صفوف منتجات. لمتاجر الألعاب التي تريد طاقة وحيوية.",
+    "Loud, colourful toys: a three-slide hero, round categories, a best-seller bento and four product rows. For toy shops that want energy.",
   ),
   category: "kids",
   style: ["bold", "playful"],
@@ -261,9 +261,9 @@ export const KIDS_BOLD = libraryTemplate({
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("كلمنا", "Talk to us"),
+        title: L("تواصل معنا", "Talk to us"),
         text: L("٣٢ شارع مكرم عبيد، مدينة نصر، القاهرة.", "32 Makram Ebeid St, Nasr City, Cairo."),
-        heading: L("محتار تجيب إيه؟ قولنا سن طفلك ونرشحلك", "Not sure what to get? Tell us your child’s age and we’ll suggest"),
+        heading: L("أخبرنا بعمر طفلك ونرشّح لك لعبة", "Tell us your child’s age and we’ll suggest a toy"),
       }),
     },
     {
@@ -271,11 +271,11 @@ export const KIDS_BOLD = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("التوصيل والاستبدال والهدايا.", "Delivery, exchanges and gifts."),
-        question: L("ينفع أبعت اللعبة هدية؟", "Can I send a toy as a gift?"),
+        text: L("الألعاب والأعمار والطلبات.", "Toys, ages and orders."),
+        question: L("هل يمكن إرسال اللعبة إلى عنوان آخر؟", "Can I send a toy to another address?"),
         answer: L(
-          "أكيد، اختار تغليف هدية واكتب رسالتك، وهنوصلها من غير الفاتورة. التوصيل في القاهرة والجيزة خلال ٤٨ ساعة.",
-          "Of course. Choose gift wrapping, write your message and we deliver it without the invoice. Cairo and Giza delivery takes 48 hours.",
+          "اكتب عنوان المستلم عند إتمام الطلب. تظهر تكلفة الشحن ومدته عند إتمام الطلب.",
+          "Enter the recipient's address at checkout. Shipping cost and time are shown at checkout.",
         ),
       }),
     },
@@ -286,6 +286,6 @@ export const KIDS_BOLD = libraryTemplate({
     surface: "card",
     band: "brand",
     extras: ["product-perks", "product-shipping"],
-    copy: { reviews: L("رأي الأهالي", "What parents say"), related: L("يلعب معاها", "Plays well with") },
+    copy: { reviews: L("آراء الأهل", "What parents say"), related: L("ألعاب قد تعجبك", "Plays well with") },
   },
 });

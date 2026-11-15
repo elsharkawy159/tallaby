@@ -40,7 +40,7 @@ export const heroBento = defineDesign({
                         maxWidth: "12ch",
                       },
                     }),
-                    t.paragraph(L("منتجات أصلية بضمان محلي، توصلك خلال ٤٨ ساعة.", "Genuine products with local warranty, delivered in 48 hours."), {
+                    t.paragraph(L("منتجات مختارة بمواصفات واضحة لكل يوم.", "Chosen products with clear specs, for every day."), {
                       role: "subtitle",
                       style: { fontSize: "lg", maxWidth: "40ch" },
                     }),
@@ -126,7 +126,7 @@ export const heroBento = defineDesign({
                           mobile: { fontSize: "5xl" },
                         }),
                         stars(t),
-                        t.text(L("من ١٢ ألف تقييم", "from 12K reviews"), {
+                        t.text(L("تقييم العملاء", "customer rating"), {
                           style: { fontSize: "sm", ...ON_BRAND_BODY },
                         }),
                       ],

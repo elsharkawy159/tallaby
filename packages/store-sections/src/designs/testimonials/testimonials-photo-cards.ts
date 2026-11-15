@@ -34,7 +34,7 @@ export const testimonialsPhotoCards = defineDesign({
         [
           t.stack(
             [
-              t.heading(L("عملاؤنا بيقولوا إيه", "What our customers say"), "h2", {
+              t.heading(L("ماذا يقول عملاؤنا", "What our customers say"), "h2", {
                 role: "title",
                 style: { fontSize: "display-md", fontWeight: "bold", lineHeight: "tight", textAlign: "center", ...ON_BRAND },
                 mobile: { fontSize: "3xl" },

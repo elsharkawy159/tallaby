@@ -10,9 +10,9 @@ import { FLUSH } from "../_modular";
 import { SHIPPING_LINK } from "./_shared";
 
 const STOPS = [
-  { time: L("٢:٠٠ م", "2:00 pm"), label: L("بتطلب النهارده", "You order today") },
-  { time: L("٦:٠٠ م", "6:00 pm"), label: L("بيتشحن", "It ships") },
-  { time: L("بكره", "Tomorrow"), label: L("بيوصلك", "It arrives") },
+  { time: L("٢:٠٠ م", "2:00 pm"), label: L("تطلب اليوم", "You order today") },
+  { time: L("٦:٠٠ م", "6:00 pm"), label: L("يُشحن", "It ships") },
+  { time: L("غدًا", "Tomorrow"), label: L("يصلك", "It arrives") },
 ];
 
 export const payPromise = defineDesign({
@@ -29,7 +29,7 @@ export const payPromise = defineDesign({
         [
           t.grid(
             [
-              t.heading(L("اطلب قبل ٢ الضهر، يوصلك بكره", "Order by 2 pm, get it tomorrow"), "h2", {
+              t.heading(L("اطلب قبل ٢ ظهرًا ليصلك غدًا", "Order by 2 pm, get it tomorrow"), "h2", {
                 role: "title",
                 style: { fontSize: "display-lg", letterSpacing: "tight", lineHeight: "tight", ...ON_BRAND },
               }),

@@ -25,7 +25,7 @@ export const productsRail = defineDesign({
       t.container(
         [
           productsHead(t, {
-            eyebrow: L("بيحبوها", "Loved by customers"),
+            eyebrow: L("المفضلة لدى العملاء", "Loved by customers"),
             title: L("الأكثر مبيعًا", "Best sellers"),
             link: { href: SHOP_LINK },
           }),

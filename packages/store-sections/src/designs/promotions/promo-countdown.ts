@@ -38,7 +38,7 @@ export const promoCountdown = defineDesign({
               t.stack(
                 [
                   t.text(L("لفترة محدودة", "Limited time"), { role: "eyebrow", style: { color: "white", fontWeight: "semibold", opacity: 90 } }),
-                  t.heading(L("عرض الويك إند على الفساتين", "The weekend offer on dresses"), "h2", {
+                  t.heading(L("عرض نهاية الأسبوع", "The weekend offer"), "h2", {
                     role: "title",
                     style: { color: "white", fontSize: "display-md", fontWeight: "bold", lineHeight: "tight", textAlign: "center" },
                   }),

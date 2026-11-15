@@ -20,7 +20,7 @@ export const contactBig = defineDesign({
     t.section({ label: L("تواصل معنا", "Contact") }, [
       t.container(
         [
-          t.heading(L("قول أهلًا", "Say hello"), "h2", {
+          t.heading(L("قل مرحبًا", "Say hello"), "h2", {
             role: "title",
             style: {
               fontSize: "display-sm",

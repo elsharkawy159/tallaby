@@ -19,7 +19,7 @@ export const blogIndex = defineDesign({
     t.section({ label: L("المدونة", "Blog") }, [
       t.container(
         [
-          sectionHead(t, { title: L("اقرأ عندنا", "Read with us"), link: { href: BLOG_LINK, text: L("كل المقالات", "All articles") } }),
+          sectionHead(t, { title: L("اقرأ معنا", "Read with us"), link: { href: BLOG_LINK, text: L("كل المقالات", "All articles") } }),
           t.postList(
             [
               t.link(

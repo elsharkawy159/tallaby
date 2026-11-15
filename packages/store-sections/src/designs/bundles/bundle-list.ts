@@ -11,10 +11,10 @@ import { FLUSH, modHead } from "../_modular";
 import { BUNDLE_LINK } from "./_shared";
 
 const KITS = [
-  { name: L("طقم المشاوير", "Commuter kit"), price: L("١٬٢٧٠ ج.م", "EGP 1,270"), was: L("بدل ١٬٤٩٠ ج.م", "Instead of EGP 1,490") },
-  { name: L("طقم الجيم", "Gym kit"), price: L("٩٥٠ ج.م", "EGP 950"), was: L("بدل ١٬١٢٠ ج.م", "Instead of EGP 1,120") },
-  { name: L("طقم البيت", "Home kit"), price: L("١٬٨٠٠ ج.م", "EGP 1,800"), was: L("بدل ٢٬١٢٠ ج.م", "Instead of EGP 2,120") },
-  { name: L("طقم العربية", "Car kit"), price: L("٧٤٠ ج.م", "EGP 740"), was: L("بدل ٨٧٠ ج.م", "Instead of EGP 870") },
+  { name: L("طقم التنقل", "Commuter kit"), price: L("١٬٢٧٠ ج.م", "EGP 1,270"), was: L("بدلًا من ١٬٤٩٠ ج.م", "Instead of EGP 1,490") },
+  { name: L("طقم الرياضة", "Sports kit"), price: L("٩٥٠ ج.م", "EGP 950"), was: L("بدلًا من ١٬١٢٠ ج.م", "Instead of EGP 1,120") },
+  { name: L("طقم البيت", "Home kit"), price: L("١٬٨٠٠ ج.م", "EGP 1,800"), was: L("بدلًا من ٢٬١٢٠ ج.م", "Instead of EGP 2,120") },
+  { name: L("طقم السيارة", "Car kit"), price: L("٧٤٠ ج.م", "EGP 740"), was: L("بدلًا من ٨٧٠ ج.م", "Instead of EGP 870") },
 ];
 
 export const bundleList = defineDesign({

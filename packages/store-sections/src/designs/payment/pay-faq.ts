@@ -11,18 +11,18 @@ import { payTitle } from "./_shared";
 
 const QUESTIONS = [
   {
-    title: L("ينفع أدفع كاش؟", "Can I pay cash?"),
-    body: L("أيوه، كاش للمندوب بعد ما تفتح الطلب وتتأكد منه.", "Yes, cash to the courier after you open and check the order."),
+    title: L("هل يمكنني الدفع نقدًا؟", "Can I pay cash?"),
+    body: L("نعم، نقدًا للمندوب بعد فتح الطلب والتأكد منه.", "Yes, cash to the courier after you open and check the order."),
   },
   {
-    title: L("التقسيط محتاج مقدم؟", "Do installments need a down payment?"),
-    body: L("لأ، مع فاليو وسيمبل من غير مقدم لحد ٢٤ شهر.", "No, valU and Sympl need no down payment up to 24 months."),
+    title: L("هل يحتاج التقسيط إلى مقدّم؟", "Do installments need a down payment?"),
+    body: L("لا، مع فاليو وسيمبل بدون مقدّم حتى ٢٤ شهرًا.", "No, valU and Sympl need no down payment up to 24 months."),
   },
   {
-    title: L("إمتى الفلوس ترجع لو رجّعت المنتج؟", "When is my refund paid?"),
+    title: L("متى يُرد المبلغ إذا أرجعت المنتج؟", "When is my refund paid?"),
     body: L("خلال ٣–٧ أيام عمل حسب طريقة الدفع.", "Within 3–7 working days depending on how you paid."),
   },
-  { title: L("في مصاريف على الدفع بالكارت؟", "Is there a card fee?"), body: L("لأ، مفيش أي مصاريف إضافية.", "No, there are no extra fees.") },
+  { title: L("هل توجد رسوم على الدفع بالبطاقة؟", "Is there a card fee?"), body: L("لا، لا توجد أي رسوم إضافية.", "No, there are no extra fees.") },
 ];
 
 export const payFaq = defineDesign({
@@ -50,7 +50,7 @@ export const payFaq = defineDesign({
                   t.row(
                     [
                       t.icon("chat", { style: { fontSize: "lg", color: "primary" } }),
-                      t.text(L("عندك سؤال تاني؟ كلمنا", "Another question? Message us"), { style: { fontWeight: "semibold" } }),
+                      t.text(L("لديك سؤال آخر؟ تواصل معنا", "Another question? Message us"), { style: { fontWeight: "semibold" } }),
                     ],
                     { label: L("نص الرابط", "Link text"), style: { gap: 8, wrap: false } },
                   ),

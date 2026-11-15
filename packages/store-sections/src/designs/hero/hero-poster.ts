@@ -22,7 +22,7 @@ export const heroPoster = defineDesign({
           t.row(
             [
               t.text(L("مجموعة الموسم", "The season drop"), { role: "eyebrow", style: { ...ON_BRAND, fontWeight: "semibold", letterSpacing: "wide" } }),
-              t.text(L("من ١ إلى ٣٠ نوفمبر", "1 – 30 November"), { style: { ...ON_BRAND, opacity: 80 } }),
+              t.text(L("وصل حديثًا", "New in"), { style: { ...ON_BRAND, opacity: 80 } }),
             ],
             {
               label: L("السطر العلوي", "Meta line"),
@@ -38,9 +38,9 @@ export const heroPoster = defineDesign({
               }),
               t.stack(
                 [
-                  t.text(L("خصم", "Up to"), { style: { fontWeight: "semibold", textAlign: "center" } }),
-                  t.heading(L("٣٠٪", "30%"), "h3", { style: { fontSize: "4xl", fontWeight: "extrabold", lineHeight: "tight", textAlign: "center" } }),
-                  t.text(L("لفترة محدودة", "off"), { style: { fontSize: "xs", textAlign: "center" } }),
+                  t.text(L("مجموعة", "The"), { style: { fontWeight: "semibold", textAlign: "center" } }),
+                  t.heading(L("٢٠٢٦", "2026"), "h3", { style: { fontSize: "4xl", fontWeight: "extrabold", lineHeight: "tight", textAlign: "center" } }),
+                  t.text(L("الجديدة", "collection"), { style: { fontSize: "xs", textAlign: "center" } }),
                 ],
                 {
                   label: L("الملصق", "Sticker"),
@@ -77,8 +77,8 @@ export const heroPoster = defineDesign({
                 [
                   t.paragraph(
                     L(
-                      "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.",
-                      "Light pieces in natural fabrics, full size range and free exchanges within 14 days.",
+                      "قطع خفيفة بخامات طبيعية ومقاسات كاملة.",
+                      "Light pieces in natural fabrics, in a full size range.",
                     ),
                     { role: "subtitle", style: ON_BRAND_BODY },
                   ),

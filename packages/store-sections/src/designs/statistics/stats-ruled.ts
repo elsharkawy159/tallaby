@@ -25,7 +25,7 @@ export const statsRuled = defineDesign({
               t.stack(
                 [
                   dotLabel(t, L("بالأرقام", "In numbers")),
-                  t.heading(L("ثمان سنين من الطلبات", "Eight years of orders"), "h2", {
+                  t.heading(L("ثماني سنوات من الطلبات", "Eight years of orders"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", letterSpacing: "tight" },
                   }),

@@ -21,10 +21,10 @@ import { PRODUCTS_SECTION } from "../products/_shared";
 
 /** Percent from the photo's left and top, with the note each dot opens. */
 const NOTES = [
-  { x: 28, y: 32, title: L("الخامة", "Material"), body: L("خامة متينة تستحمل الاستخدام اليومي.", "A durable material made for daily use.") },
-  { x: 66, y: 26, title: L("التشطيب", "Finish"), body: L("تشطيب نضيف في كل تفصيلة، من أول نظرة.", "A clean finish in every detail, from the first look.") },
+  { x: 28, y: 32, title: L("الخامة", "Material"), body: L("خامة متينة تتحمّل الاستخدام اليومي.", "A durable material made for daily use.") },
+  { x: 66, y: 26, title: L("التشطيب", "Finish"), body: L("تشطيب نظيف في كل تفصيلة.", "A clean finish in every detail.") },
   { x: 72, y: 68, title: L("المقاس", "Size"), body: L("مقاس عملي يناسب أغلب الاستخدامات.", "A practical size that suits most uses.") },
-  { x: 34, y: 74, title: L("العناية", "Care"), body: L("سهل التنضيف، ويفضل زي ما هو مع الوقت.", "Easy to clean, and it keeps its look over time.") },
+  { x: 34, y: 74, title: L("العناية", "Care"), body: L("سهل التنظيف، ويحافظ على شكله مع الوقت.", "Easy to clean, and it keeps its look over time.") },
 ] as const;
 
 export const aboutProductAnatomy = defineDesign({
@@ -46,8 +46,8 @@ export const aboutProductAnatomy = defineDesign({
             [
               editorialHead(t, {
                 eyebrow: L("التفاصيل", "The details"),
-                title: L("اللي بيفرق في كل جزء", "What matters in every part"),
-                subtitle: L("دوس على أي نقطة في الصورة وشوف تفاصيل الجزء ده.", "Tap any dot on the photo to read about that part."),
+                title: L("ما يميّز كل جزء", "What matters in every part"),
+                subtitle: L("اضغط على أي نقطة في الصورة لتقرأ تفاصيل هذا الجزء.", "Tap any dot on the photo to read about that part."),
                 align: "center",
               }),
               t.box(

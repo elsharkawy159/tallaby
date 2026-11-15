@@ -21,7 +21,7 @@ export const statsBigNumbers = defineDesign({
         [
           t.grid(
             [
-              t.heading(L("أرقامنا تتكلم عنا", "Numbers that speak"), "h2", {
+              t.heading(L("أرقامنا تتحدث عنا", "Numbers that speak"), "h2", {
                 role: "title",
                 style: { fontSize: "display-sm" },
                 tablet: { colSpan: 3 },

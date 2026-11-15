@@ -24,7 +24,7 @@ export const brandsCards = defineDesign({
         [
           modHead(t, {
             label: L("الماركات", "Brands"),
-            title: L("تسوق بالماركة", "Shop by brand"),
+            title: L("تسوّق حسب الماركة", "Shop by brand"),
             link: { text: L("كل الماركات", "All brands"), href: "/products" },
           }),
           t.grid(

@@ -45,13 +45,13 @@ const NAME = L("وادي أوتدور", "Wadi Outdoor");
 const BRANDS = ["Dune Works", "Siwa Trail", "Nomad Co.", "Red Sea Gear", "Sinai Peak", "Oasis", "Camel Pack"];
 
 const header = lib("header-brand-bar", {
-  text: { "م": L("و", "W"), "اسم متجرك": NAME, "ابحث في المتجر": L("ابحث عن خيمة، شنطة، كشاف…", "Search tents, packs, lamps…") },
+  text: { "م": L("و", "W"), "اسم متجرك": NAME, "ابحث في المتجر": L("ابحث عن خيمة، حقيبة، كشاف…", "Search tents, packs, lamps…") },
 });
 
 const footer = lib("footer-panel", {
   text: {
     "اسم متجرك": NAME,
-    "اشترك وخد العروض قبل أي حد.": L("مواعيد الرحلات وعروض الإيجار أول بأول.", "Trip dates and rental offers as they open."),
+    "اشترك ليصلك جديدنا أولًا.": L("اشترك ليصلك جديد معدات التخييم.", "Subscribe for new camping gear."),
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ وادي أوتدور. كل الحقوق محفوظة.", "© 2026 Wadi Outdoor. All rights reserved."),
     "العروض": L("الأعلى تقييماً", "Top rated"),
   },
@@ -62,27 +62,27 @@ const home: Design[] = [
   lib("hero-poster", {
     photo: [undefined, undefined, PHOTOS.desertCamp],
     text: {
-      "مجموعة الموسم": L("موسم الصحرا", "Desert season"),
-      "من ١ إلى ٣٠ نوفمبر": L("من أكتوبر لمارس", "October to March"),
-      "صورة الحملة": L("مخيم في الصحرا بالليل", "A desert camp at night"),
-      "خصم": L("إيجار من", "Rent from"),
-      "٣٠٪": L("٢٥٠", "250"),
-      "لفترة محدودة": L("ج.م لليلة", "EGP a night"),
-      "الموسم الجديد وصل": L("ليلة في الصحرا البيضا بأدواتنا", "A night in the White Desert with our gear"),
-      "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
-        "خيم وشنط نوم وكشافات، للشرا أو للإيجار، مجرّبة في الفرافرة.",
-        "Tents, sleeping bags and lamps to buy or rent, tested in Farafra.",
+      "مجموعة الموسم": L("موسم التخييم", "Camping season"),
+      "وصل حديثًا": L("معدات للصحراء والجبل", "Gear for desert and mountain"),
+      "صورة الحملة": L("مخيم في الصحراء ليلًا", "A desert camp at night"),
+      "مجموعة": L("مجموعة", "Collection"),
+      "٢٠٢٦": L("٢٠٢٦", "2026"),
+      "الجديدة": L("للتخييم", "for camping"),
+      "الموسم الجديد وصل": L("معدات التخييم والرحلات", "Camping and trip gear"),
+      "قطع خفيفة بخامات طبيعية ومقاسات كاملة.": L(
+        "خيام وأكياس نوم وكشافات وحقائب للرحلات.",
+        "Tents, sleeping bags, lamps and packs for trips.",
       ),
       "اكتشف المجموعة": L("جهّز رحلتك", "Gear up for the trip"),
     },
     links: { "/products": search("خيمة") },
   }),
-  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("على حسب رحلتك", "Shop by trip") } }),
-  lib("products-bento", { text: { "الكل بيسأل عليهم": L("اختيارات الرحلة", "Trail picks") }, links: { "/products": BEST } }),
+  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("حسب نوع الرحلة", "Shop by trip") } }),
+  lib("products-bento", { text: { "منتجات يكثر الطلب عليها": L("اختيارات الرحلة", "Trail picks") }, links: { "/products": BEST } }),
   lib("brands-bubbles", {
     name: L("ماركات المعدات", "Gear brands"),
     text: {
-      "ماركات بنحبها": L("ماركات بنثق فيها", "Brands we trust"),
+      "ماركات نحبها": L("علامات تجارية نثق بها", "Brands we trust"),
       "فولتا": BRANDS[0]!,
       "نورو": BRANDS[1]!,
       "كيان": BRANDS[2]!,
@@ -95,36 +95,36 @@ const home: Design[] = [
   }),
   lib("text-steps", {
     text: {
-      "إزاي ترجّع منتج": L("إزاي تأجّر معداتك", "How renting works"),
-      "ابعتلنا على واتساب": L("اختار المعدات", "Pick your gear"),
-      "خلال ١٤ يوم من الاستلام مع رقم الطلب.": L("خيمة، شنطة نوم، كشاف: ابعتلنا القائمة والتاريخ.", "Tent, sleeping bag, lamp: send us the list and dates."),
-      "جهّز المنتج": L("ادفع التأمين", "Pay the deposit"),
-      "في علبته الأصلية بكل الإكسسوارات.": L("تأمين بيرجعلك كامل لما المعدات ترجع سليمة.", "Refunded in full when the gear comes back sound."),
-      "المندوب يستلم": L("استلم قبل الرحلة", "Collect before the trip"),
-      "خلال يومين شغل من عنوانك.": L("من المحل أو توصيل لباب البيت يوم الخميس.", "From the shop, or delivered on Thursday."),
-      "فلوسك ترجع": L("رجّعها بعد الرحلة", "Return after the trip"),
-      "بنفس طريقة الدفع خلال ٥ أيام.": L("خلال يومين، ومن غير غسيل؛ إحنا بننضفها.", "Within two days, unwashed; we clean it."),
+      "كيف ترجع منتجًا": L("كيف تطلب معداتك", "How to order your gear"),
+      "راسلنا على واتساب": L("اختر المعدات", "Pick your gear"),
+      "خلال ١٤ يومًا من الاستلام مع رقم الطلب.": L("خيمة، كيس نوم، كشاف: أضفها إلى السلة.", "Tent, sleeping bag, lamp: add them to the cart."),
+      "جهّز المنتج": L("أكّد الطلب", "Confirm the order"),
+      "في علبته الأصلية بكل الإكسسوارات.": L("أدخل العنوان ورقم الهاتف.", "Enter your address and phone number."),
+      "يستلمه المندوب": L("استلم طلبك", "Receive your order"),
+      "من عنوانك خلال يومي عمل.": L("تظهر تكلفة الشحن ومدته عند إتمام الطلب.", "Shipping cost and time are shown at checkout."),
+      "استرداد المبلغ": L("جهّز رحلتك", "Plan your trip"),
+      "بطريقة الدفع نفسها خلال ٥ أيام.": L("راجع مواصفات كل منتج قبل الرحلة.", "Check each product's specs before the trip."),
     },
   }),
   lib("features-side-title", {
     text: {
-      "ليه الناس بترجع لنا تاني": L("ليه المخيمين بيرجعولنا", "Why campers come back"),
-      "أربع حاجات بنلتزم بيها في كل طلب.": L("أربع حاجات بنلتزم بيها في كل رحلة.", "Four things we stand by on every trip."),
-      "توصيل سريع": L("اتجربت في الصحرا", "Desert tested"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("كل خيمة بتبات ليلة في الفرافرة قبل ما تتباع", "Every tent spends a night in Farafra before we sell it"),
-      "الدفع عند الاستلام": L("اشتري أو أجّر", "Buy or rent"),
-      "أو ادفع بالبطاقة والمحفظة": L("أجّر لعطلة نهاية الأسبوع وجرّب قبل ما تشتري", "Rent for a weekend and try before you buy"),
-      "استرجاع سهل": L("صيانة مجانية", "Free repairs"),
-      "١٤ يومًا لتغيّر رأيك": L("سوست وخياطة أول سنة", "Zips and seams for the first year"),
-      "دعم على واتساب": L("مرشد على واتساب", "A guide on WhatsApp"),
-      "أشخاص حقيقيون طوال الأسبوع": L("نساعدك تخطط رحلتك قبل ما تشتري", "We help you plan the trip before you buy"),
+      "لماذا تتسوق معنا": L("لماذا تتسوق معنا", "Why shop with us"),
+      "أربعة أمور نهتم بها في كل طلب.": L("أربعة أمور تهمّنا في كل منتج.", "Four things we care about in every product."),
+      "الشحن": L("للصحراء والجبل", "For desert and mountain"),
+      "تظهر تكلفة الشحن ومدته عند إتمام الطلب": L("معدات مناسبة للرحلات البرية والتخييم", "Gear made for trips and camping"),
+      "الدفع عند الاستلام": L("مواصفات واضحة", "Clear specs"),
+      "أو بطرق الدفع المتاحة عند الطلب": L("الوزن والمقاس والخامة لكل منتج", "Weight, size and material for every product"),
+      "الاستبدال والاسترجاع": L("تشكيلة كاملة", "A full range"),
+      "التفاصيل في صفحة السياسات": L("خيام وحقائب وأدوات وأجهزة شحن", "Tents, packs, tools and power"),
+      "تواصل معنا": L("تواصل معنا", "Contact us"),
+      "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن منتج", "With any question about a product"),
     },
   }),
   lib("brands-quotes", {
     text: {
-      "«واحد من أكتر المتاجر اللي ممكن تثق فيها لو بتدور على منتج أصلي.»": L(
-        "«المكان اللي بتروحله قبل أي رحلة صحرا: أدوات مجرّبة ونصيحة بجد.»",
-        "“The place to go before any desert trip: tested gear and honest advice.”",
+      "«من أكثر المتاجر الموثوقة للتسوق عبر الإنترنت.»": L(
+        "«تشكيلة واضحة من معدات التخييم والرحلات.»",
+        "“A clear range of camping and trip gear.”",
       ),
       "ساحل": "Rahhala",
       "أوربت": "Sahraa Mag",
@@ -133,21 +133,21 @@ const home: Design[] = [
   }),
   lib("newsletter-big", {
     text: {
-      "خد ١٠٪ خصم على أول طلب": L("أخبار الرحلات والمعدات الجديدة أول بأول", "Trip news and new gear, first"),
-      "عروض للمشتركين بس، مرة في الأسبوع.": L("ومواعيد الرحلات الجماعية قبل ما تتقفل.", "Plus group trip dates before they fill up."),
+      "اشترك في نشرتنا البريدية": L("جديد معدات التخييم", "New camping gear"),
+      "كن أول من يعرف بالمنتجات الجديدة.": L("اشترك ليصلك جديد المعدات.", "Subscribe for new gear."),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن وادي", "About Wadi"), L("محل رحلات ومعدات تخييم في المعادي.", "A trips and camping gear shop in Maadi.")),
+  pageHeader(lib, "about-header", L("عن وادي", "About Wadi"), L("معدات تخييم ورحلات للصحراء والجبل.", "Camping and trip gear for desert and mountain.")),
   aboutStory(lib, {
     photo: PHOTOS.canyonTents,
     alt: L("خيم في وادي صخري", "Tents in a rocky canyon"),
-    eyebrow: L("المعادي", "Maadi"),
-    title: L("بدأنا مرشدين رحلات", "We started as trip guides"),
-    text: L("عشر سنين بنطلع سيوة وسانت كاترين والصحرا البيضا، وكل حاجة في المحل جربناها هناك.", "Ten years of trips to Siwa, St Catherine and the White Desert, and we used everything in the shop out there."),
-    more: L("وأي معدات ممكن تأجّرها قبل ما تشتري.", "And you can rent any gear before you buy it."),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("معدات للرحلات البرية", "Gear for the outdoors"),
+    text: L("نختار خيامًا وحقائب وأدوات تتحمّل الرحلات، ونعرض مواصفات كل منتج بوضوح.", "We pick tents, packs and tools made for trips, with clear specs for every product."),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
     button: L("تسوق المعدات", "Shop gear"),
     href: SHOP,
   }),
@@ -158,20 +158,20 @@ const DEMO = demoStore({
   description: L("معدات تخييم ورحلات للصحرا والجبل.", "Camping and trip gear for the desert and the mountains."),
   categories: [
     ["tents", "خيم ومخيم", "Tents & camp", PHOTOS.whiteSandTent],
-    ["packs", "شنط", "Packs", PHOTOS.packOnRock],
+    ["packs", "حقائب", "Packs", PHOTOS.packOnRock],
     ["trail", "أدوات الرحلة", "Trail kit", PHOTOS.flatLay],
-    ["water", "مية وزمزميات", "Water & bottles", PHOTOS.bottle],
+    ["water", "المياه والزمزميات", "Water & bottles", PHOTOS.bottle],
     ["power", "أجهزة وشحن", "Devices & power", PHOTOS.powerBank],
   ],
   products: [
     ["dome-tent-3p", "tents", "خيمة قبة ٣ أفراد", "Dome Tent, 3 Person", PHOTOS.whiteSandTent, 4200, { isFeatured: true, rating: 4.8, sold90: 74 }],
     ["canyon-tent-2p", "tents", "خيمة خفيفة لفردين", "Light Tent, 2 Person", PHOTOS.canyonTentsSmall, 3100, { sold90: 58 }],
-    ["desert-camp-kit", "tents", "باقة مخيم الصحرا", "Desert Camp Kit", PHOTOS.desertCampSmall, 8900, { compareAtPrice: 9900, isFeatured: true, sold90: 21 }],
-    ["trek-pack-45l", "packs", "شنطة ترِك ٤٥ لتر", "Trek Pack 45 L", PHOTOS.packOnRock, 2650, { rating: 4.7, sold90: 66 }],
-    ["canvas-daypack", "packs", "شنطة يوم كانفس", "Canvas Daypack", PHOTOS.daypack, 1350, { sold90: 90 }],
+    ["desert-camp-kit", "tents", "طقم مخيم الصحراء", "Desert Camp Kit", PHOTOS.desertCampSmall, 8900, { compareAtPrice: 9900, isFeatured: true, sold90: 21 }],
+    ["trek-pack-45l", "packs", "حقيبة ظهر ٤٥ لتر", "Trek Pack 45 L", PHOTOS.packOnRock, 2650, { rating: 4.7, sold90: 66 }],
+    ["canvas-daypack", "packs", "حقيبة يومية من قماش الكانفاس", "Canvas Daypack", PHOTOS.daypack, 1350, { sold90: 90 }],
     ["trail-essentials-set", "trail", "طقم أساسيات الرحلة", "Trail Essentials Set", PHOTOS.flatLay, 1150, { sold90: 102 }],
     ["insulated-bottle", "water", "زمزمية معزولة", "Insulated Bottle", PHOTOS.bottle, 420, { sold90: 160 }],
-    ["solar-power-bank", "power", "باور بانك للرحلات", "Trip Power Bank", PHOTOS.powerBank, 890, { compareAtPrice: 990, sold90: 70 }],
+    ["solar-power-bank", "power", "بطارية شحن متنقلة للرحلات", "Trip Power Bank", PHOTOS.powerBank, 890, { compareAtPrice: 990, sold90: 70 }],
     ["gps-trail-watch", "power", "ساعة GPS للرحلات", "GPS Trail Watch", PHOTOS.watch, 3650, { inStock: false, rating: 4.6, sold90: 28 }],
   ],
 });
@@ -182,8 +182,8 @@ export const BASECAMP = libraryTemplate({
   changelog: "Basecamp v4: categories, section order",
   name: L("بيس كامب", "Basecamp"),
   description: L(
-    "تخييم ورحلات: موسم الصحرا، ليه بيرجعولنا، الماركات وإزاي تأجّر. أربع صفحات جاهزة.",
-    "Camping and trips: a desert season poster, why campers come back, the brands and how renting works. Four ready pages.",
+    "تخييم ورحلات: موسم التخييم، ما يميزنا، العلامات التجارية وخطوات الطلب. أربع صفحات جاهزة.",
+    "Camping and trips: the season, why us, brands and how to order. Four ready pages.",
   ),
   category: "sports",
   style: ["warm"],
@@ -211,8 +211,8 @@ export const BASECAMP = libraryTemplate({
       seo: { title: L("خطط رحلتك", "Plan a trip") },
       sections: contactPage(lib, {
         title: L("خطط رحلتك", "Plan a trip"),
-        text: L("٩ شارع ٢٣١، المعادي.", "9 Road 231, Maadi."),
-        heading: L("قولنا رايح فين وهنقولك محتاج إيه", "Tell us where you are going and we tell you what you need"),
+        text: L("تواصل معنا لأي سؤال عن المعدات.", "Contact us with any question about gear."),
+        heading: L("أرسل سؤالك عن المعدات", "Send your question about gear"),
       }),
     },
     {
@@ -220,12 +220,12 @@ export const BASECAMP = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الإيجار والتأمين والتوصيل.", "Rentals, deposits and delivery."),
-        question: L("لو المعدات اتبهدلت في الرحلة؟", "What if the gear gets damaged on the trip?"),
-        answer: L("التلف العادي علينا. الكسر بنخصمه من التأمين بعد ما نوريك الصور.", "Normal wear is on us. Breakage comes out of the deposit after we show you photos."),
+        text: L("المعدات والمقاسات والطلب.", "Gear, sizes and ordering."),
+        question: L("كيف أختار الخيمة المناسبة؟", "How do I choose the right tent?"),
+        answer: L("راجع عدد الأفراد والوزن والمقاس في وصف كل خيمة.", "Check the capacity, weight and size in each tent's description."),
       }),
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء المخيّمين", "Campers' reviews"), related: L("جهّز رحلتك الجاية", "Gear for your next trip") } },
+  productPage: { surface: "shelf", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء المخيّمين", "Campers' reviews"), related: L("معدات أخرى لرحلتك", "More gear for your trip") } },
 });

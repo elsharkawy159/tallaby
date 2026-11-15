@@ -30,8 +30,8 @@ export const newsletterLetter = defineDesign({
                   }),
                   t.paragraph(
                     L(
-                      "كل خميس بكتب رسالة قصيرة فيها أحسن حاجة جربناها الأسبوع ده، وعرض للمشتركين بس.",
-                      "Every Thursday I write a short note with the best thing we tried that week and a subscriber-only offer.",
+                      "نكتب رسالة قصيرة عن أحدث المنتجات في المتجر.",
+                      "We write a short note about the newest products in the store.",
                     ),
                     {
                       role: "body",

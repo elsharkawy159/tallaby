@@ -20,9 +20,9 @@ import {
 } from "../products/_shared";
 
 const REASONS = [
-  L("أحسن عزل ضوضاء في الفئة", "Best noise cancelling in its class"),
+  L("عزل ضوضاء قوي", "Strong noise cancelling"),
   L("بطارية ٣٠ ساعة", "30-hour battery"),
-  L("ضمان سنتين", "2-year warranty"),
+  L("تصميم خفيف", "Lightweight design"),
 ];
 
 function runnerUp(
@@ -97,7 +97,7 @@ export const finderPick = defineDesign({
       t.container(
         [
           sectionHead(t, {
-            title: L("لو هتشتري واحدة بس", "If you buy just one"),
+            title: L("إن كنت ستشتري واحدة فقط", "If you buy just one"),
           }),
           t.grid(
             [
@@ -245,7 +245,7 @@ export const finderPick = defineDesign({
               ),
               t.grid(
                 [
-                  runnerUp(t, L("أوفر اختيار", "Best value"), 1),
+                  runnerUp(t, L("الأوفر سعرًا", "Best value"), 1),
                   runnerUp(t, L("الأفخم", "Premium"), 2),
                 ],
                 {

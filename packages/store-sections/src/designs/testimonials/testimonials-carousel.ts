@@ -55,12 +55,12 @@ export const testimonialsCarousel = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("عملاؤنا بيحبونا", "Loved by our customers"), "h2", {
+                  t.heading(L("عملاؤنا يحبوننا", "Loved by our customers"), "h2", {
                     role: "title",
                     style: { fontSize: "display-md", lineHeight: "tight", textAlign: "center" },
                     mobile: { fontSize: "3xl" },
                   }),
-                  t.paragraph(L("تقييمات حقيقية من طلبات اتسلّمت.", "Real reviews from delivered orders."), {
+                  t.paragraph(L("تقييمات حقيقية من طلبات تم تسليمها.", "Real reviews from delivered orders."), {
                     role: "subtitle",
                     style: { textAlign: "center", maxWidth: "640px" },
                   }),

@@ -21,7 +21,7 @@ export const bundlePriceDrop = defineDesign({
     t.section({ label: L("فرق السعر", "Price drop"), style: { background: "foreground", color: "background" } }, [
       t.container(
         [
-          t.text(L("٣ قطع مع بعض", "3 pieces together"), { role: "eyebrow", style: { fontSize: "sm", fontWeight: "semibold", color: "background" } }),
+          t.text(L("٣ قطع معًا", "3 pieces together"), { role: "eyebrow", style: { fontSize: "sm", fontWeight: "semibold", color: "background" } }),
           t.row(
             [
               t.text(L("١٬٤٩٠ ج.م", "EGP 1,490"), {
@@ -61,7 +61,7 @@ export const bundlePriceDrop = defineDesign({
                   style: { gap: 8 },
                 },
               ),
-              pillButton(t, L("اشتري الطقم", "Get the kit"), BUNDLE_LINK, { mobile: { width: "100%" } }),
+              pillButton(t, L("اشترِ الطقم", "Get the kit"), BUNDLE_LINK, { mobile: { width: "100%" } }),
             ],
             { label: L("التذييل", "Footer"), style: { justifyContent: "between", gap: 24 }, mobile: { gap: 16, direction: "column", alignItems: "stretch" } },
           ),

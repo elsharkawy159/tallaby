@@ -47,8 +47,8 @@ export const newsletterRuled = defineDesign({
                   [
                     t.heading(
                       L(
-                        "خد ١٠٪ خصم على أول طلب",
-                        "Get 10% off your first order",
+                        "اشترك في نشرتنا البريدية",
+                        "Join our newsletter",
                       ),
                       "h2",
                       {
@@ -64,8 +64,8 @@ export const newsletterRuled = defineDesign({
                     ),
                     t.text(
                       L(
-                        "عروض للمشتركين بس، مرة في الأسبوع.",
-                        "Members-only offers, once a week.",
+                        "كن أول من يعرف بالمنتجات الجديدة.",
+                        "Be the first to hear about new products.",
                       ),
                       {
                         role: "subtitle",

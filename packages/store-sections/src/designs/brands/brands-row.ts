@@ -18,7 +18,7 @@ export const brandsRow = defineDesign({
     t.section({ label: L("الماركات", "Brands"), style: { paddingTop: 32, paddingBottom: 32 } }, [
       t.container(
         [
-          t.text(L("ماركات أصلية نبيعها", "Genuine brands we carry"), {
+          t.text(L("ماركات نبيعها", "Brands we carry"), {
             role: "title",
             style: { textAlign: "center", color: "muted", fontWeight: "medium", marginBottom: 16 },
           }),

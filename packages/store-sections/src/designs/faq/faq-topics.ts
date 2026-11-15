@@ -24,7 +24,7 @@ export const faqTopics = defineDesign({
         [
           modHead(t, {
             label: L("مركز المساعدة", "Help centre"),
-            title: L("بتسأل عن إيه؟", "What do you need help with?"),
+            title: L("عمّ تسأل؟", "What do you need help with?"),
           }),
           t.grid(
             FAQ_GROUPS.map((g, i) =>

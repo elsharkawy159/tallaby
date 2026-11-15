@@ -25,8 +25,8 @@ export const featuresBento = defineDesign({
             [
               t.stack(
                 [
-                  dotLabel(t, L("وعدنا ليك", "Our promise"), { onBrand: true }),
-                  t.heading(L("نشتري لك كأننا بنشتري لنفسنا", "We buy for you like we buy for ourselves"), "h2", {
+                  dotLabel(t, L("وعدنا لك", "Our promise"), { onBrand: true }),
+                  t.heading(L("نختار كل منتج كأننا نختاره لأنفسنا", "We choose every product as if for ourselves"), "h2", {
                     role: "title",
                     style: {
                       fontSize: "display-sm",
@@ -35,7 +35,7 @@ export const featuresBento = defineDesign({
                     },
                   }),
                   t.spacer(8),
-                  pillButton(t, L("اعرف أكتر", "Learn more"), "/about", {
+                  pillButton(t, L("اعرف أكثر", "Learn more"), "/about", {
                     tone: "on-brand",
                   }),
                 ],

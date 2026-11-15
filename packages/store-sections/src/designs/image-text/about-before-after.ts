@@ -78,13 +78,13 @@ export const aboutBeforeAfter = defineDesign({
               t.stack(
                 [
                   t.text(L("قبل وبعد", "Before and after"), { role: "eyebrow", style: { ...EYEBROW, textAlign: "center" } }),
-                  t.heading(L("شوف الفرق بنفسك", "See the difference"), "h2", {
+                  t.heading(L("لاحظ الفرق بنفسك", "See the difference"), "h2", {
                     role: "title",
                     style: { ...HEAD_TITLE.style, textAlign: "center" },
                     mobile: HEAD_TITLE.mobile,
                     motion: { reveal: "words" },
                   }),
-                  t.paragraph(L("اسحب الفاصل يمين وشمال وشوف نفس الحاجة قبل وبعد.", "Drag the handle left and right to see the same thing before and after."), {
+                  t.paragraph(L("اسحب الفاصل يمينًا ويسارًا لترى المنتج قبل وبعد.", "Drag the handle left and right to see the product before and after."), {
                     role: "subtitle",
                     style: { fontSize: "md", lineHeight: "relaxed", maxWidth: "480px", textAlign: "center" },
                     mobile: { fontSize: "sm" },

@@ -12,7 +12,7 @@ import { L } from "../_kit";
 const WORDS = [
   L("توصيل لكل المحافظات", "Delivery to every governorate"),
   L("قطع جديدة كل خميس", "New drop every Thursday"),
-  L("استبدال خلال ١٤ يوم", "Exchange within 14 days"),
+  L("استبدال خلال ١٤ يومًا", "Exchange within 14 days"),
   L("الدفع عند الاستلام", "Cash on delivery"),
 ];
 

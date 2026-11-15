@@ -23,7 +23,7 @@ export const brandsQuotes = defineDesign({
             [
               t.icon("quote", { style: { fontSize: "2xl", color: "accent" } }),
               t.quote(
-                L("«واحد من أكتر المتاجر اللي ممكن تثق فيها لو بتدور على منتج أصلي.»", "“One of the most trustworthy places to buy genuine products online.”"),
+                L("«من أكثر المتاجر الموثوقة للتسوق عبر الإنترنت.»", "“One of the most trusted places to shop online.”"),
                 {
                   role: "quote",
                   style: {

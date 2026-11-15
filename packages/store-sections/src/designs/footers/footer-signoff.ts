@@ -52,7 +52,7 @@ export const footerSignoff = defineDesign({
                 t.stack(
                   [
                     t.heading(
-                      L("شكرًا إنك عدّيت علينا", "Thanks for stopping by"),
+                      L("شكرًا لزيارتك", "Thanks for stopping by"),
                       "h2",
                       {
                         role: "title",
@@ -68,7 +68,7 @@ export const footerSignoff = defineDesign({
                     ),
                     pillButton(
                       t,
-                      L("كلمنا على واتساب", "WhatsApp us"),
+                      L("تواصل معنا على واتساب", "WhatsApp us"),
                       "https://wa.me/",
                       { icon: "chat", tone: "ink" },
                     ),

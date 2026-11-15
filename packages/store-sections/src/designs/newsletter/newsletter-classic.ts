@@ -22,11 +22,11 @@ export const newsletterClassic = defineDesign({
             [
               t.stack(
                 [
-                  t.heading(L("خد ١٠٪ خصم على أول طلب", "Get 10% off your first order"), "h2", {
+                  t.heading(L("اشترك في نشرتنا البريدية", "Join our newsletter"), "h2", {
                     role: "title",
                     style: { fontSize: "display-sm", ...ON_BRAND },
                   }),
-                  t.paragraph(L("اشترك وأول ما يوصل جديد أو عرض للمشتركين هتعرف.", "Join the list for new arrivals and members-only offers."), {
+                  t.paragraph(L("اشترك لتصلك أخبار المنتجات الجديدة.", "Subscribe to hear about new arrivals."), {
                     role: "subtitle",
                     style: ON_BRAND_BODY,
                   }),

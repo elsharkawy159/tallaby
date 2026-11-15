@@ -59,8 +59,8 @@ const tel = (number: string) => phone(number).replace(/ /g, " ");
 
 const header = lib("header-announcement", {
   text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("أهلًا بيك في سَبَت، وتوصيل لكل مصر", "Welcome to Sabat | Delivery across Egypt"),
-    "الدفع عند الاستلام": L("الدفع عند الاستلام", "Cash on delivery"),
+    "تشكيلة الموسم الجديد وصلت": L("هدايا ومشغولات يدوية مختارة", "Handmade gifts and crafts"),
+    "الدفع عند الاستلام": L("صور وتفاصيل لكل قطعة", "Photos and details for every piece"),
     "م": L("س", "S"),
     "اسم متجرك": NAME,
     "المتجر": L("كل الهدايا", "Shop all"),
@@ -74,7 +74,7 @@ const header = lib("header-announcement", {
 const footer = lib("footer-classic", {
   text: {
     "اسم متجرك": NAME,
-    "أساسيات كل يوم، مختارة بعناية.": L("هدايا معمولة بالإيد من ورش صغيرة في القاهرة والفيوم وأسوان.", "Handmade gifts from small workshops in Cairo, Fayoum and Aswan."),
+    "أساسيات كل يوم، مختارة بعناية.": L("شموع وصابون وخزف وسلال مصنوعة يدويًا.", "Handmade candles, soap, stoneware and baskets."),
     "تسوّق": L("تسوّق", "Shop"),
     "كل المنتجات": L("كل الهدايا", "All gifts"),
     "العروض": L("الأعلى تقييمًا", "Top rated"),
@@ -84,7 +84,7 @@ const footer = lib("footer-classic", {
     "٠١٠٠ ١٢٣ ٤٥٦٧": L(tel("٠١١٥ ٦٤٩ ٢٧٣٠"), tel("+20 115 649 2730")),
     "‏hello@store.com": L("‏hello@sabat.eg", "hello@sabat.eg"),
     "١٢ شارع النيل، الزمالك، القاهرة": L("٩ شارع المعز، الجمالية، القاهرة", "9 El Moez St, El Gamaleya, Cairo"),
-    "السبت إلى الخميس، ١٠ ص – ١٠ م": L("كل يوم من ١١ الصبح لـ ١١ بالليل", "Daily, 11am to 11pm"),
+    "السبت إلى الخميس، ١٠ ص – ١٠ م": L("يوميًا من ١١ صباحًا حتى ١١ مساءً", "Daily, 11am to 11pm"),
     "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ سَبَت. كل الحقوق محفوظة.", "© 2026 Sabat. All rights reserved."),
     // The storefront adds its own "Powered by" line, so the design's credit stays empty.
     "بواسطة طلبي": L("", ""),
@@ -96,27 +96,27 @@ const home: Design[] = [
   lib("hero-banner", {
     photo: [PHOTOS.hero],
     text: {
-      "صورة الواجهة": L("شموع صويا في برطمانات مع ينسون نجمي", "Soy candles in jars with star anise"),
-      "موسم جديد": L("معمول بالإيد", "Made by hand"),
-      "ادخل الموسم الجديد بخطوة واثقة": L("هدايا ليها حكاية", "Gifts with a story"),
-      "قطع مريحة وطبقات سهلة تتلبس كل يوم.": L(
-        "شموع وصابون وخزف وسلال من ورش صغيرة، متغلفة بورق كرافت وخيط دوبارة.",
-        "Candles, soap, stoneware and baskets from small workshops, wrapped in kraft paper and twine.",
+      "صورة الواجهة": L("شموع صويا في أوعية زجاجية مع ينسون نجمي", "Soy candles in jars with star anise"),
+      "موسم جديد": L("صناعة يدوية", "Made by hand"),
+      "ادخل الموسم الجديد بخطوة واثقة": L("هدايا مصنوعة يدويًا", "Handmade gifts"),
+      "قطع مريحة وطبقات سهلة للارتداء اليومي.": L(
+        "شموع وصابون وخزف وسلال خوص، وعلب وأكياس كرافت للهدايا.",
+        "Candles, soap, stoneware and wicker baskets, with kraft boxes and bags for gifts.",
       ),
       "تسوّق المجموعة": L("تسوّق الهدايا", "Shop gifts"),
       "الجديد": L("وصل حديثًا", "New in"),
-      "الإطلاق الجاي": L("سوق سَبَت الجاي", "The next Sabat market"),
-      "قطع جديدة بتنزل كل خميس، كن أول من يشوفها.": L(
-        "كل أول جمعة في الشهر بنفتح الورشة للزوار، وبتنزل قطع جديدة من الحرفيين.",
-        "On the first Friday of each month we open the workshop and new pieces arrive from our makers.",
+      "الإطلاق القادم": L("قطع جديدة قريبًا", "New pieces soon"),
+      "قطع جديدة قريبًا، كن أول من يراها.": L(
+        "تصل قطع جديدة من الشموع والخزف والسلال باستمرار.",
+        "New candles, stoneware and baskets arrive regularly.",
       ),
-      "شوف الجديد": L("شوف الجديد", "See new in"),
+      "اكتشف الجديد": L("اكتشف الجديد", "See new in"),
     },
     links: { "/products": SHOP },
   }),
   lib("categories-captioned", {
     text: {
-      "اكتشف الأقسام": L("من ورش الحرفيين", "From our makers’ workshops"),
+      "اكتشف الأقسام": L("الأقسام", "Categories"),
       "كل الأقسام": L("الكل", "All"),
       "منتج": L("منتجات", "items"),
     },
@@ -125,7 +125,7 @@ const home: Design[] = [
   }),
   lib("products-shelf", {
     text: {
-      "تسوّق حسب مزاجك": L("المفضّل عند عملائنا", "Our customers’ favourites"),
+      "تسوّق حسب اختيارك": L("المفضّل عند عملائنا", "Our customers’ favourites"),
       "وصل جديد": L("الأكثر طلبًا", "Best sellers"),
       "الأكثر مبيعًا": L("وصل حديثًا", "New in"),
       "عليه خصم": L("الأعلى تقييمًا", "Top rated"),
@@ -138,17 +138,17 @@ const home: Design[] = [
     photo: [undefined, undefined, PHOTOS.story],
     text: {
       "صورة القصة": L("شمعة في كوب زجاج جنب بابونج وكبريت", "A glass candle beside chamomile and matches"),
-      "من ورشتنا": L("من ورشتنا", "From our workshop"),
-      "متصمم عشانك ومعمول في القاهرة": L("كل قطعة وراها إيد صنايعي", "Every piece has a maker behind it"),
-      "بنعمل كميات صغيرة عشان كل قطعة تفضل مميزة ومفيش حاجة تترمي.": L(
-        "بنشتغل مع فخرانية تونس في الفيوم، وصنايعية الخوص في أسوان، وبنصب الشموع ونقطع الصابون في ورشتنا في الجمالية.",
-        "We work with the potters of Tunis village in Fayoum and basket weavers in Aswan, and pour candles and cut soap in our Gamaleya workshop.",
+      "عن المتجر": L("من ورشتنا", "From our workshop"),
+      "تصميم مدروس وخامات مختارة": L("قطع مصنوعة يدويًا", "Handmade pieces"),
+      "نختار كل قطعة بعناية لتبقى مميزة.": L(
+        "فخار وسلال خوص وشموع مصبوبة وصابون مقطّع يدويًا، ولكل قطعة طابعها الخاص.",
+        "Pottery, wicker baskets, poured candles and hand-cut soap, each piece with its own character.",
       ),
-      "كل قطعة بتتقص وتتخيط عند فريقنا في المعادي.": L(
-        "+٩٠٠٠ هدية خرجت من عندنا، وتقييمنا ٤٫٨ من ٥.",
-        "9,000+ gifts sent from our workshop, rated 4.8 out of 5.",
+      "ونعرض لكل قطعة صورًا ومقاسات واضحة.": L(
+        "ونعرض لكل قطعة صورًا ومقاسات واضحة.",
+        "With clear photos and sizes for every piece.",
       ),
-      "حكايتنا": L("اقرا حكايتنا", "Read our story"),
+      "حكايتنا": L("اقرأ حكايتنا", "Read our story"),
     },
   }),
   ...categoryRows(lib, {
@@ -159,30 +159,30 @@ const home: Design[] = [
   lib("newsletter-photo", {
     photo: [undefined, undefined, undefined, PHOTOS.newsletter],
     text: {
-      "صورة من المتجر": L("بوكيهات ورد مجفف ملفوفة بورق", "Dried flower bouquets wrapped in paper"),
+      "صورة من المتجر": L("باقات ورد مجفف ملفوفة بالورق", "Dried flower bouquets wrapped in paper"),
       "للمشتركين": L("رسالة سَبَت", "The Sabat letter"),
-      "خد ١٠٪ خصم على أول طلب": L("حكايات الحرفيين، كل شهر", "Makers’ stories, every month"),
-      "اشترك عشان توصلك المنتجات الجديدة والعروض الخاصة.": L(
-        "قطع جديدة من الورش، ومواعيد سوق سَبَت، وأفكار بسيطة لتغليف الهدايا.",
-        "New pieces from the workshops, Sabat market dates and simple gift-wrapping ideas.",
+      "اشترك في نشرتنا البريدية": L("اشترك في نشرتنا البريدية", "Join our newsletter"),
+      "اشترك لتصلك أخبار المنتجات الجديدة.": L(
+        "أخبار القطع الجديدة من الشموع والخزف والسلال.",
+        "News of new candles, stoneware and baskets.",
       ),
-      "بدون رسائل مزعجة. تقدر تلغي في أي وقت.": L("بدون رسائل مزعجة. تقدر تلغي في أي وقت.", "No spam. Unsubscribe any time."),
+      "بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.": L("بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.", "No spam. Unsubscribe any time."),
     },
   }),
 ];
 
 const about: Design[] = [
-  pageHeader(lib, "about-header", L("حكايتنا", "Our story"), L("هدايا معمولة بالإيد، من ورش صغيرة في مصر.", "Handmade gifts from small workshops across Egypt.")),
+  pageHeader(lib, "about-header", L("حكايتنا", "Our story"), L("هدايا ومشغولات مصنوعة يدويًا.", "Handmade gifts and crafts.")),
   aboutStory(lib, {
     photo: PHOTOS.aboutPage,
-    alt: L("سلتين خوص على رف خشب", "Two woven baskets on a wooden shelf"),
-    eyebrow: L("من ٢٠١٦", "Since 2016"),
-    title: L("ورشة صغيرة في الجمالية", "A small workshop in Gamaleya"),
+    alt: L("سلتا خوص على رف خشبي", "Two woven baskets on a wooden shelf"),
+    eyebrow: L("حكايتنا", "Our story"),
+    title: L("مشغولات يدوية مختارة", "Chosen handmade pieces"),
     text: L(
-      "بدأنا بسبت خوص واحد من أسوان، ودلوقتي بنشتغل مع أكتر من ٣٠ حرفي في كل مصر.",
-      "We started with one wicker basket from Aswan. Today we work with more than 30 makers across Egypt.",
+      "شموع وخزف وصابون وسلال وقطع من الجلد والخشب، لكل منها صور وتفاصيل واضحة.",
+      "Candles, stoneware, soap, baskets, leather and wood, each with clear photos and details.",
     ),
-    more: L("وبندفع للحرفي سعره العادل قبل ما القطعة تتباع.", "And we pay every maker a fair price before the piece is sold."),
+    more: L("تواصل معنا لأي سؤال عن منتجاتنا.", "Contact us with any question about our products."),
     button: L("تسوّق المفضّل", "Shop favourites"),
     href: BEST,
   }),
@@ -190,7 +190,7 @@ const about: Design[] = [
 
 const DEMO = demoStore({
   name: NAME,
-  description: L("هدايا معمولة بالإيد، من ورش صغيرة في مصر.", "Handmade gifts from small workshops across Egypt."),
+  description: L("هدايا ومشغولات مصنوعة يدويًا.", "Handmade gifts and crafts."),
   categories: [
     ["candles", "الشموع", "Candles", PHOTOS.catCandles],
     ["ceramics", "الخزف والفخار", "Pottery", PHOTOS.catCeramics],
@@ -204,52 +204,52 @@ const DEMO = demoStore({
     // Candles
     ["anise-tray-candles", "candles", "شموع صويا على صينية خشب", "Soy Candles on a Wooden Tray", P(6755749), 560, { isFeatured: true, rating: 4.9, sold90: 68 }],
     ["amber-twine-candle", "candles", "شمعة عنبري مع خيط دوبارة", "Amber Candle with Twine", P(8789742), 340, { rating: 4.7, sold90: 42 }],
-    ["beeswax-honeycomb-pillars", "candles", "شموع شمع نحل شهد", "Beeswax Honeycomb Pillars", P(34806970), 480, { compareAtPrice: 540, rating: 4.8, sold90: 37 }],
-    ["ivory-pillar-pair", "candles", "شمعتين عاجي", "Ivory Pillar Pair", P(11065761), 290, { rating: 4.6, sold90: 31 }],
+    ["beeswax-honeycomb-pillars", "candles", "شموع من شمع النحل بنقش الشهد", "Beeswax Honeycomb Pillars", P(34806970), 480, { compareAtPrice: 540, rating: 4.8, sold90: 37 }],
+    ["ivory-pillar-pair", "candles", "شمعتان بلون عاجي", "Ivory Pillar Pair", P(11065761), 290, { rating: 4.6, sold90: 31 }],
     ["ribbed-glass-tealight", "candles", "شمعة في كوب زجاج مضلع", "Ribbed Glass Tealight", P(6255814), 180, { rating: 4.7, sold90: 55 }],
     ["concrete-cup-candle", "candles", "شمعة في كوب أسمنت", "Concrete Cup Candle", P(8251557), 390, { rating: 4.5, sold90: 22 }],
-    ["linen-glass-candle", "candles", "شمعة بيضا في كوب زجاج", "Linen Glass Candle", P(6311976), 420, { rating: 4.8, sold90: 28 }],
-    ["chalk-pillar-candle", "candles", "شمعة بيضا عمود", "Chalk Pillar Candle", P(8217514), 260, { rating: 4.4, sold90: 14, inStock: false }],
+    ["linen-glass-candle", "candles", "شمعة بيضاء في كوب زجاجي", "Linen Glass Candle", P(6311976), 420, { rating: 4.8, sold90: 28 }],
+    ["chalk-pillar-candle", "candles", "شمعة عمود بيضاء", "Chalk Pillar Candle", P(8217514), 260, { rating: 4.4, sold90: 14, inStock: false }],
     // Pottery
-    ["stoneware-mug-pair", "ceramics", "مجين ستونوير", "Stoneware Mug Pair", P(6312194), 520, { isFeatured: true, rating: 4.9, sold90: 49 }],
-    ["cocoa-glazed-mug", "ceramics", "مج بني مزجج", "Cocoa Glazed Mug", P(31046284), 240, { rating: 4.7, sold90: 38 }],
-    ["nesting-bowls-plate", "ceramics", "سلطانيات متداخلة وطبق", "Nesting Bowls and Plate", P(6739690), 690, { rating: 4.8, sold90: 26 }],
-    ["speckled-bowl-set", "ceramics", "سلطانية بيضا منقطة مع أطباق", "Speckled Bowl Set", P(8251788), 590, { rating: 4.6, sold90: 21 }],
-    ["two-tone-serving-bowl", "ceramics", "سلطانية تقديم بلونين", "Two-Tone Serving Bowl", P(11065506), 380, { rating: 4.7, sold90: 24 }],
-    ["blush-cup-set", "ceramics", "طقم سلطانية وفنجان روز", "Blush Bowl and Cup Set", P(7674572), 460, { compareAtPrice: 520, rating: 4.8, sold90: 33 }],
-    ["marbled-bowls", "ceramics", "سلطانيات رخامي", "Marbled Clay Bowls", P(6739219), 640, { rating: 4.6, sold90: 18 }],
-    ["tunis-clay-bowls", "ceramics", "سلطانيات طين من تونس", "Tunis Village Clay Bowls", P(32212371), 750, { rating: 4.9, sold90: 29 }],
+    ["stoneware-mug-pair", "ceramics", "كوبان من الخزف الحجري", "Stoneware Mug Pair", P(6312194), 520, { isFeatured: true, rating: 4.9, sold90: 49 }],
+    ["cocoa-glazed-mug", "ceramics", "كوب بني مزجج", "Cocoa Glazed Mug", P(31046284), 240, { rating: 4.7, sold90: 38 }],
+    ["nesting-bowls-plate", "ceramics", "أوعية متداخلة وطبق", "Nesting Bowls and Plate", P(6739690), 690, { rating: 4.8, sold90: 26 }],
+    ["speckled-bowl-set", "ceramics", "وعاء أبيض منقط مع أطباق", "Speckled Bowl Set", P(8251788), 590, { rating: 4.6, sold90: 21 }],
+    ["two-tone-serving-bowl", "ceramics", "وعاء تقديم بلونين", "Two-Tone Serving Bowl", P(11065506), 380, { rating: 4.7, sold90: 24 }],
+    ["blush-cup-set", "ceramics", "طقم وعاء وفنجان وردي", "Blush Bowl and Cup Set", P(7674572), 460, { compareAtPrice: 520, rating: 4.8, sold90: 33 }],
+    ["marbled-bowls", "ceramics", "أوعية فخار رخامية", "Marbled Clay Bowls", P(6739219), 640, { rating: 4.6, sold90: 18 }],
+    ["tunis-clay-bowls", "ceramics", "أوعية فخار", "Clay Bowls", P(32212371), 750, { rating: 4.9, sold90: 29 }],
     // Gift wrap
     ["pine-twine-parcel", "gift-boxes", "طرد كرافت بخيط وصنوبر", "Pine and Twine Parcel", P(1693650), 150, { rating: 4.8, sold90: 61 }],
     ["berry-wrapped-gift", "gift-boxes", "هدية بورق بني وتوت", "Berry Wrapped Gift", P(3298036), 180, { rating: 4.7, sold90: 44 }],
-    ["plain-kraft-box", "gift-boxes", "علبة كرافت بغطا", "Plain Kraft Box", P(8015467), 60, { rating: 4.5, sold90: 83 }],
-    ["chrysanthemum-gift", "gift-boxes", "علبة كرافت بورد أراولة", "Chrysanthemum Gift Box", P(17191388), 290, { isFeatured: true, rating: 4.9, sold90: 39 }],
-    ["tissue-kraft-bag", "gift-boxes", "شنطة كرافت بورق حرير", "Kraft Bag with Tissue", P(9218541), 45, { rating: 4.6, sold90: 72 }],
+    ["plain-kraft-box", "gift-boxes", "علبة كرافت بغطاء", "Plain Kraft Box", P(8015467), 60, { rating: 4.5, sold90: 83 }],
+    ["chrysanthemum-gift", "gift-boxes", "علبة كرافت بزهور الأقحوان", "Chrysanthemum Gift Box", P(17191388), 290, { isFeatured: true, rating: 4.9, sold90: 39 }],
+    ["tissue-kraft-bag", "gift-boxes", "حقيبة كرافت بورق حرير", "Kraft Bag with Tissue", P(9218541), 45, { rating: 4.6, sold90: 72 }],
     ["window-kraft-box", "gift-boxes", "علبة كرافت مفتوحة", "Open Kraft Gift Box", P(7957723), 75, { rating: 4.6, sold90: 34 }],
-    ["sage-kraft-bags", "gift-boxes", "شنط كرافت زيتي", "Sage Kraft Bags", P(8557942), 55, { rating: 4.4, sold90: 27 }],
-    ["twist-handle-bags", "gift-boxes", "شنط كرافت بيد ملفوفة", "Twist-Handle Kraft Bags", P(1666067), 50, { rating: 4.7, sold90: 46 }],
+    ["sage-kraft-bags", "gift-boxes", "حقائب كرافت زيتية", "Sage Kraft Bags", P(8557942), 55, { rating: 4.4, sold90: 27 }],
+    ["twist-handle-bags", "gift-boxes", "حقائب كرافت بمقبض ملفوف", "Twist-Handle Kraft Bags", P(1666067), 50, { rating: 4.7, sold90: 46 }],
     // Soap & bath
-    ["cloud-bath-bombs", "soap-bath", "قنابل استحمام بيضا", "Cloud Bath Bombs", P(6683019), 280, { rating: 4.8, sold90: 47 }],
+    ["cloud-bath-bombs", "soap-bath", "قنابل استحمام بيضاء", "Cloud Bath Bombs", P(6683019), 280, { rating: 4.8, sold90: 47 }],
     ["loofah-bath-trio", "soap-bath", "٣ قنابل استحمام على ليفة", "Bath Bomb Trio on Loofah", P(7924192), 340, { rating: 4.7, sold90: 35 }],
     ["mesh-bag-bombs", "soap-bath", "قنابل استحمام في شبكة قطن", "Bath Bombs in a Cotton Net", P(6682989), 310, { rating: 4.6, sold90: 29 }],
     ["rose-sponge-set", "soap-bath", "قنبلة استحمام وسفنجة بحر", "Bath Bomb and Sea Sponge", P(6724338), 260, { rating: 4.8, sold90: 31 }],
     ["olive-leaf-bombs", "soap-bath", "قنابل استحمام بورق زيتون", "Olive Leaf Bath Bombs", P(6683006), 290, { rating: 4.5, sold90: 19 }],
     ["clay-layer-soap", "soap-bath", "صابون طين طبقات", "Layered Clay Soap", P(5420490), 140, { compareAtPrice: 170, rating: 4.9, sold90: 58 }],
-    ["bath-ritual-bowl", "soap-bath", "طقم حمّام في سلطانية", "Bath Ritual Bowl Set", P(6683000), 450, { rating: 4.7, sold90: 22 }],
+    ["bath-ritual-bowl", "soap-bath", "طقم استحمام في وعاء", "Bath Ritual Bowl Set", P(6683000), 450, { rating: 4.7, sold90: 22 }],
     ["pink-bath-salts", "soap-bath", "ملح استحمام وردي", "Pink Bath Salts", P(20862392), 220, { rating: 4.6, sold90: 26 }],
     // Baskets
-    ["handled-tray-basket", "weaving-baskets", "سبت خوص بإيدين", "Handled Tray Basket", P(2113125), 480, { rating: 4.8, sold90: 24 }],
-    ["cream-wicker-pair", "weaving-baskets", "سبتين خوص كريمي", "Cream Wicker Pair", P(17836852), 650, { rating: 4.6, sold90: 15 }],
-    ["hanging-market-basket", "weaving-baskets", "سبت سوق متعلق", "Hanging Market Basket", P(33566970), 390, { rating: 4.7, sold90: 18 }],
-    ["aswan-straw-baskets", "weaving-baskets", "سلال قش من أسوان", "Aswan Straw Baskets", P(34667143), 560, { rating: 4.9, sold90: 21 }],
+    ["handled-tray-basket", "weaving-baskets", "سلة خوص بمقبضين", "Handled Tray Basket", P(2113125), 480, { rating: 4.8, sold90: 24 }],
+    ["cream-wicker-pair", "weaving-baskets", "سلتا خوص بلون كريمي", "Cream Wicker Pair", P(17836852), 650, { rating: 4.6, sold90: 15 }],
+    ["hanging-market-basket", "weaving-baskets", "سلة تسوق معلقة", "Hanging Market Basket", P(33566970), 390, { rating: 4.7, sold90: 18 }],
+    ["aswan-straw-baskets", "weaving-baskets", "سلال قش", "Straw Baskets", P(34667143), 560, { rating: 4.9, sold90: 21 }],
     // Leather
     ["leaf-charm-journal", "leather-goods", "دفتر جلد بتعليقة ورقة شجر", "Leaf Charm Journal", P(35810927), 590, { rating: 4.8, sold90: 27 }],
-    ["chestnut-notebook", "leather-goods", "نوتة جلد بني بأستك", "Chestnut Leather Notebook", P(8489918), 420, { rating: 4.7, sold90: 19 }],
-    ["tooled-backpack-purse", "leather-goods", "شنطة ضهر جلد محفور", "Tooled Leather Backpack", P(12442672), 1650, { rating: 4.6, sold90: 11 }],
+    ["chestnut-notebook", "leather-goods", "دفتر جلد بني بشريط مطاطي", "Chestnut Leather Notebook", P(8489918), 420, { rating: 4.7, sold90: 19 }],
+    ["tooled-backpack-purse", "leather-goods", "حقيبة ظهر جلد محفور", "Tooled Leather Backpack", P(12442672), 1650, { rating: 4.6, sold90: 11 }],
     ["embossed-flap-pouch", "leather-goods", "محفظة جلد بقلاب منقوش", "Embossed Flap Pouch", P(13870014), 380, { rating: 4.5, sold90: 13 }],
     // Woodware
-    ["slotted-beech-spoons", "wood-botanicals", "معالق زان بفتحات", "Slotted Beech Spoons", P(5507645), 190, { rating: 4.7, sold90: 32 }],
-    ["tied-spoon-bundle", "wood-botanicals", "حزمة معالق خشب", "Tied Spoon Bundle", P(6962748), 240, { rating: 4.8, sold90: 25 }],
+    ["slotted-beech-spoons", "wood-botanicals", "ملاعق زان بفتحات", "Slotted Beech Spoons", P(5507645), 190, { rating: 4.7, sold90: 32 }],
+    ["tied-spoon-bundle", "wood-botanicals", "حزمة ملاعق خشبية", "Tied Spoon Bundle", P(6962748), 240, { rating: 4.8, sold90: 25 }],
     ["acacia-board-set", "wood-botanicals", "ألواح تقطيع أكاسيا", "Acacia Board Set", P(17974511), 520, { rating: 4.6, sold90: 17 }],
     ["pine-keepsake-box", "wood-botanicals", "صندوق ذكريات خشب صنوبر", "Pine Keepsake Box", P(221004), 330, { rating: 4.9, sold90: 22 }],
   ],
@@ -260,8 +260,8 @@ export const GIFTS_WARM = libraryTemplate({
   version: 1,
   name: L("سَبَت", "Sabat"),
   description: L(
-    "هدايا هاند ميد بروح الورشة: صورة كبيرة، أقسام بعدد المنتجات وحكاية الحرفيين. لمتاجر المشغولات اليدوية والهدايا الطبيعية.",
-    "Warm handmade gifts with a workshop feel: one big photo, categories with counts and the makers’ story. For handmade and natural gift stores.",
+    "هدايا يدوية بروح الورشة: صورة كبيرة، أقسام بعدد المنتجات وحكاية المتجر. لمتاجر المشغولات اليدوية والهدايا الطبيعية.",
+    "Warm handmade gifts with a workshop feel: one big photo, categories with counts and the shop’s story. For handmade and natural gift stores.",
   ),
   category: "handmade",
   style: ["warm"],
@@ -289,8 +289,8 @@ export const GIFTS_WARM = libraryTemplate({
       name: L("تواصل", "Contact"),
       seo: { title: L("تواصل", "Contact") },
       sections: contactPage(lib, {
-        title: L("تعالى الورشة", "Visit the workshop"),
-        text: L("٩ شارع المعز، الجمالية، القاهرة. مفتوح كل يوم من ١١ الصبح لـ ١١ بالليل.", "9 El Moez St, El Gamaleya, Cairo. Open daily, 11am to 11pm."),
+        title: L("تواصل معنا", "Contact us"),
+        text: L("٩ شارع المعز، الجمالية، القاهرة. يوميًا من ١١ صباحًا حتى ١١ مساءً.", "9 El Moez St, El Gamaleya, Cairo. Open daily, 11am to 11pm."),
         heading: L("اسألنا عن أي قطعة أو هدية", "Ask us about any piece or gift"),
       }),
     },
@@ -299,11 +299,11 @@ export const GIFTS_WARM = libraryTemplate({
       name: L("الأسئلة الشائعة", "FAQ"),
       seo: { title: L("الأسئلة الشائعة", "FAQ") },
       sections: faqPage(lib, {
-        text: L("الحرفيين والتغليف والتوصيل.", "Makers, wrapping and delivery."),
-        question: L("ليه كل قطعة شكلها مختلف شوية؟", "Why does each piece look a little different?"),
+        text: L("القطع اليدوية والخامات والطلبات.", "Handmade pieces, materials and orders."),
+        question: L("لماذا تختلف القطع قليلًا عن بعضها؟", "Why does each piece look a little different?"),
         answer: L(
-          "عشان كل قطعة معمولة بالإيد، فاللون والملمس بيختلفوا شوية من قطعة للتانية. ده جزء من جمالها، ولو عايز تشوف القطعة نفسها ابعتلنا على واتساب.",
-          "Each piece is made by hand, so colour and texture vary a little. That is part of its charm; message us on WhatsApp to see the exact piece.",
+          "لأن كل قطعة مصنوعة يدويًا، يختلف اللون والملمس قليلًا من قطعة إلى أخرى. تواصل معنا لأي سؤال عن قطعة.",
+          "Each piece is made by hand, so colour and texture vary a little. Contact us with any question about a piece.",
         ),
       }),
     },
@@ -313,6 +313,6 @@ export const GIFTS_WARM = libraryTemplate({
     thumbs: "bottom",
     band: "shelf",
     extras: ["product-perks"],
-    copy: { reviews: L("من بيوت عملائنا", "From our customers’ homes"), related: L("تليق معاها", "Goes well with") },
+    copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("يتناسب معها", "Goes well with") },
   },
 });

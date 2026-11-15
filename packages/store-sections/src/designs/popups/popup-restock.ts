@@ -10,7 +10,7 @@
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
 
-const CHANNELS = [L("واتساب", "WhatsApp"), L("رسالة SMS", "SMS"), L("إيميل", "Email")];
+const CHANNELS = [L("واتساب", "WhatsApp"), L("رسالة SMS", "SMS"), L("البريد الإلكتروني", "Email")];
 
 export const popupRestock = defineDesign({
   id: "popup-restock",
@@ -30,16 +30,16 @@ export const popupRestock = defineDesign({
                 label: L("أيقونة", "Icon"),
                 style: { background: "accent", radius: 999, width: "56px", paddingTop: 14, paddingBottom: 12, textAlign: "center" },
               }),
-              t.text(L("خلص من المخزن؟", "Sold out?"), {
+              t.text(L("نفد من المخزون؟", "Sold out?"), {
                 role: "eyebrow",
                 style: { fontSize: "sm", fontWeight: "semibold", color: "muted" },
               }),
-              t.heading(L("هنبلّغك أول ما يرجع", "We'll tell you when it's back"), "h2", {
+              t.heading(L("سنبلغك فور توفره", "We'll tell you when it's back"), "h2", {
                 role: "title",
                 style: { fontSize: "3xl", letterSpacing: "tight" },
                 mobile: { fontSize: "2xl" },
               }),
-              t.paragraph(L("اكتب المنتج اللي عايزه ومقاسه، وسيب رقمك أو إيميلك.", "Write the product and size, and leave your number or email."), {
+              t.paragraph(L("اكتب المنتج الذي تريده ومقاسه، واترك رقمك أو بريدك الإلكتروني.", "Write the product and size, and leave your number or email."), {
                 role: "subtitle",
               }),
               t.row(

@@ -10,10 +10,10 @@ import { FLUSH, modHead } from "../_modular";
 import { BUNDLE_LINK } from "./_shared";
 
 const KITS = [
-  { name: L("طقم المشاوير", "Commuter kit"), count: L("٤ قطع", "4 items"), price: L("١٬٢٧٠ ج.م", "EGP 1,270") },
-  { name: L("طقم الجيم", "Gym kit"), count: L("٣ قطع", "3 items"), price: L("٩٥٠ ج.م", "EGP 950") },
+  { name: L("طقم التنقل", "Commuter kit"), count: L("٤ قطع", "4 items"), price: L("١٬٢٧٠ ج.م", "EGP 1,270") },
+  { name: L("طقم الرياضة", "Sports kit"), count: L("٣ قطع", "3 items"), price: L("٩٥٠ ج.م", "EGP 950") },
   { name: L("طقم البيت", "Home kit"), count: L("٤ قطع", "4 items"), price: L("١٬٨٠٠ ج.م", "EGP 1,800") },
-  { name: L("طقم العربية", "Car kit"), count: L("٤ قطع", "4 items"), price: L("٧٤٠ ج.م", "EGP 740") },
+  { name: L("طقم السيارة", "Car kit"), count: L("٤ قطع", "4 items"), price: L("٧٤٠ ج.م", "EGP 740") },
 ];
 
 export const bundleRail = defineDesign({

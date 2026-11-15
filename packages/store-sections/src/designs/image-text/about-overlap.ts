@@ -30,11 +30,11 @@ export const aboutOverlap = defineDesign({
                   t.stack(
                     [
                       t.badge(L("من داخل المتجر", "Inside the store"), { role: "eyebrow", style: { color: "primary" } }),
-                      t.heading(L("بدأنا من محل صغير", "We started in a small shop"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
+                      t.heading(L("منتجات نختارها بعناية", "Products we choose with care"), "h2", { role: "title", style: { fontSize: "display-sm" } }),
                       t.paragraph(
                         L(
-                          "نختار كل منتج بعناية ونغلّفه بأيدينا، ونعرف عملاءنا بالاسم.",
-                          "We pick every product with care, pack it by hand and know our customers by name.",
+                          "نختار كل منتج بعناية، ونعرض صوره وتفاصيله بوضوح.",
+                          "We choose every product with care and show its photos and details clearly.",
                         ),
                         {
                           role: "body",

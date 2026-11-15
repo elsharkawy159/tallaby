@@ -9,16 +9,16 @@ import { BIG_NUMBER } from "../_modular";
 
 const VALUES = [
   {
-    word: L("أصلي", "Genuine"),
-    text: L("كل منتج من الوكيل أو المستورد الرسمي، ومعاه ضمان.", "Every product comes from the official agent or importer, with warranty."),
+    word: L("مختار", "Chosen"),
+    text: L("نختار كل منتج بعناية ونعرض تفاصيله كاملة.", "We choose every product with care and show its full details."),
   },
   {
     word: L("واضح", "Clear"),
-    text: L("السعر اللي تشوفه هو اللي تدفعه، من غير مصاريف مخفية.", "The price you see is the price you pay, no hidden fees."),
+    text: L("الأسعار والمواصفات واضحة على كل منتج.", "Prices and specs are clear on every product."),
   },
   {
     word: L("قريب", "Close"),
-    text: L("بنرد على واتساب في أقل من ساعة، حتى يوم الجمعة.", "We answer WhatsApp within an hour, even on Fridays."),
+    text: L("تواصل معنا لأي سؤال، ويسعدنا أن نساعدك.", "Contact us with any question; we are happy to help."),
   },
 ];
 
@@ -36,7 +36,7 @@ export const teamValues = aboutDesign({
     t.section({ label: L("قيمنا", "Values") }, [
       t.container(
         [
-          t.heading(L("بنشتغل إزاي", "How we work"), "h2", {
+          t.heading(L("كيف نعمل", "How we work"), "h2", {
             role: "title",
             style: { fontSize: "md", fontWeight: "semibold", color: "muted", marginBottom: 12 },
           }),

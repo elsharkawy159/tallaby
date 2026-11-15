@@ -40,7 +40,7 @@ export const serviceRepairRequest = defineDesign({
                 [
                   dotLabel(t, L("صيانة", "Repair")),
                   t.heading(
-                    L("قولنا إيه المشكلة", "Tell us what is wrong"),
+                    L("أخبرنا بالمشكلة", "Tell us what is wrong"),
                     "h2",
                     {
                       role: "title",
@@ -53,7 +53,7 @@ export const serviceRepairRequest = defineDesign({
                   ),
                   t.paragraph(
                     L(
-                      "هنرد عليك بالسعر والمعاد في أقل من ساعة.",
+                      "سنرد عليك بالسعر والموعد خلال أقل من ساعة.",
                       "We reply with a price and a time within an hour.",
                     ),
                     { role: "subtitle", style: { maxWidth: "40ch" } },

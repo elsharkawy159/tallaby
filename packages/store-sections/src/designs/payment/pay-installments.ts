@@ -56,7 +56,7 @@ export const payInstallments = defineDesign({
                           style: { ...FLUSH, paddingTop: 12, paddingBottom: 12, paddingStart: 12, paddingEnd: 12, background: "background", radius: 12, color: "foreground" },
                         },
                       ),
-                      t.heading(L("على كام شهر؟", "Over how many months?"), "h3", { style: { fontSize: "lg" } }),
+                      t.heading(L("على كم شهرًا؟", "Over how many months?"), "h3", { style: { fontSize: "lg" } }),
                       t.grid(
                         TERMS.map((m, i) => {
                           const on = i === 2;
@@ -90,13 +90,13 @@ export const payInstallments = defineDesign({
                   ),
                   t.stack(
                     [
-                      t.text(L("قسّطها لحد", "Split it over up to"), { style: { fontSize: "md", ...ON_BRAND } }),
+                      t.text(L("قسّطها حتى", "Split it over up to"), { style: { fontSize: "md", ...ON_BRAND } }),
                       t.text(L("٢٤ شهر", "24 months"), {
                         role: "value",
                         style: { fontSize: "6xl", fontWeight: "bold", letterSpacing: "tight", lineHeight: "tight", ...ON_BRAND },
                         mobile: { fontSize: "5xl" },
                       }),
-                      t.paragraph(L("من غير فوايد ولا مقدم مع شركات التقسيط.", "No interest and no down payment with our installment partners."), {
+                      t.paragraph(L("بدون فوائد ولا مقدّم مع شركات التقسيط.", "No interest and no down payment with our installment partners."), {
                         style: { ...ON_BRAND_BODY, marginBottom: 12 },
                       }),
                       t.addToCart({ label: L("اشتري بالتقسيط", "Buy in installments") }),

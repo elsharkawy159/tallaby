@@ -7,9 +7,9 @@ import { defineDesign } from "../builder";
 import { L, stars } from "../_kit";
 
 const HIGHLIGHTS = [
-  { value: L("٤٨ ساعة", "48 hours"), label: L("توصيل", "Delivery") },
-  { value: L("سنتين", "2 years"), label: L("ضمان", "Warranty") },
-  { value: L("١٤ يومًا", "14 days"), label: L("استرجاع", "Returns") },
+  { value: L("٣ ألوان", "3 colours"), label: L("الألوان", "Colours") },
+  { value: L("٢٠٢٦", "2026"), label: L("الإصدار", "Edition") },
+  { value: L("خفيف", "Light"), label: L("الوزن", "Weight") },
 ];
 
 export const heroProduct = defineDesign({
@@ -36,7 +36,7 @@ export const heroProduct = defineDesign({
                     role: "title",
                     style: { fontSize: "display-md", fontWeight: "extrabold", lineHeight: "tight" },
                   }),
-                  t.row([stars(t, 5), t.text(L("٤٫٨ من ١٢٨ تقييم", "4.8 from 128 reviews"), { style: { color: "muted" } })], {
+                  t.row([stars(t, 5), t.text(L("تقييمات العملاء", "Customer reviews"), { style: { color: "muted" } })], {
                     label: L("التقييم", "Rating"),
                     style: { gap: 8 },
                   }),
@@ -74,9 +74,9 @@ export const heroProduct = defineDesign({
                   }),
                   t.stack(
                     [
-                      t.text(L("عرض الإطلاق", "Launch offer"), { style: { fontSize: "xs", color: "muted" } }),
-                      t.heading(L("خصم ٢٠٪", "20% off"), "h3", { style: { fontSize: "2xl", fontWeight: "extrabold" } }),
-                      t.text(L("لأول ١٠٠ طلب", "First 100 orders"), { style: { fontSize: "xs", color: "primary", fontWeight: "semibold" } }),
+                      t.text(L("جديد", "New"), { style: { fontSize: "xs", color: "muted" } }),
+                      t.heading(L("وصل حديثًا", "Just in"), "h3", { style: { fontSize: "2xl", fontWeight: "extrabold" } }),
+                      t.text(L("متوفر الآن", "Available now"), { style: { fontSize: "xs", color: "primary", fontWeight: "semibold" } }),
                     ],
                     {
                       label: L("بطاقة العرض", "Offer tag"),

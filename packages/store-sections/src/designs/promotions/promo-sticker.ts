@@ -27,7 +27,7 @@ export const promoSticker = defineDesign({
                 [
                   t.stack(
                     [
-                      dotLabel(t, L("عرض اليوم بس", "Today only")),
+                      dotLabel(t, L("عرض اليوم فقط", "Today only")),
                       productName(t, {
                         fontSize: "display-sm",
                         fontWeight: "bold",
