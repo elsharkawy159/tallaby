@@ -123,7 +123,13 @@ Route table target: `◐` for all `(main)` routes; only builder, `oauth/authoriz
 11. **Shared packages:** ecommerce/admin don't run Cache Components; keep `createCachedQuery`; broadcast change is additive.
 12. **Others' uncommitted work vs the codemod:** clean tree or manual opt-outs (rule 16).
 
-## 5. Open questions for the owner
+## 5. Owner answers (2026-11-15)
+1. Unprefixed links send an English-preferring seller to `/en/...`; the saved language changes **only** through the switcher (not by opening an `/en` link).
+2. Phase 4.4 realtime migration: **approved to plan** (staging first, production with owner approval per rule 4/6).
+3. Brief empty frame for blocked / not-yet-seller accounts: **acceptable**.
+4. `experimental.globalNotFound` and Turbopack for local `next dev`: **yes**.
+
+### The questions as asked
 1. Should an unprefixed link (email/push) send an English-preferring seller to `/en/...` (plan: yes)? And should opening an `/en/...` link save English as the preference (next-intl default) or only the switcher (today's rule)?
 2. Approve the Phase 4.4 realtime migration (`store_id` in payload + order-status event)? Without it, cancellations reach an open dashboard via focus/interval (~30 s).
 3. Is a brief empty frame acceptable for blocked / not-yet-seller accounts before the blocked screen or `/signup` redirect? (The alternative keeps `(main)` blocking and gives up the static shell.)
