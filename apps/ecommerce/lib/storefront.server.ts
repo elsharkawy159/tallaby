@@ -46,6 +46,7 @@ import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/ser
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
 import { parseStoreSalesPopup } from "@workspace/lib/stores/sales-popup";
+import { loadingScreenView } from "@workspace/lib/stores/loading-screen";
 import { parseStoreMinOrder } from "@workspace/lib/stores/min-order";
 import { parseCodDeposit } from "@workspace/lib/orders/cod-deposit";
 import {
@@ -261,6 +262,12 @@ export function getStorefrontBySubdomain(subdomain: string) {
         app: parseStoreApp(row.settings),
         /** Store settings › Sales pop-up (ROADMAP.md F-22): on/off, delay and pages. */
         salesPopup: parseStoreSalesPopup(row.settings),
+        /** Website › Design › Loading screen (ROADMAP.md F-96): null when off or invalid; media only from this store's own folder. */
+        loadingScreen: loadingScreenView(row.settings, {
+          sellerId: row.sellerId,
+          storeId: row.storeId,
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+        }),
         /** Store settings › Checkout › Minimum order (ROADMAP.md F-13b), for the cart's "add X more". Checkout reads it fresh. */
         minOrder: parseStoreMinOrder(row.settings),
         // + the connected card gateway's logos (Visa, Mastercard, Meeza…; ROADMAP.md F-39).
@@ -277,8 +284,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         defaultLocale: storeBaseLocale(row.defaultLocale),
       };
     },
-    // v18: + sellerCreatedAt (billing offline fast path). v17: + defaultLocale (unprefixed address language). v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v18-${subdomain}`],
+    // v19: + loadingScreen (F-96). v18: + sellerCreatedAt (billing offline fast path). v17: + defaultLocale (unprefixed address language). v16: paymentMethods include the card gateway's logos. v15: + currency. v14: + minOrder (F-13b). v13: + salesPopup (F-22). v12: + app (store app download button). v11: + paymentMethods (footer payment rows). v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v19-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

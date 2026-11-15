@@ -407,6 +407,10 @@
       "types": "./src/stores/blocked-phones.server.ts",
       "default": "./src/stores/blocked-phones.server.ts"
     },
+    "./stores/loading-screen": {
+      "types": "./src/stores/loading-screen.dto.ts",
+      "default": "./src/stores/loading-screen.dto.ts"
+    },
     "./stores/sales-popup": {
       "types": "./src/stores/sales-popup.lib.ts",
       "default": "./src/stores/sales-popup.lib.ts"

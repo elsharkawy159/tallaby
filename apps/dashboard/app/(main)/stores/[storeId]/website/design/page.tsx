@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getStoreForEditor } from "@workspace/lib/store-sites/server";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
+import { parseStoreLoadingScreen } from "@workspace/lib/stores/loading-screen";
 import { storeUrl } from "@workspace/lib/storefront";
 import { designSystemSchema, sectionInstanceSchema, type SectionInstance } from "@workspace/store-sections";
 import { getDesign } from "@workspace/store-sections/render";
@@ -32,6 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * are store fields and apply at once, like Store settings › General. The
  * banner list is the home page hero's photos (`hero-banners.lib.ts`), saved
  * to the home page draft; its first photo is also the store's banner.
+ * The loading screen (F-96) is `stores.settings.loadingScreen`, saved at once.
  */
 export default async function WebsiteDesignPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
@@ -69,6 +71,7 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
           designSystem: parsed.success ? parsed.data : { colors: {}, typography: {}, spacing: {} },
           version: editor.designSystem.version,
           brand: { logoUrl: store.logoUrl ?? "", faviconUrl: store.faviconUrl ?? "", bannerUrl: store.bannerUrl ?? "" },
+          loadingScreen: parseStoreLoadingScreen(store.settings),
         }}
         store={{
           name: store.name,

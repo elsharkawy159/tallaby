@@ -14,6 +14,7 @@ import { StoreCartSheet } from "./cart-sheet.client";
 import { storeFontVariables, storefrontFont } from "./storefront-font";
 import { StorefrontTracking } from "./seller-tracking";
 import { StoreViewsTag } from "@/components/storefront/store-views-tag.client";
+import { StoreLoadingScreen } from "@/components/storefront/store-loading-screen";
 import { readStoreViewsGtmId } from "@/lib/store-views.server";
 import { StoreSiteBottomNav, StoreSiteChrome } from "./store-site";
 import { StorePreviewBanner } from "./store-preview-banner";
@@ -96,6 +97,8 @@ export async function StorefrontShell({
         {...(site && siteMotionAttrs(site.designSystem.motion))}
         suppressHydrationWarning
       >
+        {/* Loading screen (F-96): first in the HTML so it covers the page at once. Store pages only: not shared pages (checkout, orders, account), not draft previews; the cart is skipped by its script. */}
+        {!shared && !preview && <StoreLoadingScreen view={store.loadingScreen} />}
         {site && <SiteTheme designSystem={site.designSystem} dark={chromeHasThemeToggle(site.header, site.footer)} />}
         {/* Dialogs, popovers and toasts render in <body>, outside the site root: give them the store's colors too. */}
         {site && <style dangerouslySetInnerHTML={{ __html: designSystemToCss(site.designSystem, "body").replace(/</g, "\\3c ") }} />}

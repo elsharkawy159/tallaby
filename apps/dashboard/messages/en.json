@@ -7584,6 +7584,48 @@
     "publishConfirm": {
       "title": "Publish your website?",
       "description": "This puts every draft change live, including pages and template changes made in the builder, not only the design."
+    },
+    "sections": {
+      "loading": {
+        "title": "Loading screen",
+        "description": "A full-screen cover with your image or GIF while your website opens for the first time."
+      }
+    },
+    "loading": {
+      "enabled": "Show a loading screen",
+      "enabledHint": "Shown once per visit, while the first page loads, for 2.5 seconds at most.",
+      "media": "Image or GIF",
+      "mediaHint": "JPEG, PNG, WebP or animated GIF, up to 2 MB. Leave it empty for a plain colour.",
+      "uploadMedia": "Upload image",
+      "changeMedia": "Change image",
+      "removeMedia": "Remove",
+      "size": "Image size",
+      "sizePx": "Fixed width",
+      "sizeFull": "Full screen",
+      "width": "Width",
+      "sizePxHint": "Centred on the screen at this width; the height follows the image.",
+      "sizeFullHint": "Covers the whole screen; the edges may be cropped on some phones.",
+      "background": "Background",
+      "color": "Colour",
+      "opacity": "Opacity",
+      "blur": "Blur behind",
+      "preview": "Preview on a phone",
+      "hint": "This is saved straight to your website, without Publish. Cart and checkout pages never show it.",
+      "discard": "Discard changes",
+      "save": "Save loading screen",
+      "saved": "Loading screen saved.",
+      "errors": {
+        "empty": "Add an image or raise the background opacity, or shoppers will see nothing.",
+        "invalidInput": "Check the values and try again.",
+        "invalidMedia": "This image can't be used. Upload it again.",
+        "tooLarge": "The image is larger than 2 MB. Choose a smaller one.",
+        "invalidType": "Use a JPEG, PNG, WebP or GIF image.",
+        "uploadFailed": "The image didn't upload. Try again.",
+        "readOnly": "This store is archived, so it can't be edited.",
+        "notFound": "This store wasn't found.",
+        "rateLimited": "Too many changes at once. Wait a moment and try again.",
+        "generic": "Something went wrong. Try again."
+      }
     }
   },
   "storeAnalytics": {

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   BadgeCheck,
   Check,
+  Hourglass,
   ImagePlus,
   LayoutTemplate,
   LoaderCircle,
@@ -22,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
+import type { StoreLoadingScreen } from "@workspace/lib/stores/loading-screen";
 import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "@workspace/store-sections/fonts";
 import type { StoreProfile } from "@workspace/store-sections/render";
 import { IconButton, Note, PageHeader, PageTabs, Segmented, SellerButton, SellerCard } from "@/components/seller-ui";
@@ -48,13 +50,14 @@ import {
 } from "./design.lib";
 import { HeroBannerList } from "./hero-banners.client";
 import { applyHeroBanners, type HeroBanners } from "./hero-banners.lib";
+import { LoadingScreenSettings } from "./loading-screen.client";
 
 type Brand = { logoUrl: string; faviconUrl: string; bannerUrl: string };
 
 /** The home page draft whose hero photos the banner list edits (null: no hero photos). */
 export type HeroBannersDraft = { hero: HeroBanners; pageId: string; version: number; content: { sections: SectionInstance[] } };
 
-type SectionId = "brand" | "colors" | "typography" | "buttons" | "layout";
+type SectionId = "brand" | "colors" | "typography" | "buttons" | "layout" | "loading";
 
 /** The page's tabs, in order. `#colors` etc. opens one directly. */
 const SECTIONS: readonly { id: SectionId; icon: LucideIcon }[] = [
@@ -63,6 +66,7 @@ const SECTIONS: readonly { id: SectionId; icon: LucideIcon }[] = [
   { id: "typography", icon: Type },
   { id: "buttons", icon: RectangleHorizontal },
   { id: "layout", icon: LayoutTemplate },
+  { id: "loading", icon: Hourglass },
 ];
 
 /** Custom colors in two groups: the brand's own, then backgrounds and text. */
@@ -91,7 +95,8 @@ export function DesignSystemEditor({
 }: {
   storeId: string;
   readOnly: boolean;
-  initial: { designSystem: DesignSystem; version: number; brand: Brand };
+  /** `loadingScreen`: Website › Design › Loading screen (F-96), saved at once in the store settings. */
+  initial: { designSystem: DesignSystem; version: number; brand: Brand; loadingScreen: StoreLoadingScreen };
   store: StoreProfile;
   defaultLocale: SiteLocale;
   catalog: PreviewCatalog;
@@ -268,7 +273,7 @@ export function DesignSystemEditor({
         <div className="sui-rise flex min-w-0 flex-col gap-3.5 [animation-delay:.05s]">
           <PageTabs
             sticky={false}
-            // Five tabs in half a page: tighter, with no icons, while the column is narrow.
+            // Six tabs in half a page: tighter, with no icons, while the column is narrow.
             className="min-[1181px]:max-[1560px]:[&>*]:px-2.5 min-[1181px]:max-[1560px]:[&_svg]:hidden"
             label={t("jumpTo")}
             value={tab}
@@ -488,6 +493,8 @@ export function DesignSystemEditor({
                 />
               </>
             )}
+
+            {tab === "loading" && <LoadingScreenSettings storeId={storeId} initial={initial.loadingScreen} disabled={readOnly} />}
           </SellerCard>
         </div>
 
