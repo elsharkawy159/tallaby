@@ -7578,7 +7578,14 @@
   "websiteTemplates": {
     "loading": "جارٍ تحميل القوالب…",
     "loadFailed": "تعذّر تحميل القوالب.",
-    "retry": "حاول مرة أخرى"
+    "retry": "حاول مرة أخرى",
+    "customTheme": {
+      "title": "مش لاقي قالب مناسب؟",
+      "body": "اطلب قالب مخصوص لمتجرك دلوقتي.",
+      "button": "تواصل معانا",
+      "message": "أهلًا، عايز قالب مخصوص لمتجري \"{store}\" على طلبي.",
+      "messageNoStore": "أهلًا، عايز قالب مخصوص لمتجري على طلبي."
+    }
   },
   "websiteDesign": {
     "publishConfirm": {

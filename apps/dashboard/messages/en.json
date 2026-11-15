@@ -7578,7 +7578,14 @@
   "websiteTemplates": {
     "loading": "Loading templates…",
     "loadFailed": "The templates couldn't be loaded.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "customTheme": {
+      "title": "Didn't find a suitable template?",
+      "body": "Request a custom template for your store now.",
+      "button": "Contact us",
+      "message": "Hi, I'd like a custom template for my store \"{store}\" on Tallaby.",
+      "messageNoStore": "Hi, I'd like a custom template for my store on Tallaby."
+    }
   },
   "websiteDesign": {
     "publishConfirm": {

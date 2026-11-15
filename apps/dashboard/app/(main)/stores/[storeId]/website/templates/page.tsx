@@ -4,6 +4,7 @@ import { PageContainer } from "@/components/seller-ui";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import { storeFontVariables } from "../_components/store-fonts";
+import { CustomThemeCta } from "./custom-theme-cta";
 import { TemplateGallery } from "./templates.client";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,7 @@ export default async function WebsiteTemplatesPage({ params }: { params: Promise
             instead of picking a template). To bring it back, render
             <ThemeRequests storeId={store.id} readOnly={store.status !== "active"} /> from "./theme-requests.client" here. */}
       </TemplateGallery>
+      <CustomThemeCta storeName={store.name} />
     </PageContainer>
   );
 }
