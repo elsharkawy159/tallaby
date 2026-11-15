@@ -16,7 +16,7 @@ import {
 } from "@workspace/ui/components/dialog";
 import { WELCOME_GIFT_IMAGE } from "@workspace/lib/store-wallet";
 import type { WelcomeGiftWatch } from "@workspace/lib/store-wallet/server";
-import { Confetti } from "@/app/(main)/_components/publish-celebration.client";
+import { Confetti } from "@/app/[locale]/(main)/_components/publish-celebration.client";
 import { formatDate, formatMoney } from "@/lib/i18n/format";
 import { WELCOME_GIFT_CHECK_EVENT } from "./welcome-gift.lib";
 import { checkWelcomeGiftAction, dismissWelcomeGiftAction } from "./welcome-gift.server";

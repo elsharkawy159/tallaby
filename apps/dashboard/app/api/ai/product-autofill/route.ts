@@ -7,7 +7,7 @@ import { getBillingState } from "@workspace/lib/billing/server"
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server"
 import { requireProductStore, taxonomyScopeOf } from "@/lib/products/product-store.server"
 import { createRateLimiter } from "@/lib/rate-limit.lib"
-import { autofillProduct } from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.server"
+import { autofillProduct } from "@/app/[locale]/(main)/stores/[storeId]/products/add/ai/ai-autofill.server"
 import {
   AUTOFILL_FEATURE,
   AUTOFILL_LIMITS,
@@ -15,7 +15,7 @@ import {
   type AutofillErrorCode,
   type AutofillFile,
   type ProductAutofillResponse,
-} from "@/app/(main)/stores/[storeId]/products/add/ai/ai-autofill.dto"
+} from "@/app/[locale]/(main)/stores/[storeId]/products/add/ai/ai-autofill.dto"
 
 /** AI product autofill (PLAN.md AI-1): photos, a PDF and/or text → form values. Never saves. */
 

@@ -6,14 +6,14 @@ import { claimAiCredit, getAiCreditStatus, refundAiCredit } from "@workspace/lib
 import { getBillingState } from "@workspace/lib/billing/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { proposeZones } from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.server";
+import { proposeZones } from "@/app/[locale]/(main)/stores/[storeId]/shipping/ai/ai-zones.server";
 import {
   AI_ZONES_FEATURE,
   AI_ZONES_LIMITS,
   validateAiZonesText,
   type AiZonesErrorCode,
   type AiZonesResponse,
-} from "@/app/(main)/stores/[storeId]/shipping/ai/ai-zones.dto";
+} from "@/app/[locale]/(main)/stores/[storeId]/shipping/ai/ai-zones.dto";
 
 /** "Describe your delivery areas" (ROADMAP.md F-45b): text → proposed zones. Never saves. */
 

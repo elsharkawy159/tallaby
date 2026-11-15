@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { SETUP_DISMISS_COOKIE } from "@/app/(main)/_components/home.shared";
-import { syncSetupPrompts } from "@/app/(main)/_components/setup-prompts.data";
-import { parseSetupPromptEvent } from "@/app/(main)/_components/setup-prompts.lib";
+import { SETUP_DISMISS_COOKIE } from "@/app/[locale]/(main)/_components/home.shared";
+import { syncSetupPrompts } from "@/app/[locale]/(main)/_components/setup-prompts.data";
+import { parseSetupPromptEvent } from "@/app/[locale]/(main)/_components/setup-prompts.lib";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 
 /**

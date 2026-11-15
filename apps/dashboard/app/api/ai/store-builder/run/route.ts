@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { builderEnabled } from "@/app/(main)/ai-builder/builder-access.server";
-import { toView } from "@/app/(main)/ai-builder/builder-chat.server";
-import { activateProducts, loadReview, regenerateSiteCopy, runBuildStep, type RunContext } from "@/app/(main)/ai-builder/builder-run.server";
-import { builderBuildBodySchema, type BuilderBuildResponse, type BuilderErrorCode } from "@/app/(main)/ai-builder/builder.dto";
-import { buildItemKeys, buildProgress } from "@/app/(main)/ai-builder/builder.lib";
-import { acquireLease, loadBuild, loadItems, releaseLease } from "@/app/(main)/ai-builder/builder.store.server";
+import { builderEnabled } from "@/app/[locale]/(main)/ai-builder/builder-access.server";
+import { toView } from "@/app/[locale]/(main)/ai-builder/builder-chat.server";
+import { activateProducts, loadReview, regenerateSiteCopy, runBuildStep, type RunContext } from "@/app/[locale]/(main)/ai-builder/builder-run.server";
+import { builderBuildBodySchema, type BuilderBuildResponse, type BuilderErrorCode } from "@/app/[locale]/(main)/ai-builder/builder.dto";
+import { buildItemKeys, buildProgress } from "@/app/[locale]/(main)/ai-builder/builder.lib";
+import { acquireLease, loadBuild, loadItems, releaseLease } from "@/app/[locale]/(main)/ai-builder/builder.store.server";
 
 /**
  * Runs an AI Store Builder build, one step per request (ROADMAP.md F-54d): there

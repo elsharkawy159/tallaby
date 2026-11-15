@@ -12,7 +12,7 @@ import { eq, and, desc, asc, sql, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import slugify from "slugify";
-import { cleanKeywords } from "@/app/(main)/stores/[storeId]/products/add/meta-keywords.lib";
+import { cleanKeywords } from "@/app/[locale]/(main)/stores/[storeId]/products/add/meta-keywords.lib";
 import {
   isRichTextEmpty,
   sanitizeRichTextHtml,

@@ -3,11 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSessionUser } from "@/lib/auth/session.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { builderEnabled } from "@/app/(main)/ai-builder/builder-access.server";
-import { answerQuestion, refreshBrief, toView, type ChatResult } from "@/app/(main)/ai-builder/builder-chat.server";
-import { BUILDER_LIMITS, builderChatBodySchema, type BuilderChatResponse, type BuilderErrorCode } from "@/app/(main)/ai-builder/builder.dto";
-import { abandonBuild, loadOpenBuild, saveBuild, type BuildRow } from "@/app/(main)/ai-builder/builder.store.server";
-import { withCard } from "@/app/(main)/ai-builder/builder-questions.lib";
+import { builderEnabled } from "@/app/[locale]/(main)/ai-builder/builder-access.server";
+import { answerQuestion, refreshBrief, toView, type ChatResult } from "@/app/[locale]/(main)/ai-builder/builder-chat.server";
+import { BUILDER_LIMITS, builderChatBodySchema, type BuilderChatResponse, type BuilderErrorCode } from "@/app/[locale]/(main)/ai-builder/builder.dto";
+import { abandonBuild, loadOpenBuild, saveBuild, type BuildRow } from "@/app/[locale]/(main)/ai-builder/builder.store.server";
+import { withCard } from "@/app/[locale]/(main)/ai-builder/builder-questions.lib";
 import {
   answerCard,
   attachFile,
@@ -16,7 +16,7 @@ import {
   refreshV2,
   setLogoColors,
   startDashboardBuild,
-} from "@/app/(main)/ai-builder/builder-chat-v2.server";
+} from "@/app/[locale]/(main)/ai-builder/builder-chat-v2.server";
 
 /**
  * The AI Store Builder's conversation (ROADMAP.md F-54c). The seller comes from

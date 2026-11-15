@@ -3,9 +3,9 @@ import type { User } from "@supabase/supabase-js";
 import { db, eq, sellers } from "@workspace/db";
 import { createClient } from "@/supabase/server";
 import { safeNextPath } from "@/lib/auth/safe-next.lib";
-import { completeSignup, signupIntentFromMetadata } from "@/app/signup/signup-complete.server";
-import { readSignupIntentCookie } from "@/app/signup/signup-intent.server";
-import { afterSignupPath } from "@/app/signup/signup.dto";
+import { completeSignup, signupIntentFromMetadata } from "@/app/[locale]/signup/signup-complete.server";
+import { readSignupIntentCookie } from "@/app/[locale]/signup/signup-intent.server";
+import { afterSignupPath } from "@/app/[locale]/signup/signup.dto";
 import { withQuery } from "@/lib/auth/after-signup.lib";
 
 /**

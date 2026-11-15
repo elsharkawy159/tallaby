@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // `instant = false` until they adopt a static shell.
   cacheComponents: true,
   typescript: { ignoreBuildErrors: true },
+  experimental: {
+    // app/global-not-found.tsx: the root layout sits under [locale] (owner, plan §5.4).
+    globalNotFound: true,
+  },
   images: {
     // Storage paths are unique (uploads never overwrite), so optimized sizes
     // stay cached 30 days instead of the 4 h default (docs/egress-audit.md §9).

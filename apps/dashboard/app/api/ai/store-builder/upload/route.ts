@@ -3,13 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { getServiceClient } from "@workspace/db/supabase/service";
-import { builderEnabled } from "@/app/(main)/ai-builder/builder-access.server";
-import { toView, withShortlist } from "@/app/(main)/ai-builder/builder-chat.server";
-import { BUILDER_IMAGE_TYPES, BUILDER_LIMITS, type BuilderChatResponse, type BuilderErrorCode } from "@/app/(main)/ai-builder/builder.dto";
-import { imageTypeOf } from "@/app/(main)/ai-builder/builder-upload.lib";
-import { withNextQuestion } from "@/app/(main)/ai-builder/builder.lib";
-import { withCard } from "@/app/(main)/ai-builder/builder-questions.lib";
-import { loadOpenBuild, saveBuild } from "@/app/(main)/ai-builder/builder.store.server";
+import { builderEnabled } from "@/app/[locale]/(main)/ai-builder/builder-access.server";
+import { toView, withShortlist } from "@/app/[locale]/(main)/ai-builder/builder-chat.server";
+import { BUILDER_IMAGE_TYPES, BUILDER_LIMITS, type BuilderChatResponse, type BuilderErrorCode } from "@/app/[locale]/(main)/ai-builder/builder.dto";
+import { imageTypeOf } from "@/app/[locale]/(main)/ai-builder/builder-upload.lib";
+import { withNextQuestion } from "@/app/[locale]/(main)/ai-builder/builder.lib";
+import { withCard } from "@/app/[locale]/(main)/ai-builder/builder-questions.lib";
+import { loadOpenBuild, saveBuild } from "@/app/[locale]/(main)/ai-builder/builder.store.server";
 
 /**
  * Logo and product photos for the AI Store Builder (ROADMAP.md F-54c). Open only
