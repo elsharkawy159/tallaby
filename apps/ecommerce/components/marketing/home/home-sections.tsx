@@ -58,11 +58,11 @@ export async function HomeHero() {
   // Prices in the home copy (and the hero demo's wallet) are `{orderFee}`-style tokens or `Money`, shown in the visitor's currency.
   const [t, locale, recent] = await Promise.all([getTranslations("home.hero"), getLocale(), getRecentStores()]);
   const features = t.raw("marquee") as string[];
-  // The third check is the Free plan's per-order fee (in the visitor's currency), a link to the pricing section below.
+  // The third check is the Free plan's per-order fee as fixed copy (owner, 2026-11-15), a link to the pricing section below.
   const checks: { key: string; label: React.ReactNode; href?: string }[] = [
     { key: "check1", label: t("check1") },
     { key: "check2", label: t("check2") },
-    { key: "check3", label: withPrices(t("check3", PRICE_TOKENS)), href: "#pricing" },
+    { key: "check3", label: t("check3"), href: "#pricing" },
   ];
   const checkIcon = <Check className="size-4 shrink-0 text-[#16a34a]" aria-hidden />;
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";

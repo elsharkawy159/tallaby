@@ -12,7 +12,7 @@
       "cta": "Create your store in under 10 minutes",
       "check1": "Free plan, no card",
       "check2": "Signup in under a minute",
-      "check3": "{orderFee} per order",
+      "check3": "About EGP 1.5 fee per order",
       "sample": "Sample data from a demo store.",
       "composer": {
         "label": "Describe your store",
@@ -142,7 +142,7 @@
     },
     "features": {
       "kicker": "What's new in Tallaby",
-      "title": "Built for how Egypt sells today",
+      "title": "Built for the way people sell online today",
       "mcpTag": "New",
       "mcpTitle": "Manage your products by chatting with <claude>Claude</claude> or <chatgpt>ChatGPT</chatgpt>",
       "mcpBody": "Connect your Tallaby account once. Then ask your AI assistant to add products, change prices or hide items, and it does it in your store.",
