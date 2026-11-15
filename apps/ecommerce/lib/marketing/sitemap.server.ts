@@ -11,9 +11,10 @@ const STATIC_PATHS = Object.keys(STATIC_PAGE_LASTMOD);
 
 /**
  * The entries of tallaby.com's /sitemap.xml (app/sitemap.xml/route.ts): pages,
- * templates (from the gallery), blog posts, the later /stores pages and each
- * listed store's home address (so search engines find new stores from
- * tallaby.com). Blog posts can be limited to one locale (`lang:xx` tags), so
+ * templates (from the gallery), blog posts and the /stores directory pages,
+ * all on tallaby.com. Store addresses are not listed (a sitemap may list only
+ * its own host): stores are found through their own sitemaps and the /stores
+ * links. Blog posts can be limited to one locale (`lang:xx` tags), so
  * each post lists only the locales it is published in; noindex posts are left out. Pages carry the dates in sitemap.lib.ts;
  * templates have no change date in the code catalog, so they carry none.
  */

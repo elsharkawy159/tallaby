@@ -117,13 +117,14 @@ export function parseDirectoryPage(segment: string): number | null {
 }
 
 /**
- * Sitemap rows for the directory: its later pages (page 1 is `/stores`, a
- * static path) in every locale, and each store's home address (absolute, on
- * the store's own host, so no tallaby.com alternates).
+ * Sitemap rows for the directory: every page (`/stores`, then
+ * `/stores/page/2`, …) in every locale, all on tallaby.com. Store home
+ * addresses are left out: a sitemap may list only its own host (Search
+ * Console rejects `*.tallaby.com` and custom domains here), so stores are
+ * found through their own sitemaps and the directory's links (owner,
+ * 2026-11-15).
  */
 export function directorySitemapEntries(stores: readonly DirectoryStore[]): MarketingSitemapEntry[] {
-  const listed = directoryStores(stores);
-  const pages = directoryPageCount(listed.length);
-  const pageEntries = Array.from({ length: pages - 1 }, (_, i) => sitemapEntries(directoryPagePath(i + 2), routing.locales)).flat();
-  return [...pageEntries, ...listed.map((store) => ({ url: store.url, alternates: { languages: {} } }))];
+  const pages = directoryPageCount(directoryStores(stores).length);
+  return Array.from({ length: pages }, (_, i) => sitemapEntries(directoryPagePath(i + 1), routing.locales)).flat();
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { localizedUrl } from "./seo.lib";
+import { SITE_URL } from "./site.lib";
 import {
   DIRECTORY_PAGE_SIZE,
   type DirectoryStore,
@@ -111,14 +112,19 @@ describe("directory pages", () => {
     for (const bad of ["0", "02", "-1", "1.5", "abc", "", "999999"]) expect(parseDirectoryPage(bad), bad).toBeNull();
   });
 
-  it("lists the later pages in both languages and every store's home address in the sitemap", () => {
-    const entries = directorySitemapEntries(many);
+  it("lists every directory page in both languages in the sitemap, and no store address", () => {
+    const entries = directorySitemapEntries([...many, { ...many[0]!, name: "Own", url: "https://faster-eg.com" }]);
     const urls = entries.map((e) => e.url);
+    expect(urls).toContain(localizedUrl("ar", "/stores"));
+    expect(urls).toContain(localizedUrl("en", "/stores"));
     expect(urls).toContain(localizedUrl("ar", "/stores/page/2"));
     expect(urls).toContain(localizedUrl("en", "/stores/page/3"));
-    expect(urls.some((u) => u.endsWith("/stores"))).toBe(false);
-    expect(urls).toContain("https://store000.tallaby.com");
-    expect(entries.filter((e) => e.url.endsWith(".tallaby.com"))).toHaveLength(many.length);
-    expect(entries.find((e) => e.url === "https://store000.tallaby.com")?.alternates.languages).toEqual({});
+    expect(entries.find((e) => e.url === localizedUrl("ar", "/stores"))?.alternates.languages.en).toBe(localizedUrl("en", "/stores"));
+    expect(urls).toHaveLength(3 * 2);
+    for (const url of urls) expect(new URL(url).host, url).toBe(new URL(SITE_URL).host);
+  });
+
+  it("lists page 1 for an empty directory", () => {
+    expect(directorySitemapEntries([]).map((e) => e.url).sort()).toEqual([localizedUrl("en", "/stores"), localizedUrl("ar", "/stores")].sort());
   });
 });
