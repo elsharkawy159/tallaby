@@ -3,6 +3,8 @@ import { redirect } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { db, eq, sellers } from "@workspace/db";
 import { createClient } from "@/supabase/server";
+import { SIGNUP_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { nicheChoices } from "@/lib/stores/niche-choices.lib";
 import { SignupForm } from "./signup.client";
 import { afterSignupPath } from "./signup.dto";
 import { cleanSubdomainPrefill, readSignupPrefillCookie } from "./signup-intent.server";
@@ -55,6 +57,8 @@ export default async function SignupPage({
       initialError={error && KNOWN_ERRORS.has(error) ? (error as "subdomainTaken" | "generic") : null}
       initialSubdomain={prefill ?? ""}
       afterSignup={afterSignup}
+      // Step 2's niche chips per industry, in the page's language (none for "Other").
+      nicheOptions={user ? nicheChoices(SIGNUP_INDUSTRIES.map((industry) => industry.id), await getLocale()) : {}}
     />
   );
 }

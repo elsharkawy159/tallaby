@@ -345,17 +345,30 @@ const hash = (value: string) => [...value].reduce((sum, char) => (sum * 31 + cha
 
 export type TemplateForShortlist = { key: string; category: string; name: { ar?: string; en?: string }; description: { ar?: string; en?: string } };
 
-/** Three templates, chosen in code: the store's industry (else related ones), then style words, then a stable shuffle. */
-export function shortlistTemplates(templates: readonly TemplateForShortlist[], industryId: string | null, styleWords: readonly string[], seed: string): string[] {
+/**
+ * Three templates, chosen in code: the store's industry (else related ones),
+ * then relevance (`rank`, lower first: the server passes `relevanceRank` of
+ * the store's industry and niche; owner, 2026-11-15), then style words, then
+ * a stable shuffle. `rank` is a parameter so this file stays free of the
+ * template data (client components import it).
+ */
+export function shortlistTemplates(
+  templates: readonly TemplateForShortlist[],
+  industryId: string | null,
+  styleWords: readonly string[],
+  seed: string,
+  rank: (template: TemplateForShortlist) => number = () => 0,
+): string[] {
   const wanted = new Set(styleWords.flatMap((word) => tokens(word)));
   const pool = templatesForIndustry(templates, industryId === OTHER_INDUSTRY ? null : industryId);
   return pool
     .map((template) => ({
       key: template.key,
+      rank: rank(template),
       score: tokens(`${template.name.en ?? ""} ${template.description.en ?? ""}`).filter((word) => wanted.has(word)).length,
       order: hash(`${seed}:${template.key}`),
     }))
-    .sort((a, b) => b.score - a.score || a.order - b.order)
+    .sort((a, b) => a.rank - b.rank || b.score - a.score || a.order - b.order)
     .slice(0, 3)
     .map((template) => template.key);
 }

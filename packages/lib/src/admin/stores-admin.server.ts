@@ -242,6 +242,8 @@ export async function getStoreForAdmin(storeId: string, q: Queryable = db) {
       // The change-theme dialog opens on the store's industry and niche.
       storeCategory: stores.storeCategory,
       storeCategoryAr: stores.storeCategoryAr,
+      // The saved niche only (stores.settings.niche), never the rest of the settings.
+      nicheSetting: sql<string | null>`${stores.settings}->>'niche'`,
       firstPublishedAt: stores.firstPublishedAt,
       lastPublishedAt: stores.lastPublishedAt,
       createdAt: stores.createdAt,

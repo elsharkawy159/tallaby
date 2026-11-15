@@ -11,10 +11,12 @@ import {
   createStore,
   getStore,
   restoreStore,
+  updateStoreSettings,
 } from "@workspace/lib/stores/server";
 import { requireSeller, isAccessError } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { SELECTED_STORE_COOKIE } from "@/lib/stores/current-store.server";
+import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import type { SubdomainCheckResult } from "@/components/stores/subdomain-field.client";
 import type { StoreActionResult } from "./stores.dto";
 
@@ -66,6 +68,9 @@ export async function checkNewStoreSubdomain(input: string): Promise<SubdomainCh
 export async function createStoreAction(input: {
   name: string;
   subdomain: string;
+  /** Optional: a STORE_INDUSTRIES id, and a niche of it (owner, 2026-11-15). */
+  industry?: string | null;
+  niche?: string | null;
 }): Promise<StoreActionResult<{ id: string }>> {
   return guard(async () => {
     const seller = await requireSeller({ forWrite: true });
@@ -79,6 +84,23 @@ export async function createStoreAction(input: {
       const map = { limit_reached: "limitReached", taken: "subdomainTaken", invalid_input: "invalidInput" } as const;
       const error = map[result.error as keyof typeof map] ?? (result.error === "no_seller" ? "forbidden" : "invalidSubdomain");
       return { success: false, error };
+    }
+
+    // The industry and niche, as Store settings › General saves them (an unknown
+    // industry is skipped; updateStoreSettings drops a niche of another industry).
+    // Best-effort: the store exists, so a failure here never fails the create.
+    const industry = STORE_INDUSTRIES.find((option) => option.id === input?.industry);
+    if (industry) {
+      try {
+        const saved = await updateStoreSettings(seller.sellerId, result.data.id, {
+          storeCategory: industry.en,
+          storeCategoryAr: industry.ar,
+          niche: typeof input?.niche === "string" && input.niche ? input.niche : null,
+        });
+        if (!saved.success) console.error("[stores] industry not saved", saved.error);
+      } catch (error) {
+        console.error("[stores] industry not saved", (error as Error)?.message);
+      }
     }
 
     // Seller onboarding mail for the new store (best-effort, once per store).

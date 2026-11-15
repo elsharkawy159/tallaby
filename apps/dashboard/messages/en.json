@@ -4119,6 +4119,9 @@
     "industryOther": "Other",
     "industryOtherLabel": "Type your store industry",
     "industryOtherPlaceholder": "e.g. Gardening tools",
+    "niche": "What do you sell most?",
+    "nicheHint": "Optional. We'll show the best-fitting templates first.",
+    "nicheOther": "Something else",
     "signOut": "Sign out",
     "storeAddress": "Store address",
     "storeAddressHint": "Lowercase letters, numbers and dashes. You can change it later.",
@@ -4602,6 +4605,7 @@
     "createDescription": "The store starts as a draft. Pick a template and publish its website so customers can visit and order.",
     "name": "Store name",
     "namePlaceholder": "e.g. My second store",
+    "industryPlaceholder": "Choose an industry (optional)",
     "createdToast": "{name} is live",
     "errors": {
       "limitReached": "You have reached your plan's store limit.",
@@ -4663,7 +4667,10 @@
       "supportedLocales": "Store languages",
       "defaultLocale": "Default language",
       "industry": "Industry",
-      "industryHint": "Pick the closest one; it fills the category fields below and suggests photos in the website editor."
+      "industryHint": "Pick the closest one; it fills the category fields below and suggests photos in the website editor.",
+      "niche": "What does your store sell most?",
+      "nicheHint": "We show the best-fitting templates first on the Templates page.",
+      "nicheNone": "None of these"
     },
     "errors": {
       "invalidInput": "Some values are not valid. Please check the form.",

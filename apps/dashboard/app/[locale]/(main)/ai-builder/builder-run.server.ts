@@ -36,7 +36,7 @@ import { suggestCategories } from "@/app/[locale]/(main)/stores/[storeId]/produc
 import { proposeZones } from "@/app/[locale]/(main)/stores/[storeId]/shipping/ai/ai-zones.server";
 import type { ProposedZone } from "@/app/[locale]/(main)/stores/[storeId]/shipping/ai/ai-zones.dto";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
-import { installTarget } from "./builder-niche.lib";
+import { builderNiche, installTarget } from "./builder-niche.lib";
 import {
   BUILDER_FEATURES,
   BUILDER_LIMITS,
@@ -155,7 +155,8 @@ async function applySettings(ctx: RunContext, build: BuildRow) {
   const settings = await updateStoreSettings(ctx.sellerId, store.id, {
     ...(state.name && { name: state.name }),
     description,
-    ...(industry && { storeCategory: industry.en, storeCategoryAr: industry.ar }),
+    // The niche goes with the industry (updateStoreSettings drops one of another industry).
+    ...(industry && { storeCategory: industry.en, storeCategoryAr: industry.ar, niche: state.nicheId ?? builderNiche(state) }),
     ...(state.logo && isOwnBuilderPath(state.logo, ctx.sellerId) && { logoUrl: builderPhotoUrl(state.logo) }),
     contact: {
       ...(state.contact.phone && { phone: state.contact.phone }),

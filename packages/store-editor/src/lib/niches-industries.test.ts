@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { matchNiche } from "../../../store-sections/src/templates/editions/match";
 import { NICHE_INDUSTRY_NAMES, NICHES, nichesOfIndustry } from "../../../store-sections/src/templates/editions/niches";
+import { industryOfCategory } from "@workspace/lib/stores/niche";
 import { STORE_INDUSTRIES, findIndustry } from "./industries.lib";
 
 describe("niches and store industries", () => {
@@ -31,5 +32,14 @@ describe("niches and store industries", () => {
     expect(findIndustry(saved)?.id).toBe("jewelry");
     expect(matchNiche({ category: saved, productTitles: ["ساعة رجالي جلد", "ساعة حريمي استانلس", "ساعة كلاسيك"] })?.nicheId).toBe("watches");
     expect(matchNiche({ category: saved, hint: "سماعات" })).toBeNull();
+  });
+
+  it("reads the industry of a saved category the same way in @workspace/lib (industryOfCategory)", () => {
+    const names = STORE_INDUSTRIES.flatMap((industry) => [industry.en, industry.ar, ...(industry.aliases ?? [])]);
+    for (const name of [...names, "Cotton tees", "تيشيرتات", ""]) {
+      expect(industryOfCategory({ en: name }), name).toBe(findIndustry({ en: name })?.id ?? null);
+      expect(industryOfCategory({ ar: name }), name).toBe(findIndustry({ ar: name })?.id ?? null);
+    }
+    for (const industry of STORE_INDUSTRIES) expect(industryOfCategory({ en: industry.en, ar: industry.ar })).toBe(industry.id);
   });
 });

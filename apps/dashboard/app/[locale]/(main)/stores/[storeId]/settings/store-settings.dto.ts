@@ -11,6 +11,8 @@ export type StoreGeneralFormValues = {
   description: string;
   storeCategory: string;
   storeCategoryAr: string;
+  /** What the store sells most: a niche id of its industry, or "" (none). */
+  niche: string;
   logoUrl: string;
   bannerUrl: string;
   phone: string;
@@ -33,6 +35,8 @@ export function toGeneralPatch(v: StoreGeneralFormValues, opts: { brand: boolean
     description: v.description.trim() || null,
     storeCategory: v.storeCategory.trim() || null,
     storeCategoryAr: v.storeCategoryAr.trim() || null,
+    // "" removes it; the server also drops a niche of another industry.
+    niche: v.niche || null,
     // Logo and banner are edited here only when the seller has no builder;
     // Website › Design owns them otherwise (the logo shows in every header and footer).
     ...(opts.brand && { logoUrl: v.logoUrl || null, bannerUrl: v.bannerUrl || null }),

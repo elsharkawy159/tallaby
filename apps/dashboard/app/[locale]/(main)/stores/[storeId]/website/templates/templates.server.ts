@@ -14,6 +14,7 @@ import {
   undoStoreTemplate,
 } from "@workspace/lib/store-sites/server";
 import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
+import { effectiveStoreNiche } from "@workspace/lib/stores/niche";
 import { getStore } from "@workspace/lib/stores/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
@@ -140,31 +141,30 @@ export async function listTemplatesPage(storeId: string, query: Partial<Template
     if (!row || !gallery) return { success: false, error: "notFound" };
 
     const industry = findIndustry({ en: row.storeCategory, ar: row.storeCategoryAr });
+    // The seller's niche (Store settings › General, signup) orders every tab; until one is saved, today's guess.
+    const nicheId = effectiveStoreNiche(row, industry?.id);
     // A niche-only industry (ROADMAP F-90) leaves out its templates that serve no niche (none until one switches).
     const templates = galleryTemplates(gallery.templates);
     // A search looks through every category; the tabs always list the whole gallery.
     const q = typeof query?.q === "string" ? query.q.trim().slice(0, 60) : "";
     const requestedCategory = q ? "all" : query?.category == null ? null : parseTemplatesCategory(query.category);
     // The niche filter belongs to a category tab: its niches that have an edition (none today for most tabs, so no filter).
-    const tab = servedCategory([...new Set(templates.map((tpl) => tpl.category))], requestedCategory, industry?.id);
+    const tab = servedCategory(requestedCategory);
     // A niche tab filters like a category (owner, 2026-11-11), so only niches with a look in this gallery get one.
     // A switched industry has one niche tab per niche template, each listing that one card.
     const filter = galleryNiches(tab, new Set(templates.map((tpl) => tpl.key)));
     const niches = filter.niches;
-    const niche = resolveNicheFilter(niches, query?.niche == null ? null : parseTemplatesNiche(query.niche), {
-      category: { en: row.storeCategory, ar: row.storeCategoryAr },
-      name: row.name,
-      industryId: industry?.id,
-    });
+    // Only a niche the seller picks filters: the store's own niche is never preselected (owner, 2026-11-15).
+    const niche = resolveNicheFilter(niches, query?.niche == null ? null : parseTemplatesNiche(query.niche));
     const paged = pageTemplates(q ? templates.filter((tpl) => matchesTemplateSearch(tpl, q)) : templates, {
       page: parseTemplatesPage(query?.page),
       category: requestedCategory,
       industryId: industry?.id,
-      seed: store.id,
+      nicheId,
       nicheLooks: filter.looksOf(niche),
       tabLooks: q ? null : filter.tabLooks,
     });
-    const categories = q ? pageTemplates(templates, { page: 1, category: "all", industryId: industry?.id, seed: store.id }).categories : paged.categories;
+    const categories = q ? pageTemplates(templates, { page: 1, category: "all", industryId: industry?.id }).categories : paged.categories;
     const currentKey = gallery.templateChosen ? gallery.currentKey : "";
     const install = gallery.lastInstall;
     return {

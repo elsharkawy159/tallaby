@@ -35,6 +35,14 @@
       "types": "./src/templates/index.ts",
       "default": "./src/templates/index.ts"
     },
+    "./niches": {
+      "types": "./src/templates/editions/niches.ts",
+      "default": "./src/templates/editions/niches.ts"
+    },
+    "./niche-match": {
+      "types": "./src/templates/editions/match.ts",
+      "default": "./src/templates/editions/match.ts"
+    },
     "./template-preview": {
       "types": "./src/templates/preview.ts",
       "default": "./src/templates/preview.ts"

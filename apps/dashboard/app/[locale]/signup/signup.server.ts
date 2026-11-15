@@ -1,13 +1,14 @@
 "use server";
 
 import { cookies, headers } from "next/headers";
-import { and, db, eq, sellers, stores } from "@workspace/db";
+import { and, db, eq, sellers, sql, stores } from "@workspace/db";
 import { REFERRAL_COOKIE, normalizeReferralCode } from "@workspace/lib/referrals";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
 import { createClient } from "@/supabase/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { OTHER_INDUSTRY_ID, STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { completeSignup } from "./signup-complete.server";
+import { signupNiche } from "./signup-niche.lib";
 import { clearSignupIntentCookie, cleanSubdomainPrefill, setSignupPrefillCookie } from "./signup-intent.server";
 import {
   emailSignupSchema,
@@ -167,11 +168,16 @@ export async function createStoreForCurrentUser(input: StoreSetupInput): Promise
   if (!done.success) return fail(done.error === "taken" ? "subdomainTaken" : "generic");
   await setSignupPrefillCookie(null);
 
-  // The same columns Store settings › General fills when an industry is picked.
+  // The same columns Store settings › General fills when an industry is picked,
+  // and the optional niche (only a known niche of that industry; otherwise none).
   if (done.data.created && done.data.storeId) {
+    const niche = signupNiche(input);
     await db
       .update(stores)
-      .set(category)
+      .set({
+        ...category,
+        ...(niche && { settings: sql`coalesce(${stores.settings}, '{}'::jsonb) || jsonb_build_object('niche', ${niche}::text)` }),
+      })
       .where(and(eq(stores.id, done.data.storeId), eq(stores.sellerId, user.id)));
   }
   return { status: "done", storeUrl: done.storeUrl!, signup: done.signup };

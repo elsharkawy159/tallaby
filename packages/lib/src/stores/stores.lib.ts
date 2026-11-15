@@ -9,6 +9,9 @@ import { SUBDOMAIN_MAX_LENGTH, normalizeSubdomain, validateSubdomain, type Subdo
 import { readSeoKeywords, seoKeywordsSchema } from "@workspace/store-sections/seo-keywords";
 import { TITLE_TEMPLATE_TOKEN } from "./seo-defaults.lib";
 
+// The niche id pattern only: a regex, no niche data in this file.
+const STORE_NICHE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}$/;
+
 export * from "./seo-defaults.lib";
 export {
   SEO_KEYWORDS_MAX,
@@ -108,6 +111,12 @@ export const storeGeneralSettingsSchema = z
     currency: z.enum(STORE_CURRENCY_CODES).optional(),
     /** How prices are labelled on this store's site (stores.settings.currencyLabel); one of the currency's symbols. */
     currencyLabel: z.enum(CURRENCY_LABELS).optional(),
+    /**
+     * What the store sells most (stores.settings.niche), a niche id; null
+     * removes it, absent keeps it. Only its shape is checked here: the server
+     * drops an unknown niche or one of another industry (store-niche.lib.ts).
+     */
+    niche: z.string().trim().regex(STORE_NICHE_ID_PATTERN).nullable().optional(),
     // The catalog mode is set with its product selection (storeCatalogInputSchema).
   })
   .strict()

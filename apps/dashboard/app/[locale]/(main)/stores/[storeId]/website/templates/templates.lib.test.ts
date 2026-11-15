@@ -12,8 +12,9 @@ import {
   parseTemplatesPage,
   resolveNicheFilter,
   servedCategory,
-  sortByIndustry,
+  sortRelevantNewest,
   templatePreviewTabUrl,
+  toTemplateCardViews,
 } from "./templates.lib";
 
 // `sortOrder`: a higher one is a newer template.
@@ -21,36 +22,42 @@ const rows = [
   { key: "classic", category: "general", sortOrder: 10 },
   { key: "mode", category: "fashion", sortOrder: 20 },
   { key: "techhub", category: "electronics", sortOrder: 50 },
-  { key: "kasr", category: "fashion", sortOrder: 40 },
-  { key: "volt", category: "electronics", sortOrder: 60 },
+  { key: "vogue", category: "fashion", sortOrder: 40 },
+  { key: "spark", category: "electronics", sortOrder: 60 },
 ];
 
-describe("sortByIndustry", () => {
-  it("puts the industry's templates first and keeps each group's order", () => {
-    expect(sortByIndustry(rows, "electronics").map((r) => r.key)).toEqual(["techhub", "volt", "classic", "mode", "kasr"]);
+describe("sortRelevantNewest", () => {
+  it("puts the industry's templates first, newest first inside each group", () => {
+    expect(sortRelevantNewest(rows, { industryId: "electronics" }).map((r) => r.key)).toEqual(["spark", "techhub", "vogue", "mode", "classic"]);
   });
 
-  it("keeps the order when the store has no industry or none of its templates", () => {
-    expect(sortByIndustry(rows, null).map((r) => r.key)).toEqual(rows.map((r) => r.key));
-    expect(sortByIndustry(rows, "pets").map((r) => r.key)).toEqual(rows.map((r) => r.key));
+  it("is newest first when the store has no industry or none of its templates", () => {
+    const newest = ["spark", "techhub", "vogue", "mode", "classic"];
+    expect(sortRelevantNewest(rows).map((r) => r.key)).toEqual(newest);
+    expect(sortRelevantNewest(rows, { industryId: "pets" }).map((r) => r.key)).toEqual(newest);
+  });
+
+  it("puts the store niche's own template first, even when it is older", () => {
+    const list = [...rows, { key: "streetwear", category: "fashion", sortOrder: 1 }];
+    expect(sortRelevantNewest(list, { industryId: "fashion", nicheId: "tshirts" }).map((r) => r.key)).toEqual(["streetwear", "vogue", "mode", "spark", "techhub", "classic"]);
   });
 });
 
 describe("pageTemplates", () => {
   it("lists All by relevance then newest, pages, with the industry's tab first", () => {
     const first = pageTemplates(rows, { page: 1, category: "all", industryId: "electronics", pageSize: 2 });
-    expect(first.items.map((r) => r.key)).toEqual(["volt", "techhub"]);
+    expect(first.items.map((r) => r.key)).toEqual(["spark", "techhub"]);
     expect(first).toMatchObject({ page: 1, pageCount: 3, total: 5, categories: ["electronics", "general", "fashion"] });
     expect(pageTemplates(rows, { page: 3, category: "all", industryId: "electronics", pageSize: 2 }).items.map((r) => r.key)).toEqual(["classic"]);
-    // The store's industry leads even when other templates are newer; a store seed no longer shuffles.
-    expect(pageTemplates(rows, { page: 1, category: "all", industryId: "fashion", seed: "store-1" }).items.map((r) => r.key)).toEqual(["kasr", "mode", "volt", "techhub", "classic"]);
+    // The store's industry leads even when other templates are newer.
+    expect(pageTemplates(rows, { page: 1, category: "all", industryId: "fashion" }).items.map((r) => r.key)).toEqual(["vogue", "mode", "spark", "techhub", "classic"]);
     // No industry: newest first.
-    expect(pageTemplates(rows, { page: 1, category: "all" }).items.map((r) => r.key)).toEqual(["volt", "techhub", "kasr", "mode", "classic"]);
+    expect(pageTemplates(rows, { page: 1, category: "all" }).items.map((r) => r.key)).toEqual(["spark", "techhub", "vogue", "mode", "classic"]);
   });
 
   it("filters by category before paging", () => {
     const fashion = pageTemplates(rows, { page: 1, category: "fashion", pageSize: 1 });
-    expect(fashion.items.map((r) => r.key)).toEqual(["kasr"]);
+    expect(fashion.items.map((r) => r.key)).toEqual(["vogue"]);
     expect(fashion).toMatchObject({ pageCount: 2, total: 2 });
     expect(fashion.categories).toEqual(["general", "fashion", "electronics"]);
   });
@@ -60,10 +67,10 @@ describe("pageTemplates", () => {
     expect(pageTemplates(rows, { page: 2, category: "pets", pageSize: 2 })).toMatchObject({ items: [], page: 1, pageCount: 1, total: 0 });
   });
 
-  it("defaults to the store's industry tab when it has templates, else all", () => {
+  it("opens on All, most relevant first, whatever the store's industry (owner, 2026-11-15)", () => {
     const fashion = pageTemplates(rows, { page: 1, category: null, industryId: "fashion" });
-    expect(fashion.category).toBe("fashion");
-    expect(fashion.items.map((r) => r.key)).toEqual(["kasr", "mode"]);
+    expect(fashion).toMatchObject({ category: "all", total: 5 });
+    expect(fashion.items.map((r) => r.key)).toEqual(["vogue", "mode", "spark", "techhub", "classic"]);
     expect(pageTemplates(rows, { page: 1, category: null, industryId: "pets" })).toMatchObject({ category: "all", total: 5 });
     expect(pageTemplates(rows, { page: 1, category: null })).toMatchObject({ category: "all", total: 5 });
     expect(pageTemplates(rows, { page: 1, category: "all", industryId: "fashion" })).toMatchObject({ category: "all", total: 5 });
@@ -82,7 +89,7 @@ describe("URL parsing", () => {
   });
 });
 
-describe("sortByIndustry with a store seed", () => {
+describe("relevance across categories and tabs", () => {
   const many = [
     { key: "classic", category: "general" },
     ...["a", "b", "c", "d", "e", "f"].map((k) => ({ key: `fashion-${k}`, category: "fashion" })),
@@ -90,26 +97,24 @@ describe("sortByIndustry with a store seed", () => {
     ...["a", "b", "c"].map((k) => ({ key: `tech-${k}`, category: "electronics" })),
   ];
 
-  it("puts the store's industry, then related industries, first", () => {
-    const sorted = sortByIndustry(many, "fashion", "store-1");
+  it("puts the store's industry, then related industries, first, in tabs and cards", () => {
+    const sorted = pageTemplates(many, { page: 1, category: "all", industryId: "fashion", pageSize: 100 }).items;
     expect(sorted.slice(0, 6).every((r) => r.category === "fashion")).toBe(true);
     expect(sorted.slice(6, 9).every((r) => r.category === "jewelry")).toBe(true);
     expect(categoryOrder(many.map((r) => r.category), "fashion")).toEqual(["fashion", "jewelry", "general", "electronics"]);
+    expect(pageTemplates(many, { page: 1, category: "all", industryId: "fashion" }).categories).toEqual(["fashion", "jewelry", "general", "electronics"]);
   });
 
-  it("is stable for one store and keeps every template", () => {
-    const a = sortByIndustry(many, "fashion", "store-1").map((r) => r.key);
-    expect(sortByIndustry(many, "fashion", "store-1").map((r) => r.key)).toEqual(a);
-    expect([...a].sort()).toEqual(many.map((r) => r.key).sort());
-  });
-
-  it("gives different stores different orders inside a category", () => {
-    const firsts = new Set(Array.from({ length: 20 }, (_, i) => sortByIndustry(many, "fashion", `store-${i}`)[0]!.key));
-    expect(firsts.size).toBeGreaterThan(2);
+  it("puts the niche's template first on its category tab and on a switched tab's list", () => {
+    const list = [...many, { key: "streetwear", category: "fashion" }];
+    const tab = pageTemplates(list, { page: 1, category: "fashion", industryId: "fashion", nicheId: "tshirts" });
+    expect(tab.items[0]!.key).toBe("streetwear");
+    const switched = pageTemplates(list, { page: 1, category: "fashion", industryId: "fashion", nicheId: "tshirts", tabLooks: ["fashion-a", "streetwear", "fashion-b"] });
+    expect(switched.items.map((r) => r.key)).toEqual(["streetwear", "fashion-a", "fashion-b"]);
   });
 
   it("pages without repeats", () => {
-    const seen = [1, 2, 3, 4].flatMap((page) => pageTemplates(many, { page, category: "all", industryId: "fashion", seed: "s", pageSize: 4 }).items.map((r) => r.key));
+    const seen = [1, 2, 3, 4].flatMap((page) => pageTemplates(many, { page, category: "all", industryId: "fashion", nicheId: "tshirts", pageSize: 4 }).items.map((r) => r.key));
     expect(new Set(seen).size).toBe(many.length);
   });
 });
@@ -118,33 +123,28 @@ describe("sortByIndustry with a store seed", () => {
 describe("the niche filter", () => {
   const tshirts = { id: "tshirts", name: { ar: "تيشيرتات", en: "T-shirts" } };
   const dresses = { id: "dresses", name: { ar: "فساتين", en: "Dresses" } };
-  const teeShop = { category: { en: "T-shirts", ar: "تيشيرتات" }, name: "Qotna tees", industryId: "fashion" };
 
-  it("serves the tab asked for, else the store's industry when it has templates, else all", () => {
-    expect(servedCategory(["fashion", "electronics"], null, "fashion")).toBe("fashion");
-    expect(servedCategory(["fashion", "electronics"], null, "pets")).toBe("all");
-    expect(servedCategory(["fashion", "electronics"], null, null)).toBe("all");
-    expect(servedCategory(["fashion", "electronics"], "electronics", "fashion")).toBe("electronics");
+  it("serves the tab asked for, else all", () => {
+    expect(servedCategory(null)).toBe("all");
+    expect(servedCategory("electronics")).toBe("electronics");
+    expect(servedCategory("all")).toBe("all");
   });
 
   it("offers no niche when the tab has no edition: no filter, whatever is asked", () => {
-    expect(resolveNicheFilter([], null, teeShop)).toBeNull();
-    expect(resolveNicheFilter([], "tshirts", teeShop)).toBeNull();
+    expect(resolveNicheFilter([], null)).toBeNull();
+    expect(resolveNicheFilter([], "tshirts")).toBeNull();
   });
 
-  it("defaults to the store's own niche when the tab offers it", () => {
-    expect(resolveNicheFilter([dresses, tshirts], null, teeShop)).toBe("tshirts");
-    // The store's niche has no edition yet: all.
-    expect(resolveNicheFilter([dresses], null, teeShop)).toBeNull();
-    // The words say nothing: all.
-    expect(resolveNicheFilter([dresses, tshirts], null, { category: { en: "Fashion", ar: "أزياء وملابس" }, name: "Nour" })).toBeNull();
+  it("never preselects a niche: none asked for is no filter (owner, 2026-11-15)", () => {
+    expect(resolveNicheFilter([dresses, tshirts], null)).toBeNull();
+    expect(resolveNicheFilter([dresses, tshirts], undefined)).toBeNull();
   });
 
   it("keeps a niche the seller chose, and treats all, an unknown id and another tab's niche as no filter", () => {
-    expect(resolveNicheFilter([dresses, tshirts], "dresses", teeShop)).toBe("dresses");
-    expect(resolveNicheFilter([dresses, tshirts], "all", teeShop)).toBeNull();
-    expect(resolveNicheFilter([dresses, tshirts], "mobiles", teeShop)).toBeNull();
-    expect(resolveNicheFilter([dresses, tshirts], "no-such-niche", teeShop)).toBeNull();
+    expect(resolveNicheFilter([dresses, tshirts], "dresses")).toBe("dresses");
+    expect(resolveNicheFilter([dresses, tshirts], "all")).toBeNull();
+    expect(resolveNicheFilter([dresses, tshirts], "mobiles")).toBeNull();
+    expect(resolveNicheFilter([dresses, tshirts], "no-such-niche")).toBeNull();
   });
 
   it("reads ?niche= as an id or all", () => {
@@ -153,24 +153,24 @@ describe("the niche filter", () => {
   });
 
   it("lists only the niche's looks on a niche tab, best look first, like a category filter", () => {
-    const withNiche = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["mode", "kasr"] });
-    expect(withNiche.items.map((r) => r.key)).toEqual(["mode", "kasr"]);
+    const withNiche = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["mode", "vogue"] });
+    expect(withNiche.items.map((r) => r.key)).toEqual(["mode", "vogue"]);
     // Only the niche's looks: the rest of the tab is not listed.
     const one = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["mode"] });
     expect(one.items.map((r) => r.key)).toEqual(["mode"]);
     expect(one.total).toBe(1);
     expect(one.category).toBe("fashion");
     // A look filed under another industry is still in its niche.
-    const across = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["volt", "mode"] });
-    expect(across.items.map((r) => r.key)).toEqual(["volt", "mode"]);
+    const across = pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: ["spark", "mode"] });
+    expect(across.items.map((r) => r.key)).toEqual(["spark", "mode"]);
     expect(across.total).toBe(2);
     // Looks that are not in the gallery are skipped; no repeats across pages.
-    const paged = [1, 2].flatMap((page) => pageTemplates(rows, { page, category: "fashion", nicheLooks: ["gone", "mode", "kasr", "mode"], pageSize: 1 }).items.map((r) => r.key));
-    expect(paged).toEqual(["mode", "kasr"]);
+    const paged = [1, 2].flatMap((page) => pageTemplates(rows, { page, category: "fashion", nicheLooks: ["gone", "mode", "vogue", "mode"], pageSize: 1 }).items.map((r) => r.key));
+    expect(paged).toEqual(["mode", "vogue"]);
   });
 
   it("leaves the list as it is with no niche, and on All", () => {
-    expect(pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: [] }).items.map((r) => r.key)).toEqual(["kasr", "mode"]);
+    expect(pageTemplates(rows, { page: 1, category: "fashion", nicheLooks: [] }).items.map((r) => r.key)).toEqual(["vogue", "mode"]);
     expect(pageTemplates(rows, { page: 1, category: "all", nicheLooks: ["mode"] }).items.map((r) => r.key)).toEqual(
       pageTemplates(rows, { page: 1, category: "all" }).items.map((r) => r.key),
     );
@@ -329,5 +329,19 @@ describe("templatePreviewTabUrl", () => {
   it("keeps the page shown and the niche edition", () => {
     expect(templatePreviewTabUrl(origin, "ar", "vella", { slug: "about", isHome: false }, "dresses")).toBe("https://tallaby.com/template-preview/vella/about?edition=dresses");
     expect(templatePreviewTabUrl(origin, "en", "vella", { slug: "product", isHome: false }, null)).toBe("https://tallaby.com/en/template-preview/vella/product");
+  });
+});
+
+describe("toTemplateCardViews", () => {
+  const card = (key: string, category: string, sortOrder: number) =>
+    ({ key, category, sortOrder, name: { en: key }, description: {}, outline: [], palette: [], formKinds: [], pageNames: {} }) as never;
+
+  it("orders the cards by relevance, newest first inside a group", () => {
+    const views = toTemplateCardViews([card("classic", "general", 1), card("vogue", "fashion", 2), card("streetwear", "fashion", 1), card("volt", "electronics", 9)], {
+      industryId: "fashion",
+      nicheId: "tshirts",
+    });
+    expect(views.map((view) => view.key)).toEqual(["streetwear", "vogue", "volt", "classic"]);
+    expect(toTemplateCardViews([card("a", "general", 1), card("b", "fashion", 2)]).map((view) => view.key)).toEqual(["b", "a"]);
   });
 });

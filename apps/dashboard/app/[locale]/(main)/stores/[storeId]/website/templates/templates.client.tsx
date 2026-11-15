@@ -32,8 +32,8 @@ type Localized = { ar?: string; en?: string };
 
 /**
  * Query key of one gallery page; `["store-templates", storeId]` matches every
- * page of the store. A `null` category is the store's default tab (its industry),
- * a `null` niche the store's own niche when that tab offers it.
+ * page of the store. A `null` category is "All" (most relevant first), a
+ * `null` niche no niche filter (owner, 2026-11-15).
  */
 const templatesKey = (storeId: string, page?: number, category?: string | null, q = "", niche: string | null = null) =>
   page === undefined ? ["store-templates", storeId] : ["store-templates", storeId, page, { category, q, niche }];
@@ -82,10 +82,10 @@ export function TemplateGallery({
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const page = parseTemplatesPage(searchParams.get("page"));
-  // No `?category=`: the server picks the store's industry tab (owner request 2026-10-28).
+  // No `?category=`: the server serves "All", most relevant first (owner, 2026-11-15).
   const categoryParam = searchParams.get("category");
   const requestedCategory = categoryParam === null ? null : parseTemplatesCategory(categoryParam);
-  // No `?niche=`: the server picks the store's own niche when the tab offers it.
+  // No `?niche=`: no niche filter (the store's niche only orders the list).
   const nicheParam = searchParams.get("niche");
   const requestedNiche = nicheParam === null ? null : parseTemplatesNiche(nicheParam);
   const listRef = useRef<HTMLDivElement>(null);
@@ -137,9 +137,8 @@ export function TemplateGallery({
 
   /**
    * Writes the filters to the URL (client-side only: no server round trip, the
-   * back button works). The category is always written, `all` too, since no
-   * `?category=` means the store's industry tab. `niche`: an id or `all` is
-   * written, `null` clears it (the tab's default), left out keeps it.
+   * back button works). The category is always written, `all` too. `niche`:
+   * an id or `all` is written, `null` clears it (no filter), left out keeps it.
    */
   const setFilters = (next: { page: number; category: string; niche?: string | null }) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -323,7 +322,7 @@ export function TemplateGallery({
                   onClick={() => {
                     setSearch("");
                     setQ("");
-                    // Another tab starts from its own default niche.
+                    // Another tab starts with no niche filter.
                     setFilters({ page: 1, category: value, niche: null });
                   }}
                 >

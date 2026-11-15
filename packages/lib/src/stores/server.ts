@@ -50,7 +50,9 @@ import { toShippingZone, type StoreShippingZone } from "./shipping-context.serve
 import { canCreateStore } from "../plans";
 import { isSwitchOn } from "./platform-switches.server";
 import { productShownInStore } from "./store-scope.server";
+import { industryOfCategory, nicheForIndustry } from "./store-niche.lib";
 import { z } from "zod";
+import type { SQL } from "drizzle-orm";
 import {
   MAX_ZONES_PER_STORE,
   SHIPPING_TEMPLATES,
@@ -355,7 +357,7 @@ export async function updateStoreSettings(
   if (!store) return { success: false, error: "not_found" };
   if (store.status !== "active") return { success: false, error: "store_read_only" };
 
-  const { contact, currency, currencyLabel, ...fields } = parsed.data;
+  const { contact, currency, currencyLabel, niche, ...fields } = parsed.data;
   const locales = fields.supportedLocales ?? store.supportedLocales;
   const defaultLocale = fields.defaultLocale ?? store.defaultLocale;
   if (!locales.includes(defaultLocale)) return { success: false, error: "invalid_input" };
@@ -368,17 +370,33 @@ export async function updateStoreSettings(
     nextContact = { ...rest, ...contact };
   }
 
+  // The niche (absent = keep) belongs to the industry the store has after this save:
+  // one of another industry, or an unknown id, is dropped (the key is removed).
+  const industryId = industryOfCategory({
+    en: fields.storeCategory !== undefined ? fields.storeCategory : store.storeCategory,
+    ar: fields.storeCategoryAr !== undefined ? fields.storeCategoryAr : store.storeCategoryAr,
+  });
+  const nextNiche = niche === undefined ? undefined : nicheForIndustry(niche, industryId);
+
+  // One settings expression for every settings key this save changes (two
+  // `settings:` keys in one set() would overwrite each other). Other settings
+  // keys (payments, …) are kept.
+  const setCurrency = Boolean(currency && currencyLabel);
+  let settings: SQL | undefined;
+  if (setCurrency || nextNiche !== undefined) {
+    settings = sql`coalesce(${stores.settings}, '{}'::jsonb)`;
+    if (nextNiche === null) settings = sql`(${settings} - 'niche')`;
+    if (setCurrency) settings = sql`${settings} || jsonb_build_object('currency', ${currency}::text, 'currencyLabel', ${currencyLabel}::text)`;
+    if (nextNiche) settings = sql`${settings} || jsonb_build_object('niche', ${nextNiche}::text)`;
+  }
+
   const write = (tx: Queryable) =>
     tx
       .update(stores)
       .set({
         ...fields,
         ...(nextContact && { contact: nextContact }),
-        // Other settings keys (payments, …) are kept.
-        ...(currency &&
-          currencyLabel && {
-            settings: sql`coalesce(${stores.settings}, '{}'::jsonb) || jsonb_build_object('currency', ${currency}::text, 'currencyLabel', ${currencyLabel}::text)`,
-          }),
+        ...(settings && { settings }),
         updatedAt: sql`now()`,
       })
       .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))

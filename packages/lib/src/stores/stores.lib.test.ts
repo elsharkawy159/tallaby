@@ -73,6 +73,15 @@ describe("storeGeneralSettingsSchema", () => {
     expect(storeGeneralSettingsSchema.safeParse({ status: "active" }).success).toBe(false);
   });
 
+  it("takes a niche id, null (remove) or nothing (keep), and refuses other shapes", () => {
+    const parse = (niche: unknown) => storeGeneralSettingsSchema.safeParse({ niche });
+    expect(parse("tshirts").data?.niche).toBe("tshirts");
+    expect(parse(" tshirts ").data?.niche).toBe("tshirts");
+    expect(parse(null).data?.niche).toBeNull();
+    expect(storeGeneralSettingsSchema.safeParse({}).data?.niche).toBeUndefined();
+    for (const bad of ["T-Shirts", "", "../x", "a".repeat(64), 7, {}]) expect(parse(bad).success, String(bad)).toBe(false);
+  });
+
   it("saves a currency together with one of its own symbols", () => {
     const ok = (v: object) => storeGeneralSettingsSchema.safeParse(v).success;
     expect(ok({ currency: "SAR", currencyLabel: "ر.س" })).toBe(true);

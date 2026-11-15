@@ -2,6 +2,10 @@ import { notFound } from "next/navigation";
 import { parseStoreCurrency } from "@workspace/lib";
 import { STORE_CATALOG_MAX_PRODUCTS } from "@workspace/lib/stores";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
+import { industryOfCategory, nicheForIndustry, parseStoreNiche } from "@workspace/lib/stores/niche";
+import { getLocale } from "next-intl/server";
+import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { nicheChoices } from "@/lib/stores/niche-choices.lib";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { getBillingState } from "@workspace/lib/billing/server"
@@ -16,10 +20,11 @@ export const instant = false;
 export default async function StoreGeneralSettingsPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadStorePage(storeId);
-  const [catalog, catalogProducts, billing] = await Promise.all([
+  const [catalog, catalogProducts, billing, locale] = await Promise.all([
     getStoreCatalog(store.sellerId, store.id),
     loadCatalogProducts(store.sellerId, store.id),
     getBillingState(),
+    getLocale(),
   ]);
   if (!catalog) notFound();
   const contact = (store.contact ?? {}) as Record<string, string | undefined>;
@@ -32,6 +37,8 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
     description: store.description ?? "",
     storeCategory: store.storeCategory ?? "",
     storeCategoryAr: store.storeCategoryAr ?? "",
+    // Only a saved niche of the store's industry shows as picked (no guess here).
+    niche: nicheForIndustry(parseStoreNiche(store.settings), industryOfCategory({ en: store.storeCategory, ar: store.storeCategoryAr })) ?? "",
     logoUrl: store.logoUrl ?? "",
     bannerUrl: store.bannerUrl ?? "",
     phone: contact.phone ?? "",
@@ -48,6 +55,10 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
       usdLive={billing.usdLive}
       storeId={store.id}
       initial={initial}
+      nicheOptions={nicheChoices(
+        STORE_INDUSTRIES.map((industry) => industry.id),
+        locale,
+      )}
       readOnly={readOnly}
       // Builder sellers edit the logo, banner and favicon in Website › Design;
       // the others keep them here.

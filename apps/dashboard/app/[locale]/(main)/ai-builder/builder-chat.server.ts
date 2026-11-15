@@ -6,6 +6,7 @@ import { builderPhotoUrl } from "./builder-upload.lib";
 import {
   BUILDER_FEATURES,
   BUILDER_LIMITS,
+  OTHER_INDUSTRY,
   builderBriefOutputSchema,
   builderChatOutputSchema,
   type BuilderAnswer,
@@ -15,7 +16,8 @@ import {
   type BuilderView,
 } from "./builder.dto";
 import { applyAnswer, currentStep, mergeReading, shortlistTemplates, withNextQuestion, withSellerMessage } from "./builder.lib";
-import { suggestionEditionChoice } from "./builder-niche.lib";
+import { relevanceRank } from "@workspace/store-editor/lib/template-relevance.lib";
+import { builderNiche, suggestionEditionChoice } from "./builder-niche.lib";
 import { MAX_TEMPLATES_SHOWN, fileProblems, nextCard } from "./builder-questions.lib";
 import { BRIEF_SYSTEM_RULES, CHAT_SYSTEM_RULES, briefRequestText, chatRequestText } from "./builder-prompts.lib";
 import { checkModelCall, claimFreeBuild, giveCreditBack, saveBuild, type BuildRow, type ModelGate } from "./builder.store.server";
@@ -150,7 +152,10 @@ async function writeBrief(build: BuildRow, state: BuilderState): Promise<{ state
 export function withShortlist(state: BuilderState, seed: string): BuilderState {
   if (currentStep(state) !== "template" || state.shortlist.length) return state;
   const templates = CODE_TEMPLATES.map(({ key, category, name, description }) => ({ key, category, name, description }));
-  return { ...state, shortlist: shortlistTemplates(templates, state.industryId, state.brief?.styleWords ?? [], seed) };
+  // The store niche's template first (owner, 2026-11-15); the niche is read in code from what the seller said.
+  const industryId = state.industryId && state.industryId !== OTHER_INDUSTRY ? state.industryId : null;
+  const rank = relevanceRank({ industryId, nicheId: state.nicheId ?? builderNiche(state) });
+  return { ...state, shortlist: shortlistTemplates(templates, state.industryId, state.brief?.styleWords ?? [], seed, rank) };
 }
 
 const answerLabel = (answer: BuilderAnswer) => (answer.type === "text" ? answer.text : answer.type === "chip" ? `chip:${answer.value}` : "chip:skip");

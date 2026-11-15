@@ -419,6 +419,10 @@
       "types": "./src/stores/sales-popup.server.ts",
       "default": "./src/stores/sales-popup.server.ts"
     },
+    "./stores/niche": {
+      "types": "./src/stores/store-niche.lib.ts",
+      "default": "./src/stores/store-niche.lib.ts"
+    },
     "./stores/server": {
       "types": "./src/stores/server.ts",
       "default": "./src/stores/server.ts"

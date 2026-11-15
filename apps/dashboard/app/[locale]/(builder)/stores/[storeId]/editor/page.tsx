@@ -10,6 +10,7 @@ import { getStorePreviewProduct } from "@workspace/lib/store-sites/preview-produ
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
+import { effectiveStoreNiche } from "@workspace/lib/stores/niche";
 import { designSystemSchema, preferTemplatePresets, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
@@ -63,7 +64,8 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const industry = findIndustry(storeCategory);
   // No "current" template until the seller picks one (the new-store Classic drafts are a placeholder).
   const templatesCurrentKey = gallery?.templateChosen ? gallery.currentKey : "";
-  const templateItems = toTemplateCardViews(gallery?.templates ?? [], storeCategory, store.id);
+  // Most relevant first: the store niche's template, its industry, related industries (owner, 2026-11-15).
+  const templateItems = toTemplateCardViews(gallery?.templates ?? [], { industryId: industry?.id, nicheId: effectiveStoreNiche(store, industry?.id) });
 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
   const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);

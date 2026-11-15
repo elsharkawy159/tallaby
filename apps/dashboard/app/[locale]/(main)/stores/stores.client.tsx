@@ -52,8 +52,9 @@ import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { selectStore } from "@/components/dashboard/store-switcher.server";
-import { IconButton, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
+import { Chip, Chips, Field, IconButton, NativeSelect, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
+import type { NicheChoice, NicheChoices } from "@/lib/stores/niche-choices.lib";
 import { archiveStoreAction, checkNewStoreSubdomain, createStoreAction, restoreStoreAction } from "./stores.server";
 import type { StoreCardData, StoreErrorKey } from "./stores.dto";
 
@@ -63,6 +64,8 @@ export function StoresView({
   maxStores,
   openCreate,
   aiBuilder = false,
+  industries = [],
+  nicheOptions = {},
 }: {
   stores: StoreCardData[];
   selectedId: string | null;
@@ -70,6 +73,9 @@ export function StoresView({
   openCreate: boolean;
   /** The AI Store Builder's switch (F-54). */
   aiBuilder?: boolean;
+  /** The create dialog's industries and their niche chips, in the page's language. */
+  industries?: NicheChoice[];
+  nicheOptions?: NicheChoices;
 }) {
   const t = useTranslations("stores");
   const tBuilder = useTranslations("aiBuilder");
@@ -126,7 +132,7 @@ export function StoresView({
         ))}
       </div>
 
-      <CreateStoreDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateStoreDialog open={createOpen} onOpenChange={setCreateOpen} industries={industries} nicheOptions={nicheOptions} />
     </>
   );
 }
@@ -288,13 +294,30 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
   );
 }
 
-function CreateStoreDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+/** The "Something else" niche chip: saved as no niche. */
+const NICHE_OTHER = "other";
+
+function CreateStoreDialog({
+  open,
+  onOpenChange,
+  industries,
+  nicheOptions,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  industries: NicheChoice[];
+  nicheOptions: NicheChoices;
+}) {
   const t = useTranslations("stores");
   const tSignup = useTranslations("signup");
   const router = useRouter();
   const showError = useErrorToast();
   const [isPending, startTransition] = useTransition();
   const [available, setAvailable] = useState(false);
+  // Optional (owner, 2026-11-15): the industry, then a niche of it ("" = not picked).
+  const [industry, setIndustry] = useState("");
+  const [niche, setNiche] = useState("");
+  const niches = nicheOptions[industry] ?? [];
 
   const schema = z.object({
     name: z.string().trim().min(2, t("errors.nameTooShort")).max(80, t("errors.nameTooLong")),
@@ -304,7 +327,11 @@ function CreateStoreDialog({ open, onOpenChange }: { open: boolean; onOpenChange
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { name: "", subdomain: "" } });
 
   useEffect(() => {
-    if (!open) form.reset();
+    if (!open) {
+      form.reset();
+      setIndustry("");
+      setNiche("");
+    }
   }, [open, form]);
 
   // Fill the address from the name until the seller edits the address themselves
@@ -321,7 +348,11 @@ function CreateStoreDialog({ open, onOpenChange }: { open: boolean; onOpenChange
       return;
     }
     startTransition(async () => {
-      const result = await createStoreAction(values);
+      const result = await createStoreAction({
+        ...values,
+        industry: industry || null,
+        niche: niche && niche !== NICHE_OTHER ? niche : null,
+      });
       if (!result.success) {
         if (result.error === "subdomainTaken") form.setError("subdomain", { message: t("errors.subdomainTaken") });
         showError(result.error);
@@ -352,6 +383,35 @@ function CreateStoreDialog({ open, onOpenChange }: { open: boolean; onOpenChange
               onAvailabilityChange={setAvailable}
               disabled={isPending}
             />
+            <Field label={tSignup("industry")} htmlFor="new-store-industry">
+              <NativeSelect
+                id="new-store-industry"
+                value={industry}
+                disabled={isPending}
+                onChange={(event) => {
+                  setIndustry(event.target.value);
+                  setNiche("");
+                }}
+              >
+                <option value="">{t("industryPlaceholder")}</option>
+                {industries.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </Field>
+            {niches.length > 0 && (
+              <Field label={tSignup("niche")} note={tSignup("nicheHint")}>
+                <Chips role="group" aria-label={tSignup("niche")}>
+                  {[...niches, { id: NICHE_OTHER, name: tSignup("nicheOther") }].map((option) => (
+                    <Chip key={option.id} pressed={niche === option.id} disabled={isPending} className="disabled:opacity-50" onClick={() => setNiche(option.id)}>
+                      {option.name}
+                    </Chip>
+                  ))}
+                </Chips>
+              </Field>
+            )}
             <DialogFooter>
               <SellerButton type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
                 {t("cancel")}

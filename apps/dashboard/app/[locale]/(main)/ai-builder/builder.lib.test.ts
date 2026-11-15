@@ -278,6 +278,11 @@ describe("template shortlist", () => {
     expect(picked.slice(0, 2).sort()).toEqual(["c", "d"]);
   });
 
+  it("ranks by relevance before style words when given a rank", () => {
+    // The niche's template ("b") first, whatever the style words say.
+    expect(shortlistTemplates(list, "food", ["minimal"], "seed", (template) => (template.key === "b" ? 0 : 1))[0]).toBe("b");
+  });
+
   it("gives the same list for the same seed", () => {
     expect(shortlistTemplates(list, null, [], "seed")).toEqual(shortlistTemplates(list, null, [], "seed"));
   });

@@ -3,10 +3,15 @@
  * 2026-11-12): the offered themes and each industry tab's niches, from the
  * same gallery rules as the seller's Website › Templates (`galleryNiches`,
  * `nicheCards`, retired templates left out), plus the tab and niche the
- * dialog opens on (the store's industry and its own niche).
+ * dialog opens on (the store's industry and its own niche: the saved one,
+ * else today's guess). The themes are most relevant first, newest first
+ * inside a group, like the seller's gallery (`sortByRelevance`; owner,
+ * 2026-11-15).
  */
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
+import { effectiveStoreNiche } from "@workspace/lib/stores/niche";
 import { findIndustry } from "@workspace/store-editor/lib/industries.lib";
+import { sortByRelevance } from "@workspace/store-editor/lib/template-relevance.lib";
 import { galleryNiches, nicheCards } from "@workspace/store-editor/lib/template-niches.lib";
 import { defaultNiche, isRetiredTemplate } from "@workspace/store-sections/templates";
 import { localizedText } from "../stores.lib";
@@ -21,10 +26,16 @@ export type ThemeGallery = {
 
 export function buildThemeGallery(
   templates: readonly StoreTemplateCard[],
-  store: { name: string; storeCategory: string | null; storeCategoryAr: string | null },
+  store: { name: string; storeCategory: string | null; storeCategoryAr: string | null; nicheSetting?: string | null },
 ): ThemeGallery {
+  const category = { en: store.storeCategory, ar: store.storeCategoryAr };
+  const industry = findIndustry(category)?.id ?? null;
+  const storeNiche = effectiveStoreNiche({ ...store, settings: { niche: store.nicheSetting ?? null } }, industry);
   // A niche-only industry (ROADMAP F-90) leaves out its templates that serve no niche.
-  const offered = templates.filter((template) => !isRetiredTemplate(template));
+  const offered = sortByRelevance(
+    templates.filter((template) => !isRetiredTemplate(template)).sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0)),
+    { industryId: industry, nicheId: storeNiche },
+  );
   const keys = new Set(offered.map((template) => template.key));
   const cards = nicheCards([...keys]);
   const themes: ThemeOption[] = offered.map((template) => ({
@@ -52,9 +63,8 @@ export function buildThemeGallery(
     };
   }
 
-  const category = { en: store.storeCategory, ar: store.storeCategoryAr };
-  const industry = findIndustry(category)?.id ?? null;
   const tab = industry && themes.some((theme) => theme.category === industry) ? industry : null;
-  const niche = tab && tabs[tab] ? defaultNiche({ category, name: store.name, industryId: tab }, tabs[tab].niches) : null;
+  const offeredNiches = tab ? tabs[tab]?.niches : undefined;
+  const niche = offeredNiches ? (offeredNiches.some((option) => option.id === storeNiche) ? storeNiche : defaultNiche({ category, name: store.name, industryId: tab }, offeredNiches)) : null;
   return { themes, tabs, initial: { category: tab, niche } };
 }

@@ -47,14 +47,19 @@ import {
   startGoogleSignup,
 } from "./signup.server";
 import type { SignupErrorKey, SignupResult } from "./signup.dto";
+import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 
 const EGYPT_MOBILE = /^(?:\+20|0020|0)?1[0125]\d{8}$/;
+/** The "Something else" niche chip: saved as no niche. */
+const NICHE_OTHER = "other";
 
 type FormValues = {
   subdomain: string;
   industry: string;
   /** The seller's own words when the industry is "Other". */
   industryOther: string;
+  /** A niche id of the chosen industry, `NICHE_OTHER` ("Something else") or "" (not picked). Optional. */
+  niche: string;
   phone: string;
   email: string;
   password: string;
@@ -71,6 +76,7 @@ export function SignupForm({
   initialError,
   initialSubdomain = "",
   afterSignup = null,
+  nicheOptions = {},
 }: {
   /** Set when a user is already signed in (no seller row yet): step 2. */
   signedInEmail: string | null;
@@ -78,6 +84,8 @@ export function SignupForm({
   initialSubdomain?: string;
   /** Where to go once the store exists, when the seller came for it. */
   afterSignup?: string | null;
+  /** Step 2's niche chips per industry id, in the page's language (owner, 2026-11-15). */
+  nicheOptions?: NicheChoices;
 }) {
   const t = useTranslations("signup");
   const tAuth = useTranslations("auth");
@@ -108,6 +116,7 @@ export function SignupForm({
                 .max(32, t("tooLong")),
               industry: z.string().min(1, t("errors.industryRequired")),
               industryOther: z.string().max(60),
+              niche: z.string(),
               phone: z
                 .string()
                 .refine(
@@ -132,6 +141,7 @@ export function SignupForm({
               subdomain: z.string(),
               industry: z.string(),
               industryOther: z.string(),
+              niche: z.string(),
               phone: z.string(),
               email: z.email(t("errors.invalidEmail")),
               password: z
@@ -153,6 +163,7 @@ export function SignupForm({
       subdomain: initialSubdomain,
       industry: "",
       industryOther: "",
+      niche: "",
       phone: "",
       email: "",
       password: "",
@@ -161,6 +172,8 @@ export function SignupForm({
   });
 
   const industry = form.watch("industry");
+  const niche = form.watch("niche");
+  const niches = nicheOptions[industry] ?? [];
 
   const handleResult = (result: SignupResult, email?: string) => {
     if (result.status === "done") {
@@ -201,6 +214,8 @@ export function SignupForm({
             phone: values.phone,
             industry: values.industry,
             industryOther: values.industryOther,
+            // Optional: "Something else" and no pick save no niche.
+            niche: values.niche && values.niche !== NICHE_OTHER ? values.niche : null,
           })
         : await signUpWithEmail({
             subdomain: initialSubdomain,
@@ -405,11 +420,13 @@ export function SignupForm({
                           role="radio"
                           aria-checked={field.value === option.id}
                           disabled={busy}
-                          onClick={() =>
+                          onClick={() => {
                             form.setValue("industry", option.id, {
                               shouldValidate: true,
-                            })
-                          }
+                            });
+                            // Another industry has other niches: start again.
+                            if (option.id !== field.value) form.setValue("niche", "");
+                          }}
                           className={cn(
                             "inline-flex h-9 cursor-pointer items-center rounded-full border border-(--s-field) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-muted) transition-colors duration-150 hover:border-(--tallaby-teal-300) disabled:opacity-50 max-[600px]:h-10",
                             field.value === option.id &&
@@ -424,6 +441,51 @@ export function SignupForm({
                   </FormItem>
                 )}
               />
+              {niches.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-0.5">
+                    <p
+                      className="text-[13px] font-bold text-(--s-text)"
+                      id="signup-niche"
+                    >
+                      {t("niche")}
+                    </p>
+                    <p
+                      className="text-[12.5px] text-(--s-muted)"
+                      id="signup-niche-hint"
+                    >
+                      {t("nicheHint")}
+                    </p>
+                  </div>
+                  <div
+                    className="flex flex-wrap gap-2"
+                    role="radiogroup"
+                    aria-labelledby="signup-niche"
+                    aria-describedby="signup-niche-hint"
+                  >
+                    {[
+                      ...niches.map((option) => ({ id: option.id, label: option.name })),
+                      { id: NICHE_OTHER, label: t("nicheOther") },
+                    ].map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={niche === option.id}
+                        disabled={busy}
+                        onClick={() => form.setValue("niche", option.id)}
+                        className={cn(
+                          "inline-flex h-9 cursor-pointer items-center rounded-full border border-(--s-field) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-muted) transition-colors duration-150 hover:border-(--tallaby-teal-300) disabled:opacity-50 max-[600px]:h-10",
+                          niche === option.id &&
+                            "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg)",
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {industry === OTHER_INDUSTRY_ID && (
                 <AuthField
                   form={form}

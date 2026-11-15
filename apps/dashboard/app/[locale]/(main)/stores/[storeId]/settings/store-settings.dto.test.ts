@@ -6,6 +6,7 @@ const values: StoreGeneralFormValues = {
   description: "",
   storeCategory: "",
   storeCategoryAr: "",
+  niche: "",
   logoUrl: "stores/logo.png",
   bannerUrl: "stores/banner.png",
   phone: "",
@@ -26,6 +27,11 @@ describe("toGeneralPatch", () => {
     const classic = toGeneralPatch(values, { brand: true });
     expect(classic.logoUrl).toBe("stores/logo.png");
     expect(classic).toHaveProperty("bannerUrl", "stores/banner.png");
+  });
+
+  it("sends the niche, and null when none is picked", () => {
+    expect(toGeneralPatch({ ...values, niche: "tshirts" }, { brand: false }).niche).toBe("tshirts");
+    expect(toGeneralPatch(values, { brand: false }).niche).toBeNull();
   });
 
   it("clears a removed logo", () => {

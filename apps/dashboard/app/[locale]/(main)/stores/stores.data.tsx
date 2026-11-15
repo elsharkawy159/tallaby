@@ -1,12 +1,15 @@
 import { and, db, eq, sellerCustomDomains } from "@workspace/db";
+import { getLocale } from "next-intl/server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
+import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
+import { nicheChoices } from "@/lib/stores/niche-choices.lib";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { builderEnabled } from "../ai-builder/builder-access.server";
 import { StoresView } from "./stores.client";
 import type { StoreCardData } from "./stores.dto";
 
 export async function StoresData({ openCreate }: { openCreate: boolean }) {
-  const [seller, { stores, selected, maxStores }] = await Promise.all([requireSeller(), getSellerStores()]);
+  const [seller, { stores, selected, maxStores }, locale] = await Promise.all([requireSeller(), getSellerStores(), getLocale()]);
 
   // Active custom domains (one per store) so cards link to the address customers use.
   const domains = await db
@@ -34,6 +37,12 @@ export async function StoresData({ openCreate }: { openCreate: boolean }) {
       maxStores={maxStores}
       aiBuilder={builderEnabled()}
       openCreate={openCreate && stores.length < maxStores}
+      // The create dialog's industry → niche choice, in the page's language.
+      industries={STORE_INDUSTRIES.map((industry) => ({ id: industry.id, name: locale === "en" ? industry.en : industry.ar }))}
+      nicheOptions={nicheChoices(
+        STORE_INDUSTRIES.map((industry) => industry.id),
+        locale,
+      )}
     />
   );
 }

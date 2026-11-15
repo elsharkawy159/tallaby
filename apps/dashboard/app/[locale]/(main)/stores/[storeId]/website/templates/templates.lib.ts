@@ -5,15 +5,9 @@
  */
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
-import {
-  SWITCHED_INDUSTRIES,
-  defaultNiche,
-  getTemplateDesign,
-  isRetiredTemplate,
-  type MatchNicheInput,
-  type NicheOption,
-} from "@workspace/store-sections/templates";
-import { RELATED_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
+import { SWITCHED_INDUSTRIES, getTemplateDesign, isRetiredTemplate, type NicheOption } from "@workspace/store-sections/templates";
+import { sortByRelevance, type TemplateRelevance } from "@workspace/store-editor/lib/template-relevance.lib";
+import { RELATED_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { templatePreviewSrc } from "@/app/[locale]/(builder)/ai-builder/_components/workspace.lib";
 import type { TemplateCardView } from "./templates.dto";
 
@@ -33,59 +27,6 @@ export function categoryOrder(categories: readonly string[], industryId: string 
   if (!industryId) return unique;
   const first = [industryId, ...(RELATED_INDUSTRIES[industryId] ?? [])].filter((id) => unique.includes(id));
   return [...first, ...unique.filter((id) => !first.includes(id))];
-}
-
-/** A 32-bit hash of a string (FNV-1a), the shuffle seed. */
-function hashSeed(value: string): number {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < value.length; i++) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return hash >>> 0;
-}
-
-/** Fisher-Yates with a seeded PRNG (mulberry32): the same seed gives the same order. */
-function seededShuffle<T>(items: readonly T[], seed: string): T[] {
-  let state = hashSeed(seed);
-  const random = () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [out[i], out[j]] = [out[j]!, out[i]!];
-  }
-  return out;
-}
-
-/**
- * The gallery order for one store (owner requests 2026-10-21 and 2026-10-27):
- * categories by the store's industry (`categoryOrder`), and the templates of
- * each category shuffled with a seed. Sellers mostly pick the first template,
- * so a per-store order keeps stores from looking alike; the seed (the store
- * id) keeps the order the same on every visit and across pages. Without a
- * seed each category keeps the gallery order.
- */
-export function sortByIndustry<T extends { category: string }>(templates: T[], industryId: string | null | undefined, seed?: string): T[] {
-  const order = categoryOrder(
-    templates.map((tpl) => tpl.category),
-    industryId,
-  );
-  if (!seed) {
-    // Matching categories first, everything else in gallery order (default first).
-    const lead = order.filter((id) => id === industryId || RELATED_INDUSTRIES[industryId ?? ""]?.includes(id));
-    return [...lead.flatMap((id) => templates.filter((tpl) => tpl.category === id)), ...templates.filter((tpl) => !lead.includes(tpl.category))];
-  }
-  return order.flatMap((category) =>
-    seededShuffle(
-      templates.filter((tpl) => tpl.category === category),
-      `${seed}:${category}`,
-    ),
-  );
 }
 
 /** One gallery row → its card view (section names resolved from the library). */
@@ -114,13 +55,9 @@ export function toTemplateCardView(template: StoreTemplateCard): TemplateCardVie
   };
 }
 
-export function toTemplateCardViews(
-  templates: StoreTemplateCard[],
-  storeCategory?: { en?: string | null; ar?: string | null },
-  seed?: string,
-): TemplateCardView[] {
-  const industry = storeCategory ? findIndustry(storeCategory) : null;
-  return sortByIndustry(templates, industry?.id, seed).map(toTemplateCardView);
+/** Gallery rows → card views, most relevant first (`sortRelevantNewest`; owner, 2026-11-15). */
+export function toTemplateCardViews(templates: StoreTemplateCard[], relevance: TemplateRelevance = {}): TemplateCardView[] {
+  return sortRelevantNewest(templates, relevance).map(toTemplateCardView);
 }
 
 /** Cards per gallery page: fills whole rows of the 2, 3 and 4-column grids. */
@@ -153,20 +90,19 @@ export function parseTemplatesNiche(value: unknown): string {
 /**
  * The niche filter of a category tab (niche editions, ROADMAP F-90).
  * `offered` is the tab's niches that have an edition (`offeredNiches`; none
- * for "All" and during a search). With no niche asked for (`null`) it is the
- * store's own niche when the tab offers it (`matchNiche` of the store's
- * category and name); `all`, an unknown id and a niche the tab does not
- * offer are no filter.
+ * for "All" and during a search). Only a niche the seller asked for filters:
+ * no niche asked for (`null`), `all`, an unknown id and a niche the tab does
+ * not offer are no filter (owner, 2026-11-15: never preselect a niche that
+ * hides other templates; the store's niche orders the list instead).
  */
-export function resolveNicheFilter(offered: readonly NicheOption[], requested: string | null | undefined, store: MatchNicheInput): string | null {
-  if (!offered.length) return null;
-  if (requested == null) return defaultNiche(store, offered);
+export function resolveNicheFilter(offered: readonly NicheOption[], requested: string | null | undefined): string | null {
+  if (!offered.length || requested == null) return null;
   return offered.some((niche) => niche.id === requested) ? requested : null;
 }
 
-/** The category tab served: the one asked for, else the store's industry when it has templates, else `all`. */
-export function servedCategory(categories: readonly string[], requested: string | null, industryId: string | null | undefined): string {
-  return requested ?? (industryId && categories.includes(industryId) ? industryId : "all");
+/** The category tab served: the one asked for, else `all` (owner, 2026-11-15: the gallery opens on All, most relevant first). */
+export function servedCategory(requested: string | null): string {
+  return requested ?? "all";
 }
 
 /** Newest first (owner request 2026-10-28): a higher `sortOrder` is a newer template; ties keep their order. */
@@ -175,53 +111,59 @@ export function sortNewest<T extends { sortOrder?: number }>(templates: T[]): T[
 }
 
 /**
- * The "All" tab (owner request 2026-10-28): most relevant first (the store's
- * industry, then its related industries in their order, then the rest), and
- * the newest first inside each of those groups.
+ * Most relevant first (owner requests 2026-10-28 and 2026-11-15:
+ * `sortByRelevance`, the store niche's template, then its industry, its
+ * related industries in their order, then the rest), and the newest first
+ * inside each of those groups.
  */
-export function sortRelevantNewest<T extends { category: string; sortOrder?: number }>(templates: T[], industryId: string | null | undefined): T[] {
-  const related = industryId ? [industryId, ...(RELATED_INDUSTRIES[industryId] ?? [])] : [];
-  const rank = (category: string) => {
-    const index = related.indexOf(category);
-    return index < 0 ? related.length : index;
-  };
-  return [...templates].sort((a, b) => rank(a.category) - rank(b.category) || (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
+export function sortRelevantNewest<T extends { key: string; category: string; sortOrder?: number }>(templates: readonly T[], relevance: TemplateRelevance = {}): T[] {
+  return sortByRelevance(sortNewest([...templates]), relevance);
 }
 
 /**
  * One page of the gallery (owner request 2026-10-24): the category filter,
- * then the page. "All" is most relevant, then newest (`sortRelevantNewest`);
- * a category tab is newest first (`sortNewest`) (owner request 2026-10-28;
- * it replaces the per-store shuffle). The page is clamped to the
- * last one, since a template change can shrink the list. `categories` lists
- * every category of the whole gallery, in gallery order (for the tabs). With
- * no category asked for (`null`), the store's industry is the default tab
- * when it has templates, else `all` (owner request 2026-10-28); `category`
- * is the tab served. A niche tab filters like a category tab (owner request
- * 2026-11-11): with `nicheLooks` (a chosen niche's looks, best first) a
- * category tab lists only those looks, in that order, whatever their own
- * category; "All" ignores them. `tabLooks` (a switched industry's niche
- * templates, in niche order; ROADMAP F-90) replaces a category tab's own
- * list the same way.
+ * then the page. Every tab is most relevant first (`sortByRelevance` with
+ * the store's industry and niche; owner request 2026-11-15), newest first
+ * inside a group. The page is clamped to the last one, since a template
+ * change can shrink the list. `categories` lists every category of the whole
+ * gallery, the store's industry and its related ones first (for the tabs).
+ * With no category asked for (`null`) the tab is `all` (owner, 2026-11-15);
+ * `category` is the tab served. A niche tab filters like a category tab
+ * (owner request 2026-11-11): with `nicheLooks` (a chosen niche's looks,
+ * best first) a category tab lists only those looks, in that order,
+ * whatever their own category; "All" ignores them. `tabLooks` (a switched
+ * industry's niche templates, in niche order; ROADMAP F-90) replaces a
+ * category tab's own list the same way, then is sorted by relevance.
  */
-export function pageTemplates<T extends { category: string; sortOrder?: number; key?: string }>(
+export function pageTemplates<T extends { category: string; sortOrder?: number; key: string }>(
   templates: T[],
   {
     page,
     category: requested,
     industryId,
-    seed,
+    nicheId,
     pageSize = TEMPLATES_PAGE_SIZE,
     nicheLooks = [],
     tabLooks = null,
-  }: { page: number; category: string | null; industryId?: string | null; seed?: string; pageSize?: number; nicheLooks?: readonly string[]; tabLooks?: readonly string[] | null },
+  }: { page: number; category: string | null; industryId?: string | null; nicheId?: string | null; pageSize?: number; nicheLooks?: readonly string[]; tabLooks?: readonly string[] | null },
 ): { items: T[]; page: number; pageCount: number; total: number; categories: string[]; category: string } {
-  // The tabs keep the store's industry first; the cards in every tab are newest first.
-  const categories = [...new Set(sortByIndustry(templates, industryId, seed).map((tpl) => tpl.category))];
-  const category = servedCategory(categories, requested, industryId);
+  const relevance = { industryId, nicheId };
+  // The tabs keep the store's industry and its related ones first.
+  const categories = categoryOrder(
+    templates.map((tpl) => tpl.category),
+    industryId,
+  );
+  const category = servedCategory(requested);
   const byKeys = (keys: readonly string[]) => [...new Set(keys)].flatMap((key) => templates.filter((tpl) => tpl.key === key));
   const inTab =
-    category === "all" ? sortRelevantNewest(templates, industryId) : tabLooks ? byKeys(tabLooks) : sortNewest(templates.filter((tpl) => tpl.category === category));
+    category === "all"
+      ? sortRelevantNewest(templates, relevance)
+      : tabLooks
+        ? sortByRelevance(byKeys(tabLooks), relevance)
+        : sortRelevantNewest(
+            templates.filter((tpl) => tpl.category === category),
+            relevance,
+          );
   const byNiche = category !== "all" && nicheLooks.length > 0;
   const filtered = byNiche ? byKeys(nicheLooks) : inTab;
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));

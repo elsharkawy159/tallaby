@@ -46,3 +46,21 @@ describe("buildThemeGallery", () => {
     expect(gallery.initial).toEqual({ category: null, niche: null });
   });
 });
+
+describe("buildThemeGallery relevance (owner, 2026-11-15)", () => {
+  it("lists the store's industry first and opens on its saved niche", () => {
+    const gallery = buildThemeGallery([row("rokn", "home"), row("streetwear", "fashion", [tshirts])], {
+      name: "Shop",
+      storeCategory: "Fashion",
+      storeCategoryAr: null,
+      nicheSetting: "tshirts",
+    });
+    expect(gallery.themes.map((theme) => theme.key)).toEqual(["streetwear", "rokn"]);
+    expect(gallery.initial).toEqual({ category: "fashion", niche: "tshirts" });
+  });
+
+  it("ignores a saved niche of another industry", () => {
+    const gallery = buildThemeGallery([row("streetwear", "fashion", [tshirts])], { name: "Shop", storeCategory: "Fashion", storeCategoryAr: null, nicheSetting: "watches" });
+    expect(gallery.initial).toEqual({ category: "fashion", niche: null });
+  });
+});

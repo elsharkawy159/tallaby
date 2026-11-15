@@ -158,6 +158,23 @@ describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", { timeout: 120_000 }
     expect(row!.contact).toEqual({ whatsapp: "01112345678", social: { fb: "x" } });
   });
 
+  it("saves the niche with the currency in one settings write, drops a niche of another industry, and removes it on null", async () => {
+    await db.update(s.stores).set({ settings: { payments: { cod: true } } }).where(eq(s.stores.id, primaryA));
+    const settingsOf = async () => (await db.select({ settings: s.stores.settings }).from(s.stores).where(eq(s.stores.id, primaryA)))[0]!.settings;
+    const fashion = { storeCategory: "Fashion", storeCategoryAr: "أزياء وملابس" };
+    expect((await updateStoreSettings(sellerA, primaryA, { ...fashion, currency: "EGP", currencyLabel: "EGP", niche: "tshirts" }, db)).success).toBe(true);
+    expect(await settingsOf()).toEqual({ payments: { cod: true }, currency: "EGP", currencyLabel: "EGP", niche: "tshirts" });
+    // Absent keeps it.
+    expect((await updateStoreSettings(sellerA, primaryA, { description: "Tees" }, db)).success).toBe(true);
+    expect(await settingsOf()).toMatchObject({ niche: "tshirts" });
+    // A watches niche is not a fashion niche: dropped, so the key goes.
+    expect((await updateStoreSettings(sellerA, primaryA, { niche: "watches" }, db)).success).toBe(true);
+    expect(await settingsOf()).not.toHaveProperty("niche");
+    expect((await updateStoreSettings(sellerA, primaryA, { niche: "dresses" }, db)).success).toBe(true);
+    expect((await updateStoreSettings(sellerA, primaryA, { niche: null }, db)).success).toBe(true);
+    expect(await settingsOf()).toEqual({ payments: { cod: true }, currency: "EGP", currencyLabel: "EGP" });
+  });
+
   it("rejects invalid settings", async () => {
     expect(await updateStoreSettings(sellerA, primaryA, { status: "suspended" } as never, db)).toEqual({
       success: false,

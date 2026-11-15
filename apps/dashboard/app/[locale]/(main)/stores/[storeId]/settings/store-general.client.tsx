@@ -50,6 +50,7 @@ import {
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { STORE_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
+import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 import { cn } from "@/lib/utils";
 import { StoreCatalogSections, useStoreCatalog, type StoreCatalogProps } from "./catalog.client";
 import { saveStoreGeneral } from "./store-settings.server";
@@ -61,6 +62,7 @@ const INTERNATIONAL_CURRENCY_CODES = STORE_CURRENCY_CODES.filter((c) => !REGIONA
 export function StoreGeneralForm({
   storeId,
   initial,
+  nicheOptions,
   readOnly,
   brandInSettings,
   catalog: catalogProps,
@@ -70,6 +72,8 @@ export function StoreGeneralForm({
   usdLive: boolean;
   storeId: string;
   initial: StoreGeneralFormValues;
+  /** Each industry's niche chips, in the page's language (owner, 2026-11-15). */
+  nicheOptions: NicheChoices;
   readOnly: boolean;
   /** Banner field here; false when Website › Design system owns it (the logo is always here). */
   brandInSettings: boolean;
@@ -89,6 +93,7 @@ export function StoreGeneralForm({
       description: z.string().max(DESCRIPTION_MAX),
       storeCategory: z.string().max(80),
       storeCategoryAr: z.string().max(80),
+      niche: z.string(),
       logoUrl: z.string(),
       bannerUrl: z.string(),
       phone: z.string().refine((v) => !v.trim() || formatPhone(v) !== null, t("errors.phoneInvalid")),
@@ -112,6 +117,8 @@ export function StoreGeneralForm({
   const [categoryEn, categoryAr] = useWatch({ control: form.control, name: ["storeCategory", "storeCategoryAr"] });
   const phone = useWatch({ control: form.control, name: "phone" });
   const industry = findIndustry({ en: categoryEn, ar: categoryAr });
+  const niche = useWatch({ control: form.control, name: "niche" });
+  const niches = industry ? (nicheOptions[industry.id] ?? []) : [];
   const currency = useWatch({ control: form.control, name: "currency" });
   const catalog = useStoreCatalog(storeId, catalogProps);
   const disabled = readOnly || isPending;
@@ -223,6 +230,8 @@ export function StoreGeneralForm({
                 disabled={disabled}
                 className="disabled:opacity-50"
                 onClick={() => {
+                  // Another industry has other niches: the niche starts again.
+                  if (industry?.id !== option.id) form.setValue("niche", "", { shouldDirty: true });
                   form.setValue("storeCategory", option.en, { shouldDirty: true });
                   form.setValue("storeCategoryAr", option.ar, { shouldDirty: true });
                 }}
@@ -232,6 +241,23 @@ export function StoreGeneralForm({
             ))}
           </Chips>
         </Field>
+        {niches.length > 0 && (
+          <Field label={t("fields.niche")} note={t("fields.nicheHint")}>
+            <Chips role="group" aria-label={t("fields.niche")}>
+              {[...niches, { id: "", name: t("fields.nicheNone") }].map((option) => (
+                <Chip
+                  key={option.id || "none"}
+                  pressed={option.id ? niche === option.id : !niches.some((choice) => choice.id === niche)}
+                  disabled={disabled}
+                  className="disabled:opacity-50"
+                  onClick={() => form.setValue("niche", option.id, { shouldDirty: true })}
+                >
+                  {option.name}
+                </Chip>
+              ))}
+            </Chips>
+          </Field>
+        )}
         <FieldRow>
           {text("storeCategoryAr", t("fields.categoryAr"), { placeholder: t("fields.categoryArPlaceholder") })}
           {text("storeCategory", t("fields.categoryEn"), { placeholder: t("fields.categoryEnPlaceholder"), dir: "ltr" })}

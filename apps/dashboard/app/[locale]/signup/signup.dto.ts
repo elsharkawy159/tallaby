@@ -13,9 +13,10 @@ export type StoreChoiceInput = z.input<typeof storeChoiceSchema>;
 
 /**
  * The setup step for a signed-in user: the store choice plus an industry id
- * (STORE_INDUSTRIES), or "other" with the seller's own words in `industryOther`.
+ * (STORE_INDUSTRIES), or "other" with the seller's own words in `industryOther`,
+ * and optionally a niche of that industry (null or absent: none; checked on the server).
  */
-export type StoreSetupInput = StoreChoiceInput & { industry: string; industryOther?: string };
+export type StoreSetupInput = StoreChoiceInput & { industry: string; industryOther?: string; niche?: string | null };
 
 /** Step 1 (account only). `subdomain` is the optional marketing-site pre-fill for step 2. */
 export const emailSignupSchema = z.object({
