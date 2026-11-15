@@ -6,11 +6,14 @@ import { addProductReturnHref } from "../products/add/add-method.lib";
 import {
   initialWelcomeSection,
   nextWelcomeStep,
+  parseWelcomeAmount,
   storeWelcomeHref,
   welcomeLandingHref,
+  welcomeDeliverySteps,
   welcomeProductHref,
   welcomeProgress,
   welcomeSetupSteps,
+  welcomeShippingDefault,
   withDefaultLocale,
 } from "./welcome.lib";
 
@@ -62,6 +65,64 @@ describe("initialWelcomeSection", () => {
     expect(initialWelcomeSection("#product", finished)).toBe("setup");
     expect(initialWelcomeSection("#setup", finished)).toBe("setup");
     expect(initialWelcomeSection("#nope", finished)).toBe("");
+  });
+
+  it("opens shipping and payments once the main setup is done, or when its hash is named", () => {
+    const deliveryOpen = welcomeDeliverySteps(none);
+    const deliveryDone = welcomeDeliverySteps({ ...none, shipping: true, payments: true });
+    expect(initialWelcomeSection("", open, deliveryOpen)).toBe("setup");
+    expect(initialWelcomeSection("", finished, deliveryOpen)).toBe("delivery");
+    expect(initialWelcomeSection("", finished, deliveryDone)).toBe("");
+    expect(initialWelcomeSection("#payments", open, deliveryDone)).toBe("delivery");
+    expect(initialWelcomeSection("#shipping", finished, deliveryDone)).toBe("delivery");
+    expect(initialWelcomeSection("#delivery", open, deliveryOpen)).toBe("delivery");
+  });
+});
+
+describe("welcomeDeliverySteps", () => {
+  it("is done from the home's shipping and payments flags", () => {
+    expect(welcomeDeliverySteps({ ...none, payments: true })).toEqual([
+      { key: "shipping", done: false },
+      { key: "payments", done: true },
+    ]);
+  });
+
+  it("reaches 4 of 4 with the main setup", () => {
+    expect(welcomeProgress({ ...none, template: true, brand: true, product: true, shipping: true, payments: true })).toEqual({ done: 4, total: 4 });
+  });
+});
+
+describe("welcomeShippingDefault", () => {
+  it("offers Whole Egypt at 60 to an EGP store", () => {
+    expect(welcomeShippingDefault("EGP")).toEqual({ kind: "egypt_flat", price: 60 });
+  });
+
+  it("offers the store's country with no price to a one-country currency", () => {
+    expect(welcomeShippingDefault("SAR")).toEqual({ kind: "country", country: "SA", price: null });
+    expect(welcomeShippingDefault("AED")).toEqual({ kind: "country", country: "AE", price: null });
+  });
+
+  it("offers no zone when the currency has no one country", () => {
+    expect(welcomeShippingDefault("USD")).toEqual({ kind: "none" });
+    expect(welcomeShippingDefault("EUR")).toEqual({ kind: "none" });
+  });
+});
+
+describe("parseWelcomeAmount", () => {
+  it("reads amounts in the store currency with up to 2 decimals", () => {
+    expect(parseWelcomeAmount("60", 10_000)).toBe(60);
+    expect(parseWelcomeAmount(" 12,5 ", 10_000)).toBe(12.5);
+    expect(parseWelcomeAmount("0", 10_000)).toBe(0);
+    expect(parseWelcomeAmount("9.99", 10_000)).toBe(9.99);
+  });
+
+  it("refuses empty, negative, too large, too precise and (when positive) zero", () => {
+    expect(parseWelcomeAmount("", 10_000)).toBeNull();
+    expect(parseWelcomeAmount("-1", 10_000)).toBeNull();
+    expect(parseWelcomeAmount("10001", 10_000)).toBeNull();
+    expect(parseWelcomeAmount("1.005", 10_000)).toBeNull();
+    expect(parseWelcomeAmount("abc", 10_000)).toBeNull();
+    expect(parseWelcomeAmount("0", 1_000_000, true)).toBeNull();
   });
 });
 
@@ -122,6 +183,11 @@ describe("storeWelcome messages", () => {
         expect(messages.storeWelcome.steps[key].title).toBeTruthy();
         expect(messages.storeWelcome.steps[key].description).toBeTruthy();
       }
+      for (const key of ["shipping", "payments"] as const) {
+        expect(messages.storeWelcome.steps[key].title).toBeTruthy();
+        expect(messages.storeWelcome.steps[key].description).toBeTruthy();
+      }
+      expect(messages.storeWelcome.delivery.title).toBeTruthy();
     }
   });
 });

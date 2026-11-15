@@ -6,15 +6,22 @@
  * (`STORE_SETUP_STEP_DONE`), never from anything stored for this page.
  */
 
+import type { StoreCurrency } from "@workspace/lib";
 import { STORE_SETUP_STEP_DONE, STORE_SETUP_STEP_KEYS, type StoreSetupFlags } from "@workspace/lib/sellers";
+import { currencyCountry } from "../shipping/shipping.dto";
 
 /** The steps of the main setup section, in order. */
 export type WelcomeSetupStepKey = "industry" | "theme" | "brand" | "product";
 
 export type WelcomeSetupStep = { key: WelcomeSetupStepKey; done: boolean };
 
-/** The page's sections (accordion items). P2/P3 add shipping, share and top-up. */
-export type WelcomeSectionKey = "setup";
+/** The steps of the "Shipping and payments" section, in order. */
+export type WelcomeDeliveryStepKey = "shipping" | "payments";
+
+export type WelcomeDeliveryStep = { key: WelcomeDeliveryStepKey; done: boolean };
+
+/** The page's sections (accordion items). P3 adds share and top-up. */
+export type WelcomeSectionKey = "setup" | "delivery";
 
 export function welcomeSetupSteps(input: {
   flags: StoreSetupFlags;
@@ -42,11 +49,64 @@ export function welcomeProgress(flags: StoreSetupFlags): { done: number; total: 
   };
 }
 
-/** The section open when the page loads: the one a `#hash` names, else the first unfinished one, else none. */
-export function initialWelcomeSection(hash: string, steps: readonly WelcomeSetupStep[]): WelcomeSectionKey | "" {
+/** Shipping, then payments, done from the home's flags (a saved setting or zone; saved payment methods or a gateway). */
+export function welcomeDeliverySteps(flags: StoreSetupFlags): WelcomeDeliveryStep[] {
+  return [
+    { key: "shipping", done: flags.shipping },
+    { key: "payments", done: flags.payments },
+  ];
+}
+
+/**
+ * The section open when the page loads: the one a `#hash` names (the section
+ * or one of its steps), else the first unfinished one, else none.
+ */
+export function initialWelcomeSection(
+  hash: string,
+  steps: readonly WelcomeSetupStep[],
+  delivery: readonly WelcomeDeliveryStep[] = [],
+): WelcomeSectionKey | "" {
   const id = hash.replace(/^#/, "");
   if (id === "setup" || steps.some((step) => step.key === id)) return "setup";
-  return nextWelcomeStep(steps) ? "setup" : "";
+  if (id === "delivery" || delivery.some((step) => step.key === id)) return "delivery";
+  if (nextWelcomeStep(steps)) return "setup";
+  return delivery.some((step) => !step.done) ? "delivery" : "";
+}
+
+/** The suggested delivery price for all Egypt (owner, 2026-11-15); the seller can change it. */
+export const WELCOME_EGYPT_FLAT_PRICE = 60;
+
+/**
+ * The first delivery zone the welcome page offers a store with none
+ * (docs/plans/seller-welcome.md, decision 5): an EGP store gets "Whole Egypt"
+ * at 60 (the `egypt_flat` template); a store in a one-country currency gets
+ * one zone for that country with no price, which the seller must type; a
+ * currency with no one country (USD, EUR) gets none, so the seller adds
+ * their own places.
+ */
+export type WelcomeShippingDefault =
+  | { kind: "egypt_flat"; price: number }
+  | { kind: "country"; country: string; price: null }
+  | { kind: "none" };
+
+export function welcomeShippingDefault(currency: StoreCurrency): WelcomeShippingDefault {
+  if (currency === "EGP") return { kind: "egypt_flat", price: WELCOME_EGYPT_FLAT_PRICE };
+  const country = currencyCountry(currency);
+  return country ? { kind: "country", country, price: null } : { kind: "none" };
+}
+
+/**
+ * A typed delivery amount as the shipping schemas take it (store currency, at
+ * most 2 decimals, 0..max), or null when it isn't one. `positive` refuses 0
+ * (a free-delivery threshold of 0 means "every order", which this page doesn't offer).
+ */
+export function parseWelcomeAmount(text: string, max: number, positive = false): number | null {
+  const trimmed = text.trim();
+  if (trimmed === "") return null;
+  const n = Number(trimmed.replace(",", "."));
+  if (!Number.isFinite(n) || n < 0 || n > max || (positive && n === 0)) return null;
+  // Whole minor units only (rule 7): the server refuses anything finer.
+  return Math.abs(n * 100 - Math.round(n * 100)) < 1e-6 ? n : null;
 }
 
 const first = (value: string | string[] | undefined): string | undefined => (Array.isArray(value) ? value[0] : value);

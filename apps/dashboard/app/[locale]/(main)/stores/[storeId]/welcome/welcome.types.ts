@@ -1,6 +1,12 @@
+import type { CurrencyLabel, StoreCurrency } from "@workspace/lib";
+import type { StorePayments } from "@workspace/lib/payments/store-methods";
+import type { StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
+import type { StoreShippingSettings } from "@workspace/lib/shipping/store-zones";
+import type { StoreShippingZone } from "@workspace/lib/stores/server";
 import type { DesignSystem } from "@workspace/store-sections";
 import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 import type { SetupFlags } from "../../../_components/setup-checklist.lib";
+import type { WelcomeShippingDefault } from "./welcome.lib";
 
 /** What the welcome page's loader (`welcome.data.ts`) hands the client. */
 export type WelcomeData = {
@@ -29,5 +35,29 @@ export type WelcomeData = {
     supportedLocales: string[];
     /** The design-system DRAFT and its version (saveDesignSystem's optimistic check); null without the builder. */
     designSystem: { value: DesignSystem; version: number } | null;
+  };
+  /** Section 2, shipping and payments. Every amount is in the store's currency. */
+  delivery: {
+    money: { currency: StoreCurrency; label: CurrencyLabel };
+    shipping: {
+      /** The whole parsed settings object: `saveShippingSettings` takes it whole (strict schema). */
+      settings: StoreShippingSettings;
+      zones: StoreShippingZone[];
+      /** The zone offered while the store has none (`welcomeShippingDefault`). */
+      suggested: WelcomeShippingDefault;
+      /** That zone's names in both languages, built on the server; null for `none`. */
+      zoneNames: { nameAr: string; nameEn: string } | null;
+      /** Where the zone sheet's place picker starts, or null (no one country for the currency). */
+      country: string | null;
+      /** The suggested zone's name in the page locale ("All Egypt", "All Saudi Arabia"). */
+      zoneLabel: string | null;
+    };
+    payments: {
+      methods: StorePayments;
+      /** The connected card gateway, or null. */
+      gateway: StoreGatewayProvider | null;
+      /** The card gateways that charge in the store's currency (linked to Settings › Payments). */
+      gatewayProviders: StoreGatewayProvider[];
+    };
   };
 };

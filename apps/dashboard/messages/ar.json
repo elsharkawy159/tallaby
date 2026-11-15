@@ -8847,6 +8847,10 @@
       "description": "نشاطك وتصميم متجرك وهويته وأول منتج.",
       "count": "{done} من {total}"
     },
+    "delivery": {
+      "title": "الشحن والدفع",
+      "description": "سعر التوصيل وطرق الدفع لعملائك."
+    },
     "steps": {
       "industry": {
         "title": "ماذا تبيع؟",
@@ -8888,6 +8892,36 @@
         "ctaManual": "أضف منتجًا",
         "doneNote": "أضفت أول منتج إلى متجرك.",
         "viewProducts": "عرض المنتجات"
+      },
+      "shipping": {
+        "title": "سعر التوصيل",
+        "description": "حدد ما يدفعه العميل للتوصيل. يمكنك تغييره في أي وقت.",
+        "countryZoneName": "كل {country}",
+        "priceLabel": "سعر التوصيل",
+        "priceHint": "نقترح هذا السعر، ويمكنك كتابة سعرك.",
+        "priceHintAbroad": "اكتب سعر التوصيل بعملة متجرك.",
+        "freeToggle": "توصيل مجاني للطلبات الكبيرة",
+        "freeOverError": "أدخل مبلغًا أكبر من 0.",
+        "save": "احفظ سعر التوصيل",
+        "saved": "تم حفظ سعر التوصيل.",
+        "adjust": "حدد أسعارًا لمناطق معينة",
+        "noCountry": "أضف الأماكن التي توصل إليها وسعر كل منها.",
+        "zonesSummary": "{count, plural, zero {لا توجد مناطق توصيل} one {منطقة توصيل واحدة} two {منطقتا توصيل} few {# مناطق توصيل} many {# منطقة توصيل} other {# منطقة توصيل}}",
+        "moreZones": "{count, plural, one {ومنطقة أخرى} two {ومنطقتان أخريان} few {و# مناطق أخرى} many {و# منطقة أخرى} other {و# منطقة أخرى}}",
+        "freeSummary": "توصيل مجاني للطلبات من {amount} فأكثر",
+        "freeAll": "توصيل مجاني لكل الطلبات",
+        "edit": "عدّل الشحن"
+      },
+      "payments": {
+        "title": "طرق الدفع",
+        "description": "الدفع عند الاستلام مفعّل. أضف إنستاباي أو محفظة إلكترونية إن أردت.",
+        "confirm": "تأكيد",
+        "transfersTitle": "إنستاباي والمحافظ الإلكترونية",
+        "cardsTitle": "الدفع بالبطاقات",
+        "cardsBody": "اربط {gateways} من إعدادات الدفع.",
+        "cardsConnected": "متصل: {gateway}",
+        "cardsLink": "إعدادات الدفع",
+        "listSeparator": " أو "
       }
     }
   },

@@ -33,9 +33,9 @@ import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateway
 import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "../../apps/app-drawer.lib";
 import { StoreGatewaysCard } from "./gateways.client";
 
-type LiveKey = "cod" | "vodafone_cash" | "e_cash" | "we_pay" | "orange_cash" | "instapay";
-type Entry = { enabled: boolean; details?: Record<string, string>; fee?: number; maxOrder?: number; note?: string };
-type Change = { enabled: boolean; details?: unknown; fee?: number; maxOrder?: number | null; note?: string };
+export type LiveKey = "cod" | "vodafone_cash" | "e_cash" | "we_pay" | "orange_cash" | "instapay";
+export type Entry = { enabled: boolean; details?: Record<string, string>; fee?: number; maxOrder?: number; note?: string };
+export type Change = { enabled: boolean; details?: unknown; fee?: number; maxOrder?: number | null; note?: string };
 
 const LIVE = STORE_PAYMENT_METHODS.filter((m) => m.status === "live");
 const WALLETS = LIVE.filter((m) => m.key !== "cod").map((m) => m.key as LiveKey);
@@ -381,7 +381,8 @@ function DetailsLine({ methodKey, entry, money }: { methodKey: LiveKey; entry?: 
   );
 }
 
-function MethodSheet({
+/** A method's details sheet; also used by the welcome page (stores/[storeId]/welcome). */
+export function MethodSheet({
   methodKey,
   money,
   entry,

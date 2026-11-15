@@ -14,13 +14,16 @@ import { cn } from "@/lib/utils";
 import { requestSetupPromptCheck } from "../../../_components/setup-prompts.lib";
 import { saveStoreGeneral } from "../settings/store-settings.server";
 import { WelcomeBrandStep } from "./welcome-brand.client";
+import { WelcomePaymentsStep, WelcomeShippingStep } from "./welcome-delivery.client";
 import { WelcomeThemeStep } from "./welcome-theme.client";
 import {
   initialWelcomeSection,
   nextWelcomeStep,
+  welcomeDeliverySteps,
   welcomeProductHref,
   welcomeProgress,
   welcomeSetupSteps,
+  type WelcomeDeliveryStepKey,
   type WelcomeSetupStepKey,
 } from "./welcome.lib";
 import type { WelcomeData } from "./welcome.types";
@@ -35,16 +38,18 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
   const t = useTranslations("storeWelcome");
   const steps = welcomeSetupSteps({ flags: data.flags, hasIndustry: Boolean(data.industry.category.en || data.industry.category.ar), themesAvailable: data.themesAvailable });
   const next = nextWelcomeStep(steps);
+  const deliverySteps = welcomeDeliverySteps(data.flags);
+  const deliveryNext = deliverySteps.find((step) => !step.done)?.key ?? null;
   const progress = welcomeProgress(data.flags);
   const stepsDone = steps.filter((step) => step.done).length;
-  const [open, setOpen] = useState<string>(() => initialWelcomeSection("", steps));
+  const [open, setOpen] = useState<string>(() => initialWelcomeSection("", steps, deliverySteps));
   const disabled = data.readOnly;
 
   // A deep link (`#product`, `#brand`…) opens its section and scrolls to the step.
   useEffect(() => {
     const hash = window.location.hash;
     if (!hash) return;
-    const section = initialWelcomeSection(hash, steps);
+    const section = initialWelcomeSection(hash, steps, deliverySteps);
     if (!section) return;
     setOpen(section);
     const id = hash.slice(1);
@@ -121,6 +126,41 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
             </AccordionContent>
           </AccordionItem>
         </SellerCard>
+
+        <SellerCard id="welcome-delivery" className="scroll-mt-24 overflow-hidden">
+          <AccordionItem value="delivery">
+            <AccordionTrigger className="items-center rounded-none bg-transparent px-5 py-4! hover:bg-(--s-fill)/40 max-[600px]:px-4">
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="flex flex-wrap items-center gap-2 text-[16px] font-bold text-(--s-ink)">
+                  {t("delivery.title")}
+                  {deliveryNext ? (
+                    <Tag>{t("main.count", { done: deliverySteps.filter((step) => step.done).length, total: deliverySteps.length })}</Tag>
+                  ) : (
+                    <Tag tone="success">{t("done")}</Tag>
+                  )}
+                </span>
+                <span className="text-[13px] font-normal text-(--s-subtle)">{t("delivery.description")}</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-1 pb-5 max-[600px]:px-0">
+              <ol className="flex flex-col">
+                {deliverySteps.map((step, index) => (
+                  <WelcomeStep
+                    key={step.key}
+                    stepKey={step.key}
+                    number={index + 1}
+                    done={step.done}
+                    current={step.key === deliveryNext}
+                    last={index === deliverySteps.length - 1}
+                  >
+                    {step.key === "shipping" && <WelcomeShippingStep storeId={data.storeId} delivery={data.delivery} disabled={disabled} />}
+                    {step.key === "payments" && <WelcomePaymentsStep storeId={data.storeId} delivery={data.delivery} done={step.done} disabled={disabled} />}
+                  </WelcomeStep>
+                ))}
+              </ol>
+            </AccordionContent>
+          </AccordionItem>
+        </SellerCard>
       </Accordion>
     </>
   );
@@ -135,7 +175,7 @@ function WelcomeStep({
   last,
   children,
 }: {
-  stepKey: WelcomeSetupStepKey;
+  stepKey: WelcomeSetupStepKey | WelcomeDeliveryStepKey;
   number: number;
   done: boolean;
   current: boolean;

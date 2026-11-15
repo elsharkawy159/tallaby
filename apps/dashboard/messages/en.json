@@ -8847,6 +8847,10 @@
       "description": "What you sell, your theme, your brand and your first product.",
       "count": "{done} of {total}"
     },
+    "delivery": {
+      "title": "Shipping and payments",
+      "description": "Your delivery price and how customers pay."
+    },
     "steps": {
       "industry": {
         "title": "What do you sell?",
@@ -8888,6 +8892,36 @@
         "ctaManual": "Add a product",
         "doneNote": "Your first product is in your store.",
         "viewProducts": "View products"
+      },
+      "shipping": {
+        "title": "Delivery price",
+        "description": "Set what customers pay for delivery. You can change it any time.",
+        "countryZoneName": "All {country}",
+        "priceLabel": "Delivery price",
+        "priceHint": "This is our suggested price. You can type your own.",
+        "priceHintAbroad": "Type the delivery price in your store's currency.",
+        "freeToggle": "Free delivery for large orders",
+        "freeOverError": "Enter an amount above 0.",
+        "save": "Save delivery price",
+        "saved": "Delivery price saved.",
+        "adjust": "Set prices for specific areas",
+        "noCountry": "Add the places you deliver to and the price for each.",
+        "zonesSummary": "{count, plural, one {# delivery zone} other {# delivery zones}}",
+        "moreZones": "{count, plural, one {and # more} other {and # more}}",
+        "freeSummary": "Free delivery for orders of {amount} or more",
+        "freeAll": "Free delivery on every order",
+        "edit": "Edit shipping"
+      },
+      "payments": {
+        "title": "Payment methods",
+        "description": "Cash on delivery is on. Add InstaPay or a mobile wallet if you like.",
+        "confirm": "Confirm",
+        "transfersTitle": "InstaPay and mobile wallets",
+        "cardsTitle": "Card payments",
+        "cardsBody": "Connect {gateways} in payment settings.",
+        "cardsConnected": "Connected: {gateway}",
+        "cardsLink": "Payment settings",
+        "listSeparator": " or "
       }
     }
   },
