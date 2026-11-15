@@ -5,8 +5,12 @@
 > `EditorAdapter` and a capabilities object. The dashboard supplies the seller adapter; `apps/admin` supplies adapters
 > for a store's site (`/stores/[storeId]/editor`), library sections (`/sections/[id]/editor`) and templates
 > (`/templates/[id]/editor`). Templates (`templates`, `template_versions`) and library sections (`library_sections`)
-> are mastered in the database; the code in `packages/store-sections` is an insert-only seed. Admin edits are audited
+> were mastered in the database then; the code in `packages/store-sections` was an insert-only seed. Admin edits are audited
 > and show the seller an "admin updated" banner. Paths below describe the original build.
+>
+> **Update 2026-10-27:** templates and sections are code-only (`CLAUDE.md` rule 17). Migration 0109 dropped the
+> `templates`, `template_versions` and `library_sections` tables and the Admin template and section screens are
+> commented out; `CODE_TEMPLATES` and `DESIGNS` in `packages/store-sections` are the single source (`store-templates` skill).
 
 > **Status (2026-10-18):** P4B-01…04, 06…11 and 14 are built, plus Templates, Explore (Pexels) and Forms tabs
 > (P4B-15, owner request); see `PLAN.md` §23. P4B-05 and 13 (variants, convert to custom) are **deferred** to the

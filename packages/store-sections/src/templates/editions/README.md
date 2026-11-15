@@ -17,6 +17,8 @@ An **edition** is a data pack (catalog, photos, copy) for one niche. A **look** 
 
 `fashion-luxe` is the reference conversion: `templates/fashion-luxe/index.ts`.
 
+> **Screenshots:** any change that alters how a look or pack renders (copy, photos, layout, a new pack) must re-shoot the template's gallery card shots in the same change: `node packages/store-sections/scripts/template-shots.mjs --keys <key>` (both languages, desktop and phone; see `../README.md`). The full guide is the `store-templates` skill; pack copy follows the `template-copywriter` skill.
+
 ## 1. Convert a look
 
 The rule: **with its default content the look must build exactly what it built before.** Do not bump its version.
@@ -141,6 +143,8 @@ Rules the validator enforces (`validateEdition`):
 - Photos: https, from `images.pexels.com` or `EDITION_MEDIA_HOST`; no photo twice in the pack (the same Pexels id at two widths counts as one) or in another pack. `photos.tiles` has one photo per category, in order; pass the same URL as the category's image in `demoStore`, or leave the image null.
 - At most two `extras`, each a library design that is not a promotion; an extra's own links and copy are patched strictly.
 - On each look: the pack holds every slot the look declares (the error names them), every page builds, every link goes to a page of the look or a catalog route, and the catalog fills every list the look shows (`journey.primary: "featured"` needs enough featured products). A category row follows the row rule (§3): each category it shows needs at least one full row.
+
+The validator still accepts `images.pexels.com` (for photos already in live templates), but new photos come only from `docs/systems/editions-photos.md` and are uploaded to `EDITION_MEDIA_HOST` (owner, 2026-11-12). Copy rules (register, no promised services, no body or intimate wording, no transliteration): the `template-copywriter` skill.
 
 Also, not checked by code: one ratio per photo slot, white-background packshots, no people or logos, and product order where a look shows the newest products (`fashion-luxe`: the first three products are the look photo's dots).
 

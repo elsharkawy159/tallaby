@@ -135,7 +135,7 @@ Picked from the niche's industry first, the most polished and most recently revi
 
 **Stores on a deleted template** keep their own drafts and live site. A lookup by key returns nothing, and every caller already skips or refuses it (gallery, preview, Admin theme dialog, apply); an AI build that chose a deleted template installs Tallaby Classic instead (`installTarget` in the dashboard AI builder).
 
-**Counts:** 84 templates (83 + Classic), 83 rows (30 wave 1 + 53 later), 21 packs (one template each), 17 industries switched.
+**Counts:** 84 templates (83 + Classic), 83 rows (30 wave 1 + 53 later), 17 industries switched. Packs: 21 on 2026-11-12; 30 committed and 34 in the working tree on 2026-11-15 (37 rows `ready`, 46 `own`). Live counts: `store-templates` skill, `references/niches.md`.
 
 ## 3. The quality bar for every niche template
 

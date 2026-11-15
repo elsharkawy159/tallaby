@@ -279,7 +279,7 @@ Rebuilt 2026-10-29 (GSAP removed; shared presets in `@workspace/motion/presets`)
 - Every text in Arabic and English (`L(ar, en)`). Arabic is the default.
 - Long Arabic and English text must wrap without breaking the layout. Test with a heading about twice its normal length.
 - Directional motion (`slide-start`, the arrow on a link) follows the page direction.
-- Arabic copy is short, warm and Egyptian-friendly; buttons are verbs ("تسوّق الآن", "اكتشف المجموعة").
+- Demo copy is simple, formal e-commerce Modern Standard Arabic, never Egyptian dialect; buttons are verbs ("تسوّق الآن", "اكتشف المجموعة"). Full rules: the `template-copywriter` skill (owner, 2026-11-15).
 
 ## 8. Speed and accessibility
 
@@ -343,7 +343,7 @@ A section ships only when all of these pass:
 7. Links only to the allowed targets (`docs/template-rules.md` §5).
    Headers and footers also pass §5.6 and §5.7: the header has a burger icon on mobile that opens a sheet or dropdown with every menu link, the header is one row on mobile, footer link columns are collapsed dropdowns on mobile followed by the centred social icons, copyright, Powered by and payment logos, and payment methods are logos.
 8. Within node and depth limits. Snapshot test, id in `EXPECTED` in `designs/designs.test.tsx`, sanitize test and the field-names snapshot (`library-fields.test.ts`) pass.
-9. Reaches the DB only through a new insert-only `section:sql` migration. Field names (`props.field`) stay stable so templates don't break.
+9. Ships with a deploy (sections are code-only since 0109; no migration). Field names (`props.field`) stay stable so templates don't break.
 
 ## 11. Gaps (what needs building)
 
@@ -370,7 +370,7 @@ IDs G7 to G12 are shared with `docs/template-rules.md` §9.
 | **G24** | Mobile footer bottom block: the chrome reorders and centres it on phones (social, copyright, Powered by, payment logos), and the copyright becomes a `role: "copyright"` text that the renderer fills with the current year and the store name. |
 | **G23** | Payment logos: the payments row draws each checkout method as a logo image from a fixed platform set (registry logos, a new cash-on-delivery logo, card logos for later). The logos have to be reachable from both the storefront and the dashboard editor, so they move to a shared location (for example `packages/store-sections` assets or a fixed public URL). `elements/store-payments.ts` returns method keys instead of labels, the footer designs replace their text badges with an image stencil, and the demo list becomes the four real methods. |
 
-**Order**: G13 and G17 (renderer only, biggest effect), then G20 and G23 (header and footer are on every page), then G7 + G8, then G14, G15, G18 and the per-section fixes in §9, done category by category in library order. Each design change gets a new version and an insert-only migration, and templates keep working because field names don't change.
+**Order**: G13 and G17 (renderer only, biggest effect), then G20 and G23 (header and footer are on every page), then G7 + G8, then G14, G15, G18 and the per-section fixes in §9, done category by category in library order. Each design change gets a new version (code-only since 0109, no migration), and templates keep working because field names don't change.
 
 ## 12. Open questions for the owner
 

@@ -1,11 +1,13 @@
 ---
 name: content-writer
-description: Write, rewrite or simplify Tallaby (طلبي) marketing and product copy in Arabic and English. Use it whenever the task touches words a seller or visitor reads - tallaby.com page copy, homepage or landing sections, hero headlines and sublines, CTAs, feature blurbs, pricing and FAQ answers, comparison and industry pages, dashboard UI microcopy, labels, tooltips, errors and empty states, seller emails and bell or push notifications - and whenever someone says the copy is too long, wordy, unclear or "make this simpler", even if they never say "copy". Do not use it for marketing videos or voiceovers (brag-slim and TALLABY_VIDEO_RULES.md cover those) or for the product descriptions the in-app AI generates (docs/ai.md covers those).
+description: Write, rewrite or simplify Tallaby (طلبي) marketing and product copy in Arabic and English. Use it whenever the task touches words a seller or visitor reads - tallaby.com page copy, homepage or landing sections, hero headlines and sublines, CTAs, feature blurbs, pricing and FAQ answers, comparison and industry pages, dashboard UI microcopy, labels, tooltips, errors and empty states, seller emails and bell or push notifications - and whenever someone says the copy is too long, wordy, unclear or "make this simpler", even if they never say "copy". Do not use it for marketing videos or voiceovers (brag-slim and TALLABY_VIDEO_RULES.md cover those), for the product descriptions the in-app AI generates (docs/ai.md covers those), or for the demo copy inside storefront templates and section designs (template-copywriter covers that).
 ---
 
 # Tallaby content writer
 
 Tallaby (Arabic **طلبي**, never تالابي) helps small sellers, mostly in Egypt and the Arab world, open their own online store and sell anywhere. Don't frame Tallaby as Egypt-only (owner, 2026-11-15). The reader is a busy seller, often on a phone, who is not technical. Good copy tells them in one glance what they get and what to do next.
+
+Storefront template and section demo copy (what a seller's customers read) has its own rules in the [`template-copywriter`](../template-copywriter/SKILL.md) skill; the word choices in §1 apply there too.
 
 Before writing, read [`FACTS.md`](FACTS.md) in this folder. It holds the live product facts, the prices and the claims you must never make, each with its source file. Facts change often, so re-check any fact you put on a page against its source; when the code and a doc disagree, the code wins (`CLAUDE.md` rule 1).
 

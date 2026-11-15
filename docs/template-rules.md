@@ -1,6 +1,6 @@
 # Storefront template rules
 
-**Status: DRAFT v0.2 (2026-10-25), for owner review. Nothing here is built yet.**
+**Status: DRAFT v0.2 (2026-10-25), for owner review.** Since then parts are built (G1, G2, G7 and others in §9) and templates became code-only and one per niche (`CLAUDE.md` rule 17, `docs/systems/one-template-per-niche.md`); the current guide is the `store-templates` skill (`.claude/skills/store-templates/`), and template copy follows the `template-copywriter` skill.
 Once approved, `CLAUDE.md` will point here and every template change (new template, new template version, template review) must follow it. It adds to, and never replaces, `CLAUDE.md` rule 17 and the section authoring rules in `docs/superpowers/specs/2026-10-19-tree-sections-design.md` §6. **How each section is made (anatomy, design language, motion) is in [`docs/section-rules.md`](section-rules.md)**; this file says how sections are put together into a template.
 
 v0.2: adds what we learned from Shopify's paid themes (section rhythm, optional visual sections, a richer but still simple scroll motion system). Changed: §2 (up to 10 sections, visual breaks, rhythm), §6 (design language points to the section rules), §6a (motion), §7, §9, §10.
@@ -33,7 +33,7 @@ Every template's home page uses this order. "Required" sections must be present;
 | 4 | ~~**Offers**~~ | **No (owner, 2026-10-27)** | Templates carry no promotions or discounts: a seller may publish a template unedited, and the store must never promise a sale, coupon or amount off it doesn't give. No promotion or bundle section, no discount-only design (`newsletter-coupon`, `newsletter-sticker`, `popup-reward`), no coupon code or "% off" in template copy (`packages/store-sections/src/templates/no-discounts.ts`, checked by `no-discounts.test.ts`). The designs stay in the library for a seller to add on purpose. Product cards keep their discount badge, bound to the product's own compare-at price. | |
 | 5 | **Products: new arrivals** | Yes | Title + 4 to 8 products + "View all". | `productList` source `newest`. "View all" goes to `/products?sort=newest`. |
 | 6 | **Brands** | Yes (hides when the store has no brands) | Title + brand logos or names in one row or rail. | Brand data node (gap G3). Each brand links to its catalog filter. |
-| 7 | **Trust strip** | Optional | 3 or 4 icons with a short line: delivery, cash on delivery, returns, support. | Static text; the seller edits it. |
+| 7 | **Trust strip** | Optional | 3 or 4 icons with a short line about the products and the catalog. Never a service the seller may not offer (delivery times, free shipping, returns, warranties; `template-copywriter` skill, owner 2026-11-15). | Static text; the seller edits it. |
 | 8 | **Reviews or newsletter** | Optional, at most one | | Newsletter uses the existing store form. |
 | 9 | **Footer** (chrome) | Yes | See §4.3 | |
 
@@ -131,7 +131,7 @@ The full design language (direction, spacing and type, layout, responsive rules,
 - **Spacing**: section padding about 96 px desktop / 48 px mobile (target `clamp(48px, 8vw, 112px)`), tighter only for trust strips; the same rhythm across the page.
 - **Product card (same across the template)**: image at a fixed ratio (1:1 or 3:4), title on at most 2 lines, price + compare-at price, discount badge, Add to cart. No extra clutter.
 - **Photos**: real, sharp photos that match the trade, the same style and crop across the template, checked by eye; no watermarks, no logos.
-- **Copy**: short, warm Arabic (Egyptian-friendly) with a matching English version; buttons are verbs ("تسوّق الآن", "شوف العروض").
+- **Copy**: simple, formal e-commerce Modern Standard Arabic (no Egyptian dialect), about the niche's products only, promising no service the seller may not offer, with a natural English version; buttons are verbs ("تسوّق الآن", "تصفّح المجموعة"). Full rules: the `template-copywriter` skill (owner, 2026-11-15; this replaces the earlier "warm, Egyptian-friendly" line).
 - **Accessibility**: text contrast at least 4.5:1, alt text on every image, visible focus.
 - **Speed**: hero images sized for mobile, at most 3 slides, no autoplaying video on the home page.
 - Checked at 390, 768, 1024, 1280 and 1440 px, in Arabic and English, before a template ships.
@@ -200,7 +200,7 @@ Changing Tallaby Classic's design needs the owner's approval (`CLAUDE.md` rule 1
 | **G5** | Rules test | §7. |
 | **G7** | Animations | **Built 2026-10-27** (`docs/section-rules.md` §6.7, §11). Site on/off switch and Hover effect in Theme; the section Animation switch (on by default) replacing today's None / Fade / Rise (`elements/shell.ts`, `section-shell.client.tsx`); the `data-reveal` output and the small `IntersectionObserver` runtime so it works on every browser (§6a, `docs/section-rules.md` §6.7). |
 | **G8–G19** | Section gaps | G8, G13, G14 (render-time fallback), G15, G17 and G19 **built 2026-10-27**; G16 and G18 still open. Zoom-in and slide-in variants, moving marquee (later), second-photo hover (later), hotspot pins (later), layout tokens (padding, heading size, container), tablet columns, mobile swipe rows, theme radius, hover transitions, section head gap, no letter-spacing on Arabic. Defined in `docs/section-rules.md` §11; a template can ship without them and add them in a later version. |
-| **G6** | Template updates | New template versions through insert-only migrations (staging first, then production with owner approval). Existing stores keep their site; only new picks and "Use template" get the new version. |
+| **G6** | Template updates | Code-only since 2026-10-27 (0109 dropped the template tables): a new template version ships with a deploy, no migration. Existing stores keep their site; only new picks and "Use template" get the new version. |
 
 ## 10. Open questions for the owner
 

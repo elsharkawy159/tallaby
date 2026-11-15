@@ -1,6 +1,8 @@
 # Niche editions: plan (Phase 0)
 
-**Status: for owner approval (2026-11-11). Nothing in this plan is built.** Branch `feat/section-system` (the owner asked to stay on it). ROADMAP F-90.
+**Status: for owner approval (2026-11-11). Nothing in this plan is built.**
+
+> **Update 2026-11-15:** most of this plan is built and parts are superseded. There are 83 niches (not 82: `slippers-clogs` was added), one template per niche replaced the two-or-three looks per niche in §2.2 (`docs/systems/one-template-per-niche.md`), many looks named below were deleted, and photos come only from `docs/systems/editions-photos.md` (generated; no new Pexels, so §3.2 is history). The editions live in `library-media/editions/<niche>/`. Current guide: the `store-templates` skill (`.claude/skills/store-templates/`). Branch `feat/section-system` (the owner asked to stay on it). ROADMAP F-90.
 
 A seller in a sub-trade (dresses, phone accessories, watches) should open a template that already looks like their shop: their categories, products, photos, copy and the sections their trade needs. We do this with data packs on top of the templates we have, not with new template designs.
 
