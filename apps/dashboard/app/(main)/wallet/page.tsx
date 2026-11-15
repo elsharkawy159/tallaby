@@ -4,7 +4,9 @@ import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { StoreWalletSection } from "./store-wallet.data";
 import { parseEntryFilter } from "./store-wallet.server";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /** Store wallet: balance, top-up and every ledger entry (moved from /financial, 2026-10-18). */
 export default async function WalletPage({

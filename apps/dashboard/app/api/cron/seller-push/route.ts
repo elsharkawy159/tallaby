@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { logServerError } from "@workspace/db/log";
 import { dispatchSellerPushes } from "@/lib/push/push-alerts.server";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**

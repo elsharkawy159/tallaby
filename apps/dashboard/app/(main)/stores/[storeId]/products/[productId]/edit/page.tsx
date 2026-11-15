@@ -24,7 +24,9 @@ import { parseCustomerFields } from "@workspace/lib/products/customer-fields";
 import type { EditProductStatus } from "./edit-product-actions.client";
 import type { CategoryOption } from "../../add/add-product.schema";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

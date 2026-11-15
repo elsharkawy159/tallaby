@@ -4,8 +4,6 @@ import { isSetupReminderToken, optOutOfSetupReminders } from "@workspace/lib/sel
 import ar from "@/messages/ar.json";
 import en from "@/messages/en.json";
 
-export const dynamic = "force-dynamic";
-
 /**
  * The "stop these reminders" link of the store setup reminder emails
  * (ROADMAP.md F-94, 0170). GET only shows a confirm button (mail scanners open

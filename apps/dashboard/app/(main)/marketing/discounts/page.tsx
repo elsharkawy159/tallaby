@@ -3,8 +3,9 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { PageContainer } from "@/components/seller-ui";
 import { DiscountRulesData } from "./discount-rules.data";
 
-// Per-seller data read from the session cookie; never cached.
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /** Marketing › Automatic discounts: store-wide rules with no code (ROADMAP.md F-13a). */
 export default async function DiscountRulesPage({ searchParams }: { searchParams: Promise<{ store?: string }> }) {

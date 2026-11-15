@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { renewDueApps } from "@workspace/lib/billing/apps";
 import { renewDuePlans } from "@workspace/lib/billing/plans";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /** Daily Pro and paid app renewals from the store wallet (ROADMAP.md F-55d, F-47). Does nothing before the USD switch. */

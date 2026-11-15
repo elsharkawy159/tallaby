@@ -2,8 +2,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getBostaLabels } from "@workspace/lib/shipping/bosta-orders";
 import { isAccessError, requireOrdersStore } from "@/lib/auth/require-seller.server";
 
-export const dynamic = "force-dynamic";
-
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**

@@ -3,8 +3,6 @@ import { OAuthError, tokenResponse } from "@workspace/lib/agents";
 import { exchangeAuthorizationCode, refreshAgentTokens } from "@workspace/lib/agents/server";
 import { oauthErrorResponse, oauthJson, oauthPreflight, rateLimited, readOAuthBody } from "@/lib/oauth/oauth-http.server";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Token endpoint for MCP assistants (ROADMAP.md F-29b): authorization_code
  * with PKCE, and refresh_token with rotation. Public clients only, so the

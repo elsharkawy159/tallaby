@@ -9,8 +9,6 @@ import {
   googleOAuthClient,
 } from "@/lib/integrations/google-oauth.server";
 
-export const dynamic = "force-dynamic";
-
 const limiter = createRateLimiter({ limit: 20, windowMs: 10 * 60_000 });
 
 /**

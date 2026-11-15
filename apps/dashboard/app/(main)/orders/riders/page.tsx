@@ -5,8 +5,9 @@ import { PageContainer } from "@/components/seller-ui";
 import { ShippingData } from "../delivery/shipping.data";
 import { ShippingSkeleton } from "../delivery/shipping.skeleton";
 
-// Per-seller data read from the session cookie.
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /** Riders (PLAN.md §7.2, P3-06): the delivery workspace opened on its riders view. */
 export default async function RidersPage() {

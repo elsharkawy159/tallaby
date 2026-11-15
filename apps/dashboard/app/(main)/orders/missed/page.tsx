@@ -6,8 +6,9 @@ import { parseLeadRange, parseLeadStatus } from "@workspace/lib/checkout-leads";
 import { ListPageSkeleton } from "../orders-page-frame";
 import { MissedOrdersData } from "./missed-orders.data";
 
-// Per-seller data read from the session cookie; personal data, never cached.
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /** Orders › Not completed: store checkouts that got an address but no order (ROADMAP.md F-03). */
 export default async function MissedOrdersPage({

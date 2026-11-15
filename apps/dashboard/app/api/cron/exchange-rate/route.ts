@@ -3,7 +3,6 @@ import { applyInvalidation, invalidateBillingRate } from "@workspace/cache";
 import { getBillingState, refreshExchangeRate } from "@workspace/lib/billing/server";
 import { shouldInvalidateMarketingRate } from "./exchange-rate.lib";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 /** The rate tallaby.com shows (Admin override, else the latest fetch), or undefined when it can't be read. */

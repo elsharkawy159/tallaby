@@ -8,7 +8,9 @@ import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { ManualOrderForm } from "./manual-order.client";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /** Orders › Create order (ROADMAP.md F-05). The store comes from the URL, never a cookie. */
 export default async function NewManualOrderPage({ searchParams }: { searchParams: Promise<{ store?: string | string[] }> }) {

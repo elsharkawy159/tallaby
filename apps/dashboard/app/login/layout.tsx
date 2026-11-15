@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { PUBLIC_ENTRY_PATH, dashboardOrigin } from "@/lib/seo/public-entry.lib";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 // /login is the dashboard's one indexable page (signed out, `/` redirects here).
 // The root layout's noindex stays the default for every other route.
 export async function generateMetadata(): Promise<Metadata> {

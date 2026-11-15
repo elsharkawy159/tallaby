@@ -9,6 +9,10 @@ import { AppActions, AppPrice } from "./app-actions.client";
 import { loadAppCenterPage } from "../app-center.data";
 import { appCanRemove, appPrimaryAction, appState } from "../app-center.lib";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /** Store › App Center › <app> › Overview (ROADMAP.md F-93): what it does, its price and its main action. */
 export default async function AppDetailPage({ params }: { params: Promise<{ storeId: string; slug: string }> }) {
   const { storeId, slug } = await params;

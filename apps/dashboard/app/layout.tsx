@@ -13,6 +13,10 @@ import { MetaPixel } from "@/components/meta-pixel.client";
 import { ClarityScript } from "@/components/clarity.client";
 import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
@@ -50,9 +54,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Not needed as a blanket declaration: this layout reads getLocale() (cookie-
-// driven), which already forces dynamic rendering. Individual private routes
-// keep their own explicit `export const dynamic = "force-dynamic"` as a marker.
+// Cache Components is on (next.config.ts). This layout reads getLocale() (the
+// locale cookie), so it renders at request time; every page and layout keeps
+// `instant = false` until it adopts a static shell (docs/plans/dashboard-static-shell.md).
 
 export default async function RootLayout({
   children,

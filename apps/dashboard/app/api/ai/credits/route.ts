@@ -3,8 +3,6 @@ import { getAiCreditStatus } from "@workspace/lib/billing/credits";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 
-export const dynamic = "force-dynamic";
-
 /** Credits left on the session's account, for the note beside the AI buttons (ROADMAP.md F-57c). */
 export async function GET() {
   let sellerId: string;

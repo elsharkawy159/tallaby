@@ -2,7 +2,9 @@ import { OrdersLocked } from "@/components/orders/orders-locked";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { FinancialSection } from "./financial.data";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /** Account statements. The store wallet has its own page at /wallet. */
 export default async function FinancialPage() {

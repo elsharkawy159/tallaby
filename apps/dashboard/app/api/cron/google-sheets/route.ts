@@ -3,7 +3,6 @@ import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { readGoogleClientEnv } from "@workspace/lib/integrations";
 import { exportStoreOrdersToSheet, listStoresForDailySheetExport } from "@workspace/lib/integrations/server";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**

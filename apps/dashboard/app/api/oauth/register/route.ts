@@ -3,8 +3,6 @@ import { OAuthError, parseRegistrationRequest, registrationResponse } from "@wor
 import { registerDcrClient } from "@workspace/lib/agents/server";
 import { oauthErrorResponse, oauthJson, oauthPreflight, rateLimited } from "@/lib/oauth/oauth-http.server";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Dynamic Client Registration (RFC 7591) for MCP assistants (ROADMAP.md
  * F-29b). Open by design (Claude and ChatGPT register themselves); a client

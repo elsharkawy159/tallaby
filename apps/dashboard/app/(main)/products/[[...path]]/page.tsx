@@ -8,7 +8,9 @@ import { ProductStoreProvider } from "@/app/(main)/stores/[storeId]/products/_co
 import { VendorProductsData } from "@/app/(main)/stores/[storeId]/products/_components/vendor-products.data";
 import { VendorProductsSkeleton } from "@/app/(main)/stores/[storeId]/products/_components/vendor-products.skeleton";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /**
  * The old account-wide Products URLs (ROADMAP.md F-87c slice 2). Products now

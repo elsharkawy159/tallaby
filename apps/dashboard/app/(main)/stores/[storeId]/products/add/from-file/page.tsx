@@ -4,7 +4,9 @@ import { aiConfigured } from "@workspace/ai";
 import { loadProductStorePage } from "@/lib/products/product-store.server";
 import { FromFile } from "./from-file.client";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /** Covers the server actions on this page too (Next docs, maxDuration): one batch writes copy, stores photos and saves. */
 export const maxDuration = 60;

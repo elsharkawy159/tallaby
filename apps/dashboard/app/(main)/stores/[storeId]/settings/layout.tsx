@@ -6,6 +6,10 @@ import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note"
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StoreSettingsTabs } from "./store-settings-tabs.client";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 export default async function StoreSettingsLayout({
   children,
   params,

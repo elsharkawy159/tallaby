@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /** Old Submissions tab URL: the inbox is now a section of the single Forms page (filters kept). */
 export default async function StoreFormSubmissionsPage({
   params,

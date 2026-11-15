@@ -6,6 +6,10 @@ import { parseStoreViewsRange, type StoreViewsReport } from "@/lib/analytics/sto
 import { getStoreViews, isStoreViewsConfigured } from "@/lib/analytics/store-views.server";
 import { StoreViews } from "./analytics.client";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /** Store › Analytics: views of the store's website from Tallaby's GA4 (PLAN.md SA-01). */
 export default async function StoreAnalyticsPage({
   params,

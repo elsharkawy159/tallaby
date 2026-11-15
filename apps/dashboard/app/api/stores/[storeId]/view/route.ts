@@ -3,8 +3,6 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 
-export const dynamic = "force-dynamic";
-
 const NO_STORE = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" };
 
 /**

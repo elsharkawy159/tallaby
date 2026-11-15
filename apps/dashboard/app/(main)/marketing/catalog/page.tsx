@@ -4,6 +4,10 @@ import { getTranslations } from "next-intl/server";
 import { PageContainer, PageHeader, SectionCard } from "@/components/seller-ui";
 import { CatalogShareForm } from "./catalog-share.client";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("catalogShare");
   return { title: t("title") };

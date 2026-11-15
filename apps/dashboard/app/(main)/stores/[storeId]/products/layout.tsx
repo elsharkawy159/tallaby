@@ -3,6 +3,10 @@ import { loadStorePage } from "@/lib/stores/store-page.server";
 import { ProductStoreProvider } from "./_components/product-store.client";
 import { PendingProductSavedToast } from "./_components/product-saved-toast.client";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /**
  * Gives every Products page the store it acts on (ROADMAP.md F-87c slice 2):
  * the `[storeId]` segment, after loadStorePage has checked it against the

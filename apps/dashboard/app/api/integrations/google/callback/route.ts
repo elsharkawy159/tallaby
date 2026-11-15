@@ -9,8 +9,6 @@ import {
   googleOAuthClient,
 } from "@/lib/integrations/google-oauth.server";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Google OAuth callback for the Sheets app (PLAN.md P7-06). Accepted only
  * when the signed state is valid and unexpired, its nonce matches this

@@ -7,6 +7,10 @@ import { AppCenter } from "./app-center.client";
 import { loadAppCenterPage } from "./app-center.data";
 import { appState } from "./app-center.lib";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /**
  * Store › App Center (ROADMAP.md F-93): every app and integration from the
  * registry, with this store's install state. Per store (rule 5): the state

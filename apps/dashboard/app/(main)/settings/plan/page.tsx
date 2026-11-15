@@ -17,6 +17,10 @@ import { getStoreWalletBalance } from "../../wallet/store-wallet.server";
 import { SignupPixelData } from "../../_components/signup-pixel.data";
 import { PlanLive } from "./plan-live.client";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 const FEATURES: (keyof PlanFeatures)[] = ["customDomain", "ai", "advancedSettings", "removeTallabyBadge"];
 
 /**

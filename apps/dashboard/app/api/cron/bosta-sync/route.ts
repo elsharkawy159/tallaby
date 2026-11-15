@@ -3,7 +3,6 @@ import { runBostaRetrySweep } from "@workspace/lib/shipping/bosta-ship";
 import { syncBostaShipments } from "@workspace/lib/shipping/bosta-sync";
 import { sendPendingDeliveredMetaPurchases } from "@workspace/lib/integrations/server";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**

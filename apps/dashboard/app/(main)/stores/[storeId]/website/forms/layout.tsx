@@ -3,6 +3,10 @@ import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { PageContainer } from "@/components/seller-ui";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /** Website › Forms (PLAN.md §8.4, P4-10): one page with the forms list and the submissions inbox, plus the form editor. */
 export default async function StoreFormsLayout({
   children,

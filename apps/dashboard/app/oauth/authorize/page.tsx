@@ -8,7 +8,9 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher.client";
 import { checkConsentRequest } from "./authorize.server";
 import { ConsentForm } from "./authorize.client";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 

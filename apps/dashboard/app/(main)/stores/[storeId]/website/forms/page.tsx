@@ -10,7 +10,9 @@ import { INBOX_STATUSES, type InboxFilter } from "./forms.dto";
 import { FormsList } from "./forms-list.client";
 import { SubmissionsInbox } from "./submissions/submissions.client";
 
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 const PAGE_SIZE = 25;
 

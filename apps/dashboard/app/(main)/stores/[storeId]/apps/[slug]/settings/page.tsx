@@ -3,6 +3,10 @@ import { appPaths, getAppBySlug } from "@workspace/apps";
 import { loadAppCenterPage } from "../../app-center.data";
 import { APP_SETTINGS_SCREENS } from "../../_settings/settings-routes.data";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /**
  * Store › App Center › <app> › Settings (ROADMAP.md F-93). The registry's
  * `settingsRoute` picks the app's existing settings screen; an app with none

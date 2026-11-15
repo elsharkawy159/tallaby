@@ -3,8 +3,10 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { PageContainer } from "@/components/seller-ui";
 import { EmailCampaignsData } from "./email-campaigns.data";
 
-// Per-seller data read from the session cookie; personal data, never cached.
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 // "Send now" keeps sending in after() for up to 4 minutes.
 export const maxDuration = 300;
 

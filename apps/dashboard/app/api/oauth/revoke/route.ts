@@ -2,8 +2,6 @@ import type { NextRequest } from "next/server";
 import { revokePresentedToken } from "@workspace/lib/agents/server";
 import { oauthErrorResponse, oauthPreflight, rateLimited, readOAuthBody } from "@/lib/oauth/oauth-http.server";
 
-export const dynamic = "force-dynamic";
-
 /** RFC 7009 token revocation for MCP assistants (ROADMAP.md F-29b). Always 200 for unknown tokens. */
 export async function POST(request: NextRequest) {
   const limited = rateLimited("revoke", request);

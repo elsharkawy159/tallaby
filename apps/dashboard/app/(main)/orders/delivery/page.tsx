@@ -5,8 +5,9 @@ import { PageContainer } from "@/components/seller-ui";
 import { ShippingData } from "./shipping.data";
 import { ShippingSkeleton } from "./shipping.skeleton";
 
-// Force dynamic rendering since this page uses cookies for authentication
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 export default async function ShippingPage() {
   const lock = await currentOrderLock();

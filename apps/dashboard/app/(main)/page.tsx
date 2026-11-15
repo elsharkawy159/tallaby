@@ -34,8 +34,9 @@ import { getHomeSnapshot } from "./_components/home.queries";
 import { showSetupOnlyHome } from "./_components/setup-checklist.lib";
 import { SetupHomeData } from "./_components/setup-home.data";
 
-// Per-seller data read from the session cookie.
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 /**
  * Seller home. Each section streams in behind its own Suspense boundary; the

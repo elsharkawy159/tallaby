@@ -4,8 +4,6 @@ import { claimStoreBuildIntake } from "@workspace/lib/store-builds/server";
 import { loadSeller } from "@/lib/auth/require-seller.server";
 import { getSessionUser } from "@/lib/auth/session.server";
 
-export const dynamic = "force-dynamic";
-
 /**
  * GET /api/store-build/claim?intake=<uuid>&token=<token> (ROADMAP.md F-82d).
  * A seller already signed in on tallaby.com lands here from the hero composer.

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { expireManualOrderLinks } from "@workspace/lib/orders/manual/server";
 
-export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /** Daily: cancels order links nobody confirmed and puts their stock back (ROADMAP.md F-05c). */

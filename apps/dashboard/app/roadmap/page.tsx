@@ -3,8 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { RoadmapPage } from "./roadmap.client";
 import { getRoadmapItems, getRoadmapViewer } from "./roadmap.data";
 
-// Public page (no login): the proxy lets /roadmap through. Votes change often, so never cached.
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("roadmap");

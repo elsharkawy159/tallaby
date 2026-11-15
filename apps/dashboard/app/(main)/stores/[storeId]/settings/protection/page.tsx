@@ -4,6 +4,10 @@ import { parseOrderConfirmTemplate } from "../../../../orders/order-confirm.lib"
 import { BlockedCustomersSettings } from "./protection.client";
 import { OrderConfirmTemplateSettings } from "./order-confirm-template.client";
 
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 /** Store settings › Order protection (ROADMAP.md F-02): WhatsApp confirm message + phone blocklist. */
 export default async function StoreOrderProtectionPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;

@@ -3,6 +3,9 @@ import createNextIntlPlugin from "next-intl/plugin";
 import { OPTIMIZED_IMAGE_HOSTS } from "./lib/image-hosts";
 
 const nextConfig: NextConfig = {
+  // Rollout in docs/plans/dashboard-static-shell.md: segments keep
+  // `instant = false` until they adopt a static shell.
+  cacheComponents: true,
   typescript: { ignoreBuildErrors: true },
   images: {
     // Storage paths are unique (uploads never overwrite), so optimized sizes

@@ -4,8 +4,9 @@ import { OrdersLocked } from "@/components/orders/orders-locked";
 import { ListPageSkeleton, OrdersPageFrame } from "../orders-page-frame";
 import { CrossSellReportData } from "./cross-sell-report.data";
 
-// Per-seller order data read from the session cookie; never cached.
-export const dynamic = "force-dynamic";
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 type Params = Partial<Record<"store" | "days" | "page" | "size", string | string[]>>;
 
