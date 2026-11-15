@@ -24,7 +24,6 @@ export const MARKETING_CLIENT_NAMESPACES = [
   "contact",
   "faq",
   "home.hero.live",
-  "home.marketing",
   "legal",
   "nav",
   "pricing.estimate",

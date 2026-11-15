@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
 import {
-  AiSection,
-  BuilderSection,
   FeaturesSection,
   FinalCta,
   HomeFaq,
   HomeHero,
-  HowItWorks,
-  MarketingSection,
-  PaymentsSection,
   PricingTeaser,
-  ShippingSection,
   TemplatesSection,
   TrustedStoresSection,
   WhatIsTallabySection,
@@ -35,14 +29,8 @@ export default function HomePage() {
       <TrustedStoresSection />
       <WhatIsTallabySection />
       <FeaturesSection />
-      <AiSection />
-      <BuilderSection />
       <TemplatesSection />
-      <MarketingSection />
-      <ShippingSection />
-      <PaymentsSection />
       <PricingTeaser />
-      <HowItWorks />
       <HomeFaq />
       <FinalCta />
       <StickyCta />

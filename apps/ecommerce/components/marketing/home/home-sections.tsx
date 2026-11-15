@@ -2,9 +2,6 @@ import * as React from "react";
 import {
   Activity,
   Banknote,
-  BellRing,
-  Bike,
-  BookOpen,
   Bot,
   Check,
   ChartNoAxesCombined,
@@ -20,12 +17,8 @@ import {
   ShieldCheck,
   ShoppingCart,
   Sparkles,
-  Star,
   Store,
   TicketPercent,
-  Timer,
-  Palette,
-  Rocket,
   Truck,
   Users,
   Wallet,
@@ -39,7 +32,7 @@ import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-acc
 import { Container, Kicker, Ltr, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
-import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
+import { IconTile } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 // Grid instead of carousel on the home page (owner, 2026-11-13); the carousel file stays so it can come back.
@@ -47,7 +40,6 @@ import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { TemplateThumb } from "@/components/marketing/templates/template-thumb";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
-import { COPY_VARS, PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { selectLogoStrip } from "@/lib/marketing/store-directory.lib";
@@ -55,25 +47,13 @@ import { getDirectoryStores, getRecentStores } from "@/lib/marketing/stores.serv
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { templateFrameSrc, type GalleryEntry } from "@/lib/marketing/templates.lib";
 import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
-import { AiDemo } from "./ai-demo";
-import { BuilderDemo } from "./builder-demo";
 import { HeroDemo } from "./hero-demo";
+import { pickHomeTemplates } from "./home-templates.lib";
 import { LiveStoreLine } from "./live-store-line.client";
-import { MarketingTools } from "./marketing-tools.client";
 import { McpChatDemo } from "./mcp-chat-demo";
-import { PaymentDemo, ShippingDemo } from "./shipping-payment-demos";
 import { StoreLogoStrip } from "./store-logo-strip";
 
-/** A small text link from a home section to its deeper page. */
-function SectionLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
-  return (
-    <Link href={href} className={className ?? "text-sm font-bold text-teal-700 underline-offset-2 hover:underline"}>
-      {children}
-    </Link>
-  );
-}
-
-/** A heading plus the small lead used in the home page's split sections. */
+/** A heading plus the small lead used in the home page's split section. */
 function SplitHeading({ id, kicker, title, body }: { id: string; kicker: string; title: string; body: string }) {
   return (
     <>
@@ -207,14 +187,17 @@ export async function TrustedStoresSection() {
   return <StoreLogoStrip stores={stores} labels={{ title: t("title"), all: t("all"), listLabel: t("listLabel") }} rtl={locale === "ar"} />;
 }
 
-/** "What is Tallaby?" right after the hero: one plain sentence, who it is for, and four facts (owner, 2026-11-08). */
+/**
+ * "What is Tallaby?" right after the hero: one plain sentence, who it is for, and four facts (owner, 2026-11-08).
+ * Payments and shipping live here only (their own home sections were cut, owner 2026-11-15); "free" is the pricing section's.
+ */
 export async function WhatIsTallabySection() {
   const t = await getTranslations("home.what");
   const points = [
     { key: "store", icon: Store },
     { key: "money", icon: Wallet },
     { key: "shipping", icon: Truck },
-    { key: "free", icon: Rocket },
+    { key: "world", icon: Globe },
   ] as const;
 
   return (
@@ -240,7 +223,6 @@ export async function WhatIsTallabySection() {
               <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{t(`points.${point.key}.title`)}</h3>
               <p className="text-sm text-pretty text-ink-500">
                 {t.rich(`points.${point.key}.body`, {
-                  ...COPY_VARS,
                   domain: (chunks) => <Ltr className="font-latin font-semibold text-ink-700">{chunks}</Ltr>,
                 })}
               </p>
@@ -252,11 +234,15 @@ export async function WhatIsTallabySection() {
   );
 }
 
+/**
+ * The page's one feature overview: AI, marketing, import and ads in one grid (owner, 2026-11-15: they had a section each).
+ * The AI and marketing cards keep the old sections' ids, so the header's "/#ai" and "/#marketing" links still land on them.
+ */
 export async function FeaturesSection() {
   const t = await getTranslations("home.features");
   const cards = [
-    { icon: Sparkles, title: t("aiTitle"), body: t("aiBody"), link: { href: "#ai", label: t("aiLink") } },
-    { icon: Truck, title: t("shipTitle"), body: t("shipBody") },
+    { id: "ai", icon: Sparkles, title: t("aiTitle"), body: t("aiBody") },
+    { id: "marketing", icon: Mail, title: t("marketingTitle"), body: t("marketingBody") },
     { icon: FileUp, title: t("importTitle"), body: t("importBody") },
     { icon: ChartNoAxesCombined, title: t("adsTitle"), body: t("adsBody") },
   ];
@@ -292,17 +278,12 @@ export async function FeaturesSection() {
             <McpChatDemo />
           </Reveal>
           {cards.map((card) => (
-            <Reveal key={card.title} as="article" className="grid grid-cols-[38px_minmax(0,1fr)] content-start gap-x-3 gap-y-0.5 rounded-[26px] border border-[#e6eef0] bg-white/85 px-4 py-3.5 transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_18px_40px_rgba(13,55,67,0.08)] min-[641px]:flex min-[641px]:flex-col min-[641px]:gap-2.5 min-[641px]:p-[26px]">
-              <IconTile className="row-span-3 size-[38px] rounded-xl min-[641px]:mb-1.5 min-[641px]:size-11 min-[641px]:rounded-[14px]">
+            <Reveal key={card.title} id={card.id} as="article" className="grid grid-cols-[38px_minmax(0,1fr)] content-start gap-x-3 gap-y-0.5 rounded-[26px] border border-[#e6eef0] bg-white/85 px-4 py-3.5 transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_18px_40px_rgba(13,55,67,0.08)] min-[641px]:flex min-[641px]:flex-col min-[641px]:gap-2.5 min-[641px]:p-[26px]">
+              <IconTile className="row-span-2 size-[38px] rounded-xl min-[641px]:mb-1.5 min-[641px]:size-11 min-[641px]:rounded-[14px]">
                 <card.icon aria-hidden />
               </IconTile>
               <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{card.title}</h3>
               <p className="text-sm text-pretty text-ink-500">{card.body}</p>
-              {card.link ? (
-                <a href={card.link.href} className="mt-1 text-sm font-bold text-teal-700 min-[641px]:mt-auto">
-                  {card.link.label}
-                </a>
-              ) : null}
             </Reveal>
           ))}
         </div>
@@ -311,56 +292,17 @@ export async function FeaturesSection() {
   );
 }
 
-export async function AiSection() {
-  const t = await getTranslations("home.ai");
-  return (
-    <Section id="ai" aria-labelledby="ai-title">
-      <Container>
-        <AiDemo>
-          <SplitHeading id="ai-title" kicker={t("kicker")} title={t("title")} body={t("body")} />
-        </AiDemo>
-      </Container>
-    </Section>
-  );
-}
-
-export async function BuilderSection() {
-  const t = await getTranslations("home.builder");
-  return (
-    <Section id="builder" aria-labelledby="builder-title">
-      <Container>
-        <Reveal>
-          <SectionHeading id="builder-title" kicker={t("kicker")} title={t("title")} description={t("body")} centered />
-        </Reveal>
-        <Reveal>
-          <BuilderDemo />
-        </Reveal>
-      </Container>
-    </Section>
-  );
-}
-
-/** One template per category, in the catalog's order. */
-function onePerCategory(entries: readonly GalleryEntry[]): GalleryEntry[] {
-  const seen = new Set<string>();
-  return entries.filter((entry) => {
-    if (seen.has(entry.category)) return false;
-    seen.add(entry.category);
-    return true;
-  });
-}
-
 /**
  * The home page's templates as a grid (owner, 2026-11-13: grid instead of
- * carousel): 2 columns on phones, 3 on tablets, 4 on desktop. Each card holds
- * what the carousel's centre card holds, with the same buttons and links; in
- * narrow columns the category tag and the buttons stack.
+ * carousel): 2 columns up to tablets, 4 on desktop, so the 8 cards always fill
+ * whole rows. Each card holds what the carousel's centre card holds, with the
+ * same buttons and links; in narrow columns the category tag and the buttons stack.
  */
 async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; locale: string }) {
   const t = await getTranslations("templates");
   if (!entries.length) return null;
   return (
-    <ul className="grid grid-cols-2 gap-3 min-[641px]:grid-cols-3 min-[641px]:gap-5 min-[1081px]:grid-cols-4">
+    <ul className="grid grid-cols-2 gap-3 min-[641px]:gap-5 min-[1081px]:grid-cols-4">
       {entries.map((entry) => {
         const href = entry.shot?.edition ? `/templates/${entry.id}?edition=${encodeURIComponent(entry.shot.edition)}` : `/templates/${entry.id}`;
         return (
@@ -379,7 +321,7 @@ async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; loca
                 </span>
               </div>
               <div className="mx-2 overflow-hidden rounded-[14px] border border-[#edf1f2] min-[641px]:mx-3 min-[641px]:rounded-[18px]">
-                <TemplateThumb shot={entry.shot} liveSrc={templateFrameSrc(locale, entry.id, undefined, true)} sizes="(min-width: 1081px) 25vw, (min-width: 641px) 33vw, 50vw" />
+                <TemplateThumb shot={entry.shot} liveSrc={templateFrameSrc(locale, entry.id, undefined, true)} sizes="(min-width: 1081px) 25vw, 50vw" />
               </div>
               {entry.palette.length ? (
                 <div className="flex items-center gap-1.5 px-3 pt-2.5 text-xs text-ink-400 min-[641px]:px-[18px] min-[641px]:pt-3">
@@ -405,125 +347,29 @@ async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; loca
   );
 }
 
+/**
+ * Templates and the builder in one section: 8 templates (pickHomeTemplates), then a link to the full gallery (owner, 2026-11-15).
+ * The heading keeps the old builder section's id for the "/#builder" links in the footer and feature pages.
+ */
 export async function TemplatesSection() {
   const locale = await getLocale();
   const [t, entries] = await Promise.all([getTranslations("home.templates"), getTemplateGallery(locale)]);
   return (
     <section id="templates" aria-labelledby="templates-title" className="py-14 min-[861px]:py-[72px]">
       <Container>
-        <Reveal>
+        <Reveal id="builder">
           <SectionHeading id="templates-title" kicker={t("kicker")} title={t("title")} description={t("body", { count: entries.length })} centered />
         </Reveal>
-      </Container>
-      {/* Grid instead of carousel (owner, 2026-11-13). */}
-      {/* <TemplateCarousel entries={onePerCategory(entries)} /> */}
-      <Container>
-        <TemplateGrid entries={onePerCategory(entries)} locale={locale} />
-      </Container>
-      <Container className="mt-6 text-center">
-        <SectionLink href="/industries/clothing-store">{t("industryLink")}</SectionLink>
+        {/* Grid instead of carousel (owner, 2026-11-13). */}
+        {/* <TemplateCarousel entries={pickHomeTemplates(entries)} /> */}
+        <TemplateGrid entries={pickHomeTemplates(entries)} locale={locale} />
+        <div className="mt-8 flex justify-center">
+          <CtaButton asChild tone="outline">
+            <Link href="/templates">{t("more")}</Link>
+          </CtaButton>
+        </div>
       </Container>
     </section>
-  );
-}
-
-export async function MarketingSection() {
-  const t = await getTranslations("home.marketing");
-  const extras = [
-    { icon: BellRing, label: t("extras.popups") },
-    { icon: Users, label: t("extras.subscribers") },
-    { icon: BookOpen, label: t("extras.catalog") },
-    { icon: ShieldCheck, label: t("extras.fake") },
-    { icon: Star, label: t("extras.reviews") },
-  ];
-  return (
-    <Section id="marketing" aria-labelledby="marketing-title">
-      <Container>
-        <Reveal>
-          <SectionHeading id="marketing-title" kicker={t("kicker")} title={t("title")} description={t("body")} centered />
-        </Reveal>
-        <Reveal>
-          <MarketingTools />
-        </Reveal>
-        <Reveal className="mt-7 flex flex-wrap justify-center gap-2.5">
-          {extras.map((extra) => (
-            <span key={extra.label} className="inline-flex h-[42px] items-center gap-2 rounded-full border border-line bg-white/80 px-4 text-sm font-semibold text-ink-700">
-              <extra.icon className="size-4 text-teal-700" aria-hidden />
-              {extra.label}
-            </span>
-          ))}
-        </Reveal>
-      </Container>
-    </Section>
-  );
-}
-
-export async function ShippingSection() {
-  const t = await getTranslations("home.shipping");
-  const carriers = [
-    { name: "Bosta", note: t("bostaNote"), latin: true, dot: "#e30613" },
-    { name: "Wassalha", note: t("wassalhaNote"), latin: true, dot: "#0f9d58" },
-    { name: t("ridersName"), note: t("ridersNote"), icon: Bike },
-  ];
-  return (
-    <Section id="shipping" aria-labelledby="shipping-title">
-      <Container className="grid items-center gap-12 min-[1081px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] min-[1081px]:gap-[72px]">
-        <Reveal className="flex flex-col items-start gap-[18px]">
-          <SplitHeading id="shipping-title" kicker={t("kicker")} title={t("title")} body={t("body")} />
-          <div className="mt-1.5 grid w-full gap-2.5 min-[641px]:grid-cols-3">
-            {carriers.map((carrier) => (
-              <div key={carrier.name} className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-[#e6eef0] bg-white px-2.5 py-3 text-center">
-                <span className="flex items-center gap-2">
-                  {carrier.icon ? <carrier.icon className="size-4 text-teal-700" aria-hidden /> : <span className="size-2.5 flex-none rounded-[3px]" style={{ background: carrier.dot }} />}
-                  <b className={carrier.latin ? "font-latin text-[15px] font-extrabold text-[#26393e]" : "text-[13.5px] font-bold text-[#26393e]"}>{carrier.name}</b>
-                </span>
-                <small className="text-xs text-ink-500">{carrier.note}</small>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-        <Reveal className="flex justify-center">
-          <ShippingDemo />
-        </Reveal>
-      </Container>
-    </Section>
-  );
-}
-
-export async function PaymentsSection() {
-  const t = await getTranslations("home.payments");
-  const groups = [
-    { label: t("groups.cod"), items: [t("cod")] },
-    { label: t("groups.transfer"), items: ["InstaPay", "Vodafone Cash", "e& Cash"] },
-    { label: t("groups.cards"), items: ["Paymob", "Kashier"] },
-  ];
-  return (
-    <Section id="payments" aria-labelledby="payments-title">
-      <Container className="grid items-center gap-12 min-[1081px]:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] min-[1081px]:gap-[72px]">
-        <Reveal className="order-2 flex justify-center min-[1081px]:order-1">
-          <PaymentDemo />
-        </Reveal>
-        <Reveal className="order-1 flex flex-col items-start gap-[18px] min-[1081px]:order-2">
-          <SplitHeading id="payments-title" kicker={t("kicker")} title={t("title")} body={t("body")} />
-          <div className="mt-1.5 flex w-full flex-col gap-3.5">
-            {groups.map((group) => (
-              <div key={group.label}>
-                <small className="mb-1.5 block text-xs font-semibold text-ink-500">{group.label}</small>
-                <div className="flex flex-wrap gap-2">
-                  {group.items.map((item) => (
-                    <span key={item} className="inline-flex h-10 items-center rounded-xl border border-[#e6eef0] bg-white px-3.5 text-[13.5px] font-bold text-[#26393e]" dir="auto">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-[13px] text-pretty text-ink-500">{t("note")}</p>
-          <SectionLink href="/solutions/create-online-store">{t("solutionLink")}</SectionLink>
-        </Reveal>
-      </Container>
-    </Section>
   );
 }
 
@@ -536,39 +382,6 @@ export async function PricingTeaser() {
           <SectionHeading id="pricing-title" kicker={t("kicker")} title={t("title")} description={t("body")} centered />
         </Reveal>
         <PlanCards />
-      </Container>
-    </Section>
-  );
-}
-
-export async function HowItWorks() {
-  const t = await getTranslations("home.how");
-  const steps = [
-    { title: t("s1Title"), body: t("s1Body"), tag: t("s1Tag"), icon: Timer },
-    { title: t("s2Title"), body: t("s2Body"), tag: t("s2Tag"), icon: Palette },
-    { title: t("s3Title"), body: withPrices(t("s3Body", PRICE_TOKENS)), tag: t("s3Tag"), icon: Rocket },
-  ];
-  return (
-    <Section id="how" aria-labelledby="how-title">
-      <Container>
-        <Reveal>
-          <SectionHeading id="how-title" kicker={t("kicker")} title={t("title")} centered />
-        </Reveal>
-        <ol className="m-0 grid list-none gap-4 p-0 min-[861px]:grid-cols-3">
-          {steps.map((step, i) => (
-            <Reveal as="li" key={step.title}>
-              <SiteCard className="flex h-full flex-col items-start gap-2.5 p-[26px]">
-                <span className="grid size-11 place-items-center rounded-[14px] bg-teal-900 font-latin text-lg font-extrabold text-white">{i + 1}</span>
-                <h3 className="text-[19px] font-bold text-teal-900">{step.title}</h3>
-                <p className="text-[15px] text-pretty text-ink-500">{step.body}</p>
-                <span className="mt-auto inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-[13px] font-semibold text-teal-700">
-                  <step.icon className="size-3.5" aria-hidden />
-                  {step.tag}
-                </span>
-              </SiteCard>
-            </Reveal>
-          ))}
-        </ol>
       </Container>
     </Section>
   );
@@ -595,7 +408,8 @@ export async function FinalCta() {
   const t = await getTranslations("home.final");
   return (
     <div id="final">
-      <CtaBand title={t("title")} body={t("body")} action={<SlugClaimForm className="w-full sm:w-[420px]" />} />
+      {/* Same verb as the hero's button: one call to action on the page. */}
+      <CtaBand title={t("title")} body={t("body")} action={<SlugClaimForm className="w-full sm:w-[420px]" submitLabel={t("cta")} />} />
     </div>
   );
 }

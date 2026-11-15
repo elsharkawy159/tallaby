@@ -8,8 +8,8 @@
   "home": {
     "hero": {
       "title": "Create your online store <em>in minutes.</em> Free.",
-      "lead": "Create your online store in minutes, and run payments, shipping, stock and marketing from one dashboard with ease.",
-      "cta": "Create your store in under 10 minutes",
+      "lead": "Add your products, take orders and ship them your way, all from one dashboard. No code.",
+      "cta": "Create your store free",
       "check1": "Free plan, no card",
       "check2": "Signup in under a minute",
       "check3": "About EGP 1.5 fee per order",
@@ -119,24 +119,24 @@
     "what": {
       "kicker": "Meet Tallaby",
       "title": "What is Tallaby?",
-      "lead": "Tallaby is an Egyptian platform where you build your own online store in minutes, on your own link or domain, and run it from one dashboard: products, orders, payments, shipping companies, marketing and AI tools.",
-      "who": "Made for sellers who already sell on Facebook, Instagram or WhatsApp and want a real store without writing code.",
+      "lead": "Tallaby is an Egyptian platform for building an online store under your own brand and running it yourself.",
+      "who": "For sellers on Facebook, Instagram or WhatsApp who want a real store without code.",
       "points": {
         "store": {
           "title": "A store with your name on it",
-          "body": "Your own store with your logo and colours, at <domain>yourbrand.tallaby.com</domain> or on a domain you own."
+          "body": "Your logo and colours, at <domain>yourbrand.tallaby.com</domain> or on a domain you own."
         },
         "money": {
           "title": "Your sales come to you",
-          "body": "Cash on delivery, InstaPay and mobile wallets, or cards through your own Paymob or Kashier account. Payments go to your accounts, and Tallaby takes no cut of your sales."
+          "body": "Cash on delivery, InstaPay and wallets, or cards through your own Paymob or Kashier account. Tallaby takes no cut of your sales."
         },
         "shipping": {
           "title": "You choose how to ship",
-          "body": "Tallaby doesn't deliver orders itself. Ship through your Bosta account or your own riders, and follow every order from the dashboard."
+          "body": "Tallaby doesn't deliver orders. Ship through your Bosta account or your own riders."
         },
-        "free": {
-          "title": "Start free",
-          "body": "Open your store with no subscription and no card, and take orders from day one. Then make a first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders. Move to Pro's fixed monthly price whenever you like."
+        "world": {
+          "title": "Sell in Egypt and abroad",
+          "body": "Choose your store's currency and the countries you ship to."
         }
       }
     },
@@ -145,147 +145,26 @@
       "title": "Built for the way people sell online today",
       "mcpTag": "New",
       "mcpTitle": "Manage your products by chatting with <claude>Claude</claude> or <chatgpt>ChatGPT</chatgpt>",
-      "mcpBody": "Connect your Tallaby account once. Then ask your AI assistant to add products, change prices or hide items, and it does it in your store.",
-      "aiTitle": "Tallaby AI writes for you",
-      "aiBody": "Product titles and descriptions in Arabic and English, category and SEO in one click.",
-      "aiLink": "See it work",
-      "shipTitle": "Ship with your own Bosta account",
-      "shipBody": "Shipping labels and tracking numbers go out from your dashboard, at your own rates.",
+      "mcpBody": "Connect your account once. Then ask the assistant to add products or change prices, and it does it in your store.",
+      "aiTitle": "Tallaby AI writes your products",
+      "aiBody": "From a photo or a few lines: title and description in Arabic and English, with category and SEO.",
+      "marketingTitle": "Bring customers back",
+      "marketingBody": "Email campaigns, discount codes, and WhatsApp follow-up on unfinished orders.",
       "importTitle": "Bring your products in minutes",
       "importBody": "From Excel, from a product link, or straight from Shopify.",
       "adsTitle": "Ads that measure right",
-      "adsBody": "Meta Pixel and Conversions API, GA4 and GTM, plus product feeds for Meta and Google catalogs."
-    },
-    "ai": {
-      "kicker": "Tallaby AI",
-      "title": "Add a product in seconds. AI fills in the rest.",
-      "body": "Add photos, a PDF or a few lines about the product. Tallaby AI prepares everything a product page needs, and you review it before publishing.",
-      "services": {
-        "inputTitle": "From photos, a PDF or text",
-        "inputBody": "Start with what you have, without filling in the form by hand.",
-        "copyTitle": "Titles and descriptions, AR + EN",
-        "copyBody": "Clear copy that sells, in both languages.",
-        "categoryTitle": "Category suggestion",
-        "categoryBody": "Picks the most specific category for search.",
-        "seoTitle": "SEO ready",
-        "seoBody": "Page title and description for Google."
-      }
-    },
-    "builder": {
-      "kicker": "Drag & Drop builder",
-      "title": "Design your store the way you picture it",
-      "body": "Drag & Drop sections into place, click any text or photo to change it, and preview on mobile before you publish."
+      "adsBody": "Meta Pixel and Conversions API, GA4 and GTM, plus product feeds for Meta and Google."
     },
     "templates": {
       "kicker": "Store templates",
       "title": "Start from a design made for what you sell",
-      "body": "Swipe through one template per category, out of {count, plural, one {{count} template} other {{count} templates}}. Switch any time without losing your products.",
-      "industryLink": "Templates and tips for clothing stores"
-    },
-    "marketing": {
-      "kicker": "Marketing tools",
-      "title": "Everything you need to bring customers back",
-      "body": "Reach your customers by email and WhatsApp, follow up on unfinished orders, and measure your ads, all from one dashboard.",
-      "tabs": {
-        "email": { "title": "Email campaigns", "body": "Targeted emails to customers and subscribers" },
-        "whatsapp": { "title": "WhatsApp follow-up", "body": "A ready message, one click from your orders" },
-        "carts": { "title": "Unfinished orders", "body": "Reach the customer before the order is lost" },
-        "coupon": { "title": "Discount codes", "body": "Percentage or fixed-amount offers" },
-        "pixel": { "title": "Pixels and tracking", "body": "Meta, GA4 and GTM" }
-      },
-      "extras": {
-        "popups": "Live sales pop-ups",
-        "subscribers": "Newsletter subscribers",
-        "catalog": "Shareable product catalog",
-        "fake": "Fake order protection",
-        "reviews": "Product reviews"
-      },
-      "email": {
-        "title": "Campaign: End of season sale",
-        "badge": "Sent",
-        "toLabel": "To",
-        "to": "Customers and subscribers",
-        "heading": "Thank you for shopping with us",
-        "body": "Use code VIP20 for 20% off until the end of the week.",
-        "button": "Shop now",
-        "sent": "Sent",
-        "left": "Left this month"
-      },
-      "whatsapp": {
-        "title": "Order confirmation message",
-        "badge": "One click from you",
-        "customer": "New customer",
-        "message": "Hi, we received your order for 1,290 EGP. Please confirm it so we can ship today.",
-        "reply": "Confirmed, thank you",
-        "note": "The button opens WhatsApp with a ready message that you edit and send yourself. Tallaby doesn't send WhatsApp messages automatically."
-      },
-      "carts": {
-        "title": "Unfinished orders today",
-        "badge": "EGP to follow up",
-        "egp": "EGP",
-        "whatsapp": "WhatsApp",
-        "contacted": "Contacted",
-        "note": "Tallaby keeps the shopper's details once they enter a phone number, even if they leave.",
-        "rows": [
-          { "product": "Pink tote bag", "when": "12 min ago", "total": "1,240" },
-          { "product": "Men's leather wallet", "when": "40 min ago", "total": "860" },
-          { "product": "2 bags: handbag and shoulder bag", "when": "2 hrs ago", "total": "2,760" }
-        ]
-      },
-      "coupon": {
-        "title": "New discount code",
-        "badge": "Active",
-        "codeLabel": "Code",
-        "offer": "15% off the first order",
-        "popupTitle": "A gift for your first visit",
-        "popupBody": "15% off, ends in",
-        "popupButton": "Copy code"
-      },
-      "pixel": {
-        "title": "Tracking and ads",
-        "badge": "4 connected",
-        "sent": "sent to 4 tools"
-      }
-    },
-    "shipping": {
-      "kicker": "Shipping",
-      "title": "Ship with the company you trust",
-      "body": "Tallaby doesn't deliver orders itself. Connect your Bosta account, set prices by area, and send every order with a tracking number from the same screen. Or use your own riders.",
-      "bostaNote": "Direct link to your account",
-      "wassalhaNote": "Sheet ready to upload",
-      "ridersName": "Your riders",
-      "ridersNote": "Delivery by your team"
-    },
-    "payments": {
-      "kicker": "Payments",
-      "title": "The ways your customers like to pay",
-      "body": "Cash on delivery works from day one. You can take InstaPay and wallet transfers, or connect your Paymob or Kashier account to accept cards.",
-      "cod": "Cash on delivery",
-      "note": "Payments go straight to your own accounts, and Tallaby takes no percentage of your sales. Your payment gateway charges its own fees.",
-      "solutionLink": "How to create an online store with cash on delivery",
-      "groups": {
-        "cod": "On delivery",
-        "transfer": "Instant transfer and wallets",
-        "cards": "Cards through your gateway"
-      }
+      "body": "{count, plural, one {{count} ready template} other {{count} ready templates}}. Edit any section with Drag & Drop, and switch templates any time without losing your products.",
+      "more": "See more templates"
     },
     "pricing": {
       "kicker": "Pricing",
       "title": "Two simple plans, switch any time",
       "body": "Start free and pay a few cents per order, or go Pro for a flat monthly price."
-    },
-    "how": {
-      "kicker": "How it works",
-      "title": "Three steps from idea to first order",
-      "s1Title": "Create your account",
-      "s1Body": "Pick your store link, add your email, phone number and a password, or continue with Google.",
-      "s1Tag": "Under a minute",
-      "s2Title": "Customize your store",
-      "s2Body": "Choose a template, add your logo, colors and products, and arrange sections with the visual editor.",
-      "s2Tag": "No code",
-      "s3Title": "Start selling",
-      "s3Body": "Publish with one click, share your link, and take orders from day one. Then make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders.",
-      "s3Tag": "One-click publish"
     },
     "faq": {
       "kicker": "FAQ",
@@ -294,23 +173,19 @@
       "items": [
         {
           "q": "What does an order cost on the free plan?",
-          "a": "{orderFee} per created order, whatever its value. No monthly fee and no percentage. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns."
+          "a": "{orderFee} per order, with no monthly fee and no percentage of sales. Make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns."
         },
         {
           "q": "When is Pro worth it?",
-          "a": "From about 1,000 orders a month, the flat {pro} costs less than per-order fees. Pro also gives you 2,000 AI credits."
+          "a": "From about 1,000 orders a month, the flat {pro} costs less than per-order fees."
         },
         {
-          "q": "What is an AI credit?",
-          "a": "Each AI action, like preparing a product from photos or text, uses one credit. Credits are shared across your whole account, not per team member."
-        },
-        {
-          "q": "Can I manage my store from ChatGPT or Claude?",
-          "a": "Yes, for products today. Connect your Tallaby account once, then ask the assistant to add, edit, publish or hide products."
+          "q": "Can I sell outside Egypt?",
+          "a": "Yes. Choose your store's currency and the countries you ship to, and shoppers see prices in that currency."
         },
         {
           "q": "Can I use my own domain?",
-          "a": "Your store starts on yourbrand.tallaby.com. Connect a domain you own from Website › Domain."
+          "a": "Yes. Your store starts on yourbrand.tallaby.com, and you can connect a domain you own from Website › Domain."
         },
         {
           "q": "Do I need to know how to code?",
@@ -320,7 +195,8 @@
     },
     "final": {
       "title": "Your store link is waiting",
-      "body": "Claim it now. Design and publish whenever you're ready."
+      "body": "Claim it now. Design and publish whenever you're ready.",
+      "cta": "Create your store"
     },
     "demo": {
       "hero": {
@@ -365,86 +241,6 @@
         "ai1": "Done. \"Brown leather bag\" is live on your store at 950 EGP, in Arabic and English.",
         "user2": "Cut all T-shirt prices by 10%",
         "ai2": "Lowered 12 T-shirts by 10%. You can review them on your Products page."
-      },
-      "ai": {
-        "title": "New product",
-        "credits": "100 AI credits a month on the free plan, 2,000 on Pro.",
-        "generate": "Generate",
-        "input": "Brown leather crossbody bag, 890 EGP",
-        "egp": "EGP",
-        "nameArLabel": "Name (Arabic)",
-        "nameEnLabel": "Name (English)",
-        "nameAr": "شنطة كروس جلد طبيعي بني",
-        "nameEn": "Brown Genuine Leather Crossbody Bag",
-        "descLabel": "Description",
-        "desc": "A practical genuine leather crossbody bag with a zip, an inside pocket and an adjustable strap. Fits a phone, wallet and keys for every day.",
-        "categoryLabel": "Category",
-        "category": "Bags › Crossbody bags",
-        "priceLabel": "Price",
-        "seoTitle": "Brown Genuine Leather Crossbody Bag | glow",
-        "seoDesc": "Genuine leather crossbody bag with an adjustable strap. Cash on delivery."
-      },
-      "builder": {
-        "home": "Home",
-        "saved": "Saved",
-        "publish": "Publish",
-        "rail": {
-          "add": "Add"
-        },
-        "library": {
-          "hero": "Hero banner",
-          "announcement": "Announcement",
-          "products": "Products",
-          "reviews": "Reviews",
-          "countdown": "Countdown",
-          "faq": "FAQ"
-        },
-        "props": {
-          "heading": "Heading",
-          "button": "Button",
-          "buttonColor": "Button color"
-        },
-        "store": {
-          "name": "DAR",
-          "announcement": "Free delivery across Egypt on orders over 1,500 EGP",
-          "bag": "Bag · 2",
-          "heading": "Made for living rooms",
-          "body": "Lamps, chairs and handmade pieces for a calmer home.",
-          "shop": "Shop the collection",
-          "arrivals": "New arrivals",
-          "price": "{amount} EGP",
-          "products": {
-            "lamp": "Brass table lamp",
-            "vases": "Sand jug vases",
-            "armchair": "Walnut armchair",
-            "table": "Oak coffee table"
-          }
-        }
-      },
-      "shipping": {
-        "product": "Red leather handbag",
-        "place": "Heliopolis, Cairo",
-        "shipWith": "Ship with",
-        "tracking": "Tracking number",
-        "label": "Print label",
-        "status": { "shipped": "Shipped" },
-        "options": [
-          { "name": "Bosta", "body": "Through your Bosta account", "price": "55 EGP", "latin": true },
-          { "name": "Your riders", "body": "A rider is free now", "price": "40 EGP" },
-          { "name": "Wassalha", "body": "Sheet ready to upload", "price": "60 EGP", "latin": true }
-        ]
-      },
-      "payment": {
-        "title": "Checkout",
-        "egp": "EGP",
-        "method": "Payment method",
-        "place": "Place order",
-        "methods": [
-          { "name": "Cash on delivery" },
-          { "name": "Bank card", "note": "VISA · MC" },
-          { "name": "InstaPay" },
-          { "name": "Vodafone Cash" }
-        ]
       }
     }
   }
