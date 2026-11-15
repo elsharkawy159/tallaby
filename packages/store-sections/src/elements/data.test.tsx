@@ -216,6 +216,26 @@ describe("productCatalogSection", () => {
     expect(html).toContain("Earbuds");
   });
 
+  it("skips a one-column row list for a later grid list", () => {
+    const rowCard = node("text", { bind: "title" }, [], "row-title");
+    const gridCard = node("text", { bind: "title" }, [], "grid-title");
+    const rowList = { ...node("productList", {}, [rowCard], "row-list"), style: { columns: 1, gap: 1 } } as ComponentNode;
+    const gridList = { ...node("productList", {}, [gridCard], "grid-list"), style: { columns: 4, gap: 24 } } as ComponentNode;
+    const instance = productCatalogSection([page(true, [node("section", {}, [rowList])]), page(false, [node("section", {}, [gridList])])]);
+    const list = instance?.componentTree?.[0]?.children[0];
+    expect(list?.children).toEqual([gridCard]);
+    expect(list?.style).toEqual({ columns: 4, gap: 24 });
+  });
+
+  it("keeps a row card in two columns when every list is a row list", () => {
+    const rowCard = node("text", { bind: "title" }, [], "row-title");
+    const rowList = { ...node("productList", {}, [rowCard], "row-list"), style: { columns: 1, gap: 1 } } as ComponentNode;
+    const list = productCatalogSection([page(true, [node("section", {}, [rowList])])])?.componentTree?.[0]?.children[0];
+    expect(list?.children).toEqual([rowCard]);
+    expect(list?.style).toEqual({ columns: 2, gap: 1 });
+    expect(list?.breakpointStyles).toEqual({ tablet: { columns: 2 }, mobile: { columns: 1 } });
+  });
+
   it("is null when the site has no product list", () => {
     expect(productCatalogSection([page(true, [node("section", {}, [node("heading", { text: "Hi" })])])])).toBeNull();
   });

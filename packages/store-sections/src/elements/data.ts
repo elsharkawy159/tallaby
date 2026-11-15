@@ -154,25 +154,36 @@ export function walkNodes(nodes: readonly ComponentNode[] | undefined, visit: (n
 /** The id of the product list in `productCatalogSection`; its records go in `ctx.catalog.products[CATALOG_LIST_ID]`. */
 export const CATALOG_LIST_ID = "catalog-products";
 
+/** A one-column product list: its card is a wide row (photo beside the name and cart button), not a grid card. */
+const isRowList = (node: ComponentNode) => node.style?.columns === 1;
+
 /**
  * The site's own product card on pages the builder does not lay out (the
- * /products catalog): the item template of the first product list on the
- * home page, else on any page, repeated in a plain catalog grid (4/3/2
- * columns, the list's own gaps). Null when the site has no product list.
+ * /products catalog): the item template of the first grid product list on
+ * the home page, else on any page, repeated in a plain catalog grid (4/3/2
+ * columns, the list's own gaps). A site whose lists are all one-column rows
+ * (e.g. "Campaign with products") keeps its row card in 2/2/1 columns, so a
+ * row is never squeezed into a quarter of the page. Null when the site has
+ * no product list.
  */
 export function productCatalogSection(pages: readonly SitePage[]): SectionInstance | null {
   const ordered = [...pages.filter((p) => p.isHome), ...pages.filter((p) => !p.isHome)];
-  let list: ComponentNode | undefined;
+  let grid: ComponentNode | undefined;
+  let rows: ComponentNode | undefined;
   for (const page of ordered) {
     for (const instance of page.content.sections) {
       walkNodes(instance.componentTree, (node) => {
-        if (!list && node.type === "productList" && node.children.length) list = node;
+        if (node.type !== "productList" || !node.children.length) return;
+        if (isRowList(node)) rows ??= node;
+        else grid ??= node;
       });
-      if (list) break;
+      if (grid) break;
     }
-    if (list) break;
+    if (grid) break;
   }
+  const list = grid ?? rows;
   if (!list) return null;
+  const columns = grid ? { desktop: 4, tablet: 3, mobile: 2 } : { desktop: 2, tablet: 2, mobile: 1 };
   const gap = list.style?.gap ?? 16;
   const tablet = list.breakpointStyles?.tablet?.gap;
   const mobile = list.breakpointStyles?.mobile?.gap;
@@ -191,8 +202,11 @@ export function productCatalogSection(pages: readonly SitePage[]): SectionInstan
             id: CATALOG_LIST_ID,
             type: "productList",
             props: { source: "newest", limit: MAX_LIST_LIMIT },
-            style: { columns: 4, gap },
-            breakpointStyles: { tablet: { columns: 3, ...(tablet != null && { gap: tablet }) }, mobile: { columns: 2, ...(mobile != null && { gap: mobile }) } },
+            style: { columns: columns.desktop, gap },
+            breakpointStyles: {
+              tablet: { columns: columns.tablet, ...(tablet != null && { gap: tablet }) },
+              mobile: { columns: columns.mobile, ...(mobile != null && { gap: mobile }) },
+            },
             children: list.children,
           },
         ],
