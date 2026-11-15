@@ -138,7 +138,7 @@ Synced with `.editions-inbox/` on 2026-11-15 (file dates). _Have/need_ counts th
 | chargers-cables     | `kabl`         | 5 / 5       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 | lighting-smart-home | `zaki`         | 6 / 6       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 
-**Waves 2–13**: wave 2 (beauty) is in progress (2026-11-15: skincare and mens-grooming are in their templates; makeup, perfumes and haircare are waiting on the images listed in their sections). Wave 3 (home, 2026-11-15): bedding-textiles, decor, furniture and home-organisation are in their templates; plants-garden is waiting on its twelve product photos. Waves 4–5 are received but not yet built; the rest are _Not started_.
+**Waves 2–13**: wave 2 (beauty) is in progress (2026-11-15: skincare and mens-grooming are in their templates; makeup, perfumes and haircare are waiting on the images listed in their sections). Wave 3 (home, 2026-11-15): bedding-textiles, decor, furniture and home-organisation are in their templates; plants-garden is waiting on its twelve product photos. Wave 4 (kitchen, 2026-11-15): cookware, tableware and coffee-gear are in their templates; kitchen-appliances is waiting on one wide photo. Wave 5 is received but not yet built; the rest are _Not started_.
 
 | Wave | Industry              | Niche (template, essential photos)                                                                                                                                      | Essential |
 | ---- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -2012,11 +2012,13 @@ Scenes
 
 ## Wave 4: Kitchen (4 niches)
 
-### cookware, template matbakh — Not started
+### cookware, template matbakh — Done
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/cookware/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _charcoal granite, copper, warm cream, olive wood._ Add: _"Cookware: unbranded, no logos stamped on handles or bases, lids on unless stated, shown empty and clean at a slight three-quarter angle from above."_
 
@@ -2052,11 +2054,13 @@ Scenes
 
 ---
 
-### tableware, template sufra — Not started
+### tableware, template sufra — Done
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/tableware/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _porcelain white, cobalt blue, linen beige, gold rim._ Add: _"Tableware: unbranded, no stamps or text on the base, plain or simple geometric patterns only, clean and empty unless stated."_
 
@@ -2092,11 +2096,13 @@ Scenes
 
 ---
 
-### coffee-gear, template qahwa — Not started
+### coffee-gear, template qahwa — Done
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/coffee-gear/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _espresso brown, brushed steel, sand ceramic, matte black._ Add: _"Coffee gear: unbranded, no logos, no dials with numbers, scales with the display off; never a copy of a known brand's iconic design."_
 
@@ -2132,11 +2138,13 @@ Scenes
 
 ---
 
-### kitchen-appliances, template beity — Not started
+### kitchen-appliances, template beity — Partial
 
 **Save to: `.editions-inbox/04-wave-4-kitchen/kitchen-appliances/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Partial (20 of 21, received 2026-11-15).** The 20 essential images are in the folder and uploaded, but Beity's hero carousel has three wide slides and the set has only two wide photos (`scene-hero-wide`, `scene-banner`): make **`scene-hero-3`** (below).
 
 Palette for scenes: _soft white, terracotta red, pale oat, stainless steel._ Add: _"Appliances: unbranded, no logos, no display digits or button labels, cables tidy, doors and lids closed unless stated."_
 
@@ -2162,6 +2170,7 @@ Scenes
 - **scene-tile-4**: A sandwich maker and a waffle maker on a breakfast table with fruit.
 - **scene-banner**: A long white kitchen counter with appliances spaced out and a window of daylight.
 - **scene-story**: A tidy appliance shop with boxes without labels on shelves and appliances displayed on white plinths.
+- **scene-hero-3** (16:9, carousel slide 3; phones crop it tall from the centre, so keep the subject in the middle third): A terracotta stand mixer, a food processor and a slow juicer lined up on a pale stone counter in warm morning light, a bowl of oranges beside them.
 
 **Later (optional):** the products below (each the fourth of its category: it only fills wider grids, and no section of this template needs it), then the premium kit and second angles (see "Later (optional)" at the end of this file).
 

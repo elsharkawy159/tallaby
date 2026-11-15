@@ -10,12 +10,19 @@
  * Photos: Pexels, each checked by eye (2026-10-21): dinnerware, mugs,
  * boards, wooden and silicone utensils, jars, pans and tea towels. No
  * people, no hands, no logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Matbakh Shop itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const MATBAKH_KEY = "matbakh";
 
@@ -50,96 +57,37 @@ const PHOTOS = {
 
 const NAME = L("مطبخ شوب", "Matbakh Shop");
 
-const header = lib("header-search", {
-  text: {
-    "م": L("م", "M"),
-    "اسم متجرك": NAME,
-    "ابحث عن منتج…": L("ابحث عن لوح، برطمان، كوباية…", "Search boards, jars, mugs…"),
-    "وصل حديثًا": L("أدوات السفرة", "Tableware"),
-    "الأكثر مبيعًا": L("التحضير", "Prep"),
-    "العروض": L("التخزين", "Storage"),
-    "هدايا": L("الطاسات والحلل", "Pans & pots"),
-    "إكسسوارات": L("الأكثر مبيعاً", "Best sellers"),
-    "توصيل خلال ٤٨ ساعة": L("توصيل مجاني فوق ٨٠٠ · افتح قبل ما تدفع", "Free delivery over EGP 800 · Open before you pay"),
-  },
-  links: { "/products": [undefined, search("طقم"), search("لوح"), search("برطمان"), search("طاسة"), BEST] },
-});
-
-const footer = lib("footer-help", {
-  text: {
-    "م": L("م", "M"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ مطبخ شوب. كل الحقوق محفوظة.", "© 2026 Matbakh Shop. All rights reserved."),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-  },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-search", {
-    text: {
-      "بتدور على إيه النهارده؟": L("بتطبخ إيه؟", "What are you cooking?"),
-      "اكتب اسم المنتج": L("لوح، برطمان، كوباية، طاسة", "Board, jar, mug, pan"),
-    },
-  }),
-  lib("categories-tiles", {
-    photo: [PHOTOS.stackedPlates, PHOTOS.utensilPot, PHOTOS.pantry, PHOTOS.pans],
-    text: {
-      "تسوّق حسب القسم": L("الأقسام", "Departments"),
-      "اختر القسم الذي يناسبك من كل ما نقدمه.": L("من السفرة للتحضير للدولاب.", "From the table to the prep counter to the cupboard."),
-      "كل الأقسام": L("كل المنتجات", "All products"),
-      "وصل حديثًا": L("أدوات السفرة", "Tableware"),
-      "الأكثر مبيعًا": L("التحضير", "Prep"),
-      "العروض": L("التخزين", "Storage"),
-      "هدايا": L("الطاسات والحلل", "Pans & pots"),
-    },
-    links: { "/products": [SHOP, search("طقم"), search("لوح"), search("برطمان"), search("طاسة")] },
-  }),
-  lib("products-tabbed", {
-    text: {
-      "منتجاتنا": L("الأسبوع ده", "This week"),
-      "وصل جديد": L("وصل جديد", "New in"),
-      "الأكثر مبيعًا": L("الأكثر مبيعاً", "Best sellers"),
-      "العروض": L("الأقل سعراً", "Lowest price"),
-    },
-    links: { "/products": [NEW, BEST, LOW] },
-  }),
-  lib("finder-budget", {
-    text: {
-      "ابدأ من الأوفر": L("مطبخ كامل على قد ميزانيتك", "A full kitchen on your budget"),
-      "رتبنالك المنتجات من الأقل سعرًا. عايز تشوف الأغلى الأول؟ اختار من الزراير.": L(
-        "من ٢٠٠ لـ ٢٥٠٠ ج.م: رتبنالك الأدوات من الأرخص. عايز الأطقم الكبيرة الأول؟ اختار من الزراير.",
-        "From EGP 200 to 2,500: tools sorted from the lowest price. Want the big sets first? Use the buttons.",
-      ),
-    },
-  }),
-  lib("pay-open-box", {
-    text: {
-      "بنكلمك قبلها بساعة.": L("بنكلمك قبلها بساعة عشان تكون موجود.", "We call an hour ahead so you are home."),
-      "جرّب المنتج قدام المندوب.": L("افتح العلبة واتأكد إن مفيش حاجة مكسورة.", "Open the box and check nothing is broken."),
-      "لو فيه أي مشكلة رجّعه للمندوب ومتدفعش حاجة.": L("لو فيه طبق مشروخ رجّعه للمندوب ومتدفعش حاجة.", "If a plate is chipped, hand it back and pay nothing."),
-    },
-  }),
-  lib("features-icon-cards", {
-    text: {
-      "لماذا تشتري منا": L("ليه إحنا", "Why us"),
-      "تسوّق وأنت مطمئن": L("سهل وآمن وفي ميعاده", "Simple, safe, on time"),
-      "توصيل سريع": L("توصيل ٢–٤ أيام", "2–4 day delivery"),
-      "من يوم إلى ٤ أيام لكل المحافظات": L("لكل المحافظات.", "To every governorate."),
-      "الدفع عند الاستلام": L("ادفع عند الاستلام", "Pay at the door"),
-      "أو ادفع بالبطاقة والمحفظة": L("كاش أو كارت لما يوصل.", "Cash or card when it arrives."),
-      "استرجاع سهل": L("استرجاع ١٤ يوم", "14-day returns"),
-      "١٤ يومًا لتغيّر رأيك": L("المقفول بيرجع من غير أسئلة.", "Unopened items, no questions."),
-      "دعم على واتساب": L("تغليف بعناية", "Packed with care"),
-      "أشخاص حقيقيون طوال الأسبوع": L("ببل وعلبة مقفولة.", "Bubble wrap and a sealed box."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن مطبخ شوب", "About Matbakh Shop"), L("أدوات مطبخ حلوة بسعر معقول.", "Good kitchen tools at fair prices.")),
-  aboutStory(lib, {
-    photo: PHOTOS.flatLay,
+/**
+ * Matbakh Shop's own content: what the look is built with when no edition
+ * is applied (the template `matbakh` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header's delivery chip: one short line.
+  announcement: [L("توصيل مجاني فوق ٨٠٠ · افتح قبل ما تدفع", "Free delivery over EGP 800 · Open before you pay")],
+  // The header search placeholder: three things a buyer types.
+  labels: { search: L("ابحث عن لوح، برطمان، كوباية…", "Search boards, jars, mugs…") },
+  // Four links, one per category in the store's order (one or two words each): the header and the category tiles show them.
+  nav: [
+    { label: L("أدوات السفرة", "Tableware"), href: search("طقم") },
+    { label: L("التحضير", "Prep"), href: search("لوح") },
+    { label: L("التخزين", "Storage"), href: search("برطمان") },
+    { label: L("الطاسات والحلل", "Pans & pots"), href: search("طاسة") },
+  ],
+  // A search hero: `title` is the question over the search box, `line` its placeholder.
+  hero: { title: L("بتطبخ إيه؟", "What are you cooking?"), line: L("لوح، برطمان، كوباية، طاسة", "Board, jar, mug, pan") },
+  categories: { title: L("الأقسام", "Departments") },
+  // The tabbed block's title (its tabs are new in, best sellers and lowest price).
+  products: { primary: { title: L("الأسبوع ده", "This week") } },
+  // Four promises with icons, a title of a few words and a short line each.
+  trust: [
+    { title: L("توصيل ٢–٤ أيام", "2–4 day delivery"), line: L("لكل المحافظات.", "To every governorate.") },
+    { title: L("ادفع عند الاستلام", "Pay at the door"), line: L("كاش أو كارت لما يوصل.", "Cash or card when it arrives.") },
+    { title: L("استرجاع ١٤ يوم", "14-day returns"), line: L("المقفول بيرجع من غير أسئلة.", "Unopened items, no questions.") },
+    { title: L("تغليف بعناية", "Packed with care"), line: L("ببل وعلبة مقفولة.", "Bubble wrap and a sealed box.") },
+  ],
+  about: {
+    line: L("أدوات مطبخ حلوة بسعر معقول.", "Good kitchen tools at fair prices."),
     alt: L("أطباق وكوبايات سيراميك من فوق", "Ceramic plates, bowls and mugs from above"),
     eyebrow: L("حكايتنا", "Our story"),
     title: L("الأساسيات اللي بتطبخ بيها كل يوم", "The basics you cook with every day"),
@@ -148,10 +96,171 @@ const about: Design[] = [
       "We pick plates, boards, jars and pans that stand up to daily use, and we try them in our own kitchen first.",
     ),
     more: L("والتوصيل لكل المحافظات، وتفتح الطلب قبل ما تدفع.", "We deliver to every governorate, and you open your order before you pay."),
-    button: L("تسوق الأكثر مبيعاً", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    // Goes to the best sellers.
+    cta: L("تسوق الأكثر مبيعاً", "Shop best sellers"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("ابعتلنا على matbakh@matbakhshop.eg أو على واتساب.", "Write to matbakh@matbakhshop.eg or on WhatsApp."),
+    heading: L("عن طلب أو منتج", "About an order or a product"),
+  },
+  faq: {
+    line: L("التوصيل والدفع والاسترجاع.", "Delivery, payment and returns."),
+    question: L("لو طبق وصل مكسور؟", "What if a plate arrives broken?"),
+    answer: L("افتح الطلب قدام المندوب ورجّعه ومتدفعش، أو ابعتلنا صورة خلال ٤٨ ساعة ونبدّله.", "Open the order in front of the courier and hand it back unpaid, or send us a photo within 48 hours and we replace it."),
+  },
+  custom: {
+    // The category tiles' line under the title.
+    "categories-line": L("من السفرة للتحضير للدولاب.", "From the table to the prep counter to the cupboard."),
+    // The budget block: a title and one line (the products show lowest price first).
+    "budget-title": L("مطبخ كامل على قد ميزانيتك", "A full kitchen on your budget"),
+    "budget-line": L(
+      "من ٢٠٠ لـ ٢٥٠٠ ج.م: رتبنالك الأدوات من الأرخص. عايز الأطقم الكبيرة الأول؟ اختار من الزراير.",
+      "From EGP 200 to 2,500: tools sorted from the lowest price. Want the big sets first? Use the buttons.",
+    ),
+    // The open-box block's three steps, one line each.
+    "open-box-1": L("بنكلمك قبلها بساعة عشان تكون موجود.", "We call an hour ahead so you are home."),
+    "open-box-2": L("افتح العلبة واتأكد إن مفيش حاجة مكسورة.", "Open the box and check nothing is broken."),
+    "open-box-3": L("لو فيه طبق مشروخ رجّعه للمندوب ومتدفعش حاجة.", "If a plate is chipped, hand it back and pay nothing."),
+    // The promises' heading, a few words.
+    "trust-title": L("سهل وآمن وفي ميعاده", "Simple, safe, on time"),
+  },
+  // The about page's photo (4:5). The category tiles show the categories' photos (`photos.tiles`).
+  photos: { story: PHOTOS.flatLay },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Best sellers, All products, New in, Lowest price, Why us) and the layout
+ * stay here.
+ */
+function look(c: LookContent, _journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const initial = initialOf(name);
+  const x = c.custom;
+  const nav = c.nav;
+  const tiles = c.photos.tiles;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-search", {
+    text: {
+      "م": initial,
+      "اسم متجرك": name,
+      "ابحث عن منتج…": c.labels.search,
+      "وصل حديثًا": nav[0]!.label,
+      "الأكثر مبيعًا": nav[1]!.label,
+      "العروض": nav[2]!.label,
+      "هدايا": nav[3]!.label,
+      "إكسسوارات": L("الأكثر مبيعاً", "Best sellers"),
+      "توصيل خلال ٤٨ ساعة": c.announcement[0]!,
+    },
+    links: { "/products": [undefined, nav[0]!.href, nav[1]!.href, nav[2]!.href, nav[3]!.href, BEST] },
+  });
+
+  const footer = lib("footer-help", {
+    text: {
+      "م": initial,
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  const home: Design[] = [
+    lib("hero-search", {
+      text: {
+        "بتدور على إيه النهارده؟": c.hero.title,
+        "اكتب اسم المنتج": c.hero.line,
+      },
+    }),
+    lib("categories-tiles", {
+      photo: [tiles[0]!, tiles[1]!, tiles[2]!, tiles[3]!],
+      text: {
+        "تسوّق حسب القسم": c.categories.title,
+        "اختر القسم الذي يناسبك من كل ما نقدمه.": x["categories-line"]!,
+        "كل الأقسام": L("كل المنتجات", "All products"),
+        "وصل حديثًا": nav[0]!.label,
+        "الأكثر مبيعًا": nav[1]!.label,
+        "العروض": nav[2]!.label,
+        "هدايا": nav[3]!.label,
+      },
+      links: { "/products": [SHOP, nav[0]!.href, nav[1]!.href, nav[2]!.href, nav[3]!.href] },
+    }),
+    lib("products-tabbed", {
+      text: {
+        "منتجاتنا": c.products.primary.title,
+        "وصل جديد": L("وصل جديد", "New in"),
+        "الأكثر مبيعًا": L("الأكثر مبيعاً", "Best sellers"),
+        "العروض": L("الأقل سعراً", "Lowest price"),
+      },
+      links: { "/products": [NEW, BEST, LOW] },
+    }),
+    lib("finder-budget", {
+      text: {
+        "ابدأ من الأوفر": x["budget-title"]!,
+        "رتبنالك المنتجات من الأقل سعرًا. عايز تشوف الأغلى الأول؟ اختار من الزراير.": x["budget-line"]!,
+      },
+    }),
+    lib("pay-open-box", {
+      text: {
+        "بنكلمك قبلها بساعة.": x["open-box-1"]!,
+        "جرّب المنتج قدام المندوب.": x["open-box-2"]!,
+        "لو فيه أي مشكلة رجّعه للمندوب ومتدفعش حاجة.": x["open-box-3"]!,
+      },
+    }),
+    lib("features-icon-cards", {
+      text: {
+        "لماذا تشتري منا": L("ليه إحنا", "Why us"),
+        "تسوّق وأنت مطمئن": x["trust-title"]!,
+        "توصيل سريع": c.trust[0]!.title,
+        "من يوم إلى ٤ أيام لكل المحافظات": c.trust[0]!.line,
+        "الدفع عند الاستلام": c.trust[1]!.title,
+        "أو ادفع بالبطاقة والمحفظة": c.trust[1]!.line,
+        "استرجاع سهل": c.trust[2]!.title,
+        "١٤ يومًا لتغيّر رأيك": c.trust[2]!.line,
+        "دعم على واتساب": c.trust[3]!.title,
+        "أشخاص حقيقيون طوال الأسبوع": c.trust[3]!.line,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L("عننا", "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -178,7 +287,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const MATBAKH = libraryTemplate({
+export const MATBAKH = editionTemplate({
   key: MATBAKH_KEY,
   version: 2,
   changelog: "Matbakh v2: product page",
@@ -203,31 +312,36 @@ export const MATBAKH = libraryTemplate({
   },
   fonts: { heading: "Readex Pro", body: "Readex Pro" },
   radius: 14,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عننا", "About"), seo: { title: L("عن مطبخ شوب", "About Matbakh Shop") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("ابعتلنا على matbakh@matbakhshop.eg أو على واتساب.", "Write to matbakh@matbakhshop.eg or on WhatsApp."),
-        heading: L("عن طلب أو منتج", "About an order or a product"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("التوصيل والدفع والاسترجاع.", "Delivery, payment and returns."),
-        question: L("لو طبق وصل مكسور؟", "What if a plate arrives broken?"),
-        answer: L("افتح الطلب قدام المندوب ورجّعه ومتدفعش، أو ابعتلنا صورة خلال ٤٨ ساعة ونبدّله.", "Open the order in front of the courier and hand it back unpaid, or send us a photo within 48 hours and we replace it."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "labels.search",
+    "nav.0",
+    "nav.1",
+    "nav.2",
+    "nav.3",
+    "hero.title",
+    "hero.line",
+    "categories.title",
+    "products.primary.title",
+    "trust",
+    "about",
+    "contact",
+    "faq",
+    "photos.story",
+    "custom.categories-line",
+    "custom.budget-title",
+    "custom.budget-line",
+    "custom.open-box-1",
+    "custom.open-box-2",
+    "custom.open-box-3",
+    "custom.trust-title",
   ],
+  // The tabbed block has its own tabs, so `primary` is not read; the four category tiles read `photos.tiles` and `nav`; no category rows.
+  optional: [],
+  journey: { primary: "newest", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

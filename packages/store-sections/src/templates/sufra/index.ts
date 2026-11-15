@@ -13,12 +13,19 @@
  * shelves, a shelf of jars over white tiles, candles on a linen cloth,
  * striped tea towels on a stool and stacked colour plates. No people, no
  * hands and no logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Sufret Teta itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const SUFRA_KEY = "sufra";
 
@@ -47,69 +54,151 @@ const PHOTOS = {
 
 const NAME = L("سفرة تيتا", "Sufret Teta");
 
-const header = lib("header-announcement", {
-  text: {
-    "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": L("افتح الطلب قبل ما تدفع", "Open your order before you pay"),
-    "الدفع عند الاستلام": L("التوصيل تاني يوم في القاهرة", "Next-day delivery in Cairo"),
-    "م": L("س", "S"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل المنتجات", "Shop all"),
-    "العروض": L("أدوات السفرة", "Tableware"),
-    "المدونة": L("التحضير", "Prep"),
+/**
+ * Sufret Teta's own content: what the look is built with when no edition is
+ * applied (the template `sufra` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header bar: two short lines.
+  announcement: [L("افتح الطلب قبل ما تدفع", "Open your order before you pay"), L("التوصيل تاني يوم في القاهرة", "Next-day delivery in Cairo")],
+  // The header's two trade links, one or two words each, to catalog routes. The hero's button goes to the first.
+  nav: [
+    { label: L("أدوات السفرة", "Tableware"), href: TABLEWARE },
+    { label: L("التحضير", "Prep"), href: search("خشب") },
+  ],
+  // A full-bleed hero (the copy sits on the photo; phones crop it from the centre).
+  hero: {
+    alt: L("سفرة متجهزة بأطباق وسلطانيات", "A laid table of plates and bowls"),
+    eyebrow: L("موسم العزايم", "Feast season"),
+    title: L("جهّز السفرة لـ١٢", "Set the table for twelve"),
+    line: L("ستون وير بيدخل الفرن ويطلع على السفرة، وكتان بيستحمل الغسيل.", "Stoneware that goes from oven to table, and linen that survives the wash."),
+    cta: L("تسوق أدوات السفرة", "Shop tableware"),
   },
-  links: { "/products": [SHOP, TABLEWARE, undefined, SHOP, TABLEWARE], "/blog": search("خشب") },
-});
-
-const footer = lib("footer-signup", {
-  text: {
-    "اشترك في النشرة": L("وصفات وقطع جديدة", "Recipes and new pieces"),
-    "عروض ومنتجات جديدة، مرة في الأسبوع.": L("إيميل واحد قبل كل موسم عزايم.", "One email before every feast season."),
-    "م": L("س", "S"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ سفرة تيتا. كل الحقوق محفوظة.", "© 2026 Sufret Teta. All rights reserved."),
-    "العروض": L("الأعلى تقييمًا", "Top rated"),
-  },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-fullbleed", {
-    photo: [PHOTOS.tableFlatLay],
-    text: {
-      "صورة الواجهة": L("سفرة متجهزة بأطباق وسلطانيات", "A laid table of plates and bowls"),
-      "المجموعة الجديدة": L("موسم العزايم", "Feast season"),
-      "صُنعت لتدوم معك": L("جهّز السفرة لـ١٢", "Set the table for twelve"),
-      "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": L(
-        "ستون وير بيدخل الفرن ويطلع على السفرة، وكتان بيستحمل الغسيل.",
-        "Stoneware that goes from oven to table, and linen that survives the wash.",
-      ),
-      "تسوّق الآن": L("تسوق أدوات السفرة", "Shop tableware"),
-      "شوف الجديد": L("وصل جديد", "New in"),
-    },
-    links: { "/products": TABLEWARE },
-  }),
-  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("جهّز سفرتك", "Set your table") } }),
-  lib("products-feature", {
-    text: { "اختيارنا ليك": L("طقم العزومة", "The feast set"), "اختيار الأسبوع": L("اختيار تيتا", "Teta’s pick") },
-  }),
-  lib("pay-open-box"),
-  lib("finder-budget"),
-  lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("التوصيل والدفع", "Delivery and payment") } }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن سفرة تيتا", "About Sufret Teta"), L("أدوات سفرة بتختارها عيلة بتعزم كل جمعة.", "Tableware chosen by a family that hosts every Friday.")),
-  aboutStory(lib, {
-    photo: PHOTOS.counter,
+  categories: { title: L("جهّز سفرتك", "Set your table") },
+  // The featured block: its title and the small badge on the featured product.
+  products: { primary: { title: L("طقم العزومة", "The feast set"), eyebrow: L("اختيار تيتا", "Teta’s pick") } },
+  // The footer's sign-up: a title and one line.
+  newsletter: { title: L("وصفات وقطع جديدة", "Recipes and new pieces"), line: L("إيميل واحد قبل كل موسم عزايم.", "One email before every feast season.") },
+  about: {
+    line: L("أدوات سفرة بتختارها عيلة بتعزم كل جمعة.", "Tableware chosen by a family that hosts every Friday."),
     alt: L("ستون وير وألواح خشب على رخامة المطبخ", "Stoneware and wooden boards on a kitchen counter"),
     eyebrow: L("حكايتنا", "Our story"),
     title: L("عيلة بتعزم كل جمعة", "A family that hosts every Friday"),
     text: L("بنختار الأطباق اللي بتستحمل عزومة ١٢ نفر والغسيل بعدها، والكتان اللي بيعيش سنين.", "We pick plates that survive lunch for twelve and the washing-up after, and linen that lasts for years."),
     more: L("بنوصل تاني يوم في القاهرة، وتفتح الطلب قدام المندوب قبل ما تدفع.", "We deliver next day in Cairo, and you open the order in front of the courier before you pay."),
-    button: L("كل المنتجات", "Shop all"),
-    href: SHOP,
-  }),
-];
+    // Goes to the whole catalog.
+    cta: L("كل المنتجات", "Shop all"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("ميدان الجامع، مصر الجديدة.", "Midan El Gamea, Heliopolis."),
+    heading: L("اسأل عن طلبك أو عن قطعة", "Ask about your order or a piece"),
+  },
+  faq: {
+    line: L("التوصيل والدفع والاسترجاع.", "Delivery, payment and returns."),
+    question: L("لو طبق وصل مكسور؟", "What if a plate arrives chipped?"),
+    answer: L("افتح العلبة قدام المندوب. لو فيه حاجة مكسورة رجّعها معاه وبنبدلها تاني يوم.", "Open the box in front of the courier. If anything is chipped, send it back with him and we replace it the next day."),
+  },
+  // hero.wide: the full-bleed hero; story: the about page (4:5).
+  photos: { hero: { wide: PHOTOS.tableFlatLay }, story: PHOTOS.counter },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Shop all, New in, Top rated, Delivery and payment), the open-box and
+ * budget blocks and the layout stay here.
+ */
+function look(c: LookContent, _journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const initial = initialOf(name);
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  const first = c.nav[0]!;
+  const second = c.nav[1]!;
+
+  const header = lib("header-announcement", {
+    text: {
+      "توصيل مجاني للطلبات فوق ١٥٠٠ ج.م": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "م": initial,
+      "اسم متجرك": name,
+      "المتجر": L("كل المنتجات", "Shop all"),
+      "العروض": first.label,
+      "المدونة": second.label,
+    },
+    links: { "/products": [SHOP, first.href, undefined, SHOP, first.href], "/blog": second.href },
+  });
+
+  const footer = lib("footer-signup", {
+    text: {
+      "اشترك في النشرة": c.newsletter.title,
+      "عروض ومنتجات جديدة، مرة في الأسبوع.": c.newsletter.line,
+      "م": initial,
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "العروض": L("الأعلى تقييمًا", "Top rated"),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  const home: Design[] = [
+    lib("hero-fullbleed", {
+      photo: [c.photos.hero.wide],
+      text: {
+        "صورة الواجهة": c.hero.alt,
+        "المجموعة الجديدة": c.hero.eyebrow,
+        "صُنعت لتدوم معك": c.hero.title,
+        "خامات مختارة وتفاصيل هادئة، وتوصيل سريع لحد باب البيت.": c.hero.line,
+        "تسوّق الآن": c.hero.cta,
+        "شوف الجديد": L("وصل جديد", "New in"),
+      },
+      links: { "/products": first.href },
+    }),
+    lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
+    lib("products-feature", {
+      text: { "اختيارنا ليك": c.products.primary.title, "اختيار الأسبوع": c.products.primary.eyebrow },
+    }),
+    lib("pay-open-box"),
+    lib("finder-budget"),
+    lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("التوصيل والدفع", "Delivery and payment") } }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: SHOP,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -134,7 +223,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const SUFRA = libraryTemplate({
+export const SUFRA = editionTemplate({
   key: SUFRA_KEY,
   version: 3,
   changelog: "Sufra v3: full-bleed hero, categories, products high, section order",
@@ -159,31 +248,29 @@ export const SUFRA = libraryTemplate({
   },
   fonts: { heading: "Reem Kufi", body: "Almarai" },
   radius: 10,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن سفرة تيتا", "About"), seo: { title: L("عن سفرة تيتا", "About Sufret Teta") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("ميدان الجامع، مصر الجديدة.", "Midan El Gamea, Heliopolis."),
-        heading: L("اسأل عن طلبك أو عن قطعة", "Ask about your order or a piece"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("التوصيل والدفع والاسترجاع.", "Delivery, payment and returns."),
-        question: L("لو طبق وصل مكسور؟", "What if a plate arrives chipped?"),
-        answer: L("افتح العلبة قدام المندوب. لو فيه حاجة مكسورة رجّعها معاه وبنبدلها تاني يوم.", "Open the box in front of the courier. If anything is chipped, send it back with him and we replace it the next day."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "nav.0",
+    "nav.1",
+    "hero",
+    "categories.title",
+    "products.primary.title",
+    "products.primary.eyebrow",
+    "newsletter.title",
+    "newsletter.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
   ],
+  // The featured block shows the store's featured products, so `primary` is not read; no category rows.
+  optional: [],
+  journey: { primary: "featured", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

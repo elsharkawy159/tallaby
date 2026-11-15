@@ -9,12 +9,19 @@
  * Photos: Pexels, each checked by eye (2026-10-21): beans in jars, moka
  * pots, a copper cezve, a gooseneck kettle, a dripper, cups and wooden
  * trays. No people, no hands, no logos or branded bags.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Qahwa Corner itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const QAHWA_KEY = "qahwa";
 
@@ -45,61 +52,42 @@ const PHOTOS = {
 
 const NAME = L("ركن القهوة", "Qahwa Corner");
 
-const header = lib("header-pill", {
-  text: { "اسم متجرك": NAME, "المتجر": L("كل الأدوات", "All gear"), "العروض": L("الأكثر طلباً", "Most ordered"), "المدونة": L("حكايتنا", "Our story") },
-  links: { "/products": [SHOP, BEST], "/blog": "/about" },
-});
-
-const footer = lib("footer-wordmark", {
-  text: {
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ ركن القهوة. كل الحقوق محفوظة.", "© 2026 Qahwa Corner. All rights reserved."),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-    "من نحن": L("حكايتنا", "Our story"),
+/**
+ * Qahwa Corner's own content: what the look is built with when no edition is
+ * applied (the template `qahwa` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The big-word hero: `hero.title` is the one big word (the trade, one word); the hero shows the first featured product.
+  hero: { title: L("قهوة", "COFFEE") },
+  categories: { title: L("تصفح", "Browse") },
+  // The panel beside the rail of products: a title and one line.
+  products: {
+    primary: {
+      title: L("هدايا لعشاق القهوة", "Gifts for coffee people"),
+      line: L("كوبايات وبن وصواني تحت ٩٠٠ ج.م.", "Mugs, beans and trays under EGP 900."),
+    },
   },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-big-word", { text: { "جديد": L("قهوة", "COFFEE"), "اطلبها": L("ضيفها للسلة", "Add to cart") } }),
-  lib("categories-chips", { text: { "إيه اللي في بالك؟": L("تصفح", "Browse") } }),
-  lib("products-panel-rail", {
-    text: {
-      "هدايا تحت ١٠٠٠ جنيه": L("هدايا لعشاق القهوة", "Gifts for coffee people"),
-      "اختيارات مضمونة لأي مناسبة.": L("كوبايات وبن وصواني تحت ٩٠٠ ج.م.", "Mugs, beans and trays under EGP 900."),
-    },
-    links: { "/products": SHOP },
-  }),
-  lib("testimonials-bento", {
-    text: {
-      "٤٫٨": L("٤٫٩", "4.9"),
-      "متوسط ١٢٬٤٠٠ تقييم": L("متوسط ٨٥٠ تقييم", "Average of 850 reviews"),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "الكنكة النحاس تقيلة ومطروقة باليد، والقهوة بقت بوش من أول مرة.",
-        "The copper cezve is heavy and hand-hammered, and the coffee had foam from the first try.",
-      ),
-      "م": L("ي", "Y"),
-      "مريم أ.": L("ياسر ع.", "Yasser A."),
-      "القاهرة": L("المعادي", "Maadi"),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "البن متحمص الأسبوع ده فعلاً، وعينة القهوة اللي جت مع الطلب حلوة جداً.",
-        "The beans really were roasted that week, and the free sample was lovely.",
-      ),
-      "ع": L("ر", "R"),
-      "عمر ك.": L("رنا م.", "Rana M."),
-      "الإسكندرية": L("الإسكندرية", "Alexandria"),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("الكاتل مظبوط للدريب، والتقسيط سهّل عليّا.", "The kettle pours perfectly for drip, and the instalments helped."),
-      "ن": L("ش", "S"),
-      "نور ح.": L("شريف ن.", "Sherif N."),
-      "الجيزة": L("الشيخ زايد", "Sheikh Zayed"),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن ركن القهوة", "About Qahwa Corner"), L("كوبايات وكتل وألواح لفنجان الصبح.", "Mugs, kettles and boards for your morning cup.")),
-  aboutStory(lib, {
-    photo: PHOTOS.mokaPair,
+  // Optional, with `custom.reviews-rating`, `custom.reviews-count` and `custom.reviews-city-1..3`: three buyer quotes with names and cities, and the rating summary. Without them the home page ends on the rail.
+  reviews: {
+    title: L("آراء العملاء", "Reviews"),
+    items: [
+      {
+        quote: L("الكنكة النحاس تقيلة ومطروقة باليد، والقهوة بقت بوش من أول مرة.", "The copper cezve is heavy and hand-hammered, and the coffee had foam from the first try."),
+        name: L("ياسر ع.", "Yasser A."),
+      },
+      {
+        quote: L("البن متحمص الأسبوع ده فعلاً، وعينة القهوة اللي جت مع الطلب حلوة جداً.", "The beans really were roasted that week, and the free sample was lovely."),
+        name: L("رنا م.", "Rana M."),
+      },
+      {
+        quote: L("الكاتل مظبوط للدريب، والتقسيط سهّل عليّا.", "The kettle pours perfectly for drip, and the instalments helped."),
+        name: L("شريف ن.", "Sherif N."),
+      },
+    ],
+  },
+  about: {
+    line: L("كوبايات وكتل وألواح لفنجان الصبح.", "Mugs, kettles and boards for your morning cup."),
     alt: L("كنكتين موكا ستانلس على رف", "Two steel moka pots on a shelf"),
     eyebrow: L("حكايتنا", "Our story"),
     title: L("فنجان الصبح يستاهل", "Your morning cup deserves it"),
@@ -108,10 +96,131 @@ const about: Design[] = [
       "We gather the coffee tools we use at home: copper cezves, moka pots, pour-over kettles and mugs that keep the heat.",
     ),
     more: L("ومع كل طلب عينة بن ببلاش، والتقسيط متاح على ٦ شهور.", "Every order comes with a free coffee sample, and you can pay over six months."),
-    button: L("تسوق الأدوات", "Shop the gear"),
-    href: SHOP,
-  }),
-];
+    // Goes to the whole catalog.
+    cta: L("تسوق الأدوات", "Shop the gear"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("محتار تختار موكا ولا دريب؟ ابعتلنا.", "Not sure between a moka pot and pour-over? Ask us."),
+    heading: L("عن أداة أو طلب", "About a tool or an order"),
+  },
+  faq: {
+    line: L("البن والأدوات والتقسيط.", "Beans, gear and instalments."),
+    question: L("البن بيتطحن قبل الشحن؟", "Do you grind the beans before shipping?"),
+    answer: L("لو عايز، اكتب في الملاحظات: تركي، موكا أو دريب، وبنطحنه يوم الشحن.", "If you like: write Turkish, moka or drip in the notes and we grind on the day it ships."),
+  },
+  custom: {
+    // The header's links to the whole catalog and to the best sellers, two words each.
+    "shop-all": L("كل الأدوات", "All gear"),
+    "best-label": L("الأكثر طلباً", "Most ordered"),
+    // With `reviews`: the average rating, the line under it and each quote's city.
+    "reviews-rating": L("٤٫٩", "4.9"),
+    "reviews-count": L("متوسط ٨٥٠ تقييم", "Average of 850 reviews"),
+    "reviews-city-1": L("المعادي", "Maadi"),
+    "reviews-city-2": L("الإسكندرية", "Alexandria"),
+    "reviews-city-3": L("الشيخ زايد", "Sheikh Zayed"),
+  },
+  // The about page's photo (4:5).
+  photos: { story: PHOTOS.mokaPair },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Our story, Add to cart, Top rated) and the layout stay here.
+ */
+function look(c: LookContent, _journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-pill", {
+    text: { "اسم متجرك": name, "المتجر": x["shop-all"]!, "العروض": x["best-label"]!, "المدونة": L("حكايتنا", "Our story") },
+    links: { "/products": [SHOP, BEST], "/blog": "/about" },
+  });
+
+  const footer = lib("footer-wordmark", {
+    text: {
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+      "من نحن": L("حكايتنا", "Our story"),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  // Absent in an edition without buyer quotes: the section is left out.
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
+  const rating: LookContent["custom"][string] | undefined = x["reviews-rating"];
+  const home: Design[] = [
+    lib("hero-big-word", { text: { "جديد": c.hero.title, "اطلبها": L("ضيفها للسلة", "Add to cart") } }),
+    lib("categories-chips", { text: { "إيه اللي في بالك؟": c.categories.title } }),
+    lib("products-panel-rail", {
+      text: {
+        "هدايا تحت ١٠٠٠ جنيه": c.products.primary.title,
+        "اختيارات مضمونة لأي مناسبة.": c.products.primary.line,
+      },
+      links: { "/products": SHOP },
+    }),
+    ...(reviews && rating
+      ? [
+          lib("testimonials-bento", {
+            text: {
+              "٤٫٨": rating,
+              "متوسط ١٢٬٤٠٠ تقييم": x["reviews-count"]!,
+              "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
+              "م": initialOf(reviews.items[0]!.name),
+              "مريم أ.": reviews.items[0]!.name,
+              "القاهرة": x["reviews-city-1"]!,
+              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[1]!.quote,
+              "ع": initialOf(reviews.items[1]!.name),
+              "عمر ك.": reviews.items[1]!.name,
+              "الإسكندرية": x["reviews-city-2"]!,
+              "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[2]!.quote,
+              "ن": initialOf(reviews.items[2]!.name),
+              "نور ح.": reviews.items[2]!.name,
+              "الجيزة": x["reviews-city-3"]!,
+            },
+          }),
+        ]
+      : []),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: SHOP,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L("حكايتنا", "Our story"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -141,7 +250,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const QAHWA = libraryTemplate({
+export const QAHWA = editionTemplate({
   key: QAHWA_KEY,
   version: 3,
   changelog: "Qahwa v3: wide hero photo, no coupon",
@@ -166,31 +275,25 @@ export const QAHWA = libraryTemplate({
   },
   fonts: { heading: "Lalezar", body: "Tajawal" },
   radius: 12,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("حكايتنا", "Our story"), seo: { title: L("عن ركن القهوة", "About Qahwa Corner") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("محتار تختار موكا ولا دريب؟ ابعتلنا.", "Not sure between a moka pot and pour-over? Ask us."),
-        heading: L("عن أداة أو طلب", "About a tool or an order"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("البن والأدوات والتقسيط.", "Beans, gear and instalments."),
-        question: L("البن بيتطحن قبل الشحن؟", "Do you grind the beans before shipping?"),
-        answer: L("لو عايز، اكتب في الملاحظات: تركي، موكا أو دريب، وبنطحنه يوم الشحن.", "If you like: write Turkish, moka or drip in the notes and we grind on the day it ships."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "hero.title",
+    "categories.title",
+    "products.primary.title",
+    "products.primary.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.story",
+    "custom.shop-all",
+    "custom.best-label",
   ],
+  // Buyer quotes and a rating are demo claims: a pack writes real ones (rating, count and cities too) or leaves them out (the section is then not built).
+  // The rail shows the design's own list, so `primary` is not read; no category rows.
+  optional: ["reviews", "custom.reviews-rating", "custom.reviews-count", "custom.reviews-city-1", "custom.reviews-city-2", "custom.reviews-city-3"],
+  journey: { primary: "featured", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

@@ -84,9 +84,9 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
   { niche: "plants-garden", template: "zarea", status: "own" },
   { niche: "home-organisation", template: "tanzim", edition: "home-organisation", status: "ready" }, // a kitchen template
   // ── kitchen (wave 4) ──
-  { niche: "cookware", template: "matbakh", status: "own" },
-  { niche: "tableware", template: "sufra", status: "own" },
-  { niche: "coffee-gear", template: "qahwa", status: "own" },
+  { niche: "cookware", template: "matbakh", edition: "cookware", status: "ready" },
+  { niche: "tableware", template: "sufra", edition: "tableware", status: "ready" },
+  { niche: "coffee-gear", template: "qahwa", edition: "coffee-gear", status: "ready" },
   { niche: "kitchen-appliances", template: "beity", status: "own" },
   // ── food (wave 5) ──
   { niche: "grocery", template: "souq", status: "own" },
