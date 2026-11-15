@@ -312,8 +312,9 @@ describe("every industry switched to one template per niche (ROADMAP F-90, 2026-
   });
 
   it("a card with no pack yet shows its template's own content (no edition)", () => {
-    expect(nicheCards(["pure", "wasla"])).toEqual({
-      pure: { niche: "skincare", name: expect.objectContaining({ en: "Skincare" }), edition: null },
+    // Pure became the skincare edition (5e882698); botanica (haircare) has no pack yet.
+    expect(nicheCards(["botanica", "wasla"])).toEqual({
+      botanica: { niche: "haircare", name: expect.objectContaining({ en: expect.any(String) }), edition: null },
       wasla: { niche: "earbuds", name: expect.objectContaining({ en: expect.any(String) }), edition: null },
     });
   });
