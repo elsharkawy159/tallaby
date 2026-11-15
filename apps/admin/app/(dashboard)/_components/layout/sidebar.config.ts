@@ -1,5 +1,6 @@
 import {
   Banknote,
+  BellRing,
   Globe,
   HandCoins,
   // Handshake, // affiliates tab is commented out below
@@ -87,6 +88,7 @@ export const sidebarSections: SidebarSection[] = [
         countKey: "newCustomers",
         countLabel: "New customers today",
       },
+      { key: "sellerNotifications", title: "Seller notifications", href: "/seller-notifications", icon: BellRing },
       // Affiliate program is disabled for now.
       // { key: "affiliates", title: "Affiliates", href: "/affiliate", icon: Handshake },
     ],

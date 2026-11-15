@@ -23,6 +23,8 @@ import {
   ADMIN_MESSAGE_TITLE_MAX,
   isDashboardPath,
 } from "@workspace/lib/notifications";
+import { templateFields, type SellerMessageLanguage } from "../../seller-notifications/seller-notification-templates.lib";
+import { TemplatePicker } from "../../seller-notifications/template-picker.client";
 import { sendSellerNotificationAction } from "./seller-admin.server";
 
 /** Seller dashboard pages a message usually points to. */
@@ -31,6 +33,7 @@ const LINKS: { label: string; path: string }[] = [
   { label: "Orders", path: "/orders" },
   { label: "Products", path: "/products" },
   { label: "Wallet", path: "/wallet" },
+  { label: "Store setup", path: "/welcome" },
   { label: "Settings", path: "/settings" },
 ];
 
@@ -45,16 +48,35 @@ export function SendSellerNotification({ sellerId, sellerName }: { sellerId: str
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [link, setLink] = useState("");
+  const [templateId, setTemplateId] = useState<string | null>(null);
+  const [language, setLanguage] = useState<SellerMessageLanguage>("ar");
   const [key, setKey] = useState(() => crypto.randomUUID());
   const [pending, startTransition] = useTransition();
 
   const linkOk = link.trim() === "" || isDashboardPath(link.trim());
   const canSend = title.trim().length > 0 && body.trim().length > 0 && linkOk && !pending;
 
+  /** A template fills the form (still editable); "Blank" clears what a template filled. */
+  const pick = (id: string | null, lang: SellerMessageLanguage) => {
+    const fields = templateFields(id, lang);
+    if (fields) {
+      setTitle(fields.title);
+      setBody(fields.body);
+      setLink(fields.link);
+    } else if (id === null && templateId !== null) {
+      setTitle("");
+      setBody("");
+      setLink("");
+    }
+    setTemplateId(id);
+    setLanguage(lang);
+  };
+
   const reset = () => {
     setTitle("");
     setBody("");
     setLink("");
+    setTemplateId(null);
     setKey(crypto.randomUUID());
   };
 
@@ -93,6 +115,10 @@ export function SendSellerNotification({ sellerId, sellerName }: { sellerId: str
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Start from a template</Label>
+              <TemplatePicker templateId={templateId} language={language} onPick={pick} disabled={pending} />
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="seller-notify-title">Title</Label>
               <Input
