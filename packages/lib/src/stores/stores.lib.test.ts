@@ -215,6 +215,15 @@ describe("SEO defaults shared by the dashboard and the storefront", () => {
     expect(storeSeoDefaults(store, { description: "Mine" }, "en").description).toBe("Mine");
   });
 
+  it("uses an industry's goods noun in the home title and description, not in the keywords", () => {
+    const pets = { name: "Pawsandclaws", description: null, storeCategory: "Pets", storeCategoryAr: "حيوانات أليفة" };
+    const ar = storeSeoDefaults(pets, {}, "ar");
+    expect(ar.homeTitle).toBe("اشتري مستلزمات الحيوانات الأليفة من Pawsandclaws الآن | طلبي");
+    expect(ar.description).toBe("تصفح مستلزمات الحيوانات الأليفة من Pawsandclaws واطلب أونلاين بخطوات بسيطة.");
+    expect(ar.keywords).toEqual(["Pawsandclaws", "حيوانات أليفة", "Pets"]);
+    expect(storeSeoDefaults(pets, {}, "en").homeTitle).toBe("Buy Pet Supplies from Pawsandclaws now | Tallaby");
+  });
+
   it("ignores a broken title template", () => {
     expect(effectiveTitleTemplate("no token", "Sara")).toBe("%s | Sara");
     expect(effectiveTitleTemplate("%s %s", "Sara")).toBe("%s | Sara");

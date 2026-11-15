@@ -31,3 +31,17 @@ export function getDefaultProductVariantId(
 
   return defaultVariant?.id ?? null;
 }
+
+/**
+ * Variants in the seller's order: by `position`, ties (and rows without one)
+ * kept in the order given. Variants saved together share `created_at`, so a
+ * read without ORDER BY position can return them in any order (2026-11-15:
+ * sizes showed 20, 5, 10).
+ */
+export function inSellerOrder<T extends { position?: number | null }>(variants: readonly T[]): T[] {
+  const rank = (variant: T) => variant.position ?? Number.MAX_SAFE_INTEGER;
+  return variants
+    .map((variant, index) => ({ variant, index }))
+    .sort((a, b) => rank(a.variant) - rank(b.variant) || a.index - b.index)
+    .map((entry) => entry.variant);
+}

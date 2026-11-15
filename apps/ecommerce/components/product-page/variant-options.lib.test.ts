@@ -25,6 +25,29 @@ describe("buildVariantMatrix", () => {
     expect(sized(["Big", "Small"])).toEqual(["Big", "Small"]);
   });
 
+  it("keeps the seller's order (position) when the rows come back in another order", () => {
+    // Production 2026-11-15, «رمل قطط كيكي كات»: KIKI-20L, KIKI-5L, KIKI-10L read back in this order, one created_at.
+    const kiki = (sku: string, liters: number, position: number) =>
+      ({
+        id: sku,
+        sku,
+        title: `${liters} L`,
+        position,
+        option1: `Size: ${liters} L`,
+        option2: null,
+        option3: null,
+        stock: 5,
+        images: null,
+        localized: { ar: { title: `${liters} لتر`, option1: `الحجم: ${liters} لتر` }, en: { title: `${liters} L`, option1: `Size: ${liters} L` }, optionMeta: [{ kind: "size" }] },
+      }) as unknown as ProductVariant;
+    const rows = [kiki("KIKI-20L", 20, 3), kiki("KIKI-5L", 5, 1), kiki("KIKI-10L", 10, 2)];
+    expect(buildVariantMatrix(rows, "en").groups[0]!.values.map((x) => x.label)).toEqual(["5 L", "10 L", "20 L"]);
+    expect(buildVariantMatrix(rows, "ar").groups[0]!.values.map((x) => x.label)).toEqual(["5 لتر", "10 لتر", "20 لتر"]);
+    // Equal or missing positions keep the order given.
+    const flat = [v("a", "Black", "Big"), v("b", "Black", "Small")];
+    expect(buildVariantMatrix(flat, "en").groups[1]!.values.map((x) => x.label)).toEqual(["Big", "Small"]);
+  });
+
   it("has no groups when two variants share the same values", () => {
     expect(buildVariantMatrix([v("a", "Black", "L"), v("b", "Black", "L")], "en").groups).toEqual([]);
   });

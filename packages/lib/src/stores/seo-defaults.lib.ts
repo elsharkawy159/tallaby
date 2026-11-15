@@ -39,12 +39,43 @@ export function storeCategoryFor(
 }
 
 /**
+ * What a store of these industries sells, for "Buy … from <store>" (2026-11-15):
+ * their display names are not goods ("Pets", «أطفال وألعاب» would read "buy
+ * pets", "buy children"). `names` are the industry's English and Arabic labels
+ * (STORE_INDUSTRIES in @workspace/store-editor, which can't be imported here;
+ * its industries test keeps the two lists in step). Any other category is used
+ * as written.
+ */
+export const STORE_CATEGORY_SEO_NOUNS: readonly { industryId: string; names: readonly string[]; en: string; ar: string }[] = [
+  { industryId: "beauty", names: ["Beauty & Cosmetics", "تجميل ومستحضرات"], en: "Beauty Products", ar: "مستحضرات تجميل" },
+  { industryId: "home", names: ["Home & Furniture", "منزل وأثاث"], en: "Furniture & Home Goods", ar: "أثاث ومستلزمات منزلية" },
+  { industryId: "kitchen", names: ["Kitchen & Appliances", "مطبخ وأجهزة منزلية"], en: "Kitchenware & Appliances", ar: "أدوات مطبخ وأجهزة منزلية" },
+  { industryId: "kids", names: ["Kids & Toys", "أطفال وألعاب"], en: "Toys & Kids' Products", ar: "ألعاب ومستلزمات أطفال" },
+  { industryId: "sports", names: ["Sports & Fitness", "رياضة ولياقة"], en: "Sports & Fitness Gear", ar: "مستلزمات رياضة ولياقة" },
+  { industryId: "health", names: ["Health & Pharmacy", "صحة وصيدلية"], en: "Health & Pharmacy Products", ar: "منتجات صحية وصيدلية" },
+  { industryId: "pets", names: ["Pets", "حيوانات أليفة"], en: "Pet Supplies", ar: "مستلزمات الحيوانات الأليفة" },
+  { industryId: "handmade", names: ["Handmade & Gifts", "هاند ميد وهدايا"], en: "Handmade Products & Gifts", ar: "منتجات هاند ميد وهدايا" },
+];
+
+const normLabel = (value: string) => value.trim().toLowerCase();
+
+/** The label a default title says the store sells: an industry's goods noun, else the category as written. */
+export function storeCategorySeoNoun(category: string | null | undefined, locale: SeoLocale): string | null {
+  const label = category?.trim() || null;
+  if (!label) return null;
+  const key = normLabel(label);
+  const known = STORE_CATEGORY_SEO_NOUNS.find((entry) => entry.names.some((name) => normLabel(name) === key));
+  if (!known) return label;
+  return locale === "ar" ? known.ar : known.en;
+}
+
+/**
  * The store's title and description when the seller wrote none (ROADMAP.md
  * F-48a). Built at render time, so existing stores get it too. `category` is
  * the store's category label in the visitor's language, when it has one.
  */
 export function storeSeoFallback(name: string, category: string | null | undefined, locale: SeoLocale): { title: string; description: string } {
-  const label = category?.trim() || null;
+  const label = storeCategorySeoNoun(category, locale);
   if (locale === "ar") {
     return {
       title: label ? `اشتري ${label} من ${name} الآن | طلبي` : `تسوّق من ${name} الآن | طلبي`,

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { STORE_CATEGORY_SEO_NOUNS, storeSeoFallback } from "@workspace/lib/stores";
 import { GENERAL_QUERIES, STORE_INDUSTRIES, findIndustry, industryQueries, templatesForIndustry } from "./industries.lib";
 
 describe("store industries", () => {
@@ -45,5 +46,24 @@ describe("store industries", () => {
     // Unknown industry, or nothing related: every template.
     expect(templatesForIndustry(templates, null)).toHaveLength(4);
     expect(templatesForIndustry(templates, "pets")).toHaveLength(4);
+  });
+});
+
+describe("industry SEO nouns (@workspace/lib/stores)", () => {
+  it("cover every name, old or new, of the industries they rename", () => {
+    for (const entry of STORE_CATEGORY_SEO_NOUNS) {
+      const industry = STORE_INDUSTRIES.find((i) => i.id === entry.industryId);
+      expect(industry, entry.industryId).toBeDefined();
+      expect([...entry.names].sort()).toEqual([industry!.en, industry!.ar, ...(industry!.aliases ?? [])].sort());
+    }
+  });
+
+  it("use the goods noun instead of the display name", () => {
+    for (const entry of STORE_CATEGORY_SEO_NOUNS) {
+      const industry = STORE_INDUSTRIES.find((i) => i.id === entry.industryId)!;
+      expect(storeSeoFallback("Shop", industry.ar, "ar").title).toBe(`اشتري ${entry.ar} من Shop الآن | طلبي`);
+      expect(storeSeoFallback("Shop", industry.en, "en").title).toBe(`Buy ${entry.en} from Shop now | Tallaby`);
+    }
+    expect(STORE_CATEGORY_SEO_NOUNS.map((entry) => entry.industryId)).toContain("pets");
   });
 });

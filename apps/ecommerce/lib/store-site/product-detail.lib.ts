@@ -5,6 +5,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { pricingDiscountPercent, productHasFreeDelivery, productPricing } from "@/components/product-page/product-page.lib";
 import type { Product } from "@/components/product-page/product-page.types";
 import type { ProductLocale } from "@/lib/product-translations";
+import { inSellerOrder } from "@/lib/product-variants";
 import { getVariantColor } from "@/lib/variant-colors";
 import { getVariantImageUrls } from "@/lib/variant-images";
 import { getVariantDisplayFields } from "@/lib/variant-localized";
@@ -82,7 +83,7 @@ export function toProductDetail(
   const pricing = productPricing(product, null);
   // As the gallery (ProductHero): a list of paths, or a single path.
   const images = strings(typeof product.images === "string" ? [product.images] : product.images).map(productImage).filter((url): url is string => Boolean(url));
-  const variants = (product.productVariants ?? []).map((variant) => variantDetail(product, variant, locale));
+  const variants = inSellerOrder(product.productVariants ?? []).map((variant) => variantDetail(product, variant, locale));
   // Total stock: what the variants hold when there are variants, else the product's own count.
   const quantity = variants.length ? variants.reduce((sum, v) => sum + Math.max(0, v.quantity), 0) : Math.max(0, pricing.stock);
   const content = product.content ?? "";

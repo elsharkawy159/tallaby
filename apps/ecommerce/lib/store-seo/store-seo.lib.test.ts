@@ -59,6 +59,18 @@ describe("storeSeoFallback", () => {
     expect(storeSeoFallback("شوب", "أزياء", "ar").description).toContain("أزياء من شوب");
   });
 
+  it("names the goods of industries whose name is not a product (pets, kids…)", () => {
+    expect(storeSeoFallback("Pawsandclaws", "حيوانات أليفة", "ar").title).toBe("اشتري مستلزمات الحيوانات الأليفة من Pawsandclaws الآن | طلبي");
+    expect(storeSeoFallback("Pawsandclaws", "Pets", "en").title).toBe("Buy Pet Supplies from Pawsandclaws now | Tallaby");
+    expect(storeSeoFallback("Pawsandclaws", "Pets", "en").description).toBe("Browse Pet Supplies from Pawsandclaws and order online in a few simple steps.");
+    expect(storeSeoFallback("شوب", "أطفال وألعاب", "ar").title).toBe("اشتري ألعاب ومستلزمات أطفال من شوب الآن | طلبي");
+    // The category in the other language still gives the visitor's language.
+    expect(storeSeoFallback("Shop", "حيوانات أليفة", "en").title).toBe("Buy Pet Supplies from Shop now | Tallaby");
+    expect(storeSeoFallback("Shop", "  pets ", "ar").title).toBe("اشتري مستلزمات الحيوانات الأليفة من Shop الآن | طلبي");
+    // Other categories are used as written.
+    expect(storeSeoFallback("Shop", "Electronics", "en").title).toBe("Buy Electronics from Shop now | Tallaby");
+  });
+
   it("has a sensible phrase without a category", () => {
     for (const category of [null, undefined, "  "]) {
       expect(storeSeoFallback("Shop", category, "en").title).toBe("Shop from Shop now | Tallaby");

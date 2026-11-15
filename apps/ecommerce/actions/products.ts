@@ -103,7 +103,8 @@ const loadProductBySlug = createCachedQuery({
                 freeDelivery: true,
               },
             },
-            productVariants: true,
+            // The seller's order (variants saved together share created_at, so position decides).
+            productVariants: { orderBy: [asc(productVariants.position), asc(productVariants.createdAt), asc(productVariants.id)] },
             reviews: {
               where: eq(reviews.status, "approved"),
               orderBy: [desc(reviews.helpfulCount), desc(reviews.createdAt)],

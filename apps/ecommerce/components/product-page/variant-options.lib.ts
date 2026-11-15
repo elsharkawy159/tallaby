@@ -1,4 +1,5 @@
 import type { ProductLocale } from "@/lib/product-translations";
+import { inSellerOrder } from "@/lib/product-variants";
 import { getVariantColors } from "@/lib/variant-colors";
 import { getVariantImageUrls } from "@/lib/variant-images";
 import { getVariantDisplayFields } from "@/lib/variant-localized";
@@ -58,7 +59,7 @@ export function sortSizes(values: OptionValue[]): OptionValue[] {
 
 /**
  * The option groups of a product, in slot order, each value once (in the
- * order the seller listed the variants). No groups (an empty matrix) when the
+ * order the seller listed the variants: by `position`). No groups (an empty matrix) when the
  * variants have no options, or two variants share the same values: the
  * picker then lists the variants themselves.
  */
@@ -67,7 +68,7 @@ export function buildVariantMatrix(variants: readonly ProductVariant[], locale: 
   const groups = SLOTS.map((slot): OptionGroup => ({ slot, name: null, isColor: true, values: [] }));
   const seen = new Set<string>();
 
-  for (const variant of variants) {
+  for (const variant of inSellerOrder(variants)) {
     const options = slotOptions(variant, locale);
     const colors = getVariantColors(variant, locale);
     const variantKeys = options.map((option) => (option ? norm(option.value) : null));
