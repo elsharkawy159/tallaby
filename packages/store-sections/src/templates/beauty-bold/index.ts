@@ -11,13 +11,20 @@
  * Photos: Pexels, each checked by eye on a contact sheet (2026-10-28):
  * product flat lays and still lifes on colour, no people, no hands, no
  * brand labels, none used twice, none shared with another template.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Bombi itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { categoryRows } from "../_category-rows";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const BEAUTY_BOLD_KEY = "beauty-bold";
 
@@ -47,105 +54,46 @@ const PHOTOS = {
 
 const NAME = L("بمبي", "Bombi");
 
-const header = lib("header-centered-ticker", {
-  text: {
-    "توصيل لكل محافظات مصر": L("توصيل لكل محافظات مصر خلال ٣ أيام", "Delivery across Egypt in 3 days"),
-    "الدفع عند الاستلام": L("ادفعي عند الاستلام", "Pay on delivery"),
-    "استبدال سهل خلال ١٤ يوم": L("تتبّعي طلبك من صفحة طلباتي", "Track your order from My orders"),
-    "اسم متجرك": NAME,
-    "المتجر": L("كل المنتجات", "Shop all"),
-    "العروض": L("وصل حديثًا", "New in"),
-    "المدونة": L("الأكثر مبيعًا", "Best sellers"),
-    "من نحن": L("عن بمبي", "About"),
-    "تواصل معنا": L("تتبّعي طلبك", "Track order"),
+/**
+ * Bombi's own content: what the look is built with when no edition is
+ * applied (the template `beauty-bold` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header ticker: three short lines.
+  announcement: [
+    L("توصيل لكل محافظات مصر خلال ٣ أيام", "Delivery across Egypt in 3 days"),
+    L("ادفعي عند الاستلام", "Pay on delivery"),
+    L("تتبّعي طلبك من صفحة طلباتي", "Track your order from My orders"),
+  ],
+  // The carousel's first slide (it goes to the newest products); slides 2 and 3 are `custom.hero-2-*` (photo: `photos.banner`) and `custom.hero-3-*` (photo: `photos.custom.hero-3`).
+  hero: {
+    alt: L("فرش وبلاشر وإسفنجات على خلفية ليلكي", "Brushes, blush and sponges on lilac"),
+    eyebrow: L("وصل حديثًا", "Just landed"),
+    title: L("ألوان بتعلي صوتك", "Colour that turns you up"),
+    line: L("روج، بلاشر وظلال بدرجات جريئة، توصلك خلال ٣ أيام.", "Lipsticks, blush and shadows in bold shades, at your door in three days."),
+    cta: L("شوفي الجديد", "Shop new in"),
   },
-  links: { "/products": [undefined, undefined, NEW], "/blog": BEST, "/contact": "/profile/orders" },
-});
-
-const footer = lib("footer-links", {
-  text: {
-    "م": L("ب", "B"),
-    "اسم متجرك": NAME,
-    "كل المنتجات": L("كل المنتجات", "All products"),
-    "وصل حديثًا": L("وصل حديثًا", "New in"),
-    "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-    "من نحن": L("عن بمبي", "About Bombi"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ بمبي. كل الحقوق محفوظة.", "© 2026 Bombi. All rights reserved."),
+  // The tabbed shelf's title, over its tabs (new in, best sellers, top rated).
+  products: { primary: { title: L("اختاري على مزاجك", "Pick your mood") } },
+  // The promise list beside a photo: an eyebrow, a title, three points (`custom.story-point-1..3`) and a link to the about page.
+  story: {
+    alt: L("فرش وماسكرا وبلاشر على رخام أسود ووردي", "Brushes, a mascara wand and blush on black and pink marble"),
+    eyebrow: L("مع كل طلب من بمبي", "With every Bombi order"),
+    title: L("مكياج أصلي، متجرب على بشرتنا", "Genuine makeup, tried on our own skin"),
+    cta: L("اعرفي حكايتنا", "Our story"),
   },
-  links: { "/products": [SHOP, NEW, BEST], "https://wa.me/": "https://wa.me/201117642380" },
-});
-
-const home: Design[] = [
-  lib("hero-carousel", {
-    photo: [PHOTOS.slideLilac, PHOTOS.slideSponges, PHOTOS.slideBrushes],
-    text: {
-      "صورة الحملة الأولى": L("فرش وبلاشر وإسفنجات على خلفية ليلكي", "Brushes, blush and sponges on lilac"),
-      "وصل حديثًا": L("وصل حديثًا", "Just landed"),
-      "الموسم الجديد وصل": L("ألوان بتعلي صوتك", "Colour that turns you up"),
-      "قطع مختارة بعناية، وتوصيل لحد باب البيت.": L("روج، بلاشر وظلال بدرجات جريئة، توصلك خلال ٣ أيام.", "Lipsticks, blush and shadows in bold shades, at your door in three days."),
-      "تسوّق الجديد": L("شوفي الجديد", "Shop new in"),
-      "صورة الحملة الثانية": L("إسفنجات مكياج ملونة وباليت ظلال", "Colourful makeup sponges and an eyeshadow palette"),
-      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-      "المفضّلة عند عملائنا": L("اللي الكل بيسأل عليه", "The ones everyone asks about"),
-      "القطع اللي بترجع لها كل مرة.": L("ثابتة طول اليوم، وبتمشي مع كل لون بشرة.", "Long-wearing, and made for every skin tone."),
-      "شوف الأكثر مبيعًا": L("شوفي الأكثر مبيعًا", "Shop best sellers"),
-      "صورة الحملة الثالثة": L("فرش مكياج دهبي وفضي على خلفية فوشيا", "Gold and silver makeup brushes on fuchsia"),
-      "عروض الأسبوع": L("أدوات المكياج", "The brush edit"),
-      "خصومات لفترة محدودة": L("الفرشة الصح بتفرق", "The right brush makes the look"),
-      "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": L("فرش ناعمة للبودرة والبلاشر والهايلايتر، بتدوم سنين.", "Soft brushes for powder, blush and highlighter, made to last for years."),
-      "تسوّق العروض": L("تسوّقي كل المنتجات", "Shop everything"),
-    },
-    links: { "/products": [NEW, BEST, SHOP] },
-  }),
-  lib("categories-big-type", {
-    text: { "منتج": L("منتج", "products") },
-  }),
-  lib("products-tabbed", {
-    text: {
-      "المتجر": L("المتجر", "The shop"),
-      "منتجاتنا": L("اختاري على مزاجك", "Pick your mood"),
-      "وصل جديد": L("وصل جديد", "New in"),
-      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
-      "العروض": L("الأعلى تقييمًا", "Top rated"),
-    },
-    links: { "/products": [NEW, BEST, RATED] },
-    lists: [{ source: "best-sellers" }],
-  }),
-  lib("about-list", {
-    photo: [undefined, undefined, undefined, undefined, undefined, PHOTOS.darkFlatLay],
-    text: {
-      "صورة المتجر": L("فرش وماسكرا وبلاشر على رخام أسود ووردي", "Brushes, a mascara wand and blush on black and pink marble"),
-      "مع كل طلب": L("مع كل طلب من بمبي", "With every Bombi order"),
-      "كل منتج بيتراجع قبل ما يوصلك": L("مكياج أصلي، متجرب على بشرتنا", "Genuine makeup, tried on our own skin"),
-      "فاتورة رسمية وضمان": L("منتجات أصلية بتاريخ صلاحية واضح", "Genuine products with clear expiry dates"),
-      "تغليف محمي من الصدمات": L("تغليف وردي محمي من الكسر", "Pink, break-proof packaging"),
-      "رقم تتبع على واتساب": L("رقم تتبع وتنسيق لون على واتساب", "Tracking and shade advice on WhatsApp"),
-      "اعرف أكتر": L("اعرفي حكايتنا", "Our story"),
-    },
-  }),
-  ...categoryRows(lib, {
-    viewAll: L("شوفي الكل", "See all"),
-    muted: [1, 3],
-    nodes: { "صورة المنتج": { style: { radius: 20 } } },
-  }),
-  lib("newsletter-channels", {
-    text: {
-      "العروض توصلك زي ما تحب": L("الألوان الجديدة توصلك زي ما تحبي", "New shades, the way you like"),
-      "على واتساب أو على الإيميل، رسالة واحدة في الأسبوع ومن غير إزعاج.": L(
-        "على واتساب أو الإيميل: الدرجات الجديدة ولوك الأسبوع، رسالة واحدة ومن غير إزعاج.",
-        "On WhatsApp or email: new shades and the look of the week, one message and no spam.",
-      ),
-      "على رقم موبايلك": L("على رقم موبايلك", "On your mobile"),
-      "على بريدك": L("على بريدك", "In your inbox"),
-      "تقدر تلغي الاشتراك في أي وقت.": L("تقدري تلغي الاشتراك في أي وقت.", "Unsubscribe any time."),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن بمبي", "About Bombi"), L("مكياج بألوان جريئة، من مصر الجديدة.", "Bold-colour makeup from Heliopolis.")),
-  aboutStory(lib, {
-    photo: PHOTOS.aboutPage,
+  // The WhatsApp-or-email sign-up: a title, a line and the note under it.
+  newsletter: {
+    title: L("الألوان الجديدة توصلك زي ما تحبي", "New shades, the way you like"),
+    line: L(
+      "على واتساب أو الإيميل: الدرجات الجديدة ولوك الأسبوع، رسالة واحدة ومن غير إزعاج.",
+      "On WhatsApp or email: new shades and the look of the week, one message and no spam.",
+    ),
+    note: L("تقدري تلغي الاشتراك في أي وقت.", "Unsubscribe any time."),
+  },
+  about: {
+    line: L("مكياج بألوان جريئة، من مصر الجديدة.", "Bold-colour makeup from Heliopolis."),
     alt: L("رموش وفرش وأدوات على خلفية وردي", "Lashes, brushes and tools on pink"),
     eyebrow: L("من ٢٠٢١", "Since 2021"),
     title: L("بدأنا من ستوري على إنستجرام", "We started with an Instagram story"),
@@ -154,10 +102,187 @@ const about: Design[] = [
       "Two friends who loved colour started selling the shades they couldn’t find in Egypt. Today we ship to more than 30,000 customers.",
     ),
     more: L("وكل درجة بنجربها على أكتر من لون بشرة قبل ما تنزل الموقع.", "Every shade is tried on several skin tones before it goes live."),
-    button: L("تسوّقي الأكثر مبيعًا", "Shop best sellers"),
-    href: BEST,
-  }),
-];
+    // Goes to the best sellers.
+    cta: L("تسوّقي الأكثر مبيعًا", "Shop best sellers"),
+  },
+  contact: {
+    title: L("محتارة في الدرجة؟", "Not sure about a shade?"),
+    line: L("ابعتيلنا صورة على واتساب ونختارلك الدرجة. ٧ شارع الأهرام، مصر الجديدة، القاهرة.", "Send us a photo on WhatsApp and we’ll pick your shade. 7 El Ahram St, Heliopolis, Cairo."),
+    heading: L("كلّمينا", "Talk to us"),
+  },
+  faq: {
+    line: L("الدرجات والتوصيل والاستبدال.", "Shades, delivery and exchanges."),
+    question: L("لو الدرجة ما طلعتش مناسبة؟", "What if the shade doesn’t suit me?"),
+    answer: L(
+      "لو المنتج لسه مقفول، تقدري تستبدليه بدرجة تانية خلال ١٤ يوم. والتوصيل في القاهرة والجيزة خلال يومين.",
+      "If the product is still sealed, you can swap it for another shade within 14 days. Cairo and Giza delivery takes two days.",
+    ),
+  },
+  custom: {
+    // Carousel slide 2 (the best sellers): its photo's alt, a title of a few words and one line.
+    "hero-2-alt": L("إسفنجات مكياج ملونة وباليت ظلال", "Colourful makeup sponges and an eyeshadow palette"),
+    "hero-2-title": L("اللي الكل بيسأل عليه", "The ones everyone asks about"),
+    "hero-2-line": L("ثابتة طول اليوم، وبتمشي مع كل لون بشرة.", "Long-wearing, and made for every skin tone."),
+    // Carousel slide 3 (the whole catalog): its photo's alt, an eyebrow, a title and one line.
+    "hero-3-alt": L("فرش مكياج دهبي وفضي على خلفية فوشيا", "Gold and silver makeup brushes on fuchsia"),
+    "hero-3-eyebrow": L("أدوات المكياج", "The brush edit"),
+    "hero-3-title": L("الفرشة الصح بتفرق", "The right brush makes the look"),
+    "hero-3-line": L("فرش ناعمة للبودرة والبلاشر والهايلايتر، بتدوم سنين.", "Soft brushes for powder, blush and highlighter, made to last for years."),
+    // The promise list's three points, one line each.
+    "story-point-1": L("منتجات أصلية بتاريخ صلاحية واضح", "Genuine products with clear expiry dates"),
+    "story-point-2": L("تغليف وردي محمي من الكسر", "Pink, break-proof packaging"),
+    "story-point-3": L("رقم تتبع وتنسيق لون على واتساب", "Tracking and shade advice on WhatsApp"),
+  },
+  // The three carousel slides (wide, cropped tall on phones, so subjects sit in the middle): hero.wide, banner and custom hero-3; story: the promise list's photo; about: the about page.
+  photos: {
+    hero: { wide: PHOTOS.slideLilac },
+    banner: PHOTOS.slideSponges,
+    story: PHOTOS.darkFlatLay,
+    about: PHOTOS.aboutPage,
+    custom: { "hero-3": PHOTOS.slideBrushes },
+  },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Shop all, New in, Best sellers, Track order, See all) and the layout stay
+ * here.
+ */
+function look(c: LookContent, _journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+  const p = c.photos.custom;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-centered-ticker", {
+    text: {
+      "توصيل لكل محافظات مصر": c.announcement[0]!,
+      "الدفع عند الاستلام": c.announcement[1]!,
+      "استبدال سهل خلال ١٤ يوم": c.announcement[2]!,
+      "اسم متجرك": name,
+      "المتجر": L("كل المنتجات", "Shop all"),
+      "العروض": L("وصل حديثًا", "New in"),
+      "المدونة": L("الأكثر مبيعًا", "Best sellers"),
+      "من نحن": L(aboutName.ar, "About"),
+      "تواصل معنا": L("تتبّعي طلبك", "Track order"),
+    },
+    links: { "/products": [undefined, undefined, NEW], "/blog": BEST, "/contact": "/profile/orders" },
+  });
+
+  const footer = lib("footer-links", {
+    text: {
+      "م": initialOf(name),
+      "اسم متجرك": name,
+      "كل المنتجات": L("كل المنتجات", "All products"),
+      "وصل حديثًا": L("وصل حديثًا", "New in"),
+      "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
+      "من نحن": aboutName,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "/products": [SHOP, NEW, BEST], "https://wa.me/": "https://wa.me/201117642380" },
+  });
+
+  const home: Design[] = [
+    lib("hero-carousel", {
+      photo: [c.photos.hero.wide, c.photos.banner, p["hero-3"]!],
+      text: {
+        "صورة الحملة الأولى": c.hero.alt,
+        "وصل حديثًا": c.hero.eyebrow,
+        "الموسم الجديد وصل": c.hero.title,
+        "قطع مختارة بعناية، وتوصيل لحد باب البيت.": c.hero.line,
+        "تسوّق الجديد": c.hero.cta,
+        "صورة الحملة الثانية": x["hero-2-alt"]!,
+        "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
+        "المفضّلة عند عملائنا": x["hero-2-title"]!,
+        "القطع اللي بترجع لها كل مرة.": x["hero-2-line"]!,
+        "شوف الأكثر مبيعًا": L("شوفي الأكثر مبيعًا", "Shop best sellers"),
+        "صورة الحملة الثالثة": x["hero-3-alt"]!,
+        "عروض الأسبوع": x["hero-3-eyebrow"]!,
+        "خصومات لفترة محدودة": x["hero-3-title"]!,
+        "أسعار أقل على قطع مختارة، لحد ما الكمية تخلص.": x["hero-3-line"]!,
+        "تسوّق العروض": L("تسوّقي كل المنتجات", "Shop everything"),
+      },
+      links: { "/products": [NEW, BEST, SHOP] },
+    }),
+    lib("categories-big-type", {
+      text: { "منتج": L("منتج", "products") },
+    }),
+    lib("products-tabbed", {
+      text: {
+        "المتجر": L("المتجر", "The shop"),
+        "منتجاتنا": c.products.primary.title,
+        "وصل جديد": L("وصل جديد", "New in"),
+        "الأكثر مبيعًا": L("الأكثر مبيعًا", "Best sellers"),
+        "العروض": L("الأعلى تقييمًا", "Top rated"),
+      },
+      links: { "/products": [NEW, BEST, RATED] },
+      lists: [{ source: "best-sellers" }],
+    }),
+    lib("about-list", {
+      photo: [undefined, undefined, undefined, undefined, undefined, c.photos.story],
+      text: {
+        "صورة المتجر": c.story.alt,
+        "مع كل طلب": c.story.eyebrow,
+        "كل منتج بيتراجع قبل ما يوصلك": c.story.title,
+        "فاتورة رسمية وضمان": x["story-point-1"]!,
+        "تغليف محمي من الصدمات": x["story-point-2"]!,
+        "رقم تتبع على واتساب": x["story-point-3"]!,
+        "اعرف أكتر": c.story.cta,
+      },
+    }),
+    // Four category rows, places 1 to 4 in order (`journey.rows` is [1, 2, 3, 4]).
+    ...categoryRows(lib, {
+      viewAll: L("شوفي الكل", "See all"),
+      muted: [1, 3],
+      nodes: { "صورة المنتج": { style: { radius: 20 } } },
+    }),
+    lib("newsletter-channels", {
+      text: {
+        "العروض توصلك زي ما تحب": c.newsletter.title,
+        "على واتساب أو على الإيميل، رسالة واحدة في الأسبوع ومن غير إزعاج.": c.newsletter.line,
+        "على رقم موبايلك": L("على رقم موبايلك", "On your mobile"),
+        "على بريدك": L("على بريدك", "In your inbox"),
+        "تقدر تلغي الاشتراك في أي وقت.": c.newsletter.note,
+      },
+    }),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.about ?? c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: BEST,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -225,7 +350,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const BEAUTY_BOLD = libraryTemplate({
+export const BEAUTY_BOLD = editionTemplate({
   key: BEAUTY_BOLD_KEY,
   version: 1,
   name: L("بمبي", "Bombi"),
@@ -249,35 +374,45 @@ export const BEAUTY_BOLD = libraryTemplate({
   fonts: { heading: "Lalezar", body: "Tajawal" },
   radius: 20,
   containerMaxWidth: 1300,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن بمبي", "About"), seo: { title: L("عن بمبي", "About Bombi") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("محتارة في الدرجة؟", "Not sure about a shade?"),
-        text: L("ابعتيلنا صورة على واتساب ونختارلك الدرجة. ٧ شارع الأهرام، مصر الجديدة، القاهرة.", "Send us a photo on WhatsApp and we’ll pick your shade. 7 El Ahram St, Heliopolis, Cairo."),
-        heading: L("كلّمينا", "Talk to us"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("الدرجات والتوصيل والاستبدال.", "Shades, delivery and exchanges."),
-        question: L("لو الدرجة ما طلعتش مناسبة؟", "What if the shade doesn’t suit me?"),
-        answer: L(
-          "لو المنتج لسه مقفول، تقدري تستبدليه بدرجة تانية خلال ١٤ يوم. والتوصيل في القاهرة والجيزة خلال يومين.",
-          "If the product is still sealed, you can swap it for another shade within 14 days. Cairo and Giza delivery takes two days.",
-        ),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "announcement.1",
+    "announcement.2",
+    "hero",
+    "products.primary.title",
+    "story.alt",
+    "story.eyebrow",
+    "story.title",
+    "story.cta",
+    "newsletter.title",
+    "newsletter.line",
+    "newsletter.note",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
+    "photos.banner",
+    "photos.custom.hero-3",
+    "custom.hero-2-alt",
+    "custom.hero-2-title",
+    "custom.hero-2-line",
+    "custom.hero-3-alt",
+    "custom.hero-3-eyebrow",
+    "custom.hero-3-title",
+    "custom.hero-3-line",
+    "custom.story-point-1",
+    "custom.story-point-2",
+    "custom.story-point-3",
   ],
+  // `photos.about`: the about page's photo (falls back to the story's).
+  // The tabbed shelf has its own tabs, so `primary` is not read; four category rows, places 1 to 4 (`categoryRows`).
+  optional: ["photos.about"],
+  journey: { primary: "best-sellers", rows: [1, 2, 3, 4] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {
     thumbs: "side",

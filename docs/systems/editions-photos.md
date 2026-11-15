@@ -138,7 +138,7 @@ Synced with `.editions-inbox/` on 2026-11-15 (file dates). _Have/need_ counts th
 | chargers-cables     | `kabl`         | 5 / 5       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 | lighting-smart-home | `zaki`         | 6 / 6       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 
-**Waves 2–13**: nothing received yet; every niche is _Not started_.
+**Waves 2–13**: wave 2 (beauty) is in progress (2026-11-15: skincare and mens-grooming are in their templates; makeup, perfumes and haircare are waiting on the images listed in their sections). Waves 3–5 are received but not yet built; the rest are _Not started_.
 
 | Wave | Industry              | Niche (template, essential photos)                                                                                                                                      | Essential |
 | ---- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -1593,11 +1593,13 @@ The rest of the platform's niches, so you can make photos ahead of time. Same ru
 
 ## Wave 2: Beauty (5 niches)
 
-### skincare, template pure — Not started
+### skincare, template pure — Done
 
 **Save to: `.editions-inbox/02-wave-2-beauty/skincare/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).** The `sheet-masks-set` packshot came back as three sachets with a set of travel minis, so the product is named "Sheet Masks and Travel Minis Set".
 
 Palette for scenes: _milky white, pale peach, soft clay, sea-glass green._ Add: _"Skincare: plain unlabelled bottles, jars and tubes in frosted glass or soft matte plastic, caps closed, no text, no printed lines or logos on any container."_
 
@@ -1633,11 +1635,13 @@ Scenes
 
 ---
 
-### makeup, template beauty-bold — Not started
+### makeup, template beauty-bold — Partial
 
 **Save to: `.editions-inbox/02-wave-2-beauty/makeup/`**
 
-**Essential: 24 images** (8 scenes, 16 products: the template shows a row of four per category). Nothing in the inbox yet.
+**Essential: 24 images** (8 scenes, 16 products: the template shows a row of four per category).
+
+**Status: Partial (24 of 25, received 2026-11-15).** The 24 essential images are in the folder and uploaded, and Beauty Bold is converted, but its hero carousel has three wide slides: slide 2 uses `scene-banner`, slide 3 needs **`scene-hero-3`** (below). The pack goes in as soon as it arrives.
 
 Palette for scenes: _deep rose, warm nude, black lacquer, soft gold._ Add: _"Makeup: generic unbranded cases in plain colours, no embossing, no logo on caps or compacts; lipsticks shown with the bullet up, compacts open when asked."_
 
@@ -1664,16 +1668,19 @@ Scenes
 - **scene-tile-4**: Makeup brushes in a ceramic cup on a vanity table by a window.
 - **scene-banner**: A long dressing table with makeup spaced along it, warm gold side light.
 - **scene-story**: A calm makeup studio counter with clean brushes drying on a towel, empty palettes and swatch cards with plain colour.
+- **scene-hero-3** (16:9, carousel slide 3, brushes and tools; phones crop it tall from the centre, so keep the subject in the middle third): Makeup brushes with black handles and gold ferrules fanned on deep rose satin beside three makeup sponges, soft gold side light.
 
 **Later (optional):** the premium kit and second angles (see "Later (optional)" at the end of this file).
 
 ---
 
-### perfumes, template perfumes-bold — Not started
+### perfumes, template perfumes-bold — Partial
 
 **Save to: `.editions-inbox/02-wave-2-beauty/perfumes/`**
 
-**Essential: 21 images** (8 scenes, 13 products: three per category, plus a fourth in the first category, whose row shows four). Nothing in the inbox yet.
+**Essential: 21 images** (8 scenes, 13 products: three per category, plus a fourth in the first category, whose row shows four).
+
+**Status: Partial (21 of 23, received 2026-11-15).** The 21 essential images are in the folder and uploaded. Perfumes Bold also draws a single-bottle anatomy photo with three note dots and a spotlight photo, which no essential scene can fill (a pack never shows one photo twice): make **`scene-anatomy`** and **`scene-spot-photo`** (below).
 
 Palette for scenes: _deep amber, smoked oud brown, ivory, antique brass._ Add: _"Perfume: plain unlabelled glass bottles in simple generic shapes (cylinder, square, round), no engraving, never a copy of a known perfume bottle or cap; liquid colour visible."_
 
@@ -1700,6 +1707,8 @@ Scenes
 - **scene-tile-4**: A perfume gift box open on ivory satin with dried rose petals.
 - **scene-banner**: A long dark wood shelf with perfume bottles spaced out and soft amber backlight.
 - **scene-story**: An old perfumer's counter in a souk without signs, rows of plain glass bottles and brass funnels.
+- **scene-anatomy** (4:5, shown portrait at most 480 px wide, with three note dots): One plain unlabelled square glass perfume bottle of amber perfume with a heavy black cap, standing alone, centred and large on an ivory backdrop, soft side light. The dots point at the cap (about 49% from the left, 15% from the top), the juice in the middle of the glass (50, 58) and the thick glass base (50, 85), so keep the cap at the top and the base near the bottom.
+- **scene-spot-photo** (4:5, beside the three newest products; portrait on desktop, landscape on phones: keep the bottles centred): Three small plain attar bottles with gold tops and a brass dish of oud chips on warm amber fabric in golden evening light.
 
 **Later (optional):** the products below (each the fourth of its category: it only fills wider grids, and no section of this template needs it), then the premium kit and second angles (see "Later (optional)" at the end of this file).
 
@@ -1709,11 +1718,13 @@ Scenes
 
 ---
 
-### haircare, template botanica — Not started
+### haircare, template botanica — Partial
 
 **Save to: `.editions-inbox/02-wave-2-beauty/haircare/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Partial (16 of 20, received 2026-11-15).** Make again: **`cream-hair-dryer`**, **`henna-powder-bag`**, **`keratin-treatment-kit`**, **`wooden-paddle-brush`**: each came back as a crowded set (bottles, brushes, a straightener or a dryer around the product) instead of the one product on white. Send each prompt again with "only this one product, nothing else in the frame".
 
 Palette for scenes: _olive green, warm cream, honey, pale terracotta._ Add: _"Hair care: plain unlabelled bottles, jars and tubes, no text; tools unbranded with cables neatly coiled."_
 
@@ -1749,11 +1760,13 @@ Scenes
 
 ---
 
-### mens-grooming, template barber — Not started
+### mens-grooming, template barber — Done
 
 **Save to: `.editions-inbox/02-wave-2-beauty/mens-grooming/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _charcoal, cognac leather, slate, brushed chrome._ Add: _"Grooming: plain unlabelled bottles, tins and jars, tools unbranded, no blades exposed beyond what is normal for the product."_
 

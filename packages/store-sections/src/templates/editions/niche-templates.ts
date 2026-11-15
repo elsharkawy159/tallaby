@@ -72,11 +72,11 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
   { niche: "wearables", template: "saa", status: "ready" }, // native, then a new pack
   { niche: "small-appliances", template: "shasha", status: "own" }, // new pack
   // ── beauty (wave 2) ──
-  { niche: "skincare", template: "pure", status: "own" },
+  { niche: "skincare", template: "pure", edition: "skincare", status: "ready" },
   { niche: "makeup", template: "beauty-bold", status: "own" },
   { niche: "perfumes", template: "perfumes-bold", status: "own" },
   { niche: "haircare", template: "botanica", status: "own" },
-  { niche: "mens-grooming", template: "barber", status: "own" },
+  { niche: "mens-grooming", template: "barber", edition: "mens-grooming", status: "ready" },
   // ── home (wave 3) ──
   { niche: "furniture", template: "furniture-luxe", status: "own" },
   { niche: "bedding-textiles", template: "mafrash", status: "own" },
