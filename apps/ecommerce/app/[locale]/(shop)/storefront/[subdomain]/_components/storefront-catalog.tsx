@@ -151,7 +151,7 @@ async function CatalogGrid({
   renderProducts?: (rows: unknown[]) => ReactNode;
 }) {
   const tStores = await getTranslations("pages.stores");
-  const result = await getProducts({
+  const filters = {
     sellerId,
     storeId,
     storeCategory,
@@ -159,9 +159,16 @@ async function CatalogGrid({
     // A seller category opens on its manual order (F-24d, 0128).
     sortBy: storefrontSortBy(query.sort, storeCategory?.sellerCategoryId),
     limit: STORE_PAGE_SIZE,
-    offset: (query.page - 1) * STORE_PAGE_SIZE,
     locale: locale as ProductLocale,
-  });
+  };
+  // A page past the last one lists nothing (the "no matches" state, as before), and is
+  // never read on its own: any ?page= would otherwise be a new cache entry. The first
+  // page's cached read gives the count; a search isn't cached, so it skips this.
+  const first = query.page > 1 && !query.search ? await getProducts({ ...filters, offset: 0 }) : null;
+  const pastLast = first !== null && query.page > Math.ceil((first.success ? first.totalCount : 0) / STORE_PAGE_SIZE);
+  const result = pastLast
+    ? { success: true, data: [], totalCount: 0 }
+    : await getProducts({ ...filters, offset: (query.page - 1) * STORE_PAGE_SIZE });
   const products = result.success ? (result.data ?? []) : [];
   const total = result.success ? result.totalCount : 0;
   const totalPages = Math.ceil(total / STORE_PAGE_SIZE);

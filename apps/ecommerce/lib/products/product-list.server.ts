@@ -81,6 +81,10 @@ export interface ProductFilters {
  */
 export async function getProducts(filters: ProductFilters = {}) {
   const catalogSplit = filters.storeId ? await isSwitchOn("stores_catalog_split") : false
+  // A shopper's free-text store search is read straight from the database: every
+  // different text would otherwise be its own cache entry (a write each), read
+  // again by almost no one. Same query, same store scoping, same result.
+  if (filters.storeId && filters.searchQuery) return readProducts(filters, catalogSplit)
   return listProducts(filters, catalogSplit)
 }
 
@@ -123,7 +127,10 @@ const listProducts = createCachedQuery({
     if (filters.isSponsored) tags.push(productTags.sponsored());
     return tags;
   },
-  query: async (filters: ProductFilters, catalogSplit: boolean) => {
+  query: (filters: ProductFilters, catalogSplit: boolean) => readProducts(filters, catalogSplit),
+});
+
+async function readProducts(filters: ProductFilters, catalogSplit: boolean) {
     try {
       const locale = (filters.locale ?? "en") as ProductLocale
       // Storefront visibility: an admin-approved product the seller has left on.
@@ -347,5 +354,4 @@ const listProducts = createCachedQuery({
       console.error("Error fetching products:", error);
       throw error;
     }
-  },
-});
+}

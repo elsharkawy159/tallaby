@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { knownStorefrontSort } from "@/lib/store-site/featured-sort.lib";
 import { redirect } from "next/navigation";
 import { storeLocalePath } from "@workspace/lib/storefront";
 import { getTranslations } from "next-intl/server";
@@ -64,7 +65,7 @@ export default async function StoreProductsPage({ params, searchParams }: StoreP
   const query: StoreQuery = {
     category: categories.some((c) => c.key === one(sp.category)) ? one(sp.category) : undefined,
     search: (one(sp.search) ?? one(sp.q))?.slice(0, 100),
-    sort: one(sp.sort),
+    sort: knownStorefrontSort(one(sp.sort)),
     page: Math.max(1, Math.floor(Number(one(sp.page)) || 1)),
   };
 

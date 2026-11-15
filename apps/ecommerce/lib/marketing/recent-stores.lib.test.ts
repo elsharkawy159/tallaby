@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import ar from "@/messages/marketing/home.ar.json";
 import en from "@/messages/marketing/home.en.json";
 import { STORE_INDUSTRIES } from "../../../../packages/store-editor/src/lib/industries.lib";
-import { LATEST_WINDOW_MS, RECENT_WINDOW_MS, STORE_INDUSTRY_NAMES, STORE_INDUSTRY_OLD_NAMES,selectStoreLine, storeAge, storeIndustryId, type RecentStore, type StoreIndustryId } from "./recent-stores.lib";
+import { LATEST_WINDOW_MS, READ_AT_STEP_MS, RECENT_WINDOW_MS, STORE_INDUSTRY_NAMES, STORE_INDUSTRY_OLD_NAMES,selectStoreLine, stableReadAt, storeAge, storeIndustryId, type RecentStore, type StoreIndustryId } from "./recent-stores.lib";
 
 const NOW = Date.parse("2026-11-04T12:00:00.000Z");
 const MINUTE = 60_000;
@@ -135,5 +135,37 @@ describe("live line plurals", () => {
     ["days", 7, "[7] days ago"],
   ] as const)("English %s %d", (key, count, expected) => {
     expect(render(en, "en", key, count)).toBe(expected);
+  });
+});
+
+describe("stableReadAt", () => {
+  const hour = Math.floor(NOW / READ_AT_STEP_MS) * READ_AT_STEP_MS;
+
+  it("is the same for the whole hour with the same stores, so a rebuild writes the same page", () => {
+    const stores = [store("fashion", 3 * HOUR)];
+    expect(stableReadAt(stores, hour)).toBe(hour);
+    expect(stableReadAt(stores, hour + 59 * MINUTE)).toBe(hour);
+    expect(stableReadAt(stores, hour + HOUR)).toBe(hour + HOUR);
+    expect(stableReadAt([], hour + 30 * MINUTE)).toBe(hour);
+  });
+
+  it("moves up to a store that opened after the hour began, so it is never left out", () => {
+    const now = hour + 40 * MINUTE;
+    const fresh: RecentStore = { industry: "food", publishedAt: new Date(hour + 25 * MINUTE).toISOString() };
+    const readAt = stableReadAt([store("fashion", 2 * DAY), fresh], now);
+    expect(readAt).toBe(hour + 25 * MINUTE);
+    expect(selectStoreLine([fresh], readAt)).toMatchObject({ kind: "recent" });
+  });
+
+  it("ignores future and unreadable times", () => {
+    const now = hour + 10 * MINUTE;
+    const future: RecentStore = { industry: "food", publishedAt: new Date(now + MINUTE).toISOString() };
+    expect(stableReadAt([future, { industry: null, publishedAt: null }, { industry: null, publishedAt: "nope" }], now)).toBe(hour);
+  });
+
+  it("never runs ahead of now", () => {
+    for (const offset of [0, 1, 59 * MINUTE, HOUR - 1]) {
+      expect(stableReadAt([store("fashion", 0)], hour + offset)).toBeLessThanOrEqual(hour + offset);
+    }
   });
 });

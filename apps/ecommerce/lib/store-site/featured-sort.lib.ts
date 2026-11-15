@@ -18,6 +18,11 @@ export const STOREFRONT_SORT_MAP = {
   popularity: "popular",
 } as const satisfies Record<string, ListingSortBy>;
 
+/** `?sort=` when it is one of the select's values, else undefined (the default order), so an unknown value never reaches links or the catalog. */
+export function knownStorefrontSort(sort: string | undefined): keyof typeof STOREFRONT_SORT_MAP | undefined {
+  return sort && Object.hasOwn(STOREFRONT_SORT_MAP, sort) ? (sort as keyof typeof STOREFRONT_SORT_MAP) : undefined;
+}
+
 /**
  * The storefront catalog (/products on a store host): with no `?sort=` a
  * seller category opens on "Featured", anything else on "Most popular" (as

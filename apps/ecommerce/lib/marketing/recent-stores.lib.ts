@@ -87,6 +87,27 @@ export function selectStoreLine(stores: readonly RecentStore[], now: number): St
   return latest ? { kind: "latest", store: latest } : { kind: "none" };
 }
 
+/** How far the time the page is rendered at may lag the real time (`stableReadAt`). */
+export const READ_AT_STEP_MS = 60 * 60 * 1000;
+
+/**
+ * The time the home page renders the line at: `now` rounded down to the hour,
+ * or the newest store's own time if that is later (and not in the future), so
+ * a store that just opened is never left out. The page is rebuilt every minute;
+ * with the same stores, this gives the same time, and so the same HTML, for the
+ * whole hour, which is what keeps the rebuild from being a new cache write. The
+ * browser moves on to its own clock right after hydration (`LiveStoreLine`), so
+ * the age a visitor reads is the real one.
+ */
+export function stableReadAt(stores: readonly RecentStore[], now: number): number {
+  let newest = Math.floor(now / READ_AT_STEP_MS) * READ_AT_STEP_MS;
+  for (const store of stores) {
+    const at = store.publishedAt ? Date.parse(store.publishedAt) : Number.NaN;
+    if (at > newest && at <= now) newest = at;
+  }
+  return newest;
+}
+
 /** The age to print, in whole units rounded down, so a store never reads newer than it is by more than its unit. */
 export function storeAge(publishedAtMs: number, now: number): StoreAge {
   const minutes = Math.floor((now - publishedAtMs) / 60_000);

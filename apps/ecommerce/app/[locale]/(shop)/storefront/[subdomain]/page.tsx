@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { knownStorefrontSort } from "@/lib/store-site/featured-sort.lib";
 import { cn } from "@workspace/ui/lib/utils";
 import { JsonLd } from "@/components/seo/json-ld";
 import { storeHomeMetadata, storeStructuredData } from "@/lib/store-seo/store-seo.lib";
@@ -42,7 +43,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
     category: categories.some((c) => c.key === one(sp.category)) ? one(sp.category) : undefined,
     // `q` arrives from marketplace search links redirected here.
     search: (one(sp.search) ?? one(sp.q))?.slice(0, 100),
-    sort: one(sp.sort),
+    sort: knownStorefrontSort(one(sp.sort)),
     page: Math.max(1, Math.floor(Number(one(sp.page)) || 1)),
   };
 

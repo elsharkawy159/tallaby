@@ -77,6 +77,34 @@ export function usdCentsToApproxEgp(usdCents: number, rate: number): number {
 }
 
 /**
+ * The largest USD amount tallaby.com shows converted to EGP (the top-up maximum,
+ * $1,000). Every marketing price must stay at or below it (a test in the
+ * ecommerce app's `pricing.lib.test.ts` checks the price tokens).
+ */
+export const MARKETING_MAX_SHOWN_USD_CENTS = TOP_UP_MAX_USD_CENTS;
+
+/**
+ * True when tallaby.com would show a different EGP figure at `next` than at
+ * `previous` for some whole-cent USD amount up to `maxUsdCents`, with the
+ * rounding every marketing price uses (`usdCentsToApproxEgp`, the same as the
+ * ecommerce app's `usdCentsToEgp`). Each figure depends only on the rate in
+ * 1/10000 EGP, so an equal rate at that precision never changes a figure.
+ * Display only: it decides cache invalidation, never a charge.
+ */
+export function marketingEgpFiguresChanged(
+  previous: number | null,
+  next: number | null,
+  maxUsdCents: number = MARKETING_MAX_SHOWN_USD_CENTS,
+): boolean {
+  if (previous === null || next === null) return previous !== next;
+  if (rateUnits(previous) === rateUnits(next)) return false;
+  for (let cents = 1; cents <= maxUsdCents; cents += 1) {
+    if (usdCentsToApproxEgp(cents, previous) !== usdCentsToApproxEgp(cents, next)) return true;
+  }
+  return false;
+}
+
+/**
  * Every price a seller sees is in EGP (owner, 2026-11-09, for Paymob): a USD
  * amount at the live rate, with "≈" in front. "≈ 1.62 جنيه", "≈ 1,563 EGP".
  * Latin digits, en-US grouping, 2 decimals under a dollar. In Arabic only the

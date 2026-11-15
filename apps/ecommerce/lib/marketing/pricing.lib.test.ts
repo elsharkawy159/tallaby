@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { quoteTopUp } from "@workspace/lib/billing";
+import { MARKETING_MAX_SHOWN_USD_CENTS, quoteTopUp } from "@workspace/lib/billing";
 import { ORDER_GRACE_DAYS } from "@workspace/lib/billing/order-grace";
-import { estimatePlans, fillPriceTokens, formatEgp, formatUsd, marketingPriceVars, PRICE_TOKENS, stripBidiIsolates, orderFee, PLAN_PRICES, proBreakEvenOrders, proBreakEvenOrdersShown, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
+import { estimatePlans, fillPriceTokens, formatEgp, formatUsd, marketingPriceVars, PRICE_TOKENS, stripBidiIsolates, orderFee, PLAN_PRICES, priceVarsWith, proBreakEvenOrders, proBreakEvenOrdersShown, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
 
 describe("PLAN_PRICES", () => {
   it("matches the agreed prices", () => {
@@ -125,5 +125,24 @@ describe("suggestedPrice", () => {
 
   it("treats empty and negative inputs as zero", () => {
     expect(suggestedPrice({ unitCost: Number.NaN, packaging: -4, shipping: 0, marginPct: 0 }).price).toBe(9);
+  });
+});
+
+describe("MARKETING_MAX_SHOWN_USD_CENTS", () => {
+  // The exchange-rate cron only clears the cached rate when an EGP figure up to this amount changes.
+  it("covers every USD amount a price token or plan card shows", () => {
+    const amounts: number[] = [];
+    priceVarsWith((cents) => {
+      amounts.push(cents);
+      return "";
+    });
+    const plan = PLAN_PRICES;
+    amounts.push(plan.free.orderFeeCents, plan.pro.monthlyCents, plan.emailPack.cents, plan.creditPack.cents, plan.topUp.minCents, plan.topUp.maxCents);
+    // The fee estimator's slider goes up to 3,000 orders a month.
+    amounts.push(estimatePlans({ orders: 3000 }).freeCents);
+    for (const cents of amounts) {
+      expect(Number.isInteger(cents)).toBe(true);
+      expect(cents).toBeLessThanOrEqual(MARKETING_MAX_SHOWN_USD_CENTS);
+    }
   });
 });

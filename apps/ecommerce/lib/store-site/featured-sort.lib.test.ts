@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { builderCategorySortBy, storefrontSortBy } from "./featured-sort.lib";
+import { builderCategorySortBy, knownStorefrontSort, storefrontSortBy } from "./featured-sort.lib";
 
 const CAT = "11111111-1111-4111-8111-111111111111";
 
@@ -35,5 +35,12 @@ describe("builderCategorySortBy", () => {
     expect(builderCategorySortBy("featured", undefined, undefined)).toBeUndefined();
     expect(builderCategorySortBy("discounted", "default", undefined)).toBeUndefined();
     expect(builderCategorySortBy("selected", undefined, undefined)).toBeUndefined();
+  });
+});
+
+describe("knownStorefrontSort", () => {
+  it("keeps the select's values and drops anything else", () => {
+    for (const sort of ["featured", "price-low", "price-high", "rating", "newest", "popularity"]) expect(knownStorefrontSort(sort)).toBe(sort);
+    for (const sort of [undefined, "", "toString", "__proto__", "price_asc", "x".repeat(500)]) expect(knownStorefrontSort(sort)).toBeUndefined();
   });
 });

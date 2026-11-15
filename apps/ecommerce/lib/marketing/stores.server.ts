@@ -7,7 +7,7 @@ import { productInStoreOf } from "@workspace/lib/stores/scope/server";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { isSwitchOn } from "@/lib/platform-switches.server";
 import { type DirectoryStore, type DirectoryStoreRow, shapeDirectoryStore } from "./store-directory.lib";
-import { RECENT_STORES_LIMIT, storeIndustryId, type RecentStore } from "./recent-stores.lib";
+import { RECENT_STORES_LIMIT, stableReadAt, storeIndustryId, type RecentStore } from "./recent-stores.lib";
 
 /** The line is optional: past this, the page renders without it rather than wait for the database. */
 const READ_TIMEOUT_MS = 3000;
@@ -44,9 +44,10 @@ const getCachedRecentStores = createCachedQuery({
 });
 
 /**
- * The stores for the home page's live line, and when they were read, which the
- * page and the browser both start from so their first render matches. Empty (the
- * line hides) if the database cannot be read.
+ * The stores for the home page's live line, and the time the page and the browser
+ * both start from so their first render matches (`stableReadAt`: the hour, or the
+ * newest store's time, so a rebuild with the same stores gives the same HTML).
+ * Empty (the line hides) if the database cannot be read.
  */
 export const getRecentStores = cache(async (): Promise<{ stores: RecentStore[]; readAt: number }> => {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -57,10 +58,10 @@ export const getRecentStores = cache(async (): Promise<{ stores: RecentStore[]; 
         timer = setTimeout(() => reject(new Error(`no answer in ${READ_TIMEOUT_MS} ms`)), READ_TIMEOUT_MS);
       }),
     ]);
-    return { stores, readAt: Date.now() };
+    return { stores, readAt: stableReadAt(stores, Date.now()) };
   } catch (error) {
     console.error("[marketing] recent stores failed", error);
-    return { stores: [], readAt: Date.now() };
+    return { stores: [], readAt: stableReadAt([], Date.now()) };
   } finally {
     clearTimeout(timer);
   }
