@@ -21,7 +21,7 @@ export async function StoreOffline({
       <h1 className="text-2xl font-bold md:text-3xl">{t("offlineTitle")}</h1>
       <p className="mt-2 max-w-md text-muted-foreground">{t("offlineBody", { store: store.displayName })}</p>
       <a
-        href={BASE_URL || "https://tallaby.com"}
+        href={BASE_URL || "https://www.tallaby.com"}
         className="mt-8 inline-flex h-11 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground"
       >
         {t("offlineCta")}

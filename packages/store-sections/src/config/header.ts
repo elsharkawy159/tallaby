@@ -561,8 +561,9 @@ function groupWithCart(nodes: Node[], tools: Node[], id: string): Node[] | null 
   return replaceFirst(nodes, (node) => node === cart, () => group);
 }
 
-/** Where the platform credit links. */
-export const TALLABY_HOME = "https://tallaby.com";
+/** Where the platform credit links: the canonical www host (the apex 308-redirects to it). */
+export const TALLABY_HOME = "https://www.tallaby.com";
+/** A stored credit link: stores keep their own tree copies, so the old apex form must still match. */
 const TALLABY_HREF_RE = /^https?:\/\/(www\.)?tallaby\.com\/?$/i;
 /**
  * The Tallaby mark (teal tile, white "t") in the footer badge: an absolute URL

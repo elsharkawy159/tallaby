@@ -149,7 +149,7 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {store.app.showDownloadButton && <StoreAppInstallButton storeName={store.displayName} />}
-            <a href={BASE_URL || "https://tallaby.com"} className="font-medium text-white hover:underline">
+            <a href={BASE_URL || "https://www.tallaby.com"} className="font-medium text-white hover:underline">
               {t("moreStores")}
             </a>
           </div>

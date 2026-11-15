@@ -28,7 +28,7 @@ export default async function Checkout() {
         <div>
           <h1 className="text-xl md:text-2xl font-bold mb-2">{ts("offlineTitle")}</h1>
           <a
-            href={BASE_URL || "https://tallaby.com"}
+            href={BASE_URL || "https://www.tallaby.com"}
             className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground"
           >
             {ts("offlineCta")}

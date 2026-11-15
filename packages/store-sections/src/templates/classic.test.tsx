@@ -100,7 +100,7 @@ describe("Tallaby Classic template", () => {
 
   it("only links inside the store (system pages and its own pages), social links and the Powered by line", () => {
     const allowed =
-      /^(\/|\/(products|about|contact|faq|blog|cart|shipping|returns|privacy|terms)(\?.*)?|\/profile(\/wishlist|\/orders)?|https:\/\/(www\.instagram\.com|www\.facebook\.com|wa\.me)\/\d*|https:\/\/tallaby\.com|tel:\+\d+|mailto:[^\s]+)$/;
+      /^(\/|\/(products|about|contact|faq|blog|cart|shipping|returns|privacy|terms)(\?.*)?|\/profile(\/wishlist|\/orders)?|https:\/\/(www\.instagram\.com|www\.facebook\.com|wa\.me)\/\d*|https:\/\/www\.tallaby\.com|tel:\+\d+|mailto:[^\s]+)$/;
     for (const node of sections().flatMap((s) => walk(s.componentTree))) {
       const href = (node.props as { href?: unknown }).href;
       if (typeof href === "string") expect(href, node.id).toMatch(allowed);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { findNode, findParent } from "../elements/tree";
 import { normalizeStyle } from "../elements/style";
-import { chromeHasThemeToggle, chromeOptionOn, drawChrome, flushHeaderOnMobile, setChromeOption, TALLABY_MARK_URL, withLanguageSwitcher } from "./header";
+import { chromeHasThemeToggle, chromeOptionOn, drawChrome, flushHeaderOnMobile, footerCreditsTallaby, setChromeOption, TALLABY_HOME, TALLABY_MARK_URL, withLanguageSwitcher } from "./header";
 import { sanitizeSiteConfig } from "./sanitize";
 import type { SectionInstance, SiteConfig } from "./schema";
 import { CODE_TEMPLATES } from "../templates/catalog";
@@ -379,7 +379,7 @@ describe("header and footer options (drawChrome)", () => {
     // A pill link: the Tallaby mark and the words, white with dark ink so it reads on any footer.
     const badge = findNode(out.componentTree!, "c-powered-by")!;
     expect(badge.type).toBe("linkBlock");
-    expect(badge.props).toMatchObject({ href: "https://tallaby.com", label: "Built with Tallaby" });
+    expect(badge.props).toMatchObject({ href: "https://www.tallaby.com", label: "Built with Tallaby" });
     expect(badge.style).toMatchObject({ background: "#ffffff", radius: 999, borderWidth: 1 });
     expect(badge.style?.hover).toBeDefined();
     expect(findNode(out.componentTree!, "c-powered-by-row")!.children.map((c) => c.type)).toEqual(["image", "text"]);
@@ -404,8 +404,23 @@ describe("header and footer options (drawChrome)", () => {
     const hrefs: unknown[] = [];
     const walk = (list: Tree) => list.forEach((node) => (hrefs.push(node.props.href), walk(node.children)));
     walk(footer?.componentTree ?? []);
-    expect(hrefs.filter((h) => h === "https://tallaby.com")).toHaveLength(1);
+    expect(hrefs.filter((h) => h === "https://www.tallaby.com")).toHaveLength(1);
+    expect(hrefs.filter((h) => typeof h === "string" && /tallaby\.com/i.test(h) && h !== TALLABY_MARK_URL)).toHaveLength(1);
   });
+
+  it.each(["https://tallaby.com", "https://tallaby.com/", "https://www.tallaby.com", "http://www.tallaby.com/", " https://tallaby.com "])(
+    "a stored credit linking to %s (no role) is recognised: dropped for the one badge, and footerCreditsTallaby sees it",
+    (href) => {
+      const input = chrome([n("box", "container", {}, [n("copy", "text", { text: "© 2026 Store" }), n("old", "link", { href }, [n("old-text", "text", { text: "Tallaby" })])])]);
+      expect(footerCreditsTallaby(input)).toBe(true);
+      const out = drawChrome(input, "footer", { translated: false, hasLogo: false, locale: "en" })!;
+      expect(findNode(out.componentTree!, "old")).toBeNull();
+      const hrefs: unknown[] = [];
+      const walk = (list: Tree) => list.forEach((node) => (hrefs.push(node.props.href), walk(node.children)));
+      walk(out.componentTree ?? []);
+      expect(hrefs.filter((h) => typeof h === "string" && /tallaby\.com\/?$/i.test(h.trim()))).toEqual([TALLABY_HOME]);
+    },
+  );
 
   it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the footer gets one Download application button when the store allows it", (_key, template) => {
     const { header, footer } = template.config();

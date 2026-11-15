@@ -178,7 +178,7 @@ const POLICY_LINKS = [
   { text: L("الشروط والأحكام", "Terms & conditions"), href: LINKS.terms },
 ];
 /** The platform credit (template rules §4.3); the storefront draws its own in every footer and drops this one. */
-export const TALLABY_URL = "https://tallaby.com";
+export const TALLABY_URL = "https://www.tallaby.com";
 const SOCIAL: { icon: ElementIconName; href: string; label: DesignText }[] = [
   { icon: "facebook", href: "https://www.facebook.com/", label: L("فيسبوك", "Facebook") },
   { icon: "instagram", href: "https://www.instagram.com/", label: L("إنستجرام", "Instagram") },

@@ -22,7 +22,7 @@ const animation = (section: SectionInstance | null | undefined) => (section ? no
 
 /** §5: the only link targets a template may use (phone and e-mail links are filled from the store's contact data). */
 const ALLOWED_HREF =
-  /^(\/|\/products(\?(category=[\w-]+|search=[^&]+|sort=(newest|popularity|rating|price-low|price-high)))?|\/(cart|profile|profile\/wishlist|profile\/orders)|\/(about|contact|faq|privacy|terms|shipping|returns|blog)|https:\/\/(www\.facebook\.com|www\.instagram\.com|wa\.me)\/\d*|https:\/\/tallaby\.com|tel:\+\d+|mailto:[^\s]+)$/;
+  /^(\/|\/products(\?(category=[\w-]+|search=[^&]+|sort=(newest|popularity|rating|price-low|price-high)))?|\/(cart|profile|profile\/wishlist|profile\/orders)|\/(about|contact|faq|privacy|terms|shipping|returns|blog)|https:\/\/(www\.facebook\.com|www\.instagram\.com|wa\.me)\/\d*|https:\/\/www\.tallaby\.com|tel:\+\d+|mailto:[^\s]+)$/;
 
 describe.each(RULED.map((template) => [template.key, template] as const))("template rules: %s", (_key, template) => {
   const config: SiteConfig = template.config();
@@ -61,7 +61,7 @@ describe.each(RULED.map((template) => [template.key, template] as const))("templ
     expect(header.some((n) => n.props.href === "/cart")).toBe(true);
     expect(header.some((n) => n.props.href === "/profile")).toBe(true);
     expect(header.some((n) => n.props.href === "/products" && walk(n.children).some((c) => c.type === "icon" && c.props.name === "search"))).toBe(true);
-    expect(nodesOf(config.footer).some((n) => n.props.href === "https://tallaby.com")).toBe(true);
+    expect(nodesOf(config.footer).some((n) => n.props.href === "https://www.tallaby.com")).toBe(true);
     // So the storefront skips its floating badge; a header (no credit) would keep it.
     expect(footerCreditsTallaby(config.footer)).toBe(true);
     expect(footerCreditsTallaby(config.header)).toBe(false);

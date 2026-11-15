@@ -138,7 +138,7 @@ const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (
  * map links are replaced by the store's contact data on install).
  */
 const ROUTE =
-  /^(\/|\/products(\?(category=[\w-]+|search=[^&]+|sort=(newest|popularity|rating|price-low|price-high)))?|\/(cart|profile|profile\/wishlist|profile\/orders)|\/(privacy|terms|shipping|returns|blog)|https:\/\/(www\.facebook\.com|www\.instagram\.com|www\.youtube\.com|www\.tiktok\.com|wa\.me|maps\.google\.com)\/\S*|https:\/\/tallaby\.com|tel:\+\d+|mailto:[^\s]+)$/;
+  /^(\/|\/products(\?(category=[\w-]+|search=[^&]+|sort=(newest|popularity|rating|price-low|price-high)))?|\/(cart|profile|profile\/wishlist|profile\/orders)|\/(privacy|terms|shipping|returns|blog)|https:\/\/(www\.facebook\.com|www\.instagram\.com|www\.youtube\.com|www\.tiktok\.com|wa\.me|maps\.google\.com)\/\S*|https:\/\/(www\.)?tallaby\.com|tel:\+\d+|mailto:[^\s]+)$/;
 
 /** Links of the built site that go nowhere: not a page of the look, not a catalog route. */
 function deadLinks(config: SiteConfig): string[] {
