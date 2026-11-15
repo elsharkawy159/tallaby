@@ -5,6 +5,7 @@ import { MetaPixel } from "@/components/meta/meta-pixel";
 import { NextIntlClientProvider } from "next-intl";
 import { loadAllMessages } from "@/i18n/messages";
 import { MARKETING_CLIENT_NAMESPACES, pickMessages } from "@/i18n/client-messages.lib";
+import { metaUsdPriceVars } from "@/lib/marketing/pricing.lib";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import "./marketing.css";
 
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     metadataBase: new URL(SITE_URL),
     title: { default: t("home.title"), template: t("titleTemplate") },
-    description: t("home.description"),
+    description: t("home.description", metaUsdPriceVars(locale)),
     applicationName: t("siteName"),
     icons: { icon: "/favicon.ico", apple: "/logo-mark.png" },
   };

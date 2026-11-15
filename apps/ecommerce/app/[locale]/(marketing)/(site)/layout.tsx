@@ -10,11 +10,11 @@ import { siteGraph } from "@/lib/marketing/structured-data.lib";
 
 /** Header, footer, the signup dialog and the visitor-currency prices shared by every marketing page. */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [t, priceTable] = await Promise.all([getTranslations("nav"), getLocale().then(getMarketingPriceTable)]);
+  const [t, tSite, priceTable] = await Promise.all([getTranslations("nav"), getTranslations("site.schema"), getLocale().then(getMarketingPriceTable)]);
   return (
     <VisitorPricesProvider table={priceTable}>
     <SignupProvider>
-      <JsonLd data={siteGraph()} />
+      <JsonLd data={siteGraph({ description: tSite("description"), knowsAbout: tSite.raw("knowsAbout") as string[] })} />
       <a
         href="#main"
         className="absolute -top-[60px] start-3 z-[200] rounded-[10px] bg-teal-900 px-3.5 py-2 text-white focus:top-3"

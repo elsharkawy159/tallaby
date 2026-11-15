@@ -11,6 +11,7 @@ import { STORE_PREVIEW_COOKIE } from "@workspace/lib/store-sites/preview";
 import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@workspace/lib/referrals";
 import { LOCALE_COOKIE, routing } from "@/i18n/routing";
 import { englishLandingRedirect, LOCALE_LANDING_REDIRECT_HEADERS } from "@/lib/marketing/locale-landing.lib";
+import { LLMS_TXT_PATH } from "@/lib/marketing/llms-txt-path.lib";
 import { geoServerTiming, requestCountry } from "@/lib/marketing/visitor-country.lib";
 import {
   isCrawlFilePath,
@@ -75,9 +76,11 @@ export async function proxy(request: NextRequest) {
     // Storefront pages only exist on their own subdomain, where the cart is
     // scoped to the store; on tallaby.com they would show the wrong cart.
     return new NextResponse(null, { status: 404 });
-  } else if (isCrawlFilePath(request.nextUrl.pathname)) {
+  } else if (isCrawlFilePath(request.nextUrl.pathname) || request.nextUrl.pathname === LLMS_TXT_PATH) {
     // The marketplace robots.txt / sitemap files, exactly as before this
-    // proxy started matching them (no locale routing, no session).
+    // proxy started matching them (no locale routing, no session), and
+    // tallaby.com's /llms.txt (app/llms.txt). Store hosts never get here:
+    // their /llms.txt is the store's 404.
     return NextResponse.next();
   }
 

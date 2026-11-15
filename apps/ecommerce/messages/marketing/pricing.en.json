@@ -2,7 +2,7 @@
   "meta": {
     "pricing": {
       "title": "Pricing | Two simple plans, no percentage of sales",
-      "description": "Two simple plans. Start free and pay {orderFee} per order, or go Pro for {pro} a month with no order fee."
+      "description": "Two simple plans. Start free and pay {orderFee} ({orderFeeUsd}) per order, or go Pro for {pro} ({proUsd}) a month with no order fee."
     }
   },
   "pricing": {

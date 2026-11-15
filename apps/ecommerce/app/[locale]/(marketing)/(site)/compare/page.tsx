@@ -7,6 +7,9 @@ import { ForwardArrow } from "@/components/marketing/site/direction-icons";
 import { alternativesLinkTargets, COMPARE_CATEGORIES, compareLinkTargets, compareRobots, compareSlug } from "@/lib/marketing/compare.lib";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
+// Rebuilt daily, so a comparison whose facts pass MAX_FACT_AGE_DAYS turns noindex without a deploy (compare.lib.ts).
+export const revalidate = 86400;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const meta = await pageMetadata({ locale, page: "compare", path: "/compare" });

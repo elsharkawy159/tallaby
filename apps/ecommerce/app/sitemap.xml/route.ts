@@ -8,12 +8,13 @@ import { serializeMarketingSitemap } from "@/lib/marketing/sitemap.lib";
  * (app/sitemap.xsl). Same entries and XML as the metadata route wrote.
  *
  * Caching matches the metadata route it replaces: static (built once, then
- * revalidated only by the cached queries it reads), dropping to dynamic only
- * if a request-time API is used. `revalidate = false` turns on static
- * generation while keeping that "auto" tracking; a plain GET handler would
- * run on every request.
+ * revalidated by the cached queries it reads), dropping to dynamic only if a
+ * request-time API is used. A numeric `revalidate` turns on static generation
+ * while keeping that "auto" tracking (a plain GET handler would run on every
+ * request); daily, so a comparison whose facts pass MAX_FACT_AGE_DAYS leaves
+ * the sitemap without a deploy (compare.lib.ts).
  */
-export const revalidate = false;
+export const revalidate = 86400;
 
 export async function GET() {
   const xml = serializeMarketingSitemap(await getMarketingSitemapEntries());

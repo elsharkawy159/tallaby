@@ -4,14 +4,28 @@
  * visible on the page.
  */
 import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS } from "@workspace/lib/billing";
-import { usdCentsToEgp } from "./pricing.lib";
+import { fillPriceTokens, stripBidiIsolates } from "./pricing.lib";
 import { CONTACT, SITE_URL, SOCIAL_LINKS } from "./site.lib";
 
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 const BRAND = { name: "Tallaby", alternateName: "طلبي" };
+const LOGO_URL = `${SITE_URL}/logo-mark.png`;
 
-export function siteGraph() {
+/**
+ * The Organization as another node names it (a blog post's publisher): the
+ * same @id and names as `siteGraph`, so both describe one entity.
+ */
+export function organizationReference() {
+  return { "@type": "Organization", "@id": ORGANIZATION_ID, ...BRAND, logo: { "@type": "ImageObject", url: LOGO_URL } };
+}
+
+/**
+ * Organization and WebSite for every marketing page. `description` and
+ * `knowsAbout` come from the page's language (`site.schema` messages). No
+ * founder or founding date: the repo states neither.
+ */
+export function siteGraph({ description, knowsAbout }: { description: string; knowsAbout: readonly string[] }) {
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -20,14 +34,18 @@ export function siteGraph() {
         "@id": ORGANIZATION_ID,
         ...BRAND,
         url: SITE_URL,
-        logo: `${SITE_URL}/logo-mark.png`,
+        logo: LOGO_URL,
+        description,
+        // Based in Cairo (the About page), serving sellers anywhere.
+        address: { "@type": "PostalAddress", addressLocality: "Cairo", addressCountry: "EG" },
+        areaServed: "Worldwide",
+        knowsAbout: [...knowsAbout],
         sameAs: Object.values(SOCIAL_LINKS).map((s) => s.href),
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "customer support",
           email: CONTACT.email,
           telephone: CONTACT.phoneTel,
-          areaServed: "EG",
           availableLanguage: ["ar", "en"],
         },
       },
@@ -43,24 +61,16 @@ export function siteGraph() {
   };
 }
 
+/** A USD price as schema.org text: "0.03", "29" (from integer cents). */
+const usdPrice = (cents: number) => (cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2));
+
 /**
- * The product itself, for the home and pricing pages. Both plans, priced in
- * USD from the billing module: Free has no monthly price and a per-order fee,
+ * The product itself, for the home and pricing pages. Both plans in USD, the
+ * currency sellers are billed in (`@workspace/lib/billing`), so the data does
+ * not move with the daily EGP rate: Free is 0 a month plus a fee per order,
  * Pro a monthly price and no order fee.
  */
-export function softwareApplicationSchema({
-  url,
-  description,
-  inLanguage,
-  egpPerUsd,
-}: {
-  url: string;
-  description: string;
-  inLanguage: string;
-  /** The live rate: offers are in EGP, as the site shows them (owner, 2026-11-09); billing stays in USD. */
-  egpPerUsd: number;
-}) {
-  const egp = (cents: number) => usdCentsToEgp(cents, egpPerUsd).toFixed(2);
+export function softwareApplicationSchema({ url, description, inLanguage }: { url: string; description: string; inLanguage: string }) {
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -76,27 +86,44 @@ export function softwareApplicationSchema({
         "@type": "Offer",
         name: "Free",
         price: "0",
-        priceCurrency: "EGP",
+        priceCurrency: "USD",
         priceSpecification: {
           "@type": "UnitPriceSpecification",
-          price: egp(FREE_ORDER_FEE_USD_CENTS),
-          priceCurrency: "EGP",
+          price: usdPrice(FREE_ORDER_FEE_USD_CENTS),
+          priceCurrency: "USD",
           referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "order" },
         },
       },
       {
         "@type": "Offer",
         name: "Pro",
-        price: egp(PRO_MONTHLY_USD_CENTS),
-        priceCurrency: "EGP",
+        price: usdPrice(PRO_MONTHLY_USD_CENTS),
+        priceCurrency: "USD",
         priceSpecification: {
           "@type": "UnitPriceSpecification",
-          price: egp(PRO_MONTHLY_USD_CENTS),
-          priceCurrency: "EGP",
+          price: usdPrice(PRO_MONTHLY_USD_CENTS),
+          priceCurrency: "USD",
           billingDuration: "P1M",
         },
       },
     ],
+  };
+}
+
+/**
+ * FAQPage data from the same strings the accordion shows; price tokens are
+ * filled with `prices` (one currency, EGP), bidi isolates removed.
+ */
+export function faqSchema(items: readonly { q: string; a: string }[], prices: Record<string, string> = {}) {
+  const plain = (text: string) => stripBidiIsolates(fillPriceTokens(text, prices));
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: plain(item.q),
+      acceptedAnswer: { "@type": "Answer", text: plain(item.a) },
+    })),
   };
 }
 

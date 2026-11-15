@@ -12,9 +12,11 @@ import {
   comparisonTable,
   competitorSources,
   COMPETITORS,
+  factsAreFresh,
   factsCheckedOn,
   findCompetitorBySlug,
   isComparePublic,
+  MAX_FACT_AGE_DAYS,
   MIN_VERIFIED_FACTS,
   publicCompetitors,
   publishableCompetitors,
@@ -195,5 +197,34 @@ describe("compare copy", () => {
     const tokens = JSON.stringify(load(locale)).match(/\{([a-zA-Z]+)\}/g) ?? [];
     const allowed = new Set([...PRICE_NAMES, ...Object.keys(COPY_VARS), "name", "date", "email", "n", "count"]);
     for (const token of tokens) expect(allowed.has(token.slice(1, -1) as never), token).toBe(true);
+  });
+});
+
+describe("facts age at runtime", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const released = publishableCompetitors().filter((competitor) => competitor.publish);
+  const readOn = (competitor: Competitor) => Date.parse(`${factsCheckedOn(competitor)}T00:00:00Z`);
+
+  it("keeps a released comparison public up to MAX_FACT_AGE_DAYS after its oldest fact, then takes it out", () => {
+    expect(released.length).toBeGreaterThan(0);
+    for (const competitor of released) {
+      const lastDay = readOn(competitor) + MAX_FACT_AGE_DAYS * DAY;
+      expect(factsAreFresh(competitor, lastDay), competitor.id).toBe(true);
+      expect(isComparePublic(competitor, true, lastDay), competitor.id).toBe(true);
+      const stale = lastDay + DAY;
+      expect(factsAreFresh(competitor, stale), competitor.id).toBe(false);
+      expect(isComparePublic(competitor, true, stale), competitor.id).toBe(false);
+      expect(publicCompetitors(true, COMPETITORS, stale).map((c) => c.id)).not.toContain(competitor.id);
+    }
+  });
+
+  it("treats a missing or broken date as stale", () => {
+    expect(factsAreFresh({ facts: {}, prices: [] })).toBe(false);
+  });
+
+  it("never publishes a hidden comparison, fresh or not", () => {
+    for (const competitor of publishableCompetitors().filter((c) => !c.publish)) {
+      expect(isComparePublic(competitor, true, readOn(competitor)), competitor.id).toBe(false);
+    }
   });
 });

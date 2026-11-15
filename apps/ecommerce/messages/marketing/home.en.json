@@ -2,7 +2,7 @@
   "meta": {
     "home": {
       "title": "Tallaby | Free AI online store builder",
-      "description": "Build your online store with AI on Tallaby. AI writes your products in Arabic and English, you take cash on delivery orders. Start free in minutes, no code needed."
+      "description": "Build your online store with AI on Tallaby. AI writes your products in Arabic and English, you take cash on delivery orders. Start free ({orderFeeUsd} per order)."
     }
   },
   "home": {

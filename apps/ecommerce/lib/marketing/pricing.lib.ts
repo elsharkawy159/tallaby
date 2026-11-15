@@ -223,6 +223,16 @@ export function formatUsd(cents: number): string {
   return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 })}`;
 }
 
+/**
+ * The plans' USD prices for search snippets only (`meta.home`/`meta.pricing`
+ * descriptions, `{orderFeeUsd}` and `{proUsd}`): what a seller is billed, so the
+ * snippet doesn't change with the daily rate. Pages keep showing ≈ EGP.
+ */
+export function metaUsdPriceVars(locale: string): { orderFeeUsd: string; proUsd: string } {
+  const usd = (cents: number) => (locale === "ar" ? `${formatUsd(cents).slice(1)} دولار` : formatUsd(cents));
+  return { orderFeeUsd: usd(FREE_ORDER_FEE_USD_CENTS), proUsd: usd(PRO_MONTHLY_USD_CENTS) };
+}
+
 /** Orders a month from which Pro costs less than Free's order fees. */
 export function proBreakEvenOrders(): number {
   return Math.ceil(PRO_MONTHLY_USD_CENTS / FREE_ORDER_FEE_USD_CENTS);

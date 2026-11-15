@@ -3,7 +3,7 @@ import { Blocks, ChevronDown, CreditCard, Mail, Percent, Repeat, Sparkles, Truck
 import { getTranslations } from "next-intl/server";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
-import { JsonLd, ProductJsonLd } from "@/components/marketing/site/json-ld";
+import { FaqJsonLd, JsonLd, ProductJsonLd } from "@/components/marketing/site/json-ld";
 import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { PageHero } from "@/components/marketing/site/page-hero";
 import { Reveal } from "@/components/marketing/site/reveal.client";
@@ -15,14 +15,14 @@ import { ComparePlans } from "@/components/marketing/pricing/compare-plans";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 import { getMarketingPriceVars, getMarketingUsdRates } from "@/lib/marketing/exchange-rate.server";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
-import { PLAN_PRICES, PRICE_TOKENS, fillPriceTokens, formatNumber, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
+import { PLAN_PRICES, PRICE_TOKENS, fillPriceTokens, formatNumber, metaUsdPriceVars, proBreakEvenOrdersShown } from "@/lib/marketing/pricing.lib";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata({ locale, page: "pricing", path: "/pricing", values: await getMarketingPriceVars(locale, { isolate: false }) });
+  return pageMetadata({ locale, page: "pricing", path: "/pricing", values: { ...(await getMarketingPriceVars(locale, { isolate: false })), ...metaUsdPriceVars(locale) } });
 }
 
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -63,6 +63,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
     <>
       <ProductJsonLd page="pricing" path="/pricing" />
       <JsonLd data={breadcrumbs} />
+      <FaqJsonLd namespace="pricing.faq" values={prices} />
       <div id="plans">
         <PageHero eyebrow={t("hero.eyebrow")} title={t("hero.title")} lead={t("hero.lead")} centered className="pb-10 sm:pb-12" />
         <Container className="pb-14 min-[861px]:pb-[72px]">

@@ -7,6 +7,9 @@ import { CompetitorChip } from "@/components/marketing/compare/compare-table";
 import { alternativesLinkTargets, COMPARE_CATEGORIES, isAlternativesHubPublic } from "@/lib/marketing/compare.lib";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
 
+// Rebuilt daily, so a comparison whose facts pass MAX_FACT_AGE_DAYS turns noindex without a deploy (compare.lib.ts).
+export const revalidate = 86400;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const meta = await pageMetadata({ locale, page: "alternatives", path: "/alternatives" });

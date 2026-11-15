@@ -12,10 +12,10 @@ import { TopUpCopy } from "@/components/marketing/site/top-up-copy.client";
 import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { getMarketingPriceVars } from "@/lib/marketing/exchange-rate.server";
-import { PRICE_TOKENS, fillPriceTokens, stripBidiIsolates } from "@/lib/marketing/pricing.lib";
+import { PRICE_TOKENS } from "@/lib/marketing/pricing.lib";
 import { localizedUrl } from "@/lib/marketing/seo.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
-import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
+import { breadcrumbSchema, faqSchema } from "@/lib/marketing/structured-data.lib";
 import { cn } from "@workspace/ui/lib/utils";
 
 const LATIN_RUN = /([A-Za-z][A-Za-z0-9 .&@=_-]*[A-Za-z0-9])/;
@@ -63,19 +63,8 @@ export async function PageTrail({ items, path, className }: { items: BreadcrumbI
 /** `aOutsideEgypt`: the wallet top-up answer for visitors outside Egypt (`TopUpCopy`); the data keeps `a`. */
 export type FaqItem = { q: string; a: string; aOutsideEgypt?: string };
 
-/** FAQPage data; price tokens are filled with `prices` (EGP, so the data has one currency). */
-export function faqSchema(items: FaqItem[], prices: Record<string, string> = {}) {
-  const plain = (text: string) => stripBidiIsolates(fillPriceTokens(text, prices));
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: items.map((item) => ({
-      "@type": "Question",
-      name: plain(item.q),
-      acceptedAnswer: { "@type": "Answer", text: plain(item.a) },
-    })),
-  };
-}
+/** FAQPage data (moved to structured-data.lib.ts; kept here for existing imports). */
+export { faqSchema };
 
 /** Heading on the start side, questions beside it, plus the FAQPage data for the same answers. */
 export async function FaqBlock({ items, title }: { items: FaqItem[]; title?: string }) {

@@ -26,6 +26,17 @@
   },
   "site": {
     "breadcrumb": "Breadcrumb",
-    "home": "Home"
+    "home": "Home",
+    "schema": {
+      "description": "Tallaby is an online store builder: sellers open a store under their own brand and sell in Egypt and worldwide, with no code.",
+      "knowsAbout": [
+        "Online store builder",
+        "E-commerce",
+        "Cash on delivery",
+        "Online payments",
+        "Shipping integrations",
+        "Online store templates"
+      ]
+    }
   }
 }

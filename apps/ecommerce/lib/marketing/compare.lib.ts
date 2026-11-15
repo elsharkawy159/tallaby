@@ -245,7 +245,7 @@ export const hasCostExample = (competitor: Pick<Competitor, "costExample">) => c
 /** Below this many official facts a comparison isn't worth a page. */
 export const MIN_VERIFIED_FACTS = 4;
 
-/** Facts older than this fail `compare-facts-age.test.ts`: re-read the source before stale prices ship. */
+/** Facts older than this fail `compare-facts-age.test.ts`, and take a live page out of search (`factsAreFresh`): re-read the source. */
 export const MAX_FACT_AGE_DAYS = 90;
 
 const counts = (fact: CompetitorFact | undefined) => fact?.mark === "official" || fact?.mark === "official-blog";
@@ -758,14 +758,32 @@ export function publishableCompetitors(list: readonly Competitor[] = COMPETITORS
   return list.filter((competitor) => verifiedFactCount(competitor) >= MIN_VERIFIED_FACTS);
 }
 
-/** True when this competitor's pages are public: the switch is on, it has its facts, and the owner released it. */
-export function isComparePublic(competitor: Competitor, comparePublic: boolean = COMPARE_PUBLIC): boolean {
-  return comparePublic && competitor.publish && verifiedFactCount(competitor) >= MIN_VERIFIED_FACTS;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * True while every fact and price the page shows was read in the last
+ * `MAX_FACT_AGE_DAYS` days (its oldest, `factsCheckedOn`). An unread or
+ * unparsable date counts as stale.
+ */
+export function factsAreFresh(competitor: Pick<Competitor, "facts" | "prices">, now: number = Date.now()): boolean {
+  const oldest = Date.parse(`${factsCheckedOn(competitor)}T00:00:00Z`);
+  return Number.isFinite(oldest) && Math.floor((now - oldest) / DAY_MS) <= MAX_FACT_AGE_DAYS;
+}
+
+/**
+ * True when this competitor's pages are public: the switch is on, it has its
+ * facts, the owner released it, and its facts are still fresh. Facts past
+ * `MAX_FACT_AGE_DAYS` turn the page back into a preview (noindex, out of the
+ * sitemap and the hubs) until someone re-reads the sources, even if nobody
+ * redeploys (the compare pages and the sitemap revalidate daily).
+ */
+export function isComparePublic(competitor: Competitor, comparePublic: boolean = COMPARE_PUBLIC, now: number = Date.now()): boolean {
+  return comparePublic && competitor.publish && verifiedFactCount(competitor) >= MIN_VERIFIED_FACTS && factsAreFresh(competitor, now);
 }
 
 /** The competitors whose pages are public (sitemap, footer, links from public pages). */
-export function publicCompetitors(comparePublic: boolean = COMPARE_PUBLIC, list: readonly Competitor[] = COMPETITORS): Competitor[] {
-  return publishableCompetitors(list).filter((competitor) => isComparePublic(competitor, comparePublic));
+export function publicCompetitors(comparePublic: boolean = COMPARE_PUBLIC, list: readonly Competitor[] = COMPETITORS, now: number = Date.now()): Competitor[] {
+  return publishableCompetitors(list).filter((competitor) => isComparePublic(competitor, comparePublic, now));
 }
 
 /** True when the /compare hub is public: the switch is on and at least one comparison is released. */

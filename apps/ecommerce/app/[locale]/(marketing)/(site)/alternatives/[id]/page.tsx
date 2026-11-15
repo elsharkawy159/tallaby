@@ -8,6 +8,8 @@ import { pageMetadata } from "@/lib/marketing/metadata.lib";
 type Props = { params: Promise<{ locale: string; id: string }> };
 
 export const dynamicParams = false;
+// Rebuilt daily, so a comparison whose facts pass MAX_FACT_AGE_DAYS turns noindex without a deploy (compare.lib.ts).
+export const revalidate = 86400;
 
 export function generateStaticParams() {
   return alternativeCompetitors().map((competitor) => ({ id: competitor.id }));

@@ -5,7 +5,8 @@ import { loadAllMessages } from "@/i18n/messages";
 import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS } from "@workspace/lib/billing";
 import { hreflangMap, localizedUrl, sitemapEntries, templateMetaDesc } from "./seo.lib";
 import { SITE_URL } from "./site.lib";
-import { breadcrumbSchema, serializeJsonLd, siteGraph, softwareApplicationSchema } from "./structured-data.lib";
+import { breadcrumbSchema, faqSchema, organizationReference, serializeJsonLd, siteGraph, softwareApplicationSchema } from "./structured-data.lib";
+import { metaUsdPriceVars } from "./pricing.lib";
 
 describe("localized URLs and hreflang", () => {
   it("leaves Arabic unprefixed and has no trailing slash on the home page", () => {
@@ -88,24 +89,70 @@ describe("meta messages", () => {
   });
 });
 
+describe("USD figures in search snippets", () => {
+  it("come from the billing module in both languages", async () => {
+    expect(metaUsdPriceVars("en")).toEqual({ orderFeeUsd: `$${(FREE_ORDER_FEE_USD_CENTS / 100).toFixed(2)}`, proUsd: `$${PRO_MONTHLY_USD_CENTS / 100}` });
+    expect(metaUsdPriceVars("ar")).toEqual({ orderFeeUsd: `${(FREE_ORDER_FEE_USD_CENTS / 100).toFixed(2)} دولار`, proUsd: `${PRO_MONTHLY_USD_CENTS / 100} دولار` });
+    for (const locale of ["ar", "en"] as const) {
+      const meta = (await loadAllMessages(locale)).meta as Record<string, { description: string }>;
+      expect(meta.home!.description, `${locale} home`).toContain("{orderFeeUsd}");
+      expect(meta.pricing!.description, `${locale} pricing`).toContain("{orderFeeUsd}");
+      expect(meta.pricing!.description, `${locale} pricing`).toContain("{proUsd}");
+    }
+  });
+});
+
 describe("structured data", () => {
+  const graphInput = { description: "Tallaby is an online store builder.", knowsAbout: ["E-commerce"] };
+
   it("names the brand in both languages and invents no ratings or reviews", () => {
-    const graph = JSON.stringify(siteGraph());
-    const app = JSON.stringify(softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "ar", egpPerUsd: 50 }));
+    const graph = JSON.stringify(siteGraph(graphInput));
+    const app = JSON.stringify(softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "ar" }));
     expect(graph).toContain("طلبي");
     expect(graph).toContain("+201003272830");
-    for (const json of [graph, app]) expect(json).not.toMatch(/aggregateRating|"review"/);
+    for (const json of [graph, app]) expect(json).not.toMatch(/aggregateRating|"review"|founder/);
     expect(graph).not.toContain("SearchAction"); // tallaby.com has no site search.
   });
 
-  it("offers both plans in EGP at the given rate, from the billing module's USD prices", () => {
-    const { offers } = softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "en", egpPerUsd: 50 });
-    expect(offers.map((o) => [o.name, o.price, o.priceCurrency])).toEqual([
-      ["Free", "0", "EGP"],
-      ["Pro", ((PRO_MONTHLY_USD_CENTS / 100) * 50).toFixed(2), "EGP"],
-    ]);
-    expect(offers[0]!.priceSpecification.price).toBe(((FREE_ORDER_FEE_USD_CENTS / 100) * 50).toFixed(2));
-    expect(offers[0]!.priceSpecification.priceCurrency).toBe("EGP");
+  it("describes the organization: Cairo address, served worldwide, no Egypt-only area", () => {
+    const org = siteGraph(graphInput)["@graph"][0] as Record<string, unknown>;
+    expect(org.description).toBe(graphInput.description);
+    expect(org.address).toEqual({ "@type": "PostalAddress", addressLocality: "Cairo", addressCountry: "EG" });
+    expect(org.areaServed).toBe("Worldwide");
+    expect(org.knowsAbout).toEqual(["E-commerce"]);
+    expect(JSON.stringify(org.contactPoint)).not.toContain("areaServed");
+    expect(org).not.toHaveProperty("foundingDate"); // Not stated anywhere in the repo.
+  });
+
+  it("names the blog publisher exactly as the Organization", () => {
+    const org = siteGraph(graphInput)["@graph"][0] as Record<string, unknown>;
+    const ref = organizationReference();
+    expect([ref["@id"], ref.name, ref.alternateName]).toEqual([org["@id"], org.name, org.alternateName]);
+  });
+
+  it("offers both plans in USD from the billing module, whatever the EGP rate", () => {
+    const { offers } = softwareApplicationSchema({ url: SITE_URL, description: "d", inLanguage: "en" });
+    const free = offers[0]!;
+    const pro = offers[1]!;
+    expect([free.name, free.price, free.priceCurrency]).toEqual(["Free", "0", "USD"]);
+    expect(free.priceSpecification).toEqual({
+      "@type": "UnitPriceSpecification",
+      price: (FREE_ORDER_FEE_USD_CENTS / 100).toFixed(2),
+      priceCurrency: "USD",
+      referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "order" },
+    });
+    expect([pro.name, pro.price, pro.priceCurrency]).toEqual(["Pro", String(PRO_MONTHLY_USD_CENTS / 100), "USD"]);
+    expect(pro.priceSpecification).toMatchObject({ price: String(PRO_MONTHLY_USD_CENTS / 100), priceCurrency: "USD", billingDuration: "P1M" });
+  });
+
+  it("builds FAQPage data from the strings shown, prices filled and isolates removed", () => {
+    const data = faqSchema([{ q: "Cost?", a: "{orderFee} per order, top up within {days} days." }], { orderFee: "\u2068≈ 1.62 EGP\u2069" });
+    expect(data["@type"]).toBe("FAQPage");
+    expect(data.mainEntity[0]).toEqual({
+      "@type": "Question",
+      name: "Cost?",
+      acceptedAnswer: { "@type": "Answer", text: expect.stringMatching(/^≈ 1\.62 EGP per order, top up within \d+ days\.$/) },
+    });
   });
 
   it("numbers breadcrumbs from 1", () => {

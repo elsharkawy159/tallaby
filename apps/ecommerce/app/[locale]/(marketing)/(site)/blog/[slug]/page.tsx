@@ -18,8 +18,7 @@ import { PLAN_PRICES, PRICE_TOKENS, usdCentsToEgp } from "@/lib/marketing/pricin
 import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { formatLongDate } from "@/lib/marketing/format.lib";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
-import { breadcrumbSchema } from "@/lib/marketing/structured-data.lib";
-import { SITE_URL } from "@/lib/marketing/site.lib";
+import { breadcrumbSchema, organizationReference } from "@/lib/marketing/structured-data.lib";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -89,7 +88,8 @@ export default async function BlogPostPage({ params }: Props) {
     dateModified: post.updatedAt ?? post.date,
     inLanguage: locale,
     author: post.authorName ? { "@type": "Person", name: post.authorName } : { "@type": "Organization", name: t("author") },
-    publisher: { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: t("author"), logo: { "@type": "ImageObject", url: localizedUrl(routing.defaultLocale, "/logo-mark.png") } },
+    // The site's Organization (same @id and names as siteGraph), not "Tallaby team".
+    publisher: organizationReference(),
     mainEntityOfPage: localizedUrl(locale, `/blog/${post.id}`),
   };
   const breadcrumbs = breadcrumbSchema([
