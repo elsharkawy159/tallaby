@@ -14,6 +14,8 @@ Work one niche at a time. For each niche, use **two ChatGPT chats**:
 2. **Chat 2, scenes:** paste the **Scene master prompt** (under "Scene photos") and the niche's palette line. Send its 8 scenes one at a time.
 3. Save every image in the niche's **"Save to"** folder under its bold name (see "Where the files go").
 
+To work on every niche at once, paste the whole of [`editions-chat-1-products.md`](editions-chat-1-products.md) into one chat and [`editions-chat-2-scenes.md`](editions-chat-2-scenes.md) into another.
+
 What to make next (2026-11-15; wave 1's six niches and 11 live templates are done):
 
 1. **Live templates still on Pexels**, partial ones first: Fadda (silver-jewelry: 8 products and 4 scenes), watches, gold-jewelry, belts-wallets, pc-gaming; then glasses, fashion-jewelry, hair-accessories, lighting-smart-home, phone-cases, chargers-cables. 86 photos in all.
