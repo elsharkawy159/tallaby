@@ -5,6 +5,11 @@
  * sweatpants: one full row of four on every category row), white-background
  * packshots (`editionPhoto`, square). Data only. No React here.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `fashion-bold` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
  * jeans and trousers folded, stacked and on hangers, denim, linen and soft
  * cotton; no people, hands or mannequins, no readable lettering, none used by
@@ -61,8 +66,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "pants-jeans";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(6764122, 1200), pexels(31842963, 1200), pexels(33633245, 1200), pexels(10348923, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -106,10 +113,11 @@ export const PANTS_JEANS: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(19824259, 1920), tall: pexels(7764609, 1200) },
+    // The tall hero is drawn by no look (Pexels).
+    hero: { wide: scene("hero-wide"), tall: pexels(7764609, 1200) },
     tiles: TILES,
-    banner: pexels(10133275, 2000),
-    story: pexels(4546763, 1200),
+    banner: scene("banner"),
+    story: scene("story"),
     // The dots, in percent from the photo's left and top: the light mom jeans, the wide-leg jeans, the mid blue straight jeans.
     look: {
       src: pexels(17720471, 1400),
@@ -122,11 +130,11 @@ export const PANTS_JEANS: Edition = {
     // Zay's hero collage: 1 portrait 4:5, 2 square, 3 landscape 4:3, one per caption (`custom.hero-piece-1..3`).
     custom: {
       // `fashion-bold`: the hero carousel's second slide (16:9; the third is `banner`).
-      "slide-2": pexels(16390580, 1920),
+      "slide-2": scene("slide-2"),
       // `fashion-bold`: the fit steps, square: measure, pick the wash, we hem.
-      "fit-1": pexels(10895045, 1200),
-      "fit-2": pexels(30828508, 1200),
-      "fit-3": pexels(4109765, 1200),
+      "fit-1": scene("fit-1"),
+      "fit-2": scene("fit-2"),
+      "fit-3": scene("fit-3"),
       "hero-piece-1": pexels(4210866, 1200),
       "hero-piece-2": pexels(6461325, 900),
       "hero-piece-3": pexels(1082528, 1400),
@@ -157,7 +165,7 @@ export const PANTS_JEANS: Edition = {
       },
     },
     story: {
-      alt: L("بناطيل جينز متطبقة على خلفية بيضا", "Folded jeans on a white background"),
+      alt: L("بناطيل جينز متطبقة على ترابيزة بيضا، واللي فوق مفتوح وباينة خياطته", "Folded jeans on a white table, the top pair open to show its stitching"),
       eyebrow: L("الخامة أول حاجة", "Fabric comes first"),
       title: L("جينز يعيش معاك سنين", "Denim that lasts for years"),
       text: L(
@@ -188,7 +196,7 @@ export const PANTS_JEANS: Edition = {
     footer: { line: L("القَصّة تفرق", "The cut matters") },
     about: {
       line: L("بناطيل لكل يوم، بقصّات مظبوطة.", "Trousers for every day, in cuts that fit."),
-      alt: L("بناطيل جينز متطبقة على خلفية بيضا", "Folded jeans on a white background"),
+      alt: L("بناطيل جينز متطبقة على ترابيزة بيضا، واللي فوق مفتوح وباينة خياطته", "Folded jeans on a white table, the top pair open to show its stitching"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("مقاس صح من أول مرة", "The right size, first time"),
       text: L(
@@ -231,7 +239,7 @@ export const PANTS_JEANS: Edition = {
       "slide-2-title": L("غسلة لكل يوم في الأسبوع", "A wash for every day"),
       "slide-2-line": L("إنديجو خام، أزرق متوسط، فاتح ورمادي، بقصّات مستقيمة وسليم وواسعة.", "Raw indigo, mid blue, light and grey, in straight, slim and wide cuts."),
       "slide-2-cta": L("شوف الأكثر طلبًا", "See the most ordered"),
-      "slide-3-alt": L("طبقات قماش جينز إنديجو متطبّقة", "Layers of folded indigo denim"),
+      "slide-3-alt": L("جينز إنديجو متطبّق، طرف خام جنب طرف متخيّط ومقص خياطة", "Folded indigo denim, a raw hem beside a stitched one and tailor's scissors"),
       "slide-3-eyebrow": L("تقصير على طولك", "Hemmed to your length"),
       "slide-3-title": L("قول طولك، ونقصّره إحنا", "Tell us your length"),
       "slide-3-line": L("اكتب طول رجلك في ملاحظة الطلب، والبنطلون يوصلك جاهز تلبسه.", "Add your inseam to the order note and your pair arrives ready to wear."),
@@ -241,7 +249,7 @@ export const PANTS_JEANS: Edition = {
       "fit-title": L("مقاسك في تلات خطوات", "Your fit in three steps"),
       "fit-1-title": L("قيس بنطلون بتحبه", "Measure a pair you love"),
       "fit-1-line": L("افرده على سطح مستوي، وقيس الوسط من طرف لطرف وطول الرجل من الدرزة لآخر الرجل.", "Lay it flat, then measure the waist edge to edge and the inseam from the crotch seam to the hem."),
-      "fit-1-alt": L("شريط قياس أصفر على خلفية زرقا", "A yellow tape measure on a blue background"),
+      "fit-1-alt": L("بنطلون جينز مفرود على قماش أزرق فاتح جنب شريط قياس", "A pair of jeans laid flat on chambray beside a tape measure"),
       "fit-2-title": L("اختار القَصّة والغسلة", "Pick the cut and the wash"),
       "fit-2-line": L("كل بنطلون مكتوب في صفحته الوسط وطول الرجل لكل مقاس بالسنتيمتر، فقارن بالأرقام.", "Each pair's page lists the waist and inseam of every size in centimetres, so compare the numbers."),
       "fit-2-alt": L("درجات جينز من الفاتح للرمادي الغامق", "Denim in shades from light blue to dark grey"),

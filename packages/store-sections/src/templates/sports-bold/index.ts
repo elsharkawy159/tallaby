@@ -58,15 +58,12 @@
  * new capture (`sports-bold.v2.json`) and the v1 one is deleted
  * (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's, no new Pexels photo (see its header). Hero tile 4296075
- * (the white canvas pair on red, orange and green paper, looked at again at
- * 3648px: only the zigzag stitching and two coloured windows in the sole's
- * heel, no lettering), home story 13807630 (white and olive pairs on oak shop
- * shelves), about page 11827147 (one chunky sneaker alone on an orange
- * shelf), category tiles 7193625, 9207813, 29253011, 5488660. Left out for
- * the hero: 1020372 (the pink shelf: the pairs are too small to read in a
- * square tile; streetwear keeps it) and 11827147 (the pair fills a tenth of
- * the frame; it is the about page's photo instead).
+ * Photos: the pack's (see its header): the generated hero tile (white
+ * canvas low-tops on red and grey paper), home story (a shop wall of
+ * sneakers on oak shelves), about page (one chunky sneaker on a concrete
+ * plinth) and square category tiles (2026-11-15,
+ * `editions/sneakers/scene-*`; the fixture was recaptured at v2 for the
+ * photo and alt swap only).
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";

@@ -18,7 +18,7 @@ To work on every niche at once, paste the whole of [`editions-chat-1-products.md
 
 What to make next (2026-11-15; wave 1's six niches and 11 live templates are done):
 
-1. **Live templates still on Pexels**: only watches' three tiles (`scene-tile-2` … `scene-tile-4`, to make again as full-bleed 3:4 photos). The other eleven are in their templates (2026-11-15).
+1. **Live templates still on Pexels**: only watches' three tiles (`scene-tile-2` … `scene-tile-4`, to make again as full-bleed 3:4 photos) and dresses' `scene-tile-1` (to make again with a plain foot). Every other live template shows its generated photos (2026-11-15).
 2. **Later waves**, an industry at a time: Wave 2 (beauty) onward, 20 to 24 photos per niche.
 3. **Global images** (13, one chat) whenever there is a free hour: no template reads them yet.
 4. **Optional:** modest-wear, silver-jewelry, wearables; then wave 14 (new niches, once each has a template); then everything under "Later (optional)".
@@ -115,17 +115,17 @@ Synced with `.editions-inbox/` on 2026-11-15 (file dates). _Have/need_ counts th
 
 | Niche               | Template       | Have / need | State                                                                                                                                                                                                              |
 | ------------------- | -------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| dresses             | `fashion-luxe` | 8 / 8       | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| lingerie-sleepwear  | `vella`        | 7 / 7       | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| tshirts             | `streetwear`   | 12 / 12     | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| menswear            | `zay`          | 8 / 8       | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| pants-jeans         | `fashion-bold` | 11 / 11     | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| sportswear          | `sports-luxe`  | 10 / 10     | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| sneakers            | `sports-bold`  | 7 / 7       | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| womens-shoes        | `kasr`         | 10 / 10     | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| mens-shoes          | `ghorza`       | 8 / 8       | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| slippers-clogs      | `tasfya`       | 7 / 7       | Done, 2026-11-15, premium kit too                                                                                                                                                                                  |
-| handbags            | `shanta`       | 7 / 7       | Done, 2026-11-15                                                                                                                                                                                                   |
+| dresses             | `fashion-luxe` | 8 / 8       | Done, 2026-11-15, premium kit too; in the template 2026-11-15 except scene-tile-1 (**make again**: a dark band came baked into its foot; keep the foot plain, the template adds its own fade) |
+| lingerie-sleepwear  | `vella`        | 7 / 7       | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| tshirts             | `streetwear`   | 12 / 12     | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| menswear            | `zay`          | 8 / 8       | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| pants-jeans         | `fashion-bold` | 11 / 11     | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| sportswear          | `sports-luxe`  | 10 / 10     | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| sneakers            | `sports-bold`  | 7 / 7       | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| womens-shoes        | `kasr`         | 10 / 10     | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| mens-shoes          | `ghorza`       | 8 / 8       | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| slippers-clogs      | `tasfya`       | 7 / 7       | Done, 2026-11-15, premium kit too; in the template 2026-11-15 |
+| handbags            | `shanta`       | 7 / 7       | Done, 2026-11-15; in the template 2026-11-15 |
 | watches             | `saat`         | 5 / 8       | In the template 2026-11-15 (hero, men's tile, banner, story, about); **make again:** scene-tile-2, scene-tile-3, scene-tile-4 (they came back as a round picture on a white page: full-bleed 3:4, no circle frame) |
 | gold-jewelry        | `jewelry-luxe` | 8 / 8       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 | belts-wallets       | `jewelry-warm` | 7 / 7       | Done, in the template 2026-11-15                                                                                                                                                                                   |
@@ -160,7 +160,7 @@ Synced with `.editions-inbox/` on 2026-11-15 (file dates). _Have/need_ counts th
 
 | Part                                                     | Images                               |
 | -------------------------------------------------------- | ------------------------------------ |
-| Live templates (photos they draw)                        | 3 (watches tiles 2–4, to make again) |
+| Live templates (photos they draw)                        | 4 (watches tiles 2–4 and dresses tile 1, to make again) |
 | Waves 2–13                                               | 1101                                 |
 | **Essential total**                                      | **1187**                             |
 | Wave 1 optional (modest-wear, silver-jewelry, wearables) | 60                                   |
@@ -573,7 +573,7 @@ Save into `.editions-inbox/00-live-templates/<niche>/`: scenes as `scene-<slot>.
 
 **Save to: `.editions-inbox/00-live-templates/dresses/`**
 
-**Status: Done.** All 8 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done; in the template 2026-11-15 except `scene-tile-1`, to make again (a dark band came baked into its foot: keep the foot plain, the template adds its own fade).** All 8 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
 
@@ -617,7 +617,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/lingerie-sleepwear/`**
 
-**Status: Done.** All 7 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 7 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
@@ -660,7 +660,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/tshirts/`**
 
-**Status: Done.** All 12 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 12 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
 
@@ -708,7 +708,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/menswear/`**
 
-**Status: Done.** All 8 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 8 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
@@ -754,7 +754,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/pants-jeans/`**
 
-**Status: Done.** All 11 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 11 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 12 product packshots. Only make the images listed below.
 
@@ -801,7 +801,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/sportswear/`**
 
-**Status: Done.** All 10 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 10 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
@@ -847,7 +847,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/sneakers/`**
 
-**Status: Done.** All 7 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 7 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
@@ -890,7 +890,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/womens-shoes/`**
 
-**Status: Done.** All 10 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 10 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
@@ -936,7 +936,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/mens-shoes/`**
 
-**Status: Done.** All 8 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 8 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
@@ -980,7 +980,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/slippers-clogs/`**
 
-**Status: Done.** All 7 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 7 photos this template draws are in the folder (received 2026-11-15), plus the 9-image premium kit. Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 
@@ -1023,7 +1023,7 @@ Product angles (optional, one more view each; the bold name is the file, `<slug>
 
 **Save to: `.editions-inbox/00-live-templates/handbags/`**
 
-**Status: Done.** All 7 photos this template draws are in the folder (received 2026-11-15). Nothing essential left.
+**Status: Done, in the template 2026-11-15.** All 7 photos this template draws are in the folder (received 2026-11-15). Nothing essential left.
 
 **Already in this folder (done, do not make again):** 16 product packshots. Only make the images listed below.
 

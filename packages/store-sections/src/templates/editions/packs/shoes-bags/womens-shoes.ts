@@ -11,6 +11,11 @@
  * woven sandals, ankle, knee and Chelsea boots), canvas and jute (the wedge).
  * Sizes 36 to 41 appear in copy only.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `kasr` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px or more
  * (2026-11-11): shelves, steps, sand and a sunlit wall; no people, legs, feet
  * or hands, no readable lettering or brand marks, none used by a template or
@@ -64,8 +69,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "womens-shoes";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(13788573, 1200), pexels(37853534, 1200), pexels(38583189, 1200), pexels(5863649, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -115,10 +122,13 @@ export const WOMENS_SHOES: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(14928875, 1920), tall: pexels(20682702, 1200) },
+    // The tall hero is drawn by no look (Pexels).
+    hero: { wide: scene("hero-wide"), tall: pexels(20682702, 1200) },
     tiles: TILES,
-    banner: pexels(16217395, 2000),
-    story: pexels(40773101, 1200),
+    banner: scene("banner"),
+    story: scene("story"),
+    // `kasr`'s about page (it falls back to the story): nude block heels in an open powder-blue box, upright.
+    about: scene("about"),
     // The dots, in percent from the photo's left and top: the orange, the yellow and the black pump.
     look: {
       src: pexels(27256446, 1400),
@@ -130,8 +140,8 @@ export const WOMENS_SHOES: Edition = {
     },
     // `kasr`: the hero's two side campaigns, 4:3 (boots for winter, heels for evenings).
     custom: {
-      "hero-side-1": pexels(27274309, 1200),
-      "hero-side-2": pexels(15792209, 1200),
+      "hero-side-1": scene("hero-side-1"),
+      "hero-side-2": scene("hero-side-2"),
     },
   },
   copy: {
@@ -149,7 +159,7 @@ export const WOMENS_SHOES: Edition = {
       { label: L("فلات", "Flats"), href: `/products?search=${encodeURIComponent("فلات")}` },
     ],
     hero: {
-      alt: L("صندل كعب دهبي على رف أبيض فاضي", "Gold block-heel sandals on an empty white shelf"),
+      alt: L("صندل كعب عريض نود على رف أبيض فاضي", "Nude block-heel sandals on an empty white shelf"),
       eyebrow: L("تشكيلة الموسم", "This season's pairs"),
       title: L("لكل خطوة جوز يليق بيها", "A fitting pair for every step"),
       line: L(
@@ -166,7 +176,7 @@ export const WOMENS_SHOES: Edition = {
       },
     },
     story: {
-      alt: L("صندل كعب أخضر منقّط بفيونكة على رف في بوتيك", "Green polka-dot slingbacks with a bow on a boutique shelf"),
+      alt: L("أربع جزم على رف أبيض طويل: باليرينا وسلينج باك وكعب عالي وبوت", "Four pairs on a long white shelf: flats, slingbacks, pumps and ankle boots"),
       eyebrow: L("المقاس أول حاجة", "Fit comes first"),
       title: L("جزمة مريحة من أول لبسة", "Comfortable from the first wear"),
       text: L(
@@ -194,7 +204,7 @@ export const WOMENS_SHOES: Edition = {
     footer: { line: L("هانم: أحذية حريمي لكل خطوة في يومك.", "Hanem: women's shoes for every step of your day.") },
     about: {
       line: L("أحذية حريمي مختارة على المقاس والراحة.", "Women's shoes chosen for fit and comfort."),
-      alt: L("صندل كعب أخضر منقّط على رف خشب في بوتيك", "Green polka-dot slingbacks on a wooden boutique shelf"),
+      alt: L("جزمة كعب نود في علبة لبني مفتوحة على ترابيزة بيضا", "Nude block heels in an open powder-blue box on a white table"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("جزمة حلوة ومريحة كمان", "Pretty pairs that feel good too"),
       text: L(
@@ -233,7 +243,7 @@ export const WOMENS_SHOES: Edition = {
       "hero-side-1-tag": L("للشتا", "For winter"),
       "hero-side-1-title": L("بوت بكعب عريض ثابت", "Boots on a steady block heel"),
       "hero-side-2-tag": L("للسهرة", "For evenings"),
-      "hero-side-2-title": L("كعب رفيع بسيور", "Strappy high heels"),
+      "hero-side-2-title": L("سلينج باك بكعب صغير", "Kitten-heel slingbacks"),
       // Kasr's categories: the small line over their title.
       "categories-eyebrow": L("على حسب النوع", "By type"),
       // Kasr's size guide (the trade's own section): a title and a line, then three groups of rows (a size and its foot length).
@@ -260,7 +270,7 @@ export const WOMENS_SHOES: Edition = {
       "size-row-7-name": L("بين مقاسين؟", "Between two sizes?"),
       "size-row-7-value": L("خدي الأكبر في الكعب", "Go up in heels"),
       // Kasr's campaign beside the sandals row, on `photos.banner`; its button is `nav.2`.
-      "banner-alt": L("صندل شامواه برتقاني بكعب عريض على أرضية أسمنت فاتحة", "Orange suede block-heel sandals on pale concrete"),
+      "banner-alt": L("صندل كعب عريض نود على سلالم حجر في شمس الصيف", "Nude block-heel sandals on stone steps in summer sun"),
       "banner-eyebrow": L("للصيف", "For summer"),
       "banner-title": L("صنادل تكمّل بيها المشوار", "Sandals for the long walk"),
       "banner-line": L("كعب عريض ثابت وسيور ناعمة، من الفلات للويدج.", "Steady block heels and soft straps, from flats to wedges."),

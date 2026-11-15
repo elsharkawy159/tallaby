@@ -44,10 +44,11 @@
  * is a new capture (`kasr.v5.json`) and the v4 one is deleted
  * (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's (see its header): hero 14928875, side campaigns
- * 27274309 and 15792209, tiles 13788573, 37853534, 38583189, 5863649, story
- * 40773101, campaign 16217395; products are the pack's white packshots. No
- * people, feet, legs, logos or lettering.
+ * Photos: the pack's (see its header): the generated hero, side campaigns,
+ * tiles, story, campaign and about page (2026-11-15,
+ * `editions/womens-shoes/scene-*`; the fixture was recaptured at v5 for the
+ * photo and alt swap and the second side campaign's title); products are
+ * the pack's white packshots. No people, feet, legs, logos or lettering.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";

@@ -5,6 +5,11 @@
  * white-background flat lays (`editionPhoto`, square). Data only. No React
  * here.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `streetwear` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, checked 2026-11-11: bright and casual; tees on
  * rails and hangers, a striped weave, cotton; no people, no logos, none used
  * by a template or another pack.
@@ -34,8 +39,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "tshirts";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(7319172, 1200), pexels(37704842, 1200), pexels(7640756, 1200), pexels(28460164, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -80,10 +87,11 @@ export const TSHIRTS: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(40450765, 1920), tall: pexels(7857552, 1200) },
+    // The tall hero is drawn by no look (Pexels).
+    hero: { wide: scene("hero-wide"), tall: pexels(7857552, 1200) },
     tiles: TILES,
-    banner: pexels(2112648, 2000),
-    story: pexels(9702241, 1200),
+    banner: scene("banner"),
+    story: scene("story"),
     // The dots, in percent from the photo's left and top: the burgundy, the white and the navy polo.
     look: {
       src: pexels(38928670, 1400),
@@ -95,11 +103,11 @@ export const TSHIRTS: Edition = {
     },
     // Streetwear's lookbook, square: one large photo, then four small ones.
     custom: {
-      "lookbook-1": pexels(8146450, 1200),
-      "lookbook-2": pexels(12039633, 900),
-      "lookbook-3": pexels(9940948, 900),
-      "lookbook-4": pexels(13924869, 900),
-      "lookbook-5": pexels(4440651, 900),
+      "lookbook-1": scene("lookbook-1"),
+      "lookbook-2": scene("lookbook-2"),
+      "lookbook-3": scene("lookbook-3"),
+      "lookbook-4": scene("lookbook-4"),
+      "lookbook-5": scene("lookbook-5"),
     },
   },
   copy: {
@@ -157,7 +165,7 @@ export const TSHIRTS: Edition = {
     footer: { line: L("البس اللي يريّحك", "Wear what feels right") },
     about: {
       line: L("تيشيرتات قطن لكل يوم، مختارة بعناية.", "Cotton tees for every day, chosen with care."),
-      alt: L("فرع قطن على خلفية بيضا", "A cotton branch on a white background"),
+      alt: L("ركن محل تيشيرتات: تيشيرتات متطبقة على ترابيزة خشب وشماعة وراها", "A tee shop corner: folded tees on a plywood table and a rail behind"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("خامة كويسة وقصّة مظبوطة", "Good fabric, the right cut"),
       text: L(

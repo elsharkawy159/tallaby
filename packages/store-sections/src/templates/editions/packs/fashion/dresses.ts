@@ -4,6 +4,11 @@
  * summer, modest maxi: one full row of four on every category row), white-background packshots on a ghost mannequin
  * (`editionPhoto`, portrait 4:5). Data only. No React here.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `fashion-luxe` draws except the casual tile (8030176), whose generated file came back with a dark band in its foot and is to be made again.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, checked 2026-11-11: bright, airy, blush and
  * neutral; dresses on rails and hangers, a fitting corner, a satin close-up;
  * no people, no readable lettering, none used by a template or another pack.
@@ -25,8 +30,11 @@ import type { Edition } from "../../types";
 
 const NICHE = "dresses";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(8030176, 1200), pexels(15893780, 1200), pexels(17151139, 1200), pexels(10689510, 1200)];
+// Casual stays Pexels 8030176 until its generated tile is made again (it came back with a dark band baked into its foot).
+const TILES = [pexels(8030176, 1200), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -73,13 +81,14 @@ export const DRESSES: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(3965551, 1920), tall: pexels(3965554, 1200) },
+    // The tall hero is drawn by no look (Pexels).
+    hero: { wide: scene("hero-wide"), tall: pexels(3965554, 1200) },
     tiles: TILES,
-    banner: pexels(8793891, 2000),
-    story: pexels(9788969, 1200),
+    banner: scene("banner"),
+    story: scene("story"),
     // The dots, in percent from the photo's left and top: the yellow, the blue and the white dress.
     look: {
-      src: pexels(8916600, 1400),
+      src: scene("look"),
       dots: [
         { x: 20, y: 44 },
         { x: 45, y: 52 },
@@ -109,7 +118,7 @@ export const DRESSES: Edition = {
       },
     },
     story: {
-      alt: L("قماش ساتان وردي فاتح بطيّات ناعمة", "Blush satin fabric in soft folds"),
+      alt: L("ساتان وردي وكريب أوف وايت بطيّات ناعمة", "Blush satin and ivory crepe in soft folds"),
       eyebrow: L("الخامة أول حاجة", "Fabric comes first"),
       title: L("قماش تحسّي بيه من أول لمسة", "Fabric you feel at first touch"),
       text: L("بنختار كل فستان على حسب خامته وقصّته، وبنكتبلك الخامة والمقاسات في صفحة كل موديل.", "We choose every dress for its fabric and its cut, and list the fabric and measurements on each product page."),

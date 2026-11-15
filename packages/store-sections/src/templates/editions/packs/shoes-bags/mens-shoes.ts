@@ -16,6 +16,11 @@
  * boots, lace-up boots, sandals, slides, white sneakers, navy boat shoes).
  * Sizes 40 to 46 appear in copy only.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `ghorza` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
  * shop shelves, steps, rugs and wood; no people, legs, feet or hands, no
  * readable lettering or brand marks (insoles and soles checked), none used by
@@ -68,8 +73,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "mens-shoes";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(19335787, 1200), pexels(6765524, 1200), pexels(37595187, 1200), pexels(35059665, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -117,13 +124,14 @@ export const MENS_SHOES: Edition = {
   photos: {
     // `tall` is ghorza's hero stage (square on desktop, 4:3 on phones): the 2000px square shoe photo cut from its foot to 16:15, so a
     // 4:3 crop still holds the sole.
-    hero: { wide: pexels(40321494, 1920), tall: `${pexels(4161710, 1600)}&h=1500&fit=crop&crop=bottom` },
+    // The wide hero is drawn by no look (Pexels).
+    hero: { wide: pexels(40321494, 1920), tall: scene("hero-tall") },
     tiles: TILES,
-    banner: pexels(9992898, 2000),
+    banner: scene("banner"),
     // The shine-bench story (ghorza, a 4:5 crop from the foot so both toes stay in) and zay's story.
-    story: `${pexels(19165536, 1200)}&h=1500&fit=crop&crop=bottom`,
+    story: scene("story"),
     // The about page (ghorza).
-    about: pexels(5710709, 1200),
+    about: scene("about"),
     // Zay's hero collage: 1 portrait 4:5, 2 square, 3 landscape 4:3, one per caption (`custom.hero-piece-1..3`).
     custom: {
       "hero-piece-1": pexels(7887198, 1200),
@@ -158,8 +166,8 @@ export const MENS_SHOES: Edition = {
     },
     story: {
       alt: L(
-        "جزمة أكسفورد سودا جواها قوالب خشب على ترابيزة قص في ورشة، أبيض وأسود",
-        "Black oxfords with wooden shoe trees on a cutting mat in a workshop, in black and white",
+        "جزمة أكسفورد سودا جواها قوالب خشب على بنش تلميع جنب فرش وعلب ورنيش",
+        "Black oxfords on wooden shoe trees on a shine bench beside brushes and polish tins",
       ),
       eyebrow: L("الجلد بيحلو مع الوقت", "Leather gets better with time"),
       title: L("جزمة تعيش معاك سنين", "A pair that lasts for years"),
@@ -185,7 +193,7 @@ export const MENS_SHOES: Edition = {
     footer: { line: L("جزم رجالي، وبنك تلميع وتصليح", "Men's shoes, and a shine and repair bench") },
     about: {
       line: L("أحذية رجالي جلد وسويد، مختارة على الخامة والمقاس.", "Men's leather and suede shoes, chosen for their make and their fit."),
-      alt: L("بوت جلد بني متلبّس كتير تحت رف فاتح عليه سنابل قمح ونوتة", "Worn brown leather boots under a light shelf with dried wheat and a notebook"),
+      alt: L("بوت جلد بني غامق متلمّع تحت رف ستيل عليه قوالب وفوطة", "Polished dark brown boots under a steel shelf with shoe trees and a cloth"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("كل جزمة بتبدأ من قالب", "Every shoe starts from a last"),
       text: L(
@@ -253,7 +261,7 @@ export const MENS_SHOES: Edition = {
       "service-4-line": L("تنضيف بالفرشة وسبراي يحمي من المية والبقع.", "A brush clean and a spray against water and stains."),
       "service-4-price": L("٩٠ ج.م", "EGP 90"),
       // ghorza's spotlight on `photos.banner`, beside the store's 2nd category (oxfords and derbies); the button goes to the whole catalog.
-      "banner-alt": L("جزمة ديربي جلد بني غامق مخرّمة على جذع شجرة", "Perforated dark brown leather derbies on a log"),
+      "banner-alt": L("جزمة ديربي جلد بني غامق مخرّمة على قاعدة خشب جوز", "Perforated dark brown leather derbies on a walnut block"),
       "banner-eyebrow": L("للبدلة والمكتب", "For the suit and the office"),
       "banner-title": L("أكسفورد وديربي", "Oxfords and derbies"),
       "banner-line": L("جلد بيلمع ونعل رفيع، للأيام اللي تفرق.", "Polished leather and slim soles, for the days that count."),

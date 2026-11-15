@@ -54,10 +54,11 @@
  * (`tasfya.v4.json`) and the v3 one is deleted
  * (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's (see its header): hero 9308418 (cropped 21:9 and
- * zoomed around the pair), tiles 8801134, 13836590, 27719438, 12969102, banner 18674213
- * (the home story), about page 34667259; products are the pack's white packshots. No people,
- * feet, logos or lettering.
+ * Photos: the pack's (see its header): the generated hero (pink clogs on
+ * the pool deck), tiles, banner (the home story) and about page
+ * (2026-11-15, `editions/slippers-clogs/scene-*`; the fixture was
+ * recaptured at v4 for the photo and alt swap only); products are the
+ * pack's white packshots. No people, feet, logos or lettering.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";

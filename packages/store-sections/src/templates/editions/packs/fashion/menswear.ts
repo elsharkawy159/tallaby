@@ -8,6 +8,11 @@
  * Materials, kept the same everywhere: the tan jacket is faux suede, the
  * black jacket is genuine leather.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `zay` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
  * shirts, knits, trousers and jackets on rails, hooks and wood; no people,
  * hands or mannequins, no readable lettering, none used by a template or
@@ -62,8 +67,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "menswear";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(35150391, 1200), pexels(13889763, 1200), pexels(6045283, 1200), pexels(615003, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -113,7 +120,7 @@ export const MENSWEAR: Edition = {
     hero: { wide: pexels(5424945, 1920), tall: pexels(18335270, 1200) },
     tiles: TILES,
     banner: pexels(298864, 2000),
-    story: pexels(7794265, 1200),
+    story: scene("story"),
     // The dots, in percent from the photo's left and top: the knit (grey crew sweater), the parka (olive field jacket), the bomber (navy bomber jacket).
     look: {
       src: pexels(3998647, 1400),
@@ -125,9 +132,9 @@ export const MENSWEAR: Edition = {
     },
     // Zay's hero collage: 1 portrait 4:5, 2 square, 3 landscape 4:3, one per caption (`custom.hero-piece-1..3`).
     custom: {
-      "hero-piece-1": pexels(36910113, 1200),
-      "hero-piece-2": pexels(6276002, 900),
-      "hero-piece-3": pexels(3633039, 1400),
+      "hero-piece-1": scene("hero-piece-1"),
+      "hero-piece-2": scene("hero-piece-2"),
+      "hero-piece-3": scene("hero-piece-3"),
     },
   },
   copy: {
@@ -155,7 +162,7 @@ export const MENSWEAR: Edition = {
       },
     },
     story: {
-      alt: L("رقبة بلوفر صوف رمادي، قريب أوي", "The neck of a grey wool sweater, up close"),
+      alt: L("راك كحلي عليه قمصان وتريكو وجواكت وتحته جزمة لوفر بني", "A navy rail of shirts, knits and jackets, brown loafers below"),
       eyebrow: L("الخامة قبل الموضة", "Fabric before fashion"),
       title: L("قطع تعيش معاك أكتر من موسم", "Pieces that last more than a season"),
       text: L(
@@ -186,7 +193,7 @@ export const MENSWEAR: Edition = {
     footer: { line: L("البس مظبوط، وانزل", "Dress right, then go") },
     about: {
       line: L("لبس رجالي شيك لكل يوم.", "Smart menswear for every day."),
-      alt: L("رقبة بلوفر صوف رمادي، قريب أوي", "The neck of a grey wool sweater, up close"),
+      alt: L("راك كحلي عليه قمصان وتريكو وجواكت وتحته جزمة لوفر بني", "A navy rail of shirts, knits and jackets, brown loafers below"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("دولاب صغير، لبس أكتر", "A smaller wardrobe, more outfits"),
       text: L(

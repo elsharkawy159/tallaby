@@ -21,6 +21,11 @@
  * shorts, the hoodie), light nylon (the windbreaker). Sizes S to XXL appear
  * in copy only.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `sports-luxe` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
  * running tracks, locker rooms and gym kit still lifes; no people, hands or
  * feet, no logos, stripe marks or brand lettering (lane and locker numbers
@@ -84,8 +89,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "sportswear";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(37496664, 1200), pexels(36717697, 1200), pexels(8454925, 1200), pexels(12255816, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -133,10 +140,11 @@ export const SPORTSWEAR: Edition = {
   }),
   photos: {
     // Madar's hero: the fabric itself. `tall` is streetwear's phone photo (Madar crops `wide`).
-    hero: { wide: pexels(1487809, 1920), tall: pexels(5274793, 1200) },
+    // The tall hero is drawn by no look (Pexels).
+    hero: { wide: scene("hero-wide"), tall: pexels(5274793, 1200) },
     tiles: TILES,
     banner: pexels(37718513, 2000),
-    story: pexels(4162550, 1200),
+    story: scene("story"),
     custom: {
       // Streetwear's lookbook, square: one large photo, then four small ones.
       "lookbook-1": pexels(9091137, 1200),
@@ -145,11 +153,11 @@ export const SPORTSWEAR: Edition = {
       "lookbook-4": pexels(4162586, 900),
       "lookbook-5": pexels(8533779, 900),
       // Madar's fabric guide, landscape close-ups in the order of its rows.
-      "fabric-1": pexels(10221743, 1400),
-      "fabric-2": pexels(4863009, 1400),
-      "fabric-3": pexels(34860712, 1400),
+      "fabric-1": scene("fabric-1"),
+      "fabric-2": scene("fabric-2"),
+      "fabric-3": scene("fabric-3"),
       // Madar's sign-up, beside the form (square on desktop, a band on phones).
-      newsletter: pexels(18372335, 1200),
+      newsletter: scene("newsletter"),
     },
   },
   copy: {
@@ -160,7 +168,7 @@ export const SPORTSWEAR: Edition = {
     ],
     labels: { search: L("دوّر على ليجينز، شورت، هودي…", "Search leggings, shorts, hoodies…") },
     hero: {
-      alt: L("قماش رياضي أزرق رمادي بنسجة رفيعة عن قرب", "A slate-blue performance weave up close"),
+      alt: L("لبس تمرين متطبق على بنش رمادي: تيشيرت وليجينز كوبالت وجاكيت", "Training pieces folded on a graphite bench: a tee, cobalt leggings and a jacket"),
       eyebrow: L("لبس التمرين الجديد وصل", "New training wear is in"),
       title: L("لبس تمرين يستحمل عرقك", "Training wear that keeps up"),
       line: L(
@@ -179,7 +187,7 @@ export const SPORTSWEAR: Edition = {
       },
     },
     story: {
-      alt: L("دواليب لوكر رمادي غامق وكراسي خشب في غرفة تغيير", "Charcoal lockers and wooden benches in a changing room"),
+      alt: L("طقم تمرين كوبالت متطبق وزمزمية ستيل على بنش خشب في غرفة تغيير", "A folded cobalt training set and a steel bottle on a changing-room bench"),
       eyebrow: L("بنجرّب قبل ما نبيع", "Tested before we sell"),
       title: L("كل قطعة بتتمرّن قبل ما توصلك", "Every piece trains before it ships"),
       text: L(
@@ -206,7 +214,7 @@ export const SPORTSWEAR: Edition = {
     footer: { line: L("اتمرّن براحتك", "Train your way") },
     about: {
       line: L("لبس تمرين مريح ومتين، للجيم والجري والتمرين في البيت.", "Comfortable, hard-wearing training wear for the gym, the run and home workouts."),
-      alt: L("دواليب لوكر رمادي غامق وكراسي خشب في غرفة تغيير", "Charcoal lockers and wooden benches in a changing room"),
+      alt: L("طقم تمرين كوبالت متطبق وزمزمية ستيل على بنش خشب في غرفة تغيير", "A folded cobalt training set and a steel bottle on a changing-room bench"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("لبس معمول للحركة", "Made to move in"),
       text: L(
@@ -267,7 +275,7 @@ export const SPORTSWEAR: Edition = {
         "قطن من برا ووبر ناعم من جوا: دفا في الطريق للجيم وبعد التمرين وفي صباحية الشتا.",
         "Cotton outside, soft brushed loops inside: warm on the way to the gym, after training and on winter mornings.",
       ),
-      "newsletter-alt": L("قماش تمرين أزرق كوبالت عن قرب", "A cobalt training knit up close"),
+      "newsletter-alt": L("توب تمرين كوبالت بربع سوستة متطبق", "A cobalt quarter-zip training top, folded flat"),
     },
   },
   // Both looks show the newest products first.

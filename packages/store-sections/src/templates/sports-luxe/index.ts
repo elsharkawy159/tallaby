@@ -54,9 +54,9 @@
  * new capture (`sports-luxe.v2.json`) and the v1 one is deleted
  * (`../editions/look-guard.test.ts`).
  *
- * Photos: the pack's (see its header): hero 1487809, fabric guide 10221743,
- * 4863009, 34860712, newsletter 18372335 (all new, fabric close-ups with no
- * marks), story 4162550, tiles 37496664, 36717697, 8454925, 12255816;
+ * Photos: the pack's (see its header): the generated hero, fabric guide,
+ * newsletter, story and tiles (2026-11-15, `editions/sportswear/scene-*`;
+ * the fixture was recaptured at v2 for the photo and alt swap only);
  * products are the pack's white packshots.
  */
 import { getDesign, type Design } from "../../designs";

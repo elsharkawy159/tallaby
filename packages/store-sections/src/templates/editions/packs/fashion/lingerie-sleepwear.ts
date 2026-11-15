@@ -17,6 +17,11 @@
  * Only `vella` for now: its other planned look (`fashion-warm`) is not
  * edition-ready.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `vella` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
  * bedrooms, bed linen and folded or hanging garments; no people or body
  * parts, no mannequins, nothing revealing, no readable lettering or brand
@@ -52,8 +57,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "lingerie-sleepwear";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(7445030, 1200), pexels(3932950, 1200), pexels(31145149, 1200), pexels(18797320, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -102,10 +109,11 @@ export const LINGERIE_SLEEPWEAR: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(5629138, 1920), tall: pexels(7580977, 1200) },
+    // The tall hero is drawn by no look (Pexels).
+    hero: { wide: scene("hero-wide"), tall: pexels(7580977, 1200) },
     tiles: TILES,
-    banner: pexels(7691347, 2000),
-    story: pexels(20065482, 1200),
+    banner: scene("banner"),
+    story: scene("story"),
   },
   copy: {
     announcement: [
@@ -115,7 +123,7 @@ export const LINGERIE_SLEEPWEAR: Edition = {
     ],
     labels: { about: L("حكايتنا", "Our story") },
     hero: {
-      alt: L("لحاف وردي فاتح ومخدة بيضاء على سرير", "A blush duvet and a white pillow on a bed"),
+      alt: L("سرير أبيض عليه بيجامة ساتان متطبقة وروب وافل على طرفه", "A white bed with a folded satin pajama set and a waffle robe over the footboard"),
       eyebrow: L("لبس البيت والنوم", "Sleep and lounge"),
       title: L("نومة هادية في قماش مريح", "Calm nights in soft fabrics"),
       line: L(
@@ -132,7 +140,7 @@ export const LINGERIE_SLEEPWEAR: Edition = {
       },
     },
     story: {
-      alt: L("تريكو متطبق على كنبة كريمي", "Folded knits on a cream sofa"),
+      alt: L("أطقم بيتي متطبقة على دراع كنبة كريمي", "Folded lounge sets on the arm of a cream sofa"),
       eyebrow: L("القماش أول حاجة", "Fabric comes first"),
       title: L("قماش تحسّي بيه على جلدك", "Fabric that feels kind on skin"),
       text: L(

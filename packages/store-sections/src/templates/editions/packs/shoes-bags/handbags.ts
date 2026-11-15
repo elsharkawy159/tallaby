@@ -12,6 +12,11 @@
  * beige tote is cotton canvas, the straw tote is woven palm straw, the black
  * clutch is satin, the pearl clutch is beaded with faux pearls.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `shanta` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11),
  * the small marks at 3000px: bags on plinths, shelves, pegs and cabinets; no
  * people or hands, no logos or readable lettering, none used by a template
@@ -65,8 +70,10 @@ import type { Edition } from "../../types";
 
 const NICHE = "handbags";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
-const TILES = [pexels(36367487, 1200), pexels(20591024, 1200), pexels(31551512, 1200), pexels(4830929, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -113,17 +120,18 @@ export const HANDBAGS: Edition = {
     ],
   }),
   photos: {
-    hero: { wide: pexels(5706271, 1920), tall: pexels(5706272, 1200) },
+    // The wide hero is drawn by no look (Pexels).
+    hero: { wide: pexels(5706271, 1920), tall: scene("hero-tall") },
     tiles: TILES,
     banner: pexels(5698420, 2000),
-    story: pexels(12105084, 1200),
+    story: scene("story"),
     // `shanta`: one bag with four note dots (not shop the look), in percent from the photo's left and top on its 4:5 crop: the handles, the zip and pockets, the hardware, the size.
     look: {
-      src: pexels(22434764, 1400),
+      src: scene("anatomy"),
       dots: [
         { x: 63, y: 31 },
         { x: 75, y: 47 },
-        { x: 71, y: 74 },
+        { x: 33, y: 49 }, // the gold ring fitting at the left handle's base
         { x: 42, y: 66 },
       ],
     },
@@ -153,7 +161,7 @@ export const HANDBAGS: Edition = {
       },
     },
     story: {
-      alt: L("جلد غامق بخياطة مزدوجة كريمي وحلقة معدن، قريب أوي", "Dark leather with cream double stitching and a steel ring, up close"),
+      alt: L("جلد جملي بخياطة مزدوجة كريمي وحلقة نحاس، قريب أوي", "Camel leather with cream double stitching and a brass D-ring, up close"),
       eyebrow: L("الخياطة بتتكلم", "The stitching tells you"),
       title: L("شنطة تستحمل شيل كل يوم", "Made to be carried daily"),
       text: L(
@@ -164,7 +172,7 @@ export const HANDBAGS: Edition = {
     },
     // `shanta`: the heading over the anatomy photo (its notes are `custom.anatomy-N-*`).
     look: {
-      alt: L("شنطة يد نبيتي بإيدين وحلقات ورجول دهبي على خلفية فاتحة", "A burgundy top-handle bag with gold rings and feet on a pale backdrop"),
+      alt: L("شنطة يد نبيتي بإيدين وحلقات ورجول دهبي على خلفية خضرا فاتحة", "A burgundy top-handle bag with gold rings and feet on a sage backdrop"),
       eyebrow: L("قبل ما تختاري", "Before you choose"),
       title: L("اعرفي الشنطة من جوه وبره", "Know the bag inside and out"),
       text: L("دوسي على أي نقطة في الصورة وشوفي تفصيلة الجزء ده.", "Tap a dot on the photo to see that part up close."),
@@ -182,7 +190,7 @@ export const HANDBAGS: Edition = {
     footer: { line: L("من الشغل الصبح لحد السهرة", "From work to a night out") },
     about: {
       line: L("شنط لكل ساعة في اليوم.", "Bags for every hour of the day."),
-      alt: L("جلد غامق بخياطة مزدوجة كريمي وحلقة معدن، قريب أوي", "Dark leather with cream double stitching and a steel ring, up close"),
+      alt: L("جلد جملي بخياطة مزدوجة كريمي وحلقة نحاس، قريب أوي", "Camel leather with cream double stitching and a brass D-ring, up close"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("شنط قليلة، بتشيل يومك كله", "A few bags that carry your whole day"),
       text: L(

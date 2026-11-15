@@ -8,6 +8,11 @@
  * Brand rule (owner): sellers say "كروكس" for any rubber clog, but it is a
  * brand. No product, category or copy here names it: they are clogs (كلوج).
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `tasfya` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
  * beach sand, towels and home floors; no people, feet or hands, no readable
  * lettering or brand marks, none used by a template or another pack, none
@@ -74,14 +79,8 @@ import type { Edition } from "../../types";
 
 const NICHE = "slippers-clogs";
 const P = (slug: string) => editionPhoto(NICHE, slug);
-
-/**
- * Tasfya's hero: the pool deck, cropped 21:9 and zoomed 1.4× around the pair
- * (the right of the photo, its lower half), so the flip-flops read at desktop
- * width and the headline still fits the first screen; phones show a 16:9 cut
- * of it, which keeps the pair whole.
- */
-const POOL_DECK = "https://images.pexels.com/photos/9308418/pexels-photo-9308418.jpeg?auto=compress&cs=tinysrgb&fit=crop&crop=focalpoint&fp-x=0.65&fp-y=0.72&fp-z=1.4&w=1920&h=823";
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
 /** Every pair's sizes, as chips on its product page (the story and about page promise 36 to 45 on every page). */
 const SIZES = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45].map((size) => L(size.toLocaleString("ar-EG"), String(size)));
@@ -160,7 +159,7 @@ const withProductPages = (demo: TemplateDemo): TemplateDemo => ({
 /** A catalog search for a word in the products' names. */
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
-const TILES = [pexels(8801134, 1200), pexels(13836590, 1200), pexels(27719438, 1200), pexels(12969102, 1200)];
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -207,10 +206,11 @@ export const SLIPPERS_CLOGS: Edition = {
     ],
   })),
   photos: {
-    hero: { wide: POOL_DECK, tall: pexels(4996974, 1200) },
+    // Tasfya's hero: pink clogs large and centred on the pool deck (16:9; the desktop 21:9 band keeps the pair). The tall one is drawn by no look (Pexels).
+    hero: { wide: scene("hero-wide"), tall: pexels(4996974, 1200) },
     tiles: TILES,
-    banner: pexels(18674213, 2000),
-    story: pexels(34667259, 1200),
+    banner: scene("banner"),
+    story: scene("story"),
     custom: {
       // Streetwear's lookbook, square: one large photo, then four small ones.
       "lookbook-1": pexels(39245998, 1200),
@@ -232,7 +232,7 @@ export const SLIPPERS_CLOGS: Edition = {
     ],
     labels: { about: L("حكايتنا", "Our story"), search: L("دوّر على كلوج، سلايد، شبشب…", "Search clogs, slides, slippers…") },
     hero: {
-      alt: L("شبشب صباع كحلي منقّط على أرضية حمام سباحة جنب المية", "Blue polka-dot flip-flops on a pool deck beside the water"),
+      alt: L("كلوج بمبي على أرضية حمام سباحة جنب المية", "Pink clogs on a pool deck beside the water"),
       eyebrow: L("تشكيلة الصيف", "The summer range"),
       title: L("صيف خفيف وبيت مريح", "Light summers, comfy homes"),
       line: L(
@@ -319,7 +319,7 @@ export const SLIPPERS_CLOGS: Edition = {
       "hero-sticker-1": L("مقاسات", "Sizes"),
       "hero-sticker-2": L("٣٦–٤٥", "36–45"),
       "hero-sticker-3": L("للكل", "for all"),
-      "banner-alt": L("فوط بحر مخططة بمبي وأخضر على الرملة", "Pink and green striped beach towels on the sand"),
+      "banner-alt": L("شبشب أسود وصباع أبيض على فوط بحر مخططة على الرملة", "Black slides and white flip-flops on striped beach towels on the sand"),
       "banner-title": L("على البحر", "Beach days"),
       "banner-line": L("سلايد وشباشب صباع كاوتش تستحمل الرملة والمية.", "Rubber slides and flip-flops that take the sand and the water."),
       "craft-statement": L("شبشب واحد مريح أحسن من خمسة على الجزّامة.", "One comfortable pair beats five by the door."),

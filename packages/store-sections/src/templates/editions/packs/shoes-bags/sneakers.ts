@@ -15,6 +15,11 @@
  * high-top), mesh or knit (the runners), canvas (everything else). Sizes 36
  * to 45 appear in copy only.
  *
+ * Generated photos (2026-11-15, `docs/systems/editions-photos.md`, checked
+ * by eye; `scene()` below) replace every Pexels photo `sports-bold` draws.
+ * The Pexels notes below describe the photos they replaced and the ones
+ * no look draws, which stay.
+ *
  * Art-directed photos: Pexels, each checked by eye at 1500px (2026-11-11):
  * shop shelves, studio paper, a clothesline and power lines; no people, legs,
  * feet or hands, no logos, stripes, swooshes or readable lettering, none used
@@ -83,15 +88,14 @@ import type { Edition } from "../../types";
 
 const NICHE = "sneakers";
 const P = (slug: string) => editionPhoto(NICHE, slug);
+/** Generated scenes (2026-11-15, docs/systems/editions-photos.md, checked by eye), same bucket: `scene-<slot>`. */
+const scene = (slot: string) => editionPhoto(NICHE, `scene-${slot}`);
 
 /** A catalog search for a word in the products' names. */
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
 
-/** Streetwear's tiles: the photos whole (3:4 cards). */
-const STREET_TILES = [pexels(7193625, 1200), pexels(9207813, 1200), pexels(29253011, 1200), pexels(5488660, 1200)];
-/** Everyday white for Nabd's round tiles: the cream pair sits at the top of a tall shot of pale boards, so it is cut 4:3 from the top and the ring holds the toes and laces. */
-const EVERYDAY_WHITE_RING = "https://images.pexels.com/photos/7193625/pexels-photo-7193625.jpeg?auto=compress&cs=tinysrgb&fit=crop&crop=focalpoint&fp-x=0.47&fp-y=0&w=1200&h=900";
-const TILES = [EVERYDAY_WHITE_RING, STREET_TILES[1]!, STREET_TILES[2]!, STREET_TILES[3]!];
+/** Nabd's round tiles, square, each pair centred so the ring keeps it whole. */
+const TILES = [scene("tile-1"), scene("tile-2"), scene("tile-3"), scene("tile-4")];
 
 // Demo contact details: a seller replaces every one of them.
 const PHONE_AR = phone("٠١٠٠ ٠٠٠ ٠٠٠٠");
@@ -140,11 +144,12 @@ export const SNEAKERS: Edition = {
   }),
   photos: {
     // Nabd's hero tile is `tall` (4296075, square: the pair stays whole in its square tile); `wide` is streetwear's.
-    hero: { wide: pexels(1020372, 1920), tall: pexels(4296075, 1400) },
+    // The wide hero is drawn by no look (Pexels).
+    hero: { wide: pexels(1020372, 1920), tall: scene("hero-tall") },
     tiles: TILES,
-    banner: pexels(13807630, 2000),
+    banner: scene("banner"),
     // Nabd: the home story sits on `banner`; `story` is the about page's photo.
-    story: pexels(11827147, 1200),
+    story: scene("story"),
     custom: {
       // Streetwear's lookbook, square: one large photo, then four small ones.
       "lookbook-1": pexels(12969390, 1200),
@@ -164,7 +169,7 @@ export const SNEAKERS: Edition = {
     nav: [{ label: L("هاي توب", "High-tops"), href: search("هاي توب") }],
     labels: { search: L("دوّر على رانينج، هاي توب، أبيض…", "Search runners, high-tops, white pairs…") },
     hero: {
-      alt: L("جوز كوتشي كانفس أبيض بخياطة زجزاج على ورق أحمر وبرتقالي وأخضر", "A pair of white canvas low-tops with zigzag stitching on red, orange and green paper"),
+      alt: L("جوز كوتشي كانفس أبيض على ورق أحمر ورمادي في الشمس", "A pair of white canvas low-tops on red and grey paper in the sun"),
       eyebrow: L("وصل الموسم الجديد", "The new season is in"),
       title: L("كوتشي للشارع، مريح لآخر اليوم", "Street pairs, comfy all day"),
       line: L(
@@ -183,7 +188,7 @@ export const SNEAKERS: Edition = {
       },
     },
     story: {
-      alt: L("كوتشي شانكي أبيض وأسود لوحده على رف خشب برتقالي", "One white and black chunky sneaker alone on an orange wooden shelf"),
+      alt: L("كوتشي شانكي أبيض وكحلي لوحده على قاعدة أسمنت قدام حيطة حمرا", "One white and navy chunky sneaker on a concrete plinth against a red wall"),
       eyebrow: L("بنختار بالعين والرجل", "Picked by eye and by foot"),
       title: L("مش أي كوتشي يدخل الرف", "Not every pair makes the shelf"),
       text: L(
@@ -208,7 +213,7 @@ export const SNEAKERS: Edition = {
     footer: { line: L("امشي براحتك", "Walk your way") },
     about: {
       line: L("كوتشيات للشارع ولكل يوم، مختارة على الراحة والشكل.", "Sneakers for the street and every day, chosen for comfort and looks."),
-      alt: L("كوتشي شانكي أبيض وأسود لوحده على رف خشب برتقالي", "One white and black chunky sneaker alone on an orange wooden shelf"),
+      alt: L("كوتشي شانكي أبيض وكحلي لوحده على قاعدة أسمنت قدام حيطة حمرا", "One white and navy chunky sneaker on a concrete plinth against a red wall"),
       eyebrow: L("حكايتنا", "Our story"),
       title: L("الكوتشي اللي بتعيش فيه", "The pair you live in"),
       text: L(
@@ -240,7 +245,7 @@ export const SNEAKERS: Edition = {
       "hero-sticker-1": L("مقاسات", "Sizes"),
       "hero-sticker-2": L("٣٦–٤٥", "36–45"),
       "hero-sticker-3": L("للكل", "for all"),
-      "banner-alt": L("كوتشيات أبيض وزيتي على رفوف خشب في محل", "White and olive sneakers on wooden shop shelves"),
+      "banner-alt": L("كوتشيات بألوان هادية على رفوف خشب في محل", "Sneakers in quiet colours on oak shop shelves"),
       "banner-title": L("على الرف دلوقتي", "On the shelf now"),
       "banner-line": L("موديلات خفيفة بنعل طري، للمشي والشغل والخروج.", "Light pairs on soft soles, for walking, work and going out."),
       "craft-statement": L("كوتشي واحد مريح أحسن من خمسة في الدولاب.", "One comfortable pair beats five in the closet."),
