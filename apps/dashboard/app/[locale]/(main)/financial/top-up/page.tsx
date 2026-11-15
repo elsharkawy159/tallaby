@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -14,5 +15,5 @@ export default async function LegacyTopUpReturnPage({
   searchParams: Promise<{ topUp?: string | string[] }>;
 }) {
   const { topUp } = await searchParams;
-  redirect(typeof topUp === "string" ? `/wallet/top-up?topUp=${encodeURIComponent(topUp)}` : "/wallet");
+  redirect({ href: typeof topUp === "string" ? `/wallet/top-up?topUp=${encodeURIComponent(topUp)}` : "/wallet", locale: await getLocale() });
 }

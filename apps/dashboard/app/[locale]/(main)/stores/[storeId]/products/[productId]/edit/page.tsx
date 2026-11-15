@@ -2,9 +2,10 @@ import { CrossSellSection } from "./cross-sell.client";
 import { listCrossSells } from "./cross-sell.server";
 import { QuantityOffersSection } from "./quantity-offers.client";
 import { listQuantityOffers } from "./quantity-offers.server";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { aiConfigured } from "@workspace/ai";
 import { getProduct } from "@/actions/products";
 import { getAllCategories } from "@/actions/categories";
@@ -66,7 +67,7 @@ export default async function EditProductPage({
 
   const product = productResult.data;
   // In Trash (0123, F-35): it is restored from there before it can be edited.
-  if ((product as { deletedAt?: string | null }).deletedAt) redirect(storeProductsHref(store.id, "/trash"));
+  if ((product as { deletedAt?: string | null }).deletedAt) redirect({ href: storeProductsHref(store.id, "/trash"), locale: await getLocale() });
   const categories = (categoriesRes.data || []) as CategoryOption[];
   const seller = sellerProfile.success ? sellerProfile.data : null;
   const sellerPricing = {

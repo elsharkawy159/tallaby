@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { listStoreCheckoutLeads, listStoreLeadSettings } from "@workspace/lib/checkout-leads/server";
 import type { LeadRange, LeadStatus } from "@workspace/lib/checkout-leads";

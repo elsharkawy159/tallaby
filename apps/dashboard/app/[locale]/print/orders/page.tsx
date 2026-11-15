@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
 import { createTranslator, type AbstractIntlMessages } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { isAccessError, requireOrdersSeller } from "@/lib/auth/require-seller.server";
@@ -42,7 +42,7 @@ export default async function PrintOrdersPage({
   try {
     ({ sellerId } = await requireOrdersSeller());
   } catch (error) {
-    if (isAccessError(error)) redirect("/");
+    if (isAccessError(error)) redirect({ href: "/", locale: await getLocale() });
     throw error;
   }
 

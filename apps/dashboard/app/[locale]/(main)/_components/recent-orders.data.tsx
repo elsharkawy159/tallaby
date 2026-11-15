@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Megaphone, ShoppingBag } from "lucide-react";
 import { getLocale, getNow, getTranslations } from "next-intl/server";
 import {

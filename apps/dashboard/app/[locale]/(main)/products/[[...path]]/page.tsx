@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { PageContainer } from "@/components/seller-ui";
 import { isAccessError } from "@/lib/auth/require-seller.server";
 import { legacyProductsTarget } from "@/lib/products/product-routes.lib";
@@ -32,12 +33,12 @@ export default async function LegacyProductsPage({
 }) {
   const [{ path }, query] = await Promise.all([params, searchParams]);
   const stores = await getSellerStores().catch((error: unknown) => error);
-  if (isAccessError(stores)) redirect(stores.code === "no_seller" ? "/signup" : "/login");
+  if (isAccessError(stores)) redirect({ href: stores.code === "no_seller" ? "/signup" : "/login", locale: await getLocale() });
   if (stores instanceof Error) throw stores;
   const { selected } = stores as Awaited<ReturnType<typeof getSellerStores>>;
 
-  if (selected) redirect(legacyProductsTarget(selected.id, path, query));
-  if (path?.length) redirect("/stores");
+  if (selected) redirect({ href: legacyProductsTarget(selected.id, path, query), locale: await getLocale() });
+  if (path?.length) redirect({ href: "/stores", locale: await getLocale() });
 
   return (
     <ProductStoreProvider storeId="">

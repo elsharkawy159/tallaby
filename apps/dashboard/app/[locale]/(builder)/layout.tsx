@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { WelcomeGiftDialog } from "@/components/layout/welcome-gift-dialog.client";
 import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
@@ -19,10 +20,10 @@ export const instant = false;
  */
 export default async function BuilderLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
-  if (!user) redirect("/login");
+  if (!user) redirect({ href: "/login", locale: await getLocale() });
 
   const access = await getSellerAccess(user.id);
-  if (!access.allowed && access.reason === "no_seller") redirect("/signup");
+  if (!access.allowed && access.reason === "no_seller") redirect({ href: "/signup", locale: await getLocale() });
   if (!access.allowed) return <SellerAccessBlocked access={access} />;
 
   // A seller who publishes from the builder sees the welcome gift popup here (0119).

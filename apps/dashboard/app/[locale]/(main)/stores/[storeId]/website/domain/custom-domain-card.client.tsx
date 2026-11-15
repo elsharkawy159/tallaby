@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { BadgeCheck, CircleAlert, CircleCheck, Clock, Copy, ExternalLink, Link2, LoaderCircle, RefreshCw, Trash2 } from "lucide-react";

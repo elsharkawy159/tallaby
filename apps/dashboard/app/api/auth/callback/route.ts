@@ -7,6 +7,8 @@ import { completeSignup, signupIntentFromMetadata } from "@/app/[locale]/signup/
 import { readSignupIntentCookie } from "@/app/[locale]/signup/signup-intent.server";
 import { afterSignupPath } from "@/app/[locale]/signup/signup.dto";
 import { withQuery } from "@/lib/auth/after-signup.lib";
+import { LOCALE_COOKIE } from "@/i18n/config";
+import { savedLocaleHref } from "@/lib/i18n/saved-locale-href.lib";
 
 /**
  * OAuth and email-confirmation callback. After the session is established, a
@@ -17,24 +19,24 @@ import { withQuery } from "@/lib/auth/after-signup.lib";
  * the Data Cache (the template gallery, library sections…), and nothing
  * cached depends on the user (docs/egress-audit.md §2).
  */
-async function finish(origin: string, next: string, user: User | null) {
-  if (!user) return NextResponse.redirect(`${origin}${next}`);
+async function finish(go: (path: string) => NextResponse, next: string, user: User | null) {
+  if (!user) return go(next);
 
   const [seller] = await db.select({ id: sellers.id }).from(sellers).where(eq(sellers.id, user.id)).limit(1);
-  if (seller) return NextResponse.redirect(`${origin}${next}`);
+  if (seller) return go(next);
 
   const intent = (await readSignupIntentCookie()) ?? signupIntentFromMetadata(user);
   // The seller came for the AI Store Builder: step 2 of signup keeps taking them there.
   const after = afterSignupPath(next);
-  if (!intent) return NextResponse.redirect(`${origin}${withQuery("/signup", { next: after ?? undefined })}`);
+  if (!intent) return go(withQuery("/signup", { next: after ?? undefined }));
 
   const result = await completeSignup(user, intent);
   if (!result.success) {
     // e.g. the address was taken meanwhile: let them pick another one.
-    return NextResponse.redirect(`${origin}/signup?error=${result.error === "taken" ? "subdomainTaken" : "generic"}`);
+    return go(`/signup?error=${result.error === "taken" ? "subdomainTaken" : "generic"}`);
   }
   // `signup` only for a new account: the welcome page fires Meta's CompleteRegistration once.
-  return NextResponse.redirect(`${origin}${withQuery(after ?? "/", { welcome: "1", signup: result.signup })}`);
+  return go(withQuery(after ?? "/", { welcome: "1", signup: result.signup }));
 }
 
 export async function GET(request: NextRequest) {
@@ -44,17 +46,21 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("token");
   const tokenHash = searchParams.get("token_hash");
   const next = safeNextPath(searchParams.get("next"));
+  // Every target is a dashboard page (or an /api link from `next`, kept as is),
+  // opened in the seller's saved language: this handler has no locale segment.
+  const localeCookie = request.cookies.get(LOCALE_COOKIE)?.value;
+  const go = (path: string) => NextResponse.redirect(`${origin}${savedLocaleHref(path, localeCookie)}`);
 
   const supabase = await createClient();
 
   // OAuth (and PKCE email confirmation) callback with a code
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) return NextResponse.redirect(`${origin}/login`);
+    if (error) return go("/login");
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    return finish(origin, next, user);
+    return finish(go, next, user);
   }
 
   // Email verification links that carry a token
@@ -65,13 +71,13 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError && userError.message.includes("Invalid")) {
-      return NextResponse.redirect(`${origin}/login`);
+      return go("/login");
     }
-    if (user) return finish(origin, next, user);
+    if (user) return finish(go, next, user);
 
     // Verified, but no session in this browser: sign in to continue.
-    return NextResponse.redirect(`${origin}/login?verified=true`);
+    return go("/login?verified=true");
   }
 
-  return NextResponse.redirect(`${origin}/login`);
+  return go("/login");
 }

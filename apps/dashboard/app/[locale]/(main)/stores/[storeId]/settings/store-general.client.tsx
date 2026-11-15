@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Banknote, Headphones, Languages, Palette, Store, TriangleAlert } from "lucide-react";
 import {
   CURRENCY_LABELS,

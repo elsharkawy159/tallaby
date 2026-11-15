@@ -9,8 +9,8 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { getPathname, useRouter } from "@/i18n/navigation";
 import { ArrowRight, FileDown, LoaderCircle, Rocket, Save, Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -161,6 +161,7 @@ function AddProductForm({
 }) {
   const isEdit = Boolean(edit);
   const router = useRouter();
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("ar");
   const [mode, setMode] = useState<"single" | "bulk">("single");
@@ -326,7 +327,7 @@ function AddProductForm({
             // The toast (with "View" on the live store) shows on the products page after the full load.
             const queued = Boolean(result.data?.id) && queueProductCreatedToast(productStoreId, result.data!.id);
             if (!queued) toast.success(tToast("productCreatedSuccessfully"));
-            window.location.assign(productsHref());
+            window.location.assign(getPathname({ href: productsHref(), locale }));
           }
         } else {
           toast.error(result.error || tToast("failedToCreateProduct"));

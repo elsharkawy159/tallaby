@@ -2,8 +2,8 @@
 
 import { createClient } from "@/supabase/server";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getAuthResult } from "@/lib/auth/session.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 
@@ -99,5 +99,5 @@ export const resendConfirmation = async (email: string): Promise<AuthActionResul
 export const logout = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/");
+  redirect({ href: "/", locale: await getLocale() });
 };

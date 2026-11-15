@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ArrowLeft, RotateCcw, Trash2 } from "lucide-react";

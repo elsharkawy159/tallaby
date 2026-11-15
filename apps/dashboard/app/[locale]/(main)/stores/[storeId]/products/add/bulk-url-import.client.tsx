@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { useLocalizedResolver } from "@/lib/i18n/localized-resolver";
+import { getPathname } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { CheckCircle2, LoaderCircle, RefreshCw, Trash2, X } from "lucide-react";
 import { Form } from "@workspace/ui/components/form";
@@ -405,7 +406,7 @@ export function BulkUrlImport ({
     if (done) {
       // One toast for the whole list; the page goes back to an empty link box.
       toast.success(t("allSaved", { count: total }), {
-        action: { label: t("viewProducts"), onClick: () => window.location.assign(productsHref()) },
+        action: { label: t("viewProducts"), onClick: () => window.location.assign(getPathname({ href: productsHref(), locale })) },
       });
       if (warnings > 0) toast.warning(t("savedWithWarnings", { count: warnings }));
       onAllSaved(total);
@@ -626,7 +627,7 @@ export function BulkUrlImport ({
             {allSaved ? t("allSaved", { count: savedCount }) : t("footerHint")}
           </p>
           {allSaved ? (
-            <SellerButton type="button" onClick={() => window.location.assign(productsHref())} className="max-sm:w-full">
+            <SellerButton type="button" onClick={() => window.location.assign(getPathname({ href: productsHref(), locale }))} className="max-sm:w-full">
               {t("viewProducts")}
             </SellerButton>
           ) : (

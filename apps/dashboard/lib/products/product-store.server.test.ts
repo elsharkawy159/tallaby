@@ -20,7 +20,9 @@ const mocks = vi.hoisted(() => ({
   }),
 }));
 
-vi.mock("next/navigation", () => ({ notFound: mocks.notFound, redirect: mocks.redirect }));
+vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
+vi.mock("@/i18n/navigation", () => ({ redirect: ({ href }: { href: string }) => mocks.redirect(href) }));
+vi.mock("next-intl/server", () => ({ getLocale: async () => "ar" }));
 
 vi.mock("@/lib/auth/require-seller.server", async () => {
   class AccessError extends Error {

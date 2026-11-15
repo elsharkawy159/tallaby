@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import {

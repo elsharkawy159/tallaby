@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+// eslint-disable-next-line no-restricted-imports -- page-view trigger only; rendered outside NextIntlClientProvider, and the pixel should see the real URL
 import { usePathname } from "next/navigation";
 import { trackTallabyPageView } from "@workspace/lib/integrations";
 

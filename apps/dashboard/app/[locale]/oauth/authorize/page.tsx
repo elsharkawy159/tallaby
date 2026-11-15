@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+// The consent check's redirect goes to the AI client's own redirect_uri (another site).
+// eslint-disable-next-line no-restricted-imports -- external URL, never locale-prefixed
+import { redirect as redirectExternal } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
+import { Link, redirect } from "@/i18n/navigation";
 import { initialConsentScopes, parseScopeParam, redirectDisplayHost } from "@workspace/lib/agents";
 import { LanguageSwitcher } from "@/components/layout/language-switcher.client";
 import { checkConsentRequest } from "./authorize.server";
@@ -35,8 +37,10 @@ export default async function AuthorizePage({
   const query = toQuery(await searchParams);
   const check = await checkConsentRequest(query);
 
-  if (check.kind === "signin") redirect(`/login?next=${encodeURIComponent(`/oauth/authorize?${query}`)}`);
-  if (check.kind === "redirect") redirect(check.to);
+  if (check.kind === "signin") {
+    redirect({ href: `/login?next=${encodeURIComponent(`/oauth/authorize?${query}`)}`, locale: await getLocale() });
+  }
+  if (check.kind === "redirect") redirectExternal(check.to);
 
   const t = await getTranslations("agentConsent");
 

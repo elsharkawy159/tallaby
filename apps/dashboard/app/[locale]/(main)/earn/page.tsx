@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { PageContainer } from "@/components/seller-ui";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { EarnSection } from "./earn.data";
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** "اربح معنا": the seller's referral link, commissions and withdrawals (ROADMAP.md F-37). */
 export default async function EarnPage() {
   const seller = await requireSeller().catch((error) => error);
-  if (isAccessError(seller)) redirect(seller.code === "no_seller" ? "/signup" : "/login");
+  if (isAccessError(seller)) redirect({ href: seller.code === "no_seller" ? "/signup" : "/login", locale: await getLocale() });
   if (seller instanceof Error) throw seller;
 
   return (

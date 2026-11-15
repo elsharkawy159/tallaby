@@ -1,7 +1,7 @@
 "use client";
 
 import { ClipboardList, FileText, Package, Printer } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { SellerButton, type SellerButtonSize } from "@/components/seller-ui";
 import { PRINT_MAX_ORDERS, printOrdersHref, type PrintDoc } from "@/app/[locale]/print/orders/print-orders.lib";
+import { getPathname } from "@/i18n/navigation";
 import { BAR_BUTTON } from "./orders-ui";
 
 /**
@@ -36,9 +37,10 @@ export function PrintOrdersButton({
   className?: string;
 }) {
   const t = useTranslations("orders.printActions");
+  const locale = useLocale();
   if (orderIds.length === 0) return null;
   const ids = orderIds.slice(0, PRINT_MAX_ORDERS);
-  const open = (doc: PrintDoc) => window.open(printOrdersHref(doc, ids, true), "_blank", "noopener");
+  const open = (doc: PrintDoc) => window.open(getPathname({ href: printOrdersHref(doc, ids, true), locale }), "_blank", "noopener");
   const label = (
     <>
       <Printer aria-hidden />

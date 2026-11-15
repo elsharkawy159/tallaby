@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { formatMoney, moneyParams, type MoneyUnit } from "@/lib/i18n/format";
 import { LoaderCircle, MessageCircle, Package, Search, Trash2, User } from "lucide-react";

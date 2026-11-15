@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+// eslint-disable-next-line no-restricted-imports -- outside [locale]: no locale here, "/" is the Arabic home
 import Link from "next/link";
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import "@workspace/ui/globals.css";

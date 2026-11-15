@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronsUpDown, ExternalLink, Plus, Store } from "lucide-react";
 import { storeHostname } from "@workspace/lib/storefront";

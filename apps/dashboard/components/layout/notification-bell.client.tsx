@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Bell, Check, CheckCheck, Settings2, X } from "lucide-react";
 import { AnchoredSheet, IconButton, IconTile } from "@/components/seller-ui";

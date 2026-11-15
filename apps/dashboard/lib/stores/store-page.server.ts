@@ -1,4 +1,6 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { getStore, type StoreRow } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 
@@ -14,8 +16,8 @@ export async function loadStorePage(storeId: string): Promise<StoreRow> {
     return store;
   } catch (error) {
     if (isAccessError(error)) {
-      if (error.code === "unauthorized") redirect("/login");
-      if (error.code === "no_seller") redirect("/signup");
+      if (error.code === "unauthorized") redirect({ href: "/login", locale: await getLocale() });
+      if (error.code === "no_seller") redirect({ href: "/signup", locale: await getLocale() });
       notFound();
     }
     throw error;

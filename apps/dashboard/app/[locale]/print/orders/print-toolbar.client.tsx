@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Printer, X } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";

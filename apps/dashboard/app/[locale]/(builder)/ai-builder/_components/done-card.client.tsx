@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, Brush, Check, Copy, ExternalLink, Loader2, PenLine, RefreshCw, TriangleAlert } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Confetti } from "@/app/[locale]/(main)/_components/publish-celebration.client";

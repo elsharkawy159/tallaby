@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { db, eq, sellers } from "@workspace/db";
 import { createClient } from "@/supabase/server";
 import { SignupForm } from "./signup.client";
@@ -39,7 +39,7 @@ export default async function SignupPage({
 
   if (user) {
     const [seller] = await db.select({ id: sellers.id }).from(sellers).where(eq(sellers.id, user.id)).limit(1);
-    if (seller) redirect(afterSignup ?? "/");
+    if (seller) redirect({ href: afterSignup ?? "/", locale: await getLocale() });
   }
 
   // Pre-filled from the marketing site's "claim your link" forms, carried over

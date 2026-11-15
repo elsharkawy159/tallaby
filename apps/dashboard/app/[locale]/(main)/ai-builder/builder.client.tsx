@@ -8,7 +8,7 @@ import { Progress } from "@workspace/ui/components/progress";
 import { CheckRow, EmptyState, IconButton, Note, PageHeader, SellerButton, SellerCard, Tag, TextAction, TextArea, TextInput } from "@/components/seller-ui";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import { BuilderReviewPanel } from "./builder-review.client";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { syncField, type SyncedField } from "./builder-row.lib";
 import {
   BUILDER_LIMITS,

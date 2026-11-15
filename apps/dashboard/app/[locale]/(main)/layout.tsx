@@ -21,8 +21,8 @@ import { resolvePlanId } from "@workspace/lib/plans";
 import { AccountMoneyProvider } from "@/components/account-money.client";
 import { loadAccountMoney } from "@/lib/stores/account-money.server";
 import { EGP_ACCOUNT } from "@/lib/stores/account-money.lib";
-import { getTranslations } from "next-intl/server";
-import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
 import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
 import { EgpRateProvider } from "@/components/egp-rate.client";
@@ -48,7 +48,7 @@ export default async function DashboardLayout({
 
   // Signed in but not a seller yet (e.g. a customer account): finish signup.
   if (user && !access.allowed && access.reason === "no_seller") {
-    redirect("/signup");
+    redirect({ href: "/signup", locale: await getLocale() });
   }
 
   if (!access.allowed) {

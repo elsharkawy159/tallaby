@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Copy, TriangleAlert } from "lucide-react";
 import { customerPhone } from "@workspace/lib/customers";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Loader2, LogIn, Send, Sparkles, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";

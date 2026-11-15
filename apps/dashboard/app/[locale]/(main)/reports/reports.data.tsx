@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { Ban, PackageX, Percent, ReceiptText, ShoppingBag, Trophy, Truck, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";

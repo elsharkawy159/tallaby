@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Clock, Wallet } from "lucide-react";
 import { ORDER_GRACE_DAYS_SHORT, daysUntilOffline, graceDaysLeft, type OrderLock } from "@workspace/lib/billing/order-lock";

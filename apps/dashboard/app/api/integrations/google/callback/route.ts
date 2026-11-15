@@ -8,6 +8,8 @@ import {
   GOOGLE_OAUTH_NONCE_COOKIE,
   googleOAuthClient,
 } from "@/lib/integrations/google-oauth.server";
+import { LOCALE_COOKIE } from "@/i18n/config";
+import { savedLocaleHref } from "@/lib/i18n/saved-locale-href.lib";
 
 /**
  * Google OAuth callback for the Sheets app (PLAN.md P7-06). Accepted only
@@ -25,7 +27,8 @@ export async function GET(request: NextRequest) {
   const nonce = request.cookies.get(GOOGLE_OAUTH_NONCE_COOKIE)?.value;
 
   const finish = (path: string) => {
-    const response = NextResponse.redirect(new URL(path, request.url));
+    // Back in the seller's saved language (this handler has no locale segment).
+    const response = NextResponse.redirect(new URL(savedLocaleHref(path, request.cookies.get(LOCALE_COOKIE)?.value), request.url));
     response.cookies.set(GOOGLE_OAUTH_NONCE_COOKIE, "", { path: GOOGLE_OAUTH_COOKIE_PATH, maxAge: 0 });
     return response;
   };

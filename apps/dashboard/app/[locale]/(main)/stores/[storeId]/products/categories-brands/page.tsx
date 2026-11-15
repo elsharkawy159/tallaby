@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { loadProductStorePage } from "@/lib/products/product-store.server";
 
@@ -9,5 +10,5 @@ export const instant = false;
 /** The old combined page; categories and brands now have their own pages. */
 export default async function CategoriesBrandsPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { store } = await loadProductStorePage((await params).storeId);
-  redirect(storeProductsHref(store.id, "/categories"));
+  redirect({ href: storeProductsHref(store.id, "/categories"), locale: await getLocale() });
 }

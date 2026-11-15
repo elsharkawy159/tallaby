@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { LOCALE_COOKIE } from "@/i18n/config";
+import { savedLocaleHref } from "@/lib/i18n/saved-locale-href.lib";
 
 const NO_STORE = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" };
 
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     access = await requireStore(storeId);
   } catch (error) {
-    if (isAccessError(error)) return NextResponse.redirect(new URL("/stores", request.url), { status: 303, headers: NO_STORE });
+    if (isAccessError(error)) return NextResponse.redirect(new URL(savedLocaleHref("/stores", request.cookies.get(LOCALE_COOKIE)?.value), request.url), { status: 303, headers: NO_STORE });
     throw error;
   }
   const { store } = access;

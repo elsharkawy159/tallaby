@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Check, Gem, Minus, Receipt, Store } from "lucide-react";
 import { and, db, eq, gte, orderItems, sellers, sql } from "@workspace/db";

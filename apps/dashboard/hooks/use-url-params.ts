@@ -1,6 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+// eslint-disable-next-line no-restricted-imports -- pushes window.location.pathname, which already has the locale prefix
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 interface SetUrlParamsOptions {

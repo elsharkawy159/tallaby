@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+// eslint-disable-next-line no-restricted-imports -- the URL is already localized by getPathname (see below)
 import { useRouter } from "next/navigation";
 import { setLocale } from "@/actions/locale";
 import { getPathname, usePathname } from "@/i18n/navigation";

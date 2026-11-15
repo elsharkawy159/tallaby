@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { topUpCredit } from "@workspace/lib/store-wallet";
@@ -23,11 +22,11 @@ export default async function TopUpReturnPage({
   searchParams: Promise<{ topUp?: string | string[] }>;
 }) {
   const [{ topUp }, seller] = await Promise.all([searchParams, requireSeller().catch((error) => error)]);
-  if (isAccessError(seller)) redirect(seller.code === "no_seller" ? "/signup" : "/login");
+  if (isAccessError(seller)) redirect({ href: seller.code === "no_seller" ? "/signup" : "/login", locale: await getLocale() });
   if (seller instanceof Error) throw seller;
 
   const row = typeof topUp === "string" ? await getStoreTopUp(seller.sellerId, topUp) : null;
-  if (!row) redirect("/wallet");
+  if (!row) redirect({ href: "/wallet", locale: await getLocale() });
 
   const [t, locale] = await Promise.all([getTranslations("storeWallet.topUp"), getLocale()]);
   const state = row.status === "succeeded" ? "succeeded" : row.status === "failed" || row.status === "cancelled" ? "failed" : "processing";

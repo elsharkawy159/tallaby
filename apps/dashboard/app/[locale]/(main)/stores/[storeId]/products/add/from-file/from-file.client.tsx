@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
 import { ArrowLeft, ChevronDown, Download, FileSpreadsheet, HardDrive, RotateCcw, Sparkles, X } from "lucide-react";

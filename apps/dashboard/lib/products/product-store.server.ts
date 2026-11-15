@@ -1,5 +1,7 @@
 import type { SQL } from "drizzle-orm";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { productInStore, storeHasProduct, taxonomyItemsInStore, type TaxonomyScope } from "@workspace/lib/stores/scope/server";
 import type { AccessOptions } from "@/lib/auth/access.lib";
 import {
@@ -114,8 +116,8 @@ export async function loadProductStorePage(storeId: string): Promise<ProductStor
     return await requireProductStore(storeId, { read: true });
   } catch (error) {
     if (isAccessError(error)) {
-      if (error.code === "unauthorized") redirect("/login");
-      if (error.code === "no_seller") redirect("/signup");
+      if (error.code === "unauthorized") redirect({ href: "/login", locale: await getLocale() });
+      if (error.code === "no_seller") redirect({ href: "/signup", locale: await getLocale() });
       notFound();
     }
     throw error;

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { listStoreLeadSettings } from "@workspace/lib/checkout-leads/server";
 import { Note, PageHeader } from "@/components/seller-ui";

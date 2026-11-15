@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useOptimistic, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Calendar, Store } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";

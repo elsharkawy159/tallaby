@@ -3,6 +3,8 @@ import { INTAKE_SIGNED_IN_MAX_AGE_MS, isIntakeId, isIntakeToken } from "@workspa
 import { claimStoreBuildIntake } from "@workspace/lib/store-builds/server";
 import { loadSeller } from "@/lib/auth/require-seller.server";
 import { getSessionUser } from "@/lib/auth/session.server";
+import { LOCALE_COOKIE } from "@/i18n/config";
+import { savedLocaleHref } from "@/lib/i18n/saved-locale-href.lib";
 
 /**
  * GET /api/store-build/claim?intake=<uuid>&token=<token> (ROADMAP.md F-82d).
@@ -13,7 +15,8 @@ import { getSessionUser } from "@/lib/auth/session.server";
  * Responses never cache and never send the token on as a referrer.
  */
 function go(request: NextRequest, path: string) {
-  const response = NextResponse.redirect(new URL(path, request.url));
+  // A dashboard page in the seller's saved language; /api paths stay as they are.
+  const response = NextResponse.redirect(new URL(savedLocaleHref(path, request.cookies.get(LOCALE_COOKIE)?.value), request.url));
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
   return response;

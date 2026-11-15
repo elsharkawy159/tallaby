@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ExternalLink, KeyRound, LoaderCircle, MapPin, RefreshCw, TriangleAlert, Truck } from "lucide-react";

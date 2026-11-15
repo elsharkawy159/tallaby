@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { EMAIL_PACK_EMAILS, EMAIL_PACK_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";

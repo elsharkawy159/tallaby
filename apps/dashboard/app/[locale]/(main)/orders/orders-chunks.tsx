@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, useTransition } from "react";
 import type { RowSelectionState } from "@tanstack/react-table";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";

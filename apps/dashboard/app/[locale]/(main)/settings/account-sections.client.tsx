@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useForm } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";

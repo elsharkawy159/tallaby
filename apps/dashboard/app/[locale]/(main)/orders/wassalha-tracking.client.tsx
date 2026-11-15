@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Copy, LoaderCircle, Mailbox, Pencil, Upload } from "lucide-react";

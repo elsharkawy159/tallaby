@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { cookies } from "next/headers";
 import { ArrowLeft, Check, CreditCard, FileText, Package, Palette, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";

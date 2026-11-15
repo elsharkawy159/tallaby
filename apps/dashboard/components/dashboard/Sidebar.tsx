@@ -3,8 +3,7 @@
 import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ArrowUpLeft, ChevronDown, LogOut, PanelRightClose, PanelRightOpen, UserIcon, X } from "lucide-react";
 import { cn, getPublicUrl } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { Link, usePathname } from "@/i18n/navigation";
 import Image from "next/image";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ClipboardCheck, ExternalLink, Loader2, Package, RefreshCw, TriangleAlert } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Note, PageHeader, SectionCard, SellerButton, StatusBadge, TextAction } from "@/components/seller-ui";
 import type { BuilderErrorCode, BuilderReview } from "./builder.dto";

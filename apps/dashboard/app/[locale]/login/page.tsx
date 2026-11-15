@@ -4,8 +4,8 @@ import { useState, useTransition, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MailCheck } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -85,7 +85,9 @@ export default function AuthPage() {
       }
       setUnconfirmedEmail(null);
       toast.success(tToast("redirectingToDashboard"));
-      router.push(next);
+      // A route handler (e.g. /api/store-build/claim) lives outside [locale]: open it as is.
+      if (next.startsWith("/api/")) window.location.assign(next);
+      else router.push(next);
     });
   };
 

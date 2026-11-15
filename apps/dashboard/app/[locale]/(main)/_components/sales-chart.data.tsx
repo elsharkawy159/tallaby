@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { FileText } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";

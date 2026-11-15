@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, ExternalLink, Monitor, PenLine, Smartphone, Tablet } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { SellerButton } from "@/components/seller-ui";

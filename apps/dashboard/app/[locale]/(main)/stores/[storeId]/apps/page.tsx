@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { APPS, appPaths, getApp } from "@workspace/apps";
 import { getStoreApp } from "@workspace/lib/integrations";
 import { storeHostname } from "@workspace/lib/storefront";
@@ -27,7 +28,7 @@ export default async function StoreAppCenterPage({
   const { store, state, readOnly } = await loadAppCenterPage(storeId);
   // Old Google OAuth round-trips came back to the Apps page (`?google=…`); the toast now lives on Google Sheets › Settings.
   const google = typeof query.google === "string" ? query.google : null;
-  if (google) redirect(`${appPaths.settings(store.id, getApp("google_sheets")!)}?google=${encodeURIComponent(google)}`);
+  if (google) redirect({ href: `${appPaths.settings(store.id, getApp("google_sheets")!)}?google=${encodeURIComponent(google)}`, locale: await getLocale() });
   const items = APPS.map((manifest) => ({ id: manifest.id, state: appState(getStoreApp(manifest.id)!, state) }));
 
   return (

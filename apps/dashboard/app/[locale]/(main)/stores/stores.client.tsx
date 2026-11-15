@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 import {

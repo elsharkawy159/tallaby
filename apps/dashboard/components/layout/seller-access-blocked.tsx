@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./language-switcher.client";
 
 type BlockedAccess = Extract<SellerAccess, { allowed: false }>;
@@ -43,9 +44,9 @@ export async function SellerAccessBlocked({ access }: { access: BlockedAccess })
         <CardFooter className="flex flex-col gap-2 sm:flex-row">
           {noSeller && (
             <Button asChild className="w-full sm:w-auto">
-              <a href="/signup">
+              <Link href="/signup">
                 {t("sellerAccess.becomeSeller")}
-              </a>
+              </Link>
             </Button>
           )}
           <form action={logout} className="w-full sm:w-auto">

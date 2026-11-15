@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowLeft, Check } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SellerButton, SellerCard } from "@/components/seller-ui";

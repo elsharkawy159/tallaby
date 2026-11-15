@@ -8,6 +8,8 @@ import {
   GOOGLE_OAUTH_NONCE_COOKIE,
   googleOAuthClient,
 } from "@/lib/integrations/google-oauth.server";
+import { LOCALE_COOKIE } from "@/i18n/config";
+import { savedLocaleHref } from "@/lib/i18n/saved-locale-href.lib";
 
 const limiter = createRateLimiter({ limit: 20, windowMs: 10 * 60_000 });
 
@@ -25,7 +27,8 @@ export async function GET(request: NextRequest) {
   try {
     const { seller, store } = await requireStore(storeId, { forWrite: true });
     if (!limiter.check(`google-start:${seller.sellerId}`)) {
-      return NextResponse.redirect(new URL(`/stores/${store.id}/apps/google-sheets/settings?google=rateLimited`, request.url));
+      const settings = `/stores/${store.id}/apps/google-sheets/settings?google=rateLimited`;
+      return NextResponse.redirect(new URL(savedLocaleHref(settings, request.cookies.get(LOCALE_COOKIE)?.value), request.url));
     }
     const nonce = newOAuthNonce();
     const state = signOAuthState({ sellerId: seller.sellerId, storeId: store.id, nonce });

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Globe, Link2, Share2 } from "lucide-react";
 import { siFacebook, siGoogle, siInstagram, siTiktok, siWhatsapp, siYoutube } from "simple-icons";
 import { getLocale, getTranslations } from "next-intl/server";

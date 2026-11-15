@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
 import { formatUsdPrice } from "@/lib/i18n/format";

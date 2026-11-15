@@ -9,7 +9,7 @@ import {
   type ShippingTemplate,
 } from "@workspace/lib/shipping/store-zones";
 import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { PageContainer, PageHeader, Tag } from "@/components/seller-ui";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowLeft, ImageIcon, Star } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { SellerCard, SellerCardHeader, TextAction } from "@/components/seller-ui";
