@@ -90,10 +90,10 @@ export const NICHE_TEMPLATES: readonly NicheTemplate[] = [
   { niche: "kitchen-appliances", template: "beity", status: "own" },
   // ── food (wave 5) ──
   { niche: "grocery", template: "souq", status: "own" },
-  { niche: "fresh-produce", template: "khodar", status: "own" },
-  { niche: "meat-poultry", template: "lahma", status: "own" },
-  { niche: "bakery", template: "loaf", status: "own" },
-  { niche: "spices-herbs", template: "atara", status: "own" },
+  { niche: "fresh-produce", template: "khodar", edition: "fresh-produce", status: "ready" },
+  { niche: "meat-poultry", template: "lahma", edition: "meat-poultry", status: "ready" },
+  { niche: "bakery", template: "loaf", edition: "bakery", status: "ready" },
+  { niche: "spices-herbs", template: "atara", edition: "spices-herbs", status: "ready" },
   { niche: "fast-food", template: "sizzle", status: "own" },
   // ── sweets (wave 6) ──
   { niche: "oriental-sweets", template: "halawa", status: "own" },

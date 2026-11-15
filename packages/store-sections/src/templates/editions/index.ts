@@ -20,6 +20,10 @@ import { HOME_ORGANISATION } from "./packs/home/home-organisation";
 import { COFFEE_GEAR } from "./packs/kitchen/coffee-gear";
 import { COOKWARE } from "./packs/kitchen/cookware";
 import { TABLEWARE } from "./packs/kitchen/tableware";
+import { BAKERY } from "./packs/food/bakery";
+import { FRESH_PRODUCE } from "./packs/food/fresh-produce";
+import { MEAT_POULTRY } from "./packs/food/meat-poultry";
+import { SPICES_HERBS } from "./packs/food/spices-herbs";
 import { LIGHTING_SMART_HOME } from "./packs/electronics/lighting-smart-home";
 import { PC_GAMING } from "./packs/electronics/pc-gaming";
 import { DRESSES } from "./packs/fashion/dresses";
@@ -55,7 +59,7 @@ export { applyEdition, copyrightLine, editionTemplate, initialOf, isEditionReady
  *   import { DRESSES } from "./packs/fashion/dresses";
  * and add `DRESSES` here.
  */
-export const EDITIONS: readonly Edition[] = [DRESSES, GLASSES, TSHIRTS, LIGHTING_SMART_HOME, PANTS_JEANS, PC_GAMING, FASHION_JEWELRY, WATCHES, CHARGERS_CABLES, SLIPPERS_CLOGS, MENSWEAR, WOMENS_SHOES, HANDBAGS, MENS_SHOES, GOLD_JEWELRY, SNEAKERS, LINGERIE_SLEEPWEAR, SPORTSWEAR, HAIR_ACCESSORIES, BELTS_WALLETS, PHONE_CASES, SKINCARE, MENS_GROOMING, BEDDING_TEXTILES, DECOR, FURNITURE, HOME_ORGANISATION, COOKWARE, TABLEWARE, COFFEE_GEAR];
+export const EDITIONS: readonly Edition[] = [DRESSES, GLASSES, TSHIRTS, LIGHTING_SMART_HOME, PANTS_JEANS, PC_GAMING, FASHION_JEWELRY, WATCHES, CHARGERS_CABLES, SLIPPERS_CLOGS, MENSWEAR, WOMENS_SHOES, HANDBAGS, MENS_SHOES, GOLD_JEWELRY, SNEAKERS, LINGERIE_SLEEPWEAR, SPORTSWEAR, HAIR_ACCESSORIES, BELTS_WALLETS, PHONE_CASES, SKINCARE, MENS_GROOMING, BEDDING_TEXTILES, DECOR, FURNITURE, HOME_ORGANISATION, COOKWARE, TABLEWARE, COFFEE_GEAR, BAKERY, FRESH_PRODUCE, MEAT_POULTRY, SPICES_HERBS];
 
 /** The pack of a niche. */
 export function getEdition(nicheId: string | null | undefined): Edition | undefined {

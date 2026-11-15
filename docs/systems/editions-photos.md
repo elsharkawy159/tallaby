@@ -2,6 +2,8 @@
 
 ROADMAP F-90. **This file is the single source of every photo our store templates show** (owner, 2026-11-12): product packshots, heroes, category tiles, banners, story and about photos, and each template's own extra slots. Every photo is generated from a prompt here and checked by eye; no new Pexels or other stock photos go into a template. The Pexels photos templates still show are listed under "Live templates" with their replacements, and are swapped as the images arrive. A template that needs a photo not listed here gets its prompt added here first.
 
+How photos are checked, uploaded and wired into a pack: [`.claude/skills/store-templates/references/photos.md`](../../.claude/skills/store-templates/references/photos.md).
+
 **Make only the essential set first (owner, 2026-11-15).** Every niche below lists just the photos its template needs to look ready (see "The essential set"). Everything else, the premium kit, second angles and extra products, is under each niche's **Later (optional)** line and in "Later (optional)" at the end of this file. Nothing was deleted; it waits.
 
 Generate them in **one ChatGPT chat per niche and kind**: paste the master prompt once, then send the short prompts one at a time.
@@ -138,7 +140,7 @@ Synced with `.editions-inbox/` on 2026-11-15 (file dates). _Have/need_ counts th
 | chargers-cables     | `kabl`         | 5 / 5       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 | lighting-smart-home | `zaki`         | 6 / 6       | Done, in the template 2026-11-15                                                                                                                                                                                   |
 
-**Waves 2–13**: wave 2 (beauty) is in progress (2026-11-15: skincare and mens-grooming are in their templates; makeup, perfumes and haircare are waiting on the images listed in their sections). Wave 3 (home, 2026-11-15): bedding-textiles, decor, furniture and home-organisation are in their templates; plants-garden is waiting on its twelve product photos. Wave 4 (kitchen, 2026-11-15): cookware, tableware and coffee-gear are in their templates; kitchen-appliances is waiting on one wide photo. Wave 5 is received but not yet built; the rest are _Not started_.
+**Waves 2–13**: wave 2 (beauty) is in progress (2026-11-15: skincare and mens-grooming are in their templates; makeup, perfumes and haircare are waiting on the images listed in their sections). Wave 3 (home, 2026-11-15): bedding-textiles, decor, furniture and home-organisation are in their templates; plants-garden is waiting on its twelve product photos. Wave 4 (kitchen, 2026-11-15): cookware, tableware and coffee-gear are in their templates; kitchen-appliances is waiting on one wide photo. Wave 5 (food, 2026-11-15): bakery, fresh-produce, meat-poultry and spices-herbs are in their templates; grocery is waiting on one wide photo; fast-food has only its products; the rest are _Not started_.
 
 | Wave | Industry              | Niche (template, essential photos)                                                                                                                                      | Essential |
 | ---- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -2183,11 +2185,13 @@ Scenes
 
 ## Wave 5: Food (6 niches)
 
-### grocery, template souq — Not started
+### grocery, template souq — Partial
 
 **Save to: `.editions-inbox/05-wave-5-food/grocery/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Partial (20 of 21, received 2026-11-15).** The 20 essential images are in the folder and uploaded, but Souq's hero carousel has three wide slides and the set has only two wide photos (`scene-hero-wide`, `scene-banner`): make **`scene-hero-3`** (below).
 
 Palette for scenes: _wheat beige, market red, kraft brown, fresh green._ Add: _"Grocery: every pack is a plain unlabelled clear bag, jar, bottle, tin or carton with no text, no printed design and no brand; the food inside clearly visible where the pack is clear."_
 
@@ -2213,6 +2217,7 @@ Scenes
 - **scene-tile-4**: A tea glass, sugar bowl and jam jars on a white tablecloth in morning light.
 - **scene-banner**: A wide pantry with neatly ordered plain jars and baskets, seen straight on.
 - **scene-story**: A small family grocery counter with a scale (display off), sacks of grains and an old wooden drawer cabinet.
+- **scene-hero-3** (16:9, carousel slide 3; phones crop it tall from the centre, so keep the subject in the middle third): Bags of rice and lentils, a bottle of oil and a jar of honey on a warm wooden pantry shelf, soft morning light.
 
 **Later (optional):** the products below (each the fourth of its category: it only fills wider grids, and no section of this template needs it), then the premium kit and second angles (see "Later (optional)" at the end of this file).
 
@@ -2223,11 +2228,13 @@ Scenes
 
 ---
 
-### fresh-produce, template khodar — Not started
+### fresh-produce, template khodar — Done
 
 **Save to: `.editions-inbox/05-wave-5-food/fresh-produce/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _leaf green, tomato red, crate wood, sunshine yellow._ Add: _"Produce: fresh, raw, washed and neat, the real colours, piled in a small group or alone on white, no stickers, no crates or baskets unless stated."_
 
@@ -2263,11 +2270,13 @@ Scenes
 
 ---
 
-### meat-poultry, template lahma — Not started
+### meat-poultry, template lahma — Done
 
 **Save to: `.editions-inbox/05-wave-5-food/meat-poultry/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _deep burgundy, butcher-paper white, slate grey, rosemary green._ Add: _"Meat: raw, fresh and neatly trimmed, laid on a plain white tray or white butcher paper, no blood pooling, no packaging labels, appetising and clean."_
 
@@ -2303,11 +2312,13 @@ Scenes
 
 ---
 
-### bakery, template loaf — Not started
+### bakery, template loaf — Done
 
 **Save to: `.editions-inbox/05-wave-5-food/bakery/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).**
 
 Palette for scenes: _golden crust, flour white, oven black, warm wheat._ Add: _"Bakery: freshly baked, golden, shown on a plain white plate, a plain white paper bag or alone on white; no printed bags, no text."_
 
@@ -2343,11 +2354,13 @@ Scenes
 
 ---
 
-### spices-herbs, template atara — Not started
+### spices-herbs, template atara — Done
 
 **Save to: `.editions-inbox/05-wave-5-food/spices-herbs/`**
 
-**Essential: 20 images** (8 scenes, 12 products: three per category). Nothing in the inbox yet.
+**Essential: 20 images** (8 scenes, 12 products: three per category).
+
+**Status: Done, in the template 2026-11-15 (20 of 20).** The `black-seed-oil-bottle` packshot came back with a jar of seeds and a jar of honey beside the bottle, so the product is named "Black Seed Oil Set with Seeds and Honey".
 
 Palette for scenes: _saffron orange, cumin brown, dried-rose pink, old brass._ Add: _"Spices: shown as a neat mound on a plain white plate or in a plain unlabelled clear jar; honey and oils in plain unlabelled glass jars and bottles; no text anywhere."_
 

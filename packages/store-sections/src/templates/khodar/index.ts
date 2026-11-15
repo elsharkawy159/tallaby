@@ -10,12 +10,19 @@
  * baskets, a fruit and veg tote, fresh herbs, a juicer with oranges,
  * tomatoes, mangoes, oranges, bananas, potatoes, aubergines and lemons. No
  * people, no hands, no logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * Khodar Express itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, primaryHref, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const KHODAR_KEY = "khodar";
 
@@ -44,81 +51,192 @@ const PHOTOS = {
 
 const NAME = L("خضار إكسبريس", "Khodar Express");
 
-const header = lib("header-search", {
-  text: {
-    "م": L("خ", "K"),
-    "اسم متجرك": NAME,
-    "ابحث عن منتج…": L("ابحث عن طماطم، مانجا، ورقيات…", "Search tomatoes, mango, greens…"),
-    "وصل حديثًا": L("خضار وفاكهة", "Fruit & veg"),
-    "الأكثر مبيعًا": L("الأكتر طلباً", "Most ordered"),
-    "العروض": L("ورقيات", "Greens"),
-    "هدايا": L("بوكسات", "Boxes"),
-    "إكسسوارات": L("عصاير", "Juicing"),
-    "توصيل خلال ٤٨ ساعة": L("نفس اليوم قبل ٣ العصر", "Same-day before 3 pm"),
+/**
+ * Khodar Express's own content: what the look is built with when no edition
+ * is applied (the template `khodar` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header's delivery chip: one short line.
+  announcement: [L("نفس اليوم قبل ٣ العصر", "Same-day before 3 pm")],
+  // The header search placeholder: three things a buyer types.
+  labels: { search: L("ابحث عن طماطم، مانجا، ورقيات…", "Search tomatoes, mango, greens…") },
+  // Four header links (one or two words each) to catalog routes; the about page's button goes to `nav.2`.
+  nav: [
+    { label: L("خضار وفاكهة", "Fruit & veg"), href: search("خضار") },
+    { label: L("ورقيات", "Greens"), href: search("ورقيات") },
+    { label: L("بوكسات", "Boxes"), href: search("بوكس") },
+    { label: L("عصاير", "Juicing"), href: search("عصير") },
+  ],
+  // A search hero: `title` is the question over the search box, `line` its placeholder.
+  hero: { title: L("محتاج إيه النهارده؟", "What do you need today?"), line: L("طماطم، مانجا، ورقيات", "Tomatoes, mango, greens") },
+  categories: { title: L("طازة النهارده", "Fresh today") },
+  // Six compact rows of what `journey.primary` shows: the title must say the same.
+  products: { primary: { title: L("الأكتر طلباً كل يوم", "Most ordered, every day") } },
+  // Optional, with `custom.reviews-city`: one buyer quote under a title, its name and city. Without them the home page ends on the delivery promise.
+  reviews: {
+    title: L("من زباينّا", "From our regulars"),
+    items: [
+      {
+        quote: L(
+          "«طلبت قبل ٣ والخضار وصل نفس اليوم، والمانجا كانت مستوية بالظبط زي ما طلبت.»",
+          "«I ordered before 3 and it came the same day. The mangoes were exactly as ripe as I asked.»",
+        ),
+        name: L("سارة ح.", "Sara H."),
+      },
+    ],
   },
-  links: { "/products": [undefined, search("خضار"), BEST, search("ورقيات"), search("بوكس"), search("عصير")] },
-});
-
-const footer = lib("footer-help", {
-  text: {
-    "م": L("خ", "K"),
-    "اسم متجرك": NAME,
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ خضار إكسبريس. كل الحقوق محفوظة.", "© 2026 Khodar Express. All rights reserved."),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-  },
-  links: { "/products": [undefined, NEW, BEST, RATED], "/contact": "/profile/orders" },
-});
-
-const home: Design[] = [
-  lib("hero-search", {
-    text: {
-      "بتدور على إيه النهارده؟": L("محتاج إيه النهارده؟", "What do you need today?"),
-      "اكتب اسم المنتج": L("طماطم، مانجا، ورقيات", "Tomatoes, mango, greens"),
-    },
-  }),
-  lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": L("طازة النهارده", "Fresh today") } }),
-  lib("products-rows", {
-    text: { "إكسسوارات بسعر حلو": L("الأكتر طلباً كل يوم", "Most ordered, every day") },
-    links: { "/products": BEST },
-    lists: [{ source: "best-sellers", limit: 6 }],
-  }),
-  lib("pay-promise", {
-    text: {
-      "اطلب قبل ٢ الضهر، يوصلك بكره": L("اطلب قبل ٣، اطبخ بالليل", "Order by 3 pm, cook it tonight"),
-      "٢:٠٠ م": L("٣:٠٠ م", "3:00 pm"),
-      "بتطلب النهارده": L("آخر ميعاد للطلب", "Order cut-off"),
-      "٦:٠٠ م": L("٥:٠٠ م", "5:00 pm"),
-      "بيتشحن": L("بيتغلف بارد", "Packed cold"),
-      "بكره": L("٨:٠٠ م", "8:00 pm"),
-      "بيوصلك": L("على بابك", "At your door"),
-    },
-  }),
-  lib("testimonials-quote", {
-    text: {
-      "آراء العملاء": L("من زباينّا", "From our regulars"),
-      "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": L(
-        "«طلبت قبل ٣ والخضار وصل نفس اليوم، والمانجا كانت مستوية بالظبط زي ما طلبت.»",
-        "«I ordered before 3 and it came the same day. The mangoes were exactly as ripe as I asked.»",
-      ),
-      "مريم أ.": L("سارة ح.", "Sara H."),
-      "القاهرة": L("المعادي", "Maadi"),
-    },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن خضار إكسبريس", "About Khodar Express"), L("خضار وفاكهة متقطفة امبارح.", "Fruit and veg picked yesterday.")),
-  aboutStory(lib, {
-    photo: PHOTOS.marketWide,
+  about: {
+    line: L("خضار وفاكهة متقطفة امبارح.", "Fruit and veg picked yesterday."),
     alt: L("سلال خضار في السوق", "Baskets of vegetables at the market"),
     eyebrow: L("من الغيط", "From the field"),
     title: L("متقطف امبارح، على بابك النهارده", "Picked yesterday, at your door today"),
     text: L("بنشتري كل يوم الفجر من مزارعين في القليوبية والفيوم، ونفرز الخضار بإيدينا قبل ما يتغلف.", "We buy every dawn from farmers in Qalyubia and Fayoum, and sort the produce before it is packed."),
     more: L("ولو حاجة مش عاجباك، بنرجعلك فلوسها من غير أسئلة.", "And if anything is not right, we refund it, no questions asked."),
-    button: L("تسوق البوكسات", "Shop boxes"),
-    href: search("بوكس"),
-  }),
-];
+    // Goes to `nav.2`.
+    cta: L("تسوق البوكسات", "Shop boxes"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("بنرد من ٨ الصبح لـ ١٠ بالليل.", "We reply from 8 am to 10 pm."),
+    heading: L("اسأل عن طلب أو بوكس", "Ask about an order or a box"),
+  },
+  faq: {
+    line: L("التوصيل والبوكسات والاسترجاع.", "Delivery, boxes and refunds."),
+    question: L("لو حاجة وصلت مش طازة؟", "What if something arrives not fresh?"),
+    answer: L("صوّرها وابعتهالنا في نفس اليوم ونرجعلك تمنها أو نبدلها.", "Send us a photo the same day and we refund or replace it."),
+  },
+  custom: {
+    // The header's link to the best sellers, two words.
+    "best-label": L("الأكتر طلباً", "Most ordered"),
+    // The delivery promise: a title, then three steps, each a time (or a day) and a short label.
+    "promise-title": L("اطلب قبل ٣، اطبخ بالليل", "Order by 3 pm, cook it tonight"),
+    "promise-time-1": L("٣:٠٠ م", "3:00 pm"),
+    "promise-step-1": L("آخر ميعاد للطلب", "Order cut-off"),
+    "promise-time-2": L("٥:٠٠ م", "5:00 pm"),
+    "promise-step-2": L("بيتغلف بارد", "Packed cold"),
+    "promise-time-3": L("٨:٠٠ م", "8:00 pm"),
+    "promise-step-3": L("على بابك", "At your door"),
+    // With `reviews`: the quote's city.
+    "reviews-city": L("المعادي", "Maadi"),
+  },
+  // The about page's photo (4:5).
+  photos: { story: PHOTOS.marketWide },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Top rated) and the layout stay here.
+ */
+function look(c: LookContent, journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const initial = initialOf(name);
+  const x = c.custom;
+  const nav = c.nav;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+
+  const header = lib("header-search", {
+    text: {
+      "م": initial,
+      "اسم متجرك": name,
+      "ابحث عن منتج…": c.labels.search,
+      "وصل حديثًا": nav[0]!.label,
+      "الأكثر مبيعًا": x["best-label"]!,
+      "العروض": nav[1]!.label,
+      "هدايا": nav[2]!.label,
+      "إكسسوارات": nav[3]!.label,
+      "توصيل خلال ٤٨ ساعة": c.announcement[0]!,
+    },
+    links: { "/products": [undefined, nav[0]!.href, BEST, nav[1]!.href, nav[2]!.href, nav[3]!.href] },
+  });
+
+  const footer = lib("footer-help", {
+    text: {
+      "م": initial,
+      "اسم متجرك": name,
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED], "/contact": "/profile/orders" },
+  });
+
+  // Absent in an edition without buyer quotes: the section is left out.
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
+  const city: LookContent["custom"][string] | undefined = x["reviews-city"];
+  const home: Design[] = [
+    lib("hero-search", {
+      text: {
+        "بتدور على إيه النهارده؟": c.hero.title,
+        "اكتب اسم المنتج": c.hero.line,
+      },
+    }),
+    lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
+    lib("products-rows", {
+      text: { "إكسسوارات بسعر حلو": c.products.primary.title },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary, limit: 6 }],
+    }),
+    lib("pay-promise", {
+      text: {
+        "اطلب قبل ٢ الضهر، يوصلك بكره": x["promise-title"]!,
+        "٢:٠٠ م": x["promise-time-1"]!,
+        "بتطلب النهارده": x["promise-step-1"]!,
+        "٦:٠٠ م": x["promise-time-2"]!,
+        "بيتشحن": x["promise-step-2"]!,
+        "بكره": x["promise-time-3"]!,
+        "بيوصلك": x["promise-step-3"]!,
+      },
+    }),
+    ...(reviews && city
+      ? [
+          lib("testimonials-quote", {
+            text: {
+              "آراء العملاء": reviews.title,
+              "«من أحسن تجارب الشراء أونلاين. الطلب وصل بسرعة، والتغليف شيك، والمنتج أحلى من الصور.»": reviews.items[0]!.quote,
+              "مريم أ.": reviews.items[0]!.name,
+              "القاهرة": city,
+            },
+          }),
+        ]
+      : []),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: nav[2]!.href,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -145,7 +263,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const KHODAR = libraryTemplate({
+export const KHODAR = editionTemplate({
   key: KHODAR_KEY,
   version: 3,
   changelog: "Khodar v3: hero first, categories, section order",
@@ -170,31 +288,37 @@ export const KHODAR = libraryTemplate({
   },
   fonts: { heading: "Tajawal", body: "Tajawal" },
   radius: 16,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن خضار إكسبريس", "About"), seo: { title: L("عن خضار إكسبريس", "About Khodar Express") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("بنرد من ٨ الصبح لـ ١٠ بالليل.", "We reply from 8 am to 10 pm."),
-        heading: L("اسأل عن طلب أو بوكس", "Ask about an order or a box"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("التوصيل والبوكسات والاسترجاع.", "Delivery, boxes and refunds."),
-        question: L("لو حاجة وصلت مش طازة؟", "What if something arrives not fresh?"),
-        answer: L("صوّرها وابعتهالنا في نفس اليوم ونرجعلك تمنها أو نبدلها.", "Send us a photo the same day and we refund or replace it."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "announcement.0",
+    "labels.search",
+    "nav.0",
+    "nav.1",
+    "nav.2",
+    "nav.3",
+    "hero.title",
+    "hero.line",
+    "categories.title",
+    "products.primary.title",
+    "about",
+    "contact",
+    "faq",
+    "photos.story",
+    "custom.best-label",
+    "custom.promise-title",
+    "custom.promise-time-1",
+    "custom.promise-step-1",
+    "custom.promise-time-2",
+    "custom.promise-step-2",
+    "custom.promise-time-3",
+    "custom.promise-step-3",
   ],
+  // A buyer quote is a demo claim: a pack writes a real one (with its city) or leaves it out (the section is then not built).
+  // Six best sellers in compact rows; no category rows.
+  optional: ["reviews", "custom.reviews-city"],
+  journey: { primary: "best-sellers", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

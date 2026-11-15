@@ -10,12 +10,19 @@
  * raw cuts with a pepper mill, minced beef, kofta on a grill and on a
  * plate, lamb chops, sausages, a pot roast, a grilled steak and half a
  * grilled chicken. No people, no hands, no logos.
+ *
+ * Edition-ready (ROADMAP F-90, `../editions/README.md`): the sections are
+ * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
+ * El Gazzar itself. The output is unchanged from before the conversion
+ * (`../editions/look-guard.test.ts`), so the version stays as it was.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { demoStore, libraryTemplate, pexels } from "../library-template";
+import { copyrightLine, editionTemplate, initialOf, type LookParts } from "../editions/apply";
+import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
+import { demoStore, pexels } from "../library-template";
 
 export const LAHMA_KEY = "lahma";
 
@@ -44,109 +51,240 @@ const PHOTOS = {
 
 const NAME = L("الجزار", "El Gazzar");
 
-const header = lib("header-brand-bar", {
-  text: {
-    "م": L("ج", "G"),
-    "اسم متجرك": NAME,
-    "ابحث في المتجر": L("ابحث عن كفتة، ريش، بوكس…", "Search kofta, chops, boxes…"),
+/**
+ * El Gazzar's own content: what the look is built with when no edition is
+ * applied (the template `lahma` has always meant). The store name and
+ * description and the category tiles come from `DEMO`.
+ */
+const DEFAULT_CONTENT: LookDefaults = {
+  // The header search placeholder: three things a buyer types.
+  labels: { search: L("ابحث عن كفتة، ريش، بوكس…", "Search kofta, chops, boxes…") },
+  // Only `nav.0.href` is read: where the hero's and the about page's buttons go.
+  nav: [{ label: L("بوكسات", "Boxes"), href: search("بوكس") }],
+  // The poster hero: an eyebrow, a title, a line and a button (to `nav.0.href`), plus `custom.hero-note` and the round sticker (`custom.hero-sticker-1..3`, a price point, not an offer).
+  hero: {
+    alt: L("قطعية ريش على لوح خشب", "A rib cut on a wooden board"),
+    eyebrow: L("بوكسات العيد", "Eid boxes"),
+    title: L("من مزرعتنا لتلاجتك", "From our farm to your fridge"),
+    line: L("بيتقطع بالطلب كل يوم الصبح وبيوصل متلج في نفس اليوم.", "Cut to order every morning, delivered cold within the day."),
+    cta: L("تسوق البوكسات", "Shop boxes"),
   },
-});
-
-const footer = lib("footer-signoff", {
-  text: {
-    "شكرًا إنك عدّيت علينا": L("بيتقطع طازة كل يوم الصبح", "Cut fresh, every morning"),
-    "كلمنا على واتساب": L("اطلب على واتساب", "Order on WhatsApp"),
-    "العروض": L("الأعلى تقييماً", "Top rated"),
-    "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": L("© ٢٠٢٦ الجزار. كل الحقوق محفوظة.", "© 2026 El Gazzar. All rights reserved."),
+  categories: { title: L("هتطبخ إيه النهارده؟", "What are you cooking today?") },
+  // The bento block: a small eyebrow over its title.
+  products: { primary: { eyebrow: L("الأكتر طلباً", "Most ordered"), title: L("الأسبوع ده", "This week") } },
+  // Optional, with `custom.reviews-city-1..4`: a wall of six short buyer quotes under a title. Without them the home page ends on the delivery zones.
+  reviews: {
+    title: L("الزباين", "Regulars"),
+    items: [
+      { quote: L("بوكس العيد وصل متلج ومتقطع زي ما طلبت بالظبط.", "The Eid box arrived chilled and cut exactly as I asked.") },
+      { quote: L("الكفتة متتبلة حلو ومش محتاجة أي حاجة.", "The kofta is seasoned just right and needs nothing else.") },
+      { quote: L("طلبت قطعية مخصوص للشوي والجزار نصحني بالأحسن.", "I asked for a special grilling cut and the butcher suggested a better one.") },
+      { quote: L("أول مرة أطلب لحمة أونلاين وأطمن عليها.", "The first time I have trusted meat ordered online.") },
+      { quote: L("اللحمة بلدي فعلاً وأسعارها أحسن من المحلات.", "Truly local beef, and cheaper than the shops.") },
+      { quote: L("فتحت الشنطة قدام المندوب ولقيت كل حاجة سليمة.", "I opened the bag in front of the courier and everything was right.") },
+    ],
   },
-  links: { "/products": [undefined, NEW, BEST, RATED] },
-});
-
-const home: Design[] = [
-  lib("hero-poster", {
-    photo: [undefined, undefined, PHOTOS.ribRoastWide],
-    text: {
-      "مجموعة الموسم": L("بوكسات العيد", "Eid boxes"),
-      "من ١ إلى ٣٠ نوفمبر": L("اطلب قبلها بـ٤٨ ساعة", "Order 48 h ahead"),
-      "صورة الحملة": L("قطعية ريش على لوح خشب", "A rib cut on a wooden board"),
-      "خصم": L("من", "From"),
-      "٣٠٪": L("٢٤٠٠", "2,400"),
-      "لفترة محدودة": L("ج.م", "EGP"),
-      "الموسم الجديد وصل": L("من مزرعتنا لتلاجتك", "From our farm to your fridge"),
-      "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": L(
-        "بيتقطع بالطلب كل يوم الصبح وبيوصل متلج في نفس اليوم.",
-        "Cut to order every morning, delivered cold within the day.",
-      ),
-      "اكتشف المجموعة": L("تسوق البوكسات", "Shop boxes"),
-    },
-    links: { "/products": search("بوكس") },
-  }),
-  lib("categories-circles", { text: { "بتدوّر على إيه؟": L("هتطبخ إيه النهارده؟", "What are you cooking today?") } }),
-  lib("products-bento", {
-    text: {
-      "الأكثر طلبًا": L("الأكتر طلباً", "Most ordered"),
-      "الكل بيسأل عليهم": L("الأسبوع ده", "This week"),
-    },
-    links: { "/products": BEST },
-  }),
-  lib("pay-zones", {
-    text: {
-      "التوصيل": L("توصيل مبرد", "Cold chain"),
-      "بنوصل لكل مصر": L("توصيل مبرد", "Cold-chain delivery"),
-      "المدة والمصاريف حسب محافظتك.": L("عربيات مبردة من المحل لباب بيتك.", "Chilled vans from our shop to your door."),
-      "توصيل مجاني للطلبات فوق ١٬٥٠٠ ج.م": L("توصيل مجاني للطلبات فوق ١٬٠٠٠ ج.م", "Free delivery on orders over EGP 1,000"),
-      "القاهرة والجيزة": L("وسط القاهرة", "Downtown Cairo"),
-      "١–٢ يوم": L("نفس اليوم", "Same day"),
-      "٥٠ ج.م": L("٤٠ ج.م", "EGP 40"),
-      "الإسكندرية والدلتا": L("الجيزة والدقي", "Giza & Dokki"),
-      "مدن القناة": L("مدينة نصر ومصر الجديدة", "Nasr City & Heliopolis"),
-      "٢–٣ أيام": L("نفس اليوم", "Same day"),
-      "٦٥ ج.م": L("٤٠ ج.م", "EGP 40"),
-      "الصعيد": L("٦ أكتوبر والشيخ زايد", "6th of October & Sheikh Zayed"),
-      "٣–٥ أيام": L("نفس اليوم", "Same day"),
-      "٨٠ ج.م": L("٥٥ ج.م", "EGP 55"),
-      "البحر الأحمر وسيناء": L("العاصمة الجديدة", "New Capital"),
-      "٤–٦ أيام": L("تاني يوم", "Next day"),
-      "٩٥ ج.م": L("٧٠ ج.م", "EGP 70"),
-    },
-  }),
-  lib("testimonials-wall", {
-    text: {
-      "ماذا يقولون عنا": L("الزباين", "Regulars"),
-      "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": L(
-        "بوكس العيد وصل متلج ومتقطع زي ما طلبت بالظبط.",
-        "The Eid box arrived chilled and cut exactly as I asked.",
-      ),
-      "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": L("الكفتة متتبلة حلو ومش محتاجة أي حاجة.", "The kofta is seasoned just right and needs nothing else."),
-      "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": L(
-        "طلبت قطعية مخصوص للشوي والجزار نصحني بالأحسن.",
-        "I asked for a special grilling cut and the butcher suggested a better one.",
-      ),
-      "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": L("أول مرة أطلب لحمة أونلاين وأطمن عليها.", "The first time I have trusted meat ordered online."),
-      "أسعار معقولة وجودة أفضل مما توقعت.": L("اللحمة بلدي فعلاً وأسعارها أحسن من المحلات.", "Truly local beef, and cheaper than the shops."),
-      "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": L("فتحت الشنطة قدام المندوب ولقيت كل حاجة سليمة.", "I opened the bag in front of the courier and everything was right."),
-      "المنصورة": L("مدينة نصر", "Nasr City"),
-      "الإسكندرية": L("الدقي", "Dokki"),
-      "أسيوط": L("المعادي", "Maadi"),
-      "طنطا": L("الشيخ زايد", "Sheikh Zayed"),
-    },
-    links: { "/products": RATED },
-  }),
-];
-
-const about: Design[] = [
-  pageHeader(lib, "about-header", L("عن الجزار", "About El Gazzar"), L("مزرعة وجزارة من ١٩٨٨.", "A farm and butcher’s since 1988.")),
-  aboutStory(lib, {
-    photo: PHOTOS.rawCutsWide,
+  // The footer's sign-off line.
+  footer: { line: L("بيتقطع طازة كل يوم الصبح", "Cut fresh, every morning") },
+  about: {
+    line: L("مزرعة وجزارة من ١٩٨٨.", "A farm and butcher’s since 1988."),
     alt: L("قطعيات لحمة طازة على لوح", "Fresh cuts of meat on a board"),
     eyebrow: L("من المزرعة", "From the farm"),
     title: L("بنربي ونقطع ونوصل بنفسنا", "We raise, cut and deliver ourselves"),
     text: L("عجولنا بتتربى في مزرعتنا في المنوفية على علف طبيعي، وبتتدبح وتتقطع في المحل كل يوم الصبح.", "Our cattle are raised on natural feed at our farm in Menoufia, then cut at the shop every morning."),
     more: L("وكل طلب بيخرج في شنطة مبردة لحد باب بيتك.", "And every order leaves in a chilled bag, all the way to your door."),
-    button: L("تسوق البوكسات", "Shop boxes"),
-    href: search("بوكس"),
-  }),
-];
+    // Goes to `nav.0.href`.
+    cta: L("تسوق البوكسات", "Shop boxes"),
+  },
+  contact: {
+    title: L("تواصل", "Contact"),
+    line: L("المحل مفتوح كل يوم من ٧ الصبح لـ ١١ بالليل.", "The shop is open daily from 7 am to 11 pm."),
+    heading: L("اطلب قطعية مخصوص", "Ask for a special cut"),
+  },
+  faq: {
+    line: L("القطعيات والتوصيل المبرد والدفع.", "Cuts, cold-chain delivery and payment."),
+    question: L("ينفع أطلب تقطيع معين؟", "Can I ask for a specific cut?"),
+    answer: L("أيوه، اكتب طلبك في الملاحظات أو ابعتلنا على واتساب قبلها بيوم.", "Yes, write it in the order notes or message us on WhatsApp a day ahead."),
+  },
+  custom: {
+    // The footer's sign-off button (WhatsApp), two or three words.
+    "footer-cta": L("اطلب على واتساب", "Order on WhatsApp"),
+    // The hero's small line and its round sticker (three short parts: a word, a number, a unit).
+    "hero-note": L("اطلب قبلها بـ٤٨ ساعة", "Order 48 h ahead"),
+    "hero-sticker-1": L("من", "From"),
+    "hero-sticker-2": L("٢٤٠٠", "2,400"),
+    "hero-sticker-3": L("ج.م", "EGP"),
+    // The delivery zones: an eyebrow, a title, a line, a note, then five zones, each a name, a delivery time and a fee.
+    "zones-eyebrow": L("توصيل مبرد", "Cold chain"),
+    "zones-title": L("توصيل مبرد", "Cold-chain delivery"),
+    "zones-line": L("عربيات مبردة من المحل لباب بيتك.", "Chilled vans from our shop to your door."),
+    "zones-note": L("توصيل مجاني للطلبات فوق ١٬٠٠٠ ج.م", "Free delivery on orders over EGP 1,000"),
+    "zone-1-name": L("وسط القاهرة", "Downtown Cairo"),
+    "zone-1-time": L("نفس اليوم", "Same day"),
+    "zone-1-price": L("٤٠ ج.م", "EGP 40"),
+    "zone-2-name": L("الجيزة والدقي", "Giza & Dokki"),
+    "zone-3-name": L("مدينة نصر ومصر الجديدة", "Nasr City & Heliopolis"),
+    "zone-3-time": L("نفس اليوم", "Same day"),
+    "zone-3-price": L("٤٠ ج.م", "EGP 40"),
+    "zone-4-name": L("٦ أكتوبر والشيخ زايد", "6th of October & Sheikh Zayed"),
+    "zone-4-time": L("نفس اليوم", "Same day"),
+    "zone-4-price": L("٥٥ ج.م", "EGP 55"),
+    "zone-5-name": L("العاصمة الجديدة", "New Capital"),
+    "zone-5-time": L("تاني يوم", "Next day"),
+    "zone-5-price": L("٧٠ ج.م", "EGP 70"),
+    // With `reviews`: four cities shown on the wall.
+    "reviews-city-1": L("مدينة نصر", "Nasr City"),
+    "reviews-city-2": L("الدقي", "Dokki"),
+    "reviews-city-3": L("المعادي", "Maadi"),
+    "reviews-city-4": L("الشيخ زايد", "Sheikh Zayed"),
+  },
+  // hero.wide: the poster hero; story: the about page.
+  photos: { hero: { wide: PHOTOS.ribRoastWide }, story: PHOTOS.rawCutsWide },
+};
+
+/**
+ * The look: every section from a content object (`DEFAULT_CONTENT`, or an
+ * edition's). What names the trade is a slot of `c`; generic shop labels
+ * (Top rated) and the layout stay here.
+ */
+function look(c: LookContent, _journey: LookJourney): LookParts {
+  const name = c.store.name;
+  const x = c.custom;
+  const main = c.nav[0]!.href;
+  const tiles = c.photos.tiles.length;
+  const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
+  // The logo letter skips the article ("الجزار" → "ج", "El Gazzar" → "G").
+  const ar = name.ar.startsWith("ال") && [...name.ar].length > 2 ? name.ar.slice(2) : name.ar;
+  const en = /^(El|Al) \S/.test(name.en) ? name.en.slice(3) : name.en;
+  const initial = initialOf(L(ar, en));
+
+  const header = lib("header-brand-bar", {
+    text: {
+      "م": initial,
+      "اسم متجرك": name,
+      "ابحث في المتجر": c.labels.search,
+    },
+  });
+
+  const footer = lib("footer-signoff", {
+    text: {
+      "شكرًا إنك عدّيت علينا": c.footer.line,
+      "كلمنا على واتساب": x["footer-cta"]!,
+      "العروض": L("الأعلى تقييماً", "Top rated"),
+      "© ٢٠٢٦ اسم متجرك. كل الحقوق محفوظة.": copyrightLine(name),
+    },
+    links: { "/products": [undefined, NEW, BEST, RATED] },
+  });
+
+  // Absent in an edition without buyer quotes: the section is left out.
+  const reviews: LookContent["reviews"] | undefined = c.reviews;
+  const city: LookContent["custom"][string] | undefined = x["reviews-city-1"];
+  const home: Design[] = [
+    lib("hero-poster", {
+      photo: [undefined, undefined, c.photos.hero.wide],
+      text: {
+        "مجموعة الموسم": c.hero.eyebrow,
+        "من ١ إلى ٣٠ نوفمبر": x["hero-note"]!,
+        "صورة الحملة": c.hero.alt,
+        "خصم": x["hero-sticker-1"]!,
+        "٣٠٪": x["hero-sticker-2"]!,
+        "لفترة محدودة": x["hero-sticker-3"]!,
+        "الموسم الجديد وصل": c.hero.title,
+        "قطع خفيفة بخامات طبيعية، مقاسات كاملة وتبديل مجاني خلال ١٤ يومًا.": c.hero.line,
+        "اكتشف المجموعة": c.hero.cta,
+      },
+      links: { "/products": main },
+    }),
+    lib("categories-circles", {
+      text: { "بتدوّر على إيه؟": c.categories.title },
+      // Six across by design; a store with another number of categories gets one full row of them (phones swipe).
+      ...(tiles !== 6 && { nodes: { "الأقسام": { style: { columns: tiles }, tablet: { columns: tiles } } } }),
+    }),
+    lib("products-bento", {
+      text: {
+        "الأكثر طلبًا": c.products.primary.eyebrow,
+        "الكل بيسأل عليهم": c.products.primary.title,
+      },
+      links: { "/products": BEST },
+    }),
+    lib("pay-zones", {
+      text: {
+        "التوصيل": x["zones-eyebrow"]!,
+        "بنوصل لكل مصر": x["zones-title"]!,
+        "المدة والمصاريف حسب محافظتك.": x["zones-line"]!,
+        "توصيل مجاني للطلبات فوق ١٬٥٠٠ ج.م": x["zones-note"]!,
+        "القاهرة والجيزة": x["zone-1-name"]!,
+        "١–٢ يوم": x["zone-1-time"]!,
+        "٥٠ ج.م": x["zone-1-price"]!,
+        "الإسكندرية والدلتا": x["zone-2-name"]!,
+        "مدن القناة": x["zone-3-name"]!,
+        "٢–٣ أيام": x["zone-3-time"]!,
+        "٦٥ ج.م": x["zone-3-price"]!,
+        "الصعيد": x["zone-4-name"]!,
+        "٣–٥ أيام": x["zone-4-time"]!,
+        "٨٠ ج.م": x["zone-4-price"]!,
+        "البحر الأحمر وسيناء": x["zone-5-name"]!,
+        "٤–٦ أيام": x["zone-5-time"]!,
+        "٩٥ ج.م": x["zone-5-price"]!,
+      },
+    }),
+    ...(reviews && city
+      ? [
+          lib("testimonials-wall", {
+            text: {
+              "ماذا يقولون عنا": reviews.title,
+              "طلبت يوم الأحد ووصل الثلاثاء. التغليف كان مرتبًا والمنتج كما في الصور تمامًا.": reviews.items[0]!.quote,
+              "ثاني مرة أطلب. كل شيء أصلي والفاتورة داخل العلبة.": reviews.items[1]!.quote,
+              "بدّلت المقاس بدون أي تعب، والفريق رد علي في دقائق.": reviews.items[2]!.quote,
+              "وصل إلى أسيوط في ٣ أيام، وهذا لم أكن أتوقعه.": reviews.items[3]!.quote,
+              "أسعار معقولة وجودة أفضل مما توقعت.": reviews.items[4]!.quote,
+              "خدمة العملاء محترمة جدًا وساعدوني أختار الصح.": reviews.items[5]!.quote,
+              "المنصورة": city,
+              "الإسكندرية": x["reviews-city-2"]!,
+              "أسيوط": x["reviews-city-3"]!,
+              "طنطا": x["reviews-city-4"]!,
+            },
+            links: { "/products": RATED },
+          }),
+        ]
+      : []),
+  ];
+
+  const about: Design[] = [
+    pageHeader(lib, "about-header", aboutName, c.about.line),
+    aboutStory(lib, {
+      photo: c.photos.story,
+      alt: c.about.alt,
+      eyebrow: c.about.eyebrow,
+      title: c.about.title,
+      text: c.about.text,
+      more: c.about.more,
+      button: c.about.cta,
+      href: main,
+    }),
+  ];
+
+  return {
+    header,
+    footer,
+    pages: [
+      { slug: "home", name: L("الرئيسية", "Home"), sections: home },
+      { slug: "about", name: L(aboutName.ar, "About"), seo: { title: aboutName }, sections: about },
+      {
+        slug: "contact",
+        name: L("تواصل", "Contact"),
+        seo: { title: L("تواصل", "Contact") },
+        sections: contactPage(lib, { title: c.contact.title, text: c.contact.line, heading: c.contact.heading }),
+      },
+      {
+        slug: "faq",
+        name: L("الأسئلة الشائعة", "FAQ"),
+        seo: { title: L("الأسئلة الشائعة", "FAQ") },
+        sections: faqPage(lib, { text: c.faq.line, question: c.faq.question, answer: c.faq.answer }),
+      },
+    ],
+  };
+}
 
 const DEMO = demoStore({
   name: NAME,
@@ -174,7 +312,7 @@ const DEMO = demoStore({
   ],
 });
 
-export const LAHMA = libraryTemplate({
+export const LAHMA = editionTemplate({
   key: LAHMA_KEY,
   version: 3,
   changelog: "Lahma v3: categories, one delivery block, section order",
@@ -199,31 +337,49 @@ export const LAHMA = libraryTemplate({
   },
   fonts: { heading: "Changa", body: "Cairo" },
   radius: 6,
-  header,
-  footer,
-  pages: [
-    { slug: "home", name: L("الرئيسية", "Home"), sections: home },
-    { slug: "about", name: L("عن الجزار", "About"), seo: { title: L("عن الجزار", "About El Gazzar") }, sections: about },
-    {
-      slug: "contact",
-      name: L("تواصل", "Contact"),
-      seo: { title: L("تواصل", "Contact") },
-      sections: contactPage(lib, {
-        title: L("تواصل", "Contact"),
-        text: L("المحل مفتوح كل يوم من ٧ الصبح لـ ١١ بالليل.", "The shop is open daily from 7 am to 11 pm."),
-        heading: L("اطلب قطعية مخصوص", "Ask for a special cut"),
-      }),
-    },
-    {
-      slug: "faq",
-      name: L("الأسئلة الشائعة", "FAQ"),
-      seo: { title: L("الأسئلة الشائعة", "FAQ") },
-      sections: faqPage(lib, {
-        text: L("القطعيات والتوصيل المبرد والدفع.", "Cuts, cold-chain delivery and payment."),
-        question: L("ينفع أطلب تقطيع معين؟", "Can I ask for a specific cut?"),
-        answer: L("أيوه، اكتب طلبك في الملاحظات أو ابعتلنا على واتساب قبلها بيوم.", "Yes, write it in the order notes or message us on WhatsApp a day ahead."),
-      }),
-    },
+  lib,
+  look,
+  // Every slot `look` reads; an edition must hold them all.
+  slots: [
+    "labels.search",
+    "nav.0.href",
+    "hero",
+    "categories.title",
+    "products.primary.eyebrow",
+    "products.primary.title",
+    "footer.line",
+    "about",
+    "contact",
+    "faq",
+    "photos.hero.wide",
+    "photos.story",
+    "custom.footer-cta",
+    "custom.hero-note",
+    "custom.hero-sticker-1",
+    "custom.hero-sticker-2",
+    "custom.hero-sticker-3",
+    "custom.zones-eyebrow",
+    "custom.zones-title",
+    "custom.zones-line",
+    "custom.zones-note",
+    "custom.zone-1-name",
+    "custom.zone-1-time",
+    "custom.zone-1-price",
+    "custom.zone-2-name",
+    "custom.zone-3-name",
+    "custom.zone-3-time",
+    "custom.zone-3-price",
+    "custom.zone-4-name",
+    "custom.zone-4-time",
+    "custom.zone-4-price",
+    "custom.zone-5-name",
+    "custom.zone-5-time",
+    "custom.zone-5-price",
   ],
+  // Buyer quotes are demo claims: a pack writes real ones (with four cities) or leaves them out (the section is then not built).
+  // The bento block shows the design's own list, so `primary` is not read; no category rows.
+  optional: ["reviews", "custom.reviews-city-1", "custom.reviews-city-2", "custom.reviews-city-3", "custom.reviews-city-4"],
+  journey: { primary: "best-sellers", rows: [] },
+  defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });
