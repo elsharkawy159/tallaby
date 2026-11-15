@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
-import { HOME_RANGES, type HomeChannel, type HomeRange } from "./home.shared";
+import { DEFAULT_HOME_RANGE, HOME_RANGES, type HomeChannel, type HomeRange } from "./home.shared";
 
 type RangeContext = {
   range: HomeRange;
@@ -61,7 +61,7 @@ export function HomeRangeProvider({
     if (next === optimisticRange) return;
     startTransition(() => {
       setOptimisticRange(next);
-      replaceParam("range", next === 7 ? null : String(next));
+      replaceParam("range", next === DEFAULT_HOME_RANGE ? null : String(next));
     });
   };
 

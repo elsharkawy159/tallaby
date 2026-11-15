@@ -4,9 +4,12 @@
 export const HOME_RANGES = [7, 30, 90] as const;
 export type HomeRange = (typeof HOME_RANGES)[number];
 
+/** The period shown when the URL has no valid `?range=`; it is left out of the URL. */
+export const DEFAULT_HOME_RANGE: HomeRange = 30;
+
 export function parseHomeRange(value: string | string[] | undefined): HomeRange {
   const n = Number(Array.isArray(value) ? value[0] : value);
-  return (HOME_RANGES as readonly number[]).includes(n) ? (n as HomeRange) : 7;
+  return (HOME_RANGES as readonly number[]).includes(n) ? (n as HomeRange) : DEFAULT_HOME_RANGE;
 }
 
 /** Set when the seller hides the setup checklist. */

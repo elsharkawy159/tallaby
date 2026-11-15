@@ -1,7 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { parseHomeChannel, resolveHomeChannel } from "./home.shared";
+import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./home.shared";
 
 const STORE = "33333333-3333-4333-8333-333333333333";
+
+describe("parseHomeRange", () => {
+  it("defaults to 30 days", () => {
+    expect(parseHomeRange(undefined)).toBe(30);
+    expect(parseHomeRange("")).toBe(30);
+    expect(parseHomeRange("14")).toBe(30);
+    expect(parseHomeRange("abc")).toBe(30);
+  });
+
+  it("keeps an explicit choice", () => {
+    expect(parseHomeRange("7")).toBe(7);
+    expect(parseHomeRange("30")).toBe(30);
+    expect(parseHomeRange(["90", "7"])).toBe(90);
+  });
+});
 
 describe("parseHomeChannel", () => {
   it("accepts all, marketplace and a store id", () => {
