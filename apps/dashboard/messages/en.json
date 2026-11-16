@@ -9007,5 +9007,9 @@
     "button": "Yes, stop the reminders",
     "done": "Done. You won't get more store setup reminders.",
     "invalid": "This link doesn't work or has expired."
+  },
+  "editorSmallScreen": {
+    "message": "Editing is easier on a computer or tablet. You can still continue on your phone.",
+    "dismiss": "Dismiss"
   }
 }

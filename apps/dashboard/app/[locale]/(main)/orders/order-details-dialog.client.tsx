@@ -263,8 +263,14 @@ export function OrderDetailsDialog({
                                 quantity: line.quantity,
                                 price: formatMoney(line.price, locale, unit),
                               })}
-                              {line.sku && <span> ({t("sku", { sku: line.sku })})</span>}
                             </div>
+                            {line.sku && (
+                              <div className="text-[11px] text-(--s-subtle)">
+                                <bdi dir="ltr" className="break-all">
+                                  {t("sku", { sku: line.sku })}
+                                </bdi>
+                              </div>
+                            )}
                             <OrderLineCustomerInputs orderId={order.id} orderItemId={line.id} value={line.customerInputs} />
                           </div>
                           <div className="shrink-0 text-end font-montserrat text-[13px] font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, unit)}>

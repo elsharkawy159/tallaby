@@ -20,6 +20,7 @@ import { toTemplateCardViews } from "@/app/[locale]/(main)/stores/[storeId]/webs
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
 import { findIndustry, templatesForIndustry } from "@workspace/store-editor/lib/industries.lib";
 import { SellerEditor } from "./seller-editor.client";
+import { SmallScreenNoticeFrame } from "./small-screen-notice.client";
 import { loadEditorSnapshot } from "./server/editor.data";
 import { loadLibraryPresets } from "./server/library.data";
 
@@ -120,5 +121,9 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     previewProduct,
   };
 
-  return <SellerEditor initial={initial} />;
+  return (
+    <SmallScreenNoticeFrame>
+      <SellerEditor initial={initial} />
+    </SmallScreenNoticeFrame>
+  );
 }
