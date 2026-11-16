@@ -9,7 +9,109 @@
     "login": "Log in",
     "closeMenu": "Close menu",
     "mobile": "Mobile menu",
-    "solutions": "Solutions"
+    "solutions": "Solutions",
+    "productMenu": {
+      "label": "Tallaby features",
+      "open": "Open the features menu",
+      "allFeatures": "All features",
+      "allFeaturesBody": "One page per feature: what it does and how to turn it on.",
+      "areas": {
+        "build": {
+          "title": "Build your store",
+          "body": "Design, templates, domain and store app."
+        },
+        "run": {
+          "title": "Run your business",
+          "body": "Products, orders, shipping and protection."
+        },
+        "market": {
+          "title": "Marketing and reports",
+          "body": "Offers, email, reports and search."
+        },
+        "paid": {
+          "title": "Get paid",
+          "body": "Cash on delivery, wallets and cards."
+        }
+      },
+      "items": {
+        "store-design": {
+          "title": "Store design",
+          "body": "Edit every element with drag and drop."
+        },
+        "templates": {
+          "title": "Templates",
+          "body": "Ready designs for each kind of store."
+        },
+        "custom-domain": {
+          "title": "Custom domain",
+          "body": "Your store under your own brand."
+        },
+        "store-app": {
+          "title": "Store app",
+          "body": "Customers add your store to their phone."
+        },
+        "ai-online-store": {
+          "title": "AI product writing",
+          "body": "Product copy in Arabic and English."
+        },
+        "product-management": {
+          "title": "Products and stock",
+          "body": "Import, bulk edit and stock alerts."
+        },
+        "order-management": {
+          "title": "Orders and customers",
+          "body": "Every order and customer in one place."
+        },
+        "shipping": {
+          "title": "Shipping",
+          "body": "Zones, Bosta and your own riders."
+        },
+        "fake-order-protection": {
+          "title": "Fake-order protection",
+          "body": "Block numbers, confirm on WhatsApp."
+        },
+        "abandoned-checkouts": {
+          "title": "Abandoned checkouts",
+          "body": "Reach shoppers who didn't finish."
+        },
+        "offers-and-coupons": {
+          "title": "Offers and coupons",
+          "body": "Coupons, quantity offers, automatic discounts."
+        },
+        "email-marketing": {
+          "title": "Email campaigns",
+          "body": "Campaigns and emails that bring buyers back."
+        },
+        "reports": {
+          "title": "Reports",
+          "body": "Sales, sources and refusal rates."
+        },
+        "store-seo": {
+          "title": "Store SEO",
+          "body": "Titles, descriptions and a sitemap."
+        },
+        "meta-pixel": {
+          "title": "Meta Pixel",
+          "body": "Measure your Facebook and Instagram ads."
+        },
+        "online-payments": {
+          "title": "Payment methods",
+          "body": "Every way your customers can pay."
+        },
+        "cash-on-delivery": {
+          "title": "Cash on delivery",
+          "body": "On from day one, with an optional deposit."
+        },
+        "paymob": {
+          "title": "Paymob",
+          "body": "Take cards into your own account."
+        },
+        "kashier": {
+          "title": "Kashier",
+          "body": "A card gateway in your own name."
+        }
+      }
+    }
   },
   "siteFooter": {
     "solutions": "Solutions",

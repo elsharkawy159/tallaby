@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createTranslator, NextIntlClientProvider } from "next-intl";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { DetailPageView } from "@/components/marketing/features/detail-page";
+import { ProductPageView } from "@/components/marketing/features/product-page";
 import IntegrationsPage from "@/app/[locale]/(marketing)/(site)/integrations/page";
 import CompareHub from "@/app/[locale]/(marketing)/(site)/compare/page";
 import SolutionsHub from "@/app/[locale]/(marketing)/(site)/solutions/page";
@@ -22,6 +23,7 @@ import { loadAllMessages } from "@/i18n/messages";
 import { alternativeCompetitors, alternativesShortlist, competitorSources, publishableCompetitors } from "@/lib/marketing/compare.lib";
 import { FEATURE_PAGES, INTEGRATION_PAGES } from "@/lib/marketing/detail-pages.lib";
 import { INDUSTRIES } from "@/lib/marketing/industries.lib";
+import { PRODUCT_MENU, PRODUCT_PAGES } from "@/lib/marketing/product-pages.lib";
 import { SOLUTIONS } from "@/lib/marketing/solutions.lib";
 import type { RankingArticle } from "@/lib/marketing/ranking.lib";
 
@@ -117,6 +119,19 @@ describe.each(["ar", "en"])("content pages render (%s)", (locale) => {
     for (const page of [...FEATURE_PAGES, ...INTEGRATION_PAGES]) check(await html(<DetailPageView page={page} />));
   });
 
+  it("product pages, with one H1, FAQPage data and links to every sibling in their group", async () => {
+    for (const page of PRODUCT_PAGES) {
+      const out = await html(<ProductPageView page={page} />);
+      check(out);
+      expect(out.match(/<h1/g), page.slug).toHaveLength(1);
+      expect(out, page.slug).toContain('"@type":"FAQPage"');
+      expect(out, page.slug).toContain('"@type":"BreadcrumbList"');
+      for (const item of PRODUCT_MENU[page.area]) expect(out, `${page.slug} → ${item.href}`).toContain(`href="${item.href}"`);
+      for (const { href } of page.related) expect(out, page.slug).toContain(`href="${href}"`);
+      expect(out, page.slug).toContain('href="/pricing"');
+    }
+  });
+
   it("the integrations hub, with soon items and a link only where a page exists", async () => {
     const out = await html(await IntegrationsPage());
     check(out);
@@ -187,7 +202,7 @@ describe.each(["ar", "en"])("content pages render (%s)", (locale) => {
   it("the solutions, features and tools hubs link every page under them", async () => {
     const hubs: [() => Promise<React.ReactNode>, string[]][] = [
       [SolutionsHub, SOLUTIONS.map((solution) => `/solutions/${solution.slug}`)],
-      [FeaturesHub, FEATURE_PAGES.map((page) => `/features/${page.slug}`)],
+      [FeaturesHub, [...FEATURE_PAGES, ...PRODUCT_PAGES].map((page) => `/features/${page.slug}`)],
       [ToolsHub, TOOL_SLUGS.map((slug) => `/tools/${slug}`)],
     ];
     for (const [Hub, hrefs] of hubs) {

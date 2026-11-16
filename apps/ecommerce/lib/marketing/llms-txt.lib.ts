@@ -2,6 +2,7 @@ import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS, TOP_UP_MIN_USD_CENTS }
 import { PLANS } from "@workspace/lib/plans";
 import { COMPARE_PUBLIC, compareSlug, publicCompetitors } from "./compare.lib";
 import { FEATURE_PAGES, INTEGRATION_PAGES } from "./detail-pages.lib";
+import { PRODUCT_PAGES } from "./product-pages.lib";
 import { INDUSTRIES } from "./industries.lib";
 import { formatNumber, formatUsd } from "./pricing.lib";
 import { localizedUrl } from "./seo.lib";
@@ -37,6 +38,7 @@ export function llmsTxtSections(comparePublic: boolean = COMPARE_PUBLIC, now: nu
         { path: "/pricing", metaKey: "pricing" },
         { path: "/features", metaKey: "features" },
         ...FEATURE_PAGES.map((page) => ({ path: `/features/${page.slug}`, metaKey: `feature-${page.slug}` })),
+        ...PRODUCT_PAGES.map((page) => ({ path: `/features/${page.slug}`, metaKey: `feature-${page.slug}` })),
         { path: "/templates", metaKey: "templates" },
       ],
     },

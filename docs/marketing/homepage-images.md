@@ -209,3 +209,61 @@ Wiring checks: 390 px and 1440 px in Arabic and English, no layout shift (fixed 
 4. Name each file exactly as in the list (lowercase, hyphens).
 5. Drop them into `apps/ecommerce/public/marketing/home/` (create the folder).
 6. Tell Claude which files are in. Missing Nice-to-have files are fine; the page works without them.
+
+## 6. Product pages (tallaby.com/features/…)
+
+The nine product pages (`lib/marketing/product-pages.lib.ts`) already show real template screenshots and coded dashboard screens, so they work without these. Each page has one optional **spot illustration** slot, the `art` field of its entry, drawn at the hero picture's top corner at ≥1081 px only (about 140 px, `alt=""`, `aria-hidden`). Same style guide as §1, same chat as the home spots so they match. All are Nice to have.
+
+| # | File (deliver as) | Page | Request | Export | Transparent | Priority |
+|---|---|---|---|---|---|---|
+| 18 | `feature-store-design.png` | /features/store-design | 1024×1024 | 384×384 | Yes | Nice to have |
+| 19 | `feature-store-app.png` | /features/store-app | 1024×1024 | 384×384 | Yes | Nice to have |
+| 20 | `feature-product-management.png` | /features/product-management | 1024×1024 | 384×384 | Yes | Nice to have |
+| 21 | `feature-order-management.png` | /features/order-management | 1024×1024 | 384×384 | Yes | Nice to have |
+| 22 | `feature-offers-and-coupons.png` | /features/offers-and-coupons | 1024×1024 | 384×384 | Yes | Nice to have |
+| 23 | `feature-email-marketing.png` | /features/email-marketing | 1024×1024 | 384×384 | Yes | Nice to have |
+| 24 | `feature-reports.png` | /features/reports | 1024×1024 | 384×384 | Yes | Nice to have |
+| 25 | `feature-store-seo.png` | /features/store-seo | 1024×1024 | 384×384 | Yes | Nice to have |
+| 26 | `feature-online-payments.png` | /features/online-payments | 1024×1024 | 384×384 | Yes | Nice to have |
+
+Every prompt below ends with `[closing line]`: replace it with this text before pasting:
+
+> Colours only: deep teal #0d3743, teal #145163, mid teal #2c6e80, pale teal #cfdde1, mist #eef3f4, white #ffffff, amber #fdad28 as the single accent. Soft diffused light from the top, soft contact shadows, about 12% empty margin on every side, clean edges with no white halo. Absolutely no text, letters, numbers, currency signs, logos, people, faces or hands.
+
+### 18. `feature-store-design.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded white browser window showing blank teal and pale teal layout blocks, with one block lifted slightly out of the page as if being dragged into place, and a small amber paint swatch resting on its corner. [closing line]
+
+### 19. `feature-store-app.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded smartphone in deep teal with a blank white screen, and a single rounded app icon tile in teal with a tiny shop awning on it floating just above the screen, with a small amber download arrow badge on the tile. [closing line]
+
+### 20. `feature-product-management.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: three neat stacked product boxes in white, pale teal and teal, with a small rounded price tag in amber hanging from the top box by a string. [closing line]
+
+### 21. `feature-order-management.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded white clipboard with blank teal bars for lines, a small closed parcel in pale teal beside it, and one small amber check badge on the clipboard. [closing line]
+
+### 22. `feature-offers-and-coupons.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded coupon ticket in white with a perforated edge and a blank teal stripe, slightly tilted, and a small wrapped gift box in teal with an amber ribbon behind it. [closing line]
+
+### 23. `feature-email-marketing.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded white envelope, half open, with a blank pale teal card rising out of it, and a small amber sparkle above the card. [closing line]
+
+### 24. `feature-reports.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded white card standing upright with four rounded bars rising from left to right in pale teal, mid teal, teal and amber for the tallest, with no axes and no numbers. [closing line]
+
+### 25. `feature-store-seo.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded teal magnifying glass resting over a small white card with blank teal lines, and a tiny amber star at the top of the card. [closing line]
+
+### 26. `feature-online-payments.png`
+
+> Illustration on a transparent background (PNG with alpha), 1024×1024, centred. Soft matte 3D style, rounded friendly shapes like smooth clay: a rounded teal wallet, slightly open, with a blank white payment card peeking out and one amber coin leaning against it. [closing line]
+
+**Wiring:** convert to WebP under ~40 KB, save as `apps/ecommerce/public/marketing/features/<slug>.webp`, and set `art: "/marketing/features/<slug>.webp"` on that page's entry in `product-pages.lib.ts`. Check 1440 px in Arabic and English (the spot must not cover the screenshot's content).

@@ -36,6 +36,7 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import { PRODUCT_AREAS, type ProductArea } from "./product-pages.lib";
 
 /**
  * /features/[slug] and /integrations/[slug]. One entry here plus one
@@ -75,9 +76,12 @@ export type DetailStepVisual =
   | "keyCheck"
   | "cardCheckout";
 
-/** The /features hub's chips (feature pages only). Words are under `featuresHub.categories`. */
-export const FEATURE_GROUPS = ["ai", "orders", "shipping", "website"] as const;
-export type FeatureGroup = (typeof FEATURE_GROUPS)[number];
+/**
+ * The /features hub's chips: the four product menu groups (product-pages.lib.ts),
+ * shared by detail and product pages. Words are under `featuresHub.categories`.
+ */
+export const FEATURE_GROUPS = PRODUCT_AREAS;
+export type FeatureGroup = ProductArea;
 
 export type DetailPage = {
   kind: "feature" | "integration";
@@ -104,7 +108,7 @@ export const FEATURE_PAGES: readonly DetailPage[] = [
   {
     kind: "feature",
     slug: "ai-online-store",
-    group: "ai",
+    group: "build",
     featured: true,
     icon: Sparkles,
     shot: "ai",
@@ -122,7 +126,7 @@ export const FEATURE_PAGES: readonly DetailPage[] = [
   {
     kind: "feature",
     slug: "fake-order-protection",
-    group: "orders",
+    group: "run",
     featured: true,
     icon: ShieldCheck,
     shot: "risk",
@@ -138,7 +142,7 @@ export const FEATURE_PAGES: readonly DetailPage[] = [
   {
     kind: "feature",
     slug: "abandoned-checkouts",
-    group: "orders",
+    group: "run",
     icon: ShoppingCart,
     shot: "missed",
     benefits: [Phone, MessageCircle, RefreshCw],
@@ -153,7 +157,7 @@ export const FEATURE_PAGES: readonly DetailPage[] = [
   {
     kind: "feature",
     slug: "shipping",
-    group: "shipping",
+    group: "run",
     featured: true,
     icon: Truck,
     shot: "zones",
@@ -169,7 +173,7 @@ export const FEATURE_PAGES: readonly DetailPage[] = [
   {
     kind: "feature",
     slug: "custom-domain",
-    group: "website",
+    group: "build",
     icon: Globe,
     shot: "domain",
     benefits: [BadgeCheck, Megaphone, Search],

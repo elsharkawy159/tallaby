@@ -5,6 +5,7 @@ import { alternativeCompetitors, COMPARE_GROUPS, COMPETITORS, publishableCompeti
 import { FEATURE_PAGES, INTEGRATION_PAGES } from "./detail-pages.lib";
 import { INDUSTRIES } from "./industries.lib";
 import { INTEGRATION_ITEMS } from "./integrations-hub.lib";
+import { PRODUCT_PAGES } from "./product-pages.lib";
 import { SOLUTIONS } from "./solutions.lib";
 import { TOOL_SLUGS } from "./tools.lib";
 
@@ -45,6 +46,26 @@ describe.each(["ar", "en"])("content page messages (%s)", (locale) => {
       if (page.uses) expect(words.uses, page.slug).toHaveLength(page.uses.length);
       for (const name of page.events ?? []) expect((words.events as unknown as Record<string, string>)[name], name).toBeTruthy();
       expect(m.meta![`${page.kind}-${page.slug}`], page.slug).toBeTruthy();
+    }
+  });
+
+  it("has what every product page needs, in the entry's order", () => {
+    for (const page of PRODUCT_PAGES) {
+      const words = m.productPages![page.slug] as Record<string, unknown>;
+      const rows = words.rows as { link?: string; mock?: unknown }[];
+      expect(rows, page.slug).toHaveLength(page.rows.length);
+      expect(words.grid, page.slug).toHaveLength(page.grid.length);
+      expect(words.related, page.slug).toHaveLength(page.related.length);
+      expect((words.faq as unknown[]).length, page.slug).toBeGreaterThanOrEqual(4);
+      page.rows.forEach((row, i) => {
+        // A link label only where the row links somewhere, and a screen for every coded picture.
+        expect(Boolean(rows[i]!.link), `${page.slug} row ${i} link`).toBe(Boolean(row.href));
+        if (row.visual.kind === "dash") expect(rows[i]!.mock, `${page.slug} row ${i} mock`).toBeTruthy();
+      });
+      if (page.hero.kind === "dash") expect(words.mock, `${page.slug} hero`).toBeTruthy();
+      expect(m.meta![`feature-${page.slug}`], page.slug).toBeTruthy();
+      expect(m.featuresHub!.items![page.slug as never], page.slug).toBeTruthy();
+      expect(m.featuresHub!.categories![page.area as never], page.area).toBeTruthy();
     }
   });
 

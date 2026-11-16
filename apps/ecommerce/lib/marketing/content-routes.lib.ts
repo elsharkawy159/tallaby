@@ -1,6 +1,7 @@
 import { COMPARE_PUBLIC, compareSlug, publicCompetitors } from "./compare.lib";
 import { FEATURE_PAGES, INTEGRATION_PAGES } from "./detail-pages.lib";
 import { INDUSTRIES } from "./industries.lib";
+import { PRODUCT_PAGES } from "./product-pages.lib";
 import { SOLUTIONS } from "./solutions.lib";
 import { TOOL_SLUGS } from "./tools.lib";
 
@@ -13,6 +14,7 @@ export function contentPagePaths(comparePublic: boolean = COMPARE_PUBLIC): strin
     "/features",
     "/tools",
     ...FEATURE_PAGES.map((page) => `/features/${page.slug}`),
+    ...PRODUCT_PAGES.map((page) => `/features/${page.slug}`),
     ...INTEGRATION_PAGES.map((page) => `/integrations/${page.slug}`),
     ...TOOL_SLUGS.map((slug) => `/tools/${slug}`),
     ...INDUSTRIES.map((industry) => `/industries/${industry.slug}`),

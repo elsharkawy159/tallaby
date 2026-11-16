@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { type PaymentMethod, PaymentMethodIcons } from "@/components/layout/payment-method-icons";
 import { CookieSettingsButton } from "@/components/layout/tracking-consent-banner.client";
 import { isCompareHubPublic } from "@/lib/marketing/compare.lib";
+import { PRODUCT_AREAS, PRODUCT_MENU } from "@/lib/marketing/product-pages.lib";
 import { CONTACT, DASHBOARD_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { Container } from "./layout-primitives";
@@ -19,7 +20,7 @@ type FooterLink = { href: string; label: string; external?: boolean };
  * buttons and payment marks.
  */
 export async function SiteFooter() {
-  const t = await getTranslations("siteFooter");
+  const [t, menu] = await Promise.all([getTranslations("siteFooter"), getTranslations("nav.productMenu")]);
 
   const columns: { title: string; links: FooterLink[] }[] = [
     {
@@ -83,6 +84,23 @@ export async function SiteFooter() {
   return (
     <footer data-print="hide" className="text-sm text-ink-on-dark">
       <div className="bg-footer-top pt-14 pb-12">
+        {/* The four product groups of the header menu (product-pages.lib.ts). */}
+        <Container className="mb-11 grid grid-cols-2 gap-x-6 gap-y-8 border-b border-white/10 pb-11 min-[861px]:grid-cols-4 min-[861px]:gap-10">
+          {PRODUCT_AREAS.map((area) => (
+            <nav key={area} aria-label={menu(`areas.${area}.title`)}>
+              <h2 className="mb-4 text-base font-bold text-white">{menu(`areas.${area}.title`)}</h2>
+              <ul className="grid gap-2.5 max-[860px]:gap-0">
+                {PRODUCT_MENU[area].map((item) => (
+                  <li key={item.href}>
+                    <Link href={item.href} className={`${link} ${tap}`}>
+                      {menu(`items.${item.id}.title`)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </Container>
         <Container className="grid grid-cols-2 gap-x-6 gap-y-8 min-[861px]:grid-cols-[1.3fr_1fr_1.15fr_1fr_1fr] min-[861px]:gap-10">
           <div className="col-span-2 min-[861px]:col-span-1">
             <Image src="/logo-white.png" alt="طلبي" width={118} height={30} className="mb-[18px] block h-[30px] w-auto" />

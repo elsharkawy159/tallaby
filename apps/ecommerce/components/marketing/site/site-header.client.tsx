@@ -11,12 +11,14 @@ import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.clie
 import { Container } from "./layout-primitives";
 import { LocaleSwitch } from "./locale-switch.client";
 import { NAV_ITEMS, activeNavKey } from "./nav.lib";
+import { ProductMenuDesktop, ProductMenuMobile } from "./product-menu.client";
 
 const MENU_ID = "site-mobile-menu";
 
 /**
  * Sticky light header: transparent at the top, frosted once the page scrolls.
- * Below 1080px the links drop down from the burger.
+ * Below 1080px the links drop down from the burger. "Features" opens the
+ * product menu (product-menu.client.tsx) instead of linking to /#features.
  */
 export function SiteHeader() {
   const t = useTranslations("nav");
@@ -57,16 +59,20 @@ export function SiteHeader() {
           <Image src="/logo-primary.png" alt="طلبي" width={118} height={30} priority className="block h-[30px] w-auto" />
         </Link>
         <nav aria-label={t("main")} className="hidden flex-1 gap-0.5 min-[1081px]:flex">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              aria-current={active === item.key ? "page" : undefined}
-              className="rounded-[10px] px-3 py-2 text-[14.5px] font-semibold whitespace-nowrap text-ink-600 hover:bg-teal-50 hover:text-teal-900 hover:no-underline aria-[current=page]:bg-teal-50 aria-[current=page]:text-teal-900"
-            >
-              {t(item.key)}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) =>
+            item.key === "features" ? (
+              <ProductMenuDesktop key={item.key} label={t(item.key)} />
+            ) : (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={active === item.key ? "page" : undefined}
+                className="rounded-[10px] px-3 py-2 text-[14.5px] font-semibold whitespace-nowrap text-ink-600 hover:bg-teal-50 hover:text-teal-900 hover:no-underline aria-[current=page]:bg-teal-50 aria-[current=page]:text-teal-900"
+              >
+                {t(item.key)}
+              </Link>
+            ),
+          )}
         </nav>
         <div className="ms-auto flex items-center gap-1.5">
           <LocaleSwitch />
@@ -98,11 +104,15 @@ export function SiteHeader() {
         className="border-t border-line-soft bg-white px-5 pt-2 pb-[18px] min-[1081px]:hidden"
       >
         <div className="grid [&>a]:border-b [&>a]:border-[#f1f4f5] [&>a]:px-1 [&>a]:py-3.5 [&>a]:font-semibold [&>a]:text-teal-900 [&>a]:hover:no-underline">
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.key} href={item.href} aria-current={active === item.key ? "page" : undefined} onClick={() => setMenuOpen(false)}>
-              {t(item.key)}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) =>
+            item.key === "features" ? (
+              <ProductMenuMobile key={item.key} label={t(item.key)} onNavigate={() => setMenuOpen(false)} />
+            ) : (
+              <Link key={item.key} href={item.href} aria-current={active === item.key ? "page" : undefined} onClick={() => setMenuOpen(false)}>
+                {t(item.key)}
+              </Link>
+            ),
+          )}
           <a href={LOGIN_URL}>{t("login")}</a>
         </div>
         <SignupTrigger className="mt-3.5 w-full" onClick={() => setMenuOpen(false)}>
