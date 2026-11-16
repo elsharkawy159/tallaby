@@ -134,29 +134,22 @@ export async function requireOrdersSeller(options: AccessOptions = {}): Promise<
 }
 
 /**
- * `requireOrdersSeller` for one order: once orders are locked (F-84), the
- * seller's first order still opens and can be worked on, and no other.
+ * `requireOrdersSeller` for one order. No order opens while orders are locked,
+ * the first one included (owner, 2026-11-16). The caller still checks the order
+ * is this seller's.
  */
-export async function requireOrderSeller(orderId: string, options: AccessOptions = {}): Promise<SellerContext> {
-  const seller = await requireSeller(options);
-  const lock = await loadOrderLock(seller.sellerId);
-  if (lock.ordersLocked && (!lock.firstOrderId || lock.firstOrderId !== orderId)) throw new AccessError("orders_locked");
-  return seller;
+export async function requireOrderSeller(_orderId: string, options: AccessOptions = {}): Promise<SellerContext> {
+  return requireOrdersSeller(options);
 }
 
 /**
- * Reading the orders list: a seller whose orders are open sees every order; once
- * they are locked (not activated and the grace window is over, F-84) only the
- * first order shows (`onlyOrderId`, set here from the server, never the client).
- * With no first order there is nothing to read. Changing orders still needs
- * requireOrdersSeller or requireOrderSeller.
+ * Reading the orders list: every order of the seller while orders are open;
+ * nothing while they are locked (not activated, F-84; owner 2026-11-16).
+ * Changing orders still needs requireOrdersSeller or requireOrderSeller.
  */
-export async function requireOrdersView(options: AccessOptions = {}): Promise<{ sellerId: string; onlyOrderId: string | null }> {
-  const seller = await requireSeller(options);
-  const lock = await loadOrderLock(seller.sellerId);
-  if (!lock.ordersLocked) return { sellerId: seller.sellerId, onlyOrderId: null };
-  if (!lock.firstOrderId) throw new AccessError("orders_locked");
-  return { sellerId: seller.sellerId, onlyOrderId: lock.firstOrderId };
+export async function requireOrdersView(options: AccessOptions = {}): Promise<{ sellerId: string }> {
+  const seller = await requireOrdersSeller(options);
+  return { sellerId: seller.sellerId };
 }
 
 /** `requireStore` for anything that reads or changes orders. */

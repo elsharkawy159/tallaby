@@ -16,9 +16,7 @@ const STATUS_LOOK: Record<WelcomeWallet["status"]["kind"], { tone: "default" | "
   review: { tone: "default", icon: Clock },
   offlineNow: { tone: "danger", icon: CircleOff },
   offlineIn: { tone: "amber", icon: Clock },
-  graceLeft: { tone: "amber", icon: Clock },
   locked: { tone: "amber", icon: Clock },
-  topUp: { tone: "amber", icon: Clock },
 };
 
 /**
@@ -37,7 +35,7 @@ export function WelcomeTopUpStep({ wallet }: { wallet: WelcomeWallet }) {
   const statusText =
     status.kind === "none"
       ? null
-      : status.kind === "offlineIn" || status.kind === "graceLeft"
+      : status.kind === "offlineIn"
         ? t(`status.${status.kind}`, { days: status.days })
         : t(`status.${status.kind}`);
   const openWallet = status.kind === "activated" || status.kind === "review";

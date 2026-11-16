@@ -78,8 +78,9 @@ export async function getOrderLock(sellerId: string): Promise<OrderLock> {
  * line of this seller (order_items.seller_id, like every seller order query), not
  * test orders (F-76), not an online payment that isn't paid yet (not a real order
  * until it is, as in 0098/0116), and not one the seller typed in themselves
- * (manual, F-05). Cancelled orders count, so cancelling the visible first order
- * never shows the next one. Migration 0159's first-order bell uses the same rule.
+ * (manual, F-05). Cancelled orders count. They only date the grace window now
+ * (no order stays visible while locked, owner 2026-11-16). Migration 0159's
+ * first-order bell uses the same rule.
  */
 async function loadGraceOrders(sellerId: string, since: Date): Promise<{ id: string; createdAt: string }[]> {
   const rows = await db

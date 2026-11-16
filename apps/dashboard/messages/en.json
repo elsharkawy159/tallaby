@@ -185,21 +185,14 @@
   },
   "orderLock": {
     "title": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}",
-    "bodyDays": "Your 14 days to see orders without a top-up are over. Your store keeps selling and your orders are waiting: top up your wallet to see them.",
-    "bodySecondOrder": "Your second order has arrived. Your first order stays visible; top up your wallet to see the new ones.",
-    "graceTitle": "{days, plural, one {# day left} other {# days left}} to top up your wallet",
-    "graceBody": "Your store is live and takes orders, and you can see them for now. After 14 days, or once your second order arrives, top up your wallet{amount, select, none {} other {, starting from {amount} only,}} to keep seeing your orders.",
-    "graceFirstOrderTitle": "You got your first order! Top up to keep seeing new orders",
-    "graceFirstOrderBody": "Your next order stays hidden until you top up your wallet{amount, select, none {} other {, starting from {amount} only}} ({days, plural, one {# day left} other {# days left}} at most). This first order always stays visible.",
+    "body": "Your store keeps selling and your orders are waiting: top up your wallet to see them.",
+    "bodyShort": "Your store keeps selling and your orders are waiting: top up your wallet to see them. Please top up within {days, plural, one {# day} other {# days}} to keep your store online.",
     "reviewTitle": "Your top-up is being reviewed",
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
     "viewWallet": "View wallet",
     "offlineTitle": "Your store is offline: top up to bring it back",
     "offlineBody": "Your {days} free days are over, so your store is closed to visitors and takes no new orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} and your store comes back online at once.",
-    "bodySecondOrderShort": "Your second order has arrived. Your first order stays visible; top up your wallet to see the new ones. Please top up within {days, plural, one {# day} other {# days}} to keep your store online.",
-    "graceBodyShort": "Your store is live and takes orders. Please top up your wallet{amount, select, none {} other {, starting from {amount} only,}} within {total} days of signing up to keep your store online.",
-    "graceFirstOrderBodyShort": "Your next order stays hidden until you top up your wallet{amount, select, none {} other {, starting from {amount} only}}. Please top up within {days, plural, one {# day} other {# days}} to keep your store online. This first order always stays visible.",
     "sidebar": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}, to see your orders"
   },
   "bulkFileImport": {
@@ -1232,6 +1225,7 @@
       "sales": "Sales",
       "orders": "Orders",
       "ordersUnit": "orders",
+      "ordersLockedHint": "Top up to see them",
       "wallet": "Wallet balance",
       "rating": "Store rating",
       "vsPrevious": "vs. previous period",
@@ -7465,7 +7459,7 @@
       },
       "top_up_reminder": {
         "title": "Please top up your Tallaby wallet",
-        "body": "Top up to keep seeing your new orders. Your balance stays in your wallet and doesn’t expire."
+        "body": "Top up to see your orders. Your balance stays in your wallet and doesn’t expire."
       },
       "deposit_reported": {
         "title": "Deposit sent",
@@ -7474,6 +7468,10 @@
       "deposit_paid": {
         "title": "Deposit paid",
         "body": "The deposit for order #{orderNumber} was paid by card. The order can ship."
+      },
+      "order_locked": {
+        "title": "You received a new order",
+        "body": "Top up to see your orders."
       }
     }
   },
@@ -7524,7 +7522,9 @@
       "order_created": {
         "title": "New order",
         "body": "Order #{orderNumber} is waiting to be prepared.",
-        "bodyWithAmount": "Order #{orderNumber} · {amount}. Open it to prepare it."
+        "bodyWithAmount": "Order #{orderNumber} · {amount}. Open it to prepare it.",
+        "lockedTitle": "You received a new order",
+        "lockedBody": "Top up to see your orders."
       },
       "carrier_shipment_failed": {
         "title": "Shipment not created",
@@ -8989,9 +8989,7 @@
         "review": "Your top-up is being reviewed. We’ll let you know once it’s approved.",
         "offlineNow": "Your store is offline. Top up to bring it back.",
         "offlineIn": "Please top up your wallet within {days, plural, one {# day} other {# days}} to keep your store online.",
-        "graceLeft": "{days, plural, one {# day left} other {# days left}} to top up and keep seeing your orders.",
-        "locked": "New orders are hidden until you top up.",
-        "topUp": "Top up to keep seeing your orders."
+        "locked": "Your orders are hidden until you top up."
       },
       "cta": "Top up your wallet",
       "ctaWallet": "Open wallet"

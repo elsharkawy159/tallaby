@@ -38,9 +38,9 @@ export async function hasLiveStoreWithProduct(sellerId: string): Promise<boolean
 }
 
 /**
- * `storeReady` for OrdersGraceNotice, for the session seller. The read runs only
- * when the notice depends on it (open window, no first order yet), so activated
- * and locked sellers pay nothing. Chain it on the lock promise to run it beside
+ * `storeReady` for the home's OrdersLockedNotice, for the session seller. The read
+ * runs only when the notice depends on it (open window, no order yet), so
+ * activated sellers and the others pay nothing. Chain it on the lock promise to run it beside
  * the page's other loads.
  */
 export async function currentGraceNoticeStoreReady(lock: OrderLock): Promise<boolean> {

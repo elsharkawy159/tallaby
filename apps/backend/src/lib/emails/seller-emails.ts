@@ -14,6 +14,7 @@ import {
   type EmailLocale,
   type TopUpMethod,
 } from "@workspace/emails";
+import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
 import { topUpCredit } from "@workspace/lib/store-wallet";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
@@ -81,6 +82,17 @@ function orderLink(orderId: string): string {
 
 type Sent = Record<string, SendOnceResult>;
 
+/**
+ * A seller who isn't activated sees no order at all (ROADMAP.md F-84; owner
+ * 2026-11-16), so their order emails, which carry the customer, items and
+ * amounts, are held: the bell and push already say a new order came, with no
+ * details. Held mail is not sent later (sendOnce never ran for it). Read fresh;
+ * if the check fails nothing is locked (getOrderLock).
+ */
+async function ordersLockedFor(sellerId: string): Promise<boolean> {
+  return (await getOrderLock(sellerId)).ordersLocked;
+}
+
 /* ------------------------------------------------------------------------ */
 
 /**
@@ -95,6 +107,10 @@ export async function sendSellerNewOrders(orderId: string): Promise<Sent> {
 
   const results: Sent = {};
   for (const [sellerId, items] of itemsBySeller(ctx)) {
+    if (await ordersLockedFor(sellerId)) {
+      results[sellerId] = { status: "skipped", reason: "orders_locked" };
+      continue;
+    }
     const seller = await loadSeller(sellerId, ctx.order.storeId);
     if (!seller) {
       results[sellerId] = { status: "skipped", reason: "no_email" };
@@ -152,6 +168,7 @@ export async function sendSellerOrderCancelled(orderId: string, cancelledBy: Can
 
   const results: Sent = {};
   for (const [sellerId, items] of itemsBySeller(ctx)) {
+    if (await ordersLockedFor(sellerId)) continue;
     const seller = await loadSeller(sellerId, ctx.order.storeId);
     if (!seller) continue;
     const money = (value: string | number | null | undefined) => formatMoney(value, seller.locale, ctx.currency);

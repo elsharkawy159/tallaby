@@ -1,26 +1,31 @@
 import type { OrderLock } from "@workspace/lib/billing/order-grace";
 
 /**
- * When the "N days left to top up" notice shows (ROADMAP.md F-84; owner
- * 2026-11-13). Display only: the grace window, activation and the order lock
- * are unchanged (`@workspace/lib/billing/order-lock`).
+ * When the home's top-up notice shows (ROADMAP.md F-84; owner 2026-11-13 and
+ * 2026-11-16). Display only: activation and the order lock are unchanged
+ * (`@workspace/lib/billing/order-lock`).
  *
- * The notice waits until the seller has a published store with at least one
- * product in it, so a new seller first builds the store without a top-up nag.
- * Once the first order arrived in the window, it shows regardless. Pure.
+ * Orders are locked from the start for a seller who isn't activated. While the
+ * grace window is still open and no order has arrived, the notice waits until
+ * the seller has a published store with at least one product in it, so a new
+ * seller first builds the store without a top-up nag. It shows regardless once
+ * an order arrived, the window is over, a top-up is in review or the store is
+ * offline. Pure.
  */
-
-/** The lock is in the open grace window (not activated, not locked). */
-function inOpenGrace(lock: OrderLock): lock is OrderLock & { grace: NonNullable<OrderLock["grace"]> } {
-  return !lock.activated && !lock.ordersLocked && lock.grace !== null;
-}
 
 /** Whether the "published store with a product" read is needed at all (skip it for everyone else). */
 export function graceNoticeNeedsStoreCheck(lock: OrderLock): boolean {
-  return inOpenGrace(lock) && !lock.grace.firstOrderReceived;
+  return (
+    lock.ordersLocked &&
+    !lock.pendingReview &&
+    !lock.storeOffline &&
+    lock.grace !== null &&
+    lock.grace.endedBy === null &&
+    !lock.grace.firstOrderReceived
+  );
 }
 
 export function showGraceNotice(lock: OrderLock, hasLiveStoreWithProduct: boolean): boolean {
-  if (!inOpenGrace(lock)) return false;
-  return lock.grace.firstOrderReceived || hasLiveStoreWithProduct;
+  if (!lock.ordersLocked) return false;
+  return !graceNoticeNeedsStoreCheck(lock) || hasLiveStoreWithProduct;
 }

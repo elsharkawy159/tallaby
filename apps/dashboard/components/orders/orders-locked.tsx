@@ -1,7 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Clock, Wallet } from "lucide-react";
-import { ORDER_GRACE_DAYS_SHORT, daysUntilOffline, graceDaysLeft, type OrderLock } from "@workspace/lib/billing/order-lock";
+import { ORDER_GRACE_DAYS_SHORT, daysUntilOffline, type OrderLock } from "@workspace/lib/billing/order-lock";
 import { Button } from "@workspace/ui/components/button";
 import { getMinTopUpText } from "@/lib/billing/min-top-up-egp.server";
 import { showGraceNotice } from "@/lib/billing/grace-notice.lib";
@@ -10,8 +10,9 @@ const PLACEHOLDER_ROWS = ["w-3/4", "w-2/3", "w-4/5", "w-1/2", "w-3/5", "w-2/3"];
 
 /**
  * What a seller whose orders are locked sees in Orders (ROADMAP.md F-68, F-84:
- * not activated and the grace window is over, with no first order to show). The
- * blurred rows are placeholders: no order data is loaded or sent to the browser.
+ * not activated; from the start and with no first-order exception since owner
+ * 2026-11-16). The blurred rows are placeholders: no order data is loaded or
+ * sent to the browser.
  */
 /** The title names the smallest top-up in EGP ("≈ 269 جنيه"), never in dollars (owner, 2026-11-09). */
 async function lockTitle(lock: OrderLock) {
@@ -21,18 +22,16 @@ async function lockTitle(lock: OrderLock) {
 }
 
 /**
- * Why orders are locked: in review, the store went offline (7-day sellers, owner
- * 2026-11-15), the second order arrived, or the 14 days passed. A 7-day seller
- * locked by the second order is told when the store goes offline.
+ * The message under the title: a top-up in review, the store already offline
+ * (7-day sellers, owner 2026-11-15), the days until it goes offline (7-day
+ * sellers, the countdown), or that orders wait for a top-up.
  */
 async function lockBody(lock: OrderLock) {
   const [t, amount] = await Promise.all([getTranslations("orderLock"), getLocale().then(getMinTopUpText)]);
   if (lock.pendingReview) return t("reviewBody");
   if (lock.storeOffline) return t("offlineBody", { days: ORDER_GRACE_DAYS_SHORT, amount: amount ?? "none" });
-  if (lock.grace?.endedBy === "second_order") {
-    return lock.grace.offlineAt ? t("bodySecondOrderShort", { days: daysUntilOffline(lock.grace) }) : t("bodySecondOrder");
-  }
-  return t("bodyDays");
+  const offlineIn = lock.grace?.offlineAt ? daysUntilOffline(lock.grace) : 0;
+  return offlineIn > 0 ? t("bodyShort", { days: offlineIn }) : t("body");
 }
 
 export async function OrdersLocked({ lock }: { lock: OrderLock }) {
@@ -77,9 +76,13 @@ const NOTICE_ROW =
   "flex flex-col gap-3 rounded-[20px] border border-(--tallaby-amber-100) bg-accent-soft px-4 py-3 text-[13.5px] text-accent-ink sm:flex-row sm:items-center dark:border-transparent";
 const NOTICE_BUTTON = "w-full max-[600px]:h-10 sm:w-auto";
 
-/** The short message on the dashboard home and above the first order. */
-export async function OrdersLockedNotice({ lock }: { lock: OrderLock }) {
-  if (!lock.ordersLocked) return null;
+/**
+ * The short message on the dashboard home. While the window is open and no order
+ * came, it waits for a published store with a product (`storeReady`, owner
+ * 2026-11-13; showGraceNotice).
+ */
+export async function OrdersLockedNotice({ lock, storeReady }: { lock: OrderLock; storeReady: boolean }) {
+  if (!showGraceNotice(lock, storeReady)) return null;
   const [t, title, body] = await Promise.all([getTranslations("orderLock"), lockTitle(lock), lockBody(lock)]);
   return (
     <div className={NOTICE_ROW}>
@@ -89,42 +92,6 @@ export async function OrdersLockedNotice({ lock }: { lock: OrderLock }) {
         </span>
         <div className="min-w-0 flex-1 break-words">
           <p className="font-semibold leading-5">{title}</p>
-          <p className="mt-0.5 text-pretty">{body}</p>
-        </div>
-      </div>
-      <Button asChild size="sm" className={NOTICE_BUTTON}>
-        <Link href="/wallet">{t(lock.pendingReview ? "viewWallet" : "topUp")}</Link>
-      </Button>
-    </div>
-  );
-}
-
-/**
- * While the grace window is open (F-84): how many days are left to top up, or,
- * once the first order arrived, that the next one waits for a top-up. Orders
- * stay open meanwhile; the store sells either way. Shown only once the seller
- * has a published store with a product in it (`storeReady`), or the first
- * order arrived; before that the seller is still building (owner, 2026-11-13).
- */
-export async function OrdersGraceNotice({ lock, storeReady }: { lock: OrderLock; storeReady: boolean }) {
-  if (!showGraceNotice(lock, storeReady) || !lock.grace) return null;
-  const [t, minTopUp] = await Promise.all([getTranslations("orderLock"), getLocale().then(getMinTopUpText)]);
-  const amount = minTopUp ?? "none";
-  const days = graceDaysLeft(lock.grace);
-  const first = lock.grace.firstOrderReceived;
-  // 7-day sellers (owner, 2026-11-15): the store goes offline when the days run out.
-  const short = lock.grace.offlineAt !== null;
-  const body = first
-    ? t(short ? "graceFirstOrderBodyShort" : "graceFirstOrderBody", { days, amount })
-    : short
-      ? t("graceBodyShort", { amount, total: ORDER_GRACE_DAYS_SHORT })
-      : t("graceBody", { amount });
-  return (
-    <div className={NOTICE_ROW}>
-      <div className="flex min-w-0 flex-1 items-start gap-3">
-        <Clock className="mt-0.5 size-4 shrink-0" aria-hidden />
-        <div className="min-w-0 flex-1 break-words">
-          <p className="font-semibold leading-5">{first ? t("graceFirstOrderTitle") : t("graceTitle", { days })}</p>
           <p className="mt-0.5 text-pretty">{body}</p>
         </div>
       </div>

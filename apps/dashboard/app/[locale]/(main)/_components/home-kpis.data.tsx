@@ -8,6 +8,7 @@ import {
   getHomeSnapshot,
   getHomeTrafficFor,
   getNewCustomers,
+  getOrdersCount,
   getSalesOverview,
   getStoreFunnel,
 } from "./home.queries";
@@ -144,11 +145,13 @@ export async function HomeMetricsData({ range, channel = "all" }: { range: HomeR
 }
 
 /**
- * The strip for a seller who isn't activated (ROADMAP.md F-68): store visits, wallet
- * and rating. It reads no order data, so nothing from sales reaches the browser.
+ * The strip for a seller who isn't activated (ROADMAP.md F-68): how many orders came
+ * in (owner, 2026-11-16: the count only, with a top-up hint), store visits, wallet and
+ * rating. No amount or order detail reaches the browser.
  */
 export async function HomeLockedMetricsData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
-  const [traffic, { storeIds, analyticsStoreId }, t, tm, locale] = await Promise.all([
+  const [orderCount, traffic, { storeIds, analyticsStoreId }, t, tm, locale] = await Promise.all([
+    getOrdersCount(range, channel),
     getHomeTrafficFor(range, channel),
     getHomeChannelStores(channel),
     getTranslations("home.kpis"),
@@ -157,7 +160,15 @@ export async function HomeLockedMetricsData({ range, channel = "all" }: { range:
   ]);
 
   return (
-    <StatStrip aria-label={tm("label")} className="grid-cols-3 max-[1180px]:grid-cols-3 max-[720px]:grid-cols-1">
+    <StatStrip aria-label={tm("label")}>
+      <StatItem
+        href="/wallet/top-up"
+        icon={ShoppingBag}
+        label={t("orders")}
+        value={formatNumber(orderCount, locale)}
+        unit={t("ordersUnit")}
+        note={t("ordersLockedHint")}
+      />
       <StatItem
         href={analyticsStoreId ? `/stores/${analyticsStoreId}/analytics` : "/stores"}
         icon={Eye}

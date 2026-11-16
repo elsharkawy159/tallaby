@@ -38,10 +38,11 @@ describe("activation", () => {
     expect(isActivated({ ...base, usdLive: false })).toBe(true);
   });
 
-  it("a seller who never topped up isn't activated, but their orders are open during grace", () => {
+  it("a seller who never topped up is locked from the start, with no order shown (owner, 2026-11-16)", () => {
     const lock = orderLockState(base);
     expect(lock.activated).toBe(false);
-    expect(lock.ordersLocked).toBe(false);
+    expect(lock.ordersLocked).toBe(true);
+    expect(lock.firstOrderId).toBeNull();
     expect(lock.grace).toEqual({ endsAt: iso(SIGNUP_MS + 14 * DAY), firstOrderReceived: false, endedBy: null, offlineAt: null });
     expect(lock.storeOffline).toBe(false);
   });
@@ -75,10 +76,11 @@ describe("activation", () => {
   });
 });
 
-describe("grace window", () => {
-  it("stays open through day 14", () => {
+describe("grace window (dates only; orders are locked all along)", () => {
+  it("stays open through day 14, while orders are already locked", () => {
     const lock = orderLockState({ ...base, at: new Date(SIGNUP_MS + 14 * DAY - 1) });
-    expect(lock.ordersLocked).toBe(false);
+    expect(lock.ordersLocked).toBe(true);
+    expect(lock.grace?.endedBy).toBeNull();
     expect(graceDaysLeft(lock.grace!, new Date(SIGNUP_MS + 14 * DAY - 1))).toBe(1);
     expect(graceDaysLeft(lock.grace!, new Date(SIGNUP_MS + 3 * DAY))).toBe(11);
   });
@@ -90,23 +92,23 @@ describe("grace window", () => {
     expect(graceDaysLeft(lock.grace!, new Date(SIGNUP_MS + 14 * DAY))).toBe(0);
   });
 
-  it("the first order inside the window keeps it open and is remembered", () => {
+  it("the first order inside the window keeps it open but is not shown", () => {
     const lock = orderLockState({ ...base, firstOrders: [order("first", SIGNUP_MS + DAY)] });
-    expect(lock.ordersLocked).toBe(false);
-    expect(lock.firstOrderId).toBe("first");
+    expect(lock.ordersLocked).toBe(true);
+    expect(lock.firstOrderId).toBeNull();
     expect(lock.grace).toMatchObject({ firstOrderReceived: true, endedBy: null, endsAt: iso(SIGNUP_MS + 14 * DAY) });
   });
 
-  it("the second order closes the window at once; the first stays visible", () => {
+  it("the second order closes the window at once; no order is shown", () => {
     const second = SIGNUP_MS + 2 * DAY;
     const lock = orderLockState({ ...base, firstOrders: [order("first", SIGNUP_MS + DAY), order("second", second)] });
-    expect(lock).toMatchObject({ activated: false, ordersLocked: true, firstOrderId: "first" });
+    expect(lock).toMatchObject({ activated: false, ordersLocked: true, firstOrderId: null });
     expect(lock.grace).toEqual({ endsAt: iso(second), firstOrderReceived: true, endedBy: "second_order", offlineAt: null });
   });
 
-  it("after day 14, the first order is still the one shown", () => {
+  it("after day 14, still no order is shown", () => {
     const lock = orderLockState({ ...base, at: new Date(SIGNUP_MS + 30 * DAY), firstOrders: [order("first", SIGNUP_MS + 20 * DAY)] });
-    expect(lock).toMatchObject({ ordersLocked: true, firstOrderId: "first" });
+    expect(lock).toMatchObject({ ordersLocked: true, firstOrderId: null });
     expect(lock.grace?.endedBy).toBe("days");
   });
 
@@ -127,9 +129,9 @@ describe("grace window", () => {
       at: new Date(FLOOR + 13 * DAY),
       firstOrders: [order("old-1", FLOOR - 5 * DAY), order("old-2", FLOOR - 4 * DAY)],
     });
-    expect(lock).toMatchObject({ ordersLocked: false, firstOrderId: null });
-    expect(lock.grace?.endsAt).toBe(iso(FLOOR + 14 * DAY));
-    expect(orderLockState({ ...base, seller: old, at: new Date(FLOOR + 14 * DAY) }).ordersLocked).toBe(true);
+    expect(lock).toMatchObject({ ordersLocked: true, firstOrderId: null });
+    expect(lock.grace).toMatchObject({ endsAt: iso(FLOOR + 14 * DAY), endedBy: null, firstOrderReceived: false });
+    expect(orderLockState({ ...base, seller: old, at: new Date(FLOOR + 14 * DAY) }).grace?.endedBy).toBe("days");
   });
 });
 
@@ -144,7 +146,7 @@ describe("short window (sellers from SHORT_GRACE_FROM)", () => {
     expect(isShortGraceSeller(SIGNUP)).toBe(false);
     expect(orderGraceDays(SIGNUP)).toBe(14);
     const day8 = orderLockState({ ...base, at: at(SIGNUP_MS + 8 * DAY) });
-    expect(day8).toMatchObject({ ordersLocked: false, storeOffline: false });
+    expect(day8).toMatchObject({ ordersLocked: true, storeOffline: false });
     const day40 = orderLockState({ ...base, at: at(SIGNUP_MS + 40 * DAY) });
     expect(day40).toMatchObject({ ordersLocked: true, storeOffline: false });
     expect(day40.grace?.offlineAt).toBeNull();
@@ -166,7 +168,7 @@ describe("short window (sellers from SHORT_GRACE_FROM)", () => {
 
   it("is online through day 7 and offline once 7 days have passed", () => {
     const day6 = state({ at: at(NEW_SIGNUP + 7 * DAY - 1) });
-    expect(day6).toMatchObject({ activated: false, ordersLocked: false, storeOffline: false });
+    expect(day6).toMatchObject({ activated: false, ordersLocked: true, firstOrderId: null, storeOffline: false });
     expect(day6.grace).toEqual({ endsAt: iso(NEW_SIGNUP + 7 * DAY), firstOrderReceived: false, endedBy: null, offlineAt: iso(NEW_SIGNUP + 7 * DAY) });
     expect(graceDaysLeft(day6.grace!, at(NEW_SIGNUP + 3 * DAY))).toBe(4);
     expect(storeMayBeBillingOffline(iso(NEW_SIGNUP), at(NEW_SIGNUP + 7 * DAY - 1))).toBe(false);
@@ -177,10 +179,10 @@ describe("short window (sellers from SHORT_GRACE_FROM)", () => {
     expect(storeMayBeBillingOffline(iso(NEW_SIGNUP), at(NEW_SIGNUP + 7 * DAY))).toBe(true);
   });
 
-  it("the second order on day 2 hides orders but keeps the store online until the days run out", () => {
+  it("the second order on day 2 keeps the store online until the days run out", () => {
     const firstOrders = [order("first", NEW_SIGNUP + DAY), order("second", NEW_SIGNUP + 2 * DAY)];
     const day3 = state({ firstOrders, at: at(NEW_SIGNUP + 3 * DAY) });
-    expect(day3).toMatchObject({ ordersLocked: true, storeOffline: false, firstOrderId: "first" });
+    expect(day3).toMatchObject({ ordersLocked: true, storeOffline: false, firstOrderId: null });
     expect(day3.grace).toMatchObject({ endedBy: "second_order", offlineAt: iso(NEW_SIGNUP + 7 * DAY) });
     expect(daysUntilOffline(day3.grace!, at(NEW_SIGNUP + 3 * DAY))).toBe(4);
     expect(state({ firstOrders, at: at(NEW_SIGNUP + 7 * DAY) }).storeOffline).toBe(true);

@@ -33,7 +33,7 @@ import {
   PUSH_CLAIM_LIMIT,
   PUSH_WINDOW_MINUTES,
   sellersWithOrderRows,
-  withoutLockedOrderRows,
+  lockedSafePushRows,
   type PushCandidate,
   type PushDevice,
   type PushLocale,
@@ -290,9 +290,9 @@ export async function dispatchSellerPushes(limit: number = PUSH_CLAIM_LIMIT): Pr
   const { expired, rows: claimed } = await claimPendingRows(limit);
   if (claimed.length === 0) return { enabled: true, ...empty, expired };
 
-  // Filtered after the claim: pushed_at is already set, so a locked seller's order
-  // alert is neither retried nor sent in a burst once they activate.
-  const rows = withoutLockedOrderRows(claimed, await loadLockedSellers(claimed));
+  // Filtered and masked after the claim: pushed_at is already set, so a locked seller's
+  // order alert is neither retried nor sent again in full once they activate.
+  const rows = lockedSafePushRows(claimed, await loadLockedSellers(claimed));
   const sellerIds = [...new Set(rows.map((row) => row.sellerId))];
   const [devices, prefs] = await Promise.all([loadDevices(sellerIds), loadPrefs(sellerIds)]);
   const deliveries = planPushDeliveries(rows, prefs, devices, new Date());

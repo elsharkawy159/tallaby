@@ -1,4 +1,10 @@
-import { sellerNotificationHref } from "@workspace/lib/notifications";
+import {
+  ORDER_DETAIL_TYPES,
+  RETIRED_SELLER_TYPES,
+  isLockedOrderNotification,
+  maskLockedOrderNotification,
+  sellerNotificationHref,
+} from "@workspace/lib/notifications";
 import { clipPushText, safePushPath, type PushLocale, type PushPayload } from "@workspace/lib/push";
 
 export {
@@ -56,8 +62,6 @@ const PUSH_TYPE_CATEGORY: Readonly<Record<string, PushCategory>> = {
   app_renewal_failed: "account",
   app_ended: "account",
   theme_request_updated: "account",
-  // Not an order row: it asks for a top-up, so it is pushed even while orders are locked (F-84).
-  first_order_top_up: "account",
   // The 24-hour top-up reminder (0172): an account row, pushed while orders are locked too.
   top_up_reminder: "account",
 };
@@ -165,18 +169,33 @@ export function planPushDeliveries(
   return deliveries;
 }
 
-/** Bell and push rows that name an order: a seller who isn't activated doesn't get them (ROADMAP.md F-68). */
-export const ORDER_LOCKED_TYPES = ["order_created", "carrier_shipment_failed", "carrier_needs_attention", "deposit_reported", "deposit_paid"] as const;
+/**
+ * Rows that name an order: a seller who isn't activated gets `order_created` masked
+ * ("You received a new order", no details, owner 2026-11-16) and none of the others
+ * (ROADMAP.md F-68, F-84).
+ */
+export const ORDER_LOCKED_TYPES = ["order_created", ...ORDER_DETAIL_TYPES] as const;
 const ORDER_LOCKED: ReadonlySet<string> = new Set(ORDER_LOCKED_TYPES);
+const ORDER_DETAIL: ReadonlySet<string> = new Set(ORDER_DETAIL_TYPES);
+const RETIRED: ReadonlySet<string> = new Set(RETIRED_SELLER_TYPES);
 
-/** Sellers whose activation decides whether one of these rows is pushed. */
+/** Sellers whose activation decides how one of these rows is pushed. */
 export function sellersWithOrderRows(rows: Pick<PushCandidate, "sellerId" | "type">[]): string[] {
   return [...new Set(rows.filter((row) => ORDER_LOCKED.has(row.type)).map((row) => row.sellerId))];
 }
 
-/** Claimed rows minus the order rows of sellers who aren't activated. Those rows stay claimed, so they never go out later. */
-export function withoutLockedOrderRows<T extends Pick<PushCandidate, "sellerId" | "type">>(rows: T[], lockedSellers: ReadonlySet<string>): T[] {
-  return rows.filter((row) => !(ORDER_LOCKED.has(row.type) && lockedSellers.has(row.sellerId)));
+/**
+ * Claimed rows as they may be pushed: retired rows dropped for everyone; for sellers
+ * who aren't activated, `order_created` masked (no order number, amount or id) and
+ * the other order rows dropped. Dropped rows stay claimed, so they never go out later.
+ */
+export function lockedSafePushRows<T extends Pick<PushCandidate, "sellerId" | "type" | "data">>(rows: T[], lockedSellers: ReadonlySet<string>): T[] {
+  return rows.flatMap((row) => {
+    if (RETIRED.has(row.type)) return [];
+    if (!lockedSellers.has(row.sellerId)) return [row];
+    if (ORDER_DETAIL.has(row.type)) return [];
+    return [maskLockedOrderNotification(row)];
+  });
 }
 
 /** Translator for one namespace of one locale. */
@@ -231,6 +250,11 @@ export function buildPushPayload(
       body: clipPushText(bell.t(`${row.type}.body`, bell.values), 180),
       url,
     };
+  }
+
+  // Orders locked (F-84): a masked new-order row has its own text and no details.
+  if (isLockedOrderNotification(row)) {
+    return { ...base, title: clipPushText(t("order_created.lockedTitle"), 80), body: clipPushText(t("order_created.lockedBody"), 180), url };
   }
 
   const orderNumber = dataString(row.data, "orderNumber");

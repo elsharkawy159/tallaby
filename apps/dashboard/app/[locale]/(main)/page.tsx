@@ -12,7 +12,7 @@ import { TrafficSourcesData } from "./_components/traffic-sources.data";
 import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_components/home-range.client";
 import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
-import { OrdersGraceNotice, OrdersLockedNotice } from "@/components/orders/orders-locked";
+import { OrdersLockedNotice } from "@/components/orders/orders-locked";
 import { currentGraceNoticeStoreReady } from "@/lib/billing/grace-notice.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
@@ -58,7 +58,7 @@ export default async function VendorDashboardPage({
     lockPromise,
     // Cached per request; the sections below read the same snapshot.
     getHomeSnapshot(),
-    // The grace notice waits for a published store with a product (owner, 2026-11-13).
+    // The top-up notice waits for a published store with a product (owner, 2026-11-13).
     lockPromise.then(currentGraceNoticeStoreReady),
   ]);
   const range = parseHomeRange(rawRange);
@@ -88,8 +88,7 @@ export default async function VendorDashboardPage({
   );
   const notices = (
     <>
-      <OrdersLockedNotice lock={orderLock} />
-      <OrdersGraceNotice lock={orderLock} storeReady={graceStoreReady} />
+      <OrdersLockedNotice lock={orderLock} storeReady={graceStoreReady} />
       {/* Only when the welcome page didn't take over (no store, or setup already done). */}
       {welcome === "1" && <WelcomeBanner />}
       {welcome === "1" && signup && (
@@ -155,7 +154,7 @@ export default async function VendorDashboardPage({
     </Suspense>
   );
 
-  // Orders locked (not activated, grace over): the sales sections aren't rendered, so their queries never run (ROADMAP.md F-68, F-84).
+  // Orders locked (not activated): the sales sections aren't rendered, so their queries never run; the strip shows only the order count (ROADMAP.md F-68, F-84).
   if (orderLock.ordersLocked) {
     return (
       <HomeRangeProvider range={range} channel={channel}>

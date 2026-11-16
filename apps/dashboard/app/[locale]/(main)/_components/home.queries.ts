@@ -298,6 +298,29 @@ export const getSalesOverview = cache(async (range: HomeRange, channel: HomeChan
   };
 });
 
+/**
+ * How many orders came in during the range, for a seller whose orders are
+ * locked (owner, 2026-11-16): the same count as the Orders KPI
+ * (`getSalesOverview().orders`: distinct orders with a revenue line of this
+ * seller in the range, test orders left out, channel respected), and nothing
+ * else. No amount, customer or order id leaves this query. Not cached across
+ * requests (rule 8).
+ */
+export const getOrdersCount = cache(async (range: HomeRange, channel: HomeChannel = "all"): Promise<number> => {
+  const sellerId = await getHomeSellerId();
+  if (!sellerId) return 0;
+  const result = await db.execute(sql`
+    SELECT count(DISTINCT oi.order_id)::int AS orders
+    FROM order_items oi
+    WHERE oi.seller_id = ${sellerId}
+      AND oi.status NOT IN ${NON_REVENUE}
+      AND coalesce(oi.is_refunded, false) = false
+      AND oi.created_at >= (${rangeStartLocal(range)} AT TIME ZONE 'Africa/Cairo')
+      ${channelFilter(channel)}
+  `);
+  return Number(rowsOf<{ orders: unknown }>(result)[0]?.orders ?? 0);
+});
+
 // ---------------------------------------------------------------------------
 // Top products by revenue in the range.
 // ---------------------------------------------------------------------------

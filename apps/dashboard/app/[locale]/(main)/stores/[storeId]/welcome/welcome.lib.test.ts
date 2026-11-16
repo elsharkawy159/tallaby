@@ -250,9 +250,10 @@ describe("the share message", () => {
 describe("welcomeWallet", () => {
   const at = new Date("2026-11-20T12:00:00Z");
   const DAY = 86_400_000;
+  // A seller who isn't activated: orders locked from the start (owner, 2026-11-16).
   const open = (overrides: Partial<OrderLock> = {}, grace: Partial<NonNullable<OrderLock["grace"]>> = {}): OrderLock => ({
     activated: false,
-    ordersLocked: false,
+    ordersLocked: true,
     firstOrderId: null,
     pendingReview: false,
     storeOffline: false,
@@ -270,8 +271,8 @@ describe("welcomeWallet", () => {
     expect(welcomeWallet({ lock: ORDERS_UNLOCKED, usdLive: true, isPro: true, at })).toEqual({ fee: false, status: { kind: "activated" } });
   });
 
-  it("counts the days left in the grace window (sellers who never go offline)", () => {
-    expect(welcomeWallet({ lock: open(), usdLive: true, isPro: false, at }).status).toEqual({ kind: "graceLeft", days: 3 });
+  it("says orders are hidden for sellers who never go offline, even while the grace window is open", () => {
+    expect(welcomeWallet({ lock: open(), usdLive: true, isPro: false, at }).status).toEqual({ kind: "locked" });
   });
 
   it("counts the days until the store goes offline (short-window sellers), even after the second order", () => {
@@ -291,14 +292,14 @@ describe("welcomeWallet", () => {
 
   it("has every status line in both languages, with the Arabic plural forms", () => {
     for (const messages of [ar, en]) {
-      for (const kind of ["activated", "review", "offlineNow", "offlineIn", "graceLeft", "locked", "topUp"] as const) {
+      for (const kind of ["activated", "review", "offlineNow", "offlineIn", "locked"] as const) {
         expect(messages.storeWelcome.topUp.status[kind]).toBeTruthy();
       }
     }
     const t = createTranslator({ locale: "ar", messages: ar, namespace: "storeWelcome.topUp.status" });
-    expect(t("graceLeft", { days: 1 })).toContain("يوم واحد");
-    expect(t("graceLeft", { days: 2 })).toContain("يومان");
-    expect(t("graceLeft", { days: 5 })).toContain("5 أيام");
+    expect(t("offlineIn", { days: 1 })).toContain("يوم واحد");
+    expect(t("offlineIn", { days: 2 })).toContain("يومين");
+    expect(t("offlineIn", { days: 5 })).toContain("5 أيام");
     expect(t("offlineIn", { days: 11 })).toContain("11 يومًا");
     expect(t("offlineIn", { days: 100 })).toContain("100 يوم");
   });

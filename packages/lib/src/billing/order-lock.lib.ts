@@ -8,21 +8,23 @@ import { isProActive } from "./billing.lib";
  *   zero (a gift, an admin credit), or active Pro. It is for good. Until then a
  *   Free seller has 20 AI requests a month and their campaign and win-back
  *   emails are held.
- * - `ordersLocked`: not activated AND the grace window is over. Orders, customers
- *   and sales totals are hidden then, except the seller's first order, which
- *   stays visible in full (`firstOrderId`). The storefront keeps selling.
+ * - `ordersLocked`: not activated, from the start (owner, 2026-11-16: no grace
+ *   for orders and no first-order exception). Orders, customers and sales totals
+ *   are hidden; the bell and push only say a new order arrived, with no details,
+ *   and the home shows how many orders came in. The storefront keeps selling.
  * - `storeOffline`: only for sellers who signed up on or after SHORT_GRACE_FROM.
  *   Not activated, the window's DAYS have run out (the second order alone never
  *   does it) and no manual top-up is waiting for review: every store of the
  *   seller shows the store-offline page and takes no new orders, like an
  *   unpublished store. Activation brings it back at once.
  *
- * The grace window starts at sign-up, never before ORDER_GRACE_START_FLOOR (so
- * every seller not activated on 2026-11-09 gets 14 days from then), and ends at
- * the earlier of its days later or the seller's second real order since it
- * started. Sellers created before SHORT_GRACE_FROM get ORDER_GRACE_DAYS (14) and
- * never go offline from this; sellers created on or after it get
- * ORDER_GRACE_DAYS_SHORT (7). Before the USD switch nothing applies.
+ * The grace window (`grace`) no longer opens orders: it only times the store
+ * going offline and its countdown. It starts at sign-up, never before
+ * ORDER_GRACE_START_FLOOR (so every seller not activated on 2026-11-09 counts
+ * from then), and ends at the earlier of its days later or the seller's second
+ * real order since it started. Sellers created before SHORT_GRACE_FROM get
+ * ORDER_GRACE_DAYS (14) and never go offline from this; sellers created on or
+ * after it get ORDER_GRACE_DAYS_SHORT (7). Before the USD switch nothing applies.
  */
 export const ORDER_GRACE_DAYS = 14;
 /** The window of sellers created on or after SHORT_GRACE_FROM; when it runs out their stores go offline. */
@@ -53,13 +55,13 @@ export type OrderGrace = {
 export type OrderLock = {
   /** Activated (or the USD switch is off): full AI allowance, campaign and win-back emails. */
   activated: boolean;
-  /** Orders, customers and sales totals hidden: not activated and the grace window is over. */
+  /** Orders, customers and sales totals hidden: not activated (from the start, owner 2026-11-16). */
   ordersLocked: boolean;
-  /** Not activated: the first real order of the window, which stays visible while orders are locked. */
+  /** Always null since 2026-11-16: no order stays visible while orders are locked. Kept so the shape doesn't change. */
   firstOrderId: string | null;
   /** A manual top-up is waiting for approval, so the message says it's in review. */
   pendingReview: boolean;
-  /** Not activated: the grace window. Null once activated or before the USD switch. */
+  /** Not activated: the grace window, which now only times the store going offline. Null once activated or before the USD switch. */
   grace: OrderGrace | null;
   /** Every store of the seller is offline for billing: short-window seller, days over, not activated, no top-up in review. */
   storeOffline: boolean;
@@ -161,8 +163,9 @@ export function orderLockState(
   const endsAt = endedBy === "second_order" ? second! : daysEnd;
   return {
     activated: false,
-    ordersLocked: endedBy !== null,
-    firstOrderId: orders[0]?.id ?? null,
+    // Locked from the start, and no order stays visible (owner, 2026-11-16).
+    ordersLocked: true,
+    firstOrderId: null,
     pendingReview: input.hasPendingManualTopUp,
     grace: {
       endsAt: endsAt.toISOString(),

@@ -7,7 +7,7 @@
  */
 
 import type { StoreCurrency } from "@workspace/lib";
-import { daysUntilOffline, graceDaysLeft, type OrderLock } from "@workspace/lib/billing/order-grace";
+import { daysUntilOffline, type OrderLock } from "@workspace/lib/billing/order-grace";
 import { STORE_SETUP_STEP_DONE, STORE_SETUP_STEP_KEYS, type StoreSetupFlags } from "@workspace/lib/sellers";
 import { currencyCountry } from "../shipping/shipping.dto";
 
@@ -187,8 +187,8 @@ export function welcomeShareMessage(
  * the Free per-order fee line: never on active Pro, never before the USD
  * switch. `status` is the days line, from the order lock (`currentOrderLock`):
  * a top-up in review, the store already offline, the days until it goes
- * offline (7-day sellers), the days left in the grace window, orders hidden,
- * or activated. Before the USD switch nothing applies (`none`).
+ * offline (7-day sellers), orders hidden until a top-up (from the start, owner
+ * 2026-11-16), or activated. Before the USD switch nothing applies (`none`).
  */
 export type WelcomeWalletStatus =
   | { kind: "none" }
@@ -196,9 +196,7 @@ export type WelcomeWalletStatus =
   | { kind: "review" }
   | { kind: "offlineNow" }
   | { kind: "offlineIn"; days: number }
-  | { kind: "graceLeft"; days: number }
-  | { kind: "locked" }
-  | { kind: "topUp" };
+  | { kind: "locked" };
 
 export type WelcomeWallet = { fee: boolean; status: WelcomeWalletStatus };
 
@@ -213,11 +211,8 @@ export function welcomeWallet(input: { lock: OrderLock; usdLive: boolean; isPro:
     const days = daysUntilOffline(lock.grace, at);
     if (days > 0) return { fee, status: { kind: "offlineIn", days } };
   }
-  if (lock.grace) {
-    const days = graceDaysLeft(lock.grace, at);
-    if (days > 0) return { fee, status: { kind: "graceLeft", days } };
-  }
-  return { fee, status: { kind: lock.ordersLocked ? "locked" : "topUp" } };
+  // Not activated: orders are hidden until a top-up.
+  return { fee, status: { kind: "locked" } };
 }
 
 /** "You're ready": the home's four setup steps (the progress bar) are all done. */

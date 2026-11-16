@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SELLER_NOTIFICATION_TYPES } from "@workspace/lib/notifications";
+import { RETIRED_SELLER_TYPES, SELLER_NOTIFICATION_TYPES } from "@workspace/lib/notifications";
 import ar from "@/messages/ar.json";
 import en from "@/messages/en.json";
 import { pushPrefsInputSchema, pushSubscriptionInputSchema } from "./push-alerts.dto";
@@ -10,6 +10,7 @@ import {
   DEFAULT_PUSH_PREFS,
   isAllowedPushEndpoint,
   isGonePushStatus,
+  lockedSafePushRows,
   normalizePushPrefs,
   orderIdsNeedingAmount,
   parseVapidConfig,
@@ -19,7 +20,6 @@ import {
   PUSHED_NOTIFICATION_TYPES,
   safePushPath,
   sellersWithOrderRows,
-  withoutLockedOrderRows,
   type PushCandidate,
   type PushDevice,
 } from "./push-alerts.lib";
@@ -42,18 +42,37 @@ function row(over: Partial<PushCandidate> = {}): PushCandidate {
   };
 }
 
-describe("order alerts before activation", () => {
+describe("order alerts before activation (F-84, owner 2026-11-16)", () => {
   const locked = new Set([SELLER_A]);
 
-  it("drops every order type for a locked seller and nothing else", () => {
+  it("masks a locked seller's new order, drops the other order rows and nothing else", () => {
     const rows = [...ORDER_LOCKED_TYPES, "low_stock", "top_up_approved", "admin_message"].map((type) => row({ type }));
-    expect(withoutLockedOrderRows(rows, locked).map((r) => r.type)).toEqual(["low_stock", "top_up_approved", "admin_message"]);
+    const out = lockedSafePushRows(rows, locked);
+    expect(out.map((r) => r.type)).toEqual(["order_created", "low_stock", "top_up_approved", "admin_message"]);
+    expect(out[0]!.data).toEqual({ locked: true });
+    expect(out[1]!.data).toEqual(row().data);
   });
 
-  it("keeps the same order rows for an activated seller", () => {
+  it("keeps the same order rows, in full, for an activated seller", () => {
     const rows = ORDER_LOCKED_TYPES.map((type) => row({ type, sellerId: SELLER_B }));
-    expect(withoutLockedOrderRows(rows, locked)).toEqual(rows);
-    expect(withoutLockedOrderRows(rows, new Set())).toEqual(rows);
+    expect(lockedSafePushRows(rows, locked)).toEqual(rows);
+    expect(lockedSafePushRows(rows, new Set())).toEqual(rows);
+  });
+
+  it("never pushes the retired first-order row, locked or not", () => {
+    const rows = [row({ type: "first_order_top_up" }), row({ type: "first_order_top_up", sellerId: SELLER_B })];
+    expect(lockedSafePushRows(rows, locked)).toEqual([]);
+    expect(pushCategoryOf("first_order_top_up")).toBeNull();
+  });
+
+  it("a masked new order says only that an order came, links to top-up and reads no amount", () => {
+    const [masked] = lockedSafePushRows([row()], locked);
+    expect(orderIdsNeedingAmount([masked!])).toEqual([]);
+    // The stub echoes any value it is given: a masked row passes none.
+    const t = (key: string, values?: Record<string, string | number>) => (values ? `${key}|${JSON.stringify(values)}` : key);
+    const p = buildPushPayload(masked!, "ar", t, "EGP 250");
+    expect([p.title, p.body, p.url]).toEqual(["order_created.lockedTitle", "order_created.lockedBody", "/wallet/top-up"]);
+    expect(JSON.stringify(p)).not.toMatch(/1042|250|33333333/);
   });
 
   it("only checks sellers who have an order row, once each", () => {
@@ -77,8 +96,8 @@ describe("type → push category", () => {
     expect(pushCategoryOf("toString")).toBeNull();
   });
 
-  it("pushes every seller bell type", () => {
-    for (const type of SELLER_NOTIFICATION_TYPES) {
+  it("pushes every seller bell type that is still shown", () => {
+    for (const type of SELLER_NOTIFICATION_TYPES.filter((type) => !(RETIRED_SELLER_TYPES as readonly string[]).includes(type))) {
       expect(pushCategoryOf(type) !== null || ALWAYS_PUSHED_TYPES.has(type), type).toBe(true);
     }
   });
@@ -91,6 +110,18 @@ describe("type → push category", () => {
         expect(texts[type]?.body, type).toBeTruthy();
       }
     }
+  });
+
+  it("the locked new-order text and the bell's masked row exist in both languages, with no order details", () => {
+    for (const messages of [ar, en]) {
+      const push = messages.pushAlerts.messages.order_created as Record<string, string>;
+      const bell = (messages.notifications.types as Record<string, { title?: string; body?: string }>).order_locked;
+      for (const text of [push.lockedTitle, push.lockedBody, bell?.title, bell?.body]) {
+        expect(text).toBeTruthy();
+        expect(text).not.toContain("{");
+      }
+    }
+    expect(ar.notifications.types.order_locked.title).toBe("وصلك طلب جديد");
   });
 
   it("every pushed type has a title and body in both languages", () => {

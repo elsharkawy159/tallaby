@@ -4,6 +4,8 @@ import {
   adminNotificationHref,
   clampNotificationLimit,
   isDashboardPath,
+  isLockedOrderNotification,
+  maskLockedOrderNotification,
   notificationCount,
   notificationText,
   parseNotificationIds,
@@ -96,6 +98,31 @@ describe("sellerNotificationHref", () => {
     expect(sellerNotificationHref({ type: "low_stock", data: {} })).toBe("/products/inventory");
     // F-87c: a row that names its store opens that store's Products pages.
     expect(sellerNotificationHref({ type: "low_stock", data: { productId: ID, storeId: ID } })).toBe(`/stores/${ID}/products/inventory?product=${ID}`);
+  });
+});
+
+describe("orders locked (F-84, owner 2026-11-16)", () => {
+  const row = { id: "n1", type: "order_created", data: { orderId: ID, orderNumber: "1042", amount: "250.00", customerName: "Mona" } };
+
+  it("masks a new-order row down to { locked: true }, keeping the rest of the row", () => {
+    const masked = maskLockedOrderNotification(row);
+    expect(masked).toEqual({ id: "n1", type: "order_created", data: { locked: true } });
+    expect(JSON.stringify(masked)).not.toMatch(/1042|250|Mona|6f1c2a3b/);
+    expect(isLockedOrderNotification(masked)).toBe(true);
+    // The original row is untouched (it shows in full after activation).
+    expect(row.data.orderNumber).toBe("1042");
+    expect(isLockedOrderNotification(row)).toBe(false);
+  });
+
+  it("leads a masked row to the top-up page, never to the order", () => {
+    expect(sellerNotificationHref(maskLockedOrderNotification(row))).toBe("/wallet/top-up");
+    expect(sellerNotificationHref(row)).toBe(`/orders?order=${ID}`);
+  });
+
+  it("leaves other types alone", () => {
+    const other = { type: "low_stock", data: { productId: ID } };
+    expect(maskLockedOrderNotification(other)).toBe(other);
+    expect(isLockedOrderNotification({ type: "low_stock", data: { locked: true } })).toBe(false);
   });
 });
 

@@ -156,8 +156,45 @@ export function adminNotificationHref(
   }
 }
 
+// ---------------------------------------------------------------------------
+// Orders locked (ROADMAP.md F-84; owner 2026-11-16)
+// ---------------------------------------------------------------------------
+
+/**
+ * Seller rows that name an order and add nothing while orders are locked:
+ * hidden from the bell and never pushed then. `order_created` is not here: it
+ * is masked instead (maskLockedOrderNotification).
+ */
+export const ORDER_DETAIL_TYPES = ["carrier_shipment_failed", "carrier_needs_attention", "deposit_reported", "deposit_paid"] as const;
+
+/**
+ * Rows no longer shown or pushed to anyone. `first_order_top_up` (0159) asked for a
+ * top-up after the first order, which stayed visible; since 2026-11-16 every
+ * order's masked `order_created` row says the same, and the old text ("top up to
+ * keep seeing new orders") is wrong for everyone. 0159's trigger still writes it.
+ */
+export const RETIRED_SELLER_TYPES = ["first_order_top_up"] as const;
+
+/**
+ * An `order_created` row for a seller whose orders are locked: its `data` is
+ * replaced with `{ locked: true }`, so no order number, amount, customer or id
+ * reaches the bell or a push. Set only by the server at read or dispatch time;
+ * the row in the table is unchanged, so it shows in full once the seller
+ * activates. Other rows pass through.
+ */
+export function maskLockedOrderNotification<T extends Pick<NotificationItem, "type" | "data">>(n: T): T {
+  return n.type === "order_created" ? { ...n, data: { locked: true } } : n;
+}
+
+/** A masked `order_created` row (maskLockedOrderNotification). */
+export function isLockedOrderNotification(n: Pick<NotificationItem, "type" | "data">): boolean {
+  return n.type === "order_created" && n.data.locked === true;
+}
+
 /** Where a seller notification leads inside the seller dashboard, or null. */
 export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data">): string | null {
+  // Orders are locked: the new-order row leads to the top-up page, like first_order_top_up did.
+  if (isLockedOrderNotification(n)) return "/wallet/top-up";
   switch (n.type) {
     case "order_created":
     case "carrier_shipment_failed":

@@ -19,17 +19,11 @@ import {
  * holds the two equal, so change them together.
  */
 
-export type OrdersScope = Pick<OrdersListFilters, "channel" | "q" | "attention"> & {
-  /** Orders locked after the grace window (F-84): only the seller's first order. Set by the server, never from the URL. */
-  onlyOrderId?: string | null;
-};
+export type OrdersScope = Pick<OrdersListFilters, "channel" | "q" | "attention">;
 type OrdersQuery = OrdersScope & Pick<OrdersListFilters, "tab" | "sort">;
 
-const ownOrders = (sellerId: string, onlyOrderId: string | null = null) =>
-  and(
-    inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId))),
-    onlyOrderId ? eq(orders.id, onlyOrderId) : undefined,
-  );
+const ownOrders = (sellerId: string) =>
+  inArray(orders.id, db.select({ id: orderItems.orderId }).from(orderItems).where(eq(orderItems.sellerId, sellerId)));
 
 /**
  * resolveSellerOrderStage() as SQL. An order has at most one shipment
@@ -113,7 +107,7 @@ function searchCondition(text: string): SQL | undefined {
 /** Store, search and the Bosta filter: what tab counts respect, as they always have. */
 function scopeConditions(sellerId: string, filters: OrdersScope): (SQL | undefined)[] {
   return [
-    ownOrders(sellerId, filters.onlyOrderId),
+    ownOrders(sellerId),
     filters.channel === "all"
       ? undefined
       : filters.channel === "marketplace"
@@ -193,14 +187,14 @@ export async function countOrdersAwaitingPrep(sellerId: string, channel: OrdersC
 }
 
 /** Facts about all the seller's orders, whatever the filters: any orders at all, and Bosta problems. */
-export async function loadOrdersOverview(sellerId: string, onlyOrderId: string | null = null): Promise<{ orders: number; attention: number }> {
+export async function loadOrdersOverview(sellerId: string): Promise<{ orders: number; attention: number }> {
   const [row] = await db
     .select({
       orders: sql<number>`count(*)::int`,
       attention: sql<number>`(count(*) FILTER (WHERE ${needsAttentionSql(sellerId)}))::int`,
     })
     .from(orders)
-    .where(ownOrders(sellerId, onlyOrderId));
+    .where(ownOrders(sellerId));
   return { orders: row?.orders ?? 0, attention: row?.attention ?? 0 };
 }
 

@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Bell, Check, CheckCheck, Settings2, X } from "lucide-react";
 import { AnchoredSheet, IconButton, IconTile } from "@/components/seller-ui";
 import {
+  isLockedOrderNotification,
   notificationText,
   sellerNotificationHref,
   sellerNotificationValues,
@@ -210,13 +211,15 @@ function NotificationRow({
   const href = sellerNotificationHref(item);
   // A message from the Tallaby team (0131) carries the admin's own title and text.
   const isMessage = item.type === "admin_message";
-  const known = !isMessage && t.has(`${item.type}.title`);
+  // Orders locked (F-84): the server masked this new-order row, so it has no details to show.
+  const textKey = isLockedOrderNotification(item) ? "order_locked" : item.type;
+  const known = !isMessage && t.has(`${textKey}.title`);
   const title = isMessage
     ? notificationText(item.data, "title") || t("admin_message.fallbackTitle")
     : known
-      ? t(`${item.type}.title`)
+      ? t(`${textKey}.title`)
       : item.type;
-  const body = isMessage ? notificationText(item.data, "body") : known ? t(`${item.type}.body`, values) : "";
+  const body = isMessage ? notificationText(item.data, "body") : known ? t(`${textKey}.body`, values) : "";
   const unread = !item.readAt;
   const look = NOTIFICATION_LOOK[item.type] ?? { icon: Bell, tone: "primary" as const };
   // The whole row opens it; the link stretches over the row, under the mark-read button.
