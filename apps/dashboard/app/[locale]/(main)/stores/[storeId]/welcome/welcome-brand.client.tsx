@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, LoaderCircle, Save } from "lucide-react";
+import { Check, CircleAlert, LoaderCircle } from "lucide-react";
 import type { DesignSystem } from "@workspace/store-sections";
 import { Link, useRouter } from "@/i18n/navigation";
-import { Field, Note, OptionCard, OptionCards, SellerButton } from "@/components/seller-ui";
+import { Field, Note, OptionCard, OptionCards } from "@/components/seller-ui";
 import { FaviconField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { cn } from "@/lib/utils";
 import { saveDesignSystem } from "@/app/[locale]/(builder)/stores/[storeId]/editor/server/editor.server";
@@ -22,6 +22,12 @@ const CLASSIC_PRIMARY = "#145163";
 /** `<input type="color">` only takes #rrggbb. */
 const fullHex = (value: string) => (value.length === 4 ? `#${[...value.slice(1)].map((c) => c + c).join("")}` : value);
 
+/** Quiet time before a change saves, so dragging the colour picker saves once. */
+const AUTOSAVE_MS = 600;
+
+type Values = { logoUrl: string; faviconUrl: string; locale: WelcomeData["brand"]["defaultLocale"]; ds: DesignSystem | null };
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
 /**
  * Step 1c: logo, favicon, main colour and the website's default language.
  * Logo, favicon and language are store fields (`saveStoreGeneral`, live at
@@ -29,6 +35,9 @@ const fullHex = (value: string) => (value.length === 4 ? `#${[...value.slice(1)]
  * the next Publish, like Website › Design): putting only the colour live
  * would need a new publish path, so that waits for the owner. The colour is
  * locked until a theme is applied, since a theme brings its own colours.
+ *
+ * Saves on its own (owner, 2026-11-16: no Save button): each change saves after
+ * a short pause, one save at a time; a change made during a save follows it.
  */
 export function WelcomeBrandStep({
   storeId,
@@ -46,61 +55,111 @@ export function WelcomeBrandStep({
   const t = useTranslations("storeWelcome.steps.brand");
   const tSettings = useTranslations("storeSettings");
   const tDesign = useTranslations("websiteDesign");
+  const tAutosave = useTranslations("settings.autosave");
+  const tErrors = useTranslations("errorPages");
   const router = useRouter();
-  const [saving, startSaving] = useTransition();
 
   const [logoUrl, setLogoUrl] = useState(brand.logoUrl);
   const [faviconUrl, setFaviconUrl] = useState(brand.faviconUrl);
   const [locale, setLocale] = useState(brand.defaultLocale);
-  const [saved, setSaved] = useState({ logoUrl: brand.logoUrl, faviconUrl: brand.faviconUrl, locale: brand.defaultLocale });
   const [ds, setDs] = useState<DesignSystem | null>(brand.designSystem?.value ?? null);
-  const [savedColors, setSavedColors] = useState(JSON.stringify(brand.designSystem?.value.colors ?? {}));
-  const [version, setVersion] = useState(brand.designSystem?.version ?? 0);
+  const [status, setStatus] = useState<SaveStatus>("idle");
+  /** What the server holds now. */
+  const saved = useRef({
+    logoUrl: brand.logoUrl,
+    faviconUrl: brand.faviconUrl,
+    locale: brand.defaultLocale,
+    colors: JSON.stringify(brand.designSystem?.value.colors ?? {}),
+  });
+  const version = useRef(brand.designSystem?.version ?? 0);
+  /** The newest values waiting to save, the running flag, and "save again after this one". */
+  const pending = useRef<Values | null>(null);
+  const running = useRef(false);
+  const again = useRef(false);
 
-  const generalDirty = logoUrl !== saved.logoUrl || faviconUrl !== saved.faviconUrl || locale !== saved.locale;
-  const colorDirty = ds !== null && JSON.stringify(ds.colors) !== savedColors;
   const primary = ds?.colors.primary ?? "";
   const colorInvalid = Boolean(primary) && !isHexColor(primary);
-  const colorLocked = disabled || saving || !themeApplied;
+  const colorLocked = disabled || !themeApplied;
   const preset = ds ? matchPreset(ds.colors) : null;
 
-  const onSave = () =>
-    startSaving(async () => {
-      const localeChanged = locale !== saved.locale;
-      if (generalDirty) {
+  const flush = useCallback(async function flushNow(): Promise<void> {
+    if (running.current) {
+      again.current = true;
+      return;
+    }
+    const next = pending.current;
+    if (!next) return;
+    running.current = true;
+    setStatus("saving");
+    let ok = true;
+    let wrote = false;
+    let localeChanged = false;
+    try {
+      const was = saved.current;
+      localeChanged = next.locale !== was.locale;
+      if (next.logoUrl !== was.logoUrl || next.faviconUrl !== was.faviconUrl || localeChanged) {
         const result = await saveStoreGeneral(storeId, {
-          logoUrl: logoUrl || null,
-          faviconUrl: faviconUrl || null,
-          ...(localeChanged && { defaultLocale: locale, supportedLocales: withDefaultLocale(brand.supportedLocales, locale) }),
+          logoUrl: next.logoUrl || null,
+          faviconUrl: next.faviconUrl || null,
+          ...(localeChanged && { defaultLocale: next.locale, supportedLocales: withDefaultLocale(brand.supportedLocales, next.locale) }),
         });
-        if (!result.success) {
+        if (result.success) {
+          saved.current = { ...saved.current, logoUrl: next.logoUrl, faviconUrl: next.faviconUrl, locale: next.locale };
+          wrote = true;
+        } else {
+          ok = false;
           toast.error(tSettings(`errors.${result.error}`));
-          return;
         }
-        setSaved({ logoUrl, faviconUrl, locale });
       }
-      if (colorDirty && ds) {
-        const result = await saveDesignSystem(storeId, ds, version);
-        if (!result.success) {
+      const colors = next.ds ? JSON.stringify(next.ds.colors) : null;
+      const nextPrimary = next.ds?.colors.primary ?? "";
+      if (ok && next.ds && colors !== null && colors !== saved.current.colors && (!nextPrimary || isHexColor(nextPrimary))) {
+        const result = await saveDesignSystem(storeId, next.ds, version.current);
+        if (result.success) {
+          version.current = result.data.version;
+          saved.current = { ...saved.current, colors };
+          wrote = true;
+        } else {
+          ok = false;
           toast.error(tDesign(`errors.${result.error}` as never));
-          return;
         }
-        setVersion(result.data.version);
-        setSavedColors(JSON.stringify(ds.colors));
       }
-      // A new default language moves the website drafts to it: say what to do next (Store settings' message).
-      if (localeChanged) toast.success(tSettings("savedLocaleChanged"), { duration: 12_000 });
-      else toast.success(t("saved"));
+    } catch (error) {
+      console.error("Welcome brand autosave failed", error);
+      ok = false;
+    } finally {
+      running.current = false;
+    }
+    setStatus(ok ? "saved" : "error");
+    // A new default language moves the website drafts to it: say what to do next (Store settings' message).
+    if (ok && localeChanged) toast.success(tSettings("savedLocaleChanged"), { duration: 12_000 });
+    if (wrote) {
       router.refresh();
       requestSetupPromptCheck();
-    });
+    }
+    if (again.current) {
+      again.current = false;
+      await flushNow();
+    }
+  }, [storeId, brand.supportedLocales, router, tSettings, tDesign]);
+
+  // Each change saves after a short pause; nothing saves while the step is locked.
+  useEffect(() => {
+    if (disabled) return;
+    const was = saved.current;
+    const colorsChanged = ds !== null && JSON.stringify(ds.colors) !== was.colors;
+    if (logoUrl === was.logoUrl && faviconUrl === was.faviconUrl && locale === was.locale && !colorsChanged) return;
+    pending.current = { logoUrl, faviconUrl, locale, ds };
+    const timer = setTimeout(() => void flush(), AUTOSAVE_MS);
+    return () => clearTimeout(timer);
+  }, [logoUrl, faviconUrl, locale, ds, disabled, flush]);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-[20px] border border-(--s-line) bg-(--s-surface) p-3.5">
-        <LogoField value={logoUrl} onChange={setLogoUrl} name={storeName} disabled={disabled || saving} />
+        <LogoField value={logoUrl} onChange={setLogoUrl} name={storeName} disabled={disabled} />
       </div>
-      <FaviconField value={faviconUrl} onChange={setFaviconUrl} disabled={disabled || saving} />
+      <FaviconField value={faviconUrl} onChange={setFaviconUrl} disabled={disabled} />
 
       {ds && (
         <Field label={t("color")} note={t("colorHint")}>
@@ -166,19 +225,30 @@ export function WelcomeBrandStep({
               name="welcome-default-locale"
               title={tSettings(`locales.${option}`)}
               checked={locale === option}
-              disabled={disabled || saving}
+              disabled={disabled}
               onChange={() => setLocale(option)}
             />
           ))}
         </OptionCards>
       </Field>
 
-      <div className="flex justify-end max-[600px]:[&>*]:flex-1">
-        <SellerButton variant="solid" disabled={disabled || saving || colorInvalid || (!generalDirty && !colorDirty)} onClick={onSave}>
-          {saving ? <LoaderCircle className="animate-spin" aria-hidden /> : <Save aria-hidden />}
-          {t("save")}
-        </SellerButton>
-      </div>
+      {status !== "idle" && (
+        <p className="flex min-h-6 items-center gap-1.5 text-[12.5px] text-(--s-muted)" aria-live="polite">
+          {status === "saving" ? (
+            <LoaderCircle className="size-3.5 animate-spin" aria-hidden />
+          ) : status === "saved" ? (
+            <Check className="size-3.5 text-success" strokeWidth={3} aria-hidden />
+          ) : (
+            <CircleAlert className="size-3.5 text-destructive" aria-hidden />
+          )}
+          <span className={cn(status === "error" && "text-destructive")}>{tAutosave(status)}</span>
+          {status === "error" && (
+            <button type="button" onClick={() => void flush()} className="cursor-pointer font-bold text-(--s-link) underline-offset-4 hover:underline">
+              {tErrors("retry")}
+            </button>
+          )}
+        </p>
+      )}
     </div>
   );
 }
