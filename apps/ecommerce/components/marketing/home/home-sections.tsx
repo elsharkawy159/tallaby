@@ -324,11 +324,12 @@ export async function FeaturesSection() {
 }
 
 /**
- * A home card's width, so the browser picks the 600 px or 1200 px desktop shot: three across the
- * 1400 px container (40 px gutters, 32 px gaps) from 1081 px, two (24 px gutters, 24 px gap) from
- * 641 px. Phones show the carousel (slides about 80vw) and get the phone shot.
+ * A home card's width, so the browser picks the 600 px or 1200 px desktop shot: five across the
+ * 1400 px container (40 px gutters, 24 px gaps) from 1280 px, so the 10 cards fill two rows; two
+ * (24 px gutters, 24 px gap) from 641 px. Phones show the carousel (slides about 80vw) and get the
+ * phone shot.
  */
-const HOME_TEMPLATE_CARD_SIZES = "(min-width: 1081px) calc((min(100vw, 1400px) - 144px) / 3), (min-width: 641px) calc(50vw - 36px), 80vw";
+const HOME_TEMPLATE_CARD_SIZES = "(min-width: 1280px) calc((min(100vw, 1400px) - 176px) / 5), (min-width: 641px) calc(50vw - 36px), 80vw";
 
 /**
  * The home page's templates (2026-11-16): the /templates gallery's tall full-page cards
@@ -369,7 +370,7 @@ async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; loca
           }}
         />
       </div>
-      <div className="hidden grid-cols-2 gap-x-6 gap-y-10 min-[641px]:grid min-[1081px]:grid-cols-3 min-[1081px]:gap-x-8 min-[1081px]:gap-y-12">
+      <div className="hidden grid-cols-2 gap-x-6 gap-y-10 min-[641px]:grid min-[1280px]:grid-cols-5 min-[1280px]:gap-x-6 min-[1280px]:gap-y-12">
         {cards.map((card) => (
           <TemplatePreviewCard
             key={card.id}
@@ -406,7 +407,13 @@ export async function TemplatesSection() {
         <TemplateGrid entries={pickHomeTemplates(entries)} locale={locale} />
         <div className="mt-10 flex justify-center min-[641px]:mt-12">
           <CtaButton asChild tone="outline">
-            <Link href="/templates">{t("more")}</Link>
+            <Link href="/templates" aria-label={t("moreCount", { count: entries.length })}>
+              {t("more")}
+              {/* The whole gallery's size, as a small badge (owner, 2026-11-16). Numbers stay LTR in Arabic. */}
+              <span aria-hidden dir="ltr" className="ms-2 inline-flex min-w-9 items-center justify-center rounded-full bg-teal-600 px-2 py-0.5 text-xs font-bold leading-5 text-white tabular-nums">
+                +{entries.length}
+              </span>
+            </Link>
           </CtaButton>
         </div>
       </Container>

@@ -160,6 +160,7 @@
       "title": "Start from a design made for what you sell",
       "body": "{count, plural, one {{count} ready template} other {{count} ready templates}}. Edit any section with Drag & Drop, and switch templates any time without losing your products.",
       "more": "See more templates",
+      "moreCount": "See all {count} templates",
       "carousel": "Featured templates",
       "slide": "Template {index} of {total}",
       "prev": "Previous template",
