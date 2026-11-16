@@ -28,12 +28,22 @@ type LegalSection = {
 
 type SummaryItem = { title: string; body: string };
 
+type LegalDoc = "terms" | "privacy" | "refund";
+
+/** Every legal page, in footer order; the meta key gives its title. */
+const LEGAL_DOCS: { doc: LegalDoc; href: string }[] = [
+  { doc: "terms", href: "/terms" },
+  { doc: "privacy", href: "/privacy" },
+  { doc: "refund", href: "/refund-policy" },
+];
+
 const RIGHT_ICONS = [Eye, Pencil, Download, Trash2];
 
 /**
- * Terms and Privacy share this layout: a header on the page fog with a Terms/Privacy
- * switch, three summary cards, contents and numbered sections. All copy
- * comes from `legal.<doc>` in the messages.
+ * Terms, Privacy and the Refund policy share this layout: a header on the page
+ * fog, three summary cards, contents, numbered sections and, at the end, links
+ * to the other legal pages (each is its own document, so there is no switch
+ * between them). All copy comes from `legal.<doc>` in the messages.
  */
 export async function LegalPage({
   doc,
@@ -42,7 +52,7 @@ export async function LegalPage({
   minutes,
   usdSwitchDate = null,
 }: {
-  doc: "terms" | "privacy";
+  doc: LegalDoc;
   summaryIcons: ComponentType<{ className?: string }>[];
   /** ISO date of the last revision. */
   updated: string;
@@ -57,10 +67,7 @@ export async function LegalPage({
   const locale = await getLocale();
   const switchDate = usdSwitchDate ? formatLongDate(usdSwitchDate, locale) : null;
 
-  const swap = [
-    { href: "/terms", label: tm("terms.title"), current: doc === "terms" },
-    { href: "/privacy", label: tm("privacy.title"), current: doc === "privacy" },
-  ];
+  const related = LEGAL_DOCS.filter((d) => d.doc !== doc);
 
   return (
     <>
@@ -79,18 +86,6 @@ export async function LegalPage({
               <Clock className="size-[15px] text-teal-500" aria-hidden />
               {t("readTime", { minutes })}
             </span>
-          </div>
-          <div className="mt-7 flex flex-wrap gap-2" data-print="hide">
-            {swap.map((s) => (
-              <Link
-                key={s.href}
-                href={s.href}
-                aria-current={s.current ? "page" : undefined}
-                className="inline-flex h-10 items-center rounded-full border border-line-strong bg-white px-[18px] text-sm font-semibold text-ink-600 hover:border-teal-300 hover:text-teal-900 hover:no-underline aria-[current=page]:border-teal-900 aria-[current=page]:bg-teal-900 aria-[current=page]:text-white aria-[current=page]:hover:text-white"
-              >
-                {s.label}
-              </Link>
-            ))}
           </div>
         </Container>
       </div>
@@ -153,6 +148,20 @@ export async function LegalPage({
                 ) : null}
               </section>
             ))}
+            <nav aria-labelledby="legal-related" data-print="hide" className="rounded-2xl border border-line bg-white p-5">
+              <h2 id="legal-related" className="mb-2.5 text-base font-bold text-teal-900">
+                {t("related")}
+              </h2>
+              <ul className="flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
+                {related.map((r) => (
+                  <li key={r.href}>
+                    <Link href={r.href} className="font-semibold text-teal-700 underline-offset-4 hover:underline">
+                      {tm(`${r.doc}.title`)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </article>
         </div>
       </Container>

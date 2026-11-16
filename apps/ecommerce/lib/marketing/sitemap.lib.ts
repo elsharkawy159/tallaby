@@ -18,8 +18,9 @@ export const STATIC_PAGE_LASTMOD: Record<string, string> = {
   "/careers": "2026-11-04",
   "/contact": "2026-11-06",
   "/faq": "2026-11-04",
-  "/terms": "2026-11-09",
-  "/privacy": "2026-11-09",
+  "/terms": "2026-11-16",
+  "/privacy": "2026-11-16",
+  "/refund-policy": "2026-11-16",
   "/follow-us": "2026-11-04",
 };
 

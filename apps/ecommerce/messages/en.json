@@ -2154,6 +2154,10 @@
       "title": "Privacy policy",
       "description": "What we collect, why we collect it, and the choices you have."
     },
+    "refund": {
+      "title": "Refund policy",
+      "description": "Tallaby wallet top-ups aren't refunded in cash. See how charges, billing mistakes and closing a store work, and who handles refunds on store purchases."
+    },
     "affiliates": {
       "title": "Affiliate program",
       "description": "Share your referral link and earn EGP 100 for every seller who signs up through it and tops up $5, paid in cash to your bank account or Vodafone Cash."
@@ -2202,6 +2206,7 @@
     "rights": "© {year} tallaby.com. All rights reserved.",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
+    "refund": "Refund policy",
     "cookies": "Cookie policy",
     "social": "Social media",
     "claimPrompt": "Type your brand name to claim your store link"

@@ -140,6 +140,9 @@ export async function SiteFooter() {
               <Link href="/privacy" className={`${link} ${tap}`}>
                 {t("privacy")}
               </Link>
+              <Link href="/refund-policy" className={`${link} ${tap}`}>
+                {t("refund")}
+              </Link>
             </div>
             <Link href="/privacy#cookies" className={`w-fit ${link} ${tap}`}>
               {t("cookies")}

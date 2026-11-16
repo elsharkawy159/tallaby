@@ -32,6 +32,7 @@ export const MARKETING_SEGMENTS: ReadonlySet<string> = new Set([
   "integrations",
   "pricing",
   "privacy",
+  "refund-policy",
   "solutions",
   "stores",
   "templates",
