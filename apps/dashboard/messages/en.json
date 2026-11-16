@@ -8840,8 +8840,8 @@
   "storeWelcome": {
     "title": "Set up your store",
     "description": "A few short steps to get your store ready for its first order.",
-    "welcomeTitle": "Welcome to Tallaby! Your store is ready",
-    "welcomeDescription": "Set it up in minutes: follow the steps below in order.",
+    "welcomeTitle": "Welcome to Tallaby! Your store is created",
+    "welcomeDescription": "A few steps left before it is ready for its first order. Follow them in order.",
     "skip": "Go to dashboard",
     "progress": "Steps done: {done} of {total}",
     "progressLabel": "Setup progress",
