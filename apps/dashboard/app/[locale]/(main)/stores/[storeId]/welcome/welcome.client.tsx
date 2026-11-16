@@ -84,7 +84,14 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
         </div>
       </div>
 
-      <Accordion type="single" collapsible value={open} onValueChange={setOpen} className="flex flex-col gap-3">
+      {/* Phones: drop the shared content's px-4; every step keeps its own px-3, so content gains 16px a side. */}
+      <Accordion
+        type="single"
+        collapsible
+        value={open}
+        onValueChange={setOpen}
+        className="flex flex-col gap-3 max-[600px]:[&_[data-slot=accordion-content]]:px-0"
+      >
         <SellerCard id="welcome-setup" className="scroll-mt-24 overflow-hidden">
           <AccordionItem value="setup">
             <AccordionTrigger className="items-center rounded-none bg-transparent px-5 py-4! hover:bg-(--s-fill)/40 max-[600px]:px-4">
