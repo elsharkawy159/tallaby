@@ -16,9 +16,9 @@ import { normalizeCountry } from "./visitor-country.lib";
 export type TopUpCopyVariant = "egp" | "usdCard";
 
 /**
- * Off until a seller outside Egypt can really top up by card in USD: today
- * card top-ups are off (`CARD_TOP_UPS_ENABLED = false` in
- * packages/lib/src/store-wallet/top-up.lib.ts) and the Kashier session and
+ * Off until a seller outside Egypt can really top up by card in USD: since
+ * 2026-11-16 every top-up goes through Kashier (`CARD_TOP_UPS_ENABLED` in
+ * packages/lib/src/store-wallet/top-up.lib.ts), but the Kashier session and
  * webhook are EGP only. Turn on in the same change that makes USD card
  * top-ups work, so the site never promises what the dashboard can't do.
  */

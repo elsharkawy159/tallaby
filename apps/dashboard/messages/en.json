@@ -3887,8 +3887,8 @@
       },
       "topUp": {
         "question": "How do I top up my wallet?",
-        "answerUsd": "Open Balance & top-ups and choose Top up. Pick an amount from {min} to {max}; you see the total in EGP before you pay. Send it by Vodafone Cash or InstaPay and upload the transfer receipt. Your balance is credited once our team confirms the transfer. Card top-ups are coming soon.",
-        "answer": "Open Balance & top-ups and choose Top up. Send between EGP 100 and EGP 20,000 by Vodafone Cash or InstaPay, then upload the transfer receipt. Your balance updates once our team confirms the transfer."
+        "answerUsd": "Open Balance & top-ups and choose Top up. Pick an amount from {min} to {max}; you see the total in EGP before you pay. Pay through Kashier by card, Meeza, mobile wallet, Apple Pay or Google Pay. Your balance is added as soon as the payment goes through.",
+        "answer": "Open Balance & top-ups and choose Top up. Pick between EGP 100 and EGP 20,000 and pay through Kashier by card, Meeza, mobile wallet, Apple Pay or Google Pay. Your balance updates as soon as the payment goes through."
       },
       "paymentMethods": {
         "question": "Which payment methods can my store offer?",
@@ -6277,6 +6277,7 @@
       "continue": "Continue to payment",
       "refresh": "Check again",
       "backToWallet": "Back to wallet",
+      "tryAgain": "Try again",
       "errors": {
         "invalid": "Enter an amount in dollars, for example 10.",
         "too_small": "The minimum top-up is {min}.",
@@ -6297,7 +6298,7 @@
         },
         "failed": {
           "title": "Top-up didn't go through",
-          "description": "{amount} was not charged to your wallet. You can try again."
+          "description": "{amount} wasn't added to your wallet. You can try again."
         }
       }
     },
@@ -6355,18 +6356,19 @@
     "manualTopUp": {
       "limitsUsd": "Type the wallet amount in US dollars, {minUsd} to {maxUsd} (from {min} to {max} at today's rate). You pay in EGP.",
       "button": "Top up wallet",
-      "title": "Top up wallet",
-      "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
       "panel": {
         "title": "Top up wallet",
-        "subtitle": "Pick the amount and how to transfer it. You pay in EGP, and the balance is added after the receipt is reviewed.",
+        "subtitle": "Choose an amount and pay online in EGP. Your balance is added as soon as the payment goes through.",
         "presets": "Pick an amount",
         "popular": "Most chosen",
         "approxOrders": "≈ {count, plural, one {{formatted} order} other {{formatted} orders}}",
         "custom": "Or type another amount",
         "decrease": "Decrease",
         "increase": "Increase",
-        "methods": "Transfer with:",
+        "pay": "How you pay",
+        "payMethods": "Card, Meeza, a mobile wallet such as Vodafone Cash, Apple Pay or Google Pay.",
+        "payHint": "You choose how to pay on Kashier's secure page, then come back here.",
+        "secure": "Secure payment by Kashier",
         "summary": {
           "rate": "Rate",
           "tax": "Tax",
@@ -6374,103 +6376,31 @@
           "amount": "Top-up amount",
           "fee": "Top-up fee",
           "free": "Free",
-          "total": "You transfer",
+          "total": "You pay",
           "after": "Balance after top-up:",
           "rateUsd": "Dollar rate today"
         },
-        "cta": "Top up now",
+        "cta": "Pay with Kashier",
+        "redirecting": "Opening the payment page…",
         "trust": {
-          "review": "Added once we check the receipt",
+          "instant": "Added as soon as the payment goes through",
           "noExpiry": "Lifetime balance, it never expires",
           "noExpiryEgp": "Your balance never expires",
           "feeUsd": "Only {fee} per order"
         }
       },
-      "changeAmount": "Change amount",
-      "dialogTitle": "Transfer {amount}",
-      "dialogDescription": "By {method}, then upload the receipt.",
-      "cancel": "Cancel",
-      "recap": {
-        "amount": "Amount",
-        "method": "Method",
-        "from": "From"
-      },
-      "progress": "Top-up steps",
-      "steps": {
-        "method": "Method",
-        "transfer": "Transfer",
-        "receipt": "Receipt"
-      },
-      "limits": "From 100 to 20,000 EGP.",
-      "methodLabel": "Transfer with",
-      "methods": {
-        "vodafone_cash": {
-          "name": "Vodafone Cash",
-          "hint": "From any Vodafone Cash wallet",
-          "to": "To Vodafone Cash number",
-          "sender": "Wallet number you sent from"
-        },
-        "instapay": {
-          "name": "InstaPay",
-          "hint": "From the InstaPay app",
-          "to": "To InstaPay number",
-          "sender": "Phone number linked to InstaPay"
-        },
-        "card": {
-          "name": "Debit or credit card",
-          "hint": "Not available yet",
-          "soon": "Soon"
-        }
-      },
-      "slip": {
-        "sendExactly": "Send exactly",
-        "copyAmount": "Copy amount",
-        "copyNumber": "Copy number",
-        "holder": "Account name: {name}",
-        "how": {
-          "open": "Open the {method} app.",
-          "send": "Send exactly {amount} to the number above.",
-          "screenshot": "Take a screenshot of the confirmation screen."
-        }
-      },
-      "optional": "Optional",
-      "senderHint": "Helps us match your transfer faster.",
-      "receipt": {
-        "pick": "Choose the receipt picture",
-        "pickHint": "JPG, PNG or WEBP, up to 5 MB",
-        "replace": "Change picture",
-        "remove": "Remove picture",
-        "previewAlt": "Transfer receipt",
-        "required": "Upload the transfer receipt first.",
-        "wrongType": "Choose a JPG, PNG or WEBP picture.",
-        "tooLarge": "The picture is larger than 5 MB.",
-        "uploadFailed": "Couldn't upload the picture. Try again.",
-        "clarity": "Make sure the picture clearly shows the amount and the transfer date."
-      },
-      "back": "Back",
-      "next": "Next",
-      "transferred": "I've sent it",
-      "submit": "Send for review",
-      "copyFailed": "Couldn't copy. Copy it by hand.",
-      "done": {
-        "title": "Top-up request sent",
-        "subtitle": "Your request is now under review.",
-        "body": "We'll check your {method} transfer and add the amount to your balance. You can follow it on the wallet page.",
-        "close": "Done"
-      },
-      "errors": {
-        "invalid": "Check the details and try again.",
-        "too_small": "The minimum top-up is 100 EGP.",
-        "too_large": "The maximum top-up is 20,000 EGP.",
-        "invalid_proof": "We couldn't use that receipt. Upload it again.",
-        "too_many_open": "You have 3 top-ups under review. Wait until we check them.",
-        "wallet_not_active": "This wallet isn't active right now.",
-        "rateLimited": "Too many attempts. Wait a few minutes.",
-        "notAllowed": "You can't top up this wallet.",
-        "generic": "Couldn't send the request. Try again."
-      }
+      "limits": "From 100 to 20,000 EGP."
     },
     "welcomeGiftActive": "Welcome gift: {amount} left, valid until {date}. It pays your fees first."
+  },
+  "paymentLogos": {
+    "label": "Payment methods",
+    "visa": "Visa",
+    "mastercard": "Mastercard",
+    "meeza": "Meeza",
+    "vodafone_cash": "Vodafone Cash",
+    "apple_pay": "Apple Pay",
+    "google_pay": "Google Pay"
   },
   "websiteSocial": {
     "title": "Social media",

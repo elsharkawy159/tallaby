@@ -69,7 +69,7 @@
             },
             {
               "title": "Topping up",
-              "body": "You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay. We add no margin to that rate, and the total is rounded down to a whole pound. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. A manual transfer is credited once we confirm it."
+              "body": "You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay. We add no margin to that rate, and the total is rounded down to a whole pound. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. You pay through our payment provider, Kashier, and the wallet is credited once the payment is confirmed."
             },
             {
               "title": "Activating your account",
@@ -339,8 +339,7 @@
           "id": "failed-top-up",
           "title": "A top-up that didn't reach your wallet",
           "paragraphs": [
-            "If you paid for a top-up and it wasn't added to your balance, or you paid for the same top-up twice, email us with proof of payment. We check the payment, and once we confirm we received it, we add it to your wallet.",
-            "A manual transfer is added to your wallet once we confirm it."
+            "If you paid for a top-up and it wasn't added to your balance, or you paid for the same top-up twice, email us with proof of payment. We check the payment, and once we confirm we received it, we add it to your wallet."
           ]
         },
         {

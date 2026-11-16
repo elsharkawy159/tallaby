@@ -1,9 +1,10 @@
 import { Link, redirect } from "@/i18n/navigation";
-import { CheckCircle2, Clock, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, LockKeyhole, XCircle } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { topUpCredit } from "@workspace/lib/store-wallet";
 import { getStoreTopUp } from "@workspace/lib/store-wallet/server";
 import { IconTile, PageContainer, SellerButton, SellerCard } from "@/components/seller-ui";
+import { PaymentMethodLogos } from "@/components/payments/payment-method-logos";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { walletMoney } from "../store-wallet.lib";
 
@@ -28,7 +29,11 @@ export default async function TopUpReturnPage({
   const row = typeof topUp === "string" ? await getStoreTopUp(seller.sellerId, topUp) : null;
   if (!row) redirect({ href: "/wallet", locale: await getLocale() });
 
-  const [t, locale] = await Promise.all([getTranslations("storeWallet.topUp"), getLocale()]);
+  const [t, tPanel, locale] = await Promise.all([
+    getTranslations("storeWallet.topUp"),
+    getTranslations("storeWallet.manualTopUp.panel"),
+    getLocale(),
+  ]);
   const state = row.status === "succeeded" ? "succeeded" : row.status === "failed" || row.status === "cancelled" ? "failed" : "processing";
   // What the wallet gets, not the EGP paid: the same until the USD switch.
   const credit = topUpCredit(row);
@@ -54,10 +59,22 @@ export default async function TopUpReturnPage({
                 <Link href={`/wallet/top-up?topUp=${row.id}`}>{t("refresh")}</Link>
               </SellerButton>
             )}
+            {state === "failed" && (
+              <SellerButton asChild variant="outline">
+                <Link href="/wallet?topup=1#topup">{t("tryAgain")}</Link>
+              </SellerButton>
+            )}
             <SellerButton asChild variant="solid">
               <Link href="/wallet">{t("backToWallet")}</Link>
             </SellerButton>
           </div>
+        </div>
+        <div className="flex flex-col items-center gap-2.5 border-t border-(--s-line-soft) px-[22px] py-4">
+          <PaymentMethodLogos size="sm" className="justify-center" />
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-(--s-muted)">
+            <LockKeyhole className="size-3.5 shrink-0 text-success" aria-hidden />
+            {tPanel("secure")}
+          </p>
         </div>
       </SellerCard>
     </PageContainer>

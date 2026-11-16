@@ -260,7 +260,8 @@ export const SellerOrderCancelledEmail = ({
 
 /* ----------------------------------------------------------------------- */
 
-export type TopUpMethod = "card" | "wallet" | "instapay" | "bank_transfer" | "manual";
+/** `kashier`: any Kashier payment (card, Meeza, wallet, Apple Pay); the others stay for past top-ups. */
+export type TopUpMethod = "kashier" | "card" | "wallet" | "instapay" | "bank_transfer" | "manual";
 
 export interface SellerWalletTopUpEmailProps extends SellerEmailProps {
   amount: string;

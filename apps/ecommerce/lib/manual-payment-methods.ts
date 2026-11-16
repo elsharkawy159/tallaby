@@ -1,8 +1,7 @@
 import type { SellerPaymentDetails } from "@workspace/lib/payments/store-methods";
-import { TALLABY_TOP_UP_ACCOUNTS } from "@workspace/lib/store-wallet";
 
-/** The (masked) name on Tallaby's own receiving accounts. */
-const TALLABY_ACCOUNT_HOLDER = TALLABY_TOP_UP_ACCOUNTS.vodafone_cash.holder;
+/** The (masked) name on Tallaby's own receiving accounts (owner-provided, 2026-10-18). */
+const TALLABY_ACCOUNT_HOLDER = "عمر م*** ع******* ا**** م***";
 
 export type ManualPaymentMethod = "instapay" | "vodafone_cash" | "e_cash" | "we_pay" | "orange_cash";
 

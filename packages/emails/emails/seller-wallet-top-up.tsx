@@ -10,7 +10,7 @@ export default function SellerWalletTopUp() {
     balance: "1,250 جنيه",
     previousBalance: "750 جنيه",
     reference: "TU-20261023-417",
-    method: "card",
+    method: "kashier",
     date: "23 أكتوبر 2026",
     links: { wallet: "https://dashboard.tallaby.com/wallet", topUp: "https://dashboard.tallaby.com/wallet" },
   });

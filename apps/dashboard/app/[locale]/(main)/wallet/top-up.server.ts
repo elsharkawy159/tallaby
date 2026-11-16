@@ -42,7 +42,8 @@ export async function startTopUp(amount: string): Promise<TopUpActionResult> {
       actorId: seller.userId,
       amount: String(amount),
       email: user?.email ?? null,
-      returnUrl: `${base}/wallet/top-up`,
+      // Arabic is the default locale (no prefix); an English seller comes back to the English page.
+      returnUrl: `${base}${locale === "en" ? "/en" : ""}/wallet/top-up`,
       locale,
     });
     return result.success ? { success: true, sessionUrl: result.sessionUrl } : result;
@@ -59,7 +60,8 @@ export type ManualTopUpActionError = SubmitManualTopUpError | "rateLimited" | "n
 export type ManualTopUpActionResult = { success: true; amount: string } | { success: false; error: ManualTopUpActionError };
 
 /**
- * Store wallet › Top up by Vodafone Cash or InstaPay (owner request 2026-10-18).
+ * Store wallet › Top up by Vodafone Cash or InstaPay (owner request 2026-10-18;
+ * no longer offered in the seller UI since 2026-11-16, kept for old clients).
  * The browser has already uploaded the receipt into the seller's own folder of
  * the private bucket; this checks the path and that the file exists, then
  * records a PENDING request. The wallet is credited only when an admin

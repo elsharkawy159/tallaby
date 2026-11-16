@@ -115,10 +115,10 @@ Add a product to the cart on Seller A's store as a guest, then open checkout.
 ## A5. Wallet and top-ups
 
 - [ ] Wallet › Balance & top-ups (الرصيد وشحن المحفظة): amounts are in EGP, limits 100 to 20,000.
-- [ ] Press اشحن الآن: only InstaPay and Vodafone Cash can be chosen. Card (بطاقة خصم أو ائتمان) shows Soon (قريبًا) and can't be selected.
-- [ ] The next step shows InstaPay 01152372358 or Vodafone Cash 01003272830, with Copy buttons that work.
-- [ ] You can't send without a receipt picture. Send one: "تم إرسال طلب الشحن" shows, and the balance doesn't change yet.
-- [ ] ⭐ In Admin › Store top-ups, the receipt picture opens. Press Approve and credit: the seller's balance goes up once, and the bell says so. Reject another one: the balance doesn't change.
+- [ ] The top-up page shows no InstaPay or Vodafone Cash number and no receipt upload: only the payment logos and "ادفع عبر Kashier" (2026-11-16).
+- [ ] ⭐ Press ادفع عبر Kashier: Kashier's page opens with the right EGP total. Pay: you come back to /wallet/top-up, it says the top-up was received, and the balance goes up once (the webhook credits it; refresh to check it stays once).
+- [ ] Cancel or fail a payment on Kashier: the result page says it didn't go through, the balance doesn't change, and "حاول مرة أخرى" goes back to the amount.
+- [ ] ⭐ In Admin › Store top-ups, an older manual request (if any) still opens its receipt and can be approved or rejected.
 
 ## A6. Manual orders and order link
 

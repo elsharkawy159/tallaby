@@ -1,47 +1,18 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  Check,
-  Coins,
-  Copy,
-  Hourglass,
-  ImageUp,
-  Infinity as InfinityIcon,
-  LoaderCircle,
-  Minus,
-  Plus,
-  Send,
-  ShieldCheck,
-  TrendingUp,
-  X,
-} from "lucide-react";
-import {
-  CARD_TOP_UPS_ENABLED,
-  MANUAL_TOP_UP_METHODS,
-  TALLABY_TOP_UP_ACCOUNTS,
-  TOP_UP_PROOF_BUCKET,
-  TOP_UP_PROOF_MAX_BYTES,
-  TOP_UP_PROOF_TYPES,
-  buildTopUpProofPath,
-  parseStoreTopUpAmount,
-  STORE_TOP_UP_MIN_EGP,
-  type ManualTopUpMethod,
-} from "@workspace/lib/store-wallet";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
-import { DropZone, Field, IconButton, Note, SellerButton, SellerCard, Tag, TextInput } from "@/components/seller-ui";
+import { ArrowLeft, Check, Coins, Infinity as InfinityIcon, LoaderCircle, LockKeyhole, Minus, Plus, TrendingUp, Zap } from "lucide-react";
+import { parseStoreTopUpAmount, STORE_TOP_UP_MIN_EGP } from "@workspace/lib/store-wallet";
+import { SellerButton, SellerCard } from "@/components/seller-ui";
 import { toAsciiDigits } from "@/components/form/form-ui";
-import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
-import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
+import { PaymentMethodLogos } from "@/components/payments/payment-method-logos";
 import { cn } from "@/lib/utils";
 import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
 import { formatUsdPrice } from "@/lib/i18n/format";
 import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, orderCountValues, ordersCovered, stepTopUpAmount, stepUsdTopUp, TOP_UP_MAX_EGP, walletMoney, walletPoundLabel } from "./store-wallet.lib";
-import { submitManualTopUp } from "./top-up.server";
+import { startTopUp } from "./top-up.server";
 
 /**
  * How a preset card sizes itself, by how many presets there are. The columns follow the space the
@@ -57,22 +28,18 @@ const PRESET_CARD_LAYOUT: Record<number, string> = {
   5: "min-h-[calc((100cqw-20px)/3)] basis-[calc((100%-20px)/3)] @[480px]:aspect-square @[480px]:min-h-auto @[480px]:basis-[calc((100%-40px)/5)]",
 };
 
-/** "01003272830" → "0100 327 2830", easier to read off a screen and type into a wallet app. */
-const groupNumber = (n: string) => n.replace(/^(\d{4})(\d{3})(\d+)$/, "$1 $2 $3");
-
 /** The amount field shows thousands separators; the state keeps plain digits. */
 const groupDigits = (digits: string) => (digits ? Number(digits).toLocaleString("en-US") : "");
 
 /**
- * Store wallet › Top up (owner request 2026-10-18; Claude Design "Seller
- * Wallet v3"): the amount and the method are chosen on the page, the summary
- * sits beside them, and the dialog shows the transfer to Tallaby's number and
- * takes the receipt. Submitting records a pending request; the balance changes
- * only after an admin approves it. `below` and `side` are the page's other
- * cards, placed here so one grid holds the sticky summary.
+ * Store wallet › Top up (Claude Design "Seller Wallet v3"; Kashier only since
+ * 2026-11-16): the amount is chosen on the page and the summary sits beside
+ * it. Paying opens Kashier's hosted page (card, Meeza, mobile wallets, Apple
+ * Pay); the wallet is credited only by Kashier's signed webhook, and Kashier
+ * sends the seller back to /wallet/top-up. `below` and `side` are the page's
+ * other cards, placed here so one grid holds the sticky summary.
  */
 export function TopUpPanel({
-  sellerId,
   balance,
   disabled,
   defaultOpen,
@@ -82,11 +49,10 @@ export function TopUpPanel({
 }: {
   /** Set once the wallet is in USD (0136): priced in dollars, paid in EGP. */
   billing?: BillingState | null;
-  sellerId: string;
   /** The current balance, for "balance after the top-up". */
   balance: number;
   disabled?: boolean;
-  /** Opens on load: /wallet?topup=1 from the negative-balance pop-up. */
+  /** /wallet?topup=1 from the negative-balance pop-up: puts the cursor in the amount. */
   defaultOpen?: boolean;
   /** The column under the top-up card. */
   below?: React.ReactNode;
@@ -96,24 +62,16 @@ export function TopUpPanel({
   const t = useTranslations("storeWallet.manualTopUp");
   const tErrors = useTranslations("storeWallet.topUp.errors");
   const tWallet = useTranslations("storeWallet");
-  const tCommon = useTranslations("common");
   const locale = useLocale();
-  const router = useRouter();
   const ids = useId();
   const amountInput = useRef<HTMLInputElement>(null);
 
-  const [open, setOpen] = useState(Boolean(defaultOpen) && !disabled);
-  const [done, setDone] = useState(false);
   const usd = Boolean(billing?.usdLive);
   const presets = usd ? TOP_UP_PRESETS_USD : TOP_UP_PRESETS;
   const [amount, setAmount] = useState(usd ? String(DEFAULT_TOP_UP_USD) : "250");
-  const [method, setMethod] = useState<ManualTopUpMethod>(MANUAL_TOP_UP_METHODS[0]);
-  const [senderPhone, setSenderPhone] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const [copied, setCopied] = useState<"number" | "amount" | null>(null);
   const [isPending, startTransition] = useTransition();
+  // Stays true once Kashier's page is opening, so a second tap can't start a second session.
+  const [leaving, setLeaving] = useState(false);
 
   // Prices show in EGP at this rate (owner, 2026-11-09). The amount typed stays in dollars:
   // that is what the wallet is credited and what the quote below prices, unchanged.
@@ -128,7 +86,7 @@ export function TopUpPanel({
     : { min: walletMoney(STORE_TOP_UP_MIN_EGP, "EGP", locale), max: walletMoney(TOP_UP_MAX_EGP, "EGP", locale), minUsd: "", maxUsd: "" };
   const usdParsed = usd ? parseUsdTopUp(amount) : null;
   const quote = usdParsed?.success && billing ? quoteTopUp(usdParsed.usdCents, billing) : null;
-  // Whichever mode: `parsed.amount` is what the seller typed, `money` is the EGP to send.
+  // Whichever mode: `parsed.amount` is what the seller typed, `money` is the EGP to pay.
   const parsed: ReturnType<typeof parseStoreTopUpAmount> = !usd
     ? parseStoreTopUpAmount(amount)
     : usdParsed?.success
@@ -140,88 +98,36 @@ export function TopUpPanel({
   const money = !parsed.success ? "" : walletMoney(quote ? quote.totalPiastres / 100 : parsed.amount, "EGP", locale);
   // The top-up before tax in EGP: the quote's own whole pounds, so amount + tax = total.
   const credited = !parsed.success ? "—" : quote ? walletMoney(quote.basePiastres / 100, "EGP", locale) : walletMoney(parsed.amount, usd ? "USD" : "EGP", locale, rate);
-  const account = TALLABY_TOP_UP_ACCOUNTS[method];
-  const methodLabel = t(`methods.${method}.name`);
   // Only a typed amount gets an error; an empty field just shows the limits.
   // The shared errors name EGP limits; in USD mode the limits line says it right.
   const amountError = !parsed.success && value > 0 && parsed.error !== "invalid" ? (usd ? t("limitsUsd", limitValues) : tErrors(parsed.error, limitValues)) : null;
-  const canStart = parsed.success && !disabled;
+  const busy = isPending || leaving;
+  const canStart = parsed.success && !disabled && !busy;
 
-  useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
+  // From the negative-balance pop-up (/wallet?topup=1): straight to the amount.
+  useEffect(() => {
+    if (defaultOpen && !disabled) amountInput.current?.focus({ preventScroll: true });
+  }, [defaultOpen, disabled]);
 
-  const reset = () => {
-    setDone(false);
-    setSenderPhone("");
-    setFile(null);
-    setPreview(null);
-    setFileError(null);
-  };
-
-  const onOpenChange = (next: boolean) => {
-    if (isPending) return;
-    setOpen(next);
-    if (!next) {
-      if (done) router.refresh();
-      reset();
-    }
-  };
+  // Back from Kashier with the browser's Back button: the page comes from the back-forward cache.
+  useEffect(() => {
+    const onShow = (event: PageTransitionEvent) => event.persisted && setLeaving(false);
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
 
   const start = () => {
-    if (!canStart) return amountInput.current?.focus();
-    reset();
-    setOpen(true);
-  };
-
-  const changeAmount = () => {
-    onOpenChange(false);
-    // After the dialog has given focus back to the page.
-    setTimeout(() => amountInput.current?.focus(), 0);
-  };
-
-  const copy = async (text: string, what: "number" | "amount") => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(what);
-      setTimeout(() => setCopied((c) => (c === what ? null : c)), 1600);
-    } catch {
-      toast.error(t("copyFailed"));
-    }
-  };
-
-  const pickFile = (picked: File | undefined) => {
-    if (!picked) return;
-    if (!(TOP_UP_PROOF_TYPES as readonly string[]).includes(picked.type)) return setFileError(t("receipt.wrongType"));
-    if (picked.size > TOP_UP_PROOF_MAX_BYTES) return setFileError(t("receipt.tooLarge"));
-    setFileError(null);
-    setFile(picked);
-    setPreview(URL.createObjectURL(picked));
-  };
-
-  const clearFile = () => {
-    setFile(null);
-    setPreview(null);
-  };
-
-  const submit = () => {
-    if (!parsed.success) return changeAmount();
-    if (!file) return setFileError(t("receipt.required"));
-    const path = buildTopUpProofPath(sellerId, crypto.randomUUID(), file.type);
-    if (!path) return setFileError(t("receipt.wrongType"));
-
+    if (!parsed.success || disabled) return amountInput.current?.focus();
+    if (busy) return;
     startTransition(async () => {
-      try {
-        await uploadOwnFolderFile(file, { bucket: TOP_UP_PROOF_BUCKET, path });
-      } catch (error) {
-        console.error("Top-up receipt upload failed:", error);
-        setFileError(t("receipt.uploadFailed"));
-        return;
-      }
-      const result = await submitManualTopUp({ method, amount: parsed.amount, proofPath: path, senderPhone });
+      // The typed amount (dollars on a USD wallet); the server validates and quotes it again.
+      const result = await startTopUp(amount);
       if (!result.success) {
-        toast.error(t(`errors.${result.error}`));
+        toast.error(tErrors(result.error, limitValues));
         return;
       }
-      setDone(true);
+      setLeaving(true);
+      window.location.assign(result.sessionUrl);
     });
   };
 
@@ -291,7 +197,7 @@ export function TopUpPanel({
                       />
                     </span>
                     {presetQuote ? (
-                      // USD wallet: the EGP the seller transfers leads; the dollars credited (the typed amount) are small.
+                      // USD wallet: the EGP the seller pays leads; the dollars credited (the typed amount) are small.
                       <>
                         <bdi className="whitespace-nowrap font-montserrat text-[15px]/6 font-extrabold text-(--s-ink) tabular-nums">
                           {walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}
@@ -370,52 +276,21 @@ export function TopUpPanel({
           </div>
         </div>
 
-        <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-3">
-          <legend className="contents">
-            <span className="flex items-center gap-2.5 text-[13.5px] font-bold text-(--s-text)">
-              <StepNumber>2</StepNumber>
-              {t("methodLabel")}
-            </span>
-          </legend>
-          <div className="grid grid-cols-2 gap-2.5 ps-10 max-[720px]:grid-cols-1 max-[720px]:ps-0">
-            {MANUAL_TOP_UP_METHODS.map((m) => (
-              <label
-                key={m}
-                className="relative flex cursor-pointer items-center gap-3 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-3.5 transition-[border-color,background-color,box-shadow] duration-150 hover:border-(--s-outline) has-checked:border-(--s-primary) has-checked:bg-(--s-tint) has-checked:shadow-[0_0_0_3px_var(--s-focus-soft)] has-focus-visible:outline-[3px] has-focus-visible:outline-offset-2 has-focus-visible:outline-(--s-focus) has-disabled:cursor-not-allowed has-disabled:opacity-60"
-              >
-                <input
-                  type="radio"
-                  name={`${ids}-method`}
-                  className="peer absolute size-px opacity-0"
-                  checked={method === m}
-                  onChange={() => setMethod(m)}
-                />
-                <PaymentMethodLogo method={m} label={t(`methods.${m}.name`)} className="size-[42px] rounded-[13px] border-(--s-line)" />
-                <span className="min-w-0 flex-1">
-                  <b className="block text-sm font-bold text-(--s-ink)">{t(`methods.${m}.name`)}</b>
-                  <small className="block text-xs text-(--s-subtle)">{t(`methods.${m}.hint`)}</small>
-                </span>
-                <span
-                  aria-hidden
-                  className="size-5 shrink-0 rounded-full border-2 border-(--s-field-strong) transition-all duration-150 peer-checked:border-[6px] peer-checked:border-(--s-primary)"
-                />
-              </label>
-            ))}
-            {!CARD_TOP_UPS_ENABLED && (
-              <div
-                aria-disabled="true"
-                className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-(--s-field) p-3.5 opacity-70"
-              >
-                <PaymentMethodLogo method="card" label={t("methods.card.name")} className="size-[42px] rounded-[13px] border-(--s-line)" />
-                <span className="min-w-0 flex-1">
-                  <b className="block text-sm font-bold text-(--s-ink)">{t("methods.card.name")}</b>
-                  <small className="block text-xs text-(--s-subtle)">{t("methods.card.hint")}</small>
-                </span>
-                <Tag>{t("methods.card.soon")}</Tag>
-              </div>
-            )}
+        <section aria-labelledby={`${ids}-pay`} className="flex min-w-0 flex-col gap-3">
+          <h3 id={`${ids}-pay`} className="flex items-center gap-2.5 text-[13.5px] font-bold text-(--s-text)">
+            <StepNumber>2</StepNumber>
+            {t("panel.pay")}
+          </h3>
+          <div className="ms-10 flex min-w-0 flex-col gap-2.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 max-[720px]:ms-0">
+            <PaymentMethodLogos />
+            <p className="text-pretty text-[13.5px] font-semibold text-(--s-ink)">{t("panel.payMethods")}</p>
+            <p className="text-pretty text-xs text-(--s-subtle)">{t("panel.payHint")}</p>
+            <p className="mt-0.5 flex items-center gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
+              <LockKeyhole className="size-3.5 shrink-0 text-success" aria-hidden />
+              {t("panel.secure")}
+            </p>
           </div>
-        </fieldset>
+        </section>
       </SellerCard>
 
       {/* Second in the DOM, so one column puts the summary and its button right under the amount. */}
@@ -442,14 +317,24 @@ export function TopUpPanel({
               {afterBalance !== null && <> · {tWallet("runway", orderCountValues(ordersCovered(afterBalance, walletCurrency), locale))}</>}
             </span>
           </p>
-          <SellerButton className="h-[52px] w-full text-[15px]" disabled={!canStart} onClick={start}>
-            {t("panel.cta")}
-            <ArrowLeft className="ltr:rotate-180" aria-hidden />
+          <SellerButton className="h-[52px] w-full text-[15px]" disabled={!canStart} aria-busy={busy || undefined} onClick={start}>
+            {busy ? (
+              <>
+                <LoaderCircle className="animate-spin" aria-hidden />
+                {t("panel.redirecting")}
+              </>
+            ) : (
+              <>
+                <LockKeyhole aria-hidden />
+                {t("panel.cta")}
+                <ArrowLeft className="ltr:rotate-180" aria-hidden />
+              </>
+            )}
           </SellerButton>
           <ul className="flex flex-col gap-2 border-t border-(--s-line-soft) pt-3.5 text-[12.5px] text-(--s-muted)">
             <li className="flex items-center gap-2">
-              <ShieldCheck className="size-[15px] shrink-0 text-success" aria-hidden />
-              {t("panel.trust.review")}
+              <Zap className="size-[15px] shrink-0 text-success" aria-hidden />
+              {t("panel.trust.instant")}
             </li>
             <li className="flex items-center gap-2">
               <InfinityIcon className="size-[15px] shrink-0 text-success" aria-hidden />
@@ -468,135 +353,6 @@ export function TopUpPanel({
 
       <div className="flex min-w-0 flex-col gap-4">{below}</div>
 
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          closeLabel={tCommon("close")}
-          // Header and footer stay put; only the body scrolls, so the send button is always on screen.
-          className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0! sm:max-w-[480px]"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-        >
-          <DialogHeader className="shrink-0 gap-1 px-6 pe-12 pt-6 text-start max-[480px]:px-[18px] max-[480px]:pt-[18px]">
-            <DialogTitle className="text-lg font-bold text-(--s-ink)">
-              {done ? t("done.title") : t("dialogTitle", { amount: money })}
-            </DialogTitle>
-            <DialogDescription className="text-[12.5px] text-(--s-subtle)">
-              {done ? t("done.subtitle") : t("dialogDescription", { method: methodLabel })}
-            </DialogDescription>
-            {!done && (
-              <div className="-me-6 mt-2.5 flex gap-1.5" role="img" aria-label={t("progress")}>
-                {[true, true, Boolean(file)].map((on, i) => (
-                  <i
-                    key={i}
-                    className={cn("h-1 flex-1 rounded-full transition-colors duration-300", on ? "bg-(--s-primary)" : "bg-(--s-line-soft)")}
-                  />
-                ))}
-              </div>
-            )}
-          </DialogHeader>
-
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4 max-[480px]:px-[18px]">
-            {done ? (
-              <div className="flex flex-col items-center gap-2.5 py-2 text-center">
-                <span className="grid size-16 place-items-center rounded-full bg-accent-soft text-accent-ink">
-                  <Hourglass className="size-[30px]" aria-hidden />
-                </span>
-                <p className="font-montserrat text-3xl font-bold text-(--s-ink) tabular-nums">
-                  <bdi>{money}</bdi>
-                </p>
-                <p className="max-w-[340px] text-pretty text-[13px] text-(--s-muted)">{t("done.body", { method: methodLabel })}</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3.5">
-                <div className="flex flex-col gap-2">
-                  <CopyRow
-                    label={t("slip.sendExactly")}
-                    copyLabel={t("slip.copyAmount")}
-                    done={copied === "amount"}
-                    onCopy={() => parsed.success && copy(String(quote ? quote.totalPiastres / 100 : Number(parsed.amount)), "amount")}
-                  >
-                    <bdi>{money}</bdi>
-                  </CopyRow>
-                  <CopyRow
-                    label={t(`methods.${method}.to`)}
-                    note={t("slip.holder", { name: account.holder })}
-                    copyLabel={t("slip.copyNumber")}
-                    done={copied === "number"}
-                    onCopy={() => copy(account.number, "number")}
-                  >
-                    <bdi dir="ltr">{groupNumber(account.number)}</bdi>
-                  </CopyRow>
-                  <button
-                    type="button"
-                    onClick={changeAmount}
-                    className="w-fit cursor-pointer text-[12.5px] font-semibold text-(--s-link) underline underline-offset-2"
-                  >
-                    {t("changeAmount")}
-                  </button>
-                </div>
-
-                <Field label={t(`methods.${method}.sender`)} hint={t("optional")} note={t("senderHint")} htmlFor={`${ids}-sender`}>
-                  <TextInput
-                    id={`${ids}-sender`}
-                    dir="ltr"
-                    inputMode="tel"
-                    placeholder="01XXXXXXXXX"
-                    className="text-start font-montserrat"
-                    value={senderPhone}
-                    onChange={(e) => setSenderPhone(e.target.value)}
-                  />
-                </Field>
-
-                {preview && file ? (
-                  <div className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-success/40 bg-success-soft/40 p-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
-                    <img src={preview} alt={t("receipt.previewAlt")} className="h-16 w-14 shrink-0 rounded-[10px] border border-(--s-line) object-cover" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13.5px] font-bold text-(--s-ink)" dir="auto">
-                        {file.name}
-                      </p>
-                      <p className="text-xs text-(--s-subtle)" dir="ltr">
-                        {(file.size / 1024 / 1024).toFixed(1)} MB
-                      </p>
-                    </div>
-                    <IconButton aria-label={t("receipt.remove")} disabled={isPending} onClick={clearFile}>
-                      <X aria-hidden />
-                    </IconButton>
-                  </div>
-                ) : (
-                  <DropZone
-                    icon={ImageUp}
-                    title={t("receipt.pick")}
-                    hint={t("receipt.pickHint")}
-                    accept={TOP_UP_PROOF_TYPES.join(",")}
-                    onFiles={([picked]) => pickFile(picked)}
-                    className={cn("p-[22px]", fileError && "border-destructive/60")}
-                  />
-                )}
-                {fileError && <p className="text-xs font-medium text-destructive">{fileError}</p>}
-                <Note tone="amber">{t("receipt.clarity")}</Note>
-              </div>
-            )}
-          </div>
-
-          <div className="flex shrink-0 gap-2 px-6 pb-6 pt-1 max-[480px]:px-[18px] max-[480px]:pb-[calc(18px+env(safe-area-inset-bottom))]">
-            {done ? (
-              <SellerButton variant="solid" className="flex-1" onClick={() => onOpenChange(false)}>
-                {t("done.close")}
-              </SellerButton>
-            ) : (
-              <>
-                <SellerButton variant="outline" className="flex-1" disabled={isPending} onClick={() => onOpenChange(false)}>
-                  {t("cancel")}
-                </SellerButton>
-                <SellerButton variant="solid" className="flex-1" disabled={isPending || !file} onClick={submit}>
-                  {isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Send className="rtl:-scale-x-100" aria-hidden />}
-                  {t("submit")}
-                </SellerButton>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
@@ -618,38 +374,3 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CopyRow({
-  label,
-  note,
-  copyLabel,
-  done,
-  onCopy,
-  children,
-}: {
-  label: string;
-  note?: string;
-  copyLabel: string;
-  done: boolean;
-  onCopy: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-2.5 rounded-2xl border border-(--s-line) bg-(--s-tint) px-3.5 py-3">
-      <div className="min-w-0 flex-1">
-        <small className="block text-[11.5px] text-(--s-subtle)">{label}</small>
-        <b className="block font-montserrat text-base font-bold text-(--s-ink) tabular-nums">{children}</b>
-        {note && <small className="block text-[11.5px] text-(--s-subtle)">{note}</small>}
-      </div>
-      <SellerButton
-        variant="mini"
-        size="xs"
-        className={cn(done && "border-success/40 text-success [&_svg]:text-success")}
-        aria-label={copyLabel}
-        onClick={onCopy}
-      >
-        {done ? <Check aria-hidden /> : <Copy aria-hidden />}
-        <span className="max-[480px]:sr-only">{copyLabel}</span>
-      </SellerButton>
-    </div>
-  );
-}

@@ -231,7 +231,7 @@ export interface TransactionalCopy {
     topUpAgain: string;
     notYou: string;
     contactUs: string;
-    methods: Record<"card" | "wallet" | "instapay" | "bank_transfer" | "manual", string>;
+    methods: Record<"kashier" | "card" | "wallet" | "instapay" | "bank_transfer" | "manual", string>;
   };
   sellerPayout: {
     subject: string;
@@ -528,6 +528,7 @@ export const transactionalEn: TransactionalCopy = {
     notYou: "Didn't make this top-up?",
     contactUs: "Contact us right away",
     methods: {
+      kashier: "Online payment (Kashier)",
       card: "Card",
       wallet: "Mobile wallet",
       instapay: "InstaPay",
@@ -868,6 +869,7 @@ export const transactionalAr: TransactionalCopy = {
     notYou: "لم تقم بهذه العملية؟",
     contactUs: "تواصل معنا فورًا",
     methods: {
+      kashier: "دفع إلكتروني عبر Kashier",
       card: "بطاقة",
       wallet: "محفظة إلكترونية",
       instapay: "إنستاباي",

@@ -15,5 +15,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 const USD_SWITCH_DATE: string | null = "2026-11-06";
 
 export default function TermsPage() {
-  return <LegalPage doc="terms" summaryIcons={[Store, BadgePercent, DoorOpen]} updated="2026-11-06" minutes={8} usdSwitchDate={USD_SWITCH_DATE} />;
+  return <LegalPage doc="terms" summaryIcons={[Store, BadgePercent, DoorOpen]} updated="2026-11-16" minutes={8} usdSwitchDate={USD_SWITCH_DATE} />;
 }

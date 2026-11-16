@@ -36,6 +36,10 @@ export function getKashierConfig(): KashierConfig | null {
     merchantId,
     webhookUrl,
     mode: process.env.KASHIER_MODE === 'live' ? 'live' : 'test',
+    // Kashier v3 sessions (developers.kashier.io/docs/accept-payments/payment-sessions):
+    // `card` covers Visa, Mastercard and Meeza (a card brand, never its own method) and
+    // Apple Pay (offered on the hosted page as a card method); `wallet` covers mobile
+    // wallets such as Vodafone Cash. An env value overrides; empty falls back to this.
     allowedMethods: process.env.KASHIER_ALLOWED_METHODS || 'card,wallet',
   }
 }

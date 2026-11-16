@@ -251,7 +251,8 @@ export async function sendSellerLowStock(orderId: string): Promise<Sent> {
 /* ------------------------------------------------------------------------ */
 
 const TOP_UP_METHODS: Record<string, TopUpMethod> = {
-  kashier: "card",
+  // Card, Meeza, mobile wallet or Apple Pay: Kashier doesn't say which here.
+  kashier: "kashier",
   vodafone_cash: "wallet",
   e_cash: "wallet",
   orange_cash: "wallet",
@@ -261,7 +262,7 @@ const TOP_UP_METHODS: Record<string, TopUpMethod> = {
   manual: "manual",
 };
 
-/** Store-wallet top-up credited (Kashier card or an approved manual transfer). */
+/** Store-wallet top-up credited (Kashier, or an approved manual transfer made before 2026-11-16). */
 export async function sendSellerWalletTopUp(topUpId: string, balanceAfter?: string | number | null): Promise<SendOnceResult> {
   const [topUp] = await db.select().from(sellerWalletTopUps).where(eq(sellerWalletTopUps.id, topUpId)).limit(1);
   if (!topUp) return { status: "skipped", reason: "not_found" };
