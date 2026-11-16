@@ -288,6 +288,57 @@
   }
 }
 
+/*
+ * Home hero phone (owner, 2026-11-17): the template's phone screenshot scrolls
+ * itself slowly to the bottom, rests, comes back up, rests, and loops. The
+ * screen is a size container, so 100cqh is its height. One way takes
+ * --hero-phone-run (12–30 s, by the shot's length); it only runs while the
+ * phone is on screen (data-playing), paused in place otherwise. Reduced motion
+ * (the rule below) leaves the shot at its top.
+ */
+.hero-phone {
+  container-type: size;
+}
+.hero-phone__shot {
+  animation: hero-phone-tour calc(var(--hero-phone-run, 20s) * 2 + 3s) linear 0.8s infinite paused;
+}
+.hero-phone[data-playing] .hero-phone__shot {
+  animation-play-state: running;
+}
+@keyframes hero-phone-tour {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  47%,
+  50% {
+    transform: translateY(calc(-100% + 100cqh));
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  97%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Home hero decorations: a slow drift inside a few pixels, on the inner element
+ * (the outer one keeps the pop-in). Each sets its own --float-* so no two move
+ * in step.
+ */
+.hero-float {
+  animation: hero-float var(--float-run, 10s) ease-in-out var(--float-delay, 0s) infinite;
+}
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(calc(var(--float-turn, 2.5deg) * -0.5));
+  }
+  50% {
+    transform: translate3d(var(--float-x, 3px), var(--float-y, -7px), 0) rotate(calc(var(--float-turn, 2.5deg) * 0.5));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

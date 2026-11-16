@@ -212,8 +212,6 @@
         "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
         "latest": "Latest orders",
         "newOrder": "New order",
-        "cod": "Cash on delivery",
-        "placeOrder": "Place order",
         "kpi": {
           "sales": "Sales",
           "orders": "Orders",

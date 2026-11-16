@@ -177,7 +177,8 @@ export async function HomeHero() {
 
       <Container>
         <HeroDemo />
-        <p className="mt-[76px] text-center text-xs text-ink-400 min-[641px]:mt-16">{t("sample")}</p>
+        {/* The top margin clears the phone, which hangs below the dashboard (HeroDemo). */}
+        <p className="mt-[200px] text-center text-xs text-ink-400 min-[641px]:mt-[92px] min-[1081px]:mt-[134px]">{t("sample")}</p>
       </Container>
     </section>
   );

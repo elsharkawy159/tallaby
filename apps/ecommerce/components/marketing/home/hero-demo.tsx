@@ -1,8 +1,12 @@
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import { Bell, ShoppingBag, Wallet } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { Money } from "@/components/marketing/pricing/visitor-prices.client";
+import { getTemplateGallery } from "@/lib/marketing/templates.server";
+import { HeroPhoneScreen } from "./hero-phone.client";
+import { heroPhoneShots } from "./hero-phone.lib";
 import { HERO_DEMO_WALLET_USD_CENTS } from "./home-demo.lib";
 
 type Order = { product: string; when: string; total: number; status: "pending" | "shipped" | "delivered" };
@@ -11,23 +15,37 @@ type Order = { product: string; when: string; total: number; status: "pending" |
 const SALES = 49_820;
 const ORDERS = 39;
 const VISITS = 2940;
-/** glow sells bags: a Pexels shot on white (the host is allowed in next.config `images.remotePatterns`). */
-const PRODUCT = { price: 1450, image: "https://images.pexels.com/photos/22434764/pexels-photo-22434764.jpeg?auto=compress&cs=tinysrgb&w=500" };
+/** The new order: one bag plus shipping. */
+const PRODUCT_PRICE = 1450;
 const SHIPPING = 50;
 const BADGE = { pending: "bg-[#fff4dc] text-[#8a5a00]", shipped: "bg-[#e8f1fb] text-[#1d5fa8]", delivered: "bg-[#e5f6ea] text-[#15803d]" };
 
 const money = (n: number) => n.toLocaleString("en-US");
 
+/** One of the order's things (bag, parcel): the outer box pops in once, the image inside drifts slowly (`.hero-float`). */
+function Floating({ src, className, float }: { src: string; className: string; float: Record<`--float-${string}`, string> }) {
+  return (
+    <span className={cn("absolute z-[2] block motion-safe:animate-pop", className)}>
+      <Image src={src} alt="" width={256} height={256} unoptimized className="hero-float block h-auto w-full" style={float as CSSProperties} />
+    </span>
+  );
+}
+
 /**
- * The hero's stage, a still frame: an order placed on the store's phone page
- * has just landed in the seller's dashboard. Sample data; the wallet shows in
- * the visitor's currency like every tallaby.com price (owner, 2026-11-10).
+ * The hero's stage: the seller's dashboard, where an order has just landed,
+ * and the store on a phone. The dashboard is a still frame of sample data (the
+ * wallet shows in the visitor's currency like every tallaby.com price, owner
+ * 2026-11-10); the phone shows a real template that scrolls itself, a
+ * different one on every load (owner, 2026-11-17; HeroPhoneScreen).
  */
 export async function HeroDemo() {
-  const t = await getTranslations("home.demo.hero");
+  const locale = await getLocale();
+  const [t, gallery] = await Promise.all([getTranslations("home.demo.hero"), getTemplateGallery(locale)]);
+  const phoneShots = heroPhoneShots(gallery);
+  const hasPhone = phoneShots.length > 0;
   const egp = t("egp");
   const productName = (t.raw("products") as string[])[0] ?? "";
-  const fresh: Order = { product: productName, when: "justNow", total: PRODUCT.price + SHIPPING, status: "pending" };
+  const fresh: Order = { product: productName, when: "justNow", total: PRODUCT_PRICE + SHIPPING, status: "pending" };
   const orders = [fresh, ...(t.raw("orders") as Order[])].slice(0, 4);
   const pending = orders.filter((o) => o.status === "pending").length;
   const kpis = [
@@ -38,9 +56,10 @@ export async function HeroDemo() {
   ];
 
   return (
-    <div aria-hidden className="relative mx-auto mt-11 w-full max-w-[1060px] text-start text-[13px] text-[#333] min-[641px]:mt-16">
-      <div className="overflow-hidden rounded-2xl border border-[#e7e9e8] bg-[#f8f9f8] shadow-soft min-[641px]:me-[110px] min-[641px]:rounded-[20px] min-[1081px]:me-[150px]">
-        <div className="flex h-[50px] items-center gap-2 border-b border-[#e7e9e8] bg-white px-3 min-[641px]:px-4">
+    <div aria-hidden className="relative mx-auto mt-[68px] w-full max-w-[1060px] text-start text-[13px] text-[#333] min-[641px]:mt-20">
+      {/* The phone covers only the dashboard's last 30 px (its padding): the end margin and the top bar's wider end padding keep the bell, amounts and statuses clear of it. */}
+      <div className={cn("overflow-hidden rounded-2xl border border-[#e7e9e8] bg-[#f8f9f8] shadow-soft min-[641px]:rounded-[20px]", hasPhone && "min-[641px]:me-[190px] min-[1081px]:me-[210px]")}>
+        <div className={cn("flex h-[50px] items-center gap-2 border-b border-[#e7e9e8] bg-white px-3 min-[641px]:ps-4", hasPhone ? "min-[641px]:pe-12" : "min-[641px]:pe-4")}>
           <b className="flex-1 text-[14px] font-bold text-[#171717] min-[641px]:text-[15px]">{t("title")}</b>
           <span className="flex h-[30px] items-center gap-1.5 rounded-full border border-[#e7e9e8] px-2.5 text-[11.5px] whitespace-nowrap text-[#5f6b6e]">
             <Wallet className="size-3.5" />
@@ -53,14 +72,15 @@ export async function HeroDemo() {
           </span>
         </div>
 
-        <div className="flex flex-col gap-3 p-3 pb-[110px] min-[641px]:p-[18px]">
+        {/* Under 641 px the phone stands in the space kept below the order list. */}
+        <div className={cn("flex flex-col gap-3 p-3 min-[641px]:p-[18px]", hasPhone && "pb-[160px]")}>
           <div>
             <b className="block text-[16px] font-bold text-[#171717] min-[641px]:text-xl">{t("greeting")}</b>
             <small className="text-xs text-[#808080]">{t("newOrders", { count: pending })}</small>
           </div>
-          <div className="grid grid-cols-2 gap-2 min-[641px]:grid-cols-4 min-[641px]:gap-2.5">
+          <div className="grid grid-cols-2 gap-2 min-[641px]:gap-2.5 min-[861px]:grid-cols-4">
             {kpis.map((kpi) => (
-              <div key={kpi.label} className={cn("rounded-2xl border border-[#e7e9e8] bg-white p-3", kpi.wide && "hidden min-[641px]:block")}>
+              <div key={kpi.label} className={cn("rounded-2xl border border-[#e7e9e8] bg-white p-3", kpi.wide && "hidden min-[861px]:block")}>
                 <span className="block truncate text-xs font-semibold text-[#3f4a4d]">{kpi.label}</span>
                 <b className="font-latin text-[18px] font-bold text-[#171717] min-[641px]:text-[22px]">{kpi.value}</b> <span className="text-[11.5px] text-[#808080]">{kpi.unit}</span>
               </div>
@@ -82,46 +102,29 @@ export async function HeroDemo() {
         </div>
       </div>
 
-      {/* The store on a phone: the product the order came from. */}
-      <div className="absolute -end-1 -bottom-[60px] z-[3] w-[150px] rounded-[26px] bg-[#0f1d21] p-1.5 shadow-raise min-[641px]:end-0 min-[641px]:-bottom-12 min-[641px]:w-[210px] min-[641px]:rounded-[34px] min-[641px]:p-2 min-[1081px]:w-[240px]">
-        <div className="flex flex-col gap-1.5 overflow-hidden rounded-[21px] bg-white p-2 pt-3 min-[641px]:gap-2.5 min-[641px]:rounded-[27px] min-[641px]:p-3 min-[641px]:pt-5">
-          <b className="flex items-center justify-between font-latin text-xs font-extrabold text-[#4a2c2a] min-[641px]:text-[15px]">
-            glow
-            <ShoppingBag className="size-4" />
-          </b>
-          <span className="relative block aspect-[1.1] overflow-hidden rounded-xl">
-            <Image src={PRODUCT.image} alt="" fill sizes="230px" className="object-cover" style={{ objectPosition: "center 55%" }} />
-          </span>
-          <p className="truncate text-[11px] text-[#4a2c2a] min-[641px]:text-sm">{productName}</p>
-          <b className="text-xs text-[#c8586b] min-[641px]:text-base">
-            <span className="font-latin">{money(PRODUCT.price)}</span> {egp}
-          </b>
-          <span className="text-[10px] text-[#7a6461] min-[641px]:text-xs">{t("cod")}</span>
-          <span className="grid h-8 place-items-center rounded-[10px] bg-[#c8586b] text-[11px] font-bold text-white min-[641px]:h-10 min-[641px]:text-sm">{t("placeOrder")}</span>
+      {/* The store on a phone, over the end corner: a template's home page that scrolls itself. */}
+      {hasPhone && (
+        <div className="absolute -end-1 -bottom-[176px] z-[3] w-[160px] rounded-[28px] bg-[#0f1d21] p-1.5 shadow-stage min-[641px]:end-0 min-[641px]:-bottom-[70px] min-[641px]:w-[220px] min-[641px]:rounded-[36px] min-[641px]:p-2 min-[1081px]:-bottom-[112px] min-[1081px]:w-[240px] min-[1081px]:rounded-[40px] min-[1081px]:p-[9px]">
+          <HeroPhoneScreen shots={phoneShots} className="aspect-[9/19] rounded-[22px] min-[641px]:rounded-[28px] min-[1081px]:rounded-[30px]" />
+          <i className="absolute top-2.5 left-1/2 h-2 w-[30%] -translate-x-1/2 rounded-full bg-[#0f1d21] min-[641px]:top-3.5 min-[641px]:h-2.5 min-[1081px]:top-4 min-[1081px]:h-3" />
         </div>
-      </div>
+      )}
 
-      {/* The order's bag and parcel float off the free corners (opposite the notice and the phone),
-          from 641 px only; lazy, so phones never fetch them. Not directional, so not mirrored. */}
-      <Image
+      {/* The order's bag and parcel drift slowly, each at its own pace. From 641 px they sit off the free corners
+          (opposite the notice and behind the phone's top); on phones, in the space beside the phone. Not directional, so not mirrored. */}
+      <Floating
         src="/marketing/home/home-hero-bag.webp"
-        alt=""
-        width={256}
-        height={256}
-        unoptimized
-        className="absolute -top-14 end-1 z-[2] hidden w-[104px] min-[641px]:block min-[641px]:motion-safe:animate-pop min-[1081px]:-top-16 min-[1081px]:w-[136px] [animation-delay:300ms]"
+        className="start-[92px] -bottom-[150px] w-[66px] [animation-delay:300ms] min-[641px]:start-auto min-[641px]:end-7 min-[641px]:-top-14 min-[641px]:bottom-auto min-[641px]:w-[104px] min-[1081px]:-top-[68px] min-[1081px]:w-[128px]"
+        float={{ "--float-run": "9s", "--float-delay": "-2s", "--float-x": "3px", "--float-y": "-7px", "--float-turn": "3deg" }}
       />
-      <Image
+      <Floating
         src="/marketing/home/home-hero-parcel.webp"
-        alt=""
-        width={256}
-        height={256}
-        unoptimized
-        className="absolute -bottom-14 -start-4 z-[2] hidden w-[96px] min-[641px]:block min-[641px]:motion-safe:animate-pop min-[1081px]:-bottom-16 min-[1081px]:-start-20 min-[1081px]:w-[124px] [animation-delay:450ms]"
+        className="start-2 -bottom-[62px] w-[92px] [animation-delay:450ms] min-[641px]:-start-4 min-[641px]:-bottom-[76px] min-[641px]:w-[96px] min-[1081px]:-start-8 min-[1081px]:-bottom-[100px] min-[1081px]:w-[124px] min-[1281px]:-start-20"
+        float={{ "--float-run": "12s", "--float-delay": "-7s", "--float-x": "-4px", "--float-y": "-5px", "--float-turn": "-2.5deg" }}
       />
 
-      {/* The new order's notice, over the dashboard's start corner. */}
-      <div className="absolute -top-[30px] start-2 z-[4] flex items-center gap-2.5 rounded-2xl border border-line bg-white px-3 py-2 shadow-raise min-[641px]:start-7">
+      {/* The new order's notice, above the dashboard's start corner (clear of its title). */}
+      <div className="absolute -top-[56px] start-2 z-[4] flex items-center gap-2.5 rounded-2xl border border-line bg-white px-3 py-2 shadow-raise min-[641px]:start-7">
         <span className="grid size-8 place-items-center rounded-xl bg-amber-100 text-amber-700">
           <ShoppingBag className="size-[18px]" />
         </span>
