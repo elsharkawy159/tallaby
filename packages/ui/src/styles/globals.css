@@ -269,6 +269,33 @@
     transition: transform var(--tpl-shot-run, 6s) cubic-bezier(0.45, 0.05, 0.4, 1) 0.25s;
   }
 
+  /*
+   * Touch screens (owner, 2026-11-16): while the frame is in view
+   * (TemplateShotTour sets data-tour), the shot scrolls smoothly to the
+   * bottom, rests, comes back up, rests, and loops. Each way takes the
+   * hover run time (--tpl-shot-run).
+   */
+  @media (hover: none) {
+    .tpl-shot[data-tour] .tpl-shot__img {
+      animation: tpl-shot-tour calc(var(--tpl-shot-run, 6s) * 2 + 2.4s) cubic-bezier(0.45, 0.05, 0.55, 0.95) 0.4s infinite;
+    }
+  }
+
+  @keyframes tpl-shot-tour {
+    0%,
+    8% {
+      transform: translateY(0);
+    }
+    46%,
+    54% {
+      transform: translateY(calc(-100% + 100cqh));
+    }
+    92%,
+    100% {
+      transform: translateY(0);
+    }
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .tpl-shot-trigger:hover .tpl-shot__img {
       transform: translateY(calc(-100% + 100cqh));

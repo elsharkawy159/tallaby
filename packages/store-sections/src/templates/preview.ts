@@ -85,15 +85,29 @@ export function shotPreview(
 export type PreviewShot = TemplatePreviewShot & { edition: string | null };
 
 /**
- * The shot a card shows: the card's language, only when the card draws the
- * same edition as the shot (`edition` undefined: any, the card then links
- * with the shot's edition). Null: draw the card as before. Its `mobile`, when
- * set, is the phone shot of the same page.
+ * TEMPORARY test (owner, 2026-11-16): every card shows the English shot, in
+ * both languages, to see whether sellers find the templates more professional.
+ * Set to null to go back to the card's own language.
  */
-export function previewShot(preview: TemplatePreview | null | undefined, locale: string, edition?: string | null): PreviewShot | null {
+export const PREVIEW_SHOT_LOCALE_OVERRIDE: "en" | "ar" | null = "en";
+
+/**
+ * The shot a card shows: the card's language (or PREVIEW_SHOT_LOCALE_OVERRIDE
+ * while it is set), only when the card draws the same edition as the shot
+ * (`edition` undefined: any, the card then links with the shot's edition).
+ * Null: draw the card as before. Its `mobile`, when set, is the phone shot of
+ * the same page.
+ */
+export function previewShot(
+  preview: TemplatePreview | null | undefined,
+  locale: string,
+  edition?: string | null,
+  override: "en" | "ar" | null = PREVIEW_SHOT_LOCALE_OVERRIDE,
+): PreviewShot | null {
   if (!preview) return null;
   if (edition !== undefined && edition !== preview.edition) return null;
-  return { ...(locale === "en" ? preview.en : preview.ar), edition: preview.edition };
+  const shown = override ?? locale;
+  return { ...(shown === "en" ? preview.en : preview.ar), edition: preview.edition };
 }
 
 /** A shot's URL from another app: `origin` (tallaby.com) + its public path. A full URL stays as it is. */

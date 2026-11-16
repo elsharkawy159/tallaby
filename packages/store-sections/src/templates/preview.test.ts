@@ -184,10 +184,15 @@ describe("templatePreview with the generated sizes", () => {
 describe("previewShot", () => {
   const preview = templatePreview("vella", "lingerie-sleepwear", { ar: 2000, en: 2100 }, {});
 
-  it("picks the card's language, Arabic by default", () => {
-    expect(previewShot(preview, "en")).toEqual({ src: "/template-previews/vella.en.webp", width: 600, height: 2100, edition: "lingerie-sleepwear" });
-    expect(previewShot(preview, "ar")?.height).toBe(2000);
-    expect(previewShot(preview, "fr")?.src).toBe("/template-previews/vella.ar.webp");
+  it("picks the card's language, Arabic by default, when no override is set", () => {
+    expect(previewShot(preview, "en", undefined, null)).toEqual({ src: "/template-previews/vella.en.webp", width: 600, height: 2100, edition: "lingerie-sleepwear" });
+    expect(previewShot(preview, "ar", undefined, null)?.height).toBe(2000);
+    expect(previewShot(preview, "fr", undefined, null)?.src).toBe("/template-previews/vella.ar.webp");
+  });
+
+  it("shows the English shot in every language during the 2026-11-16 test", () => {
+    expect(previewShot(preview, "ar")?.src).toBe("/template-previews/vella.en.webp");
+    expect(previewShot(preview, "en")?.src).toBe("/template-previews/vella.en.webp");
   });
 
   it("shows only on a card drawing the same edition", () => {

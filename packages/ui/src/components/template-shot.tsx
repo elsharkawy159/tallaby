@@ -1,6 +1,7 @@
 import * as React from "react";
 import { getImageProps } from "next/image";
 import { cn } from "../lib/utils";
+import { TemplateShotTour } from "./template-shot-tour";
 
 /**
  * Seconds a card takes to scroll its shot to the bottom on hover, by how many
@@ -23,6 +24,9 @@ export function templateShotSeconds(width: number, height: number): number {
  * `<picture>` source picks it on screens matching `mobileMedia`, in CSS, so
  * there is no script, no flash and no second download; each source carries
  * its own size, so the image never shifts the layout.
+ *
+ * On touch screens (owner, 2026-11-16) the shot tours itself while it is in
+ * view: smoothly to the bottom, then back up, on a loop (TemplateShotTour).
  *
  * `large` (2026-11-16) is the same desktop shot stored 1200 px wide: with it
  * the desktop image gets a `600w, 1200w` srcset, so wide cards and 2x screens
@@ -77,6 +81,7 @@ export function TemplateShot({
           className="tpl-shot__img pointer-events-none absolute inset-x-0 top-0 block h-auto w-full max-w-none select-none"
         />
       </picture>
+      <TemplateShotTour />
     </span>
   );
 }

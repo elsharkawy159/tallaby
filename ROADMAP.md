@@ -1842,6 +1842,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-16 — Template cards: English shot for every language (temporary test), phone auto-scroll (owner request)
+
+- **Owner (2026-11-16):** for a while, show every template card's English screenshot in both languages to test whether sellers find the templates more professional; on phones, scroll the card's preview to the bottom and back up by itself while it is in view.
+- **English shot:** `previewShot` (`packages/store-sections/src/templates/preview.ts`) uses `PREVIEW_SHOT_LOCALE_OVERRIDE = "en"`; every gallery that draws a card shot goes through it (tallaby.com gallery, home and template page, dashboard Templates, Admin store theme). Set it to `null` to go back to the card's own language. Tests cover both.
+- **Phone tour:** `TemplateShotTour` (`packages/ui`, client) marks a `.tpl-shot` frame `data-tour` while ≥ 60% of it is in view, on screens with no hover only; `globals.css` runs `tpl-shot-tour` (top → bottom → top with short rests, each way the hover run time, looping). Reduced motion: no movement. Hover and keyboard focus on desktop are unchanged.
+- Checks: preview tests pass; `@workspace/ui`, store-sections, dashboard and admin typecheck clean; ecommerce only the known `profile.chunks.tsx` errors. Not yet tried on a real phone. No migration.
+
 ### 2026-11-16 — F-84h No order visible before activation; masked new-order bell and push; order count on home (owner request)
 
 - **Rule (`packages/lib/src/billing/order-lock.lib.ts`):** `orderLockState` returns `ordersLocked: true` and `firstOrderId: null` for every seller who isn't activated (after the USD switch). `isActivated`, `grace` (dates, `endedBy`, `offlineAt`) and `storeOffline` are unchanged; the window now only times the 7-day sellers' offline date and its countdown. Before the switch or once activated: `ORDERS_UNLOCKED`, as before.
