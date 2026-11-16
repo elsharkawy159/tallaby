@@ -99,9 +99,9 @@ export default async function TemplatePage({ params }: Props) {
       </div>
 
       {/*
-        With a screenshot (2026-11-16) the page leads with the big scrollable shot and its
-        desktop / phone switch; every page live sits further down. Without one, the live
-        stage leads as before.
+        One preview only (owner, 2026-11-16): with a screenshot, the big scrollable shot and its
+        desktop / phone switch (the live site is one click away on "Live demo"); without one,
+        the live stage, as before.
       */}
       {entry.shot ? (
         <Container id="preview" className="relative -mt-[90px] scroll-mt-24">
@@ -155,16 +155,6 @@ export default async function TemplatePage({ params }: Props) {
             </dl>
           </div>
         </div>
-
-        {entry.shot ? (
-          <section id="stage" aria-labelledby="stage-title" className="scroll-mt-24 pt-10 pb-6">
-            <h2 id="stage-title" className="text-[28px] font-bold text-teal-900">
-              {t("detail.liveTitle")}
-            </h2>
-            <p className="mt-2 mb-6 max-w-[640px] text-base text-pretty text-ink-500">{t("detail.liveBody")}</p>
-            <TemplateStage templateKey={entry.id} pages={entry.pages} editions={entry.editions} />
-          </section>
-        ) : null}
 
         {more.length ? (
           <section className="pt-12 pb-16">

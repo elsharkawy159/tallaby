@@ -102,9 +102,7 @@
       "edition": "Made for {niche}",
       "newTab": "Preview",
       "newTabLabel": "Preview the template in a new tab",
-      "shotRegion": "{name} home page, scroll to see all of it",
-      "liveTitle": "Try every page",
-      "liveBody": "Open the home page, the product page and the rest, just as your customers will see them."
+      "shotRegion": "{name} home page, scroll to see all of it"
     },
     "filters": {
       "title": "Filters",
