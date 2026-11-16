@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Megaphone, MessageCircle, ShoppingBag, Sparkles, Store, Truck } from "lucide-react";
+import { Megaphone, ShoppingBag, Sparkles, Store, Truck } from "lucide-react";
+import { WhatsAppIcon } from "@/components/dashboard/support-chat-link.client";
 
 import { cn } from "@/lib/utils";
 import { getSupportWhatsAppUrl } from "@/lib/constants";
@@ -57,7 +58,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
             rel="noopener noreferrer"
             className={cn(AUTH_LINK, "inline-flex min-h-10 items-center gap-1.5")}
           >
-            <MessageCircle className="size-[15px] text-(--s-whatsapp)" />
+            <WhatsAppIcon className="size-4 shrink-0 text-(--s-whatsapp)" />
             {t("needHelp")}
           </a>
         </div>

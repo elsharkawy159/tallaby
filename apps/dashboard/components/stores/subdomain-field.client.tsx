@@ -141,7 +141,7 @@ export function SubdomainField<TFieldValues extends FieldValues>({
               </span>
             </div>
           </FormControl>
-          <div id={`${String(name)}-status`} aria-live="polite" className="min-h-5 text-sm">
+          <div id={`${String(name)}-status`} aria-live="polite" className="text-sm empty:hidden">
             {state.status === "checking" && (
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Loader2 className="size-3.5 animate-spin" />

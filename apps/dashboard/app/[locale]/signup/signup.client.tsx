@@ -6,10 +6,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
   ArrowRight,
+  Check,
+  Footprints,
+  Gem,
+  Gift,
+  Laptop,
   Loader2,
   LogOut,
   MailCheck,
-  UserRound,
+  Shapes,
+  Shirt,
+  ShoppingBasket,
+  Smartphone,
+  Sofa,
+  Sparkles,
+  Store,
+  ToyBrick,
+  type LucideIcon,
 } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -52,6 +65,21 @@ import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 const EGYPT_MOBILE = /^(?:\+20|0020|0)?1[0125]\d{8}$/;
 /** The "Something else" niche chip: saved as no niche. */
 const NICHE_OTHER = "other";
+
+/** Step 2's industry tile icons (UI only); a new signup industry falls back to Store. */
+const INDUSTRY_ICONS: Record<string, LucideIcon> = {
+  fashion: Shirt,
+  "shoes-bags": Footprints,
+  electronics: Laptop,
+  "mobile-accessories": Smartphone,
+  beauty: Sparkles,
+  home: Sofa,
+  food: ShoppingBasket,
+  kids: ToyBrick,
+  jewelry: Gem,
+  handmade: Gift,
+  [OTHER_INDUSTRY_ID]: Shapes,
+};
 
 type FormValues = {
   subdomain: string;
@@ -316,42 +344,11 @@ export function SignupForm({
   return (
     <AuthShell>
       <AuthHeading
-        eyebrow={t("stepOf", { step: signedIn ? 2 : 1, total: 2 })}
+        eyebrow={signedIn ? undefined : t("stepOf", { step: 1, total: 2 })}
         title={signedIn ? t("setupTitle") : t("title")}
         subtitle={signedIn ? t("setupSubtitle") : t("subtitle")}
       />
-      {signedIn ? (
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-[14px] border border-(--s-line) bg-(--s-tint) px-3.5 py-1 text-[13px] text-(--s-muted)">
-          <UserRound className="size-4 shrink-0" />
-          {/* A long address wraps rather than hiding its start; it gets its own direction inside Arabic text. */}
-          <span className="min-w-0 flex-[1_1_70%] [overflow-wrap:anywhere]">
-            {t.rich("signedInAs", {
-              email: signedInEmail,
-              b: (chunks) => (
-                <bdi dir="ltr" className="font-semibold text-(--s-text)">
-                  {chunks}
-                </bdi>
-              ),
-            })}
-          </span>
-          <button
-            type="button"
-            className={`${AUTH_LINK} ms-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 disabled:opacity-50`}
-            onClick={() => {
-              setSigningOut(true);
-              void logout();
-            }}
-            disabled={busy || isSigningOut}
-          >
-            {isSigningOut ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <LogOut className="size-4 rtl:rotate-180" />
-            )}
-            {t("signOut")}
-          </button>
-        </div>
-      ) : (
+      {!signedIn && (
         <>
           <AuthTabs active="signup" />
           <SellerButton
@@ -380,17 +377,6 @@ export function SignupForm({
         >
           {signedIn ? (
             <div className="flex flex-col gap-3.5 [&_button[dir=ltr]]:min-h-10 [&_button[dir=ltr]]:px-3.5">
-              <SubdomainField
-                form={form}
-                name="subdomain"
-                check={checkSignupSubdomain}
-                onAvailabilityChange={setAvailable}
-                disabled={busy}
-                autoFocus
-                className="h-[50px] rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) shadow-none focus-within:border-(--s-primary) focus-within:shadow-[0_0_0_4px_var(--s-focus-soft)] focus-within:ring-0 aria-invalid:border-destructive max-[480px]:h-[52px]"
-                inputClassName="px-3.5 text-[15px] text-(--s-text) placeholder:text-(--s-placeholder) md:text-[15px]"
-                labelClassName="text-[13px] font-bold text-(--s-text)"
-              />
               <FormField
                 control={form.control}
                 name="industry"
@@ -403,7 +389,7 @@ export function SignupForm({
                       {t("industry")}
                     </p>
                     <div
-                      className="flex flex-wrap gap-2"
+                      className="grid grid-cols-3 gap-2"
                       role="radiogroup"
                       aria-labelledby="signup-industry"
                     >
@@ -413,29 +399,47 @@ export function SignupForm({
                           label: locale === "en" ? option.en : option.ar,
                         })),
                         { id: OTHER_INDUSTRY_ID, label: t("industryOther") },
-                      ].map((option) => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          role="radio"
-                          aria-checked={field.value === option.id}
-                          disabled={busy}
-                          onClick={() => {
-                            form.setValue("industry", option.id, {
-                              shouldValidate: true,
-                            });
-                            // Another industry has other niches: start again.
-                            if (option.id !== field.value) form.setValue("niche", "");
-                          }}
-                          className={cn(
-                            "inline-flex h-9 cursor-pointer items-center rounded-full border border-(--s-field) bg-(--s-surface) px-3.5 text-[13px] font-semibold text-(--s-muted) transition-colors duration-150 hover:border-(--tallaby-teal-300) disabled:opacity-50 max-[600px]:h-10",
-                            field.value === option.id &&
-                              "border-(--s-solid) bg-(--s-solid) text-(--s-solid-fg)",
-                          )}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
+                      ].map((option) => {
+                        const selected = field.value === option.id;
+                        const Icon = INDUSTRY_ICONS[option.id] ?? Store;
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            disabled={busy}
+                            onClick={() => {
+                              form.setValue("industry", option.id, {
+                                shouldValidate: true,
+                              });
+                              // Another industry has other niches: start again.
+                              if (option.id !== field.value) form.setValue("niche", "");
+                            }}
+                            className={cn(
+                              "relative flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px] border-(--s-field) bg-(--s-surface) px-1.5 py-3 text-center transition-[border-color,background-color,transform] duration-150 active:scale-[0.97] focus-visible:border-(--s-primary) focus-visible:shadow-[0_0_0_4px_var(--s-focus-soft)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100 [@media(hover:hover)]:hover:border-(--tallaby-teal-300)",
+                              selected && "border-(--s-primary) bg-(--s-hover)",
+                            )}
+                          >
+                            {selected && (
+                              <span className="absolute end-1.5 top-1.5 grid size-[18px] place-items-center rounded-full bg-(--s-solid) text-(--s-solid-fg)">
+                                <Check className="size-3" strokeWidth={3} aria-hidden />
+                              </span>
+                            )}
+                            <span
+                              className={cn(
+                                "grid size-10 place-items-center rounded-full bg-(--s-fill) text-(--s-primary) transition-colors",
+                                selected && "bg-(--s-solid) text-(--s-solid-fg)",
+                              )}
+                            >
+                              <Icon className="size-5" strokeWidth={1.75} aria-hidden />
+                            </span>
+                            <span className="text-[12.5px] leading-tight font-semibold text-(--s-text) [text-wrap:balance]">
+                              {option.label}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -497,6 +501,17 @@ export function SignupForm({
                   autoFocus
                 />
               )}
+              {/* No autoFocus: on phones the keyboard would cover the industry tiles. */}
+              <SubdomainField
+                form={form}
+                name="subdomain"
+                check={checkSignupSubdomain}
+                onAvailabilityChange={setAvailable}
+                disabled={busy}
+                className="h-[50px] rounded-[14px] border-[1.5px] border-(--s-field) bg-(--s-surface) shadow-none focus-within:border-(--s-primary) focus-within:shadow-[0_0_0_4px_var(--s-focus-soft)] focus-within:ring-0 aria-invalid:border-destructive max-[480px]:h-[52px]"
+                inputClassName="px-3.5 text-[15px] text-(--s-text) placeholder:text-(--s-placeholder) md:text-[15px]"
+                labelClassName="text-[13px] font-bold text-(--s-text)"
+              />
               <AuthField
                 form={form}
                 name="phone"
@@ -556,6 +571,38 @@ export function SignupForm({
           </SellerButton>
         </form>
       </Form>
+
+      {signedIn && (
+        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[13px] text-(--s-muted)">
+          {/* A long address wraps rather than hiding its start; it gets its own direction inside Arabic text. */}
+          <span className="min-w-0 [overflow-wrap:anywhere]">
+            {t.rich("signedInAs", {
+              email: signedInEmail,
+              b: (chunks) => (
+                <bdi dir="ltr" className="font-semibold text-(--s-text)">
+                  {chunks}
+                </bdi>
+              ),
+            })}
+          </span>
+          <button
+            type="button"
+            className={`${AUTH_LINK} inline-flex min-h-10 shrink-0 items-center gap-1.5 disabled:opacity-50`}
+            onClick={() => {
+              setSigningOut(true);
+              void logout();
+            }}
+            disabled={busy || isSigningOut}
+          >
+            {isSigningOut ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <LogOut className="size-4 rtl:rotate-180" />
+            )}
+            {t("signOut")}
+          </button>
+        </p>
+      )}
 
       {!signedIn && (
         <>
