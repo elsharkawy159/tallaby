@@ -200,7 +200,8 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/settings/plan", title: "planUsage", parent: "accountHelp", icon: Gem },
   { href: "/help", title: "help", parent: "accountHelp", icon: CircleHelp },
   { href: "/roadmap", title: "roadmap", parent: "accountHelp", icon: MapIcon },
-  { href: "/earn", title: "earn", parent: "accountHelp", icon: HandCoins },
+  // A top-level sidebar link since 2026-11-16, so no parent in the header.
+  { href: "/earn", title: "earn", icon: HandCoins },
 ];
 
 const EDIT_PRODUCT: DashboardRoute = {

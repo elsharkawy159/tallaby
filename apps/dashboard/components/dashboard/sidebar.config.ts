@@ -4,6 +4,7 @@ import {
   // ChartLine, // Store views hidden from the sidebar (F-65c)
   CircleUserRound,
   Globe,
+  HandCoins,
   LayoutDashboard,
   Megaphone,
   Package,
@@ -216,10 +217,11 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "planUsage", href: "/settings/plan", status: "live" },
       { key: "help", href: "/help", status: "live" },
       { key: "roadmap", href: "/roadmap", status: "live" },
-      // Affiliate program (F-37): referral link, commissions, withdrawals.
-      { key: "earn", href: "/earn", status: "live" },
     ],
   },
+  // Affiliate program (F-37): referral link, rewards, withdrawals. Its own top-level link so
+  // every seller sees it without opening a group (owner, 2026-11-16). The /earn URL stays.
+  { kind: "link", key: "earn", href: "/earn", icon: HandCoins, status: "live" },
 ];
 
 export type ResolvedLink = {

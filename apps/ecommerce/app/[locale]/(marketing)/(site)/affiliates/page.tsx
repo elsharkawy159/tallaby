@@ -16,7 +16,7 @@ import { DASHBOARD_URL } from "@/lib/marketing/site.lib";
  * The Tallaby affiliate program on tallaby.com (ROADMAP.md F-37g): how it
  * works and its terms, as approved in F-37a
  * (docs/superpowers/specs/2026-10-29-affiliate-program-design.md). Sellers
- * get their link on the dashboard's "Earn with us" page (`/earn`).
+ * get their link on the dashboard's "Affiliate program" page (`/earn`).
  */
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {

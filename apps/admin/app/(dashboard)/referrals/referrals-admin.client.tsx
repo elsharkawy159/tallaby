@@ -242,7 +242,7 @@ export function RelockButton({ sellerId }: { sellerId: string }) {
         open={open}
         onOpenChange={setOpen}
         title="Lock withdrawals again"
-        description="The referrer can withdraw again only once their honest counts reach 10 referrals and 10 stores."
+        description="This only clears the old 10 referrals + 10 stores unlock. Since 2026-11-12 withdrawals need just the EGP 500 minimum, so it does not stop them; reject the request instead."
         label="Reason"
         multiline
         confirm="Lock"

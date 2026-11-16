@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("metaTitle") };
 }
 
-/** "اربح معنا": the seller's referral link, commissions and withdrawals (ROADMAP.md F-37). */
+/** Affiliate program ("برنامج التسويق بالعمولة", route /earn): the seller's referral link, commissions and withdrawals (ROADMAP.md F-37). */
 export default async function EarnPage() {
   const seller = await requireSeller().catch((error) => error);
   if (isAccessError(seller)) redirect({ href: seller.code === "no_seller" ? "/signup" : "/login", locale: await getLocale() });

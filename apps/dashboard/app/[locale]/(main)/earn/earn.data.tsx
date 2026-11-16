@@ -12,7 +12,7 @@ const STAT_ICONS = { earned: TrendingUp, available: Wallet, paid: CircleCheck } 
 const HOW_STEPS = ["share", "topUp", "earn"] as const;
 
 /**
- * Earn with us (F-37): earnings totals, the share link, how many referred
+ * Affiliate program (F-37, route /earn): earnings totals, the share link, how many referred
  * sellers reached $5 (the EGP 100 bonus), referred sellers and withdrawals. Never cached: money data is
  * read fresh on every request (CLAUDE.md rule 8).
  */

@@ -145,6 +145,7 @@ export function HomeLockedLayout(slots: {
   attention: React.ReactNode;
   sources: React.ReactNode;
   questions: React.ReactNode;
+  affiliate?: React.ReactNode;
   community: React.ReactNode;
 }) {
   return (
@@ -156,6 +157,7 @@ export function HomeLockedLayout(slots: {
         {slots.attention}
         {slots.sources}
       </div>
+      {slots.affiliate}
       {slots.questions}
       <div className="sui-rise [animation-delay:.18s]">{slots.community}</div>
     </PageContainer>
@@ -167,6 +169,7 @@ export function HomeSetupLayout(slots: {
   header: React.ReactNode;
   notices: React.ReactNode;
   steps: React.ReactNode;
+  affiliate?: React.ReactNode;
   community: React.ReactNode;
 }) {
   return (
@@ -174,6 +177,7 @@ export function HomeSetupLayout(slots: {
       <div className="sui-rise">{slots.header}</div>
       {slots.notices}
       {slots.steps}
+      {slots.affiliate}
       <div className="sui-rise [animation-delay:.18s]">{slots.community}</div>
     </PageContainer>
   );
@@ -192,6 +196,7 @@ export function HomeLayout(slots: {
   sources: React.ReactNode;
   orders: React.ReactNode;
   questions?: React.ReactNode;
+  affiliate?: React.ReactNode;
   community?: React.ReactNode;
 }) {
   return (
@@ -204,6 +209,7 @@ export function HomeLayout(slots: {
         {slots.chart}
         {slots.attention}
       </div>
+      {slots.affiliate}
       <div
         className={`sui-rise grid grid-cols-3 gap-3.5 [animation-delay:.22s] max-[1180px]:grid-cols-2 max-[1180px]:[&>:last-child]:col-span-full max-[720px]:grid-cols-1 ${STRETCH}`}
       >

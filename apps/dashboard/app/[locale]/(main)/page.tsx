@@ -5,6 +5,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { AttentionData } from "./_components/attention.data";
 import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "./_components/home-header.data";
 import { HomeKpisData, HomeLockedMetricsData, HomeMetricsData } from "./_components/home-kpis.data";
+import { AffiliateCard } from "./_components/affiliate-card";
 import { CommunityCard } from "./_components/community-card";
 import { CustomerJourneyData } from "./_components/customer-journey.data";
 import { TrafficSourcesData } from "./_components/traffic-sources.data";
@@ -110,6 +111,7 @@ export default async function VendorDashboardPage({
         header={<HomeHeaderView title={title} subtitle={subtitle} rangeControl={null} />}
         notices={notices}
         steps={<SetupHomeData snapshot={snapshot} />}
+        affiliate={<AffiliateCard />}
         community={<CommunityCard />}
       />
     );
@@ -170,6 +172,7 @@ export default async function VendorDashboardPage({
           attention={attention}
           sources={sources}
           questions={questions}
+          affiliate={<AffiliateCard />}
           community={<CommunityCard />}
         />
       </HomeRangeProvider>
@@ -224,6 +227,7 @@ export default async function VendorDashboardPage({
           </Suspense>
         }
         questions={questions}
+        affiliate={<AffiliateCard />}
         community={<CommunityCard />}
       />
     </HomeRangeProvider>

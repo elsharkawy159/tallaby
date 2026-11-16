@@ -2155,7 +2155,7 @@
       "description": "What we collect, why we collect it, and the choices you have."
     },
     "affiliates": {
-      "title": "Earn with us: the affiliate program",
+      "title": "Affiliate program",
       "description": "Share your referral link and earn EGP 100 for every seller who signs up through it and tops up $5, paid in cash to your bank account or Vodafone Cash."
     },
     "followUs": {
@@ -2192,7 +2192,7 @@
     "templates": "Templates",
     "builder": "Store builder",
     "pricing": "Pricing",
-    "affiliates": "Earn with us",
+    "affiliates": "Affiliate program",
     "faq": "FAQ",
     "helpCenter": "Help center",
     "paymentMethods": "Payment methods",
@@ -3141,7 +3141,7 @@
   },
   "affiliates": {
     "hero": {
-      "eyebrow": "Earn with us",
+      "eyebrow": "Affiliate program",
       "title": "Earn <em>EGP 100</em> for every seller you bring who tops up $5",
       "lead": "Share your link with your referral code. Every seller who signs up through it and tops up their store wallet with $5 or more earns you EGP 100, once per seller, in cash, not wallet credit.",
       "getLink": "Get your link",
@@ -3160,7 +3160,7 @@
       "steps": [
         {
           "title": "Get your link",
-          "body": "Create a free seller account on Tallaby, then open “Earn with us” in your dashboard to find your link and referral code."
+          "body": "Create a free seller account on Tallaby, then open “Affiliate program” in your dashboard to find your link and referral code."
         },
         {
           "title": "Share it",
@@ -3205,7 +3205,7 @@
       "items": [
         {
           "q": "Who can join?",
-          "a": "Anyone with a Tallaby seller account. Creating one is free, and your link is ready on the “Earn with us” page of your dashboard."
+          "a": "Anyone with a Tallaby seller account. Creating one is free, and your link is ready on the “Affiliate program” page of your dashboard."
         },
         {
           "q": "When do I earn the EGP 100?",
@@ -3217,7 +3217,7 @@
         },
         {
           "q": "How do I get paid?",
-          "a": "Request a withdrawal on the “Earn with us” page and choose a bank account or Vodafone Cash. The Tallaby team transfers your whole available balance and lets you know when it's paid."
+          "a": "Request a withdrawal on the “Affiliate program” page and choose a bank account or Vodafone Cash. The Tallaby team transfers your whole available balance and lets you know when it's paid."
         },
         {
           "q": "Do I see the details of the sellers I referred?",
@@ -3231,7 +3231,7 @@
     },
     "band": {
       "title": "Your link is ready in your dashboard",
-      "body": "Create a free seller account, or sign in and open “Earn with us”."
+      "body": "Create a free seller account, or sign in and open “Affiliate program”."
     }
   },
   "trackingConsent": {

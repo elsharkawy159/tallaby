@@ -468,7 +468,7 @@
     "accountHelp": "Account & help",
     "sellerCategories": "Categories",
     "sellerBrands": "Brands",
-    "earn": "Earn with us",
+    "earn": "Affiliate program",
     "orderProtection": "Order protection",
     "storeApp": "Store app",
     "salesPopup": "Sales pop-up",
@@ -1378,6 +1378,12 @@
       "join": "Join the channel",
       "socialTitle": "Follow us on social media",
       "socialDescription": "Tutorials and seller success stories on Tallaby"
+    },
+    "affiliate": {
+      "title": "Affiliate program",
+      "description": "Earn {bonus} for every seller you invite who tops up ${usd}.",
+      "unit": "EGP",
+      "cta": "Get your link"
     }
   },
   "table": {
@@ -7394,8 +7400,8 @@
         "body": "Bosta flagged order #{orderNumber}. Open it to see why."
       },
       "referral_commission_earned": {
-        "title": "Commission earned",
-        "body": "You earned {amount} from {count, plural, one {a top-up} other {# top-ups}} by sellers you referred today."
+        "title": "Affiliate reward earned",
+        "body": "You earned {amount} today from {count, plural, one {a seller} other {# sellers}} you invited."
       },
       "referral_payout_paid": {
         "title": "Withdrawal paid",
@@ -7403,7 +7409,7 @@
       },
       "referral_payout_rejected": {
         "title": "Withdrawal not paid",
-        "body": "Your {amount} withdrawal was declined. Open Earn with us to see why."
+        "body": "Your {amount} withdrawal was declined. Open Affiliate program to see why."
       },
       "welcome_gift_granted": {
         "title": "Welcome gift: {amount}",
@@ -7836,8 +7842,8 @@
     }
   },
   "earn": {
-    "metaTitle": "Earn with us",
-    "title": "Earn with us: affiliate marketing",
+    "metaTitle": "Affiliate program",
+    "title": "Affiliate program",
     "intro": "Share your link with your referral code. You earn {bonus} for every seller who signs up through it and tops up their wallet with $5 or more. Paid in cash (bank or Vodafone Cash), not as wallet credit.",
     "stats": {
       "earned": "Total earned",

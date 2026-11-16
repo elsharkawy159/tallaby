@@ -105,6 +105,7 @@ describe("SIDEBAR_CONFIG", () => {
       "settingsGroup",
       "|",
       "accountHelp",
+      "earn",
     ]);
   });
 
@@ -112,7 +113,7 @@ describe("SIDEBAR_CONFIG", () => {
     const hrefs = (key: string) =>
       SIDEBAR_CONFIG.flatMap((e) => (e.kind === "group" && e.key === key ? e.items.map((i) => i.href) : []));
     expect(hrefs("settingsGroup").every((h) => h.includes("[storeId]"))).toBe(true);
-    expect(hrefs("accountHelp")).toEqual(["/stores", "/settings", "/settings/plan", "/help", "/roadmap", "/earn"]);
+    expect(hrefs("accountHelp")).toEqual(["/stores", "/settings", "/settings/plan", "/help", "/roadmap"]);
   });
 
   it("hides Website & Content without the store-builder flag", () => {
@@ -134,6 +135,7 @@ describe("SIDEBAR_CONFIG", () => {
       "marketing",
       "|",
       "accountHelp",
+      "earn",
     ]);
   });
 

@@ -7,7 +7,7 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import type { WithdrawActionResult } from "./earn.dto";
 
 /**
- * Earn with us › Request withdrawal (F-37). The seller comes from the
+ * Affiliate program › Request withdrawal (F-37). The seller comes from the
  * session; the amount is always the whole available balance, computed on the
  * server. An admin pays it by hand (Admin › Referrals).
  */
