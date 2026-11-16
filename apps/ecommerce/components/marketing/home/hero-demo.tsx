@@ -15,6 +15,11 @@ type Order = { product: string; when: string; total: number; status: "pending" |
 const SALES = 49_820;
 const ORDERS = 39;
 const VISITS = 2940;
+/** Each card's seven daily bars, oldest first, as heights in %: a gently rising week that ends on today. */
+const SALES_TREND = [42, 38, 55, 50, 68, 74, 100];
+const ORDERS_TREND = [36, 48, 44, 62, 58, 80, 96];
+const VISITS_TREND = [52, 46, 60, 72, 66, 88, 94];
+const CONVERSION_TREND = [58, 64, 54, 70, 78, 74, 90];
 /** The new order: one bag plus shipping. */
 const PRODUCT_PRICE = 1450;
 const SHIPPING = 50;
@@ -49,10 +54,10 @@ export async function HeroDemo() {
   const orders = [fresh, ...(t.raw("orders") as Order[])].slice(0, 4);
   const pending = orders.filter((o) => o.status === "pending").length;
   const kpis = [
-    { label: t("kpi.sales"), value: money(SALES), unit: egp },
-    { label: t("kpi.orders"), value: String(ORDERS), unit: t("kpi.ordersUnit") },
-    { label: t("kpi.visits"), value: money(VISITS), unit: t("kpi.visitsUnit"), wide: true },
-    { label: t("kpi.conversion"), value: ((ORDERS / VISITS) * 100).toFixed(1), unit: "%", wide: true },
+    { label: t("kpi.sales"), value: money(SALES), unit: egp, trend: SALES_TREND },
+    { label: t("kpi.orders"), value: String(ORDERS), unit: t("kpi.ordersUnit"), trend: ORDERS_TREND },
+    { label: t("kpi.visits"), value: money(VISITS), unit: t("kpi.visitsUnit"), trend: VISITS_TREND, wide: true },
+    { label: t("kpi.conversion"), value: ((ORDERS / VISITS) * 100).toFixed(1), unit: "%", trend: CONVERSION_TREND, wide: true },
   ];
 
   return (
@@ -83,6 +88,12 @@ export async function HeroDemo() {
               <div key={kpi.label} className={cn("rounded-2xl border border-[#e7e9e8] bg-white p-3", kpi.wide && "hidden min-[861px]:block")}>
                 <span className="block truncate text-xs font-semibold text-[#3f4a4d]">{kpi.label}</span>
                 <b className="font-latin text-[18px] font-bold text-[#171717] min-[641px]:text-[22px]">{kpi.value}</b> <span className="text-[11.5px] text-[#808080]">{kpi.unit}</span>
+                {/* The week as seven bars; today's, the last one, is solid. */}
+                <div className="mt-2 flex h-7 items-end gap-[3px] min-[641px]:h-8">
+                  {kpi.trend.map((height, day) => (
+                    <i key={day} className={cn("flex-1 rounded-t-[3px]", day === kpi.trend.length - 1 ? "bg-teal-700" : "bg-teal-100")} style={{ height: `${height}%` }} />
+                  ))}
+                </div>
               </div>
             ))}
           </div>
