@@ -4,9 +4,7 @@ import {
   Banknote,
   Bot,
   Check,
-  ChartNoAxesCombined,
   CreditCard,
-  FileUp,
   Globe,
   Import,
   LayoutTemplate,
@@ -17,28 +15,27 @@ import {
   ShieldCheck,
   ShoppingCart,
   Sparkles,
-  Store,
   TicketPercent,
   Truck,
   Users,
-  Wallet,
   WandSparkles,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
+import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { CtaBand } from "@/components/marketing/site/cta-band";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
 import { Container, Kicker, Ltr, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
-import { IconTile } from "@/components/marketing/site/site-card";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { PlanCards } from "@/components/marketing/pricing/plan-cards";
 // Grid instead of carousel on the home page (owner, 2026-11-13); the carousel file stays so it can come back.
 // import { TemplateCarousel } from "@/components/marketing/templates/template-carousel.client";
 import { CtaButton } from "@/components/marketing/site/cta-button";
-import { TemplateThumb } from "@/components/marketing/templates/template-thumb";
+import { TemplatePreviewCard } from "@/components/marketing/templates/template-preview-card";
 import { withPrices } from "@/components/marketing/pricing/with-prices";
 import { selectStoreLine } from "@/lib/marketing/recent-stores.lib";
 import { CONTACT } from "@/lib/marketing/site.lib";
@@ -100,7 +97,13 @@ export async function HomeHero() {
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
 
   return (
-    <section id="top" aria-labelledby="home-h1" className="relative overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
+    <section id="top" aria-labelledby="home-h1" className="relative isolate overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
+      {/* A soft, near-white pattern over the fog (home-hero-pattern, 4 KB). A CSS background, so it never
+          competes with the title for bandwidth; it fades out before the demo ends. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[min(100%,1100px)] bg-[url(/marketing/home/home-hero-pattern.webp)] bg-cover bg-top opacity-70 [mask-image:linear-gradient(to_bottom,#000_60%,transparent)]"
+      />
       <Container className="relative flex flex-col items-center text-center">
         {/* First thing in the hero, above the title (owner, 2026-11-06; was after the call to action),
             in a slot of fixed height so nothing moves when it changes. */}
@@ -184,7 +187,29 @@ export async function TrustedStoresSection() {
   const stores = selectLogoStrip(await getDirectoryStores());
   if (stores.length === 0) return null;
   const [t, locale] = await Promise.all([getTranslations("home.trusted"), getLocale()]);
-  return <StoreLogoStrip stores={stores} labels={{ title: t("title"), all: t("all"), listLabel: t("listLabel") }} rtl={locale === "ar"} />;
+  return <StoreLogoStrip stores={stores} labels={{ title: t("title"), all: t("all"), listLabel: t("listLabel") }} locale={locale} />;
+}
+
+/** A point card: the spot beside the text on phones, above it from 641 px. */
+const SPOT_CARD_CLASS =
+  "grid grid-cols-[64px_minmax(0,1fr)] content-start gap-x-3.5 gap-y-0.5 rounded-[26px] border border-[#e6eef0] bg-white/85 px-4 py-3.5 min-[641px]:flex min-[641px]:flex-col min-[641px]:gap-2 min-[641px]:p-[22px] min-[641px]:pt-4";
+
+/**
+ * A card's spot illustration (the owner's 3D set, 2026-11-16, in place of an icon tile): 64 px on
+ * phones, 88 px from 641 px. Decorative: the card's title says it. `mirror` flips a picture
+ * that moves left to right for Arabic.
+ */
+function Spot({ src, mirror }: { src: string; mirror?: boolean }) {
+  return (
+    <Image
+      src={src}
+      alt=""
+      width={192}
+      height={192}
+      unoptimized
+      className={cn("row-span-2 size-16 min-[641px]:-ms-1.5 min-[641px]:size-[88px]", mirror && "rtl:-scale-x-100")}
+    />
+  );
 }
 
 /**
@@ -193,12 +218,7 @@ export async function TrustedStoresSection() {
  */
 export async function WhatIsTallabySection() {
   const t = await getTranslations("home.what");
-  const points = [
-    { key: "store", icon: Store },
-    { key: "money", icon: Wallet },
-    { key: "shipping", icon: Truck },
-    { key: "world", icon: Globe },
-  ] as const;
+  const points = ["store", "money", "shipping", "world"] as const;
 
   return (
     <Section id="what-is-tallaby" aria-labelledby="what-is-tallaby-title">
@@ -209,20 +229,27 @@ export async function WhatIsTallabySection() {
             <Users className="mt-0.5 size-[18px] flex-none text-teal-700" aria-hidden />
             {t("who")}
           </p>
+          {/* Fills the heading column's empty height on wide screens; the cards say the same on phones. */}
+          <Image
+            src="/marketing/home/home-what.webp"
+            alt=""
+            width={880}
+            height={621}
+            unoptimized
+            className="mt-2 hidden h-auto w-[440px] max-w-full self-center min-[1081px]:block"
+          />
         </Reveal>
         <ul className="m-0 grid list-none gap-3 p-0 min-[641px]:grid-cols-2 min-[641px]:gap-4">
           {points.map((point) => (
             <Reveal
               as="li"
-              key={point.key}
-              className="grid grid-cols-[38px_minmax(0,1fr)] content-start gap-x-3 gap-y-0.5 rounded-[26px] border border-[#e6eef0] bg-white/85 px-4 py-3.5 min-[641px]:flex min-[641px]:flex-col min-[641px]:gap-2.5 min-[641px]:p-[26px]"
+              key={point}
+              className={SPOT_CARD_CLASS}
             >
-              <IconTile className="row-span-2 size-[38px] rounded-xl min-[641px]:mb-1.5 min-[641px]:size-11 min-[641px]:rounded-[14px]">
-                <point.icon aria-hidden />
-              </IconTile>
-              <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{t(`points.${point.key}.title`)}</h3>
+              <Spot src={`/marketing/home/home-point-${point}.webp`} />
+              <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{t(`points.${point}.title`)}</h3>
               <p className="text-sm text-pretty text-ink-500">
-                {t.rich(`points.${point.key}.body`, {
+                {t.rich(`points.${point}.body`, {
                   domain: (chunks) => <Ltr className="font-latin font-semibold text-ink-700">{chunks}</Ltr>,
                 })}
               </p>
@@ -241,10 +268,11 @@ export async function WhatIsTallabySection() {
 export async function FeaturesSection() {
   const t = await getTranslations("home.features");
   const cards = [
-    { id: "ai", icon: Sparkles, title: t("aiTitle"), body: t("aiBody") },
-    { id: "marketing", icon: Mail, title: t("marketingTitle"), body: t("marketingBody") },
-    { icon: FileUp, title: t("importTitle"), body: t("importBody") },
-    { icon: ChartNoAxesCombined, title: t("adsTitle"), body: t("adsBody") },
+    // The AI and import pictures move left to right, so Arabic mirrors them.
+    { id: "ai", spot: "ai", mirror: true, title: t("aiTitle"), body: t("aiBody") },
+    { id: "marketing", spot: "marketing", title: t("marketingTitle"), body: t("marketingBody") },
+    { spot: "import", mirror: true, title: t("importTitle"), body: t("importBody") },
+    { spot: "ads", title: t("adsTitle"), body: t("adsBody") },
   ];
 
   return (
@@ -255,7 +283,8 @@ export async function FeaturesSection() {
         </Reveal>
         <div className="grid gap-3 min-[641px]:grid-cols-2 min-[641px]:gap-4 min-[1081px]:grid-cols-4 min-[1081px]:grid-rows-[272px_272px]">
           <Reveal as="article" className="flex h-[540px] min-h-0 flex-col gap-5 overflow-hidden rounded-[26px] border border-[#e6eef0] bg-[linear-gradient(160deg,#f3f8f9_0%,#fff_60%)] p-5 min-[641px]:col-span-2 min-[641px]:p-[26px] min-[1081px]:row-span-2 min-[1081px]:h-auto">
-            <div className="flex flex-col items-start gap-2.5">
+            <div className="flex items-start gap-4">
+            <div className="flex min-w-0 flex-1 flex-col items-start gap-2.5">
               <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11.5px] font-bold text-[#8a5300]">{t("mcpTag")}</span>
               <h3 className="text-[clamp(20px,2.4vw,26px)] leading-[1.4] font-bold text-teal-900">
                 {t.rich("mcpTitle", {
@@ -275,13 +304,14 @@ export async function FeaturesSection() {
               </h3>
               <p className="text-[15px] text-pretty text-ink-500">{t("mcpBody")}</p>
             </div>
+            {/* A chat wired to a store, at the card's end corner from 641 px (the brand marks stay in the title). */}
+            <Image src="/marketing/home/home-mcp.webp" alt="" width={400} height={232} unoptimized className="hidden h-auto w-[176px] flex-none min-[641px]:block min-[1081px]:w-[200px]" />
+            </div>
             <McpChatDemo />
           </Reveal>
           {cards.map((card) => (
-            <Reveal key={card.title} id={card.id} as="article" className="grid grid-cols-[38px_minmax(0,1fr)] content-start gap-x-3 gap-y-0.5 rounded-[26px] border border-[#e6eef0] bg-white/85 px-4 py-3.5 transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_18px_40px_rgba(13,55,67,0.08)] min-[641px]:flex min-[641px]:flex-col min-[641px]:gap-2.5 min-[641px]:p-[26px]">
-              <IconTile className="row-span-2 size-[38px] rounded-xl min-[641px]:mb-1.5 min-[641px]:size-11 min-[641px]:rounded-[14px]">
-                <card.icon aria-hidden />
-              </IconTile>
+            <Reveal key={card.title} id={card.id} as="article" className={cn(SPOT_CARD_CLASS, "transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_18px_40px_rgba(13,55,67,0.08)]")}>
+              <Spot src={`/marketing/home/home-${card.spot}.webp`} mirror={card.mirror} />
               <h3 className="text-[15.5px] leading-normal font-bold text-teal-900 min-[641px]:text-[17px]">{card.title}</h3>
               <p className="text-sm text-pretty text-ink-500">{card.body}</p>
             </Reveal>
@@ -293,57 +323,38 @@ export async function FeaturesSection() {
 }
 
 /**
- * The home page's templates as a grid (owner, 2026-11-13: grid instead of
- * carousel): 2 columns up to tablets, 4 on desktop, so the 8 cards always fill
- * whole rows. Each card holds what the carousel's centre card holds, with the
- * same buttons and links; in narrow columns the category tag and the buttons stack.
+ * A home card's width, so the browser picks the 600 px or 1200 px desktop shot: four across the
+ * 1600 px container (40 px gutters, 32 px gaps) from 1081 px, two below (phones get the phone shot).
+ */
+const HOME_TEMPLATE_CARD_SIZES = "(min-width: 1081px) calc((min(100vw, 1600px) - 176px) / 4), (min-width: 641px) calc(50vw - 36px), calc(50vw - 22px)";
+
+/**
+ * The home page's templates (2026-11-16): the /templates gallery's tall full-page cards
+ * (TemplatePreviewCard), 2 across up to tablets and 4 on desktop so the 8 cards fill whole rows.
+ * Each card is one link to its template page, with the name and category under it and no buttons.
  */
 async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; locale: string }) {
   const t = await getTranslations("templates");
   if (!entries.length) return null;
   return (
-    <ul className="grid grid-cols-2 gap-3 min-[641px]:gap-5 min-[1081px]:grid-cols-4">
+    <div className="grid grid-cols-2 gap-x-3 gap-y-7 min-[641px]:gap-x-6 min-[641px]:gap-y-10 min-[1081px]:grid-cols-4 min-[1081px]:gap-x-8 min-[1081px]:gap-y-12">
       {entries.map((entry) => {
-        const href = entry.shot?.edition ? `/templates/${entry.id}?edition=${encodeURIComponent(entry.shot.edition)}` : `/templates/${entry.id}`;
+        const edition = entry.shot?.edition ?? null;
         return (
-          <li key={entry.id} className="min-w-0">
-            <article
-              aria-label={entry.name}
-              className="tpl-shot-trigger flex h-full flex-col overflow-hidden rounded-[20px] border border-line bg-white shadow-[0_14px_36px_rgba(13,55,67,0.09)] min-[641px]:rounded-[30px]"
-            >
-              <div className="flex flex-col items-start gap-1.5 px-3 pt-3 pb-2.5 min-[641px]:px-[18px] min-[641px]:pt-4 min-[641px]:pb-3 min-[1081px]:flex-row min-[1081px]:items-center min-[1081px]:justify-between min-[1081px]:gap-2.5">
-                <div className="w-full min-w-0">
-                  <h3 className="truncate font-latin text-[15px] font-bold text-teal-900 min-[641px]:text-base">{entry.name}</h3>
-                  <small className="line-clamp-1 text-[12px] text-ink-400 min-[641px]:text-[12.5px]">{entry.description ?? ""}</small>
-                </div>
-                <span className="max-w-full flex-none truncate rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-teal-700 min-[641px]:text-[11.5px]">
-                  {t(`categories.${entry.category}`)}
-                </span>
-              </div>
-              <div className="mx-2 overflow-hidden rounded-[14px] border border-[#edf1f2] min-[641px]:mx-3 min-[641px]:rounded-[18px]">
-                <TemplateThumb shot={entry.shot} liveSrc={templateFrameSrc(locale, entry.id, undefined, true)} sizes="(min-width: 1081px) 25vw, 50vw" />
-              </div>
-              {entry.palette.length ? (
-                <div className="flex items-center gap-1.5 px-3 pt-2.5 text-xs text-ink-400 min-[641px]:px-[18px] min-[641px]:pt-3">
-                  <span className="max-[640px]:sr-only">{t("colors")}</span>
-                  {entry.palette.slice(0, 4).map((color, c) => (
-                    <i key={`${c}-${color}`} className="size-3.5 rounded-full border-2 border-white shadow-[0_0_0_1px_#dfe8ea] min-[641px]:size-4" style={{ background: color }} />
-                  ))}
-                </div>
-              ) : null}
-              <div className="mt-auto flex flex-col gap-2 px-3 pt-3 pb-3 min-[641px]:px-[18px] min-[641px]:pt-3.5 min-[641px]:pb-[18px] min-[1081px]:flex-row">
-                <SignupTrigger size="sm" className="h-11 w-full flex-1 shadow-none!">
-                  {t("use")}
-                </SignupTrigger>
-                <CtaButton asChild tone="outline" size="sm" className="h-11 w-full min-[1081px]:w-auto">
-                  <Link href={href}>{t("preview")}</Link>
-                </CtaButton>
-              </div>
-            </article>
-          </li>
+          <TemplatePreviewCard
+            key={entry.id}
+            href={edition ? `/templates/${entry.id}?edition=${encodeURIComponent(edition)}` : `/templates/${entry.id}`}
+            name={entry.name}
+            tag={t(`categories.${entry.category}`)}
+            linkLabel={t("previewNamed", { name: entry.name })}
+            badge={entry.price ? null : t("detail.free")}
+            shot={entry.shot}
+            liveSrc={templateFrameSrc(locale, entry.id, undefined, true, edition)}
+            sizes={HOME_TEMPLATE_CARD_SIZES}
+          />
         );
       })}
-    </ul>
+    </div>
   );
 }
 
@@ -363,7 +374,7 @@ export async function TemplatesSection() {
         {/* Grid instead of carousel (owner, 2026-11-13). */}
         {/* <TemplateCarousel entries={pickHomeTemplates(entries)} /> */}
         <TemplateGrid entries={pickHomeTemplates(entries)} locale={locale} />
-        <div className="mt-8 flex justify-center">
+        <div className="mt-10 flex justify-center min-[641px]:mt-12">
           <CtaButton asChild tone="outline">
             <Link href="/templates">{t("more")}</Link>
           </CtaButton>
@@ -393,8 +404,10 @@ export async function HomeFaq() {
   return (
     <Section id="faq" aria-labelledby="faq-title">
       <Container className="grid gap-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-14">
-        <Reveal>
+        <Reveal className="flex flex-col">
           <SectionHeading id="faq-title" kicker={t("kicker")} title={t("title")} className="mb-0" description={t.rich("desc", { link: (chunks) => <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 underline-offset-2 hover:underline">{chunks}</a> })} />
+          {/* Fills the empty height under the heading on wide screens only. */}
+          <Image src="/marketing/home/home-faq.webp" alt="" width={440} height={440} unoptimized className="mt-6 hidden h-auto w-[220px] self-center min-[1081px]:block" />
         </Reveal>
         <Reveal>
           <FaqAccordion items={items} />
@@ -409,7 +422,12 @@ export async function FinalCta() {
   return (
     <div id="final">
       {/* Same verb as the hero's button: one call to action on the page. */}
-      <CtaBand title={t("title")} body={t("body")} action={<SlugClaimForm className="w-full sm:w-[420px]" submitLabel={t("cta")} />} />
+      <CtaBand
+        title={t("title")}
+        body={t("body")}
+        art={<Image src="/marketing/home/home-cta.webp" alt="" width={440} height={325} unoptimized className="h-auto w-[220px]" />}
+        action={<SlugClaimForm className="w-full sm:w-[420px]" submitLabel={t("cta")} />}
+      />
     </div>
   );
 }

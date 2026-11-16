@@ -15,6 +15,7 @@ export async function pageMetadata({
   path,
   values,
   absoluteTitle,
+  image: ownImage,
 }: {
   locale: string;
   /** Key under `meta` in the messages. */
@@ -23,11 +24,13 @@ export async function pageMetadata({
   values?: Record<string, string>;
   /** Home uses its full title without the "| Tallaby" suffix. */
   absoluteTitle?: boolean;
+  /** The page's own 1200×630 share image (under public/); unset: DEFAULT_OG_IMAGE. */
+  image?: { url: string; width: number; height: number };
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "meta" });
   const title = t(`${page}.title`, values);
   const description = t(`${page}.description`, values);
-  const image = { ...DEFAULT_OG_IMAGE, alt: t("siteName") };
+  const image = { ...(ownImage ?? DEFAULT_OG_IMAGE), alt: t("siteName") };
 
   return {
     title: absoluteTitle ? { absolute: title } : title,

@@ -9,8 +9,8 @@ import { storeIndustryId, type StoreIndustryId } from "./recent-stores.lib";
  * listed industry and how many products it shows. Nothing about the seller.
  */
 
-/** "+10 published products" (owner): a store needs at least this many to join the home strip. */
-export const LOGO_STRIP_MIN_PRODUCTS = 10;
+/** "At least 5 products" (owner, 2026-11-16; was 10): a store needs this many to join the home strip. */
+export const LOGO_STRIP_MIN_PRODUCTS = 5;
 /** The most logos the strip shows. */
 export const LOGO_STRIP_MAX = 30;
 /** Fewer qualifying stores than this and the strip is not shown at all (no near-empty line). */
@@ -73,14 +73,34 @@ function byName(a: DirectoryStore, b: DirectoryStore): number {
   return a.name.localeCompare(b.name, "ar", { sensitivity: "base" }) || a.url.localeCompare(b.url);
 }
 
+/** Names a stock or empty image rather than the seller's own upload. */
+const PLACEHOLDER_LOGO = /placeholder|no[-_]?image|default[-_]?logo/i;
+
 /**
- * The home strip: stores with a logo and at least LOGO_STRIP_MIN_PRODUCTS
+ * True when `logoUrl` is a seller's real uploaded logo (owner, 2026-11-16): an
+ * https URL with a file path, and not a placeholder. `shapeDirectoryStore`
+ * already drops empty and non-https logos; this also stops a bare or relative
+ * value that `getPublicUrl` turned into a storage URL with an empty path.
+ */
+export function isUploadedLogo(logoUrl: string | null): logoUrl is string {
+  if (!logoUrl) return false;
+  let url: URL;
+  try {
+    url = new URL(logoUrl);
+  } catch {
+    return false;
+  }
+  return url.protocol === "https:" && /\/[^/]+\.[a-z0-9]+$/i.test(url.pathname) && !url.pathname.includes("//") && !PLACEHOLDER_LOGO.test(url.pathname);
+}
+
+/**
+ * The home strip: stores with an uploaded logo (isUploadedLogo) and at least LOGO_STRIP_MIN_PRODUCTS
  * products, most products first, at most LOGO_STRIP_MAX. Empty when fewer than
  * LOGO_STRIP_MIN_SHOWN qualify, so the section hides.
  */
 export function selectLogoStrip(stores: readonly DirectoryStore[]): DirectoryStore[] {
   const picked = stores
-    .filter((store) => store.logoUrl && store.productCount >= LOGO_STRIP_MIN_PRODUCTS)
+    .filter((store) => isUploadedLogo(store.logoUrl) && store.productCount >= LOGO_STRIP_MIN_PRODUCTS)
     .sort((a, b) => b.productCount - a.productCount || byName(a, b))
     .slice(0, LOGO_STRIP_MAX);
   return picked.length >= LOGO_STRIP_MIN_SHOWN ? picked : [];

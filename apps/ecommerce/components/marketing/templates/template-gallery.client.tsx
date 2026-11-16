@@ -3,14 +3,13 @@
 import * as React from "react";
 import { Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { Chip, ChipRow } from "@/components/marketing/site/chips";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { IconTile } from "@/components/marketing/site/site-card";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { TEMPLATE_CATEGORIES, type TemplateCategory } from "@/lib/marketing/templates.data";
 import { galleryCards, templateFrameSrc, type GalleryEntry, type GalleryNicheTab } from "@/lib/marketing/templates.lib";
-import { TemplateThumb } from "./template-thumb";
+import { TemplatePreviewCard } from "./template-preview-card";
 
 /**
  * The /templates grid: category chips, a count, and cards with each template's
@@ -119,11 +118,7 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
         ) : null}
       </div>
 
-      {/*
-        Tall cards in the style of themes.shopify.com (2026-11-16): the home page shot,
-        panned on hover or keyboard focus, then the name and the niche. The whole card is
-        one link to the template page; "Use" and the live demo live there.
-      */}
+      {/* Tall cards in the style of themes.shopify.com (TemplatePreviewCard). */}
       <div className="grid gap-x-6 gap-y-10 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-3 min-[1081px]:gap-x-8 min-[1081px]:gap-y-14">
         {ordered.map((tpl) => {
           // On a niche tab every listed card is that niche's edition; a niche-only industry's card is its niche's.
@@ -133,28 +128,19 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
           const shot = tpl.shot && tpl.shot.edition === edition ? tpl.shot : null;
           const href = edition ? `/templates/${tpl.id}?edition=${encodeURIComponent(edition)}` : `/templates/${tpl.id}`;
           return (
-            <article key={tpl.id} hidden={!visibleIds.has(tpl.id)} className="tpl-shot-trigger group/card min-w-0 [&[hidden]]:hidden">
-              <Link
-                href={href}
-                aria-label={t("previewNamed", { name: tpl.name })}
-                className="block rounded-[18px] outline-none hover:no-underline focus-visible:ring-[3px] focus-visible:ring-teal-500 focus-visible:ring-offset-4"
-              >
-                <TemplateThumb
-                  key={edition ?? "own"}
-                  shot={shot}
-                  liveSrc={templateFrameSrc(locale, tpl.id, undefined, true, edition)}
-                  sizes={GALLERY_CARD_SIZES}
-                  className="rounded-[18px] border border-line bg-[#eef3f4] shadow-soft transition-shadow duration-300 group-hover/card:shadow-raise"
-                />
-                <div className="flex items-start justify-between gap-3 px-1 pt-4">
-                  <div className="min-w-0">
-                    <h3 className="truncate font-latin text-[17px] leading-snug font-bold text-teal-900">{tpl.name}</h3>
-                    <p className="mt-0.5 truncate text-sm text-ink-500">{card?.tag ?? t(`categories.${tpl.category}`)}</p>
-                  </div>
-                  <span className="flex-none pt-0.5 text-sm font-semibold text-teal-700">{tpl.price ? null : t("detail.free")}</span>
-                </div>
-              </Link>
-            </article>
+            <TemplatePreviewCard
+              key={tpl.id}
+              hidden={!visibleIds.has(tpl.id)}
+              href={href}
+              name={tpl.name}
+              tag={card?.tag ?? t(`categories.${tpl.category}`)}
+              linkLabel={t("previewNamed", { name: tpl.name })}
+              badge={tpl.price ? null : t("detail.free")}
+              thumbKey={edition ?? "own"}
+              shot={shot}
+              liveSrc={templateFrameSrc(locale, tpl.id, undefined, true, edition)}
+              sizes={GALLERY_CARD_SIZES}
+            />
           );
         })}
 

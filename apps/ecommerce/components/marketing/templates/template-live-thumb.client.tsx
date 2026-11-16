@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { cn } from "@workspace/ui/lib/utils";
 
 /** The frame a live thumbnail is drawn at: a desktop window, scaled to the card. */
@@ -11,7 +12,8 @@ const FRAME_HEIGHT = 960;
  * A template's real home page as a card thumbnail, for templates without a
  * `thumbnail_url`: the preview frame (/template-preview) drawn at desktop
  * width and scaled down. Loads when the card nears the viewport; never
- * focusable or clickable (the card is the link).
+ * focusable or clickable (the card is the link). Until the frame loads, a
+ * plain wireframe of a store page stands in (home-template-poster, 2026-11-16).
  */
 export function TemplateLiveThumb({
   src,
@@ -54,7 +56,9 @@ export function TemplateLiveThumb({
           style={{ width: FRAME_WIDTH, height: frameHeight, transform: `scale(${scale})` }}
         />
       ) : null}
-      {loaded ? null : <div className="absolute inset-0 animate-pulse bg-neutral-100" />}
+      {loaded ? null : (
+        <Image src="/marketing/home/home-template-poster.webp" alt="" width={600} height={800} unoptimized className="absolute inset-0 size-full object-cover object-top" />
+      )}
     </div>
   );
 }

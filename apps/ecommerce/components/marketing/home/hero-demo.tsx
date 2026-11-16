@@ -101,6 +101,25 @@ export async function HeroDemo() {
         </div>
       </div>
 
+      {/* The order's bag and parcel float off the free corners (opposite the notice and the phone),
+          from 641 px only; lazy, so phones never fetch them. Not directional, so not mirrored. */}
+      <Image
+        src="/marketing/home/home-hero-bag.webp"
+        alt=""
+        width={256}
+        height={256}
+        unoptimized
+        className="absolute -top-14 end-1 z-[2] hidden w-[104px] min-[641px]:block min-[641px]:motion-safe:animate-pop min-[1081px]:-top-16 min-[1081px]:w-[136px] [animation-delay:300ms]"
+      />
+      <Image
+        src="/marketing/home/home-hero-parcel.webp"
+        alt=""
+        width={256}
+        height={256}
+        unoptimized
+        className="absolute -bottom-14 -start-4 z-[2] hidden w-[96px] min-[641px]:block min-[641px]:motion-safe:animate-pop min-[1081px]:-bottom-16 min-[1081px]:-start-20 min-[1081px]:w-[124px] [animation-delay:450ms]"
+      />
+
       {/* The new order's notice, over the dashboard's start corner. */}
       <div className="absolute -top-[30px] start-2 z-[4] flex items-center gap-2.5 rounded-2xl border border-line bg-white px-3 py-2 shadow-raise min-[641px]:start-7">
         <span className="grid size-8 place-items-center rounded-xl bg-amber-100 text-amber-700">

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/marketing/site/layout-primitives";
+import { STORE_INDUSTRY_NAMES } from "@/lib/marketing/recent-stores.lib";
 import type { DirectoryStore } from "@/lib/marketing/store-directory.lib";
 
 /**
@@ -9,12 +10,15 @@ import type { DirectoryStore } from "@/lib/marketing/store-directory.lib";
  * threshold, and then nothing renders. The first copy is a real list of links;
  * the second only closes the loop, so it is hidden from readers and tab order.
  * It pauses on hover and focus, and under reduced motion it becomes one static,
- * wrapped row (marketing.css, `.logo-marquee`).
+ * wrapped row (marketing.css, `.logo-marquee`). Logos keep their own colours,
+ * with the store's listed industry under them (the /stores label), when it has one
+ * (owner, 2026-11-16).
  */
 export type StoreLogoStripLabels = { title: string; all: string; listLabel: string };
 
-export function StoreLogoStrip({ stores, labels, rtl }: { stores: readonly DirectoryStore[]; labels: StoreLogoStripLabels; rtl: boolean }) {
+export function StoreLogoStrip({ stores, labels, locale }: { stores: readonly DirectoryStore[]; labels: StoreLogoStripLabels; locale: string }) {
   if (stores.length === 0) return null;
+  const rtl = locale === "ar";
   // About 4 seconds a logo, so a long line moves at the same calm speed as a short one.
   const duration = `${Math.max(40, stores.length * 4)}s`;
 
@@ -46,7 +50,9 @@ export function StoreLogoStrip({ stores, labels, rtl }: { stores: readonly Direc
               data-marquee-copy={copy === 1 ? "" : undefined}
               className="m-0 flex flex-none list-none gap-3 p-0 pe-3"
             >
-              {stores.map((store) => (
+              {stores.map((store) => {
+                const industry = store.industry ? STORE_INDUSTRY_NAMES[store.industry][rtl ? "ar" : "en"] : null;
+                return (
                 <li key={store.url}>
                   <a
                     href={store.url}
@@ -55,7 +61,8 @@ export function StoreLogoStrip({ stores, labels, rtl }: { stores: readonly Direc
                     rel="noopener noreferrer"
                     tabIndex={copy === 1 ? -1 : undefined}
                     title={store.name}
-                    className="group flex h-[76px] w-[156px] items-center justify-center rounded-2xl border border-line bg-white px-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    // A fixed size whether or not the category line shows, so nothing moves.
+                    className="flex h-[96px] w-[168px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-line bg-white px-4 transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- seller logos can live on any https host */}
                     <img
@@ -65,11 +72,17 @@ export function StoreLogoStrip({ stores, labels, rtl }: { stores: readonly Direc
                       height={44}
                       loading="lazy"
                       decoding="async"
-                      className="h-11 w-auto max-w-full object-contain opacity-70 grayscale transition-[filter,opacity] duration-200 group-hover:opacity-100 group-hover:grayscale-0 group-focus-visible:opacity-100 group-focus-visible:grayscale-0"
+                      className="h-11 w-auto max-w-full flex-none object-contain"
                     />
+                    {industry ? (
+                      <span dir={rtl ? "rtl" : "ltr"} className="block max-w-full truncate text-xs leading-4 text-ink-500">
+                        {industry}
+                      </span>
+                    ) : null}
                   </a>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           ))}
         </div>

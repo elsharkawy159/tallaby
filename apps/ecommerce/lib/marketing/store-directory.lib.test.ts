@@ -10,6 +10,7 @@ import {
   directoryPagePath,
   directorySitemapEntries,
   directoryStores,
+  isUploadedLogo,
   LOGO_STRIP_MAX,
   LOGO_STRIP_MIN_PRODUCTS,
   parseDirectoryPage,
@@ -71,8 +72,25 @@ describe("shapeDirectoryStore", () => {
 
 describe("selectLogoStrip", () => {
   it(`needs a logo and at least ${LOGO_STRIP_MIN_PRODUCTS} products, most products first`, () => {
-    const picked = selectLogoStrip([store("A", 10), store("B", 9), store("C", 40, false), store("D", 25), store("E", 11), store("F", 12)]);
+    expect(LOGO_STRIP_MIN_PRODUCTS).toBe(5);
+    const picked = selectLogoStrip([store("A", 5), store("B", 4), store("C", 40, false), store("D", 25), store("E", 6), store("F", 7)]);
     expect(picked.map((s) => s.name)).toEqual(["D", "F", "E", "A"]);
+  });
+
+  it("leaves out a store whose logo is not a real upload", () => {
+    const bad = (name: string, logoUrl: string): DirectoryStore => ({ ...store(name, 50), logoUrl });
+    const picked = selectLogoStrip([
+      store("A", 20),
+      store("B", 20),
+      store("C", 20),
+      store("D", 20),
+      bad("Empty", ""),
+      bad("Folder", "https://x.supabase.co/storage/v1/object/public/sellers/"),
+      bad("Doubled", "https://x.supabase.co/storage/v1/object/public/sellers//logo.png"),
+      bad("Placeholder", "https://cdn.example/placeholder.png"),
+      bad("Default", "https://cdn.example/img/default-logo.webp"),
+    ]);
+    expect(picked.map((s) => s.name)).toEqual(["A", "B", "C", "D"]);
   });
 
   it("hides the strip when fewer than 4 stores qualify", () => {
@@ -84,6 +102,19 @@ describe("selectLogoStrip", () => {
     const picked = selectLogoStrip(many);
     expect(picked).toHaveLength(LOGO_STRIP_MAX);
     expect(picked[0]?.name).toBe("S49");
+  });
+});
+
+describe("isUploadedLogo", () => {
+  it("accepts an https image file and nothing else", () => {
+    expect(isUploadedLogo("https://x.supabase.co/storage/v1/object/public/sellers/logos/u1/a.png")).toBe(true);
+    expect(isUploadedLogo("https://shop.example/wp-content/uploads/2026/09/logo-removed-bg.png")).toBe(true);
+    expect(isUploadedLogo(null)).toBe(false);
+    expect(isUploadedLogo("")).toBe(false);
+    expect(isUploadedLogo("logos/a.png")).toBe(false);
+    expect(isUploadedLogo("http://cdn.example/a.png")).toBe(false);
+    expect(isUploadedLogo("https://cdn.example/")).toBe(false);
+    expect(isUploadedLogo("https://cdn.example/no-image.jpg")).toBe(false);
   });
 });
 
