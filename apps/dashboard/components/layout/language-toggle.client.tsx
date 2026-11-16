@@ -11,8 +11,12 @@ const TARGET = {
   en: { value: "ar", label: "العربية" },
 } as const;
 
-/** `.lang` in the top bar (the name goes up to 1020px); with `row`, a labelled line for the phone drawer. */
-export function LanguageToggle({ row = false }: { row?: boolean }) {
+/**
+ * `.lang` in the top bar (the name goes up to 1020px); with `row`, a labelled line
+ * for the phone drawer; with `labelled`, the top-bar button that keeps the name at
+ * every width (the drawer's compact tools line).
+ */
+export function LanguageToggle({ row = false, labelled = false }: { row?: boolean; labelled?: boolean }) {
   const t = useTranslations("header");
   const locale = useLocale() === "ar" ? "ar" : "en";
   const { switchTo, isPending } = useSwitchLocale();
@@ -32,7 +36,9 @@ export function LanguageToggle({ row = false }: { row?: boolean }) {
         "flex shrink-0 cursor-pointer items-center transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) disabled:opacity-60",
         row
           ? "min-h-10 gap-[11px] rounded-xl px-3 text-[13px] font-medium text-(--s-muted)"
-          : "h-9 gap-1.5 rounded-[11px] px-2.5 text-[12.5px] font-semibold text-(--s-muted) max-[1020px]:w-9 max-[1020px]:justify-center max-[1020px]:px-0",
+          : labelled
+            ? "h-10 gap-1.5 rounded-xl px-2.5 text-[12.5px] font-semibold text-(--s-muted)"
+            : "h-9 gap-1.5 rounded-[11px] px-2.5 text-[12.5px] font-semibold text-(--s-muted) max-[1020px]:w-9 max-[1020px]:justify-center max-[1020px]:px-0",
       )}
     >
       {isPending ? <Loader2 className="size-[18px] animate-spin" /> : <Languages className="size-[18px]" />}
@@ -42,7 +48,7 @@ export function LanguageToggle({ row = false }: { row?: boolean }) {
           <span className="ms-auto font-montserrat text-xs">{target.label}</span>
         </>
       ) : (
-        <span className="font-montserrat max-[1020px]:hidden">{target.label}</span>
+        <span className={cn("font-montserrat", !labelled && "max-[1020px]:hidden")}>{target.label}</span>
       )}
     </button>
   );

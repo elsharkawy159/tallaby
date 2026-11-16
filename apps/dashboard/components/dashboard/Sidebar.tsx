@@ -340,14 +340,20 @@ const SidebarContent = ({
       {/* Support, then what the top bar hides on phones, then sign out */}
       <div className={cn("flex shrink-0 flex-col gap-2 border-t border-(--s-line-soft)", isCollapsed ? "p-3" : "px-3.5 pb-4 pt-3")}>
         <SupportCard isCollapsed={isCollapsed} />
+        {/* Phones: one compact line (owner, 2026-11-16), so the tools don't take the screen. */}
         {showTools && (
-          <div className="flex flex-col gap-0.5 min-[601px]:hidden">
-            <InstallAppButton row />
-            <LanguageToggle row />
-            <ThemeToggle row />
+          <div className="flex items-center gap-1 min-[601px]:hidden">
+            <LanguageToggle labelled />
+            <ThemeToggle />
+            <InstallAppButton />
+            <span className="ms-auto">
+              <LogoutButton isCollapsed={false} />
+            </span>
           </div>
         )}
-        <LogoutButton isCollapsed={isCollapsed} />
+        <div className={cn(showTools && "max-[600px]:hidden", "flex flex-col")}>
+          <LogoutButton isCollapsed={isCollapsed} />
+        </div>
       </div>
     </div>
   );
