@@ -1,6 +1,6 @@
 /**
  * Grocery Warm (2026-10-28, grocery & food niche, warm / farm-to-table):
- * wheat paper, terracotta brown and olive, Aref Ruqaa headings over Almarai,
+ * wheat paper, terracotta brown and olive, Cairo headings over Almarai,
  * soft 12px corners and a 1360px container. A slow, farm-shop home: the
  * centred-logo header with a scrolling ticker, one wide photo of an olive
  * grove over a harvest-day strip, the first aisle as a big photo beside a
@@ -244,7 +244,8 @@ const DEMO = demoStore({
 
 export const GROCERY_WARM = libraryTemplate({
   key: GROCERY_WARM_KEY,
-  version: 1,
+  // v2 (2026-11-16, owner): Cairo headings replace Aref Ruqaa, which read oddly to shoppers.
+  version: 2,
   name: L("غيط", "Gheit"),
   description: L(
     "بقالة دافئة بروح المزرعة: صورة حقل كبيرة، منتجات الموسم وحكاية المتجر. لمتاجر الأكل البيتي والمنتجات الطبيعية.",
@@ -263,7 +264,7 @@ export const GROCERY_WARM = libraryTemplate({
     border: "#dccdb4",
     accent: "#6b7a3a",
   },
-  fonts: { heading: "Aref Ruqaa", body: "Almarai" },
+  fonts: { heading: "Cairo", body: "Almarai" },
   radius: 12,
   containerMaxWidth: 1360,
   header,

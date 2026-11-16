@@ -4,7 +4,7 @@
  * shop. The palette is read off a field watch: a midnight-blue dial for the
  * hero half and every action, brushed steel for the bands and rings, a
  * seconds-hand red kept for the small marks (the hero's dot, sale chips),
- * white for the product stage. Reem Kufi headings (geometric, set like the
+ * white for the product stage. Noto Kufi Arabic headings (geometric, set like the
  * indices on a dial) over Noto Sans Arabic; crisp 4px corners, the way a
  * case and its box are cut. Built from section library designs
  * (`fromLibrary`).
@@ -417,8 +417,9 @@ export const SAAT = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(SAAT_KEY, "watches", { ar: 2812, en: 2812 }),
   key: SAAT_KEY,
-  version: 5,
-  changelog: "Saat v4: the watches template, rebuilt look-first",
+  // v6 (2026-11-16, owner): Noto Kufi Arabic headings replace Reem Kufi, which read oddly to shoppers.
+  version: 6,
+  changelog: "Saat v6: Noto Kufi Arabic headings",
   productPage: {
     surface: "flat",
     thumbs: "side",
@@ -448,7 +449,7 @@ export const SAAT = editionTemplate({
     border: "#d6dbe2",
     accent: "#c2362b",
   },
-  fonts: { heading: "Reem Kufi", body: "Noto Sans Arabic" },
+  fonts: { heading: "Noto Kufi Arabic", body: "Noto Sans Arabic" },
   radius: 4,
   productStage: WATCHES.productStage,
   lib,

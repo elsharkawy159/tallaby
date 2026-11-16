@@ -1,6 +1,6 @@
 /**
  * Gifts Warm (2026-10-28, gifts & handmade niche, warm / crafty): kraft
- * cream paper, terracotta and sage, Aref Ruqaa headings over Readex Pro,
+ * cream paper, terracotta and sage, Amiri headings over Readex Pro,
  * soft 12px corners and a 1360px container. A slow, workshop-table home: the
  * announcement header, one wide photo of soy candles and star anise over a
  * market-day strip, captioned category cards with counts, a shelf of best
@@ -257,7 +257,8 @@ const DEMO = demoStore({
 
 export const GIFTS_WARM = libraryTemplate({
   key: GIFTS_WARM_KEY,
-  version: 1,
+  // v2 (2026-11-16, owner): Amiri headings replace Aref Ruqaa, which read oddly to shoppers.
+  version: 2,
   name: L("سَبَت", "Sabat"),
   description: L(
     "هدايا يدوية بروح الورشة: صورة كبيرة، أقسام بعدد المنتجات وحكاية المتجر. لمتاجر المشغولات اليدوية والهدايا الطبيعية.",
@@ -276,7 +277,7 @@ export const GIFTS_WARM = libraryTemplate({
     border: "#e0d2bd",
     accent: "#7d8a5c",
   },
-  fonts: { heading: "Aref Ruqaa", body: "Readex Pro" },
+  fonts: { heading: "Amiri", body: "Readex Pro" },
   radius: 12,
   containerMaxWidth: 1360,
   header,

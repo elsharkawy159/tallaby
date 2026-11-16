@@ -1,7 +1,7 @@
 /**
  * Tibr (accessories, warm / workshop): white paper for the product stage, a
  * cordovan brown for actions and bands, a cool canvas grey for tinted rows
- * and a brass accent; Aref Ruqaa headings (a hand-lettered maker's mark) over
+ * and a brass accent; Noto Naskh Arabic headings (a calm book hand for the maker's mark) over
  * IBM Plex Sans Arabic, crisp 6px corners and a 1280px container. Built from
  * section library designs (`fromLibrary`).
  *
@@ -412,7 +412,8 @@ export const JEWELRY_WARM = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(JEWELRY_WARM_KEY, "belts-wallets", { ar: 2798, en: 2798 }),
   key: JEWELRY_WARM_KEY,
-  version: 3,
+  // v4 (2026-11-16, owner): Noto Naskh Arabic headings replace Aref Ruqaa, which read oddly to shoppers.
+  version: 4,
   name: L("تِبر", "Tibr"),
   description: L(
     "ورشة صغيرة بروح دافية: صورة الورشة بعرض الشاشة، أقسام بصور طولية، حكاية الصنعة وركن للعناية بالقطعة. للجلديات والقطع المعمولة باليد.",
@@ -431,7 +432,7 @@ export const JEWELRY_WARM = editionTemplate({
     border: "#d8d5ce",
     accent: "#a87b2f",
   },
-  fonts: { heading: "Aref Ruqaa", body: "IBM Plex Sans Arabic" },
+  fonts: { heading: "Noto Naskh Arabic", body: "IBM Plex Sans Arabic" },
   radius: 6,
   containerMaxWidth: 1280,
   productStage: { ratio: "1:1", fit: "cover" },

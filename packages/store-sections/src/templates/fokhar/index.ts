@@ -1,7 +1,7 @@
 /**
  * Fokhar (template 66, handmade ceramics; Claude Design "Storefront
  * Templates"): warm clay paper, a terracotta brown for actions and a
- * biscuit highlight, Reem Kufi headings over Almarai text and soft 20px
+ * biscuit highlight, Noto Naskh Arabic headings over Almarai text and soft 20px
  * corners. A Fustat pottery: no two plates alike, this week's firing, clay
  * to table, the potters, double-boxed delivery and customers' tables. Built
  * from section library designs (`fromLibrary`).
@@ -177,8 +177,9 @@ const DEMO = demoStore({
 
 export const FOKHAR = libraryTemplate({
   key: FOKHAR_KEY,
-  version: 3,
-  changelog: "Fokhar v3: categories, section order",
+  // v4 (2026-11-16, owner): Noto Naskh Arabic headings replace Reem Kufi, which read oddly to shoppers.
+  version: 4,
+  changelog: "Fokhar v4: Noto Naskh Arabic headings",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قطع أخرى قد تعجبك", "More pieces you may like") } },
   name: L("فخار", "Fokhar"),
   description: L(
@@ -198,7 +199,7 @@ export const FOKHAR = libraryTemplate({
     border: "#dfcdb8",
     accent: "#e8b98a",
   },
-  fonts: { heading: "Reem Kufi", body: "Almarai" },
+  fonts: { heading: "Noto Naskh Arabic", body: "Almarai" },
   radius: 20,
   header,
   footer,

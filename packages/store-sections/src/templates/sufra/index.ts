@@ -1,7 +1,7 @@
 /**
  * Sufra (template 41, tableware led by delivery and payment; Claude Design
  * "Storefront Templates"): warm cream paper, a sand-gold highlight and a
- * deep green for actions, Reem Kufi headings on Almarai and 10px corners.
+ * deep green for actions, Noto Kufi Arabic headings on Almarai and 10px corners.
  * A family tableware shop (v3, section order): a feast table edge to edge,
  * the departments, the feast pick with the newest pieces, open before you
  * pay, shop by budget and delivery and payment questions. Built from
@@ -225,8 +225,9 @@ const DEMO = demoStore({
 
 export const SUFRA = editionTemplate({
   key: SUFRA_KEY,
-  version: 4,
-  changelog: "Sufra v3: full-bleed hero, categories, products high, section order",
+  // v5 (2026-11-16, owner): Noto Kufi Arabic headings replace Reem Kufi, which read oddly to shoppers.
+  version: 5,
+  changelog: "Sufra v5: Noto Kufi Arabic headings",
   productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("سفرة", "Sufra"),
   description: L(
@@ -246,7 +247,7 @@ export const SUFRA = editionTemplate({
     border: "#e0d6c4",
     accent: "#f0c987",
   },
-  fonts: { heading: "Reem Kufi", body: "Almarai" },
+  fonts: { heading: "Noto Kufi Arabic", body: "Almarai" },
   radius: 10,
   lib,
   look,

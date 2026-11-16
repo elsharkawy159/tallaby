@@ -1,6 +1,6 @@
 /**
  * Fashion Luxe "Hareer" (fashion niche, premium / minimal): white paper,
- * jet-black ink and a soft taupe, Reem Kufi headings over Noto Sans Arabic,
+ * jet-black ink and a soft taupe, El Messiri headings over Noto Sans Arabic,
  * square corners and a wide 1400px container. Built from section library
  * designs (`fromLibrary`).
  *
@@ -736,7 +736,8 @@ export const FASHION_LUXE = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(FASHION_LUXE_KEY, "dresses", { ar: 2812, en: 2812 }),
   key: FASHION_LUXE_KEY,
-  version: 4,
+  // v5 (2026-11-16, owner): El Messiri headings replace Reem Kufi, which read oddly to shoppers.
+  version: 5,
   name: L("حرير", "Hareer"),
   description: L(
     "أزياء راقية بهدوء: فيديو لشماعة الموسم، أقسام بصور طولية، لوك تتسوقه بالنقط وصفوف منتجات على خلفية واحدة. لبوتيكات الملابس الراقية.",
@@ -755,7 +756,7 @@ export const FASHION_LUXE = editionTemplate({
     border: "#dcdad3",
     accent: "#a08c72",
   },
-  fonts: { heading: "Reem Kufi", body: "Noto Sans Arabic" },
+  fonts: { heading: "El Messiri", body: "Noto Sans Arabic" },
   radius: 0,
   containerMaxWidth: 1400,
   productStage: { ratio: "1:1", fit: "cover" },

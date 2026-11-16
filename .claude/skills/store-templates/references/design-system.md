@@ -25,13 +25,20 @@ Classic's defaults (`CLASSIC_TOKENS` in `core/theme.ts`) apply when a value is u
 
 Tone (light or dark) and how many cards and tiles the home needs are computed, not hand-written (`templateTraits` in `traits.ts`).
 
-Example (`templates/fashion-luxe/index.ts`, Hareer): white paper, `#161616` ink as primary, taupe accent `#a08c72`, Reem Kufi over Noto Sans Arabic, radius 0, container 1400, stage `1:1 cover`.
+Example (`templates/fashion-luxe/index.ts`, Hareer): white paper, `#161616` ink as primary, taupe accent `#a08c72`, El Messiri over Noto Sans Arabic, radius 0, container 1400, stage `1:1 cover`.
 
 ## Fonts and pairing
 
 Every `STORE_FONTS` face covers **both Arabic and Latin**, so one pair serves both store languages. The 18 faces: Readex Pro (Classic, the storefront default), Cairo, Tajawal, Almarai, IBM Plex Sans Arabic, Noto Kufi Arabic, El Messiri, Amiri, Rubik, Noto Sans Arabic, Alexandria, Changa, Noto Naskh Arabic, Lalezar, Aref Ruqaa, Reem Kufi, Baloo Bhaijaan 2, Lemonada. A new face means loading it in `apps/ecommerce` (`storefront-font.ts`) and the dashboard preview first; don't name a font that isn't in the list.
 
-- Pair a characterful heading (Reem Kufi, El Messiri, Amiri, Lalezar, Changa, Aref Ruqaa) with a calm, readable body (Noto Sans Arabic, IBM Plex Sans Arabic, Cairo, Tajawal, Readex Pro). Display faces (Lalezar, Aref Ruqaa, Lemonada, Baloo Bhaijaan 2) are for headings only, never body text.
+- Pair a characterful heading (El Messiri, Amiri, Noto Naskh Arabic, Noto Kufi Arabic, Changa, Lalezar) with a calm, readable body (Noto Sans Arabic, IBM Plex Sans Arabic, Cairo, Tajawal, Almarai, Readex Pro). Display faces (Lalezar, Lemonada, Baloo Bhaijaan 2) are for headings only, never body text.
+
+### Arabic fonts (owner, 2026-11-16)
+
+Shoppers must read the Arabic at a glance, so templates use popular, well-made Arabic faces only.
+
+- **Approved** (any role): Cairo, Tajawal, Almarai, IBM Plex Sans Arabic, Noto Kufi Arabic, Noto Sans Arabic, Readex Pro, Alexandria. **Approved for headings**: El Messiri (soft and elegant: luxe, feminine, traditional), Noto Naskh Arabic and Amiri (book hands: workshop, craft, editorial; Amiri has only 400 and 700), Changa (bold, sporty). Playful display faces (Lalezar, Lemonada, Baloo Bhaijaan 2) stay for headings on bold, food and kids looks.
+- **Avoid in templates: Reem Kufi and Aref Ruqaa.** The owner found their Arabic odd to read. They were replaced on 2026-11-16 in `zahra`, `atara`, `fashion-luxe`, `jewelry-warm`, `saat`, `sufra`, `fokhar`, `gifts-warm` and `grocery-warm`. They stay in `STORE_FONTS` because sellers may still choose them and existing stores keep them.
 - The seller's quick pairings are `FONT_PAIRINGS` in `core/fonts.ts`; a template may use any two faces.
 - No uppercase and no letter-spacing on Arabic (it breaks the joined letters); English eyebrows may be spaced, Arabic stays plain (`docs/section-rules.md` §5.2).
 - Within one industry, no two niche templates share the same palette and type pair (`docs/systems/one-template-per-niche.md` §3). Avoid the defaults the owner called out: warm-cream-and-terracotta, acid-lime-on-black, all-caps eyebrows over every heading.

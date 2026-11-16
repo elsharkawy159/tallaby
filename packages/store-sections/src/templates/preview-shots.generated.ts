@@ -4,7 +4,7 @@ import type { TemplatePreviewShots } from "./types";
 
 export const PREVIEW_SHOTS: Readonly<Record<string, TemplatePreviewShots>> = {
   "arena": { edition: "pc-gaming", ar: { desktop: { width: 600, height: 1834 }, mobile: { width: 600, height: 7661 } }, en: { desktop: { width: 600, height: 1833 }, mobile: { width: 600, height: 7692 } } },
-  "atara": { edition: "spices-herbs", ar: { desktop: { width: 600, height: 1073 }, mobile: { width: 600, height: 4469 } }, en: { desktop: { width: 600, height: 1073 }, mobile: { width: 600, height: 4469 } } },
+  "atara": { edition: "spices-herbs", ar: { desktop: { width: 600, height: 1075 }, mobile: { width: 600, height: 4478 } }, en: { desktop: { width: 600, height: 1075 }, mobile: { width: 600, height: 4478 } } },
   "barber": { edition: "mens-grooming", ar: { desktop: { width: 600, height: 1530 }, mobile: { width: 600, height: 5654 } }, en: { desktop: { width: 600, height: 1568 }, mobile: { width: 600, height: 5792 } } },
   "fadda": { edition: null, ar: { desktop: { width: 600, height: 2124 }, mobile: { width: 600, height: 7977 } }, en: { desktop: { width: 600, height: 2157 }, mobile: { width: 600, height: 8135 } } },
   "fashion-bold": { edition: "pants-jeans", ar: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } } },
@@ -12,7 +12,7 @@ export const PREVIEW_SHOTS: Readonly<Record<string, TemplatePreviewShots>> = {
   "furniture-luxe": { edition: "furniture", ar: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } } },
   "ghorza": { edition: "mens-shoes", ar: { desktop: { width: 600, height: 2682 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2682 }, mobile: { width: 600, height: 9000 } } },
   "jewelry-luxe": { edition: "gold-jewelry", ar: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 8816 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 8829 } } },
-  "jewelry-warm": { edition: "belts-wallets", ar: { desktop: { width: 600, height: 2786 }, mobile: { width: 600, height: 8514 } }, en: { desktop: { width: 600, height: 2786 }, mobile: { width: 600, height: 8736 } } },
+  "jewelry-warm": { edition: "belts-wallets", ar: { desktop: { width: 600, height: 2789 }, mobile: { width: 600, height: 8523 } }, en: { desktop: { width: 600, height: 2789 }, mobile: { width: 600, height: 8745 } } },
   "kabl": { edition: "chargers-cables", ar: { desktop: { width: 600, height: 1586 }, mobile: { width: 600, height: 6276 } }, en: { desktop: { width: 600, height: 1625 }, mobile: { width: 600, height: 6386 } } },
   "karat": { edition: "glasses", ar: { desktop: { width: 600, height: 1682 }, mobile: { width: 600, height: 5624 } }, en: { desktop: { width: 600, height: 1682 }, mobile: { width: 600, height: 5664 } } },
   "kasr": { edition: "womens-shoes", ar: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } } },
@@ -30,12 +30,12 @@ export const PREVIEW_SHOTS: Readonly<Record<string, TemplatePreviewShots>> = {
   "sports-bold": { edition: "sneakers", ar: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } } },
   "sports-luxe": { edition: "sportswear", ar: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 9000 } } },
   "streetwear": { edition: "tshirts", ar: { desktop: { width: 600, height: 2586 }, mobile: { width: 600, height: 7716 } }, en: { desktop: { width: 600, height: 2609 }, mobile: { width: 600, height: 7740 } } },
-  "sufra": { edition: "tableware", ar: { desktop: { width: 600, height: 2373 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2385 }, mobile: { width: 600, height: 9000 } } },
+  "sufra": { edition: "tableware", ar: { desktop: { width: 600, height: 2375 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2413 }, mobile: { width: 600, height: 9000 } } },
   "tanzim": { edition: "home-organisation", ar: { desktop: { width: 600, height: 1533 }, mobile: { width: 600, height: 5793 } }, en: { desktop: { width: 600, height: 1570 }, mobile: { width: 600, height: 5975 } } },
   "tasfya": { edition: "slippers-clogs", ar: { desktop: { width: 600, height: 2523 }, mobile: { width: 600, height: 8249 } }, en: { desktop: { width: 600, height: 2546 }, mobile: { width: 600, height: 8391 } } },
   "vella": { edition: "lingerie-sleepwear", ar: { desktop: { width: 600, height: 2680 }, mobile: { width: 600, height: 7664 } }, en: { desktop: { width: 600, height: 2689 }, mobile: { width: 600, height: 7830 } } },
   "volt": { edition: "phone-cases", ar: { desktop: { width: 600, height: 1690 }, mobile: { width: 600, height: 4823 } }, en: { desktop: { width: 600, height: 1681 }, mobile: { width: 600, height: 4983 } } },
-  "zahra": { edition: "fashion-jewelry", ar: { desktop: { width: 600, height: 2808 }, mobile: { width: 600, height: 8862 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 8930 } } },
+  "zahra": { edition: "fashion-jewelry", ar: { desktop: { width: 600, height: 2811 }, mobile: { width: 600, height: 8871 } }, en: { desktop: { width: 600, height: 2813 }, mobile: { width: 600, height: 8939 } } },
   "zaki": { edition: "lighting-smart-home", ar: { desktop: { width: 600, height: 2527 }, mobile: { width: 600, height: 9000 } }, en: { desktop: { width: 600, height: 2539 }, mobile: { width: 600, height: 9000 } } },
   "zay": { edition: "menswear", ar: { desktop: { width: 600, height: 2099 }, mobile: { width: 600, height: 7244 } }, en: { desktop: { width: 600, height: 2176 }, mobile: { width: 600, height: 7433 } } },
 };

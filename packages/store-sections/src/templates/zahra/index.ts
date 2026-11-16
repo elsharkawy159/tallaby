@@ -2,8 +2,8 @@
  * Zahra (accessories, the fashion-jewelry niche template; one template per
  * niche, ROADMAP F-90, `docs/systems/one-template-per-niche.md`): gold-tone
  * and silver fashion jewelry at gift prices. White paper, a blush plaster
- * tint, a deep petrol ink for actions and a dusty rose; Aref Ruqaa headings
- * (the ornament in the name) over Alexandria; 14px corners. Built from
+ * tint, a deep petrol ink for actions and a dusty rose; El Messiri headings
+ * (rounded and graceful, the ornament in the name) over Alexandria; 14px corners. Built from
  * section library designs (`fromLibrary`).
  *
  * v3 (2026-11-11): rebuilt look-first around the pieces. Home, nine sections:
@@ -291,8 +291,9 @@ export const ZAHRA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ZAHRA_KEY, "fashion-jewelry", { ar: 2812, en: 2812 }),
   key: ZAHRA_KEY,
-  version: 4,
-  changelog: "Zahra v3: the fashion-jewelry template, rebuilt look-first",
+  // v5 (2026-11-16, owner): El Messiri headings replace Aref Ruqaa, which read oddly to shoppers.
+  version: 5,
+  changelog: "Zahra v5: El Messiri headings",
   productPage: {
     surface: "flat",
     thumbs: "bottom",
@@ -318,7 +319,7 @@ export const ZAHRA = editionTemplate({
     border: "#ead8d0",
     accent: "#d9a5a0",
   },
-  fonts: { heading: "Aref Ruqaa", body: "Alexandria" },
+  fonts: { heading: "El Messiri", body: "Alexandria" },
   radius: 14,
   productStage: FASHION_JEWELRY.productStage,
   lib,

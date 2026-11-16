@@ -1,7 +1,7 @@
 /**
  * Atara (template 73, spices and herbs; Claude Design "Storefront
  * Templates"): warm parchment paper, a burnt paprika for actions and a
- * saffron highlight, Reem Kufi headings over Almarai text and 10px
+ * saffron highlight, El Messiri headings over Almarai text and 10px
  * corners. A neighbourhood attar: ground on the day you order, the kitchen
  * set, the most reordered, a first-order coupon and the neighbours'
  * reviews. Built from section library designs (`fromLibrary`).
@@ -292,8 +292,9 @@ const DEMO = demoStore({
 
 export const ATARA = editionTemplate({
   key: ATARA_KEY,
-  version: 4,
-  changelog: "Atara v3: categories, no coupon, section order",
+  // v5 (2026-11-16, owner): El Messiri headings replace Reem Kufi, which read oddly to shoppers.
+  version: 5,
+  changelog: "Atara v5: El Messiri headings",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("عطارة", "Atara"),
   description: L(
@@ -313,7 +314,7 @@ export const ATARA = editionTemplate({
     border: "#e6d4b2",
     accent: "#e9b949",
   },
-  fonts: { heading: "Reem Kufi", body: "Almarai" },
+  fonts: { heading: "El Messiri", body: "Almarai" },
   radius: 10,
   lib,
   look,
