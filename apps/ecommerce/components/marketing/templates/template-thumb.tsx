@@ -10,11 +10,12 @@ const TALL_FRAME_HEIGHT = 1707;
  * A template card's tall (3:4) preview (owner, 2026-11-12): the template's
  * home page screenshot when it has one (`GalleryEntry.shot`, scrolled on
  * hover of the nearest `.tpl-shot-trigger`), else its home page drawn live
- * in the same frame, so the grid stays even.
+ * in the same frame, so the grid stays even. Phones get the phone shot,
+ * wider screens the desktop shot (600 or 1200 px, by `sizes`).
  */
 export function TemplateThumb({ shot, liveSrc, className, sizes }: { shot: PreviewShot | null; liveSrc: string; className?: string; sizes?: string }) {
   return shot ? (
-    <TemplateShot src={shot.src} width={shot.width} height={shot.height} mobile={shot.mobile} mobileMedia={TEMPLATE_PREVIEW_MOBILE_MEDIA} sizes={sizes} className={className} />
+    <TemplateShot src={shot.src} width={shot.width} height={shot.height} mobile={shot.mobile} large={shot.large} mobileMedia={TEMPLATE_PREVIEW_MOBILE_MEDIA} sizes={sizes} className={className} />
   ) : (
     <TemplateLiveThumb src={liveSrc} className={cn("aspect-[3/4]", className)} frameHeight={TALL_FRAME_HEIGHT} />
   );

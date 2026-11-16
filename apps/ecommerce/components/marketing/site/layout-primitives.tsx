@@ -1,9 +1,15 @@
 import * as React from "react";
 import { cn } from "@workspace/ui/lib/utils";
 
-/** Page-width wrapper (1200px, 20px gutters, 16px on phones). */
+/**
+ * Page-width wrapper for every tallaby.com page, header and footer (widened
+ * 2026-11-16, like themes.shopify.com): at most 1600px with gutters of 16px on
+ * phones, 24px from 640px and 40px from 1024px, so content runs up to 1520px.
+ * Long reading columns (blog posts, legal pages, hubs) keep their own narrow
+ * max-width inside it.
+ */
 export function Container({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("mx-auto w-full max-w-[1200px] px-4 sm:px-5", className)} {...props} />;
+  return <div className={cn("mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10", className)} {...props} />;
 }
 
 /** Standard vertical rhythm for page sections: 72px, 56px on small screens. */

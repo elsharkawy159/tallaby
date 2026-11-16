@@ -98,7 +98,8 @@ export function FaqAccordionList({ items, defaultOpen, className }: { items: Faq
               className="grid text-sm transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none data-[state=closed]:grid-rows-[0fr] data-[state=open]:grid-rows-[1fr]"
             >
               <div className="min-h-0 overflow-hidden">
-                <div className="px-[22px] pt-0 pb-5 text-[15px] text-pretty text-ink-500">{item.a}</div>
+                {/* Answers keep a reading width inside the wide page container (2026-11-16). */}
+                <div className="max-w-[75ch] px-[22px] pt-0 pb-5 text-[15px] text-pretty text-ink-500">{item.a}</div>
               </div>
             </div>
           </div>

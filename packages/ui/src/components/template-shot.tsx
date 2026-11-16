@@ -23,14 +23,22 @@ export function templateShotSeconds(width: number, height: number): number {
  * `<picture>` source picks it on screens matching `mobileMedia`, in CSS, so
  * there is no script, no flash and no second download; each source carries
  * its own size, so the image never shifts the layout.
+ *
+ * `large` (2026-11-16) is the same desktop shot stored 1200 px wide: with it
+ * the desktop image gets a `600w, 1200w` srcset, so wide cards and 2x screens
+ * pick the sharp file and the rest keep the light one. `loading` and
+ * `fetchPriority` let a page lead with its shot (tallaby.com's template page).
  */
 export function TemplateShot({
   src,
   width,
   height,
   mobile,
+  large,
   mobileMedia = "(max-width: 640px)",
   sizes = "(min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw",
+  loading = "lazy",
+  fetchPriority,
   className,
 }: {
   src: string;
@@ -38,13 +46,19 @@ export function TemplateShot({
   height: number;
   /** The phone shot of the same page; unset: the desktop shot everywhere. */
   mobile?: { src: string; width: number; height: number } | null;
+  /** The same desktop shot stored wider (1200 px); unset: the `src` file only. */
+  large?: { src: string; width: number; height: number } | null;
   /** The screens that get `mobile` (`TEMPLATE_PREVIEW_MOBILE_MEDIA`). */
   mobileMedia?: string;
   sizes?: string;
+  loading?: "lazy" | "eager";
+  fetchPriority?: "high" | "low" | "auto";
   /** The frame: its aspect (3:4 by default), corners and background. */
   className?: string;
 }) {
-  const { props: img } = getImageProps({ src, alt: "", width, height, sizes, unoptimized: true, loading: "lazy" });
+  const { props: img } = getImageProps({ src, alt: "", width, height, sizes, unoptimized: true, loading });
+  // Unoptimized images get no srcset from Next: list the two stored widths by hand.
+  const srcSet = large ? `${src} ${width}w, ${large.src} ${large.width}w` : undefined;
   return (
     <span
       aria-hidden
@@ -55,6 +69,9 @@ export function TemplateShot({
         {mobile && <source media={mobileMedia} srcSet={mobile.src} width={mobile.width} height={mobile.height} />}
         <img
           {...img}
+          srcSet={srcSet}
+          sizes={srcSet ? sizes : img.sizes}
+          fetchPriority={fetchPriority}
           alt=""
           draggable={false}
           className="tpl-shot__img pointer-events-none absolute inset-x-0 top-0 block h-auto w-full max-w-none select-none"

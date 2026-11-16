@@ -7,11 +7,16 @@
 // it shoots the whole home page twice and writes WebP files to apps/ecommerce/public/template-previews:
 //   <key>.<locale>.webp         drawn 1280 px wide, stored 600 px wide (at most 6000 CSS px tall)
 //   <key>.<locale>.mobile.webp  drawn 400 px wide at 2x, stored 600 px wide (at most 6000 CSS px tall)
+//   <key>.<locale>.lg.webp      the same desktop shot stored 1200 px wide (2026-11-16): tallaby.com's
+//                               tall gallery cards on wide or 2x screens and its template page preview
 // then rewrites src/templates/preview-shots.generated.ts from every file in that folder.
 //
 // --keys   template keys to shoot (default: every "ready" row of NICHE_TEMPLATES whose pack, or
 //          native template, draws the generated photos (`editionPhoto(`)). Re-run with new keys as
 //          more niches become ready; files of other templates are kept.
+// --all    every catalog template (2026-11-16): each NICHE_TEMPLATES row, whatever its status, drawn
+//          with its edition (its own content when it has none), plus Tallaby Classic.
+// --concurrency N  pages shot at once (default 1; 2-3 is fine once the dev server has compiled).
 // --list   print the default keys and exit.
 // --manifest-only  rewrite the manifest from the files without shooting.
 //
@@ -30,11 +35,25 @@ const TEMPLATES = path.join(ROOT, "packages/store-sections/src/templates");
 const OUT = path.join(ROOT, "apps/ecommerce/public/template-previews");
 const MANIFEST = path.join(TEMPLATES, "preview-shots.generated.ts");
 
-/** How each kind of shot is drawn and stored. */
+/**
+ * How each kind of shot is drawn and stored. `maxKb` is a file's budget (under the caps in
+ * src/templates/preview.test.ts): a busier page is re-encoded at a lower quality until it fits.
+ */
 const KINDS = {
-  desktop: { suffix: "", viewport: { width: 1280, height: 800 }, scale: 1, mobile: false, maxCssHeight: 6000, storedWidth: 600, quality: 72 },
-  mobile: { suffix: ".mobile", viewport: { width: 400, height: 860 }, scale: 2, mobile: true, maxCssHeight: 6000, storedWidth: 600, quality: 66 },
+  desktop: {
+    viewport: { width: 1280, height: 800 },
+    scale: 1,
+    mobile: false,
+    maxCssHeight: 6000,
+    outputs: [
+      { suffix: "", storedWidth: 600, quality: 72, maxKb: 145 },
+      { suffix: ".lg", storedWidth: 1200, quality: 60, maxKb: 420 },
+    ],
+  },
+  mobile: { viewport: { width: 400, height: 860 }, scale: 2, mobile: true, maxCssHeight: 6000, outputs: [{ suffix: ".mobile", storedWidth: 600, quality: 66, maxKb: 290 }] },
 };
+/** Tallaby Classic, the default template: in the catalog but not a niche row; drawn with its own content. */
+const CLASSIC_KEY = "tallaby-classic";
 const LOCALES = ["ar", "en"];
 
 const args = process.argv.slice(2);
@@ -49,6 +68,11 @@ function nicheRows() {
   const source = fs.readFileSync(path.join(TEMPLATES, "editions/niche-templates.ts"), "utf8");
   const re = /\{\s*niche:\s*"([^"]+)",\s*template:\s*"([^"]+)"(?:,\s*edition:\s*"([^"]+)")?,\s*status:\s*"([^"]+)"\s*\}/g;
   return [...source.matchAll(re)].map(([, niche, template, edition, status]) => ({ niche, template, edition: edition ?? null, status }));
+}
+
+/** Every catalog template with the edition its gallery card shows: the niche rows, then Tallaby Classic. */
+function catalogRows(rows) {
+  return [...rows, { niche: null, template: CLASSIC_KEY, edition: null, status: "default" }];
 }
 
 function filesUnder(dir) {
@@ -93,16 +117,21 @@ function writeManifest(rows) {
       continue;
     }
     const withMobile = LOCALES.every((l) => files.has(`${key}.${l}.mobile.webp`));
+    const withLarge = LOCALES.every((l) => files.has(`${key}.${l}.lg.webp`));
     const entry = { edition: editionOf.get(key) };
     for (const l of LOCALES) {
-      entry[l] = { desktop: webpSize(path.join(OUT, `${key}.${l}.webp`)), ...(withMobile ? { mobile: webpSize(path.join(OUT, `${key}.${l}.mobile.webp`)) } : {}) };
+      entry[l] = {
+        desktop: webpSize(path.join(OUT, `${key}.${l}.webp`)),
+        ...(withMobile ? { mobile: webpSize(path.join(OUT, `${key}.${l}.mobile.webp`)) } : {}),
+        ...(withLarge ? { large: webpSize(path.join(OUT, `${key}.${l}.lg.webp`)) } : {}),
+      };
     }
     entries[key] = entry;
   }
   const body = Object.entries(entries)
     .map(([key, e]) => {
       const size = (s) => `{ width: ${s.width}, height: ${s.height} }`;
-      const locale = (l) => `${l}: { desktop: ${size(e[l].desktop)}${e[l].mobile ? `, mobile: ${size(e[l].mobile)}` : ""} }`;
+      const locale = (l) => `${l}: { desktop: ${size(e[l].desktop)}${e[l].mobile ? `, mobile: ${size(e[l].mobile)}` : ""}${e[l].large ? `, large: ${size(e[l].large)}` : ""} }`;
       return `  ${JSON.stringify(key)}: { edition: ${JSON.stringify(e.edition)}, ${locale("ar")}, ${locale("en")} },`;
     })
     .join("\n");
@@ -184,9 +213,19 @@ async function shoot(browser, sharp, key, edition, locale, kindName) {
     const cssHeight = await page.evaluate(() => document.documentElement.scrollHeight);
     const height = Math.min(cssHeight, kind.maxCssHeight);
     const png = await page.screenshot({ fullPage: true, clip: { x: 0, y: 0, width: kind.viewport.width, height }, animations: "disabled" });
-    const file = path.join(OUT, `${key}.${locale}${kind.suffix}.webp`);
-    const info = await sharp(png).resize({ width: kind.storedWidth }).webp({ quality: kind.quality, effort: 6, smartSubsample: true }).toFile(file);
-    console.log(`${path.basename(file).padEnd(36)} ${info.width}x${info.height}  ${(info.size / 1024).toFixed(0)} KB  (page ${cssHeight} css px${cssHeight > height ? `, cut at ${height}` : ""})`);
+    for (const output of kind.outputs) {
+      const file = path.join(OUT, `${key}.${locale}${output.suffix}.webp`);
+      const resized = await sharp(png).resize({ width: output.storedWidth }).toBuffer();
+      let quality = output.quality;
+      let webp = await sharp(resized).webp({ quality, effort: 6, smartSubsample: true }).toBuffer();
+      while (webp.length > output.maxKb * 1024 && quality > 40) {
+        quality -= 6;
+        webp = await sharp(resized).webp({ quality, effort: 6, smartSubsample: true }).toBuffer();
+      }
+      fs.writeFileSync(file, webp);
+      const info = { ...(await sharp(webp).metadata()), size: webp.length };
+      console.log(`${path.basename(file).padEnd(36)} ${info.width}x${info.height}  ${(info.size / 1024).toFixed(0)} KB  q${quality}  (page ${cssHeight} css px${cssHeight > height ? `, cut at ${height}` : ""})`);
+    }
   } finally {
     await context.close();
   }
@@ -195,16 +234,21 @@ async function shoot(browser, sharp, key, edition, locale, kindName) {
 const debug = (message) => process.env.SHOTS_DEBUG && console.log(`  … ${message}`);
 const BASE = (option("--base") ?? "http://localhost:3000").replace(/\/+$/, "");
 const rows = nicheRows();
+const catalog = catalogRows(rows);
 
 if (flag("--list")) {
   console.log(readyKeys(rows).join(","));
   process.exit(0);
 }
 if (!flag("--manifest-only")) {
-  const keys = option("--keys") ? option("--keys").split(",").map((k) => k.trim()).filter(Boolean) : readyKeys(rows);
-  const editionOf = new Map(rows.map((row) => [row.template, row.edition]));
+  const keys = option("--keys")
+    ? option("--keys").split(",").map((k) => k.trim()).filter(Boolean)
+    : flag("--all")
+      ? catalog.map((row) => row.template)
+      : readyKeys(rows);
+  const editionOf = new Map(catalog.map((row) => [row.template, row.edition]));
   const unknown = keys.filter((k) => !editionOf.has(k));
-  if (unknown.length) throw new Error(`Not in NICHE_TEMPLATES: ${unknown.join(", ")}`);
+  if (unknown.length) throw new Error(`Not in NICHE_TEMPLATES or Tallaby Classic: ${unknown.join(", ")}`);
   const nextDir = path.dirname(createRequire(import.meta.url).resolve("next/package.json", { paths: [path.join(ROOT, "apps/ecommerce")] }));
   const sharp = createRequire(path.join(nextDir, "package.json"))("sharp");
   const { chromium } = loadPlaywright();
@@ -212,9 +256,13 @@ if (!flag("--manifest-only")) {
   const failed = [];
   try {
     console.log(`shooting ${keys.length}: ${keys.join(", ")}`);
-    for (const key of keys)
-      for (const locale of LOCALES)
-        for (const kind of Object.keys(KINDS)) {
+    const jobs = keys.flatMap((key) => LOCALES.flatMap((locale) => Object.keys(KINDS).map((kind) => ({ key, locale, kind }))));
+    const workers = Math.max(1, Number(option("--concurrency") ?? 1) || 1);
+    let next = 0;
+    await Promise.all(
+      Array.from({ length: workers }, async () => {
+        while (next < jobs.length) {
+          const { key, locale, kind } = jobs[next++];
           try {
             await shoot(browser, sharp, key, editionOf.get(key), locale, kind);
           } catch (error) {
@@ -222,9 +270,11 @@ if (!flag("--manifest-only")) {
             console.error(`FAILED ${key} ${locale} ${kind}: ${error.message}`);
           }
         }
+      }),
+    );
   } finally {
     await browser.close();
   }
   if (failed.length) console.error(`failed: ${failed.join(", ")}`);
 }
-writeManifest(rows);
+writeManifest(catalog);

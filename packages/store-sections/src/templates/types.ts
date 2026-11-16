@@ -89,6 +89,12 @@ export type TemplatePreviewShot = {
    * desktop shot everywhere.
    */
   mobile?: TemplatePreviewImage;
+  /**
+   * The same desktop shot stored 1200 px wide (2026-11-16, `<key>.<locale>.lg.webp`):
+   * tallaby.com's tall gallery cards on wide or 2x screens and its template
+   * page preview; unset: only the 600 px file exists.
+   */
+  large?: TemplatePreviewImage;
 };
 
 /** One stored screenshot file: its public path and pixel size. */
@@ -108,10 +114,10 @@ export type TemplatePreviewSize = { width: number; height: number };
  * A template's generated screenshot sizes (`preview-shots.generated.ts`,
  * written by `scripts/template-shots.mjs`): the edition it was drawn with
  * (null: its own content) and, per language, the desktop shot and, when
- * taken, the phone shot.
+ * taken, the phone shot and the 1200 px desktop shot.
  */
 export type TemplatePreviewShots = {
   edition: string | null;
-  ar: { desktop: TemplatePreviewSize; mobile?: TemplatePreviewSize };
-  en: { desktop: TemplatePreviewSize; mobile?: TemplatePreviewSize };
+  ar: { desktop: TemplatePreviewSize; mobile?: TemplatePreviewSize; large?: TemplatePreviewSize };
+  en: { desktop: TemplatePreviewSize; mobile?: TemplatePreviewSize; large?: TemplatePreviewSize };
 };

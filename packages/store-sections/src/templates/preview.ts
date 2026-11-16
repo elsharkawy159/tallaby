@@ -5,7 +5,9 @@
  * (`apps/ecommerce/public/template-previews/<key>.<locale>.webp`), plus the
  * same page on a phone (400 px wide, owner 2026-11-15:
  * `<key>.<locale>.mobile.webp`), shown on small screens
- * (`TEMPLATE_PREVIEW_MOBILE_MEDIA`). The shots are taken by
+ * (`TEMPLATE_PREVIEW_MOBILE_MEDIA`), plus the same desktop shot stored
+ * 1200 px wide (2026-11-16: `<key>.<locale>.lg.webp`, `large`) for
+ * tallaby.com's wide cards, 2x screens and template page. The shots are taken by
  * `packages/store-sections/scripts/template-shots.mjs`, which writes their
  * sizes to `preview-shots.generated.ts`; a template that declares
  * `preview: templatePreview(…)` gets the generated sizes when it has them,
@@ -34,12 +36,13 @@ export const TEMPLATE_PREVIEW_MOBILE_MEDIA = "(max-width: 640px)";
 /** A generated entry as a template's `preview`. */
 function generatedPreview(key: string, entry: TemplatePreviewShots): TemplatePreview {
   const shot = (locale: "ar" | "en"): TemplatePreviewShot => {
-    const { desktop, mobile } = entry[locale];
+    const { desktop, mobile, large } = entry[locale];
     return {
       src: `${TEMPLATE_PREVIEW_DIR}/${key}.${locale}.webp`,
       width: desktop.width,
       height: desktop.height,
       ...(mobile ? { mobile: { src: `${TEMPLATE_PREVIEW_DIR}/${key}.${locale}.mobile.webp`, width: mobile.width, height: mobile.height } } : {}),
+      ...(large ? { large: { src: `${TEMPLATE_PREVIEW_DIR}/${key}.${locale}.lg.webp`, width: large.width, height: large.height } } : {}),
     };
   };
   return { edition: entry.edition, ar: shot("ar"), en: shot("en") };

@@ -11,6 +11,7 @@ import { BackArrow, ForwardArrow } from "@/components/marketing/site/direction-i
 import { Container, Eyebrow } from "@/components/marketing/site/layout-primitives";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
 import { TemplateFrame } from "@/components/marketing/templates/template-card";
+import { TemplateShotViewer } from "@/components/marketing/templates/template-shot-viewer.client";
 import { TemplateStage } from "@/components/marketing/templates/template-stage.client";
 import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
 import { templateMetaDesc } from "@/lib/marketing/seo.lib";
@@ -97,9 +98,20 @@ export default async function TemplatePage({ params }: Props) {
         </Container>
       </div>
 
-      <Container id="stage" className="relative -mt-[90px] scroll-mt-24">
-        <TemplateStage templateKey={entry.id} pages={entry.pages} editions={entry.editions} />
-      </Container>
+      {/*
+        With a screenshot (2026-11-16) the page leads with the big scrollable shot and its
+        desktop / phone switch; every page live sits further down. Without one, the live
+        stage leads as before.
+      */}
+      {entry.shot ? (
+        <Container id="preview" className="relative -mt-[90px] scroll-mt-24">
+          <TemplateShotViewer name={entry.name} shot={entry.shot} host={`${entry.id}.tallaby.com`} />
+        </Container>
+      ) : (
+        <Container id="stage" className="relative -mt-[90px] scroll-mt-24">
+          <TemplateStage templateKey={entry.id} pages={entry.pages} editions={entry.editions} />
+        </Container>
+      )}
 
       <Container>
         <div className="grid gap-7 pt-16 pb-6 min-[901px]:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] min-[901px]:gap-10">
@@ -143,6 +155,16 @@ export default async function TemplatePage({ params }: Props) {
             </dl>
           </div>
         </div>
+
+        {entry.shot ? (
+          <section id="stage" aria-labelledby="stage-title" className="scroll-mt-24 pt-10 pb-6">
+            <h2 id="stage-title" className="text-[28px] font-bold text-teal-900">
+              {t("detail.liveTitle")}
+            </h2>
+            <p className="mt-2 mb-6 max-w-[640px] text-base text-pretty text-ink-500">{t("detail.liveBody")}</p>
+            <TemplateStage templateKey={entry.id} pages={entry.pages} editions={entry.editions} />
+          </section>
+        ) : null}
 
         {more.length ? (
           <section className="pt-12 pb-16">

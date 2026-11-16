@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { CODE_TEMPLATES } from "./catalog";
+import { CODE_TEMPLATES, DEFAULT_TEMPLATE } from "./catalog";
 import { NICHE_TEMPLATES } from "./editions/niche-templates";
 import { TEMPLATE_PREVIEW_DIR, TEMPLATE_PREVIEW_WIDTH, previewShot, shotPreview, templatePreview, templatePreviewUrl } from "./preview";
 import { PREVIEW_SHOTS } from "./preview-shots.generated";
@@ -11,9 +11,10 @@ import type { TemplatePreviewShots } from "./types";
 const PUBLIC = join(__dirname, "../../../../apps/ecommerce/public");
 
 /**
- * The templates shot (2026-11-12; phone shots and re-shot 2026-11-15, `scripts/template-shots.mjs`):
- * every ready niche drawn with the generated photos, on its template. The script writes the
- * manifest, so the list grows as niches become ready.
+ * The templates shot (2026-11-12; phone shots and re-shot 2026-11-15, `scripts/template-shots.mjs`;
+ * every catalog template with a 1200 px desktop file since 2026-11-16, `--all`): each niche
+ * template drawn with its row's pack (its own content when it has none), plus Tallaby Classic.
+ * The script writes the manifest.
  */
 const SHOT = Object.keys(PREVIEW_SHOTS).sort();
 
@@ -33,18 +34,27 @@ function webpSize(file: string): { width: number; height: number } {
 /** A phone shot's file size cap (it is taller than the desktop one). */
 const MOBILE_MAX_KB = 300;
 
+/** The 1200 px desktop file's width and size cap (tallaby.com's wide cards and template page). */
+const LARGE_WIDTH = 1200;
+const LARGE_MAX_KB = 450;
+
 const withPreview = CODE_TEMPLATES.filter((template) => template.preview);
 
 describe("template card screenshots", () => {
-  it("covers exactly the templates shot, each a catalog template", () => {
+  it("covers exactly the templates shot, each a catalog template, and every catalog template", () => {
     expect(withPreview.map((template) => template.key).sort()).toEqual(SHOT);
+    expect(SHOT).toEqual(CODE_TEMPLATES.map((template) => template.key).sort());
   });
 
-  it("shows each template with its niche row's pack", () => {
+  it("shows each niche template with its niche row's pack, and Tallaby Classic with its own content", () => {
     for (const template of withPreview) {
       const row = NICHE_TEMPLATES.find((r) => r.template === template.key);
+      if (template.key === DEFAULT_TEMPLATE.key) {
+        expect(row, template.key).toBeUndefined();
+        expect(template.preview!.edition, template.key).toBeNull();
+        continue;
+      }
       expect(row, template.key).toBeDefined();
-      expect(row!.status, template.key).toBe("ready");
       expect(template.preview!.edition, template.key).toBe(row!.edition ?? null);
     }
   });
@@ -77,6 +87,24 @@ describe("template card screenshots", () => {
     }
   });
 
+  it("has a 1200 px desktop file for every template shot, the same page as the 600 px one", () => {
+    for (const template of withPreview) {
+      for (const locale of ["ar", "en"] as const) {
+        const shot = template.preview![locale];
+        const large = shot.large;
+        expect(large, `${template.key} ${locale}`).toBeDefined();
+        expect(large!.src).toBe(`${TEMPLATE_PREVIEW_DIR}/${template.key}.${locale}.lg.webp`);
+        const file = join(PUBLIC, large!.src);
+        expect(existsSync(file), file).toBe(true);
+        expect(webpSize(file), file).toEqual({ width: large!.width, height: large!.height });
+        expect(large!.width).toBe(LARGE_WIDTH);
+        // Both files are resized from one screenshot: twice the height, give or take rounding.
+        expect(Math.abs(large!.height - shot.height * 2), file).toBeLessThanOrEqual(2);
+        expect(readFileSync(file).length, file).toBeLessThan(LARGE_MAX_KB * 1024);
+      }
+    }
+  });
+
   it("takes every template's sizes from the generated manifest", () => {
     expect(SHOT.length).toBeGreaterThanOrEqual(22);
     for (const template of withPreview) expect(template.preview!.edition, template.key).toBe(PREVIEW_SHOTS[template.key]!.edition);
@@ -85,7 +113,7 @@ describe("template card screenshots", () => {
   it("leaves no file in the folder that no template declares", () => {
     const declared = new Set(
       withPreview.flatMap((template) =>
-        [template.preview!.ar, template.preview!.en].flatMap((shot) => [shot.src, shot.mobile?.src]).flatMap((src) => (src ? [src.split("/").pop()] : [])),
+        [template.preview!.ar, template.preview!.en].flatMap((shot) => [shot.src, shot.mobile?.src, shot.large?.src]).flatMap((src) => (src ? [src.split("/").pop()] : [])),
       ),
     );
     const files = readdirSync(join(PUBLIC, TEMPLATE_PREVIEW_DIR));
@@ -124,6 +152,17 @@ describe("templatePreview with the generated sizes", () => {
         en: { src: "/template-previews/vella.en.webp", width: 600, height: 2100 },
       });
     }
+  });
+
+  it("adds the 1200 px desktop file when the entry has one", () => {
+    const shots = { ...SHOTS, zay: { ...SHOTS.zay!, en: { desktop: { width: 600, height: 2140 }, large: { width: 1200, height: 4280 } } } };
+    expect(templatePreview("zay", "menswear", { ar: 1, en: 1 }, shots).en).toEqual({
+      src: "/template-previews/zay.en.webp",
+      width: 600,
+      height: 2140,
+      large: { src: "/template-previews/zay.en.lg.webp", width: 1200, height: 4280 },
+    });
+    expect(templatePreview("zay", "menswear", { ar: 1, en: 1 }, shots).ar.large).toBeUndefined();
   });
 
   it("leaves out the phone shot when the entry has none", () => {
