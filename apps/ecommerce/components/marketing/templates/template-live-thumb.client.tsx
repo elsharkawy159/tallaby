@@ -27,12 +27,16 @@ export function TemplateLiveThumb({
 }) {
   const box = React.useRef<HTMLDivElement>(null);
   const [scale, setScale] = React.useState<number | null>(null);
+  const [boxHeight, setBoxHeight] = React.useState(0);
   const [loaded, setLoaded] = React.useState(false);
 
   React.useEffect(() => {
     const el = box.current;
     if (!el) return;
-    const measure = () => setScale(el.clientWidth / FRAME_WIDTH);
+    const measure = () => {
+      setScale(el.clientWidth / FRAME_WIDTH);
+      setBoxHeight(el.clientHeight);
+    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -53,7 +57,8 @@ export function TemplateLiveThumb({
             "pointer-events-none absolute start-0 top-0 origin-top-left border-0 bg-white transition-opacity duration-300 rtl:origin-top-right",
             loaded ? "opacity-100" : "opacity-0",
           )}
-          style={{ width: FRAME_WIDTH, height: frameHeight, transform: `scale(${scale})` }}
+          // A box taller than its aspect class (a phone card at 70svh) gets a taller frame, so the page still fills it.
+          style={{ width: FRAME_WIDTH, height: Math.max(frameHeight, Math.ceil(boxHeight / scale)), transform: `scale(${scale})` }}
         />
       ) : null}
       {loaded ? null : (

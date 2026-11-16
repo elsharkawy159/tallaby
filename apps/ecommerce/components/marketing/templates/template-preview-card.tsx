@@ -48,7 +48,8 @@ export function TemplatePreviewCard({
           shot={shot}
           liveSrc={liveSrc}
           sizes={sizes}
-          className="rounded-[18px] border border-line bg-[#eef3f4] shadow-soft transition-shadow duration-300 group-hover/card:shadow-raise"
+          // Phones (owner, 2026-11-16): 70% of the screen's height instead of 3:4, so the shot reads big.
+          className="rounded-[18px] border border-line bg-[#eef3f4] shadow-soft transition-shadow duration-300 group-hover/card:shadow-raise max-[640px]:aspect-auto max-[640px]:h-[70svh]"
         />
         <div className="flex items-start justify-between gap-3 px-1 pt-4">
           <div className="min-w-0">
