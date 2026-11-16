@@ -278,27 +278,28 @@
   @media (hover: none) {
     /*
      * Slow and smooth (owner, 2026-11-16): one way takes --tpl-shot-tour-run
-     * (8–30 s, timed on the phone shot), with a gentle sine ease on each leg
-     * and a short rest at the top and the bottom.
+     * (8–30 s, timed on the phone shot), with a gentle sine ease on each leg.
+     * It starts moving almost at once (owner, 2026-11-16: no wait before the
+     * scroll); only a brief rest at the bottom and back at the top, before the
+     * next loop.
      */
     .tpl-shot[data-tour] .tpl-shot__img {
       will-change: transform;
-      animation: tpl-shot-tour calc(var(--tpl-shot-tour-run, 12s) * 2 + 3s) linear 0.6s infinite;
+      animation: tpl-shot-tour calc(var(--tpl-shot-tour-run, 12s) * 2 + 2s) linear 0.1s infinite;
     }
   }
 
   @keyframes tpl-shot-tour {
-    0%,
-    6% {
+    0% {
       transform: translateY(0);
       animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
     }
     47%,
-    53% {
+    50% {
       transform: translateY(calc(-100% + 100cqh));
       animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
     }
-    94%,
+    97%,
     100% {
       transform: translateY(0);
     }
