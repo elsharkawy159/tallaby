@@ -1,7 +1,7 @@
 import type { GalleryEntry } from "@/lib/marketing/templates.lib";
 
-/** How many templates the home page shows before its "See more templates" button (owner, 2026-11-16: 10 industries). */
-export const HOME_TEMPLATE_COUNT = 10;
+/** How many templates the home page shows before its "See more templates" button (owner, 2026-11-17: 9 industries, three full rows of 3 on desktop). */
+export const HOME_TEMPLATE_COUNT = 9;
 
 /** A Fisher–Yates shuffle with an injectable random source (tests pass a fixed one). */
 function shuffled<T>(items: readonly T[], random: () => number): T[] {

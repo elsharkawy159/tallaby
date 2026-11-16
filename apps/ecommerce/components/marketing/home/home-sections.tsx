@@ -324,12 +324,12 @@ export async function FeaturesSection() {
 }
 
 /**
- * A home card's width, so the browser picks the 600 px or 1200 px desktop shot: five across the
- * 1400 px container (40 px gutters, 24 px gaps) from 1280 px, so the 10 cards fill two rows; two
+ * A home card's width, so the browser picks the 600 px or 1200 px desktop shot: three across the
+ * 1400 px container (40 px gutters, 32 px gaps) from 1081 px, so the 9 cards fill three rows; two
  * (24 px gutters, 24 px gap) from 641 px. Phones show the carousel (slides about 80vw) and get the
  * phone shot.
  */
-const HOME_TEMPLATE_CARD_SIZES = "(min-width: 1280px) calc((min(100vw, 1400px) - 176px) / 5), (min-width: 641px) calc(50vw - 36px), 80vw";
+const HOME_TEMPLATE_CARD_SIZES = "(min-width: 1081px) calc((min(100vw, 1400px) - 144px) / 3), (min-width: 641px) calc(50vw - 36px), 80vw";
 
 /**
  * The home page's templates (2026-11-16): the /templates gallery's tall full-page cards
@@ -370,7 +370,7 @@ async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; loca
           }}
         />
       </div>
-      <div className="hidden grid-cols-2 gap-x-6 gap-y-10 min-[641px]:grid min-[1280px]:grid-cols-5 min-[1280px]:gap-x-6 min-[1280px]:gap-y-12">
+      <div className="hidden grid-cols-2 gap-x-6 gap-y-10 min-[641px]:grid min-[1081px]:grid-cols-3 min-[1081px]:gap-x-8 min-[1081px]:gap-y-12">
         {cards.map((card) => (
           <TemplatePreviewCard
             key={card.id}
@@ -390,7 +390,7 @@ async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; loca
 }
 
 /**
- * Templates and the builder in one section: 6 templates (pickHomeTemplates), then a link to the full gallery (owner, 2026-11-15).
+ * Templates and the builder in one section: 9 random industries, one design each (pickHomeTemplates), then a link to the full gallery (owner, 2026-11-17).
  * The heading keeps the old builder section's id for the "/#builder" links in the footer and feature pages.
  */
 export async function TemplatesSection() {

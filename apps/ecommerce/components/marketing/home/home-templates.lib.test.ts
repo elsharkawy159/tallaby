@@ -16,16 +16,16 @@ function seeded(seed: number): () => number {
 }
 
 describe("pickHomeTemplates", () => {
-  it("shows 10 templates", () => {
-    expect(HOME_TEMPLATE_COUNT).toBe(10);
+  it("shows 9 templates", () => {
+    expect(HOME_TEMPLATE_COUNT).toBe(9);
   });
 
-  it("takes one design from each of 10 different industries", () => {
+  it("takes one design from each of 9 different industries by default", () => {
     const entries = Array.from({ length: 17 }, (_, i) => [entry(`c${i}a`, `c${i}`), entry(`c${i}b`, `c${i}`)]).flat();
     for (const seed of [1, 2, 3, 42]) {
-      const picked = pickHomeTemplates(entries, 10, seeded(seed));
-      expect(picked).toHaveLength(10);
-      expect(new Set(picked.map((e) => e.category)).size).toBe(10);
+      const picked = pickHomeTemplates(entries, undefined, seeded(seed));
+      expect(picked).toHaveLength(9);
+      expect(new Set(picked.map((e) => e.category)).size).toBe(9);
     }
   });
 
