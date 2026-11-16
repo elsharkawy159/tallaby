@@ -580,10 +580,13 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput, optio
 
       try {
         const payload = buildProductPayload(row, copy, { sku, categoryId, sellerCategoryId, sellerBrandId, imagePaths: photos.paths, aiWritten: Boolean(ai), now });
+        // A product that isn't ready to sell stays hidden; createProduct only knows about photos.
+        const holdBack = options.keepDraft === true || (row.stock === null && !unlimited) || !strongCategory || nameInDoubt;
         const created = await createProduct(
           options.storeId,
           (unlimited ? { ...payload, trackStock: false } : payload) as unknown as Parameters<typeof createProduct>[1],
-          { stockReason: "import" },
+          // `willHide`: a product hidden just below must not put a new store live.
+          { stockReason: "import", willHide: holdBack },
         );
         if (!created.success || !created.data) {
           await giveUp();
@@ -597,8 +600,6 @@ export async function runBulkBatch(sellerId: string, input: AddBatchInput, optio
           continue;
         }
 
-        // A product that isn't ready to sell stays hidden; createProduct only knows about photos.
-        const holdBack = options.keepDraft === true || (row.stock === null && !unlimited) || !strongCategory || nameInDoubt;
         let status = created.data.status;
         if (status === "active" && holdBack) {
           const hidden = await setProductPublished(options.storeId, created.data.id, false);

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mergeInvalidations, type CacheInvalidation } from "@workspace/cache/invalidate";
 import {
   agentCreateProductSchema,
   agentSearchProductsSchema,
@@ -14,6 +15,7 @@ import {
   type AgentProductContext,
   type ProductImageUploader,
 } from "@workspace/lib/products/agent/server";
+import { publishNewStoreIfReady } from "@workspace/lib/store-sites/auto-publish";
 import { requireOwnedStore, sellerStatusOf } from "../guards.server";
 import type { AgentContext, AgentTool, Skill } from "../types";
 
@@ -33,6 +35,19 @@ const noUpload: ProductImageUploader = async () => ({ ok: false, reason: "upload
 
 async function productContext(ctx: AgentContext): Promise<AgentProductContext> {
   return { sellerId: ctx.sellerId, userId: ctx.userId ?? ctx.sellerId, sellerStatus: await sellerStatusOf(ctx.sellerId), storeId: ctx.storeId };
+}
+
+/**
+ * A product of the store went live: a store that was never published, with a
+ * chosen template, goes live with it (owner, 2026-11-17), as in the dashboard.
+ * Not inside an AI Store Builder run: the build publishes at its own step.
+ * The seller and store are the context's (checked by `requireOwnedStore`);
+ * the publish checks them again and never throws.
+ */
+async function withStoreGoingLive(ctx: AgentContext, invalidation: CacheInvalidation): Promise<CacheInvalidation> {
+  if (ctx.source === "builder") return invalidation;
+  const result = await publishNewStoreIfReady(ctx.sellerId, ctx.storeId, ctx.userId ?? ctx.sellerId);
+  return result.published ? mergeInvalidations(invalidation, result.invalidation) : invalidation;
 }
 
 // Model-facing inputs: no storeId (from the context), no publish flag (from the caller), no idempotency key (the runtime has its own).
@@ -111,7 +126,8 @@ export function productsSkill(deps: ProductsSkillDeps = {}): Skill {
         upload,
       );
       const data = { productId: created.productId, status: created.status, slug: created.slug };
-      return { data, invalidation: created.invalidation, resultRef: data };
+      const invalidation = created.wentLive ? await withStoreGoingLive(ctx, created.invalidation) : created.invalidation;
+      return { data, invalidation, resultRef: data };
     },
   };
 
@@ -135,7 +151,8 @@ export function productsSkill(deps: ProductsSkillDeps = {}): Skill {
       const updated = await agentUpdateProduct(await productContext(ctx), { ...input, storeId: ctx.storeId }, upload);
       return {
         data: { productId: updated.productId, status: updated.status },
-        invalidation: updated.invalidation,
+        // Only a legacy "pending" product goes live on an edit.
+        invalidation: updated.wentLive ? await withStoreGoingLive(ctx, updated.invalidation) : updated.invalidation,
         resultRef: { productId: updated.productId, fields: Object.keys(input).filter((k) => k !== "productId") },
       };
     },
@@ -158,7 +175,8 @@ export function productsSkill(deps: ProductsSkillDeps = {}): Skill {
       await requireOwnedStore(ctx, { forWrite: true });
       const out = await agentSetProductStatus(await productContext(ctx), input.productId, input.status);
       const data = { productId: input.productId, status: out.status, changed: out.changed };
-      return { data, invalidation: out.invalidation, resultRef: data };
+      const invalidation = out.changed && out.status === "active" ? await withStoreGoingLive(ctx, out.invalidation) : out.invalidation;
+      return { data, invalidation, resultRef: data };
     },
   };
 

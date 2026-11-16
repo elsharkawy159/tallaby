@@ -46,7 +46,8 @@ export async function saveBulkProduct (
   options: { draft: boolean; cache: StoreCategoryCache; onCategory?: (option: SellerTaxonomyOption) => void }
 ): Promise<BulkSaveResult> {
   const { payload, taxonomy } = toProductPayload(data);
-  const created = await createProduct(storeId, payload as Parameters<typeof createProduct>[1], { stockReason: "import" });
+  // `willHide`: a row saved as a draft is hidden just below, so it must not put a new store live.
+  const created = await createProduct(storeId, payload as Parameters<typeof createProduct>[1], { stockReason: "import", willHide: options.draft });
   if (!created.success || !created.data?.id) {
     return { ok: false, error: "error" in created && typeof created.error === "string" ? created.error : undefined };
   }

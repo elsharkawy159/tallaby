@@ -305,9 +305,11 @@ async function applyChecks(ctx: RunContext, build: BuildRow, items: ReadonlyMap<
 // ── Publish (D1, D3, D4) ────────────────────────────────────────────────────
 
 /**
- * The same safe path as Templates' auto-publish (`publishNewStoreSafely`): only
- * a store never published (checked under the row lock), with its template
- * chosen; the cache is cleared; an error is returned, never thrown.
+ * The safe path of the automatic publish (`publishNewStoreIfReady`), without
+ * its "one published product" rule: "Build and publish" is the seller's
+ * consent, so the site goes live even with no products (D3). Only a store
+ * never published (checked under the row lock), with its template chosen;
+ * the cache is cleared; an error is returned, never thrown.
  */
 async function publishBuiltStore(ctx: RunContext, store: { id: string; subdomain: string }): Promise<{ ok: boolean; error: string | null }> {
   try {

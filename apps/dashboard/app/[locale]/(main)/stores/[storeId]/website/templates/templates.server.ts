@@ -3,23 +3,21 @@
 import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getTranslations } from "next-intl/server";
 import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
-import { applyInvalidation, invalidateStoreSite } from "@workspace/cache";
 import {
   applyStoreTemplate,
   getStoreTemplateConfig,
   getTemplateMeta,
   listStoreTemplates,
-  publishStoreSite,
   templateEditionId,
   undoStoreTemplate,
 } from "@workspace/lib/store-sites/server";
-import { grantWelcomeGiftSafely } from "@workspace/lib/store-wallet/server";
 import { effectiveStoreNiche } from "@workspace/lib/stores/niche";
 import { getStore } from "@workspace/lib/stores/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { autoPublishStore } from "@/lib/stores/auto-publish-store.server";
 import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { findIndustry } from "@/lib/stores/industries.lib";
 import {
@@ -50,7 +48,10 @@ import {
  * language, or reuses the store's forms of the same name. The store id is explicit
  * and re-checked with requireStore; the template is chosen by key and must be
  * active. Applying writes drafts only, so the storefront is not invalidated:
- * the live site changes on the next Publish. A niche edition (ROADMAP F-90) is
+ * the live site changes on the next Publish. A store that was never published
+ * goes live here only when it already has a published product (owner,
+ * 2026-11-17; `autoPublishStore`); without one it stays offline and goes live
+ * when its first product is published. A niche edition (ROADMAP F-90) is
  * chosen by niche id and checked on the server (`templateEditionId`); its demo
  * catalog is preview data and is never written to the store.
  */
@@ -87,7 +88,7 @@ async function withStore<T>(storeId: string, run: (access: Access) => Promise<Te
 }
 
 export async function applyTemplate(storeId: string, templateKey: string, editionId?: string | null) {
-  return withStore<{ pagesUpdated: number; pagesCreated: number; published: boolean }>(storeId, async ({ seller, store }) => {
+  return withStore<{ pagesUpdated: number; pagesCreated: number; published: boolean; needsProduct: boolean }>(storeId, async ({ seller, store }) => {
     const result = await applyStoreTemplate(seller.sellerId, store.id, String(templateKey), seller.userId, {
       allowedSections: ALLOWED,
       overrideKeys: OVERRIDE_KEYS,
@@ -96,34 +97,21 @@ export async function applyTemplate(storeId: string, templateKey: string, editio
       ...(editionId != null && editionId !== "" && { editionId: String(editionId) }),
     });
     if (!result.success) return { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
-    const published = await publishNewStoreSafely(seller.sellerId, store.id, store.subdomain, seller.userId);
-    return { success: true, data: { pagesUpdated: result.data.pagesUpdated, pagesCreated: result.data.pagesCreated, published } };
+    // A new store with a published product goes live now; one without stays offline until its
+    // first product is published (owner, 2026-11-17). Public for everyone, activated or not (F-84).
+    // Never fails the template apply.
+    const outcome = await autoPublishStore(seller.sellerId, store.id, seller.userId);
+    return {
+      success: true,
+      data: {
+        pagesUpdated: result.data.pagesUpdated,
+        pagesCreated: result.data.pagesCreated,
+        published: outcome.published,
+        // Only a missing product keeps the new store offline: the gallery tells the seller so.
+        needsProduct: !outcome.published && outcome.reason === "no_active_product",
+      },
+    };
   });
-}
-
-/**
- * Choosing a template publishes a store that was never published (owner,
- * 2026-11-07: no separate "Publish your store" step). It is public for
- * everyone, activated or not (F-84). A store the seller switched off stays off. Never fails the template apply.
- */
-async function publishNewStoreSafely(sellerId: string, storeId: string, subdomain: string, userId: string): Promise<boolean> {
-  try {
-    const result = await publishStoreSite(sellerId, storeId, userId, {
-      allowedSections: ALLOWED,
-      requireTemplateChoice: true,
-      onlyIfNeverPublished: true,
-    });
-    if (!result.success) {
-      if (result.error !== "already_published") console.error("[website-templates] auto-publish skipped", result.error);
-      return false;
-    }
-    await grantWelcomeGiftSafely(sellerId);
-    await applyInvalidation(invalidateStoreSite(sellerId, storeId, subdomain), { from: "dashboard", mode: "action" });
-    return true;
-  } catch (error) {
-    console.error("[website-templates] auto-publish failed", (error as Error)?.message);
-    return false;
-  }
 }
 
 /**

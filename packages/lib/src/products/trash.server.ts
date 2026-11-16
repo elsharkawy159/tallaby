@@ -214,14 +214,16 @@ export async function trashProducts(
 /**
  * Brings the seller's products back from Trash with the status they had,
  * except a live product that can't go live now comes back as a draft.
+ * `wentLive`: at least one came back live (a new store can go live then,
+ * `publishNewStoreIfReady`).
  */
 export async function restoreProducts(
   sellerId: string,
   ids: unknown,
   { canPublish, inStore }: { canPublish: boolean } & TrashScope,
-): Promise<{ restored: string[]; invalidation: CacheInvalidation }> {
+): Promise<{ restored: string[]; wentLive: boolean; invalidation: CacheInvalidation }> {
   const wanted = trashIds(ids);
-  if (!wanted.length) return { restored: [], invalidation: noInvalidation };
+  if (!wanted.length) return { restored: [], wentLive: false, invalidation: noInvalidation };
 
   const rows = await db.query.products.findMany({
     where: and(
@@ -236,6 +238,7 @@ export async function restoreProducts(
   });
 
   const restored: string[] = [];
+  let wentLive = false;
   const invalidations: CacheInvalidation[] = [];
   const now = new Date().toISOString();
   for (const row of rows) {
@@ -247,10 +250,11 @@ export async function restoreProducts(
       .returning({ id: products.id });
     if (!updated.length) continue;
     restored.push(row.id);
+    if (status === "active") wentLive = true;
     await syncCategoryProductCountForProductChange({ categoryId: row.categoryId, previousStatus: row.status, nextStatus: status });
     invalidations.push(invalidateProduct(toSnapshot(row), toSnapshot(row, status)));
   }
-  return { restored, invalidation: mergeInvalidations(...invalidations) };
+  return { restored, wentLive, invalidation: mergeInvalidations(...invalidations) };
 }
 
 /**

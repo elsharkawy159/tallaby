@@ -416,6 +416,8 @@ export type AgentProductWriteResult = {
   productId: string;
   status: ProductStatusValue;
   slug: string;
+  /** This write made the product live (it was new or not live before). */
+  wentLive: boolean;
   invalidation: CacheInvalidation;
 };
 
@@ -519,7 +521,7 @@ export async function agentCreateProduct(
     ...(taxonomy.taxonomyChanged ? [invalidateSellerProducts(ctx.sellerId)] : []),
     ...(pickNeeded ? [invalidateStoreCatalog(ctx.sellerId, store.id, store.subdomain)] : []),
   );
-  return { productId: created.productId, status, slug: created.slug, invalidation };
+  return { productId: created.productId, status, slug: created.slug, wentLive: status === "active", invalidation };
 }
 
 export async function agentUpdateProduct(
@@ -648,7 +650,8 @@ export async function agentUpdateProduct(
     invalidateProduct(snapshotOf(before), after ? snapshotOf(after) : null),
     ...(taxonomy.taxonomyChanged ? [invalidateSellerProducts(ctx.sellerId)] : []),
   );
-  return { productId: input.productId, status: (after?.status ?? status) as ProductStatusValue, slug, invalidation };
+  const finalStatus = (after?.status ?? status) as ProductStatusValue;
+  return { productId: input.productId, status: finalStatus, slug, wentLive: finalStatus === "active" && before.status !== "active", invalidation };
 }
 
 /** Publish (active) or hide (draft) a product, with the dashboard's rules. */

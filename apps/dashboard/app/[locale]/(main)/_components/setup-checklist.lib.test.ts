@@ -47,7 +47,7 @@ describe("isSetupDone", () => {
     for (const key of ["template", "brand", "product", "shipping", "payments"] as const) {
       expect(isSetupDone({ ...all, [key]: false }, STORE)).toBe(false);
     }
-    // Publishing is no longer a step: choosing a template publishes (owner, 2026-11-07).
+    // Publishing is no longer a step: a new store goes live with a chosen template and a published product (owner, 2026-11-17).
     expect(isSetupDone({ ...all, publish: false }, STORE)).toBe(true);
   });
 

@@ -26,8 +26,9 @@ const firstPageKey = (storeId: string) => ["store-templates", storeId, 1, { cate
 /**
  * Step 1b: the six themes that fit the store best (`listTemplatesPage` sorts
  * by its industry and niche), each with Preview and Use. Using one is the
- * gallery's `applyTemplate` (it publishes a never-published store), then the
- * page refreshes in place.
+ * gallery's `applyTemplate` (a never-published store goes live with it only
+ * when it already has a published product; owner, 2026-11-17), then the page
+ * refreshes in place.
  */
 export function WelcomeThemeStep({
   storeId,
@@ -80,7 +81,8 @@ export function WelcomeThemeStep({
         toast.error(t(`errors.${result.error}`));
         return;
       }
-      toast.success(t(result.data.published ? "appliedPublished" : "applied", { name: text(template.name) }));
+      // Still offline for lack of a published product: say what makes it live (the product step is on this page).
+      toast.success(t(result.data.needsProduct ? "appliedNeedsProduct" : result.data.published ? "appliedPublished" : "applied", { name: text(template.name) }));
       void queryClient.invalidateQueries({ queryKey: ["store-templates", storeId] });
       setOpen(false);
       router.refresh();

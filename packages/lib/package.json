@@ -451,6 +451,10 @@
       "types": "./src/store-sites/server.ts",
       "default": "./src/store-sites/server.ts"
     },
+    "./store-sites/auto-publish": {
+      "types": "./src/store-sites/auto-publish.server.ts",
+      "default": "./src/store-sites/auto-publish.server.ts"
+    },
     "./store-sites/catalog-data": {
       "types": "./src/store-sites/catalog-data.server.ts",
       "default": "./src/store-sites/catalog-data.server.ts"

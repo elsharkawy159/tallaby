@@ -18,6 +18,7 @@ import type { SQL } from "drizzle-orm";
 import { isAccessError, type SellerContext } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
 import { hasProductImage, type ProductStatus } from "@/lib/products/product-status.lib";
+import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import {
   bulkEditInputSchema,
   type BulkActionError,
@@ -238,6 +239,10 @@ async function afterWrite(changes: { row: LoadedRow; before: ProductValues; afte
   revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
 }
 
+/** A product went live in this write: a new store with a chosen template can go live now (owner, 2026-11-17). */
+const wentLive = (changes: { before: ProductValues; after: ProductValues }[]) =>
+  changes.some((c) => c.after.status === "active" && c.before.status !== "active");
+
 const undoKey = () => deriveUndoKey(parseIntegrationKey());
 
 /** Before → after for every selected product; writes nothing. */
@@ -266,7 +271,7 @@ export async function previewBulkEditAction(storeId: unknown, input: unknown): P
 /** Applies the change in one transaction and returns a signed 10-minute Undo token. */
 export async function applyBulkEditAction(storeId: unknown, input: unknown): Promise<BulkApplyResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId);
+    const { seller, store, inStore } = await requireProductStore(storeId);
     const parsed = bulkEditInputSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const ids = [...new Set(parsed.data.ids)];
@@ -292,6 +297,8 @@ export async function applyBulkEditAction(storeId: unknown, input: unknown): Pro
     });
 
     await afterWrite(changes);
+    // Once for the store, after the transaction committed.
+    if (wentLive(changes)) await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
     if (!changes.length) return { success: true, changed: 0, skipped, undoToken: null, undoExpiresAt: null };
     const entries: UndoEntry[] = changes.map((c) => ({ id: c.row.id, b: c.before, a: c.after }));
     const { token, expiresAt } = signUndoToken(seller.sellerId, entries, key);
@@ -311,7 +318,7 @@ export async function undoBulkEditAction(storeId: unknown, token: unknown): Prom
   try {
     // The token is bound to the seller; a product outside this store is never
     // loaded (inStore), so it counts as a conflict and is left alone.
-    const { seller, inStore } = await requireProductStore(storeId);
+    const { seller, store, inStore } = await requireProductStore(storeId);
     const payload = verifyUndoToken(token, undoKey());
     if (!payload || payload.sellerId !== seller.sellerId) return { success: false, error: "expired" };
     const ids = [...new Set(payload.entries.map((e) => e.id))].slice(0, 500);
@@ -342,6 +349,8 @@ export async function undoBulkEditAction(storeId: unknown, token: unknown): Prom
     });
 
     await afterWrite(changes);
+    // Undoing a bulk "hide" puts products back live.
+    if (wentLive(changes)) await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
     return { success: true, restored: changes.length, conflicts };
   } catch (error) {
     return failure(error, "undo");

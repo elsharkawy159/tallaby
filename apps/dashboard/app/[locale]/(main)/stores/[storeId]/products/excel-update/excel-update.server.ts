@@ -19,6 +19,7 @@ import { setStockContext } from "@workspace/db/inventory";
 import { isAccessError, type SellerContext } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
 import type { ProductStatus } from "@/lib/products/product-status.lib";
+import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import { canonicalTime } from "../bulk-edit/bulk-edit.lib";
 import {
   EXCEL_UPDATE_MAX_BYTES,
@@ -319,7 +320,7 @@ async function afterWrite(edits: { row: LoadedProduct; before: ProductWrite; aft
 /** Applies the sheet in one transaction (rows locked, re-planned) and clears caches. */
 export async function applyExcelUpdateAction(storeId: string, formData: FormData): Promise<ExcelApplyResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId);
+    const { seller, store, inStore } = await requireProductStore(storeId);
     const sheet = await readSheet(formData);
     if (!sheet.ok) return { success: false, error: sheet.error };
     const locale = await getLocale();
@@ -344,6 +345,11 @@ export async function applyExcelUpdateAction(storeId: string, formData: FormData
     });
 
     await afterWrite(result.done);
+    // A sheet that set a product live: a new store with a chosen template can go live now (owner, 2026-11-17).
+    // Once for the store, after the transaction committed.
+    if (result.done.some((edit) => edit.after.status === "active" && edit.before.status !== "active")) {
+      await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
+    }
     return { success: true, changedRows: result.changedRows, changedProducts: result.done.length, skipped: result.skipped };
   } catch (error) {
     // Drizzle wraps driver errors: the SQLSTATE is on `.cause`.

@@ -5,6 +5,7 @@ import { applyInvalidation } from "@workspace/cache";
 import { deleteTrashedProductsForever, restoreProducts, trashProducts } from "@workspace/lib/products/trash/server";
 import { isAccessError } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
+import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
 
 /**
@@ -43,10 +44,12 @@ export async function trashProductsAction(storeId: unknown, ids: unknown): Promi
 
 export async function restoreProductsAction(storeId: unknown, ids: unknown): Promise<TrashActionResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId);
+    const { seller, store, inStore } = await requireProductStore(storeId);
     // Same rule as the Publish switch: only approved sellers make products live.
-    const { restored, invalidation } = await restoreProducts(seller.sellerId, ids, { canPublish: seller.status === "approved", inStore });
+    const { restored, wentLive, invalidation } = await restoreProducts(seller.sellerId, ids, { canPublish: seller.status === "approved", inStore });
     await applyInvalidation(invalidation, { from: "dashboard", mode: "action" });
+    // A product back live: a new store with a chosen template can go live now (owner, 2026-11-17). Once for the store.
+    if (wentLive) await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
     revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
     return { success: true, count: restored.length, ids: restored };
   } catch (error) {

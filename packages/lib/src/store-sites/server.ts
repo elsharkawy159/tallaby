@@ -19,6 +19,7 @@ import {
   eq,
   isNull,
   max,
+  products,
   sellers,
   sql,
   storeDesignSystems,
@@ -251,7 +252,8 @@ export type PublishError =
   | "publish_blocked"
   | "invalid_site"
   | "template_not_chosen"
-  | "already_published";
+  | "already_published"
+  | "no_active_product";
 
 export type PublishOptions = BuilderOptions & {
   /**
@@ -263,11 +265,36 @@ export type PublishOptions = BuilderOptions & {
   /**
    * Publish only a store that was never published (`site_status = 'draft'`),
    * checked under the row lock; anything else returns `already_published`.
-   * Choosing a template publishes a new store this way (owner, 2026-11-07),
-   * so a site the seller switched off is never put back online.
+   * A new store goes live by itself this way (publishNewStoreIfReady), so a
+   * site the seller switched off is never put back online.
    */
   onlyIfNeverPublished?: boolean;
+  /**
+   * Publish only when the store has at least one published product: a
+   * `products` row of this store and this seller that is `active` and not in
+   * Trash, checked under the row lock; otherwise `no_active_product`. A new
+   * store goes live by itself only with a chosen template AND such a product
+   * (owner, 2026-11-17). The seller's own Publish button never passes it.
+   */
+  requireActiveProduct?: boolean;
 };
+
+/** One published product of this store: active and not in Trash (the storefront's own rule). */
+async function storeHasActiveProduct(q: Queryable, sellerId: string, storeId: string): Promise<boolean> {
+  const [row] = await q
+    .select({ id: products.id })
+    .from(products)
+    .where(
+      and(
+        eq(products.storeId, storeId),
+        eq(products.sellerId, sellerId),
+        eq(products.status, "active"),
+        isNull(products.deletedAt),
+      ),
+    )
+    .limit(1);
+  return Boolean(row);
+}
 
 /**
  * Publish all drafts as one revision (PLAN.md §12 step 5). Locks the store row
@@ -291,6 +318,7 @@ export async function publishStoreSite(
       if (store.sellerStatus !== "approved") throw new SiteError("publish_blocked");
       if (options.onlyIfNeverPublished && store.siteStatus !== "draft") throw new SiteError("already_published");
       if (options.requireTemplateChoice && !(await storeTemplateChosen(tx, store.id))) throw new SiteError("template_not_chosen");
+      if (options.requireActiveProduct && !(await storeHasActiveProduct(tx, sellerId, store.id))) throw new SiteError("no_active_product");
 
       const raw = await buildDraftSiteConfig(tx, store);
       const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections });

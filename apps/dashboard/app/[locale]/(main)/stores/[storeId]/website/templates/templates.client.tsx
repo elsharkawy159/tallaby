@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Chip, EmptyState, Modal, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
+import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { RemoteImage } from "@/components/media/remote-image";
 import { TemplateCard, ThumbnailFallback } from "./template-card.client";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
@@ -202,8 +203,14 @@ export function TemplateGallery({
         toast.error(t(`errors.${result.error}`));
         return;
       }
-      // A never-published store goes live when its template is chosen (owner, 2026-11-07).
-      toast.success(t(result.data.published ? "appliedPublished" : "applied", { name: text(template.name) }));
+      // A never-published store goes live once it has a template AND a published product (owner, 2026-11-17).
+      if (result.data.needsProduct) {
+        toast.success(t("appliedNeedsProduct", { name: text(template.name) }), {
+          action: { label: t("addProduct"), onClick: () => router.push(storeProductsHref(storeId, "/add")) },
+        });
+      } else {
+        toast.success(t(result.data.published ? "appliedPublished" : "applied", { name: text(template.name) }));
+      }
       void queryClient.invalidateQueries({ queryKey: templatesKey(storeId) });
       // Website › Overview shows the live link (or the publish button for later changes).
       router.push(`/stores/${storeId}/website`);

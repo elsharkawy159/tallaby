@@ -248,4 +248,47 @@ describe.skipIf(!TEST_DATABASE_URL)("new stores start from the code default temp
     expect((home!.draftContent as { sections: unknown[] }).sections.length).toBeGreaterThan(0);
     expect((home!.draftContent as { sections: unknown[] }).sections.length).toBeLessThanOrEqual(codeHome.content.sections.length);
   });
+
+  it("requireActiveProduct publishes only with a live product of this store (owner, 2026-11-17)", async () => {
+    const created = await createStore(sellerId, { name: "Needs product", subdomain: `dt-${tag}-np` }, db);
+    if (!created.success) throw new Error(`createStore failed: ${created.error}`);
+    const storeId = created.data.id;
+    const [other] = await db
+      .select({ id: s.stores.id })
+      .from(s.stores)
+      .where(and(eq(s.stores.sellerId, sellerId), eq(s.stores.isPrimary, true)));
+    const [category] = await db.select({ id: s.categories.id }).from(s.categories).limit(1);
+    const options = { allowedSections: ALLOWED, onlyIfNeverPublished: true, requireActiveProduct: true };
+    const refused = { success: false, error: "no_active_product" };
+    const product = (store: string, status: "active" | "draft", deletedAt: string | null = null) => ({
+      id: randomUUID(),
+      sellerId,
+      storeId: store,
+      categoryId: category!.id,
+      status,
+      deletedAt,
+      quantity: "5",
+      price: 100,
+      images: [],
+      sku: `np-${tag}-${randomUUID().slice(0, 8)}`,
+    });
+
+    expect(await publishStoreSite(sellerId, storeId, sellerId, options, db)).toEqual(refused);
+
+    // A draft, a product in Trash and another store's live product do not count.
+    await db.insert(s.products).values([
+      product(storeId, "draft"),
+      product(storeId, "active", new Date().toISOString()),
+      product(other!.id, "active"),
+    ]);
+    expect(await publishStoreSite(sellerId, storeId, sellerId, options, db)).toEqual(refused);
+    const [still] = await db.select({ siteStatus: s.stores.siteStatus }).from(s.stores).where(eq(s.stores.id, storeId));
+    expect(still!.siteStatus).toBe("draft");
+
+    await db.insert(s.products).values(product(storeId, "active"));
+    expect(await publishStoreSite(sellerId, storeId, sellerId, options, db)).toMatchObject({ success: true });
+
+    // Live stays live with no option; a second automatic publish is refused as already published.
+    expect(await publishStoreSite(sellerId, storeId, sellerId, options, db)).toEqual({ success: false, error: "already_published" });
+  });
 });

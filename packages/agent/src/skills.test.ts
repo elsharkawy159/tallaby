@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { applyStoreShippingTemplate, updateStoreSettings, updateStoreSocialLinks } from "@workspace/lib/stores/server";
 import { agentCreateProduct } from "@workspace/lib/products/agent/server";
+import { publishNewStoreIfReady } from "@workspace/lib/store-sites/auto-publish";
 import { saveStoreDesignSystem } from "@workspace/lib/store-sites/server";
 import { matchPlaceNames } from "./places.lib";
 import { createAgentRegistry } from "./registry";
@@ -115,5 +116,19 @@ describe("shipping and products", () => {
     expect(vi.mocked(agentCreateProduct).mock.calls[0]![1]).toMatchObject({ storeId: STORE, publish: false, price: 120 });
     await confirm("create_product", input, { ...ctx, publishProducts: true });
     expect(vi.mocked(agentCreateProduct).mock.calls[1]![1]).toMatchObject({ publish: true });
+  });
+
+  it("a product going live lets a new store go live, except inside a builder run", async () => {
+    const PRODUCT = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+    // A draft product never asks.
+    await confirm("create_product", { title: { ar: "كوباية", en: "Mug" }, price: 120, images: ["a.jpg"] });
+    expect(publishNewStoreIfReady).not.toHaveBeenCalled();
+
+    await confirm("set_product_status", { productId: PRODUCT, status: "active" });
+    expect(publishNewStoreIfReady).toHaveBeenCalledExactlyOnceWith(SELLER, STORE, SELLER);
+
+    vi.mocked(publishNewStoreIfReady).mockClear();
+    await confirm("set_product_status", { productId: PRODUCT, status: "active" }, { ...ctx, source: "builder" });
+    expect(publishNewStoreIfReady).not.toHaveBeenCalled();
   });
 });

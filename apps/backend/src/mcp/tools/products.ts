@@ -1,4 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { mergeInvalidations, type CacheInvalidation } from "@workspace/cache/invalidate";
+import { logServerError } from "@workspace/db/log";
 import type { AgentActor } from "@workspace/lib/agents";
 import {
   agentCreateProductSchema,
@@ -34,6 +36,33 @@ const contextFor = (actor: AgentActor, storeId: string): AgentProductContext => 
   sellerStatus: actor.sellerStatus,
   storeId,
 });
+
+/**
+ * A product of the store went live: a store that was never published, with a
+ * chosen template, goes live with it (owner, 2026-11-17), as in the dashboard.
+ * The seller and store come from the verified token and the store-in-grant
+ * check (tool.ts); the publish checks the store against the seller again. It
+ * never throws. The store's site purge joins the tool's cache broadcast.
+ * Imported on first use: the site publish code (schema and templates) is
+ * large, and most requests to this function never need it.
+ */
+async function storeGoesLive(
+  actor: AgentActor,
+  storeId: string,
+  invalidation: CacheInvalidation,
+): Promise<{ storeWentLive: boolean; invalidation: CacheInvalidation }> {
+  try {
+    const { publishNewStoreIfReady } = await import("@workspace/lib/store-sites/auto-publish");
+    const result = await publishNewStoreIfReady(actor.sellerId, storeId, actor.userId);
+    return result.published
+      ? { storeWentLive: true, invalidation: mergeInvalidations(invalidation, result.invalidation) }
+      : { storeWentLive: false, invalidation };
+  } catch (error) {
+    // The product write is done: a failed load must not fail the tool.
+    logServerError("publish", "mcp auto-publish failed", { storeId }, error);
+    return { storeWentLive: false, invalidation };
+  }
+}
 
 const COPY_RULES =
   "Write every title and text in BOTH Arabic (Egyptian-friendly Modern Standard Arabic) and English. Prices are in Egyptian pounds (EGP).";
@@ -103,8 +132,9 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
     annotations: WRITE,
     run: async (args) => {
       const created = await agentCreateProduct(contextFor(actor, args.storeId), args, uploadProductImageFromUrl);
-      const data = { productId: created.productId, status: created.status, slug: created.slug };
-      return { data, storeId: args.storeId, resultRef: data, invalidation: created.invalidation };
+      const site = created.wentLive ? await storeGoesLive(actor, args.storeId, created.invalidation) : null;
+      const data = { productId: created.productId, status: created.status, slug: created.slug, ...(site?.storeWentLive && { storeWentLive: true }) };
+      return { data, storeId: args.storeId, resultRef: data, invalidation: site?.invalidation ?? created.invalidation };
     },
   });
 
@@ -123,8 +153,10 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
     annotations: { ...WRITE, idempotentHint: true },
     run: async (args) => {
       const updated = await agentUpdateProduct(contextFor(actor, args.storeId), args, uploadProductImageFromUrl);
-      const data = { productId: updated.productId, status: updated.status, slug: updated.slug };
-      return { data, storeId: args.storeId, resultRef: { productId: updated.productId, fields: Object.keys(args).filter((k) => k !== "storeId" && k !== "productId") }, invalidation: updated.invalidation };
+      // Only a legacy "pending" product goes live on an edit.
+      const site = updated.wentLive ? await storeGoesLive(actor, args.storeId, updated.invalidation) : null;
+      const data = { productId: updated.productId, status: updated.status, slug: updated.slug, ...(site?.storeWentLive && { storeWentLive: true }) };
+      return { data, storeId: args.storeId, resultRef: { productId: updated.productId, fields: Object.keys(args).filter((k) => k !== "storeId" && k !== "productId") }, invalidation: site?.invalidation ?? updated.invalidation };
     },
   });
 
@@ -139,8 +171,9 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
     annotations: { ...WRITE, idempotentHint: true, openWorldHint: false },
     run: async (args) => {
       const out = await agentSetProductStatus(contextFor(actor, args.storeId), args.productId, args.status);
-      const data = { productId: args.productId, status: out.status, changed: out.changed };
-      return { data, storeId: args.storeId, resultRef: data, invalidation: out.invalidation };
+      const site = out.changed && out.status === "active" ? await storeGoesLive(actor, args.storeId, out.invalidation) : null;
+      const data = { productId: args.productId, status: out.status, changed: out.changed, ...(site?.storeWentLive && { storeWentLive: true }) };
+      return { data, storeId: args.storeId, resultRef: data, invalidation: site?.invalidation ?? out.invalidation };
     },
   });
 
@@ -174,11 +207,13 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
     annotations: { ...WRITE, idempotentHint: true, openWorldHint: false },
     run: async (args) => {
       const out = await agentRestoreProducts(contextFor(actor, args.storeId), args.productIds);
+      // Once for the store, whatever the number of products restored.
+      const site = out.wentLive ? await storeGoesLive(actor, args.storeId, out.invalidation) : null;
       return {
-        data: { restored: out.restored, notFound: args.productIds.filter((id) => !out.restored.includes(id)) },
+        data: { restored: out.restored, notFound: args.productIds.filter((id) => !out.restored.includes(id)), ...(site?.storeWentLive && { storeWentLive: true }) },
         storeId: args.storeId,
         resultRef: { restored: out.restored },
-        invalidation: out.invalidation,
+        invalidation: site?.invalidation ?? out.invalidation,
       };
     },
   });

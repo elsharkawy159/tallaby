@@ -131,7 +131,9 @@ describe("runBulkBatch", () => {
     expect(mocks.createProduct).toHaveBeenCalledTimes(2);
     expect(mocks.createProduct.mock.calls[0]![1]).toMatchObject({ sku: "IMP-A1B2C3D4E5-2", categoryId: "shirts", quantity: 4 });
     expect(mocks.createProduct.mock.calls[1]![1]).toMatchObject({ sku: "OWN-1" });
-    expect(mocks.createProduct.mock.calls[0]![2]).toEqual({ stockReason: "import" });
+    // `willHide`: only a row the import then hides must not put a new store live.
+    expect(mocks.createProduct.mock.calls[0]![2]).toMatchObject({ stockReason: "import" });
+    expect(typeof mocks.createProduct.mock.calls[0]![2].willHide).toBe("boolean");
   });
 
   it("re-checks every row on the server, whatever the browser said", async () => {

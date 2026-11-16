@@ -18,11 +18,15 @@ vi.mock("@workspace/lib/stores/server", () => ({
 }));
 
 vi.mock("@workspace/lib/products/agent/server", () => ({
-  agentCreateProduct: vi.fn(async () => ({ productId: "p1", status: "draft", slug: "p1", invalidation: { tags: [], paths: [] } })),
-  agentUpdateProduct: vi.fn(async () => ({ productId: "p1", status: "active", slug: "p1", invalidation: { tags: [], paths: [] } })),
+  agentCreateProduct: vi.fn(async () => ({ productId: "p1", status: "draft", slug: "p1", wentLive: false, invalidation: { tags: [], paths: [] } })),
+  agentUpdateProduct: vi.fn(async () => ({ productId: "p1", status: "active", slug: "p1", wentLive: false, invalidation: { tags: [], paths: [] } })),
   agentSetProductStatus: vi.fn(async () => ({ status: "active", changed: true, invalidation: { tags: [], paths: [] } })),
   agentSearchProducts: vi.fn(async () => ({ products: [], nextCursor: null })),
   agentSearchCategories: vi.fn(async () => []),
+}));
+
+vi.mock("@workspace/lib/store-sites/auto-publish", () => ({
+  publishNewStoreIfReady: vi.fn(async () => ({ published: false, reason: "no_active_product" })),
 }));
 
 vi.mock("@workspace/lib/store-sites/server", () => ({

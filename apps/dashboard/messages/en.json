@@ -1159,7 +1159,7 @@
       "tasks": {
         "template": {
           "title": "Choose your template",
-          "description": "Pick a design for your website. Your store goes live as soon as you choose it.",
+          "description": "Pick a design for your website. Your store goes live once it has a template and one published product.",
           "cta": "Choose"
         },
         "brand": {
@@ -6539,7 +6539,7 @@
       "unpublished": "Offline"
     },
     "statusHint": {
-      "draft": "Your website hasn't been published yet. Shoppers see the \"store unavailable\" page until you publish.",
+      "draft": "Your website isn't published yet, so shoppers see the \"store unavailable\" page. Publish it now, or it goes live by itself when you publish your first product.",
       "published": "Shoppers see your latest published version.",
       "changes": "You have changes that shoppers don't see yet. Preview them, then publish.",
       "unpublished": "Your website is offline. Shoppers see a \"store unavailable\" page and can't place orders until you turn it back on."

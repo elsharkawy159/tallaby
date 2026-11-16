@@ -33,6 +33,7 @@ import { normalizePrice } from "@workspace/lib";
 import { resolveProductSlug } from "@workspace/lib/products/slug/server";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { assertProductTaxonomyInStore, requireProductStore, requireStoreProduct } from "@/lib/products/product-store.server";
+import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import {
   hasProductImage,
   nextProductStatus,
@@ -1111,8 +1112,12 @@ export async function createProduct(
   /** The store the product is added to (F-87c): checked against the session, written to products.store_id. */
   storeId: string,
   data: CreateProductLegacy | CreateProductNew,
-  /** Stock history label (0125): the bulk imports below pass "import". */
-  options?: { stockReason?: "import" }
+  /**
+   * Stock history label (0125): the bulk imports below pass "import".
+   * `willHide`: the caller hides the product right after (an import that keeps
+   * it as a draft), so it must not put a new store live.
+   */
+  options?: { stockReason?: "import"; willHide?: boolean }
 ) {
   try {
     const session = await getUser();
@@ -1319,6 +1324,8 @@ export async function createProduct(
         }),
         { from: "dashboard", mode: "action" }
       );
+      // A new store with a chosen template goes live with its first published product (owner, 2026-11-17).
+      if (createdProduct.status === "active" && !options?.willHide) await autoPublishStoreIfReady(productStore.seller.sellerId, store.id, productStore.seller.userId);
     }
 
     return { success: true, data: createdProduct };
@@ -1624,6 +1631,8 @@ export async function updateProduct(
       from: "dashboard",
       mode: "action",
     });
+    // A legacy "pending" product goes live on save: that can be a new store's first published product.
+    if (before.status !== "active" && after?.status === "active") await autoPublishStoreIfReady(productStore.seller.sellerId, productStore.store.id, productStore.seller.userId);
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
@@ -1669,7 +1678,7 @@ export async function setProductPublished(storeId: string, productId: string, pu
     if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
-    await requireStoreProduct(storeId, productId);
+    const productStore = await requireStoreProduct(storeId, productId);
 
     const product = await db.query.products.findFirst({
       where: and(
@@ -1736,6 +1745,8 @@ export async function setProductPublished(storeId: string, productId: string, pu
       from: "dashboard",
       mode: "action",
     });
+    // A new store with a chosen template goes live with its first published product (owner, 2026-11-17).
+    if (published) await autoPublishStoreIfReady(productStore.seller.sellerId, productStore.store.id, productStore.seller.userId);
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
