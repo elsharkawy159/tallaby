@@ -87,6 +87,10 @@ export function WelcomeThemeStep({
       requestSetupPromptCheck();
     });
 
+  // The first theme applies at once (owner, 2026-11-16): nothing of the seller's is replaced yet. Changing it later still asks.
+  const requestUse = (template: TemplateCardView, edition: string | null) =>
+    done ? setConfirming({ template, edition }) : onApply(template, edition);
+
   const currentName = data?.currentKey ? text(data.currentName ?? {}) || data.currentKey : "";
 
   return (
@@ -142,7 +146,8 @@ export function WelcomeThemeStep({
                     fontClassName={fontClassName}
                     disabled={disabled || isPending}
                     onPreview={() => setPreviewing(template)}
-                    onUse={() => setConfirming({ template, edition })}
+                    onUse={() => requestUse(template, edition)}
+                    compact
                   />
                 );
               })}
@@ -165,7 +170,7 @@ export function WelcomeThemeStep({
         editionId={previewing ? editionOf(previewing) : null}
         onUse={(template) => {
           setPreviewing(null);
-          setConfirming({ template, edition: editionOf(template) });
+          requestUse(template, editionOf(template));
         }}
         onOpenChange={(value) => !value && setPreviewing(null)}
       />
