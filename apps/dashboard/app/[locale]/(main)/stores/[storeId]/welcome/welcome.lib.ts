@@ -159,6 +159,11 @@ export function welcomeProductHref(storeId: string, aiEnabled: boolean): string 
   return `/stores/${encodeURIComponent(storeId)}/products/add?method=${aiEnabled ? "ai" : "choose"}&from=welcome`;
 }
 
+/** The add form itself, where the inline AI uploader's unfinished product (a stored draft) is completed. */
+export function welcomeFinishProductHref(storeId: string): string {
+  return `/stores/${encodeURIComponent(storeId)}/products/add?method=manual&from=welcome`;
+}
+
 /** The store's languages after choosing a default one: the chosen language is added, none is removed. */
 export function withDefaultLocale(current: readonly string[], chosen: "ar" | "en"): ("ar" | "en")[] {
   const kept = current.filter((locale): locale is "ar" | "en" => locale === "ar" || locale === "en");

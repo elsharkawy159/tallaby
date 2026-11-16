@@ -50,6 +50,21 @@ export function hasStoredDraft() {
 }
 
 /**
+ * Hands unfinished values to the add page, which restores them on open (the
+ * quick AI uploader's "finish in the full form"). Never replaces a draft the
+ * seller already has: false then, and false when storage is blocked.
+ */
+export function storeProductDraft(values: AddProductFormData): boolean {
+  if (!hasContent(values) || hasStoredDraft()) return false;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ savedAt: Date.now(), values } satisfies StoredDraft));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Keeps the unpublished product in localStorage so a refresh, a crash or a
  * closed tab doesn't lose the seller's work. Restores once on mount.
  */

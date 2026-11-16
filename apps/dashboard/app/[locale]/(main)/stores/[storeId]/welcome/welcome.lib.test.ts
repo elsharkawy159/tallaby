@@ -14,6 +14,7 @@ import {
   storeWelcomeHref,
   welcomeLandingHref,
   welcomeDeliverySteps,
+  welcomeFinishProductHref,
   welcomeProductHref,
   welcomeProgress,
   welcomeReady,
@@ -163,6 +164,7 @@ describe("the first-product round trip", () => {
   it("links to the AI add page, or the choice when AI is off, marked from=welcome", () => {
     expect(welcomeProductHref(STORE, true)).toBe(`/stores/${STORE}/products/add?method=ai&from=welcome`);
     expect(welcomeProductHref(STORE, false)).toBe(`/stores/${STORE}/products/add?method=choose&from=welcome`);
+    expect(welcomeFinishProductHref(STORE)).toBe(`/stores/${STORE}/products/add?method=manual&from=welcome`);
   });
 
   it("returns to the welcome page only for from=welcome", () => {

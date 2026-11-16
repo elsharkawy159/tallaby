@@ -1856,6 +1856,30 @@
         "reviewsSkip": "No reviews in your message"
       }
     },
+    "aiQuick": {
+      "photos": "Product photos",
+      "addPhoto": "Add photo",
+      "description": "Description",
+      "priceNote": "This is the price your customers see.",
+      "create": "Create the product",
+      "steps": {
+        "read": "Reading the photos and writing the details in Arabic and English",
+        "photos": "Adding the photos to the product",
+        "save": "Saving the product to your store"
+      },
+      "wait": "This can take up to a minute.",
+      "live": "Live",
+      "draft": "Draft",
+      "draftNote": "The product is saved as a draft, and customers can't see it yet. Open it to check and publish it.",
+      "edit": "Edit product",
+      "viewProducts": "View products",
+      "incomplete": "We wrote most of the product, and a few details are left. Finish them in the product form, then publish it.",
+      "incompleteNoDraft": "We couldn't finish the product here. Add it from the product form.",
+      "finish": "Finish the product",
+      "openForm": "Open the product form",
+      "saveFailed": "The product details are written, but it wasn't saved. Try saving it again.",
+      "retry": "Save the product"
+    },
     "ai": {
       "title": "Add your product with AI",
       "description": "Add photos, a spec sheet (PDF) or a short description, and AI fills in the form in Arabic and English. Review it before you publish.",
@@ -8891,12 +8915,13 @@
       },
       "product": {
         "title": "Add your first product",
-        "description": "Check the details and publish it, then you come back here.",
+        "description": "One product is enough to see your store the way customers do.",
         "aiHint": "Describe your product and upload a photo, and we write the title and description for you.",
         "cta": "Add a product with AI",
         "ctaManual": "Add a product",
         "doneNote": "Your first product is in your store.",
-        "viewProducts": "View products"
+        "viewProducts": "View products",
+        "fullForm": "Or use the full product form"
       },
       "shipping": {
         "title": "Delivery price",

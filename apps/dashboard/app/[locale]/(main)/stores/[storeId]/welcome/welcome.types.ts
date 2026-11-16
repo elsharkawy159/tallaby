@@ -4,6 +4,9 @@ import type { StoreGatewayProvider } from "@workspace/lib/payments/store-gateway
 import type { StoreShippingSettings } from "@workspace/lib/shipping/store-zones";
 import type { StoreShippingZone } from "@workspace/lib/stores/server";
 import type { DesignSystem } from "@workspace/store-sections";
+import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
+import type { CategoryOption } from "../products/add/add-product.schema";
+import type { QuickProductCard } from "../products/add/ai/ai-product-uploader.lib";
 import type { NicheChoices } from "@/lib/stores/niche-choices.lib";
 import type { SetupFlags } from "../../../_components/setup-checklist.lib";
 import type { WelcomeShippingDefault, WelcomeWallet } from "./welcome.lib";
@@ -17,6 +20,13 @@ export type WelcomeData = {
   /** Website › Templates and the design system are open to this seller (store-builder rollout). */
   themesAvailable: boolean;
   aiEnabled: boolean;
+  /** The first-product step. */
+  product: {
+    /** The store's newest live product, shown once the step is done; null before. */
+    latest: QuickProductCard | null;
+    /** What the inline AI uploader needs; loaded only while AI is on and the step is not done. */
+    uploader: { categories: CategoryOption[]; sellerPricing: SellerPricingSettings } | null;
+  };
   industry: {
     /** The saved industry's id, or null (none, or a category that matches no industry). */
     id: string | null;

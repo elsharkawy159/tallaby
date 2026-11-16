@@ -12,6 +12,8 @@ import { IndustryNichePicker } from "@/components/stores/industry-niche-picker.c
 import { STORE_INDUSTRIES, type StoreIndustry } from "@/lib/stores/industries.lib";
 import { cn } from "@/lib/utils";
 import { requestSetupPromptCheck } from "../../../_components/setup-prompts.lib";
+import { AiProductCreatedCard, AiProductUploader } from "../products/add/ai/ai-product-uploader.client";
+import type { QuickProductCard } from "../products/add/ai/ai-product-uploader.lib";
 import { saveStoreGeneral } from "../settings/store-settings.server";
 import { WelcomeBrandStep } from "./welcome-brand.client";
 import { WelcomePaymentsStep, WelcomeShippingStep } from "./welcome-delivery.client";
@@ -22,6 +24,7 @@ import {
   initialWelcomeSection,
   nextWelcomeStep,
   welcomeDeliverySteps,
+  welcomeFinishProductHref,
   welcomeProductHref,
   welcomeProgress,
   welcomeReady,
@@ -131,7 +134,7 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
                         disabled={disabled}
                       />
                     )}
-                    {step.key === "product" && <ProductStep storeId={data.storeId} done={step.done} aiEnabled={data.aiEnabled} disabled={disabled} />}
+                    {step.key === "product" && <ProductStep data={data} done={step.done} disabled={disabled} />}
                   </WelcomeStep>
                 ))}
               </ol>
@@ -380,15 +383,54 @@ function IndustryStep({ data, disabled }: { data: WelcomeData; disabled: boolean
   );
 }
 
-/** Step 1d: today's add-product page (AI first), which comes back here once the product is published. */
-function ProductStep({ storeId, done, aiEnabled, disabled }: { storeId: string; done: boolean; aiEnabled: boolean; disabled: boolean }) {
+/**
+ * Step 1d. With AI on: the quick AI uploader right here (photos, description,
+ * price, one click), replaced by the saved product's card; the full add form
+ * stays one link away. With AI off: today's add page, which comes back here
+ * once the product is published. A done step shows the store's newest product.
+ */
+function ProductStep({ data, done, disabled }: { data: WelcomeData; done: boolean; disabled: boolean }) {
   const t = useTranslations("storeWelcome.steps.product");
+  const router = useRouter();
+  const { storeId, aiEnabled } = data;
+  // Kept across router.refresh(), so the card doesn't flash while the done flag reloads (or stays off for a draft).
+  const [created, setCreated] = useState<QuickProductCard | null>(null);
+  const card = created ?? (done ? data.product.latest : null);
+
+  if (card) return <AiProductCreatedCard storeId={storeId} product={card} />;
   if (done) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[13.5px] font-semibold text-success">{t("doneNote")}</p>
         <Link href={`/stores/${storeId}/products`} className="inline-flex min-h-10 items-center text-[13px] font-bold text-(--s-link) underline-offset-4 hover:underline">
           {t("viewProducts")}
+        </Link>
+      </div>
+    );
+  }
+  if (aiEnabled && data.product.uploader) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-pretty text-[13px] text-(--s-muted)">{t("aiHint")}</p>
+        <AiProductUploader
+          storeId={storeId}
+          categories={data.product.uploader.categories}
+          sellerPricing={data.product.uploader.sellerPricing}
+          finishHref={welcomeFinishProductHref(storeId)}
+          disabled={disabled}
+          onCreated={(product) => {
+            setCreated(product);
+            router.refresh();
+            requestSetupPromptCheck();
+          }}
+        />
+        <Link
+          href={welcomeProductHref(storeId, false)}
+          aria-disabled={disabled || undefined}
+          tabIndex={disabled ? -1 : undefined}
+          className={cn("inline-flex min-h-10 items-center self-start text-[13px] font-bold text-(--s-link) underline-offset-4 hover:underline", disabled && "pointer-events-none opacity-45")}
+        >
+          {t("fullForm")}
         </Link>
       </div>
     );
