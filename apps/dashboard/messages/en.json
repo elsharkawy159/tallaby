@@ -198,7 +198,7 @@
     "offlineTitle": "Your store is offline: top up to bring it back",
     "offlineBody": "Your {days} free days are over, so your store is closed to visitors and takes no new orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} and your store comes back online at once.",
     "bodySecondOrderShort": "Your second order has arrived. Your first order stays visible; top up your wallet to see the new ones. Please top up within {days, plural, one {# day} other {# days}} to keep your store online.",
-    "graceBodyShort": "Your store is live and takes orders. Please top up your wallet{amount, select, none {} other {, starting from {amount} only,}} within {total} days of signing up to keep your store online. Once your second order arrives, new orders stay hidden until you top up.",
+    "graceBodyShort": "Your store is live and takes orders. Please top up your wallet{amount, select, none {} other {, starting from {amount} only,}} within {total} days of signing up to keep your store online.",
     "graceFirstOrderBodyShort": "Your next order stays hidden until you top up your wallet{amount, select, none {} other {, starting from {amount} only}}. Please top up within {days, plural, one {# day} other {# days}} to keep your store online. This first order always stays visible.",
     "sidebar": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}, to see your orders"
   },
