@@ -45,6 +45,7 @@ import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { templateFrameSrc, type GalleryEntry } from "@/lib/marketing/templates.lib";
 import { ChatGptMark, ClaudeMark } from "./ai-brand-marks";
 import { HeroDemo } from "./hero-demo";
+import { HomeTemplateCarousel, type HomeCarouselCard } from "./home-template-carousel.client";
 import { pickHomeTemplates } from "./home-templates.lib";
 import { LiveStoreLine } from "./live-store-line.client";
 import { McpChatDemo } from "./mcp-chat-demo";
@@ -323,43 +324,72 @@ export async function FeaturesSection() {
 }
 
 /**
- * A home card's width, so the browser picks the 600 px or 1200 px desktop shot: four across the
- * 1600 px container (40 px gutters, 32 px gaps) from 1081 px, two below (phones get the phone shot).
+ * A home card's width, so the browser picks the 600 px or 1200 px desktop shot: three across the
+ * 1400 px container (40 px gutters, 32 px gaps) from 1081 px, two (24 px gutters, 24 px gap) from
+ * 641 px. Phones show the carousel (slides about 80vw) and get the phone shot.
  */
-const HOME_TEMPLATE_CARD_SIZES = "(min-width: 1081px) calc((min(100vw, 1600px) - 176px) / 4), (min-width: 641px) calc(50vw - 36px), calc(50vw - 22px)";
+const HOME_TEMPLATE_CARD_SIZES = "(min-width: 1081px) calc((min(100vw, 1400px) - 144px) / 3), (min-width: 641px) calc(50vw - 36px), 80vw";
 
 /**
  * The home page's templates (2026-11-16): the /templates gallery's tall full-page cards
- * (TemplatePreviewCard), 2 across up to tablets and 4 on desktop so the 8 cards fill whole rows.
+ * (TemplatePreviewCard). Phones get a centred carousel (HomeTemplateCarousel); from 641 px a grid,
+ * 2 across up to 1080 px and 3 on desktop, so the 6 cards fill whole rows. Both are in the HTML and
+ * CSS shows one; both use the same `sizes`, so the hidden copy's images resolve to the files the
+ * visible copy loads (one download each), and its live frames never mount.
  * Each card is one link to its template page, with the name and category under it and no buttons.
  */
 async function TemplateGrid({ entries, locale }: { entries: GalleryEntry[]; locale: string }) {
-  const t = await getTranslations("templates");
+  const [t, th] = await Promise.all([getTranslations("templates"), getTranslations("home.templates")]);
   if (!entries.length) return null;
+  const cards: HomeCarouselCard[] = entries.map((entry) => {
+    const edition = entry.shot?.edition ?? null;
+    return {
+      id: entry.id,
+      href: edition ? `/templates/${entry.id}?edition=${encodeURIComponent(edition)}` : `/templates/${entry.id}`,
+      name: entry.name,
+      tag: t(`categories.${entry.category}`),
+      linkLabel: t("previewNamed", { name: entry.name }),
+      badge: entry.price ? null : t("detail.free"),
+      shot: entry.shot,
+      liveSrc: templateFrameSrc(locale, entry.id, undefined, true, edition),
+    };
+  });
   return (
-    <div className="grid grid-cols-2 gap-x-3 gap-y-7 min-[641px]:gap-x-6 min-[641px]:gap-y-10 min-[1081px]:grid-cols-4 min-[1081px]:gap-x-8 min-[1081px]:gap-y-12">
-      {entries.map((entry) => {
-        const edition = entry.shot?.edition ?? null;
-        return (
+    <>
+      <div className="min-[641px]:hidden">
+        <HomeTemplateCarousel
+          cards={cards}
+          rtl={locale === "ar"}
+          sizes={HOME_TEMPLATE_CARD_SIZES}
+          labels={{
+            region: th("carousel"),
+            prev: th("prev"),
+            next: th("next"),
+            slides: cards.map((_, index) => th("slide", { index: index + 1, total: cards.length })),
+          }}
+        />
+      </div>
+      <div className="hidden grid-cols-2 gap-x-6 gap-y-10 min-[641px]:grid min-[1081px]:grid-cols-3 min-[1081px]:gap-x-8 min-[1081px]:gap-y-12">
+        {cards.map((card) => (
           <TemplatePreviewCard
-            key={entry.id}
-            href={edition ? `/templates/${entry.id}?edition=${encodeURIComponent(edition)}` : `/templates/${entry.id}`}
-            name={entry.name}
-            tag={t(`categories.${entry.category}`)}
-            linkLabel={t("previewNamed", { name: entry.name })}
-            badge={entry.price ? null : t("detail.free")}
-            shot={entry.shot}
-            liveSrc={templateFrameSrc(locale, entry.id, undefined, true, edition)}
+            key={card.id}
+            href={card.href}
+            name={card.name}
+            tag={card.tag}
+            linkLabel={card.linkLabel}
+            badge={card.badge}
+            shot={card.shot}
+            liveSrc={card.liveSrc}
             sizes={HOME_TEMPLATE_CARD_SIZES}
           />
-        );
-      })}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }
 
 /**
- * Templates and the builder in one section: 8 templates (pickHomeTemplates), then a link to the full gallery (owner, 2026-11-15).
+ * Templates and the builder in one section: 6 templates (pickHomeTemplates), then a link to the full gallery (owner, 2026-11-15).
  * The heading keeps the old builder section's id for the "/#builder" links in the footer and feature pages.
  */
 export async function TemplatesSection() {

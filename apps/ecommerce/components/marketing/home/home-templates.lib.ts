@@ -1,7 +1,7 @@
 import type { GalleryEntry } from "@/lib/marketing/templates.lib";
 
-/** How many templates the home page shows before its "See more templates" button (owner, 2026-11-15). */
-export const HOME_TEMPLATE_COUNT = 8;
+/** How many templates the home page shows before its "See more templates" button (owner, 2026-11-16: 6, so the 3- and 2-column grids fill whole rows). */
+export const HOME_TEMPLATE_COUNT = 6;
 
 /**
  * The home page's templates: one per category first, in the catalog's order,

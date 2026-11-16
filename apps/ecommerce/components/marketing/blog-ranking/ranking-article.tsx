@@ -190,7 +190,7 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
           </div>
           {article.cover ? (
             <div className="relative h-[clamp(220px,36vw,440px)] overflow-hidden rounded-[20px] shadow-[0_24px_60px_rgba(13,55,67,0.14)] sm:rounded-card-lg">
-              <Image src={article.cover} alt={article.title} fill sizes="(min-width: 1600px) 1520px, (min-width: 1024px) calc(100vw - 80px), 100vw" className="object-cover" priority />
+              <Image src={article.cover} alt={article.title} fill sizes="(min-width: 1400px) 1320px, (min-width: 1024px) calc(100vw - 80px), 100vw" className="object-cover" priority />
             </div>
           ) : null}
         </Container>

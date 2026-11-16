@@ -9,7 +9,7 @@ import { BrowserBar } from "@/components/marketing/site/browser-frame";
 
 type Device = "desktop" | "mobile";
 
-/** The desktop frame's width: the 1600 px container less its gutters and the stage padding. */
+/** The desktop frame's width: the 1400 px container less its gutters and the stage padding, at most 1200 px. */
 const DESKTOP_SIZES = "(min-width: 1081px) min(1200px, calc(100vw - 144px)), calc(100vw - 56px)";
 
 function subscribe(onChange: () => void) {

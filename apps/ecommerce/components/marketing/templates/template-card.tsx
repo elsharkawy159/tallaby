@@ -41,7 +41,7 @@ export function TemplateFrame({
           className,
         )}
       >
-        <TemplateThumb shot={shot} liveSrc={liveSrc ?? ""} sizes="(min-width: 901px) calc((min(100vw, 1600px) - 128px) / 3), (min-width: 601px) calc(50vw - 40px), 100vw" />
+        <TemplateThumb shot={shot} liveSrc={liveSrc ?? ""} sizes="(min-width: 901px) calc((min(100vw, 1400px) - 128px) / 3), (min-width: 601px) calc(50vw - 40px), 100vw" />
         {badge ? <div className="pointer-events-none absolute end-3 top-3">{badge}</div> : null}
       </div>
     );

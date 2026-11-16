@@ -135,7 +135,7 @@ export default async function BlogPostPage({ params }: Props) {
               fill
               priority
               unoptimized={!isOptimizableImage(post.image)}
-              sizes="(min-width: 1600px) 1520px, (min-width: 1024px) calc(100vw - 80px), 100vw"
+              sizes="(min-width: 1400px) 1320px, (min-width: 1024px) calc(100vw - 80px), 100vw"
               className="object-cover"
             />
           </div>

@@ -5,13 +5,13 @@ import { HOME_TEMPLATE_COUNT, pickHomeTemplates } from "./home-templates.lib";
 const entry = (id: string, category: string) => ({ id, category }) as unknown as GalleryEntry;
 
 describe("pickHomeTemplates", () => {
-  it("shows 8 templates", () => {
-    expect(HOME_TEMPLATE_COUNT).toBe(8);
+  it("shows 6 templates", () => {
+    expect(HOME_TEMPLATE_COUNT).toBe(6);
   });
 
   it("takes one per category in catalog order and stops at the count", () => {
     const entries = Array.from({ length: 12 }, (_, i) => entry(`t${i}`, `c${i}`));
-    expect(pickHomeTemplates(entries).map((e) => e.id)).toEqual(["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"]);
+    expect(pickHomeTemplates(entries).map((e) => e.id)).toEqual(["t0", "t1", "t2", "t3", "t4", "t5"]);
   });
 
   it("fills up from the rest of the catalog when there are fewer categories", () => {
