@@ -152,3 +152,7 @@ Each conversion is also a redesign to the look-first standard of the pilot (`doc
 ## 4. Waves after this
 
 Beauty, home, kitchen, food, sweets, kids, sports, health, pets, auto, handmade and books follow one industry per session, with the same map, the same quality bar and their photo lists added to `editions-photos.md` before the work starts.
+
+## 5. Simple boutique looks (owner, 2026-11-16)
+
+The owner likes romana.tallaby.com and janelle-eg.com for being very simple, and wants some templates like them when templates are next updated: a split hero, one products grid, a founder story and a brand-colour header and footer, for small brands with one product line (lip and beauty, perfume, candles, handmade). The recipe, the design-system rule (pale brand colour in `secondary`, dark logo colour in `primary`) and what not to copy from janelle-eg.com are in `.claude/skills/store-templates/references/simple-boutique.md`; Romana's exact build script is `docs/systems/simple-boutique/romana-site.ts.txt`.

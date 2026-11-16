@@ -31,6 +31,7 @@ Ready templates with no card screenshot yet: `furniture-luxe`, `mafrash`, `rokn`
 - **One template per niche** (2026-11-11/12, `docs/systems/one-template-per-niche.md`). Each niche has exactly one template; no template serves two niches; each has its own home order, designs, palette and type, not just other photos. Templates that served no niche were deleted (116 → 84).
 - **Editions.** A *look* is a template whose sections read copy and photos from a content object; an *edition* (pack) is one niche's data (catalog, photos, copy). `applyEdition(look, edition)` builds the look with the pack. Its default content must build byte-for-byte what it built before.
 - **Tallaby Classic** (`tallaby-classic`, `DEFAULT_TEMPLATE`) is the default starting site, not a niche template. Changing its design needs the owner's approval (`CLAUDE.md` rule 12).
+- **Simple boutique looks wanted** (owner, 2026-11-16): the owner likes romana.tallaby.com and janelle-eg.com because they are very simple (split hero, one products grid, founder story, brand-colour header and footer). Future templates should include some like them, for small one-line brands. Recipe and limits: references/simple-boutique.md.
 - **No offers.** Templates carry no promotion, bundle or discount-only section and no coupon, sale or "% off" copy (`templates/no-discounts.ts`, `OFFER_COPY`). Product-card discount badges stay (bound to the product's own compare-at price).
 
 ## Quality bar (every template)
@@ -71,6 +72,7 @@ It shoots Arabic and English, desktop (1280 px, stored 600 px wide) and phone (4
 | [references/niches.md](references/niches.md) | Mapping industries → niches → templates, statuses, adding a niche, matching a store to its niche |
 | [references/design-system.md](references/design-system.md) | Choosing or checking a template's palette, fonts, radius, container, product stage, dark pages, motion; contrast rules |
 | [references/photos.md](references/photos.md) | Ordering, checking, naming, uploading or wiring template photos |
+| [references/simple-boutique.md](references/simple-boutique.md) | Building a very simple, premium template for a small one-line brand (the Romana / janelle-eg.com look) |
 | [references/workflow.md](references/workflow.md) | Converting a look, writing a pack, fixtures, registering, tests, screenshots, docs to update |
 | `template-copywriter` skill | Writing or reviewing any template or section demo copy |
 

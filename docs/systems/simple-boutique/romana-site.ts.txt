@@ -1,0 +1,413 @@
+import { readFileSync, writeFileSync } from "node:fs";
+const MODE = process.argv[2] ?? "dry"; // dry | save | publish
+const { createTreeBuilder, instantiateTemplate } = await import("F:/Programming Projects/tallaby/packages/store-sections/src/designs/builder.ts");
+const { premiumCard, productsHead } = await import("F:/Programming Projects/tallaby/packages/store-sections/src/designs/products/_shared.ts");
+const { iconLink } = await import("F:/Programming Projects/tallaby/packages/store-sections/src/designs/headers/_shared.ts");
+const { contrastRatio } = await import("F:/Programming Projects/tallaby/packages/store-sections/src/core/palette.ts");
+const { validatePageContent, designSystemSchema } = await import("@workspace/store-sections");
+const { storeSectionRegistry } = await import("@workspace/store-sections/render");
+const { db, storePages, stores, storeDesignSystems, eq, mediaAssets, and } = await import("@workspace/db");
+const lib = await import("@workspace/lib/store-sites/server");
+const { getServiceClient } = await import("@workspace/db/supabase/service");
+const { recordMediaAsset } = await import("@workspace/lib/media/server");
+const { broadcastInvalidation } = await import("@workspace/cache/broadcast");
+const { invalidateStoreSite } = await import("@workspace/cache/invalidate");
+const ALLOWED = storeSectionRegistry.allowedSections();
+const L = (en: string, ar: string) => ({ ar, en });
+const t = createTreeBuilder();
+const base = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/\/+$/, "");
+const media = (p: string) => `${base}/storage/v1/object/public/store-media/${p}`;
+const OUT = "C:/Users/elsha/AppData/Local/Temp/claude/55b71fcc0546c797/8d00ea36-33f0-4ba3-9803-a145d0edf4e4/scratchpad/build/";
+
+// ---- assets ---------------------------------------------------------------
+// The founder photo the seller already uploaded to her media library (hero section.jpeg, 1199x1312).
+const FOUNDER = media("63639b45-dd57-4bbc-ac83-13284af35abe/5d6536d8-2939-44ba-803c-6ece23b834e3/c56abe36-550f-4cf3-a4fa-3ca7f5e65b6a.png");
+async function heroPhoto(): Promise<string> {
+  const [found] = await db
+    .select({ p: mediaAssets.storagePath })
+    .from(mediaAssets)
+    .where(and(eq(mediaAssets.sellerId, SELLER_ID), eq(mediaAssets.filename, "romana-heart-gloss.jpeg")))
+    .limit(1);
+  if (found) return media(found.p);
+  if (MODE === "dry") return media("PENDING");
+  const path = `${SELLER_ID}/${STORE_ID}/${crypto.randomUUID()}.jpg`;
+  const { error } = await getServiceClient()
+    .storage.from("store-media")
+    .upload(path, readFileSync("C:/Users/elsha/OneDrive/Desktop/tallaby/romana store/Lip gloss 150 EGP (2).jpeg"), { contentType: "image/jpeg", cacheControl: "31536000", upsert: false });
+  if (error) throw new Error("upload " + error.message);
+  const rec = await recordMediaAsset(SELLER_ID, STORE_ID, {
+    storagePath: path,
+    filename: "romana-heart-gloss.jpeg",
+    width: 1212,
+    height: 1297,
+    altText: { en: "Romana heart gloss in berry", ar: "ملمع رومانا بغطاء القلب" },
+  });
+  if (!rec.success) throw new Error("record " + rec.error);
+  return media(path);
+}
+const HERO = await heroPhoto();
+
+// ---- copy -----------------------------------------------------------------
+const TAGLINE = L("Because you deserve to sparkle.", "لأنكِ تستحقين أن تتألقي.");
+const STORY = L(
+  'Welcome to Romana! ♡ Hi, I\'m Rana, the founder of Romana. This little brand is a dream brought to life with love and passion. The name "Romana" is actually my special childhood nickname, given to me by my beloved late grandmother. I chose it to keep her memory alive, and I hope everyone who comes across Romana remembers her in their prayers. May Allah rest her soul in peace. 🤍',
+  "أهلًا بيكم في رومانا! ♡ أنا رنا، مؤسسة رومانا. البراند ده حلم بدأ بحب وشغف. أما اسم «رومانا»، فهو اسم الدلع اللي كانت ستي حبيبتي الله يرحمها بتناديني بيه. اخترته عشان تفضل ذكراها عايشة معايا، ونفسي كل حد يعرف رومانا يفتكرها بدعوة حلوة بالرحمة. ربنا يرحمها ويغفر لها. 🤍",
+);
+const NO_PAD = { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0 };
+const navLink = (text: any, href: string) =>
+  t.link(href, [t.text(text, { style: { fontSize: "sm", fontWeight: "medium" } })], {
+    label: L("Menu link", "رابط"),
+    style: { ...NO_PAD, paddingTop: 4, paddingBottom: 4, color: "foreground", hover: { opacity: 70 } },
+  });
+
+// ---- header -----------------------------------------------------------------
+const headerTree = t.section(
+  { label: L("Header", "الهيدر"), style: { paddingTop: 0, paddingBottom: 0, background: "secondary" }, mobile: { paddingTop: 0, paddingBottom: 0 } },
+  [
+    t.box([t.text(TAGLINE, { style: { color: "primaryInk", fontSize: "xs", fontWeight: "medium", textAlign: "center" } })], {
+      role: "announcement",
+      label: L("Announcement bar", "شريط الإعلان"),
+      style: { background: "primary", paddingTop: 8, paddingBottom: 8, paddingStart: 16, paddingEnd: 16 },
+    }),
+    t.container(
+      [
+        t.grid(
+          [
+            t.row([navLink(L("Shop", "المتجر"), "/products"), navLink(L("Our story", "حكايتنا"), "/about")], {
+              label: L("Menu", "القائمة"),
+              role: "menu",
+              style: { gap: 32, alignItems: "center" },
+            }),
+            t.link("/", [t.text(L("Romana", "رومانا"), { role: "storeName", style: { fontFamily: "heading", fontWeight: "bold", fontSize: "3xl", textAlign: "center" } })], {
+              label: L("Home link", "رابط الرئيسية"),
+              role: "logo",
+              style: { ...NO_PAD, justifyContent: "center" },
+            }),
+            t.row(
+              [
+                t.row([navLink(L("Contact", "تواصل معنا"), "/contact")], { label: L("Menu", "القائمة"), role: "menu", style: { gap: 32, alignItems: "center" } }),
+                iconLink(t, "search", "/products", L("Search", "بحث")),
+                iconLink(t, "shopping-bag", "/cart", L("Cart", "السلة")),
+              ],
+              { label: L("End", "النهاية"), style: { gap: 8, justifyContent: "end", alignItems: "center", wrap: false } },
+            ),
+          ],
+          { label: L("Bar", "الشريط"), columns: { desktop: 3, mobile: 3 }, style: { gap: 16, alignItems: "center", paddingTop: 14, paddingBottom: 14 } },
+        ),
+      ],
+      { label: L("Container", "الحاوية"), style: { paddingTop: 0, paddingBottom: 0 } },
+    ),
+  ],
+);
+
+// ---- hero -------------------------------------------------------------------
+const heroTree = t.section({ label: L("Hero", "الواجهة"), style: { paddingTop: 0, paddingBottom: 0 }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
+  t.container(
+    [
+      t.grid(
+        [
+          t.image(HERO, L("Romana heart gloss in berry, with its pink heart cap", "ملمع رومانا بلون التوت بغطاء القلب الوردي"), {
+            role: "image",
+            style: { aspectRatio: "landscape", objectFit: "contain", width: "100%", radius: 0, order: 2, background: "background" },
+            tablet: { aspectRatio: "portrait" },
+            mobile: { aspectRatio: "square", order: 0 },
+          }),
+          t.stack(
+            [
+              t.stack(
+                [
+                  t.text(L("Romana lip gloss", "ملمعات شفاه رومانا"), { role: "eyebrow", style: { color: "primary", fontSize: "sm", fontWeight: "semibold" } }),
+                  t.heading(TAGLINE, "h1", {
+                    role: "title",
+                    style: { fontSize: "display-lg", fontWeight: "bold", lineHeight: "tight", color: "primary" },
+                    tablet: { fontSize: "display-md" },
+                    mobile: { fontSize: "4xl" },
+                  }),
+                  t.paragraph(
+                    L(
+                      "Five lip glosses, from clear pink to deep mocha, each in its own little bottle.",
+                      "خمسة ملمعات للشفاه، من الوردي الشفاف إلى الموكا الداكن، ولكلٍّ منها عبوتها الصغيرة.",
+                    ),
+                    { role: "subtitle", style: { fontSize: "lg", lineHeight: "relaxed", maxWidth: "460px" }, mobile: { fontSize: "md" } },
+                  ),
+                  t.row(
+                    [
+                      t.button(L("Shop the glosses", "تسوّقي الملمعات"), "/products", "solid", { role: "cta", style: { paddingStart: 28, paddingEnd: 28 } }),
+                      t.button(L("Our story", "حكايتنا"), "/about", "outline", {
+                        role: "cta2",
+                        style: { background: "transparent", color: "foreground", borderWidth: 0, underline: true, fontWeight: "medium", paddingStart: 12, paddingEnd: 12, hover: { opacity: 70 } },
+                      }),
+                    ],
+                    { label: L("Buttons", "الأزرار"), style: { gap: 8, paddingTop: 16, alignItems: "center" } },
+                  ),
+                ],
+                { label: L("Copy", "النص"), style: { gap: 20, alignItems: "start", maxWidth: "560px" }, mobile: { gap: 14 } },
+              ),
+            ],
+            {
+              label: L("Panel", "اللوح"),
+              style: { background: "secondary", justifyContent: "center", paddingTop: 80, paddingBottom: 80, paddingStart: 96, paddingEnd: 64 },
+              tablet: { paddingStart: 40, paddingEnd: 32 },
+              mobile: { paddingTop: 36, paddingBottom: 44, paddingStart: 20, paddingEnd: 20 },
+            },
+          ),
+        ],
+        { label: L("Split", "الواجهة"), columns: { desktop: 2, tablet: 2, mobile: 1 }, style: { gap: 0, alignItems: "stretch", radius: 0, overflow: "hidden" } },
+      ),
+    ],
+    { label: L("Container", "الحاوية"), role: "container", style: { maxWidth: "100%", paddingStart: 0, paddingEnd: 0 } },
+  ),
+]);
+
+// ---- products ---------------------------------------------------------------
+const productsTree = t.section({ label: L("Products", "المنتجات"), style: { paddingTop: 88, paddingBottom: 88 }, mobile: { paddingTop: 48, paddingBottom: 48 } }, [
+  t.container(
+    [
+      productsHead(t, {
+        title: L("The gloss collection", "مجموعة الملمعات"),
+        subtitle: L("Five shades, five little bottles.", "خمس درجات في خمس عبوات صغيرة."),
+        link: { href: "/products", text: L("View all", "عرض الكل") },
+      }),
+      t.productList([premiumCard(t, { ratio: "square", frame: "background" })], {
+        label: L("Products", "المنتجات"),
+        role: "items",
+        source: "newest",
+        limit: 12,
+        columns: { desktop: 5, tablet: 3, mobile: 2 },
+        style: { gap: 28 },
+        tablet: { gap: 20 },
+        mobile: { gap: 12 },
+      }),
+    ],
+    { label: L("Container", "الحاوية") },
+  ),
+]);
+
+// ---- founder story ------------------------------------------------------------
+const founderTree = (cta: { text: any; href: string }) =>
+  t.section({ label: L("Founder story", "قصة المؤسسة"), style: { paddingTop: 96, paddingBottom: 96 }, mobile: { paddingTop: 48, paddingBottom: 56 } }, [
+    t.container(
+      [
+        t.grid(
+          [
+            t.box(
+              [
+                t.image(FOUNDER, L("Rana, the founder of Romana, applying Romana lip gloss", "رنا مؤسسة رومانا تضع ملمع رومانا"), {
+                  role: "image",
+                  style: { aspectRatio: "auto", width: "100%", radius: 12 },
+                  motion: { reveal: "wipe-start" },
+                }),
+              ],
+              { label: L("Photo frame", "إطار الصورة"), role: "frame", style: { overflow: "hidden", radius: 12 }, motion: { reveal: "none" } },
+            ),
+            t.stack(
+              [
+                t.text(L("Meet the founder", "تعرّفي على المؤسِّسة"), { role: "eyebrow", style: { fontSize: "sm", fontWeight: "semibold", color: "primary" } }),
+                t.heading(L("The story behind the name", "حكاية الاسم"), "h2", {
+                  role: "title",
+                  style: { fontSize: "display-sm", lineHeight: "tight", color: "primary" },
+                  motion: { reveal: "words" },
+                }),
+                t.paragraph(STORY, { role: "body", style: { fontSize: "lg", lineHeight: "relaxed", maxWidth: "560px" }, mobile: { fontSize: "md" } }),
+                t.text(TAGLINE, { style: { fontFamily: "heading", fontSize: "xl", color: "primary" } }),
+                t.button(cta.text, cta.href, "solid", { role: "cta" }),
+              ],
+              { label: L("Copy", "النص"), style: { gap: 18, alignItems: "start", justifyContent: "center" }, mobile: { gap: 14 } },
+            ),
+          ],
+          { label: L("Halves", "النصين"), columns: { desktop: 2, tablet: 2, mobile: 1 }, style: { gap: 80, alignItems: "center" }, tablet: { gap: 40 }, mobile: { gap: 28 } },
+        ),
+      ],
+      { label: L("Container", "الحاوية"), style: { maxWidth: "1280px" } },
+    ),
+  ]);
+
+// ---- social row -----------------------------------------------------------------
+// A `role: "social"` row: the storefront draws the store's own links (stores.contact.social),
+// styled like the first link here. The authored links carry the real URLs too, never placeholders.
+const socialLinks = (style: Record<string, unknown>) =>
+  t.row(
+    (
+      [
+        ["instagram", "https://www.instagram.com/roma.n.a", L("Instagram", "إنستجرام")],
+        ["facebook", "https://www.facebook.com/profile.php?id=61568200648180", L("Facebook", "فيسبوك")],
+      ] as const
+    ).map(([icon, href, label]) =>
+      t.link(href, [t.icon(icon as any, { style: { fontSize: "md", color: "primary" } })], {
+        label,
+        style: { width: "44px", paddingTop: 12, paddingBottom: 10, paddingStart: 0, paddingEnd: 0, radius: 999, textAlign: "center", color: "primary", hover: { opacity: 70 } },
+      }),
+    ),
+    { label: L("Social links", "التواصل الاجتماعي"), role: "social", style: { gap: 10, ...style } },
+  );
+
+// ---- footer -------------------------------------------------------------------
+const FOOT_LINKS: [any, string][] = [
+  [L("Home", "الرئيسية"), "/"],
+  [L("Shop", "المتجر"), "/products"],
+  [L("Our story", "حكايتنا"), "/about"],
+  [L("Contact", "تواصل معنا"), "/contact"],
+  [L("Privacy policy", "سياسة الخصوصية"), "/privacy"],
+  [L("Terms", "الشروط والأحكام"), "/terms"],
+];
+const footerTree = t.section(
+  { label: L("Footer", "الفوتر"), style: { background: "secondary", paddingTop: 72, paddingBottom: 28 }, mobile: { paddingTop: 44, paddingBottom: 24 } },
+  [
+    t.container(
+      [
+        t.stack(
+          [
+            t.link("/", [t.text(L("Romana", "رومانا"), { role: "storeName", style: { fontFamily: "heading", fontWeight: "bold", fontSize: "2xl", textAlign: "center" } })], {
+              label: L("Home link", "رابط الرئيسية"),
+              role: "logo",
+              style: NO_PAD,
+            }),
+            t.text(TAGLINE, { style: { fontFamily: "heading", fontSize: "lg", color: "primary", textAlign: "center" } }),
+            t.row(
+              FOOT_LINKS.map(([text, href]) =>
+                t.link(href, [t.text(text, { style: { fontSize: "sm" } })], {
+                  label: L("Link", "رابط"),
+                  style: { paddingTop: 8, paddingBottom: 8, paddingStart: 10, paddingEnd: 10, color: "foreground", hover: { opacity: 70 } },
+                }),
+              ),
+              { label: L("Links", "الروابط"), role: "menu", style: { gap: 4, justifyContent: "center" } },
+            ),
+            socialLinks({ justifyContent: "center" }),
+            t.row(
+              [t.badge(L("Cash on delivery", "الدفع عند الاستلام"), { style: { background: "background", color: "foreground", borderWidth: 1, borderColor: "border", radius: 6 } })],
+              { label: L("Payment methods", "طرق الدفع"), role: "payments", style: { gap: 8, justifyContent: "center" } },
+            ),
+            t.divider({ style: { width: "100%", marginTop: 8, marginBottom: 0 } }),
+            t.text(L("© 2026 Romana. All rights reserved.", "© ٢٠٢٦ رومانا. جميع الحقوق محفوظة."), { role: "copyright", style: { color: "muted", fontSize: "xs", textAlign: "center" } }),
+          ],
+          { label: L("Content", "المحتوى"), style: { gap: 18, alignItems: "center" } },
+        ),
+      ],
+      { label: L("Container", "الحاوية") },
+    ),
+  ],
+);
+
+// ---- inner pages -------------------------------------------------------------
+const pageHeader = (title: any, subtitle: any) =>
+  t.section({ label: L("Page header", "عنوان الصفحة"), style: { background: "secondary", paddingTop: 72, paddingBottom: 64 }, mobile: { paddingTop: 44, paddingBottom: 40 } }, [
+    t.container(
+      [
+        t.stack(
+          [
+            t.heading(title, "h1", { role: "title", style: { fontSize: "display-md", fontWeight: "bold", color: "primary", textAlign: "center" }, mobile: { fontSize: "4xl" } }),
+            t.paragraph(subtitle, { role: "subtitle", style: { fontSize: "lg", textAlign: "center", maxWidth: "560px" } }),
+          ],
+          { label: L("Copy", "النص"), style: { gap: 12, alignItems: "center" } },
+        ),
+      ],
+      { label: L("Container", "الحاوية") },
+    ),
+  ]);
+const contactForm = (formId: string) => {
+  const form = t.storeForm();
+  return t.section({ label: L("Form section", "النموذج"), style: { paddingTop: 72, paddingBottom: 88 }, mobile: { paddingTop: 40, paddingBottom: 56 } }, [
+    t.container(
+      [
+        t.grid(
+          [
+            t.stack(
+              [
+                t.heading(L("Send us a message", "أرسلي لنا رسالة"), "h2", { role: "title", style: { fontSize: "display-sm", color: "primary" } }),
+                t.paragraph(
+                  L("A question about a shade or an order? Fill in the form and Romana will get back to you.", "لديكِ سؤال عن درجة أو طلب؟ املئي النموذج وسنعود إليكِ."),
+                  { role: "subtitle", style: { fontSize: "lg", lineHeight: "relaxed", maxWidth: "460px" } },
+                ),
+                t.text(L("Or find Romana on", "أو تابعي رومانا على"), { style: { fontSize: "sm", color: "muted", marginTop: 8 } }),
+                socialLinks({}),
+              ],
+              { label: L("Copy", "النص"), style: { gap: 14, alignItems: "start" } },
+            ),
+            t.box([{ ...form, props: { ...form.props, formId } }], {
+              label: L("Form card", "بطاقة النموذج"),
+              style: { radius: 12, background: "background", borderWidth: 1, borderColor: "border", paddingTop: 28, paddingBottom: 28, paddingStart: 28, paddingEnd: 28 },
+              mobile: { paddingTop: 20, paddingBottom: 20, paddingStart: 16, paddingEnd: 16 },
+            }),
+          ],
+          { label: L("Halves", "النصين"), columns: { desktop: 2, tablet: 1, mobile: 1 }, style: { gap: 56, alignItems: "start" }, mobile: { gap: 24 } },
+        ),
+      ],
+      { label: L("Container", "الحاوية"), style: { maxWidth: "1180px" } },
+    ),
+  ]);
+};
+
+const inst = (tree: any, id: string) => instantiateTemplate(tree, { id, source: `${id}@1`, defaultLocale: "en" });
+const header = { ...inst(headerTree, "romana-header"), props: { logoHeight: 84, logoHeightMobile: 52 } };
+const footer = { ...inst(footerTree, "romana-footer"), props: { logoHeight: 120, logoHeightMobile: 96 } };
+const home = {
+  sections: [inst(heroTree, "romana-hero"), inst(productsTree, "romana-products"), inst(founderTree({ text: L("Read our story", "اقرئي حكايتنا"), href: "/about" }), "romana-founder")],
+};
+const about = {
+  sections: [
+    inst(pageHeader(L("Our story", "حكايتنا"), TAGLINE), "romana-about-header"),
+    inst(founderTree({ text: L("Shop the glosses", "تسوّقي الملمعات"), href: "/products" }), "romana-about-founder"),
+  ],
+};
+const contact = {
+  sections: [
+    inst(pageHeader(L("Contact us", "تواصلي معنا"), L("We would love to hear from you.", "يسعدنا أن نسمع منكِ.")), "romana-contact-header"),
+    inst(contactForm("bcb2df22-fec6-4ab6-96c7-2f707266a810"), "romana-contact-form"),
+  ],
+};
+
+const designSystem = {
+  colors: { primary: "#741825", secondary: "#ffd6d4", background: "#ffffff", foreground: "#2a0c13", muted: "#6b4650", border: "#f2c6c4", accent: "#f4a7b0" },
+  typography: { headingFont: "Amiri", bodyFont: "IBM Plex Sans Arabic" },
+  spacing: { borderRadius: 10, containerMaxWidth: 2560, sectionPaddingY: 96, productStage: { ratio: "1:1", fit: "cover", background: "#ffffff" } },
+};
+const c = designSystem.colors;
+console.log(
+  "contrast primary/bg",
+  contrastRatio(c.primary, c.background).toFixed(2),
+  "primary/secondary",
+  contrastRatio(c.primary, c.secondary).toFixed(2),
+  "fg/secondary",
+  contrastRatio(c.foreground, c.secondary).toFixed(2),
+  "muted/bg",
+  contrastRatio(c.muted, c.background).toFixed(2),
+  "muted/secondary",
+  contrastRatio(c.muted, c.secondary).toFixed(2),
+);
+if (!designSystemSchema.safeParse(designSystem).success) throw new Error("ds invalid");
+for (const [name, content] of Object.entries({ home, about, contact, chrome: { sections: [header, footer] } })) {
+  const v = validatePageContent(content, { allowedSections: ALLOWED });
+  console.log("validate", name, v.success, v.success ? "" : JSON.stringify(v.issues).slice(0, 600));
+}
+writeFileSync(OUT + "new-site.json", JSON.stringify({ designSystem, header, footer, home, about, contact }, null, 1));
+if (MODE === "dry") process.exit(0);
+
+// ---- save through the builder's own functions -----------------------------------
+const must = (label: string, r: any) => {
+  if (!r.success) throw new Error(label + " " + r.error + " " + JSON.stringify(r.issues ?? "").slice(0, 500));
+  console.log("ok", label);
+  return r;
+};
+const [ds] = await db.select({ v: storeDesignSystems.version }).from(storeDesignSystems).where(eq(storeDesignSystems.storeId, STORE_ID));
+must("design system", await lib.saveStoreDesignSystem(SELLER_ID, STORE_ID, designSystem, ds!.v));
+const [st] = await db.select({ v: stores.chromeVersion }).from(stores).where(eq(stores.id, STORE_ID));
+const h = must("header", await lib.saveStoreChrome(SELLER_ID, STORE_ID, "header", header, st!.v, { allowedSections: ALLOWED }));
+must("footer", await lib.saveStoreChrome(SELLER_ID, STORE_ID, "footer", footer, h.data.version, { allowedSections: ALLOWED }));
+const pages = await db.select({ id: storePages.id, slug: storePages.slug, v: storePages.draftVersion }).from(storePages).where(eq(storePages.storeId, STORE_ID));
+const bySlug = Object.fromEntries(pages.map((p) => [p.slug, p]));
+for (const [slug, content] of Object.entries({ home, about, contact })) {
+  must("page " + slug, await lib.saveStorePageDraft(SELLER_ID, STORE_ID, bySlug[slug]!.id, content, bySlug[slug]!.v, { allowedSections: ALLOWED }));
+}
+must("about name", await lib.updateStorePage(SELLER_ID, STORE_ID, bySlug.about!.id, { name: { en: "Our story", ar: "حكايتنا" } }));
+must("faq hidden", await lib.updateStorePage(SELLER_ID, STORE_ID, bySlug.faq!.id, { showInNav: false, seo: { title: "FAQs" } }));
+// Page SEO is one language: the store's default (English). The template's Arabic SEO made promises the store never made.
+must("about seo", await lib.updateStorePage(SELLER_ID, STORE_ID, bySlug.about!.id, { seo: { title: "Our story", description: "Meet Rana, the founder of Romana, and the story behind the name." } }));
+must("contact seo", await lib.updateStorePage(SELLER_ID, STORE_ID, bySlug.contact!.id, { seo: { title: "Contact us", description: "Send Romana a message about a shade or an order." } }));
+must("privacy seo", await lib.updateStorePage(SELLER_ID, STORE_ID, bySlug.privacy!.id, { seo: { title: "Privacy policy" } }));
+must("terms seo", await lib.updateStorePage(SELLER_ID, STORE_ID, bySlug.terms!.id, { seo: { title: "Terms & conditions" } }));
+if (MODE !== "publish") process.exit(0);
+const pub = must("publish", await lib.publishStoreSite(SELLER_ID, STORE_ID, SELLER_ID, { allowedSections: ALLOWED, requireTemplateChoice: true }));
+console.log("revision", JSON.stringify(pub.data));
+await broadcastInvalidation(invalidateStoreSite(SELLER_ID, STORE_ID, "romana"), "backend");
+console.log("broadcast done");
+process.exit(0);
