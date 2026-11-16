@@ -11,6 +11,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function TemplatesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const [entries, niches] = await Promise.all([getTemplateGallery(locale), getTemplateNicheTabs(locale)]);
-  // The hero leads with Kasr, Volt and Pure, then one template per category.
-  return <TemplatesPageContent entries={entries} niches={niches} leadKeys={["kasr", "volt", "pure"]} />;
+  return <TemplatesPageContent entries={entries} niches={niches} />;
 }

@@ -19,16 +19,10 @@
       "eyebrow": "Store templates",
       "title": "Pick a design. <em>Make it yours.</em>",
       "lead": "Every template comes with a home page, product pages, cart and checkout. Change colors and sections any time without losing your products.",
-      "cta": "Start with a free template",
-      "browse": "Browse {count, plural, one {the template} other {{count} templates}}",
-      "checkFree": "All templates are free",
-      "checkLanguages": "Arabic and English",
-      "checkMobile": "Designed for mobile first"
+      "cta": "Start with a free template"
     },
     "gallery": {
-      "kicker": "All templates",
-      "title": "A design made for what you sell",
-      "body": "Pick a category and preview a template. Every template can be edited in the builder after you pick it."
+      "title": "A design made for what you sell"
     },
     "included": {
       "kicker": "In every template",
@@ -111,6 +105,28 @@
       "shotRegion": "{name} home page, scroll to see all of it",
       "liveTitle": "Try every page",
       "liveBody": "Open the home page, the product page and the rest, just as your customers will see them."
+    },
+    "filters": {
+      "title": "Filters",
+      "open": "Filters",
+      "industries": "Industry",
+      "niches": "Trade",
+      "anyNiche": "All trades",
+      "showAll": "Show all ({count})",
+      "showFewer": "Show fewer",
+      "clearAll": "Clear all",
+      "active": "Active filters",
+      "remove": "Remove filter: {name}",
+      "close": "Close filters",
+      "apply": "{count, plural, =0 {No templates to show} one {Show # template} other {Show # templates}}",
+      "sortLabel": "Sort by",
+      "sort": {
+        "featured": "Featured",
+        "newest": "Newest",
+        "name": "Name (A–Z)"
+      },
+      "emptyBody": "No templates match these filters. Clear them to see every template.",
+      "emptyCta": "Clear filters"
     }
   }
 }

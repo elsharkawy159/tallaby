@@ -1,9 +1,8 @@
-import { Check, LayoutTemplate, Languages, Repeat, Smartphone } from "lucide-react";
+import { LayoutTemplate, Languages, Repeat, Smartphone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { CtaBand } from "@/components/marketing/site/cta-band";
-import { CtaButton } from "@/components/marketing/site/cta-button";
 import { FaqAccordion, type FaqEntry } from "@/components/marketing/site/faq-accordion";
-import { Container, Kicker, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
+import { Container, Section, SectionHeading } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
 import { IconTile, SiteCard } from "@/components/marketing/site/site-card";
@@ -11,34 +10,10 @@ import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/sign
 import { CONTACT } from "@/lib/marketing/site.lib";
 import type { GalleryEntry, GalleryNicheTab } from "@/lib/marketing/templates.lib";
 import { TemplateGallery } from "./template-gallery.client";
-import { TemplateShowcase, type ShowcaseEntry } from "./template-showcase.client";
-
-/** How many templates the hero's picker offers. */
-const SHOWCASE_SIZE = 6;
-
-/** The hero's picks: `leadKeys` first, then one template per category not shown yet. */
-export function showcasePicks(entries: readonly GalleryEntry[], leadKeys: readonly string[], size = SHOWCASE_SIZE): GalleryEntry[] {
-  const leads = leadKeys.flatMap((key) => entries.filter((entry) => entry.id === key));
-  const categories = new Set(leads.map((entry) => entry.category));
-  const rest = entries.filter((entry) => {
-    if (categories.has(entry.category)) return false;
-    categories.add(entry.category);
-    return true;
-  });
-  return [...leads, ...rest].slice(0, size);
-}
 
 /** Everything on /templates. `entries` is the code catalog; `niches` the niche tabs under each category. */
-export async function TemplatesPageContent({ entries, niches = [], leadKeys = [] }: { entries: GalleryEntry[]; niches?: GalleryNicheTab[]; leadKeys?: readonly string[] }) {
+export async function TemplatesPageContent({ entries, niches = [] }: { entries: GalleryEntry[]; niches?: GalleryNicheTab[] }) {
   const t = await getTranslations("templates");
-  const picks: ShowcaseEntry[] = showcasePicks(entries, leadKeys).map((entry) => ({
-    id: entry.id,
-    name: entry.name,
-    description: entry.description,
-    category: entry.category,
-    palette: entry.palette,
-  }));
-  const checks = [t("hero.checkFree"), t("hero.checkLanguages"), t("hero.checkMobile")];
   const included = [
     { icon: Smartphone, title: t("included.phoneTitle"), body: t("included.phoneBody") },
     { icon: Languages, title: t("included.langTitle"), body: t("included.langBody") },
@@ -47,39 +22,22 @@ export async function TemplatesPageContent({ entries, niches = [], leadKeys = []
 
   return (
     <>
-      <section aria-labelledby="templates-h1" className="relative overflow-hidden pt-10 pb-14 min-[641px]:pt-16 min-[641px]:pb-[72px]">
-        <Container className="flex flex-col items-center text-center">
-          <Kicker className="mb-[18px]">{t("hero.eyebrow")}</Kicker>
-          <h1 id="templates-h1" className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
-            {t.rich("hero.title", richTags)}
-          </h1>
-          <p className="mx-auto mt-4 mb-6 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500 min-[641px]:mt-5 min-[641px]:mb-8">{t("hero.lead")}</p>
-          <div className="flex flex-wrap justify-center gap-2.5">
-            <SignupTrigger>{t("hero.cta")}</SignupTrigger>
-            <CtaButton asChild tone="outline">
-              <a href="#gallery">{t("hero.browse", { count: entries.length })}</a>
-            </CtaButton>
-          </div>
-          <ul className="m-0 mt-[18px] flex list-none flex-wrap justify-center gap-x-3.5 gap-y-1.5 p-0 text-[13px] text-ink-500 min-[641px]:gap-x-[22px] min-[641px]:gap-y-2 min-[641px]:text-sm">
-            {checks.map((check) => (
-              <li key={check} className="flex items-center gap-1.5">
-                <Check className="size-4 text-[#16a34a]" aria-hidden />
-                {check}
-              </li>
-            ))}
-          </ul>
-          {picks.length ? <TemplateShowcase entries={picks} /> : null}
-        </Container>
-      </section>
-
-      <Section id="gallery" aria-labelledby="gallery-title" className="scroll-mt-20">
+      {/* A short hero (owner, 2026-11-16): the heading, one line and the sign-up, so the filters and grid sit near the top. */}
+      <section id="gallery" aria-labelledby="templates-h1" className="scroll-mt-20 pt-8 pb-14 min-[641px]:pt-12 min-[861px]:pb-[72px]">
         <Container>
-          <Reveal>
-            <SectionHeading id="gallery-title" kicker={t("gallery.kicker")} title={t("gallery.title")} description={t("gallery.body")} centered />
-          </Reveal>
+          <div className="mb-8 flex flex-col gap-4 min-[861px]:mb-10 min-[861px]:flex-row min-[861px]:items-end min-[861px]:justify-between min-[861px]:gap-10">
+            <div className="max-w-[760px]">
+              <h1 id="templates-h1" className="text-[clamp(30px,4.4vw,48px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
+                {t.rich("hero.title", richTags)}
+              </h1>
+              <p className="mt-3 max-w-[640px] text-[clamp(15px,1.6vw,17px)] text-pretty text-ink-500">{t("hero.lead")}</p>
+            </div>
+            <SignupTrigger className="self-start min-[861px]:self-auto">{t("hero.cta")}</SignupTrigger>
+          </div>
+          <h2 className="sr-only">{t("gallery.title")}</h2>
           <TemplateGallery entries={entries} niches={niches} />
         </Container>
-      </Section>
+      </section>
 
       <Section id="included" aria-labelledby="included-title">
         <Container>
