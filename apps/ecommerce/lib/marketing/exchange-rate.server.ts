@@ -94,7 +94,7 @@ export async function getMarketingPriceVars(locale: string, options?: { isolate?
   return marketingPriceVars(await getMarketingEgpPerUsd(), locale, options);
 }
 
-/** The price table for `VisitorPricesProvider` (the (site) layout): EGP on Arabic pages and USD on English ones until the visitor's country is known. */
+/** The price table for `VisitorPricesProvider` (the (site) layout): EGP in every language until the visitor's country is known (owner, 2026-11-16). */
 export async function getMarketingPriceTable(locale: string): Promise<MarketingPriceTable> {
   const [rates, t] = await Promise.all([getMarketingUsdRates(), getTranslations({ locale, namespace: "pricing.plans" })]);
   return { locale, rates, labels: t.raw("currency") as Record<string, string> };

@@ -94,7 +94,7 @@ export function useVisitorCountry(): string | null {
 
 /**
  * The currency to show: the page's default on the server render and until the
- * country is known (EGP on Arabic pages, USD on English ones; what crawlers
+ * country is known (EGP in every language, owner 2026-11-16; what crawlers
  * index), then the visitor's country's currency if `available(code)` (we have
  * a rate), else USD. If the country can't be read, the default stays.
  */

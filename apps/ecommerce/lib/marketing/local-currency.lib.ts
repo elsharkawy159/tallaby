@@ -87,9 +87,14 @@ export function currencyForCountry(country: string | null | undefined): string |
   return COUNTRY_CURRENCY[country.toUpperCase()] ?? null;
 }
 
-/** What a page shows before (and without) the visitor's country: EGP on Arabic pages, USD on English ones. */
-export function defaultCurrency(locale: string): string {
-  return locale.startsWith("en") ? USD : "EGP";
+/**
+ * What a page shows before (and without) the visitor's country: EGP in every
+ * language (owner, 2026-11-16: only the visitor's location picks the currency,
+ * never the page language; most visitors are in Egypt). `locale` is kept so
+ * callers don't change.
+ */
+export function defaultCurrency(_locale: string): string {
+  return "EGP";
 }
 
 /**

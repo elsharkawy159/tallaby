@@ -19,11 +19,12 @@ describe("withPrices", () => {
     expect(html).toBe("<i>a </i>≈ ⁦1.50⁩ جنيه<i> b {other}</i>");
   });
 
-  it("renders USD on an English page's server render", () => {
+  it("renders EGP on an English page's server render too: only the visitor's location picks the currency", () => {
     const en = { locale: "en", rates, labels: { EGP: "EGP", USD: "USD" } };
     const html = renderToStaticMarkup(<VisitorPricesProvider table={en}>{withPrices("{orderFee} per order, {pro} a month")}</VisitorPricesProvider>);
-    expect(html).toBe("0.03 USD per order, 29 USD a month");
-    expect(renderToStaticMarkup(<VisitorPricesProvider table={en}><Money cents={1240} /></VisitorPricesProvider>)).toBe("12.4 USD");
+    expect(html).toContain("EGP");
+    expect(html).not.toContain("USD");
+    expect(renderToStaticMarkup(<VisitorPricesProvider table={en}><Money cents={1240} /></VisitorPricesProvider>)).toContain("EGP");
   });
 
   it("is the wrapped text alone without tokens", () => {

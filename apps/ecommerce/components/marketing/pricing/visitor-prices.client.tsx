@@ -30,7 +30,7 @@ const VisitorPricesContext = createContext<VisitorPrices | null>(null);
 /**
  * The price tokens in the visitor's currency, for every price on tallaby.com
  * (owner, 2026-11-09; every country 2026-11-10). On the server render and
- * until the country is known: EGP on Arabic pages, USD on English ones. Then
+ * until the country is known: EGP in every language (owner, 2026-11-16). Then
  * the country's currency when we have a rate for it, else USD: a Swedish
  * visitor reads "≈ 0.29 SEK per order", a Saudi one "≈ 0.11 ريال لكل طلب".
  */

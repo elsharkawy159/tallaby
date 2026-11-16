@@ -67,11 +67,12 @@ describe("visitorCurrency", () => {
   const rates: Record<string, number> = { EGP: 53.9, USD: 1, SAR: 3.75, SEK: 9.81, EUR: 0.89, GBP: 0.74, CNY: 6.69 };
   const available = (code: string) => code in rates;
 
-  it("shows the page's default until the country is known: EGP in Arabic, USD in English", () => {
+  it("shows EGP in every language until the country is known (only the location picks the currency)", () => {
     expect(defaultCurrency("ar")).toBe("EGP");
-    expect(defaultCurrency("en")).toBe("USD");
+    expect(defaultCurrency("en")).toBe("EGP");
     expect(visitorCurrency(null, "ar", available)).toBe("EGP");
-    expect(visitorCurrency(null, "en", available)).toBe("USD");
+    expect(visitorCurrency(null, "en", available)).toBe("EGP");
+    expect(visitorCurrency("EG", "en", available)).toBe("EGP");
   });
 
   it.each([

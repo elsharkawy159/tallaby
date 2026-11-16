@@ -41,7 +41,10 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
       note: t("freeNote"),
       activation,
       cta: t("freeCta"),
-      tone: "outline" as const,
+      // The most used plan (owner, 2026-11-16): the highlighted card, in the brand colour.
+      tone: "amber" as const,
+      featured: true,
+      ribbon: t("freeRibbon"),
       features: [
         t("featureUnlimited"),
         t("featureVisits"),
@@ -62,7 +65,8 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
       note: t("proNote"),
       activation: null,
       cta: t("proCta"),
-      tone: "amber" as const,
+      tone: "teal" as const,
+      featured: false,
       ribbon: t("proRibbon"),
       features: [
         t("featureEverything"),
@@ -82,35 +86,45 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
             {...(reveal ? { as: "article" } : {})}
             key={card.name}
             className={cn(
-              "relative flex flex-col gap-3.5 rounded-card border border-line bg-white p-6 shadow-soft min-[641px]:rounded-card-lg min-[641px]:p-8",
-              card.ribbon && "border-teal-900 shadow-raise",
+              "relative flex flex-col gap-3.5 rounded-card border p-6 min-[641px]:rounded-card-lg min-[641px]:p-8",
+              card.featured ? "border-teal-900 bg-teal-900 text-white shadow-raise" : "border-line bg-white shadow-soft",
             )}
           >
-            {card.ribbon ? (
-              <span className="absolute -top-3 start-6 max-w-[calc(100%-48px)] rounded-full bg-teal-900 px-3 py-0.5 text-xs font-bold text-white min-[641px]:start-8">{card.ribbon}</span>
-            ) : null}
-            <div>
-              <h3 className={cn("text-[22px] font-bold text-teal-900", card.latinName && "font-latin")}>{card.name}</h3>
-              <p className="text-sm text-ink-500">{card.tagline}</p>
-            </div>
-            <PlanPrice cents={card.cents} per={card.per} note={card.note} />
-            {card.activation ? (
-              <p className="m-0 flex items-start gap-1.5 text-[12.5px] leading-relaxed text-pretty text-ink-500">
-                <Info className="mt-0.5 size-3.5 flex-none" aria-hidden />
-                <span>{card.activation}</span>
-              </p>
-            ) : null}
-            <SignupTrigger tone={card.tone} plan={card.plan === "pro" ? "pro" : undefined} className="w-full">
-              {card.cta}
-            </SignupTrigger>
-            <ul className="m-0 mt-1 flex list-none flex-col gap-2.5 p-0 text-[14.5px] text-ink-700">
-              {card.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2.5">
-                  <Check className="mt-1 size-4 flex-none text-[#16a34a]" aria-hidden />
-                  {feature}
-                </li>
-              ))}
-            </ul>
+            {/* One child: Reveal passes its children on as a prop array, which made React ask for keys. */}
+            <>
+              {card.ribbon ? (
+                <span
+                  className={cn(
+                    "absolute -top-3 start-6 max-w-[calc(100%-48px)] rounded-full px-3 py-0.5 text-xs font-bold min-[641px]:start-8",
+                    card.featured ? "bg-amber-600 text-teal-900" : "bg-teal-900 text-white",
+                  )}
+                >
+                  {card.ribbon}
+                </span>
+              ) : null}
+              <div>
+                <h3 className={cn("text-[22px] font-bold", card.featured ? "text-white" : "text-teal-900", card.latinName && "font-latin")}>{card.name}</h3>
+                <p className={cn("text-sm", card.featured ? "text-white/75" : "text-ink-500")}>{card.tagline}</p>
+              </div>
+              <PlanPrice cents={card.cents} per={card.per} note={card.note} inverted={card.featured} />
+              {card.activation ? (
+                <p className={cn("m-0 flex items-start gap-1.5 text-[12.5px] leading-relaxed text-pretty", card.featured ? "text-white/75" : "text-ink-500")}>
+                  <Info className="mt-0.5 size-3.5 flex-none" aria-hidden />
+                  <span>{card.activation}</span>
+                </p>
+              ) : null}
+              <SignupTrigger tone={card.tone} plan={card.plan === "pro" ? "pro" : undefined} className="w-full">
+                {card.cta}
+              </SignupTrigger>
+              <ul className={cn("m-0 mt-1 flex list-none flex-col gap-2.5 p-0 text-[14.5px]", card.featured ? "text-white/90" : "text-ink-700")}>
+                {card.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2.5">
+                    <Check className={cn("mt-1 size-4 flex-none", card.featured ? "text-amber-500" : "text-[#16a34a]")} aria-hidden />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </>
           </Card>
         ))}
       </div>
