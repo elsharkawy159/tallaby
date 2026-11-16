@@ -49,6 +49,7 @@ export {
   languageSwitcherOn,
   mobileMenuRows,
   setChromeOption,
+  splitTallabyCredit,
   TALLABY_HOME,
   TALLABY_MARK_URL,
   withLanguageSwitcher,

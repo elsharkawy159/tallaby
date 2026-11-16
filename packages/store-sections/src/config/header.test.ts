@@ -376,18 +376,22 @@ describe("header and footer options (drawChrome)", () => {
     const out = drawChrome(input, "footer", { translated: false, hasLogo: false, locale: "en" })!;
     expect(findNode(out.componentTree!, "old")).toBeNull();
     expect(findNode(out.componentTree!, "c-legal")!.children.map((c) => c.id)).toEqual(["copy", "c-powered-by"]);
-    // A pill link: the Tallaby mark and the words, white with dark ink so it reads on any footer.
+    // Plain text in the footer's colour, only the brand name underlined.
     const badge = findNode(out.componentTree!, "c-powered-by")!;
     expect(badge.type).toBe("linkBlock");
     expect(badge.props).toMatchObject({ href: "https://www.tallaby.com", label: "Built with Tallaby" });
-    expect(badge.style).toMatchObject({ background: "#ffffff", radius: 999, borderWidth: 1 });
-    expect(badge.style?.hover).toBeDefined();
-    expect(findNode(out.componentTree!, "c-powered-by-row")!.children.map((c) => c.type)).toEqual(["image", "text"]);
-    expect(findNode(out.componentTree!, "c-powered-by-mark")!.props.src).toBe(TALLABY_MARK_URL);
-    expect(findNode(out.componentTree!, "c-powered-by-text")!.props.text).toBe("Built with Tallaby");
+    expect(badge.style?.background).toBeUndefined();
+    expect(findNode(out.componentTree!, "c-powered-by-row")!.children.map((c) => c.id)).toEqual(["c-powered-by-text", "c-powered-by-brand"]);
+    expect(findNode(out.componentTree!, "c-powered-by-text")!.props.text).toBe("Built with");
+    const brand = findNode(out.componentTree!, "c-powered-by-brand")!;
+    expect(brand.props.text).toBe("Tallaby");
+    expect(brand.style).toMatchObject({ underline: true });
+    expect(normalizeStyle(brand.style)).toEqual(brand.style);
     // On phones the badge takes its own row under the copyright, lined up with it.
     expect(findNode(out.componentTree!, "c-legal")!.breakpointStyles?.mobile).toMatchObject({ direction: "column", alignItems: "start" });
-    expect(findNode(drawChrome(input, "footer", { translated: false, hasLogo: false })!.componentTree!, "c-powered-by-text")!.props.text).toBe("صمم عبر منصة طلبي");
+    const ar = drawChrome(input, "footer", { translated: false, hasLogo: false })!.componentTree!;
+    expect(findNode(ar, "c-powered-by-text")!.props.text).toBe("صمم عبر منصة");
+    expect(findNode(ar, "c-powered-by-brand")!.props.text).toBe("طلبي");
     // Every style it uses survives the style whitelist.
     expect(normalizeStyle(badge.style)).toEqual(badge.style);
   });

@@ -574,9 +574,11 @@ const TALLABY_HREF_RE = /^https?:\/\/(www\.)?tallaby\.com\/?$/i;
 export const TALLABY_MARK_URL = "https://www.tallaby.com/logo-mark.png";
 /** The footer badge's words (owner, 2026-11-12): Arabic «صمم عبر منصة طلبي». */
 export const TALLABY_BADGE_TEXT: Record<string, string> = { ar: "صمم عبر منصة طلبي", en: "Built with Tallaby" };
-/** Badge colours: fixed, not theme tokens, so it reads the same on light, dark and brand-coloured footers. */
-const BADGE_INK = "#0f3441";
-const BADGE_LINE = "rgb(23 79 98 / 0.22)";
+/** The credit split at its last word: the lead-in and the brand name (underlined), e.g. «صمم عبر منصة» + «طلبي». */
+export function splitTallabyCredit(words: string): { lead: string; brand: string } {
+  const at = words.trim().lastIndexOf(" ");
+  return at < 0 ? { lead: "", brand: words.trim() } : { lead: words.slice(0, at).trim(), brand: words.slice(at + 1).trim() };
+}
 const COPYRIGHT_RE = /©|حقوق|rights reserved/i;
 
 /** A credit the tree carries itself (older templates): a tallaby.com link or the `poweredBy` role. */
@@ -600,12 +602,11 @@ function findFirst(nodes: readonly Node[], match: (node: Node) => boolean): Node
 }
 
 /**
- * The Tallaby badge in every footer (owner, 2026-10-26; a button since
- * 2026-11-12): a white pill with the Tallaby mark and «صمم عبر منصة طلبي» /
- * "Built with Tallaby", linking to tallaby.com, beside the copyright line
- * (else in its own centred row at the end of the footer). White with dark ink
- * and a hairline border, so it stands out on a light, dark or brand-coloured
- * footer alike; on phones it takes its own row under the copyright.
+ * The Tallaby credit in every footer (owner, 2026-10-26; plain text again since
+ * 2026-11-16): «صمم عبر منصة طلبي» / "Built with Tallaby" with only the brand
+ * name underlined, linking to tallaby.com, beside the copyright line (else in
+ * its own centred row at the end of the footer). It takes the footer's own text
+ * colour; on phones it takes its own row under the copyright.
  * It is drawn here and never saved, so a seller cannot remove or edit it in
  * the builder; a credit the tree carries itself is dropped so it never shows
  * twice. Its text is in `locale`, the language shown.
@@ -614,36 +615,25 @@ function withTallabyCredit(tree: Node[], id: string, locale: string): Node[] {
   const words = TALLABY_BADGE_TEXT[locale] ?? TALLABY_BADGE_TEXT.en!;
   const nodes = withoutNodes(tree, isTallabyCredit);
   const copyright = findFirst(nodes, isCopyright);
+  const { lead, brand } = splitTallabyCredit(words);
   const credit: Node = {
     id: `${id}-powered-by`,
     type: "linkBlock",
     props: { href: TALLABY_HOME, label: words },
-    style: {
-      background: "#ffffff",
-      color: BADGE_INK,
-      borderWidth: 1,
-      borderColor: BADGE_LINE,
-      radius: 999,
-      shadow: "sm",
-      paddingTop: 6,
-      paddingBottom: 6,
-      paddingStart: 6,
-      paddingEnd: 14,
-      hover: { background: "#eef6f7", borderColor: "#174f62", shadow: "md" },
-    },
+    style: {},
     children: [
       {
         id: `${id}-powered-by-row`,
         type: "hFlex",
         props: {},
-        style: { gap: 8, alignItems: "center", wrap: false },
+        style: { gap: 4, alignItems: "baseline", wrap: false },
         children: [
-          { id: `${id}-powered-by-mark`, type: "image", props: { src: TALLABY_MARK_URL, alt: "" }, style: { width: "22px", radius: 6 }, children: [] },
+          ...(lead ? [{ id: `${id}-powered-by-text`, type: "text", props: { text: lead }, style: { fontSize: "sm" }, children: [] } satisfies Node] : []),
           {
-            id: `${id}-powered-by-text`,
+            id: `${id}-powered-by-brand`,
             type: "text",
-            props: { text: words },
-            style: { fontSize: "sm", fontWeight: "semibold", color: BADGE_INK, lineHeight: "tight" },
+            props: { text: brand },
+            style: { fontSize: "sm", fontWeight: "semibold", underline: true },
             children: [],
           },
         ],
