@@ -17,8 +17,8 @@
  *                                    slowly as the page scrolls (transform
  *                                    only, still with reduced motion)
  *   2. `categories-portrait-labels`  four tall category photos, rounded
- *   3. `products-feature`            the pick of the week large on the white
- *                                    stage, four of the newest beside it
+ *   3. `products-grid`               eight of the newest on the white stage
+ *                                    (v6; the pick-of-the-week feature before)
  *   4. `finder-use`                  the trade's own section: "where will
  *                                    you wear them?" (beach, pool and
  *                                    shower, errands, home), each a link to
@@ -269,11 +269,16 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         nodes: { الصورة: { style: { radius: RADIUS } } },
       }),
     ),
-    // The pick of the week (the newest featured pair) large on the white stage, and four of the main list beside it.
+    // v6: the main list as a grid of eight on the white stage (it replaced the pick-of-the-week feature: the home keeps its nine sections).
     calm(
-      lib("products-feature", {
-        text: { "اختيارنا لك": c.products.primary.title },
-        lists: [undefined, { source: journey.primary, limit: 4 }],
+      lib("products-grid", {
+        text: {
+          "وصل حديثًا": c.products.primary.title,
+          ...(journey.primary === "best-sellers" && { "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products.") }),
+          ...(journey.primary === "featured" && { "أحدث المنتجات في المتجر.": L("منتجات مختارة من المتجر.", "Products picked by the store.") }),
+        },
+        links: { "/products": primaryHref(journey.primary) },
+        lists: [{ source: journey.primary, limit: 8 }],
       }),
     ),
     finder(c),
@@ -372,8 +377,9 @@ export const TASFYA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(TASFYA_KEY, "slippers-clogs", { ar: 2535, en: 2558 }),
   key: TASFYA_KEY,
-  version: 5,
-  changelog: "Tasfya v4: the slippers-clogs template, rebuilt look-first",
+  // v6 (2026-11-16, owner): every home has at least one real products grid (it replaces the pick-of-the-week feature).
+  version: 6,
+  changelog: "Tasfya v6: a products grid on the home",
   name: L("تصفية", "Tasfya"),
   description: L(
     "شباشب وكلوج: بوستر حمام سباحة بملصق المقاسات، أقسام بصور طولية، أحدث موديل كبير على خلفية بيضا، هتلبسه فين، وصفوف للكلوج والشباشب الصباع. لمحلات الشباشب والكلوج والسلايد والشباشب البيتي.",
@@ -433,7 +439,7 @@ export const TASFYA = editionTemplate({
   ],
   // `photos.about`: the about page's photo (falls back to the story's).
   optional: ["photos.about"],
-  // The newest pairs (one large, four beside it), then the store's 1st and 3rd categories (clogs, flip-flops) as rows.
+  // The newest pairs in a grid of eight, then the store's 1st and 3rd categories (clogs, flip-flops) as rows.
   journey: { primary: "newest", rows: [1, 3] },
   defaultContent: DEFAULT_CONTENT,
   demo: SLIPPERS_CLOGS.demo,

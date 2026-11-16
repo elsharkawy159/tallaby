@@ -3,7 +3,7 @@
  * terracotta ink and a honey accent, Lemonada headings over Almarai, soft
  * 14px corners and a 1360px container. A cosy family toy shop: the
  * announcement header, a split hero of soft toys on a bed, category cards
- * with counts, a featured-gifts panel, the family story over a nursery
+ * with counts, a best-seller grid (v2), the family story over a nursery
  * photo, four category rows with tall photos, a brand newsletter panel and
  * the classic footer with the shop's address. Built from section library
  * designs (`fromLibrary`).
@@ -104,13 +104,14 @@ const home: Design[] = [
     lists: [{ limit: 6 }],
     nodes: { "الأقسام": { style: { columns: 3 } } },
   }),
-  lib("products-panel-rail", {
+  // v2 (2026-11-16, owner): a real products grid replaces the panel rail (a panel and three cards); the home stays at nine sections.
+  lib("products-grid", {
     text: {
-      "هدايا": L("هدايا", "Gifts"),
-      "هدايا تحت ١٠٠٠ جنيه": L("هدايا لكل مناسبة", "Gifts for every occasion"),
-      "أفكار هدايا لكل مناسبة.": L("دباديب وألعاب خشب وألوان تصلح هدية لكل عمر.", "Teddy bears, wooden toys and paints that make gifts for every age."),
-      "عرض الكل": L("كل الهدايا", "All gifts"),
+      "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"),
+      "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
     },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 8 }],
   }),
   lib("about-overlap", {
     person: [undefined, undefined, undefined, undefined, PHOTOS.nursery],
@@ -221,7 +222,8 @@ const DEMO = demoStore({
 
 export const KIDS_WARM = libraryTemplate({
   key: KIDS_WARM_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Hodn v2: a products grid on the home",
   name: L("حُضن", "Hodn"),
   description: L(
     "متجر ألعاب بروح دافئة: واجهة بنصفين، بطاقات أقسام، لوحة هدايا وحكاية المتجر. لمتاجر الألعاب والهدايا والدباديب.",

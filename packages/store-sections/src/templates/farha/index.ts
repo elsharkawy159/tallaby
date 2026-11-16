@@ -123,6 +123,13 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لتختار اللعبة المناسبة.", "So you pick the right toy."),
     },
   }),
+  // v4 (2026-11-16, owner): every home has at least one real products grid.
+  lib("products-grid", {
+    as: "new-in",
+    text: { "وصل حديثًا": L("وصل حديثًا", "New in"), "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store.") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("testimonials-wall", {
     text: {
       "ماذا يقولون عنا": L("من الأهالي", "From parents"),
@@ -190,8 +197,8 @@ const DEMO = demoStore({
 
 export const FARHA = libraryTemplate({
   key: FARHA_KEY,
-  version: 3,
-  changelog: "Farha v3: categories after the hero, products before the age finder",
+  version: 4,
+  changelog: "Farha v4: a products grid on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الأهالي", "What parents say"), related: L("ألعاب أخرى قد تعجبك", "More toys to love") } },
   name: L("فرحة", "Farha"),
   description: L(

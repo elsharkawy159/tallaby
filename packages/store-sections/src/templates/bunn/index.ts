@@ -89,6 +89,13 @@ const home: Design[] = [
       "بطريقة الدفع نفسها خلال ٥ أيام.": L("تواصل معنا لأي سؤال عن التحميص أو الطحنة.", "Contact us with any question about a roast or a grind."),
     },
   }),
+  // v4 (2026-11-16, owner): every home has at least one real products grid.
+  lib("products-grid", {
+    as: "new-in",
+    text: { "وصل حديثًا": L("وصل حديثًا", "New in"), "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store.") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("text-terms", {
     text: {
       "شروط الضمان": L("طريقة التحضير", "Brewing guide"),
@@ -156,8 +163,8 @@ const DEMO = demoStore({
 
 export const BUNN = libraryTemplate({
   key: BUNN_KEY,
-  version: 3,
-  changelog: "Bunn v3: categories, wide hero photo, section order",
+  version: 4,
+  changelog: "Bunn v4: a products grid on the home",
   productPage: { thumbs: "side", band: "brand", copy: { reviews: L("آراء محبي القهوة", "From coffee drinkers"), related: L("قد يعجبك أيضًا", "More to try") } },
   name: L("بُن", "Bunn"),
   description: L("قهوة مختصة: كلمة تحميص الكبيرة، ابدأ من هنا، طريقة التحضير ورسائل العملاء. أربع صفحات جاهزة.", "Specialty coffee: the big ROAST word, start here, a brewing guide and customer messages. Four ready pages."),

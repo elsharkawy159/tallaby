@@ -97,6 +97,15 @@ const home: Design[] = [
       "تواصل معنا": L("تسوّق سهل من هاتفك", "Easy shopping from your phone"),
     },
   }),
+  // v5 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
+  lib("products-grid", {
+    text: {
+      "وصل حديثًا": L("وصل حديثًا", "New in"),
+      "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store."),
+    },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("about-stories", {
     photo: [undefined, PHOTOS.greenHalves, PHOTOS.roasterTop, PHOTOS.scoop],
     text: {
@@ -175,8 +184,8 @@ const DEMO = demoStore({
 
 export const ROAST = libraryTemplate({
   key: ROAST_KEY,
-  version: 4,
-  changelog: "Roast v4: hero, categories, section order",
+  version: 5,
+  changelog: "Roast v5: a products grid on the home",
   name: L("روست", "Roast"),
   description: L(
     "محمصة بن: صورة المحمصة بعرض الشاشة، تحميص الأسبوع، وعود يوم التحميص ومن الحبة إلى الفنجان. أربع صفحات جاهزة.",

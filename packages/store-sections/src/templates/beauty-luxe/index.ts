@@ -4,7 +4,7 @@
  * Arabic, near-square 2px corners and a 1400px container. A calm, clinical
  * home like a skincare atelier: the announcement header, a background video
  * of blank white bottles, a ruled category index with thumbnails, a
- * spotlight of the house picks beside a photo, the spa story over a
+ * minimal grid of the best sellers (v2), the spa story over a
  * full-bleed photo, four category rows with tall portrait cards, a
  * skin-concerns newsletter and the light centred footer. Built from section
  * library designs (`fromLibrary`).
@@ -33,7 +33,6 @@ const P = (id: number) => pexels(id, 800);
 const PHOTOS = {
   heroVideo: pexelsVideo(4214999, "4214999-hd_1920_1080_25fps.mp4"),
   heroPoster: pexelsVideoPoster(4214999),
-  spotlight: pexels(8015809, 1200),
   spa: pexels(4735904, 1200),
   aboutPage: pexels(6724353, 1200),
   // Category thumbnails.
@@ -101,22 +100,12 @@ const home: Design[] = [
       "منتج": L("منتج", "products"),
     },
   }),
-  lib("products-spotlight", {
-    photo: [undefined, undefined, PHOTOS.spotlight],
-    text: {
-      "صورة المجموعة": L("أنابيب بيضاء وليفة ومنشفة على سطح أبيض", "White tubes, a sponge and a towel on a white surface"),
-      "مجموعة": L("اختيارات صفا", "Safa picks"),
-      "مجموعة الموسم": L("أساسيات العناية اليومية", "Daily care essentials"),
-      "قطع مختارة بعناية، بخامات جيدة وتفاصيل هادئة.": L(
-        "ثلاثة منتجات للعناية اليومية صباحًا ومساءً.",
-        "Three products for daily care, morning and night.",
-      ),
-      "تسوّق المجموعة": L("تسوّق الأكثر طلبًا", "Shop best sellers"),
-      "من المجموعة": L("من الاختيارات", "From the picks"),
-      "عرض الكل": L("كل المنتجات", "Shop all"),
-    },
-    links: { "/products": [BEST, SHOP] },
-    lists: [{ source: "featured" }],
+  // v2 (2026-11-16, owner): a real products grid replaces the spotlight (a photo and three cards); the home stays at nine sections.
+  lib("products-minimal", {
+    text: { "الأكثر طلباً": L("الأكثر طلبًا", "Best sellers") },
+    lists: [{ source: "best-sellers", limit: 8 }],
+    // Four across, so the eight products fill two rows.
+    nodes: { المنتجات: { style: { columns: 4 } } },
   }),
   lib("about-fullbleed", {
     photo: [undefined, undefined, PHOTOS.spa],
@@ -241,7 +230,8 @@ const DEMO = demoStore({
 
 export const BEAUTY_LUXE = libraryTemplate({
   key: BEAUTY_LUXE_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Safa v2: a products grid on the home",
   name: L("صفا", "Safa"),
   description: L(
     "عناية بالبشرة بهدوء: فيديو زجاجات بيضاء، فهرس أقسام وأربعة صفوف ببطاقات طولية. لعلامات العناية بالبشرة الراقية.",

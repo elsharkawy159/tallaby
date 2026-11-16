@@ -87,6 +87,13 @@ const home: Design[] = [
       "من السبت إلى الخميس": L("يوميًا عدا الجمعة", "Every day except Friday"),
     },
   }),
+  // v4 (2026-11-16, owner): every home has at least one real products grid.
+  lib("products-tabs-grid", {
+    as: "new-in",
+    text: { "وصل حديثاً": L("وصل حديثًا", "New in") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("pay-installments", {
     text: {
       "قسّطها": L("قسّط الطقم", "Pay for the set monthly"),
@@ -147,8 +154,8 @@ const DEMO = demoStore({
 
 export const TYRE = libraryTemplate({
   key: TYRE_KEY,
-  version: 3,
-  changelog: "Tyre v3: categories after the search, tyres before fitting, one service block",
+  version: 4,
+  changelog: "Tyre v4: a products grid on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("إضافات لسيارتك", "Add-ons for your car") } },
   name: L("إطارات", "Kawetch"),
   description: L(

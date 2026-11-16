@@ -91,6 +91,12 @@ const home: Design[] = [
       "تواصل سهل لأي سؤال": L("تواصل معنا لأي سؤال", "Contact us with any question"),
     },
   }),
+  // v3: a products grid of the newest after the comparison (the pick above shows the best sellers).
+  lib("products-grid", {
+    text: { "وصل حديثًا": L("وصل حديثًا", "New in") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("pay-installments", {
     text: {
       "قسّطها": L("قسّط ساعتك", "Pay for your watch in installments"),
@@ -160,8 +166,9 @@ const DEMO = demoStore({
 
 export const SAA = libraryTemplate({
   key: SAA_KEY,
-  version: 2,
-  changelog: "Saa v2: product page",
+  // v3 (2026-11-16, owner): every home has at least one real products grid.
+  version: 3,
+  changelog: "Saa v3: a products grid on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("سيور وإكسسوارات", "Straps and extras") } },
   name: L("ساعة", "Saa"),
   description: L(

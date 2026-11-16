@@ -149,6 +149,31 @@ const wordmark = (brand: Localized): string | Localized => (brand.ar === brand.e
 const brandHref = (brand: Localized): string => search(brand.en.charAt(0).toUpperCase() + brand.en.slice(1).toLowerCase());
 
 /**
+ * The home's products grid (owner, 2026-11-16: every home has one): the
+ * newest products, or the best sellers when the main list already shows the
+ * newest, so an edition never repeats its main list.
+ */
+function gridPatch(primary: LookJourney["primary"]): LibraryPatch {
+  return primary === "newest"
+    ? {
+        text: {
+          "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"),
+          "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
+        },
+        links: { "/products": BEST },
+        lists: [{ source: "best-sellers", limit: 8 }],
+      }
+    : {
+        text: {
+          "وصل حديثًا": L("وصل حديثًا", "New in"),
+          "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store."),
+        },
+        links: { "/products": NEW },
+        lists: [{ source: "newest", limit: 8 }],
+      };
+}
+
+/**
  * The look: every section from a content object (`DEFAULT_CONTENT`, or an
  * edition's). What names the trade is a slot of `c`; generic shop labels
  * (Best sellers on the hero, Top rated, the help question) and the layout
@@ -245,6 +270,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "فيديو المنتجات": x("video-alt"),
       },
     }),
+    // v6 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
+    lib("products-grid", gridPatch(journey.primary)),
     lib("faq-topics", {
       text: { "عمّ تسأل؟": L("كيف يمكننا مساعدتك؟", "How can we help?") },
     }),
@@ -331,8 +358,9 @@ export const ARENA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ARENA_KEY, "pc-gaming", { ar: 1836, en: 1835 }),
   key: ARENA_KEY,
-  version: 5,
-  changelog: "Arena v4: hero, categories, section order",
+  // v6 (2026-11-16, owner): a products grid of the newest after the setup video.
+  version: 6,
+  changelog: "Arena v6: a products grid on the home",
   name: L("أرينا", "Arena"),
   description: L(
     "أدوات جيمنج بالوضع الداكن: صورة كبيرة، اختيارات اللعيبة، ماركات وفيديو السيت أب. أربع صفحات جاهزة.",

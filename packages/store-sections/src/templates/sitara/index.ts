@@ -126,6 +126,13 @@ const home: Design[] = [
       "حوّل من هاتفك في ثوانٍ.": L("حوّلي من هاتفك في ثوانٍ.", "Transfer from your phone in seconds."),
     },
   }),
+  // v3: the newest pieces as tall cards on a tinted band after the payment methods (the pick above shows the best sellers).
+  lib("products-rail", {
+    as: "new-in",
+    text: { "المفضلة لدى العملاء": L("جديد", "New"), "الأكثر مبيعًا": L("وصل حديثًا", "New in") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("testimonials-ruled", {
     text: {
       "آراء العملاء": L("الآراء", "Reviews"),
@@ -185,8 +192,9 @@ const DEMO = demoStore({
 
 export const SITARA = libraryTemplate({
   key: SITARA_KEY,
-  version: 2,
-  changelog: "Sitara v2: product page",
+  // v3 (2026-11-16, owner): every home has at least one real products grid.
+  version: 3,
+  changelog: "Sitara v3: a products grid on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("تنسيقات تكمّلها", "Styles to go with it") } },
   name: L("سِتارة", "Sitara"),
   description: L(

@@ -3,7 +3,7 @@
  * navy ink, a cobalt blue and a sunny yellow, Baloo Bhaijaan 2 headings over
  * Rubik, round 24px corners and a 1280px container. A loud, colourful toy
  * shop: a scrolling ticker header, a three-slide hero carousel, round
- * category stories, a best-seller bento, the playroom story in a yellow ring,
+ * category stories, a best-seller grid (v2), the playroom story in a yellow ring,
  * four category rows with rounded frames, a slim sign-up strip and the help
  * footer. Built from section library designs (`fromLibrary`).
  *
@@ -112,13 +112,14 @@ const home: Design[] = [
   lib("categories-circles", {
     text: { "ما الذي تبحث عنه؟": L("بماذا تريد أن تلعب اليوم؟", "What shall we play today?") },
   }),
-  lib("products-bento", {
+  // v2 (2026-11-16, owner): a real products grid replaces the bento (one big card and four small); the home stays at nine sections.
+  lib("products-grid", {
     text: {
-      "منتجات يكثر الطلب عليها": L("اختيارات فرفوش", "Farfoosh picks"),
-      "عرض الكل": L("الكل", "All"),
+      "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"),
+      "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
     },
-    links: { "/products": SHOP },
-    lists: [{ source: "featured" }, { source: "featured" }],
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 8 }],
   }),
   lib("about-circle", {
     person: [PHOTOS.playroom],
@@ -229,7 +230,8 @@ const DEMO = demoStore({
 
 export const KIDS_BOLD = libraryTemplate({
   key: KIDS_BOLD_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Farfoosh v2: a products grid on the home",
   name: L("فرفوش", "Farfoosh"),
   description: L(
     "ألعاب بألوان جريئة: واجهة بثلاث صور، أقسام دائرية، شبكة للأكثر مبيعًا وأربعة صفوف منتجات. لمتاجر الألعاب التي تريد طاقة وحيوية.",

@@ -102,6 +102,13 @@ const home: Design[] = [
       "٨٠ ج.م": L("٥٠ ج.م", "EGP 50"),
     },
   }),
+  // v4 (2026-11-16, owner): every home has at least one real products grid.
+  lib("products-tabs-grid", {
+    as: "new-in",
+    text: { "وصل حديثاً": L("وصل حديثًا", "New in") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("team-branches", {
     text: {
       "الفروع": L("الورشة", "Workshop"),
@@ -163,8 +170,8 @@ const DEMO = demoStore({
 
 export const DARRAGA = libraryTemplate({
   key: DARRAGA_KEY,
-  version: 3,
-  changelog: "Darraga v3: categories after the hero, gear before the workshop, one price list",
+  version: 4,
+  changelog: "Darraga v4: a products grid on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء راكبي الدراجات", "From the riders"), related: L("إكسسوارات أخرى لدراجتك", "More for your bike") } },
   name: L("عجلة", "Darraga"),
   description: L(

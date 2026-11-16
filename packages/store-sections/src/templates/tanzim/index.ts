@@ -177,6 +177,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "الصعيد، البحر الأحمر، سيناء": L("الصعيد وسيناء", "Upper Egypt and Sinai"),
       },
     }),
+    // v5: a products grid after the delivery days, the other list of the main rows.
+    ...(journey.primary === "newest"
+      ? [lib("products-grid", { text: { "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"), "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products.") }, links: { "/products": BEST }, lists: [{ source: "best-sellers", limit: 8 }] })]
+      : [lib("products-grid", { text: { "وصل حديثًا": L("وصل حديثًا", "New in") }, links: { "/products": NEW }, lists: [{ source: "newest", limit: 8 }] })]),
     lib("faq-columns", {
       as: "faq-home",
       text: {
@@ -263,8 +267,9 @@ const DEMO = demoStore({
 
 export const TANZIM = editionTemplate({
   key: TANZIM_KEY,
-  version: 4,
-  changelog: "Tanzim v3: categories, section order",
+  // v5 (2026-11-16, owner): every home has at least one real products grid.
+  version: 5,
+  changelog: "Tanzim v5: a products grid on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("تنظيم", "Tanzim"),
   description: L(

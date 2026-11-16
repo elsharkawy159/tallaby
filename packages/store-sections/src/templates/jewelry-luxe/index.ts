@@ -3,7 +3,7 @@
  * paper, ink black and champagne gold, Amiri headings over Readex Pro,
  * near-square 2px corners and a wide 1440px container. A quiet, atelier-like
  * home: top bar header, a background video of woven gold wire, portrait
- * category tiles, a three-piece spotlight, the atelier story in an inset
+ * category tiles, a grid of the newest pieces (v3; a three-piece spotlight before), the atelier story in an inset
  * photo, four category rows on white studio shots, a centred newsletter and
  * the light centred footer. Built from section library designs
  * (`fromLibrary`).
@@ -53,7 +53,6 @@ const P = (id: number) => pexels(id, 800);
 const PHOTOS = {
   heroVideo: pexelsVideo(5815082, "5815082-hd_1920_1080_25fps.mp4"),
   heroPoster: pexelsVideoPoster(5815082),
-  spotlight: pexels(40179571, 1200),
   story: pexels(7248760, 1200),
   aboutPage: pexels(11952736, 1200),
   // Category tiles.
@@ -89,15 +88,9 @@ const DEFAULT_CONTENT: LookDefaults = {
   },
   categories: { title: L("تسوّق حسب القطعة", "Shop by piece") },
   products: {
-    // The spotlight: a tall photo with this copy over it, beside the store's three featured products.
+    // The home grid's title (v3; its line is the shop's own for what it shows).
     primary: {
-      alt: L("خاتم ذهب وردي بقلب ألماس على خلفية بيضاء", "A rose gold ring with a pavé disc on white"),
-      eyebrow: L("اختياراتنا", "Our picks"),
       title: L("قطع مناسبة للإهداء", "Pieces to give as gifts"),
-      line: L(
-        "ثلاث قطع مختارة من الذهب والألماس.",
-        "Three chosen pieces in gold and diamonds.",
-      ),
       // The button goes to the best sellers.
       cta: L("تسوّق الأكثر طلبًا", "Shop best sellers"),
     },
@@ -161,8 +154,6 @@ const DEFAULT_CONTENT: LookDefaults = {
     story: PHOTOS.story,
     // The about page's photo, landscape. Optional: without it the page shows `story`.
     about: PHOTOS.aboutPage,
-    // The spotlight's tall photo, 4:5 with a dark fade and white copy over its lower half (a wide crop on tablets and phones): one hero piece, centred.
-    custom: { "spot-photo": PHOTOS.spotlight },
   },
 };
 
@@ -175,8 +166,10 @@ const DEFAULT_CONTENT: LookDefaults = {
 function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
-  // Optional wording a trade may replace: the link to the whole catalog (header, footer and the spotlight's "view all").
+  // Optional wording a trade may replace: the link to the whole catalog (header, footer and the home grid's "view all").
   const shopAll = c.custom?.["shop-all"] ?? L("كل القطع", "Shop all");
+  // What the home grid shows.
+  const grid = journey.primary;
 
   const header = lib("header-topbar", {
     text: {
@@ -223,21 +216,17 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("categories-photo-tiles", {
       text: { "تسوّق حسب القسم": c.categories.title },
     }),
-    lib("products-spotlight", {
-      photo: [undefined, undefined, c.photos.custom["spot-photo"]!],
-      // Phones: the copy sits over the light photo, so the shade darkens all of it.
-      nodes: { "التظليل": { mobile: { background: "black", opacity: 60 } } },
+    // v3: a grid of eight in the three-piece spotlight's place (the fixed home keeps its nine sections).
+    lib("products-grid", {
       text: {
-        "صورة المجموعة": c.products.primary.alt,
-        "مجموعة": c.products.primary.eyebrow,
-        "مجموعة الموسم": c.products.primary.title,
-        "قطع مختارة بعناية، بخامات جيدة وتفاصيل هادئة.": c.products.primary.line,
-        "تسوّق المجموعة": c.products.primary.cta,
-        "من المجموعة": L("من الاختيارات", "From the picks"),
+        "وصل حديثًا": c.products.primary.title,
+        ...(grid === "best-sellers" && { "أحدث المنتجات في المتجر.": L("القطع الأكثر طلبًا في المتجر.", "The store's most ordered pieces.") }),
+        ...(grid === "newest" && { "أحدث المنتجات في المتجر.": L("أحدث القطع في المتجر.", "The newest pieces in the store.") }),
+        ...(grid === "featured" && { "أحدث المنتجات في المتجر.": L("قطع مختارة من المتجر.", "Pieces picked by the store.") }),
+        // Its "view all" is the link to the whole catalog, as the spotlight's was.
         "عرض الكل": shopAll,
       },
-      links: { "/products": [BEST, SHOP] },
-      lists: [{ source: journey.primary }],
+      lists: [{ source: grid, limit: 8 }],
     }),
     lib("about-inset", {
       photo: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, c.photos.story],
@@ -368,7 +357,9 @@ export const JEWELRY_LUXE = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(JEWELRY_LUXE_KEY, "gold-jewelry", { ar: 2812, en: 2812 }),
   key: JEWELRY_LUXE_KEY,
-  version: 2,
+  // v3 (2026-11-16, owner): every home has at least one real products grid (it replaces the three-piece spotlight).
+  version: 3,
+  changelog: "Jewelry Luxe v3: a products grid on the home",
   name: L("ماسة", "Masa"),
   description: L(
     "مجوهرات فاخرة بهدوء: فيديو دهب، صور ستوديو بيضا وأربع صفوف للأقسام. لمحلات الدهب والألماس الراقية.",
@@ -400,10 +391,6 @@ export const JEWELRY_LUXE = editionTemplate({
     "hero",
     "categories.title",
     "products.primary.title",
-    "products.primary.line",
-    "products.primary.eyebrow",
-    "products.primary.cta",
-    "products.primary.alt",
     "story",
     "newsletter.title",
     "newsletter.line",
@@ -413,12 +400,11 @@ export const JEWELRY_LUXE = editionTemplate({
     "faq",
     "photos.hero.wide",
     "photos.story",
-    "photos.custom.spot-photo",
   ],
-  // `custom.shop-all`: the link to the whole catalog in the header, the footer and the spotlight (default "كل القطع / Shop all").
+  // `custom.shop-all`: the link to the whole catalog in the header, the footer and the home grid (default "كل القطع / Shop all").
   optional: ["photos.hero.video", "photos.about", "newsletter.note", "custom.shop-all"],
-  // The spotlight shows the featured products (three), then the store's first four categories as rows.
-  journey: { primary: "featured", rows: [1, 2, 3, 4] },
+  // The grid shows the newest pieces (v3; the spotlight showed the three featured), then the store's first four categories as rows.
+  journey: { primary: "newest", rows: [1, 2, 3, 4] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: {

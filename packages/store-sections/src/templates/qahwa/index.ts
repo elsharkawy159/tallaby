@@ -125,11 +125,36 @@ const DEFAULT_CONTENT: LookDefaults = {
 };
 
 /**
+ * The home's products grid (owner, 2026-11-16: every home has one): the
+ * newest products, or the best sellers when the main list already shows the
+ * newest, so an edition never repeats its main list.
+ */
+function gridPatch(primary: LookJourney["primary"]): LibraryPatch {
+  return primary === "newest"
+    ? {
+        text: {
+          "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"),
+          "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
+        },
+        links: { "/products": BEST },
+        lists: [{ source: "best-sellers", limit: 8 }],
+      }
+    : {
+        text: {
+          "وصل حديثًا": L("وصل حديثًا", "New in"),
+          "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store."),
+        },
+        links: { "/products": NEW },
+        lists: [{ source: "newest", limit: 8 }],
+      };
+}
+
+/**
  * The look: every section from a content object (`DEFAULT_CONTENT`, or an
  * edition's). What names the trade is a slot of `c`; generic shop labels
  * (Our story, Add to cart, Top rated) and the layout stay here.
  */
-function look(c: LookContent, _journey: LookJourney): LookParts {
+function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const x = c.custom;
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
@@ -162,6 +187,8 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       },
       links: { "/products": SHOP },
     }),
+    // v5 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
+    lib("products-grid", gridPatch(journey.primary)),
     ...(reviews && rating
       ? [
           lib("testimonials-bento", {
@@ -252,8 +279,8 @@ const DEMO = demoStore({
 
 export const QAHWA = editionTemplate({
   key: QAHWA_KEY,
-  version: 4,
-  changelog: "Qahwa v3: wide hero photo, no coupon",
+  version: 5,
+  changelog: "Qahwa v5: a products grid on the home",
   productPage: { thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("قهوة", "Qahwa"),
   description: L(

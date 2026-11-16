@@ -93,6 +93,15 @@ const home: Design[] = [
     },
     links: { "/products": BRANDS.map(search) },
   }),
+  // v5 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
+  lib("products-grid", {
+    text: {
+      "وصل حديثًا": L("وصل حديثًا", "New in"),
+      "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store."),
+    },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("text-steps", {
     text: {
       "كيف ترجع منتجًا": L("كيف تطلب معداتك", "How to order your gear"),
@@ -178,8 +187,8 @@ const DEMO = demoStore({
 
 export const BASECAMP = libraryTemplate({
   key: BASECAMP_KEY,
-  version: 4,
-  changelog: "Basecamp v4: categories, section order",
+  version: 5,
+  changelog: "Basecamp v5: a products grid on the home",
   name: L("بيس كامب", "Basecamp"),
   description: L(
     "تخييم ورحلات: موسم التخييم، ما يميزنا، العلامات التجارية وخطوات الطلب. أربع صفحات جاهزة.",

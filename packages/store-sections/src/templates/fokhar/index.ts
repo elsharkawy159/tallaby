@@ -108,6 +108,12 @@ const home: Design[] = [
       "في أي سؤال عن منتجاتنا.": L("تُحرق القطعة في الفرن على حرارة عالية.", "It is fired in a hot kiln."),
     },
   }),
+  // v5: a products grid of the newest pieces after the making story (the bento above shows the most ordered).
+  lib("products-grid", {
+    text: { "وصل حديثًا": L("أحدث القطع", "Latest pieces"), "أحدث المنتجات في المتجر.": L("أحدث القطع في المتجر.", "The newest pieces in the store.") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("pay-promise", {
     text: {
       "اطلب قبل ٢ ظهرًا ليصلك غدًا": L("خطوات طلبك", "Your order, step by step"),
@@ -178,8 +184,9 @@ const DEMO = demoStore({
 export const FOKHAR = libraryTemplate({
   key: FOKHAR_KEY,
   // v4 (2026-11-16, owner): Noto Naskh Arabic headings replace Reem Kufi, which read oddly to shoppers.
-  version: 4,
-  changelog: "Fokhar v4: Noto Naskh Arabic headings",
+  // v5 (2026-11-16, owner): every home has at least one real products grid.
+  version: 5,
+  changelog: "Fokhar v5: a products grid on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قطع أخرى قد تعجبك", "More pieces you may like") } },
   name: L("فخار", "Fokhar"),
   description: L(

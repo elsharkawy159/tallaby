@@ -3,7 +3,7 @@
  * terracotta and a camel accent, Amiri headings over Tajawal, soft 10px
  * corners and a 1360px container. A slow, magazine-like home: the
  * announcement header, a split hero of a wooden-hanger rail, captioned
- * category cards with counts, a campaign photo beside best sellers, the
+ * category cards with counts, a grid of the best sellers (v2), the
  * making story in three photos, four category rows with tall frames, a
  * personal letter newsletter and the classic footer. Built from section
  * library designs (`fromLibrary`).
@@ -51,7 +51,6 @@ const RATED = "/products?sort=rating";
 const P = (id: number) => pexels(id, 800);
 const PHOTOS = {
   hero: pexels(8311879, 1920),
-  campaign: pexels(5424912, 1200),
   storeRail: pexels(6347892, 1200),
   storeStand: pexels(35033800, 1200),
   storeShirts: pexels(10558182, 1200),
@@ -131,16 +130,14 @@ const home: Design[] = [
     lists: [{ limit: 6 }],
     nodes: { "الأقسام": { style: { columns: 3 } } },
   }),
-  lib("products-campaign", {
-    photo: [undefined, undefined, undefined, PHOTOS.campaign],
+  // v2 (2026-11-16, owner): a real products grid replaces the campaign (one photo and four cards); the home stays at nine sections.
+  lib("products-grid", {
     text: {
-      "صورة الحملة": L("قمصان بيج وخوخية بجوار مرآة", "Beige and blush shirts beside a mirror"),
-      "الخط الجديد": L("الأكثر مبيعًا", "Best sellers"),
-      "اخترناها لك بعناية": L("القطع الأكثر طلبًا", "The most ordered pieces"),
-      "قطع جديدة من خطنا الجديد، مصنوعة لتدوم.": L("خامات طبيعية وقصّات مريحة تناسب كل الإطلالات.", "Natural fabrics and easy cuts that go with everything."),
-      "تسوّق المجموعة": L("كل الأكثر مبيعًا", "All best sellers"),
+      "وصل حديثًا": L("القطع الأكثر طلبًا", "The most ordered pieces"),
+      "أحدث المنتجات في المتجر.": L("خامات طبيعية وقصّات مريحة تناسب كل الإطلالات.", "Natural fabrics and easy cuts that go with everything."),
     },
     links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 8 }],
   }),
   lib("about-stories", {
     photo: [undefined, PHOTOS.storeRail, PHOTOS.storeStand, PHOTOS.storeShirts],
@@ -253,7 +250,8 @@ const DEMO = demoStore({
 
 export const FASHION_WARM = libraryTemplate({
   key: FASHION_WARM_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Nawl v2: a products grid on the home",
   name: L("نَوْل", "Nawl"),
   description: L(
     "أزياء دافئة بروح المجلات: صورة كبيرة، حملة بصورة وأربعة صفوف للأقسام. لعلامات القطن والكتان والأعمال اليدوية.",

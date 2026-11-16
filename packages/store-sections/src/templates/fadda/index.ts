@@ -106,6 +106,15 @@ const home: Design[] = [
       "ميزان": "Scoop",
     },
   }),
+  // v5 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
+  lib("products-grid", {
+    text: {
+      "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"),
+      "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
+    },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 8 }],
+  }),
   lib("text-terms", {
     text: {
       "شروط الضمان": L("الخامات والعناية", "Materials & care"),
@@ -189,8 +198,8 @@ const DEMO = demoStore({
 
 export const FADDA = libraryTemplate({
   key: FADDA_KEY,
-  version: 4,
-  changelog: "Fadda v4: hero, categories, section order",
+  version: 5,
+  changelog: "Fadda v5: a products grid on the home",
   name: L("فضة", "Fadda"),
   description: L(
     "ستوديو فضة: واجهة بخاتم واحد، الجديد، آراء الصحافة، الخامات والعناية ورسالة المتجر. أربع صفحات جاهزة.",

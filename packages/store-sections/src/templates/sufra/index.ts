@@ -160,6 +160,12 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       text: { "اختيارنا لك": c.products.primary.title, "اختيار الأسبوع": c.products.primary.eyebrow },
     }),
     lib("pay-open-box"),
+    // v6: a products grid; the pick above already shows the newest, so the grid shows the best sellers.
+    lib("products-classic", {
+      text: { "جديدنا": L("المتجر", "The shop"), "وصل حديثًا": L("الأكثر طلبًا", "Best sellers") },
+      links: { "/products": BEST },
+      lists: [{ source: "best-sellers", limit: 8 }],
+    }),
     lib("finder-budget"),
     lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("التوصيل والدفع", "Delivery and payment") } }),
   ];
@@ -226,8 +232,9 @@ const DEMO = demoStore({
 export const SUFRA = editionTemplate({
   key: SUFRA_KEY,
   // v5 (2026-11-16, owner): Noto Kufi Arabic headings replace Reem Kufi, which read oddly to shoppers.
-  version: 5,
-  changelog: "Sufra v5: Noto Kufi Arabic headings",
+  // v6 (2026-11-16, owner): every home has at least one real products grid.
+  version: 6,
+  changelog: "Sufra v6: a products grid on the home",
   productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("سفرة", "Sufra"),
   description: L(

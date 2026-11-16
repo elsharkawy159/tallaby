@@ -101,6 +101,13 @@ const home: Design[] = [
       "بطريقة الدفع نفسها خلال ٥ أيام.": L("شرح طريقة استخدام الشاحن وتطبيقه.", "A walk-through of the charger and its app."),
     },
   }),
+  // v4 (2026-11-16, owner): every home has at least one real products grid.
+  lib("products-grid", {
+    as: "new-in",
+    text: { "وصل حديثًا": L("وصل حديثًا", "New in"), "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store.") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("service-booking", {
     text: {
       "احجز موعد الفني": L("احجز معاينة", "Book a survey"),
@@ -171,8 +178,8 @@ const DEMO = demoStore({
 
 export const KAHRABA = libraryTemplate({
   key: KAHRABA_KEY,
-  version: 3,
-  changelog: "Kahraba v3: categories after the hero, chargers before the install, one service block",
+  version: 4,
+  changelog: "Kahraba v4: a products grid on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء مستخدمي الشواحن", "From charger owners"), related: L("إكسسوارات للسيارة", "Accessories for the car") } },
   name: L("كهربا", "Kahraba"),
   description: L(

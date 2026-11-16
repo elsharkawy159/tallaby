@@ -26,7 +26,8 @@ import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
 import { fromLibrary, type LibraryPatch } from "../_library";
 import { aboutStory, contactPage, faqPage, pageHeader } from "../_pages";
-import { copyrightLine, editionTemplate, type LookParts } from "../editions/apply";
+import type { Localized } from "../../core/types";
+import { copyrightLine, editionTemplate, primaryHref, type LookParts } from "../editions/apply";
 import type { LookContent, LookDefaults, LookJourney } from "../editions/types";
 import { demoStore, handle, pexels, pexelsVideo, pexelsVideoPoster, phone } from "../library-template";
 import { templatePreview } from "../preview";
@@ -138,6 +139,18 @@ const ROW_LIMITS = [4, 8, 4, 4];
  * generic shop labels (New in, Best sellers, Shop now, View all), the
  * library's scrolling words ("Your style, your way") and the layout stay here.
  */
+/** The home grid's title and line for what it shows (generic shop labels, not slots). */
+const GRID_TITLE: Record<LookJourney["primary"], Localized> = {
+  newest: L("وصل حديثًا", "New in"),
+  "best-sellers": L("الأكثر طلبًا", "Best sellers"),
+  featured: L("منتجات مختارة", "Featured products"),
+};
+const GRID_LINE: Record<LookJourney["primary"], Localized> = {
+  newest: L("أحدث المنتجات في المتجر.", "The newest products in the store."),
+  "best-sellers": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
+  featured: L("منتجات مختارة من المتجر.", "Products picked by the store."),
+};
+
 function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
@@ -198,7 +211,16 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     lib("categories-portrait-labels", {
       text: { "المجموعات": c.categories.title, "تسوّق الآن": c.custom["categories-cta"] ?? L("تسوّق الآن", "Shop now") },
     }),
-    lib("text-big-marquee"),
+    // v3: a products grid of the main list in the marquee band's place (the home keeps its nine sections), tall photos like the rows.
+    lib("products-grid", {
+      text: {
+        "وصل حديثًا": GRID_TITLE[journey.primary],
+        ...(journey.primary !== "newest" && { "أحدث المنتجات في المتجر.": GRID_LINE[journey.primary] }),
+      },
+      links: { "/products": primaryHref(journey.primary) },
+      lists: [{ source: journey.primary, limit: 8 }],
+      nodes: { "صورة البطاقة": { style: { aspectRatio: "portrait" } } },
+    }),
     rows[0]!,
     lib("about-fullbleed", {
       photo: [undefined, undefined, c.photos.banner],
@@ -299,7 +321,9 @@ export const VELLA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(VELLA_KEY, "lingerie-sleepwear", { ar: 2682, en: 2691 }),
   key: VELLA_KEY,
-  version: 2,
+  // v3 (2026-11-16, owner): every home has at least one real products grid (it takes the marquee band's place).
+  version: 3,
+  changelog: "Vella v3: a products grid on the home",
   name: NAME,
   description: L(
     "أزياء نسائية بأسلوب نضيف: شريط رسائل أسود متحرك، فيديو بعرض الشاشة، أقسام بصور طولية وصف منتجات لكل قسم. لمتاجر الملابس النسائية.",
@@ -348,7 +372,7 @@ export const VELLA = editionTemplate({
   // `custom.categories-cta`: the small link under each category photo (default "تسوّق الآن / Shop now").
   // `custom.footer-offers`: the label of the footer's "العروض / Offers" link, which goes to the whole catalog (a pack should rename it: an edition shows no offers).
   optional: ["photos.hero.video", "custom.categories-cta", "custom.footer-offers"],
-  // No main product section: the home page is one row per category (`primary` is not read). The rows hold 4, 8, 4 and 4 products.
+  // The grid after the categories shows `primary`, then one row per category. The rows hold 4, 8, 4 and 4 products.
   journey: { primary: "newest", rows: [1, 2, 3, 4] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,

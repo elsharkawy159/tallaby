@@ -159,6 +159,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "تفاصيل واضحة": c.custom["compare-row-2"]!,
       },
     }),
+    // v6: a products grid after the comparison, the other list of the main rows (newest, or best sellers when the rows show the newest).
+    ...(journey.primary === "newest"
+      ? [lib("products-grid", { text: { "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"), "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products.") }, links: { "/products": BEST }, lists: [{ source: "best-sellers", limit: 8 }] })]
+      : [lib("products-grid", { text: { "وصل حديثًا": L("وصل حديثًا", "New in") }, links: { "/products": NEW }, lists: [{ source: "newest", limit: 8 }] })]),
     ...(reviews && reply
       ? [
           lib("testimonials-chat", {
@@ -247,8 +251,9 @@ export const VOLT = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(VOLT_KEY, "phone-cases", { ar: 1683, en: 1683 }),
   key: VOLT_KEY,
-  version: 5,
-  changelog: "Volt v4: wide hero photo",
+  // v6 (2026-11-16, owner): every home has at least one real products grid.
+  version: 6,
+  changelog: "Volt v6: a products grid on the home",
   name: L("فولت", "Volt"),
   description: L(
     "إكسسوارات موبايل: كلمة كبيرة للمنتج، صفوف شراء سريع ومقارنة. أربع صفحات جاهزة.",

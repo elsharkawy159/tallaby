@@ -117,6 +117,13 @@ const home: Design[] = [
       "كسر الشاشة مرة واحدة": L("حادثان وجهاز بديل أثناء الإصلاح", "Two accidents and a loan device during repair"),
     },
   }),
+  // v4 (2026-11-16, owner): every home has at least one real products grid.
+  lib("products-tabs-grid", {
+    as: "new-in",
+    text: { "وصل حديثاً": L("وصل حديثًا", "New in") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
   lib("pay-open-box", {
     text: {
       "جرّب المنتج أمام المندوب.": L("شغّل الجهاز وتأكد منه أمام المندوب.", "Switch the device on and check it in front of the courier."),
@@ -167,8 +174,8 @@ const DEMO = demoStore({
 
 export const SHASHA = libraryTemplate({
   key: SHASHA_KEY,
-  version: 3,
-  changelog: "Shasha v3: categories after the hero, one delivery block",
+  version: 4,
+  changelog: "Shasha v4: a products grid on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء المستخدمين", "Customer reviews"), related: L("أجهزة تكمّل جهازك", "Pairs well with this") } },
   name: L("شاشة", "Shasha"),
   description: L(

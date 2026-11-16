@@ -133,6 +133,31 @@ const DEFAULT_CONTENT: LookDefaults = {
 };
 
 /**
+ * The home's products grid (owner, 2026-11-16: every home has one): the
+ * newest products, or the best sellers when the main list already shows the
+ * newest, so an edition never repeats its main list.
+ */
+function gridPatch(primary: LookJourney["primary"]): LibraryPatch {
+  return primary === "newest"
+    ? {
+        text: {
+          "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"),
+          "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
+        },
+        links: { "/products": BEST },
+        lists: [{ source: "best-sellers", limit: 8 }],
+      }
+    : {
+        text: {
+          "وصل حديثًا": L("وصل حديثًا", "New in"),
+          "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store."),
+        },
+        links: { "/products": NEW },
+        lists: [{ source: "newest", limit: 8 }],
+      };
+}
+
+/**
  * The look: every section from a content object (`DEFAULT_CONTENT`, or an
  * edition's). What names the trade is a slot of `c`; generic shop labels
  * (New in, FAQ, Top rated, By price) and the layout stay here.
@@ -186,6 +211,8 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       // Six across by design; a store with another number of categories gets one full row of them (phones swipe).
       ...(tiles !== 6 && { nodes: { "الأقسام": { style: { columns: tiles }, tablet: { columns: tiles } } } }),
     }),
+    // v5 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
+    lib("products-grid", gridPatch(journey.primary)),
     lib("finder-price-bands", {
       text: {
         "حسب السعر": L("حسب السعر", "By price"),
@@ -284,8 +311,8 @@ const DEMO = demoStore({
 
 export const ROKN = editionTemplate({
   key: ROKN_KEY,
-  version: 4,
-  changelog: "Rokn v3: categories, section order",
+  version: 5,
+  changelog: "Rokn v5: a products grid on the home",
   productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("ركن", "Rokn"),
   description: L(

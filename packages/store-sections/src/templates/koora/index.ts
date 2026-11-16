@@ -103,6 +103,13 @@ const home: Design[] = [
       ),
     },
   }),
+  // v4 (2026-11-16, owner): every home has at least one real products grid; after the messages, not next to the bento.
+  lib("products-grid", {
+    as: "new-in",
+    text: { "وصل حديثًا": L("وصل حديثًا", "New in"), "أحدث المنتجات في المتجر.": L("أحدث المنتجات في المتجر.", "The newest products in the store.") },
+    links: { "/products": NEW },
+    lists: [{ source: "newest", limit: 8 }],
+  }),
 ];
 
 const about: Design[] = [
@@ -151,8 +158,8 @@ const DEMO = demoStore({
 
 export const KOORA = libraryTemplate({
   key: KOORA_KEY,
-  version: 3,
-  changelog: "Koora v3: categories after the hero",
+  version: 4,
+  changelog: "Koora v4: a products grid on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الفرق", "From teams"), related: L("جهّز الفريق", "Kit out the team") } },
   name: L("كورة", "Koora"),
   description: L(

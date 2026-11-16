@@ -89,10 +89,11 @@ const home: Design[] = [
       "تواصل سهل لأي سؤال": L("بيانات التوافق موضحة لكل منتج", "Fit details for every product"),
     },
   }),
-  lib("products-rows", {
-    text: { "إكسسوارات بأسعار مناسبة": L("وصل حديثًا: إضافات صغيرة لسيارتك", "Just in: small upgrades for your car") },
+  // v5: the newest upgrades as a grid of bordered cards with the cart button (they were slim rows).
+  lib("products-classic", {
+    text: { "وصل حديثًا": L("إضافات صغيرة لسيارتك", "Small upgrades for your car") },
     links: { "/products": NEW },
-    lists: [{ source: "newest" }],
+    lists: [{ source: "newest", limit: 8 }],
   }),
   lib("testimonials-chat", {
     text: {
@@ -155,8 +156,9 @@ const DEMO = demoStore({
 
 export const GARAGE = libraryTemplate({
   key: GARAGE_KEY,
-  version: 4,
-  changelog: "Garage v4: section order, newest upgrades rail, no sale wording",
+  // v5 (2026-11-16, owner): every home has at least one real products grid (the newest upgrades, rows before).
+  version: 5,
+  changelog: "Garage v5: a products grid on the home",
   name: L("جراج", "Garage"),
   description: L(
     "إكسسوارات سيارات: ملصق الموسم، اختيارات السائقين، مقارنة ورسائل واتساب. أربع صفحات جاهزة.",

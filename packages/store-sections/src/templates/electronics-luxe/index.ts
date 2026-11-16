@@ -3,8 +3,8 @@
  * paper, graphite ink and a steel-blue accent, Noto Kufi Arabic headings
  * over IBM Plex Sans Arabic, near-square 4px corners and a wide 1440px
  * container. A calm, gallery-like gadget store: top bar header, a background
- * video of white headphones on a stand, ringed category circles, the pick of the
- * week, the studio story beside a tidy desk, four category rows, a topics
+ * video of white headphones on a stand, ringed category circles, a grid of the
+ * best sellers (v2), the studio story beside a tidy desk, four category rows, a topics
  * newsletter and the ruled footer. Built from section library designs
  * (`fromLibrary`).
  *
@@ -108,12 +108,14 @@ const home: Design[] = [
   lib("categories-circles", {
     text: { "ما الذي تبحث عنه؟": L("تسوّق حسب الجهاز", "Shop by device") },
   }),
-  lib("products-feature", {
+  // v2 (2026-11-16, owner): a real products grid replaces the feature (one big card and four small); the home stays at nine sections.
+  lib("products-grid", {
     text: {
-      "اختيارنا لك": L("اختيار الأسبوع", "Pick of the week"),
-      "اختيار الأسبوع": L("اختيار الأسبوع", "Pick of the week"),
+      "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"),
+      "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products."),
     },
-    lists: [undefined, { source: "best-sellers" }],
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 8 }],
   }),
   lib("about-list", {
     photo: [undefined, undefined, undefined, undefined, undefined, PHOTOS.whiteDesk],
@@ -223,7 +225,8 @@ const DEMO = demoStore({
 
 export const ELECTRONICS_LUXE = libraryTemplate({
   key: ELECTRONICS_LUXE_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Atheer v2: a products grid on the home",
   name: L("أثير", "Atheer"),
   description: L(
     "إلكترونيات بهدوء فاخر: فيديو لسماعة على حامل، أقسام في دوائر وأربعة صفوف منتجات. لمتاجر السماعات والأجهزة الراقية.",
