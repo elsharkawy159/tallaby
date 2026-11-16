@@ -276,21 +276,29 @@
    * hover run time (--tpl-shot-run).
    */
   @media (hover: none) {
+    /*
+     * Slow and smooth (owner, 2026-11-16): one way takes --tpl-shot-tour-run
+     * (8–30 s, timed on the phone shot), with a gentle sine ease on each leg
+     * and a short rest at the top and the bottom.
+     */
     .tpl-shot[data-tour] .tpl-shot__img {
-      animation: tpl-shot-tour calc(var(--tpl-shot-run, 6s) * 2 + 2.4s) cubic-bezier(0.45, 0.05, 0.55, 0.95) 0.4s infinite;
+      will-change: transform;
+      animation: tpl-shot-tour calc(var(--tpl-shot-tour-run, 12s) * 2 + 3s) linear 0.6s infinite;
     }
   }
 
   @keyframes tpl-shot-tour {
     0%,
-    8% {
+    6% {
       transform: translateY(0);
+      animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
     }
-    46%,
-    54% {
+    47%,
+    53% {
       transform: translateY(calc(-100% + 100cqh));
+      animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
     }
-    92%,
+    94%,
     100% {
       transform: translateY(0);
     }

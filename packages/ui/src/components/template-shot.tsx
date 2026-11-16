@@ -13,6 +13,16 @@ export function templateShotSeconds(width: number, height: number): number {
 }
 
 /**
+ * Seconds the touch-screen tour (TemplateShotTour) takes one way, from the shot
+ * phones show: slower than the hover scroll (owner, 2026-11-16: "slower and
+ * smooth"), about 4.5 s per 3:4 card height of page below the first, 8–30 s.
+ */
+export function templateShotTourSeconds(width: number, height: number): number {
+  const below = height / width / (4 / 3) - 1;
+  return Math.round(Math.min(30, Math.max(8, below * 4.5)) * 10) / 10;
+}
+
+/**
  * A template card's preview (owner, 2026-11-12): a full-page screenshot of
  * the template's home in a 3:4 frame, showing its top. Hovering the nearest
  * `.tpl-shot-trigger` (the card) with a fine pointer, or keyboard focus
@@ -67,7 +77,13 @@ export function TemplateShot({
     <span
       aria-hidden
       className={cn("tpl-shot relative block aspect-[3/4] w-full overflow-hidden bg-neutral-100", className)}
-      style={{ "--tpl-shot-run": `${templateShotSeconds(width, height)}s` } as React.CSSProperties}
+      style={
+        {
+          "--tpl-shot-run": `${templateShotSeconds(width, height)}s`,
+          // Phones show the phone shot when there is one: time the tour on its own length.
+          "--tpl-shot-tour-run": `${templateShotTourSeconds(mobile?.width ?? width, mobile?.height ?? height)}s`,
+        } as React.CSSProperties
+      }
     >
       <picture>
         {mobile && <source media={mobileMedia} srcSet={mobile.src} width={mobile.width} height={mobile.height} />}
