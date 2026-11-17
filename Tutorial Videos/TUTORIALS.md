@@ -86,7 +86,8 @@ Owner, 2026-11-17: every tutorial has a simple, calm, human-sounding voiceover i
 |---|---|
 | Voice | **Hanafi – Educational – Egyptian** (ElevenLabs), `voice_id: DWMVT5WflKt0P8OPpIrY`. Chosen by the owner on 2026-11-17 from nine test takes (`T-01-add-product/work/vo-tests/`) |
 | Model | `eleven_v4`, the connector's default voice settings. Never raise style, expressiveness or speed |
-| Tags | None. No `[excited]`, `[calm]` or any other tag; pauses come from punctuation only |
+| Tags | None. No `[excited]`, `[calm]`, `[laughs]` or any other tag; pauses come from punctuation only |
+| Tone | **Formal, serious and calm** from the first word to the last (owner, 2026-11-17). **No laughing, chuckling, giggling or smiling-while-talking sounds**, no sighs, no playful or joking delivery |
 | Takes | One generation of the whole script. Generate again only when the take fails the checks below, after fixing the script |
 | If Hanafi is unavailable | Stop and ask the owner. Do not switch voice on your own, and never use a non-Egyptian voice |
 
@@ -104,6 +105,7 @@ Every script has the same three parts, so all tutorials sound like one series:
 
 **Writing rules**
 
+- **Keep it formal** (owner, 2026-11-17): respectful and businesslike, like a trainer explaining a tool at work. Nothing in the script invites a laugh: no jokes, no teasing, no slang exclamations (يا عم، يا باشا، هههه), no "!" and no emoji. Statements end with a full stop; only the opening may be a question.
 - **Egyptian Arabic, simple and polite**, the way a helpful colleague explains something: عايز، اختار، ضيف، اكتب، دلوقتي، كده، بقى. No Modern Standard words (سوف، الآن، يمكنك، هذا) and no Gulf or Levantine words (أبغى، الحين، كذا، شلون، هالـ).
 - **Anybody must understand it.** Sentences of 3–8 words, one action each. No technical terms without a plain word beside them. Call things by the name written on the button or field.
 - **Clear, polite verbs with the thing named after them:** ضيف منتجك، اكتب الاسم، اختار الفئة، اضغط نشر، دخّل البيانات، افتح الصفحة، ارفع الصور، فعّل الخيار، احفظ التغييرات، راجع البيانات، شارك الرابط.
@@ -186,6 +188,7 @@ This is for the voice only. Text on screen keeps the dashboard's own words (for 
 
 - Transcribe it (`creative_transcribe_audio`) and compare it with the script word for word.
 - Check that طلبي, every word in the diacritics table and every English word came out right, and that no Gulf or formal word replaced an Egyptian one.
+- **A take with any laugh, chuckle or playful tone is rejected**, even if every word is right. The transcript can show a laugh as "(يضحك)", "(laughs)" or "هه"; the listener checks for it too.
 - A take that fails is not patched: fix the script's spelling, diacritics or punctuation and generate again.
 - The model cannot hear the take. For each new video the owner, or someone who can listen, confirms the voice sounds calm and natural before the video's status becomes `ready`.
 
@@ -317,11 +320,14 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 
 ### Wave 1 — the first things every seller does
 
+**Four ways to add a product, four videos** (owner, 2026-11-17): the add-product page offers adding by hand, with AI, from a link and from a file. Each way gets its own short video: T-01 (by hand, pilot made), T-02 (AI), T-51 (link) and T-03 (file). Never combine them into one video.
+
 | ID | Video (the task) | Dashboard path | Steps to show | Status |
 |---|---|---|---|---|
 | T-01 | Add a product | `/stores/[storeId]/products/add` | Choose "إضافة يدويًا" → name and short description → photos → category → price and publish → the product in the list | draft (pilot: rendered with voice, 34.3 s; waiting for the owner's approval and a production check) |
 | T-02 | Add a product with AI | `/stores/[storeId]/products/add` (AI card) | Choose "with AI" → add photos → the fields fill in Arabic and English → review → publish | todo |
-| T-03 | Add many products from a file | `/stores/[storeId]/products/add/from-file` | Upload the file → check the rows → import → the products list | todo |
+| T-03 | Add products from a file | `/stores/[storeId]/products/add/from-file` | Upload the file → check the rows → import → the products list | todo |
+| T-51 | Add a product from a link | `/stores/[storeId]/products/add` (link option) | Choose "from a link" → paste the product's link → the fields and photos fill in → review → publish | todo |
 | T-04 | Choose your store's template | `/stores/[storeId]/website/templates` | Open Templates → preview one → choose it | todo |
 | T-05 | Edit your website and publish | `/stores/[storeId]/website` | Open the editor → change a title and a photo → Publish | todo |
 | T-06 | Set your shipping prices | `/stores/[storeId]/shipping` | Add an area → set the price → save | todo |
@@ -403,3 +409,4 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | 2026-11-17 | T-01 | Pilot rendered without a voice; sounds made simpler and quieter (owner) |
 | 2026-11-17 | — | Voiceover plan added (§5.1): owner chose the Hanafi voice from nine test takes; the pilot does not have the voice yet |
 | 2026-11-17 | T-01 | Approved script generated with Hanafi (transcript matched word for word); kit now places and mixes a voice; pilot retimed to the voice and re-rendered: 34.3 s, -16.1 LUFS, -2.2 dBTP. Not yet listened to by a person |
+| 2026-11-17 | — | Owner: the voiceover stays formal with no laughing (§5.1); one video for each of the four ways to add a product, so T-51 "Add a product from a link" was added (51 topics) |

@@ -1349,7 +1349,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **Why:** a seller on a feature page should be able to watch, in about 30 seconds, how to use it, without leaving the dashboard.
 - **Rules (owner):** one video per feature, about 30 s, YouTube Shorts (9:16), a calm Egyptian voiceover (first asked without one; changed the same day, Hanafi voice chosen from nine test takes), quiet simple sound effects, no music, the dashboard's mobile screen filling the whole video (no small phone mockup), one design system across all videos, every video in its own folder under `Tutorial Videos/` with a `video.md` (caption, duration, feature, dashboard path).
 - **F-97a · P1 · deps: —** Shared video kit (`Tutorial Videos/_kit/`: overlays, sounds, title and end cards) and the pilot video T-01 "Add a product"; owner approves the look before the rest are made.
-- **F-97b · P1 · deps: F-97a** Wave 1 videos T-02 … T-10 (add with AI, from a file, template, editor, shipping, payments, top-up, orders, MCP).
+- **F-97b · P1 · deps: F-97a** Wave 1 videos T-02 … T-10 and T-51 (add with AI, from a link, from a file; one video per way of adding a product, owner 2026-11-17; template, editor, shipping, payments, top-up, orders, MCP).
 - **F-97c · P2 · deps: F-97a** Waves 2–6 videos T-11 … T-50.
 - **F-97d · P1 · deps: one uploaded video** Dashboard button: one code registry mapping a page path to its YouTube link, a "شاهد الشرح" header button (opposite the page title) that opens the Short in a dialog, strings in `ar.json` and `en.json`; a page with no video shows no button. No migration.
 
