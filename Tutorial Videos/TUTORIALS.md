@@ -345,7 +345,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | T-12 | Main and sub-categories | `/stores/[storeId]/products/categories` | Add a main category → a sub-category → put a product in it | todo |
 | T-13 | Update stock quickly | `/stores/[storeId]/products/inventory` | «السجل» under a product → type the units that arrived → «إضافة» → the new row in the stock history | draft |
 | T-14 | Restore a deleted product | `/stores/[storeId]/products/trash` | Menu › المنتجات › «سلة المحذوفات» → tick the product → «استرجاع» → back to the products list | draft |
-| T-15 | Ask the customer for details on a product | product form (customer requirements) | Add a field → the customer fills it on the product page | todo |
+| T-15 | Ask the customer for details on a product | product form › مطلوب من العميل | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page | draft (take made before the full-تشكيل rule) |
 | T-16 | Add a size chart | `/stores/[storeId]/apps` › Size chart | Install → create a chart → link it to a category → "اعرف مقاسك" on the product | todo |
 | T-17 | Quantity offers and cross-sell | `/orders/cross-sell` | Create an offer → it shows under the product | todo |
 
