@@ -6,7 +6,7 @@ roadmap: "§2.1 Products"
 dashboard_path: /stores/[storeId]/products/add
 status: draft
 duration_seconds: 34.3
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation TUi2SwSBiJtLQK9TuU8m"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 5Khwxdmn90PgdyBv32CB"
 made_on: 2026-11-17
 youtube_url:
 youtube_title_ar: "طريقة إضافة منتج جديد لمتجرك على طلبي #Shorts"
@@ -32,7 +32,7 @@ The bar at the bottom counts down as on the real page: 29% "5 حقول مطلو�
 
 عايز تِضيف مُنتَج جديد على طَلَبي؟ الموضوع بسيط. واحد: اختار إضافة يَدَوِيًّا. اتنين: اكتِب اسم المُنتَج، ووَصف قُصيَّر عنه. تلاتة: ضيف صُوَر المُنتَج. أربعة: اختار الفِئة. خمسة: اكتِب السِّعر، واضغَط نَشر. وكده مُنتَجَك بقى مَعروض في مَتجَرَك.
 
-Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, generation `TUi2SwSBiJtLQK9TuU8m`. The take is `work/vo/take.mp3` (19.76 s), cut at its sentence pauses and placed one sentence per beat; it is not sped up or stretched. The take was transcribed and matched the script word for word, but **nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
+Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, generation `5Khwxdmn90PgdyBv32CB`. The take is `work/vo/take.mp3` (19.44 s; regenerated 2026-11-17 under the formal, no-laughing rule), cut at its sentence pauses and placed one sentence per beat; it is not sped up or stretched. The take was transcribed and matched the script word for word, but **nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 
@@ -74,7 +74,7 @@ https://tallaby.com
 
 **Fictional data:** store "متجر نور"; products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450 جنيه, "مزهرية سيراميك" 320 جنيه, "شمعة عطرية" 180 جنيه; categories "أكواب ومجّات", "أطباق وصحون", "ديكور المنزل", "شموع ومعطرات", "هدايا"; wallet "≈ 270 جنيه". Product pictures are drawn shapes, not photos.
 
-**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2.2 dBTP; the voice alone -16.1 LUFS, the sounds alone -36.3 LUFS and -18 dBFS (20 dB under the voice). One gain (+10.3 dB) is applied to the whole take; a limiter with a -2.5 dBFS ceiling touches 0.09% of its samples (4.7 dB on the tallest peak).
+**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.2 LUFS and -2.3 dBTP; the voice alone -16.2 LUFS, the sounds alone -36.3 LUFS and -18 dBFS (20 dB under the voice). One gain (+10.3 dB) is applied to the whole take; a limiter with a -2.5 dBFS ceiling touches 0.09% of its samples (4.7 dB on the tallest peak).
 
 **Not checked:** the page was read in the code, not opened on production. Do that before changing `status` to `ready`. The sound was measured, not listened to.
 
