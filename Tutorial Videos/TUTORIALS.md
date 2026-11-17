@@ -334,7 +334,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | T-06 | Set your shipping prices | `/stores/[storeId]/shipping` | Add a delivery area → name it → pick governorates → set the price and save | draft |
 | T-07 | Choose your payment methods | `/stores/[storeId]/settings/payments` | «إعداد» on a method → its receiving details → holder name → «حفظ وتفعيل» | draft |
 | T-08 | Top up your wallet | `/wallet/top-up` | Enter the amount → pay → the new balance | todo |
-| T-09 | Follow and confirm an order | `/orders` | Open an order → confirm it → change its stage | todo |
+| T-09 | Follow and confirm an order | `/orders` | Open a new order → review it → «تأكيد الطلب» → «خرج للتوصيل» | draft |
 | T-10 | Connect an AI assistant to your store (MCP) | `/stores/[storeId]/apps` › AI assistants | Open the app → copy the link → approve the connection → ask the assistant to add a product | todo |
 
 ### Wave 2 — products and stock
