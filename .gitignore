@@ -54,3 +54,9 @@ docs/systems/**/*.png
 docs/systems/**/*.jpg
 docs/systems/**/*.jpeg
 docs/systems/**/*.webp
+
+# Private business numbers (repo is public)
+docs/business/
+
+# Local Playwright MCP logs and screenshots
+.playwright-mcp/
