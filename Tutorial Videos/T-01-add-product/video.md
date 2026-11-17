@@ -4,7 +4,7 @@ slug: add-product
 feature: Add a product
 roadmap: "§2.1 Products"
 dashboard_path: /stores/[storeId]/products/add
-status: draft
+status: ready
 duration_seconds: 34.3
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation Nx0NWDGYjzHxfoMoSD5K"
 made_on: 2026-11-17
@@ -72,7 +72,7 @@ https://tallaby.com
 - The category sheet lists only the store's own categories ("فئات متجرك"). The real sheet also lists Tallaby's categories under them.
 - The photo counter reads "8 / 3" in Arabic. That is how the real page's markup renders in a right-to-left line (`{files.length} / {maxImages}` with spaces), so it was kept.
 
-**Fictional data:** store "متجر نور"; products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450 جنيه, "مزهرية سيراميك" 320 جنيه, "شمعة عطرية" 180 جنيه; categories "أكواب ومجّات", "أطباق وصحون", "ديكور المنزل", "شموع ومعطرات", "هدايا"; wallet "≈ 270 جنيه". Product pictures are drawn shapes, not photos.
+**Fictional data:** store "متجر نور"; products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450 جنيه, "مزهرية سيراميك" 320 جنيه, "شمعة عطرية" 180 جنيه; categories "أكواب ومجّات", "أطباق وصحون", "ديكور المنزل", "شموع ومعطرات", "هدايا"; wallet "$5.00". Product pictures are drawn shapes, not photos.
 
 **Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.2 LUFS and -2.3 dBTP; the voice alone -16.2 LUFS, the sounds alone -36.3 LUFS and -18 dBFS (20 dB under the voice). One gain (+10.3 dB) is applied to the whole take; a limiter with a -2.5 dBFS ceiling touches 0.09% of its samples (4.7 dB on the tallest peak).
 

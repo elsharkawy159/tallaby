@@ -4,7 +4,7 @@ slug: add-product-link
 feature: Add a product from a link
 roadmap: "§2.1 Products"
 dashboard_path: /stores/[storeId]/products/add?method=url
-status: draft
+status: ready
 duration_seconds: 34.0
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 0dbNJYqzpc6G3zYz2htV"
 made_on: 2026-11-17
@@ -79,7 +79,7 @@ https://tallaby.com
 - The photo counter reads "8 / 3" in Arabic, as in T-01 (how the real markup renders in a right-to-left line).
 - The link field uses JetBrains Mono for the page's monospace font (the real page uses the phone's own monospace font).
 
-**Fictional data:** store "متجر نور"; link `https://example-shop.com/products/mug`; products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450 جنيه, "مزهرية سيراميك" 320 جنيه, "شمعة عطرية" 180 جنيه; wallet "≈ 270 جنيه". Product pictures are drawn shapes, not photos.
+**Fictional data:** store "متجر نور"; link `https://example-shop.com/products/mug`; products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450 جنيه, "مزهرية سيراميك" 320 جنيه, "شمعة عطرية" 180 جنيه; wallet "$5.00". Product pictures are drawn shapes, not photos.
 
 **Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2.3 dBTP; the voice alone -16 LUFS, the sounds alone -34.5 LUFS and -18 dBFS (18.5 dB under the voice). One gain (+9.5 dB) is applied to the whole take; a limiter with a -2.5 dBFS ceiling touches 0.10% of its samples (4.8 dB on the tallest peak).
 

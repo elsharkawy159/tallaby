@@ -4,7 +4,7 @@ slug: wallet-top-up
 feature: Top up your wallet
 roadmap: "§2.1 Store wallet (USD wallet F-55/F-56, Kashier top-ups only since 2026-11-16)"
 dashboard_path: /wallet
-status: draft
+status: ready
 duration_seconds: 31.3
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation FwB2iS9DVPNdgwxyLZmR"
 made_on: 2026-11-18
@@ -18,11 +18,11 @@ youtube_title_en: "How to top up your Tallaby store wallet #Shorts"
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
 | 0–4.8 s | Title card | "شحن محفظة المتجر", label "شرح سريع" | 0.30–4.30 s «هنشحن مَحفَظة مَتجَرَك على طَلَبي، في أربع خطوات بسيطة.» |
-| 4.8–9.0 s | 1. اضغط «شحن المحفظة» | The wallet page: balance card "محفظة المتجر" $1.20, "يكفي لنحو 40 طلب", "رسوم الطلب $0.03"; tap "شحن المحفظة"; the page goes down to the top-up card "شحن المحفظة" with "1 اختر المبلغ" and the 8 amount cards ($5 chosen, as when the page opens) | 5.10–7.70 s «واحد: اضغَط شَحن المَحفَظة.» |
+| 4.8–9.0 s | 1. اضغط «شحن المحفظة» | The wallet page: balance card "محفظة المتجر" $5.00, "يكفي لنحو 166 طلب", "رسوم الطلب $0.03"; tap "شحن المحفظة"; the page goes down to the top-up card "شحن المحفظة" with "1 اختر المبلغ" and the 8 amount cards ($5 chosen, as when the page opens) | 5.10–7.70 s «واحد: اضغَط شَحن المَحفَظة.» |
 | 9.0–13.6 s | 2. اختر المبلغ | Tap the $10 card ("الأكثر طلبًا", "539 جنيه", "≈ 333 طلب"); the field "أو اكتب مبلغًا آخر" changes to $ 10; the page goes down to "ملخص الشحن" | 9.30–12.90 s «اتنين: اختار مبلغ الشَّحن، زي عشرة دولار.» |
-| 13.6–19.6 s | 3. اضغط «ادفع عبر Kashier» وأكمل الدفع | The summary: "مبلغ الشحن 539 جنيه", "سعر الدولار اليوم 53.9 جنيه", "ستدفع 539 جنيه", "رصيدك بعد الشحن: $11.20 · يكفي لنحو 373 طلب"; tap "ادفع عبر Kashier" (spinner, "جارٍ فتح صفحة الدفع…"); then Kashier's return page: "تم استلام الشحن", "تمت إضافة $10.00 إلى محفظة متجرك." | 13.90–18.90 s «تلاتة: اضغَط ادفع عبر كاشير، وكمّل الدفع في صفحة كاشير.» |
+| 13.6–19.6 s | 3. اضغط «ادفع عبر Kashier» وأكمل الدفع | The summary: "مبلغ الشحن 539 جنيه", "سعر الدولار اليوم 53.9 جنيه", "ستدفع 539 جنيه", "رصيدك بعد الشحن: $15.00 · يكفي لنحو 500 طلب"; tap "ادفع عبر Kashier" (spinner, "جارٍ فتح صفحة الدفع…"); then Kashier's return page: "تم استلام الشحن", "تمت إضافة $10.00 إلى محفظة متجرك." | 13.90–18.90 s «تلاتة: اضغَط ادفع عبر كاشير، وكمّل الدفع في صفحة كاشير.» |
 | 19.6–24.2 s | 4. اضغط «العودة إلى المحفظة» | Tap "العودة إلى المحفظة"; the wallet page opens with the new balance | 19.90–23.65 s «أربعة: بعد الدفع، اضغَط العودة إلى المَحفَظة.» |
-| 24.2–28.6 s | Result | Balance $11.20, "يكفي لنحو 373 طلب", the runway bar full; the top bar shows $11.20; the gold check on the balance card | 24.50–28.03 s «وكده الرَّصيد الجديد اتضاف لمَحفَظة مَتجَرَك.» |
+| 24.2–28.6 s | Result | Balance $15.00, "يكفي لنحو 500 طلب", the runway bar full; the top bar shows $15.00; the gold check on the balance card | 24.50–28.03 s «وكده الرَّصيد الجديد اتضاف لمَحفَظة مَتجَرَك.» |
 | 28.6–31.3 s | End card | "جرّبها الآن من لوحة التحكم", "المحفظة ‹ الرصيد وشحن المحفظة" | Nothing is spoken |
 
 ## Voiceover script (with diacritics, exactly as generated)
@@ -62,10 +62,10 @@ https://tallaby.com
 - Limits: $5 to $1,000 (`TOP_UP_MIN_USD_CENTS = 500`, `TOP_UP_MAX_USD_CENTS = 100_000`); the page opens with $5 chosen; the cards are $5, $10 (marked "الأكثر طلبًا"), $20, $50, $100, $200, $500, $1,000.
 - Kashier is the only way to pay since 2026-11-16 (card, Meeza, mobile wallets such as Vodafone Cash, Apple Pay, Google Pay); the InstaPay / Vodafone Cash transfer with a receipt is no longer offered to sellers (`CARD_TOP_UPS_ENABLED`, `submitManualTopUp` comment).
 - The wallet is credited only by Kashier's signed webhook; the return page shows the stored status: "تم استلام الشحن" when it succeeded, "جارٍ تأكيد الدفع" while it is still being confirmed, "لم يكتمل الشحن" when it failed. The video shows the success case.
-- The balance, the top bar and the return page show the wallet's own dollars ($11.20, $10.00), not EGP.
+- The balance, the top bar and the return page show the wallet's own dollars ($5.00, $15.00, $10.00), not EGP.
 - No tax row is shown: the tax line appears only when Admin turns tax on (`billing_settings`); its live value was not checked.
 
-**Fictional data:** store "متجر نور" (not named on these pages); balance $1.20 before and $11.20 after; rate 53.90 EGP per $1 (production's switch rate was 53.9007; the live rate changes every day), so every EGP figure is the code's own maths at that rate: $10 = 539 جنيه, $5 = 269 جنيه, the order fee "≈ 1.62 جنيه", orders covered = dollars ÷ $0.03. No card number, no email, no real seller.
+**Fictional data:** store "متجر نور" (not named on these pages); balance $5.00 before and $15.00 after; rate 53.90 EGP per $1 (production's switch rate was 53.9007; the live rate changes every day), so every EGP figure is the code's own maths at that rate: $10 = 539 جنيه, $5 = 269 جنيه, the order fee "≈ 1.62 جنيه", orders covered = dollars ÷ $0.03. No card number, no email, no real seller.
 
 **Kashier's page is not drawn.** "ادفع عبر Kashier" leaves the dashboard for Kashier's hosted page; the video goes from the button's spinner straight to the return page with a step change, and the caption and voice say "وأكمل الدفع".
 

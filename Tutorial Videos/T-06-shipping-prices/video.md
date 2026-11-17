@@ -4,7 +4,7 @@ slug: shipping-prices
 feature: Set your shipping prices
 roadmap: "§2.1 Shipping (store shipping zones, F-45a coverage board)"
 dashboard_path: /stores/[storeId]/shipping
-status: draft
+status: ready
 duration_seconds: 32.3
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation MGXZ7E0EL8Q9GuNdDuQe"
 made_on: 2026-11-18
@@ -73,7 +73,7 @@ https://tallaby.com
 - The live example under the toggles ("عميل في القاهرة بطلب قيمته 300 جنيه يدفع 50 جنيه.") is in the markup but scrolled out of view.
 - The chip row appears above the list when the first governorate is ticked, which pushes the list down, as on the real page; the tap ring on "القاهرة" stays where the tap was.
 
-**Fictional data:** store "متجر نور"; zone "القاهرة والجيزة" at 50 جنيه, 1–3 days, cash on delivery on; wallet "≈ 270 جنيه" (the kit's top bar). The empty-state picture is the dashboard's own `public/illustrations/empty/shipping-zones.png`. Tallaby does not deliver: the page's own line "وأنت من يتولى توصيل الطلبات" is shown and the voice only says customers see the delivery price.
+**Fictional data:** store "متجر نور"; zone "القاهرة والجيزة" at 50 جنيه, 1–3 days, cash on delivery on; wallet "$5.00" (the kit's top bar). The empty-state picture is the dashboard's own `public/illustrations/empty/shipping-zones.png`. Tallaby does not deliver: the page's own line "وأنت من يتولى توصيل الطلبات" is shown and the voice only says customers see the delivery price.
 
 **Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -1.9 dBTP; the voice alone -16 LUFS (peak -2.4 dBFS), the sounds alone -35.4 LUFS and -18 dBFS (19.4 dB under the voice). One gain (+9.9 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.06% of samples (3.9 dB on the tallest peak).
 

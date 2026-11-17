@@ -4,7 +4,7 @@ slug: edit-website
 feature: Edit your website and publish
 roadmap: "§2.1 Website builder"
 dashboard_path: /stores/[storeId]/website → /stores/[storeId]/editor
-status: draft
+status: ready
 duration_seconds: 35.0
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 1Vp8Eumkvb23Jyy8b8lm"
 made_on: 2026-11-18
@@ -75,7 +75,7 @@ https://tallaby.com
 - The media library shows four photos and no folders; the upload area and "مشاركة الصور المرفوعة مع كل متاجري" are drawn only partly.
 - The selected section is a template section, so the action bar's second line reads "قسم مخصص" (the custom-section display name), as the real bar would.
 
-**Fictional data:** store "متجر نور", address `matjar-noor.tallaby.com`, last published 12 نوفمبر 2026, 3 pages, wallet "≈ 270 جنيه" (kit top bar); titles "أواني سيراميك مصنوعة يدويًا" → "تشكيلة الشتاء وصلت"; photos `hero-vases.webp`, `winter-mugs.webp`, `plates.webp`, `candles.webp` (drawn shapes, no photos, no people); products "كوب سيراميك يدوي" 299 جنيه, "مزهرية سيراميك" 320 جنيه; published version 4.
+**Fictional data:** store "متجر نور", address `matjar-noor.tallaby.com`, last published 12 نوفمبر 2026, 3 pages, wallet "$5.00" (kit top bar); titles "أواني سيراميك مصنوعة يدويًا" → "تشكيلة الشتاء وصلت"; photos `hero-vases.webp`, `winter-mugs.webp`, `plates.webp`, `candles.webp` (drawn shapes, no photos, no people); products "كوب سيراميك يدوي" 299 جنيه, "مزهرية سيراميك" 320 جنيه; published version 4.
 
 **Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.2 LUFS and -1.9 dBTP; the voice alone -16.1 LUFS (peak -2.4 dBFS), the sounds alone -35 LUFS and -18 dBFS (18.9 dB under the voice). One gain (+9.8 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.12% of its samples (5.8 dB on the tallest peak).
 

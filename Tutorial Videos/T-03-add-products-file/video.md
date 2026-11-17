@@ -4,7 +4,7 @@ slug: add-products-file
 feature: Add products from a file
 roadmap: "§2.1 Products (PLAN.md AI-3, bulk products from a file)"
 dashboard_path: /stores/[storeId]/products/add/from-file
-status: draft
+status: ready
 duration_seconds: 34.3
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation EgLVPNN5eDnj7pLbvq9W"
 made_on: 2026-11-17
@@ -81,7 +81,7 @@ https://tallaby.com
 - The chooser cards and the list are scrolled so the thing being used sits in the safe area; extra empty room under the page content exists only for that.
 - The result highlight is on the "منشور 6" tab, because the "الكل 6" tab sits under the right-hand Shorts buttons.
 
-**Fictional data:** store "متجر نور"; file `products.xlsx` (18 KB, 6 rows, 5 columns: name, price, quantity, category, photo link); products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450, "مزهرية سيراميك" 320, "شمعة عطرية" 180, "طقم فناجين قهوة" 380, "وعاء سلطة سيراميك" 260; categories "أكواب ومجّات", "أطباق وصحون", "ديكور المنزل", "شموع ومعطرات"; wallet "≈ 270 جنيه"; AI credit balance 100. Product pictures are drawn shapes, not photos.
+**Fictional data:** store "متجر نور"; file `products.xlsx` (18 KB, 6 rows, 5 columns: name, price, quantity, category, photo link); products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450, "مزهرية سيراميك" 320, "شمعة عطرية" 180, "طقم فناجين قهوة" 380, "وعاء سلطة سيراميك" 260; categories "أكواب ومجّات", "أطباق وصحون", "ديكور المنزل", "شموع ومعطرات"; wallet "$5.00"; AI credit balance 100. Product pictures are drawn shapes, not photos.
 
 **Sound:** voice in front, the five kit sounds under it (1 pop, 5 whoosh, 4 tap, 1 success; nothing is typed, so no key sound), no music. The finished video measures -16.3 LUFS and -2.3 dBTP; the voice alone -16.2 LUFS, the sounds alone -34.5 LUFS and -18 dBFS (18.3 dB under the voice). One gain (+9.2 dB) is applied to the whole take; a limiter with a -2.5 dBFS ceiling touches 0.05% of its samples (3.5 dB on the tallest peak).
 

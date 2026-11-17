@@ -4,7 +4,7 @@ slug: payment-methods
 feature: Choose your payment methods
 roadmap: "§2.1 Payments (store payment methods, P3-07; seller transfers F-21p)"
 dashboard_path: /stores/[storeId]/settings/payments
-status: draft
+status: ready
 duration_seconds: 32.7
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 4Xs92FdgBOvLshwoyLNF"
 made_on: 2026-11-18
@@ -77,7 +77,7 @@ https://tallaby.com
 - The "ما يراه عميلك" card is shown below the method cards, where it stacks on phones (below 860 px).
 - The InstaPay logo appears three times on the page, which HyperFrames' check reports as a duplicate-image risk (warning only).
 
-**Fictional data:** store "متجر نور" (`nour.tallaby.com`), InstaPay address `nour@instapay`, holder "نور أحمد", wallet "≈ 270 جنيه" (the kit's top bar). Tallaby never holds the transfer: the page's own note says so, and the voice says the amount reaches the seller's account directly.
+**Fictional data:** store "متجر نور" (`nour.tallaby.com`), InstaPay address `nour@instapay`, holder "نور أحمد", wallet "$5.00" (the kit's top bar). Tallaby never holds the transfer: the page's own note says so, and the voice says the amount reaches the seller's account directly.
 
 **Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2.4 dBTP; the voice alone -16 LUFS (peak -2.4 dBFS), the sounds alone -35.2 LUFS and -18 dBFS (19.2 dB under the voice). One gain (+10.1 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.05% of samples (4.6 dB on the tallest peak).
 

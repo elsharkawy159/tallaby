@@ -4,7 +4,7 @@ slug: choose-template
 feature: Choose your store's template
 roadmap: "§2.1 Website (templates)"
 dashboard_path: /stores/[storeId]/website/templates
-status: draft
+status: ready
 duration_seconds: 31.8
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation Tsr5WUU2z8X1Fxlmqylj"
 made_on: 2026-11-18
@@ -77,7 +77,7 @@ https://tallaby.com
 
 **Template pictures:** the repo's own card screenshots in `apps/ecommerce/public/template-previews` (`fokhar`, `gifts-warm`, `tallaby-classic`), cropped into `work/assets/img/`. No people or body parts. The names shown (فخار، سَبَت، طلبي الكلاسيكي) are templates in `CODE_TEMPLATES`. The demo store names inside the screenshots ("فخار الفسطاط", "كلاسيك ستور") are the templates' own demo content.
 
-**Fictional data:** store "متجر نور" at `noor.tallaby.com`, last published "10 نوفمبر 2026", 5 pages, wallet "≈ 270 جنيه".
+**Fictional data:** store "متجر نور" at `noor.tallaby.com`, last published "10 نوفمبر 2026", 5 pages, wallet "$5.00".
 
 **Sound:** voice in front, the kit sounds under it (1 pop, 4 tap, 4 whoosh, 1 success), no music. The finished video measures -16.1 LUFS and -2.2 dBTP; the voice alone -16.1 LUFS; the sounds alone -34.1 LUFS and -18 dBFS (18 dB under the voice). One gain (+10.2 dB) on the whole take; the limiter touches 0.05% of its samples (3.3 dB on the tallest peak).
 

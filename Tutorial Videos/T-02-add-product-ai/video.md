@@ -4,7 +4,7 @@ slug: add-product-ai
 feature: Add a product with AI
 roadmap: "§2.1 AI product autofill; F-71b (AI screen of the add-product flow)"
 dashboard_path: /stores/[storeId]/products/add
-status: draft
+status: ready
 duration_seconds: 34.9
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation q23Ow18UEWjY4oNQnxM1"
 made_on: 2026-11-17
@@ -82,7 +82,7 @@ https://tallaby.com
 - While the steps tick, the page is scrolled so the step being written stays in the safe area, so the card's header (percent and the current step's name) is off the top for about 2 seconds.
 - The photo counter in the form reads "8 / 3" in Arabic, as on the real page (see T-01).
 
-**Fictional data:** store "متجر نور"; product "كوب سيراميك يدوي" 299 جنيه with a drawn mug (three drawings, no photos); the other products and the wallet "≈ 270 جنيه" are T-01's.
+**Fictional data:** store "متجر نور"; product "كوب سيراميك يدوي" 299 جنيه with a drawn mug (three drawings, no photos); the other products and the wallet "$5.00" are T-01's.
 
 **Kit:** nothing in `_kit/` was changed. One override lives in `work/screen.css`: the title card's text is 80 px instead of the kit's 96 px, because "إضافة منتج بالذكاء الاصطناعي" takes three lines at 96 px and TUTORIALS.md §4 allows 72–96 px and at most two lines. The end card's breadcrumbs are "إضافة منتج ‹ إضافة بالذكاء الاصطناعي" because three crumbs ("المنتجات ‹ إضافة منتج ‹ …") are wider than the kit's pill.
 

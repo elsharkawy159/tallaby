@@ -4,7 +4,7 @@ slug: confirm-order
 feature: Follow and confirm an order
 roadmap: "§2.1 Orders (seller order flow; F-02g WhatsApp confirm)"
 dashboard_path: /orders
-status: draft
+status: ready
 duration_seconds: 33.4
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 6vD1KhbyBqwiWnCey9QH"
 made_on: 2026-11-18
@@ -75,7 +75,7 @@ https://tallaby.com
 - No Bosta or Wassalha is connected, so "شحن مع بوسطة" and the Wassalha buttons are not shown; with Bosta set to auto-ship, confirming also sends the order to Bosta.
 - The tap ring on the card is placed on its body (the card's whole area opens the panel).
 
-**Fictional data:** store "متجر نور"; order "#1042", 18/11/2026 10:24; customer "عميل تجريبي", phone 01000000000, "شارع تجريبي 10، الدور الثاني"، "مدينة نصر، القاهرة"; "كوب سيراميك يدوي" 2 × 150 جنيه, total 350 جنيه, cash on delivery; tab counts 9 / 1 / 2 / 1; wallet "≈ 270 جنيه" (the kit's top bar). The product picture is T-01's drawn mug, not a photo. Tallaby does not deliver: the page's own line "التوصيل مسؤوليتك" is shown, and the voice says "لما تبعت الطلب للعميل".
+**Fictional data:** store "متجر نور"; order "#1042", 18/11/2026 10:24; customer "عميل تجريبي", phone 01000000000, "شارع تجريبي 10، الدور الثاني"، "مدينة نصر، القاهرة"; "كوب سيراميك يدوي" 2 × 150 جنيه, total 350 جنيه, cash on delivery; tab counts 9 / 1 / 2 / 1; wallet "$5.00" (the kit's top bar). The product picture is T-01's drawn mug, not a photo. Tallaby does not deliver: the page's own line "التوصيل مسؤوليتك" is shown, and the voice says "لما تبعت الطلب للعميل".
 
 **Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2 dBTP; the voice alone -16.1 LUFS (peak -2.4 dBFS), the sounds alone -34.1 LUFS and -18 dBFS (18 dB under the voice). One gain (+9.5 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.08% of samples (3.6 dB on the tallest peak).
 
