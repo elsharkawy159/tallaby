@@ -343,7 +343,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 |---|---|---|---|---|
 | T-11 | Add sizes and colours | product form (options) | Add an option → its values → prices and stock per variant | todo |
 | T-12 | Main and sub-categories | `/stores/[storeId]/products/categories` | Add a main category → a sub-category → put a product in it | todo |
-| T-13 | Update stock quickly | `/stores/[storeId]/products/inventory` | Change a quantity → save → the stock history | todo |
+| T-13 | Update stock quickly | `/stores/[storeId]/products/inventory` | «السجل» under a product → type the units that arrived → «إضافة» → the new row in the stock history | draft |
 | T-14 | Restore a deleted product | `/stores/[storeId]/products/trash` | Open Trash → restore | todo |
 | T-15 | Ask the customer for details on a product | product form (customer requirements) | Add a field → the customer fills it on the product page | todo |
 | T-16 | Add a size chart | `/stores/[storeId]/apps` › Size chart | Install → create a chart → link it to a category → "اعرف مقاسك" on the product | todo |
