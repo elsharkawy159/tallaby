@@ -342,7 +342,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | ID | Video (the task) | Dashboard path | Steps to show | Status |
 |---|---|---|---|---|
 | T-11 | Add sizes and colours | product form › المخزون والأنواع | «+ المقاس» → pick sizes → add «اللون» and colours → stock + «تطبيق على الكل» → «حفظ» | draft |
-| T-12 | Main and sub-categories | `/stores/[storeId]/products/categories` | Add a main category → a sub-category → put a product in it | todo |
+| T-12 | Main and sub-categories | `/stores/[storeId]/products/categories` | «إضافة فئة» (main) → again with «الفئة الرئيسية» → the sub-category → pick it in the product form → «حفظ» | draft (take made before the full-تشكيل rule) |
 | T-13 | Update stock quickly | `/stores/[storeId]/products/inventory` | «السجل» under a product → type the units that arrived → «إضافة» → the new row in the stock history | draft |
 | T-14 | Restore a deleted product | `/stores/[storeId]/products/trash` | Menu › المنتجات › «سلة المحذوفات» → tick the product → «استرجاع» → back to the products list | draft |
 | T-15 | Ask the customer for details on a product | product form › مطلوب من العميل | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page | draft (take made before the full-تشكيل rule) |

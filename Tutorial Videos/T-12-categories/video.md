@@ -1,0 +1,84 @@
+---
+id: T-12
+slug: categories
+feature: Main and sub-categories
+roadmap: "F-95 Nested store categories (Products › Categories, two levels, migration 0171)"
+dashboard_path: /stores/[storeId]/products/categories
+status: draft
+duration_seconds: 34.8
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation pGoh0DM4sA34QJ754a9J"
+made_on: 2026-11-18
+youtube_url:
+youtube_title_ar: "طريقة عمل فئات رئيسية وفرعية على طلبي #Shorts"
+youtube_title_en: "How to make main and sub-categories on Tallaby #Shorts"
+---
+
+## Steps shown
+
+| Time | Step | What happens on screen | Voice |
+|---|---|---|---|
+| 0–5.55 s | Title card | "الفئات الرئيسية والفرعية", label "شرح سريع" | 0.30–5.45 s «هنعمل فئة رئيسية وفئة فرعية لمتجرك على طلبي، في خمس خطوات بسيطة.» |
+| 5.55–10.15 s | 1. أضف الفئة الرئيسية «ملابس» | Page "الفئات" (2): "أحذية" and "شنط". Tap "إضافة فئة"; the dialog "إضافة فئة" opens with "الفئة الرئيسية: بدون (فئة رئيسية)"; type "ملابس"; tap the Tallaby suggestion "ملابس"; toast "تمت إضافة «ملابس»", the row "ملابس · لا منتجات · من طلبي" is added (count 3) | 5.85–9.50 s «واحد: اضغط إضافة فئة، وضيف فئة ملابس.» |
+| 10.15–14.95 s | 2. اختر «ملابس» في «الفئة الرئيسية» | Back up; tap "إضافة فئة" again; tap the "الفئة الرئيسية" select; the phone's list opens; tap "ملابس"; the select reads "ملابس" | 10.45–14.70 s «اتنين: اضغط إضافة فئة تاني، واختار ملابس كفئة رئيسية.» |
+| 14.95–19.15 s | 3. اكتب «تيشيرتات» واختر الاقتراح | Type "تيشيرتات"; tap the suggestion "تيشيرتات"; toast "تمت إضافة «تيشيرتات»"; "تيشيرتات" sits indented under "ملابس", which now reads "فئة فرعية واحدة" (count 4) | 15.25–18.85 s «تلاتة: اكتب تيشيرتات، واختار الاقتراح من القائمة.» |
+| 19.15–23.45 s | 4. اختر «تيشيرتات» في صفحة المنتج | "تعديل المنتج" for "تيشيرت قطن أبيض"; tap "الفئة" (was the Tallaby category "تيشيرتات وبولو"); the sheet "اختر الفئة" opens; tap "ملابس › تيشيرتات" under "فئات متجرك"; the field reads "ملابس › تيشيرتات", "من فئات متجرك" | 19.45–22.65 s «أربعة: افتح المنتج، واختار فئة تيشيرتات.» |
+| 23.45–27.35 s | 5. اضغط «حفظ» | The screen lifts (23.55–26.3 s, 2.75 s) so "حفظ" in the fixed bottom bar is at y 1090; tap; "جارٍ الحفظ..."; toast "تم تحديث المنتج بنجاح!" | 23.75–25.50 s «خمسة: اضغط حفظ.» |
+| 27.35–32.15 s | Result | Back on "الفئات": "ملابس · منتج واحد · فئة فرعية واحدة" with "تيشيرتات · منتج واحد" under it; the gold check on "تيشيرتات" | 27.65–32.06 s «وكده المنتج بقى في فئة تيشيرتات، وبيظهر كمان في فئة ملابس.» |
+| 32.15–34.75 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ الفئات" | Nothing is spoken |
+
+## Voiceover script (with diacritics, exactly as generated)
+
+هنعمل فِئة رئيسية وفِئة فرعية لمَتجَرَك على طَلَبي، في خمس خطوات بسيطة. واحد: اضغَط إضافة فِئة، وضيف فِئة ملابس. اتنين: اضغَط إضافة فِئة تاني، واختار ملابس كفِئة رئيسية. تلاتة: اكتِب تيشيرتات، واختار الاقتراح من القائمة. أربعة: افتح المُنتَج، واختار فِئة تيشيرتات. خمسة: اضغَط حِفظ. وكده المُنتَج بقى في فِئة تيشيرتات، وبيظهر كمان في فِئة ملابس.
+
+49 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`pGoh0DM4sA34QJ754a9J`, 345 credits, ElevenLabs flow `9ih1RI64uBZDGNVi50jJ`). The take is `work/vo/take.mp3` (27.36 s), cut inside its pauses (opening 0–5.15, then 5.45–9.1, 9.3–13.55, 13.75–17.35, 17.55–20.75, 21.0–22.75 and 22.95–27.36 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker; like the earlier videos it returned the script's diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "فِئة", "كفِئة", "تيشيرتات" and "الاقتراح" sound right) before `status` becomes `ready`.
+
+## YouTube description (Arabic)
+
+طريقة عمل فئة رئيسية وفئة فرعية داخلها في لوحة تحكم طلبي، ووضع منتج فيها.
+
+1. أضف الفئة الرئيسية «ملابس».
+2. اضغط «إضافة فئة» مرة أخرى واختر «ملابس» في «الفئة الرئيسية».
+3. اكتب «تيشيرتات» واختر الاقتراح.
+4. في صفحة المنتج، اختر «ملابس › تيشيرتات» في «الفئة».
+5. اضغط «حفظ».
+
+https://tallaby.com
+
+## Caption / post text
+
+نظّم منتجاتك في فئات رئيسية وفرعية: أضف «ملابس»، ثم أضف «تيشيرتات» واختر «ملابس» كفئة رئيسية لها، واختر الفئة الفرعية في صفحة المنتج. المنتج يظهر في الفئة الفرعية وفي فئتها الرئيسية معًا.
+
+## Tags
+
+طلبي, Tallaby, الفئات, فئات فرعية, تنظيم المنتجات, لوحة التحكم, متجر إلكتروني, شرح, البيع أونلاين, مصر
+
+## Notes
+
+**Source files checked (2026-11-18, `main` at `5cffdffe`):** `apps/dashboard/app/[locale]/(main)/stores/[storeId]/products/categories/page.tsx` → `categories-brands/taxonomy-page.data.tsx`, `categories-brands.client.tsx` (`TaxonomyManager`, `TaxonomyList`, `SortableRow`, `AddItemDialog`, `ParentField`, `EditDialog`), `categories-brands.lib.ts`; `products/[productId]/edit/edit-product.tsx`, `edit-product-actions.client.tsx`, `add/add-product.tsx` (edit mode, `publishButton(true)` = "حفظ"), `add/category-field.tsx` (phone sheet), `add/category-search.lib.ts` (`storeOptionLabel` "Main › Sub"), `add/form-kit.tsx`; `packages/ui/src/components/dialog.tsx`, `button.tsx`; `messages/ar.json` (`categoriesBrands`, `productForm.categoryField`, `productForm.page`, `productForm.saving`, `toast.productUpdatedSuccessfully`). Every label in the video is the string from `ar.json`.
+
+**Where the real page differs from the outline in TUTORIALS.md §11** ("Add a main category → a sub-category → put a product in it"):
+
+- A sub-category is made in the same "إضافة فئة" dialog: its "الفئة الرئيسية" select (shown once the store has a main category) picks the main category. There is no "add sub-category" button on a row. An existing category can also be moved under a main one from its "تعديل" dialog; that is not shown.
+- The shortest way to add a category is a Tallaby list suggestion (one tap). Typing your own name opens a second form (name, Arabic name, image, "حفظ"), so the video uses the suggestions.
+- The categories page cannot put a product in a category ("ترتيب المنتجات" only orders products already in it). A product gets its category in the product form's "الفئة" field, so the video goes to the product's edit page and saves. Step 4's caption says "في صفحة المنتج" for that reason, and the outline's three steps became five.
+- The result is shown back on the categories page, where "ملابس" counts its sub-category's product ("منتج واحد"), as the page does (`totals`).
+
+**Simplified or not shown:**
+
+- The real "حفظ" keeps the seller on the edit page; the video switches back to "الفئات" for the result (a navigation the seller would make from the menu).
+- The phone's own list for the select is drawn as a simple white list with radio dots (Android style); it looks different on each phone.
+- Category images are the page's first-letter tiles (no image); Tallaby list suggestions may carry an image in the real list.
+- The edit page's progress chips under the header are left out (as in T-01); the "قارب على النفاد" badge, AI box and the sections below the price are not shown.
+- The toasts sit at the bottom of the screen, where the real ones are, so the Shorts buttons may cover them; the rows, the check and the field change are in the safe area.
+- During step 5 the screen is lifted for 2.75 s so the fixed Save bar sits at y 1090.
+- The row "ملابس" cuts its second line with "…" at phone width, as the real page does (`truncate`).
+
+**Fictional data:** store "متجر نور" (top bar wallet "$5.00" from the kit); categories "أحذية" (2 products), "شنط" (3), "ملابس", "تيشيرتات"; Tallaby suggestions "ملابس" (أزياء), "ملابس رياضية", "ملابس أطفال", "تيشيرتات" (ملابس رجالي), "تيشيرتات نسائي", "تيشيرتات أطفال"; product "تيشيرت قطن أبيض", 350 جنيه, drawn as a plain t-shirt shape.
+
+**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2.3 dBTP; the voice alone -16.1 LUFS (peak -2.4 dBFS), the sounds alone -35.2 LUFS and -18 dBFS (19.1 dB under the voice). One gain (+10.3 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.07% of samples (4.5 dB on the tallest peak). The result check sits at 28.8 s, where the kit's `success` sound does not land on a voice peak (at 28.4 s the mix peaked at -1.2 dBFS).
+
+**Checks:** `hyperframes check`: 0 errors; the warnings are the kit's usual ones (one generated composition, nested overlay clips), the dead stretch on the title card (the hold for the opening line) and a layout warning that the kit title card's text reaches the right-edge zone.
+
+**Not checked:** the page was read in the code, not opened on production. Do that before changing `status` to `ready`. The sound was measured, not listened to.
+
+**Rebuild:** `node "Tutorial Videos/_kit/build.mjs" "Tutorial Videos/T-12-categories"`, render in `work/` (`npx hyperframes render --quality delivery --crf 18 --fps 30 --workers 1 --output renders/raw.mp4`), then `node "Tutorial Videos/_kit/finish.mjs" "Tutorial Videos/T-12-categories"` (see `_kit/README.md`).
