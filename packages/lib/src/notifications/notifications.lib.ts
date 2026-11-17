@@ -25,6 +25,10 @@ export const ADMIN_NOTIFICATION_TYPES = [
   "app_requested",
   // A seller asked for a theme from Website › Templates (0156, F-77)
   "theme_requested",
+  // A top-up paid online (Kashier) succeeded (0173, F-96): `data` = { amount, currency, creditAmount, creditCurrency, method, sellerName }
+  "top_up_paid",
+  // A seller signed up through a referral link (0173, F-96): `data` = { sellerName, referrerId, referrerName }
+  "referral_signup",
 ] as const;
 export type AdminNotificationType = (typeof ADMIN_NOTIFICATION_TYPES)[number];
 
@@ -141,6 +145,14 @@ export function adminNotificationHref(
       return "/integrations";
     case "top_up_requested":
       return "/store-top-ups";
+    case "top_up_paid":
+      return n.sellerId ? `/sellers/${encodeURIComponent(n.sellerId)}` : "/sellers";
+    case "referral_signup": {
+      // The referrer's page lists everyone they brought; else the new seller.
+      const referrerId = dataString(data, "referrerId");
+      if (referrerId && UUID_RE.test(referrerId)) return `/referrals/${encodeURIComponent(referrerId)}`;
+      return n.sellerId ? `/sellers/${encodeURIComponent(n.sellerId)}` : "/referrals";
+    }
     case "feature_request_created":
       return "/roadmap";
     case "referral_payout_requested":

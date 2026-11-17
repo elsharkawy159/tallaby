@@ -3679,7 +3679,7 @@ export const adminNotifications = pgTable("admin_notifications", {
 			foreignColumns: [users.id],
 			name: "admin_notifications_read_by_fkey"
 		}).onDelete("set null"),
-	check("admin_notifications_type_check", sql`type IN ('seller_created', 'store_created', 'store_published', 'top_up_requested', 'feature_request_created', 'product_created', 'first_order_received', 'integration_connected', 'store_unpublished', 'store_deleted', 'referral_payout_requested')`),
+	check("admin_notifications_type_check", sql`type IN ('seller_created', 'store_created', 'store_published', 'top_up_requested', 'feature_request_created', 'product_created', 'first_order_received', 'integration_connected', 'store_unpublished', 'store_deleted', 'referral_payout_requested', 'top_up_paid', 'referral_signup')`),
 ]);
 
 /**

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ADMIN_NOTIFICATION_TYPES,
   MAX_NOTIFICATION_IDS,
   adminNotificationHref,
   clampNotificationLimit,
@@ -62,6 +63,25 @@ describe("adminNotificationHref", () => {
     expect(adminNotificationHref({ type: "integration_connected", sellerId: ID, storeId: ID })).toBe("/integrations");
     expect(adminNotificationHref({ type: "store_unpublished", sellerId: ID, storeId: ID })).toBe(`/stores/${ID}`);
     expect(adminNotificationHref({ type: "store_deleted", sellerId: ID, storeId: ID })).toBe(`/sellers/${ID}`);
+  });
+
+  it("links a paid top-up and a referral signup (0173)", () => {
+    const REF = "22222222-2222-4222-8222-222222222222";
+    expect(adminNotificationHref({ type: "top_up_paid", sellerId: ID, storeId: null })).toBe(`/sellers/${ID}`);
+    expect(adminNotificationHref({ type: "top_up_paid", sellerId: null, storeId: null })).toBe("/sellers");
+    expect(
+      adminNotificationHref({ type: "referral_signup", sellerId: ID, storeId: null, data: { referrerId: REF } })
+    ).toBe(`/referrals/${REF}`);
+    // A malformed referrer id falls back to the new seller's page.
+    expect(
+      adminNotificationHref({ type: "referral_signup", sellerId: ID, storeId: null, data: { referrerId: "../x" } })
+    ).toBe(`/sellers/${ID}`);
+    expect(adminNotificationHref({ type: "referral_signup", sellerId: null, storeId: null })).toBe("/referrals");
+  });
+
+  it("lists the 0173 admin types", () => {
+    expect(ADMIN_NOTIFICATION_TYPES).toContain("top_up_paid");
+    expect(ADMIN_NOTIFICATION_TYPES).toContain("referral_signup");
   });
 });
 

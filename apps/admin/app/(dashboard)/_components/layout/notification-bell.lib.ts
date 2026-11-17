@@ -45,6 +45,35 @@ export function describeAdminNotification(n: Pick<NotificationItem, 'type' | 'da
         body: [seller, detail].filter(Boolean).join(' · ') || 'A manual top-up needs review.',
       }
     }
+    case 'top_up_paid': {
+      // `amount` is the EGP paid; `creditAmount` what the wallet got (USD since the switch).
+      const amount = notificationText(n.data, 'amount')
+      const currency = notificationText(n.data, 'currency') || 'EGP'
+      const credit = notificationText(n.data, 'creditAmount')
+      const creditCurrency = notificationText(n.data, 'creditCurrency')
+      const raw = notificationText(n.data, 'method')
+      const method = raw === 'kashier' ? 'Kashier' : (TOP_UP_METHODS[raw] ?? raw)
+      const paid = amount && `${currency} ${amount}`
+      const got =
+        credit && creditCurrency && creditCurrency !== currency
+          ? creditCurrency === 'USD'
+            ? `$${credit}`
+            : `${creditCurrency} ${credit}`
+          : ''
+      const detail = [paid && (got ? `${paid} (${got})` : paid), method && `via ${method}`].filter(Boolean).join(' ')
+      return {
+        title: 'Top-up paid online',
+        body: [seller, detail].filter(Boolean).join(' · ') || 'A seller topped up their wallet online.',
+      }
+    }
+    case 'referral_signup': {
+      const referrer = notificationText(n.data, 'referrerName')
+      return {
+        title: 'New seller from a referral',
+        body: [seller, referrer && `referred by ${referrer}`].filter(Boolean).join(' · ') ||
+          'A seller signed up through a referral link.',
+      }
+    }
     case 'feature_request_created': {
       const title = notificationText(n.data, 'title')
       return {

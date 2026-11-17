@@ -316,6 +316,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 71  | F-93 | App Center: every app and integration in one hub, shared registry + public catalog API | P1 | no | Owner request 2026-11-12; built, not deployed |
 | 72  | F-94 | Store setup reminder emails (24 h and 7 days after signup, Arabic, Resend) | P1 | yes (0170) | Owner request 2026-11-13; built, not deployed |
 | 73  | F-95 | Nested store categories: main categories hold sub-categories (two levels) | P1 | yes (0171) | Owner request 2026-11-14; built, not deployed |
+| 74  | F-96 | Admin bell: online top-up paid, seller signed up through a referral link | P2 | yes (0173) | Owner request 2026-11-17; built, not deployed; 0173 not applied |
 
 ---
 
@@ -1335,6 +1336,12 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-95c · P1 · deps: F-95a** Discount rules, size charts, Arrange products, MCP tools, product feed `product_type` "Main > Sub".
 - **F-95d · P3 · deps: F-95b** Later, if wanted: three levels, a category under two main categories, a header menu editor that lists categories, a `/category/<slug>` route.
 
+### F-96 Admin bell: paid top-ups and referral sign-ups — P2 · Owner request 2026-11-17
+
+- **Status:** built 2026-11-17, not deployed; migration `0173` not applied anywhere yet.
+- **Why:** only manual top-ups rang the Admin bell (`top_up_requested`, 0142); a Kashier top-up and a referral sign-up passed silently.
+- **F-96a · P2 · deps: —** Migration `0173`: admin types `top_up_paid` (AFTER UPDATE OF status / AFTER INSERT on `seller_wallet_top_ups` when a non-manual row becomes `succeeded`; `top_up_paid:<id>`) and `referral_signup` (AFTER INSERT on `sellers` with a referrer, or UPDATE of `referred_by_seller_id` from NULL; `referral_signup:<seller id>`). Admin bell and push text (English, like every Admin bell row) and links: paid top-up → `/sellers/<id>`, referral → `/referrals/<referrer id>`.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1343,6 +1350,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | Two new Admin notifications: when a seller's wallet top-up paid online (Kashier) succeeds, and when a seller signs up through someone's referral link | F-96 (F-96a) | **Built** 2026-11-17, not deployed; needs migration `0173` (§7) |
 | 2026-11-17 | Make the new-store welcome page (`/stores/<id>/welcome`) as simple as possible: one flat list of at most three steps (theme, first product, delivery price) with one counter, then a "store is live" card and a top-up line; brand, payments, sharing tips and the top-up text leave the page; payments counts as set up by default (cash on delivery is on). | Welcome page (no F-number; `docs/plans/seller-welcome.md`) | **Built** 2026-11-17, not committed or deployed; no migration; not seen in a browser (§7) |
 | 2026-11-17 | Seller top-up rules (`docs/seller-top-up-rules.md`): when the trial days end without a top-up (14 days for sellers from before 2026-11-16, 7 for the rest), every store of every seller goes offline, AI stops (0 requests), and any try to put the store online sends the seller to the wallet top-up page with "top up your wallet to bring your store back online"; a manual top-up in review keeps the stores online; activation brings everything back. | F-84 (F-84i) | **Built** 2026-11-17, not committed or deployed; no migration (§7) |
 | 2026-11-17 | "Don't make seller's website published automatically on selecting theme, but on selecting theme and publishing one product at least" | Website publish rule (no F-number; replaces the 2026-11-07 "choosing a template publishes") | **Built** 2026-11-17 (`82ba1e22`), not deployed; no migration (§7) |
@@ -1555,6 +1563,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-95b Storefront main/sub-categories + builder category list "Show" option — 2026-11-14, not deployed; not seen in a browser
 - [x] F-95c Discounts, size charts, Arrange products, MCP, product feed cover sub-categories — 2026-11-14, not deployed
 - [ ] F-95d Three levels / two parents / menu editor / category route (only if asked)
+- [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17, not deployed; `0173` not applied
 - [x] F-90 One template per niche: all 83 niches mapped, every industry switched, 32 templates deleted (116 → 84) — 2026-11-12, not deployed; no migration; not seen in a browser
 - [ ] F-90 Packs and redesigns for the 59 `own` rows (wave 1's six new packs, then waves 2–13 as their photos arrive)
 - [x] F-21c Deposit checkout + seller confirm (checkout summary, deposit payment page by card or transfer + screenshot, dashboard "Awaiting deposit" + confirm/reject, bell, 48 h cron, carrier COD = remainder) — 2026-11-12, not deployed
@@ -1853,6 +1862,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-17 — Admin bell: paid top-ups and referral sign-ups (F-96, owner request)
+
+- **Owner (2026-11-17):** notify the Admin team when a seller's top-up paid online succeeds and when a seller signs up through a referral link.
+- **Migration `0173_admin_paid_top_up_and_referral_signup.sql` (NOT applied on staging or production yet):** widens `admin_notifications_type_check` from its live definition (guarded) with `top_up_paid` and `referral_signup`; `notify_admin_top_up_paid()` on `seller_wallet_top_ups` (AFTER UPDATE OF status when a row that isn't a manual method becomes `succeeded`, and AFTER INSERT if inserted succeeded; data `amount` EGP paid, `currency`, `creditAmount`/`creditCurrency` (USD credit), `method`, `sellerName`); `notify_admin_referral_signup()` on `sellers` (AFTER INSERT with `referred_by_seller_id`, AFTER UPDATE when it goes from NULL to a value; data `sellerName`, `referrerId`, `referrerName`). SECURITY DEFINER, `search_path = ''`, errors become warnings, `ON CONFLICT (dedupe_key) DO NOTHING`, EXECUTE revoked. Additive; existing triggers unchanged. Older admin code shows an unknown type as a plain "Notification" with no link, so deploy order does not matter.
+- **Real Kashier path:** backend `POST` webhook (`apps/backend/src/routes/kashier.ts`) → `applyStoreTopUpWebhook` (`packages/lib/src/store-wallet/top-up.server.ts`) UPDATEs the locked row to `succeeded` with the wallet credit; a replay finds it no longer pending and the dedupe key holds anyway. Manual approvals (`packages/lib/src/admin/top-ups.server.ts`) are excluded by provider.
+- **Admin:** `ADMIN_NOTIFICATION_TYPES`, `adminNotificationHref` (paid top-up → `/sellers/<id>`; referral → `/referrals/<referrer id>`, else the new seller) and `describeAdminNotification` (bell and push share it). The Admin app has no message files (English only), so no `ar.json`/`en.json` strings. Drizzle check list mirrored in `schema.ts`.
+- Checks: see the task report. Not seen in a browser; no DB integration test run.
 
 ### 2026-11-17 — Welcome page simplified to three steps; payments set up by default (owner request)
 
