@@ -333,7 +333,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | T-05 | Edit your website and publish | `/stores/[storeId]/website` | Open the editor → tap the title, «تعديل» → type → pick a photo from the library → «نشر» | draft |
 | T-06 | Set your shipping prices | `/stores/[storeId]/shipping` | Add a delivery area → name it → pick governorates → set the price and save | draft |
 | T-07 | Choose your payment methods | `/stores/[storeId]/settings/payments` | «إعداد» on a method → its receiving details → holder name → «حفظ وتفعيل» | draft |
-| T-08 | Top up your wallet | `/wallet/top-up` | Enter the amount → pay → the new balance | todo |
+| T-08 | Top up your wallet | `/wallet` (Kashier returns to `/wallet/top-up`) | «شحن المحفظة» → pick an amount in $ → pay with Kashier → back to the wallet | draft |
 | T-09 | Follow and confirm an order | `/orders` | Open a new order → review it → «تأكيد الطلب» → «خرج للتوصيل» | draft |
 | T-10 | Connect an AI assistant to your store (MCP) | `/stores/[storeId]/apps` › AI assistants | Open the app → copy the link → approve the connection → ask the assistant to add a product | todo |
 
@@ -413,4 +413,5 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | 2026-11-17 | — | Owner: the voiceover stays formal with no laughing (§5.1); one video for each of the four ways to add a product, so T-51 "Add a product from a link" was added (51 topics) |
 | 2026-11-17 | T-01 | Owner heard a laugh on "الموضوع بسيط" in two takes. Opening changed to a plain statement ("هنضيف منتج جديد على طلبي، في خمس خطوات بسيطة."), rule added to §5.1, third take generated and placed. Waiting for the owner to listen |
 | 2026-11-17 | T-01 | Owner approved the pilot (look, sounds, voice). Wave 1 started with the other three add-product videos: T-02, T-51, T-03 |
+| 2026-11-18 | T-04 … T-09 | Built with the kit and the Hanafi voice, one take each (284 + 278 + 299 + 278 + 273 + 312 credits); transcripts match, no laugh marker. Nobody has listened yet. T-10 (MCP) held: ROADMAP F-29 is Delayed, so rule 18 rules it out. Kit gaps found: the kit top bar shows "≈ 270 جنيه" but the real one shows the wallet in $ (`dashboard-header.client.tsx`); render with `--workers 1` (one parallel chunk drifted in T-08) |
 | 2026-11-17 | T-02, T-51, T-03 | Built with the kit and the Hanafi voice (one take each, 280 + 261 + 271 credits; transcripts match). All four add-product videos depend on the method chooser (`ROADMAP.md` F-71), whose roadmap status still reads "Built, not deployed": confirm on production before uploading any of them |

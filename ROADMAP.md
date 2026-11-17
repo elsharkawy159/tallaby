@@ -1576,7 +1576,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-95c Discounts, size charts, Arrange products, MCP, product feed cover sub-categories — 2026-11-14, not deployed
 - [ ] F-95d Three levels / two parents / menu editor / category route (only if asked)
 - [x] F-97a Tutorial video kit + pilot video T-01 "Add a product" — 2026-11-17 (`dd63f557`, `04827b49`); look, sounds and Hanafi voiceover approved by the owner; not uploaded; page not checked on production
-- [~] F-97b started 2026-11-17 on `main`: T-02, T-51, T-03 in progress
+- [~] F-97b started 2026-11-17 on `main`: T-02, T-51, T-03 built 2026-11-17; T-04 … T-09 built 2026-11-18 (drafts, not listened to, not uploaded); T-10 (MCP) held because F-29 is Delayed
 - [ ] F-97b Tutorial videos wave 1 (T-02 … T-10)
 - [ ] F-97c Tutorial videos waves 2–6 (T-11 … T-50)
 - [ ] F-97d Dashboard "شاهد الشرح" button + path → video registry
@@ -1879,6 +1879,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-18 — Tutorial videos wave 1: T-04 … T-09 built (F-97b)
+
+- **Done:** template, website editor, shipping, payment methods, wallet top-up and order videos built with the kit and the Hanafi voice (one take each, 1,724 credits in all), each reviewed and committed on its own. Every real page was read in the code; the videos follow its labels and order.
+- **Not done:** nobody has listened to the takes; no page was opened on production; nothing uploaded. T-10 (AI assistant, MCP) is held because F-29 is Delayed (rule 18).
+- **Found:** the gallery's `health` and `pets` template categories have no Arabic or English label; the dashboard hint "عاينها ثم انشرها." uses the verb-plus-ـها form the video rules avoid; the kit top bar shows "≈ 270 جنيه" where the real top bar shows the wallet in $.
+- **No migration, no code change.**
 
 ### 2026-11-17 — Tutorial videos planned (F-97, owner request)
 
