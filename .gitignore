@@ -42,6 +42,10 @@ npm-debug.log*
 brag-output*
 Marketing Videos/.supabase-s3.env
 
+# Tutorial videos: keep the rules, kit and each video.md; not the renders or build files
+Tutorial Videos/*/work/
+Tutorial Videos/**/*.mp4
+
 # motion perf scratch
 scripts/perf-work/
 scripts/perf/

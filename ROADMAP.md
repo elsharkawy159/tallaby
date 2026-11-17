@@ -317,6 +317,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 72  | F-94 | Store setup reminder emails (24 h and 7 days after signup, Arabic, Resend) | P1 | yes (0170) | Owner request 2026-11-13; built, not deployed |
 | 73  | F-95 | Nested store categories: main categories hold sub-categories (two levels) | P1 | yes (0171) | Owner request 2026-11-14; built, not deployed |
 | 74  | F-96 | Admin bell: online top-up paid, seller signed up through a referral link | P2 | yes (0173) | Owner request 2026-11-17; built, not deployed; 0173 not applied |
+| 75  | F-97 | Tutorial videos: one YouTube Short per feature and a "شاهد الشرح" button on each dashboard page | P1 | no | Owner request 2026-11-17; rules and 50 topics written (`Tutorial Videos/TUTORIALS.md`); no video or button yet |
 
 ---
 
@@ -1342,6 +1343,16 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **Why:** only manual top-ups rang the Admin bell (`top_up_requested`, 0142); a Kashier top-up and a referral sign-up passed silently.
 - **F-96a · P2 · deps: —** Migration `0173`: admin types `top_up_paid` (AFTER UPDATE OF status / AFTER INSERT on `seller_wallet_top_ups` when a non-manual row becomes `succeeded`; `top_up_paid:<id>`) and `referral_signup` (AFTER INSERT on `sellers` with a referrer, or UPDATE of `referred_by_seller_id` from NULL; `referral_signup:<seller id>`). Admin bell and push text (English, like every Admin bell row) and links: paid top-up → `/sellers/<id>`, referral → `/referrals/<referrer id>`.
 
+### F-97 Tutorial videos and a "شاهد الشرح" button on each feature page — P1 · Owner request 2026-11-17
+
+- **Status:** planned. Rules and 50 topics written 2026-11-17 in [`Tutorial Videos/TUTORIALS.md`](Tutorial%20Videos/TUTORIALS.md); no video made and no button built yet.
+- **Why:** a seller on a feature page should be able to watch, in about 30 seconds, how to use it, without leaving the dashboard.
+- **Rules (owner):** one video per feature, about 30 s, YouTube Shorts (9:16), no voiceover, simple sound effects only, the dashboard's mobile screen filling the whole video (no small phone mockup), one design system across all videos, every video in its own folder under `Tutorial Videos/` with a `video.md` (caption, duration, feature, dashboard path).
+- **F-97a · P1 · deps: —** Shared video kit (`Tutorial Videos/_kit/`: overlays, sounds, title and end cards) and the pilot video T-01 "Add a product"; owner approves the look before the rest are made.
+- **F-97b · P1 · deps: F-97a** Wave 1 videos T-02 … T-10 (add with AI, from a file, template, editor, shipping, payments, top-up, orders, MCP).
+- **F-97c · P2 · deps: F-97a** Waves 2–6 videos T-11 … T-50.
+- **F-97d · P1 · deps: one uploaded video** Dashboard button: one code registry mapping a page path to its YouTube link, a "شاهد الشرح" header button (opposite the page title) that opens the Short in a dialog, strings in `ar.json` and `en.json`; a page with no video shows no button. No migration.
+
 ---
 
 ## 5. Owner feature requests (intake)
@@ -1350,6 +1361,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Feature ID                                                                                       | Status                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | "I need to generate videos shorts for youtube one video per feature to add the video url on the feature page on dashboard … add product page should have a button at top left … around 30 seconds per video … without voiceover, just simple sound effect … same design system across videos … show the mockup on full mobile screen … each video in a folder with .md file of the video details" | F-97 (F-97a … F-97d) | **Planned** 2026-11-17: rules and topics in `Tutorial Videos/TUTORIALS.md`; no video or button yet (§7) |
 | 2026-11-17 | Two new Admin notifications: when a seller's wallet top-up paid online (Kashier) succeeds, and when a seller signs up through someone's referral link | F-96 (F-96a) | **Built** 2026-11-17, not deployed; needs migration `0173` (§7) |
 | 2026-11-17 | Make the new-store welcome page (`/stores/<id>/welcome`) as simple as possible: one flat list of at most three steps (theme, first product, delivery price) with one counter, then a "store is live" card and a top-up line; brand, payments, sharing tips and the top-up text leave the page; payments counts as set up by default (cash on delivery is on). | Welcome page (no F-number; `docs/plans/seller-welcome.md`) | **Built** 2026-11-17, not committed or deployed; no migration; not seen in a browser (§7) |
 | 2026-11-17 | Seller top-up rules (`docs/seller-top-up-rules.md`): when the trial days end without a top-up (14 days for sellers from before 2026-11-16, 7 for the rest), every store of every seller goes offline, AI stops (0 requests), and any try to put the store online sends the seller to the wallet top-up page with "top up your wallet to bring your store back online"; a manual top-up in review keeps the stores online; activation brings everything back. | F-84 (F-84i) | **Built** 2026-11-17, not committed or deployed; no migration (§7) |
@@ -1563,6 +1575,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-95b Storefront main/sub-categories + builder category list "Show" option — 2026-11-14, not deployed; not seen in a browser
 - [x] F-95c Discounts, size charts, Arrange products, MCP, product feed cover sub-categories — 2026-11-14, not deployed
 - [ ] F-95d Three levels / two parents / menu editor / category route (only if asked)
+- [ ] F-97a Tutorial video kit + pilot video T-01 "Add a product" (rules and topics written 2026-11-17)
+- [ ] F-97b Tutorial videos wave 1 (T-02 … T-10)
+- [ ] F-97c Tutorial videos waves 2–6 (T-11 … T-50)
+- [ ] F-97d Dashboard "شاهد الشرح" button + path → video registry
 - [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17, not deployed; `0173` not applied
 - [x] F-90 One template per niche: all 83 niches mapped, every industry switched, 32 templates deleted (116 → 84) — 2026-11-12, not deployed; no migration; not seen in a browser
 - [ ] F-90 Packs and redesigns for the 59 `own` rows (wave 1's six new packs, then waves 2–13 as their photos arrive)
@@ -1862,6 +1878,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-17 — Tutorial videos planned (F-97, owner request)
+
+- **Asked:** one YouTube Short per feature (about 30 s, no voiceover, simple sound effects, full-screen mobile screen, one design system), each in its own folder with a details file, and a button on each dashboard feature page that opens the video.
+- **Done:** `Tutorial Videos/TUTORIALS.md` written: format, full-screen rule, the shared design kit, sounds, folder layout, the `video.md` template, YouTube and QA rules, and 50 topics in six waves with their dashboard paths. F-97 added (§3, §4, §5, §6). CLAUDE.md rule 18 now points tutorials to that file.
+- **Not done:** no video, no kit and no dashboard button yet. The topic paths were taken from the dashboard routes and are not yet checked page by page or on production; each is checked when its video is made.
+- **No migration, no code change.**
 
 ### 2026-11-17 — Admin bell: paid top-ups and referral sign-ups (F-96, owner request)
 
