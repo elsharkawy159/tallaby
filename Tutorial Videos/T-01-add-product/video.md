@@ -6,7 +6,7 @@ roadmap: "§2.1 Products"
 dashboard_path: /stores/[storeId]/products/add
 status: draft
 duration_seconds: 34.3
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 5Khwxdmn90PgdyBv32CB"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation Nx0NWDGYjzHxfoMoSD5K"
 made_on: 2026-11-17
 youtube_url:
 youtube_title_ar: "طريقة إضافة منتج جديد لمتجرك على طلبي #Shorts"
@@ -30,9 +30,9 @@ The bar at the bottom counts down as on the real page: 29% "5 حقول مطلو�
 
 ## Voiceover script (with diacritics, exactly as generated)
 
-عايز تِضيف مُنتَج جديد على طَلَبي؟ الموضوع بسيط. واحد: اختار إضافة يَدَوِيًّا. اتنين: اكتِب اسم المُنتَج، ووَصف قُصيَّر عنه. تلاتة: ضيف صُوَر المُنتَج. أربعة: اختار الفِئة. خمسة: اكتِب السِّعر، واضغَط نَشر. وكده مُنتَجَك بقى مَعروض في مَتجَرَك.
+هنضيف مُنتَج جديد على طَلَبي، في خمس خطوات بسيطة. واحد: اختار إضافة يَدَوِيًّا. اتنين: اكتِب اسم المُنتَج، ووَصف قُصيَّر عنه. تلاتة: ضيف صُوَر المُنتَج. أربعة: اختار الفِئة. خمسة: اكتِب السِّعر، واضغَط نَشر. وكده مُنتَجَك بقى مَعروض في مَتجَرَك.
 
-Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, generation `5Khwxdmn90PgdyBv32CB`. The take is `work/vo/take.mp3` (19.44 s; regenerated 2026-11-17 under the formal, no-laughing rule), cut at its sentence pauses and placed one sentence per beat; it is not sped up or stretched. The take was transcribed and matched the script word for word, but **nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
+Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, generation `Nx0NWDGYjzHxfoMoSD5K`. The take is `work/vo/take.mp3` (19.6 s; third take, 2026-11-17: the first two laughed on "الموضوع بسيط", so the opening became a plain statement), cut at its sentence pauses and placed one sentence per beat; it is not sped up or stretched. The take was transcribed and matched the script word for word, but **nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 

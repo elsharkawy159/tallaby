@@ -87,7 +87,7 @@ Owner, 2026-11-17: every tutorial has a simple, calm, human-sounding voiceover i
 | Voice | **Hanafi – Educational – Egyptian** (ElevenLabs), `voice_id: DWMVT5WflKt0P8OPpIrY`. Chosen by the owner on 2026-11-17 from nine test takes (`T-01-add-product/work/vo-tests/`) |
 | Model | `eleven_v4`, the connector's default voice settings. Never raise style, expressiveness or speed |
 | Tags | None. No `[excited]`, `[calm]`, `[laughs]` or any other tag; pauses come from punctuation only |
-| Tone | **Formal, serious and calm** from the first word to the last (owner, 2026-11-17). **No laughing, chuckling, giggling or smiling-while-talking sounds**, no sighs, no playful or joking delivery |
+| Tone | **Calm, professional and a little friendly, never laughing** (owner, 2026-11-17: "a bit fun but not laugh"). Warm like a good trainer, the same from the first word to the last. **No laughing, chuckling, giggling or smiling-while-talking sounds**, no sighs, no playful or joking delivery |
 | Takes | One generation of the whole script. Generate again only when the take fails the checks below, after fixing the script |
 | If Hanafi is unavailable | Stop and ask the owner. Do not switch voice on your own, and never use a non-Egyptian voice |
 
@@ -97,7 +97,8 @@ This voice is for tutorials only. Marketing videos keep their own voice (Tamer).
 
 Every script has the same three parts, so all tutorials sound like one series:
 
-1. **Opening** (over the title card): one short question or sentence that names the task, then "الموضوع بسيط." or a similar calm line. Say **طَلَبي** here when it fits naturally.
+1. **Opening** (over the title card): **one plain statement** that names the task and how many steps it takes, for example "هنضيف مُنتَج جديد على طَلَبي، في خمس خطوات بسيطة." Say **طَلَبي** here when it fits naturally.
+   - **Never open with a question followed by a reassuring remark** ("عايز تضيف منتج؟ الموضوع بسيط."). The voice read exactly that pattern with a laugh on "الموضوع بسيط" in two takes of T-01 (owner, 2026-11-17). Chatty asides invite a laugh: الموضوع بسيط، سهلة خالص، ولا يهمك، بسيطة، متقلقش.
 2. **Steps:** one sentence per step, starting with its number as a word: "واحد:", "اتنين:", "تلاتة:", "أربعة:", "خمسة:". The sentence says the same action as the step's caption on screen.
 3. **Closing** (over the result): one sentence that says what the seller now has. No call to action, no "tallaby.com".
 
@@ -105,7 +106,7 @@ Every script has the same three parts, so all tutorials sound like one series:
 
 **Writing rules**
 
-- **Keep it formal** (owner, 2026-11-17): respectful and businesslike, like a trainer explaining a tool at work. Nothing in the script invites a laugh: no jokes, no teasing, no slang exclamations (يا عم، يا باشا، هههه), no "!" and no emoji. Statements end with a full stop; only the opening may be a question.
+- **Keep it formal** (owner, 2026-11-17): respectful and businesslike, like a trainer explaining a tool at work. Nothing in the script invites a laugh: no jokes, no teasing, no slang exclamations (يا عم، يا باشا، هههه), no "!" and no emoji. Every sentence is a statement that ends with a full stop; no questions.
 - **Egyptian Arabic, simple and polite**, the way a helpful colleague explains something: عايز، اختار، ضيف، اكتب، دلوقتي، كده، بقى. No Modern Standard words (سوف، الآن، يمكنك، هذا) and no Gulf or Levantine words (أبغى، الحين، كذا، شلون، هالـ).
 - **Anybody must understand it.** Sentences of 3–8 words, one action each. No technical terms without a plain word beside them. Call things by the name written on the button or field.
 - **Clear, polite verbs with the thing named after them:** ضيف منتجك، اكتب الاسم، اختار الفئة، اضغط نشر، دخّل البيانات، افتح الصفحة، ارفع الصور، فعّل الخيار، احفظ التغييرات، راجع البيانات، شارك الرابط.
@@ -194,7 +195,7 @@ This is for the voice only. Text on screen keeps the dashboard's own words (for 
 
 **Reference script: T-01 "Add a product"** (the pattern every script follows)
 
-> عايز تِضيف مُنتَج جديد على طَلَبي؟ الموضوع بسيط.
+> هنضيف مُنتَج جديد على طَلَبي، في خمس خطوات بسيطة.
 > واحد: اختار إضافة يَدَوِيًّا.
 > اتنين: اكتِب اسم المُنتَج، ووَصف قُصيَّر عنه.
 > تلاتة: ضيف صُوَر المُنتَج.
@@ -410,3 +411,4 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | 2026-11-17 | — | Voiceover plan added (§5.1): owner chose the Hanafi voice from nine test takes; the pilot does not have the voice yet |
 | 2026-11-17 | T-01 | Approved script generated with Hanafi (transcript matched word for word); kit now places and mixes a voice; pilot retimed to the voice and re-rendered: 34.3 s, -16.1 LUFS, -2.2 dBTP. Not yet listened to by a person |
 | 2026-11-17 | — | Owner: the voiceover stays formal with no laughing (§5.1); one video for each of the four ways to add a product, so T-51 "Add a product from a link" was added (51 topics) |
+| 2026-11-17 | T-01 | Owner heard a laugh on "الموضوع بسيط" in two takes. Opening changed to a plain statement ("هنضيف منتج جديد على طلبي، في خمس خطوات بسيطة."), rule added to §5.1, third take generated and placed. Waiting for the owner to listen |
