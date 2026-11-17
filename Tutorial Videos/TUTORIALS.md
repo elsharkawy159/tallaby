@@ -330,7 +330,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | T-03 | Add products from a file | `/stores/[storeId]/products/add/from-file` | Upload the file → check the rows → import → the products list | draft (34.3 s, voice done; waiting for the owner to listen and a production check) |
 | T-51 | Add a product from a link | `/stores/[storeId]/products/add` (link option) | Choose "from a link" → paste the product's link → the fields and photos fill in → review → publish | draft (34.0 s, voice done; waiting for the owner to listen and a production check) |
 | T-04 | Choose your store's template | `/stores/[storeId]/website/templates` | Open Templates → preview one → «استخدام القالب» → confirm (goes to the drafts) | draft |
-| T-05 | Edit your website and publish | `/stores/[storeId]/website` | Open the editor → change a title and a photo → Publish | todo |
+| T-05 | Edit your website and publish | `/stores/[storeId]/website` | Open the editor → tap the title, «تعديل» → type → pick a photo from the library → «نشر» | draft |
 | T-06 | Set your shipping prices | `/stores/[storeId]/shipping` | Add a delivery area → name it → pick governorates → set the price and save | draft |
 | T-07 | Choose your payment methods | `/stores/[storeId]/settings/payments` | Turn a method on → add its details → save | todo |
 | T-08 | Top up your wallet | `/wallet/top-up` | Enter the amount → pay → the new balance | todo |
