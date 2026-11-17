@@ -1,0 +1,496 @@
+/*
+ * Tallaby tutorial kit: the seller dashboard's look, for rebuilding its pages in a video.
+ * Values are copied from apps/dashboard (app/globals.css tokens and components/seller-ui),
+ * at the phone layout (390 CSS px wide, the max-[600px] variants). Sizes are CSS px:
+ * the kit draws the screen 2.77 times larger.
+ *
+ * Only pieces that many dashboard pages share live here. A page's own layout goes in
+ * that video's work/screen.css. If the dashboard's design changes, update this file.
+ */
+
+.db {
+  /* app/globals.css */
+  --teal-50: #eaf2f4;
+  --teal-100: #cfe0e4;
+  --teal-700: #145163;
+  --teal-900: #0d3743;
+  --amber-50: #fff6e3;
+  --amber-600: #fdad28;
+  --s-ink: #0d3743;
+  --s-text: #26393e;
+  --s-body: #33464b;
+  --s-muted: #5f7277;
+  --s-subtle: #7b8f94;
+  --s-faint: #8a9ca1;
+  --s-placeholder: #a7b6ba;
+  --s-line: #e6eef0;
+  --s-line-soft: #edf1f2;
+  --s-field: #e3ebed;
+  --s-field-strong: #cfdde1;
+  --s-surface: #ffffff;
+  --s-surface-2: #f8fafa;
+  --s-fill: #f1f5f6;
+  --s-primary: #145163;
+  --s-solid: #0d3743;
+  --s-glass: rgb(255 255 255 / 0.92);
+  --s-topbar: rgb(250 250 248 / 0.78);
+  --s-topbar-line: rgb(20 81 99 / 0.07);
+  --s-focus-soft: rgb(20 81 99 / 0.08);
+  --s-shadow-card: 0 1px 2px rgb(13 55 67 / 0.03);
+  --s-shadow-bar: 0 18px 40px rgb(13 55 67 / 0.3);
+  --s-shadow-amber: 0 6px 18px rgb(253 173 40 / 0.32);
+  --primary-soft: #eaf2f4;
+  --accent-soft: #fff6e3;
+  --accent-ink: #8a5300;
+  --success: #15803d;
+  --success-soft: #e5f6ea;
+  --destructive: #b42318;
+
+  direction: rtl;
+  font-family: "Noto Kufi Arabic", "Montserrat", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--s-text);
+  background: #fafaf8;
+  -webkit-font-smoothing: antialiased;
+}
+
+.db svg {
+  flex: none;
+  display: block;
+}
+
+.db .mont {
+  font-family: "Montserrat", "Noto Kufi Arabic", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A page: the wash of the dashboard background, the top bar, then the page's view. */
+.db-page {
+  background:
+    radial-gradient(900px 560px at 70% -180px, rgb(20 81 99 / 0.14), transparent 72%),
+    radial-gradient(600px 500px at 6% 4%, rgb(253 173 40 / 0.1), transparent 70%),
+    #fafaf8;
+}
+
+.db-view {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60px;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/* ── Top bar (components/layout/dashboard-header.client.tsx, phone) ── */
+
+.db-topbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 30;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  /* the real bar is glass with a 7% teal line; drawn solid here so nothing shows through in the video */
+  border-bottom: 1px solid #eaeeed;
+  background: #fafaf8;
+}
+
+.db-topbar-search {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--s-field);
+  background: var(--s-surface);
+  color: #8aa0a6;
+}
+
+.db-topbar-search svg {
+  width: 18px;
+  height: 18px;
+}
+
+.db-topbar-wallet {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 10px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--s-field);
+  background: var(--s-surface);
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--s-ink);
+}
+
+.db-topbar-wallet i {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--teal-50);
+  color: var(--s-primary);
+}
+
+.db-topbar-wallet i svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Icon button (seller-ui IconButton: 40 px on phones) ── */
+
+.db-ib {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--s-subtle);
+}
+
+.db-ib svg {
+  width: 18px;
+  height: 18px;
+}
+
+.db-ib.sm {
+  width: 36px;
+  height: 36px;
+}
+
+/* ── Buttons (seller-ui SellerButton) ── */
+
+.db-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.db-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.db-btn.amber {
+  background: var(--amber-600);
+  color: var(--teal-900);
+  box-shadow: var(--s-shadow-amber);
+}
+
+.db-btn.solid {
+  background: var(--s-solid);
+  color: #fff;
+}
+
+.db-btn.outline {
+  border: 1.5px solid var(--teal-100);
+  background: var(--s-surface);
+  color: var(--s-ink);
+}
+
+.db-btn.mini {
+  border: 1px solid var(--s-field);
+  background: var(--s-surface);
+  font-weight: 600;
+  color: var(--s-body);
+}
+
+.db-btn.mini svg {
+  color: var(--s-subtle);
+}
+
+/* size="xs": 40 px tall on phones */
+.db-btn.xs {
+  height: 40px;
+  gap: 6px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+.db-btn.xs svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* PHONE_COMPACT_ACTIONS: buttons in a page header's actions row */
+.db-btn.compact {
+  height: 36px;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 12.5px;
+}
+
+.db-btn.compact svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Section card (products/add/form-kit.tsx SectionCard, phone) ── */
+
+.db-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid var(--s-line);
+  background: var(--s-glass);
+  box-shadow: var(--s-shadow-card);
+}
+
+.db-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.db-card-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--s-primary);
+}
+
+.db-card-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.db-card-head > div {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.db-card-head h2 {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--s-ink);
+}
+
+.db-card-head p {
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--s-muted);
+}
+
+/* ── Fields (seller-ui fieldClass, form-kit FieldLabel / FieldHint / LocaleTag) ── */
+
+.db-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.db-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--s-text);
+}
+
+.db-label .req {
+  color: var(--destructive);
+}
+
+.db-label .loc {
+  padding: 0 5px;
+  border-radius: 5px;
+  background: var(--primary-soft);
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  color: var(--s-primary);
+}
+
+.db-label .note {
+  margin-inline-start: auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--s-faint);
+}
+
+.db-field {
+  height: 46px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--s-field);
+  background: var(--s-surface);
+  font-size: 16px;
+  color: var(--s-text);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.db-field[data-focus="on"],
+.db-group[data-focus="on"] {
+  border-color: var(--s-primary);
+  box-shadow: 0 0 0 4px var(--s-focus-soft);
+}
+
+.db .tk-ph {
+  color: var(--s-placeholder);
+}
+
+.db-hint {
+  font-size: 12px;
+  line-height: 1.625;
+  color: var(--s-faint);
+}
+
+/* Input with a fixed part, e.g. the currency (form-kit InputGroup + InputAddon) */
+.db-group {
+  height: 46px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1.5px solid var(--s-field);
+  background: var(--s-surface);
+}
+
+.db-group .addon {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--s-surface-2);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--s-subtle);
+  white-space: nowrap;
+}
+
+.db-group .value {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--s-text);
+}
+
+/* ── Switch (packages/ui switch: 44 x 24, thumb 20) ── */
+
+.db-switch {
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--s-field);
+}
+
+.db-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  inset-inline-start: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fafaf8;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+}
+
+.db-switch.on {
+  background: var(--s-primary);
+}
+
+.db-switch.on::after {
+  inset-inline-start: 22px;
+}
+
+.db-switch.sm {
+  width: 36px;
+  height: 20px;
+}
+
+.db-switch.sm::after {
+  width: 16px;
+  height: 16px;
+}
+
+.db-switch.sm.on::after {
+  inset-inline-start: 18px;
+}
+
+.db-switch.green.on {
+  background: var(--success);
+}
+
+/* ── Toast (packages/ui sonner: dark, bottom centre) ── */
+
+.db-toast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+}
+
+.db-toast > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #1f2a2e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.db-toast svg {
+  width: 16px;
+  height: 16px;
+  color: #4ade80;
+}
+
+.db-toast b {
+  margin-inline-start: 4px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2a2e;
+  font-size: 12px;
+  font-weight: 500;
+}

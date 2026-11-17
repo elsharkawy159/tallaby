@@ -1,0 +1,394 @@
+/*
+ * Tallaby tutorial kit: the overlays every tutorial video shares (TUTORIALS.md section 4).
+ * Sizes are in video pixels (1080 x 1920). Never restyle these inside one video:
+ * change this file and render the videos again.
+ */
+
+:root {
+  /* The only overlay colours. */
+  --tk-teal: #145163;
+  --tk-gold: #fdad28;
+  --tk-offwhite: #fafaf8;
+  --tk-white: #ffffff;
+  --tk-teal-94: rgb(20 81 99 / 0.94);
+  --tk-white-40: rgb(255 255 255 / 0.4);
+
+  --tk-font-ar: "Noto Kufi Arabic", "Montserrat", sans-serif;
+  --tk-font-lat: "Montserrat", "Noto Kufi Arabic", sans-serif;
+
+  /* The frame and the phone screen inside it. */
+  --tk-w: 1080px;
+  --tk-h: 1920px;
+  --tk-screen-w: 390px;
+  --tk-screen-h: 693px;
+  --tk-fit: 2.76923; /* 1080 / 390 */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+#root {
+  position: relative;
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+  direction: rtl;
+  font-family: var(--tk-font-ar);
+  background: #ffffff;
+}
+
+/* ───────────── The dashboard screen: fills the frame, no phone mockup ───────────── */
+
+#tk-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* The camera: the kit zooms and moves this element. */
+#tk-cam {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1080px;
+  height: 1920px;
+}
+
+/* 390 x 693 CSS px drawn 2.77 times larger. */
+#tk-fit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 390px;
+  height: 693px;
+  transform: scale(2.76923);
+  transform-origin: 0 0;
+  overflow: hidden;
+}
+
+/* One dashboard page. Several can be stacked; the kit slides between them. */
+.tk-screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* ───────────── Overlay layer ───────────── */
+
+#tk-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.tk-clip {
+  position: absolute;
+  inset: 0;
+}
+
+.tk-lat {
+  font-family: var(--tk-font-lat);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* ───────────── Title card and end card ───────────── */
+
+.tk-card {
+  position: absolute;
+  inset: 0;
+  background: var(--tk-teal);
+  color: var(--tk-white);
+  overflow: hidden;
+}
+
+/* A soft light and a gold arc: depth without a new colour. */
+.tk-card::before {
+  content: "";
+  position: absolute;
+  left: -260px;
+  top: -340px;
+  width: 1600px;
+  height: 1600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0) 62%);
+}
+
+.tk-card::after {
+  content: "";
+  position: absolute;
+  left: 140px;
+  top: 1210px;
+  width: 1400px;
+  height: 1400px;
+  border-radius: 50%;
+  border: 3px solid rgb(253 173 40 / 0.22);
+}
+
+.tk-card-logo {
+  position: absolute;
+  left: 390px;
+  top: 300px;
+  width: 300px;
+  height: auto;
+  display: block;
+}
+
+/* Label, title and rule: one centred block, so a one-line and a two-line title both sit well. */
+.tk-title-block {
+  position: absolute;
+  left: 170px;
+  right: 170px;
+  top: 560px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+}
+
+.tk-title-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  height: 76px;
+  padding: 0 34px;
+  border-radius: 38px;
+  background: var(--tk-gold);
+  color: var(--tk-teal);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tk-title-label svg {
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+
+.tk-title-text {
+  text-align: center;
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+.tk-title-rule {
+  width: 200px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--tk-gold);
+}
+
+.tk-end-line {
+  position: absolute;
+  left: 160px;
+  right: 160px;
+  top: 690px;
+  text-align: center;
+  font-size: 68px;
+  font-weight: 700;
+  line-height: 1.6;
+  text-wrap: balance;
+}
+
+.tk-end-crumbs {
+  position: absolute;
+  left: 160px;
+  right: 160px;
+  top: 990px;
+  display: flex;
+  justify-content: center;
+}
+
+.tk-end-crumbs div {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  height: 92px;
+  padding: 0 40px;
+  border-radius: 46px;
+  border: 3px solid var(--tk-white-40);
+  color: var(--tk-offwhite);
+  font-size: 40px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tk-end-crumbs b {
+  font-weight: 700;
+  color: var(--tk-white);
+}
+
+.tk-end-crumbs i {
+  font-style: normal;
+  color: var(--tk-gold);
+  font-weight: 700;
+}
+
+/* ───────────── Step caption: one card, bottom edge at y 1460 ───────────── */
+
+.tk-cap {
+  position: absolute;
+  left: 110px;
+  top: 1270px;
+  width: 860px;
+  height: 190px;
+  border-radius: 28px;
+  background: var(--tk-teal-94);
+  box-shadow: 0 18px 44px rgb(13 55 67 / 0.28);
+}
+
+.tk-step {
+  position: absolute;
+  left: 110px;
+  top: 1270px;
+  width: 860px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  /* 50 px keeps the number clear of the Shorts buttons (right 160 px) */
+  padding: 0 50px;
+  color: var(--tk-white);
+}
+
+.tk-step-num {
+  flex: none;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--tk-gold);
+  color: var(--tk-teal);
+  display: grid;
+  place-items: center;
+  font-family: var(--tk-font-lat);
+  font-size: 50px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tk-step-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 52px;
+  font-weight: 600;
+  line-height: 1.42;
+  text-wrap: balance;
+}
+
+/* Progress dots, above the card: gold for the current step, white 40% for the others. */
+.tk-dots-pill {
+  position: absolute;
+  top: 1212px;
+  height: 38px;
+  border-radius: 19px;
+  background: var(--tk-teal-94);
+}
+
+.tk-dot {
+  position: absolute;
+  top: 1224px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--tk-white-40);
+}
+
+.tk-dot-on {
+  position: absolute;
+  top: 1220px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--tk-gold);
+}
+
+/* ───────────── Tap marker: gold ring 96 px, 6 px stroke, one soft ripple ───────────── */
+
+.tk-tap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+}
+
+.tk-tap-ring,
+.tk-tap-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 6px solid var(--tk-gold);
+}
+
+.tk-tap-ring {
+  background: rgb(253 173 40 / 0.18);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.55);
+}
+
+.tk-tap-ripple {
+  border-width: 4px;
+}
+
+/* ───────────── Highlight: 6 px gold outline, 16 px radius ───────────── */
+
+.tk-hl {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border: 6px solid var(--tk-gold);
+  border-radius: 16px;
+  box-shadow: 0 0 0 6px rgb(253 173 40 / 0.2);
+}
+
+/* ───────────── Typing caret (inside the dashboard screen, so in CSS px) ───────────── */
+
+.tk-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.15em;
+  margin-inline: 1px -2.5px; /* takes no room, so the placeholder does not move */
+  vertical-align: -0.2em;
+  background: var(--tk-teal);
+  opacity: 0;
+}
+
+/* ───────────── Result: a white check in a gold circle ───────────── */
+
+.tk-check {
+  position: absolute;
+  left: 456px;
+  top: 1281px;
+  width: 168px;
+  height: 168px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--tk-gold);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 10px rgb(255 255 255 / 0.9), 0 18px 44px rgb(13 55 67 / 0.3);
+}
+
+.tk-check svg {
+  width: 96px;
+  height: 96px;
+  display: block;
+}

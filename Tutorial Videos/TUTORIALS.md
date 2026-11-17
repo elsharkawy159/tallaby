@@ -84,7 +84,8 @@ Every tutorial uses the same kit, kept in `Tutorial Videos/_kit/` and imported b
 | `whoosh` | Every step change |
 | `success` | The result card |
 
-- All effects are soft: 5–10 ms fade-in, no harsh highs. Peak at most **-6 dBTP**; the whole video at about **-20 to -18 LUFS**. The video must work fully with the sound off.
+- **Simple, low volume, not bold** (owner, 2026-11-17): each sound is one plain soft tone (the whoosh is a faint breath of air). No layered notes, no clicks or noise bursts, no chimes that draw attention.
+- All effects have a 5–10 ms fade-in and no harsh highs. Peak at most **-16 dBTP**; the whole video at most **-28 LUFS** (T-01 measures -36.3 LUFS, -18 dBTP). The video must work fully with the sound off.
 
 ## 6. Where the files go
 
