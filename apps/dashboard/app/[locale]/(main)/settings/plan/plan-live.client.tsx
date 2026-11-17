@@ -218,7 +218,9 @@ export function PlanLive(props: PlanLiveProps) {
         </p>
         {credits.notActivated && (
           <Note tone="amber" className="mt-3">
-            {t("creditsNotActivated", { locked: AI_CREDITS_MONTHLY_NOT_ACTIVATED, full: PLANS.free.aiCreditsMonthly, min: usd(TOP_UP_MIN_USD_CENTS) })}{" "}
+            {credits.stopped
+              ? t("creditsStopped", { full: PLANS.free.aiCreditsMonthly, min: usd(TOP_UP_MIN_USD_CENTS) })
+              : t("creditsNotActivated", { locked: AI_CREDITS_MONTHLY_NOT_ACTIVATED, full: PLANS.free.aiCreditsMonthly, min: usd(TOP_UP_MIN_USD_CENTS) })}{" "}
             <Link href="/wallet" className="underline underline-offset-2">
               {t("topUpFirst")}
             </Link>

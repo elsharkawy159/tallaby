@@ -308,12 +308,14 @@ async function applyChecks(ctx: RunContext, build: BuildRow, items: ReadonlyMap<
  * The safe path of the automatic publish (`publishNewStoreIfReady`), without
  * its "one published product" rule: "Build and publish" is the seller's
  * consent, so the site goes live even with no products (D3). Only a store
- * never published (checked under the row lock), with its template chosen;
- * the cache is cleared; an error is returned, never thrown.
+ * never published (checked under the row lock), with its template chosen,
+ * and never while the seller's stores are offline for billing
+ * (`top_up_required`, docs/seller-top-up-rules.md §4); the cache is cleared;
+ * an error is returned, never thrown.
  */
 async function publishBuiltStore(ctx: RunContext, store: { id: string; subdomain: string }): Promise<{ ok: boolean; error: string | null }> {
   try {
-    const result = await publishStoreSite(ctx.sellerId, store.id, ctx.userId, { allowedSections: ALLOWED, requireTemplateChoice: true, onlyIfNeverPublished: true });
+    const result = await publishStoreSite(ctx.sellerId, store.id, ctx.userId, { allowedSections: ALLOWED, requireTemplateChoice: true, onlyIfNeverPublished: true, refuseWhenBillingOffline: true });
     if (!result.success) return { ok: false, error: result.error };
     await grantWelcomeGiftSafely(ctx.sellerId);
     await applyInvalidation(invalidateStoreSite(ctx.sellerId, store.id, store.subdomain), { from: "dashboard", mode: "route" });

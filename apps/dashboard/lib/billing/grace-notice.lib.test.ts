@@ -8,7 +8,7 @@ const locked = (grace: Partial<NonNullable<OrderLock["grace"]>> = {}, over: Part
   ordersLocked: true,
   firstOrderId: null,
   pendingReview: false,
-  grace: { endsAt: "2026-11-27T00:00:00Z", firstOrderReceived: false, endedBy: null, offlineAt: null, ...grace },
+  grace: { endsAt: "2026-11-27T00:00:00Z", firstOrderReceived: false, endedBy: null, offlineAt: "2026-11-27T00:00:00Z", ...grace },
   storeOffline: false,
   ...over,
 });

@@ -201,6 +201,7 @@
       "previewUnavailable": "Preview on your store isn't available right now.",
       "nothingToPublish": "Nothing to publish: there are no unpublished changes.",
       "templateNotChosen": "Choose your store's template first (Website › Templates), then publish.",
+      "topUpRequired": "Top up your wallet to bring your store back online.",
       "cancelled": "Publishing was cancelled.",
       "aiNoCredits": "You're out of AI credits. Get more from the wallet, or fill from templates only.",
       "aiDailyLimit": "You reached today's AI limit. Try again tomorrow.",
@@ -1105,6 +1106,7 @@
       "versionConflict": "The design was changed in another tab. Reload before continuing.",
       "invalidSite": "The website has a problem and couldn't be published. Open the editor to check it.",
       "templateNotChosen": "Choose your store's template first (Website › Templates), then publish.",
+      "topUpRequired": "Top up your wallet to bring your store back online.",
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again."
     }

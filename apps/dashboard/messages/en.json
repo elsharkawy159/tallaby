@@ -192,7 +192,8 @@
     "topUp": "Top up",
     "viewWallet": "View wallet",
     "offlineTitle": "Your store is offline: top up to bring it back",
-    "offlineBody": "Your {days} free days are over, so your store is closed to visitors and takes no new orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} and your store comes back online at once.",
+    "goOnlineTopUp": "Top up your wallet to bring your store back online.",
+    "offlineBody": "Your free days are over, so your store is closed to visitors and takes no new orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} and your store comes back online at once.",
     "sidebar": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}, to see your orders"
   },
   "bulkFileImport": {
@@ -4804,6 +4805,7 @@
     "purchasedLeft": "Plus {count, number} bought credits, which don't expire.",
     "resetsFree": "Monthly credits reset on the 1st.",
     "creditsNotActivated": "You have {locked, number} AI requests a month until you top up your wallet, starting from {min} only. Then you have {full, number} a month.",
+    "creditsStopped": "Your free days are over, so AI requests are stopped until you top up your wallet, starting from {min} only. Then you have {full, number} a month.",
     "fewerPacks": "Fewer credits",
     "morePacks": "More credits",
     "creditsCount": "{count, number} credits",

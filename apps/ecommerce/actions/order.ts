@@ -118,9 +118,9 @@ export async function createOrder(data: {
 
 
     // The seller took this store's website offline, or it is offline for billing (a
-    // seller from SHORT_GRACE_FROM still not activated after 7 days): it takes no orders.
-    // Inside their window, and for older sellers, a seller who isn't activated still takes
-    // real orders (ROADMAP.md F-84).
+    // seller still not activated when the trial's days are over): it takes no orders.
+    // Inside the trial a seller who isn't activated still takes real orders
+    // (ROADMAP.md F-84, F-84i).
     if (await isCartStoreOffline(data.cartId)) {
       return { success: false, error: "This store is temporarily unavailable" };
     }

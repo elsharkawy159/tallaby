@@ -11,6 +11,7 @@
  * Every function takes the session's sellerId and checks store ownership.
  */
 import { z } from "zod";
+import { getOrderLock } from "../billing/order-lock.server";
 import {
   and,
   asc,
@@ -253,7 +254,8 @@ export type PublishError =
   | "invalid_site"
   | "template_not_chosen"
   | "already_published"
-  | "no_active_product";
+  | "no_active_product"
+  | "top_up_required";
 
 export type PublishOptions = BuilderOptions & {
   /**
@@ -277,6 +279,15 @@ export type PublishOptions = BuilderOptions & {
    * (owner, 2026-11-17). The seller's own Publish button never passes it.
    */
   requireActiveProduct?: boolean;
+  /**
+   * Refuse with `top_up_required` while the seller's stores are offline for
+   * billing (`getOrderLock().storeOffline`: not activated, the trial's days are
+   * over, no top-up in review; owner 2026-11-17, docs/seller-top-up-rules.md §4).
+   * Every seller path passes it (the Publish button, the "Website live" switch,
+   * the AI Store Builder, the automatic publish); Admin never does. Read before
+   * the transaction, so it never needs a second connection while one is held.
+   */
+  refuseWhenBillingOffline?: boolean;
 };
 
 /** One published product of this store: active and not in Trash (the storefront's own rule). */
@@ -310,6 +321,10 @@ export async function publishStoreSite(
   options: PublishOptions = {},
   q: Queryable = db,
 ): Promise<SiteResult<{ revisionId: string; revisionNumber: number }, PublishError>> {
+  // The order lock is the session seller's own; the store is checked against that seller below.
+  if (options.refuseWhenBillingOffline && (await getOrderLock(sellerId)).storeOffline) {
+    return { success: false, error: "top_up_required" };
+  }
   try {
     const data = await q.transaction(async (tx) => {
       const store = await loadOwnStore(tx, sellerId, storeId, true);

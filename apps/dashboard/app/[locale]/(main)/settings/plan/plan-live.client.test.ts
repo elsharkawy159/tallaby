@@ -56,3 +56,18 @@ describe("PlanLive before activation", () => {
     expect(html).toMatch(/<h2 class="[^"]*">أنت على الباقة المجانية\.<\/h2>/);
   });
 });
+
+describe("PlanLive AI credits before activation (docs/seller-top-up-rules.md)", () => {
+  it("says 20 a month during the trial", () => {
+    const html = render({});
+    expect(html).toContain("حد طلبات الذكاء الاصطناعي 20 شهريًا");
+    expect(html).not.toContain("توقفت طلبات الذكاء الاصطناعي");
+  });
+
+  it("says AI is stopped once the trial's days are over", () => {
+    const stopped = { ...base.credits, total: 0, monthlyAllowance: 0, monthlyRemaining: 0, stopped: true };
+    const html = render({ credits: stopped });
+    expect(html).toContain("توقفت طلبات الذكاء الاصطناعي إلى أن تشحن محفظتك");
+    expect(html).not.toContain("حد طلبات الذكاء الاصطناعي 20 شهريًا");
+  });
+});

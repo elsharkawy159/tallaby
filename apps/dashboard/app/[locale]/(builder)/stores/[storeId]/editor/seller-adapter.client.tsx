@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "@/i18n/navigation";
+import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
 import type { EditorAdapter, EditorCapabilities } from "@workspace/store-editor";
 import { sellerMediaAdapter } from "@/components/media/media-adapter.client";
 import { createFormFromTemplate } from "@/app/[locale]/(main)/stores/[storeId]/website/forms/forms.server";
@@ -57,6 +59,7 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
   const overridesKey = JSON.stringify(capabilities ?? {});
   // eslint-disable-next-line react-hooks/exhaustive-deps -- overridesKey stands for `capabilities`
   const merged = useMemo(() => ({ ...SELLER_CAPABILITIES, ...capabilities }), [overridesKey]);
+  const router = useRouter();
   return useMemo<EditorAdapter>(
     () => ({
       capabilities: merged,
@@ -72,6 +75,8 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
         const result = await publish(storeId);
         // A new seller may have just earned the welcome gift (0119).
         if (result.success) requestWelcomeGiftCheck();
+        // Offline for billing: the editor shows the message, and the seller lands on the wallet's top-up.
+        else if (result.error === "topUpRequired") router.push(TOP_UP_TO_GO_ONLINE_HREF);
         return result;
       },
       pages: {
@@ -103,6 +108,6 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       },
       media: sellerMediaAdapter(storeId),
     }),
-    [storeId, merged],
+    [storeId, merged, router],
   );
 }

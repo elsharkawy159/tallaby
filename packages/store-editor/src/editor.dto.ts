@@ -39,6 +39,8 @@ export type EditorErrorKey =
   | "nothingToPublish"
   /** Publishing needs a template chosen first (Website › Templates; owner 2026-10-27). */
   | "templateNotChosen"
+  /** The seller's stores are offline until a wallet top-up (docs/seller-top-up-rules.md); the dashboard sends them to the wallet. */
+  | "topUpRequired"
   /** The host cancelled the publish (e.g. its confirmation dialog); no message is shown. */
   | "cancelled"
   /** AI steps (Fill missing translations): out of AI credits, over today's limit, AI not set up, the AI call failed. */
@@ -96,6 +98,7 @@ export const EDITOR_ERRORS: Record<string, EditorErrorKey> = {
   invalid_site: "invalidSite",
   invalid_input: "invalidInput",
   template_not_chosen: "templateNotChosen",
+  top_up_required: "topUpRequired",
 };
 
 /** Forms tab row: a store form with its counts. */

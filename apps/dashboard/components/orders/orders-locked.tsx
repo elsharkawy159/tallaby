@@ -1,7 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Clock, Wallet } from "lucide-react";
-import { ORDER_GRACE_DAYS_SHORT, daysUntilOffline, type OrderLock } from "@workspace/lib/billing/order-lock";
+import { daysUntilOffline, type OrderLock } from "@workspace/lib/billing/order-lock";
 import { Button } from "@workspace/ui/components/button";
 import { getMinTopUpText } from "@/lib/billing/min-top-up-egp.server";
 import { showGraceNotice } from "@/lib/billing/grace-notice.lib";
@@ -23,14 +23,14 @@ async function lockTitle(lock: OrderLock) {
 
 /**
  * The message under the title: a top-up in review, the store already offline
- * (7-day sellers, owner 2026-11-15), the days until it goes offline (7-day
- * sellers, the countdown), or that orders wait for a top-up.
+ * (the trial's days are over, owner 2026-11-17), the days until it goes offline
+ * (the countdown), or that orders wait for a top-up.
  */
 async function lockBody(lock: OrderLock) {
   const [t, amount] = await Promise.all([getTranslations("orderLock"), getLocale().then(getMinTopUpText)]);
   if (lock.pendingReview) return t("reviewBody");
-  if (lock.storeOffline) return t("offlineBody", { days: ORDER_GRACE_DAYS_SHORT, amount: amount ?? "none" });
-  const offlineIn = lock.grace?.offlineAt ? daysUntilOffline(lock.grace) : 0;
+  if (lock.storeOffline) return t("offlineBody", { amount: amount ?? "none" });
+  const offlineIn = lock.grace ? daysUntilOffline(lock.grace) : 0;
   return offlineIn > 0 ? t("bodyShort", { days: offlineIn }) : t("body");
 }
 

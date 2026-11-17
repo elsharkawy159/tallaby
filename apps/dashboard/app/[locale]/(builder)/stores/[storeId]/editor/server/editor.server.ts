@@ -230,10 +230,13 @@ export async function publish(storeId: string) {
   return withStore<{ revisionId: string; revisionNumber: number }>(storeId, { forPublish: true, publishAction: "publish" }, async (access) => {
     if (!publishLimiter.check(`publish:${access.seller.sellerId}`)) return fail("rateLimited");
     // A store goes live only after its seller chose a template (owner 2026-10-27);
-    // checked in the publish transaction for this seller's store.
+    // checked in the publish transaction for this seller's store. While the seller's
+    // stores are offline for billing it is refused (`topUpRequired`) and the client
+    // sends the seller to the wallet (owner 2026-11-17, docs/seller-top-up-rules.md §4).
     const result = await publishStoreSite(access.seller.sellerId, access.store.id, access.seller.userId, {
       allowedSections: ALLOWED,
       requireTemplateChoice: true,
+      refuseWhenBillingOffline: true,
     });
     if (!result.success) return fail(result.error);
     // A new seller who just finished setup gets the welcome gift (0119); never fails the publish.

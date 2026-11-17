@@ -76,8 +76,8 @@ export default async function DashboardLayout({
   const walletBalance = wallet?.balance ?? null;
   // Clarity session tag: internal seller id + plan only (loadSeller is per-request cached; getSellerAccess already read it).
   const clarityPlan = user && enabledClarityProjectId() ? resolvePlanId((await loadSeller(user.id))?.plan) : null;
-  // A 7-day seller still not activated has every store offline (owner, 2026-11-15): the header dot says so.
-  // The lock is read only once the sign-up date says it can apply; older sellers skip it.
+  // A seller still not activated when the trial's days are over has every store offline (owner, 2026-11-17): the header dot says so.
+  // The lock is read only once the sign-up date says it can apply (loadOrderLock is cached per request).
   const billingOffline =
     user && storeMayBeBillingOffline((await loadSeller(user.id))?.createdAt) ? (await loadOrderLock(user.id)).storeOffline : false;
 

@@ -12,9 +12,9 @@ import { getStorefrontSite } from "./preview.server";
  *
  * A published store is public for everyone, whether or not its seller is
  * activated (ROADMAP.md F-84, owner 2026-11-09; the private store of F-76 is gone),
- * with one exception: a seller who signed up on or after SHORT_GRACE_FROM and is
- * still not activated when their 7 days run out has every store offline the same
- * way (`isStoreBillingOffline`, owner 2026-11-15). Shoppers see the same generic
+ * with one exception: a seller who is still not activated when their trial days
+ * run out (14, or 7 from SHORT_GRACE_FROM) has every store offline the same
+ * way (`isStoreBillingOffline`, owner 2026-11-17, docs/seller-top-up-rules.md). Shoppers see the same generic
  * offline page either way; nothing about billing is shown to them.
  */
 

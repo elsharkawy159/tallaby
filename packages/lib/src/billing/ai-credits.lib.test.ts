@@ -5,22 +5,47 @@ describe("aiCreditAllowance", () => {
   const base = { isPro: false, planExpiresAt: null, locked: false, month: "2026-11" };
 
   it("gives Free its normal allowance when activated", () => {
-    expect(aiCreditAllowance(base)).toEqual({ plan: "free", allowance: 100, period: "free:2026-11", notActivated: false });
+    expect(aiCreditAllowance(base)).toEqual({ plan: "free", allowance: 100, period: "free:2026-11", notActivated: false, stopped: false });
   });
 
   it("gives 20 under its own key when locked", () => {
-    expect(aiCreditAllowance({ ...base, locked: true })).toEqual({ plan: "free", allowance: 20, period: "free-locked:2026-11", notActivated: true });
+    expect(aiCreditAllowance({ ...base, locked: true })).toEqual({ plan: "free", allowance: 20, period: "free-locked:2026-11", notActivated: true, stopped: false });
+    expect(aiCreditAllowance({ ...base, locked: true, trialOver: false }).allowance).toBe(20);
+  });
+
+  it("gives 0 under its own key once the trial's days are over (not activated)", () => {
+    expect(aiCreditAllowance({ ...base, locked: true, trialOver: true })).toEqual({
+      plan: "free",
+      allowance: 0,
+      period: "free-ended:2026-11",
+      notActivated: true,
+      stopped: true,
+    });
+  });
+
+  it("ignores the trial on an activated seller and on Pro", () => {
+    expect(aiCreditAllowance({ ...base, locked: false, trialOver: true })).toMatchObject({ allowance: 100, period: "free:2026-11", stopped: false });
+    expect(aiCreditAllowance({ ...base, isPro: true, locked: true, trialOver: true })).toMatchObject({ plan: "pro", allowance: 2000, stopped: false });
   });
 
   it("ignores the lock on Pro", () => {
     const pro = aiCreditAllowance({ ...base, isPro: true, planExpiresAt: "2026-12-01", locked: true });
-    expect(pro).toEqual({ plan: "pro", allowance: 2000, period: "pro:2026-12-01", notActivated: false });
+    expect(pro).toEqual({ plan: "pro", allowance: 2000, period: "pro:2026-12-01", notActivated: false, stopped: false });
   });
 });
 
 describe("nextMonthlyCredits", () => {
   const move = (previousPeriod: string | null, remaining: number, nextPeriod: string, allowance: number, usedSinceGrant: number | null = null) =>
     nextMonthlyCredits({ previousPeriod, remaining, nextPeriod, allowance, usedSinceGrant });
+
+  it("keeps nothing when the trial's days end, and activation then loads the Free allowance", () => {
+    expect(move("free-locked:2026-11", 15, "free-ended:2026-11", 0)).toBe(0);
+    expect(move(null, 0, "free-ended:2026-11", 0)).toBe(0);
+    expect(move("free-ended:2026-11", 0, "free-ended:2026-12", 0)).toBe(0);
+    // Activated in the same month: the full Free allowance the first time, less what was used if the key had loaded before.
+    expect(move("free-ended:2026-11", 0, "free:2026-11", 100)).toBe(100);
+    expect(move("free-ended:2026-11", 0, "free:2026-11", 100, 30)).toBe(70);
+  });
 
   it("loads the full allowance on a first load, a new month, or from Pro", () => {
     expect(move(null, 0, "free-locked:2026-11", 20)).toBe(20);

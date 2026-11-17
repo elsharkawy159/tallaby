@@ -3,7 +3,7 @@ import { aiCreditLedger, db, eq, sellerAiCredits, sellers, sql } from "@workspac
 import { postStoreWalletEntry, STORE_WALLET_REFERENCE_TYPES, StoreWalletLimitError } from "@workspace/db/wallet";
 import { aiCreditAllowance, nextMonthlyCredits } from "./ai-credits.lib";
 import { cairoMonthKey, CREDIT_PACK_CREDITS, CREDIT_PACK_USD_CENTS, isProActive, minorToAmount } from "./billing.lib";
-import { getOrderLock } from "./order-lock.server";
+import { getOrderLock, trialDaysOver } from "./order-lock.server";
 
 /**
  * AI credits (ROADMAP.md F-57). One balance per seller account, shared by
@@ -25,26 +25,39 @@ export type AiCreditStatus = {
   plan: "free" | "pro";
   /** A Free seller on the smaller allowance until activated (order lock, F-68). */
   notActivated: boolean;
+  /** Not activated and the trial's days are over: no AI request until a top-up, bought credits included (F-84i). */
+  stopped: boolean;
 };
 
 /**
- * Moves the seller to the period that applies now, once (`nextMonthlyCredits` has the
- * rules). `locked` comes from getOrderLock, read before the transaction so it never
- * needs a second connection while this one is held.
+ * The order lock's answer for AI: `locked` is activation, not the grace window
+ * (new accounts keep the small allowance until a top-up, F-84); `trialOver` stops
+ * AI once the trial's days end (F-84i). Read before the transaction.
  */
-async function ensureCurrentPeriod(tx: Tx, sellerId: string, locked: boolean) {
+async function aiLockState(sellerId: string): Promise<{ locked: boolean; trialOver: boolean }> {
+  const lock = await getOrderLock(sellerId);
+  return { locked: !lock.activated, trialOver: trialDaysOver(lock) };
+}
+
+/**
+ * Moves the seller to the period that applies now, once (`nextMonthlyCredits` has the
+ * rules). `state` comes from getOrderLock (`aiLockState`), read before the transaction
+ * so it never needs a second connection while this one is held.
+ */
+async function ensureCurrentPeriod(tx: Tx, sellerId: string, state: { locked: boolean; trialOver: boolean }) {
   const [seller] = await tx
     .select({ plan: sellers.plan, planExpiresAt: sellers.planExpiresAt, planGraceUntil: sellers.planGraceUntil })
     .from(sellers)
     .where(eq(sellers.id, sellerId));
   if (!seller) throw new Error("Seller not found");
-  const { plan, allowance, period, notActivated } = aiCreditAllowance({
+  const { plan, allowance, period, notActivated, stopped } = aiCreditAllowance({
     isPro: isProActive(seller),
     planExpiresAt: seller.planExpiresAt,
-    locked,
+    locked: state.locked,
+    trialOver: state.trialOver,
     month: cairoMonthKey(),
   });
-  const result = { plan, allowance, notActivated };
+  const result = { plan, allowance, notActivated, stopped };
 
   await tx.insert(sellerAiCredits).values({ sellerId }).onConflictDoNothing();
   const own = eq(sellerAiCredits.sellerId, sellerId);
@@ -93,10 +106,9 @@ async function usedSinceFirstGrant(tx: Tx, sellerId: string, period: string): Pr
 }
 
 export async function getAiCreditStatus(sellerId: string): Promise<AiCreditStatus> {
-  // Activation, not the grace window: new accounts keep the small allowance until a top-up (F-84).
-  const locked = !(await getOrderLock(sellerId)).activated;
+  const state = await aiLockState(sellerId);
   return db.transaction(async (tx) => {
-    const { plan, allowance, notActivated } = await ensureCurrentPeriod(tx, sellerId, locked);
+    const { plan, allowance, notActivated, stopped } = await ensureCurrentPeriod(tx, sellerId, state);
     const [row] = await tx.select().from(sellerAiCredits).where(eq(sellerAiCredits.sellerId, sellerId));
     const monthly = row?.monthlyRemaining ?? 0;
     const purchased = row?.purchasedRemaining ?? 0;
@@ -104,9 +116,11 @@ export async function getAiCreditStatus(sellerId: string): Promise<AiCreditStatu
       monthlyRemaining: monthly,
       monthlyAllowance: allowance,
       purchasedRemaining: purchased,
-      total: monthly + purchased,
+      // What the seller can use now: nothing while AI is stopped.
+      total: stopped ? 0 : monthly + purchased,
       plan,
       notActivated,
+      stopped,
     };
   });
 }
@@ -115,10 +129,11 @@ export type AiCreditClaim = { ok: true; reference: string } | { ok: false; error
 
 /** Takes 1 credit before an AI call. Give it back with refundAiCredit if the call doesn't complete. */
 export async function claimAiCredit(sellerId: string, feature: string): Promise<AiCreditClaim> {
-  // Activation, not the grace window: new accounts keep the small allowance until a top-up (F-84).
-  const locked = !(await getOrderLock(sellerId)).activated;
+  const state = await aiLockState(sellerId);
   return db.transaction(async (tx) => {
-    await ensureCurrentPeriod(tx, sellerId, locked);
+    const { stopped } = await ensureCurrentPeriod(tx, sellerId, state);
+    // The trial's days are over and the seller isn't activated: no AI request at all (F-84i).
+    if (stopped) return { ok: false, error: "no_credits" } as const;
     const monthly = await tx
       .update(sellerAiCredits)
       .set({ monthlyRemaining: sql`${sellerAiCredits.monthlyRemaining} - 1`, updatedAt: sql`now()` })

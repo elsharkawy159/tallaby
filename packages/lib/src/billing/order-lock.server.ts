@@ -5,7 +5,55 @@ import { getBillingState } from "./billing.server";
 import { ORDERS_UNLOCKED, isActivated, orderGraceStart, orderLockState, type OrderLock } from "./order-lock.lib";
 
 export type { OrderLock, OrderGrace } from "./order-lock.lib";
-export { ORDER_GRACE_DAYS, ORDER_GRACE_DAYS_SHORT, daysUntilOffline, graceDaysLeft, storeMayBeBillingOffline } from "./order-lock.lib";
+export { ORDER_GRACE_DAYS, ORDER_GRACE_DAYS_SHORT, daysUntilOffline, graceDaysLeft, storeMayBeBillingOffline, trialDaysOver } from "./order-lock.lib";
+
+/**
+ * What activates a seller, read fresh: a succeeded top-up row of any provider or a
+ * `top_up` ledger entry, and ever having a store wallet balance above zero (the
+ * balance now, or a USD ledger entry with `balance_after` above zero). Throws on a
+ * database error; the callers decide how to fail.
+ */
+async function loadActivationFacts(sellerId: string) {
+  const [[topUps], [ledger], [wallet], [positiveEntry]] = await Promise.all([
+    db
+      .select({
+        succeeded: sql<boolean>`bool_or(${sellerWalletTopUps.status} = 'succeeded')`,
+        pendingManual: sql<boolean>`bool_or(${sellerWalletTopUps.status} = 'pending' AND ${inArray(sellerWalletTopUps.provider, [...MANUAL_TOP_UP_METHODS])})`,
+      })
+      .from(sellerWalletTopUps)
+      .where(eq(sellerWalletTopUps.sellerId, sellerId)),
+    db
+      .select({ one: sql<number>`1` })
+      .from(walletTransactions)
+      .where(and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.type, "top_up")))
+      .limit(1),
+    db.select({ balance: sellerWallet.balance }).from(sellerWallet).where(eq(sellerWallet.sellerId, sellerId)).limit(1),
+    db
+      .select({ one: sql<number>`1` })
+      .from(walletTransactions)
+      .where(and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.currency, "USD"), sql`${walletTransactions.balanceAfter} > 0`))
+      .limit(1),
+  ]);
+  return {
+    hasTopUp: topUps?.succeeded === true || Boolean(ledger),
+    hasHadPositiveBalance: Number(wallet?.balance ?? 0) > 0 || Boolean(positiveEntry),
+    hasPendingManualTopUp: topUps?.pendingManual === true,
+  };
+}
+
+/**
+ * Activated by money, which can never be undone: an approved top-up, or a store
+ * wallet balance that was ever above zero. Active Pro alone is NOT counted (a Pro
+ * granted by an admin can end), nor is "before the USD switch", so `true` is safe
+ * to cache for long (the storefront does). Unlike getOrderLock it does not fail
+ * open: it throws on a database error, so an error is never cached as "activated".
+ */
+export async function isActivatedByMoney(sellerId: string): Promise<boolean> {
+  const { usdLive } = await getBillingState();
+  if (!usdLive) return false;
+  const facts = await loadActivationFacts(sellerId);
+  return facts.hasTopUp || facts.hasHadPositiveBalance;
+}
 
 /**
  * This seller's activation and grace window (ROADMAP.md F-68, F-84; order-lock.lib.ts
@@ -23,7 +71,7 @@ export async function getOrderLock(sellerId: string): Promise<OrderLock> {
     // No more queries before the switch.
     if (!usdLive) return ORDERS_UNLOCKED;
 
-    const [[seller], [topUps], [ledger], [wallet], [positiveEntry]] = await Promise.all([
+    const [[seller], facts] = await Promise.all([
       db
         .select({
           plan: sellers.plan,
@@ -34,37 +82,20 @@ export async function getOrderLock(sellerId: string): Promise<OrderLock> {
         .from(sellers)
         .where(eq(sellers.id, sellerId))
         .limit(1),
-      db
-        .select({
-          succeeded: sql<boolean>`bool_or(${sellerWalletTopUps.status} = 'succeeded')`,
-          pendingManual: sql<boolean>`bool_or(${sellerWalletTopUps.status} = 'pending' AND ${inArray(sellerWalletTopUps.provider, [...MANUAL_TOP_UP_METHODS])})`,
-        })
-        .from(sellerWalletTopUps)
-        .where(eq(sellerWalletTopUps.sellerId, sellerId)),
-      db
-        .select({ one: sql<number>`1` })
-        .from(walletTransactions)
-        .where(and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.type, "top_up")))
-        .limit(1),
-      db.select({ balance: sellerWallet.balance }).from(sellerWallet).where(eq(sellerWallet.sellerId, sellerId)).limit(1),
-      db
-        .select({ one: sql<number>`1` })
-        .from(walletTransactions)
-        .where(and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.currency, "USD"), sql`${walletTransactions.balanceAfter} > 0`))
-        .limit(1),
+      loadActivationFacts(sellerId),
     ]);
 
     const activation = {
       usdLive,
       seller: seller ?? null,
-      hasTopUp: topUps?.succeeded === true || Boolean(ledger),
-      hasHadPositiveBalance: Number(wallet?.balance ?? 0) > 0 || Boolean(positiveEntry),
+      hasTopUp: facts.hasTopUp,
+      hasHadPositiveBalance: facts.hasHadPositiveBalance,
     };
     if (isActivated(activation)) return ORDERS_UNLOCKED;
 
     return orderLockState({
       ...activation,
-      hasPendingManualTopUp: topUps?.pendingManual === true,
+      hasPendingManualTopUp: facts.hasPendingManualTopUp,
       firstOrders: await loadGraceOrders(sellerId, orderGraceStart(seller?.createdAt)),
     });
   } catch (error) {

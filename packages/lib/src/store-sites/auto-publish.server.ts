@@ -7,7 +7,9 @@
  *
  * The seller's own Publish button and the "Website live" switch do not come
  * here, and a store the seller switched off is never put back online. A store
- * that is live stays live when its last product is hidden or deleted.
+ * that is live stays live when its last product is hidden or deleted. While the
+ * seller's stores are offline for billing (the trial's days are over with no
+ * top-up, docs/seller-top-up-rules.md) nothing is published, silently.
  *
  * Server-only. `sellerId` comes from the session (or the verified agent
  * token) and `storeId` is the store the caller already checked;
@@ -36,7 +38,7 @@ export type AutoPublishOptions = BuilderOptions & {
 };
 
 /** The normal reasons a store stays offline: nothing to log. */
-const EXPECTED: ReadonlySet<AutoPublishSkip> = new Set(["already_published", "template_not_chosen", "no_active_product", "not_draft"]);
+const EXPECTED: ReadonlySet<AutoPublishSkip> = new Set(["already_published", "template_not_chosen", "no_active_product", "not_draft", "top_up_required"]);
 
 /**
  * Publishes a never-published store when it has a chosen template and a
@@ -67,6 +69,7 @@ export async function publishNewStoreIfReady(
       requireTemplateChoice: true,
       onlyIfNeverPublished: true,
       requireActiveProduct: true,
+      refuseWhenBillingOffline: true,
     });
     if (!result.success) {
       if (!EXPECTED.has(result.error)) {

@@ -187,7 +187,7 @@ export function welcomeShareMessage(
  * the Free per-order fee line: never on active Pro, never before the USD
  * switch. `status` is the days line, from the order lock (`currentOrderLock`):
  * a top-up in review, the store already offline, the days until it goes
- * offline (7-day sellers), orders hidden until a top-up (from the start, owner
+ * offline, orders hidden until a top-up (from the start, owner
  * 2026-11-16), or activated. Before the USD switch nothing applies (`none`).
  */
 export type WelcomeWalletStatus =
@@ -207,7 +207,7 @@ export function welcomeWallet(input: { lock: OrderLock; usdLive: boolean; isPro:
   if (lock.activated) return { fee, status: { kind: "activated" } };
   if (lock.pendingReview) return { fee, status: { kind: "review" } };
   if (lock.storeOffline) return { fee, status: { kind: "offlineNow" } };
-  if (lock.grace?.offlineAt) {
+  if (lock.grace) {
     const days = daysUntilOffline(lock.grace, at);
     if (days > 0) return { fee, status: { kind: "offlineIn", days } };
   }

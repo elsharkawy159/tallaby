@@ -25,7 +25,7 @@ import {
   sql,
 } from "@workspace/db";
 import { categoryTags, createCachedQuery, productTags, sellerTags, storeTags } from "@workspace/cache";
-import { getOrderLock, storeMayBeBillingOffline } from "@workspace/lib/billing/order-lock";
+import { getOrderLock, isActivatedByMoney, storeMayBeBillingOffline } from "@workspace/lib/billing/order-lock";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
   hostnameOf,
@@ -101,26 +101,62 @@ export function isStorefrontOffline(store: Pick<Storefront, "siteStatus">): bool
   return store.siteStatus !== "published";
 }
 
+/** Thrown inside the cached read below so "not activated" is never stored: the Data Cache keeps results, not errors. */
+const NOT_ACTIVATED = new Error("seller not activated");
+
 /**
- * One seller's stores are offline for billing (ROADMAP.md F-84 follow-up, owner
- * 2026-11-15; `storeOffline` in @workspace/lib/billing/order-lock): signed up on or
- * after SHORT_GRACE_FROM, the 7 days are over, not activated and no top-up in
- * review. Cached 30 s per seller (the boolean only, never a balance). Activation
- * is for good, so a stale "online" is harmless; a stale "offline" after a top-up
- * clears within 30 s. getOrderLock fails open (online) on any error.
+ * "This seller is activated by money" (an approved top-up, or a wallet balance
+ * that was ever above zero), kept for a day per seller. That can never be
+ * undone, so `true` is safe to keep; anything else (not activated, Pro only,
+ * a failed read) throws and is not stored, so it is read again next time. Only
+ * the boolean is cached, never a balance or a top-up (CLAUDE.md rule 8).
+ */
+const getSellerActivatedByMoney = createCachedQuery({
+  name: "storefront:activated-by-money:v1",
+  ttl: 86_400,
+  tags: (sellerId: string) => [sellerTags.detail(sellerId)],
+  query: async (sellerId: string): Promise<true> => {
+    if (!(await isActivatedByMoney(sellerId))) throw NOT_ACTIVATED;
+    return true;
+  },
+});
+
+/** The day-long "activated" answer; false means "not known to be activated", never "not activated". */
+async function isSellerKnownActivated(sellerId: string): Promise<boolean> {
+  try {
+    return await getSellerActivatedByMoney(sellerId);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * One seller's stores are offline for billing (ROADMAP.md F-84i, owner
+ * 2026-11-17, docs/seller-top-up-rules.md; `storeOffline` in
+ * @workspace/lib/billing/order-lock): the trial's days are over, not activated
+ * and no top-up in review. Cached 30 s per seller (the boolean only, never a
+ * balance). An activated seller is answered from the day-long cache above, so
+ * their storefront pays no query; the rest read the order lock at most once
+ * per 30 s. A stale "offline" after a top-up clears within 30 s. getOrderLock
+ * fails open (online) on any error.
  */
 const getSellerBillingOffline = createCachedQuery({
-  name: "storefront:billing-offline:v1",
+  name: "storefront:billing-offline:v2",
   ttl: 30,
   tags: (sellerId: string) => [sellerTags.detail(sellerId)],
-  query: async (sellerId: string) => (await getOrderLock(sellerId)).storeOffline,
+  query: async (sellerId: string) => {
+    if (await isSellerKnownActivated(sellerId)) return false;
+    return (await getOrderLock(sellerId)).storeOffline;
+  },
 });
 
 /**
  * Whether the store's seller has it offline for billing. Runs on every
- * storefront request, so the common cases cost no query: a seller created
- * before SHORT_GRACE_FROM, or still inside the 7 days, is online from the
- * cached profile's `sellerCreatedAt` alone. `fresh` skips the 30 s cache (placing an order).
+ * storefront request, so the common cases cost no query: a seller still inside
+ * the trial's days is online from the cached profile's `sellerCreatedAt`
+ * alone, and an activated seller from the cached answers above. `fresh` skips
+ * the 30 s cache (placing an order): only a seller not known to be activated
+ * reads the order lock.
  */
 export async function isStoreBillingOffline(
   store: { id: string; sellerCreatedAt: string | null },
@@ -128,7 +164,9 @@ export async function isStoreBillingOffline(
 ): Promise<boolean> {
   if (!storeMayBeBillingOffline(store.sellerCreatedAt)) return false;
   try {
-    return fresh ? (await getOrderLock(store.id)).storeOffline : await getSellerBillingOffline(store.id);
+    if (!fresh) return await getSellerBillingOffline(store.id);
+    if (await isSellerKnownActivated(store.id)) return false;
+    return (await getOrderLock(store.id)).storeOffline;
   } catch {
     return false;
   }

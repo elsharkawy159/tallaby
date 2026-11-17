@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
+import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -133,7 +134,10 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
             toast.error(te("errors.templateNotChosen"), {
               action: { label: t("chooseTemplate"), onClick: () => router.push(`${base}/website/templates`) },
             });
-          else toast.error(te(`errors.${result.error}` as "errors.generic"));
+          else if (result.error === "topUpRequired") {
+            // Offline for billing: the wallet page shows the message (docs/seller-top-up-rules.md §4).
+            router.push(TOP_UP_TO_GO_ONLINE_HREF);
+          } else toast.error(te(`errors.${result.error}` as "errors.generic"));
         }
       } catch {
         onFail?.();

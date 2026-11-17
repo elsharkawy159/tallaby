@@ -6,18 +6,28 @@ export function aiCreditAllowance(input: {
   planExpiresAt: string | null;
   /** Not activated: `!getOrderLock().activated`, never the grace window (F-84); always false before the USD switch. */
   locked: boolean;
+  /**
+   * Not activated and the trial's days are over (`trialDaysOver` of the order lock):
+   * AI stops, 0 requests, until the seller is activated (owner, 2026-11-17;
+   * docs/seller-top-up-rules.md §4). Only read while `locked`.
+   */
+  trialOver?: boolean;
   month: string;
-}): { plan: "free" | "pro"; allowance: number; period: string; notActivated: boolean } {
+}): { plan: "free" | "pro"; allowance: number; period: string; notActivated: boolean; stopped: boolean } {
   if (input.isPro) {
-    return { plan: "pro", allowance: getPlanLimits("pro").aiCreditsMonthly, period: `pro:${input.planExpiresAt ?? "open"}`, notActivated: false };
+    return { plan: "pro", allowance: getPlanLimits("pro").aiCreditsMonthly, period: `pro:${input.planExpiresAt ?? "open"}`, notActivated: false, stopped: false };
+  }
+  if (input.locked && input.trialOver) {
+    return { plan: "free", allowance: 0, period: `free-ended:${input.month}`, notActivated: true, stopped: true };
   }
   return input.locked
-    ? { plan: "free", allowance: AI_CREDITS_MONTHLY_NOT_ACTIVATED, period: `free-locked:${input.month}`, notActivated: true }
-    : { plan: "free", allowance: getPlanLimits("free").aiCreditsMonthly, period: `free:${input.month}`, notActivated: false };
+    ? { plan: "free", allowance: AI_CREDITS_MONTHLY_NOT_ACTIVATED, period: `free-locked:${input.month}`, notActivated: true, stopped: false }
+    : { plan: "free", allowance: getPlanLimits("free").aiCreditsMonthly, period: `free:${input.month}`, notActivated: false, stopped: false };
 }
 
+/** `locked`: a not-activated key, in the trial (`free-locked`) or after it (`free-ended`, allowance 0). */
 const freePeriod = (period: string | null) => {
-  const match = period?.match(/^free(-locked)?:(.+)$/);
+  const match = period?.match(/^free(-locked|-ended)?:(.+)$/);
   return match ? { locked: Boolean(match[1]), month: match[2]! } : null;
 };
 
@@ -27,7 +37,8 @@ const freePeriod = (period: string | null) => {
  * (F-68), so a seller normally only moves up. The period can still flip because
  * getOrderLock fails open: a failed check reads as activated, and the next good one as
  * locked. Inside one month:
- * - going locked keeps at most the locked allowance, so nobody gains by it;
+ * - going locked keeps at most the locked allowance, so nobody gains by it; when the
+ *   trial's days end the allowance is 0, so nothing is kept;
  * - activating loads the full Free allowance the first time;
  * - activating again can't refill: it gives back only what the month's Free allowance
  *   still has after what was used since it first loaded.

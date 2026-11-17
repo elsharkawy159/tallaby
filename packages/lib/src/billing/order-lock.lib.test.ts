@@ -11,6 +11,7 @@ import {
   orderGraceStart,
   orderLockState,
   storeMayBeBillingOffline,
+  trialDaysOver,
 } from "./order-lock.lib";
 
 const DAY = 86_400_000;
@@ -43,7 +44,7 @@ describe("activation", () => {
     expect(lock.activated).toBe(false);
     expect(lock.ordersLocked).toBe(true);
     expect(lock.firstOrderId).toBeNull();
-    expect(lock.grace).toEqual({ endsAt: iso(SIGNUP_MS + 14 * DAY), firstOrderReceived: false, endedBy: null, offlineAt: null });
+    expect(lock.grace).toEqual({ endsAt: iso(SIGNUP_MS + 14 * DAY), firstOrderReceived: false, endedBy: null, offlineAt: iso(SIGNUP_MS + 14 * DAY) });
     expect(lock.storeOffline).toBe(false);
   });
 
@@ -103,7 +104,7 @@ describe("grace window (dates only; orders are locked all along)", () => {
     const second = SIGNUP_MS + 2 * DAY;
     const lock = orderLockState({ ...base, firstOrders: [order("first", SIGNUP_MS + DAY), order("second", second)] });
     expect(lock).toMatchObject({ activated: false, ordersLocked: true, firstOrderId: null });
-    expect(lock.grace).toEqual({ endsAt: iso(second), firstOrderReceived: true, endedBy: "second_order", offlineAt: null });
+    expect(lock.grace).toEqual({ endsAt: iso(second), firstOrderReceived: true, endedBy: "second_order", offlineAt: iso(SIGNUP_MS + 14 * DAY) });
   });
 
   it("after day 14, still no order is shown", () => {
@@ -142,21 +143,22 @@ describe("short window (sellers from SHORT_GRACE_FROM)", () => {
   const at = (ms: number) => new Date(ms);
   const state = (overrides: Partial<typeof base> = {}) => orderLockState({ ...base, seller: fresh, ...overrides });
 
-  it("a seller from before the cutoff keeps 14 days and never goes offline", () => {
+  it("a seller from before the cutoff keeps 14 days; only the length differs", () => {
     expect(isShortGraceSeller(SIGNUP)).toBe(false);
     expect(orderGraceDays(SIGNUP)).toBe(14);
+    expect(orderGraceDays(iso(NEW_SIGNUP))).toBe(7);
     const day8 = orderLockState({ ...base, at: at(SIGNUP_MS + 8 * DAY) });
     expect(day8).toMatchObject({ ordersLocked: true, storeOffline: false });
-    const day40 = orderLockState({ ...base, at: at(SIGNUP_MS + 40 * DAY) });
-    expect(day40).toMatchObject({ ordersLocked: true, storeOffline: false });
-    expect(day40.grace?.offlineAt).toBeNull();
-    expect(storeMayBeBillingOffline(SIGNUP, at(SIGNUP_MS + 40 * DAY))).toBe(false);
+    expect(day8.grace?.offlineAt).toBe(iso(SIGNUP_MS + 14 * DAY));
+    expect(storeMayBeBillingOffline(SIGNUP, at(SIGNUP_MS + 8 * DAY))).toBe(false);
   });
 
-  it("an unknown sign-up time is the old rule", () => {
+  it("an unknown sign-up time gets 14 days from the floor", () => {
     expect(isShortGraceSeller(null)).toBe(false);
     expect(isShortGraceSeller("not a date")).toBe(false);
-    expect(storeMayBeBillingOffline(null, at(CUTOFF + 40 * DAY))).toBe(false);
+    expect(storeMayBeBillingOffline(null, at(FLOOR + 14 * DAY - 1))).toBe(false);
+    expect(storeMayBeBillingOffline(null, at(FLOOR + 14 * DAY))).toBe(true);
+    expect(storeMayBeBillingOffline("not a date", at(FLOOR + 14 * DAY))).toBe(true);
   });
 
   it("a seller created exactly at the cutoff is on the short rule; a millisecond earlier is not", () => {
@@ -202,5 +204,94 @@ describe("short window (sellers from SHORT_GRACE_FROM)", () => {
 
   it("nothing applies before the USD switch", () => {
     expect(state({ usdLive: false, at: at(NEW_SIGNUP + 20 * DAY) })).toEqual(ORDERS_UNLOCKED);
+  });
+});
+
+describe("14-day sellers go offline too (owner, 2026-11-17; docs/seller-top-up-rules.md)", () => {
+  /** Signed up 2026-11-01: counts from the floor (2026-11-09 00:00 Cairo), so the days end 2026-11-23 00:00 Cairo. */
+  const old = { ...free, createdAt: "2026-11-01T09:00:00+02:00" };
+  const END = Date.parse("2026-11-23T00:00:00+02:00");
+  const at = (ms: number) => new Date(ms);
+  const state = (overrides: Partial<typeof base> = {}) => orderLockState({ ...base, seller: old, ...overrides });
+
+  it("the days end 14 days after the floor", () => {
+    expect(FLOOR + 14 * DAY).toBe(END);
+    expect(state({ at: at(END - DAY) }).grace?.offlineAt).toBe(iso(END));
+  });
+
+  it("is online and counting down the day before", () => {
+    const now = at(END - DAY);
+    const lock = state({ at: now });
+    expect(lock).toMatchObject({ activated: false, ordersLocked: true, storeOffline: false });
+    expect(lock.grace?.endedBy).toBeNull();
+    expect(daysUntilOffline(lock.grace!, now)).toBe(1);
+    expect(trialDaysOver(lock, now)).toBe(false);
+    expect(storeMayBeBillingOffline(old.createdAt, now)).toBe(false);
+    // The last millisecond is still online.
+    expect(state({ at: at(END - 1) }).storeOffline).toBe(false);
+    expect(storeMayBeBillingOffline(old.createdAt, at(END - 1))).toBe(false);
+  });
+
+  it("goes offline the moment the days end, and AI stops", () => {
+    const now = at(END);
+    const lock = state({ at: now });
+    expect(lock).toMatchObject({ activated: false, ordersLocked: true, storeOffline: true });
+    expect(lock.grace).toMatchObject({ endedBy: "days", offlineAt: iso(END) });
+    expect(daysUntilOffline(lock.grace!, now)).toBe(0);
+    expect(trialDaysOver(lock, now)).toBe(true);
+    expect(storeMayBeBillingOffline(old.createdAt, now)).toBe(true);
+    expect(state({ at: at(END + 40 * DAY) }).storeOffline).toBe(true);
+  });
+
+  it("the second order never takes the store offline before the days end", () => {
+    const firstOrders = [order("first", FLOOR + DAY), order("second", FLOOR + 2 * DAY)];
+    const before = state({ firstOrders, at: at(END - DAY) });
+    expect(before.grace).toMatchObject({ endedBy: "second_order", offlineAt: iso(END) });
+    expect(before.storeOffline).toBe(false);
+    expect(trialDaysOver(before, at(END - DAY))).toBe(false);
+    expect(state({ firstOrders, at: at(END) }).storeOffline).toBe(true);
+  });
+
+  it("a manual top-up in review keeps the stores online, but AI stays stopped", () => {
+    const now = at(END + 3 * DAY);
+    const lock = state({ at: now, hasPendingManualTopUp: true });
+    expect(lock).toMatchObject({ activated: false, ordersLocked: true, pendingReview: true, storeOffline: false });
+    expect(trialDaysOver(lock, now)).toBe(true);
+    // Rejected: offline again.
+    expect(state({ at: now, hasPendingManualTopUp: false }).storeOffline).toBe(true);
+    // In review during the trial changes nothing.
+    expect(state({ at: at(END - DAY), hasPendingManualTopUp: true }).storeOffline).toBe(false);
+  });
+
+  it("an activated seller is never affected", () => {
+    const late = at(END + 40 * DAY);
+    for (const lock of [
+      state({ at: late, hasTopUp: true }),
+      state({ at: late, hasHadPositiveBalance: true }),
+      state({ at: late, seller: { ...old, plan: "pro" } }),
+    ]) {
+      expect(lock).toEqual(ORDERS_UNLOCKED);
+      expect(trialDaysOver(lock, late)).toBe(false);
+    }
+  });
+
+  it("nothing applies before the USD switch", () => {
+    const late = at(END + 40 * DAY);
+    const lock = state({ usdLive: false, at: late });
+    expect(lock).toEqual(ORDERS_UNLOCKED);
+    expect(trialDaysOver(lock, late)).toBe(false);
+  });
+
+  it("a seller created 2026-11-17 has 7 days from sign-up", () => {
+    const created = "2026-11-17T10:00:00+02:00";
+    const end = Date.parse(created) + 7 * DAY;
+    const fresh = { ...free, createdAt: created };
+    const before = orderLockState({ ...base, seller: fresh, at: at(end - 1) });
+    expect(before.storeOffline).toBe(false);
+    expect(trialDaysOver(before, at(end - 1))).toBe(false);
+    const after = orderLockState({ ...base, seller: fresh, at: at(end) });
+    expect(after.storeOffline).toBe(true);
+    expect(trialDaysOver(after, at(end))).toBe(true);
+    expect(storeMayBeBillingOffline(created, at(end))).toBe(true);
   });
 });

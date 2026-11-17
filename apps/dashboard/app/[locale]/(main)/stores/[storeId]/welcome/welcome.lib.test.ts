@@ -257,7 +257,13 @@ describe("welcomeWallet", () => {
     firstOrderId: null,
     pendingReview: false,
     storeOffline: false,
-    grace: { endsAt: new Date(at.getTime() + 3 * DAY).toISOString(), firstOrderReceived: false, endedBy: null, offlineAt: null, ...grace },
+    grace: {
+      endsAt: new Date(at.getTime() + 3 * DAY).toISOString(),
+      firstOrderReceived: false,
+      endedBy: null,
+      offlineAt: new Date(at.getTime() + 3 * DAY).toISOString(),
+      ...grace,
+    },
     ...overrides,
   });
 
@@ -271,11 +277,13 @@ describe("welcomeWallet", () => {
     expect(welcomeWallet({ lock: ORDERS_UNLOCKED, usdLive: true, isPro: true, at })).toEqual({ fee: false, status: { kind: "activated" } });
   });
 
-  it("says orders are hidden for sellers who never go offline, even while the grace window is open", () => {
-    expect(welcomeWallet({ lock: open(), usdLive: true, isPro: false, at }).status).toEqual({ kind: "locked" });
+  it("counts down for every seller who isn't activated, 14-day ones included (owner, 2026-11-17)", () => {
+    expect(welcomeWallet({ lock: open(), usdLive: true, isPro: false, at }).status).toEqual({ kind: "offlineIn", days: 3 });
+    const in14 = new Date(at.getTime() + 14 * DAY).toISOString();
+    expect(welcomeWallet({ lock: open({}, { offlineAt: in14 }), usdLive: true, isPro: false, at }).status).toEqual({ kind: "offlineIn", days: 14 });
   });
 
-  it("counts the days until the store goes offline (short-window sellers), even after the second order", () => {
+  it("counts the days until the store goes offline, even after the second order", () => {
     const offlineAt = new Date(at.getTime() + 2 * DAY - 1).toISOString();
     expect(welcomeWallet({ lock: open({}, { offlineAt }), usdLive: true, isPro: false, at }).status).toEqual({ kind: "offlineIn", days: 2 });
     expect(
@@ -284,9 +292,12 @@ describe("welcomeWallet", () => {
   });
 
   it("says offline, in review, locked or activated from the lock", () => {
-    expect(welcomeWallet({ lock: open({ storeOffline: true, ordersLocked: true }, { endedBy: "days" }), usdLive: true, isPro: false, at }).status).toEqual({ kind: "offlineNow" });
+    const past = new Date(at.getTime() - DAY).toISOString();
+    expect(
+      welcomeWallet({ lock: open({ storeOffline: true, ordersLocked: true }, { endedBy: "days", offlineAt: past }), usdLive: true, isPro: false, at }).status,
+    ).toEqual({ kind: "offlineNow" });
     expect(welcomeWallet({ lock: open({ pendingReview: true }), usdLive: true, isPro: false, at }).status).toEqual({ kind: "review" });
-    expect(welcomeWallet({ lock: open({ ordersLocked: true }, { endedBy: "days" }), usdLive: true, isPro: false, at }).status).toEqual({ kind: "locked" });
+    expect(welcomeWallet({ lock: open({ ordersLocked: true }, { endedBy: "days", offlineAt: past }), usdLive: true, isPro: false, at }).status).toEqual({ kind: "locked" });
     expect(welcomeWallet({ lock: ORDERS_UNLOCKED, usdLive: true, isPro: false, at }).status).toEqual({ kind: "activated" });
   });
 

@@ -57,12 +57,13 @@ describe("publishNewStoreIfReady", () => {
       requireTemplateChoice: true,
       onlyIfNeverPublished: true,
       requireActiveProduct: true,
+      refuseWhenBillingOffline: true,
     });
     expect(result).toEqual({ published: true, invalidation: invalidateStoreSite(SELLER, STORE, "shop") });
     expect(mocks.grantWelcomeGiftSafely).toHaveBeenCalledExactlyOnceWith(SELLER);
   });
 
-  it.each(["already_published", "template_not_chosen", "no_active_product"] as const)("stays silent on %s", async (error) => {
+  it.each(["already_published", "template_not_chosen", "no_active_product", "top_up_required"] as const)("stays silent on %s", async (error) => {
     mocks.publishStoreSite.mockResolvedValue({ success: false, error });
 
     expect(await publishNewStoreIfReady(SELLER, STORE, USER)).toEqual({ published: false, reason: error });
