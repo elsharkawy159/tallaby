@@ -24,29 +24,34 @@ const SHOWN = 6;
 const firstPageKey = (storeId: string) => ["store-templates", storeId, 1, { category: null, q: "", niche: null }];
 
 /**
- * Step 1b: the six themes that fit the store best (`listTemplatesPage` sorts
- * by its industry and niche), each with Preview and Use. Using one is the
- * gallery's `applyTemplate` (a never-published store goes live with it only
- * when it already has a published product; owner, 2026-11-17), then the page
- * refreshes in place.
+ * The theme step: the six themes that fit the store best (`listTemplatesPage`
+ * sorts by its industry and niche, shown above the cards as `industry`), each
+ * with Preview and Use. Using one is the gallery's `applyTemplate` (a
+ * never-published store goes live with it only when it already has a
+ * published product; owner, 2026-11-17), then the page refreshes in place.
  */
 export function WelcomeThemeStep({
   storeId,
   done,
+  needsConfirm,
   disabled,
   fontClassName,
+  industry,
 }: {
   storeId: string;
   done: boolean;
+  /** Ask before applying (`welcomeThemeNeedsConfirm`): everywhere but a never-published store with no template yet. */
+  needsConfirm: boolean;
   disabled: boolean;
   fontClassName: string;
+  /** The "what you sell" line with its change link. */
+  industry: React.ReactNode;
 }) {
   const t = useTranslations("websiteTemplates");
   const tw = useTranslations("storeWelcome.steps.theme");
   const locale = useLocale() === "en" ? "en" : "ar";
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(!done);
   const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
   const [confirming, setConfirming] = useState<{ template: TemplateCardView; edition: string | null } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -84,82 +89,69 @@ export function WelcomeThemeStep({
       // Still offline for lack of a published product: say what makes it live (the product step is on this page).
       toast.success(t(result.data.needsProduct ? "appliedNeedsProduct" : result.data.published ? "appliedPublished" : "applied", { name: text(template.name) }));
       void queryClient.invalidateQueries({ queryKey: ["store-templates", storeId] });
-      setOpen(false);
       router.refresh();
       requestSetupPromptCheck();
     });
 
-  // The first theme applies at once (owner, 2026-11-16): nothing of the seller's is replaced yet. Changing it later still asks.
+  // The first theme of a never-published store applies at once: nothing of the seller's is replaced yet. Every other case asks.
   const requestUse = (template: TemplateCardView, edition: string | null) =>
-    done ? setConfirming({ template, edition }) : onApply(template, edition);
+    needsConfirm ? setConfirming({ template, edition }) : onApply(template, edition);
 
   const currentName = data?.currentKey ? text(data.currentName ?? {}) || data.currentKey : "";
 
   return (
     <div className="flex flex-col gap-3">
-      {done && (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {currentName ? (
-            <p className="text-[13.5px] font-semibold text-(--s-ink)">{tw("current", { name: currentName })}</p>
-          ) : (
-            <span />
-          )}
-          <SellerButton variant="mini" size="xs" disabled={disabled} onClick={() => setOpen((value) => !value)} aria-expanded={open}>
-            {tw(open ? "hide" : "change")}
-          </SellerButton>
+      <div className="flex flex-col">
+        {done && currentName && <p className="text-[13.5px] font-semibold text-(--s-ink)">{tw("current", { name: currentName })}</p>}
+        {industry}
+      </div>
+
+      {!data && query.isPending && (
+        <div role="status" aria-label={t("loading")} className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton key={index} className="aspect-[3/4] w-full rounded-2xl" />
+          ))}
         </div>
       )}
-
-      {open && (
-        <>
-          {!data && query.isPending && (
-            <div role="status" aria-label={t("loading")} className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
-              {Array.from({ length: 3 }, (_, index) => (
-                <Skeleton key={index} className="aspect-[3/4] w-full rounded-2xl" />
-              ))}
-            </div>
-          )}
-          {!data && query.isError && (
-            <EmptyState
-              icon={LayoutTemplate}
-              title={t("loadFailed")}
-              action={
-                <SellerButton variant="mini" size="sm" onClick={() => void query.refetch()}>
-                  <RotateCcw aria-hidden />
-                  {t("retry")}
-                </SellerButton>
-              }
-            />
-          )}
-          {data && (
-            // Phones: one row that scrolls sideways, so six tall cards don't push the next steps away.
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-x-4 gap-y-6 max-[600px]:-mx-1 max-[600px]:flex max-[600px]:snap-x max-[600px]:snap-mandatory max-[600px]:overflow-x-auto max-[600px]:px-1 max-[600px]:pb-2 max-[600px]:[&>li]:w-[72%] max-[600px]:[&>li]:shrink-0 max-[600px]:[&>li]:snap-start">
-              {data.items.slice(0, SHOWN).map((template) => {
-                const edition = editionOf(template);
-                return (
-                  <TemplateCard
-                    key={template.key}
-                    storeId={storeId}
-                    template={template}
-                    current={template.key === data.currentKey}
-                    edition={edition}
-                    nicheTag={editionName(template, edition)}
-                    categoryName={categoryName(template.category)}
-                    fontClassName={fontClassName}
-                    disabled={disabled || isPending}
-                    onPreview={() => setPreviewing(template)}
-                    onUse={() => requestUse(template, edition)}
-                    compact
-                  />
-                );
-              })}
-            </ul>
-          )}
-          <Link href={`/stores/${storeId}/website/templates`} className="inline-flex min-h-10 items-center self-start text-[13px] font-bold text-(--s-link) underline-offset-4 hover:underline">
-            {tw("seeAll")}
-          </Link>
-        </>
+      {!data && query.isError && (
+        <EmptyState
+          icon={LayoutTemplate}
+          title={t("loadFailed")}
+          action={
+            <SellerButton variant="mini" size="sm" onClick={() => void query.refetch()}>
+              <RotateCcw aria-hidden />
+              {t("retry")}
+            </SellerButton>
+          }
+        />
       )}
+      {data && (
+        // Phones: one row that scrolls sideways, so six tall cards don't push the next steps away.
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-x-4 gap-y-6 max-[600px]:-mx-1 max-[600px]:flex max-[600px]:snap-x max-[600px]:snap-mandatory max-[600px]:overflow-x-auto max-[600px]:px-1 max-[600px]:pb-2 max-[600px]:[&>li]:w-[72%] max-[600px]:[&>li]:shrink-0 max-[600px]:[&>li]:snap-start">
+          {data.items.slice(0, SHOWN).map((template) => {
+            const edition = editionOf(template);
+            return (
+              <TemplateCard
+                key={template.key}
+                storeId={storeId}
+                template={template}
+                current={template.key === data.currentKey}
+                edition={edition}
+                nicheTag={editionName(template, edition)}
+                categoryName={categoryName(template.category)}
+                fontClassName={fontClassName}
+                disabled={disabled || isPending}
+                onPreview={() => setPreviewing(template)}
+                onUse={() => requestUse(template, edition)}
+                compact
+              />
+            );
+          })}
+        </ul>
+      )}
+      <Link href={`/stores/${storeId}/website/templates`} className="inline-flex min-h-11 items-center self-start text-[13px] font-bold text-(--s-link) underline-offset-4 hover:underline">
+        {tw("seeAll")}
+      </Link>
 
       <TemplatePreview
         storeId={storeId}

@@ -8809,22 +8809,13 @@
     "progressLabel": "Setup progress",
     "readOnly": "This store is read-only, so its setup can't be changed.",
     "done": "Done",
-    "main": {
-      "title": "Main setup",
-      "description": "What you sell, your theme, your brand and your first product.",
-      "count": "{done} of {total}"
-    },
-    "delivery": {
-      "title": "Shipping and payments",
-      "description": "Your delivery price and how customers pay."
-    },
     "steps": {
       "industry": {
-        "title": "What do you sell?",
-        "description": "We suggest the themes that fit what you sell.",
-        "empty": "Not chosen yet",
+        "label": "Themes that fit what you sell: <b>{industry}</b>",
+        "labelNiche": "Themes that fit what you sell: <b>{industry}, {niche}</b>",
+        "empty": "Tell us what you sell and we suggest the themes that fit.",
         "choose": "Choose",
-        "edit": "Edit",
+        "change": "Change",
         "modalTitle": "What does your store sell?",
         "cancel": "Cancel",
         "save": "Save",
@@ -8833,23 +8824,9 @@
       "theme": {
         "title": "Choose your theme",
         "description": "The best fit for your store comes first. You can change it any time.",
+        "doneNote": "Your theme is chosen.",
         "current": "Your theme: {name}",
-        "change": "Change theme",
-        "hide": "Hide themes",
         "seeAll": "See all themes"
-      },
-      "brand": {
-        "title": "Your brand",
-        "description": "Your logo, browser icon, main color and website language.",
-        "color": "Main color",
-        "colorHint": "Used for buttons and links.",
-        "colorCustom": "Another color",
-        "colorDraft": "The color is saved to your website draft and shows to visitors after you publish from <link>Website › Design</link>.",
-        "colorLocked": "Choose a theme first. Each theme comes with its own colors.",
-        "language": "Main website language",
-        "languageHint": "The language visitors see first.",
-        "save": "Save brand",
-        "saved": "Brand saved."
       },
       "product": {
         "title": "Add your first product with AI",
@@ -8868,67 +8845,38 @@
         "priceLabel": "Delivery price",
         "priceHint": "This is our suggested price. You can type your own.",
         "priceHintAbroad": "Type the delivery price in your store's currency.",
-        "freeToggle": "Free delivery for large orders",
-        "freeOverError": "Enter an amount above 0.",
         "save": "Save delivery price",
         "saved": "Delivery price saved.",
-        "adjust": "Set prices for specific areas",
         "noCountry": "Add the places you deliver to and the price for each.",
         "zonesSummary": "{count, plural, one {# delivery zone} other {# delivery zones}}",
         "moreZones": "{count, plural, one {and # more} other {and # more}}",
         "freeSummary": "Free delivery for orders of {amount} or more",
         "freeAll": "Free delivery on every order",
         "edit": "Edit shipping"
-      },
-      "payments": {
-        "title": "Payment methods",
-        "description": "Cash on delivery is on. Add InstaPay or a mobile wallet if you like.",
-        "confirm": "Confirm",
-        "transfersTitle": "InstaPay and mobile wallets",
-        "cardsTitle": "Card payments",
-        "cardsBody": "Connect {gateways} in payment settings.",
-        "cardsConnected": "Connected: {gateway}",
-        "cardsLink": "Payment settings",
-        "listSeparator": " or "
       }
     },
-    "share": {
-      "title": "Share your store",
-      "description": "Send your store link to your first customers.",
-      "live": "Live",
-      "offlineLink": "Go to the Website page",
-      "tipsTitle": "Ways to share it",
-      "tips": {
-        "bio": "Put the link in your social media bio.",
-        "family": "Share it with friends and family.",
-        "status": "Post it in your WhatsApp status."
-      },
-      "messageTitle": "A message for your customers",
-      "messageHint": "Copy it or send it on WhatsApp. You can edit it before you send it.",
-      "message": "We’ve opened our new store, {storeName}! You can order now here: {url}",
-      "copy": "Copy message",
-      "copied": "Message copied.",
-      "copyFailed": "Couldn’t copy the message.",
-      "whatsapp": "Send via WhatsApp"
+    "live": {
+      "title": "Your store is live",
+      "copy": "Copy link",
+      "copied": "Store link copied.",
+      "copyFailed": "Couldn’t copy the link.",
+      "open": "Open store",
+      "whatsapp": "Send via WhatsApp",
+      "message": "We’ve opened our new store, {storeName}! You can order now here: {url}"
+    },
+    "offline": {
+      "note": "Your store is not live.",
+      "link": "Publish it from the Website page"
     },
     "topUp": {
-      "title": "Top up your wallet",
-      "description": "How your wallet works and when to top up.",
-      "body": "Your balance stays in your wallet and doesn’t expire.",
       "fee": "Only {fee} is taken per order.",
       "status": {
-        "activated": "Your wallet is active.",
         "review": "Your top-up is being reviewed. We’ll let you know once it’s approved.",
         "offlineNow": "Your store is offline. Top up to bring it back.",
-        "offlineIn": "Please top up your wallet within {days, plural, one {# day} other {# days}} to keep your store online.",
+        "offlineIn": "{days, plural, one {# day} other {# days}} left before your store goes offline.",
         "locked": "Your orders are hidden until you top up."
       },
-      "cta": "Top up your wallet",
-      "ctaWallet": "Open wallet"
-    },
-    "ready": {
-      "title": "Your store is ready to sell",
-      "description": "You finished every step. Run your store from your dashboard."
+      "cta": "Top up your wallet"
     }
   },
   "setupReminderUnsubscribe": {

@@ -6,97 +6,117 @@ import { whatsappShare } from "@/app/[locale]/(builder)/ai-builder/_components/w
 import ar from "../../../../../../messages/ar.json";
 import en from "../../../../../../messages/en.json";
 import { addProductReturnHref } from "../products/add/add-method.lib";
+import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
 import {
-  initialWelcomeSection,
   nextWelcomeStep,
   normalizeWelcomeDigits,
   parseWelcomeAmount,
   storeWelcomeHref,
-  welcomeLandingHref,
-  welcomeDeliverySteps,
+  welcomeArrival,
   welcomeFinishProductHref,
+  welcomeHashRedirect,
+  welcomeLandingHref,
+  welcomeLiveState,
   welcomeProductHref,
   welcomeProgress,
-  welcomeReady,
-  welcomeSetupSteps,
   welcomeShareMessage,
   welcomeShippingDefault,
+  welcomeSteps,
+  welcomeThemeNeedsConfirm,
+  welcomeTopUpLine,
   welcomeWallet,
-  withDefaultLocale,
 } from "./welcome.lib";
 
 const STORE = "11111111-1111-4111-8111-111111111111";
 const none: StoreSetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false };
 
-describe("welcomeSetupSteps", () => {
-  it("lists industry, theme, brand and product, done from the home's flags", () => {
-    const steps = welcomeSetupSteps({ flags: { ...none, template: true }, hasIndustry: true, themesAvailable: true });
+describe("welcomeSteps", () => {
+  it("lists theme, product and delivery price, done from the home's flags", () => {
+    const steps = welcomeSteps({ flags: { ...none, template: true }, themesAvailable: true });
     expect(steps).toEqual([
-      { key: "industry", done: true },
       { key: "theme", done: true },
-      { key: "brand", done: false },
       { key: "product", done: false },
+      { key: "shipping", done: false },
     ]);
-    expect(nextWelcomeStep(steps)).toBe("brand");
+    expect(nextWelcomeStep(steps)).toBe("product");
   });
 
   it("has no theme step outside the store-builder rollout", () => {
-    const steps = welcomeSetupSteps({ flags: none, hasIndustry: false, themesAvailable: false });
-    expect(steps.map((step) => step.key)).toEqual(["industry", "brand", "product"]);
-    expect(nextWelcomeStep(steps)).toBe("industry");
+    const steps = welcomeSteps({ flags: none, themesAvailable: false });
+    expect(steps.map((step) => step.key)).toEqual(["product", "shipping"]);
+    expect(nextWelcomeStep(steps)).toBe("product");
   });
 
-  it("has no next step when every step is done", () => {
-    const steps = welcomeSetupSteps({ flags: { ...none, template: true, brand: true, product: true }, hasIndustry: true, themesAvailable: true });
+  it("never counts brand or payments", () => {
+    const steps = welcomeSteps({ flags: { ...none, template: true, product: true, shipping: true }, themesAvailable: true });
     expect(nextWelcomeStep(steps)).toBeNull();
+    expect(welcomeProgress(steps)).toEqual({ done: 3, total: 3 });
   });
 });
 
 describe("welcomeProgress", () => {
-  it("counts the home's four steps (design needs template and brand)", () => {
-    expect(welcomeProgress(none)).toEqual({ done: 0, total: 4 });
-    expect(welcomeProgress({ ...none, template: true })).toEqual({ done: 0, total: 4 });
-    expect(welcomeProgress({ ...none, template: true, brand: true, product: true, shipping: true })).toEqual({ done: 3, total: 4 });
+  it("is one counter over exactly the steps shown", () => {
+    expect(welcomeProgress(welcomeSteps({ flags: none, themesAvailable: true }))).toEqual({ done: 0, total: 3 });
+    expect(welcomeProgress(welcomeSteps({ flags: { ...none, product: true }, themesAvailable: true }))).toEqual({ done: 1, total: 3 });
+    expect(welcomeProgress(welcomeSteps({ flags: { ...none, product: true, template: true }, themesAvailable: false }))).toEqual({ done: 1, total: 2 });
+    expect(welcomeProgress(welcomeSteps({ flags: { ...none, product: true, shipping: true, brand: true, payments: true }, themesAvailable: false }))).toEqual({ done: 2, total: 2 });
   });
 });
 
-describe("initialWelcomeSection", () => {
-  const open = welcomeSetupSteps({ flags: none, hasIndustry: true, themesAvailable: true });
-  const finished = welcomeSetupSteps({ flags: { ...none, template: true, brand: true, product: true }, hasIndustry: true, themesAvailable: true });
+describe("welcomeArrival", () => {
+  const open = welcomeSteps({ flags: none, themesAvailable: true });
+  const themeDone = welcomeSteps({ flags: { ...none, template: true }, themesAvailable: true });
+  const finished = welcomeSteps({ flags: { ...none, template: true, product: true, shipping: true }, themesAvailable: true });
+  const noThemes = welcomeSteps({ flags: none, themesAvailable: false });
 
-  it("opens the first unfinished section", () => {
-    expect(initialWelcomeSection("", open)).toBe("setup");
-    expect(initialWelcomeSection("", finished)).toBe("");
+  it("opens the first unfinished step, or none when all are done", () => {
+    expect(welcomeArrival("", open)).toEqual({ open: "theme", scrollTo: null });
+    expect(welcomeArrival("", themeDone)).toEqual({ open: "product", scrollTo: null });
+    expect(welcomeArrival("", finished)).toEqual({ open: "", scrollTo: null });
   });
 
-  it("opens the section a step's hash names, even when done", () => {
-    expect(initialWelcomeSection("#product", finished)).toBe("setup");
-    expect(initialWelcomeSection("#setup", finished)).toBe("setup");
-    expect(initialWelcomeSection("#nope", finished)).toBe("");
+  it("opens the step a hash names, even when done", () => {
+    expect(welcomeArrival("#theme", finished)).toEqual({ open: "theme", scrollTo: "theme" });
+    expect(welcomeArrival("#product", finished)).toEqual({ open: "product", scrollTo: "product" });
+    expect(welcomeArrival("#shipping", open)).toEqual({ open: "shipping", scrollTo: "shipping" });
   });
 
-  it("opens shipping and payments once the main setup is done, or when its hash is named", () => {
-    const deliveryOpen = welcomeDeliverySteps(none);
-    const deliveryDone = welcomeDeliverySteps({ ...none, shipping: true, payments: true });
-    expect(initialWelcomeSection("", open, deliveryOpen)).toBe("setup");
-    expect(initialWelcomeSection("", finished, deliveryOpen)).toBe("delivery");
-    expect(initialWelcomeSection("", finished, deliveryDone)).toBe("");
-    expect(initialWelcomeSection("#payments", open, deliveryDone)).toBe("delivery");
-    expect(initialWelcomeSection("#shipping", finished, deliveryDone)).toBe("delivery");
-    expect(initialWelcomeSection("#delivery", open, deliveryOpen)).toBe("delivery");
+  it("maps the old section and step names", () => {
+    expect(welcomeArrival("#industry", themeDone)).toEqual({ open: "theme", scrollTo: "theme" });
+    expect(welcomeArrival("#setup", themeDone)).toEqual({ open: "theme", scrollTo: "theme" });
+    expect(welcomeArrival("#delivery", open)).toEqual({ open: "shipping", scrollTo: "shipping" });
+  });
+
+  it("falls back to the first unfinished step for a step the page no longer has", () => {
+    expect(welcomeArrival("#brand", themeDone)).toEqual({ open: "product", scrollTo: null });
+    expect(welcomeArrival("#payments", themeDone)).toEqual({ open: "product", scrollTo: null });
+    expect(welcomeArrival("#nope", finished)).toEqual({ open: "", scrollTo: null });
+    expect(welcomeArrival("#constructor", open)).toEqual({ open: "theme", scrollTo: null });
+    // No theme step outside the rollout: its hashes open the first unfinished step.
+    expect(welcomeArrival("#theme", noThemes)).toEqual({ open: "product", scrollTo: null });
+    expect(welcomeArrival("#industry", noThemes)).toEqual({ open: "product", scrollTo: null });
+  });
+
+  it("scrolls share to the live card and topUp to the top-up line", () => {
+    expect(welcomeArrival("#share", finished)).toEqual({ open: "", scrollTo: "live" });
+    expect(welcomeArrival("#topUp", themeDone)).toEqual({ open: "product", scrollTo: "topUp" });
   });
 });
 
-describe("welcomeDeliverySteps", () => {
-  it("is done from the home's shipping and payments flags", () => {
-    expect(welcomeDeliverySteps({ ...none, payments: true })).toEqual([
-      { key: "shipping", done: false },
-      { key: "payments", done: true },
-    ]);
+describe("welcomeHashRedirect", () => {
+  it("sends #payments to the store's Settings › Payments, and nothing else", () => {
+    expect(welcomeHashRedirect("#payments", STORE)).toBe(`/stores/${STORE}/settings/payments`);
+    for (const hash of ["", "#brand", "#share", "#product", "#payments2"]) expect(welcomeHashRedirect(hash, STORE)).toBeNull();
   });
+});
 
-  it("reaches 4 of 4 with the main setup", () => {
-    expect(welcomeProgress({ ...none, template: true, brand: true, product: true, shipping: true, payments: true })).toEqual({ done: 4, total: 4 });
+describe("welcomeThemeNeedsConfirm", () => {
+  it("skips the dialog only for a never-published store with no template yet", () => {
+    expect(welcomeThemeNeedsConfirm({ templateChosen: false, siteStatus: "draft" })).toBe(false);
+    expect(welcomeThemeNeedsConfirm({ templateChosen: true, siteStatus: "draft" })).toBe(true);
+    expect(welcomeThemeNeedsConfirm({ templateChosen: false, siteStatus: "published" })).toBe(true);
+    expect(welcomeThemeNeedsConfirm({ templateChosen: false, siteStatus: "unpublished" })).toBe(true);
+    expect(welcomeThemeNeedsConfirm({ templateChosen: true, siteStatus: "published" })).toBe(true);
   });
 });
 
@@ -124,13 +144,12 @@ describe("parseWelcomeAmount", () => {
     expect(parseWelcomeAmount("9.99", 10_000)).toBe(9.99);
   });
 
-  it("refuses empty, negative, too large, too precise and (when positive) zero", () => {
+  it("refuses empty, negative, too large and too precise", () => {
     expect(parseWelcomeAmount("", 10_000)).toBeNull();
     expect(parseWelcomeAmount("-1", 10_000)).toBeNull();
     expect(parseWelcomeAmount("10001", 10_000)).toBeNull();
     expect(parseWelcomeAmount("1.005", 10_000)).toBeNull();
     expect(parseWelcomeAmount("abc", 10_000)).toBeNull();
-    expect(parseWelcomeAmount("0", 1_000_000, true)).toBeNull();
   });
 });
 
@@ -177,27 +196,25 @@ describe("the first-product round trip", () => {
   });
 });
 
-describe("withDefaultLocale", () => {
-  it("adds the chosen language and removes none", () => {
-    expect(withDefaultLocale(["ar"], "en")).toEqual(["ar", "en"]);
-    expect(withDefaultLocale(["ar", "en"], "ar")).toEqual(["ar", "en"]);
-    expect(withDefaultLocale(["fr"], "ar")).toEqual(["ar"]);
-  });
-});
-
 describe("storeWelcome messages", () => {
-  it("has a title and description for every step in both languages", () => {
+  it("has a title, a description and a done summary for every step in both languages", () => {
     for (const messages of [ar, en]) {
-      for (const key of ["industry", "theme", "brand", "product"] as const) {
+      for (const key of ["theme", "product", "shipping"] as const) {
         expect(messages.storeWelcome.steps[key].title).toBeTruthy();
         expect(messages.storeWelcome.steps[key].description).toBeTruthy();
       }
-      for (const key of ["shipping", "payments"] as const) {
-        expect(messages.storeWelcome.steps[key].title).toBeTruthy();
-        expect(messages.storeWelcome.steps[key].description).toBeTruthy();
-      }
-      expect(messages.storeWelcome.delivery.title).toBeTruthy();
+      expect(messages.storeWelcome.steps.theme.doneNote).toBeTruthy();
+      expect(messages.storeWelcome.steps.product.doneNote).toBeTruthy();
+      expect(messages.storeWelcome.steps.shipping.zonesSummary).toBeTruthy();
+      expect(messages.storeWelcome.live.title).toBeTruthy();
+      expect(messages.storeWelcome.offline.link).toBeTruthy();
     }
+  });
+
+  it("has the same keys in both languages", () => {
+    const keys = (value: unknown, prefix = ""): string[] =>
+      value && typeof value === "object" ? Object.entries(value).flatMap(([key, child]) => keys(child, `${prefix}${key}.`)) : [prefix];
+    expect(keys(ar.storeWelcome)).toEqual(keys(en.storeWelcome));
   });
 });
 
@@ -214,14 +231,13 @@ describe("Arabic digits in amounts", () => {
   it("applies the same limits as Latin digits", () => {
     expect(parseWelcomeAmount("١٢٣", 100)).toBeNull();
     expect(parseWelcomeAmount("١٫٠٠٥", 10_000)).toBeNull();
-    expect(parseWelcomeAmount("٠", 1_000_000, true)).toBeNull();
   });
 });
 
 describe("the share message", () => {
   const url = "https://ward-shop.tallaby.com";
-  const tAr = createTranslator({ locale: "ar", messages: ar, namespace: "storeWelcome.share" });
-  const tEn = createTranslator({ locale: "en", messages: en, namespace: "storeWelcome.share" });
+  const tAr = createTranslator({ locale: "ar", messages: ar, namespace: "storeWelcome.live" });
+  const tEn = createTranslator({ locale: "en", messages: en, namespace: "storeWelcome.live" });
 
   it("names the store and its link in both languages", () => {
     const arMessage = welcomeShareMessage(tAr, { storeName: " متجر ورد ", url });
@@ -303,7 +319,7 @@ describe("welcomeWallet", () => {
 
   it("has every status line in both languages, with the Arabic plural forms", () => {
     for (const messages of [ar, en]) {
-      for (const kind of ["activated", "review", "offlineNow", "offlineIn", "locked"] as const) {
+      for (const kind of ["review", "offlineNow", "offlineIn", "locked"] as const) {
         expect(messages.storeWelcome.topUp.status[kind]).toBeTruthy();
       }
     }
@@ -316,18 +332,45 @@ describe("welcomeWallet", () => {
   });
 });
 
-describe("welcomeReady", () => {
-  it("is ready only when the four progress steps are done", () => {
-    expect(welcomeReady(none)).toBe(false);
-    expect(welcomeReady({ ...none, template: true, brand: true, product: true, shipping: true })).toBe(false);
-    expect(welcomeReady({ ...none, template: true, brand: true, product: true, shipping: true, payments: true })).toBe(true);
+describe("welcomeTopUpLine", () => {
+  it("shows nothing to an activated seller or before the USD switch", () => {
+    expect(welcomeTopUpLine({ kind: "activated" })).toBeNull();
+    expect(welcomeTopUpLine({ kind: "none" })).toBeNull();
+  });
+
+  it("links the button to the wallet top-up, with the go-online notice for an offline store", () => {
+    expect(welcomeTopUpLine({ kind: "offlineIn", days: 3 })).toEqual({ kind: "offlineIn", days: 3, href: "/wallet?topup=1" });
+    expect(welcomeTopUpLine({ kind: "locked" })).toEqual({ kind: "locked", href: "/wallet?topup=1" });
+    expect(welcomeTopUpLine({ kind: "offlineNow" })).toEqual({ kind: "offlineNow", href: TOP_UP_TO_GO_ONLINE_HREF });
+  });
+
+  it("has no button while a top-up is in review", () => {
+    expect(welcomeTopUpLine({ kind: "review" })).toEqual({ kind: "review", href: null });
   });
 });
 
-describe("share and top-up deep links", () => {
-  it("open their sections", () => {
-    const finished = welcomeSetupSteps({ flags: { ...none, template: true, brand: true, product: true }, hasIndustry: true, themesAvailable: true });
-    expect(initialWelcomeSection("#share", finished)).toBe("share");
-    expect(initialWelcomeSection("#topUp", finished)).toBe("topUp");
+describe("welcomeLiveState", () => {
+  const activated = { kind: "activated" } as const;
+
+  it("shows the live card once the store is published", () => {
+    expect(welcomeLiveState({ flags: { ...none, template: true, product: true, publish: true }, themesAvailable: true, wallet: activated })).toBe("live");
+    expect(welcomeLiveState({ flags: { ...none, publish: true }, themesAvailable: true, wallet: { kind: "offlineIn", days: 2 } })).toBe("live");
+    expect(welcomeLiveState({ flags: { ...none, publish: true }, themesAvailable: true, wallet: { kind: "review" } })).toBe("live");
+  });
+
+  it("never says live while billing holds the store offline", () => {
+    expect(welcomeLiveState({ flags: { ...none, template: true, product: true, publish: true }, themesAvailable: true, wallet: { kind: "offlineNow" } })).toBe("none");
+    expect(welcomeLiveState({ flags: { ...none, template: true, product: true }, themesAvailable: true, wallet: { kind: "offlineNow" } })).toBe("none");
+  });
+
+  it("points to the Website page when theme and product are done but the store is offline", () => {
+    expect(welcomeLiveState({ flags: { ...none, template: true, product: true }, themesAvailable: true, wallet: activated })).toBe("offline");
+    expect(welcomeLiveState({ flags: { ...none, product: true }, themesAvailable: false, wallet: activated })).toBe("offline");
+  });
+
+  it("shows nothing while a step that makes the store live is still open", () => {
+    expect(welcomeLiveState({ flags: none, themesAvailable: true, wallet: activated })).toBe("none");
+    expect(welcomeLiveState({ flags: { ...none, product: true }, themesAvailable: true, wallet: activated })).toBe("none");
+    expect(welcomeLiveState({ flags: { ...none, template: true }, themesAvailable: true, wallet: activated })).toBe("none");
   });
 });

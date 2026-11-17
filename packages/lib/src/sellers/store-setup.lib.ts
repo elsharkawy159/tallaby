@@ -18,7 +18,7 @@ export type StoreSetupFlags = {
   publish: boolean;
   /** Shipping settings saved, or a delivery zone. */
   shipping: boolean;
-  /** Payment methods saved, or a connected card gateway. */
+  /** The store exists: checkout offers cash on delivery by default, so payments need no save (owner, 2026-11-17). */
   payments: boolean;
 };
 

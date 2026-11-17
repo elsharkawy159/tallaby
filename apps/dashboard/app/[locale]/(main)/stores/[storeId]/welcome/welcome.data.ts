@@ -1,19 +1,15 @@
 import { getTranslations } from "next-intl/server";
 import { aiConfigured } from "@workspace/ai";
-import { and, db, desc, eq, isNull, products, sellers, storeDesignSystems } from "@workspace/db";
+import { and, db, desc, eq, isNull, products, sellers } from "@workspace/db";
 import { parsePriceJson, parseStoreCurrency } from "@workspace/lib";
 import { isProActive } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { placeLabel } from "@workspace/lib/places";
-import { gatewaySupportsCurrency, parseStorePayments } from "@workspace/lib/payments/store-methods";
-import { STORE_GATEWAY_PROVIDERS } from "@workspace/lib/payments/store-gateways";
-import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { getStoreShipping } from "@workspace/lib/stores/server";
 import { effectiveStoreNiche, industryOfCategory, nicheForIndustry, parseStoreNiche } from "@workspace/lib/stores/niche";
 import type { StoreRow } from "@workspace/lib/stores/server";
-import { designSystemSchema } from "@workspace/store-sections";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { findIndustry, STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
@@ -42,24 +38,10 @@ export async function loadWelcomeData(store: StoreRow, locale: string): Promise<
     latest: row?.flags.product ? await loadLatestProduct(store, locale) : null,
     uploader: row && !row.flags.product && aiEnabled ? await loadUploaderContext() : null,
   }));
-  const [promptRow, product, designRows, shipping, gateways, tAr, tEn, lock, billing, planRows, customDomain] = await Promise.all([
+  const [promptRow, product, shipping, tAr, tEn, lock, billing, planRows, customDomain] = await Promise.all([
     promptRowPromise,
     productPromise,
-    themesAvailable
-      ? db
-          .select({
-            colors: storeDesignSystems.colors,
-            typography: storeDesignSystems.typography,
-            spacing: storeDesignSystems.spacing,
-            motion: storeDesignSystems.motion,
-            version: storeDesignSystems.version,
-          })
-          .from(storeDesignSystems)
-          .where(eq(storeDesignSystems.storeId, store.id))
-          .limit(1)
-      : Promise.resolve([]),
     getStoreShipping(store.sellerId, store.id),
-    getStoreGatewayOverview(store.sellerId, store.id),
     // Zone names are saved in both languages, as the shipping page builds them.
     getTranslations({ locale: "ar" }),
     getTranslations({ locale: "en" }),
@@ -92,21 +74,7 @@ export async function loadWelcomeData(store: StoreRow, locale: string): Promise<
   const industry = findIndustry(category);
   const industryId = industryOfCategory(category);
 
-  // As Website › Design reads it: a null motion column means "defaults" (the key is left out).
-  const row = designRows[0];
-  const parsed = row
-    ? designSystemSchema.safeParse({
-        colors: row.colors,
-        typography: row.typography,
-        spacing: row.spacing,
-        ...(row.motion != null && { motion: row.motion }),
-      })
-    : null;
-  const designSystem = row && parsed?.success ? { value: parsed.data, version: row.version } : null;
-
   const planRow = planRows[0];
-
-  const locales = store.supportedLocales.filter((l): l is "ar" | "en" => l === "ar" || l === "en");
 
   return {
     storeId: store.id,
@@ -126,34 +94,19 @@ export async function loadWelcomeData(store: StoreRow, locale: string): Promise<
         locale,
       ),
     },
-    brand: {
-      logoUrl: store.logoUrl ?? "",
-      faviconUrl: store.faviconUrl ?? "",
-      defaultLocale: store.defaultLocale === "en" ? "en" : "ar",
-      supportedLocales: locales.length ? locales : [store.defaultLocale === "en" ? "en" : "ar"],
-      designSystem,
-    },
     share: {
       url: storeUrl(store.subdomain, customDomain),
-      subdomain: store.subdomain,
-      customDomain,
       siteStatus: store.siteStatus,
     },
     wallet: welcomeWallet({ lock, usdLive: billing.usdLive, isPro: planRow ? isProActive(planRow) : false }),
     delivery: {
       money,
       shipping: {
-        settings: shipping.settings,
+        freeShippingOver: shipping.settings.freeShippingOver,
         zones: shipping.zones,
         suggested,
         zoneNames,
-        country: suggested.kind === "egypt_flat" ? "EG" : suggested.kind === "country" ? suggested.country : null,
         zoneLabel,
-      },
-      payments: {
-        methods: parseStorePayments((store.settings as Record<string, unknown> | null)?.payments),
-        gateway: gateways?.connected?.provider ?? null,
-        gatewayProviders: STORE_GATEWAY_PROVIDERS.filter((provider) => gatewaySupportsCurrency(provider, money.currency)),
       },
     },
   };

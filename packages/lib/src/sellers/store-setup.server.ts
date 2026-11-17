@@ -23,11 +23,11 @@ export const storeSetupFlagColumns = (productScope: SQL) => sql`
             WHERE ti.store_id = st.id AND ti.undone_at IS NULL)), false) AS setup_brand,
       coalesce(st.settings ? 'shipping'
         OR EXISTS (SELECT 1 FROM store_shipping_zones z WHERE z.store_id = st.id), false) AS setup_shipping,
-      -- settings.payments is written only by the seller's own save (Store settings › Payment methods);
-      -- a new store has none and checkout falls back to the defaults. A connected card gateway counts too.
-      coalesce(st.settings ? 'payments'
-        OR EXISTS (SELECT 1 FROM store_integrations si WHERE si.store_id = st.id AND si.seller_id = s.id
-          AND si.provider IN ('paymob', 'kashier') AND si.status = 'connected'), false) AS setup_payments,
+      -- Every store takes payments from the start (owner, 2026-11-17): with no saved settings.payments
+      -- checkout offers cash on delivery (parseStorePayments falls back to defaultStorePayments), and a saved
+      -- one always keeps a method on (storePaymentsSchema: last_method). So this is "the store exists";
+      -- nothing is written to mark it (store-setup.server.test.ts pins the checkout default).
+      (st.id IS NOT NULL) AS setup_payments,
       coalesce(st.site_status = 'published', false) AS setup_publish
 `;
 

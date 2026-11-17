@@ -26,9 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 type SearchParams = Promise<{ welcome?: string | string[]; signup?: string | string[] }>;
 
 /**
- * The store welcome page (docs/plans/seller-welcome.md, owner 2026-11-15):
- * the store's setup as a short list of sections, done in minutes, with a
- * "Go to dashboard" skip at the top. A new seller lands here once after
+ * The store welcome page (docs/plans/seller-welcome.md, owner 2026-11-15,
+ * simplified 2026-11-17): the store's setup as one flat list of at most three
+ * steps, done in minutes, with a "Go to dashboard" skip at the top. A new seller lands here once after
  * signup (`?welcome=1&signup=…`, from the home), where the Meta
  * CompleteRegistration fires. A foreign or missing store is a 404 (rule 5).
  * The title and skip are a static frame; the store's data streams behind one
@@ -80,8 +80,8 @@ function WelcomeSkeleton() {
     <div className="flex flex-col gap-3" aria-hidden>
       <Skeleton className="h-4 w-48" />
       <Skeleton className="h-1.5 w-full rounded-full" />
-      <Skeleton className="h-[72px] w-full rounded-[24px]" />
-      <Skeleton className="h-[320px] w-full rounded-[24px]" />
+      {/* One card: the open first step, then two closed ones. */}
+      <Skeleton className="h-[480px] w-full rounded-[24px] max-[600px]:rounded-[20px]" />
     </div>
   );
 }

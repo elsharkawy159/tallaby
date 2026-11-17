@@ -9,7 +9,8 @@ import type { SellerAudience } from "@workspace/lib/admin";
  *
  * Links are seller-level dashboard paths: `/welcome` opens the setup page of
  * the store selected in the seller's sidebar, and its `#hash` opens that step
- * (initialWelcomeSection in the dashboard's welcome.lib.ts); `/wallet?topup=1`
+ * (welcomeArrival in the dashboard's welcome.lib.ts; `#payments` goes on to the
+ * store's Settings › Payments, `#share` to the "store is live" card); `/wallet?topup=1`
  * opens the top-up dialog. Keep bodies under about 180 characters, the push
  * alert's length (clipPushText).
  */

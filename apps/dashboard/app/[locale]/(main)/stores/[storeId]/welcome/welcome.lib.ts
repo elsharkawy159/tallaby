@@ -1,78 +1,93 @@
 /**
  * The store welcome page (`/stores/<id>/welcome`, docs/plans/seller-welcome.md).
- * Pure: which setup steps are done, which one opens first, the progress, and
- * the links in and out of the page. Done-states come from the same setup
+ * Pure: which steps are shown and done, which one opens first, the progress,
+ * and the links in and out of the page. Done-states come from the same setup
  * flags as the dashboard home and the setup reminder emails
- * (`STORE_SETUP_STEP_DONE`), never from anything stored for this page.
+ * (`StoreSetupFlags`), never from anything stored for this page.
  */
 
 import type { StoreCurrency } from "@workspace/lib";
 import { daysUntilOffline, type OrderLock } from "@workspace/lib/billing/order-grace";
-import { STORE_SETUP_STEP_DONE, STORE_SETUP_STEP_KEYS, type StoreSetupFlags } from "@workspace/lib/sellers";
+import type { StoreSetupFlags } from "@workspace/lib/sellers";
+import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
 import { currencyCountry } from "../shipping/shipping.dto";
 
-/** The steps of the main setup section, in order. */
-export type WelcomeSetupStepKey = "industry" | "theme" | "brand" | "product";
+/** The page's steps, in order: one flat list (owner, 2026-11-17). */
+export type WelcomeStepKey = "theme" | "product" | "shipping";
 
-export type WelcomeSetupStep = { key: WelcomeSetupStepKey; done: boolean };
+export type WelcomeStep = { key: WelcomeStepKey; done: boolean };
 
-/** The steps of the "Shipping and payments" section, in order. */
-export type WelcomeDeliveryStepKey = "shipping" | "payments";
-
-export type WelcomeDeliveryStep = { key: WelcomeDeliveryStepKey; done: boolean };
-
-/** The page's sections (accordion items), in order. */
-export type WelcomeSectionKey = "setup" | "delivery" | "share" | "topUp";
-
-export function welcomeSetupSteps(input: {
+/**
+ * The steps the page shows: a theme (only inside the store-builder rollout),
+ * the first product, the delivery price. Done from the home's flags. Brand
+ * and payments are not steps here: they live in Store settings, and cash on
+ * delivery is on by default.
+ */
+export function welcomeSteps(input: {
   flags: StoreSetupFlags;
-  /** The store has an industry (a category) saved. */
-  hasIndustry: boolean;
   /** The seller can use Website › Templates (store-builder rollout); else no theme step. */
   themesAvailable: boolean;
-}): WelcomeSetupStep[] {
-  const steps: WelcomeSetupStep[] = [{ key: "industry", done: input.hasIndustry }];
+}): WelcomeStep[] {
+  const steps: WelcomeStep[] = [];
   if (input.themesAvailable) steps.push({ key: "theme", done: input.flags.template });
-  steps.push({ key: "brand", done: input.flags.brand }, { key: "product", done: input.flags.product });
+  steps.push({ key: "product", done: input.flags.product }, { key: "shipping", done: input.flags.shipping });
   return steps;
 }
 
 /** The first step still open, or null when every step is done. */
-export function nextWelcomeStep(steps: readonly WelcomeSetupStep[]): WelcomeSetupStepKey | null {
+export function nextWelcomeStep(steps: readonly WelcomeStep[]): WelcomeStepKey | null {
   return steps.find((step) => !step.done)?.key ?? null;
 }
 
-/** "x of 4": the dashboard home's four setup steps (product, design, payments, shipping). */
-export function welcomeProgress(flags: StoreSetupFlags): { done: number; total: number } {
-  return {
-    done: STORE_SETUP_STEP_KEYS.filter((key) => STORE_SETUP_STEP_DONE[key](flags)).length,
-    total: STORE_SETUP_STEP_KEYS.length,
-  };
+/** "x of N": the page's one counter, over exactly the steps it shows. */
+export function welcomeProgress(steps: readonly WelcomeStep[]): { done: number; total: number } {
+  return { done: steps.filter((step) => step.done).length, total: steps.length };
 }
 
-/** Shipping, then payments, done from the home's flags (a saved setting or zone; saved payment methods or a gateway). */
-export function welcomeDeliverySteps(flags: StoreSetupFlags): WelcomeDeliveryStep[] {
-  return [
-    { key: "shipping", done: flags.shipping },
-    { key: "payments", done: flags.payments },
-  ];
+/** What an old or current `#hash` means now: a step to open, or a place below the list to scroll to. */
+const HASH_STEP: Record<string, WelcomeStepKey> = {
+  theme: "theme",
+  // The industry is a link inside the theme step; "setup" was the first section.
+  industry: "theme",
+  setup: "theme",
+  product: "product",
+  shipping: "shipping",
+  delivery: "shipping",
+};
+const HASH_ANCHOR: Record<string, "live" | "topUp"> = { share: "live", live: "live", topUp: "topUp" };
+
+export type WelcomeArrival = { open: WelcomeStepKey | ""; scrollTo: WelcomeStepKey | "live" | "topUp" | null };
+
+/**
+ * Where a visit lands: the step open on arrival (the one a `#hash` names when
+ * the page shows it, else the first unfinished one, else none) and the element
+ * to scroll to (`welcome-<scrollTo>`), or null without a known hash. Old links
+ * (`#brand`, `#payments`…) fall back to the first unfinished step.
+ */
+export function welcomeArrival(hash: string, steps: readonly WelcomeStep[]): WelcomeArrival {
+  const id = hash.replace(/^#/, "");
+  const named = Object.hasOwn(HASH_STEP, id) ? HASH_STEP[id] : undefined;
+  if (named && steps.some((step) => step.key === named)) return { open: named, scrollTo: named };
+  const anchor = Object.hasOwn(HASH_ANCHOR, id) ? HASH_ANCHOR[id] : undefined;
+  return { open: nextWelcomeStep(steps) ?? "", scrollTo: anchor ?? null };
 }
 
 /**
- * The section open when the page loads: the one a `#hash` names (the section
- * or one of its steps), else the first unfinished one, else none.
+ * A `#hash` whose job moved to another page: `#payments` (Admin's "choose your
+ * payment methods" message) opens the store's Settings › Payments. Null for
+ * every other hash.
  */
-export function initialWelcomeSection(
-  hash: string,
-  steps: readonly WelcomeSetupStep[],
-  delivery: readonly WelcomeDeliveryStep[] = [],
-): WelcomeSectionKey | "" {
-  const id = hash.replace(/^#/, "");
-  if (id === "setup" || steps.some((step) => step.key === id)) return "setup";
-  if (id === "delivery" || delivery.some((step) => step.key === id)) return "delivery";
-  if (id === "share" || id === "topUp") return id;
-  if (nextWelcomeStep(steps)) return "setup";
-  return delivery.some((step) => !step.done) ? "delivery" : "";
+export function welcomeHashRedirect(hash: string, storeId: string): string | null {
+  return hash.replace(/^#/, "") === "payments" ? `/stores/${encodeURIComponent(storeId)}/settings/payments` : null;
+}
+
+/**
+ * Using a theme asks first, except for a store that was never published and
+ * has no template chosen yet: nothing of the seller's is replaced there
+ * (owner, 2026-11-17). Everywhere else applying a theme replaces the draft.
+ */
+export function welcomeThemeNeedsConfirm(input: { templateChosen: boolean; siteStatus: string }): boolean {
+  return input.templateChosen || input.siteStatus !== "draft";
 }
 
 /** The suggested delivery price for all Egypt (owner, 2026-11-15); the seller can change it. */
@@ -108,14 +123,13 @@ export function normalizeWelcomeDigits(text: string): string {
 
 /**
  * A typed delivery amount as the shipping schemas take it (store currency, at
- * most 2 decimals, 0..max), or null when it isn't one. `positive` refuses 0
- * (a free-delivery threshold of 0 means "every order", which this page doesn't offer).
+ * most 2 decimals, 0..max), or null when it isn't one.
  */
-export function parseWelcomeAmount(text: string, max: number, positive = false): number | null {
+export function parseWelcomeAmount(text: string, max: number): number | null {
   const trimmed = normalizeWelcomeDigits(text).trim();
   if (trimmed === "") return null;
   const n = Number(trimmed.replace(",", "."));
-  if (!Number.isFinite(n) || n < 0 || n > max || (positive && n === 0)) return null;
+  if (!Number.isFinite(n) || n < 0 || n > max) return null;
   // Whole minor units only (rule 7): the server refuses anything finer.
   return Math.abs(n * 100 - Math.round(n * 100)) < 1e-6 ? n : null;
 }
@@ -164,15 +178,9 @@ export function welcomeFinishProductHref(storeId: string): string {
   return `/stores/${encodeURIComponent(storeId)}/products/add?method=manual&from=welcome`;
 }
 
-/** The store's languages after choosing a default one: the chosen language is added, none is removed. */
-export function withDefaultLocale(current: readonly string[], chosen: "ar" | "en"): ("ar" | "en")[] {
-  const kept = current.filter((locale): locale is "ar" | "en" => locale === "ar" || locale === "en");
-  return [...new Set([...kept, chosen])];
-}
-
 /**
  * The pre-written message a seller sends customers to open the store (owner,
- * 2026-11-15). `format` is the page's translator for `storeWelcome.share.message`
+ * 2026-11-15). `format` is the page's translator for `storeWelcome.live.message`
  * (ICU, so the name and link go in as values and are never parsed as markup).
  */
 export function welcomeShareMessage(
@@ -183,7 +191,7 @@ export function welcomeShareMessage(
 }
 
 /**
- * The top-up section's state (copy only; no money logic, rule 7). `fee` shows
+ * The top-up line's state (copy only; no money logic, rule 7). `fee` shows
  * the Free per-order fee line: never on active Pro, never before the USD
  * switch. `status` is the days line, from the order lock (`currentOrderLock`):
  * a top-up in review, the store already offline, the days until it goes
@@ -215,8 +223,44 @@ export function welcomeWallet(input: { lock: OrderLock; usdLive: boolean; isPro:
   return { fee, status: { kind: "locked" } };
 }
 
-/** "You're ready": the home's four setup steps (the progress bar) are all done. */
-export function welcomeReady(flags: StoreSetupFlags): boolean {
-  const { done, total } = welcomeProgress(flags);
-  return done === total;
+/**
+ * The top-up line under the steps: what it says and where its button goes.
+ * Null when there is nothing to ask (activated, or before the USD switch). A
+ * top-up in review has no button. An offline store's button carries the
+ * "bring your store back online" notice (docs/seller-top-up-rules.md §4).
+ */
+export type WelcomeTopUpLine =
+  | { kind: "review"; href: null }
+  | { kind: "offlineNow" | "locked"; href: string }
+  | { kind: "offlineIn"; days: number; href: string };
+
+export const WELCOME_TOP_UP_HREF = "/wallet?topup=1";
+
+export function welcomeTopUpLine(status: WelcomeWalletStatus): WelcomeTopUpLine | null {
+  switch (status.kind) {
+    case "none":
+    case "activated":
+      return null;
+    case "review":
+      return { kind: "review", href: null };
+    case "offlineNow":
+      return { kind: "offlineNow", href: TOP_UP_TO_GO_ONLINE_HREF };
+    case "offlineIn":
+      return { kind: "offlineIn", days: status.days, href: WELCOME_TOP_UP_HREF };
+    case "locked":
+      return { kind: "locked", href: WELCOME_TOP_UP_HREF };
+  }
+}
+
+/**
+ * What shows under the steps about the store being live: the "store is live"
+ * card once it is published (never while billing holds it offline: the top-up
+ * line says so instead); one line to the Website page when the theme and the
+ * product are done but the store is still offline (the seller switched it
+ * off); else nothing.
+ */
+export function welcomeLiveState(input: { flags: StoreSetupFlags; themesAvailable: boolean; wallet: WelcomeWalletStatus }): "live" | "offline" | "none" {
+  if (input.wallet.kind === "offlineNow") return "none";
+  if (input.flags.publish) return "live";
+  return input.flags.product && (input.flags.template || !input.themesAvailable) ? "offline" : "none";
 }
