@@ -26,7 +26,7 @@ Owner request, 2026-11-17. This file is the single source for **what** tutorials
 | Duration | **28–35 s** target. Hard limits 20–40 s |
 | Sound | **A calm Egyptian voiceover** (§5.1), quiet simple sound effects (§5.2), **no music** |
 | Language | Arabic interface and Arabic step captions (the dashboard's default locale); the voiceover is Egyptian Arabic |
-| Codec | H.264 High, `yuv420p`, CRF 18, `-movflags +faststart`; AAC 48 kHz stereo 192 kbps |
+| Codec | H.264 High, `yuv420p`, CRF 18, `-movflags +faststart`; AAC 48 kHz stereo (192k encoder setting) |
 | File | `.mp4`, under 45 MB |
 
 ## 3. Screen: full-screen mobile, no small mockup
@@ -41,6 +41,7 @@ The owner's rule: the screen must be **clear**, so the dashboard fills the whole
   - bottom 420 px: nothing important (title, channel, subscribe)
   - right 160 px: nothing important (like, comment, share)
   - Scroll or zoom the page so each step's target sits between **y 240 and y 1180**.
+  - **A button fixed to the bottom of the page** (a save or publish bar) sits under the Shorts buttons. For the step that uses it, lift the whole screen so the button sits near y 1090, then bring the screen back. This is the only time the dashboard may not fill the frame; keep it under 3 s.
 
 ## 4. One design system for every video
 
@@ -50,24 +51,26 @@ Every tutorial uses the same kit, kept in `Tutorial Videos/_kit/` and imported b
 |---|---|
 | Colours | Teal `#145163`, gold `#fdad28`, off-white `#fafaf8`, white. Nothing else in overlays |
 | Fonts | Noto Kufi Arabic (Arabic), Montserrat (Latin and digits) |
-| **Title card** (0–2 s) | Teal full frame, white logo at top, the task as the title (72–96 px bold, at most 2 lines), small gold label "شرح سريع". It is also frame 0, so it is the YouTube thumbnail |
-| **Step caption** | One card, centred on x = 540, bottom edge at y 1460, 860 px wide, teal `#145163` at 94% opacity, 28 px radius. Gold circle with the step number on the right, white text 50–56 px semi-bold, at most 2 lines and about 7 words |
+| **Title card** (from 0 s) | Teal full frame, white logo at top, the task as the title (72–96 px bold, at most 2 lines), small gold label "شرح سريع". It is also frame 0, so it is the YouTube thumbnail |
+| **Step caption** | One card, centred on x = 540, bottom edge at y 1460, 860 px wide, teal `#145163` at 94% opacity, 28 px radius. The card's edge may reach into the right 160 px zone, but the number circle and the text end at x 920. Gold circle with the step number on the right, white text 50–56 px semi-bold, at most 2 lines and about 7 words |
 | **Step progress** | A row of small dots above the caption card: gold for the current step, white 40% for the others |
 | **Tap marker** | Gold ring, 96 px, 6 px stroke, with one soft ripple (400 ms). Shown on every tap, 300 ms before the screen reacts |
 | **Typing** | Text appears letter group by letter group with a caret; Arabic is rendered by the browser, never drawn letter by letter |
-| **Highlight** | A 6 px gold outline with 16 px radius around the field or button the step is about |
+| **Highlight** | A 6 px gold outline around the field or button the step is about, with 16 px radius or the element's own radius when that is larger |
 | **Step change** | One transition for all videos: a 350 ms slide plus blur. Scrolls inside a page use ease-in-out |
-| **Result card** | When the task is done: the real success state of the page, plus a white check in a gold circle for 1.5 s |
+| **Result card** | When the task is done: the real success state of the page, plus a white check in a gold circle (168 px) for 1.5 s, on the corner of the element that proves the result |
 | **End card** (last 2.5–3 s) | Teal full frame, white logo, the line "جرّبها الآن من لوحة التحكم" and the page's path as breadcrumbs (for example "المنتجات ‹ إضافة منتج") |
 
 **Timeline (same for every video):**
 
 | Time | Beat |
 |---|---|
-| 0–2 s | Title card |
-| 2–26 s | 3 to 5 numbered steps, 4–6 s each. One action per step |
-| 26–29 s | The result on the real page |
-| 29–31 s | End card |
+| 0 to about 4 s | Title card, for as long as the opening sentence lasts (at least 2 s) |
+| then | 3 to 5 numbered steps, 4–6 s each (up to 7 s when the step's sentence needs it). One action per step |
+| about 3 s | The result on the real page, until the closing sentence ends |
+| last 2.5–3 s | End card, nothing spoken |
+
+T-01 runs: title 0–4.2 s, steps 4.2–28.4 s, result 28.4–31.7 s, end card 31.7–34.3 s.
 
 **Caption wording:** short, plain Arabic that every seller understands, with neutral verbs: اضغط، اكتب، اختر، أضف، احفظ، انشر. Use the page's own button names in the caption ("اضغط «حفظ»"). Use the owner's word choices: جنيه، الهاتف، التاجر. Read every caption against the banned words list in the marketing rules §1 before rendering.
 
@@ -175,7 +178,8 @@ This is for the voice only. Text on screen keeps the dashboard's own words (for 
 
 - Cut the take at its sentence pauses. Each sentence goes on its own beat: the opening on the title card, each step's sentence 0.3 s after its caption appears, the closing on the result.
 - **The video follows the voice.** If a sentence is longer than its step, make the step longer (up to 7 s) or shorten the sentence. Never speed up or stretch the voice.
-- Leave at least 0.4 s of quiet between sentences. Nothing is spoken over the end card.
+- Leave at least 0.4 s of quiet between sentences. Nothing is spoken over the end card: the closing sentence ends before it starts.
+- Every cut sits inside a pause of the take, never inside a word. `build.mjs` stops with a message when a cut is inside speech or a sentence does not fit its beat.
 - The step captions stay on screen: the video must still be fully clear with the sound off.
 
 **Checking a take before using it**
@@ -214,7 +218,8 @@ This is for the voice only. Text on screen keeps the dashboard's own words (for 
 
 - The voice is in front and always clear; the effects sit at least 15 dB under it and are never raised to compete with it. No music.
 - Whole video: about **-16 LUFS** integrated (between -18 and -14), true peak at most **-1.5 dBTP**. Check with `ffmpeg -af ebur128=peak=true`.
-- The kit's `build.mjs` and `finish.mjs` were written before the voiceover: they place only the effects and check the effects-only loudness. They are updated when the voice is added to the pilot.
+- **Method:** one fixed gain on the whole take (the same for every sentence) plus a light peak limiter. `build.mjs` refuses a take that would need more than 6 dB of limiting; fix the take instead of pushing it.
+- The kit does this: a video's `video.mjs` declares a `voice` block (the take and where each sentence starts and ends in it), `build.mjs` places and mixes it, and `finish.mjs` checks the numbers. T-01 measures -16.1 LUFS and -2.2 dBTP, with the effects 20 dB under the voice.
 
 ## 6. Where the files go
 
@@ -314,7 +319,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 
 | ID | Video (the task) | Dashboard path | Steps to show | Status |
 |---|---|---|---|---|
-| T-01 | Add a product | `/stores/[storeId]/products/add` | Photos → name and price → category → publish → the product in the list | todo |
+| T-01 | Add a product | `/stores/[storeId]/products/add` | Choose "إضافة يدويًا" → name and short description → photos → category → price and publish → the product in the list | draft (pilot: rendered with voice, 34.3 s; waiting for the owner's approval and a production check) |
 | T-02 | Add a product with AI | `/stores/[storeId]/products/add` (AI card) | Choose "with AI" → add photos → the fields fill in Arabic and English → review → publish | todo |
 | T-03 | Add many products from a file | `/stores/[storeId]/products/add/from-file` | Upload the file → check the rows → import → the products list | todo |
 | T-04 | Choose your store's template | `/stores/[storeId]/website/templates` | Open Templates → preview one → choose it | todo |
@@ -397,3 +402,4 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | 2026-11-17 | — | File created; 50 topics listed from the dashboard routes; no video made yet |
 | 2026-11-17 | T-01 | Pilot rendered without a voice; sounds made simpler and quieter (owner) |
 | 2026-11-17 | — | Voiceover plan added (§5.1): owner chose the Hanafi voice from nine test takes; the pilot does not have the voice yet |
+| 2026-11-17 | T-01 | Approved script generated with Hanafi (transcript matched word for word); kit now places and mixes a voice; pilot retimed to the voice and re-rendered: 34.3 s, -16.1 LUFS, -2.2 dBTP. Not yet listened to by a person |

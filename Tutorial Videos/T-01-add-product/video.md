@@ -5,7 +5,8 @@ feature: Add a product
 roadmap: "§2.1 Products"
 dashboard_path: /stores/[storeId]/products/add
 status: draft
-duration_seconds: 31.8
+duration_seconds: 34.3
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation TUi2SwSBiJtLQK9TuU8m"
 made_on: 2026-11-17
 youtube_url:
 youtube_title_ar: "طريقة إضافة منتج جديد لمتجرك على طلبي #Shorts"
@@ -14,18 +15,24 @@ youtube_title_en: "How to add a product to your Tallaby store #Shorts"
 
 ## Steps shown
 
-| Time | Step | What happens on screen |
-|---|---|---|
-| 0–2.0 s | Title card | "إضافة منتج جديد", label "شرح سريع" |
-| 2.0–6.0 s | 1. اختر «إضافة يدويًا» | The page "كيف تريد إضافة منتجك؟" scrolls to the fourth card; tap "إضافة يدويًا"; the form "منتج جديد" opens |
-| 6.0–11.8 s | 2. اكتب اسم المنتج ووصفه المختصر | Tap "اسم المنتج" and type "كوب سيراميك يدوي" (the product link appears under it); tap "الوصف المختصر" and type one line |
-| 11.8–16.0 s | 3. أضف صور المنتج | Tap "اسحب الصور هنا أو انقر للرفع"; three photos upload; the first is "الغلاف" |
-| 16.0–21.0 s | 4. اختر الفئة | Tap "الفئة"; the sheet "اختر الفئة" opens; tap "أكواب ومجّات" under "فئات متجرك" |
-| 21.0–26.2 s | 5. اكتب السعر ثم اضغط «نشر» | Tap "سعر المنتج" and type 299; the bar says "جاهز للنشر" at 100%; tap "نشر"; the button shows "جارٍ النشر…" |
-| 26.2–29.0 s | Result | The products list with the new product first, the message "تم إنشاء المنتج بنجاح!" and the gold check |
-| 29.0–31.8 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ إضافة منتج" |
+| Time | Step | What happens on screen | Voice |
+|---|---|---|---|
+| 0–4.2 s | Title card | "إضافة منتج جديد", label "شرح سريع" | 0.30–3.82 s «عايز تضيف منتج جديد على طلبي؟ الموضوع بسيط.» |
+| 4.2–8.2 s | 1. اختر «إضافة يدويًا» | The page "كيف تريد إضافة منتجك؟" scrolls to the fourth card; tap "إضافة يدويًا"; the form "منتج جديد" opens | 4.50–7.15 s «واحد: اختار إضافة يدويًا.» |
+| 8.2–14.0 s | 2. اكتب اسم المنتج ووصفه المختصر | Tap "اسم المنتج" and type "كوب سيراميك يدوي" (the product link appears under it); tap "الوصف المختصر" and type one line | 8.50–12.31 s «اتنين: اكتب اسم المنتج، ووصف قصير عنه.» |
+| 14.0–18.2 s | 3. أضف صور المنتج | Tap "اسحب الصور هنا أو انقر للرفع"; three photos upload; the first is "الغلاف" | 14.30–16.64 s «تلاتة: ضيف صور المنتج.» |
+| 18.2–23.2 s | 4. اختر الفئة | Tap "الفئة"; the sheet "اختر الفئة" opens; tap "أكواب ومجّات" under "فئات متجرك" | 18.50–20.38 s «أربعة: اختار الفئة.» |
+| 23.2–28.4 s | 5. اكتب السعر ثم اضغط «نشر» | Tap "سعر المنتج" and type 299; the bar says "جاهز للنشر" at 100%; tap "نشر"; the button shows "جارٍ النشر…" | 23.50–26.36 s «خمسة: اكتب السعر، واضغط نشر.» |
+| 28.4–31.7 s | Result | The products list with the new product first, the message "تم إنشاء المنتج بنجاح!" and the gold check | 28.70–31.40 s «وكده منتجك بقى معروض في متجرك.» |
+| 31.7–34.3 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ إضافة منتج" | Nothing is spoken |
 
 The bar at the bottom counts down as on the real page: 29% "5 حقول مطلوبة متبقية" → 43% → 57% → 71% "حقلان مطلوبان متبقيان" → 86% "حقل مطلوب متبقٍ" → 100% "جاهز للنشر".
+
+## Voiceover script (with diacritics, exactly as generated)
+
+عايز تِضيف مُنتَج جديد على طَلَبي؟ الموضوع بسيط. واحد: اختار إضافة يَدَوِيًّا. اتنين: اكتِب اسم المُنتَج، ووَصف قُصيَّر عنه. تلاتة: ضيف صُوَر المُنتَج. أربعة: اختار الفِئة. خمسة: اكتِب السِّعر، واضغَط نَشر. وكده مُنتَجَك بقى مَعروض في مَتجَرَك.
+
+Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, generation `TUi2SwSBiJtLQK9TuU8m`. The take is `work/vo/take.mp3` (19.76 s), cut at its sentence pauses and placed one sentence per beat; it is not sped up or stretched. The take was transcribed and matched the script word for word, but **nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 
@@ -67,6 +74,8 @@ https://tallaby.com
 
 **Fictional data:** store "متجر نور"; products "كوب سيراميك يدوي" 299 جنيه, "طبق تقديم سيراميك" 450 جنيه, "مزهرية سيراميك" 320 جنيه, "شمعة عطرية" 180 جنيه; categories "أكواب ومجّات", "أطباق وصحون", "ديكور المنزل", "شموع ومعطرات", "هدايا"; wallet "≈ 270 جنيه". Product pictures are drawn shapes, not photos.
 
-**Not checked:** the page was read in the code, not opened on production. Do that before changing `status` to `ready`. The sounds were made simpler and quieter on 2026-11-17 (owner); the new mix was measured (-36.3 LUFS, -18 dBTP), not listened to.
+**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2.2 dBTP; the voice alone -16.1 LUFS, the sounds alone -36.3 LUFS and -18 dBFS (20 dB under the voice). One gain (+10.3 dB) is applied to the whole take; a limiter with a -2.5 dBFS ceiling touches 0.09% of its samples (4.7 dB on the tallest peak).
+
+**Not checked:** the page was read in the code, not opened on production. Do that before changing `status` to `ready`. The sound was measured, not listened to.
 
 **Rebuild:** `node "Tutorial Videos/_kit/build.mjs" "Tutorial Videos/T-01-add-product"`, render in `work/`, then `node "Tutorial Videos/_kit/finish.mjs" "Tutorial Videos/T-01-add-product"` (see `_kit/README.md`).

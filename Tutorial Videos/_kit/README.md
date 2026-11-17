@@ -8,7 +8,7 @@ Everything every Tallaby tutorial video shares. The rules are in [`../TUTORIALS.
 |---|---|
 | `kit.css` | The overlays, in video pixels (1080×1920): colour and font tokens, title card, step caption card and progress dots, tap marker, highlight outline, typing caret, result check, end card |
 | `kit.js` | The runtime. Reads the video's script and builds one timeline: step changes (350 ms slide plus blur), taps, typing, highlights, scrolls, zooms, the result check, the end card |
-| `build.mjs` | Builds a video's HyperFrames project from its script and page, and places the sounds |
+| `build.mjs` | Builds a video's HyperFrames project from its script and page, places the sounds, and cuts and places the voiceover |
 | `finish.mjs` | Turns the render into `video.mp4`, `poster.jpg` and review stills, and checks the format and loudness |
 | `dashboard/dashboard.css` | The seller dashboard's look at phone width (tokens, top bar, buttons, fields, section card, switch, toast), copied from `apps/dashboard` |
 | `dashboard/topbar.html` | The dashboard's top bar on a phone |
@@ -25,7 +25,7 @@ You need Node 22+, `ffmpeg` and `ffprobe` on PATH, and `pnpm install` done in th
    - `screen.html`: the dashboard page, rebuilt from the real components at 390×693 CSS px. Each page is a `<section class="tk-screen db-page">`. `<!-- @kit topbar -->` puts the top bar in. `<i data-lucide="tag"></i>` becomes the real Lucide icon.
    - `screen.css`: only this page's layout. Shared pieces come from `dashboard/dashboard.css`.
    - `video.mjs`: the script (below).
-3. **Build:** `node "Tutorial Videos/_kit/build.mjs" "Tutorial Videos/T-xx-slug"`. It stops with a message if the script breaks a rule (3 to 5 steps, 4–6 s a step, caption length, Latin digits, end card length, every tap followed by a reaction 0.3 s later).
+3. **Build:** `node "Tutorial Videos/_kit/build.mjs" "Tutorial Videos/T-xx-slug"`. It stops with a message if the script breaks a rule (3 to 5 steps, 4–6 s a step or up to 7 s with a voice, caption length, Latin digits, end card length, every tap followed by a reaction 0.3 s later, every spoken sentence fitting its beat).
 4. **Check and look**, inside `work/`: `npx hyperframes check` (0 errors), then `npx hyperframes snapshot --at 0,5,10` and read the pictures.
 5. **Render:** `npx hyperframes render --quality delivery --crf 18 --fps 30 --output renders/raw.mp4`.
 6. **Finish:** `node "Tutorial Videos/_kit/finish.mjs" "Tutorial Videos/T-xx-slug"`. It writes `video.mp4`, `poster.jpg` and `work/stills/`, and prints the numbers of TUTORIALS.md §10. Look at every still.
@@ -43,9 +43,12 @@ export default {
   checkAt: 27.25,  // the gold check, for 1.5 s
   checkOn: "#new-product", // optional: put the check on this element's corner
   endAt: 29.0,     // end card
+  voice: { /* the voiceover, see "Voiceover" below */ },
   events: [ /* what happens on the page, see below */ ],
 };
 ```
+
+The title card lasts until the first step's `at`. Give it more than 2 s when the opening line needs it.
 
 Times are seconds. Events can be in any order. Positions are never typed: the kit measures the element on the page at that moment.
 
@@ -65,9 +68,43 @@ Times are seconds. Events can be in any order. Positions are never typed: the ki
 
 The title card, the caption card, the dots, the result check, the end card and all five sounds are added by the kit from `steps`, `checkAt` and `endAt`. A video never adds its own.
 
+## Voiceover
+
+Put the approved take in `work/` (for example `work/vo/take.mp3`) and say where each sentence is in it, in seconds. Find the pauses with `ffmpeg -i take.mp3 -af silencedetect=noise=-35dB:d=0.12 -f null -` and cut inside them.
+
+```js
+voice: {
+  src: "vo/take.mp3",
+  opening: { from: 0, to: 3.52 },      // spoken over the title card
+  steps: [{ from: 3.52, to: 6.17 }, /* one per step, in order */],
+  closing: { from: 17.06, to: 19.76 }, // spoken over the result
+},
+```
+
+`build.mjs` places the opening at 0.3 s, each step's sentence 0.3 s after that step's `at`, and the closing 0.3 s after `resultAt`. It never speeds up, stretches or trims the voice. It stops with a message when:
+
+- a sentence ends less than 0.4 s before the next one starts (start the next beat later, or shorten the sentence);
+- the closing ends after `endAt` (nothing is spoken over the end card);
+- a cut is inside speech instead of a pause;
+- the take's peaks are so tall that reaching the loudness would need more than 6 dB of limiting.
+
+One gain is applied to the whole take, so every sentence has the same level. The gain is chosen so the video measures about -16 LUFS. A limiter with a -2.5 dBFS ceiling catches only the tallest peaks; the build prints how many samples it touched. To set the gain by hand, add `gainDb` to the `voice` block.
+
+With a voice, the build also writes `assets/voice-mix.wav` (voice alone), `assets/audio-mix.wav` (voice + sounds, the video's sound) and `voice-cues.json` (where each sentence landed, the gap after it, the gain and the measured loudness). A video without a `voice` block builds exactly as before, with `assets/sfx-mix.wav` as its sound. A voice needs `ffmpeg` on PATH at build time.
+
 ## Sounds
 
-`python sfx/make_sfx.py` makes the five files again (no packages needed). Each sound's peak is set in `PEAK_DB` at the top of that file. The sounds are simple and quiet on purpose (owner, 2026-11-17): one plain soft tone each. With these values T-01 measures -36.3 LUFS and -18 dBTP; TUTORIALS.md §5 asks for at most -28 LUFS and at most -16 dBTP, and `finish.mjs` checks both. After changing a sound, run `build.mjs` and `finish.mjs` again for each video; the picture does not need a new render.
+`python sfx/make_sfx.py` makes the five files again (no packages needed). Each sound's peak is set in `PEAK_DB` at the top of that file. The sounds are quiet on purpose and are never raised to compete with the voice.
+
+## What `finish.mjs` checks
+
+| | With a voice | Sounds only |
+|---|---|---|
+| Loudness of the video | -18 to -14 LUFS | at most -28 LUFS |
+| True peak | at most -1.5 dBTP | at most -16 dBTP |
+| Sounds alone | peak at most -16 dBFS, and at least 15 dB under the voice | — |
+
+Both also check the size, frame rate, codecs, duration (20–40 s, target 28–35 s), file size and faststart. T-01 with its voice measures -16.1 LUFS and -2.2 dBTP; its sounds alone -36.3 LUFS and -18 dBFS.
 
 ## Good to know
 

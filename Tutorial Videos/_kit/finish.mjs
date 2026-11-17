@@ -10,6 +10,8 @@
  *   <video>/poster.jpg    frame 0 (the title card)
  *   <video>/work/stills/  one still per moment a reviewer must look at
  * Prints the TUTORIALS.md section 10 numbers and exits 1 if one is out of range.
+ * A video with a `voice` block is checked as a voiced mix (-18 to -14 LUFS, peak at most -1.5 dBTP,
+ * sounds at least 15 dB under the voice); one without is checked as quiet sounds only.
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, openSync, readSync, closeSync, rmSync, statSync } from "node:fs";
@@ -28,10 +30,17 @@ const out = join(videoDir, "video.mp4");
 const run = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 
 // The picture is copied as rendered; the sound comes straight from the kit mix, not from the render's low-bitrate track.
+const hasVoice = Boolean(video.voice);
+const soundFile = join(work, "assets", hasVoice ? "audio-mix.wav" : "sfx-mix.wav");
+if (!existsSync(soundFile)) {
+  console.error(`Sound not found: ${soundFile}
+Run build.mjs first.`);
+  process.exit(1);
+}
 run("ffmpeg", [
   "-y", "-v", "error",
   "-i", raw,
-  "-i", join(work, "assets", "sfx-mix.wav"),
+  "-i", soundFile,
   "-map", "0:v:0", "-map", "1:a:0",
   "-c:v", "copy",
   "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
@@ -46,6 +55,7 @@ const stills = join(work, "stills");
 rmSync(stills, { recursive: true, force: true });
 mkdirSync(stills, { recursive: true });
 const shots = [["00-title", 0]];
+if (video.steps[0].at > 2.5) shots.push(["00-title-late", video.steps[0].at - 0.5]); // a long title card: look at it near its end too
 video.steps.forEach((step, i) => {
   const end = video.steps[i + 1]?.at ?? video.resultAt;
   shots.push([`${String(i + 1).padStart(2, "0")}-step-${i + 1}`, (step.at + end) / 2]);
@@ -65,10 +75,14 @@ for (const [name, t] of shots) {
 const probe = JSON.parse(run("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", out]));
 const v = probe.streams.find((s) => s.codec_type === "video");
 const a = probe.streams.find((s) => s.codec_type === "audio");
-const loud = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", out, "-af", "ebur128=peak=true", "-f", "null", "-"], { encoding: "utf8" }).stderr;
-const summary = loud.slice(loud.lastIndexOf("Summary:"));
-const lufs = Number(summary.match(/I:\s+(-?[\d.]+) LUFS/)?.[1]);
-const peak = Number(summary.match(/Peak:\s+(-?[\d.]+) dBFS/)?.[1]);
+function loudness(file) {
+  const log = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", file, "-af", "ebur128=peak=true", "-f", "null", "-"], { encoding: "utf8" }).stderr;
+  const summary = log.slice(log.lastIndexOf("Summary:"));
+  return { lufs: Number(summary.match(/I:\s+(-?[\d.]+) LUFS/)?.[1]), peak: Number(summary.match(/Peak:\s+(-?[\d.]+) dBFS/)?.[1]) };
+}
+const { lufs, peak } = loudness(out);
+const voiceOnly = hasVoice ? loudness(join(work, "assets", "voice-mix.wav")) : null;
+const soundsOnly = loudness(join(work, "assets", "sfx-mix.wav"));
 
 // faststart = the "moov" box comes before "mdat".
 const head = Buffer.alloc(1 << 16);
@@ -87,15 +101,25 @@ const rows = [
   ["video", `${v.codec_name} ${v.profile} ${v.pix_fmt}`, v.codec_name === "h264" && v.profile === "High" && v.pix_fmt === "yuv420p"],
   ["audio", `${a.codec_name} ${a.sample_rate} Hz ${a.channels} ch ${Math.round(a.bit_rate / 1000)} kbps`, a.codec_name === "aac" && a.sample_rate === "48000" && a.channels === 2],
   ["duration", `${duration.toFixed(2)} s`, duration >= 20 && duration <= 40],
-  ["target 28-32 s", duration >= 28 && duration <= 32 ? "yes" : "no", duration >= 28 && duration <= 32],
+  ["target 28-35 s", duration >= 28 && duration <= 35 ? "yes" : "no", duration >= 28 && duration <= 35],
   ["file size", `${sizeMb.toFixed(2)} MB`, sizeMb < 45],
   ["faststart", faststart ? "yes" : "no", faststart],
-  ["loudness", `${lufs} LUFS (quiet: at most -28)`, lufs <= -28],
-  ["true peak", `${peak} dBTP (at most -16)`, peak <= -16],
+  ...(hasVoice
+    ? [
+        ["loudness", `${lufs} LUFS (about -16: -18 to -14)`, lufs >= -18 && lufs <= -14],
+        ["true peak", `${peak} dBTP (at most -1.5)`, peak <= -1.5],
+        ["voice alone", `${voiceOnly.lufs} LUFS, peak ${voiceOnly.peak} dBFS`, true],
+        ["sounds alone", `${soundsOnly.lufs} LUFS, peak ${soundsOnly.peak} dBFS (peak at most -16)`, soundsOnly.peak <= -16],
+        ["sounds under voice", `${(voiceOnly.lufs - soundsOnly.lufs).toFixed(1)} dB (at least 15)`, voiceOnly.lufs - soundsOnly.lufs >= 15],
+      ]
+    : [
+        ["loudness", `${lufs} LUFS (quiet: at most -28)`, lufs <= -28],
+        ["true peak", `${peak} dBTP (at most -16)`, peak <= -16],
+      ]),
 ];
 let failed = false;
 for (const [name, value, ok] of rows) {
-  console.log(`${ok ? "ok  " : "FAIL"}  ${name.padEnd(16)} ${value}`);
+  console.log(`${ok ? "ok  " : "FAIL"}  ${name.padEnd(18)} ${value}`);
   if (!ok) failed = true;
 }
 console.log(`\n${out}\n${join(videoDir, "poster.jpg")}\n${stills} (${shots.length} stills: look at every one)`);
