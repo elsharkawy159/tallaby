@@ -332,7 +332,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | T-04 | Choose your store's template | `/stores/[storeId]/website/templates` | Open Templates → preview one → «استخدام القالب» → confirm (goes to the drafts) | draft |
 | T-05 | Edit your website and publish | `/stores/[storeId]/website` | Open the editor → tap the title, «تعديل» → type → pick a photo from the library → «نشر» | draft |
 | T-06 | Set your shipping prices | `/stores/[storeId]/shipping` | Add a delivery area → name it → pick governorates → set the price and save | draft |
-| T-07 | Choose your payment methods | `/stores/[storeId]/settings/payments` | Turn a method on → add its details → save | todo |
+| T-07 | Choose your payment methods | `/stores/[storeId]/settings/payments` | «إعداد» on a method → its receiving details → holder name → «حفظ وتفعيل» | draft |
 | T-08 | Top up your wallet | `/wallet/top-up` | Enter the amount → pay → the new balance | todo |
 | T-09 | Follow and confirm an order | `/orders` | Open an order → confirm it → change its stage | todo |
 | T-10 | Connect an AI assistant to your store (MCP) | `/stores/[storeId]/apps` › AI assistants | Open the app → copy the link → approve the connection → ask the assistant to add a product | todo |
