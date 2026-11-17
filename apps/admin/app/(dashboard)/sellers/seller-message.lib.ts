@@ -2,9 +2,10 @@ import { toWhatsAppNumber } from "@workspace/ui/lib/contact";
 
 /**
  * The WhatsApp message Admin sends a seller from the sellers list and the
- * seller page (owner, 2026-11-08), in the seller's dialect. Since 2026-11-16
- * it is one short line (see `COPY`); it never asks for money. Pure: the facts
- * come from seller-message.server.ts.
+ * seller page (owner, 2026-11-08), in the seller's dialect. Since 2026-11-17
+ * it is three short lines (see `COPY`): a greeting for the time of day in
+ * Cairo, who is writing, and the follow-up sentence; it never asks for money.
+ * Pure: the facts come from seller-message.server.ts, and the time from `now`.
  */
 
 /** Where the seller stopped: the first open setup step, or "ready" when both are done. */
@@ -110,29 +111,77 @@ export function sellerMessageActivation(facts: {
 /** The first word of the owner's name, else null. */
 export const firstName = (name: string | null | undefined): string | null => name?.trim().split(/\s+/)[0] || null;
 
+/** Who the message is from (owner, 2026-11-17). */
+const SENDER_NAME = "عمر";
+
+const CAIRO_HOUR = new Intl.DateTimeFormat("en-US", { timeZone: "Africa/Cairo", hour: "numeric", hourCycle: "h23" });
+
 /**
- * Owner, 2026-11-16: one short line, as simple as possible, the same for every
- * seller whatever step they're at. Egypt uses the owner's own words.
+ * The greeting for the time of day in Cairo, whatever the server's timezone
+ * (owner, 2026-11-17): before 12:00 noon "صباح الخير", from 12:00 on "مساء الخير".
  */
-const COPY: Record<MessageDialect, string> = {
-  eg: "صباح الخير يا فندم، حضرتك سجلت في طلبي، بتابع معاك لو محتاج أي مساعدة.",
-  sa: "صباح الخير، سجّلت معنا في طلبي، وأتابع معك إذا احتجت أي مساعدة.",
-  gulf: "صباح الخير، سجّلت معنا في طلبي، وأتابع معك إذا احتجت أي مساعدة.",
-  levant: "صباح الخير، سجّلت عنا بطلبي، وعم تابع معك إذا بدك أي مساعدة.",
-  msa: "صباح الخير، لقد سجّلت في طلبي، وأتابع معك إن احتجت أي مساعدة.",
+export function messageGreeting(now: Date): string {
+  const hour = Number(CAIRO_HOUR.formatToParts(now).find((part) => part.type === "hour")?.value);
+  return hour < 12 ? "صباح الخير" : "مساء الخير";
+}
+
+type MessageCopy = {
+  /** Added after the greeting on the first line. */
+  greetingSuffix: string;
+  /** Who is writing. */
+  intro: string;
+  /** The follow-up sentence. */
+  followUp: string;
+};
+
+/**
+ * Owner, 2026-11-17: three short lines (greeting, who is writing, follow-up),
+ * as simple as possible, the same for every seller whatever step they're at
+ * (one line from 2026-11-16 until then). Egypt uses the owner's own words.
+ */
+const COPY: Record<MessageDialect, MessageCopy> = {
+  eg: {
+    greetingSuffix: " يا فندم",
+    intro: `مع حضرتك ${SENDER_NAME} من منصة طلبي`,
+    followUp: "حضرتك سجلت معانا، وبتابع معاك لو محتاج أي مساعدة.",
+  },
+  sa: {
+    greetingSuffix: "",
+    intro: `معك ${SENDER_NAME} من منصة طلبي`,
+    followUp: "سجّلت معنا، وأتابع معك إذا احتجت أي مساعدة.",
+  },
+  gulf: {
+    greetingSuffix: "",
+    intro: `معك ${SENDER_NAME} من منصة طلبي`,
+    followUp: "سجّلت معنا، وأتابع معك إذا احتجت أي مساعدة.",
+  },
+  levant: {
+    greetingSuffix: "",
+    intro: `معك ${SENDER_NAME} من منصة طلبي`,
+    followUp: "سجّلت عنا، وعم تابع معك إذا بدك أي مساعدة.",
+  },
+  msa: {
+    greetingSuffix: "",
+    intro: `معك ${SENDER_NAME} من منصة طلبي`,
+    followUp: "لقد سجّلت معنا، وأتابع معك إن احتجت أي مساعدة.",
+  },
 };
 
 export type SellerMessageInput = {
   dialect: MessageDialect;
-  /** Kept for callers; the one-line message doesn't use them (owner, 2026-11-16). */
+  /** Kept for callers; the message doesn't use them (owner, 2026-11-16). */
   ownerName: string | null;
   storeName: string;
   storeLink: string | null;
   step: SellerMessageStep;
   activation: SellerActivation;
+  /** The moment the message is built, for the greeting; defaults to now. */
+  now?: Date;
 };
 
-/** The message: one line in the seller's dialect. */
+/** The message: three lines in the seller's dialect, greeting by the time of day in Cairo. */
 export function buildSellerWhatsAppMessage(input: SellerMessageInput): string {
-  return COPY[input.dialect];
+  const copy = COPY[input.dialect];
+  const greeting = messageGreeting(input.now ?? new Date());
+  return [`${greeting}${copy.greetingSuffix}`, copy.intro, copy.followUp].join("\n");
 }
