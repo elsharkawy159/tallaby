@@ -326,9 +326,9 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | ID | Video (the task) | Dashboard path | Steps to show | Status |
 |---|---|---|---|---|
 | T-01 | Add a product | `/stores/[storeId]/products/add` | Choose "إضافة يدويًا" → name and short description → photos → category → price and publish → the product in the list | ready (pilot, 34.3 s; look and voice approved by the owner 2026-11-17; the page still needs a check on production before upload) |
-| T-02 | Add a product with AI | `/stores/[storeId]/products/add` (AI card) | Choose "with AI" → add photos → the fields fill in Arabic and English → review → publish | todo |
-| T-03 | Add products from a file | `/stores/[storeId]/products/add/from-file` | Upload the file → check the rows → import → the products list | todo |
-| T-51 | Add a product from a link | `/stores/[storeId]/products/add` (link option) | Choose "from a link" → paste the product's link → the fields and photos fill in → review → publish | todo |
+| T-02 | Add a product with AI | `/stores/[storeId]/products/add` (AI card) | Choose "with AI" → add photos → the fields fill in Arabic and English → review → publish | draft (34.9 s, voice done; waiting for the owner to listen and a production check) |
+| T-03 | Add products from a file | `/stores/[storeId]/products/add/from-file` | Upload the file → check the rows → import → the products list | draft (34.3 s, voice done; waiting for the owner to listen and a production check) |
+| T-51 | Add a product from a link | `/stores/[storeId]/products/add` (link option) | Choose "from a link" → paste the product's link → the fields and photos fill in → review → publish | draft (34.0 s, voice done; waiting for the owner to listen and a production check) |
 | T-04 | Choose your store's template | `/stores/[storeId]/website/templates` | Open Templates → preview one → choose it | todo |
 | T-05 | Edit your website and publish | `/stores/[storeId]/website` | Open the editor → change a title and a photo → Publish | todo |
 | T-06 | Set your shipping prices | `/stores/[storeId]/shipping` | Add an area → set the price → save | todo |
@@ -413,3 +413,4 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | 2026-11-17 | — | Owner: the voiceover stays formal with no laughing (§5.1); one video for each of the four ways to add a product, so T-51 "Add a product from a link" was added (51 topics) |
 | 2026-11-17 | T-01 | Owner heard a laugh on "الموضوع بسيط" in two takes. Opening changed to a plain statement ("هنضيف منتج جديد على طلبي، في خمس خطوات بسيطة."), rule added to §5.1, third take generated and placed. Waiting for the owner to listen |
 | 2026-11-17 | T-01 | Owner approved the pilot (look, sounds, voice). Wave 1 started with the other three add-product videos: T-02, T-51, T-03 |
+| 2026-11-17 | T-02, T-51, T-03 | Built with the kit and the Hanafi voice (one take each, 280 + 261 + 271 credits; transcripts match). All four add-product videos depend on the method chooser (`ROADMAP.md` F-71), whose roadmap status still reads "Built, not deployed": confirm on production before uploading any of them |
