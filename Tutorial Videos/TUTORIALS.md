@@ -121,7 +121,7 @@ Every script has the same three parts, so all tutorials sound like one series:
 
 **Diacritics (تشكيل), so no word changes its meaning**
 
-- Add diacritics **only where a word can be read two ways or is often misread**; a fully marked script sounds stiff and formal. If a marked word comes out wrong or too formal in the take, change the marking, not the voice settings.
+- **Full تشكيل on every word** of the text sent to ElevenLabs (owner, 2026-11-18: "so voiceover be 100% correct"): a vowel on each letter, shadda and sukun included, marked the way an Egyptian speaker says it (هَنْضِيف، اِضْغَط، مُنْتَجَك), never MSA case endings. The table below lists words the voice got wrong before; it is a check list, not the only words to mark. If a marked word still comes out wrong or too formal in the take, change the marking, not the voice settings. (Videos made before 2026-11-18 used marks only on hard words; they stay as approved.)
 - **طَلَبي is always written with its diacritics** in every script.
 - Always written this way in scripts (add to this list whenever a take misreads a word):
 
