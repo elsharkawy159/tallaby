@@ -4,7 +4,7 @@ Short "how to do it" videos for sellers, one video per dashboard feature. Each v
 
 Owner request, 2026-11-17. This file is the single source for **what** tutorials exist and **how** every one of them looks and sounds.
 
-**How this differs from the marketing videos.** Marketing videos follow [`TALLABY_VIDEO_RULES.md`](../.claude/skills/brag-slim/TALLABY_VIDEO_RULES.md) (voiceover, music, phone mockup, hook, CTA). Tutorials follow **this file**. Where the two conflict, this file wins for tutorials. Still shared, unchanged, from the marketing rules:
+**How this differs from the marketing videos.** Marketing videos follow [`TALLABY_VIDEO_RULES.md`](../.claude/skills/brag-slim/TALLABY_VIDEO_RULES.md) (music, phone mockup, hook, CTA, the Tamer voice). Tutorials follow **this file**. Where the two conflict, this file wins for tutorials. Still shared, unchanged, from the marketing rules:
 
 - §1 facts and brand: colours, fonts, logo, Latin digits, no real data on screen, the banned words list, only finished features.
 - §5 "Arabic must be perfect" and "Show the real product".
@@ -23,9 +23,9 @@ Owner request, 2026-11-17. This file is the single source for **what** tutorials
 | Setting | Value |
 |---|---|
 | Size | **9:16, 1080×1920**, 30 fps |
-| Duration | **28–32 s** target. Hard limits 20–40 s |
-| Sound | **No voiceover, no music.** Simple sound effects only (§5) |
-| Language | Arabic interface and Arabic step captions (the dashboard's default locale) |
+| Duration | **28–35 s** target. Hard limits 20–40 s |
+| Sound | **A calm Egyptian voiceover** (§5.1), quiet simple sound effects (§5.2), **no music** |
+| Language | Arabic interface and Arabic step captions (the dashboard's default locale); the voiceover is Egyptian Arabic |
 | Codec | H.264 High, `yuv420p`, CRF 18, `-movflags +faststart`; AAC 48 kHz stereo 192 kbps |
 | File | `.mp4`, under 45 MB |
 
@@ -71,9 +71,132 @@ Every tutorial uses the same kit, kept in `Tutorial Videos/_kit/` and imported b
 
 **Caption wording:** short, plain Arabic that every seller understands, with neutral verbs: اضغط، اكتب، اختر، أضف، احفظ، انشر. Use the page's own button names in the caption ("اضغط «حفظ»"). Use the owner's word choices: جنيه، الهاتف، التاجر. Read every caption against the banned words list in the marketing rules §1 before rendering.
 
-## 5. Sound: simple effects only
+## 5. Sound: a calm voiceover, quiet effects, no music
 
-- **No voiceover and no music** (owner, 2026-11-17).
+Owner, 2026-11-17: every tutorial has a simple, calm, human-sounding voiceover in Egyptian Arabic. The sound effects stay simple and quiet under it. There is never music.
+
+### 5.1 Voiceover plan
+
+**The voice (same in every tutorial)**
+
+| Setting | Value |
+|---|---|
+| Voice | **Hanafi – Educational – Egyptian** (ElevenLabs), `voice_id: DWMVT5WflKt0P8OPpIrY`. Chosen by the owner on 2026-11-17 from nine test takes (`T-01-add-product/work/vo-tests/`) |
+| Model | `eleven_v4`, the connector's default voice settings. Never raise style, expressiveness or speed |
+| Tags | None. No `[excited]`, `[calm]` or any other tag; pauses come from punctuation only |
+| Takes | One generation of the whole script. Generate again only when the take fails the checks below, after fixing the script |
+| If Hanafi is unavailable | Stop and ask the owner. Do not switch voice on your own, and never use a non-Egyptian voice |
+
+This voice is for tutorials only. Marketing videos keep their own voice (Tamer).
+
+**How the script is built**
+
+Every script has the same three parts, so all tutorials sound like one series:
+
+1. **Opening** (over the title card): one short question or sentence that names the task, then "الموضوع بسيط." or a similar calm line. Say **طَلَبي** here when it fits naturally.
+2. **Steps:** one sentence per step, starting with its number as a word: "واحد:", "اتنين:", "تلاتة:", "أربعة:", "خمسة:". The sentence says the same action as the step's caption on screen.
+3. **Closing** (over the result): one sentence that says what the seller now has. No call to action, no "tallaby.com".
+
+**Length:** 40–55 words, about 220–300 characters, which Hanafi reads in about 17–22 seconds. Longer scripts drift in tone.
+
+**Writing rules**
+
+- **Egyptian Arabic, simple and polite**, the way a helpful colleague explains something: عايز، اختار، ضيف، اكتب، دلوقتي، كده، بقى. No Modern Standard words (سوف، الآن، يمكنك، هذا) and no Gulf or Levantine words (أبغى، الحين، كذا، شلون، هالـ).
+- **Anybody must understand it.** Sentences of 3–8 words, one action each. No technical terms without a plain word beside them. Call things by the name written on the button or field.
+- **Clear, polite verbs with the thing named after them:** ضيف منتجك، اكتب الاسم، اختار الفئة، اضغط نشر، دخّل البيانات، افتح الصفحة، ارفع الصور، فعّل الخيار، احفظ التغييرات، راجع البيانات، شارك الرابط.
+- **Numbers are written as Egyptians say them:** واحد، اتنين، تلاتة، تلاتمية جنيه. Never digits in the script.
+
+**Words that are never said (double meanings)**
+
+- Owner's list, 2026-11-17: ادخلو، ادخلهولك، احطهولك، هتحطه، اديك، اديهولك، تديهوله.
+- The whole list in the marketing rules §1 also applies (حطه، حطها، دخّله، دخّلها، طلّعه، نزّله، ركّبه، خدها، اديها، كبّرها، حرّكها، and questions built on "فين؟").
+- **The rule behind the lists:** never an instruction verb with a pronoun stuck to it (ـه، ـها، ـهولك، ـهوله). Always say the verb and then name the thing: "ضيف المنتج", "دخّل البيانات". Do not use the verbs حطّ and ادّى at all; use ضيف، اكتب، ابعت، شارك.
+- Read the finished script once only for this, before generating.
+
+**Diacritics (تشكيل), so no word changes its meaning**
+
+- Add diacritics **only where a word can be read two ways or is often misread**; a fully marked script sounds stiff and formal. If a marked word comes out wrong or too formal in the take, change the marking, not the voice settings.
+- **طَلَبي is always written with its diacritics** in every script.
+- Always written this way in scripts (add to this list whenever a take misreads a word):
+
+| Write | So it is not read as | Meaning |
+|---|---|---|
+| طَلَبي | — | the brand name |
+| مُنتَج | مُنتِج (producer) | product |
+| صُوَر | صَوَّر (he photographed) | photos |
+| سِعر | سَعَّر (he priced) | price |
+| نَشر | نَشَرَ (he published) | the Publish button |
+| اكتِب | أَكتُب (I write) | write |
+| اضغَط | ضَغط (pressure) | press |
+| ضيف | ضَيف (guest); write "ضِيف" if a take misreads it | add |
+| فِئة | — | category |
+| طَلَب / طَلَبات | طَلَبَ (he asked) | order / orders |
+| مَتجَر | — | store |
+| مَحفَظة | — | wallet |
+| شَحن | — | shipping, or topping up |
+| خَصم | خِصم (opponent) | discount |
+| عَرض | عُرض (width) | offer |
+| كَمّية | — | quantity |
+| حِفظ | — | the Save button |
+| رَصيد | — | balance |
+| عُملة | عَمَلة | currency |
+| يَدَوِيًّا | — | by hand (the "إضافة يدويًا" choice) |
+
+**English words are written in Arabic letters**, so the voice says them clearly. The voice never reads Latin letters.
+
+| English | In the script |
+|---|---|
+| Domain | دومين |
+| Pixel | بيكسِل |
+| Coupon | كوبون |
+| Link | لينك |
+| Email | إيميل |
+| SEO | إس إي أو |
+| AI | إيه آي |
+| MCP | إم سي بي |
+| PDF | بي دي إف |
+| Excel | إكسِل |
+| Pro | برو |
+| WhatsApp | واتساب |
+| InstaPay | إنستا باي |
+| Vodafone Cash | فودافون كاش |
+| Kashier | كاشير |
+| Bosta | بوسطة |
+| Meta | ميتا |
+| TikTok | تيك توك |
+| Google | جوجل |
+| YouTube | يوتيوب |
+| Shopify | شوبيفاي |
+| tallaby.com | طَلَبي دوت كوم |
+
+This is for the voice only. Text on screen keeps the dashboard's own words (for example "النطاق" on the page while the voice says "دومين").
+
+**Placing the voice on the video**
+
+- Cut the take at its sentence pauses. Each sentence goes on its own beat: the opening on the title card, each step's sentence 0.3 s after its caption appears, the closing on the result.
+- **The video follows the voice.** If a sentence is longer than its step, make the step longer (up to 7 s) or shorten the sentence. Never speed up or stretch the voice.
+- Leave at least 0.4 s of quiet between sentences. Nothing is spoken over the end card.
+- The step captions stay on screen: the video must still be fully clear with the sound off.
+
+**Checking a take before using it**
+
+- Transcribe it (`creative_transcribe_audio`) and compare it with the script word for word.
+- Check that طلبي, every word in the diacritics table and every English word came out right, and that no Gulf or formal word replaced an Egyptian one.
+- A take that fails is not patched: fix the script's spelling, diacritics or punctuation and generate again.
+- The model cannot hear the take. For each new video the owner, or someone who can listen, confirms the voice sounds calm and natural before the video's status becomes `ready`.
+
+**Reference script: T-01 "Add a product"** (the pattern every script follows)
+
+> عايز تِضيف مُنتَج جديد على طَلَبي؟ الموضوع بسيط.
+> واحد: اختار إضافة يَدَوِيًّا.
+> اتنين: اكتِب اسم المُنتَج، ووَصف قُصيَّر عنه.
+> تلاتة: ضيف صُوَر المُنتَج.
+> أربعة: اختار الفِئة.
+> خمسة: اكتِب السِّعر، واضغَط نَشر.
+> وكده مُنتَجَك بقى مَعروض في مَتجَرَك.
+
+### 5.2 Sound effects
+
 - One fixed set of sounds, generated once into `_kit/sfx/` and reused by every video, so all tutorials sound the same:
 
 | Sound | When |
@@ -85,7 +208,13 @@ Every tutorial uses the same kit, kept in `Tutorial Videos/_kit/` and imported b
 | `success` | The result card |
 
 - **Simple, low volume, not bold** (owner, 2026-11-17): each sound is one plain soft tone (the whoosh is a faint breath of air). No layered notes, no clicks or noise bursts, no chimes that draw attention.
-- All effects have a 5–10 ms fade-in and no harsh highs. Peak at most **-16 dBTP**; the whole video at most **-28 LUFS** (T-01 measures -36.3 LUFS, -18 dBTP). The video must work fully with the sound off.
+- All effects have a 5–10 ms fade-in and no harsh highs. On their own they peak at most **-16 dBTP** (T-01's effects alone measure -36.3 LUFS, -18 dBTP).
+
+### 5.3 Mix
+
+- The voice is in front and always clear; the effects sit at least 15 dB under it and are never raised to compete with it. No music.
+- Whole video: about **-16 LUFS** integrated (between -18 and -14), true peak at most **-1.5 dBTP**. Check with `ffmpeg -af ebur128=peak=true`.
+- The kit's `build.mjs` and `finish.mjs` were written before the voiceover: they place only the effects and check the effects-only loudness. They are updated when the voice is added to the pilot.
 
 ## 6. Where the files go
 
@@ -115,6 +244,7 @@ roadmap: "§2.1 Products"
 dashboard_path: /stores/[storeId]/products/add
 status: draft | ready | uploaded | outdated
 duration_seconds: 30
+voice: Hanafi (DWMVT5WflKt0P8OPpIrY), eleven_v4
 made_on: 2026-11-17
 youtube_url:
 youtube_title_ar:
@@ -123,6 +253,9 @@ youtube_title_en:
 
 ## Steps shown
 1. …
+
+## Voiceover script (with diacritics, exactly as generated)
+…
 
 ## YouTube description (Arabic)
 …
@@ -163,7 +296,9 @@ Source files checked, fictional data used, anything that differs from the real p
 - [ ] Each step's target and the caption are inside the safe area (§3); nothing important under the Shorts buttons.
 - [ ] Overlays come from `_kit/` unchanged: same caption card, tap marker, transition, title and end cards.
 - [ ] Arabic shaping is correct in every still; Latin digits only; no banned words.
-- [ ] No voiceover, no music; only the five kit sounds; loudness and peak within §5.
+- [ ] Voiceover follows §5.1: Hanafi, `eleven_v4`, no tags; the transcript matches the script word for word; طلبي and every marked or English word pronounced right; none of the never-said words; each sentence on its own step, never sped up.
+- [ ] No music; only the five kit sounds, quiet under the voice; loudness and peak within §5.3.
+- [ ] Someone who can listen has confirmed the voice sounds calm and natural.
 - [ ] Only fictional data on screen; the feature is live on production.
 - [ ] `video.md` is complete; frame 0 is the title card and reads as a thumbnail.
 
@@ -260,3 +395,5 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | Date | ID | What happened |
 |---|---|---|
 | 2026-11-17 | — | File created; 50 topics listed from the dashboard routes; no video made yet |
+| 2026-11-17 | T-01 | Pilot rendered without a voice; sounds made simpler and quieter (owner) |
+| 2026-11-17 | — | Voiceover plan added (§5.1): owner chose the Hanafi voice from nine test takes; the pilot does not have the voice yet |

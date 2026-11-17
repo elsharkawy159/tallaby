@@ -1347,7 +1347,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **Status:** planned. Rules and 50 topics written 2026-11-17 in [`Tutorial Videos/TUTORIALS.md`](Tutorial%20Videos/TUTORIALS.md); no video made and no button built yet.
 - **Why:** a seller on a feature page should be able to watch, in about 30 seconds, how to use it, without leaving the dashboard.
-- **Rules (owner):** one video per feature, about 30 s, YouTube Shorts (9:16), no voiceover, simple sound effects only, the dashboard's mobile screen filling the whole video (no small phone mockup), one design system across all videos, every video in its own folder under `Tutorial Videos/` with a `video.md` (caption, duration, feature, dashboard path).
+- **Rules (owner):** one video per feature, about 30 s, YouTube Shorts (9:16), a calm Egyptian voiceover (first asked without one; changed the same day, Hanafi voice chosen from nine test takes), quiet simple sound effects, no music, the dashboard's mobile screen filling the whole video (no small phone mockup), one design system across all videos, every video in its own folder under `Tutorial Videos/` with a `video.md` (caption, duration, feature, dashboard path).
 - **F-97a · P1 · deps: —** Shared video kit (`Tutorial Videos/_kit/`: overlays, sounds, title and end cards) and the pilot video T-01 "Add a product"; owner approves the look before the rest are made.
 - **F-97b · P1 · deps: F-97a** Wave 1 videos T-02 … T-10 (add with AI, from a file, template, editor, shipping, payments, top-up, orders, MCP).
 - **F-97c · P2 · deps: F-97a** Waves 2–6 videos T-11 … T-50.
@@ -1884,6 +1884,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - **Asked:** one YouTube Short per feature (about 30 s, no voiceover, simple sound effects, full-screen mobile screen, one design system), each in its own folder with a details file, and a button on each dashboard feature page that opens the video.
 - **Done:** `Tutorial Videos/TUTORIALS.md` written: format, full-screen rule, the shared design kit, sounds, folder layout, the `video.md` template, YouTube and QA rules, and 50 topics in six waves with their dashboard paths. F-97 added (§3, §4, §5, §6). CLAUDE.md rule 18 now points tutorials to that file.
 - **Not done:** no video, no kit and no dashboard button yet. The topic paths were taken from the dashboard routes and are not yet checked page by page or on production; each is checked when its video is made.
+- **Later the same day:** kit and pilot T-01 built and committed (`6119be29`); sounds made simpler and quieter; the owner then asked for a calm Egyptian voiceover and chose the Hanafi voice from nine test takes. The voiceover plan (voice, script pattern, diacritics, English words in Arabic letters, never-said words, mix) is in `TUTORIALS.md` §5.1; the pilot does not have the voice yet.
 - **No migration, no code change.**
 
 ### 2026-11-17 — Admin bell: paid top-ups and referral sign-ups (F-96, owner request)
