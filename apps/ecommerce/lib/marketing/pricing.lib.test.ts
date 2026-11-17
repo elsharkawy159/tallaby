@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MARKETING_MAX_SHOWN_USD_CENTS, quoteTopUp } from "@workspace/lib/billing";
-import { ORDER_GRACE_DAYS } from "@workspace/lib/billing/order-grace";
+import { ORDER_GRACE_DAYS_SHORT } from "@workspace/lib/billing/order-grace";
 import { estimatePlans, fillPriceTokens, formatEgp, formatUsd, marketingPriceVars, PRICE_TOKENS, stripBidiIsolates, orderFee, PLAN_PRICES, priceVarsWith, proBreakEvenOrders, proBreakEvenOrdersShown, suggestedPrice, usdCentsToEgp } from "./pricing.lib";
 
 describe("PLAN_PRICES", () => {
@@ -40,10 +40,10 @@ describe("marketingPriceVars", () => {
     expect(fillPriceTokens("{orderFee} · {other}", { orderFee: "≈ 1.50 EGP" })).toBe("≈ 1.50 EGP · {other}");
   });
 
-  it("fills {days} from ORDER_GRACE_DAYS everywhere, never as a price token", () => {
-    expect(PRICE_TOKENS.days).toBe(String(ORDER_GRACE_DAYS));
-    expect(fillPriceTokens("{days} · {topUpMin}", {})).toBe(`${ORDER_GRACE_DAYS} · {topUpMin}`);
-    expect(marketingPriceVars(50, "en").days).toBe(String(ORDER_GRACE_DAYS));
+  it("fills {days} from ORDER_GRACE_DAYS_SHORT everywhere, never as a price token", () => {
+    expect(PRICE_TOKENS.days).toBe(String(ORDER_GRACE_DAYS_SHORT));
+    expect(fillPriceTokens("{days} · {topUpMin}", {})).toBe(`${ORDER_GRACE_DAYS_SHORT} · {topUpMin}`);
+    expect(marketingPriceVars(50, "en").days).toBe(String(ORDER_GRACE_DAYS_SHORT));
   });
 });
 

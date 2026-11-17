@@ -10,7 +10,7 @@ import {
   TOP_UP_MIN_USD_CENTS,
   usdCentsToPiastres,
 } from "@workspace/lib/billing";
-import { ORDER_GRACE_DAYS } from "@workspace/lib/billing/order-grace";
+import { ORDER_GRACE_DAYS_SHORT } from "@workspace/lib/billing/order-grace";
 import { PLANS } from "@workspace/lib/plans";
 
 /**
@@ -130,7 +130,7 @@ export const PRICE_NAMES: readonly PriceName[] = [
 
 /** The ICU values every tallaby.com string with a price takes: `{orderFee}`, `{pro}`, `{topUpMin}`, … */
 export type MarketingPriceVars = Record<PriceName, string> & {
-  /** Not a price: the days a Free seller has for a first top-up before new orders hide (F-84, `ORDER_GRACE_DAYS`). */
+  /** Not a price: the days a new Free seller has for a first top-up before every store goes offline (F-84i, `ORDER_GRACE_DAYS_SHORT`). */
   days: string;
   /** Not a price: the cost example's orders a month (`COST_EXAMPLE_ORDERS`). */
   costOrders: string;
@@ -138,9 +138,10 @@ export type MarketingPriceVars = Record<PriceName, string> & {
 
 /**
  * Non-price values the copy can use, filled wherever price tokens are:
- * `{days}` is the grace window (`ORDER_GRACE_DAYS`), never written in the copy.
+ * `{days}` is a new seller's trial (`ORDER_GRACE_DAYS_SHORT`), never written in the copy.
+ * Sellers from before 2026-11-16 keep `ORDER_GRACE_DAYS`, which the dashboard shows them.
  */
-export const COPY_VARS = { days: String(ORDER_GRACE_DAYS), costOrders: COST_EXAMPLE_ORDERS.toLocaleString("en-US") } as const;
+export const COPY_VARS = { days: String(ORDER_GRACE_DAYS_SHORT), costOrders: COST_EXAMPLE_ORDERS.toLocaleString("en-US") } as const;
 
 /** A competitor price in USD cents for the visitor-currency formatter, or null when it shows as published (EGP, percent). */
 export function competitorPriceUsdCents(price: Pick<CompetitorPrice, "minor" | "currency">): number | null {

@@ -20,7 +20,7 @@
       "freeTagline": "For starting out and growing.",
       "perOrder": "per order",
       "freeNote": "no monthly fee",
-      "freeActivation": "Your store takes orders from day one. Make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns.",
+      "freeActivation": "Your store takes orders from day one. Top up from {topUpMin} within {days} days to see your orders and keep your store online.",
       "freeCta": "Start free",
       "proTagline": "For stores with steady orders.",
       "perMonth": "per month",
@@ -473,8 +473,8 @@
       "desc": "These come out of your store wallet, which you top up in Egyptian pounds.",
       "descOutsideEgypt": "These come out of your store wallet, which you top up by card in US dollars.",
       "topUpTitle": "Wallet top-ups",
-      "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the Free plan, make your first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns.",
-      "topUpBodyOutsideEgypt": "From {topUpMin} to {topUpMax}, paid by card in USD. On the Free plan, make your first top-up within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns.",
+      "topUpBody": "From {topUpMin} to {topUpMax}, paid in EGP. On the Free plan, make your first top-up within {days} days to see your orders, send campaigns and keep your store online.",
+      "topUpBodyOutsideEgypt": "From {topUpMin} to {topUpMax}, paid by card in USD. On the Free plan, make your first top-up within {days} days to see your orders, send campaigns and keep your store online.",
       "appsTitle": "Apps",
       "appsBody": "Some apps have a small cost, shown in your dashboard before you turn them on. One is Order Notifications, which sends customer order emails. It's optional and set per store.",
       "emailsTitle": "Extra campaign emails",
@@ -501,7 +501,7 @@
         },
         {
           "q": "Is the free plan completely free?",
-          "a": "There's no subscription and no card to start, and your store takes orders from day one. Make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns; then {orderFee} per order comes out of your wallet."
+          "a": "There's no subscription and no card to start, and your store takes orders from day one. Make a first top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online; then {orderFee} per order comes out of your wallet."
         },
         {
           "q": "When is Pro worth it?",

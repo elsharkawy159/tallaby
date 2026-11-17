@@ -140,7 +140,7 @@
       },
       "activation": {
         "label": "Activation",
-        "tallaby": "Orders from day one. A first top-up from {topUpMin} within {days} days, or at your first order, whichever comes first, keeps new orders visible"
+        "tallaby": "Orders from day one. A first top-up from {topUpMin} within {days} days shows your orders and keeps your store online"
       },
       "limits": {
         "label": "Product and order limits",
@@ -382,7 +382,7 @@
       },
       "try": {
         "q": "Can I try Tallaby before closing my current store?",
-        "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders."
+        "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days to see your orders and keep your store online."
       },
       "methods": {
         "q": "What payment and shipping options does Tallaby have?",
@@ -437,7 +437,7 @@
       "cons": [
         "No landing-page funnels or installments yet",
         "Plans are priced in US dollars (shown in approximate pounds)",
-        "A first wallet top-up is needed to keep seeing new orders"
+        "A first wallet top-up is needed to see your orders and keep your store online"
       ]
     },
     "bestFor": "Best for:",
@@ -450,7 +450,7 @@
     "faq": {
       "free": {
         "q": "Can I start on Tallaby without a monthly fee?",
-        "a": "Yes. The Free plan has no monthly subscription: you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days or at your first order, whichever comes first, to keep seeing new orders."
+        "a": "Yes. The Free plan has no monthly subscription: you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days to see your orders and keep your store online."
       },
       "how": {
         "q": "How did you put this list together?",

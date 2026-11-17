@@ -178,7 +178,7 @@
       "items": [
         {
           "q": "What does an order cost on the free plan?",
-          "a": "{orderFee} per order, with no monthly fee and no percentage of sales. Make a first top-up from {topUpMin} within {days} days or when your first order arrives, whichever comes first, to keep seeing new orders and send campaigns."
+          "a": "{orderFee} per order, with no monthly fee and no percentage of sales. Make a first top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online."
         },
         {
           "q": "When is Pro worth it?",

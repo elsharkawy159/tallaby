@@ -102,7 +102,7 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
       { id: "monthly", tallaby: "y" }, // PRO_MONTHLY_USD_CENTS
       { id: "orderFee", tallaby: "y" }, // Free pays per order, Pro doesn't
       { id: "salesShare", tallaby: "y" }, // flat fee, no % of the order value
-      { id: "activation", tallaby: "p" }, // F-84 grace window, ORDER_GRACE_DAYS + TOP_UP_MIN
+      { id: "activation", tallaby: "p" }, // F-84i trial, ORDER_GRACE_DAYS_SHORT + TOP_UP_MIN
       { id: "yearly", tallaby: "n" }, // Pro is billed monthly from the wallet only (PRO_MONTHLY_USD_CENTS)
       { id: "trial", tallaby: "n" }, // no trial since 0119; Free itself has no monthly fee
       { id: "gatewayFees", tallaby: "y" }, // the seller's own Paymob/Kashier (F-39): no Tallaby fee on top

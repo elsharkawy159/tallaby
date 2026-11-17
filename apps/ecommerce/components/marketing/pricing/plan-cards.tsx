@@ -25,9 +25,9 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
   const t = await getTranslations("pricing.plans");
   const { free, pro } = PLAN_PRICES;
 
-  // F-84: stores take orders from day one; the first top-up keeps new orders
-  // visible after the grace window and unlocks campaigns. EGP at the live rate.
-  // `{days}` (ORDER_GRACE_DAYS) comes with PRICE_TOKENS.
+  // F-84i: stores take orders from day one; orders stay hidden until the first
+  // top-up, and every store goes offline when the trial days end without one.
+  // EGP at the live rate. `{days}` (ORDER_GRACE_DAYS_SHORT) comes with PRICE_TOKENS.
   const activation = withPrices(t("freeActivation", PRICE_TOKENS));
 
   const cards = [
