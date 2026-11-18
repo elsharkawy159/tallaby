@@ -122,6 +122,8 @@ Every script has the same three parts, so all tutorials sound like one series:
 **Diacritics (تشكيل), so no word changes its meaning**
 
 - **Full تشكيل on every word** of the text sent to ElevenLabs (owner, 2026-11-18: "so voiceover be 100% correct"): a vowel on each letter, shadda and sukun included, marked the way an Egyptian speaker says it (هَنْضِيف، اِضْغَط، مُنْتَجَك), never MSA case endings. The table below lists words the voice got wrong before; it is a check list, not the only words to mark. If a marked word still comes out wrong or too formal in the take, change the marking, not the voice settings. (Videos made before 2026-11-18 used marks only on hard words; they stay as approved.)
+- **Gulf drift (owner, 2026-11-18, T-13 and T-15).** Two full-تشكيل takes sounded Gulf. Keep scripts Egyptian: avoid words with ق when an everyday Egyptian word exists (حَقْل → خَانَة، قِسْم → جُزْء، قِطْعَة → leave out or say the number), since the voice can say ق as a Gulf "g" or formal "q" where an Egyptian says a glottal stop; write "and" as the Egyptian وِ, never وَ; prefer Egyptian phrasing (اللِّي إِنْتَ عَايْزُه). The screen keeps the dashboard's words.
+- **ج is always the Egyptian "g" (geim), never "j" (owner, 2026-11-18).** In the text sent to ElevenLabs, write every ج as گ (مُنْتَگ، مَتْگَرَك، گَدْوَل، رَاگِع، اِرْگَع، گَنْب، الإِنْگِلِيزِي). The owner compared both spellings in `_kit/vo-tests/geem/` and only گ came out as "g". The transcript may show گ or ج; both count as a match. Only the voice text changes: the script in `video.md` shows the text exactly as generated (with گ), and the screen keeps ج.
 - **طَلَبي is always written with its diacritics** in every script.
 - Always written this way in scripts (add to this list whenever a take misreads a word):
 
@@ -341,13 +343,13 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 
 | ID | Video (the task) | Dashboard path | Steps to show | Status |
 |---|---|---|---|---|
-| T-11 | Add sizes and colours | product form › المخزون والأنواع | «+ المقاس» → pick sizes → add «اللون» and colours → stock + «تطبيق على الكل» → «حفظ» | draft |
-| T-12 | Main and sub-categories | `/stores/[storeId]/products/categories` | «إضافة فئة» (main) → again with «الفئة الرئيسية» → the sub-category → pick it in the product form → «حفظ» | draft (take made before the full-تشكيل rule) |
-| T-13 | Update stock quickly | `/stores/[storeId]/products/inventory` | «السجل» under a product → type the units that arrived → «إضافة» → the new row in the stock history | draft |
-| T-14 | Restore a deleted product | `/stores/[storeId]/products/trash` | Menu › المنتجات › «سلة المحذوفات» → tick the product → «استرجاع» → back to the products list | draft |
-| T-15 | Ask the customer for details on a product | product form › مطلوب من العميل | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page | draft (take made before the full-تشكيل rule) |
-| T-16 | Add a size chart | `/stores/[storeId]/apps` › جدول المقاسات | «ثبّت» → «تثبيت» → new chart from the «تيشيرتات وقمصان» template → «حفظ الجدول» → «طبّقه على» a category → «اعرف مقاسك» on the product | draft (take made before the full-تشكيل rule) |
-| T-17 | Quantity offers | product edit page › عروض الكمية | Scroll to the section → «أضف شريحة» → the discount → a second tier → «احفظ العروض» → the offers in the store buy box | draft (full تشكيل) |
+| T-11 | Add sizes and colours | product form › المخزون والأنواع | «+ المقاس» → pick sizes → add «اللون» and colours → stock + «تطبيق على الكل» → «حفظ» | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
+| T-12 | Main and sub-categories | `/stores/[storeId]/products/categories` | «إضافة فئة» (main) → again with «الفئة الرئيسية» → the sub-category → pick it in the product form → «حفظ» | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
+| T-13 | Update stock quickly | `/stores/[storeId]/products/inventory` | «السجل» under a product → type the units that arrived → «إضافة» → the new row in the stock history | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
+| T-14 | Restore a deleted product | `/stores/[storeId]/products/trash` | Menu › المنتجات › «سلة المحذوفات» → tick the product → «استرجاع» → back to the products list | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
+| T-15 | Ask the customer for details on a product | product form › مطلوب من العميل | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
+| T-16 | Add a size chart | `/stores/[storeId]/apps` › جدول المقاسات | «ثبّت» → «تثبيت» → new chart from the «تيشيرتات وقمصان» template → «حفظ الجدول» → «طبّقه على» a category → «اعرف مقاسك» on the product | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
+| T-17 | Quantity offers | product edit page › عروض الكمية | Scroll to the section → «أضف شريحة» → the discount → a second tier → «احفظ العروض» → the offers in the store buy box | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
 | T-52 | Cross-sell offers | product form (cross-sell) + `/orders/cross-sell` report | Search a product to offer → type and value → «إضافة» → the offer on the product page and in the cart | todo (split from T-17, 2026-11-18) |
 
 ### Wave 3 — orders and customers

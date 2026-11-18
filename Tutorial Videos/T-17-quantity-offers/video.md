@@ -6,7 +6,7 @@ roadmap: "F-07a–c Quantity offers (product form + store buy box)"
 dashboard_path: /stores/[storeId]/products/[productId]/edit (card "عروض الكمية" under the form; edit page only)
 status: draft
 duration_seconds: 33.2
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation u3fNDZNvuD91x2kIIioD"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation LY3ntk1hZLBBfuB3YVcq"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "عروض الكمية على منتجك في طلبي #Shorts"
@@ -19,20 +19,22 @@ The video starts on a product that is already being edited ("فازة سيرام
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–5.4 s | Title card | "عروض الكمية على منتجك", label "شرح سريع" | 0.30–5.00 s «هَنْضِيف عُرُوض كَمِّيَّة عَلَى مُنْتَجَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة.» |
-| 5.4–9.6 s | 1. انزل إلى «عروض الكمية» | The page scrolls down to the card "عروض الكمية" (title, description, "أضف شريحة", "احفظ العروض"; the card "يُشترى مع هذا المنتج" below it); the card is highlighted | 5.70–8.65 s «وَاحِد: اِنْزِل لِقِسْم عُرُوض الكَمِّيَّة.» |
-| 9.6–13.8 s | 2. اضغط «أضف شريحة» | Tap "أضف شريحة": a tier row appears with the code's defaults (quantity 2, "نسبة", 10, switch on, trash); the row is highlighted | 9.90–12.84 s «اِتْنِين: اِضْغَط أَضِف شَرِيحَة.» |
-| 13.8–18.0 s | 3. اكتب نسبة الخصم | Tap the discount field, type 15 (10 → 15) | 14.10–16.44 s «تَلَاتَة: اِكْتِب نِسْبِة الخَصْم.» |
-| 18.0–22.4 s | 4. أضف شريحة لكمية أكبر | Scroll; tap "أضف شريحة" again: the next row is the code's default (quantity 3, "نسبة", 25) | 18.30–21.64 s «أَرْبَعَة: ضِيف شَرِيحَة تَانْيَة لِكَمِّيَّة أَكْبَر.» |
-| 22.4–26.6 s | 5. اضغط «احفظ العروض» | Scroll the card's own button to y ≈ 900; tap "احفظ العروض"; toast "تم حفظ العروض" | 22.70–25.41 s «خَمْسَة: اِضْغَط اِحْفَظ العُرُوض.» |
-| 26.6–30.6 s | Result | The customer's product page on "متجر نور": "اشترِ أكثر ووفّر أكثر" with "اشترِ قطعة واحدة · 200 جنيه للقطعة", "اشترِ قطعتين · وفّر 15% · 170 جنيه للقطعة", "اشترِ 3 قطع · وفّر 25% · 150 جنيه للقطعة"; the customer taps "اشترِ قطعتين", the row is selected and the quantity goes 1 → 2; gold check on the offers | 26.90–30.00 s «وِكِدَه العَمِيل هَيْشُوف العُرُوض فِي صَفْحِة المُنْتَج.» |
+| 0–5.4 s | Title card | "عروض الكمية على منتجك", label "شرح سريع" | 0.30–4.66 s «هَنْضِيف عُرُوض كَمِّيَّة عَلَى مُنْتَگَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة.» |
+| 5.4–9.6 s | 1. انزل إلى «عروض الكمية» | The page scrolls down to the card "عروض الكمية" (title, description, "أضف شريحة", "احفظ العروض"; the card "يُشترى مع هذا المنتج" below it); the card is highlighted | 5.70–8.41 s «وَاحِد: اِنْزِل لِگُزْء عُرُوض الكَمِّيَّة.» |
+| 9.6–13.8 s | 2. اضغط «أضف شريحة» | Tap "أضف شريحة": a tier row appears with the code's defaults (quantity 2, "نسبة", 10, switch on, trash); the row is highlighted | 9.90–12.46 s «اِتْنِين: اِضْغَط أَضِف شَرِيحَة.» |
+| 13.8–18 s | 3. اكتب نسبة الخصم | Tap the discount field, type 15 (10 → 15) | 14.10–16.23 s «تَلَاتَة: اِكْتِب نِسْبِة الخَصْم.» |
+| 18–22.4 s | 4. أضف شريحة لكمية أكبر | Scroll; tap "أضف شريحة" again: the next row is the code's default (quantity 3, "نسبة", 25) | 18.30–21.34 s «أَرْبَعَة: ضِيف شَرِيحَة تَانْيَة لِكَمِّيَّة أَكْبَر.» |
+| 22.4–26.6 s | 5. اضغط «احفظ العروض» | Scroll the card's own button to y ≈ 900; tap "احفظ العروض"; toast "تم حفظ العروض" | 22.70–25.27 s «خَمْسَة: اِضْغَط اِحْفَظ العُرُوض.» |
+| 26.6–30.6 s | Result | The customer's product page on "متجر نور": "اشترِ أكثر ووفّر أكثر" with "اشترِ قطعة واحدة · 200 جنيه للقطعة", "اشترِ قطعتين · وفّر 15% · 170 جنيه للقطعة", "اشترِ 3 قطع · وفّر 25% · 150 جنيه للقطعة"; the customer taps "اشترِ قطعتين", the row is selected and the quantity goes 1 → 2; gold check on the offers | 26.90–29.64 s «وِكِدَه العَمِيل هَيْشُوف العُرُوض فِي صَفْحِة المُنْتَگ.» |
 | 30.6–33.2 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ تعديل المنتج" | Nothing is spoken |
 
-## Voiceover script (with diacritics, exactly as generated)
+## Voiceover script (full تشكيل, exactly as generated)
 
-هَنْضِيف عُرُوض كَمِّيَّة عَلَى مُنْتَجَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة. وَاحِد: اِنْزِل لِقِسْم عُرُوض الكَمِّيَّة. اِتْنِين: اِضْغَط أَضِف شَرِيحَة. تَلَاتَة: اِكْتِب نِسْبِة الخَصْم. أَرْبَعَة: ضِيف شَرِيحَة تَانْيَة لِكَمِّيَّة أَكْبَر. خَمْسَة: اِضْغَط اِحْفَظ العُرُوض. وِكِدَه العَمِيل هَيْشُوف العُرُوض فِي صَفْحِة المُنْتَج.
+هَنْضِيف عُرُوض كَمِّيَّة عَلَى مُنْتَگَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة. وَاحِد: اِنْزِل لِگُزْء عُرُوض الكَمِّيَّة. اِتْنِين: اِضْغَط أَضِف شَرِيحَة. تَلَاتَة: اِكْتِب نِسْبِة الخَصْم. أَرْبَعَة: ضِيف شَرِيحَة تَانْيَة لِكَمِّيَّة أَكْبَر. خَمْسَة: اِضْغَط اِحْفَظ العُرُوض. وِكِدَه العَمِيل هَيْشُوف العُرُوض فِي صَفْحِة المُنْتَگ.
 
-41 words, full تشكيل (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`u3fNDZNvuD91x2kIIioD`, 343 credits, ElevenLabs flow `VvUudYNOZImfAaoZaFei`). The take is `work/vo/take.mp3` (22.08 s), cut inside its pauses at 4.7, 7.65, 10.59, 12.93, 16.27 and 18.98 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`, 41 words) matched the script word for word, with no laugh marker; it returned the script's diacritics, so it may lean on the text. Step 2 says the button's own name «أَضِف شَرِيحَة»; step 4 uses the Egyptian «ضِيف». **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "طَلَبي", "كَمِّيَّة", "شَرِيحَة" and "الخَصْم" sound right) before `status` becomes `ready`.
+41 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`LY3ntk1hZLBBfuB3YVcq`, 343 credits, ElevenLabs flow `VvUudYNOZImfAaoZaFei`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–4.36, 4.92–7.63, 8.01–10.57, 10.97–13.1, 13.63–16.67, 17.05–19.62, 19.95–22.69 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
+
+**Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «لِقِسْم» → «لِگُزْء» (no ق). The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 

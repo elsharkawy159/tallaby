@@ -6,7 +6,7 @@ roadmap: "F-10 Stock history and quick restock (Products › Inventory, migratio
 dashboard_path: /stores/[storeId]/products/inventory
 status: draft
 duration_seconds: 31.5
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation KXFw2FsNdnfbZawZQaDE"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation X31LCXeQoSKzNPpMobLi"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "طريقة تحديث المخزون بسرعة على طلبي #Shorts"
@@ -17,19 +17,21 @@ youtube_title_en: "How to update your stock quickly on Tallaby #Shorts"
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–4.9 s | Title card | "تحديث المخزون بسرعة", label "شرح سريع" | 0.30–4.47 s «هنحدّث كمية المخزون على طلبي، في أربع خطوات بسيطة.» |
-| 4.9–9.0 s | 1. اضغط «السجل» تحت اسم المنتج | The page "المخزون" with "قارب على النفاد أو نفد (2)": "كوب سيراميك" (نفد من المخزون) and "شمعة معطّرة" (بقيت 2 قطعة). Tap "السجل" under the mug's name; the card "سجل المخزون · كوب سيراميك" opens on top with the product's line and its history | 5.20–8.23 s «واحد: اضغط السجل تحت اسم المنتج.» |
-| 9.0–14.2 s | 2. اكتب عدد القطع المضافة | Push in (1.12×) on the line; tap "+ كمية" and type 20; "إضافة" becomes active | 9.30–13.49 s «اتنين: اكتب عدد القطع اللي وصلت، زي عشرين قطعة.» |
-| 14.2–19.4 s | 3. اضغط «إضافة» | Tap "إضافة"; the toast "كوب سيراميك: أصبح المخزون 20", the badge turns to "بقيت 20 قطعة", the field clears, a new row is on top of the history, the mug leaves the low-stock list (count 1) | 14.50–18.46 s «تلاتة: اضغط إضافة، والمخزون هيتحدّث على طول.» |
-| 19.4–23.4 s | 4. راجع التغيير في سجل المخزون | Scroll so the line and the history are in view; highlight the new row "تعديل · 18/11/2026، 11:05 ص · بواسطتك", "+20", "المخزون: 20" | 19.70–22.52 s «أربعة: راجع التغيير في سجل المخزون.» |
-| 23.4–28.9 s | Result | The line "بقيت 20 قطعة" and the history row; the gold check on the new row | 23.70–28.36 s «وكده المخزون بقى عشرين قطعة، وكل تغيير بيتسجّل في السجل.» |
+| 0–4.9 s | Title card | "تحديث المخزون بسرعة", label "شرح سريع" | 0.30–4.22 s «هَنْحَدِّث كَمِّيِّة المَخْزُون عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة.» |
+| 4.9–9 s | 1. اضغط «السجل» تحت اسم المنتج | The page "المخزون" with "قارب على النفاد أو نفد (2)": "كوب سيراميك" (نفد من المخزون) and "شمعة معطّرة" (بقيت 2 قطعة). Tap "السجل" under the mug's name; the card "سجل المخزون · كوب سيراميك" opens on top with the product's line and its history | 5.20–8.14 s «وَاحِد: اِضْغَط السِّجِلّ تَحْت اِسْم المُنْتَگ.» |
+| 9–14.2 s | 2. اكتب عدد القطع المضافة | Push in (1.12×) on the line; tap "+ كمية" and type 20; "إضافة" becomes active | 9.30–12.50 s «اِتْنِين: اِكْتِب العَدَد اللِّي وِصِل، زَيّ عِشْرِين.» |
+| 14.2–19.4 s | 3. اضغط «إضافة» | Tap "إضافة"; the toast "كوب سيراميك: أصبح المخزون 20", the badge turns to "بقيت 20 قطعة", the field clears, a new row is on top of the history, the mug leaves the low-stock list (count 1) | 14.50–18.14 s «تَلَاتَة: اِضْغَط إِضَافَة، وِالمَخْزُون هَيِتْحَدِّث عَلَى طُول.» |
+| 19.4–23.4 s | 4. راجع التغيير في سجل المخزون | Scroll so the line and the history are in view; highlight the new row "تعديل · 18/11/2026، 11:05 ص · بواسطتك", "+20", "المخزون: 20" | 19.70–22.53 s «أَرْبَعَة: رَاگِع التَّغْيِير فِي سِجِلّ المَخْزُون.» |
+| 23.4–28.9 s | Result | The line "بقيت 20 قطعة" and the history row; the gold check on the new row | 23.70–27.69 s «وِكِدَه المَخْزُون بَقَى عِشْرِين، وِكُلّ تَغْيِير بِيِتْسَجِّل فِي السِّجِلّ.» |
 | 28.9–31.5 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ المخزون" | Nothing is spoken |
 
 ## Voiceover script (full تشكيل, exactly as generated)
 
-هَنْحَدِّث كَمِّيِّة المَخْزُون عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة. وَاحِد: اِضْغَط السِّجِلّ تَحْت اِسْم المُنْتَج. اِتْنِين: اِكْتِب عَدَد القِطَع اللِّي وِصْلِت، زَيّ عِشْرِين قِطْعَة. تَلَاتَة: اِضْغَط إِضَافَة، وَالمَخْزُون هَيِتْحَدِّث عَلَى طُول. أَرْبَعَة: رَاجِع التَّغْيِير فِي سِجِلّ المَخْزُون. وِكِدَه المَخْزُون بَقَى عِشْرِين قِطْعَة، وَكُلّ تَغْيِير بِيِتْسَجِّل فِي السِّجِلّ.
+هَنْحَدِّث كَمِّيِّة المَخْزُون عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة. وَاحِد: اِضْغَط السِّجِلّ تَحْت اِسْم المُنْتَگ. اِتْنِين: اِكْتِب العَدَد اللِّي وِصِل، زَيّ عِشْرِين. تَلَاتَة: اِضْغَط إِضَافَة، وِالمَخْزُون هَيِتْحَدِّث عَلَى طُول. أَرْبَعَة: رَاگِع التَّغْيِير فِي سِجِلّ المَخْزُون. وِكِدَه المَخْزُون بَقَى عِشْرِين، وِكُلّ تَغْيِير بِيِتْسَجِّل فِي السِّجِلّ.
 
-47 words, full تشكيل on every word (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`KXFw2FsNdnfbZawZQaDE`, 402 credits, ElevenLabs flow `NGrdgtl3vlUGEO1k76UD`), made 2026-11-18. **It replaced the first take** (`Y9bKR2YeXCYWiDroDk6p`, 293 credits, flow `c79cyQUdkbj07XyMydUL`, marks on hard words only; kept as `work/vo/take-old.mp3`) under the full-تشكيل rule (owner, 2026-11-18). The take is `work/vo/take.mp3` (24.61 s, was 23.5 s), cut inside its pauses (opening 0–4.17, then 4.59–7.62, 7.93–12.12, 12.46–16.42, 16.63–19.45 and 19.84–24.5 s) and placed one sentence per beat; it is not sped up or stretched. Every sentence still fits its beat, so no step moved. The transcript (`eleven_scribe_v1`, 47 words) matched the script word for word, with no laugh marker; it returned the script's diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "طَلَبي", "كَمِّيِّة", "السِّجِلّ", "قِطْعَة", "وِصْلِت" and "عَلَى طُول" sound right) before `status` becomes `ready`.
+44 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`X31LCXeQoSKzNPpMobLi`, 378 credits, ElevenLabs flow `NGrdgtl3vlUGEO1k76UD`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–3.92, 4.38–7.32, 7.66–10.86, 11.27–14.91, 15.34–18.17, 18.54–22.53 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
+
+**Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «عَدَد القِطَع … عِشْرِين قِطْعَة» → «العَدَد اللِّي وِصِل، زَيّ عِشْرِين» (no ق). The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 

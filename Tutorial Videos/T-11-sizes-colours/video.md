@@ -6,7 +6,7 @@ roadmap: "§2.1 Products (options and variants in the product form)"
 dashboard_path: /stores/[storeId]/products/[productId]/edit (section "المخزون والأنواع"; the same editor is on /products/add)
 status: draft
 duration_seconds: 34.5
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 1Upj93hDN0kBBHIJ279i"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation oFLNS5JxyaMWwAACQOib"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "طريقة إضافة مقاسات وألوان لمنتجك على طلبي #Shorts"
@@ -19,20 +19,22 @@ The video starts on a product that is already being edited ("تيشيرت قطن
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–5.0 s | Title card | "إضافة مقاسات وألوان", label "شرح سريع" | 0.30–4.86 s «هنضيف مقاسات وألوان لمنتجك على طلبي، في خمس خطوات بسيطة.» |
-| 5.0–9.0 s | 1. أضف خيار «المقاس» | Under "الأنواع والخيارات" the empty box "هل للمنتج ألوان أو مقاسات؟" with "+ اللون", "+ المقاس", "+ خيار آخر"; tap "+ المقاس"; the option card opens with the list "المقاس", the value box "اكتب القيمة واضغط Enter (مثال: أحمر)" and "اقتراحات:" XS S M L XL XXL 3XL | 5.30–7.56 s «واحد: ضيف خيار المقاس.» |
-| 9.0–13.3 s | 2. اختر المقاسات من الاقتراحات | Tap S, M, L: each becomes a chip and leaves the suggestions; "تركيبات المنتج" appears under the option (تركيبة واحدة → تركيبتان → 3 تركيبات) with the bulk box | 9.30–12.31 s «اتنين: اختار المقاسات من الاقتراحات.» |
-| 13.3–18.2 s | 3. أضف خيار «اللون» واختر الألوان | Tap "إضافة خيار آخر": a second card "اللون" (the first kind not used yet) with colour suggestions; tap "أسود", then "أبيض" (the suggestions move up as in the code); "6 تركيبات" | 13.60–16.63 s «تلاتة: ضيف خيار اللون، واختار الألوان.» |
-| 18.2–23.2 s | 4. اكتب الكمية واضغط «تطبيق على الكل» | The bulk box ("كل المقاس" S M L, "كل اللون" أسود أبيض, "السعر", "المخزون"); type 10 in "المخزون"; tap "تطبيق على الكل (6)"; every combination reads 10, the message "تم تحديث 6 تركيبات"; the row "S / أبيض" (price 299, stock 10) is highlighted | 18.50–22.11 s «أربعة: اكتب الكمية، واضغط تطبيق على الكل.» |
-| 23.2–27.2 s | 5. اضغط «حفظ» | The screen lifts so the bottom bar sits at y ≈ 1090 (23.5–25.95 s); tap "حفظ"; the button shows "جارٍ الحفظ..."; the products list opens | 23.50–24.92 s «خمسة: اضغط حفظ.» |
-| 27.2–31.9 s | Result | The products list: "تيشيرت قطن" first with "متوفر · 60", the message "تم تحديث المنتج بنجاح!" with "عرض", the gold check on the card | 27.50–31.46 s «وكده منتجك بقى معروض بمقاساته وألوانه في متجرك.» |
+| 0–5 s | Title card | "إضافة مقاسات وألوان", label "شرح سريع" | 0.30–4.60 s «هَنْضِيف مَقَاسَات وِأَلْوَان لِمُنْتَگَك عَلَى طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة.» |
+| 5–9 s | 1. أضف خيار «المقاس» | Under "الأنواع والخيارات" the empty box "هل للمنتج ألوان أو مقاسات؟" with "+ اللون", "+ المقاس", "+ خيار آخر"; tap "+ المقاس"; the option card opens with the list "المقاس", the value box "اكتب القيمة واضغط Enter (مثال: أحمر)" and "اقتراحات:" XS S M L XL XXL 3XL | 5.30–7.43 s «وَاحِد: ضِيف خِيَار المَقَاس.» |
+| 9–13.3 s | 2. اختر المقاسات من الاقتراحات | Tap S, M, L: each becomes a chip and leaves the suggestions; "تركيبات المنتج" appears under the option (تركيبة واحدة → تركيبتان → 3 تركيبات) with the bulk box | 9.30–11.83 s «اِتْنِين: اِخْتَار المَقَاسَات اللِّي ظَاهْرَة تَحْت.» |
+| 13.3–18.2 s | 3. أضف خيار «اللون» واختر الألوان | Tap "إضافة خيار آخر": a second card "اللون" (the first kind not used yet) with colour suggestions; tap "أسود", then "أبيض" (the suggestions move up as in the code); "6 تركيبات" | 13.60–16.41 s «تَلَاتَة: ضِيف خِيَار اللَّوْن، وِاخْتَار الأَلْوَان.» |
+| 18.2–23.2 s | 4. اكتب الكمية واضغط «تطبيق على الكل» | The bulk box ("كل المقاس" S M L, "كل اللون" أسود أبيض, "السعر", "المخزون"); type 10 in "المخزون"; tap "تطبيق على الكل (6)"; every combination reads 10, the message "تم تحديث 6 تركيبات"; the row "S / أبيض" (price 299, stock 10) is highlighted | 18.50–21.79 s «أَرْبَعَة: اِكْتِب الكَمِّيَّة، وِاضْغَط تَطْبِيق عَلَى الكُلّ.» |
+| 23.2–27.2 s | 5. اضغط «حفظ» | The screen lifts so the bottom bar sits at y ≈ 1090 (23.5–25.95 s); tap "حفظ"; the button shows "جارٍ الحفظ..."; the products list opens | 23.50–25.07 s «خَمْسَة: اِضْغَط حِفْظ.» |
+| 27.2–31.9 s | Result | The products list: "تيشيرت قطن" first with "متوفر · 60", the message "تم تحديث المنتج بنجاح!" with "عرض", the gold check on the card | 27.50–31.21 s «وِكِدَه مُنْتَگَك بَقَى مَعْرُوض بِالمَقَاسَات وِالأَلْوَان فِي مَتْگَرَك.» |
 | 31.9–34.5 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ تعديل المنتج" | Nothing is spoken |
 
 ## Voiceover script (full تشكيل, exactly as generated)
 
-هَنْضِيف مَقَاسَات وَأَلْوَان لِمُنْتَجَك عَلَى طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة. وَاحِد: ضِيف خِيَار المَقَاس. اِتْنِين: اِخْتَار المَقَاسَات مِن الاِقْتِرَاحَات. تَلَاتَة: ضِيف خِيَار اللَّوْن، وَاخْتَار الأَلْوَان. أَرْبَعَة: اِكْتِب الكَمِّيَّة، وَاضْغَط تَطْبِيق عَلَى الكُلّ. خَمْسَة: اِضْغَط حِفْظ. وِكِدَه مُنْتَجَك بَقَى مَعْرُوض بِمَقَاسَاتُه وَأَلْوَانُه فِي مَتْجَرَك.
+هَنْضِيف مَقَاسَات وِأَلْوَان لِمُنْتَگَك عَلَى طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة. وَاحِد: ضِيف خِيَار المَقَاس. اِتْنِين: اِخْتَار المَقَاسَات اللِّي ظَاهْرَة تَحْت. تَلَاتَة: ضِيف خِيَار اللَّوْن، وِاخْتَار الأَلْوَان. أَرْبَعَة: اِكْتِب الكَمِّيَّة، وِاضْغَط تَطْبِيق عَلَى الكُلّ. خَمْسَة: اِضْغَط حِفْظ. وِكِدَه مُنْتَگَك بَقَى مَعْرُوض بِالمَقَاسَات وِالأَلْوَان فِي مَتْگَرَك.
 
-43 words, full تشكيل on every word (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`1Upj93hDN0kBBHIJ279i`, 383 credits, ElevenLabs flow `ZyKrZGTgJnwIVJCz2NLK`), made 2026-11-18. **It replaced the first take** (`aHM5itTD4leCH0qnbuUh`, 278 credits, flow `lqhz8CVS1jVphreKc9JT`, marks on hard words only; kept as `work/vo/take-old.mp3`) under the full-تشكيل rule (owner, 2026-11-18). The take is `work/vo/take.mp3` (23.88 s, was 22.4 s), cut inside its pauses (opening 0–4.56, then 4.98–7.24, 7.49–10.5, 10.72–13.75, 14.13–17.74, 18.03–19.45 and 19.9–23.86 s) and placed one sentence per beat; it is not sped up or stretched. Only step 1 moved (4.9 → 5.0 s) so the longer opening keeps 0.4 s of quiet before it. The transcript (`eleven_scribe_v1`, 43 words) matched the script word for word, with no laugh marker; it returned the script's diacritics, so it may lean on the text. The closing avoids "ليه" (it also means "why"). **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "طَلَبي", "الكَمِّيَّة", "حِفْظ" and "بِمَقَاسَاتُه" sound right) before `status` becomes `ready`.
+44 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`oFLNS5JxyaMWwAACQOib`, 385 credits, ElevenLabs flow `ZyKrZGTgJnwIVJCz2NLK`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–4.3, 4.77–6.9, 7.18–9.71, 10.22–13.03, 13.46–16.75, 17.09–18.66, 19.08–22.79 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
+
+**Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «مِن الاِقْتِرَاحَات» → «اللِّي ظَاهْرَة تَحْت» (no ق). The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 

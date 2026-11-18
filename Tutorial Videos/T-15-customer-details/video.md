@@ -6,7 +6,7 @@ roadmap: "F-91 Customer requirements on a product (مطلوب من العميل)
 dashboard_path: /stores/[storeId]/products/[productId]/edit (section "مطلوب من العميل"; the same section is on /products/add)
 status: draft
 duration_seconds: 34.9
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation nHfqTn0kY77QkfhZZ6Ei"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation iQUg4l12Bn3UZJhl6B8f"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "اطلب بيانات من العميل على منتجك في طلبي #Shorts"
@@ -19,22 +19,22 @@ The video starts on a product that is already being edited ("مج بالاسم",
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–6.95 s | Title card | "اطلب بيانات من العميل على منتجك", label "شرح سريع" | 0.30–6.82 s «هَنْضِيف حَقْل يِكْتِب فِيه العَمِيل بَيَانَاتُه عَلَى مُنْتَجَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة.» |
-| 6.95–10.95 s | 1. افتح «مطلوب من العميل» | The folded section "مطلوب من العميل" (summary "لا شيء") is highlighted and tapped; it opens with its hint and the buttons "+ نص", "+ رفع صورة", "+ قائمة اختيارات" | 7.25–10.46 s «وَاحِد: اِفْتَح قِسْم مَطْلُوب مِن العَمِيل.» |
-| 10.95–14.95 s | 2. أضف حقل «نص» | Tap "+ نص": a field card appears (title "نص", the type switch نص / رفع صورة / قائمة اختيارات with "نص" on), the summary becomes "حقل واحد · واحد مطلوب"; the type switch is highlighted | 11.25–14.06 s «اِتْنِين: ضِيف حَقْل مِن نُوع نَصّ.» |
-| 14.95–19.6 s | 3. اكتب اسم الحقل بالعربية والإنجليزية | "اسم الحقل *" AR: type "الاسم المطلوب على المج" (the card title follows); "اسم الحقل *" EN: type "Name on the mug" | 15.25–18.70 s «تَلَاتَة: اِكْتِب اِسْم الحَقْل بِالعَرَبِي وِالإِنْجِلِيزِي.» |
-| 19.6–23.9 s | 4. اكتب السعر الإضافي | Scroll past "العميل لازم يملأه" (on by default) to "سعر إضافي": type 20; the field and its hint are highlighted; "أقصى عدد حروف" 500 حرف below | 19.90–22.71 s «أَرْبَعَة: اِكْتِب السِّعْر الإِضَافِي لِلْحَقْل.» |
-| 23.9–27.9 s | 5. اضغط «حفظ» | The screen lifts so the bottom bar sits at y ≈ 1090 (24.2–26.65 s, 2.45 s); tap "حفظ"; "جارٍ الحفظ..." | 24.20–25.93 s «خَمْسَة: اِضْغَط حِفْظ.» |
-| 27.9–32.3 s | Result | The customer's product page on "متجر نور": "مج بالاسم", "بيانات مطلوبة منك", "الاسم المطلوب على المج *" with "+20 جنيه", the box "اكتب هنا" above "أضف للسلة"; the customer types "نور" (3 / 500) and the price goes 150 → 170 جنيه; gold check on the field | 28.20–32.29 s «وِكِدَه العَمِيل هَيِكْتِب الاِسْم المَطْلُوب فِي صَفْحِة المُنْتَج.» |
+| 0–6.95 s | Title card | "اطلب بيانات من العميل على منتجك", label "شرح سريع" | 0.30–6.41 s «هَنْضِيف خَانَة يِكْتِب فِيهَا العَمِيل بَيَانَاتُه عَلَى مُنْتَگَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة.» |
+| 6.95–10.95 s | 1. افتح «مطلوب من العميل» | The folded section "مطلوب من العميل" (summary "لا شيء") is highlighted and tapped; it opens with its hint and the buttons "+ نص", "+ رفع صورة", "+ قائمة اختيارات" | 7.25–10.13 s «وَاحِد: اِفْتَح گُزْء مَطْلُوب مِن العَمِيل.» |
+| 10.95–14.95 s | 2. أضف حقل «نص» | Tap "+ نص": a field card appears (title "نص", the type switch نص / رفع صورة / قائمة اختيارات with "نص" on), the summary becomes "حقل واحد · واحد مطلوب"; the type switch is highlighted | 11.25–13.91 s «اِتْنِين: ضِيف خَانَة مِن نُوع نَصّ.» |
+| 14.95–19.6 s | 3. اكتب اسم الحقل بالعربية والإنجليزية | "اسم الحقل *" AR: type "الاسم المطلوب على المج" (the card title follows); "اسم الحقل *" EN: type "Name on the mug" | 15.25–18.54 s «تَلَاتَة: اِكْتِب اِسْم الخَانَة بِالعَرَبِي وِالإِنْگِلِيزِي.» |
+| 19.6–23.9 s | 4. اكتب السعر الإضافي | Scroll past "العميل لازم يملأه" (on by default) to "سعر إضافي": type 20; the field and its hint are highlighted; "أقصى عدد حروف" 500 حرف below | 19.90–22.46 s «أَرْبَعَة: اِكْتِب السِّعْر الإِضَافِي لِلْخَانَة.» |
+| 23.9–27.9 s | 5. اضغط «حفظ» | The screen lifts so the bottom bar sits at y ≈ 1090 (24.2–26.65 s, 2.45 s); tap "حفظ"; "جارٍ الحفظ..." | 24.20–25.71 s «خَمْسَة: اِضْغَط حِفْظ.» |
+| 27.9–32.3 s | Result | The customer's product page on "متجر نور": "مج بالاسم", "بيانات مطلوبة منك", "الاسم المطلوب على المج *" with "+20 جنيه", the box "اكتب هنا" above "أضف للسلة"; the customer types "نور" (3 / 500) and the price goes 150 → 170 جنيه; gold check on the field | 28.20–31.53 s «وِكِدَه العَمِيل هَيِكْتِب الاِسْم اللِّي إِنْتَ عَايْزُه فِي صَفْحِة المُنْتَگ.» |
 | 32.3–34.9 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ تعديل المنتج" | Nothing is spoken |
 
 ## Voiceover script (full تشكيل, exactly as generated)
 
-هَنْضِيف حَقْل يِكْتِب فِيه العَمِيل بَيَانَاتُه عَلَى مُنْتَجَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة. وَاحِد: اِفْتَح قِسْم مَطْلُوب مِن العَمِيل. اِتْنِين: ضِيف حَقْل مِن نُوع نَصّ. تَلَاتَة: اِكْتِب اِسْم الحَقْل بِالعَرَبِي وِالإِنْجِلِيزِي. أَرْبَعَة: اِكْتِب السِّعْر الإِضَافِي لِلْحَقْل. خَمْسَة: اِضْغَط حِفْظ. وِكِدَه العَمِيل هَيِكْتِب الاِسْم المَطْلُوب فِي صَفْحِة المُنْتَج.
+هَنْضِيف خَانَة يِكْتِب فِيهَا العَمِيل بَيَانَاتُه عَلَى مُنْتَگَك فِي طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة. وَاحِد: اِفْتَح گُزْء مَطْلُوب مِن العَمِيل. اِتْنِين: ضِيف خَانَة مِن نُوع نَصّ. تَلَاتَة: اِكْتِب اِسْم الخَانَة بِالعَرَبِي وِالإِنْگِلِيزِي. أَرْبَعَة: اِكْتِب السِّعْر الإِضَافِي لِلْخَانَة. خَمْسَة: اِضْغَط حِفْظ. وِكِدَه العَمِيل هَيِكْتِب الاِسْم اللِّي إِنْتَ عَايْزُه فِي صَفْحِة المُنْتَگ.
 
-48 words, full تشكيل (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`nHfqTn0kY77QkfhZZ6Ei`, 391 credits, ElevenLabs flow `N395fPqV4zeRbJ0OPdHq`), made 2026-11-18. The take is `work/vo/take.mp3` (26.91 s), cut inside its pauses (chunks 0–6.52, 6.95–10.16, 10.44–13.25, 13.53–16.98, 17.39–20.2, 20.6–22.33 and 22.82–26.91 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`, 48 words) matched the script word for word, with no laugh marker; it returned the script's diacritics, so it may lean on the text. The opening avoids "هنطلب" next to "طَلَبي". "نَصّ" carries a shadda so it is not read as "نُصّ" (half).
+50 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`iQUg4l12Bn3UZJhl6B8f`, 409 credits, ElevenLabs flow `N395fPqV4zeRbJ0OPdHq`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–6.11, 6.76–9.64, 10.02–12.68, 13.03–16.32, 16.73–19.29, 19.65–21.16, 21.67–25 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
-**Re-recorded under the full-تشكيل rule (owner, 2026-11-18).** The first take (`ntQjYsIQevLvAOVAvdza`, 284 credits, 23.44 s, marks only on hard words) is kept as `work/vo/take-old.mp3`. The new take reads slower, with longer pauses (the opening alone is 6.5 s), so steps 1–3 were retimed: step 1 starts at 6.95 s (was 5.9), step 2 at 10.95 s (was 9.9), step 3 at 14.95 s (was 14.2), with their taps and typing moved by the same amount; steps 4–5, the result and the end card did not move. **Nobody has listened to the new take yet**: someone who can listen must confirm it sounds calm and natural (and that "طَلَبي", "نَصّ", "السِّعْر" and "حِفْظ" sound right) before `status` becomes `ready`.
+**Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «حَقْل» → «خَانَة» and «قِسْم» → «گُزْء» (no ق), and a more Egyptian closing («الاِسْم اللِّي إِنْتَ عَايْزُه»); the screen keeps the dashboard's «حقل». The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 
