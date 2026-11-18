@@ -6,14 +6,14 @@ import { TUTORIAL_VIDEOS, tutorialEmbedUrl, type TutorialVideoId } from "./tutor
 const ids = Object.keys(TUTORIAL_VIDEOS) as TutorialVideoId[];
 
 describe("tutorial videos", () => {
-  it("builds a privacy-enhanced embed URL that neither autoplays nor mutes", () => {
+  it("builds a privacy-enhanced embed URL that autoplays with sound (never muted)", () => {
     for (const id of ids) {
       const url = tutorialEmbedUrl(TUTORIAL_VIDEOS[id].youtubeId);
       expect(url).not.toBeNull();
       const parsed = new URL(url!);
       expect(parsed.origin).toBe("https://www.youtube-nocookie.com");
       expect(parsed.pathname).toBe(`/embed/${TUTORIAL_VIDEOS[id].youtubeId}`);
-      expect(parsed.searchParams.has("autoplay")).toBe(false);
+      expect(parsed.searchParams.get("autoplay")).toBe("1");
       expect(parsed.searchParams.has("mute")).toBe(false);
     }
   });

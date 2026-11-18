@@ -30,10 +30,11 @@ export type TutorialVideoId = keyof typeof TUTORIAL_VIDEOS;
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
 
 /**
- * Privacy-enhanced embed URL. Never autoplays and is never muted: the seller
- * presses play. Returns null for an id that isn't a YouTube video id.
+ * Privacy-enhanced embed URL. Autoplays with sound (never muted) as soon as
+ * the dialog opens: the seller's click on «كيف يعمل؟» is the user activation
+ * that lets it play. Returns null for an id that isn't a YouTube video id.
  */
 export function tutorialEmbedUrl(youtubeId: string): string | null {
   if (!YOUTUBE_ID.test(youtubeId)) return null;
-  return `https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&modestbranding=1&playsinline=1`;
+  return `https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
 }

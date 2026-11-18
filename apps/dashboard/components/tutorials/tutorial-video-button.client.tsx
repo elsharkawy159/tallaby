@@ -9,9 +9,10 @@ import { TUTORIAL_VIDEOS, tutorialEmbedUrl, type TutorialVideoId } from "@/lib/t
 
 /**
  * «كيف يعمل؟» next to the part of the dashboard a tutorial Short teaches
- * (ROADMAP.md F-97d). Opens the video in a dialog; it never autoplays and is
- * never muted, and the iframe only exists while the dialog is open, so closing
- * it stops the video.
+ * (ROADMAP.md F-97d). Opens the video in a dialog, where it autoplays with
+ * sound (never muted; the click's user activation is delegated to the iframe
+ * through `allow="autoplay"`). The iframe only exists while the dialog is
+ * open, so closing it unmounts the iframe and stops the video.
  */
 export function TutorialVideoButton({
   video,
@@ -53,9 +54,8 @@ export function TutorialVideoButton({
             src={src}
             title={title}
             className="size-full border-0"
-            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
-            loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
           />
         </div>
