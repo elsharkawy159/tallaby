@@ -1,7 +1,7 @@
 /**
  * The seller's own card payment gateway per store (ROADMAP.md F-39, owner
- * 2026-10-30). The seller pastes the keys of their own Paymob or Kashier
- * account; storefront card payments then go straight to the seller, never
+ * 2026-10-30). The seller pastes the keys of their own Paymob, Kashier or
+ * EasyKash (F-98) account; storefront card payments then go straight to the seller, never
  * through Tallaby. Pure: no DB, no fetch. Server code is in
  * store-gateways.server.ts.
  *
@@ -15,7 +15,7 @@ import { buildKashierOrderReference, parseKashierOrderReference, verifyKashierWe
 import { verifyPaymobTransactionHmac } from "../paymob/paymob.lib";
 import type { PaymobTransactionObj } from "../paymob/paymob.types";
 
-export const STORE_GATEWAY_PROVIDERS = ["paymob", "kashier"] as const;
+export const STORE_GATEWAY_PROVIDERS = ["paymob", "kashier", "easykash"] as const;
 export type StoreGatewayProvider = (typeof STORE_GATEWAY_PROVIDERS)[number];
 
 export function isStoreGatewayProvider(value: unknown): value is StoreGatewayProvider {
@@ -46,7 +46,18 @@ export type KashierSecret = {
   secretKey: string;
 };
 
-export type StoreGatewaySecret = PaymobSecret | KashierSecret;
+/** EasyKash › Settings › Integration Settings (docs/easykash.md §4.1). No test mode: always live. */
+export type EasykashSecret = {
+  apiKey: string;
+  hmacSecret: string;
+};
+
+export type StoreGatewaySecret = PaymobSecret | KashierSecret | EasykashSecret;
+
+/** Compile-time guard: a provider added to STORE_GATEWAY_PROVIDERS must be handled in every switch. */
+export function assertNeverProvider(provider: never): never {
+  throw new Error(`Unhandled store gateway provider: ${String(provider)}`);
+}
 
 /** Public config (store_integrations.config). No secret ever goes here. */
 export type StoreGatewayConfig = {
@@ -101,40 +112,55 @@ export function validateGatewayInput(
   const input = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const pick = (key: string) => str(input[key]) || str((saved as Record<string, unknown> | null)?.[key]);
 
-  if (provider === "paymob") {
-    const secretKey = pick("secretKey");
-    const publicKey = pick("publicKey");
-    const secretMode = paymobKeyMode(secretKey, "secret");
-    if (!secretMode) return { success: false, error: "invalid_secret_key" };
-    const publicMode = paymobKeyMode(publicKey, "public");
-    if (!publicMode) return { success: false, error: "invalid_public_key" };
-    if (secretMode !== publicMode) return { success: false, error: "mode_mismatch" };
+  switch (provider) {
+    case "paymob":
+      return validatePaymob(input, saved as Partial<PaymobSecret> | null, pick);
+    case "kashier":
+      return validateKashier(input, pick);
+    case "easykash":
+      return validateEasykash(pick);
+    default:
+      return assertNeverProvider(provider);
+  }
+}
 
-    const hmacSecret = pick("hmacSecret");
-    if (!token(16).safeParse(hmacSecret).success) return { success: false, error: "invalid_hmac_secret" };
+type Pick = (key: string) => string;
 
-    const rawCard = input.cardIntegrationId ?? (saved as PaymobSecret | null)?.cardIntegrationId;
-    const card = integrationId.safeParse(rawCard);
-    if (!card.success) return { success: false, error: "invalid_integration_id" };
-    const rawWallet =
-      input.walletIntegrationId !== undefined ? input.walletIntegrationId : (saved as PaymobSecret | null)?.walletIntegrationId;
-    let walletIntegrationId: number | undefined;
-    if (rawWallet !== undefined && rawWallet !== null && String(rawWallet).trim() !== "") {
-      const wallet = integrationId.safeParse(rawWallet);
-      if (!wallet.success || wallet.data === card.data) return { success: false, error: "invalid_integration_id" };
-      walletIntegrationId = wallet.data;
-    }
+function validatePaymob(input: Record<string, unknown>, saved: Partial<PaymobSecret> | null, pick: Pick): ValidatedGateway {
+  const secretKey = pick("secretKey");
+  const publicKey = pick("publicKey");
+  const secretMode = paymobKeyMode(secretKey, "secret");
+  if (!secretMode) return { success: false, error: "invalid_secret_key" };
+  const publicMode = paymobKeyMode(publicKey, "public");
+  if (!publicMode) return { success: false, error: "invalid_public_key" };
+  if (secretMode !== publicMode) return { success: false, error: "mode_mismatch" };
 
-    const secret: PaymobSecret = {
-      secretKey,
-      publicKey,
-      hmacSecret,
-      cardIntegrationId: card.data,
-      ...(walletIntegrationId !== undefined && { walletIntegrationId }),
-    };
-    return { success: true, secret, mode: secretMode, keyHint: secretKey.slice(-4) };
+  const hmacSecret = pick("hmacSecret");
+  if (!token(16).safeParse(hmacSecret).success) return { success: false, error: "invalid_hmac_secret" };
+
+  const rawCard = input.cardIntegrationId ?? saved?.cardIntegrationId;
+  const card = integrationId.safeParse(rawCard);
+  if (!card.success) return { success: false, error: "invalid_integration_id" };
+  const rawWallet =
+    input.walletIntegrationId !== undefined ? input.walletIntegrationId : saved?.walletIntegrationId;
+  let walletIntegrationId: number | undefined;
+  if (rawWallet !== undefined && rawWallet !== null && String(rawWallet).trim() !== "") {
+    const wallet = integrationId.safeParse(rawWallet);
+    if (!wallet.success || wallet.data === card.data) return { success: false, error: "invalid_integration_id" };
+    walletIntegrationId = wallet.data;
   }
 
+  const secret: PaymobSecret = {
+    secretKey,
+    publicKey,
+    hmacSecret,
+    cardIntegrationId: card.data,
+    ...(walletIntegrationId !== undefined && { walletIntegrationId }),
+  };
+  return { success: true, secret, mode: secretMode, keyHint: secretKey.slice(-4) };
+}
+
+function validateKashier(input: Record<string, unknown>, pick: Pick): ValidatedGateway {
   const merchantId = pick("merchantId").toUpperCase();
   if (!KASHIER_MID.test(merchantId)) return { success: false, error: "invalid_merchant_id" };
   const paymentApiKey = pick("paymentApiKey");
@@ -146,19 +172,35 @@ export function validateGatewayInput(
   return { success: true, secret: { merchantId, paymentApiKey, secretKey }, mode, keyHint: secretKey.slice(-4) };
 }
 
+/** The docs' example API key is 6 characters, so the floor is low; the HMAC secret is a long hex string. */
+function validateEasykash(pick: Pick): ValidatedGateway {
+  const apiKey = pick("apiKey");
+  if (!token(6).safeParse(apiKey).success) return { success: false, error: "invalid_api_key" };
+  const hmacSecret = pick("hmacSecret");
+  if (!token(16).safeParse(hmacSecret).success) return { success: false, error: "invalid_hmac_secret" };
+  const secret: EasykashSecret = { apiKey, hmacSecret };
+  return { success: true, secret, mode: "live", keyHint: apiKey.slice(-4) };
+}
+
 /** True when the secret has every field its provider needs (a decrypted row is re-checked). */
 export function isCompleteSecret(provider: StoreGatewayProvider, secret: unknown): secret is StoreGatewaySecret {
   if (!secret || typeof secret !== "object") return false;
   const s = secret as Record<string, unknown>;
-  if (provider === "paymob") {
-    return (
-      typeof s.secretKey === "string" &&
-      typeof s.publicKey === "string" &&
-      typeof s.hmacSecret === "string" &&
-      typeof s.cardIntegrationId === "number"
-    );
+  switch (provider) {
+    case "paymob":
+      return (
+        typeof s.secretKey === "string" &&
+        typeof s.publicKey === "string" &&
+        typeof s.hmacSecret === "string" &&
+        typeof s.cardIntegrationId === "number"
+      );
+    case "kashier":
+      return typeof s.merchantId === "string" && typeof s.paymentApiKey === "string" && typeof s.secretKey === "string";
+    case "easykash":
+      return typeof s.apiKey === "string" && typeof s.hmacSecret === "string";
+    default:
+      return assertNeverProvider(provider);
   }
-  return typeof s.merchantId === "string" && typeof s.paymentApiKey === "string" && typeof s.secretKey === "string";
 }
 
 export function readGatewayConfig(config: unknown): StoreGatewayConfig | null {
@@ -177,7 +219,12 @@ export function readGatewayConfig(config: unknown): StoreGatewayConfig | null {
 /* ------------------------------------------------------------------ */
 
 /** Snapshot in orders.metadata.paymentGateway for a storefront card order. */
-export type OrderGatewayMeta = { provider: StoreGatewayProvider; integrationId: string };
+export type OrderGatewayMeta = {
+  provider: StoreGatewayProvider;
+  integrationId: string;
+  /** EasyKash: the reference of the latest checkout attempt, for the Inquiry API (docs/easykash.md §4.4). */
+  lastReference?: string;
+};
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -185,10 +232,13 @@ export function readOrderGateway(metadata: unknown): OrderGatewayMeta | null {
   if (!metadata || typeof metadata !== "object") return null;
   const g = (metadata as Record<string, unknown>).paymentGateway;
   if (!g || typeof g !== "object") return null;
-  const { provider, integrationId } = g as Record<string, unknown>;
-  return isStoreGatewayProvider(provider) && typeof integrationId === "string" && UUID.test(integrationId)
-    ? { provider, integrationId }
-    : null;
+  const { provider, integrationId, lastReference } = g as Record<string, unknown>;
+  if (!isStoreGatewayProvider(provider) || typeof integrationId !== "string" || !UUID.test(integrationId)) return null;
+  return {
+    provider,
+    integrationId,
+    ...(typeof lastReference === "string" && parseGatewayReference(lastReference) && { lastReference }),
+  };
 }
 
 /**
@@ -224,6 +274,22 @@ export function storeGatewayWebhookUrl(
   const root = base?.trim().replace(/\/+$/, "");
   if (!root || !/^https:\/\//i.test(root)) return null;
   return `${root}/api/webhooks/store-payments/${encodeURIComponent(integrationId)}`;
+}
+
+/**
+ * EasyKash's Callback URL (docs/easykash.md §4.2). EasyKash keeps one per
+ * account, set once by the seller, so it names the seller, not the
+ * integration: it survives a disconnect and reconnect. The seller id is only
+ * a routing hint; the store's HMAC secret is the proof. Null without a public
+ * https backend, like storeGatewayWebhookUrl.
+ */
+export function easykashCallbackUrl(
+  sellerId: string,
+  base: string | undefined = process.env.STORE_PAYMENTS_WEBHOOK_BASE_URL || process.env.BACKEND_API_URL,
+): string | null {
+  if (!UUID.test(sellerId)) return null;
+  const root = storeGatewayWebhookUrl("easykash", base);
+  return root ? `${root}/${sellerId.toLowerCase()}` : null;
 }
 
 /** Storefront route the gateway sends the shopper back to. It writes nothing. */

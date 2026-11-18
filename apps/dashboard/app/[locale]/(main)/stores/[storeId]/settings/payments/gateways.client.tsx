@@ -241,7 +241,8 @@ function GatewaySheet({
       <SheetContent data-clarity-mask="true" side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
         <SheetHeader className="border-b border-(--s-line-soft) px-[18px] py-4 pe-14">
           <div className="flex items-center gap-3">
-            <AppLogo app={provider} className="size-11 rounded-[14px]" />
+            {/* The sheet only opens from a catalog row, so the provider is always an app key (EasyKash's card is F-98d). */}
+            <AppLogo app={provider as StoreApp["key"]} className="size-11 rounded-[14px]" />
             <div className="min-w-0">
               <SheetTitle className="text-[17px] font-bold text-(--s-ink)">{t(isUpdate ? "updateTitle" : "connectTitle", { gateway: name })}</SheetTitle>
               <SheetDescription className="text-[12.5px] text-(--s-subtle)">{t(`providers.${provider}.whereToFind`)}</SheetDescription>

@@ -1,5 +1,6 @@
 import { and, db, eq, inArray, orders, payments, sql, storeIntegrations, storeSettingsAudit } from "@workspace/db";
 import { chargeOrderPlacementFee } from "@workspace/db/wallet";
+import { randomUUID } from "node:crypto";
 import { decryptCredentials, encryptCredentials } from "../integrations/crypto.server";
 import { INTEGRATIONS } from "../integrations/registry";
 import {
@@ -11,6 +12,13 @@ import {
   type Queryable,
   type StoreIntegrationSummary,
 } from "../integrations/store-integrations.server";
+import {
+  buildEasykashPayBody,
+  isEasykashPaidStatus,
+  readEasykashCallback,
+  verifyEasykashSignature,
+} from "../easykash/easykash.lib";
+import { EasykashApiError, createEasykashPayLink, inquireEasykashPayment } from "../easykash/easykash.server";
 import { createKashierSession } from "../kashier/kashier";
 import { isDepositPending } from "../orders/cod-deposit.lib";
 import { notifyDeposit } from "../orders/cod-deposit.server";
@@ -18,7 +26,9 @@ import { buildBillingData, PAYMOB_EGYPT_BASE_URL } from "../paymob/paymob.lib";
 import { buildPaymobCheckoutUrl } from "../paymob/paymob";
 import {
   STORE_GATEWAY_PROVIDERS,
+  assertNeverProvider,
   buildGatewayReference,
+  easykashCallbackUrl,
   isCompleteSecret,
   isStoreGatewayProvider,
   parseGatewayReference,
@@ -34,6 +44,7 @@ import {
   type GatewayEvent,
   type GatewayInputError,
   type GatewayMode,
+  type EasykashSecret,
   type GatewayWebhookRequest,
   type KashierSecret,
   type OrderGatewayMeta,
@@ -111,6 +122,23 @@ async function readRow(q: Queryable, storeId: string, sellerId: string, provider
   return row ?? null;
 }
 
+/** One gateway per store: true when any of the other providers has a row. */
+async function hasOtherGateway(q: Queryable, storeId: string, sellerId: string, others: StoreGatewayProvider[]) {
+  if (others.length === 0) return false;
+  const [row] = await q
+    .select({ id: storeIntegrations.id })
+    .from(storeIntegrations)
+    .where(
+      and(
+        eq(storeIntegrations.storeId, storeId),
+        eq(storeIntegrations.sellerId, sellerId),
+        inArray(storeIntegrations.provider, others),
+      ),
+    )
+    .limit(1);
+  return Boolean(row);
+}
+
 function decryptSecret(provider: StoreGatewayProvider, storeId: string, payload: string | null): StoreGatewaySecret | null {
   if (!payload) return null;
   try {
@@ -144,8 +172,8 @@ export async function connectStoreGateway(
   if (!store) return { success: false, error: "not_found" };
   if (store.status !== "active") return { success: false, error: "store_read_only" };
 
-  const other = STORE_GATEWAY_PROVIDERS.find((p) => p !== provider)!;
-  if (await readRow(q, storeId, sellerId, other)) return { success: false, error: "other_gateway_connected" };
+  const others = STORE_GATEWAY_PROVIDERS.filter((p) => p !== provider);
+  if (await hasOtherGateway(q, storeId, sellerId, others)) return { success: false, error: "other_gateway_connected" };
 
   const existing = await readRow(q, storeId, sellerId, provider);
   const saved = existing ? decryptSecret(provider, storeId, existing.secret) : null;
@@ -154,9 +182,11 @@ export async function connectStoreGateway(
 
   // Webhooks are the only way an order is marked paid; without a public URL
   // a connected gateway would take money that Tallaby never sees.
-  if (!storeGatewayWebhookUrl(existing?.id ?? "00000000-0000-0000-0000-000000000000")) {
-    return { success: false, error: "webhooks_not_configured" };
-  }
+  const resultUrl =
+    provider === "easykash"
+      ? easykashCallbackUrl(sellerId)
+      : storeGatewayWebhookUrl(existing?.id ?? "00000000-0000-0000-0000-000000000000");
+  if (!resultUrl) return { success: false, error: "webhooks_not_configured" };
 
   // Checked outside the transaction: a slow gateway must not hold the store row lock.
   const check = await verifyGatewayKeys(provider, validated.secret, validated.mode, callOptions);
@@ -166,7 +196,7 @@ export async function connectStoreGateway(
     const locked = await ownStoreStatus(tx, sellerId, storeId, true);
     if (!locked) return { success: false, error: "not_found" } as const;
     if (locked.status !== "active") return { success: false, error: "store_read_only" } as const;
-    if (await readRow(tx, storeId, sellerId, other)) return { success: false, error: "other_gateway_connected" } as const;
+    if (await hasOtherGateway(tx, storeId, sellerId, others)) return { success: false, error: "other_gateway_connected" } as const;
 
     const previous = readGatewayConfig((await readRow(tx, storeId, sellerId, provider))?.config);
     const sameKeys = saved && JSON.stringify(saved) === JSON.stringify(validated.secret) && previous?.mode === validated.mode;
@@ -277,14 +307,49 @@ async function withTimeout<T>(ms: number, run: (signal: AbortSignal) => Promise<
 }
 
 /**
- * Creates a 1 EGP checkout with the keys (never paid; it simply expires).
- * 401/403/4xx → the keys are wrong; network, timeout or 5xx → try again.
+ * Paymob and Kashier: creates a 1 EGP checkout with the keys (never paid; it
+ * simply expires). 401/403/4xx → the keys are wrong; network, timeout or 5xx
+ * → try again. EasyKash: a Payment Inquiry for a reference that never
+ * existed (nothing is created); only 401/403 mean a wrong key, since its
+ * answer for an unknown reference is not documented (docs/easykash.md §1.10).
  */
 export async function verifyGatewayKeys(
   provider: StoreGatewayProvider,
   secret: StoreGatewaySecret,
   mode: GatewayMode,
-  { fetch: fetchImpl = fetch, timeoutMs = 15_000 }: GatewayCallOptions = {},
+  options: GatewayCallOptions = {},
+): Promise<"ok" | "keys_rejected" | "gateway_unreachable"> {
+  switch (provider) {
+    case "paymob":
+    case "kashier":
+      return verifyCheckoutKeys(provider, secret, mode, options);
+    case "easykash":
+      return verifyEasykashKey(secret as EasykashSecret, options);
+    default:
+      return assertNeverProvider(provider);
+  }
+}
+
+async function verifyEasykashKey(
+  secret: EasykashSecret,
+  { fetch: fetchImpl = fetch, timeoutMs = 15_000 }: GatewayCallOptions,
+): Promise<"ok" | "keys_rejected" | "gateway_unreachable"> {
+  const probe = `tallaby-keycheck-${randomUUID()}`;
+  try {
+    await inquireEasykashPayment(secret.apiKey, probe, { fetch: fetchImpl, timeoutMs });
+    return "ok";
+  } catch (error) {
+    if (!(error instanceof EasykashApiError)) return "gateway_unreachable";
+    if (error.status === 401 || error.status === 403) return "keys_rejected";
+    return error.status >= 500 ? "gateway_unreachable" : "ok";
+  }
+}
+
+async function verifyCheckoutKeys(
+  provider: "paymob" | "kashier",
+  secret: StoreGatewaySecret,
+  mode: GatewayMode,
+  { fetch: fetchImpl = fetch, timeoutMs = 15_000 }: GatewayCallOptions,
 ): Promise<"ok" | "keys_rejected" | "gateway_unreachable"> {
   try {
     const response = await withTimeout(timeoutMs, (signal) =>
@@ -461,73 +526,152 @@ export async function createStoreGatewayCheckout(input: {
   if (!account || account.storeId !== order.storeId || account.provider !== meta.provider) {
     return { success: false, error: "gateway_missing" };
   }
-  const webhookUrl = storeGatewayWebhookUrl(account.integrationId);
+  const webhookUrl =
+    account.provider === "easykash" ? easykashCallbackUrl(account.sellerId) : storeGatewayWebhookUrl(account.integrationId);
   if (!webhookUrl) return { success: false, error: "gateway_missing" };
 
   const reference = buildGatewayReference(order.id);
-  const returnUrl = `${input.siteUrl.replace(/\/+$/, "")}${storeGatewayReturnPath(order.id)}`;
+  const siteUrl = input.siteUrl.replace(/\/+$/, "");
+  const returnUrl = `${siteUrl}${storeGatewayReturnPath(order.id)}`;
   const currency = order.currency || "EGP";
   const description = isDeposit ? `Deposit, order ${order.orderNumber}` : `Order ${order.orderNumber}`;
   const amount = isDeposit ? (order.depositAmount ?? "0") : order.totalAmount;
 
   try {
-    if (account.provider === "paymob") {
-      const secret = account.secret as PaymobSecret;
-      const address = order.userAddress_shippingAddressId;
-      const response = await fetch(`${PAYMOB_EGYPT_BASE_URL}/v1/intention/`, {
-        method: "POST",
-        headers: { Authorization: `Token ${secret.secretKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify(
-          paymobIntentionBody(secret, {
-            amountPiastres: toPiastres(amount),
-            currency,
-            reference,
-            itemName: description,
-            notificationUrl: webhookUrl,
-            redirectionUrl: returnUrl,
-            billing: buildBillingData({
-              fullName: address?.fullName || order.user?.fullName || "Customer",
-              phone: address?.phone || order.user?.phone || "",
-              email: order.user?.email || "customer@tallaby.com",
-              addressLine1: address?.addressLine1 || "NA",
-              addressLine2: address?.addressLine2,
-              city: address?.city || "Cairo",
-              state: address?.state || "Cairo",
-              country: address?.country,
-              postalCode: address?.postalCode,
+    switch (account.provider) {
+      case "paymob": {
+        const secret = account.secret as PaymobSecret;
+        const address = order.userAddress_shippingAddressId;
+        const response = await fetch(`${PAYMOB_EGYPT_BASE_URL}/v1/intention/`, {
+          method: "POST",
+          headers: { Authorization: `Token ${secret.secretKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify(
+            paymobIntentionBody(secret, {
+              amountPiastres: toPiastres(amount),
+              currency,
+              reference,
+              itemName: description,
+              notificationUrl: webhookUrl,
+              redirectionUrl: returnUrl,
+              billing: buildBillingData({
+                fullName: address?.fullName || order.user?.fullName || "Customer",
+                phone: address?.phone || order.user?.phone || "",
+                email: order.user?.email || "customer@tallaby.com",
+                addressLine1: address?.addressLine1 || "NA",
+                addressLine2: address?.addressLine2,
+                city: address?.city || "Cairo",
+                state: address?.state || "Cairo",
+                country: address?.country,
+                postalCode: address?.postalCode,
+              }),
             }),
-          }),
-        ),
-      });
-      const body = (await response.json().catch(() => ({}))) as { client_secret?: string };
-      if (!response.ok || !body.client_secret) {
-        console.error("[store-gateway] paymob intention failed", { status: response.status, integrationId: account.integrationId });
-        return { success: false, error: "gateway_failed" };
+          ),
+        });
+        const body = (await response.json().catch(() => ({}))) as { client_secret?: string };
+        if (!response.ok || !body.client_secret) {
+          console.error("[store-gateway] paymob intention failed", { status: response.status, integrationId: account.integrationId });
+          return { success: false, error: "gateway_failed" };
+        }
+        return { success: true, data: { checkoutUrl: buildPaymobCheckoutUrl(secret.publicKey, body.client_secret) } };
       }
-      return { success: true, data: { checkoutUrl: buildPaymobCheckoutUrl(secret.publicKey, body.client_secret) } };
+      case "kashier": {
+        const secret = account.secret as KashierSecret;
+        const session = await createKashierSession(
+          // Egyptian mobile wallets charge EGP only; another currency pays by card.
+          { ...secret, mode: account.config.mode, webhookUrl, allowedMethods: currency === "EGP" ? "card,wallet" : "card" },
+          {
+            orderReference: reference,
+            amount,
+            currency,
+            customerEmail: order.user?.email,
+            // Kashier requires customer.reference; fall back to the order if there is no user.
+            customerReference: order.userId || order.id,
+            merchantRedirect: returnUrl,
+            display: input.locale === "ar" ? "ar" : "en",
+            description,
+            metaData: { orderId: order.id, orderNumber: String(order.orderNumber) },
+          },
+        );
+        return { success: true, data: { checkoutUrl: session.sessionUrl } };
+      }
+      case "easykash": {
+        const address = order.userAddress_shippingAddressId;
+        return await startEasykashCheckout({
+          orderId: order.id,
+          account,
+          isDeposit,
+          siteUrl,
+          reference,
+          currency,
+          amount,
+          buyer: {
+            name: address?.fullName || order.user?.fullName,
+            email: order.user?.email,
+            mobile: address?.phone || order.user?.phone,
+          },
+        });
+      }
+      default:
+        return assertNeverProvider(account.provider);
     }
-
-    const secret = account.secret as KashierSecret;
-    const session = await createKashierSession(
-      // Egyptian mobile wallets charge EGP only; another currency pays by card.
-      { ...secret, mode: account.config.mode, webhookUrl, allowedMethods: currency === "EGP" ? "card,wallet" : "card" },
-      {
-        orderReference: reference,
-        amount,
-        currency,
-        customerEmail: order.user?.email,
-        // Kashier requires customer.reference; fall back to the order if there is no user.
-        customerReference: order.userId || order.id,
-        merchantRedirect: returnUrl,
-        display: input.locale === "ar" ? "ar" : "en",
-        description,
-        metaData: { orderId: order.id, orderNumber: String(order.orderNumber) },
-      },
-    );
-    return { success: true, data: { checkoutUrl: session.sessionUrl } };
   } catch (error) {
     // Never log the error body: it can echo the keys' owner details.
     console.error("[store-gateway] checkout failed", { provider: account.provider, name: (error as Error)?.name });
+    return { success: false, error: "gateway_failed" };
+  }
+}
+
+/**
+ * EasyKash Pay API (docs/easykash.md §4.4). EGP stores only in v1 (owner,
+ * 2026-11-18): EasyKash charges the buyer in EGP whatever currency is sent.
+ * The reference is saved on the order first (outside any transaction), so
+ * the return page and the sweeper can ask the Inquiry API about it; older
+ * references stay valid for callbacks, since they carry the order id.
+ */
+async function startEasykashCheckout(input: {
+  orderId: string;
+  account: GatewayAccount;
+  isDeposit: boolean;
+  siteUrl: string;
+  reference: string;
+  currency: string;
+  amount: string;
+  buyer: { name?: string | null; email?: string | null; mobile?: string | null };
+}): Promise<IntegrationResult<{ checkoutUrl: string }, StoreGatewayCheckoutError>> {
+  const { account } = input;
+  if (input.currency !== "EGP") {
+    console.error("[store-gateway] easykash needs an EGP store", { integrationId: account.integrationId });
+    return { success: false, error: "gateway_missing" };
+  }
+  // jsonb_set on the snapshot read above: only lastReference changes.
+  const path = input.isDeposit ? "{deposit,gateway,lastReference}" : "{paymentGateway,lastReference}";
+  await db
+    .update(orders)
+    .set({ metadata: sql`jsonb_set(${orders.metadata}, ${path}::text[], to_jsonb(${input.reference}::text), true)` })
+    .where(eq(orders.id, input.orderId));
+
+  try {
+    const { redirectUrl } = await createEasykashPayLink(
+      (account.secret as EasykashSecret).apiKey,
+      buildEasykashPayBody({
+        amountPiastres: toPiastres(input.amount),
+        currency: input.currency,
+        name: input.buyer.name,
+        email: input.buyer.email,
+        mobile: input.buyer.mobile,
+        // Path form: EasyKash appends its own ?status=… (docs/easykash.md §1.3).
+        redirectUrl: `${input.siteUrl}/api/store-payments/return/${encodeURIComponent(input.orderId)}`,
+        customerReference: input.reference,
+      }),
+    );
+    return { success: true, data: { checkoutUrl: redirectUrl } };
+  } catch (error) {
+    // Status only: the body can echo the buyer's or the account's details.
+    console.error("[store-gateway] easykash pay failed", {
+      integrationId: account.integrationId,
+      status: error instanceof EasykashApiError ? error.status : undefined,
+      name: (error as Error)?.name,
+    });
     return { success: false, error: "gateway_failed" };
   }
 }
@@ -537,7 +681,7 @@ export async function createStoreGatewayCheckout(input: {
 /* ------------------------------------------------------------------ */
 
 export type GatewayWebhookResult = {
-  status: 200 | 401 | 400 | 404 | 409;
+  status: 200 | 401 | 400 | 404 | 409 | 500;
   body: Record<string, unknown>;
   /** Set when this call moved the order to paid: the caller sends the emails. */
   paidOrderId?: string;
@@ -556,10 +700,20 @@ export async function handleStoreGatewayWebhook(integrationId: string, req: Gate
   // Unknown or disconnected: ack, so the gateway stops retrying a dead URL.
   if (!account) return { status: 200, body: { received: true, outcome: "ignored" } };
 
-  const parsed =
-    account.provider === "paymob"
-      ? parsePaymobWebhook(req, account.secret as PaymobSecret)
-      : parseKashierWebhook(req, account.secret as KashierSecret);
+  let parsed: ReturnType<typeof parsePaymobWebhook>;
+  switch (account.provider) {
+    case "paymob":
+      parsed = parsePaymobWebhook(req, account.secret as PaymobSecret);
+      break;
+    case "kashier":
+      parsed = parseKashierWebhook(req, account.secret as KashierSecret);
+      break;
+    case "easykash":
+      // EasyKash calls the per-seller URL (handleEasykashCallback), never this one.
+      return { status: 200, body: { received: true, outcome: "ignored" } };
+    default:
+      return assertNeverProvider(account.provider);
+  }
 
   if (parsed.kind === "invalid_signature") {
     console.error("[store-gateway] webhook signature failed", { provider: account.provider, integrationId });
@@ -576,6 +730,93 @@ export async function handleStoreGatewayWebhook(integrationId: string, req: Gate
   const outcome = await applyGatewayEvent(account, orderId, parsed.event);
   if (outcome === "duplicate") return { status: 409, body: { received: true, duplicate: true } };
   if (outcome === "not_found") return { status: 404, body: { error: "Order not found" } };
+  return {
+    status: 200,
+    body: { received: true, outcome },
+    ...(outcome === "paid" && { paidOrderId: orderId }),
+  };
+}
+
+const IGNORED: GatewayWebhookResult = { status: 200, body: { received: true, outcome: "ignored" } };
+
+/**
+ * `GET|POST /api/webhooks/store-payments/easykash/:sellerId` (apps/backend;
+ * docs/easykash.md §4.2–§4.3). EasyKash calls one URL per account, and only
+ * for paid payments. The order comes from our reference; it must be a store
+ * order whose (deposit) gateway snapshot names an EasyKash integration of
+ * that seller still connected on the order's store, and the signature must
+ * check out with THAT store's HMAC secret, so a callback can only ever change
+ * an order of the store whose secret signed it. The payment is then confirmed
+ * with the Inquiry API before anything moves. Unknown, foreign or stale
+ * callbacks are acked (200) so EasyKash stops retrying; a duplicate is 200 too.
+ */
+export async function handleEasykashCallback(sellerId: string, raw: unknown): Promise<GatewayWebhookResult> {
+  const fields = readEasykashCallback(raw);
+  if (!fields.customerReference || !fields.signatureHash) return { status: 400, body: { error: "Invalid callback payload" } };
+  if (!UUID_RE.test(sellerId)) return IGNORED;
+
+  const orderId = parseGatewayReference(fields.customerReference);
+  if (!orderId) return IGNORED;
+  const order = await db.query.orders.findFirst({
+    where: eq(orders.id, orderId),
+    columns: { id: true, storeId: true, currency: true, metadata: true, paymentMethod: true, depositStatus: true, depositAmount: true },
+  });
+  if (!order?.storeId) return IGNORED;
+  const meta = isDepositOrder(order) ? readOrderDepositGateway(order.metadata) : readOrderGateway(order.metadata);
+  if (meta?.provider !== "easykash") return IGNORED;
+  const account = await loadGatewayAccount(meta.integrationId);
+  // The integration row's seller is the store owner (connectStoreGateway checks it).
+  if (
+    !account ||
+    account.provider !== "easykash" ||
+    account.storeId !== order.storeId ||
+    account.sellerId.toLowerCase() !== sellerId.toLowerCase()
+  ) {
+    return IGNORED;
+  }
+  // v1 is EGP stores only; checkout never sends another currency to EasyKash.
+  if ((order.currency || "EGP") !== "EGP") return IGNORED;
+
+  const secret = account.secret as EasykashSecret;
+  if (!verifyEasykashSignature(fields, secret.hmacSecret)) {
+    // Never the body: it carries the buyer's details.
+    console.error("[store-gateway] easykash callback signature failed", { integrationId: account.integrationId });
+    return { status: 401, body: { error: "Invalid signature" } };
+  }
+  await markWebhookVerified(account);
+
+  // The signed string covers no currency or timestamp, so a replay verifies:
+  // only EasyKash's own answer, fetched with the seller's key, moves the order.
+  let inquiry: Awaited<ReturnType<typeof inquireEasykashPayment>>;
+  try {
+    inquiry = await inquireEasykashPayment(secret.apiKey, fields.customerReference);
+  } catch (error) {
+    console.error("[store-gateway] easykash inquiry failed", {
+      integrationId: account.integrationId,
+      status: error instanceof EasykashApiError ? error.status : undefined,
+    });
+    return { status: 500, body: { error: "Payment inquiry failed" } };
+  }
+  if (!inquiry || (isEasykashPaidStatus(inquiry.status) && inquiry.amountPiastres === null)) {
+    console.error("[store-gateway] easykash inquiry unreadable", { integrationId: account.integrationId });
+    return { status: 500, body: { error: "Payment inquiry failed" } };
+  }
+  if (!isEasykashPaidStatus(inquiry.status)) return { status: 200, body: { received: true, outcome: "not_paid" } };
+
+  // applyGatewayEvent keeps the exact amount match (owner, 2026-11-18, option A):
+  // a different amount is recorded for review and never marked paid.
+  const outcome = await applyGatewayEvent(account, orderId, {
+    transactionId: `easykash:${fields.easykashRef}`,
+    reference: fields.customerReference,
+    status: "SUCCESS",
+    amountPiastres: inquiry.amountPiastres!,
+    currency: order.currency || "EGP",
+  });
+  if (outcome === "mismatch") {
+    console.error("[store-gateway] easykash payment not applied", { integrationId: account.integrationId, orderId });
+  }
+  if (outcome === "not_found" || outcome === "foreign") return IGNORED;
+  if (outcome === "duplicate") return { status: 200, body: { received: true, duplicate: true } };
   return {
     status: 200,
     body: { received: true, outcome },

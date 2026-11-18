@@ -16,7 +16,7 @@ const STORE_A = "11111111-1111-4111-8111-111111111111";
 const STORE_B = "22222222-2222-4222-8222-222222222222";
 
 describe("registry", () => {
-  it("matches the provider CHECK list (0056, plus bosta from 0106, paymob, kashier and wassalha from 0130)", () => {
+  it("matches the provider CHECK list (0056, plus bosta from 0106, paymob, kashier and wassalha from 0130, easykash from 0174)", () => {
     expect([...INTEGRATION_PROVIDERS].sort()).toEqual(
       [
         "meta_pixel",
@@ -31,6 +31,7 @@ describe("registry", () => {
         "paymob",
         "kashier",
         "wassalha",
+        "easykash",
       ].sort(),
     );
     for (const provider of INTEGRATION_PROVIDERS) expect(INTEGRATIONS[provider].provider).toBe(provider);
@@ -49,6 +50,7 @@ describe("registry", () => {
       "paymob",
       "kashier",
       "wassalha",
+      "easykash",
     ]);
     expect(INTEGRATIONS.google_tag_manager.warnsAboutSellerScripts).toBe(true);
   });

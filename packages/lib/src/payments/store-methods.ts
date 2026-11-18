@@ -276,6 +276,8 @@ export function validateMethodChange(
 export const GATEWAY_CURRENCIES: Record<OrderGatewayMeta["provider"], readonly string[] | "any"> = {
   kashier: "any",
   paymob: ["EGP"],
+  // v1 is EGP stores only (owner, 2026-11-18; docs/easykash.md §10).
+  easykash: ["EGP"],
 };
 
 export function gatewaySupportsCurrency(provider: string | null | undefined, currency: string): boolean {
@@ -484,6 +486,8 @@ export type FooterPaymentKey = Exclude<StorefrontCheckoutMethod, "online_payment
 const GATEWAY_FOOTER_KEYS: Record<OrderGatewayMeta["provider"], GatewayFooterKey[]> = {
   kashier: ["visa", "mastercard", "meeza", "mobile_wallets"],
   paymob: ["visa", "mastercard", "meeza"],
+  // The options shown are what the seller turned on in EasyKash; cards are the one we can count on.
+  easykash: ["visa", "mastercard"],
 };
 
 /**

@@ -5,21 +5,30 @@ import type { PaymobTransactionObj } from "../paymob/paymob.types";
 import { buildWebhookSignaturePayload } from "../kashier/kashier.lib";
 import {
   buildGatewayReference,
+  easykashCallbackUrl,
   isCompleteSecret,
   paymobKeyMode,
   parseGatewayReference,
   parseKashierWebhook,
   parsePaymobWebhook,
   readGatewayConfig,
+  readOrderDepositGateway,
   readOrderGateway,
   storeGatewayReturnPath,
   storeGatewayWebhookUrl,
   toPiastres,
   validateGatewayInput,
+  type EasykashSecret,
   type KashierSecret,
   type PaymobSecret,
 } from "./store-gateways.lib";
-import { isStorefrontCheckoutMethodAllowed, storeShippingCollector, storefrontCheckoutMethods } from "./store-methods";
+import { readPublicDetails } from "../integrations/validate";
+import {
+  gatewaySupportsCurrency,
+  isStorefrontCheckoutMethodAllowed,
+  storeShippingCollector,
+  storefrontCheckoutMethods,
+} from "./store-methods";
 
 const ORDER = "3f2b8c1e-1d2a-4c3b-9e8f-0a1b2c3d4e5f";
 const INTEGRATION = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
@@ -110,10 +119,60 @@ describe("validateGatewayInput — Kashier", () => {
   });
 });
 
+describe("validateGatewayInput — EasyKash", () => {
+  const easykashInput = { apiKey: "ab12cd34ef", hmacSecret: "da9fe30575517d987762a859842b5631" };
+
+  it("accepts both keys, always live, with the API key's last 4 as the hint", () => {
+    expect(validateGatewayInput("easykash", { ...easykashInput, mode: "test" })).toEqual({
+      success: true,
+      secret: easykashInput,
+      mode: "live",
+      keyHint: "34ef",
+    });
+  });
+
+  it.each([
+    [{ apiKey: "abc" }, "invalid_api_key"],
+    [{ apiKey: "has space 123" }, "invalid_api_key"],
+    [{ hmacSecret: "short" }, "invalid_hmac_secret"],
+    [{ hmacSecret: "da9fe305 75517d987762a859842b5631" }, "invalid_hmac_secret"],
+  ])("refuses %o", (patch, error) => {
+    expect(validateGatewayInput("easykash", { ...easykashInput, ...patch })).toEqual({ success: false, error });
+  });
+
+  it("keeps saved keys for fields left blank", () => {
+    const saved: EasykashSecret = { apiKey: "saved-key-9999", hmacSecret: "saved-hmac-secret-0123456789" };
+    expect(validateGatewayInput("easykash", { apiKey: "", hmacSecret: "" }, saved)).toEqual({
+      success: true,
+      secret: saved,
+      mode: "live",
+      keyHint: "9999",
+    });
+    expect(validateGatewayInput("easykash", { apiKey: "new-key-1234", hmacSecret: "" }, saved)).toMatchObject({
+      secret: { apiKey: "new-key-1234", hmacSecret: saved.hmacSecret },
+    });
+  });
+
+  it("is offered to EGP stores only and shows only public details", () => {
+    expect(gatewaySupportsCurrency("easykash", "EGP")).toBe(true);
+    expect(gatewaySupportsCurrency("easykash", "SAR")).toBe(false);
+    expect(readPublicDetails("easykash", { mode: "live", keyHint: "34ef", webhookVerifiedAt: "t", apiKey: "never" })).toEqual({
+      mode: "live",
+      keyHint: "34ef",
+      webhookVerifiedAt: "t",
+    });
+  });
+});
+
 describe("stored rows", () => {
   it("checks a decrypted secret has every field", () => {
     expect(isCompleteSecret("kashier", { merchantId: "MID-1-1", paymentApiKey: "a", secretKey: "b" })).toBe(true);
     expect(isCompleteSecret("paymob", { secretKey: "a", publicKey: "b", hmacSecret: "c" })).toBe(false);
+    expect(isCompleteSecret("easykash", { apiKey: "a", hmacSecret: "b" })).toBe(true);
+    expect(isCompleteSecret("easykash", { apiKey: "a" })).toBe(false);
+    // A Kashier secret is never an EasyKash one, and the other way round.
+    expect(isCompleteSecret("easykash", { merchantId: "MID-1-1", paymentApiKey: "a", secretKey: "b" })).toBe(false);
+    expect(isCompleteSecret("kashier", { apiKey: "a", hmacSecret: "b" })).toBe(false);
   });
 
   it("reads only the public config", () => {
@@ -129,6 +188,22 @@ describe("stored rows", () => {
     expect(readOrderGateway({ paymentGateway: { provider: "stripe", integrationId: INTEGRATION } })).toBeNull();
     expect(readOrderGateway({ paymentGateway: { provider: "paymob", integrationId: "x" } })).toBeNull();
     expect(readOrderGateway(null)).toBeNull();
+  });
+
+  it("reads the last EasyKash reference when it is well formed", () => {
+    const lastReference = `${ORDER}_abc123`;
+    expect(readOrderGateway({ paymentGateway: { provider: "easykash", integrationId: INTEGRATION, lastReference } })).toEqual({
+      provider: "easykash",
+      integrationId: INTEGRATION,
+      lastReference,
+    });
+    expect(readOrderGateway({ paymentGateway: { provider: "easykash", integrationId: INTEGRATION, lastReference: "x" } })).toEqual({
+      provider: "easykash",
+      integrationId: INTEGRATION,
+    });
+    expect(
+      readOrderDepositGateway({ deposit: { gateway: { provider: "easykash", integrationId: INTEGRATION, lastReference } } }),
+    ).toEqual({ provider: "easykash", integrationId: INTEGRATION, lastReference });
   });
 });
 
@@ -147,6 +222,15 @@ describe("references and URLs", () => {
     expect(storeGatewayWebhookUrl(INTEGRATION, "http://localhost:3004")).toBeNull();
     expect(storeGatewayWebhookUrl(INTEGRATION, "")).toBeNull();
     expect(storeGatewayReturnPath(ORDER)).toBe(`/api/store-payments/return?order=${ORDER}`);
+  });
+
+  it("builds the EasyKash callback URL per seller, only for a public https backend", () => {
+    expect(easykashCallbackUrl(ORDER, "https://api.tallaby.com/")).toBe(
+      `https://api.tallaby.com/api/webhooks/store-payments/easykash/${ORDER}`,
+    );
+    expect(easykashCallbackUrl(ORDER, "http://localhost:3004")).toBeNull();
+    expect(easykashCallbackUrl(ORDER, "")).toBeNull();
+    expect(easykashCallbackUrl("not-a-uuid", "https://api.tallaby.com")).toBeNull();
   });
 
   it("converts EGP to integer piastres", () => {

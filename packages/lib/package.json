@@ -119,6 +119,10 @@
       "types": "./src/kashier/index.ts",
       "default": "./src/kashier/index.ts"
     },
+    "./easykash": {
+      "types": "./src/easykash/index.ts",
+      "default": "./src/easykash/index.ts"
+    },
     "./payments": {
       "types": "./src/payments/index.ts",
       "default": "./src/payments/index.ts"

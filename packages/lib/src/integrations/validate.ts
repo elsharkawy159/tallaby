@@ -82,7 +82,7 @@ export type IntegrationPublicDetails = {
   autoShip?: string;
   /** Meta Pixel: which events are sent and when Purchase is sent (F-30). */
   tracking?: MetaTrackingSettings;
-  /** Payment gateways (paymob, kashier): test or live, and whether a signed webhook has arrived yet. */
+  /** Payment gateways (paymob, kashier, easykash): test or live, and whether a signed webhook has arrived yet. */
   mode?: string;
   webhookVerifiedAt?: string;
   /** Wassalha: the account it exports for. */
@@ -98,6 +98,7 @@ const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPu
   bosta: ["keyHint", "pickupLocationName", "autoShip"],
   paymob: ["keyHint", "mode", "webhookVerifiedAt"],
   kashier: ["keyHint", "mode", "webhookVerifiedAt"],
+  easykash: ["keyHint", "mode", "webhookVerifiedAt"],
   wassalha: ["postId", "merchantName", "warehouseName"],
 };
 

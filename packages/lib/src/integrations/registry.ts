@@ -2,7 +2,8 @@
  * Store apps and integrations (PLAN.md §9, P7-01). Pure and edge-safe.
  *
  * Every provider listed here exists in the `store_integrations.provider`
- * CHECK (0056; `bosta` from 0106; `paymob`, `kashier` and `wassalha` from 0130).
+ * CHECK (0056; `bosta` from 0106; `paymob`, `kashier` and `wassalha` from 0130;
+ * `easykash` from 0174).
  * Where each one shows up in the dashboard is catalog.ts. Public identifiers live in `config`; secrets only ever go
  * through `encryptCredentials` (crypto.server.ts).
  */
@@ -20,6 +21,7 @@ export const INTEGRATION_PROVIDERS = [
   "paymob",
   "kashier",
   "wassalha",
+  "easykash",
 ] as const;
 
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
@@ -78,6 +80,8 @@ export const INTEGRATIONS: Record<IntegrationProvider, IntegrationDefinition> = 
   // Wassalha (Egypt Post): no API; orders go out as its Excel upload sheet
   // (ROADMAP.md F-12c). Public settings only, no secret.
   wassalha: { provider: "wassalha", category: "shipping", kind: "settings", availability: "available" },
+  // The seller's own EasyKash account (ROADMAP.md F-98, docs/easykash.md).
+  easykash: { provider: "easykash", category: "payments", kind: "credentials", availability: "available" },
 };
 
 export function isIntegrationProvider(value: unknown): value is IntegrationProvider {

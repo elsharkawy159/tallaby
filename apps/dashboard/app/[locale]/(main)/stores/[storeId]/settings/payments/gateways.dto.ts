@@ -34,6 +34,11 @@ export const GATEWAY_FIELDS = {
     { name: "paymentApiKey", secret: true, placeholder: "" },
     { name: "secretKey", secret: true, placeholder: "" },
   ],
+  // EasyKash (F-98). Not shown until its app card ships (F-98d), which also adds the `fields.apiKey` label.
+  easykash: [
+    { name: "apiKey", secret: true, placeholder: "" },
+    { name: "hmacSecret", secret: true, placeholder: "" },
+  ],
 } as const;
 
 export type GatewayFieldName = (typeof GATEWAY_FIELDS)[keyof typeof GATEWAY_FIELDS][number]["name"];

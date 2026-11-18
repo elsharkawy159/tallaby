@@ -1,6 +1,6 @@
 # EasyKash: seller payment gateway (ROADMAP.md F-98)
 
-Status: **plan only, nothing built** (owner request 2026-11-18). Source: the official docs at
+Status: **building** (owner request 2026-11-18; decisions in §10). Source: the official docs at
 <https://easykash.gitbook.io/easykash-apis-documentation>, read in full on 2026-11-18 (9 pages, listed in §11).
 
 ## 0. In short
@@ -518,6 +518,8 @@ and no change; a callback naming another seller → ignored; duplicate → 200, 
 ---
 
 ## 10. Questions for the owner
+
+**Answered 2026-11-18:** exact amount only (option A, §4.5); no-reply@tallaby.com when the buyer gave no email; vouchers stay open 24 h; migration 0174 on staging when the code is ready, production only with a separate owner OK; name «إيزي كاش» and EGP stores only for v1 (recommended defaults).
 
 1. **Name and priority:** «إيزي كاش» in Arabic? P1, after the current work?
 2. **Fees on the buyer (money rule):** option A (exact amount; we tell sellers to keep fees on themselves) or B
