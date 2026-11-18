@@ -5073,7 +5073,8 @@
         "cardIntegrationId": "رقم تكامل البطاقات (Integration ID)",
         "walletIntegrationId": "رقم تكامل المحافظ الإلكترونية",
         "merchantId": "رقم التاجر (Merchant ID)",
-        "paymentApiKey": "مفتاح الدفع (Payment API key)"
+        "paymentApiKey": "مفتاح الدفع (Payment API key)",
+        "apiKey": "مفتاح API (API Key)"
       },
       "providers": {
         "paymob": {
@@ -5081,6 +5082,32 @@
         },
         "kashier": {
           "whereToFind": "من لوحة تحكم كاشير: Integrate now / API keys لرقم التاجر ومفتاح الدفع والمفتاح السري. اختر التجربة أو الحساب الفعلي حسب المفاتيح."
+        },
+        "easykash": {
+          "whereToFind": "من حسابك في إيزي كاش: Settings › Integration Settings. اتبع الخطوات بالترتيب.",
+          "steps": {
+            "title": "خطوات الربط",
+            "directPayment": "اطلب من دعم إيزي كاش تفعيل خدمة الدفع المباشر (Direct Payment) لحسابك.",
+            "callback": "في إيزي كاش افتح Settings › Integration Settings، والصق هذا الرابط في خانة Callback URL. الرابط نفسه لكل متاجرك ولا يتغير.",
+            "options": "اختر وسائل الدفع التي تريد عرضها لعملائك، ثم اضغط Save. يظهر بعدها مفتاح HMAC Secret Key.",
+            "fees": "عند سؤالك عن الرسوم، اختر أن تتحملها أنت ولا تُضاف على المشتري، ثم اضغط Submit. إذا أُضيفت الرسوم على المشتري فلن تتأكد الطلبات المدفوعة تلقائيًا.",
+            "keys": "انسخ API Key وHMAC Secret Key والصقهما في الخانتين أدناه، ثم اضغط «تحقق من المفاتيح واربط».",
+            "test": "اطلب طلبًا حقيقيًا صغيرًا من متجرك وادفعه. تبقى الحالة «في انتظار أول دفعة» حتى تصلنا أول دفعة، ثم تصبح «مربوطة»."
+          },
+          "callbackLabel": "رابط Callback URL الخاص بك",
+          "callbackCopy": "نسخ",
+          "callbackCopiedShort": "تم النسخ",
+          "callbackCopied": "تم نسخ الرابط. الصقه في خانة Callback URL في إيزي كاش.",
+          "callbackCopyFailed": "تعذر النسخ. حدد الرابط وانسخه يدويًا.",
+          "noCallbackUrl": "لا يمكن ربط إيزي كاش حاليًا. تواصل مع دعم طلبي.",
+          "howItWorks": {
+            "verify": "نتحقق من مفتاح API مع إيزي كاش دون إنشاء أي عملية دفع. يتأكد مفتاح HMAC مع أول دفعة."
+          },
+          "errors": {
+            "invalidApiKey": "مفتاح API غير صحيح. انسخه مرة أخرى من Settings › Integration Settings في إيزي كاش.",
+            "invalidHmacSecret": "مفتاح HMAC غير صحيح. انسخه مرة أخرى من Settings › Integration Settings في إيزي كاش، ويظهر بعد الضغط على Save.",
+            "keysRejected": "إيزي كاش لم تقبل مفتاح API. تأكد من نسخه كاملًا ومن تفعيل الدفع المباشر (Direct Payment) لحسابك."
+          }
         }
       },
       "errors": {
@@ -5941,6 +5968,11 @@
         "name": "كاشير",
         "vendor": "Kashier",
         "description": "الدفع بالبطاقات والمحافظ الإلكترونية في متجرك، وتصل الأموال مباشرة إلى حساب كاشير الخاص بك."
+      },
+      "easykash": {
+        "name": "إيزي كاش",
+        "vendor": "EasyKash",
+        "description": "البطاقات والمحافظ والدفع نقدًا في فوري وأمان والتقسيط في متجرك، وتصل الأموال مباشرة إلى حسابك في إيزي كاش."
       },
       "paytabs": {
         "name": "باي تابس",

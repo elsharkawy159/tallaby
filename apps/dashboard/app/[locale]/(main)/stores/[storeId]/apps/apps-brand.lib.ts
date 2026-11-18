@@ -89,6 +89,7 @@ const GLYPHS: Record<AppId, Pick<SimpleIcon, "path">> = {
   aramex: PARCEL_ICON,
   paymob: CARD_ICON,
   kashier: CARD_ICON,
+  easykash: CARD_ICON,
   paytabs: CARD_ICON,
   moyasar: CARD_ICON,
   paylink: CARD_ICON,

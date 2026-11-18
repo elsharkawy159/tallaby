@@ -6,6 +6,7 @@ import aiAssistants from "./ai-assistants";
 import aramex from "./aramex";
 import bosta from "./bosta";
 import customerNotifications from "./customer-notifications";
+import easykash from "./easykash";
 import googleAnalytics from "./google-analytics";
 import googleSheets from "./google-sheets";
 import googleTagManager from "./google-tag-manager";
@@ -46,6 +47,7 @@ export const MANIFESTS = [
   aramex,
   paymob,
   kashier,
+  easykash,
   paytabs,
   moyasar,
   paylink,

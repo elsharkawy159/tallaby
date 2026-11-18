@@ -5073,7 +5073,8 @@
         "cardIntegrationId": "Card integration ID",
         "walletIntegrationId": "Mobile wallet integration ID",
         "merchantId": "Merchant ID",
-        "paymentApiKey": "Payment API key"
+        "paymentApiKey": "Payment API key",
+        "apiKey": "API Key"
       },
       "providers": {
         "paymob": {
@@ -5081,6 +5082,32 @@
         },
         "kashier": {
           "whereToFind": "In your Kashier dashboard: Integrate now / API keys for the Merchant ID, Payment API key and Secret key. Choose Test or Live to match the keys."
+        },
+        "easykash": {
+          "whereToFind": "In your EasyKash account: Settings › Integration Settings. Follow the steps in order.",
+          "steps": {
+            "title": "How to connect",
+            "directPayment": "Ask EasyKash support to turn on Direct Payment for your account.",
+            "callback": "In EasyKash, open Settings › Integration Settings and paste this link in Callback URL. It's the same link for all your stores and never changes.",
+            "options": "Choose the payment options your customers should see, then press Save. The HMAC Secret Key appears after that.",
+            "fees": "When asked about fees, choose to pay them yourself, not to add them on the buyer, then press Submit. If the fees are added on the buyer, paid orders won't be confirmed automatically.",
+            "keys": "Copy the API Key and the HMAC Secret Key into the two fields below, then press \"Check keys and connect\".",
+            "test": "Place a small real order on your store and pay it. The status stays \"Waiting for first payment\" until the first payment reaches us, then turns to \"Connected\"."
+          },
+          "callbackLabel": "Your Callback URL",
+          "callbackCopy": "Copy",
+          "callbackCopiedShort": "Copied",
+          "callbackCopied": "Link copied. Paste it in Callback URL in EasyKash.",
+          "callbackCopyFailed": "Couldn't copy. Select the link and copy it yourself.",
+          "noCallbackUrl": "EasyKash can't be connected right now. Please contact Tallaby support.",
+          "howItWorks": {
+            "verify": "We check your API key with EasyKash without creating any payment. The HMAC key is confirmed by your first payment."
+          },
+          "errors": {
+            "invalidApiKey": "The API Key doesn't look right. Copy it again from Settings › Integration Settings in EasyKash.",
+            "invalidHmacSecret": "The HMAC Secret Key doesn't look right. Copy it again from Settings › Integration Settings in EasyKash. It appears after you press Save.",
+            "keysRejected": "EasyKash didn't accept this API Key. Check that you copied all of it and that Direct Payment is on for your account."
+          }
         }
       },
       "errors": {
@@ -5941,6 +5968,11 @@
         "name": "Kashier",
         "vendor": "Kashier",
         "description": "Card and mobile wallet payments on your store, paid straight to your own Kashier account."
+      },
+      "easykash": {
+        "name": "EasyKash",
+        "vendor": "EasyKash",
+        "description": "Cards, mobile wallets, cash at Fawry and Aman, and instalments on your store, paid straight to your own EasyKash account."
       },
       "paytabs": {
         "name": "PayTabs",

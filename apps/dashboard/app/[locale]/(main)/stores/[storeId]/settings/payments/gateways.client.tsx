@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, CircleDashed, Clock, CreditCard, KeyRound, LoaderCircle, Plug, ShieldCheck, Unplug } from "lucide-react";
+import { Check, CircleDashed, Clock, Copy, CreditCard, KeyRound, LoaderCircle, Plug, ShieldCheck, Unplug } from "lucide-react";
 
 import { isStoreAppLive, storeAppsInGroup, type StoreApp } from "@workspace/lib/integrations";
 import { isStoreGatewayProvider, type StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
@@ -19,13 +19,13 @@ import { AppLogo } from "../../apps/app-logo";
 import { connectGateway, disconnectGateway } from "./gateways.server";
 import { GATEWAY_FIELDS } from "./gateways.dto";
 
-/** Paymob, Kashier, PayPal, Tallaby Pay: the catalog's payments group. */
+/** Paymob, Kashier, EasyKash, PayPal, Tallaby Pay: the catalog's payments group. */
 const GATEWAYS = storeAppsInGroup("payments");
 
 /**
  * Store settings › Payment methods › Online card payments (ROADMAP.md F-39):
- * the seller connects their own Paymob or Kashier account; card payments go
- * straight to them. One gateway per store. PayPal and Tallaby Pay are "soon".
+ * the seller connects their own Paymob, Kashier or EasyKash (F-98) account;
+ * card payments go straight to them. One gateway per store. PayPal and Tallaby Pay are "soon".
  */
 export function StoreGatewaysCard({
   storeId,
@@ -34,6 +34,7 @@ export function StoreGatewaysCard({
   usdLive,
   currency,
   only,
+  easykashCallbackUrl = null,
 }: {
   storeId: string;
   initial: StoreGatewayOverview;
@@ -43,6 +44,8 @@ export function StoreGatewaysCard({
   currency: string;
   /** App Center › <gateway> › Settings shows just that gateway (F-93); Payment methods shows them all. */
   only?: readonly string[];
+  /** This seller's EasyKash Callback URL, computed on the server; null when there is no public backend URL. */
+  easykashCallbackUrl?: string | null;
 }) {
   const t = useTranslations("storePayments.gateways");
   const tApp = useTranslations("storeApps.providers");
@@ -74,6 +77,8 @@ export function StoreGatewaysCard({
     const isConnected = live && connected?.provider === provider;
     const blocked = live && !!connected && !isConnected;
     const wrongCurrency = live && !gatewaySupportsCurrency(provider, currency);
+    // EasyKash posts to a per-seller URL; without one it can't be connected (same rule as webhooksReady).
+    const noCallbackUrl = provider === "easykash" && !easykashCallbackUrl;
     const name = tApp(`${key}.name`);
     return (
       <div
@@ -134,7 +139,7 @@ export function StoreGatewaysCard({
               <SellerButton
                 variant="solid"
                 size="xs"
-                disabled={readOnly || isPending || blocked || wrongCurrency || !overview.webhooksReady}
+                disabled={readOnly || isPending || blocked || wrongCurrency || !overview.webhooksReady || noCallbackUrl}
                 onClick={() => setEditing(provider)}
               >
                 <Plug aria-hidden />
@@ -169,6 +174,7 @@ export function StoreGatewaysCard({
           storeId={storeId}
           isUpdate={connected?.provider === editing}
           currentMode={connected?.provider === editing ? (connected.details.mode as "test" | "live" | undefined) : undefined}
+          callbackUrl={editing === "easykash" ? easykashCallbackUrl : null}
           onClose={() => setEditing(null)}
           onConnected={(next) => {
             setOverview(next);
@@ -207,8 +213,11 @@ function GatewaySheet({
   onClose,
   onConnected,
   feeKey,
+  callbackUrl,
 }: {
   feeKey: "howItWorks.fee" | "howItWorks.feeUsd";
+  /** EasyKash only: the URL the seller pastes in EasyKash (server-computed). */
+  callbackUrl: string | null;
   provider: StoreGatewayProvider;
   storeId: string;
   isUpdate: boolean;
@@ -225,6 +234,8 @@ function GatewaySheet({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const name = tApp(`${provider}.name`);
+  // A provider can word an error or the key check its own way (EasyKash's API key, its Inquiry check).
+  const providerText = (key: string) => (t.has(`providers.${provider}.${key}`) ? t(`providers.${provider}.${key}`) : t(key));
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,7 +243,7 @@ function GatewaySheet({
     startTransition(async () => {
       const result = await connectGateway(storeId, provider, { ...values, ...(provider === "kashier" && { mode }) });
       if (result.success) onConnected(result.data);
-      else setError(t(`errors.${result.error}`));
+      else setError(providerText(`errors.${result.error}`));
     });
   };
 
@@ -241,8 +252,8 @@ function GatewaySheet({
       <SheetContent data-clarity-mask="true" side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
         <SheetHeader className="border-b border-(--s-line-soft) px-[18px] py-4 pe-14">
           <div className="flex items-center gap-3">
-            {/* The sheet only opens from a catalog row, so the provider is always an app key (EasyKash's card is F-98d). */}
-            <AppLogo app={provider as StoreApp["key"]} className="size-11 rounded-[14px]" />
+            {/* The sheet only opens from a catalog row, so the provider is always an app key. */}
+            <AppLogo app={provider} className="size-11 rounded-[14px]" />
             <div className="min-w-0">
               <SheetTitle className="text-[17px] font-bold text-(--s-ink)">{t(isUpdate ? "updateTitle" : "connectTitle", { gateway: name })}</SheetTitle>
               <SheetDescription className="text-[12.5px] text-(--s-subtle)">{t(`providers.${provider}.whereToFind`)}</SheetDescription>
@@ -260,6 +271,8 @@ function GatewaySheet({
               </OptionCards>
             </Field>
           )}
+
+          {provider === "easykash" && <EasykashSteps callbackUrl={callbackUrl} />}
 
           {fields.map((field) => {
             const optional = "optional" in field && field.optional;
@@ -286,7 +299,7 @@ function GatewaySheet({
 
           <Note icon={ShieldCheck}>
             <span className="flex flex-col gap-1.5">
-              <span>{t("howItWorks.verify")}</span>
+              <span>{providerText("howItWorks.verify")}</span>
               <span>{t("howItWorks.money")}</span>
               <span>{t(feeKey)}</span>
             </span>
@@ -310,5 +323,71 @@ function GatewaySheet({
         </SheetFooter>
       </SheetContent>
     </Sheet>
+  );
+}
+
+/**
+ * EasyKash setup (docs/easykash.md §2): the numbered steps, with this seller's
+ * Callback URL to copy at the step that uses it. The URL comes from the
+ * server; it is not a secret, only a routing hint (the HMAC is the proof).
+ */
+function EasykashSteps({ callbackUrl }: { callbackUrl: string | null }) {
+  const t = useTranslations("storePayments.gateways.providers.easykash");
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    if (!callbackUrl) return;
+    try {
+      await navigator.clipboard.writeText(callbackUrl);
+      setCopied(true);
+      toast.success(t("callbackCopied"));
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t("callbackCopyFailed"));
+    }
+  };
+
+  const steps = ["directPayment", "callback", "options", "fees", "keys", "test"] as const;
+  return (
+    <section aria-labelledby="easykash-steps" className="flex flex-col gap-3 rounded-[14px] border border-(--s-line-soft) p-3.5">
+      <h3 id="easykash-steps" className="text-[13.5px] font-bold text-(--s-text)">
+        {t("steps.title")}
+      </h3>
+      <ol className="flex flex-col gap-3">
+        {steps.map((step, i) => (
+          <li key={step} className="flex gap-2.5">
+            <span
+              aria-hidden
+              className="grid size-6 shrink-0 place-items-center rounded-full bg-(--s-tint) font-montserrat text-xs font-bold text-(--s-primary)"
+            >
+              {i + 1}
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5 text-[12.5px] leading-[1.7] text-(--s-muted)">
+              <p className={cn(step === "fees" && "font-semibold text-(--s-text)")}>{t(`steps.${step}`)}</p>
+              {step === "callback" &&
+                (callbackUrl ? (
+                  <div className="flex items-center gap-2">
+                    <TextInput
+                      id="easykash-callback-url"
+                      aria-label={t("callbackLabel")}
+                      dir="ltr"
+                      readOnly
+                      value={callbackUrl}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="h-10 min-w-0 flex-1 text-start font-montserrat text-xs"
+                    />
+                    <SellerButton type="button" variant="mini" size="xs" onClick={copy}>
+                      {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
+                      {copied ? t("callbackCopiedShort") : t("callbackCopy")}
+                    </SellerButton>
+                  </div>
+                ) : (
+                  <Note tone="amber">{t("noCallbackUrl")}</Note>
+                ))}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }

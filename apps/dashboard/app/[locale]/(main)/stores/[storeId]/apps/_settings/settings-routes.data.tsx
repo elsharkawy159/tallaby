@@ -7,6 +7,7 @@ import { DEFAULT_MCP_RESOURCE } from "@workspace/lib/agents";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { isIntegrationProvider } from "@workspace/lib/integrations";
 import { getBostaOverview, getWassalhaOverview, type StoreIntegrationSummary } from "@workspace/lib/integrations/server";
+import { easykashCallbackUrl } from "@workspace/lib/payments/store-gateways";
 import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { SIZE_CHART_APP, listStoreSizeCharts } from "@workspace/lib/size-charts/server";
 import { storeUrl } from "@workspace/lib/storefront";
@@ -107,6 +108,8 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
         usdLive={usdLive}
         currency={parseStoreCurrency(store.settings).currency ?? DEFAULT_CURRENCY}
         only={[manifest.id]}
+        // The store was loaded for the session seller, so this is their own URL (never from the client).
+        easykashCallbackUrl={manifest.id === "easykash" ? easykashCallbackUrl(store.sellerId) : null}
       />
     );
   },

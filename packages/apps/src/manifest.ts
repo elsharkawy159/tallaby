@@ -26,6 +26,7 @@ export const APP_IDS = [
   "aramex",
   "paymob",
   "kashier",
+  "easykash",
   "paytabs",
   "moyasar",
   "paylink",

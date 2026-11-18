@@ -96,6 +96,7 @@ export function StorePaymentsSettings({
   initial,
   initialDeposit,
   gateways,
+  easykashCallbackUrl,
   readOnly,
   usdLive,
 }: {
@@ -106,6 +107,8 @@ export function StorePaymentsSettings({
   /** `stores.settings.codDeposit` (F-21). */
   initialDeposit: CodDepositSetting | null;
   gateways: StoreGatewayOverview;
+  /** This seller's EasyKash Callback URL, computed on the server (null: no public backend URL). */
+  easykashCallbackUrl: string | null;
   readOnly: boolean;
   /** The USD switch (0136): the order fee is no longer EGP 5. */
   usdLive: boolean;
@@ -257,7 +260,7 @@ export function StorePaymentsSettings({
           <Rows>{WALLETS.map(row)}</Rows>
         </SectionCard>
 
-        <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} usdLive={usdLive} currency={money.currency ?? DEFAULT_CURRENCY} />
+        <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} usdLive={usdLive} currency={money.currency ?? DEFAULT_CURRENCY} easykashCallbackUrl={easykashCallbackUrl} />
 
         <SectionCard icon={Clock} tone="accent" title={t("soonTitle")} description={t("soonDescription")}>
           <ul className="flex flex-wrap gap-1.5">

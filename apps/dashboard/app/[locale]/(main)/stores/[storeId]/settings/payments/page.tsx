@@ -2,6 +2,7 @@ import { parseStoreCurrency } from "@workspace/lib";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { parseStorePayments } from "@workspace/lib/payments/store-methods";
 import { parseCodDeposit } from "@workspace/lib/orders/cod-deposit";
+import { easykashCallbackUrl } from "@workspace/lib/payments/store-gateways";
 import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
 import { requireStore } from "@/lib/auth/require-seller.server";
 import { loadStorePage } from "@/lib/stores/store-page.server";
@@ -20,5 +21,5 @@ export default async function StorePaymentsPage({ params }: { params: Promise<{ 
   const { usdLive } = await getBillingState();
   const gateways = (await getStoreGatewayOverview(seller.sellerId, store.id)) ?? { connected: null, webhooksReady: false };
 
-  return <StorePaymentsSettings money={parseStoreCurrency(store.settings)} usdLive={usdLive} storeId={store.id} initial={payments} initialDeposit={parseCodDeposit(store.settings)} gateways={gateways} readOnly={store.status !== "active"} />;
+  return <StorePaymentsSettings money={parseStoreCurrency(store.settings)} usdLive={usdLive} storeId={store.id} initial={payments} initialDeposit={parseCodDeposit(store.settings)} gateways={gateways} easykashCallbackUrl={easykashCallbackUrl(seller.sellerId)} readOnly={store.status !== "active"} />;
 }

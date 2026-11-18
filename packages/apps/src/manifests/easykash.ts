@@ -1,0 +1,39 @@
+import { defineApp } from "../manifest";
+
+/** F-98: the seller's own EasyKash account (keys encrypted); one card gateway per store. Always live (no test mode). */
+export default defineApp({
+  id: "easykash",
+  slug: "easykash",
+  kind: "integration",
+  category: "payments",
+  mechanism: "gateway",
+  name: { ar: "إيزي كاش", en: "EasyKash" },
+  vendor: { ar: "EasyKash", en: "EasyKash" },
+  summary: {
+    ar: "البطاقات والمحافظ والدفع نقدًا في فوري وأمان والتقسيط في متجرك، وتصل الأموال مباشرة إلى حسابك في إيزي كاش.",
+    en: "Cards, mobile wallets, cash at Fawry and Aman, and instalments on your store, paid straight to your own EasyKash account.",
+  },
+  description: {
+    ar: "اربط حسابك في إيزي كاش بمفتاحيه، ويمكن لعملائك الدفع بالبطاقة أو المحفظة، أو نقدًا في فوري وأمان، أو بالتقسيط مثل ValU. تصل الأموال إلى حسابك في إيزي كاش مباشرة، وتأخذ إيزي كاش رسومها منك هناك. كل متجر يربط بوابة دفع واحدة.",
+    en: "Connect your EasyKash account with its two keys, and your customers can pay by card or mobile wallet, in cash at Fawry and Aman, or in instalments such as ValU. The money goes straight to your EasyKash account, and EasyKash takes its fees there. A store connects one card gateway.",
+  },
+  highlights: [
+    { ar: "بطاقات ومحافظ", en: "Cards and wallets" },
+    { ar: "نقدًا في فوري وأمان", en: "Cash at Fawry and Aman" },
+    { ar: "تقسيط مثل ValU", en: "Instalments such as ValU" },
+    { ar: "الأموال لحسابك مباشرة", en: "Paid straight to your account" },
+  ],
+  keywords: ["EasyKash", "Easy Kash", "card", "wallet", "Fawry", "Aman", "ValU", "instalments", "payment gateway"],
+  icon: { background: "#0B4DA2", foreground: "#FFFFFF", image: "/app-logos/easykash.png" },
+  screenshots: [],
+  pricing: { model: "free" },
+  providerFees: true,
+  plans: ["free", "pro"],
+  developer: "tallaby",
+  status: "live",
+  installMode: "connect",
+  settingsRoute: "gateway",
+  surfaces: ["storefront.checkout", "payments"],
+  docsUrl: "https://tallaby.com/integrations/easykash",
+  internal: { provider: "easykash" },
+});

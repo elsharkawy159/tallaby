@@ -34,7 +34,7 @@ export const GATEWAY_FIELDS = {
     { name: "paymentApiKey", secret: true, placeholder: "" },
     { name: "secretKey", secret: true, placeholder: "" },
   ],
-  // EasyKash (F-98). Not shown until its app card ships (F-98d), which also adds the `fields.apiKey` label.
+  // EasyKash (F-98): always live, so no mode picker; the sheet also shows the seller's Callback URL.
   easykash: [
     { name: "apiKey", secret: true, placeholder: "" },
     { name: "hmacSecret", secret: true, placeholder: "" },

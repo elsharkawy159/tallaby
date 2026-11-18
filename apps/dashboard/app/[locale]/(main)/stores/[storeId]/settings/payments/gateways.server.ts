@@ -54,7 +54,7 @@ export async function connectGateway(
 
     // Only the fields a gateway form has, as strings; validated in @workspace/lib.
     const clean: Record<string, string> = {};
-    for (const key of ["secretKey", "publicKey", "hmacSecret", "cardIntegrationId", "walletIntegrationId", "merchantId", "paymentApiKey", "mode"]) {
+    for (const key of ["secretKey", "publicKey", "hmacSecret", "cardIntegrationId", "walletIntegrationId", "merchantId", "paymentApiKey", "apiKey", "mode"]) {
       const value = input?.[key];
       if (typeof value === "string") clean[key] = value.slice(0, 600);
     }
