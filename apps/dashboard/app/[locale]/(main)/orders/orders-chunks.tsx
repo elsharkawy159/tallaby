@@ -19,6 +19,7 @@ import {
 import { TableSection } from "@workspace/ui/components/table-section";
 import { Chip, EmptyState, PageHeader, SellerButton, SellerCard } from "@/components/seller-ui";
 import { cn, getPublicUrl } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { formatDateTime, formatNumber, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { useTableSectionLabels } from "@/lib/i18n/table-labels";
@@ -414,6 +415,7 @@ export function VendorOrdersTable({
         description={t("subtitle")}
         actions={
           <>
+            <TutorialVideoButton video="T-09" />
             <ExportOrdersButton filters={filters} count={total} />
             {storeChannel && shipQueue.wassalha && <WassalhaExportButton storeId={filters.channel} orders={shipQueue.orders} showCount />}
             {storeChannel && shipQueue.wassalha && <WassalhaTrackingUpload storeId={filters.channel} />}

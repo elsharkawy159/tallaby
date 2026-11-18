@@ -304,7 +304,7 @@ Source files checked, fictional data used, anything that differs from the real p
 
 ## 8. The dashboard button (`ROADMAP.md` F-97)
 
-- A small outline button **"شاهد الشرح"** with a play icon in the page header, on the side opposite the page title (left in Arabic, right in English).
+- A small button **«كيف يعمل؟»** with a Play icon (owner, 2026-11-18; it replaced "شاهد الشرح") on the part the video teaches: the page header (opposite the title) for a page, or the section or card header for one part of a form. It opens the video in a dialog, never autoplayed or muted. Code: `apps/dashboard/lib/tutorials/tutorial-videos.ts` (one id per video) and `components/tutorials/tutorial-video-button.client.tsx`.
 - It opens the Short in a dialog (YouTube embed, 9:16); on a phone it may open YouTube directly.
 - One registry in the dashboard maps a page path to its video (`dashboard_path` → `youtube_url` and `youtube_embed`). A page with no video shows no button.
 - The button is added only after the video is uploaded.

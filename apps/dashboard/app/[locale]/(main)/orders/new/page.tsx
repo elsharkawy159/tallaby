@@ -7,6 +7,7 @@ import { currentOrderLock, requireSeller } from "@/lib/auth/require-seller.serve
 import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { ManualOrderForm } from "./manual-order.client";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -29,7 +30,11 @@ export default async function NewManualOrderPage({ searchParams }: { searchParam
 
   return (
     <PageContainer narrow>
-      <PageHeader title={t("title")} description={store ? t("subtitle", { store: store.name }) : t("chooseStore")} />
+      <PageHeader
+        title={t("title")}
+        description={store ? t("subtitle", { store: store.name }) : t("chooseStore")}
+        actions={<TutorialVideoButton video="T-18" />}
+      />
       {store ? (
         <ManualOrderForm money={storeMoney[store.id]} storeId={store.id} storeName={store.name} />
       ) : (

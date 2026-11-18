@@ -13,6 +13,7 @@ import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS, m
 import { formatUsdPrice } from "@/lib/i18n/format";
 import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, orderCountValues, ordersCovered, stepTopUpAmount, stepUsdTopUp, TOP_UP_MAX_EGP, walletMoney, walletPoundLabel } from "./store-wallet.lib";
 import { startTopUp } from "./top-up.server";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 /**
  * How a preset card sizes itself, by how many presets there are. The columns follow the space the
@@ -142,11 +143,14 @@ export function TopUpPanel({
         aria-labelledby={`${ids}-title`}
         className="sui-rise flex scroll-mt-24 flex-col gap-[18px] px-6 pb-6 pt-[22px] [animation-delay:.05s] max-[720px]:gap-4 max-[720px]:px-4 max-[720px]:pb-5 max-[720px]:pt-[18px]"
       >
-        <div>
-          <h2 id={`${ids}-title`} className="text-[17px] font-bold leading-normal text-(--s-ink)">
-            {t("panel.title")}
-          </h2>
-          <p className="text-pretty text-[13px] text-(--s-subtle)">{t("panel.subtitle")}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 id={`${ids}-title`} className="text-[17px] font-bold leading-normal text-(--s-ink)">
+              {t("panel.title")}
+            </h2>
+            <p className="text-pretty text-[13px] text-(--s-subtle)">{t("panel.subtitle")}</p>
+          </div>
+          <TutorialVideoButton video="T-08" />
         </div>
 
         <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-3">

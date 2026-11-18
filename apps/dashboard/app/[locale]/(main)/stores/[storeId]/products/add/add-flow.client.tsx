@@ -23,6 +23,7 @@ export function FlowStage({
   icon: Icon,
   label,
   running = false,
+  help,
   children,
 }: {
   /** A button or Link with the back label; see `backProps`. */
@@ -30,6 +31,8 @@ export function FlowStage({
   icon: LucideIcon;
   label: string;
   running?: boolean;
+  /** Optional help at the end of the back bar (the screen's tutorial video). */
+  help?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -41,6 +44,7 @@ export function FlowStage({
             <Icon className="size-3.5 shrink-0 text-primary-ink" aria-hidden />
             <span className="truncate">{label}</span>
           </span>
+          {help && <div className="ms-auto shrink-0">{help}</div>}
         </div>
         <div className={cn("flex min-w-0 flex-1 flex-col gap-[22px]", running ? "justify-start" : "justify-center")}>{children}</div>
       </div>

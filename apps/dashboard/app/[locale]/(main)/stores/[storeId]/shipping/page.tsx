@@ -15,6 +15,7 @@ import { PageContainer, PageHeader, Tag } from "@/components/seller-ui";
 import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { cn } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { StoreShippingSettings } from "./shipping.client";
 import { currencyCountry, type CoverageItem, type TemplateOption, type ZoneView } from "./shipping.dto";
 
@@ -98,9 +99,12 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
         title={t("pageTitle")}
         description={t("pageDescription")}
         actions={
-          <Tag className="h-7 px-3 text-xs">
-            <bdi>{store.name}</bdi>
-          </Tag>
+          <>
+            <Tag className="h-7 px-3 text-xs">
+              <bdi>{store.name}</bdi>
+            </Tag>
+            <TutorialVideoButton video="T-06" />
+          </>
         }
       />
       {offline && (

@@ -27,6 +27,7 @@ import { CollapsibleSection } from "../add/sections/collapsible-section";
 import { MoneyField } from "../add/sections/fields";
 import { getErrorAtPath } from "../add/add-product.lib";
 import type { AddProductFormData } from "../add/add-product.schema";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 /**
  * "Customer requirements" (مطلوب من العميل, 0167, ROADMAP.md F-91): what the
@@ -64,6 +65,7 @@ export function CustomerFieldsSection({ id = "sec-customer-fields" }: { id?: str
       id={id}
       icon={ClipboardList}
       title={t("title")}
+      help={<TutorialVideoButton video="T-15" compact />}
       description={t("description")}
       summary={fields.length ? t("summary", { count: fields.length, required }) : t("summaryNone")}
       summaryTone={fields.length ? "ok" : "muted"}

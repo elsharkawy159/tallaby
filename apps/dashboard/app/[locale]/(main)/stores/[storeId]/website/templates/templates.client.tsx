@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Chip, EmptyState, Modal, Note, PageHeader, SellerButton, SellerCard, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { RemoteImage } from "@/components/media/remote-image";
 import { TemplateCard, ThumbnailFallback } from "./template-card.client";
@@ -238,15 +239,17 @@ export function TemplateGallery({
         title={t("title")}
         description={t("description")}
         actions={
-          data &&
-          !showCurrent && (
-            <SellerButton asChild variant="outline">
-              <Link href={`/stores/${storeId}/editor`}>
-                <Pencil aria-hidden />
-                {t("openEditor")}
-              </Link>
-            </SellerButton>
-          )
+          <>
+            <TutorialVideoButton video="T-04" />
+            {data && !showCurrent && (
+              <SellerButton asChild variant="outline">
+                <Link href={`/stores/${storeId}/editor`}>
+                  <Pencil aria-hidden />
+                  {t("openEditor")}
+                </Link>
+              </SellerButton>
+            )}
+          </>
         }
       />
       {children}

@@ -86,6 +86,7 @@ import { addProductReturnHref } from "./add-method.lib";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
 import { useProductStoreId, useProductsHref } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
 import { queueProductCreatedToast, showProductSavedToast } from "../_components/product-saved-toast.client";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 interface AddProductProps {
   categories: CategoryOption[];
@@ -585,6 +586,7 @@ function AddProductForm({
                 {!isEdit && draft.hasDraft && (
                   <ClearDraftButton className="inline-flex max-[600px]:ms-auto max-[600px]:h-9 sm:max-lg:hidden" disabled={isPending} onConfirm={clearDraft} />
                 )}
+                {!isEdit && <TutorialVideoButton video="T-01" compact className={cn(!draft.hasDraft && "max-[600px]:ms-auto")} />}
                 {/* One scrolling line on phones: this bar is sticky, and two rows of buttons cost a quarter of the screen. */}
                 {headerActions && (
                   <div

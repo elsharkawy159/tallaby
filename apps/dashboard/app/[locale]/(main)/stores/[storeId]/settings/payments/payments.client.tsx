@@ -27,6 +27,7 @@ import { CurrencyInput } from "@/components/form/currency-input";
 import { moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { cn } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { saveCodDeposit, saveDefaultPaymentMethod, saveStorePaymentMethod } from "./payments.server";
 import { toDetails, type PaymentDetailsFormValues } from "./payments.dto";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
@@ -224,6 +225,9 @@ export function StorePaymentsSettings({
   return (
     <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-start gap-4 max-[860px]:grid-cols-1">
       <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex justify-end">
+          <TutorialVideoButton video="T-07" />
+        </div>
         {readOnly && <Note tone="amber">{t("readOnly")}</Note>}
         {!egyptian && <Note tone="amber">{t("currencyNotice", { unit: moneyUnitText(locale, money) })}</Note>}
         <Note>{t(usdLive ? "checkoutNoticeUsd" : "checkoutNotice")}</Note>

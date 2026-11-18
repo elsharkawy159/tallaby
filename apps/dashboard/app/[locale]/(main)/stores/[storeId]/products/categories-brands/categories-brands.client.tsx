@@ -90,6 +90,7 @@ import {
 import { RemoteImage } from "@/components/media/remote-image";
 import { CategoryOrderDialog } from "../category-order/category-order.client";
 import { useProductStoreId } from "../_components/product-store.client";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 const KEY: Record<TaxonomyKind, "categories" | "brands"> = { category: "categories", brand: "brands" };
 
@@ -101,12 +102,15 @@ export function TaxonomyManager({ kind, initialItems }: { kind: TaxonomyKind; in
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-5">
-      <header>
-        <h1 className="flex items-center gap-2.5 text-[clamp(22px,2.4vw,28px)] font-bold leading-[1.35] text-(--s-ink)">
-          {t(`${k}.pageTitle`)}
-          <span className="rounded-full bg-primary-soft px-2.5 py-0.5 font-montserrat text-sm font-bold tabular-nums text-primary-ink">{items.length}</span>
-        </h1>
-        <p className="mt-0.5 text-pretty text-[14.5px] leading-[1.7] text-(--s-muted) max-[600px]:text-[13.5px]">{t(`${k}.pageSubtitle`)}</p>
+      <header className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="flex items-center gap-2.5 text-[clamp(22px,2.4vw,28px)] font-bold leading-[1.35] text-(--s-ink)">
+            {t(`${k}.pageTitle`)}
+            <span className="rounded-full bg-primary-soft px-2.5 py-0.5 font-montserrat text-sm font-bold tabular-nums text-primary-ink">{items.length}</span>
+          </h1>
+          <p className="mt-0.5 text-pretty text-[14.5px] leading-[1.7] text-(--s-muted) max-[600px]:text-[13.5px]">{t(`${k}.pageSubtitle`)}</p>
+        </div>
+        {kind === "category" && <TutorialVideoButton video="T-12" className="mt-1.5" />}
       </header>
       <TaxonomyList kind={kind} items={items} setItems={setItems} />
     </div>

@@ -13,6 +13,7 @@ import { Switch } from "@workspace/ui/components/switch";
 import { addCrossSell, removeCrossSell, setCrossSellActive, type CrossSellResult, type CrossSellRow } from "./cross-sell.server";
 import { toAsciiDigits } from "@/components/form/form-ui";
 import { useProductStoreId } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 /** "Frequently bought with": offers shown under this product on the seller's stores (ROADMAP.md F-32c). */
 export function CrossSellSection({ productId, initial }: { productId: string; initial: CrossSellRow[] }) {
@@ -79,8 +80,13 @@ export function CrossSellSection({ productId, initial }: { productId: string; in
 
   return (
     <section className="rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-4">
-      <h2 className="text-[16.5px] font-bold text-(--s-ink)">{t("title")}</h2>
-      <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted)">{t("description")}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-[16.5px] font-bold text-(--s-ink)">{t("title")}</h2>
+          <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted)">{t("description")}</p>
+        </div>
+        <TutorialVideoButton video="T-52" compact />
+      </div>
 
       {offers.length > 0 && (
         <ul className="mt-3 divide-y">

@@ -8889,5 +8889,29 @@
   "editorSmallScreen": {
     "message": "Editing is easier on a computer or tablet. You can still continue on your phone.",
     "dismiss": "Dismiss"
+  },
+  "tutorialVideos": {
+    "button": "How it works?",
+    "titles": {
+      "T-01": "Add a product by hand",
+      "T-02": "Add a product with AI",
+      "T-03": "Add products from a file",
+      "T-04": "Choose a template",
+      "T-05": "Edit and publish your website",
+      "T-06": "Set shipping prices",
+      "T-07": "Choose payment methods",
+      "T-08": "Top up the store wallet",
+      "T-09": "Follow and confirm an order",
+      "T-11": "Add sizes and colours",
+      "T-12": "Main and sub-categories",
+      "T-13": "Update stock",
+      "T-14": "Restore a deleted product",
+      "T-15": "Ask the customer for details",
+      "T-16": "Size chart",
+      "T-17": "Quantity offers",
+      "T-18": "Add an order by hand",
+      "T-51": "Add a product from a link",
+      "T-52": "Sell a product with this one"
+    }
   }
 }

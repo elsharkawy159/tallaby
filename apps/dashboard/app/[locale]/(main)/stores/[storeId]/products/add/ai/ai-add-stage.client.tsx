@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { formatMoneyMarked, formatNumber } from "@/lib/i18n/format"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import { BackIcon, backClassName, FlowIntro, FlowStage, GenCard, GenFoot, PILL_BUTTON_CLASS, type GenStep } from "../add-flow.client"
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client"
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
 import { AUTOFILL_LIMITS, type ProductAutofillOutput } from "./ai-autofill.dto"
 import { checkComposer } from "./ai-composer.lib"
@@ -298,6 +299,7 @@ export function AiAddStage ({
       }
       icon={Sparkles}
       label={t("mode")}
+      help={<TutorialVideoButton video="T-02" />}
       running={run !== null}
     >
       {/* Stays mounted through a run: a failed send puts the seller back here with everything intact. */}

@@ -13,6 +13,7 @@ import type { TrashedProduct } from "@workspace/lib/products/trash/server";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import { cn, getPublicUrl } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { deleteProductsForeverAction, restoreProductsAction } from "./trash.server";
 import { useProductStoreId, useProductsHref } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
 
@@ -74,7 +75,7 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
             {t("back")}
           </Link>
         </TextAction>
-        <PageHeader title={t("pageTitle")} description={t("subtitle")} />
+        <PageHeader title={t("pageTitle")} description={t("subtitle")} actions={<TutorialVideoButton video="T-14" />} />
       </div>
 
       {items.length === 0 ? (

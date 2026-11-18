@@ -12,6 +12,7 @@ import { formatNumber } from "@/lib/i18n/format";
 import { downloadXlsx, PRODUCT_EXCEL_COLUMNS, PRODUCT_EXCEL_TEMPLATE_ROW, todayStamp } from "@/lib/product-excel";
 import { IconButton, Note, SellerButton } from "@/components/seller-ui";
 import { BackIcon, backClassName, FlowIntro, FlowOrb, FlowStage, GenCard, GenFoot, PILL_BUTTON_CLASS, type GenStep } from "../add-flow.client";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import {
   BULK_CREDITS_PER_AI_PRODUCT,
   BULK_FIELDS,
@@ -435,6 +436,7 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
       }
       icon={FileSpreadsheet}
       label={t("stage.mode")}
+      help={<TutorialVideoButton video="T-03" />}
       running={running}
     >
       {children}

@@ -9,6 +9,7 @@ import { ArrowLeft, BellRing, Boxes, History, PackagePlus, Pencil, X } from "luc
 import { EmptyState, PageHeader, Row, Rows, SellerButton, SellerCard, StatusBadge, TextAction, TextInput } from "@/components/seller-ui";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import { getPublicUrl } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { MAX_RESTOCK, stockLevel } from "./inventory.lib";
 import { restockAction } from "./inventory.server";
 import type { InventoryLine, ProductInventory, StockMovementRow } from "./inventory.types";
@@ -33,7 +34,7 @@ export function InventoryPage({ lowStock, selected }: { lowStock: InventoryLine[
             {t("back")}
           </Link>
         </TextAction>
-        <PageHeader title={t("pageTitle")} description={t("subtitle")} />
+        <PageHeader title={t("pageTitle")} description={t("subtitle")} actions={<TutorialVideoButton video="T-13" />} />
       </div>
 
       {selected && <ProductHistory product={selected} />}

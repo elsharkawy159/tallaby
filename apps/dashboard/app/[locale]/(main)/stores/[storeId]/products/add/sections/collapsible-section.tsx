@@ -33,6 +33,7 @@ export function CollapsibleSection({
   invalid = false,
   filled = false,
   defaultOpen = false,
+  help,
   children,
 }: {
   id: string;
@@ -45,6 +46,8 @@ export function CollapsibleSection({
   /** The seller (or the AI) has put something in it beyond the defaults. */
   filled?: boolean;
   defaultOpen?: boolean;
+  /** Optional help beside the header (the section's tutorial video); kept outside the fold button. */
+  help?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen || filled);
@@ -74,38 +77,42 @@ export function CollapsibleSection({
         invalid && "border-destructive/45",
       )}
     >
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={bodyId}
-        onClick={() => setOpen((o) => !o)}
-        className={cn(
-          "group flex min-h-[60px] w-full cursor-pointer items-center gap-3 rounded-[24px] p-[22px] text-start max-[600px]:gap-2.5 max-[600px]:rounded-[20px] max-[600px]:p-4",
-          open && "pb-0 max-[600px]:pb-0",
-        )}
-      >
-        <SectionIcon icon={icon} />
-        <div className="min-w-0 flex-1">
-          <h2 className="text-[16.5px] font-bold leading-normal text-(--s-ink) transition-colors group-hover:text-(--s-link) max-[600px]:text-[15px]">
-            {title}
-          </h2>
-          <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted) max-[600px]:hidden">{description}</p>
-        </div>
-        {summary ? (
-          <span
-            className={cn(
-              "max-w-[46%] shrink-0 truncate rounded-full border px-2.5 text-xs font-medium leading-6 min-[601px]:max-w-[42%]",
-              SUMMARY_TONE[summaryTone],
-            )}
-          >
-            {summary}
-          </span>
-        ) : null}
-        <ChevronDown
-          className={cn("size-[18px] shrink-0 text-(--s-faint) transition-transform duration-200", open && "rotate-180")}
-          aria-hidden
-        />
-      </button>
+      <div className="flex items-start">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={bodyId}
+          onClick={() => setOpen((o) => !o)}
+          className={cn(
+            "group flex min-h-[60px] w-full min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-[24px] p-[22px] text-start max-[600px]:gap-2.5 max-[600px]:rounded-[20px] max-[600px]:p-4",
+            open && "pb-0 max-[600px]:pb-0",
+            help != null && "pe-3 max-[600px]:pe-2",
+          )}
+        >
+          <SectionIcon icon={icon} />
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[16.5px] font-bold leading-normal text-(--s-ink) transition-colors group-hover:text-(--s-link) max-[600px]:text-[15px]">
+              {title}
+            </h2>
+            <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted) max-[600px]:hidden">{description}</p>
+          </div>
+          {summary ? (
+            <span
+              className={cn(
+                "max-w-[46%] shrink-0 truncate rounded-full border px-2.5 text-xs font-medium leading-6 min-[601px]:max-w-[42%]",
+                SUMMARY_TONE[summaryTone],
+              )}
+            >
+              {summary}
+            </span>
+          ) : null}
+          <ChevronDown
+            className={cn("size-[18px] shrink-0 text-(--s-faint) transition-transform duration-200", open && "rotate-180")}
+            aria-hidden
+          />
+        </button>
+        {help != null && <div className="shrink-0 pe-[22px] pt-[22px] max-[600px]:pe-4 max-[600px]:pt-4">{help}</div>}
+      </div>
       <div
         id={bodyId}
         className={cn("flex-col gap-4 p-[22px] pt-[18px] max-[600px]:p-4 max-[600px]:pt-3.5", open ? "flex" : "hidden")}

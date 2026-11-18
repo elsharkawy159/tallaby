@@ -53,6 +53,7 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { IconButton, IconTile, Note, PageHeader, Segmented, SellerButton, SellerCard, StatusBadge, Tag, Toggle } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { discardDraft, publish, restoreRevision, unpublish } from "@/app/[locale]/(builder)/stores/[storeId]/editor/server/editor.server";
 import { useStorePreview } from "@/app/[locale]/(builder)/stores/[storeId]/editor/use-store-preview.client";
 import { PublishCelebration, type LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
@@ -211,7 +212,12 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
 
   return (
     <>
-      <PageHeader title={t("heading")} description={t("description")} className="sui-rise" />
+      <PageHeader
+        title={t("heading")}
+        description={t("description")}
+        className="sui-rise"
+        actions={<TutorialVideoButton video="T-05" />}
+      />
 
       <SellerCard
         aria-label={tw("statusLabel")}

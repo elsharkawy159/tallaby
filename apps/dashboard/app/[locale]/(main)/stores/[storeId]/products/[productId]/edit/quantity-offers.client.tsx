@@ -12,6 +12,7 @@ import { Switch } from "@workspace/ui/components/switch";
 import { saveQuantityOffers, type QuantityOfferRow } from "./quantity-offers.server";
 import { useProductStoreId } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
 import { toAsciiDigits } from "@/components/form/form-ui";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 type Draft = { key: number; minQuantity: string; discountType: "percent" | "fixed"; discountValue: string; isActive: boolean };
 
@@ -78,8 +79,13 @@ export function QuantityOffersSection({ productId, initial }: { productId: strin
 
   return (
     <section className="rounded-[24px] border border-(--s-line) bg-(--s-glass) p-[22px] shadow-(--s-shadow-card) max-[600px]:rounded-[20px] max-[600px]:p-4">
-      <h2 className="text-[16.5px] font-bold text-(--s-ink)">{t("title")}</h2>
-      <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted)">{t("description")}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-[16.5px] font-bold text-(--s-ink)">{t("title")}</h2>
+          <p className="mt-0.5 text-pretty text-[13px] leading-relaxed text-(--s-muted)">{t("description")}</p>
+        </div>
+        <TutorialVideoButton video="T-17" compact />
+      </div>
 
       {tiers.length > 0 && (
         <ul className="mt-3 space-y-2">

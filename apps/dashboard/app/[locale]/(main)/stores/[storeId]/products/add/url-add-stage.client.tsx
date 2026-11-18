@@ -8,6 +8,7 @@ import { Note, SellerButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { BackIcon, backClassName, FlowIntro, FlowStage } from "./add-flow.client";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { TEXTAREA_CLASS } from "./form-kit";
 import { useProductImport } from "./use-product-import";
 import { parseProductUrlList } from "./product-url-list.lib";
@@ -62,6 +63,7 @@ export function UrlAddStage ({
       }
       icon={Link2}
       label={t("mode")}
+      help={<TutorialVideoButton video="T-51" />}
     >
       <FlowIntro
         orb={<Image src="/illustrations/features/add-url.png" alt="" aria-hidden width={72} height={72} className="size-[72px] select-none" />}

@@ -21,6 +21,7 @@ import { SizeChartTargets } from "./size-chart-targets.client";
 import { setSizeChartAppInstalled } from "./size-chart.server";
 import type { SizeChartCategoryOption } from "./size-chart.dto";
 import { pickText } from "./size-chart-form.lib";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 type Draft = { id: string | null; name: SizeChartName; definition: SizeChartDefinition };
 
@@ -120,12 +121,15 @@ export function SizeChartApp({
         title={t("charts.title")}
         description={t("charts.description", { max: SIZE_CHART_LIMITS.chartsPerStore })}
         action={
-          !readOnly && (
-            <SellerButton size="sm" variant="solid" disabled={atLimit} onClick={() => setChoosing(true)}>
-              <Plus aria-hidden />
-              {t("charts.new")}
-            </SellerButton>
-          )
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <TutorialVideoButton video="T-16" />
+            {!readOnly && (
+              <SellerButton size="sm" variant="solid" disabled={atLimit} onClick={() => setChoosing(true)}>
+                <Plus aria-hidden />
+                {t("charts.new")}
+              </SellerButton>
+            )}
+          </div>
         }
       >
         {charts.length === 0 ? (

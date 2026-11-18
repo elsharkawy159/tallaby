@@ -20,6 +20,7 @@ import { generateSku } from "../add-product.lib";
 import { useFieldError } from "./fields";
 import { VariantsEditor } from "./variants-editor";
 import { CollapsibleSection } from "./collapsible-section";
+import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { defaultValues, type AddProductFormData, type SupportedLocale } from "../add-product.schema";
 
 export function InventorySection({
@@ -61,6 +62,7 @@ export function InventorySection({
       id={id}
       icon={Boxes}
       title={t("title")}
+      help={<TutorialVideoButton video="T-11" compact />}
       description={t("description")}
       summary={summary}
       summaryTone={!trackStock || stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
