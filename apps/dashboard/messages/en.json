@@ -2838,6 +2838,7 @@
   "orders": {
     "pageTitle": "Orders",
     "testBadge": "Test",
+    "quickActions": "Quick actions",
     "createOrder": "Create order",
     "subtitle": "Confirm new orders, send them out and mark them delivered. You handle the delivery.",
     "sort": {

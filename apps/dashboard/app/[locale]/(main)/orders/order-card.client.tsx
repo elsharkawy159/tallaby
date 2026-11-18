@@ -1,17 +1,19 @@
 "use client";
 
+import { useId, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { Clock, ImageIcon, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ChevronDown, Clock, ImageIcon, MapPin, MessageCircle, Phone, Zap } from "lucide-react";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { buildTelUrl, buildWhatsAppUrl } from "@workspace/ui/lib/contact";
-import { SellerButton } from "@/components/seller-ui";
+import { PHONE_COMPACT_ACTIONS, SellerButton } from "@/components/seller-ui";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { formatDateTime, moneyDir } from "@/lib/i18n/format";
 import { Money } from "@/components/money";
 import { BostaChip, canShipWithBosta, ShipWithBostaButton } from "./bosta-ship.client";
 import { OrderActions } from "./order-actions.client";
 import { OrderRiskBadges } from "./order-risk.client";
+import { orderQuickContacts } from "./order-quick-actions.lib";
 import { OrderStageBadge } from "./order-stage-badge";
 import type { SellerOrderRow } from "./orders.types";
 import { PhoneText } from "./orders-ui";
@@ -43,6 +45,19 @@ export function OrderCard({
   const ended = ["cancelled", "returned", "refund"].includes(order.flow.stage);
   const askUrl = order.confirmMessage ? buildWhatsAppUrl(order.customerPhone, order.confirmMessage) : null;
   const telUrl = buildTelUrl(order.customerPhone);
+  const hasStrip =
+    order.flow.primary != null ||
+    order.flow.corrections.length > 0 ||
+    canShipWithBosta(order) ||
+    canExportForWassalha(order);
+  const quick = orderQuickContacts({
+    phone: order.customerPhone,
+    confirmMessage: order.confirmMessage,
+    chatText: t("details.whatsappText", { number: order.orderNumber }),
+  });
+  const hasQuickContacts = quick.whatsapp != null || quick.tel != null;
+  const [quickOpen, setQuickOpen] = useState(false);
+  const regionId = useId();
 
   return (
     <article
@@ -174,19 +189,73 @@ export function OrderCard({
         </div>
       </div>
 
-      {(order.flow.primary || order.flow.corrections.length > 0 || canShipWithBosta(order) || canExportForWassalha(order)) && (
-        <div className="relative z-10 flex flex-wrap gap-1.5 border-t border-(--s-line-soft) p-3">
-          <OrderActions order={order} compact className="min-w-0 flex-[1_1_auto]" />
-          <ShipWithBostaButton order={order} className="flex-1" />
-          {order.storeId && <WassalhaExportButton storeId={order.storeId} orders={[order]} className="flex-1" />}
-          {askUrl && (
-            <SellerButton asChild variant="outline" size="sm" className="flex-1">
-              <a href={askUrl} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="text-(--s-whatsapp)" aria-hidden />
-                {t("details.askToConfirm")}
-              </a>
-            </SellerButton>
-          )}
+      {(hasStrip || hasQuickContacts) && (
+        <div className={cn("relative z-10 border-t border-(--s-line-soft)", !hasStrip && "min-[721px]:hidden")}>
+          {/* Phones (the card-only view, ≤720px): the actions fold under "Quick actions". */}
+          <button
+            type="button"
+            id={`${regionId}-toggle`}
+            aria-expanded={quickOpen}
+            aria-controls={regionId}
+            onClick={() => setQuickOpen((open) => !open)}
+            className="flex min-h-11 w-full cursor-pointer items-center gap-2 px-3.5 text-start text-[13px] font-semibold text-(--s-body) transition-colors hover:text-(--s-ink) focus-visible:outline-offset-[-3px] min-[721px]:hidden"
+          >
+            <Zap className="size-4 shrink-0 text-(--s-subtle)" aria-hidden />
+            <span className="me-auto">{t("quickActions")}</span>
+            <ChevronDown
+              className={cn(
+                "size-4 shrink-0 text-(--s-faint) transition-transform duration-200 motion-reduce:transition-none",
+                quickOpen && "rotate-180",
+              )}
+              aria-hidden
+            />
+          </button>
+          <div
+            id={regionId}
+            className={cn(
+              "max-[720px]:grid max-[720px]:transition-[grid-template-rows,opacity,visibility] max-[720px]:duration-200 max-[720px]:ease-out motion-reduce:transition-none",
+              quickOpen
+                ? "max-[720px]:grid-rows-[1fr] max-[720px]:opacity-100"
+                : "max-[720px]:invisible max-[720px]:grid-rows-[0fr] max-[720px]:opacity-0",
+            )}
+          >
+            <div className="max-[720px]:min-h-0 max-[720px]:overflow-hidden">
+              <div
+                className={cn(
+                  "flex flex-wrap gap-1.5 p-3 max-[720px]:flex-nowrap max-[720px]:overflow-x-auto max-[720px]:px-3.5 max-[720px]:pt-1 max-[720px]:[scrollbar-width:none]",
+                  PHONE_COMPACT_ACTIONS,
+                )}
+              >
+                <OrderActions order={order} compact className="min-w-0 flex-[1_1_auto] max-[720px]:flex-none max-[720px]:flex-nowrap" />
+                {quick.whatsapp && (
+                  <SellerButton asChild variant="outline" size="sm" className="min-[721px]:hidden">
+                    <a href={quick.whatsapp.url} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="text-(--s-whatsapp)" aria-hidden />
+                      {quick.whatsapp.ask ? t("details.askToConfirm") : t("details.whatsapp")}
+                    </a>
+                  </SellerButton>
+                )}
+                {quick.tel && (
+                  <SellerButton asChild variant="outline" size="sm" className="min-[721px]:hidden">
+                    <a href={quick.tel}>
+                      <Phone aria-hidden />
+                      {t("details.call")}
+                    </a>
+                  </SellerButton>
+                )}
+                <ShipWithBostaButton order={order} className="flex-1 max-[720px]:flex-none" />
+                {order.storeId && <WassalhaExportButton storeId={order.storeId} orders={[order]} className="flex-1 max-[720px]:flex-none" />}
+                {askUrl && (
+                  <SellerButton asChild variant="outline" size="sm" className="flex-1 max-[720px]:hidden">
+                    <a href={askUrl} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="text-(--s-whatsapp)" aria-hidden />
+                      {t("details.askToConfirm")}
+                    </a>
+                  </SellerButton>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </article>
