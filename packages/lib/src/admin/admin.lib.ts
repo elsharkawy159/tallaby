@@ -103,6 +103,12 @@ export const ADMIN_AUDIT_ACTIONS = [
   "restore_store_products",
   // Admin › store page: a store's new tallaby.com subdomain (owner request 2026-11-12; the action check is a pattern, no migration)
   "change_store_subdomain",
+  // Tallaby Pay withdrawals and KYC (0175, F-100e; the action check is a pattern, no migration)
+  "tallaby_pay_payout_paid",
+  "tallaby_pay_payout_rejected",
+  "tallaby_pay_payout_reversed",
+  "tallaby_pay_kyc_verified",
+  "tallaby_pay_kyc_rejected",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

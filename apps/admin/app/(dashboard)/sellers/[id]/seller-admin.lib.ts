@@ -68,6 +68,11 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   set_store_product_status: "Product published or hidden",
   trash_store_products: "Products moved to Trash",
   restore_store_products: "Products restored from Trash",
+  tallaby_pay_payout_paid: "Tallaby Pay withdrawal paid",
+  tallaby_pay_payout_rejected: "Tallaby Pay withdrawal rejected",
+  tallaby_pay_payout_reversed: "Tallaby Pay withdrawal reversed",
+  tallaby_pay_kyc_verified: "Tallaby Pay identity verified",
+  tallaby_pay_kyc_rejected: "Tallaby Pay identity rejected",
 };
 
 export function auditActionLabel(action: string): string {
