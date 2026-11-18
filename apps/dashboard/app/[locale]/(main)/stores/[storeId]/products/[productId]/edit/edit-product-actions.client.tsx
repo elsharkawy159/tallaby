@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { EyeOff, ExternalLink, LoaderCircle, Rocket } from "lucide-react";
 import { SellerButton } from "@/components/seller-ui";
 import { setProductPublished } from "@/actions/products";
@@ -50,6 +51,7 @@ export function EditProductActions({
       }
       setCurrent(next ? "active" : "draft");
       toast.success(next ? tToast("productPublished") : tToast("productUnpublished"));
+      if ("live" in result) announceStoreLive(result.live);
       router.refresh();
     });
   };

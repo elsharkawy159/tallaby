@@ -1325,7 +1325,9 @@ export async function createProduct(
         { from: "dashboard", mode: "action" }
       );
       // A new store with a chosen template goes live with its first published product (owner, 2026-11-17).
-      if (createdProduct.status === "active" && !options?.willHide) await autoPublishStoreIfReady(productStore.seller.sellerId, store.id, productStore.seller.userId);
+      // `live`: the store went live just now, for the "Your store is live!" dialog (owner, 2026-11-18).
+      const live = createdProduct.status === "active" && !options?.willHide ? await autoPublishStoreIfReady(productStore.seller.sellerId, store.id, productStore.seller.userId) : null;
+      return { success: true, data: createdProduct, live: live ?? undefined };
     }
 
     return { success: true, data: createdProduct };
@@ -1632,9 +1634,9 @@ export async function updateProduct(
       mode: "action",
     });
     // A legacy "pending" product goes live on save: that can be a new store's first published product.
-    if (before.status !== "active" && after?.status === "active") await autoPublishStoreIfReady(productStore.seller.sellerId, productStore.store.id, productStore.seller.userId);
+    const live = before.status !== "active" && after?.status === "active" ? await autoPublishStoreIfReady(productStore.seller.sellerId, productStore.store.id, productStore.seller.userId) : null;
 
-    return { success: true, data: updatedProduct[0] };
+    return { success: true, data: updatedProduct[0], live: live ?? undefined };
   } catch (error) {
     console.error("Error updating product:", error);
     return {
@@ -1746,9 +1748,9 @@ export async function setProductPublished(storeId: string, productId: string, pu
       mode: "action",
     });
     // A new store with a chosen template goes live with its first published product (owner, 2026-11-17).
-    if (published) await autoPublishStoreIfReady(productStore.seller.sellerId, productStore.store.id, productStore.seller.userId);
+    const live = published ? await autoPublishStoreIfReady(productStore.seller.sellerId, productStore.store.id, productStore.seller.userId) : null;
 
-    return { success: true, data: updatedProduct[0] };
+    return { success: true, data: updatedProduct[0], live: live ?? undefined };
   } catch (error) {
     console.error("Error setting product published state:", error);
     return {

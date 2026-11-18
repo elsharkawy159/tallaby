@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { ArrowLeft, ArrowRight, Loader2, Undo2 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
@@ -282,6 +283,7 @@ export function BulkEditDialog({
       if (res.changed === 0) toast.info(t("nothingChanged"));
       else toast.success(t("applied", { count: res.changed }));
       if (res.skipped > 0) toast.warning(t("appliedSkipped", { count: res.skipped }));
+      announceStoreLive(res.live);
       onApplied(res.undoToken && res.undoExpiresAt ? { token: res.undoToken, expiresAt: res.undoExpiresAt, count: res.changed } : null);
       onOpenChange(false);
     });
@@ -480,6 +482,7 @@ export function BulkEditUndoBar({ undo, onClear }: { undo: BulkEditUndo; onClear
       } else {
         if (res.restored > 0) toast.success(t("undone", { count: res.restored }));
         if (res.conflicts > 0) toast.warning(t("undoConflicts", { count: res.conflicts }));
+        announceStoreLive(res.live);
       }
       onClear();
       router.refresh();

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { ArrowLeft, RotateCcw, Trash2 } from "lucide-react";
 import { EmptyState, PageHeader, Row, Rows, SellerButton, TextAction } from "@/components/seller-ui";
 import { Checkbox } from "@workspace/ui/components/checkbox";
@@ -49,6 +50,7 @@ export function ProductTrash({ items }: { items: TrashedProduct[] }) {
         return;
       }
       toast.success(t("restored", { count: res.count }));
+      announceStoreLive(res.live);
       setSelected(new Set());
       router.refresh();
     });

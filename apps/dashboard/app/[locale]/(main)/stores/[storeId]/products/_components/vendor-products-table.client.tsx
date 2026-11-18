@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { ColumnDef } from "@tanstack/react-table";
 import { Star } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -284,8 +285,10 @@ export function VendorProductsTable({
               label: t("undo"),
               onClick: async () => {
                 const undone = await restoreProductsAction(productStoreId, res.ids);
-                if (undone.success) toast.success(t("restored", { count: undone.count }));
-                else toast.error(t("restoreFailed"));
+                if (undone.success) {
+                  toast.success(t("restored", { count: undone.count }));
+                  announceStoreLive(undone.live);
+                } else toast.error(t("restoreFailed"));
                 router.refresh();
               },
             },

@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { translateStatus } from "@/lib/i18n/status";
 import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { Badge } from "@workspace/ui/components/badge";
 import { Switch } from "@workspace/ui/components/switch";
 import {
@@ -64,6 +65,7 @@ function useProductPublish(productId: string, status: ProductStatus) {
       toast.success(
         checked ? tToast("productPublished") : tToast("productUnpublished")
       );
+      if ("live" in result) announceStoreLive(result.live);
       router.refresh();
     });
   };

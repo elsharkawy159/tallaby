@@ -3,6 +3,7 @@
 import { Link, useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useState, useSyncExternalStore, useTransition } from "react";
 import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { useLocale, useTranslations } from "next-intl";
 import {
   CheckCheck,
@@ -233,6 +234,7 @@ export function VendorProductsSection({
       }
       if (res.failed > 0) toast.error(t("bulkPublishFailed", { count: res.failed }));
       if (res.done > 0) toast.success(t(published ? "bulkPublished" : "bulkDrafted", { count: res.done }));
+      announceStoreLive(res.live);
       setSelected(new Set());
       router.refresh();
     });
@@ -243,8 +245,10 @@ export function VendorProductsSection({
     label: t("undo"),
     onClick: async () => {
       const res = await restoreProductsAction(productStoreId, ids);
-      if (res.success) toast.success(t("restored", { count: res.count }));
-      else toast.error(t("restoreFailed"));
+      if (res.success) {
+        toast.success(t("restored", { count: res.count }));
+        announceStoreLive(res.live);
+      } else toast.error(t("restoreFailed"));
       router.refresh();
     },
   });

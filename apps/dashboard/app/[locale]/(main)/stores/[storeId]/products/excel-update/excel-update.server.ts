@@ -347,10 +347,10 @@ export async function applyExcelUpdateAction(storeId: string, formData: FormData
     await afterWrite(result.done);
     // A sheet that set a product live: a new store with a chosen template can go live now (owner, 2026-11-17).
     // Once for the store, after the transaction committed.
-    if (result.done.some((edit) => edit.after.status === "active" && edit.before.status !== "active")) {
-      await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
-    }
-    return { success: true, changedRows: result.changedRows, changedProducts: result.done.length, skipped: result.skipped };
+    const live = result.done.some((edit) => edit.after.status === "active" && edit.before.status !== "active")
+      ? await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId)
+      : null;
+    return { success: true, changedRows: result.changedRows, changedProducts: result.done.length, skipped: result.skipped, ...(live && { live }) };
   } catch (error) {
     // Drizzle wraps driver errors: the SQLSTATE is on `.cause`.
     const pg = error as { code?: string; cause?: { code?: string } } | null;

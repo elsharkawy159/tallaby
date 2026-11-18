@@ -9,6 +9,8 @@
  * on the server against rows it reads scoped by the session's seller.
  */
 
+import type { LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
+
 /** Most rows one upload may hold (products plus variants). */
 export const EXCEL_UPDATE_MAX_ROWS = 3000;
 /** Server actions accept 1 MB bodies; a 3000-row sheet is far below this. */
@@ -96,7 +98,8 @@ export type ExcelPreviewResult =
   | { success: false; error: ExcelActionError };
 
 export type ExcelApplyResult =
-  | { success: true; changedRows: number; changedProducts: number; skipped: number }
+  /** `live`: the store went live just now (its first published product), for the go-live dialog. */
+  | { success: true; changedRows: number; changedProducts: number; skipped: number; live?: LiveSite }
   | { success: false; error: ExcelActionError };
 
 export type ExcelExportResult =

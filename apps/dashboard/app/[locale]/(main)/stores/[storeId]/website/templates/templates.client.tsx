@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { RemoteImage } from "@/components/media/remote-image";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { TemplateCard, ThumbnailFallback } from "./template-card.client";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, listTemplatesPage, undoTemplate } from "./templates.server";
@@ -209,6 +210,9 @@ export function TemplateGallery({
         toast.success(t("appliedNeedsProduct", { name: text(template.name) }), {
           action: { label: t("addProduct"), onClick: () => router.push(storeProductsHref(storeId, "/add")) },
         });
+      } else if (result.data.live) {
+        // Went live just now: the "Your store is live!" dialog says so, instead of a toast (owner, 2026-11-18).
+        announceStoreLive(result.data.live);
       } else {
         toast.success(t(result.data.published ? "appliedPublished" : "applied", { name: text(template.name) }));
       }

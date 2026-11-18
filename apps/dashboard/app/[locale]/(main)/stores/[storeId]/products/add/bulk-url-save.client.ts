@@ -1,4 +1,5 @@
 import { createProduct, setProductPublished } from "@/actions/products";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { ensureTaxonomyItem, setProductSellerTaxonomy } from "../categories-brands/categories-brands.server";
 import { saveProductSocialProof } from "../social-proof/social-proof.server";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
@@ -52,6 +53,8 @@ export async function saveBulkProduct (
     return { ok: false, error: "error" in created && typeof created.error === "string" ? created.error : undefined };
   }
   const productId = created.data.id;
+  // The store went live with this row: "Your store is live!" over the add page (owner, 2026-11-18).
+  if ("live" in created) announceStoreLive(created.live);
   let warning: "category" | "settings" | "status" | undefined;
 
   const chosen = data.sellerCategoryName?.trim() ? null : data.sellerCategoryId || null;

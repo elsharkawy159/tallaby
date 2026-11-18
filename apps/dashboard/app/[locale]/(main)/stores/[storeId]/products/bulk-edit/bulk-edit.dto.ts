@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
 
 /**
  * Bulk product editing (ROADMAP.md F-24a/F-24b): one change applied to many of
@@ -106,9 +107,11 @@ export type BulkApplyResult =
       /** Server-signed Undo token (10 minutes), null when nothing changed. */
       undoToken: string | null;
       undoExpiresAt: number | null;
+      /** The store went live just now (its first published product): the page shows the go-live dialog. */
+      live?: LiveSite;
     }
   | { success: false; error: BulkActionError };
 
 export type BulkUndoResult =
-  | { success: true; restored: number; conflicts: number }
+  | { success: true; restored: number; conflicts: number; live?: LiveSite }
   | { success: false; error: BulkActionError };

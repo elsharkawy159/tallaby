@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { ArrowLeft, Download, FileSpreadsheet, Loader2, Upload } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -117,6 +118,7 @@ export function ExcelUpdateDialog({
       if (result.changedProducts === 0) toast.info(t("nothingChanged"));
       else toast.success(t("applied", { count: result.changedProducts }));
       if (result.skipped > 0) toast.warning(t("appliedSkipped", { count: result.skipped }));
+      announceStoreLive(result.live);
       reset();
       onOpenChange(false);
       router.refresh();

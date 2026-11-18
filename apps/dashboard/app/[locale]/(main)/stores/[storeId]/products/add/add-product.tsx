@@ -9,6 +9,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { announceStoreLive, queueStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { getPathname, useRouter } from "@/i18n/navigation";
@@ -328,6 +329,8 @@ function AddProductForm({
           }
           draft.pause();
           draft.clear();
+          // The store went live with this product: the next page shows "Your store is live!" (owner, 2026-11-18).
+          if ("live" in result) queueStoreLive(result.live);
           // Full page loads clear stuck pending UI and reset the form cleanly
           if (result.data?.status === "draft") {
             toast.info(tToast("productSavedAsDraft"));
@@ -364,6 +367,7 @@ function AddProductForm({
           await saveSocialProof(productId, data);
           if (aiFills.current > 0)
             await markProductAiAssisted(productStoreId, productId, "edit");
+          if ("live" in result) announceStoreLive(result.live);
           await showProductSavedToast(tToast("productUpdatedSuccessfully"), {
             storeId: productStoreId,
             productId,

@@ -18,6 +18,7 @@ import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { autoPublishStore } from "@/lib/stores/auto-publish-store.server";
+import type { LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
 import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { findIndustry } from "@/lib/stores/industries.lib";
 import {
@@ -88,7 +89,7 @@ async function withStore<T>(storeId: string, run: (access: Access) => Promise<Te
 }
 
 export async function applyTemplate(storeId: string, templateKey: string, editionId?: string | null) {
-  return withStore<{ pagesUpdated: number; pagesCreated: number; published: boolean; needsProduct: boolean }>(storeId, async ({ seller, store }) => {
+  return withStore<{ pagesUpdated: number; pagesCreated: number; published: boolean; needsProduct: boolean; live?: LiveSite }>(storeId, async ({ seller, store }) => {
     const result = await applyStoreTemplate(seller.sellerId, store.id, String(templateKey), seller.userId, {
       allowedSections: ALLOWED,
       overrideKeys: OVERRIDE_KEYS,
@@ -109,6 +110,8 @@ export async function applyTemplate(storeId: string, templateKey: string, editio
         published: outcome.published,
         // Only a missing product keeps the new store offline: the gallery tells the seller so.
         needsProduct: !outcome.published && outcome.reason === "no_active_product",
+        // The store went live just now: the page shows the "Your store is live!" dialog (owner, 2026-11-18).
+        ...(outcome.published && outcome.live && { live: outcome.live }),
       },
     };
   });

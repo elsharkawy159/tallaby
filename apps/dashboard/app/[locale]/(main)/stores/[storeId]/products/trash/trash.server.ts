@@ -7,6 +7,7 @@ import { isAccessError } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
 import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
+import type { LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
 
 /**
  * Product Trash actions (0123, ROADMAP.md F-35). The seller comes from the
@@ -20,7 +21,8 @@ import { STORE_PRODUCTS_PATTERN } from "@/lib/products/product-routes.lib";
  */
 
 export type TrashActionResult =
-  | { success: true; count: number; ids: string[] }
+  /** `live` (restore only): the store went live just now, for the go-live dialog. */
+  | { success: true; count: number; ids: string[]; live?: LiveSite }
   | { success: false; error: "unauthorized" | "readOnly" | "generic" };
 
 function failure(error: unknown, label: string): TrashActionResult {
@@ -49,9 +51,9 @@ export async function restoreProductsAction(storeId: unknown, ids: unknown): Pro
     const { restored, wentLive, invalidation } = await restoreProducts(seller.sellerId, ids, { canPublish: seller.status === "approved", inStore });
     await applyInvalidation(invalidation, { from: "dashboard", mode: "action" });
     // A product back live: a new store with a chosen template can go live now (owner, 2026-11-17). Once for the store.
-    if (wentLive) await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
+    const live = wentLive ? await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId) : null;
     revalidateDashboardPath(STORE_PRODUCTS_PATTERN, "layout");
-    return { success: true, count: restored.length, ids: restored };
+    return { success: true, count: restored.length, ids: restored, ...(live && { live }) };
   } catch (error) {
     return failure(error, "restore");
   }

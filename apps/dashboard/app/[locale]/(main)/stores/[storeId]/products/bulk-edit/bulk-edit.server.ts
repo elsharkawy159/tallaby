@@ -298,11 +298,11 @@ export async function applyBulkEditAction(storeId: unknown, input: unknown): Pro
 
     await afterWrite(changes);
     // Once for the store, after the transaction committed.
-    if (wentLive(changes)) await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
+    const live = wentLive(changes) ? await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId) : null;
     if (!changes.length) return { success: true, changed: 0, skipped, undoToken: null, undoExpiresAt: null };
     const entries: UndoEntry[] = changes.map((c) => ({ id: c.row.id, b: c.before, a: c.after }));
     const { token, expiresAt } = signUndoToken(seller.sellerId, entries, key);
-    return { success: true, changed: changes.length, skipped, undoToken: token, undoExpiresAt: expiresAt };
+    return { success: true, changed: changes.length, skipped, undoToken: token, undoExpiresAt: expiresAt, ...(live && { live }) };
   } catch (error) {
     return failure(error, "apply");
   }
@@ -350,8 +350,8 @@ export async function undoBulkEditAction(storeId: unknown, token: unknown): Prom
 
     await afterWrite(changes);
     // Undoing a bulk "hide" puts products back live.
-    if (wentLive(changes)) await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId);
-    return { success: true, restored: changes.length, conflicts };
+    const live = wentLive(changes) ? await autoPublishStoreIfReady(seller.sellerId, store.id, seller.userId) : null;
+    return { success: true, restored: changes.length, conflicts, ...(live && { live }) };
   } catch (error) {
     return failure(error, "undo");
   }

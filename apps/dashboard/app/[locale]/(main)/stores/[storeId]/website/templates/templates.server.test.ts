@@ -36,12 +36,13 @@ import { applyTemplate } from "./templates.server";
 const SELLER = "11111111-1111-4111-8111-111111111111";
 const STORE = "22222222-2222-4222-8222-222222222222";
 const USER = "33333333-3333-4333-8333-333333333333";
+const LIVE = { url: "https://shop.tallaby.com", hostname: "shop.tallaby.com" };
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.requireStore.mockResolvedValue({ seller: { sellerId: SELLER, userId: USER }, store: { id: STORE, subdomain: "shop" } });
   mocks.applyStoreTemplate.mockResolvedValue({ success: true, data: { installId: "i", templateKey: "vella", pagesUpdated: 2, pagesCreated: 1 } });
-  mocks.autoPublishStore.mockResolvedValue({ published: true });
+  mocks.autoPublishStore.mockResolvedValue({ published: true, live: LIVE });
 });
 
 describe("applyTemplate", () => {
@@ -57,7 +58,7 @@ describe("applyTemplate", () => {
   it("puts a new store live when it already has a published product", async () => {
     expect(await applyTemplate(STORE, "vella")).toEqual({
       success: true,
-      data: { pagesUpdated: 2, pagesCreated: 1, published: true, needsProduct: false },
+      data: { pagesUpdated: 2, pagesCreated: 1, published: true, needsProduct: false, live: LIVE },
     });
     // The session's seller and the checked store, never a client value.
     expect(mocks.autoPublishStore).toHaveBeenCalledExactlyOnceWith(SELLER, STORE, USER);

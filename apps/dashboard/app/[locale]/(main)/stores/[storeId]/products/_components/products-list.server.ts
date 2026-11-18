@@ -11,6 +11,7 @@ import {
 } from "./products-list.query";
 import { parseProductsFilters, type ProductsListFilters } from "./products-view.lib";
 import type { VendorProduct } from "./vendor-products.section";
+import type { LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
 
 /**
  * Actions on the whole filtered list, not just the page on screen (ROADMAP.md
@@ -66,7 +67,7 @@ export async function bulkSetPublishedAction(
   storeId: unknown,
   ids: unknown,
   published: boolean,
-): Promise<{ success: true; done: number; failed: number } | { success: false }> {
+): Promise<{ success: true; done: number; failed: number; live?: LiveSite } | { success: false }> {
   try {
     // The store is the page's, checked against the session (F-87c); only its products are touched.
     const { seller, store, inStore } = await requireProductStore(storeId);
@@ -76,6 +77,7 @@ export async function bulkSetPublishedAction(
 
     let done = 0;
     let failed = 0;
+    let live: LiveSite | null = null;
     for (let i = 0; i < targets.length; i += PUBLISH_BATCH) {
       const results = await Promise.all(
         targets.slice(i, i + PUBLISH_BATCH).map((p) => setProductPublished(store.id, p.id, published)),
@@ -83,9 +85,11 @@ export async function bulkSetPublishedAction(
       for (const r of results) {
         if (r.success) done++;
         else failed++;
+        // The store went live with one of them (once ever): the page shows the go-live dialog.
+        if ("live" in r && r.live) live = r.live;
       }
     }
-    return { success: true, done, failed };
+    return { success: true, done, failed, ...(live && { live }) };
   } catch (error) {
     return failure(error, "bulk publish");
   }

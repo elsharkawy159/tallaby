@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useForm, useWatch } from "react-hook-form"
 import { useLocale, useTranslations } from "next-intl"
 import { toast } from "sonner"
+import { announceStoreLive } from "@/app/[locale]/(main)/_components/store-live.lib"
 import { Check, ImageIcon, ImagePlus, LoaderCircle, Pencil, Sparkles, X } from "lucide-react"
 import { Form } from "@workspace/ui/components/form"
 import { createProduct } from "@/actions/products"
@@ -137,6 +138,8 @@ function Uploader ({
         return
       }
       created = { id: result.data.id, status: result.data.status ?? "draft" }
+      // The store went live with this product (not on the welcome page, which shows its own live card).
+      if ("live" in result) announceStoreLive(result.live)
     } catch (error) {
       console.error("Quick AI product save failed", error)
       toast.error(tToast("somethingWentWrong"))

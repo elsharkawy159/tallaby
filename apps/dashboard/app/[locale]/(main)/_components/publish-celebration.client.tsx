@@ -20,7 +20,8 @@ export type LiveSite = { url: string; hostname: string };
 
 /**
  * "Your store is live!" over a confetti burst, after a store goes live (the
- * home checklist and Website › Overview). Open while `live` is set; the
+ * home checklist and Website › Overview, and `StoreLiveCelebration` when a
+ * new store goes live by itself). Open while `live` is set; the
  * caller clears it in `onClose` (and refreshes then, so the dialog is not
  * unmounted by the refreshed page under it). Closing it lets the welcome
  * gift popup (0119) check, so a new seller sees it right after this one.
