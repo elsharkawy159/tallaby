@@ -43,7 +43,10 @@ export function TutorialVideoButton({
           title={compact ? t("button") : undefined}
           className={cn("max-[600px]:h-9", compact && "max-[600px]:w-9 max-[600px]:px-0", className)}
         >
-          <Play aria-hidden className="fill-current" />
+          {/* The play icon in its own small rounded square, so it reads as a video button (owner, 2026-11-18). */}
+          <span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-[6px] border border-(--s-field) bg-(--s-fill) text-(--s-ink)">
+            <Play className="size-2.5! fill-current" />
+          </span>
           <span className={cn(compact && "max-[600px]:sr-only")}>{t("button")}</span>
         </SellerButton>
       }
