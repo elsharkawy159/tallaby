@@ -8,8 +8,8 @@ status: draft
 duration_seconds: 31.5
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation X31LCXeQoSKzNPpMobLi"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/Bj9LjP3Er4E
+youtube_embed: https://www.youtube.com/embed/Bj9LjP3Er4E
 youtube_title: "تحديث المخزون بسرعة في 4 خطوات | Tallaby"
 youtube_title_ar: "طريقة تحديث المخزون بسرعة على طلبي #Shorts"
 youtube_title_en: "How to update your stock quickly on Tallaby #Shorts"

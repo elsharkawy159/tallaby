@@ -8,8 +8,8 @@ status: draft
 duration_seconds: 33.7
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation hKkW1C6FcPxALTr3B3GO"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/ugn69u3Q-Xo
+youtube_embed: https://www.youtube.com/embed/ugn69u3Q-Xo
 youtube_title: "إضافة طلب يدويًا في 5 خطوات | Tallaby"
 youtube_title_ar: "طريقة إضافة طلب يدويًا وإرسال رابط التأكيد على طلبي #Shorts"
 youtube_title_en: "How to add an order by hand on Tallaby #Shorts"

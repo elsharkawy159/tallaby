@@ -8,8 +8,8 @@ status: ready
 duration_seconds: 31.3
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation FwB2iS9DVPNdgwxyLZmR"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/eGLMKw2w4Xg
+youtube_embed: https://www.youtube.com/embed/eGLMKw2w4Xg
 youtube_title: "شحن محفظة متجرك في 4 خطوات | Tallaby"
 youtube_title_ar: "طريقة شحن محفظة متجرك على طلبي #Shorts"
 youtube_title_en: "How to top up your Tallaby store wallet #Shorts"

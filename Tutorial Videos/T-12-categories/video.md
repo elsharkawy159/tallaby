@@ -8,8 +8,8 @@ status: draft
 duration_seconds: 35
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation rKjdMTN9e3HB6YwYP2Q4"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/2vJ8tpX8o8w
+youtube_embed: https://www.youtube.com/embed/2vJ8tpX8o8w
 youtube_title: "عمل فئات رئيسية وفرعية لمتجرك في 5 خطوات | Tallaby"
 youtube_title_ar: "طريقة عمل فئات رئيسية وفرعية على طلبي #Shorts"
 youtube_title_en: "How to make main and sub-categories on Tallaby #Shorts"

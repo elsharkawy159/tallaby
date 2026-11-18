@@ -8,8 +8,8 @@ status: ready
 duration_seconds: 34.9
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation q23Ow18UEWjY4oNQnxM1"
 made_on: 2026-11-17
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/zme9oBh3Gfk?feature=share
+youtube_embed: https://www.youtube.com/embed/zme9oBh3Gfk
 youtube_title: "إضافة منتج بالذكاء الاصطناعي في 4 خطوات | Tallaby"
 youtube_title_ar: "إضافة منتج بالذكاء الاصطناعي على طلبي #Shorts"
 youtube_title_en: "Add a product with AI on Tallaby #Shorts"

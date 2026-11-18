@@ -8,8 +8,8 @@ status: draft
 duration_seconds: 34.9
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation hwUso4tsIffZIAiaRFdU"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/ratO_S8_lJE
+youtube_embed: https://www.youtube.com/embed/ratO_S8_lJE
 youtube_title: "إضافة جدول مقاسات لمتجرك في 4 خطوات | Tallaby"
 youtube_title_ar: "طريقة إضافة جدول مقاسات لمتجرك على طلبي #Shorts"
 youtube_title_en: "How to add a size chart to your Tallaby store #Shorts"

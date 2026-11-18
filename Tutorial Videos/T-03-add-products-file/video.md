@@ -8,8 +8,8 @@ status: ready
 duration_seconds: 34.3
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation EgLVPNN5eDnj7pLbvq9W"
 made_on: 2026-11-17
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/rnXoqT5toTQ?feature=share
+youtube_embed: https://www.youtube.com/embed/rnXoqT5toTQ
 youtube_title: "إضافة منتجات كثيرة من ملف واحد في 5 خطوات | Tallaby"
 youtube_title_ar: "طريقة إضافة منتجات كثيرة من ملف واحد على طلبي #Shorts"
 youtube_title_en: "How to add many products from one file on Tallaby #Shorts"

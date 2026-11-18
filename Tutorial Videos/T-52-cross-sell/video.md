@@ -8,8 +8,8 @@ status: draft
 duration_seconds: 31.6
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation rlt0mGhD9Rg7qfeJe3N4"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/_uCi4-Cty9w
+youtube_embed: https://www.youtube.com/embed/_uCi4-Cty9w
 youtube_title: "عرض منتج مع منتجك بخصم في 4 خطوات | Tallaby"
 youtube_title_ar: "عرض منتج مكمّل مع منتجك على طلبي #Shorts"
 youtube_title_en: "Cross-sell offers on your product on Tallaby #Shorts"

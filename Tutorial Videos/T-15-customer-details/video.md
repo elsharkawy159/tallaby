@@ -8,8 +8,8 @@ status: draft
 duration_seconds: 34.9
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation iQUg4l12Bn3UZJhl6B8f"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/Shd258e4Oq8
+youtube_embed: https://www.youtube.com/embed/Shd258e4Oq8
 youtube_title: "طلب بيانات من العميل على منتجك في 5 خطوات | Tallaby"
 youtube_title_ar: "اطلب بيانات من العميل على منتجك في طلبي #Shorts"
 youtube_title_en: "Ask the customer for details on a product on Tallaby #Shorts"

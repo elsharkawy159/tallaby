@@ -8,8 +8,8 @@ status: draft
 duration_seconds: 33.2
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation LY3ntk1hZLBBfuB3YVcq"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/OXboAA4CxxA
+youtube_embed: https://www.youtube.com/embed/OXboAA4CxxA
 youtube_title: "إضافة عروض الكمية لمنتجك في 5 خطوات | Tallaby"
 youtube_title_ar: "عروض الكمية على منتجك في طلبي #Shorts"
 youtube_title_en: "Quantity offers on your product on Tallaby #Shorts"

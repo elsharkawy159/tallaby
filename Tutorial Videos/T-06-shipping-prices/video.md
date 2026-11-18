@@ -8,8 +8,8 @@ status: ready
 duration_seconds: 32.3
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation MGXZ7E0EL8Q9GuNdDuQe"
 made_on: 2026-11-18
-youtube_url:
-youtube_embed:
+youtube_url: https://youtube.com/shorts/s4ucnN8sMgI?feature=share
+youtube_embed: https://www.youtube.com/embed/s4ucnN8sMgI
 youtube_title: "تحديد أسعار الشحن لمتجرك في 4 خطوات | Tallaby"
 youtube_title_ar: "طريقة تحديد أسعار الشحن لمتجرك على طلبي #Shorts"
 youtube_title_en: "How to set shipping prices for your Tallaby store #Shorts"
