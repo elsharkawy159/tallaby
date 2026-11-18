@@ -9,6 +9,7 @@ duration_seconds: 34.5
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation oFLNS5JxyaMWwAACQOib"
 made_on: 2026-11-18
 youtube_url:
+youtube_title: "إضافة مقاسات وألوان لمنتجك في 5 خطوات | Tallaby"
 youtube_title_ar: "طريقة إضافة مقاسات وألوان لمنتجك على طلبي #Shorts"
 youtube_title_en: "How to add sizes and colours to a product on Tallaby #Shorts"
 ---

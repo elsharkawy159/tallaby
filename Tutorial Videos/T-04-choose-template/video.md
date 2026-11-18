@@ -9,6 +9,7 @@ duration_seconds: 31.8
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation Tsr5WUU2z8X1Fxlmqylj"
 made_on: 2026-11-18
 youtube_url:
+youtube_title: "اختيار قالب لمتجرك في 4 خطوات | Tallaby"
 youtube_title_ar: "طريقة اختيار قالب لمتجرك على طلبي #Shorts"
 youtube_title_en: "How to choose a template for your Tallaby store #Shorts"
 ---

@@ -258,6 +258,7 @@ duration_seconds: 30
 voice: Hanafi (DWMVT5WflKt0P8OPpIrY), eleven_v4
 made_on: 2026-11-17
 youtube_url:
+youtube_title: "إضافة منتج جديد لمتجرك في 5 خطوات | Tallaby"   # the title to upload with (owner, 2026-11-18): "<task> في <steps> خطوات | Tallaby", the number = steps in the video
 youtube_title_ar:
 youtube_title_en:
 ---
