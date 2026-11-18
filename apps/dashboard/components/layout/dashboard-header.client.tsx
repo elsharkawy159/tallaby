@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight, ExternalLink, Menu, Plus, Search } from "lucide-react";
+import { ChevronRight, ExternalLink, Menu, Plus } from "lucide-react";
 import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
+import type { SetupNextStep } from "@/app/[locale]/(main)/_components/setup-next-step.lib";
 import { CommandPalette } from "./command-palette.client";
 import { OPEN_COMMAND_PALETTE_EVENT } from "./command-palette.lib";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
+import { HeaderNextStep } from "./header-next-step.client";
 import { InstallAppButton } from "./install-app-button.client";
 import { LanguageToggle } from "./language-toggle.client";
 import { NotificationBell } from "./notification-bell.client";
@@ -27,6 +29,7 @@ export function DashboardHeader({
   storeLink,
   siteLive,
   storeId,
+  setupNextStep,
 }: {
   walletBalance: number | null;
   walletCurrency: string;
@@ -35,6 +38,8 @@ export function DashboardHeader({
   siteLive: boolean;
   /** The selected store (navigation only): where the palette's Products links go (F-87c). */
   storeId: string | null;
+  /** The selected store's next home setup step, or done (setup-next-step.lib.ts). */
+  setupNextStep: SetupNextStep | null;
 }) {
   const t = useTranslations("header");
   const locale = useLocale();
@@ -43,11 +48,12 @@ export function DashboardHeader({
   const route = resolveDashboardRoute(pathname);
   const setMobileOpen = useSidebarStore((state) => state.setMobileOpen);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // The search button is hidden for now (owner, 2026-11-18), so its OS shortcut hint is too; Ctrl/⌘K still works.
   // The shortcut hint depends on the OS; resolve after mount to keep SSR markup stable.
-  const [isMac, setIsMac] = useState(false);
+  // const [isMac, setIsMac] = useState(false);
 
   useEffect(() => {
-    setIsMac(/Mac|iPhone|iPad/.test(navigator.userAgent));
+    // setIsMac(/Mac|iPhone|iPad/.test(navigator.userAgent));
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
@@ -112,6 +118,12 @@ export function DashboardHeader({
         )}
       </div>
 
+      {/* The next setup step, then "Visit store" (owner, 2026-11-18). Always rendered: it keeps the actions at the end. */}
+      <div className="mx-auto flex min-w-0 flex-[1_1_0] justify-center max-[720px]:justify-start">
+        <HeaderNextStep key={storeId ?? "none"} initial={setupNextStep} storeHref={storeLink?.href ?? null} />
+      </div>
+
+      {/* Search hidden for now (owner, 2026-11-18): Ctrl/⌘K and the bottom nav's Search still open the palette.
       <button
         type="button"
         onClick={() => setPaletteOpen(true)}
@@ -127,8 +139,9 @@ export function DashboardHeader({
           {isMac ? "⌘" : "Ctrl"} K
         </kbd>
       </button>
+      */}
 
-      <div className="flex shrink-0 items-center gap-1 max-[600px]:gap-0">
+      <div className="flex shrink-0 items-center gap-1">
         {walletBalance != null && (
           <span
             className={cn(

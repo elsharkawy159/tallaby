@@ -11,7 +11,10 @@ import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
-import { SetupPrompts } from "./_components/setup-prompts.client";
+// Replaced by the header Next step button (owner, 2026-11-18).
+// import { SetupPrompts } from "./_components/setup-prompts.client";
+import { loadSetupNextStep } from "./_components/setup-next-step.server";
+import { StoreLiveCelebration } from "./_components/store-live-celebration.client";
 import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { getSessionUser } from "@/lib/auth/session.server";
 import { loadOrderLock, loadSeller } from "@/lib/auth/require-seller.server";
@@ -65,6 +68,7 @@ export default async function DashboardLayout({
     accountMoney,
     { selected },
     egpRate,
+    setupNextStep,
   ] = await Promise.all([
     user ? getStoreWalletBalance(user.id) : null,
     user ? needsHeardAboutUs(user.id) : false,
@@ -73,6 +77,7 @@ export default async function DashboardLayout({
     user ? loadAccountMoney(user.id).catch(() => EGP_ACCOUNT) : EGP_ACCOUNT,
     getSellerStores(),
     getEgpPerUsd(),
+    user ? loadSetupNextStep(user.id).catch(() => null) : null,
   ]);
   const walletBalance = wallet?.balance ?? null;
   // Clarity session tag: internal seller id + plan only (loadSeller is per-request cached; getSellerAccess already read it).
@@ -99,6 +104,7 @@ export default async function DashboardLayout({
             storeLink={storeLink}
             siteLive={selected?.siteStatus === "published" && !billingOffline}
             storeId={selected?.id ?? null}
+            setupNextStep={setupNextStep}
           />
           {access.status === "restricted" && (
             <div className="border-b border-(--s-line) bg-accent-soft px-7 py-3 text-sm text-accent-ink max-[1020px]:px-4">
@@ -106,7 +112,8 @@ export default async function DashboardLayout({
               {t("sellerStatus.restricted.message")}
             </div>
           )}
-          <SetupPrompts />
+          {/* Replaced by the header Next step button (owner, 2026-11-18). */}
+          {/* <SetupPrompts /> */}
           <AccountMoneyProvider value={accountMoney}>
             <main className="min-w-0 flex-1">{children}</main>
           </AccountMoneyProvider>
@@ -126,6 +133,7 @@ export default async function DashboardLayout({
           }
         />
         <WelcomeGiftDialog initial={welcomeGift} />
+        <StoreLiveCelebration />
         {user && clarityPlan && <ClarityIdentify sellerId={user.id} plan={clarityPlan} />}
       </div>
       </EgpRateProvider>

@@ -3951,7 +3951,11 @@
     "searchHint": "Search pages, products or orders",
     "topUp": "Top up",
     "siteLive": "Your website is open to visitors",
-    "siteOffline": "Your website is not open to visitors"
+    "siteOffline": "Your website is not open to visitors",
+    "nextStep": "Next step: {step}",
+    "nextStepShort": "Next step",
+    "visitStore": "Visit store",
+    "visitStoreHint": "Opens your store in a new tab"
   },
   "negativeWalletDialog": {
     "descriptionUsd": "Tallaby takes its order fee from your wallet for each new order on the Free plan. Top up to clear the amount you owe.",
