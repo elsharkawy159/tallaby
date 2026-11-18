@@ -1,7 +1,8 @@
 import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getLocale } from "next-intl/server";
-import { getMinTopUpText } from "@/lib/billing/min-top-up-egp.server";
+import { TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
+import { formatUsdShort } from "@/lib/billing/order-lock-copy.lib";
 import { Sidebar } from "./Sidebar";
 import { storeBuilderEnabled } from "./sidebar.config";
 import { getSidebarCounts } from "./sidebar.server";
@@ -15,7 +16,8 @@ export async function SidebarData() {
   ]);
 
   const ordersLocked = (await loadOrderLock(seller.sellerId)).ordersLocked;
-  const minTopUp = ordersLocked ? await getMinTopUpText(await getLocale()) : null;
+  // In dollars ("5$"), like the orders-lock banner (owner, 2026-11-18).
+  const minTopUp = ordersLocked ? formatUsdShort(TOP_UP_MIN_USD_CENTS, await getLocale()) : null;
 
   return (
     <Sidebar

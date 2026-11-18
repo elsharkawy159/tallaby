@@ -184,9 +184,9 @@
     }
   },
   "orderLock": {
-    "title": "يُرجى شحن محفظتك{amount, select, none {} other {، ابتداءً من {amount} فقط}}",
-    "body": "يستمر متجرك في البيع وطلباتك بانتظارك: اشحن محفظتك لعرضها.",
-    "bodyShort": "يستمر متجرك في البيع وطلباتك بانتظارك: اشحن محفظتك لعرضها. يُرجى الشحن خلال {days, plural, one {يوم واحد} two {يومين} few {# أيام} other {# يومًا}} ليبقى متجرك متاحًا.",
+    "title": "يُرجى شحن محفظتك، ابتداءً من {min} فقط",
+    "body": "يُخصم {cents, plural, one {سنت واحد} two {سنتان} other {{centsText} سنت}}{feeEgp, select, none {} other { = {feeEgp} جنيه}} عن كل طلب من محفظتك.",
+    "bodyShort": "يُخصم {cents, plural, one {سنت واحد} two {سنتان} other {{centsText} سنت}}{feeEgp, select, none {} other { = {feeEgp} جنيه}} عن كل طلب من محفظتك. يُرجى الشحن خلال {days, plural, one {يوم واحد} two {يومين} few {# أيام} other {# يومًا}} ليبقى متجرك متاحًا.",
     "reviewTitle": "طلب الشحن قيد المراجعة",
     "reviewBody": "ستظهر طلباتك فور الموافقة عليه.",
     "topUp": "اشحن المحفظة",
@@ -194,7 +194,7 @@
     "offlineTitle": "متجرك متوقف: اشحن محفظتك لإعادة تشغيله",
     "goOnlineTopUp": "اشحن محفظتك لإعادة تشغيل متجرك.",
     "offlineBody": "انتهت أيامك المجانية، لذلك أُغلق متجرك أمام الزوار ولا يستقبل طلبات جديدة. اشحن محفظتك{amount, select, none {} other { ابتداءً من {amount} فقط}} ليعود متجرك للعمل فورًا.",
-    "sidebar": "يُرجى شحن محفظتك{amount, select, none {} other {، ابتداءً من {amount} فقط}}، لعرض طلباتك"
+    "sidebar": "يُرجى شحن محفظتك، ابتداءً من {min} فقط، لعرض طلباتك"
   },
   "bulkFileImport": {
     "stage": {

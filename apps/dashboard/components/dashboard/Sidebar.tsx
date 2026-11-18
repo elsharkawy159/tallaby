@@ -32,8 +32,7 @@ import { WhatsAppIcon, useSupportWhatsAppUrl } from "./support-chat-link.client"
 interface SidebarProps {
   /** No first top-up yet: Orders shows a warning (F-68). */
   ordersLocked: boolean;
-  /** The $5 minimum top-up in EGP, shown in the warning's tooltip. Null when unknown. */
-  /** The smallest top-up as shown ("≈ 269 جنيه"), or null with no rate. */
+  /** The smallest top-up in dollars ("5$"), shown in the warning's tooltip (owner, 2026-11-18). Null when orders aren't locked. */
   minTopUp: string | null;
   counts: SidebarCounts;
   stores: SwitcherStore[];
@@ -449,7 +448,7 @@ const LOCKED_GROUPS = ["ordersGroup"];
 function OrdersWarning() {
   const t = useTranslations("orderLock");
   const amount = useContext(MinTopUpContext);
-  const label = t("sidebar", { amount: amount ?? "none" });
+  const label = t("sidebar", { min: amount ?? "" });
   return (
     <span role="img" aria-label={label} title={label} className="shrink-0 text-sm leading-none">
       ⚠️

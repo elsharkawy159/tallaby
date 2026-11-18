@@ -184,9 +184,9 @@
     }
   },
   "orderLock": {
-    "title": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}",
-    "body": "Your store keeps selling and your orders are waiting: top up your wallet to see them.",
-    "bodyShort": "Your store keeps selling and your orders are waiting: top up your wallet to see them. Please top up within {days, plural, one {# day} other {# days}} to keep your store online.",
+    "title": "Please top up your wallet, from just {min}",
+    "body": "Each order takes {cents, plural, one {{centsText} cent} other {{centsText} cents}}{feeEgp, select, none {} other { (≈ {feeEgp} EGP)}} from your wallet.",
+    "bodyShort": "Each order takes {cents, plural, one {{centsText} cent} other {{centsText} cents}}{feeEgp, select, none {} other { (≈ {feeEgp} EGP)}} from your wallet. Top up within {days, plural, one {# day} other {# days}} to keep your store online.",
     "reviewTitle": "Your top-up is being reviewed",
     "reviewBody": "Your orders will open as soon as we approve it.",
     "topUp": "Top up",
@@ -194,7 +194,7 @@
     "offlineTitle": "Your store is offline: top up to bring it back",
     "goOnlineTopUp": "Top up your wallet to bring your store back online.",
     "offlineBody": "Your free days are over, so your store is closed to visitors and takes no new orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} and your store comes back online at once.",
-    "sidebar": "Kindly top up your wallet{amount, select, none {} other {, starting from {amount} only}}, to see your orders"
+    "sidebar": "Please top up your wallet, from just {min}, to see your orders"
   },
   "bulkFileImport": {
     "stage": {

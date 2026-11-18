@@ -3,7 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Clock, Wallet } from "lucide-react";
 import { daysUntilOffline, type OrderLock } from "@workspace/lib/billing/order-lock";
 import { Button } from "@workspace/ui/components/button";
-import { getMinTopUpText } from "@/lib/billing/min-top-up-egp.server";
+import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
+import { getMinTopUpText, getOrderFeeEgpText } from "@/lib/billing/min-top-up-egp.server";
+import { formatUsdShort } from "@/lib/billing/order-lock-copy.lib";
 import { showGraceNotice } from "@/lib/billing/grace-notice.lib";
 
 const PLACEHOLDER_ROWS = ["w-3/4", "w-2/3", "w-4/5", "w-1/2", "w-3/5", "w-2/3"];
@@ -14,24 +16,36 @@ const PLACEHOLDER_ROWS = ["w-3/4", "w-2/3", "w-4/5", "w-1/2", "w-3/5", "w-2/3"];
  * 2026-11-16). The blurred rows are placeholders: no order data is loaded or
  * sent to the browser.
  */
-/** The title names the smallest top-up in EGP ("≈ 269 جنيه"), never in dollars (owner, 2026-11-09). */
+/**
+ * The title names the smallest top-up in dollars ("5$", owner 2026-11-18: the
+ * banner says why and how much in one glance); the offline and review titles
+ * name no amount.
+ */
 async function lockTitle(lock: OrderLock) {
-  const [t, amount] = await Promise.all([getTranslations("orderLock"), getLocale().then(getMinTopUpText)]);
+  const [t, locale] = await Promise.all([getTranslations("orderLock"), getLocale()]);
   if (lock.pendingReview) return t("reviewTitle");
-  return lock.storeOffline ? t("offlineTitle") : t("title", { amount: amount ?? "none" });
+  return lock.storeOffline ? t("offlineTitle") : t("title", { min: formatUsdShort(TOP_UP_MIN_USD_CENTS, locale) });
 }
 
 /**
  * The message under the title: a top-up in review, the store already offline
- * (the trial's days are over, owner 2026-11-17), the days until it goes offline
- * (the countdown), or that orders wait for a top-up.
+ * (the trial's days are over, owner 2026-11-17; still the EGP minimum), or the
+ * Free plan's per-order fee ("3 cents ≈ 1.62 EGP", no EGP part with no rate),
+ * with the days until the store goes offline while the countdown runs. Only a
+ * seller who isn't activated sees it, and an active Pro plan activates, so the
+ * fee line always applies.
  */
 async function lockBody(lock: OrderLock) {
-  const [t, amount] = await Promise.all([getTranslations("orderLock"), getLocale().then(getMinTopUpText)]);
+  const [t, locale] = await Promise.all([getTranslations("orderLock"), getLocale()]);
   if (lock.pendingReview) return t("reviewBody");
-  if (lock.storeOffline) return t("offlineBody", { amount: amount ?? "none" });
+  if (lock.storeOffline) return t("offlineBody", { amount: (await getMinTopUpText(locale)) ?? "none" });
+  const fee = {
+    cents: FREE_ORDER_FEE_USD_CENTS,
+    centsText: FREE_ORDER_FEE_USD_CENTS.toLocaleString("en-US"),
+    feeEgp: (await getOrderFeeEgpText()) ?? "none",
+  };
   const offlineIn = lock.grace ? daysUntilOffline(lock.grace) : 0;
-  return offlineIn > 0 ? t("bodyShort", { days: offlineIn }) : t("body");
+  return offlineIn > 0 ? t("bodyShort", { ...fee, days: offlineIn }) : t("body", fee);
 }
 
 export async function OrdersLocked({ lock }: { lock: OrderLock }) {
