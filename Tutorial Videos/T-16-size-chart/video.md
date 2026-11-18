@@ -14,6 +14,27 @@ youtube_title_ar: "طريقة إضافة جدول مقاسات لمتجرك عل
 youtube_title_en: "How to add a size chart to your Tallaby store #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة جدول مقاسات لمتجرك في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة تثبيت تطبيق جدول المقاسات على متجرك في طلبي، وعمل جدول من قالب جاهز وربطه بقسم، عشان يظهر زر «اعرف مقاسك» للعميل في صفحة المنتج.
+
+1. اضغط «ثبّت» ثم «تثبيت».
+2. اختر قالب «تيشيرتات وقمصان».
+3. راجع المقاسات واضغط «حفظ الجدول».
+4. اضغط «طبّقه على» واختر القسم.
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -33,17 +54,6 @@ youtube_title_en: "How to add a size chart to your Tallaby store #Shorts"
 47 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`hwUso4tsIffZIAiaRFdU`, 429 credits, ElevenLabs flow `CRCP9NodFJgWlF9UXjLB`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–4.38, 4.84–7.85, 8.2–12.24, 12.57–15.76, 16.2–19.86, 20.39–25.88 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
 **Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «بِقِسْم» → «بِفِئِة», «هَيْلَاقِي» → «هَيْشُوف» and «اُرْبُط» → «اِرْبُط»; step 1 moved 0.15 s later (4.9 s) for the longer opening. «مَقَاسَات» keeps its ق, since it is the feature's name. The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة تثبيت تطبيق جدول المقاسات على متجرك في طلبي، وعمل جدول من قالب جاهز وربطه بقسم، عشان يظهر زر «اعرف مقاسك» للعميل في صفحة المنتج.
-
-1. اضغط «ثبّت» ثم «تثبيت».
-2. اختر قالب «تيشيرتات وقمصان».
-3. راجع المقاسات واضغط «حفظ الجدول».
-4. اضغط «طبّقه على» واختر القسم.
-
-https://tallaby.com
 
 ## Caption / post text
 

@@ -14,6 +14,27 @@ youtube_title_ar: "طريقة اختيار طرق الدفع لمتجرك على
 youtube_title_en: "How to choose payment methods for your Tallaby store #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+اختيار طرق الدفع لمتجرك في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة اختيار طرق الدفع لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اضغط «إعداد» بجانب إنستاباي.
+2. اكتب عنوان إنستاباي.
+3. اكتب اسم صاحب الحساب.
+4. اضغط «حفظ وتفعيل».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -31,17 +52,6 @@ youtube_title_en: "How to choose payment methods for your Tallaby store #Shorts"
 هنختار طُرُق الدَّفع لمَتجَرَك على طَلَبي، في أربع خطوات بسيطة. واحد: اضغَط إعداد جنب إنستا باي. اتنين: اكتِب عنوان إنستا باي بتاعك. تلاتة: اكتِب اسم صاحب الحساب. أربعة: اضغَط حِفظ وتفعيل. وكده عُمَلاءَك هيقدروا يدفعوا عند الاستلام أو بإنستا باي، والمَبلَغ بيوصل لحسابك مباشرةً.
 
 44 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`4Xs92FdgBOvLshwoyLNF`, 278 credits, ElevenLabs flow `KbtsVZQsM9Lr2yOJYdwU`). The take is `work/vo/take.mp3` (21.9 s), cut inside its pauses at 4.2, 7.2, 10.2, 12.85 and 15.4 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word (44 words), with no laugh marker; like T-06's, it returned the script's own diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "إنستا باي", "حِفظ وتفعيل" and "مباشرةً" sound right) before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة اختيار طرق الدفع لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اضغط «إعداد» بجانب إنستاباي.
-2. اكتب عنوان إنستاباي.
-3. اكتب اسم صاحب الحساب.
-4. اضغط «حفظ وتفعيل».
-
-https://tallaby.com
 
 ## Caption / post text
 

@@ -14,6 +14,28 @@ youtube_title_ar: "طريقة إضافة منتج جديد لمتجرك على �
 youtube_title_en: "How to add a product to your Tallaby store #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة منتج جديد لمتجرك في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة إضافة منتج جديد لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اختر «إضافة يدويًا».
+2. اكتب اسم المنتج ووصفه المختصر.
+3. أضف صور المنتج.
+4. اختر الفئة.
+5. اكتب السعر ثم اضغط «نشر».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -34,18 +56,6 @@ The bar at the bottom counts down as on the real page: 29% "5 حقول مطلو�
 هنضيف مُنتَج جديد على طَلَبي، في خمس خطوات بسيطة. واحد: اختار إضافة يَدَوِيًّا. اتنين: اكتِب اسم المُنتَج، ووَصف قُصيَّر عنه. تلاتة: ضيف صُوَر المُنتَج. أربعة: اختار الفِئة. خمسة: اكتِب السِّعر، واضغَط نَشر. وكده مُنتَجَك بقى مَعروض في مَتجَرَك.
 
 Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, generation `Nx0NWDGYjzHxfoMoSD5K`. The take is `work/vo/take.mp3` (19.6 s; third take, 2026-11-17: the first two laughed on "الموضوع بسيط", so the opening became a plain statement), cut at its sentence pauses and placed one sentence per beat; it is not sped up or stretched. The take was transcribed and matched the script word for word, but **nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة إضافة منتج جديد لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اختر «إضافة يدويًا».
-2. اكتب اسم المنتج ووصفه المختصر.
-3. أضف صور المنتج.
-4. اختر الفئة.
-5. اكتب السعر ثم اضغط «نشر».
-
-https://tallaby.com
 
 ## Caption / post text
 

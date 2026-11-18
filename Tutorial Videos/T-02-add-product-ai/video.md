@@ -14,6 +14,27 @@ youtube_title_ar: "إضافة منتج بالذكاء الاصطناعي على 
 youtube_title_en: "Add a product with AI on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة منتج بالذكاء الاصطناعي في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة إضافة منتج بالذكاء الاصطناعي من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اختر «إضافة بالذكاء الاصطناعي».
+2. اكتب وصف المنتج وسعره.
+3. أرفق الصور ثم اضغط «إرسال».
+4. راجع البيانات ثم اضغط «نشر».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -35,17 +56,6 @@ The nine steps on the progress card, as the page lists them: تحليل الصو
 40 words. "AI" is said as "الذكاء الاصطناعي", the name written on the card, not "إيه آي".
 
 Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`q23Ow18UEWjY4oNQnxM1`, flow `tMo3sXAKzpBfb4qj6wY4`, 280 credits). The take is `work/vo/take.mp3` (22.28 s), cut at its sentence pauses (4.51, 7.67, 10.81, 14.15, 17.38 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, 40 of 40 words, with no laugh marker. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural, with no laugh, before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة إضافة منتج بالذكاء الاصطناعي من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اختر «إضافة بالذكاء الاصطناعي».
-2. اكتب وصف المنتج وسعره.
-3. أرفق الصور ثم اضغط «إرسال».
-4. راجع البيانات ثم اضغط «نشر».
-
-https://tallaby.com
 
 ## Caption / post text
 

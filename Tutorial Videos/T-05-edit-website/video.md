@@ -14,6 +14,28 @@ youtube_title_ar: "طريقة تعديل موقع متجرك ونشره على �
 youtube_title_en: "How to edit and publish your Tallaby store website #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+تعديل موقع متجرك ونشره في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة تعديل موقع متجرك ونشره من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اضغط «تعديل الموقع».
+2. اضغط العنوان ثم «تعديل».
+3. اكتب العنوان الجديد.
+4. اختر صورة جديدة من المكتبة.
+5. اضغط «نشر» لتظهر التغييرات.
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -32,18 +54,6 @@ youtube_title_en: "How to edit and publish your Tallaby store website #Shorts"
 هنعدّل موقع مَتجَرَك على طَلَبي، في خمس خطوات بسيطة. واحد: اضغَط تعديل الموقع. اتنين: اضغَط العنوان، وبعدين اضغَط تعديل. تلاتة: اكتِب العنوان الجديد. أربعة: اختار صورة جديدة من المكتبة. خمسة: اضغَط نَشر، علشان التعديلات تظهر في مَتجَرَك. وكده العملاء شايفين موقعك بالشكل الجديد.
 
 43 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`1Vp8Eumkvb23Jyy8b8lm`, flow `vN09QIsSteAKDmnStIF4`, 278 credits). The take is `work/vo/take.mp3` (22.64 s), cut at its sentence pauses (0 / 3.68 / 6.30 / 9.95 / 12.27 / 15.15 / 19.32 / 22.64 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word and shows no laugh marker. The transcript also copied the script's diacritics exactly, so it may have been guided by the prompt: **nobody has listened to the take yet**. Someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة تعديل موقع متجرك ونشره من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اضغط «تعديل الموقع».
-2. اضغط العنوان ثم «تعديل».
-3. اكتب العنوان الجديد.
-4. اختر صورة جديدة من المكتبة.
-5. اضغط «نشر» لتظهر التغييرات.
-
-https://tallaby.com
 
 ## Caption / post text
 

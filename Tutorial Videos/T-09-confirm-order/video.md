@@ -14,6 +14,27 @@ youtube_title_ar: "طريقة متابعة طلب جديد وتأكيده على
 youtube_title_en: "How to follow and confirm a new order on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+تأكيد طلب جديد ومتابعته في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة متابعة طلب جديد وتأكيده من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. افتح الطلب الجديد.
+2. راجع بيانات العميل والمنتجات.
+3. اضغط «تأكيد الطلب».
+4. اضغط «خرج للتوصيل» عند إرسال الطلب.
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -31,17 +52,6 @@ youtube_title_en: "How to follow and confirm a new order on Tallaby #Shorts"
 هنأكّد طَلَب جديد ونتابع مرحلته على طَلَبي، في أربع خطوات بسيطة. واحد: افتح الطَّلَب الجديد. اتنين: راجع بيانات العميل والمُنتَجات. تلاتة: بعد ما العميل يأكّد على واتساب، اضغَط تأكيد الطَّلَب. أربعة: لما تبعت الطَّلَب للعميل، اضغَط خرج للتوصيل. وكده الطَّلَب بقى في الطريق، وتقدر تتابع مرحلته من صفحة الطَّلَبات.
 
 49 words (transcript count). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`6vD1KhbyBqwiWnCey9QH`, 312 credits, ElevenLabs flow `K6u3Nkc2IUMpGgf8auDJ`). The take is `work/vo/take.mp3` (24.1 s), cut inside its pauses at 4.97, 7.27, 10.6, 15.1 and 19.52 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker; it also returned the script's diacritics, so it may lean on the text more than a blind transcript would. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "طَلَب" / "طَلَبي" in the opening, "يأكّد" and "خرج للتوصيل" sound right) before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة متابعة طلب جديد وتأكيده من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. افتح الطلب الجديد.
-2. راجع بيانات العميل والمنتجات.
-3. اضغط «تأكيد الطلب».
-4. اضغط «خرج للتوصيل» عند إرسال الطلب.
-
-https://tallaby.com
 
 ## Caption / post text
 

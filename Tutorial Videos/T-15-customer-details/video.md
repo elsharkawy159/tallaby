@@ -14,6 +14,28 @@ youtube_title_ar: "اطلب بيانات من العميل على منتجك ف�
 youtube_title_en: "Ask the customer for details on a product on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+طلب بيانات من العميل على منتجك في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة طلب بيانات من العميل على منتجك من لوحة التحكم في طلبي، مثل الاسم المطلوب طباعته، خطوة بخطوة.
+
+1. افتح «مطلوب من العميل».
+2. أضف حقل «نص».
+3. اكتب اسم الحقل بالعربية والإنجليزية.
+4. اكتب السعر الإضافي.
+5. اضغط «حفظ».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 The video starts on a product that is already being edited ("مج بالاسم", 150 جنيه), scrolled down to its folded sections. The title card covers the page until 6.95 s.
@@ -36,18 +58,6 @@ The video starts on a product that is already being edited ("مج بالاسم",
 50 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`iQUg4l12Bn3UZJhl6B8f`, 409 credits, ElevenLabs flow `N395fPqV4zeRbJ0OPdHq`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–6.11, 6.76–9.64, 10.02–12.68, 13.03–16.32, 16.73–19.29, 19.65–21.16, 21.67–25 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
 **Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «حَقْل» → «خَانَة» and «قِسْم» → «گُزْء» (no ق), and a more Egyptian closing («الاِسْم اللِّي إِنْتَ عَايْزُه»); the screen keeps the dashboard's «حقل». The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة طلب بيانات من العميل على منتجك من لوحة التحكم في طلبي، مثل الاسم المطلوب طباعته، خطوة بخطوة.
-
-1. افتح «مطلوب من العميل».
-2. أضف حقل «نص».
-3. اكتب اسم الحقل بالعربية والإنجليزية.
-4. اكتب السعر الإضافي.
-5. اضغط «حفظ».
-
-https://tallaby.com
 
 ## Caption / post text
 

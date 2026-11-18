@@ -14,6 +14,28 @@ youtube_title_ar: "عروض الكمية على منتجك في طلبي #Shorts
 youtube_title_en: "Quantity offers on your product on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة عروض الكمية لمنتجك في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة إضافة عروض الكمية على منتجك من لوحة التحكم في طلبي، مثل قطعتين بخصم 15% و3 قطع بخصم 25%، خطوة بخطوة.
+
+1. انزل إلى «عروض الكمية» في صفحة تعديل المنتج.
+2. اضغط «أضف شريحة».
+3. اكتب نسبة الخصم.
+4. أضف شريحة لكمية أكبر.
+5. اضغط «احفظ العروض».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 The video starts on a product that is already being edited ("فازة سيراميك", 200 جنيه), scrolled down past the form's folded sections. The title card covers the page until 5.4 s.
@@ -36,18 +58,6 @@ The video starts on a product that is already being edited ("فازة سيرام
 41 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`LY3ntk1hZLBBfuB3YVcq`, 343 credits, ElevenLabs flow `VvUudYNOZImfAaoZaFei`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–4.36, 4.92–7.63, 8.01–10.57, 10.97–13.1, 13.63–16.67, 17.05–19.62, 19.95–22.69 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
 **Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «لِقِسْم» → «لِگُزْء» (no ق). The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة إضافة عروض الكمية على منتجك من لوحة التحكم في طلبي، مثل قطعتين بخصم 15% و3 قطع بخصم 25%، خطوة بخطوة.
-
-1. انزل إلى «عروض الكمية» في صفحة تعديل المنتج.
-2. اضغط «أضف شريحة».
-3. اكتب نسبة الخصم.
-4. أضف شريحة لكمية أكبر.
-5. اضغط «احفظ العروض».
-
-https://tallaby.com
 
 ## Caption / post text
 

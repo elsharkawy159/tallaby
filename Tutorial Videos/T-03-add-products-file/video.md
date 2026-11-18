@@ -14,6 +14,28 @@ youtube_title_ar: "طريقة إضافة منتجات كثيرة من ملف و�
 youtube_title_en: "How to add many products from one file on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة منتجات كثيرة من ملف واحد في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة إضافة منتجات كثيرة لمتجرك من ملف واحد، من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اختر «رفع ملف منتجات».
+2. ارفع ملف منتجاتك.
+3. راجع المنتجات قبل الإضافة.
+4. اضغط «إضافة جميع المنتجات».
+5. اضغط «عرض المنتجات».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -32,18 +54,6 @@ youtube_title_en: "How to add many products from one file on Tallaby #Shorts"
 هنضيف مُنتَجات كتير على طَلَبي من ملف واحد، في خمس خطوات بسيطة. واحد: اختار رفع ملف مُنتَجات. اتنين: ارفَع ملف الإكسِل من جهازك. تلاتة: راجِع المُنتَجات قبل الإضافة. أربعة: اضغَط إضافة جميع المُنتَجات. خمسة: اضغَط عَرض المُنتَجات. وكده مُنتَجاتَك كلها اتضافت في مَتجَرَك.
 
 43 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`EgLVPNN5eDnj7pLbvq9W`, 271 credits, ElevenLabs flow `KobywqTNag4gY2VEfV7n`). The take is `work/vo/take.mp3` (22.67 s), cut at its sentence pauses (0 / 4.88 / 7.91 / 10.86 / 13.68 / 16.70 / 19.55 / 22.67 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, 43 words, with no laugh marker. The transcript came back with the same diacritics as the script, so it proves the words, not how each one sounds. **Nobody has listened to the take yet**: someone who can listen must confirm it sounds calm and natural, and that "طلبي", "الإكسل", "ارفع", "راجع" and "عرض" are said right, before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة إضافة منتجات كثيرة لمتجرك من ملف واحد، من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اختر «رفع ملف منتجات».
-2. ارفع ملف منتجاتك.
-3. راجع المنتجات قبل الإضافة.
-4. اضغط «إضافة جميع المنتجات».
-5. اضغط «عرض المنتجات».
-
-https://tallaby.com
 
 ## Caption / post text
 

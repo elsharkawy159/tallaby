@@ -14,6 +14,27 @@ youtube_title_ar: "طريقة شحن محفظة متجرك على طلبي #Shor
 youtube_title_en: "How to top up your Tallaby store wallet #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+شحن محفظة متجرك في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة شحن محفظة متجرك من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اضغط «شحن المحفظة».
+2. اختر المبلغ.
+3. اضغط «ادفع عبر Kashier» وأكمل الدفع.
+4. اضغط «العودة إلى المحفظة».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -31,17 +52,6 @@ youtube_title_en: "How to top up your Tallaby store wallet #Shorts"
 هنشحن مَحفَظة مَتجَرَك على طَلَبي، في أربع خطوات بسيطة. واحد: اضغَط شَحن المَحفَظة. اتنين: اختار مبلغ الشَّحن، زي عشرة دولار. تلاتة: اضغَط ادفع عبر كاشير، وكمّل الدفع في صفحة كاشير. أربعة: بعد الدفع، اضغَط العودة إلى المَحفَظة. وكده الرَّصيد الجديد اتضاف لمَحفَظة مَتجَرَك.
 
 43 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`FwB2iS9DVPNdgwxyLZmR`, 273 credits, ElevenLabs flow `RSiPjK1wEUdEOfVOdGk1`). The take is `work/vo/take.mp3` (22.5 s), cut inside its pauses at 4.0, 6.6, 10.2, 15.2 and 18.95 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`, 43 words) matched the script word for word, with no laugh marker; like T-06's, it returned the script's own diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "كاشير" and "عشرة دولار" sound right) before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة شحن محفظة متجرك من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اضغط «شحن المحفظة».
-2. اختر المبلغ.
-3. اضغط «ادفع عبر Kashier» وأكمل الدفع.
-4. اضغط «العودة إلى المحفظة».
-
-https://tallaby.com
 
 ## Caption / post text
 

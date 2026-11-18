@@ -14,6 +14,27 @@ youtube_title_ar: "طريقة تحديث المخزون بسرعة على طلب
 youtube_title_en: "How to update your stock quickly on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+تحديث المخزون بسرعة في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة زيادة مخزون منتج من صفحة المخزون في لوحة تحكم طلبي، ومتابعة كل تغيير في سجل المخزون.
+
+1. اضغط «السجل» تحت اسم المنتج.
+2. اكتب عدد القطع المضافة.
+3. اضغط «إضافة».
+4. راجع التغيير في سجل المخزون.
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -33,17 +54,6 @@ youtube_title_en: "How to update your stock quickly on Tallaby #Shorts"
 44 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`X31LCXeQoSKzNPpMobLi`, 378 credits, ElevenLabs flow `NGrdgtl3vlUGEO1k76UD`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–3.92, 4.38–7.32, 7.66–10.86, 11.27–14.91, 15.34–18.17, 18.54–22.53 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
 **Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «عَدَد القِطَع … عِشْرِين قِطْعَة» → «العَدَد اللِّي وِصِل، زَيّ عِشْرِين» (no ق). The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة زيادة مخزون منتج من صفحة المخزون في لوحة تحكم طلبي، ومتابعة كل تغيير في سجل المخزون.
-
-1. اضغط «السجل» تحت اسم المنتج.
-2. اكتب عدد القطع المضافة.
-3. اضغط «إضافة».
-4. راجع التغيير في سجل المخزون.
-
-https://tallaby.com
 
 ## Caption / post text
 

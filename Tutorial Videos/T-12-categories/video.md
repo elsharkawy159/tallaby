@@ -14,6 +14,28 @@ youtube_title_ar: "طريقة عمل فئات رئيسية وفرعية على �
 youtube_title_en: "How to make main and sub-categories on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+عمل فئات رئيسية وفرعية لمتجرك في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة عمل فئة رئيسية وفئة فرعية داخلها في لوحة تحكم طلبي، ووضع منتج فيها.
+
+1. أضف الفئة الرئيسية «ملابس».
+2. اضغط «إضافة فئة» مرة أخرى واختر «ملابس» في «الفئة الرئيسية».
+3. اكتب «تيشيرتات» واختر الاقتراح.
+4. في صفحة المنتج، اختر «ملابس › تيشيرتات» في «الفئة».
+5. اضغط «حفظ».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -34,18 +56,6 @@ youtube_title_en: "How to make main and sub-categories on Tallaby #Shorts"
 56 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`rKjdMTN9e3HB6YwYP2Q4`, 481 credits, ElevenLabs flow `5uFWtOXUvSYZq379CjjW`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–5.41, 5.91–9.8, 10.14–14.93, 15.27–19.45, 19.83–23.23, 23.57–25.27, 25.61–29.79 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
 **Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «الاِقْتِرَاح مِن القَائِمَة» → «الاِسْم اللِّي ظَهَر تَحْت» and «مَلَابِس كَفِئَة رَئِيسِيَّة» → «الفِئَة الرَّئِيسِيَّة مَلَابِس»; the longer sentences moved steps 2–5 (10.15, 15.35, 19.93 and 24.0 s, taps and typing with them), the result to 28.0 s and the end card to 32.5 s, so the video is now 35.0 s. The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة عمل فئة رئيسية وفئة فرعية داخلها في لوحة تحكم طلبي، ووضع منتج فيها.
-
-1. أضف الفئة الرئيسية «ملابس».
-2. اضغط «إضافة فئة» مرة أخرى واختر «ملابس» في «الفئة الرئيسية».
-3. اكتب «تيشيرتات» واختر الاقتراح.
-4. في صفحة المنتج، اختر «ملابس › تيشيرتات» في «الفئة».
-5. اضغط «حفظ».
-
-https://tallaby.com
 
 ## Caption / post text
 

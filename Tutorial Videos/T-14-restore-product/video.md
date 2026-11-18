@@ -14,6 +14,27 @@ youtube_title_ar: "طريقة استرجاع منتج محذوف على طلبي
 youtube_title_en: "How to restore a deleted product on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+استرجاع منتج محذوف في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة استرجاع منتج حذفته من سلة المحذوفات في لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. افتح «سلة المحذوفات» من القائمة.
+2. اختر المنتج.
+3. اضغط «استرجاع».
+4. ارجع إلى «المنتجات».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -33,17 +54,6 @@ youtube_title_en: "How to restore a deleted product on Tallaby #Shorts"
 44 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`46C09hJ4QKEPhGr0Ojdu`, 389 credits, ElevenLabs flow `PjNDavvKOtgcrAKPCEW1`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–4.72, 5.33–8.88, 9.22–12.44, 12.75–14.7, 15.1–17.57, 17.9–23.24 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
 **Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «القَايْمَة» → «المِنْيُو» (no ق). The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة استرجاع منتج حذفته من سلة المحذوفات في لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. افتح «سلة المحذوفات» من القائمة.
-2. اختر المنتج.
-3. اضغط «استرجاع».
-4. ارجع إلى «المنتجات».
-
-https://tallaby.com
 
 ## Caption / post text
 

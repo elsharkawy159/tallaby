@@ -14,6 +14,28 @@ youtube_title_ar: "طريقة إضافة منتج من رابط لمتجرك ع�
 youtube_title_en: "How to add a product from a link to your Tallaby store #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة منتج من رابط لمتجرك في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة إضافة منتج لمتجرك من رابط صفحته، من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اختر «رابط المنتج».
+2. الصق رابط المنتج.
+3. اضغط «جلب المنتج».
+4. راجع الاسم والصور والسعر.
+5. اضغط «نشر».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -34,18 +56,6 @@ youtube_title_en: "How to add a product from a link to your Tallaby store #Short
 Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`0dbNJYqzpc6G3zYz2htV`, flow `MVgavpQxmo6TWRdpHmT2`, 261 credits). 41 words. The take is `work/vo/take.mp3` (20.27 s), cut at its sentence pauses (3.85, 6.23, 8.56, 12.77, 15.63, 17.45 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) came back the same as the script word for word, with no laugh marker. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural, and that "الصَق", "جَلب" and "لينك" are said right, before `status` becomes `ready`.
 
 The voice says "لينك" (TUTORIALS.md §5.1 English words table); the screen and the captions keep the page's word "رابط".
-
-## YouTube description (Arabic)
-
-طريقة إضافة منتج لمتجرك من رابط صفحته، من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اختر «رابط المنتج».
-2. الصق رابط المنتج.
-3. اضغط «جلب المنتج».
-4. راجع الاسم والصور والسعر.
-5. اضغط «نشر».
-
-https://tallaby.com
 
 ## Caption / post text
 

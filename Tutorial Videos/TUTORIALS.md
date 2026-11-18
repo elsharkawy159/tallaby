@@ -263,13 +263,24 @@ youtube_title_ar:
 youtube_title_en:
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة منتج جديد لمتجرك في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+One line that says what the video shows, the numbered steps, then https://tallaby.com
+```
+
 ## Steps shown
 1. …
 
 ## Voiceover script (with diacritics, exactly as generated)
-…
-
-## YouTube description (Arabic)
 …
 
 ## Caption / post text
@@ -284,7 +295,7 @@ Source files checked, fictional data used, anything that differs from the real p
 
 ## 7. YouTube
 
-- Upload as a **Short** (vertical, under 60 s). Title in Arabic, at most 60 characters, ending with `#Shorts`.
+- Upload as a **Short** (vertical, under 60 s). Title: the video's `youtube_title`, "<task> في <N> خطوات | Tallaby" (owner, 2026-11-18). The title and the description sit together at the top of each `video.md` under "YouTube (copy and paste)", ready to copy.
 - Description: one line that says what the video shows, then the numbered steps, then `https://tallaby.com`.
 - After uploading, write the link in the video's `video.md` (`youtube_url`) and in the dashboard's tutorial registry (§8). The owner uploads, or approves the upload.
 

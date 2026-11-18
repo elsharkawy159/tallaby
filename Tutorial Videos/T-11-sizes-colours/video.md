@@ -14,6 +14,28 @@ youtube_title_ar: "طريقة إضافة مقاسات وألوان لمنتجك 
 youtube_title_en: "How to add sizes and colours to a product on Tallaby #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+إضافة مقاسات وألوان لمنتجك في 5 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة إضافة مقاسات وألوان لمنتجك من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. أضف خيار «المقاس».
+2. اختر المقاسات من الاقتراحات.
+3. أضف خيار «اللون» واختر الألوان.
+4. اكتب الكمية واضغط «تطبيق على الكل».
+5. اضغط «حفظ».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 The video starts on a product that is already being edited ("تيشيرت قطن", 299 جنيه, 20 pieces), scrolled to its section "المخزون والأنواع". The title card covers the page until 5.0 s.
@@ -36,18 +58,6 @@ The video starts on a product that is already being edited ("تيشيرت قطن
 44 words, full تشكيل. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`oFLNS5JxyaMWwAACQOib`, 385 credits, ElevenLabs flow `ZyKrZGTgJnwIVJCz2NLK`), made 2026-11-18. The take is `work/vo/take.mp3`, cut inside its pauses (0–4.3, 4.77–6.9, 7.18–9.71, 10.22–13.03, 13.46–16.75, 17.09–18.66, 19.08–22.79 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker.
 
 **Re-recorded after a Gulf-sounding take (owner, 2026-11-18: "voiceover looks like gulf, please stick with the voiceover plan"; "pronounce geim not jeim").** Every ج is written as گ in the voice text, so the voice says the Egyptian "g" (the owner picked it from the test in `_kit/vo-tests/geem/`); every "and" is the Egyptian وِ, not وَ; and ق words were swapped for everyday Egyptian ones where the meaning stays the same: «مِن الاِقْتِرَاحَات» → «اللِّي ظَاهْرَة تَحْت» (no ق). The screen and captions keep the dashboard's own words. Earlier takes are kept: `work/vo/take-tashkeel-v1.mp3` (the Gulf-sounding one) and `work/vo/take-old.mp3` (marks on hard words only). **Nobody has listened to the new take yet**: the owner must confirm it sounds Egyptian, calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة إضافة مقاسات وألوان لمنتجك من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. أضف خيار «المقاس».
-2. اختر المقاسات من الاقتراحات.
-3. أضف خيار «اللون» واختر الألوان.
-4. اكتب الكمية واضغط «تطبيق على الكل».
-5. اضغط «حفظ».
-
-https://tallaby.com
 
 ## Caption / post text
 

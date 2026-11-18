@@ -14,6 +14,29 @@ youtube_title_ar: "طريقة اختيار قالب لمتجرك على طلبي
 youtube_title_en: "How to choose a template for your Tallaby store #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+اختيار قالب لمتجرك في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة اختيار قالب لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. افتح «القوالب».
+2. اضغط على القالب لمعاينته.
+3. اضغط «استخدام القالب».
+4. اضغط «استخدام القالب» للتأكيد.
+
+القالب يُطبَّق على مسودة موقعك، ولا يتغير متجرك المنشور حتى تنشر.
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -31,19 +54,6 @@ youtube_title_en: "How to choose a template for your Tallaby store #Shorts"
 هنختار تصميم لمَتجَرَك على طَلَبي، في أربع خطوات بسيطة. واحد: افتح صفحة القوالب. اتنين: اضغَط على القالب، عشان تشوف المُعايَنة. تلاتة: اضغَط استخدام القالب. أربعة: اضغَط استخدام القالب مرة تانية للتأكيد. وكده القالب الجديد بقى جاهز في مُسوَّدة موقعك، ومش هيظهر للعملاء غير لما تِنشُر.
 
 45 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`Tsr5WUU2z8X1Fxlmqylj`, flow `Fe2m9J2PKffmwOsrTXxd`, 284 credits). The take is `work/vo/take.mp3` (21.9 s), cut at its sentence pauses (0 / 4.05 / 6.47 / 9.80 / 12.33 / 15.95 / 21.92 s) and placed one sentence per beat; it is not sped up or stretched. Transcribed with `eleven_scribe_v1`: 45 words, the same words as the script, no laugh marker. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة اختيار قالب لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. افتح «القوالب».
-2. اضغط على القالب لمعاينته.
-3. اضغط «استخدام القالب».
-4. اضغط «استخدام القالب» للتأكيد.
-
-القالب يُطبَّق على مسودة موقعك، ولا يتغير متجرك المنشور حتى تنشر.
-
-https://tallaby.com
 
 ## Caption / post text
 

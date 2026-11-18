@@ -14,6 +14,27 @@ youtube_title_ar: "طريقة تحديد أسعار الشحن لمتجرك عل
 youtube_title_en: "How to set shipping prices for your Tallaby store #Shorts"
 ---
 
+## YouTube (copy and paste)
+
+**Title**
+
+```text
+تحديد أسعار الشحن لمتجرك في 4 خطوات | Tallaby
+```
+
+**Description**
+
+```text
+طريقة تحديد أسعار الشحن لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
+
+1. اضغط «أضف منطقة توصيل».
+2. اكتب اسم المنطقة.
+3. اختر محافظات المنطقة.
+4. اكتب السعر ثم اضغط «حفظ المنطقة».
+
+https://tallaby.com
+```
+
 ## Steps shown
 
 | Time | Step | What happens on screen | Voice |
@@ -31,17 +52,6 @@ youtube_title_en: "How to set shipping prices for your Tallaby store #Shorts"
 هنحدّد أسعار الشَّحن لمَتجَرَك على طَلَبي، في أربع خطوات بسيطة. واحد: اضغَط أضِف مَنطِقة توصيل. اتنين: اكتِب اسم المَنطِقة، زي القاهرة والجيزة. تلاتة: اختار مُحافظات المَنطِقة. أربعة: اكتِب سِعر التوصيل، خمسين جنيه، واضغَط حِفظ المَنطِقة. وكده عُمَلاءَك هيشوفوا سِعر التوصيل وهمّا بيكمّلوا الطَّلَب.
 
 43 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`MGXZ7E0EL8Q9GuNdDuQe`, 299 credits, ElevenLabs flow `pcTUIxmmSz4rUo9iFkq7`). The take is `work/vo/take.mp3` (22.4 s), cut inside its pauses at 4.29, 7.27, 11.10, 13.65 and 18.41 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker; note that it even returned the script's diacritics, so it may lean on the text more than a blind transcript would. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "أضِف" and "خمسين جنيه" sound right) before `status` becomes `ready`.
-
-## YouTube description (Arabic)
-
-طريقة تحديد أسعار الشحن لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
-
-1. اضغط «أضف منطقة توصيل».
-2. اكتب اسم المنطقة.
-3. اختر محافظات المنطقة.
-4. اكتب السعر ثم اضغط «حفظ المنطقة».
-
-https://tallaby.com
 
 ## Caption / post text
 
