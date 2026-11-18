@@ -347,7 +347,8 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | T-14 | Restore a deleted product | `/stores/[storeId]/products/trash` | Menu › المنتجات › «سلة المحذوفات» → tick the product → «استرجاع» → back to the products list | draft |
 | T-15 | Ask the customer for details on a product | product form › مطلوب من العميل | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page | draft (take made before the full-تشكيل rule) |
 | T-16 | Add a size chart | `/stores/[storeId]/apps` › جدول المقاسات | «ثبّت» → «تثبيت» → new chart from the «تيشيرتات وقمصان» template → «حفظ الجدول» → «طبّقه على» a category → «اعرف مقاسك» on the product | draft (take made before the full-تشكيل rule) |
-| T-17 | Quantity offers and cross-sell | `/orders/cross-sell` | Create an offer → it shows under the product | todo |
+| T-17 | Quantity offers | product edit page › عروض الكمية | Scroll to the section → «أضف شريحة» → the discount → a second tier → «احفظ العروض» → the offers in the store buy box | draft (full تشكيل) |
+| T-52 | Cross-sell offers | product form (cross-sell) + `/orders/cross-sell` report | Search a product to offer → type and value → «إضافة» → the offer on the product page and in the cart | todo (split from T-17, 2026-11-18) |
 
 ### Wave 3 — orders and customers
 
