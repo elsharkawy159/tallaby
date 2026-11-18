@@ -1141,102 +1141,143 @@ export async function applyGatewayEvent(account: GatewayAccount, orderId: string
     return "foreign";
   }
 
-  const now = new Date().toISOString();
-  const amount = (event.amountPiastres / 100).toFixed(2);
   // Every seller can sign any transaction id with their own keys, so the id is
   // namespaced by the integration: one store can never claim or settle
   // another store's payment row.
   const transactionId = `store:${account.integrationId}:${event.transactionId}`;
   const paymentData = { provider: account.provider, collector: "seller", integrationId: account.integrationId, event };
-  let outcome: ApplyOutcome = "pending";
+  return db.transaction((tx) => claimGatewayPayment(tx, { order, purpose: "order", event, transactionId, paymentData }));
+}
 
-  await db.transaction(async (tx) => {
-    // Gateways retry and may deliver concurrently; payments has no unique
-    // transaction_id, so serialise on it (same as the Kashier route).
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${transactionId}))`);
-    const existing = await tx.query.payments.findFirst({
-      where: and(eq(payments.transactionId, transactionId), eq(payments.orderId, orderId)),
-    });
-    if (existing && (existing.status === "paid" || existing.status === "failed")) {
-      outcome = "duplicate";
-      return;
-    }
-    if (existing && event.status === "PENDING") {
-      outcome = "duplicate";
-      return;
-    }
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-    const writePayment = async (values: { status: "paid" | "failed" | "pending"; errorMessage?: string; capturedAt?: string }) => {
-      const row = {
-        orderId,
-        amount,
-        method: "online_payment",
-        currency: event.currency || order.currency || "EGP",
-        transactionId,
-        paymentData,
-        ...values,
-      };
-      if (existing) await tx.update(payments).set({ ...row, updatedAt: now }).where(eq(payments.id, existing.id));
-      else await tx.insert(payments).values(row);
+export type GatewayPaymentClaim = {
+  /** The order row loaded before the transaction; the claim re-checks its state with guarded updates. */
+  order: OrderRow;
+  /** `order`: the event pays the whole card order; `deposit`: a COD order's deposit (F-21). */
+  purpose: "order" | "deposit";
+  event: GatewayEvent;
+  /** `payments.transaction_id`, already namespaced by the caller; also the advisory lock key. */
+  transactionId: string;
+  /** Stored in `payments.payment_data`. Never secrets. */
+  paymentData: Record<string, unknown>;
+};
+
+/**
+ * The paid-state claim shared by every store gateway (the seller's own and
+ * Tallaby Pay, design §6.2), inside the caller's transaction: serialise on
+ * the transaction id, skip duplicates, require the exact amount, move the
+ * order (or its deposit) to paid with a guarded update, write the `payments`
+ * row and, for an order, charge the plan order fee. Returns `paid` or
+ * `deposit_paid` only when THIS call moved the state, so a caller can add its
+ * own writes (Tallaby Pay's sale credit) in the same transaction.
+ */
+export async function claimGatewayPayment(tx: Tx, claim: GatewayPaymentClaim): Promise<ApplyOutcome> {
+  const { order, purpose, event, transactionId, paymentData } = claim;
+  const isDeposit = purpose === "deposit";
+  const now = new Date().toISOString();
+  const amount = (event.amountPiastres / 100).toFixed(2);
+
+  // Gateways retry and may deliver concurrently; payments has no unique
+  // transaction_id, so serialise on it (same as the Kashier route).
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${transactionId}))`);
+  const existing = await tx.query.payments.findFirst({
+    where: and(eq(payments.transactionId, transactionId), eq(payments.orderId, order.id)),
+  });
+  if (existing && (existing.status === "paid" || existing.status === "failed")) return "duplicate";
+  if (existing && event.status === "PENDING") return "duplicate";
+
+  const writePayment = async (values: { status: "paid" | "failed" | "pending"; errorMessage?: string; capturedAt?: string }) => {
+    const row = {
+      orderId: order.id,
+      amount,
+      method: isDeposit ? "cod_deposit" : "online_payment",
+      currency: event.currency || order.currency || "EGP",
+      transactionId,
+      paymentData,
+      ...values,
     };
+    if (existing) await tx.update(payments).set({ ...row, updatedAt: now }).where(eq(payments.id, existing.id));
+    else await tx.insert(payments).values(row);
+  };
 
-    if (event.status === "SUCCESS") {
-      const expected = toPiastres(order.totalAmount);
-      if (event.amountPiastres !== expected || (order.currency && event.currency !== order.currency)) {
-        // Paid, but not what we asked for: never confirm; keep it for review.
-        await writePayment({
-          status: "pending",
-          errorMessage: `Amount mismatch: expected ${(expected / 100).toFixed(2)} ${order.currency}, received ${amount} ${event.currency}`,
-        });
-        outcome = "mismatch";
-        return;
-      }
-      const [claimed] = await tx
-        .update(orders)
-        .set({ paymentStatus: "paid", status: "confirmed", paidAt: now, processedAt: now, updatedAt: now })
-        .where(
-          and(
-            eq(orders.id, orderId),
-            inArray(orders.paymentStatus, ["pending", "failed"]),
-            // A cancelled order stays cancelled; the money is kept for review.
-            inArray(orders.status, ["payment_processing", "pending"]),
-          ),
-        )
-        .returning({ id: orders.id });
-      if (!claimed) {
-        const current = await tx.query.orders.findFirst({ where: eq(orders.id, orderId), columns: { paymentStatus: true } });
-        if (current?.paymentStatus === "paid") {
-          outcome = "duplicate";
-          return;
-        }
-        // Paid on the gateway, but the order was cancelled meanwhile: record it
-        // (the seller refunds from their gateway) and never confirm the order.
-        await writePayment({ status: "pending", errorMessage: "Paid after the order was cancelled; refund from the gateway" });
-        outcome = "mismatch";
-        return;
-      }
-      await writePayment({ status: "paid", capturedAt: now });
-      // The order is real now: the EGP 5 fee (PLAN.md §13.3; held sellers wait for delivery).
-      await chargeOrderPlacementFee(tx, orderId);
-      outcome = "paid";
-      return;
+  if (event.status === "SUCCESS") {
+    const expected = toPiastres(isDeposit ? (order.depositAmount ?? 0) : order.totalAmount);
+    if (event.amountPiastres !== expected || (order.currency && event.currency !== order.currency)) {
+      // Paid, but not what we asked for: never confirm; keep it for review.
+      await writePayment({
+        status: "pending",
+        errorMessage: `${isDeposit ? "Deposit amount" : "Amount"} mismatch: expected ${(expected / 100).toFixed(2)} ${order.currency}, received ${amount} ${event.currency}`,
+      });
+      return "mismatch";
     }
+    const [claimed] = isDeposit
+      ? await tx
+          .update(orders)
+          .set({
+            depositStatus: "paid",
+            depositPaidAt: now,
+            updatedAt: now,
+            metadata: sql`coalesce(${orders.metadata}, '{}'::jsonb) || jsonb_build_object('depositPaidVia', 'gateway')`,
+          })
+          .where(
+            and(
+              eq(orders.id, order.id),
+              inArray(orders.depositStatus, ["awaiting", "reported"]),
+              // A cancelled order stays cancelled; the money is kept for review.
+              inArray(orders.status, ["pending", "confirmed"]),
+            ),
+          )
+          .returning({ id: orders.id })
+      : await tx
+          .update(orders)
+          .set({ paymentStatus: "paid", status: "confirmed", paidAt: now, processedAt: now, updatedAt: now })
+          .where(
+            and(
+              eq(orders.id, order.id),
+              inArray(orders.paymentStatus, ["pending", "failed"]),
+              // A cancelled order stays cancelled; the money is kept for review.
+              inArray(orders.status, ["payment_processing", "pending"]),
+            ),
+          )
+          .returning({ id: orders.id });
+    if (!claimed) {
+      const current = await tx.query.orders.findFirst({
+        where: eq(orders.id, order.id),
+        columns: { paymentStatus: true, depositStatus: true },
+      });
+      if ((isDeposit ? current?.depositStatus : current?.paymentStatus) === "paid") return "duplicate";
+      // Paid on the gateway, but the order was cancelled meanwhile: record it
+      // (refunded from the gateway) and never confirm the order.
+      await writePayment({
+        status: "pending",
+        errorMessage: isDeposit
+          ? "Deposit paid after the order was cancelled; refund from the gateway"
+          : "Paid after the order was cancelled; refund from the gateway",
+      });
+      return "mismatch";
+    }
+    await writePayment({ status: "paid", capturedAt: now });
+    // A deposit's fee was taken when the COD order was created.
+    if (isDeposit) return "deposit_paid";
+    // The order is real now: the EGP 5 fee (PLAN.md §13.3; held sellers wait for delivery).
+    await chargeOrderPlacementFee(tx, order.id);
+    return "paid";
+  }
 
-    if (event.status === "FAILURE") {
+  if (event.status === "FAILURE") {
+    if (!isDeposit) {
       await tx
         .update(orders)
         .set({ paymentStatus: "failed", updatedAt: now })
-        .where(and(eq(orders.id, orderId), eq(orders.paymentStatus, "pending")));
-      await writePayment({ status: "failed", errorMessage: "Payment failed" });
-      outcome = "failed";
-      return;
+        .where(and(eq(orders.id, order.id), eq(orders.paymentStatus, "pending")));
     }
+    await writePayment({ status: "failed", errorMessage: isDeposit ? "Deposit payment failed" : "Payment failed" });
+    return "failed";
+  }
 
-    await writePayment({ status: "pending" });
-    outcome = "pending";
-  });
-
-  return outcome;
+  await writePayment({ status: "pending" });
+  return "pending";
 }
 
 /* ------------------------------------------------------------------ */
@@ -1246,7 +1287,7 @@ export async function applyGatewayEvent(account: GatewayAccount, orderId: string
 type OrderRow = NonNullable<Awaited<ReturnType<typeof db.query.orders.findFirst>>>;
 
 /** A COD order that carries a deposit (0166): gateway events for it pay the deposit. */
-function isDepositOrder(order: Pick<OrderRow, "paymentMethod" | "depositStatus" | "depositAmount">): boolean {
+export function isDepositOrder(order: Pick<OrderRow, "paymentMethod" | "depositStatus" | "depositAmount">): boolean {
   return order.paymentMethod === "cash_on_delivery" && order.depositStatus != null && order.depositAmount != null;
 }
 
@@ -1275,92 +1316,12 @@ async function applyDepositGatewayEvent(account: GatewayAccount, order: OrderRow
     return "foreign";
   }
 
-  const now = new Date().toISOString();
-  const amount = (event.amountPiastres / 100).toFixed(2);
   const transactionId = `store:${account.integrationId}:${event.transactionId}`;
   const paymentData = { provider: account.provider, collector: "seller", integrationId: account.integrationId, purpose: "deposit", event };
-  let outcome: ApplyOutcome = "pending";
+  const outcome = await db.transaction((tx) =>
+    claimGatewayPayment(tx, { order, purpose: "deposit", event, transactionId, paymentData }),
+  );
 
-  await db.transaction(async (tx) => {
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${transactionId}))`);
-    const existing = await tx.query.payments.findFirst({
-      where: and(eq(payments.transactionId, transactionId), eq(payments.orderId, order.id)),
-    });
-    if (existing && (existing.status === "paid" || existing.status === "failed")) {
-      outcome = "duplicate";
-      return;
-    }
-    if (existing && event.status === "PENDING") {
-      outcome = "duplicate";
-      return;
-    }
-
-    const writePayment = async (values: { status: "paid" | "failed" | "pending"; errorMessage?: string; capturedAt?: string }) => {
-      const row = {
-        orderId: order.id,
-        amount,
-        method: "cod_deposit",
-        currency: event.currency || order.currency || "EGP",
-        transactionId,
-        paymentData,
-        ...values,
-      };
-      if (existing) await tx.update(payments).set({ ...row, updatedAt: now }).where(eq(payments.id, existing.id));
-      else await tx.insert(payments).values(row);
-    };
-
-    if (event.status === "SUCCESS") {
-      const expected = toPiastres(order.depositAmount ?? 0);
-      if (event.amountPiastres !== expected || (order.currency && event.currency !== order.currency)) {
-        await writePayment({
-          status: "pending",
-          errorMessage: `Deposit amount mismatch: expected ${(expected / 100).toFixed(2)} ${order.currency}, received ${amount} ${event.currency}`,
-        });
-        outcome = "mismatch";
-        return;
-      }
-      const [claimed] = await tx
-        .update(orders)
-        .set({
-          depositStatus: "paid",
-          depositPaidAt: now,
-          updatedAt: now,
-          metadata: sql`coalesce(${orders.metadata}, '{}'::jsonb) || jsonb_build_object('depositPaidVia', 'gateway')`,
-        })
-        .where(
-          and(
-            eq(orders.id, order.id),
-            inArray(orders.depositStatus, ["awaiting", "reported"]),
-            // A cancelled order stays cancelled; the money is kept for review.
-            inArray(orders.status, ["pending", "confirmed"]),
-          ),
-        )
-        .returning({ id: orders.id });
-      if (!claimed) {
-        const current = await tx.query.orders.findFirst({ where: eq(orders.id, order.id), columns: { depositStatus: true } });
-        if (current?.depositStatus === "paid") {
-          outcome = "duplicate";
-          return;
-        }
-        await writePayment({ status: "pending", errorMessage: "Deposit paid after the order was cancelled; refund from the gateway" });
-        outcome = "mismatch";
-        return;
-      }
-      await writePayment({ status: "paid", capturedAt: now });
-      outcome = "deposit_paid";
-      return;
-    }
-
-    if (event.status === "FAILURE") {
-      await writePayment({ status: "failed", errorMessage: "Deposit payment failed" });
-      outcome = "failed";
-      return;
-    }
-
-    await writePayment({ status: "pending" });
-    outcome = "pending";
-  });
-
-  if ((outcome as ApplyOutcome) === "deposit_paid") await notifyDeposit(order.id, "deposit_paid");
+  if (outcome === "deposit_paid") await notifyDeposit(order.id, "deposit_paid");
   return outcome;
 }

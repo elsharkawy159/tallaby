@@ -1,28 +1,11 @@
 import { Hono, type Context } from "hono";
 import { hasEasykashCallbackFields } from "@workspace/lib/easykash";
-import {
-  handleEasykashCallback,
-  handleStoreGatewayWebhook,
-  type GatewayWebhookResult,
-} from "@workspace/lib/payments/store-gateways/server";
-import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
-import { sendSellerLowStock, sendSellerNewOrders } from "../lib/emails/seller-emails";
+import { handleEasykashCallback, handleStoreGatewayWebhook } from "@workspace/lib/payments/store-gateways/server";
+import { afterGatewayPayment } from "../lib/after-gateway-payment";
 
 const app = new Hono();
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/** The order left payment_processing: digital items, then the seller hears about it. */
-async function afterGatewayPayment(result: GatewayWebhookResult) {
-  if (!result.paidOrderId) return;
-  const orderId = result.paidOrderId;
-  await fulfillDigitalOrderItems(orderId).catch((error) =>
-    console.error("Digital fulfillment after store gateway payment failed:", error),
-  );
-  await sendSellerNewOrders(orderId)
-    .then(() => sendSellerLowStock(orderId))
-    .catch((error) => console.error("Seller emails after store gateway payment failed:", error));
-}
 
 /**
  * The seller's own EasyKash account (ROADMAP.md F-98, docs/easykash.md §4.3).
