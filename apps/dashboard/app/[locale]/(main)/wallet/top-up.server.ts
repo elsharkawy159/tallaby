@@ -60,8 +60,9 @@ export type ManualTopUpActionError = SubmitManualTopUpError | "rateLimited" | "n
 export type ManualTopUpActionResult = { success: true; amount: string } | { success: false; error: ManualTopUpActionError };
 
 /**
- * Store wallet › Top up by Vodafone Cash or InstaPay (owner request 2026-10-18;
- * no longer offered in the seller UI since 2026-11-16, kept for old clients).
+ * Store wallet › Top up by InstaPay transfer (owner request 2026-10-18; back in
+ * the seller UI beside Kashier since 2026-11-18). The UI offers InstaPay only;
+ * `vodafone_cash` is still accepted here for old clients.
  * The browser has already uploaded the receipt into the seller's own folder of
  * the private bucket; this checks the path and that the file exists, then
  * records a PENDING request. The wallet is credited only when an admin

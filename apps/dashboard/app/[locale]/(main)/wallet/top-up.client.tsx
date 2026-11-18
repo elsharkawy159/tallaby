@@ -3,16 +3,47 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Coins, Infinity as InfinityIcon, LoaderCircle, LockKeyhole, Minus, Plus, TrendingUp, Zap } from "lucide-react";
-import { parseStoreTopUpAmount, STORE_TOP_UP_MIN_EGP } from "@workspace/lib/store-wallet";
-import { SellerButton, SellerCard } from "@/components/seller-ui";
+import {
+  ArrowLeft,
+  Check,
+  Coins,
+  Copy,
+  CreditCard,
+  Hourglass,
+  ImageUp,
+  Infinity as InfinityIcon,
+  LoaderCircle,
+  LockKeyhole,
+  Minus,
+  Plus,
+  Send,
+  ShieldCheck,
+  TrendingUp,
+  X,
+  Zap,
+} from "lucide-react";
+import {
+  MAX_OPEN_MANUAL_TOP_UPS,
+  SELLER_MANUAL_TOP_UP_METHOD,
+  STORE_TOP_UP_MIN_EGP,
+  TALLABY_INSTAPAY_ACCOUNT,
+  TOP_UP_PROOF_BUCKET,
+  TOP_UP_PROOF_MAX_BYTES,
+  TOP_UP_PROOF_TYPES,
+  buildTopUpProofPath,
+  parseStoreTopUpAmount,
+} from "@workspace/lib/store-wallet";
+import { useRouter } from "@/i18n/navigation";
+import { DropZone, Field, IconButton, Note, SellerButton, SellerCard, TextInput } from "@/components/seller-ui";
 import { toAsciiDigits } from "@/components/form/form-ui";
+import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
+import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { PaymentMethodLogos } from "@/components/payments/payment-method-logos";
 import { cn } from "@/lib/utils";
 import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
 import { formatUsdPrice } from "@/lib/i18n/format";
 import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, orderCountValues, ordersCovered, stepTopUpAmount, stepUsdTopUp, TOP_UP_MAX_EGP, walletMoney, walletPoundLabel } from "./store-wallet.lib";
-import { startTopUp } from "./top-up.server";
+import { startTopUp, submitManualTopUp } from "./top-up.server";
 import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
 /**
@@ -29,18 +60,30 @@ const PRESET_CARD_LAYOUT: Record<number, string> = {
   5: "min-h-[calc((100cqw-20px)/3)] basis-[calc((100%-20px)/3)] @[480px]:aspect-square @[480px]:min-h-auto @[480px]:basis-[calc((100%-40px)/5)]",
 };
 
+/** How the seller pays: Kashier's hosted page (default) or an InstaPay transfer an admin reviews (owner, 2026-11-18). */
+type PayMethod = "kashier" | "instapay";
+const PAY_METHODS: readonly PayMethod[] = ["kashier", "instapay"];
+
+/** Groups a phone number 4-3-rest, easier to read off a screen and type into the InstaPay app. */
+const groupNumber = (n: string) => n.replace(/^(\d{4})(\d{3})(\d+)$/, "$1 $2 $3");
+
 /** The amount field shows thousands separators; the state keeps plain digits. */
 const groupDigits = (digits: string) => (digits ? Number(digits).toLocaleString("en-US") : "");
 
 /**
- * Store wallet › Top up (Claude Design "Seller Wallet v3"; Kashier only since
- * 2026-11-16): the amount is chosen on the page and the summary sits beside
- * it. Paying opens Kashier's hosted page (card, Meeza, mobile wallets, Apple
- * Pay); the wallet is credited only by Kashier's signed webhook, and Kashier
- * sends the seller back to /wallet/top-up. `below` and `side` are the page's
- * other cards, placed here so one grid holds the sticky summary.
+ * Store wallet › Top up (Claude Design "Seller Wallet v3"): the amount is
+ * chosen on the page and the summary sits beside it. Two ways to pay:
+ * - Kashier (default): opens Kashier's hosted page (card, Meeza, mobile
+ *   wallets, Apple Pay); the wallet is credited only by Kashier's signed
+ *   webhook, and Kashier sends the seller back to /wallet/top-up.
+ * - InstaPay (owner, 2026-11-18): the seller transfers the same EGP total to
+ *   Tallaby's InstaPay number and uploads the receipt; this records a PENDING
+ *   request and the wallet is credited only when an admin approves it.
+ * `below` and `side` are the page's other cards, placed here so one grid
+ * holds the sticky summary.
  */
 export function TopUpPanel({
+  sellerId,
   balance,
   disabled,
   defaultOpen,
@@ -50,6 +93,8 @@ export function TopUpPanel({
 }: {
   /** Set once the wallet is in USD (0136): priced in dollars, paid in EGP. */
   billing?: BillingState | null;
+  /** The receipt goes into this seller's own folder of the private proof bucket. */
+  sellerId: string;
   /** The current balance, for "balance after the top-up". */
   balance: number;
   disabled?: boolean;
@@ -63,7 +108,9 @@ export function TopUpPanel({
   const t = useTranslations("storeWallet.manualTopUp");
   const tErrors = useTranslations("storeWallet.topUp.errors");
   const tWallet = useTranslations("storeWallet");
+  const tInsta = useTranslations("storeWallet.manualTopUp.instapay");
   const locale = useLocale();
+  const router = useRouter();
   const ids = useId();
   const amountInput = useRef<HTMLInputElement>(null);
 
@@ -73,6 +120,15 @@ export function TopUpPanel({
   const [isPending, startTransition] = useTransition();
   // Stays true once Kashier's page is opening, so a second tap can't start a second session.
   const [leaving, setLeaving] = useState(false);
+  const [method, setMethod] = useState<PayMethod>("kashier");
+  const [senderPhone, setSenderPhone] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<"number" | "amount" | null>(null);
+  // The EGP total of the InstaPay request just sent, for the "under review" state.
+  const [sent, setSent] = useState<string | null>(null);
+  const instapay = method === "instapay";
 
   // Prices show in EGP at this rate (owner, 2026-11-09). The amount typed stays in dollars:
   // that is what the wallet is credited and what the quote below prices, unchanged.
@@ -103,7 +159,9 @@ export function TopUpPanel({
   // The shared errors name EGP limits; in USD mode the limits line says it right.
   const amountError = !parsed.success && value > 0 && parsed.error !== "invalid" ? (usd ? t("limitsUsd", limitValues) : tErrors(parsed.error, limitValues)) : null;
   const busy = isPending || leaving;
-  const canStart = parsed.success && !disabled && !busy;
+  const canStart = parsed.success && !disabled && !busy && !(instapay && sent);
+
+  useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
 
   // From the negative-balance pop-up (/wallet?topup=1): straight to the amount.
   useEffect(() => {
@@ -117,9 +175,74 @@ export function TopUpPanel({
     return () => window.removeEventListener("pageshow", onShow);
   }, []);
 
+  const copy = async (text: string, what: "number" | "amount") => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(what);
+      setTimeout(() => setCopied((c) => (c === what ? null : c)), 1600);
+    } catch {
+      toast.error(tInsta("copyFailed"));
+    }
+  };
+
+  const pickFile = (picked: File | undefined) => {
+    if (!picked) return;
+    if (!(TOP_UP_PROOF_TYPES as readonly string[]).includes(picked.type)) return setFileError(tInsta("receipt.wrongType"));
+    if (picked.size > TOP_UP_PROOF_MAX_BYTES) return setFileError(tInsta("receipt.tooLarge"));
+    setFileError(null);
+    setFile(picked);
+    setPreview(URL.createObjectURL(picked));
+  };
+
+  const clearFile = () => {
+    setFile(null);
+    setPreview(null);
+  };
+
+  const sendAnother = () => {
+    setSent(null);
+    setSenderPhone("");
+    setFileError(null);
+    clearFile();
+  };
+
+  /** InstaPay: upload the receipt into the seller's own folder, then record a pending request. */
+  const submitTransfer = () => {
+    if (!parsed.success) return;
+    if (!file) return setFileError(tInsta("receipt.required"));
+    const path = buildTopUpProofPath(sellerId, crypto.randomUUID(), file.type);
+    if (!path) return setFileError(tInsta("receipt.wrongType"));
+    const total = money;
+    startTransition(async () => {
+      try {
+        await uploadOwnFolderFile(file, { bucket: TOP_UP_PROOF_BUCKET, path });
+      } catch (error) {
+        console.error("Top-up receipt upload failed:", error);
+        setFileError(tInsta("receipt.uploadFailed"));
+        return;
+      }
+      // The typed amount (dollars on a USD wallet); the server validates and prices it again.
+      const result = await submitManualTopUp({ method: SELLER_MANUAL_TOP_UP_METHOD, amount: parsed.amount, proofPath: path, senderPhone });
+      if (!result.success) {
+        const error = result.error;
+        toast.error(
+          error === "too_small" || error === "too_large"
+            ? tErrors(error, limitValues)
+            : tInsta(`errors.${error}`, { max: MAX_OPEN_MANUAL_TOP_UPS }),
+        );
+        return;
+      }
+      setSent(total);
+      clearFile();
+      // The pending request shows in "Top-up requests" and beside the balance.
+      router.refresh();
+    });
+  };
+
   const start = () => {
     if (!parsed.success || disabled) return amountInput.current?.focus();
     if (busy) return;
+    if (instapay) return submitTransfer();
     startTransition(async () => {
       // The typed amount (dollars on a USD wallet); the server validates and quotes it again.
       const result = await startTopUp(amount);
@@ -285,15 +408,141 @@ export function TopUpPanel({
             <StepNumber>2</StepNumber>
             {t("panel.pay")}
           </h3>
-          <div className="ms-10 flex min-w-0 flex-col gap-2.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 max-[720px]:ms-0">
-            <PaymentMethodLogos />
-            <p className="text-pretty text-[13.5px] font-semibold text-(--s-ink)">{t("panel.payMethods")}</p>
-            <p className="text-pretty text-xs text-(--s-subtle)">{t("panel.payHint")}</p>
-            <p className="mt-0.5 flex items-center gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
-              <LockKeyhole className="size-3.5 shrink-0 text-success" aria-hidden />
-              {t("panel.secure")}
-            </p>
-          </div>
+          <fieldset disabled={disabled || busy} className="ms-10 flex min-w-0 flex-col gap-2.5 max-[720px]:ms-0">
+            <legend className="sr-only">{t("panel.pay")}</legend>
+            <div className="grid grid-cols-2 gap-2.5 max-[720px]:grid-cols-1">
+              {PAY_METHODS.map((m) => (
+                <label
+                  key={m}
+                  className="relative flex cursor-pointer items-center gap-3 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-3.5 transition-[border-color,background-color,box-shadow] duration-150 hover:border-(--s-outline) has-checked:border-(--s-primary) has-checked:bg-(--s-tint) has-checked:shadow-[0_0_0_3px_var(--s-focus-soft)] has-focus-visible:outline-[3px] has-focus-visible:outline-offset-2 has-focus-visible:outline-(--s-focus) has-disabled:cursor-not-allowed has-disabled:opacity-60"
+                >
+                  <input
+                    type="radio"
+                    name={`${ids}-method`}
+                    value={m}
+                    className="peer absolute size-px opacity-0"
+                    checked={method === m}
+                    onChange={() => setMethod(m)}
+                  />
+                  {m === "instapay" ? (
+                    <PaymentMethodLogo method="instapay" label={t("panel.methods.instapay.name")} className="size-[42px] rounded-[13px] border-(--s-line)" />
+                  ) : (
+                    <span aria-hidden className="grid size-[42px] shrink-0 place-items-center rounded-[13px] border border-(--s-line) bg-(--s-tint) text-(--s-primary)">
+                      <CreditCard className="size-5" />
+                    </span>
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <b className="block text-sm font-bold text-(--s-ink)">{t(`panel.methods.${m}.name`)}</b>
+                    <small className="block text-pretty text-xs text-(--s-subtle)">{t(`panel.methods.${m}.hint`)}</small>
+                  </span>
+                  <span
+                    aria-hidden
+                    className="size-5 shrink-0 rounded-full border-2 border-(--s-field-strong) transition-all duration-150 peer-checked:border-[6px] peer-checked:border-(--s-primary)"
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {!instapay ? (
+            <div className="ms-10 flex min-w-0 flex-col gap-2.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 max-[720px]:ms-0">
+              <PaymentMethodLogos />
+              <p className="text-pretty text-[13.5px] font-semibold text-(--s-ink)">{t("panel.payMethods")}</p>
+              <p className="text-pretty text-xs text-(--s-subtle)">{t("panel.payHint")}</p>
+              <p className="mt-0.5 flex items-center gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
+                <LockKeyhole className="size-3.5 shrink-0 text-success" aria-hidden />
+                {t("panel.secure")}
+              </p>
+            </div>
+          ) : sent ? (
+            <div role="status" className="ms-10 flex min-w-0 flex-col items-center gap-2.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) px-4 py-5 text-center max-[720px]:ms-0">
+              <span className="grid size-14 place-items-center rounded-full bg-accent-soft text-accent-ink">
+                <Hourglass className="size-[26px]" aria-hidden />
+              </span>
+              <p className="text-[15px] font-bold text-(--s-ink)">{tInsta("done.title")}</p>
+              <p className="max-w-[360px] text-pretty text-[13px] text-(--s-muted)">
+                {tInsta("done.body", { amount: sent })}
+              </p>
+              <SellerButton variant="outline" size="xs" className="mt-1" onClick={sendAnother}>
+                {tInsta("done.again")}
+              </SellerButton>
+            </div>
+          ) : (
+            <fieldset disabled={disabled || busy} className="ms-10 flex min-w-0 flex-col gap-3.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 max-[720px]:ms-0">
+              <legend className="sr-only">{t("panel.methods.instapay.name")}</legend>
+              <div className="flex flex-col gap-2">
+                <CopyRow
+                  label={tInsta("sendExactly")}
+                  copyLabel={tInsta("copyAmount")}
+                  done={copied === "amount"}
+                  disabled={!parsed.success}
+                  onCopy={() => parsed.success && copy(String(quote ? quote.totalPiastres / 100 : Number(parsed.amount)), "amount")}
+                >
+                  <bdi>{total}</bdi>
+                </CopyRow>
+                <CopyRow
+                  label={tInsta("to")}
+                  note={tInsta("holder", { name: TALLABY_INSTAPAY_ACCOUNT.holder })}
+                  copyLabel={tInsta("copyNumber")}
+                  done={copied === "number"}
+                  onCopy={() => copy(TALLABY_INSTAPAY_ACCOUNT.number, "number")}
+                >
+                  <bdi dir="ltr">{groupNumber(TALLABY_INSTAPAY_ACCOUNT.number)}</bdi>
+                </CopyRow>
+              </div>
+
+              <Field label={tInsta("sender")} hint={tInsta("optional")} note={tInsta("senderHint")} htmlFor={`${ids}-sender`}>
+                <TextInput
+                  id={`${ids}-sender`}
+                  dir="ltr"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="01XXXXXXXXX"
+                  className="text-start font-montserrat"
+                  value={senderPhone}
+                  onChange={(e) => setSenderPhone(toAsciiDigits(e.target.value))}
+                />
+              </Field>
+
+              {preview && file ? (
+                <div className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-success/40 bg-success-soft/40 p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
+                  <img src={preview} alt={tInsta("receipt.previewAlt")} className="h-16 w-14 shrink-0 rounded-[10px] border border-(--s-line) object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13.5px] font-bold text-(--s-ink)" dir="auto">
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-(--s-subtle)" dir="ltr">
+                      {(file.size / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                  </div>
+                  <IconButton aria-label={tInsta("receipt.remove")} onClick={clearFile}>
+                    <X aria-hidden />
+                  </IconButton>
+                </div>
+              ) : (
+                <DropZone
+                  icon={ImageUp}
+                  title={tInsta("receipt.pick")}
+                  hint={tInsta("receipt.pickHint")}
+                  accept={TOP_UP_PROOF_TYPES.join(",")}
+                  disabled={disabled || busy}
+                  onFiles={([picked]) => pickFile(picked)}
+                  className={cn("p-[22px]", fileError && "border-destructive/60")}
+                />
+              )}
+              {fileError && (
+                <p role="alert" className="text-xs font-medium text-destructive">
+                  {fileError}
+                </p>
+              )}
+              <Note tone="amber">{tInsta("receipt.clarity")}</Note>
+              <p className="flex items-start gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
+                <ShieldCheck className="mt-px size-3.5 shrink-0 text-success" aria-hidden />
+                {tInsta("reviewNote")}
+              </p>
+            </fieldset>
+          )}
         </section>
       </SellerCard>
 
@@ -310,7 +559,7 @@ export function TopUpPanel({
           )}
           {!usd && <SummaryRow label={t("panel.summary.fee")} value={t("panel.summary.free")} />}
           <div className="flex items-baseline justify-between gap-3 rounded-[18px] border border-(--tallaby-amber-100) bg-accent-soft p-4 dark:border-transparent">
-            <span className="whitespace-nowrap text-[13.5px] font-bold text-accent-ink">{t("panel.summary.total")}</span>
+            <span className="whitespace-nowrap text-[13.5px] font-bold text-accent-ink">{t(instapay ? "panel.summary.totalTransfer" : "panel.summary.total")}</span>
             <bdi className="whitespace-nowrap font-montserrat text-[26px] font-extrabold leading-none text-(--s-ink) tabular-nums">{total}</bdi>
           </div>
           <p className="flex items-start gap-2 text-[12.5px] font-semibold text-success">
@@ -325,7 +574,12 @@ export function TopUpPanel({
             {busy ? (
               <>
                 <LoaderCircle className="animate-spin" aria-hidden />
-                {t("panel.redirecting")}
+                {t(instapay ? "panel.sending" : "panel.redirecting")}
+              </>
+            ) : instapay ? (
+              <>
+                <Send className="rtl:-scale-x-100" aria-hidden />
+                {t("panel.ctaInstapay")}
               </>
             ) : (
               <>
@@ -337,8 +591,8 @@ export function TopUpPanel({
           </SellerButton>
           <ul className="flex flex-col gap-2 border-t border-(--s-line-soft) pt-3.5 text-[12.5px] text-(--s-muted)">
             <li className="flex items-center gap-2">
-              <Zap className="size-[15px] shrink-0 text-success" aria-hidden />
-              {t("panel.trust.instant")}
+              {instapay ? <ShieldCheck className="size-[15px] shrink-0 text-success" aria-hidden /> : <Zap className="size-[15px] shrink-0 text-success" aria-hidden />}
+              {t(instapay ? "panel.trust.review" : "panel.trust.instant")}
             </li>
             <li className="flex items-center gap-2">
               <InfinityIcon className="size-[15px] shrink-0 text-success" aria-hidden />
@@ -378,3 +632,41 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function CopyRow({
+  label,
+  note,
+  copyLabel,
+  done,
+  disabled,
+  onCopy,
+  children,
+}: {
+  label: string;
+  note?: string;
+  copyLabel: string;
+  done: boolean;
+  disabled?: boolean;
+  onCopy: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2.5 rounded-2xl border border-(--s-line) bg-(--s-tint) px-3.5 py-3">
+      <div className="min-w-0 flex-1">
+        <small className="block text-[11.5px] text-(--s-subtle)">{label}</small>
+        <b className="block font-montserrat text-base font-bold text-(--s-ink) tabular-nums">{children}</b>
+        {note && <small className="block text-[11.5px] text-(--s-subtle)">{note}</small>}
+      </div>
+      <SellerButton
+        variant="mini"
+        size="xs"
+        disabled={disabled}
+        className={cn(done && "border-success/40 text-success [&_svg]:text-success")}
+        aria-label={copyLabel}
+        onClick={onCopy}
+      >
+        {done ? <Check aria-hidden /> : <Copy aria-hidden />}
+        <span className="max-[480px]:sr-only">{copyLabel}</span>
+      </SellerButton>
+    </div>
+  );
+}

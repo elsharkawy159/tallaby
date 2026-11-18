@@ -55,15 +55,26 @@ export function parseStoreTopUpAmount(raw: unknown): TopUpAmountResult {
 }
 
 // ---------------------------------------------------------------------------
-// Manual top-ups (owner request 2026-10-18, retired for sellers 2026-11-16):
-// the seller transferred by InstaPay or Vodafone Cash, uploaded the receipt,
-// and the top-up stayed pending until a Tallaby admin approved it. Sellers now
-// top up through Kashier only; these stay so Admin can still review open
-// requests and the wallet page can show past ones.
+// Manual top-ups (owner request 2026-10-18): the seller transfers the money,
+// uploads the receipt, and the top-up stays pending until a Tallaby admin
+// approves it. Only the approval credits the wallet. Kashier is the default
+// since 2026-11-16; InstaPay came back beside it on 2026-11-18 (owner).
+// Vodafone Cash is no longer offered to sellers; it stays in the list so Admin
+// can still review old requests and the wallet page can show past ones.
 // ---------------------------------------------------------------------------
 
 export const MANUAL_TOP_UP_METHODS = ["instapay", "vodafone_cash"] as const;
 export type ManualTopUpMethod = (typeof MANUAL_TOP_UP_METHODS)[number];
+
+/** The only manual method the seller dashboard offers (owner, 2026-11-18). */
+export const SELLER_MANUAL_TOP_UP_METHOD = "instapay" satisfies ManualTopUpMethod;
+
+/**
+ * Tallaby's InstaPay account for seller top-ups (owner-provided, 2026-10-18;
+ * restored 2026-11-18). Shown only inside the InstaPay option of the dashboard
+ * Wallet › Top up panel: never in FAQ, terms, emails or other copy (owner).
+ */
+export const TALLABY_INSTAPAY_ACCOUNT = { number: "01152372358", holder: "عمر م*** ع******* ا**** م***" } as const;
 
 /**
  * Top-ups through Kashier (card, Meeza, mobile wallets, Apple Pay), the only way

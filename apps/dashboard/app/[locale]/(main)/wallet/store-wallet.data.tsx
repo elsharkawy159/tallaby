@@ -166,6 +166,7 @@ export async function StoreWalletSection({
 
       <TopUpPanel
         billing={usd ? billing : null}
+        sellerId={sellerId}
         balance={balance}
         disabled={overview.status !== "active"}
         defaultOpen={openTopUp}

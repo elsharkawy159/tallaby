@@ -6402,7 +6402,7 @@
       "button": "Top up wallet",
       "panel": {
         "title": "Top up wallet",
-        "subtitle": "Choose an amount and pay online in EGP. Your balance is added as soon as the payment goes through.",
+        "subtitle": "Choose an amount and how to pay in EGP. Online payments are added at once, InstaPay transfers after we check them.",
         "presets": "Pick an amount",
         "popular": "Most chosen",
         "approxOrders": "≈ {count, plural, one {{formatted} order} other {{formatted} orders}}",
@@ -6410,6 +6410,16 @@
         "decrease": "Decrease",
         "increase": "Increase",
         "pay": "How you pay",
+        "methods": {
+          "kashier": {
+            "name": "Online payment",
+            "hint": "Card, Meeza or mobile wallet through Kashier. Added at once."
+          },
+          "instapay": {
+            "name": "InstaPay transfer",
+            "hint": "Transfer the amount and upload the receipt. Added after we check it."
+          }
+        },
         "payMethods": "Card, Meeza, a mobile wallet such as Vodafone Cash, Apple Pay or Google Pay.",
         "payHint": "You choose how to pay on Kashier's secure page, then come back here.",
         "secure": "Secure payment by Kashier",
@@ -6422,18 +6432,60 @@
           "free": "Free",
           "total": "You pay",
           "after": "Balance after top-up:",
-          "rateUsd": "Dollar rate today"
+          "rateUsd": "Dollar rate today",
+          "totalTransfer": "You transfer"
         },
         "cta": "Pay with Kashier",
         "redirecting": "Opening the payment page…",
+        "ctaInstapay": "Send for review",
+        "sending": "Sending…",
         "trust": {
+          "review": "Added once we check the receipt",
           "instant": "Added as soon as the payment goes through",
           "noExpiry": "Lifetime balance, it never expires",
           "noExpiryEgp": "Your balance never expires",
           "feeUsd": "Only {fee} per order"
         }
       },
-      "limits": "From 100 to 20,000 EGP."
+      "limits": "From 100 to 20,000 EGP.",
+      "instapay": {
+        "sendExactly": "Send exactly",
+        "to": "To InstaPay number",
+        "holder": "Account name: {name}",
+        "copyAmount": "Copy amount",
+        "copyNumber": "Copy number",
+        "copyFailed": "Couldn't copy. Copy it by hand.",
+        "sender": "Phone number linked to InstaPay",
+        "optional": "Optional",
+        "senderHint": "Helps us match your transfer faster.",
+        "receipt": {
+          "pick": "Choose the receipt picture",
+          "pickHint": "JPG, PNG or WEBP, up to 5 MB",
+          "remove": "Remove picture",
+          "previewAlt": "Transfer receipt",
+          "required": "Upload the transfer receipt first.",
+          "wrongType": "Choose a JPG, PNG or WEBP picture.",
+          "tooLarge": "The picture is larger than 5 MB.",
+          "uploadFailed": "Couldn't upload the picture. Try again.",
+          "clarity": "Make sure the picture clearly shows the amount and the transfer date."
+        },
+        "reviewNote": "We add the amount to your wallet after we check the transfer. You can follow it under Top-up requests.",
+        "done": {
+          "title": "Top-up request sent",
+          "body": "We'll check your InstaPay transfer of {amount}, then add it to your wallet. You'll find it under Top-up requests.",
+          "again": "Send another transfer"
+        },
+        "errors": {
+          "invalid": "Check the details and try again.",
+          "invalid_proof": "We couldn't use that receipt. Upload it again.",
+          "too_many_open": "You've reached the limit of {max} top-ups under review. Wait until we check them.",
+          "wallet_not_active": "This wallet isn't active right now.",
+          "not_configured": "Top-ups aren't available right now. Try again later.",
+          "rateLimited": "Too many attempts. Wait a few minutes.",
+          "notAllowed": "You can't top up this wallet.",
+          "generic": "Couldn't send the request. Try again."
+        }
+      }
     },
     "welcomeGiftActive": "Welcome gift: {amount} left, valid until {date}. It pays your fees first."
   },
