@@ -9,6 +9,7 @@ import { isIntegrationProvider } from "@workspace/lib/integrations";
 import { getBostaOverview, getWassalhaOverview, type StoreIntegrationSummary } from "@workspace/lib/integrations/server";
 import { easykashCallbackUrl } from "@workspace/lib/payments/store-gateways";
 import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
+import { TALLABY_PAY_DEFAULT_SETTINGS } from "@workspace/lib/tallaby-pay";
 import { SIZE_CHART_APP, listStoreSizeCharts } from "@workspace/lib/size-charts/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
@@ -97,13 +98,13 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
     return <WassalhaApp storeId={store.id} storeName={store.name} initial={overview} readOnly={readOnly} />;
   },
 
-  // F-39: the same card as Store settings › Payment methods, showing only this gateway.
+  // F-39 / F-100: the same card as Store settings › Payment methods, showing only this gateway (Tallaby Pay: Turn on / off).
   gateway: async ({ store, manifest, readOnly }) => {
     const [{ usdLive }, overview] = await Promise.all([getBillingState(), getStoreGatewayOverview(store.sellerId, store.id)]);
     return (
       <StoreGatewaysCard
         storeId={store.id}
-        initial={overview ?? { connected: null, webhooksReady: false }}
+        initial={overview ?? { connected: null, webhooksReady: false, tallabyPay: { ...TALLABY_PAY_DEFAULT_SETTINGS } }}
         readOnly={readOnly}
         usdLive={usdLive}
         currency={parseStoreCurrency(store.settings).currency ?? DEFAULT_CURRENCY}

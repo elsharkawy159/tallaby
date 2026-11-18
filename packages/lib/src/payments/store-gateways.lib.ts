@@ -1,28 +1,30 @@
 /**
- * The seller's own card payment gateway per store (ROADMAP.md F-39, owner
- * 2026-10-30). The seller pastes the keys of their own Paymob, Kashier or
- * EasyKash (F-98) account; storefront card payments then go straight to the seller, never
- * through Tallaby. Pure: no DB, no fetch. Server code is in
+ * The store's online payment gateway (ROADMAP.md F-39, owner 2026-10-30).
+ * Either the seller's own Paymob, Kashier or EasyKash (F-98) account, whose
+ * keys the seller pastes and whose card payments go straight to the seller,
+ * or Tallaby Pay (F-100): no keys, the shopper pays on Tallaby's own EasyKash
+ * account, and the seller's share goes to the store's Tallaby Pay earnings
+ * (never the store wallet). Pure: no DB, no fetch. Server code is in
  * store-gateways.server.ts.
  *
- * Money (PLAN.md §13.4): these orders carry `metadata.paymentCollector =
- * 'seller'`, so delivery posts only the EGP 5 fee. One gateway per store at
- * a time. Tallaby Pay (internal, money to the store wallet) and PayPal are
- * "soon".
+ * Money (PLAN.md §13.4): the seller gateways' orders carry
+ * `metadata.paymentCollector = 'seller'`, so delivery posts only the order
+ * fee; Tallaby Pay orders carry `'tallaby'` (`gatewayCollector`). One gateway
+ * per store at a time. PayPal is "soon".
  */
 import { z } from "zod";
 import { buildKashierOrderReference, parseKashierOrderReference, verifyKashierWebhookSignature } from "../kashier/kashier.lib";
 import { verifyPaymobTransactionHmac } from "../paymob/paymob.lib";
 import type { PaymobTransactionObj } from "../paymob/paymob.types";
 
-export const STORE_GATEWAY_PROVIDERS = ["paymob", "kashier", "easykash"] as const;
+export const STORE_GATEWAY_PROVIDERS = ["paymob", "kashier", "easykash", "tallaby_pay"] as const;
 export type StoreGatewayProvider = (typeof STORE_GATEWAY_PROVIDERS)[number];
 
 export function isStoreGatewayProvider(value: unknown): value is StoreGatewayProvider {
   return typeof value === "string" && (STORE_GATEWAY_PROVIDERS as readonly string[]).includes(value);
 }
 
-// Which gateways the Payment methods page lists (and PayPal / Tallaby Pay as
+// Which gateways the Payment methods page lists (Tallaby Pay first, PayPal as
 // "soon") is the store apps catalog: integrations/catalog.ts, group "payments".
 
 export type GatewayMode = "test" | "live";
@@ -59,6 +61,24 @@ export function assertNeverProvider(provider: never): never {
   throw new Error(`Unhandled store gateway provider: ${String(provider)}`);
 }
 
+/**
+ * Who receives an online payment made on this gateway (design §3): the
+ * seller's own accounts are `seller`; Tallaby Pay is collected by Tallaby,
+ * which owes the seller their share through the earnings ledger.
+ */
+export function gatewayCollector(provider: StoreGatewayProvider): "seller" | "tallaby" {
+  switch (provider) {
+    case "paymob":
+    case "kashier":
+    case "easykash":
+      return "seller";
+    case "tallaby_pay":
+      return "tallaby";
+    default:
+      return assertNeverProvider(provider);
+  }
+}
+
 /** Public config (store_integrations.config). No secret ever goes here. */
 export type StoreGatewayConfig = {
   mode: GatewayMode;
@@ -76,7 +96,9 @@ export type GatewayInputError =
   | "invalid_hmac_secret"
   | "invalid_merchant_id"
   | "invalid_api_key"
-  | "invalid_mode";
+  | "invalid_mode"
+  /** Tallaby Pay has no keys: it is turned on with its own action (enableTallabyPay). */
+  | "no_credentials";
 
 const token = (min: number) => z.string().trim().min(min).max(512).regex(/^\S+$/);
 
@@ -119,6 +141,8 @@ export function validateGatewayInput(
       return validateKashier(input, pick);
     case "easykash":
       return validateEasykash(pick);
+    case "tallaby_pay":
+      return { success: false, error: "no_credentials" };
     default:
       return assertNeverProvider(provider);
   }
@@ -198,6 +222,9 @@ export function isCompleteSecret(provider: StoreGatewayProvider, secret: unknown
       return typeof s.merchantId === "string" && typeof s.paymentApiKey === "string" && typeof s.secretKey === "string";
     case "easykash":
       return typeof s.apiKey === "string" && typeof s.hmacSecret === "string";
+    case "tallaby_pay":
+      // No secret per store: Tallaby's own EasyKash keys are env vars.
+      return false;
     default:
       return assertNeverProvider(provider);
   }
@@ -222,7 +249,10 @@ export function readGatewayConfig(config: unknown): StoreGatewayConfig | null {
 export type OrderGatewayMeta = {
   provider: StoreGatewayProvider;
   integrationId: string;
-  /** EasyKash: the reference of the latest checkout attempt, for the Inquiry API (docs/easykash.md §4.4). */
+  /**
+   * EasyKash and Tallaby Pay: the reference of the latest checkout attempt, for
+   * the Inquiry API (docs/easykash.md §4.4). Tallaby Pay's carry the `tpay_` prefix.
+   */
   lastReference?: string;
 };
 
@@ -237,7 +267,7 @@ export function readOrderGateway(metadata: unknown): OrderGatewayMeta | null {
   return {
     provider,
     integrationId,
-    ...(typeof lastReference === "string" && parseGatewayReference(lastReference) && { lastReference }),
+    ...(typeof lastReference === "string" && parseOrderGatewayReference(provider, lastReference) && { lastReference }),
   };
 }
 
@@ -256,6 +286,97 @@ export function readOrderDepositGateway(metadata: unknown): OrderGatewayMeta | n
 /** Unique per checkout attempt (gateways refuse a reused reference); carries the order id. */
 export const buildGatewayReference = buildKashierOrderReference;
 export const parseGatewayReference = parseKashierOrderReference;
+
+/* ------------------------------------------------------------------ */
+/* Tallaby Pay (ROADMAP.md F-100, design 2026-11-18)                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Keeps Tallaby Pay references apart from anything else that may later use
+ * Tallaby's EasyKash account (design §2.4): `tpay_<orderId>_<suffix>`.
+ */
+export const TALLABY_PAY_REFERENCE_PREFIX = "tpay_";
+
+export function buildTallabyPayReference(orderId: string): string {
+  return `${TALLABY_PAY_REFERENCE_PREFIX}${buildGatewayReference(orderId)}`;
+}
+
+/** The order id of a `tpay_` reference, or null for anything else (a seller gateway's reference included). */
+export function parseTallabyPayReference(reference: string | null | undefined): string | null {
+  if (!reference || !reference.startsWith(TALLABY_PAY_REFERENCE_PREFIX)) return null;
+  return parseGatewayReference(reference.slice(TALLABY_PAY_REFERENCE_PREFIX.length));
+}
+
+/** The order id in a reference made for this provider's checkout. */
+export function parseOrderGatewayReference(provider: StoreGatewayProvider, reference: string): string | null {
+  return provider === "tallaby_pay" ? parseTallabyPayReference(reference) : parseGatewayReference(reference);
+}
+
+/** The seller terms shown on Turn on (design §2.1); stored on the integration row and on each order. */
+export const TALLABY_PAY_TERMS_VERSION = "2026-11-18";
+
+/** `store_integrations.config` of a Tallaby Pay row. `mode` is always live, so readGatewayConfig accepts it. */
+export type TallabyPayGatewayConfig = {
+  mode: "live";
+  termsVersion: string;
+  termsAcceptedAt: string;
+  enabledAt: string;
+};
+
+/**
+ * `orders.metadata.tallabyPay`: the fee and hold read once at placement
+ * (design §3), so a later rate change never alters an order already placed.
+ */
+export type TallabyPayOrderSnapshot = { feeBps: number; holdDays: number; termsVersion: string };
+
+export function readOrderTallabyPay(metadata: unknown): TallabyPayOrderSnapshot | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const raw = (metadata as Record<string, unknown>).tallabyPay;
+  if (!raw || typeof raw !== "object") return null;
+  const { feeBps, holdDays, termsVersion } = raw as Record<string, unknown>;
+  if (typeof feeBps !== "number" || !Number.isInteger(feeBps) || feeBps < 0 || feeBps > 2_000) return null;
+  if (typeof holdDays !== "number" || !Number.isInteger(holdDays) || holdDays < 0 || holdDays > 60) return null;
+  if (typeof termsVersion !== "string" || !termsVersion) return null;
+  return { feeBps, holdDays, termsVersion };
+}
+
+/**
+ * What a storefront order paid (in full, or its COD deposit) on the store's
+ * gateway records at placement (design §3): who collects, the gateway
+ * snapshot, and for Tallaby Pay the fee and hold snapshot. `settings` is
+ * required for Tallaby Pay and ignored otherwise.
+ */
+export function storeGatewayOrderMetadata(
+  gateway: { provider: StoreGatewayProvider; integrationId: string },
+  settings: { feeBps: number; holdDays: number } | null,
+): {
+  paymentCollector: "seller" | "tallaby";
+  paymentGateway: { provider: StoreGatewayProvider; integrationId: string };
+  tallabyPay?: TallabyPayOrderSnapshot;
+} {
+  const paymentCollector = gatewayCollector(gateway.provider);
+  const paymentGateway = { provider: gateway.provider, integrationId: gateway.integrationId };
+  if (gateway.provider !== "tallaby_pay") return { paymentCollector, paymentGateway };
+  if (!settings) throw new Error("A Tallaby Pay order needs the fee settings snapshot");
+  return {
+    paymentCollector,
+    paymentGateway,
+    tallabyPay: { feeBps: settings.feeBps, holdDays: settings.holdDays, termsVersion: TALLABY_PAY_TERMS_VERSION },
+  };
+}
+
+/**
+ * The one Callback URL of Tallaby's EasyKash account (design §2.3), set once
+ * by the owner in EasyKash. Null without a public https backend, like the
+ * seller gateways' webhook URL. The route itself is F-100c.
+ */
+export function tallabyPayCallbackUrl(
+  base: string | undefined = process.env.STORE_PAYMENTS_WEBHOOK_BASE_URL || process.env.BACKEND_API_URL,
+): string | null {
+  const root = base?.trim().replace(/\/+$/, "");
+  if (!root || !/^https:\/\//i.test(root)) return null;
+  return `${root}/api/webhooks/tallaby-pay/easykash`;
+}
 
 /**
  * The EasyKash account and latest reference of an order's own snapshot

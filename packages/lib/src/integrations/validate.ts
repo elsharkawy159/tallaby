@@ -85,6 +85,10 @@ export type IntegrationPublicDetails = {
   /** Payment gateways (paymob, kashier, easykash): test or live, and whether a signed webhook has arrived yet. */
   mode?: string;
   webhookVerifiedAt?: string;
+  /** Tallaby Pay: the terms the seller accepted and when it was turned on (F-100). */
+  termsVersion?: string;
+  termsAcceptedAt?: string;
+  enabledAt?: string;
   /** Wassalha: the account it exports for. */
   postId?: string;
   merchantName?: string;
@@ -99,6 +103,7 @@ const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPu
   paymob: ["keyHint", "mode", "webhookVerifiedAt"],
   kashier: ["keyHint", "mode", "webhookVerifiedAt"],
   easykash: ["keyHint", "mode", "webhookVerifiedAt"],
+  tallaby_pay: ["mode", "termsVersion", "termsAcceptedAt", "enabledAt"],
   wassalha: ["postId", "merchantName", "warehouseName"],
 };
 

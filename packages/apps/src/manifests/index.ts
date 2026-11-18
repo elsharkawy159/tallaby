@@ -45,6 +45,8 @@ export const MANIFESTS = [
   mylerz,
   jtExpress,
   aramex,
+  // Tallaby Pay first among the payment gateways (owner, 2026-11-18).
+  tallabyPay,
   paymob,
   kashier,
   easykash,
@@ -53,7 +55,6 @@ export const MANIFESTS = [
   paylink,
   tabby,
   paypal,
-  tallabyPay,
   googleSheets,
   shopifyImport,
   customerNotifications,

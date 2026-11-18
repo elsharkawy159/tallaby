@@ -352,6 +352,8 @@
     "payWithCard": "الدفع بالبطاقة",
     "payByCard": "الدفع بالبطاقة",
     "payByCardDescription": "ادفع بأمان باستخدام بطاقتك الائتمانية أو بطاقة الخصم.",
+    "payWithTallabyPay": "ادفع أونلاين (طلبي باي)",
+    "payWithTallabyPayDescription": "بالبطاقة أو المحفظة أو ميزة، أو نقدًا في فوري وأمان، أو بالتقسيط، على صفحة دفع آمنة.",
     "cardPaymentTemporarilyUnavailable": "غير متاح مؤقتًا",
     "instapay": "إنستاباي",
     "instapayDescription": "التحويل عبر إنستاباي",

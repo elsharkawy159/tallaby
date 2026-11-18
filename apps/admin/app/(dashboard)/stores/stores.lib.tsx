@@ -71,6 +71,8 @@ export const PROVIDER_LABELS: Record<IntegrationProvider, string> & Record<strin
   bosta: "Bosta",
   paymob: "Paymob (seller gateway)",
   kashier: "Kashier (seller gateway)",
+  easykash: "EasyKash (seller gateway)",
+  tallaby_pay: "Tallaby Pay",
   wassalha: "Wassalha (Egypt Post)",
 };
 

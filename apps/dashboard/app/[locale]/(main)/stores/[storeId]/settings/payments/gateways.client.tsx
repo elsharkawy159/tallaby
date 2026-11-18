@@ -4,28 +4,32 @@ import { useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, CircleDashed, Clock, Copy, CreditCard, KeyRound, LoaderCircle, Plug, ShieldCheck, Unplug } from "lucide-react";
+import { Check, CircleDashed, Clock, Copy, CreditCard, KeyRound, LoaderCircle, Plug, Power, ShieldCheck, Unplug } from "lucide-react";
 
 import { isStoreAppLive, storeAppsInGroup, type StoreApp } from "@workspace/lib/integrations";
 import { isStoreGatewayProvider, type StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
 import { gatewaySupportsCurrency } from "@workspace/lib/payments/store-methods";
 import type { StoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
+import { splitTallabyPay } from "@workspace/lib/tallaby-pay";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { Field, Note, OptionCard, OptionCards, Rows, SectionCard, SellerButton, Tag, TextInput } from "@/components/seller-ui";
 import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.client";
 import { cn } from "@/lib/utils";
 import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "../../apps/app-drawer.lib";
 import { AppLogo } from "../../apps/app-logo";
-import { connectGateway, disconnectGateway } from "./gateways.server";
+import { connectGateway, disconnectGateway, turnOffTallabyPay, turnOnTallabyPay } from "./gateways.server";
 import { GATEWAY_FIELDS } from "./gateways.dto";
 
-/** Paymob, Kashier, EasyKash, PayPal, Tallaby Pay: the catalog's payments group. */
+/** Tallaby Pay first, then Paymob, Kashier, EasyKash and PayPal: the catalog's payments group. */
 const GATEWAYS = storeAppsInGroup("payments");
 
 /**
  * Store settings › Payment methods › Online card payments (ROADMAP.md F-39):
- * the seller connects their own Paymob, Kashier or EasyKash (F-98) account;
- * card payments go straight to them. One gateway per store. PayPal and Tallaby Pay are "soon".
+ * Tallaby Pay (F-100: no keys, turned on with its terms, paid to the store's
+ * Tallaby Pay earnings) or the seller's own Paymob, Kashier or EasyKash (F-98)
+ * account, whose card payments go straight to them. One gateway per store.
+ * PayPal is "soon".
  */
 export function StoreGatewaysCard({
   storeId,
@@ -53,16 +57,18 @@ export function StoreGatewaysCard({
   const [overview, setOverview] = useState(initial);
   const [editing, setEditing] = useState<StoreGatewayProvider | null>(null);
   const [confirming, setConfirming] = useState<StoreGatewayProvider | null>(null);
+  const [turningOn, setTurningOn] = useState(false);
   const [isPending, startTransition] = useTransition();
   const connected = overview.connected;
 
   const disconnect = (provider: StoreGatewayProvider) => {
     startTransition(async () => {
-      const result = await disconnectGateway(storeId, provider);
+      const tallabyPay = provider === "tallaby_pay";
+      const result = tallabyPay ? await turnOffTallabyPay(storeId) : await disconnectGateway(storeId, provider);
       if (result.success) {
         setConfirming(null);
         setOverview((o) => ({ ...o, connected: null }));
-        toast.success(t("disconnected"));
+        toast.success(t(tallabyPay ? "tallabyPay.turnedOff" : "disconnected"));
         router.refresh();
       } else {
         toast.error(t(`errors.${result.error}`));
@@ -79,6 +85,9 @@ export function StoreGatewaysCard({
     const wrongCurrency = live && !gatewaySupportsCurrency(provider, currency);
     // EasyKash posts to a per-seller URL; without one it can't be connected (same rule as webhooksReady).
     const noCallbackUrl = provider === "easykash" && !easykashCallbackUrl;
+    // Tallaby Pay (F-100): no keys and no seller webhook; it opens when the owner turns on its launch switch.
+    const tallabyPay = provider === "tallaby_pay";
+    const tallabyPayClosed = tallabyPay && !overview.tallabyPay.live;
     const name = tApp(`${key}.name`);
     return (
       <div
@@ -92,10 +101,22 @@ export function StoreGatewaysCard({
         <div className="min-w-0 flex-1 basis-[180px]">
           <b className="flex flex-wrap items-center gap-2 text-sm font-bold text-(--s-text)">
             {name}
-            {!live ? <Tag tone="warning">{t("soon")}</Tag> : isConnected ? <ConnectedTag verified={!!connected?.details.webhookVerifiedAt} /> : null}
+            {!live || (tallabyPayClosed && !isConnected) ? (
+              <Tag tone="warning">{t("soon")}</Tag>
+            ) : isConnected && tallabyPay ? (
+              <Tag tone="success">
+                <Check aria-hidden />
+                {t("tallabyPay.on")}
+              </Tag>
+            ) : isConnected ? (
+              <ConnectedTag verified={!!connected?.details.webhookVerifiedAt} />
+            ) : null}
           </b>
           <small className="block text-xs leading-relaxed text-(--s-subtle)">{tApp(`${key}.description`)}</small>
-          {isConnected && connected && (
+          {tallabyPayClosed && (
+            <p className="mt-0.5 text-xs text-(--s-muted)">{t(isConnected ? "tallabyPay.paused" : "tallabyPay.notLiveYet")}</p>
+          )}
+          {isConnected && connected && !tallabyPay && (
             <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-(--s-muted)">
               <KeyRound className="size-3.5 text-(--s-subtle)" aria-hidden />
               <bdi dir="ltr" className="font-montserrat">
@@ -116,7 +137,33 @@ export function StoreGatewaysCard({
             </Note>
           )}
         </div>
-        {live && (
+        {live && tallabyPay && (
+          <div className="ms-auto flex items-center gap-1.5">
+            {isConnected ? (
+              <SellerButton
+                variant="mini"
+                size="xs"
+                className="text-destructive [&_svg]:text-destructive"
+                disabled={readOnly || isPending}
+                onClick={() => setConfirming(provider)}
+              >
+                <Power aria-hidden />
+                {t("tallabyPay.turnOff")}
+              </SellerButton>
+            ) : (
+              <SellerButton
+                variant="solid"
+                size="xs"
+                disabled={readOnly || isPending || blocked || wrongCurrency || tallabyPayClosed}
+                onClick={() => setTurningOn(true)}
+              >
+                <Power aria-hidden />
+                {t("tallabyPay.turnOn")}
+              </SellerButton>
+            )}
+          </div>
+        )}
+        {live && !tallabyPay && (
           <div className="ms-auto flex items-center gap-1.5">
             {isConnected ? (
               <>
@@ -159,13 +206,31 @@ export function StoreGatewaysCard({
       <ConfirmActionDialog
         open={!!confirming}
         onOpenChange={(open) => !open && setConfirming(null)}
-        title={t("disconnectConfirm.title", { gateway: confirming ? tApp(`${confirming}.name`) : "" })}
-        description={t("disconnectConfirm.description")}
-        confirmLabel={t("disconnect")}
+        title={
+          confirming === "tallaby_pay"
+            ? t("tallabyPay.turnOffConfirm.title")
+            : t("disconnectConfirm.title", { gateway: confirming ? tApp(`${confirming}.name`) : "" })
+        }
+        description={confirming === "tallaby_pay" ? t("tallabyPay.turnOffConfirm.description") : t("disconnectConfirm.description")}
+        confirmLabel={confirming === "tallaby_pay" ? t("tallabyPay.turnOff") : t("disconnect")}
         destructive
         pending={isPending}
         onConfirm={() => confirming && disconnect(confirming)}
       />
+      {turningOn && (
+        <TallabyPaySheet
+          storeId={storeId}
+          settings={overview.tallabyPay}
+          feeKey={usdLive ? "howItWorks.feeUsd" : "howItWorks.fee"}
+          onClose={() => setTurningOn(false)}
+          onTurnedOn={(next) => {
+            setOverview(next);
+            setTurningOn(false);
+            toast.success(t("tallabyPay.turnedOn"));
+            router.refresh();
+          }}
+        />
+      )}
       {editing && (
         <GatewaySheet
           feeKey={usdLive ? "howItWorks.feeUsd" : "howItWorks.fee"}
@@ -185,6 +250,107 @@ export function StoreGatewaysCard({
         />
       )}
     </SectionCard>
+  );
+}
+
+/**
+ * Tallaby Pay › Turn on (ROADMAP.md F-100b, design §2.1): the terms in plain
+ * words with the live fee, hold and minimum withdrawal, an "I agree" box, and
+ * Turn on. The server re-checks everything (terms, EGP, launch switch, one
+ * gateway per store).
+ */
+function TallabyPaySheet({
+  storeId,
+  settings,
+  feeKey,
+  onClose,
+  onTurnedOn,
+}: {
+  storeId: string;
+  settings: StoreGatewayOverview["tallabyPay"];
+  feeKey: "howItWorks.fee" | "howItWorks.feeUsd";
+  onClose: () => void;
+  onTurnedOn: (overview: StoreGatewayOverview) => void;
+}) {
+  const t = useTranslations("storePayments.gateways");
+  const locale = useLocale();
+  const [agreed, setAgreed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  // Western digits, as in the rest of the dashboard copy.
+  const number = (value: number, digits = 0) => value.toLocaleString("en", { minimumFractionDigits: digits, maximumFractionDigits: 2 });
+  const percent = number(settings.feeBps / 100);
+  const net = number(splitTallabyPay(10_000, settings.feeBps).netPiastres / 100, 2);
+  const minimum = number(settings.minPayoutPiastres / 100);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await turnOnTallabyPay(storeId, agreed);
+      if (result.success) onTurnedOn(result.data);
+      else setError(t(`errors.${result.error}`));
+    });
+  };
+
+  const terms = [
+    t("tallabyPay.terms.fee", { percent }),
+    t("tallabyPay.terms.example", { net }),
+    t("tallabyPay.terms.earnings"),
+    settings.holdDays === 0 ? t("tallabyPay.terms.availableOnDelivery") : t("tallabyPay.terms.availableAfter", { days: settings.holdDays }),
+    t("tallabyPay.terms.withdraw", { minimum }),
+    t("tallabyPay.terms.refunds"),
+    t(feeKey),
+  ];
+
+  return (
+    <Sheet open onOpenChange={(open) => !open && !pending && onClose()}>
+      <SheetContent side={locale.startsWith("ar") ? "left" : "right"} className={APP_DRAWER_CLASS}>
+        <SheetHeader className="border-b border-(--s-line-soft) px-[18px] py-4 pe-14">
+          <div className="flex items-center gap-3">
+            <AppLogo app="tallaby_pay" className="size-11 rounded-[14px]" />
+            <div className="min-w-0">
+              <SheetTitle className="text-[17px] font-bold text-(--s-ink)">{t("tallabyPay.sheetTitle")}</SheetTitle>
+              <SheetDescription className="text-[12.5px] text-(--s-subtle)">{t("tallabyPay.sheetDescription")}</SheetDescription>
+            </div>
+          </div>
+        </SheetHeader>
+
+        <form id="tallaby-pay-form" onSubmit={submit} noValidate className="flex flex-1 flex-col gap-4 overflow-y-auto p-[18px]">
+          <section aria-labelledby="tallaby-pay-terms" className="flex flex-col gap-3 rounded-[14px] border border-(--s-line-soft) p-3.5">
+            <h3 id="tallaby-pay-terms" className="text-[13.5px] font-bold text-(--s-text)">
+              {t("tallabyPay.terms.title")}
+            </h3>
+            <ul className="flex list-disc flex-col gap-2 ps-5 text-[12.5px] leading-[1.7] text-(--s-muted)">
+              {terms.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </section>
+
+          <label htmlFor="tallaby-pay-agree" className="flex cursor-pointer items-start gap-2.5 text-[13px] leading-[1.6] text-(--s-text)">
+            <Checkbox id="tallaby-pay-agree" className="mt-0.5" checked={agreed} onCheckedChange={(checked) => setAgreed(checked === true)} />
+            <span>{t("tallabyPay.agree")}</span>
+          </label>
+
+          {error && (
+            <Note tone="danger" icon={CircleDashed}>
+              <span role="alert">{error}</span>
+            </Note>
+          )}
+        </form>
+
+        <SheetFooter className={APP_DRAWER_FOOTER_CLASS}>
+          <SellerButton variant="outline" onClick={onClose} disabled={pending}>
+            {t("cancel")}
+          </SellerButton>
+          <SellerButton type="submit" form="tallaby-pay-form" disabled={pending || !agreed}>
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden /> : <Power aria-hidden />}
+            {t("tallabyPay.turnOn")}
+          </SellerButton>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

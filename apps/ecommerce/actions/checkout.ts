@@ -348,6 +348,8 @@ export async function getCheckoutData() {
         onlineCardPaymentEnabled: storePayments
           ? storePayments.methods.includes("online_payment")
           : ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled(),
+        // Tallaby Pay (F-100) gets its own checkout row title and logo; the integration id stays on the server.
+        onlinePaymentTallabyPay: storePayments?.gateway?.provider === "tallaby_pay",
         // The gateway's integration id stays on the server.
         storePayments: storePayments
           ? { ...storePayments, gateway: null }

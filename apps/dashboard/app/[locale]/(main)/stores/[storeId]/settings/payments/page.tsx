@@ -4,6 +4,7 @@ import { parseStorePayments } from "@workspace/lib/payments/store-methods";
 import { parseCodDeposit } from "@workspace/lib/orders/cod-deposit";
 import { easykashCallbackUrl } from "@workspace/lib/payments/store-gateways";
 import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/server";
+import { TALLABY_PAY_DEFAULT_SETTINGS } from "@workspace/lib/tallaby-pay";
 import { requireStore } from "@/lib/auth/require-seller.server";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StorePaymentsSettings } from "./payments.client";
@@ -19,7 +20,11 @@ export default async function StorePaymentsPage({ params }: { params: Promise<{ 
   // loadStorePage already handled access; this only reads the session seller.
   const { seller } = await requireStore(store.id);
   const { usdLive } = await getBillingState();
-  const gateways = (await getStoreGatewayOverview(seller.sellerId, store.id)) ?? { connected: null, webhooksReady: false };
+  const gateways = (await getStoreGatewayOverview(seller.sellerId, store.id)) ?? {
+    connected: null,
+    webhooksReady: false,
+    tallabyPay: { ...TALLABY_PAY_DEFAULT_SETTINGS },
+  };
 
   return <StorePaymentsSettings money={parseStoreCurrency(store.settings)} usdLive={usdLive} storeId={store.id} initial={payments} initialDeposit={parseCodDeposit(store.settings)} gateways={gateways} easykashCallbackUrl={easykashCallbackUrl(seller.sellerId)} readOnly={store.status !== "active"} />;
 }

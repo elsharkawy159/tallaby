@@ -82,6 +82,9 @@ const CARD_LOGOS = [
   { src: "/icons/payments/meeza.svg", alt: "Meeza", card: true },
 ];
 
+/** Tallaby Pay (F-100): the Tallaby mark first, then the cards it takes. */
+const TALLABY_PAY_LOGOS = [{ src: "/logo-mark.png", alt: "Tallaby Pay" }, ...CARD_LOGOS];
+
 export const CheckoutData = ({
   checkoutData,
   addresses: initialAddresses = [],
@@ -398,6 +401,7 @@ export const CheckoutData = ({
     }
   }, [isWalletEligible, hasWallet, form]);
 
+  const onlineTallabyPay = Boolean(checkoutData.onlinePaymentTallabyPay);
   const onlineCardPaymentEnabled = Boolean(
     checkoutData.onlineCardPaymentEnabled,
   );
@@ -460,10 +464,10 @@ export const CheckoutData = ({
             {
               id: "online_payment",
               value: "online_payment",
-              title: t("payByCard"),
-              description: t("payByCardDescription"),
+              title: onlineTallabyPay ? t("payWithTallabyPay") : t("payByCard"),
+              description: onlineTallabyPay ? t("payWithTallabyPayDescription") : t("payByCardDescription"),
               enabled: true,
-              logos: CARD_LOGOS,
+              logos: onlineTallabyPay ? TALLABY_PAY_LOGOS : CARD_LOGOS,
             },
           ]
         : []),
@@ -499,6 +503,7 @@ export const CheckoutData = ({
   }, [
     codDeposit,
     onlineCardPaymentEnabled,
+    onlineTallabyPay,
     codAllowed,
     isCodEligible,
     isCodEligibleShipping,

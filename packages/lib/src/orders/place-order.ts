@@ -69,6 +69,8 @@ import {
   storeShippingCollector,
   type StorefrontCheckoutPayments,
 } from '../payments/store-methods'
+import { gatewayCollector, storeGatewayOrderMetadata } from '../payments/store-gateways.lib'
+import { getTallabyPaySettings } from '../tallaby-pay/settings.server'
 import {
   resolveStoreOrderShipping,
   zoneSellerFreeDeliveryDiscount,
@@ -874,14 +876,17 @@ export async function placeOrderFromCart(
     }
   }
 
-  // Storefront card payment through the seller's own gateway (ROADMAP.md
-  // F-39): the money goes straight to the seller, so the order is
-  // seller-collected (fee-only on delivery, PLAN.md §13.4) and keeps which
-  // gateway it was placed with.
-  const sellerGateway =
+  // Storefront online payment through the store's gateway, which the order
+  // keeps a snapshot of. The seller's own gateway (ROADMAP.md F-39): the money
+  // goes straight to the seller, so the order is seller-collected (fee-only on
+  // delivery, PLAN.md §13.4). Tallaby Pay (F-100): Tallaby collects, so it is
+  // not seller-collected (design §3).
+  const storeGateway =
     storefrontPayments?.gateway && resolvedPaymentMethod === 'online_payment'
       ? storefrontPayments.gateway
       : null
+  const sellerGateway =
+    storeGateway && gatewayCollector(storeGateway.provider) === 'seller' ? storeGateway : null
   // Storefront InstaPay / Vodafone Cash / e& Cash: paid to the seller's own
   // details (owner, 2026-10-31; PLAN.md P3-07 Part B), so seller-collected
   // too, with a snapshot of what the customer was shown.
@@ -915,6 +920,17 @@ export async function placeOrderFromCart(
         }
       : null
 
+  // Tallaby Pay (F-100): the fee and hold are read once, here, so a later rate
+  // change never alters this order (design §3); a COD deposit paid with it
+  // carries the same snapshot.
+  const tallabyPayMeta =
+    storefrontPayments?.gateway?.provider === 'tallaby_pay' && (storeGateway || deposit)
+      ? storeGatewayOrderMetadata(storefrontPayments.gateway, await getTallabyPaySettings())
+      : null
+  const gatewayMeta = storeGateway
+    ? (tallabyPayMeta ?? storeGatewayOrderMetadata(storeGateway, null))
+    : null
+
   const storeShipping: StoreShippingSnapshot | null =
     storeQuote && (storeQuote.kind === 'zone' || storeQuote.kind === 'tallaby_rates')
       ? {
@@ -940,20 +956,19 @@ export async function placeOrderFromCart(
   const hasFeeHolds = Object.keys(feeHolds).length > 0
 
   const baseOrderMetadata: Record<string, unknown> | null =
-    storeShipping || sellerCollected || hasFeeHolds || orderMetadata || deposit
+    storeShipping || sellerCollected || hasFeeHolds || orderMetadata || deposit || gatewayMeta
       ? {
           ...orderMetadata,
           ...(hasFeeHolds && { feeHolds }),
           ...(storeShipping && { storeShipping }),
           ...(sellerCollected && { paymentCollector: 'seller' }),
-          ...(sellerGateway && {
-            paymentGateway: {
-              provider: sellerGateway.provider,
-              integrationId: sellerGateway.integrationId,
-            },
+          ...(gatewayMeta && {
+            paymentCollector: gatewayMeta.paymentCollector,
+            paymentGateway: gatewayMeta.paymentGateway,
           }),
           ...(sellerTransfer && { sellerPayment: sellerTransfer }),
           ...(deposit && { deposit: deposit.snapshot }),
+          ...(tallabyPayMeta?.tallabyPay && { tallabyPay: tallabyPayMeta.tallabyPay }),
         }
       : null
 

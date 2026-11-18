@@ -1,4 +1,4 @@
-import { and, db, eq, inArray, orders, payments, sql, storeIntegrations, storeSettingsAudit } from "@workspace/db";
+import { and, db, eq, inArray, not, orders, payments, sql, storeIntegrations, storeSettingsAudit, stores } from "@workspace/db";
 import { chargeOrderPlacementFee } from "@workspace/db/wallet";
 import { randomUUID } from "node:crypto";
 import { decryptCredentials, encryptCredentials } from "../integrations/crypto.server";
@@ -26,10 +26,16 @@ import { isDepositPending } from "../orders/cod-deposit.lib";
 import { notifyDeposit } from "../orders/cod-deposit.server";
 import { buildBillingData, PAYMOB_EGYPT_BASE_URL } from "../paymob/paymob.lib";
 import { buildPaymobCheckoutUrl } from "../paymob/paymob";
+import { isSwitchOn } from "../stores/platform-switches.server";
+import { getTallabyPaySettings } from "../tallaby-pay/settings.server";
+import type { TallabyPaySettings } from "../tallaby-pay/settings.lib";
+import { parseStoreCurrency } from "../utils/formatPrice";
 import {
   STORE_GATEWAY_PROVIDERS,
+  TALLABY_PAY_TERMS_VERSION,
   assertNeverProvider,
   buildGatewayReference,
+  buildTallabyPayReference,
   easykashCallbackUrl,
   isCompleteSecret,
   isStoreGatewayProvider,
@@ -42,6 +48,7 @@ import {
   readOrderGateway,
   storeGatewayReturnPath,
   storeGatewayWebhookUrl,
+  tallabyPayCallbackUrl,
   toPiastres,
   validateGatewayInput,
   type GatewayEvent,
@@ -55,6 +62,7 @@ import {
   type StoreGatewayConfig,
   type StoreGatewayProvider,
   type StoreGatewaySecret,
+  type TallabyPayGatewayConfig,
 } from "./store-gateways.lib";
 
 /**
@@ -73,11 +81,21 @@ export type GatewayCallOptions = { fetch?: FetchLike; timeoutMs?: number };
 /* ------------------------------------------------------------------ */
 
 export type StoreGatewayOverview = {
-  /** At most one row: one gateway per store. */
+  /** At most one row: one gateway per store. A turned-off Tallaby Pay row is not "connected". */
   connected: (StoreIntegrationSummary & { provider: StoreGatewayProvider }) | null;
   /** False when no public backend URL is configured: gateways can't be connected. */
   webhooksReady: boolean;
+  /** Tallaby Pay's live fee, hold, minimum withdrawal and launch switch, for its Turn on sheet (F-100). */
+  tallabyPay: TallabyPaySettings;
 };
+
+/**
+ * Turning Tallaby Pay off keeps its row as `disconnected` (design §2.1, so
+ * orders already placed still settle); that row is not the store's gateway.
+ */
+function activeGatewayRow() {
+  return not(and(eq(storeIntegrations.provider, "tallaby_pay"), eq(storeIntegrations.status, "disconnected"))!);
+}
 
 export async function getStoreGatewayOverview(
   sellerId: string,
@@ -94,12 +112,15 @@ export async function getStoreGatewayOverview(
         eq(storeIntegrations.storeId, storeId),
         eq(storeIntegrations.sellerId, sellerId),
         inArray(storeIntegrations.provider, [...STORE_GATEWAY_PROVIDERS]),
+        activeGatewayRow(),
       ),
     );
+  const tallabyPay = await getTallabyPaySettings(q);
   const row = rows.find((r) => isStoreGatewayProvider(r.provider));
   return {
     connected: row ? { ...toIntegrationSummary(row.provider as StoreGatewayProvider, row), provider: row.provider as StoreGatewayProvider } : null,
     webhooksReady: storeGatewayWebhookUrl("00000000-0000-0000-0000-000000000000") !== null,
+    tallabyPay,
   };
 }
 
@@ -114,6 +135,16 @@ export type ConnectGatewayError =
   | "gateway_unreachable"
   | GatewayInputError;
 
+export type TallabyPayToggleError =
+  | "not_found"
+  | "store_read_only"
+  /** The `tallaby_pay_live` launch switch is off (design §2.1, §10). */
+  | "not_live"
+  | "terms_required"
+  /** v1 is EGP stores only. */
+  | "currency_not_supported"
+  | "other_gateway_connected";
+
 async function readRow(q: Queryable, storeId: string, sellerId: string, provider: StoreGatewayProvider) {
   const [row] = await q
     .select({ id: storeIntegrations.id, secret: storeIntegrations.credentialsEncrypted, config: storeIntegrations.config })
@@ -125,7 +156,7 @@ async function readRow(q: Queryable, storeId: string, sellerId: string, provider
   return row ?? null;
 }
 
-/** One gateway per store: true when any of the other providers has a row. */
+/** One gateway per store: true when any of the other providers has a row (a turned-off Tallaby Pay row does not count). */
 async function hasOtherGateway(q: Queryable, storeId: string, sellerId: string, others: StoreGatewayProvider[]) {
   if (others.length === 0) return false;
   const [row] = await q
@@ -136,6 +167,7 @@ async function hasOtherGateway(q: Queryable, storeId: string, sellerId: string, 
         eq(storeIntegrations.storeId, storeId),
         eq(storeIntegrations.sellerId, sellerId),
         inArray(storeIntegrations.provider, others),
+        activeGatewayRow(),
       ),
     )
     .limit(1);
@@ -168,7 +200,8 @@ export async function connectStoreGateway(
 ): Promise<IntegrationResult<StoreGatewayOverview, ConnectGatewayError>> {
   const { q = db, ...callOptions } = options;
   if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
-  if (!isStoreGatewayProvider(provider)) return { success: false, error: "unsupported" };
+  // Tallaby Pay has no keys: enableTallabyPay turns it on, with the terms.
+  if (!isStoreGatewayProvider(provider) || provider === "tallaby_pay") return { success: false, error: "unsupported" };
   if (INTEGRATIONS[provider].availability !== "available") return { success: false, error: "not_available" };
 
   const store = await ownStoreStatus(q, sellerId, storeId);
@@ -250,7 +283,7 @@ export async function connectStoreGateway(
 
     return {
       success: true,
-      data: { connected: { ...toIntegrationSummary(provider, row!), provider }, webhooksReady: true },
+      data: { connected: { ...toIntegrationSummary(provider, row!), provider }, webhooksReady: true, tallabyPay: await getTallabyPaySettings(tx) },
     } as const;
   });
 }
@@ -269,7 +302,8 @@ export async function disconnectStoreGateway(
   q: Queryable = db,
 ): Promise<IntegrationResult<null, "not_found" | "store_read_only" | "unsupported">> {
   if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
-  if (!isStoreGatewayProvider(provider)) return { success: false, error: "unsupported" };
+  // Tallaby Pay's row is kept when it is turned off (disableTallabyPay).
+  if (!isStoreGatewayProvider(provider) || provider === "tallaby_pay") return { success: false, error: "unsupported" };
 
   return q.transaction(async (tx) => {
     const store = await ownStoreStatus(tx, sellerId, storeId, true);
@@ -297,6 +331,142 @@ export async function disconnectStoreGateway(
     }
     return { success: true, data: null } as const;
   });
+}
+
+/**
+ * Turns Tallaby Pay on for a store (ROADMAP.md F-100b, design §2.1): no keys.
+ * The session seller must own the active store, the store must sell in EGP,
+ * the seller must have ticked the terms, the `tallaby_pay_live` switch must be
+ * on, and no other gateway may be connected (one gateway per store, §2.2).
+ * Writes the row (no credentials) and a `store_settings_audit` entry. Checks
+ * run again under the store row lock.
+ */
+export async function enableTallabyPay(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  input: { termsAccepted: boolean },
+  q: Queryable = db,
+): Promise<IntegrationResult<StoreGatewayOverview, TallabyPayToggleError>> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  if (input.termsAccepted !== true) return { success: false, error: "terms_required" };
+  const provider = "tallaby_pay" as const;
+  const others = STORE_GATEWAY_PROVIDERS.filter((p) => p !== provider);
+
+  return q.transaction(async (tx) => {
+    const [store] = await tx
+      .select({ status: stores.status, settings: stores.settings })
+      .from(stores)
+      .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), sql`${stores.deletedAt} IS NULL`))
+      .for("update");
+    if (!store) return { success: false, error: "not_found" } as const;
+    if (store.status !== "active") return { success: false, error: "store_read_only" } as const;
+    if (parseStoreCurrency(store.settings).currency !== "EGP") return { success: false, error: "currency_not_supported" } as const;
+    const settings = await getTallabyPaySettings(tx);
+    if (!settings.live) return { success: false, error: "not_live" } as const;
+    if (await hasOtherGateway(tx, storeId, sellerId, others)) return { success: false, error: "other_gateway_connected" } as const;
+
+    const now = new Date().toISOString();
+    const config: TallabyPayGatewayConfig = {
+      mode: "live",
+      termsVersion: TALLABY_PAY_TERMS_VERSION,
+      termsAcceptedAt: now,
+      enabledAt: now,
+    };
+    const [row] = await tx
+      .insert(storeIntegrations)
+      .values({
+        storeId,
+        sellerId,
+        provider,
+        status: "connected",
+        config,
+        credentialsEncrypted: null,
+        connectedBy: actorId,
+        connectedAt: sql`now()`,
+      })
+      .onConflictDoUpdate({
+        target: [storeIntegrations.storeId, storeIntegrations.provider],
+        set: {
+          status: "connected",
+          config,
+          credentialsEncrypted: null,
+          lastError: null,
+          connectedBy: actorId,
+          connectedAt: sql`now()`,
+          updatedAt: sql`now()`,
+        },
+      })
+      .returning(summaryColumns);
+
+    await tx.insert(storeSettingsAudit).values({
+      storeId,
+      sellerId,
+      actorId,
+      section: "payments",
+      action: "tallaby_pay_enabled",
+      changes: { gateway: provider, termsVersion: TALLABY_PAY_TERMS_VERSION, feeBps: settings.feeBps, holdDays: settings.holdDays },
+    });
+
+    return {
+      success: true,
+      data: { connected: { ...toIntegrationSummary(provider, row!), provider }, webhooksReady: true, tallabyPay: settings },
+    } as const;
+  });
+}
+
+/**
+ * Turns Tallaby Pay off: checkout stops offering it at once, but the row is
+ * kept as `disconnected` (design §2.1), so orders already sent to EasyKash
+ * still settle and the earnings keep working. Audited. Never refused by the
+ * launch switch: a seller can always turn it off.
+ */
+export async function disableTallabyPay(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  q: Queryable = db,
+): Promise<IntegrationResult<null, "not_found" | "store_read_only">> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  return q.transaction(async (tx) => {
+    const store = await ownStoreStatus(tx, sellerId, storeId, true);
+    if (!store) return { success: false, error: "not_found" } as const;
+    if (store.status !== "active") return { success: false, error: "store_read_only" } as const;
+    const updated = await tx
+      .update(storeIntegrations)
+      .set({ status: "disconnected", updatedAt: sql`now()` })
+      .where(
+        and(
+          eq(storeIntegrations.storeId, storeId),
+          eq(storeIntegrations.sellerId, sellerId),
+          eq(storeIntegrations.provider, "tallaby_pay"),
+          eq(storeIntegrations.status, "connected"),
+        ),
+      )
+      .returning({ id: storeIntegrations.id });
+    if (updated.length > 0) {
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "payments",
+        action: "tallaby_pay_disabled",
+        changes: { gateway: "tallaby_pay" },
+      });
+    }
+    return { success: true, data: null } as const;
+  });
+}
+
+/** Tallaby's own EasyKash API key (design §2.3). Server-only env, never `NEXT_PUBLIC_*`, never logged. */
+function tallabyEasykashApiKey(): string | null {
+  const key = process.env.TALLABY_EASYKASH_API_KEY?.trim();
+  return key ? key : null;
+}
+
+/** True when this app has Tallaby's EasyKash API key; storefront checkout hides Tallaby Pay without it. */
+export function isTallabyPayConfigured(): boolean {
+  return tallabyEasykashApiKey() !== null;
 }
 
 async function withTimeout<T>(ms: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
@@ -328,6 +498,9 @@ export async function verifyGatewayKeys(
       return verifyCheckoutKeys(provider, secret, mode, options);
     case "easykash":
       return verifyEasykashKey(secret as EasykashSecret, options);
+    case "tallaby_pay":
+      // No keys to check; connectStoreGateway refuses Tallaby Pay before this.
+      return "keys_rejected";
     default:
       return assertNeverProvider(provider);
   }
@@ -413,7 +586,8 @@ async function verifyCheckoutKeys(
 
 /**
  * The store's connected gateway for checkout, or null. No secrets. The caller
- * resolves the store from the request host and passes its owner.
+ * resolves the store from the request host and passes its owner. Tallaby Pay
+ * counts only while its launch switch is on (design §10).
  */
 export async function getStorefrontGateway(storeId: string, sellerId: string, q: Queryable = db): Promise<OrderGatewayMeta | null> {
   if (!UUID_RE.test(storeId)) return null;
@@ -429,7 +603,9 @@ export async function getStorefrontGateway(storeId: string, sellerId: string, q:
       ),
     );
   const row = rows.find((r) => isStoreGatewayProvider(r.provider) && readGatewayConfig(r.config));
-  return row ? { provider: row.provider as StoreGatewayProvider, integrationId: row.id } : null;
+  if (!row) return null;
+  if (row.provider === "tallaby_pay" && !(await isSwitchOn("tallaby_pay_live", q))) return null;
+  return { provider: row.provider as StoreGatewayProvider, integrationId: row.id };
 }
 
 type GatewayAccount = {
@@ -437,8 +613,10 @@ type GatewayAccount = {
   storeId: string;
   sellerId: string;
   provider: StoreGatewayProvider;
+  status: string;
   config: StoreGatewayConfig;
-  secret: StoreGatewaySecret;
+  /** The store's own keys; null only for Tallaby Pay, which pays on Tallaby's account. */
+  secret: StoreGatewaySecret | null;
 };
 
 /** The account behind an integration id (checkout and webhooks). Server-only. */
@@ -459,9 +637,33 @@ async function loadGatewayAccount(integrationId: string, q: Queryable = db): Pro
     .limit(1);
   if (!row || !isStoreGatewayProvider(row.provider)) return null;
   const config = readGatewayConfig(row.config);
-  const secret = decryptSecret(row.provider, row.storeId, row.secret);
-  if (!config || !secret) return null;
-  return { integrationId: row.id, storeId: row.storeId, sellerId: row.sellerId, provider: row.provider, config, secret };
+  const keyless = row.provider === "tallaby_pay";
+  const secret = keyless ? null : decryptSecret(row.provider, row.storeId, row.secret);
+  if (!config || (!keyless && !secret)) return null;
+  return {
+    integrationId: row.id,
+    storeId: row.storeId,
+    sellerId: row.sellerId,
+    provider: row.provider,
+    status: row.status,
+    config,
+    secret,
+  };
+}
+
+/** Where the gateway posts payment results for this account, or null without a public https backend. */
+function gatewayResultUrl(account: GatewayAccount): string | null {
+  switch (account.provider) {
+    case "paymob":
+    case "kashier":
+      return storeGatewayWebhookUrl(account.integrationId);
+    case "easykash":
+      return easykashCallbackUrl(account.sellerId);
+    case "tallaby_pay":
+      return tallabyPayCallbackUrl();
+    default:
+      return assertNeverProvider(account.provider);
+  }
 }
 
 function paymobIntentionBody(
@@ -527,11 +729,10 @@ export async function createStoreGatewayCheckout(input: {
   if (!account || account.storeId !== order.storeId || account.provider !== meta.provider) {
     return { success: false, error: "gateway_missing" };
   }
-  const webhookUrl =
-    account.provider === "easykash" ? easykashCallbackUrl(account.sellerId) : storeGatewayWebhookUrl(account.integrationId);
+  const webhookUrl = gatewayResultUrl(account);
   if (!webhookUrl) return { success: false, error: "gateway_missing" };
 
-  const reference = buildGatewayReference(order.id);
+  const reference = account.provider === "tallaby_pay" ? buildTallabyPayReference(order.id) : buildGatewayReference(order.id);
   const siteUrl = input.siteUrl.replace(/\/+$/, "");
   const returnUrl = `${siteUrl}${storeGatewayReturnPath(order.id)}`;
   const currency = order.currency || "EGP";
@@ -599,7 +800,37 @@ export async function createStoreGatewayCheckout(input: {
         const address = order.userAddress_shippingAddressId;
         return await startEasykashCheckout({
           orderId: order.id,
-          account,
+          apiKey: (account.secret as EasykashSecret).apiKey,
+          integrationId: account.integrationId,
+          isDeposit,
+          siteUrl,
+          reference,
+          currency,
+          amount,
+          buyer: {
+            name: address?.fullName || order.user?.fullName,
+            email: order.user?.email,
+            mobile: address?.phone || order.user?.phone,
+          },
+        });
+      }
+      case "tallaby_pay": {
+        // Tallaby's own EasyKash account (design §2.4). A new payment attempt
+        // needs the row still on and the launch switch on; callbacks for
+        // attempts already made settle either way (F-100c).
+        if (account.status !== "connected" || !(await isSwitchOn("tallaby_pay_live"))) {
+          return { success: false, error: "gateway_missing" };
+        }
+        const apiKey = tallabyEasykashApiKey();
+        if (!apiKey) {
+          console.error("[tallaby-pay] TALLABY_EASYKASH_API_KEY is not set", { integrationId: account.integrationId });
+          return { success: false, error: "gateway_missing" };
+        }
+        const address = order.userAddress_shippingAddressId;
+        return await startEasykashCheckout({
+          orderId: order.id,
+          apiKey,
+          integrationId: account.integrationId,
           isDeposit,
           siteUrl,
           reference,
@@ -623,15 +854,20 @@ export async function createStoreGatewayCheckout(input: {
 }
 
 /**
- * EasyKash Pay API (docs/easykash.md §4.4). EGP stores only in v1 (owner,
- * 2026-11-18): EasyKash charges the buyer in EGP whatever currency is sent.
- * The reference is saved on the order first (outside any transaction), so
- * the return page and the sweeper can ask the Inquiry API about it; older
- * references stay valid for callbacks, since they carry the order id.
+ * EasyKash Pay API (docs/easykash.md §4.4), on the seller's own account or on
+ * Tallaby's (Tallaby Pay: the key comes from env, and the body is the same:
+ * EGP, cashExpiry 24, no paymentOptions, so instalments stay on, owner
+ * 2026-11-18). EGP stores only in v1: EasyKash charges the buyer in EGP
+ * whatever currency is sent. The reference is saved on the order first
+ * (outside any transaction), so the return page and the sweeper can ask the
+ * Inquiry API about it; older references stay valid for callbacks, since
+ * they carry the order id.
  */
 async function startEasykashCheckout(input: {
   orderId: string;
-  account: GatewayAccount;
+  apiKey: string;
+  /** For logs only. */
+  integrationId: string;
   isDeposit: boolean;
   siteUrl: string;
   reference: string;
@@ -639,9 +875,8 @@ async function startEasykashCheckout(input: {
   amount: string;
   buyer: { name?: string | null; email?: string | null; mobile?: string | null };
 }): Promise<IntegrationResult<{ checkoutUrl: string }, StoreGatewayCheckoutError>> {
-  const { account } = input;
   if (input.currency !== "EGP") {
-    console.error("[store-gateway] easykash needs an EGP store", { integrationId: account.integrationId });
+    console.error("[store-gateway] easykash needs an EGP store", { integrationId: input.integrationId });
     return { success: false, error: "gateway_missing" };
   }
   // jsonb_set on the snapshot read above: only lastReference changes.
@@ -653,7 +888,7 @@ async function startEasykashCheckout(input: {
 
   try {
     const { redirectUrl } = await createEasykashPayLink(
-      (account.secret as EasykashSecret).apiKey,
+      input.apiKey,
       buildEasykashPayBody({
         amountPiastres: toPiastres(input.amount),
         currency: input.currency,
@@ -669,7 +904,7 @@ async function startEasykashCheckout(input: {
   } catch (error) {
     // Status only: the body can echo the buyer's or the account's details.
     console.error("[store-gateway] easykash pay failed", {
-      integrationId: account.integrationId,
+      integrationId: input.integrationId,
       status: error instanceof EasykashApiError ? error.status : undefined,
       name: (error as Error)?.name,
     });
@@ -765,6 +1000,9 @@ export async function handleStoreGatewayWebhook(integrationId: string, req: Gate
       break;
     case "easykash":
       // EasyKash calls the per-seller URL (handleEasykashCallback), never this one.
+      return { status: 200, body: { received: true, outcome: "ignored" } };
+    case "tallaby_pay":
+      // Tallaby's EasyKash account calls its own platform URL (F-100c), never this one.
       return { status: 200, body: { received: true, outcome: "ignored" } };
     default:
       return assertNeverProvider(account.provider);

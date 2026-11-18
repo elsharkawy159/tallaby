@@ -4,7 +4,9 @@ import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.se
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import {
   connectStoreGateway,
+  disableTallabyPay,
   disconnectStoreGateway,
+  enableTallabyPay,
   type StoreGatewayOverview,
 } from "@workspace/lib/payments/store-gateways/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -21,6 +23,7 @@ import type { GatewayErrorKey, GatewayResult } from "./gateways.dto";
 /** Connecting calls the gateway with whatever is pasted: 5 a minute per store stops key-guessing through us. */
 const connectLimiter = createRateLimiter({ limit: 5, windowMs: 60_000 });
 const disconnectLimiter = createRateLimiter({ limit: 10, windowMs: 10 * 60_000 });
+const tallabyPayLimiter = createRateLimiter({ limit: 10, windowMs: 10 * 60_000 });
 
 const ERRORS: Record<string, GatewayErrorKey> = {
   invalid_secret_key: "invalidSecretKey",
@@ -37,6 +40,10 @@ const ERRORS: Record<string, GatewayErrorKey> = {
   webhooks_not_configured: "webhooksNotConfigured",
   not_available: "notAvailable",
   unsupported: "notAvailable",
+  no_credentials: "notAvailable",
+  not_live: "tallabyPayNotLive",
+  terms_required: "termsRequired",
+  currency_not_supported: "currencyNotSupported",
   store_read_only: "readOnly",
   not_found: "notFound",
 };
@@ -71,6 +78,53 @@ export async function connectGateway(
     if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
     // The name only: an error object could carry the submitted keys.
     console.error("[store-gateways] connect failed", (error as Error)?.name);
+    return { success: false, error: "generic" };
+  }
+}
+
+/** Tallaby Pay's App Center slug (`tallaby-pay`), for revalidation. */
+const TALLABY_PAY_APP_PATH = "apps/tallaby-pay";
+
+async function afterTallabyPayChange(storeId: string, subdomain: string) {
+  revalidateDashboardPath(`/stores/${storeId}/settings/payments`);
+  revalidateDashboardPath(`/stores/${storeId}/${TALLABY_PAY_APP_PATH}`);
+  revalidateDashboardPath(`/stores/${storeId}/${TALLABY_PAY_APP_PATH}/settings`);
+  // Website footers show the gateway's card logos (cached storefront profile).
+  await applyInvalidation(invalidateStorefront([subdomain]), { from: "dashboard", mode: "action" });
+}
+
+/**
+ * Tallaby Pay › Turn on (ROADMAP.md F-100b): no keys, only the seller's yes to
+ * the terms. Ownership, EGP, the launch switch and one-gateway-per-store are
+ * all checked in @workspace/lib, under the store row lock.
+ */
+export async function turnOnTallabyPay(storeId: string, termsAccepted: boolean): Promise<GatewayResult<StoreGatewayOverview>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!tallabyPayLimiter.check(`tallaby-pay:${store.id}`)) return { success: false, error: "rateLimited" };
+    const result = await enableTallabyPay(seller.sellerId, seller.userId, store.id, { termsAccepted: termsAccepted === true });
+    if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
+    await afterTallabyPayChange(store.id, store.subdomain);
+    return { success: true, data: result.data };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
+    console.error("[store-gateways] tallaby pay turn on failed", (error as Error)?.name);
+    return { success: false, error: "generic" };
+  }
+}
+
+/** Tallaby Pay › Turn off: checkout stops offering it; orders already paid still reach the earnings. */
+export async function turnOffTallabyPay(storeId: string): Promise<GatewayResult<null>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!tallabyPayLimiter.check(`tallaby-pay:${store.id}`)) return { success: false, error: "rateLimited" };
+    const result = await disableTallabyPay(seller.sellerId, seller.userId, store.id);
+    if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
+    await afterTallabyPayChange(store.id, store.subdomain);
+    return { success: true, data: null };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
+    console.error("[store-gateways] tallaby pay turn off failed", (error as Error)?.name);
     return { success: false, error: "generic" };
   }
 }

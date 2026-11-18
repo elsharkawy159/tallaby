@@ -13,6 +13,9 @@ export type GatewayErrorKey =
   | "otherGatewayConnected"
   | "webhooksNotConfigured"
   | "notAvailable"
+  | "tallabyPayNotLive"
+  | "termsRequired"
+  | "currencyNotSupported"
   | "readOnly"
   | "notFound"
   | "rateLimited"
@@ -39,6 +42,8 @@ export const GATEWAY_FIELDS = {
     { name: "apiKey", secret: true, placeholder: "" },
     { name: "hmacSecret", secret: true, placeholder: "" },
   ],
+  // Tallaby Pay (F-100): no keys; it has its own Turn on sheet with the terms.
+  tallaby_pay: [],
 } as const;
 
 export type GatewayFieldName = (typeof GATEWAY_FIELDS)[keyof typeof GATEWAY_FIELDS][number]["name"];

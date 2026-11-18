@@ -352,6 +352,8 @@
     "payWithCard": "Pay with Card",
     "payByCard": "Pay by Card",
     "payByCardDescription": "Pay securely with your credit or debit card.",
+    "payWithTallabyPay": "Pay online (Tallaby Pay)",
+    "payWithTallabyPayDescription": "Card, mobile wallet, Meeza, cash at Fawry or Aman, or instalments, on a secure payment page.",
     "cardPaymentTemporarilyUnavailable": "Temporarily unavailable",
     "instapay": "InstaPay",
     "instapayDescription": "Transfer via InstaPay",

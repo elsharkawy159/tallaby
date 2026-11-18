@@ -71,7 +71,8 @@ export function appState(app: StoreApp, store: AppCenterStoreState): AppState {
   const install = store.installs.find((item) => item.appKey === app.key);
   const request = store.requests.find((item) => item.appKey === app.key);
   const available = isStoreAppLive(app) && (app.key !== "google_sheets" || store.googleSheetsEnabled);
-  const connected = Boolean(row);
+  // A turned-off Tallaby Pay keeps its row as `disconnected` (F-100), so in-flight orders still settle.
+  const connected = Boolean(row) && !(row?.provider === "tallaby_pay" && row.status === "disconnected");
   const failing = row?.status === "error";
   const hasInstallRow = Boolean(install);
   const installed = available && (isStoreAppDefaultInstalled(app) || connected || hasInstallRow);

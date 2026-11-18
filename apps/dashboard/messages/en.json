@@ -5067,6 +5067,32 @@
         "fee": "Tallaby's EGP 5 fee per order is taken from your store wallet once the payment is confirmed, as with any order.",
         "feeUsd": "Your plan's order fee, if it has one, is taken from your store wallet once the payment is confirmed, as with any order."
       },
+      "tallabyPay": {
+        "turnOn": "Turn on",
+        "turnOff": "Turn off",
+        "on": "On",
+        "turnedOn": "Tallaby Pay is on. \"Pay online (Tallaby Pay)\" now shows at your store's checkout.",
+        "turnedOff": "Tallaby Pay is off. It no longer shows at checkout. Orders already paid still reach your earnings.",
+        "notLiveYet": "Tallaby Pay isn't open yet. You'll be able to turn it on soon.",
+        "paused": "Tallaby Pay is paused for now, so it doesn't show at checkout.",
+        "sheetTitle": "Turn on Tallaby Pay",
+        "sheetDescription": "No account and no keys. Your customers pay online and Tallaby sends you your share.",
+        "agree": "I agree to these Tallaby Pay terms.",
+        "terms": {
+          "title": "How Tallaby Pay works",
+          "fee": "Tallaby keeps {percent}% of each paid order, including the payment company's fee. You get the rest.",
+          "example": "Example: on an order of EGP 100, you get EGP {net}.",
+          "earnings": "Your share goes to this store's Tallaby Pay earnings, kept apart from your store wallet.",
+          "availableOnDelivery": "It becomes available to withdraw once the order is delivered.",
+          "availableAfter": "It becomes available to withdraw {days, plural, one {# day} other {# days}} after the order is delivered.",
+          "withdraw": "You ask to withdraw once you have at least EGP {minimum}. Tallaby sends it to your InstaPay, bank account or mobile wallet.",
+          "refunds": "If an order is refunded before delivery, its amount is taken back from your earnings, even below zero. After delivery, you refund the customer yourself."
+        },
+        "turnOffConfirm": {
+          "title": "Turn off Tallaby Pay?",
+          "description": "\"Pay online (Tallaby Pay)\" will disappear from your checkout. Orders already paid still reach your earnings, and you can still withdraw them."
+        }
+      },
       "fields": {
         "mode": "Account mode",
         "secretKey": "Secret key",
@@ -5126,6 +5152,9 @@
         "otherGatewayConnected": "Another gateway is already connected. Disconnect it first.",
         "webhooksNotConfigured": "Card payments can't be set up right now. Please contact Tallaby support.",
         "notAvailable": "This gateway isn't available yet.",
+        "tallabyPayNotLive": "Tallaby Pay isn't open yet. Please try again later.",
+        "termsRequired": "Tick \"I agree\" to turn on Tallaby Pay.",
+        "currencyNotSupported": "Tallaby Pay works only for stores that sell in Egyptian pounds (EGP).",
         "readOnly": "This store is read-only.",
         "notFound": "Store not found.",
         "rateLimited": "Too many attempts. Please wait a minute and try again.",
@@ -6036,7 +6065,7 @@
       "tallaby_pay": {
         "name": "Tallaby Pay",
         "vendor": "Tallaby",
-        "description": "Card payments with no gateway account of your own; the money goes to your store wallet. Coming soon."
+        "description": "Online payments with no gateway account. The money goes to your Tallaby Pay earnings and you withdraw it to your account."
       },
       "ai_assistants": {
         "name": "AI assistants",

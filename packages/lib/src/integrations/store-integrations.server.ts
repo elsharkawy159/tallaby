@@ -173,6 +173,8 @@ export async function saveSettingsIntegration(
   q: Queryable = db,
 ): Promise<IntegrationResult<StoreIntegrationSummary, "not_found" | "store_read_only" | "not_available">> {
   if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  // Tallaby Pay is a `settings` row too, but only enableTallabyPay may write it (terms, launch switch, one gateway).
+  if (provider === "tallaby_pay") return { success: false, error: "not_available" };
   if (INTEGRATIONS[provider].kind !== "settings" || INTEGRATIONS[provider].availability !== "available") {
     return { success: false, error: "not_available" };
   }
@@ -246,7 +248,8 @@ export async function disconnectStoreIntegration(
   q: Queryable = db,
 ): Promise<IntegrationResult<null, "not_found" | "store_read_only" | "unsupported">> {
   if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
-  if (!isIntegrationProvider(provider)) return { success: false, error: "unsupported" };
+  // Tallaby Pay's row is kept when it is turned off, so orders already placed still settle (disableTallabyPay).
+  if (!isIntegrationProvider(provider) || provider === "tallaby_pay") return { success: false, error: "unsupported" };
 
   return q.transaction(async (tx) => {
     const store = await ownStoreStatus(tx, sellerId, storeId, true);

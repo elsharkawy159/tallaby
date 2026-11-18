@@ -21,6 +21,12 @@ describe("App Center state (F-93)", () => {
     expect(actionOf("bosta")).toBe("settings");
   });
 
+  it("shows Tallaby Pay as connected only while it is on: turning it off keeps a disconnected row (F-100b)", () => {
+    expect(stateOf("tallaby_pay", { integrations: [{ provider: "tallaby_pay", status: "connected" }] })).toMatchObject({ connected: true, badge: "connected" });
+    expect(stateOf("tallaby_pay", { integrations: [{ provider: "tallaby_pay", status: "disconnected" }] })).toMatchObject({ connected: false, badge: "available" });
+    expect(actionOf("tallaby_pay")).toBe("settings");
+  });
+
   it("never mixes up another app's row", () => {
     expect(stateOf("kashier", { integrations: [{ provider: "paymob", status: "connected" }] }).connected).toBe(false);
   });

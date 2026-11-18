@@ -40,7 +40,7 @@ export type Change = { enabled: boolean; details?: unknown; fee?: number; maxOrd
 
 const LIVE = STORE_PAYMENT_METHODS.filter((m) => m.status === "live");
 const WALLETS = LIVE.filter((m) => m.key !== "cod").map((m) => m.key as LiveKey);
-// Card payments have their own card (StoreGatewaysCard: the seller's gateway, Tallaby Pay soon).
+// Card payments have their own card (StoreGatewaysCard: Tallaby Pay or the seller's own gateway).
 const SOON = STORE_PAYMENT_METHODS.filter((m) => m.status === "soon" && m.key !== "card");
 const EMPTY: PaymentDetailsFormValues = { holderName: "", phone: "", ipa: "", iban: "", paymentLink: "" };
 

@@ -278,6 +278,8 @@ export const GATEWAY_CURRENCIES: Record<OrderGatewayMeta["provider"], readonly s
   paymob: ["EGP"],
   // v1 is EGP stores only (owner, 2026-11-18; docs/easykash.md §10).
   easykash: ["EGP"],
+  // Tallaby Pay runs on Tallaby's EasyKash account: EGP stores only in v1 (F-100).
+  tallaby_pay: ["EGP"],
 };
 
 export function gatewaySupportsCurrency(provider: string | null | undefined, currency: string): boolean {
@@ -488,6 +490,8 @@ const GATEWAY_FOOTER_KEYS: Record<OrderGatewayMeta["provider"], GatewayFooterKey
   paymob: ["visa", "mastercard", "meeza"],
   // The options shown are what the seller turned on in EasyKash; cards are the one we can count on.
   easykash: ["visa", "mastercard"],
+  // Tallaby's EasyKash account takes cards, Meeza and mobile wallets (and cash at Fawry and Aman, which has no footer logo yet).
+  tallaby_pay: ["visa", "mastercard", "meeza", "mobile_wallets"],
 };
 
 /**

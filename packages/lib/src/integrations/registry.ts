@@ -3,7 +3,7 @@
  *
  * Every provider listed here exists in the `store_integrations.provider`
  * CHECK (0056; `bosta` from 0106; `paymob`, `kashier` and `wassalha` from 0130;
- * `easykash` from 0174).
+ * `easykash` from 0174; `tallaby_pay` from 0175).
  * Where each one shows up in the dashboard is catalog.ts. Public identifiers live in `config`; secrets only ever go
  * through `encryptCredentials` (crypto.server.ts).
  */
@@ -22,6 +22,7 @@ export const INTEGRATION_PROVIDERS = [
   "kashier",
   "wassalha",
   "easykash",
+  "tallaby_pay",
 ] as const;
 
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
@@ -82,6 +83,10 @@ export const INTEGRATIONS: Record<IntegrationProvider, IntegrationDefinition> = 
   wassalha: { provider: "wassalha", category: "shipping", kind: "settings", availability: "available" },
   // The seller's own EasyKash account (ROADMAP.md F-98, docs/easykash.md).
   easykash: { provider: "easykash", category: "payments", kind: "credentials", availability: "available" },
+  // Tallaby Pay (ROADMAP.md F-100): no keys and no secret; the row only records
+  // that the seller turned it on and accepted the terms. Turned on and off only
+  // through enableTallabyPay / disableTallabyPay (payments/store-gateways.server.ts).
+  tallaby_pay: { provider: "tallaby_pay", category: "payments", kind: "settings", availability: "available" },
 };
 
 export function isIntegrationProvider(value: unknown): value is IntegrationProvider {

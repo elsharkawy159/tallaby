@@ -42,7 +42,7 @@ import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
 import type { StoreCatalogScope } from "@workspace/lib/stores/scope/server";
 import { isSwitchOn } from "@/lib/platform-switches.server";
-import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
+import { getStorefrontGateway, isTallabyPayConfigured } from "@workspace/lib/payments/store-gateways/server";
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
 import { parseStoreSalesPopup } from "@workspace/lib/stores/sales-popup";
@@ -423,8 +423,10 @@ export async function getStorefrontCheckoutPayments(): Promise<StorefrontCheckou
     .where(and(eq(stores.id, scope.storeId), eq(stores.sellerId, scope.sellerId)))
     .limit(1);
   const settings = row?.settings as Record<string, unknown> | null | undefined;
-  // The seller's own card gateway, when connected (ROADMAP.md F-39).
-  const gateway = row ? await getStorefrontGateway(scope.storeId, scope.sellerId) : null;
+  // The store's online gateway, when connected (ROADMAP.md F-39). Tallaby Pay (F-100) is hidden
+  // while this app has no Tallaby EasyKash key, so checkout never offers a payment it can't start.
+  const connected = row ? await getStorefrontGateway(scope.storeId, scope.sellerId) : null;
+  const gateway = connected?.provider === "tallaby_pay" && !isTallabyPayConfigured() ? null : connected;
   return storefrontCheckoutMethods(parseStorePayments(settings?.payments), gateway, parseStoreCurrency(settings).currency, parseCodDeposit(settings));
 }
 

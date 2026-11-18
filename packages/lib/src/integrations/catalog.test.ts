@@ -40,14 +40,16 @@ describe("store apps catalog", () => {
     expect(isStoreAppLive(getStoreApp("bosta")!)).toBe(true);
     expect(isStoreAppLive(getStoreApp("wassalha")!)).toBe(true);
     expect(isStoreAppLive(getStoreApp("tiktok_pixel")!)).toBe(false);
-    for (const key of ["mylerz", "jt_express", "aramex", "paytabs", "moyasar", "paylink", "tabby", "paypal", "tallaby_pay"]) {
+    expect(isStoreAppLive(getStoreApp("tallaby_pay")!)).toBe(true);
+    for (const key of ["mylerz", "jt_express", "aramex", "paytabs", "moyasar", "paylink", "tabby", "paypal"]) {
       expect(isStoreAppLive(getStoreApp(key)!), key).toBe(false);
     }
   });
 
   it("groups carriers and gateways for the Shipping and Payment methods pages", () => {
     expect(storeAppsInGroup("shipping").map((a) => a.key)).toEqual(["bosta", "wassalha", "mylerz", "jt_express", "aramex"]);
-    expect(storeAppsInGroup("payments").map((a) => a.key)).toEqual(["paymob", "kashier", "easykash", "paytabs", "moyasar", "paylink", "tabby", "paypal", "tallaby_pay"]);
+    // Tallaby Pay first among the payment gateways (owner, 2026-11-18; F-100b).
+    expect(storeAppsInGroup("payments").map((a) => a.key)).toEqual(["tallaby_pay", "paymob", "kashier", "easykash", "paytabs", "moyasar", "paylink", "tabby", "paypal"]);
   });
 
   it("links every app to its App Center page, and built ones to their settings (F-93)", () => {
@@ -55,13 +57,15 @@ describe("store apps catalog", () => {
     expect(storeAppHref("s1", getStoreApp("meta_pixel")!)).toBe("/stores/s1/apps/meta-pixel");
     expect(storeAppSettingsHref("s1", getStoreApp("bosta")!)).toBe("/stores/s1/apps/bosta/settings");
     expect(storeAppSettingsHref("s1", getStoreApp("paymob")!)).toBe("/stores/s1/apps/paymob/settings");
+    expect(storeAppSettingsHref("s1", getStoreApp("tallaby_pay")!)).toBe("/stores/s1/apps/tallaby-pay/settings");
     expect(storeAppSettingsHref("s1", getStoreApp("ai_assistants")!)).toBe("/stores/s1/apps/ai-assistants/settings");
     expect(storeAppSettingsHref("s1", getStoreApp("mylerz")!)).toBeNull();
     expect(storeAppSettingsHref("s1", getStoreApp("customer_notifications")!)).toBeNull();
   });
 
   it("keeps the entries the install engine and the old pages read, as before the registry (F-93)", () => {
-    // The catalog as it was in packages/lib before @workspace/apps, plus Product feeds (F-11b, now an app) and EasyKash (F-98).
+    // The catalog as it was in packages/lib before @workspace/apps, plus Product feeds (F-11b, now an app), EasyKash (F-98)
+    // and Tallaby Pay (F-100b: live, with its own provider, moved first among the payment gateways).
     const before = [
       { key: "ai_assistants", group: "ai", kind: "agent", live: true, pricing: FREE, defaultInstalled: true },
       { key: "size_chart", group: "storefront", kind: "widget", live: true, pricing: FREE },
@@ -77,6 +81,7 @@ describe("store apps catalog", () => {
       { key: "mylerz", group: "shipping", kind: "carrier", pricing: FREE },
       { key: "jt_express", group: "shipping", kind: "carrier", pricing: FREE },
       { key: "aramex", group: "shipping", kind: "carrier", pricing: FREE },
+      { key: "tallaby_pay", group: "payments", kind: "gateway", provider: "tallaby_pay", pricing: FREE },
       { key: "paymob", group: "payments", kind: "gateway", provider: "paymob", pricing: FREE },
       { key: "kashier", group: "payments", kind: "gateway", provider: "kashier", pricing: FREE },
       { key: "easykash", group: "payments", kind: "gateway", provider: "easykash", pricing: FREE },
@@ -85,7 +90,6 @@ describe("store apps catalog", () => {
       { key: "paylink", group: "payments", kind: "gateway", pricing: FREE },
       { key: "tabby", group: "payments", kind: "gateway", pricing: FREE },
       { key: "paypal", group: "payments", kind: "gateway", pricing: FREE },
-      { key: "tallaby_pay", group: "payments", kind: "gateway", pricing: FREE },
       { key: "google_sheets", group: "data", kind: "account", provider: "google_sheets", pricing: FREE },
       { key: "shopify_import", group: "data", kind: "import", provider: "shopify_import", pricing: FREE },
       { key: "customer_notifications", group: "messaging", kind: "notifications", live: true, pricing: { model: "per_order", usdCents: 1 } },
