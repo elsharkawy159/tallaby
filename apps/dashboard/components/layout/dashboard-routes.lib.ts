@@ -4,6 +4,7 @@ import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import {
   AppWindow,
   BadgePercent,
+  Banknote,
   PhoneMissed,
   // ScanBarcode, // scan returns hidden (owner, 2026-10-31)
   LayoutGrid,
@@ -107,6 +108,8 @@ export type NavKey =
   | "wallet"
   // Sidebar regrouping (operations / grow / account & help)
   | "walletBalance"
+  // Tallaby Pay earnings of a store (F-100f)
+  | "tallabyPayEarnings"
   | "coupons"
   | "campaigns"
   | "subscribers"
@@ -167,6 +170,8 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
     ? [{ href: "/settings/fulfillment", title: "fulfillment", parent: "fulfillmentShipping", icon: Warehouse } satisfies DashboardRoute]
     : []),
   { href: "/wallet", title: "walletBalance", parent: "finance", icon: Wallet },
+  // Only stores with Tallaby Pay have it (F-100f), so it stays out of the command palette.
+  { href: "/stores/[storeId]/earnings", title: "tallabyPayEarnings", parent: "finance", icon: Banknote, hiddenFromPalette: true },
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
   { href: "/stores/[storeId]/website", title: "websiteOverview", parent: "websiteContent", icon: Globe },

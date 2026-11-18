@@ -32,7 +32,7 @@ import type { SidebarCounts } from "./sidebar.types";
  */
 
 export type NavStatus = "live" | "soon" | "planned";
-export type NavFeature = "storeBuilder";
+export type NavFeature = "storeBuilder" | "tallabyPayEarnings";
 
 export type NavLinkConfig = {
   key: NavKey;
@@ -137,6 +137,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     icon: Wallet,
     items: [
       { key: "walletBalance", href: "/wallet", status: "live" },
+      // The selected store's Tallaby Pay earnings (ROADMAP.md F-100f): only while Tallaby Pay is on or the store has an earnings wallet.
+      { key: "tallabyPayEarnings", href: "/stores/[storeId]/earnings", status: "live", feature: "tallabyPayEarnings" },
       { key: "accountStatements", href: "/financial", countKey: "financial", status: "live" },
       // Per-store funnel, sources, refusals by governorate, best/worst products (ROADMAP.md F-15a).
       { key: "reports", href: "/reports", status: "live", exact: true },

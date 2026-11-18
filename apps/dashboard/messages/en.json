@@ -487,7 +487,8 @@
     "helpCardHint": "Need help? Talk to us",
     "storeLive": "Live",
     "manageStores": "Manage my stores",
-    "seo": "SEO"
+    "seo": "SEO",
+    "tallabyPayEarnings": "Tallaby Pay earnings"
   },
   "errorPages": {
     "notFoundTitle": "This page doesn't exist",
@@ -3061,7 +3062,16 @@
       "blockedNote": "This phone is blocked on this store.",
       "blockReason": "From order {number}",
       "askToConfirm": "Ask to confirm",
-      "unconfirmedFor": "Not confirmed for {hours} h"
+      "unconfirmedFor": "Not confirmed for {hours} h",
+      "tallabyPay": {
+        "paid": "Paid with Tallaby Pay",
+        "paidDeposit": "Deposit paid with Tallaby Pay",
+        "gross": "Customer paid",
+        "fee": "Tallaby Pay fee",
+        "net": "Your share",
+        "hint": "Your share becomes available to withdraw once the order is delivered.",
+        "viewEarnings": "View earnings"
+      }
     },
     "channel": {
       "label": "Sales channel",
@@ -5091,7 +5101,8 @@
         "turnOffConfirm": {
           "title": "Turn off Tallaby Pay?",
           "description": "\"Pay online (Tallaby Pay)\" will disappear from your checkout. Orders already paid still reach your earnings, and you can still withdraw them."
-        }
+        },
+        "viewEarnings": "Earnings"
       },
       "fields": {
         "mode": "Account mode",
@@ -9069,6 +9080,185 @@
       "T-18": "Add an order by hand",
       "T-51": "Add a product from a link",
       "T-52": "Sell a product with this one"
+    }
+  },
+  "tallabyPayEarnings": {
+    "title": "Tallaby Pay earnings · {store}",
+    "frozenBadge": "Withdrawals paused",
+    "available": "Available to withdraw",
+    "howShort": "Money from an order becomes available once it is delivered. If an order is returned after delivery, you refund the customer yourself.",
+    "withdrawCta": "Withdraw {amount}",
+    "pending": "Waiting for delivery",
+    "pendingNote": "Paid orders not delivered yet",
+    "reserved": "In withdrawal",
+    "reservedNote": "Held for your open request",
+    "withdrawn": "Withdrawn",
+    "withdrawnNote": "Sent to your account so far",
+    "negative": "Refunds were more than your earnings. New sales will cover the difference before you can withdraw.",
+    "frozen": "Withdrawals from this store are paused. Contact Tallaby support to find out why.",
+    "frozenWithReason": "Withdrawals from this store are paused: {reason}",
+    "offNote": "Tallaby Pay is off for this store, so it no longer shows at checkout. You can still withdraw what you earned. <link>Turn it on</link>",
+    "empty": {
+      "offTitle": "Take online payments with Tallaby Pay",
+      "offDescription": "Turn on Tallaby Pay to let customers pay online with no gateway account. Your earnings and withdrawals will show here.",
+      "openApp": "Open Tallaby Pay"
+    },
+    "sales": {
+      "title": "Sales",
+      "description": "Every order paid with Tallaby Pay in this store.",
+      "empty": "No paid orders yet",
+      "emptyHint": "Orders your customers pay with Tallaby Pay will show here.",
+      "pages": "Sales pages",
+      "newer": "Newer",
+      "older": "Older",
+      "pageOf": "Page {page} of {pages}",
+      "orderHidden": "Order",
+      "deposit": "Deposit",
+      "columns": {
+        "order": "Order",
+        "date": "Date",
+        "paid": "Paid",
+        "fee": "Fee",
+        "net": "Your share",
+        "status": "Status"
+      },
+      "states": {
+        "waiting_delivery": "Waiting for delivery",
+        "returned": "Returned",
+        "releasing": "Available shortly",
+        "pending_until": "Available on {date}",
+        "available": "Available",
+        "refund_requested": "Refund requested",
+        "refunded": "Refunded"
+      }
+    },
+    "history": {
+      "title": "Withdrawals",
+      "empty": "No withdrawals yet",
+      "reference": "Ref. {reference}",
+      "status": {
+        "requested": "Under review",
+        "paid": "Sent",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled",
+        "reversed": "Returned"
+      }
+    },
+    "methods": {
+      "instapay": "InstaPay",
+      "bank": "Bank account",
+      "mobile_wallet": "Mobile wallet"
+    },
+    "walletProviders": {
+      "vodafone_cash": "Vodafone Cash",
+      "e_cash": "e& Cash",
+      "orange_cash": "Orange Cash",
+      "we_pay": "WE Pay"
+    },
+    "withdraw": {
+      "title": "Withdraw your earnings",
+      "description": "Tallaby sends the money to your account by hand. The minimum is {minimum}.",
+      "openTitle": "Withdrawal under review",
+      "openDescription": "Tallaby will send it soon. You can cancel it until then.",
+      "requestedOn": "Requested on {date}",
+      "cancel": "Cancel request",
+      "cancelled": "Withdrawal request cancelled.",
+      "cancelConfirmTitle": "Cancel this withdrawal?",
+      "cancelConfirmDescription": "The amount goes back to your available balance. You can request again at any time.",
+      "requested": "Withdrawal requested. Tallaby will review it and send it to you.",
+      "submit": "Request withdrawal",
+      "manualNote": "The account must be in the same legal name you verified.",
+      "amountHint": "Up to {max}",
+      "amountNote": "Minimum {minimum}. Leave it as is to withdraw everything.",
+      "methodHints": {
+        "instapay": "Your InstaPay address or phone number.",
+        "bank": "A bank account or IBAN in your name.",
+        "mobile_wallet": "Vodafone Cash, e& Cash, Orange Cash or WE Pay."
+      },
+      "fields": {
+        "method": "Send to",
+        "holderName": "Account holder name",
+        "address": "InstaPay address or phone",
+        "bankName": "Bank name",
+        "accountNumber": "Account number or IBAN",
+        "provider": "Wallet",
+        "phone": "Wallet phone number",
+        "amount": "Amount (EGP)"
+      },
+      "fieldErrors": {
+        "method": "Choose where to send the money.",
+        "holderName": "Enter the account holder's full name.",
+        "address": "Enter an InstaPay address like name@instapay or an 11-digit phone number.",
+        "bankName": "Enter the bank name.",
+        "accountNumber": "Enter an account number or an IBAN that starts with EG and has 27 digits.",
+        "provider": "Choose a wallet.",
+        "phone": "Enter an 11-digit phone number that starts with 01.",
+        "amount": "Enter an amount in pounds, like 500 or 750.50."
+      }
+    },
+    "blocks": {
+      "kyc_required": "Verify your identity below before your first withdrawal.",
+      "kyc_pending": "Your identity is under review. You can withdraw once it is verified.",
+      "kyc_rejected": "Your identity check was rejected. Fix it below to withdraw.",
+      "name_mismatch": "The account holder name must match your verified legal name.",
+      "frozen": "Withdrawals from this store are paused.",
+      "no_balance": "You have nothing available to withdraw yet.",
+      "open_request": "You already have a withdrawal under review.",
+      "below_minimum": "You can withdraw once you have at least {minimum} available.",
+      "above_withdrawable": "The amount is more than you can withdraw."
+    },
+    "errors": {
+      "kyc_required": "Verify your identity before your first withdrawal.",
+      "kyc_pending": "Your identity is still under review.",
+      "kyc_rejected": "Your identity check was rejected. Submit it again.",
+      "name_mismatch": "This name doesn't match your verified legal name.",
+      "frozen": "Withdrawals from this store are paused.",
+      "no_balance": "You have nothing available to withdraw.",
+      "open_request": "You already have a withdrawal under review.",
+      "below_minimum": "The minimum withdrawal is {minimum}.",
+      "above_withdrawable": "You can withdraw up to {max}.",
+      "invalid_input": "Some details are missing or not valid. Check them and try again.",
+      "not_found": "This request no longer exists. Refresh the page.",
+      "already_handled": "Tallaby already handled this request. Refresh the page.",
+      "already_verified": "Your identity is already verified.",
+      "rateLimited": "Too many attempts. Wait a few minutes and try again.",
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "suspended": "Your account can't make changes right now.",
+      "generic": "Something went wrong. Try again."
+    },
+    "kyc": {
+      "title": "Identity check",
+      "description": "Needed once before your first withdrawal. It covers all your stores.",
+      "status": {
+        "required": "Required",
+        "submitted": "Under review",
+        "verified": "Verified",
+        "rejected": "Rejected"
+      },
+      "verifiedDescription": "Verified as {name}. Withdrawals go to accounts in this name.",
+      "submittedDescription": "Tallaby is reviewing the details for {name}.",
+      "rejected": "Tallaby couldn't verify these details. Check them and submit again.",
+      "rejectedWithReason": "Tallaby couldn't verify these details: {reason}",
+      "fields": {
+        "legalName": "Full legal name",
+        "idType": "ID type",
+        "nationalId": "National ID number",
+        "commercialRegister": "Commercial register number"
+      },
+      "legalNameNote": "As written on your ID or commercial register.",
+      "idTypes": {
+        "national_id": "National ID",
+        "commercial_register": "Commercial register"
+      },
+      "fieldErrors": {
+        "legalName": "Enter your full legal name.",
+        "nationalId": "Enter the 14-digit national ID number.",
+        "commercialRegister": "Enter the commercial register number."
+      },
+      "submit": "Submit for review",
+      "submitted": "Sent for review.",
+      "privacy": "Only the Tallaby team sees these details, to verify withdrawals."
     }
   }
 }

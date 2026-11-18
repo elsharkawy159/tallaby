@@ -20,6 +20,7 @@ import { OrderRiskNote } from "./order-risk.client";
 import { OrderStageBadge } from "./order-stage-badge";
 import { OrderPaymentProof } from "./payment-proof.client";
 import { OrderDepositCard } from "./deposit.client";
+import { OrderTallabyPay } from "./tallaby-pay.client";
 import { OrderLineCustomerInputs } from "./customer-inputs.client";
 import type { SellerOrderRow } from "./orders.types";
 import { DetailRow, DIALOG_CLOSE_40, PanelSection, PhoneText } from "./orders-ui";
@@ -300,6 +301,7 @@ export function OrderDetailsDialog({
                         value={order.paymentStatus ? translateStatus(tStatus, "payment", order.paymentStatus) : null}
                       />
                       <OrderDepositCard order={order} />
+                      <OrderTallabyPay order={order} />
                       <OrderPaymentProof orderId={order.id} />
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 border-t border-(--s-line-soft) pt-2">
                         <span className="text-[13px] font-bold text-(--s-text)">{t("orderTotal")}</span>

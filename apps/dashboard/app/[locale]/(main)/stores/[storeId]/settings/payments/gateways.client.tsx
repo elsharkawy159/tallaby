@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, CircleDashed, Clock, Copy, CreditCard, KeyRound, LoaderCircle, Plug, Power, ShieldCheck, Unplug } from "lucide-react";
+import { Banknote, Check, CircleDashed, Clock, Copy, CreditCard, KeyRound, LoaderCircle, Plug, Power, ShieldCheck, Unplug } from "lucide-react";
 
 import { isStoreAppLive, storeAppsInGroup, type StoreApp } from "@workspace/lib/integrations";
 import { isStoreGatewayProvider, type StoreGatewayProvider } from "@workspace/lib/payments/store-gateways";
@@ -138,18 +138,27 @@ export function StoreGatewaysCard({
           )}
         </div>
         {live && tallabyPay && (
-          <div className="ms-auto flex items-center gap-1.5">
+          <div className="ms-auto flex flex-wrap items-center gap-1.5">
             {isConnected ? (
-              <SellerButton
-                variant="mini"
-                size="xs"
-                className="text-destructive [&_svg]:text-destructive"
-                disabled={readOnly || isPending}
-                onClick={() => setConfirming(provider)}
-              >
-                <Power aria-hidden />
-                {t("tallabyPay.turnOff")}
-              </SellerButton>
+              <>
+                {/* F-100f: the store's Tallaby Pay balances, sales and withdrawals. */}
+                <SellerButton asChild variant="mini" size="xs">
+                  <Link href={`/stores/${storeId}/earnings`}>
+                    <Banknote aria-hidden />
+                    {t("tallabyPay.viewEarnings")}
+                  </Link>
+                </SellerButton>
+                <SellerButton
+                  variant="mini"
+                  size="xs"
+                  className="text-destructive [&_svg]:text-destructive"
+                  disabled={readOnly || isPending}
+                  onClick={() => setConfirming(provider)}
+                >
+                  <Power aria-hidden />
+                  {t("tallabyPay.turnOff")}
+                </SellerButton>
+              </>
             ) : (
               <SellerButton
                 variant="solid"
