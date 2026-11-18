@@ -365,7 +365,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 | T-15 | Ask the customer for details on a product | product form › مطلوب من العميل | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
 | T-16 | Add a size chart | `/stores/[storeId]/apps` › جدول المقاسات | «ثبّت» → «تثبيت» → new chart from the «تيشيرتات وقمصان» template → «حفظ الجدول» → «طبّقه على» a category → «اعرف مقاسك» on the product | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
 | T-17 | Quantity offers | product edit page › عروض الكمية | Scroll to the section → «أضف شريحة» → the discount → a second tier → «احفظ العروض» → the offers in the store buy box | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-52 | Cross-sell offers | product form (cross-sell) + `/orders/cross-sell` report | Search a product to offer → type and value → «إضافة» → the offer on the product page and in the cart | todo (split from T-17, 2026-11-18) |
+| T-52 | Cross-sell offers | product form (cross-sell) + `/orders/cross-sell` report | Search a product to offer → type and value → «إضافة» → the offer on the product page and in the cart | draft (made 2026-11-18; not listened to yet) |
 
 ### Wave 3 — orders and customers
 
