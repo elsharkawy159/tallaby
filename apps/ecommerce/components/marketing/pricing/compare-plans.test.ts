@@ -53,8 +53,8 @@ describe("COMPARE_GROUPS", () => {
     expect(new Set(COMPARE_ROW_IDS).size).toBe(COMPARE_ROW_IDS.length);
   });
 
-  it("only differs where the plans module differs: price, AI credits and campaign emails", () => {
+  it("only differs where the plans module differs: price, AI credits, campaign emails and stores", () => {
     const differing = COMPARE_GROUPS.flatMap((group) => group.rows.filter(rowDiffers).map((row) => row.id)).sort();
-    expect(differing).toEqual(["aiCredits", "emailCampaigns", "monthlyFee", "orderFee"]);
+    expect(differing).toEqual(["aiCredits", "emailCampaigns", "monthlyFee", "orderFee", "stores"]);
   });
 });

@@ -7,8 +7,8 @@ import { PLAN_PRICES, formatNumber } from "@/lib/marketing/pricing.lib";
  * every task `[x]`) belong here; nothing "soon". The labels live in
  * `pricing.compare.rows.<id>` ({ label, desc }) and the values in
  * `pricing.compare.values.<key>`. Numbers come from the plans module, never
- * the copy: today the plans differ only by price, AI credits and campaign
- * emails (`@workspace/lib/plans`).
+ * the copy: today the plans differ only by price, AI credits, campaign
+ * emails and the store limit (`@workspace/lib/plans`).
  */
 
 /** "yes": included (a check). "text": a value key, with ICU values (`{count}`) or price tokens (`{pro}`). */

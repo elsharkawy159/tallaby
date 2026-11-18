@@ -64,7 +64,7 @@
           },
           {
             "q": "Is there a limit on products or orders?",
-            "a": "No. Products, orders and visitors are unlimited on both plans. Each account can have up to 3 stores."
+            "a": "No. Products, orders and visitors are unlimited on both plans. Each account can have up to 3 stores on Free and 10 on Pro."
           }
         ]
       },
@@ -160,7 +160,7 @@
       },
       {
         "q": "Is there a limit on products or orders?",
-        "a": "No. Products, orders and visitors are unlimited on both plans. Each account can have up to 3 stores."
+        "a": "No. Products, orders and visitors are unlimited on both plans. Each account can have up to 3 stores on Free and 10 on Pro."
       },
       {
         "q": "Can I use my own domain?",

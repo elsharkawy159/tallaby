@@ -3866,7 +3866,7 @@
       },
       "plan": {
         "question": "How many stores can I have?",
-        "answer": "The Free plan includes up to 3 stores. You can see how many you're using in Plan & usage. If you need more, contact us."
+        "answer": "The Free plan includes up to 3 stores, and Pro up to 10. You can see how many you're using in Plan & usage. If you need more, contact us."
       },
       "addProduct": {
         "question": "How do I add a product?",
@@ -4625,6 +4625,7 @@
     "usage": "{count} of {max} stores",
     "create": "Create store",
     "limitHint": "You have reached your plan's store limit. Archived stores count toward it.",
+    "limitUpgrade": "Move to Pro for up to {count, plural, one {# store} other {# stores}}.",
     "suspended": "Suspended",
     "createdOn": "Created {date}",
     "actions": "Store actions",
@@ -4799,6 +4800,7 @@
     "creditsLine": "{count, number} AI credits a month",
     "emailsLine": "{count, number} campaign emails a month",
     "emailsExtra": "Extra emails: {price} per {emails}",
+    "storesLine": "Up to {count, plural, one {# store} other {# stores}} per account",
     "unlimited": "Unlimited products and orders",
     "everythingElse": "Every other feature, on both plans",
     "upgrade": "Move to Pro",

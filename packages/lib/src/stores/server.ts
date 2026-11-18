@@ -48,6 +48,7 @@ import { seedStarterSite } from "./starter-site.server";
 import { rebaseStoreDraftsLocale } from "../store-sites/site-locale.server";
 import { toShippingZone, type StoreShippingZone } from "./shipping-context.server";
 import { canCreateStore } from "../plans";
+import { isProActive } from "../billing/billing.lib";
 import { isSwitchOn } from "./platform-switches.server";
 import { productShownInStore } from "./store-scope.server";
 import { industryOfCategory, nicheForIndustry } from "./store-niche.lib";
@@ -307,7 +308,12 @@ export async function createStore(
   try {
     const store = await q.transaction(async (tx) => {
       const [seller] = await tx
-        .select({ plan: sellers.plan, maxStoresOverride: sellers.maxStoresOverride })
+        .select({
+          plan: sellers.plan,
+          planExpiresAt: sellers.planExpiresAt,
+          planGraceUntil: sellers.planGraceUntil,
+          maxStoresOverride: sellers.maxStoresOverride,
+        })
         .from(sellers)
         .where(eq(sellers.id, sellerId))
         .for("update");
@@ -317,7 +323,9 @@ export async function createStore(
         .select({ value: count() })
         .from(stores)
         .where(and(eq(stores.sellerId, sellerId), isNull(stores.deletedAt)));
-      if (!canCreateStore(seller.plan, current, { maxStoresOverride: seller.maxStoresOverride })) {
+      // The plan that applies now: a lapsed Pro gets Free's limit before the renewal job runs.
+      const plan = isProActive(seller) ? "pro" : "free";
+      if (!canCreateStore(plan, current, { maxStoresOverride: seller.maxStoresOverride })) {
         throw new StoreActionError("limit_reached");
       }
 

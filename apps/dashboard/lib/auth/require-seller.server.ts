@@ -53,6 +53,8 @@ export const loadSeller = cache(async (userId: string) => {
       id: sellers.id,
       status: sellers.status,
       plan: sellers.plan,
+      planExpiresAt: sellers.planExpiresAt,
+      planGraceUntil: sellers.planGraceUntil,
       maxStoresOverride: sellers.maxStoresOverride,
       createdAt: sellers.createdAt,
     })

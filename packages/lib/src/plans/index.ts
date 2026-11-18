@@ -30,9 +30,10 @@ export const PLANS = {
     customDomain: true,
     removeTallabyBadge: false,
   },
-  // Owner: credits, campaign emails and the order fee are the only differences.
+  // Owner: credits, campaign emails, the order fee and the store limit
+  // (10 stores, owner 2026-11-18) are the only differences.
   pro: {
-    maxStores: 3,
+    maxStores: 10,
     aiCreditsMonthly: 2000,
     emailsMonthly: 10000,
     ai: true,
@@ -71,6 +72,11 @@ export type StoreLimitOptions = {
   maxStoresOverride?: number | null;
 };
 
+/**
+ * Pass the plan that applies right now (`isProActive(seller) ? "pro" : "free"`
+ * from `@workspace/lib/billing`), not the raw `sellers.plan` column, so a
+ * lapsed Pro seller gets Free's limit before the renewal job runs.
+ */
 export function getMaxStores(plan: string | null | undefined, options: StoreLimitOptions = {}): number {
   const override = options.maxStoresOverride;
   if (typeof override === "number" && Number.isInteger(override) && override >= 0) {

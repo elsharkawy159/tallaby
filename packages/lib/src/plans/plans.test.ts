@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { AI_CREDITS_MONTHLY_NOT_ACTIVATED, canCreateStore, getPlanLimits, hasFeature, resolvePlanId } from "./index";
+import { AI_CREDITS_MONTHLY_NOT_ACTIVATED, canCreateStore, getMaxStores, getPlanLimits, hasFeature, resolvePlanId } from "./index";
 
 describe("getPlanLimits", () => {
   it("gives the Free plan a limit of 3 stores", () => {
     expect(getPlanLimits("free").maxStores).toBe(3);
+  });
+
+  it("gives the Pro plan a limit of 10 stores (owner, 2026-11-18)", () => {
+    expect(getPlanLimits("pro").maxStores).toBe(10);
+    expect(getMaxStores("pro")).toBe(10);
+    expect(getMaxStores("free")).toBe(3);
   });
 
   it("falls back to Free for an unknown plan", () => {
@@ -43,6 +49,18 @@ describe("canCreateStore", () => {
     expect(canCreateStore("free", 5, { maxStoresOverride: 5 })).toBe(false);
   });
 
+  it("lets a Pro seller open up to 10 stores", () => {
+    expect(canCreateStore("pro", 3)).toBe(true);
+    expect(canCreateStore("pro", 9)).toBe(true);
+    expect(canCreateStore("pro", 10)).toBe(false);
+  });
+
+  it("lets an admin override win over the Pro limit too", () => {
+    expect(getMaxStores("pro", { maxStoresOverride: 4 })).toBe(4);
+    expect(canCreateStore("pro", 4, { maxStoresOverride: 4 })).toBe(false);
+    expect(getMaxStores("pro", { maxStoresOverride: 20 })).toBe(20);
+  });
+
   it("ignores an invalid override", () => {
     expect(canCreateStore("free", 3, { maxStoresOverride: -1 })).toBe(false);
     expect(canCreateStore("free", 3, { maxStoresOverride: Number.NaN })).toBe(false);
@@ -50,7 +68,7 @@ describe("canCreateStore", () => {
 });
 
 describe("hasFeature", () => {
-  it("gives both plans AI, and only credits differ (owner, 2026-11-03)", () => {
+  it("gives both plans AI, and only credits, emails and stores differ (owner, 2026-11-03, 2026-11-18)", () => {
     expect(hasFeature("free", "ai")).toBe(true);
     expect(hasFeature("free", "advancedSettings")).toBe(false);
     expect(getPlanLimits("free").aiCreditsMonthly).toBe(100);
@@ -58,7 +76,6 @@ describe("hasFeature", () => {
     expect(AI_CREDITS_MONTHLY_NOT_ACTIVATED).toBe(20);
     expect(getPlanLimits("free").emailsMonthly).toBe(500);
     expect(getPlanLimits("pro").emailsMonthly).toBe(10000);
-    expect(getPlanLimits("pro").maxStores).toBe(getPlanLimits("free").maxStores);
     expect(hasFeature("pro", "removeTallabyBadge")).toBe(false);
   });
 

@@ -24,6 +24,7 @@ import {
 } from "@workspace/db";
 import { getStoreWalletSummary } from "@workspace/db/wallet";
 import { getMaxStores, getPlanLimits } from "../plans";
+import { isProActive } from "../billing/billing.lib";
 import { getFeeTrialStatus } from "../sellers/fee-trial.lib";
 import { listStoreRevisions, type StoreRevisionRow } from "../store-sites/server";
 import { storeHostname } from "../storefront";
@@ -72,11 +73,13 @@ export async function getSellerAccountForAdmin(sellerId: string, q: Queryable = 
   }
 
   const trial = getFeeTrialStatus(seller);
+  // The plan that applies now: a lapsed Pro gets Free's store limit before the renewal job runs.
+  const activePlan = isProActive(seller) ? "pro" : "free";
   return {
     ...seller,
     walletCurrency,
-    planMaxStores: getPlanLimits(seller.plan).maxStores,
-    maxStores: getMaxStores(seller.plan, { maxStoresOverride: seller.maxStoresOverride }),
+    planMaxStores: getPlanLimits(activePlan).maxStores,
+    maxStores: getMaxStores(activePlan, { maxStoresOverride: seller.maxStoresOverride }),
     storeCount: Number(storeCount),
     trial: {
       state: trial.state,

@@ -144,7 +144,7 @@
       },
       "limits": {
         "label": "Product and order limits",
-        "tallaby": "No limit on either plan, and up to 3 stores"
+        "tallaby": "No limit on either plan, and up to 3 stores on Free or 10 on Pro"
       },
       "signup": {
         "label": "Sign-up",
@@ -276,7 +276,7 @@
       },
       "multiStore": {
         "label": "Several stores on one account",
-        "tallaby": "Up to 3 stores on either plan"
+        "tallaby": "Up to 3 stores on Free and 10 on Pro"
       },
       "staff": {
         "label": "Staff accounts",

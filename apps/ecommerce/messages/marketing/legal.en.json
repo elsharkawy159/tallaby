@@ -61,7 +61,7 @@
           "clauses": [
             {
               "title": "Plans",
-              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of {orderFee} per new order. Pro costs {pro} a month and has no order fee. Each account can have up to 3 stores, on either plan. Prices are set in US dollars and shown approximately in Egyptian pounds or your local currency at the current exchange rate; top-ups are paid in Egyptian pounds. Prices may change; we will tell you before a change applies to you."
+              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of {orderFee} per new order. Pro costs {pro} a month and has no order fee. Each account can have up to 3 stores on Free and up to 10 on Pro. Prices are set in US dollars and shown approximately in Egyptian pounds or your local currency at the current exchange rate; top-ups are paid in Egyptian pounds. Prices may change; we will tell you before a change applies to you."
             },
             {
               "title": "Your wallet",

@@ -119,7 +119,7 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
       { id: "import", tallaby: "y" }, // Excel, URL and Shopify import
       { id: "domain", tallaby: "y" }, // PLANS.*.customDomain
       { id: "arabicAdmin", tallaby: "y" }, // dashboard default locale ar
-      { id: "multiStore", tallaby: "y" }, // PLANS.*.maxStores = 3
+      { id: "multiStore", tallaby: "y" }, // PLANS.free.maxStores = 3, PLANS.pro.maxStores = 10
       { id: "staff", tallaby: "n" }, // F-09 delayed (owner, 2026-11-04)
       { id: "export", tallaby: "y" }, // products, orders (F-04b) and customers (F-01d) to Excel
     ],

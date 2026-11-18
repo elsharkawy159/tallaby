@@ -122,8 +122,8 @@ export function PlanLive(props: PlanLiveProps) {
       <TwoColumns className="items-stretch gap-3.5">
         {(
           [
-            { id: "free", price: t("freePrice"), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: credits.notActivated ? credits.monthlyAllowance : PLANS.free.aiCreditsMonthly, emails: PLANS.free.emailsMonthly, current: !isPro },
-            { id: "pro", price: t("proPrice", { amount: usd(PRO_MONTHLY_USD_CENTS) }), fee: t("noFee"), credits: PLANS.pro.aiCreditsMonthly, emails: PLANS.pro.emailsMonthly, current: isPro },
+            { id: "free", price: t("freePrice"), fee: usd(FREE_ORDER_FEE_USD_CENTS), credits: credits.notActivated ? credits.monthlyAllowance : PLANS.free.aiCreditsMonthly, emails: PLANS.free.emailsMonthly, stores: PLANS.free.maxStores, current: !isPro },
+            { id: "pro", price: t("proPrice", { amount: usd(PRO_MONTHLY_USD_CENTS) }), fee: t("noFee"), credits: PLANS.pro.aiCreditsMonthly, emails: PLANS.pro.emailsMonthly, stores: PLANS.pro.maxStores, current: isPro },
           ] as const
         ).map((plan) => (
           <SellerCard
@@ -141,7 +141,7 @@ export function PlanLive(props: PlanLiveProps) {
               <bdi>{plan.price}</bdi>
             </p>
             <ul className="mt-3.5 flex flex-1 flex-col gap-2.5 text-[13px] text-(--s-body)">
-              {[t("feeLine", { fee: plan.fee }), t("creditsLine", { count: plan.credits }), t("emailsLine", { count: plan.emails }), t("emailsExtra", { price: usd(EMAIL_PACK_USD_CENTS), emails: format1000 }), t("unlimited"), t("everythingElse")].map((line) => (
+              {[t("feeLine", { fee: plan.fee }), t("creditsLine", { count: plan.credits }), t("emailsLine", { count: plan.emails }), t("emailsExtra", { price: usd(EMAIL_PACK_USD_CENTS), emails: format1000 }), t("storesLine", { count: plan.stores }), t("unlimited"), t("everythingElse")].map((line) => (
                 <li key={line} className="flex items-start gap-2">
                   <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
                   <span>{line}</span>

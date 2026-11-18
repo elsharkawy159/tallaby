@@ -62,6 +62,7 @@ export function StoresView({
   stores,
   selectedId,
   maxStores,
+  upgradeMaxStores = null,
   openCreate,
   aiBuilder = false,
   industries = [],
@@ -70,6 +71,8 @@ export function StoresView({
   stores: StoreCardData[];
   selectedId: string | null;
   maxStores: number;
+  /** Pro's store limit when moving to Pro would raise this seller's limit (shown at the limit). */
+  upgradeMaxStores?: number | null;
   openCreate: boolean;
   /** The AI Store Builder's switch (F-54). */
   aiBuilder?: boolean;
@@ -124,7 +127,19 @@ export function StoresView({
         }
       />
 
-      {atLimit && <Note tone="amber">{t("limitHint")}</Note>}
+      {atLimit && (
+        <Note tone="amber">
+          {t("limitHint")}
+          {upgradeMaxStores !== null && (
+            <>
+              {" "}
+              <Link href="/settings/plan" className="underline">
+                {t("limitUpgrade", { count: upgradeMaxStores })}
+              </Link>
+            </>
+          )}
+        </Note>
+      )}
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-3.5">
         {stores.map((store) => (

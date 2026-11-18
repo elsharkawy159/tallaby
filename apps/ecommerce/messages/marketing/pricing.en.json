@@ -80,7 +80,7 @@
     "compare": {
       "kicker": "Compare plans",
       "title": "Every feature, side by side",
-      "desc": "Both plans come with every store feature. They differ only in how you pay, and in your monthly AI credits and campaign emails.",
+      "desc": "Both plans come with every store feature. They differ only in how you pay, your monthly AI credits and campaign emails, and how many stores you can have.",
       "jump": "Compare all features",
       "count": "{count} features in {groups} groups",
       "openAll": "Open all groups",
@@ -497,7 +497,7 @@
         },
         {
           "q": "Do both plans have the same features?",
-          "a": "Yes. Every store feature is on both plans. Pro has no order fee, and comes with {proCredits} AI credits and more campaign emails a month."
+          "a": "Yes. Every store feature is on both plans. Pro has no order fee, and comes with {proCredits} AI credits and more campaign emails a month, and up to 10 stores."
         },
         {
           "q": "Is the free plan completely free?",
