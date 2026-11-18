@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { db, eq, orders } from "@workspace/db";
 import { isAwaitingCustomer } from "@workspace/lib/orders/manual";
 import { OrderLinkConfirm } from "./order-link-confirm.client";
@@ -16,6 +17,7 @@ import { getStoreThankYouView } from "./store-thank-you.server";
 import { StoreThankYou } from "./store-thank-you";
 import { reorderAccess } from "@/lib/reorder/reorder.server";
 import { OrderReorderButton } from "./order-reorder-button";
+import { OrderEasykashVoucher } from "./order-easykash-voucher";
 
 const FINAL_ORDER_STATUSES = new Set(["delivered", "cancelled", "refunded", "returned"]);
 
@@ -109,6 +111,12 @@ export async function OrderConfirmationData({
         supportHref={await getSupportHref()}
         {...(thankYouView && { thankYou: <StoreThankYou view={thankYouView} locale={locale} /> })}
         {...(canReorder && { reorder: <OrderReorderButton orderId={orderId} /> })}
+        // Access is proven above (result.success); streams in, never blocks the page.
+        paymentVoucher={
+          <Suspense fallback={null}>
+            <OrderEasykashVoucher orderId={orderId} />
+          </Suspense>
+        }
       />
     </>
   );

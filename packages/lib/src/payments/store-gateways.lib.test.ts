@@ -11,6 +11,7 @@ import {
   parseGatewayReference,
   parseKashierWebhook,
   parsePaymobWebhook,
+  readEasykashInquiryTarget,
   readGatewayConfig,
   readOrderDepositGateway,
   readOrderGateway,
@@ -336,5 +337,41 @@ describe("storefront checkout with a seller gateway", () => {
   it("still counts Tallaby's own card checkout as Tallaby-collected", () => {
     // place-order overrides this to `seller` for seller-gateway orders.
     expect(storeShippingCollector("online_payment")).toBe("tallaby");
+  });
+});
+
+describe("readEasykashInquiryTarget", () => {
+  const ref = `${ORDER}_lx2abc`;
+  const gateway = { provider: "easykash", integrationId: INTEGRATION, lastReference: ref };
+
+  it("reads the order's EasyKash snapshot and its latest reference", () => {
+    expect(readEasykashInquiryTarget(ORDER, { paymentGateway: gateway }, "order")).toEqual({
+      integrationId: INTEGRATION,
+      reference: ref,
+    });
+    expect(readEasykashInquiryTarget(ORDER, { deposit: { gateway } }, "deposit")).toEqual({
+      integrationId: INTEGRATION,
+      reference: ref,
+    });
+  });
+
+  it("reads only the snapshot that matches the purpose", () => {
+    expect(readEasykashInquiryTarget(ORDER, { paymentGateway: gateway }, "deposit")).toBeNull();
+    expect(readEasykashInquiryTarget(ORDER, { deposit: { gateway } }, "order")).toBeNull();
+  });
+
+  it("refuses other providers, a missing reference or another order's reference", () => {
+    expect(readEasykashInquiryTarget(ORDER, { paymentGateway: { ...gateway, provider: "kashier" } }, "order")).toBeNull();
+    expect(
+      readEasykashInquiryTarget(ORDER, { paymentGateway: { provider: "easykash", integrationId: INTEGRATION } }, "order"),
+    ).toBeNull();
+    expect(
+      readEasykashInquiryTarget(
+        ORDER,
+        { paymentGateway: { ...gateway, lastReference: `${INTEGRATION}_lx2abc` } },
+        "order",
+      ),
+    ).toBeNull();
+    expect(readEasykashInquiryTarget(ORDER, null, "order")).toBeNull();
   });
 });

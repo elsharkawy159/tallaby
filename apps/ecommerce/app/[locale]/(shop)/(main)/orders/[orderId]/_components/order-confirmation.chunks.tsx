@@ -43,6 +43,8 @@ interface OrderConfirmationContentProps {
   thankYou?: React.ReactNode;
   /** Store websites: "Order again" for the order's owner (F-01e). */
   reorder?: React.ReactNode;
+  /** EasyKash cash payment: the Fawry / Aman payment number (F-98e). */
+  paymentVoucher?: React.ReactNode;
 }
 
 export async function OrderConfirmationContent({
@@ -53,6 +55,7 @@ export async function OrderConfirmationContent({
   supportHref,
   thankYou,
   reorder,
+  paymentVoucher,
 }: OrderConfirmationContentProps) {
   const t = await getTranslations("orders");
   const tCheckout = await getTranslations("checkout");
@@ -290,6 +293,8 @@ export async function OrderConfirmationContent({
           </CardContent>
         </Card>
       )}
+
+      {paymentVoucher}
 
       {isAwaitingManualVerification && (
         <Card className="rounded-xl md:rounded-2xl border border-amber-200 bg-amber-50/60">

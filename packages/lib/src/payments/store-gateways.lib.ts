@@ -257,6 +257,24 @@ export function readOrderDepositGateway(metadata: unknown): OrderGatewayMeta | n
 export const buildGatewayReference = buildKashierOrderReference;
 export const parseGatewayReference = parseKashierOrderReference;
 
+/**
+ * The EasyKash account and latest reference of an order's own snapshot
+ * (`paymentGateway`, or `deposit.gateway` for a deposit), for the Inquiry
+ * API. Null unless the snapshot is EasyKash and the reference is this
+ * order's (docs/easykash.md §4.4).
+ */
+export function readEasykashInquiryTarget(
+  orderId: string,
+  metadata: unknown,
+  purpose: "order" | "deposit",
+): { integrationId: string; reference: string } | null {
+  const meta = purpose === "deposit" ? readOrderDepositGateway(metadata) : readOrderGateway(metadata);
+  if (meta?.provider !== "easykash" || !meta.lastReference) return null;
+  const refOrderId = parseGatewayReference(meta.lastReference);
+  if (!refOrderId || refOrderId.toLowerCase() !== orderId.toLowerCase()) return null;
+  return { integrationId: meta.integrationId, reference: meta.lastReference };
+}
+
 /** EGP → integer piastres (CLAUDE.md rule 7). */
 export function toPiastres(amount: string | number): number {
   return Math.round(Number(amount) * 100);

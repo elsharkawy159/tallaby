@@ -14,9 +14,11 @@ import {
 } from "../integrations/store-integrations.server";
 import {
   buildEasykashPayBody,
+  easykashVoucherFromInquiry,
   isEasykashPaidStatus,
   readEasykashCallback,
   verifyEasykashSignature,
+  type EasykashVoucher,
 } from "../easykash/easykash.lib";
 import { EasykashApiError, createEasykashPayLink, inquireEasykashPayment } from "../easykash/easykash.server";
 import { createKashierSession } from "../kashier/kashier";
@@ -34,6 +36,7 @@ import {
   parseGatewayReference,
   parseKashierWebhook,
   parsePaymobWebhook,
+  readEasykashInquiryTarget,
   readGatewayConfig,
   readOrderDepositGateway,
   readOrderGateway,
@@ -514,9 +517,7 @@ export async function createStoreGatewayCheckout(input: {
     !order ||
     (isDeposit
       ? !isDepositCheckoutOpen(order)
-      : order.paymentMethod !== "online_payment" ||
-        !["pending", "failed"].includes(order.paymentStatus ?? "pending") ||
-        !["payment_processing", "pending"].includes(order.status ?? ""))
+      : !isOrderCheckoutOpen(order))
   ) {
     return { success: false, error: "not_payable" };
   }
@@ -673,6 +674,60 @@ async function startEasykashCheckout(input: {
       name: (error as Error)?.name,
     });
     return { success: false, error: "gateway_failed" };
+  }
+}
+
+/** A card order the shopper may still pay (or pay again). */
+function isOrderCheckoutOpen(order: Pick<OrderRow, "paymentMethod" | "paymentStatus" | "status">): boolean {
+  return (
+    order.paymentMethod === "online_payment" &&
+    ["pending", "failed"].includes(order.paymentStatus ?? "pending") &&
+    ["payment_processing", "pending"].includes(order.status ?? "")
+  );
+}
+
+export type { EasykashVoucher };
+
+const VOUCHER_INQUIRY_TIMEOUT_MS = 4_000;
+
+/**
+ * The Fawry or Aman voucher of an unpaid EasyKash cash payment, for the order
+ * page (docs/easykash.md §4.4, §5). The CALLER must already have authorised
+ * the viewer for this order (session owner or signed order link) and passes
+ * the row it loaded; the account comes from the order's own snapshot and must
+ * belong to the order's store (CLAUDE.md rule 5). Asks EasyKash's Inquiry API
+ * with the seller's key (never the return URL's forgeable query). Returns
+ * only the voucher fields, never the key; any failure is null. Not cached
+ * (rule 8).
+ */
+export async function getEasykashVoucher(
+  order: Pick<
+    OrderRow,
+    "id" | "storeId" | "currency" | "metadata" | "paymentMethod" | "paymentStatus" | "status" | "depositStatus" | "depositAmount"
+  >,
+  options: GatewayCallOptions = {},
+): Promise<EasykashVoucher | null> {
+  if (!order.storeId || (order.currency || "EGP") !== "EGP") return null;
+  const purpose = isDepositOrder(order) ? "deposit" : "order";
+  if (purpose === "deposit" ? !isDepositCheckoutOpen(order) : !isOrderCheckoutOpen(order)) return null;
+  const target = readEasykashInquiryTarget(order.id, order.metadata, purpose);
+  if (!target) return null;
+  try {
+    const account = await loadGatewayAccount(target.integrationId);
+    if (!account || account.provider !== "easykash" || account.storeId !== order.storeId) return null;
+    const inquiry = await inquireEasykashPayment((account.secret as EasykashSecret).apiKey, target.reference, {
+      fetch: options.fetch,
+      timeoutMs: options.timeoutMs ?? VOUCHER_INQUIRY_TIMEOUT_MS,
+    });
+    return easykashVoucherFromInquiry(inquiry);
+  } catch (error) {
+    // Status only: never the key or the answer body (buyer details).
+    console.error("[store-gateway] easykash voucher inquiry failed", {
+      integrationId: target.integrationId,
+      status: error instanceof EasykashApiError ? error.status : undefined,
+      name: (error as Error)?.name,
+    });
+    return null;
   }
 }
 

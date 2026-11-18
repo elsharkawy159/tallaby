@@ -858,6 +858,12 @@
     "vodafoneCash": "Vodafone Cash",
     "eCash": "E& Cash",
     "paymentAwaitingVerification": "We're verifying your payment and will confirm your order shortly.",
+    "easykashVoucher": {
+      "title": "Pay at any Fawry or Aman outlet",
+      "label": "Payment number",
+      "howTo": "Give this number when you pay. Your order is confirmed automatically once it's paid.",
+      "expires": "This number expires {hours} hours after the order."
+    },
     "items": "Items",
     "item": "item",
     "orderStatusTracking": "Order Status Tracking",

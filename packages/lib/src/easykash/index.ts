@@ -7,6 +7,7 @@ export {
   easykashAmountToPiastres,
   easykashMobile,
   easykashSignatureString,
+  easykashVoucherFromInquiry,
   hasEasykashCallbackFields,
   isEasykashPaidStatus,
   parseEasykashInquiry,
@@ -14,7 +15,13 @@ export {
   verifyEasykashSignature,
 } from "./easykash.lib";
 
-export type { EasykashCallbackFields, EasykashInquiry, EasykashPayBody, EasykashPayInput } from "./easykash.lib";
+export type {
+  EasykashCallbackFields,
+  EasykashInquiry,
+  EasykashPayBody,
+  EasykashPayInput,
+  EasykashVoucher,
+} from "./easykash.lib";
 
 export { EasykashApiError, createEasykashPayLink, inquireEasykashPayment } from "./easykash.server";
 

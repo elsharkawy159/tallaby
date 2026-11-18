@@ -158,3 +158,17 @@ export function parseEasykashInquiry(body: unknown): EasykashInquiry | null {
 export function isEasykashPaidStatus(status: string): boolean {
   return status === "PAID" || status === "DELIVERED";
 }
+
+/** What the order page shows for a cash payment still to be paid (docs/easykash.md §4.4). */
+export type EasykashVoucher = { voucher: string; paymentMethod: string | null; status: string };
+
+/**
+ * The Fawry or Aman voucher to show the shopper, or null: only a NEW payment
+ * that has a voucher number. PAID (the callback marks it), EXPIRED, FAILED
+ * and card payments show nothing.
+ */
+export function easykashVoucherFromInquiry(inquiry: EasykashInquiry | null): EasykashVoucher | null {
+  if (!inquiry || inquiry.status !== "NEW" || !inquiry.voucher) return null;
+  if (!/^[0-9A-Za-z-]{1,40}$/.test(inquiry.voucher)) return null;
+  return { voucher: inquiry.voucher, paymentMethod: inquiry.paymentMethod, status: inquiry.status };
+}

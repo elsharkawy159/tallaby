@@ -7,6 +7,7 @@ import {
   easykashAmountToPiastres,
   easykashMobile,
   easykashSignatureString,
+  easykashVoucherFromInquiry,
   hasEasykashCallbackFields,
   isEasykashPaidStatus,
   parseEasykashInquiry,
@@ -209,5 +210,32 @@ describe("parseEasykashInquiry", () => {
     expect(isEasykashPaidStatus("PAID")).toBe(true);
     expect(isEasykashPaidStatus("DELIVERED")).toBe(true);
     for (const s of ["NEW", "EXPIRED", "FAILED", "REFUNDED", "CANCELED", ""]) expect(isEasykashPaidStatus(s)).toBe(false);
+  });
+});
+
+describe("easykashVoucherFromInquiry", () => {
+  const inquiry = {
+    status: "NEW",
+    amountPiastres: 25000,
+    easykashRef: "1206102054",
+    voucher: "32423432",
+    paymentMethod: "Cash Through Fawry",
+  };
+
+  it("shows the voucher of an unpaid cash payment", () => {
+    expect(easykashVoucherFromInquiry(inquiry)).toEqual({
+      voucher: "32423432",
+      paymentMethod: "Cash Through Fawry",
+      status: "NEW",
+    });
+  });
+
+  it("shows nothing once paid, expired or failed, without a voucher, or for an odd voucher", () => {
+    for (const status of ["PAID", "DELIVERED", "EXPIRED", "FAILED", "CANCELED", "REFUNDED"]) {
+      expect(easykashVoucherFromInquiry({ ...inquiry, status })).toBeNull();
+    }
+    expect(easykashVoucherFromInquiry({ ...inquiry, voucher: null })).toBeNull();
+    expect(easykashVoucherFromInquiry({ ...inquiry, voucher: "<b>1</b>" })).toBeNull();
+    expect(easykashVoucherFromInquiry(null)).toBeNull();
   });
 });
