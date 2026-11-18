@@ -590,6 +590,18 @@ requested, `release_at` in the future); `readOrderGateway` accepts `tallaby_pay`
 
 ## 14. Questions for the owner
 
+**Answered by the owner, 2026-11-18 (these override the recommendations below and the matching parts of §4–§8):**
+1. **Hold days = 0.** The seller's net goes to **available as soon as the order is delivered** (no hold). If the order is cancelled or returned *after* delivery, the **seller refunds the customer himself**; Tallaby changes nothing in the Earnings wallet. A refund *before* delivery stays as designed (admin refund, the sale's net and fee reversed).
+2. **Minimum withdrawal: EGP 500.**
+3. **Instalment methods stay on** (no `paymentOptions` filter) so they can be tested.
+4. **Yes:** the plan order fee (Free $0.03) is separate from the Tallaby Pay fee and still applies.
+5. Not answered: the recommendation (release a kept COD deposit to the seller) applies.
+6. **Yes:** KYC (legal name + national ID or commercial register, destination in the same name) before the first withdrawal.
+7. Not answered: no longer hold for risky stores in v1 (recommendation).
+8. **Seller pays chargeback fees** (an `adjustment` entry with the reason).
+9–11. Not answered: the recommendations apply (future earnings only; no invoices yet; move-to-store-wallet later).
+12. **Name OK:** «طلبي باي» / Tallaby Pay. **Use the Tallaby logo** for it, and **show it first** among the payment gateways (Apps › Payments and the store's online payment options, checkout row first).
+
 1. **Hold days:** how many days after delivery until money is available? **Recommended: 7**, and never shorter than EasyKash's
    settlement delay to Tallaby's bank. Egyptian consumer law allows returns for 14 days, and the affiliate hold in the code is 14
    (`RETURN_WINDOW_DAYS`). Choose 14 if returns matter more than speed.
