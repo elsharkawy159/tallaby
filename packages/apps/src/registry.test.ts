@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   APP_CATEGORIES,
   APP_IDS,
+  APP_PAYMENT_METHODS,
   APP_SETTINGS_ROUTES,
   appManifestSchema,
 } from "./manifest";
@@ -51,6 +52,15 @@ describe("app manifests", () => {
   it("points `requires` at real apps", () => {
     for (const app of APPS) for (const id of app.requires) expect(getApp(id), `${app.id} → ${id}`).not.toBeNull();
     expect(getApp("meta_capi")!.requires).toEqual(["meta_pixel"]);
+  });
+
+  it("lists shopper payment methods only for EasyKash, and rejects them on a non-gateway", () => {
+    expect(getApp("easykash")!.paymentMethods).toEqual([...APP_PAYMENT_METHODS]);
+    for (const app of APPS) if (app.id !== "easykash") expect(app.paymentMethods, app.id).toEqual([]);
+    const metaPixel = MANIFESTS.find((m) => m.id === "meta_pixel")!;
+    expect(appManifestSchema.safeParse({ ...metaPixel, paymentMethods: ["card"] }).success).toBe(false);
+    const easykash = MANIFESTS.find((m) => m.id === "easykash")!;
+    expect(appManifestSchema.safeParse({ ...easykash, paymentMethods: ["card", "card"] }).success).toBe(false);
   });
 
   it("keeps the old dashboard URLs: slugs bosta, wassalha, size-chart and ai-assistants", () => {

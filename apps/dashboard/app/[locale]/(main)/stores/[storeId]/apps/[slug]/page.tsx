@@ -6,6 +6,7 @@ import { APP_DEVELOPERS, appPaths, getApp, getAppBySlug, localize } from "@works
 import { getStoreApp } from "@workspace/lib/integrations";
 import { Note, SellerCard } from "@/components/seller-ui";
 import { AppActions, AppPrice } from "./app-actions.client";
+import { AppPaymentMethods } from "./app-payment-methods";
 import { loadAppCenterPage } from "../app-center.data";
 import { appCanRemove, appPrimaryAction, appState } from "../app-center.lib";
 
@@ -61,6 +62,8 @@ export default async function AppDetailPage({ params }: { params: Promise<{ stor
             </ul>
           </SellerCard>
         )}
+
+        <AppPaymentMethods methods={manifest.paymentMethods} vendor={vendor} />
 
         {manifest.surfaces.length > 0 && (
           <SellerCard className="p-6 max-[600px]:p-4" aria-labelledby="app-where">

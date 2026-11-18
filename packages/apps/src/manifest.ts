@@ -112,6 +112,28 @@ export const APP_SURFACES = [
 ] as const;
 export type AppSurface = (typeof APP_SURFACES)[number];
 
+/**
+ * The ways a payment gateway lets the store's shoppers pay, shown as logos on
+ * the app's detail page. Ids only: the dashboard owns the logo files and the
+ * labels (`appCenter.paymentMethod.<id>`).
+ */
+export const APP_PAYMENT_METHODS = [
+  "card",
+  "mobile_wallet",
+  "cash_fawry_aman",
+  "meeza",
+  "nbe_installments",
+  "valu",
+  "aman_installments",
+  "souhoola",
+  "contact",
+  "apple_pay",
+  "tru",
+  "klivvr",
+  "pay_by_card",
+] as const;
+export type AppPaymentMethod = (typeof APP_PAYMENT_METHODS)[number];
+
 export const APP_PLANS = ["free", "pro"] as const;
 export type AppPlan = (typeof APP_PLANS)[number];
 
@@ -175,6 +197,8 @@ export const appManifestSchema = z
     /** Null for an app that is not built yet, or that has nothing to set (it only installs). */
     settingsRoute: z.enum(APP_SETTINGS_ROUTES).nullable(),
     surfaces: z.array(z.enum(APP_SURFACES)),
+    /** A gateway's shopper payment methods, in display order (logos on the detail page). Empty for every other app. */
+    paymentMethods: z.array(z.enum(APP_PAYMENT_METHODS)).default([]),
     /** Other apps it needs first (data only). */
     requires: z.array(z.enum(APP_IDS)).default([]),
     /** Public help page on tallaby.com. */
@@ -198,6 +222,12 @@ export const appManifestSchema = z
     }
     if (manifest.installMode === "request" && manifest.status === "live") {
       ctx.addIssue({ code: "custom", path: ["installMode"], message: "a live app is not requested" });
+    }
+    if (manifest.paymentMethods.length > 0 && manifest.mechanism !== "gateway") {
+      ctx.addIssue({ code: "custom", path: ["paymentMethods"], message: "only a payment gateway lists payment methods" });
+    }
+    if (new Set(manifest.paymentMethods).size !== manifest.paymentMethods.length) {
+      ctx.addIssue({ code: "custom", path: ["paymentMethods"], message: "payment methods must not repeat" });
     }
     if (manifest.requires.includes(manifest.id)) {
       ctx.addIssue({ code: "custom", path: ["requires"], message: "an app cannot require itself" });

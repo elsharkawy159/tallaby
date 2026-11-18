@@ -5631,7 +5631,9 @@
       "docs": "اقرأ الشرح",
       "screenshots": "صور من التطبيق",
       "onlyThisStore": "الإعدادات هنا لمتجر {store} فقط.",
-      "noSettings": "هذا التطبيق لا يحتاج إعدادات: يعمل بمجرد تثبيته."
+      "noSettings": "هذا التطبيق لا يحتاج إعدادات: يعمل بمجرد تثبيته.",
+      "paymentMethods": "طرق الدفع المتاحة لعملائك",
+      "paymentMethodsNote": "تظهر عند الدفع فقط الطرق التي تفعّلها في حسابك على {vendor}."
     },
     "action": {
       "settings": "افتح الإعدادات",
@@ -5656,6 +5658,36 @@
       "catalog_feed": "كتالوج المنتجات",
       "customer_messages": "رسائل لعملائك",
       "agent": "مساعدك الذكي"
+    },
+    "paymentMethod": {
+      "card": "بطاقات الائتمان والخصم",
+      "mobile_wallet": "المحافظ الإلكترونية",
+      "cash_fawry_aman": "نقدًا في فوري وأمان",
+      "meeza": "ميزة",
+      "nbe_installments": "تقسيط البنك الأهلي المصري: 6 أو 12 أو 18 شهرًا",
+      "valu": "ValU",
+      "aman_installments": "تقسيط أمان",
+      "souhoola": "سهولة",
+      "contact": "كونتكت",
+      "apple_pay": "Apple Pay",
+      "tru": "TRU",
+      "klivvr": "Klivvr",
+      "pay_by_card": "الدفع بالبطاقة"
+    },
+    "paymentBrand": {
+      "visa": "Visa",
+      "mastercard": "Mastercard",
+      "mobileWallets": "فودافون كاش وأورنج كاش واتصالات كاش",
+      "fawry": "فوري",
+      "aman": "أمان",
+      "meeza": "ميزة",
+      "nbe": "البنك الأهلي المصري",
+      "valu": "ValU",
+      "souhoola": "سهولة",
+      "contact": "كونتكت",
+      "applePay": "Apple Pay",
+      "tru": "TRU",
+      "klivvr": "Klivvr"
     }
   },
   "storeApps": {

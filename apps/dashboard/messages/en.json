@@ -5631,7 +5631,9 @@
       "docs": "Read the guide",
       "screenshots": "Screenshots",
       "onlyThisStore": "Settings here apply to {store} only.",
-      "noSettings": "This app has nothing to set: it works once it is installed."
+      "noSettings": "This app has nothing to set: it works once it is installed.",
+      "paymentMethods": "Payment methods your customers can use",
+      "paymentMethodsNote": "Only the methods you turn on in your {vendor} account show at checkout."
     },
     "action": {
       "settings": "Open settings",
@@ -5656,6 +5658,36 @@
       "catalog_feed": "Product feeds",
       "customer_messages": "Messages to your customers",
       "agent": "Your AI assistant"
+    },
+    "paymentMethod": {
+      "card": "Credit and debit cards",
+      "mobile_wallet": "Mobile wallets",
+      "cash_fawry_aman": "Cash at Fawry and Aman",
+      "meeza": "Meeza",
+      "nbe_installments": "NBE instalments: 6, 12 or 18 months",
+      "valu": "ValU",
+      "aman_installments": "Aman instalments",
+      "souhoola": "Souhoola",
+      "contact": "Contact",
+      "apple_pay": "Apple Pay",
+      "tru": "TRU",
+      "klivvr": "Klivvr",
+      "pay_by_card": "Pay by Card"
+    },
+    "paymentBrand": {
+      "visa": "Visa",
+      "mastercard": "Mastercard",
+      "mobileWallets": "Vodafone Cash, Orange Cash and Etisalat Cash",
+      "fawry": "Fawry",
+      "aman": "Aman",
+      "meeza": "Meeza",
+      "nbe": "National Bank of Egypt",
+      "valu": "ValU",
+      "souhoola": "Souhoola",
+      "contact": "Contact",
+      "applePay": "Apple Pay",
+      "tru": "TRU",
+      "klivvr": "Klivvr"
     }
   },
   "storeApps": {
