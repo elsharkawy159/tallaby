@@ -34,7 +34,7 @@ import { UnansweredQuestionsData } from "./_components/unanswered-questions.data
 import { WelcomeBanner } from "./_components/welcome-banner.client";
 import { SignupPixelData } from "./_components/signup-pixel.data";
 import { getHomeSnapshot } from "./_components/home.queries";
-import { showSetupOnlyHome } from "./_components/setup-checklist.lib";
+import { isSetupDone, showSetupOnlyHome } from "./_components/setup-checklist.lib";
 import { SetupHomeData } from "./_components/setup-home.data";
 import { welcomeLandingHref } from "./stores/[storeId]/welcome/welcome.lib";
 
@@ -88,7 +88,11 @@ export default async function VendorDashboardPage({
   );
   const notices = (
     <>
-      <OrdersLockedNotice lock={orderLock} storeReady={graceStoreReady} />
+      {/* Before any order, the top-up notice also waits for the whole home setup (owner, 2026-11-18): sellers left on seeing it too early. */}
+      <OrdersLockedNotice
+        lock={orderLock}
+        storeReady={graceStoreReady && snapshot !== null && isSetupDone(snapshot.setup, snapshot.setupStoreId)}
+      />
       {/* Only when the welcome page didn't take over (no store, or setup already done). */}
       {welcome === "1" && <WelcomeBanner />}
       {welcome === "1" && signup && (
