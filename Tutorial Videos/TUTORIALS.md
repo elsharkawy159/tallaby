@@ -371,7 +371,7 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 
 | ID | Video (the task) | Dashboard path | Steps to show | Status |
 |---|---|---|---|---|
-| T-18 | Add an order by hand | `/orders/new` | Choose products → customer details → create → send the link | todo |
+| T-18 | Add an order by hand | `/orders/new` | Choose products → customer details → create → send the link | draft (made 2026-11-18; not listened to yet) |
 | T-19 | Win back unfinished orders | `/orders/missed` | Open a missed order → contact on WhatsApp → mark contacted | todo |
 | T-20 | Your customers list | `/orders/customers` | Open a customer → add a note and a tag | todo |
 | T-21 | Block fake orders | `/stores/[storeId]/settings/protection` | Turn protection on → block a phone number | todo |
