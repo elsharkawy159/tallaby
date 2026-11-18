@@ -25,6 +25,8 @@ export interface SidebarCounts {
   integrationErrors: number;
   /** Custom domains that are not `active`. */
   failingDomains: number;
+  /** Tallaby Pay open withdrawals + refunds to make + identities to review (F-100g). */
+  tallabyPayQueue: number;
 }
 
 /** The signed-in admin, shown in the sidebar footer. */
@@ -55,4 +57,5 @@ export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   pendingAdRequests: 0,
   integrationErrors: 0,
   failingDomains: 0,
+  tallabyPayQueue: 0,
 };

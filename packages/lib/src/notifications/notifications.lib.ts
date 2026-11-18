@@ -29,6 +29,12 @@ export const ADMIN_NOTIFICATION_TYPES = [
   "top_up_paid",
   // A seller signed up through a referral link (0173, F-96): `data` = { sellerName, referrerId, referrerName }
   "referral_signup",
+  // Tallaby Pay (0176, F-100g). `data` = { amount, currency, storeName, sellerName, payoutId } for a withdrawal request;
+  // { sellerName, legalName } for an identity sent for review; { source: seller | paid_after_cancel | paid_twice,
+  // amount, orderNumber, storeName } for a refund to make in Tallaby's EasyKash account.
+  "tallaby_pay_payout_requested",
+  "tallaby_pay_kyc_submitted",
+  "tallaby_pay_refund_requested",
 ] as const;
 export type AdminNotificationType = (typeof ADMIN_NOTIFICATION_TYPES)[number];
 
@@ -70,6 +76,16 @@ export const SELLER_NOTIFICATION_TYPES = [
   "deposit_paid",
   // 24 hours after the first store, a seller who isn't activated is asked to top up (0172). `data` = {}
   "top_up_reminder",
+  // Tallaby Pay earnings (0176, F-100g). Sales: `data` = { saleId, orderId, orderNumber, amount (net), currency, storeId };
+  // withdrawals: { payoutId, amount, currency, storeId }; identity: { storeId? }.
+  "tallaby_pay_sale_credited",
+  "tallaby_pay_earnings_available",
+  "tallaby_pay_refunded",
+  "tallaby_pay_refund_declined",
+  "tallaby_pay_payout_paid",
+  "tallaby_pay_payout_rejected",
+  "tallaby_pay_kyc_verified",
+  "tallaby_pay_kyc_rejected",
 ] as const;
 export type SellerNotificationType = (typeof SELLER_NOTIFICATION_TYPES)[number];
 
@@ -163,6 +179,12 @@ export function adminNotificationHref(
       const requestId = dataString(data, "requestId");
       return requestId ? `/theme-requests/${encodeURIComponent(requestId)}` : "/theme-requests";
     }
+    case "tallaby_pay_payout_requested":
+      return "/tallaby-pay/payouts";
+    case "tallaby_pay_kyc_submitted":
+      return "/tallaby-pay/kyc";
+    case "tallaby_pay_refund_requested":
+      return "/tallaby-pay/refunds";
     default:
       return null;
   }
@@ -177,7 +199,17 @@ export function adminNotificationHref(
  * hidden from the bell and never pushed then. `order_created` is not here: it
  * is masked instead (maskLockedOrderNotification).
  */
-export const ORDER_DETAIL_TYPES = ["carrier_shipment_failed", "carrier_needs_attention", "deposit_reported", "deposit_paid"] as const;
+export const ORDER_DETAIL_TYPES = [
+  "carrier_shipment_failed",
+  "carrier_needs_attention",
+  "deposit_reported",
+  "deposit_paid",
+  // Tallaby Pay rows name an order and its amount (0176)
+  "tallaby_pay_sale_credited",
+  "tallaby_pay_earnings_available",
+  "tallaby_pay_refunded",
+  "tallaby_pay_refund_declined",
+] as const;
 
 /**
  * Rows no longer shown or pushed to anyone. `first_order_top_up` (0159) asked for a
@@ -256,6 +288,15 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     }
     case "theme_request_updated":
       return themeRequestsPath(dataString(n.data, "storeId"));
+    case "tallaby_pay_sale_credited":
+    case "tallaby_pay_earnings_available":
+    case "tallaby_pay_refunded":
+    case "tallaby_pay_refund_declined":
+    case "tallaby_pay_payout_paid":
+    case "tallaby_pay_payout_rejected":
+    case "tallaby_pay_kyc_verified":
+    case "tallaby_pay_kyc_rejected":
+      return tallabyPayEarningsPath(dataString(n.data, "storeId"));
     case "admin_message": {
       const link = dataString(n.data, "link");
       return link && isDashboardPath(link) ? link : null;
@@ -263,6 +304,11 @@ export function sellerNotificationHref(n: Pick<NotificationItem, "type" | "data"
     default:
       return null;
   }
+}
+
+/** The store's Tallaby Pay earnings page (F-100f), or the store list when the row names no valid store. */
+function tallabyPayEarningsPath(storeId: string | null): string {
+  return storeId && UUID_RE.test(storeId) ? `/stores/${encodeURIComponent(storeId)}/earnings` : "/stores";
 }
 
 /** How many events a grouped row stands for (`product_created`, 0116); 1 when unset. */

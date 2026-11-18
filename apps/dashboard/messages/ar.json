@@ -7562,6 +7562,38 @@
         "title": "يرجى شحن محفظة طلبي",
         "body": "اشحن محفظتك لعرض طلباتك. يبقى رصيدك في محفظتك ولا تنتهي صلاحيته."
       },
+      "tallaby_pay_sale_credited": {
+        "title": "دفعة جديدة عبر طلبي باي",
+        "body": "أُضيف {amount} من الطلب #{orderNumber} إلى أرباحك المعلقة."
+      },
+      "tallaby_pay_earnings_available": {
+        "title": "أرباحك متاحة للسحب",
+        "body": "أصبح {amount} من الطلب #{orderNumber} متاحًا للسحب."
+      },
+      "tallaby_pay_refunded": {
+        "title": "رددنا مبلغ طلب للعميل",
+        "body": "رددنا مبلغ الطلب #{orderNumber} للعميل، وخُصم {amount} من أرباحك المعلقة."
+      },
+      "tallaby_pay_refund_declined": {
+        "title": "رفضنا طلب رد المبلغ",
+        "body": "رفضنا طلب رد مبلغ الطلب #{orderNumber}، ويبقى {amount} من أرباحك ويصبح متاحًا بعد التسليم."
+      },
+      "tallaby_pay_payout_paid": {
+        "title": "حوّلنا لك أرباحك",
+        "body": "حوّلنا لك {amount}. تحقق من حسابك."
+      },
+      "tallaby_pay_payout_rejected": {
+        "title": "لم يتم السحب",
+        "body": "رفضنا طلب سحب {amount}، وعاد المبلغ إلى أرباحك المتاحة. افتح الأرباح لمعرفة السبب."
+      },
+      "tallaby_pay_kyc_verified": {
+        "title": "تم التحقق من هويتك",
+        "body": "يمكنك الآن سحب أرباح طلبي باي."
+      },
+      "tallaby_pay_kyc_rejected": {
+        "title": "لم نتمكن من التحقق من هويتك",
+        "body": "افتح الأرباح لمعرفة السبب وإرسال بياناتك مرة أخرى."
+      },
       "deposit_reported": {
         "title": "تم إرسال العربون",
         "body": "العميل يقول إنه أرسل عربون الطلب #{orderNumber}. راجع حسابك وأكّد الاستلام."

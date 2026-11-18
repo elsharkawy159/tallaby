@@ -341,6 +341,17 @@ export interface TransactionalCopy {
     requested: string;
     reference: string;
   };
+  /** Tallaby Pay earnings (F-100g): a withdrawal paid or rejected, an identity not verified. */
+  sellerTallabyPay: {
+    payoutPaid: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    payoutRejected: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    kycRejected: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    amount: string;
+    store: string;
+    reference: string;
+    date: string;
+    reasonTitle: string;
+  };
 }
 
 export const transactionalEn: TransactionalCopy = {
@@ -709,6 +720,37 @@ export const transactionalEn: TransactionalCopy = {
     requested: "Sent on",
     reference: "Reference",
   },
+  sellerTallabyPay: {
+    payoutPaid: {
+      subject: "We sent your Tallaby Pay withdrawal: {amount}",
+      preview: "{amount} is on its way to your account.",
+      pill: "Withdrawal sent",
+      heading: "Your withdrawal is on its way",
+      lead: "We sent {amount} from your Tallaby Pay earnings to the account you chose.",
+      cta: "Open Earnings",
+    },
+    payoutRejected: {
+      subject: "Your Tallaby Pay withdrawal was declined",
+      preview: "{amount} is back in your available earnings.",
+      pill: "Withdrawal declined",
+      heading: "We couldn't send this withdrawal",
+      lead: "{amount} is back in your available earnings. Check the reason below, then send a new request.",
+      cta: "Open Earnings",
+    },
+    kycRejected: {
+      subject: "We couldn't verify your identity for Tallaby Pay",
+      preview: "Send your details again to withdraw your earnings.",
+      pill: "Not verified",
+      heading: "We couldn't verify your identity",
+      lead: "To withdraw Tallaby Pay earnings, your legal name and ID must match. Check the reason below and send your details again.",
+      cta: "Send my details again",
+    },
+    amount: "Amount",
+    store: "Store",
+    reference: "Transfer reference",
+    date: "Date",
+    reasonTitle: "Reason",
+  },
 };
 
 export const transactionalAr: TransactionalCopy = {
@@ -1069,5 +1111,36 @@ export const transactionalAr: TransactionalCopy = {
     requestTitle: "طلبك",
     requested: "تاريخ الإرسال",
     reference: "الرابط المرجعي",
+  },
+  sellerTallabyPay: {
+    payoutPaid: {
+      subject: "حوّلنا لك سحب طلبي باي: {amount}",
+      preview: "المبلغ {amount} في الطريق إلى حسابك.",
+      pill: "تم التحويل",
+      heading: "سحبك في الطريق إليك",
+      lead: "حوّلنا {amount} من أرباح طلبي باي إلى الحساب الذي اخترته.",
+      cta: "افتح الأرباح",
+    },
+    payoutRejected: {
+      subject: "لم نتمكن من تنفيذ سحب طلبي باي",
+      preview: "عاد المبلغ {amount} إلى أرباحك المتاحة.",
+      pill: "تم رفض السحب",
+      heading: "لم نتمكن من تحويل هذا السحب",
+      lead: "عاد المبلغ {amount} إلى أرباحك المتاحة. اطلع على السبب بالأسفل، ثم أرسل طلبًا جديدًا.",
+      cta: "افتح الأرباح",
+    },
+    kycRejected: {
+      subject: "لم نتمكن من التحقق من هويتك في طلبي باي",
+      preview: "أرسل بياناتك مرة أخرى لسحب أرباحك.",
+      pill: "لم يتم التحقق",
+      heading: "لم نتمكن من التحقق من هويتك",
+      lead: "لسحب أرباح طلبي باي، يجب أن يطابق اسمك القانوني بيانات هويتك. اطلع على السبب بالأسفل وأرسل بياناتك مرة أخرى.",
+      cta: "أرسل بياناتي مرة أخرى",
+    },
+    amount: "المبلغ",
+    store: "المتجر",
+    reference: "رقم التحويل",
+    date: "التاريخ",
+    reasonTitle: "السبب",
   },
 };

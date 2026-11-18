@@ -3658,7 +3658,7 @@ export const platformBlogPosts = pgTable("platform_blog_posts", {
 
 export const adminNotifications = pgTable("admin_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	/** seller_created | store_created | store_published | top_up_requested */
+	/** seller_created | store_created | store_published | top_up_requested | … (full list: ADMIN_NOTIFICATION_TYPES in @workspace/lib/notifications) | tallaby_pay_payout_requested, tallaby_pay_kyc_submitted, tallaby_pay_refund_requested (0176, F-100g; written by triggers) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	sellerId: uuid("seller_id"),
@@ -3700,7 +3700,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) | deposit_reported, deposit_paid (0166, F-21: `data` = { orderId, orderNumber }) | top_up_reminder (0172: `data` = {}, the 24-hour top-up reminder) */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) | deposit_reported, deposit_paid (0166, F-21: `data` = { orderId, orderNumber }) | top_up_reminder (0172: `data` = {}, the 24-hour top-up reminder) | tallaby_pay_sale_credited, tallaby_pay_earnings_available, tallaby_pay_refunded, tallaby_pay_refund_declined (0176, F-100g: `data` = { saleId, orderId, orderNumber, amount, currency, purpose, storeId }) | tallaby_pay_payout_paid, tallaby_pay_payout_rejected (0176: `data` = { payoutId, amount, currency, storeId }) | tallaby_pay_kyc_verified, tallaby_pay_kyc_rejected (0176: `data` = { storeId? }); rows written by 0176's triggers */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),

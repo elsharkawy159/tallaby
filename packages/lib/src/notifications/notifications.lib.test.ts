@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   ADMIN_NOTIFICATION_TYPES,
   MAX_NOTIFICATION_IDS,
+  ORDER_DETAIL_TYPES,
+  SELLER_NOTIFICATION_TYPES,
   adminNotificationHref,
   clampNotificationLimit,
   isDashboardPath,
@@ -190,5 +192,53 @@ describe("sellerNotificationHref › app bills (F-93)", () => {
     expect(sellerNotificationHref({ type: "app_renewed", data: { storeId: STORE, appKey: "customer_notifications" } })).toBe(`/stores/${STORE}/apps/customer-notifications`);
     expect(sellerNotificationHref({ type: "app_ended", data: { storeId: STORE, appKey: "gone" } })).toBe(`/stores/${STORE}/apps`);
     expect(sellerNotificationHref({ type: "app_renewal_failed", data: {} })).toBe("/wallet");
+  });
+});
+
+describe("Tallaby Pay bells (0176, F-100g)", () => {
+  const STORE = "22222222-2222-4222-8222-222222222222";
+  const SELLER_TYPES = [
+    "tallaby_pay_sale_credited",
+    "tallaby_pay_earnings_available",
+    "tallaby_pay_refunded",
+    "tallaby_pay_refund_declined",
+    "tallaby_pay_payout_paid",
+    "tallaby_pay_payout_rejected",
+    "tallaby_pay_kyc_verified",
+    "tallaby_pay_kyc_rejected",
+  ] as const;
+
+  it("lists every type the migration adds", () => {
+    expect(ADMIN_NOTIFICATION_TYPES).toEqual(
+      expect.arrayContaining(["tallaby_pay_payout_requested", "tallaby_pay_kyc_submitted", "tallaby_pay_refund_requested"]),
+    );
+    expect(SELLER_NOTIFICATION_TYPES).toEqual(expect.arrayContaining([...SELLER_TYPES]));
+  });
+
+  it("opens the store's earnings page, else the store list", () => {
+    for (const type of SELLER_TYPES) {
+      expect(sellerNotificationHref({ type, data: { storeId: STORE } })).toBe(`/stores/${STORE}/earnings`);
+      expect(sellerNotificationHref({ type, data: {} })).toBe("/stores");
+      expect(sellerNotificationHref({ type, data: { storeId: "../wallet" } })).toBe("/stores");
+    }
+  });
+
+  it("hides the rows that name an order while orders are locked", () => {
+    expect(ORDER_DETAIL_TYPES).toEqual(
+      expect.arrayContaining([
+        "tallaby_pay_sale_credited",
+        "tallaby_pay_earnings_available",
+        "tallaby_pay_refunded",
+        "tallaby_pay_refund_declined",
+      ]),
+    );
+    expect(ORDER_DETAIL_TYPES).not.toContain("tallaby_pay_payout_paid");
+  });
+
+  it("opens the matching Admin queue", () => {
+    const base = { sellerId: null, storeId: null };
+    expect(adminNotificationHref({ ...base, type: "tallaby_pay_payout_requested" })).toBe("/tallaby-pay/payouts");
+    expect(adminNotificationHref({ ...base, type: "tallaby_pay_kyc_submitted" })).toBe("/tallaby-pay/kyc");
+    expect(adminNotificationHref({ ...base, type: "tallaby_pay_refund_requested" })).toBe("/tallaby-pay/refunds");
   });
 });

@@ -17,6 +17,8 @@ export {
   sendRefundIssuedEmail,
   sendStoreCreatedEmail,
   sendStoreWalletTopUpEmail,
+  sendTallabyPayKycRejectedEmail,
+  sendTallabyPayPayoutEmail,
   sendThemeRequestUpdateEmail,
   type OrderCancelledBy,
   type OrderEmailEvent,

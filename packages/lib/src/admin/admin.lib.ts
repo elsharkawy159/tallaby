@@ -111,6 +111,13 @@ export const ADMIN_AUDIT_ACTIONS = [
   "tallaby_pay_kyc_rejected",
   // Tallaby Pay refund before delivery (F-100d)
   "tallaby_pay_sale_refunded",
+  // Admin › Tallaby Pay (F-100g): wallets, a paid-twice refund and the settings
+  "tallaby_pay_wallet_frozen",
+  "tallaby_pay_wallet_unfrozen",
+  "tallaby_pay_wallet_adjusted",
+  "tallaby_pay_duplicate_refunded",
+  "tallaby_pay_refund_declined",
+  "tallaby_pay_settings_updated",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

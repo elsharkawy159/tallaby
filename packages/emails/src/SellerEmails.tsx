@@ -666,3 +666,79 @@ export const SellerThemeRequestEmail = ({
     </SellerShell>
   );
 };
+
+export type SellerTallabyPayKind = "payoutPaid" | "payoutRejected" | "kycRejected";
+
+export interface SellerTallabyPayEmailProps extends SellerEmailProps {
+  kind: SellerTallabyPayKind;
+  /** Pre-formatted amount (withdrawals only). */
+  amount?: string | null | undefined;
+  /** The transfer reference the team typed (paid only). */
+  reference?: string | null | undefined;
+  /** The admin's reason (rejections), shown as written. */
+  reason?: string | null | undefined;
+  /** Pre-formatted date of the decision. */
+  date: string;
+  links: { earnings: string };
+}
+
+/** Tallaby Pay (ROADMAP.md F-100g): a withdrawal paid or rejected, or an identity not verified. */
+export const SellerTallabyPayEmail = ({
+  locale = "en",
+  storeName,
+  settingsUrl,
+  kind,
+  amount,
+  reference,
+  reason,
+  date,
+  links,
+}: SellerTallabyPayEmailProps) => {
+  const f = emailFrame(PLATFORM_BRAND, locale);
+  const messages = getEmailMessages(locale);
+  const all = messages.sellerTallabyPay;
+  const copy = all[kind];
+  const values = { amount: amount ? isolateLtr(amount) : "" };
+  const kit = messages.kit;
+
+  return (
+    <SellerShell
+      f={f}
+      storeName={storeName}
+      settingsUrl={settingsUrl}
+      title={interpolate(copy.subject, values)}
+      preview={interpolate(copy.preview, values)}
+    >
+      <Block f={f} padding="36px 32px 8px">
+        <Pill f={f} tone={kind === "payoutPaid" ? "success" : "warning"}>
+          {copy.pill}
+        </Pill>
+        <H1 f={f} flush>
+          {copy.heading}
+        </H1>
+        <Lead f={f}>{interpolate(copy.lead, values)}</Lead>
+        {reason ? (
+          <Callout f={f} tone="warning">
+            <Strong>{all.reasonTitle}</Strong>
+            <div style={{ whiteSpace: "pre-line" }}>{reason}</div>
+          </Callout>
+        ) : null}
+        <MetaGrid
+          f={f}
+          items={[
+            ...(amount ? [{ label: all.amount, value: amount, ltr: true }] : []),
+            ...(kind === "kycRejected" ? [] : [{ label: all.store, value: storeName }]),
+            ...(reference ? [{ label: all.reference, value: reference, ltr: true }] : []),
+            { label: all.date, value: date },
+          ]}
+        />
+        <Cta f={f} href={links.earnings} label={copy.cta} />
+      </Block>
+      <Block f={f} divider padding="0 32px 32px" last>
+        <HelpBlock f={f}>
+          {kit.replyOrWrite} <MailLink f={f} email={f.brand.supportEmail} />.
+        </HelpBlock>
+      </Block>
+    </SellerShell>
+  );
+};

@@ -115,3 +115,17 @@ export async function sendBackInStockEmail(subscriptionId: string): Promise<Emai
 export async function sendThemeRequestUpdateEmail(requestId: string): Promise<EmailResult> {
   return postEmail('theme-request-update', { requestId })
 }
+
+/**
+ * A Tallaby Pay withdrawal was paid or rejected (ROADMAP.md F-100g). The
+ * backend reads the payout's current status and claims one email per
+ * (outcome, payout).
+ */
+export async function sendTallabyPayPayoutEmail(payoutId: string): Promise<EmailResult> {
+  return postEmail('tallaby-pay-payout', { payoutId })
+}
+
+/** A seller's Tallaby Pay identity was not verified (F-100g): one email per rejection. */
+export async function sendTallabyPayKycRejectedEmail(sellerId: string): Promise<EmailResult> {
+  return postEmail('tallaby-pay-kyc-rejected', { sellerId })
+}

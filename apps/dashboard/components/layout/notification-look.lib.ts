@@ -1,6 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
+  BadgeCheck,
+  CircleDollarSign,
   Gem,
   Gift,
   HandCoins,
@@ -44,6 +46,14 @@ export const NOTIFICATION_LOOK: Record<SellerNotificationType, { icon: LucideIco
   theme_request_updated: { icon: LayoutTemplate, tone: "info" },
   first_order_top_up: { icon: Wallet, tone: "accent" },
   top_up_reminder: { icon: Wallet, tone: "accent" },
+  tallaby_pay_sale_credited: { icon: CircleDollarSign, tone: "primary" },
+  tallaby_pay_earnings_available: { icon: CircleDollarSign, tone: "success" },
+  tallaby_pay_refunded: { icon: CircleDollarSign, tone: "accent" },
+  tallaby_pay_refund_declined: { icon: CircleDollarSign, tone: "info" },
+  tallaby_pay_payout_paid: { icon: HandCoins, tone: "success" },
+  tallaby_pay_payout_rejected: { icon: HandCoins, tone: "danger" },
+  tallaby_pay_kyc_verified: { icon: BadgeCheck, tone: "success" },
+  tallaby_pay_kyc_rejected: { icon: BadgeCheck, tone: "danger" },
 };
 
 export type NotificationDay = "today" | "yesterday" | "older";

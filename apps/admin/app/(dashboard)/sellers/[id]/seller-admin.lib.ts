@@ -74,6 +74,12 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   tallaby_pay_kyc_verified: "Tallaby Pay identity verified",
   tallaby_pay_kyc_rejected: "Tallaby Pay identity rejected",
   tallaby_pay_sale_refunded: "Tallaby Pay sale refunded",
+  tallaby_pay_wallet_frozen: "Tallaby Pay earnings frozen",
+  tallaby_pay_wallet_unfrozen: "Tallaby Pay earnings unfrozen",
+  tallaby_pay_wallet_adjusted: "Tallaby Pay earnings adjusted",
+  tallaby_pay_duplicate_refunded: "Tallaby Pay second payment refunded",
+  tallaby_pay_refund_declined: "Tallaby Pay refund request declined",
+  tallaby_pay_settings_updated: "Tallaby Pay settings changed",
 };
 
 export function auditActionLabel(action: string): string {

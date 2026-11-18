@@ -24,6 +24,8 @@ import {
   sendSellerNewOrders,
   sendSellerOrderCancelled,
   sendSellerStoreCreated,
+  sendSellerTallabyPayKycRejected,
+  sendSellerTallabyPayPayout,
   sendSellerThemeRequestUpdate,
   sendSellerWalletTopUp,
 } from "../lib/emails/seller-emails";
@@ -376,6 +378,37 @@ app.post("/theme-request-update", async (c) => {
   } catch (error) {
     console.error("Error sending theme request email:", error);
     return c.json({ error: "Failed to send theme request email" }, 500);
+  }
+});
+
+const tallabyPayPayoutSchema = z.object({ payoutId: z.string().uuid() });
+const tallabyPayKycSchema = z.object({ sellerId: z.string().uuid() });
+
+/** A Tallaby Pay withdrawal was paid or rejected (F-100g): the seller's mail, once per outcome. */
+app.post("/tallaby-pay-payout", async (c) => {
+  const parsed = tallabyPayPayoutSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    return c.json({ success: true, result: await sendSellerTallabyPayPayout(parsed.data.payoutId) });
+  } catch (error) {
+    console.error("Error sending Tallaby Pay payout email:", error);
+    return c.json({ error: "Failed to send Tallaby Pay payout email" }, 500);
+  }
+});
+
+/** A seller's Tallaby Pay identity was not verified (F-100g): once per rejection. */
+app.post("/tallaby-pay-kyc-rejected", async (c) => {
+  const parsed = tallabyPayKycSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+  try {
+    return c.json({ success: true, result: await sendSellerTallabyPayKycRejected(parsed.data.sellerId) });
+  } catch (error) {
+    console.error("Error sending Tallaby Pay KYC email:", error);
+    return c.json({ error: "Failed to send Tallaby Pay KYC email" }, 500);
   }
 });
 

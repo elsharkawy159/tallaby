@@ -129,6 +129,38 @@ export function describeAdminNotification(n: Pick<NotificationItem, 'type' | 'da
         body: [store, amount && `EGP ${amount}`].filter(Boolean).join(' · ') || 'A referrer asked to withdraw their commission.',
       }
     }
+    case 'tallaby_pay_payout_requested': {
+      const amount = notificationText(n.data, 'amount')
+      return {
+        title: 'Tallaby Pay withdrawal requested',
+        body: [who(seller, store), amount && `EGP ${amount}`].filter(Boolean).join(' · ') ||
+          'A store asked to withdraw its earnings.',
+      }
+    }
+    case 'tallaby_pay_kyc_submitted': {
+      const legalName = notificationText(n.data, 'legalName')
+      return {
+        title: 'Identity to verify',
+        body: [seller, legalName && legalName !== seller && `as ${legalName}`].filter(Boolean).join(' ') ||
+          'A seller sent their legal name and ID for Tallaby Pay.',
+      }
+    }
+    case 'tallaby_pay_refund_requested': {
+      const amount = notificationText(n.data, 'amount')
+      const orderNumber = notificationText(n.data, 'orderNumber')
+      const source = notificationText(n.data, 'source')
+      const title =
+        source === 'paid_twice'
+          ? 'Paid twice: refund in EasyKash'
+          : source === 'paid_after_cancel'
+            ? 'Paid after cancel: refund in EasyKash'
+            : 'Tallaby Pay refund requested'
+      return {
+        title,
+        body: [store, orderNumber && `#${orderNumber}`, amount && `EGP ${amount}`].filter(Boolean).join(' · ') ||
+          'A Tallaby Pay payment needs a refund.',
+      }
+    }
     case 'store_deleted':
       return {
         title: 'Store deleted',

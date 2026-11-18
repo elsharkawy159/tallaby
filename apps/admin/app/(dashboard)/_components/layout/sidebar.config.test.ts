@@ -82,3 +82,13 @@ describe("groups", () => {
     expect(sectionCount(sales, counts)).toBe(5);
   });
 });
+
+describe("Tallaby Pay link (F-100g)", () => {
+  it("sits under Money with the queue badge", () => {
+    const money = sidebarSections.find((section) => section.key === "money")!;
+    const link = money.links.find((l) => l.key === "tallabyPay");
+    expect(link).toMatchObject({ href: "/tallaby-pay", countKey: "tallabyPayQueue" });
+    expect(link?.hidden).toBeFalsy();
+    expect(activeHref("/tallaby-pay/payouts")).toBe("/tallaby-pay");
+  });
+});

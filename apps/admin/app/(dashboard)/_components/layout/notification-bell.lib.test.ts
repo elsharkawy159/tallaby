@@ -31,3 +31,44 @@ describe('describeAdminNotification (0173)', () => {
     expect(describeAdminNotification({ type: 'something_new', data: {} })).toEqual({ title: 'Notification', body: '' })
   })
 })
+
+describe('describeAdminNotification (0176, Tallaby Pay)', () => {
+  it('describes a withdrawal request', () => {
+    expect(
+      describeAdminNotification({
+        type: 'tallaby_pay_payout_requested',
+        data: { amount: '750.00', sellerName: 'Mona', storeName: 'Mona Shop' },
+      })
+    ).toEqual({ title: 'Tallaby Pay withdrawal requested', body: 'Mona · Mona Shop · EGP 750.00' })
+    expect(describeAdminNotification({ type: 'tallaby_pay_payout_requested', data: {} }).body).toBe(
+      'A store asked to withdraw its earnings.'
+    )
+  })
+
+  it('describes an identity to verify, naming the legal name only when it differs', () => {
+    expect(
+      describeAdminNotification({ type: 'tallaby_pay_kyc_submitted', data: { sellerName: 'Mona', legalName: 'Mona Ali Hassan' } }).body
+    ).toBe('Mona as Mona Ali Hassan')
+    expect(describeAdminNotification({ type: 'tallaby_pay_kyc_submitted', data: { sellerName: 'Mona', legalName: 'Mona' } }).body).toBe(
+      'Mona'
+    )
+  })
+
+  it('names each refund source', () => {
+    const data = { storeName: 'Nour', orderNumber: '1042', amount: '320.00' }
+    expect(describeAdminNotification({ type: 'tallaby_pay_refund_requested', data: { ...data, source: 'seller' } })).toEqual({
+      title: 'Tallaby Pay refund requested',
+      body: 'Nour · #1042 · EGP 320.00',
+    })
+    expect(describeAdminNotification({ type: 'tallaby_pay_refund_requested', data: { source: 'paid_twice' } }).title).toBe(
+      'Paid twice: refund in EasyKash'
+    )
+    expect(describeAdminNotification({ type: 'tallaby_pay_refund_requested', data: { source: 'paid_after_cancel' } }).title).toBe(
+      'Paid after cancel: refund in EasyKash'
+    )
+  })
+
+  it('keeps the old plain-notification fallback', () => {
+    expect(describeAdminNotification({ type: 'something_new', data: {} })).toEqual({ title: 'Notification', body: '' })
+  })
+})

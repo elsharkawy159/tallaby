@@ -7562,6 +7562,38 @@
         "title": "Please top up your Tallaby wallet",
         "body": "Top up to see your orders. Your balance stays in your wallet and doesn’t expire."
       },
+      "tallaby_pay_sale_credited": {
+        "title": "New Tallaby Pay payment",
+        "body": "{amount} from order #{orderNumber} was added to your pending earnings."
+      },
+      "tallaby_pay_earnings_available": {
+        "title": "Earnings ready to withdraw",
+        "body": "{amount} from order #{orderNumber} is now available to withdraw."
+      },
+      "tallaby_pay_refunded": {
+        "title": "Order refunded to the customer",
+        "body": "We refunded order #{orderNumber} to the customer, and {amount} left your pending earnings."
+      },
+      "tallaby_pay_refund_declined": {
+        "title": "Refund request declined",
+        "body": "We declined the refund for order #{orderNumber}. {amount} stays in your earnings and becomes available after delivery."
+      },
+      "tallaby_pay_payout_paid": {
+        "title": "Withdrawal sent",
+        "body": "We sent you {amount}. Check your account."
+      },
+      "tallaby_pay_payout_rejected": {
+        "title": "Withdrawal declined",
+        "body": "Your {amount} withdrawal was declined and the amount is back in your available earnings. Open Earnings to see why."
+      },
+      "tallaby_pay_kyc_verified": {
+        "title": "Identity verified",
+        "body": "You can now withdraw your Tallaby Pay earnings."
+      },
+      "tallaby_pay_kyc_rejected": {
+        "title": "Identity not verified",
+        "body": "Open Earnings to see why and send your details again."
+      },
       "deposit_reported": {
         "title": "Deposit sent",
         "body": "The customer says they sent the deposit for order #{orderNumber}. Check your account and confirm it."

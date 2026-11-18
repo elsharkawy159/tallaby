@@ -64,6 +64,15 @@ const PUSH_TYPE_CATEGORY: Readonly<Record<string, PushCategory>> = {
   theme_request_updated: "account",
   // The 24-hour top-up reminder (0172): an account row, pushed while orders are locked too.
   top_up_reminder: "account",
+  // Tallaby Pay earnings (0176, F-100g). The sale rows name an order, so they stay out while orders are locked.
+  tallaby_pay_sale_credited: "account",
+  tallaby_pay_earnings_available: "account",
+  tallaby_pay_refunded: "account",
+  tallaby_pay_refund_declined: "account",
+  tallaby_pay_payout_paid: "account",
+  tallaby_pay_payout_rejected: "account",
+  tallaby_pay_kyc_verified: "account",
+  tallaby_pay_kyc_rejected: "account",
 };
 
 /** Messages from the Tallaby team (Admin › Sellers, 0131): pushed to every device, no switch. */

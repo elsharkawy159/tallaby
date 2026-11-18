@@ -11,7 +11,16 @@ describe("email policy", () => {
       ["order_cancelled", "order_delivered", "order_shipped", "refund_issued"].sort(),
     );
     expect(ofRule("store_order")).toEqual(["order_confirmation"]);
-    expect(ofRule("keep").sort()).toEqual(["seller_setup_reminder_day1", "seller_setup_reminder_day7", "seller_store_created", "theme_request_declined", "theme_request_ready"]);
+    expect(ofRule("keep").sort()).toEqual([
+      "seller_setup_reminder_day1",
+      "seller_setup_reminder_day7",
+      "seller_store_created",
+      "tallaby_pay_kyc_rejected",
+      "tallaby_pay_payout_paid",
+      "tallaby_pay_payout_rejected",
+      "theme_request_declined",
+      "theme_request_ready",
+    ]);
     expect(ofRule("manual").sort()).toEqual(["store_campaign", "store_campaign_test"]);
   });
 

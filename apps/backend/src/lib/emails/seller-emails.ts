@@ -1,5 +1,19 @@
+import { createHash } from "node:crypto";
 import { createElement } from "react";
-import { and, db, eq, isNull, sellers, sellerWalletTopUps, stores, themeRequests, users } from "@workspace/db";
+import {
+  and,
+  db,
+  eq,
+  isNull,
+  sellers,
+  sellerWalletTopUps,
+  stores,
+  tallabyPayKyc,
+  tallabyPayPayouts,
+  tallabyPayWallets,
+  themeRequests,
+  users,
+} from "@workspace/db";
 import {
   getEmailMessages,
   interpolate,
@@ -8,6 +22,7 @@ import {
   SellerNewOrderEmail,
   SellerOrderCancelledEmail,
   SellerStoreCreatedEmail,
+  SellerTallabyPayEmail,
   SellerThemeRequestEmail,
   SellerWalletTopUpEmail,
   type CancelledBy,
@@ -386,5 +401,119 @@ export async function sendSellerThemeRequestUpdate(requestId: string): Promise<S
       links: { templates: joinUrl(DASHBOARD_URL, themeRequestsPath(request.storeId)) },
     }),
     metadata: { status },
+  });
+}
+
+/* ------------------------------------------------------------------------ */
+/* Tallaby Pay (ROADMAP.md F-100g)                                           */
+/* ------------------------------------------------------------------------ */
+
+const tallabyPayEarningsUrl = (storeId: string | null) =>
+  joinUrl(DASHBOARD_URL, storeId ? `/stores/${storeId}/earnings` : "/stores");
+
+/**
+ * A withdrawal was paid or rejected. Reads the payout's CURRENT status: only
+ * `paid` and `rejected` send, each once per payout (the email_deliveries
+ * claim), so a retry sends nothing.
+ */
+export async function sendSellerTallabyPayPayout(payoutId: string): Promise<SendOnceResult> {
+  const [payout] = await db
+    .select({
+      id: tallabyPayPayouts.id,
+      sellerId: tallabyPayPayouts.sellerId,
+      storeId: tallabyPayPayouts.storeId,
+      amount: tallabyPayPayouts.amount,
+      status: tallabyPayPayouts.status,
+      reference: tallabyPayPayouts.reference,
+      rejectionReason: tallabyPayPayouts.rejectionReason,
+      reviewedAt: tallabyPayPayouts.reviewedAt,
+    })
+    .from(tallabyPayPayouts)
+    .where(eq(tallabyPayPayouts.id, payoutId))
+    .limit(1);
+  if (!payout) return { status: "skipped", reason: "not_found" };
+  if (payout.status !== "paid" && payout.status !== "rejected") return { status: "skipped", reason: "not_final" };
+
+  const seller = await loadSeller(payout.sellerId, payout.storeId);
+  if (!seller) return { status: "skipped", reason: "no_email" };
+
+  const kind = payout.status === "paid" ? "payoutPaid" : "payoutRejected";
+  const amount = formatMoney(payout.amount, seller.locale, "EGP");
+  const copy = getEmailMessages(seller.locale).sellerTallabyPay[kind];
+
+  return sendOnce({
+    emailType: kind === "payoutPaid" ? EMAIL_TYPES.tallabyPayPayoutPaid : EMAIL_TYPES.tallabyPayPayoutRejected,
+    referenceId: payout.id,
+    recipient: seller.email,
+    subject: interpolate(copy.subject, { amount }),
+    content: createElement(SellerTallabyPayEmail, {
+      locale: seller.locale,
+      storeName: seller.storeName,
+      settingsUrl: SETTINGS_URL,
+      kind,
+      amount,
+      reference: kind === "payoutPaid" ? payout.reference : null,
+      reason: kind === "payoutRejected" ? payout.rejectionReason : null,
+      date: formatDate(payout.reviewedAt, seller.locale),
+      links: { earnings: tallabyPayEarningsUrl(payout.storeId) },
+    }),
+    metadata: { status: payout.status, storeId: payout.storeId },
+  });
+}
+
+/** A stable uuid-shaped id for one event (sha-256 of the key), for the email claim. */
+export function tallabyPayEventUuid(key: string): string {
+  const h = createHash("sha256").update(key).digest("hex");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`;
+}
+
+/**
+ * The seller's identity was not verified. Reads the KYC's CURRENT status:
+ * only `rejected` sends, once per rejection (an identity sent again and
+ * rejected again mails again).
+ */
+export async function sendSellerTallabyPayKycRejected(sellerId: string): Promise<SendOnceResult> {
+  const [kyc] = await db
+    .select({
+      sellerId: tallabyPayKyc.sellerId,
+      status: tallabyPayKyc.status,
+      rejectionReason: tallabyPayKyc.rejectionReason,
+      updatedAt: tallabyPayKyc.updatedAt,
+    })
+    .from(tallabyPayKyc)
+    .where(eq(tallabyPayKyc.sellerId, sellerId))
+    .limit(1);
+  if (!kyc) return { status: "skipped", reason: "not_found" };
+  if (kyc.status !== "rejected") return { status: "skipped", reason: "not_rejected" };
+
+  // KYC is per account: the link opens the earnings of the seller's oldest live store with a wallet.
+  const [wallet] = await db
+    .select({ storeId: tallabyPayWallets.storeId })
+    .from(tallabyPayWallets)
+    .innerJoin(stores, and(eq(stores.id, tallabyPayWallets.storeId), isNull(stores.deletedAt)))
+    .where(eq(tallabyPayWallets.sellerId, kyc.sellerId))
+    .orderBy(tallabyPayWallets.createdAt)
+    .limit(1);
+  const storeId = wallet?.storeId ?? null;
+
+  const seller = await loadSeller(kyc.sellerId, storeId);
+  if (!seller) return { status: "skipped", reason: "no_email" };
+  const copy = getEmailMessages(seller.locale).sellerTallabyPay.kycRejected;
+
+  return sendOnce({
+    emailType: EMAIL_TYPES.tallabyPayKycRejected,
+    referenceId: tallabyPayEventUuid(`tallaby_pay_kyc_rejected:${kyc.sellerId}:${kyc.updatedAt}`),
+    recipient: seller.email,
+    subject: copy.subject,
+    content: createElement(SellerTallabyPayEmail, {
+      locale: seller.locale,
+      storeName: seller.storeName,
+      settingsUrl: SETTINGS_URL,
+      kind: "kycRejected",
+      reason: kyc.rejectionReason,
+      date: formatDate(kyc.updatedAt, seller.locale),
+      links: { earnings: tallabyPayEarningsUrl(storeId) },
+    }),
+    metadata: { sellerId: kyc.sellerId },
   });
 }

@@ -22,6 +22,8 @@ import {
   sellerCustomDomains,
 } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { tallabyPayQueueCount } from "@workspace/lib/tallaby-pay";
+import { getTallabyPayQueueCounts } from "@workspace/lib/tallaby-pay/server";
 import { getAdminUser } from "@/actions/auth";
 import {
   EMPTY_SIDEBAR_COUNTS,
@@ -79,6 +81,14 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
       : ((result as { rows?: Array<Record<string, unknown>> }).rows ?? []);
     const row = (rows[0] ?? {}) as Record<string, unknown>;
 
+    // Its own statement, after the one above: a database without 0175 loses only this badge.
+    let tallabyPayQueue = 0;
+    try {
+      tallabyPayQueue = tallabyPayQueueCount(await getTallabyPayQueueCounts());
+    } catch (error) {
+      console.error("Error fetching Tallaby Pay queue counts:", error);
+    }
+
     return {
       newCustomers: Number(row.new_customers ?? 0),
       newSellers: Number(row.new_sellers ?? 0),
@@ -93,6 +103,7 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
       pendingAdRequests: Number(row.pending_ad_requests ?? 0),
       integrationErrors: Number(row.integration_errors ?? 0),
       failingDomains: Number(row.failing_domains ?? 0),
+      tallabyPayQueue,
     };
   } catch (error) {
     console.error("Error fetching sidebar counts:", error);

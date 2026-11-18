@@ -35,6 +35,14 @@ export const EMAIL_TYPES = {
   /** reference_id = theme_requests.id: one per request and outcome (F-77, 0156). */
   themeRequestReady: "theme_request_ready",
   themeRequestDeclined: "theme_request_declined",
+  /** reference_id = tallaby_pay_payouts.id: one per withdrawal and outcome (F-100g). */
+  tallabyPayPayoutPaid: "tallaby_pay_payout_paid",
+  tallabyPayPayoutRejected: "tallaby_pay_payout_rejected",
+  /**
+   * reference_id = a uuid derived from (seller id, the rejection's updated_at),
+   * so each rejection of a resubmitted identity mails once.
+   */
+  tallabyPayKycRejected: "tallaby_pay_kyc_rejected",
 } as const;
 
 export type EmailType = (typeof EMAIL_TYPES)[keyof typeof EMAIL_TYPES];

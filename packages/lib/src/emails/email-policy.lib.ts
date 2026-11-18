@@ -32,6 +32,10 @@ export const EMAIL_RULES = {
   // "Request a theme" outcome: ready or declined (F-77)
   theme_request_ready: "keep",
   theme_request_declined: "keep",
+  // Tallaby Pay (F-100g): a withdrawal paid or rejected, an identity not verified
+  tallaby_pay_payout_paid: "keep",
+  tallaby_pay_payout_rejected: "keep",
+  tallaby_pay_kyc_rejected: "keep",
   // Store setup reminders, 24 hours and 7 days after signup (F-94; own claim table, 0170)
   seller_setup_reminder_day1: "keep",
   seller_setup_reminder_day7: "keep",

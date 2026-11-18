@@ -29,6 +29,7 @@ import {
   CreditCard,
   Award,
   Coins,
+  Landmark,
 } from "lucide-react";
 import type { SidebarCounts } from "./sidebar.types";
 
@@ -185,6 +186,15 @@ export const sidebarSections: SidebarSection[] = [
         icon: Banknote,
         countKey: "pendingStoreTopUps",
         countLabel: "Store top-ups waiting for review",
+      },
+      // «طلبي باي» (F-100g): Tallaby's own payment collection, withdrawals, refunds and identity checks.
+      {
+        key: "tallabyPay",
+        title: "Tallaby Pay",
+        href: "/tallaby-pay",
+        icon: Landmark,
+        countKey: "tallabyPayQueue",
+        countLabel: "Tallaby Pay withdrawals, refunds and identities waiting",
       },
       // Tallaby affiliate program (F-37): withdrawal requests and referrers.
       { key: "referrals", title: "Referrals", href: "/referrals", icon: HandCoins },
