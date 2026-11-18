@@ -30,7 +30,6 @@ You need Node 22+, `ffmpeg` and `ffprobe` on PATH, and `pnpm install` done in th
 5. **Render:** `npx hyperframes render --quality delivery --crf 18 --fps 30 --output renders/raw.mp4`.
 6. **Finish:** `node "Tutorial Videos/_kit/finish.mjs" "Tutorial Videos/T-xx-slug"`. It writes `video.mp4`, `poster.jpg` and `work/stills/`, and prints the numbers of TUTORIALS.md §10. Look at every still.
 7. Write `video.md` from the template in TUTORIALS.md §6.
-8. Refresh the upload list: `node "Tutorial Videos/_kit/youtube-list.mjs"` rewrites `Tutorial Videos/YOUTUBE.md` (every video's YouTube title and description, ready to copy).
 
 ## The script (`video.mjs`)
 
