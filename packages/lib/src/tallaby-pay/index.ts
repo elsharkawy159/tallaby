@@ -2,4 +2,5 @@
 export * from "./fee.lib";
 export * from "./ledger.lib";
 export * from "./payouts.lib";
+export * from "./release.lib";
 export * from "./settings.lib";

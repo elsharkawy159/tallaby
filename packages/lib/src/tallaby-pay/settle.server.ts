@@ -11,9 +11,16 @@
  * way round. Replays stop at the advisory lock + the guarded order claim, and
  * the sale's unique (order, purpose) and easykash_ref and the entry claim are
  * backstops. Hold days are 0 (owner, 2026-11-18): the net only goes to
- * `pending` here; the release on delivery is F-100d.
+ * `pending` here; the release on delivery is release.server.ts (F-100d).
+ *
+ * Money that arrives for an order Tallaby can't accept is never credited to
+ * the seller (design §5): paid after the order was cancelled → a sale row in
+ * the Admin refund queue (`refund_state = 'requested'`, reason
+ * `paid_after_cancel`) that can never release; paid a second time for an
+ * order already paid → a `payments` row pending review (0175 has no sale row
+ * for it: UNIQUE (order_id, purpose)).
  */
-import { db, eq, orders, sql, stores, tallabyPaySales } from "@workspace/db";
+import { and, db, eq, orders, payments, sql, stores, tallabyPaySales } from "@workspace/db";
 
 import { isEasykashPaidStatus, readEasykashCallback, verifyEasykashSignature } from "../easykash/easykash.lib";
 import { EasykashApiError, inquireEasykashPayment } from "../easykash/easykash.server";
@@ -25,8 +32,9 @@ import {
   type GatewayCallOptions,
   type GatewayWebhookResult,
 } from "../payments/store-gateways.server";
-import { piastresToAmount, splitTallabyPay } from "./fee.lib";
+import { amountToPiastres, piastresToAmount, splitTallabyPay } from "./fee.lib";
 import { ensureTallabyPayWallet, postTallabyPayEntry } from "./ledger.server";
+import { TALLABY_PAY_REFUND_REASONS } from "./release.lib";
 import { isValidEasykashRef, readTallabyPaySettleTarget, tallabyPayTransactionId, type TallabyPaySettleTarget } from "./settle.lib";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -128,17 +136,23 @@ export async function handleTallabyPayCallback(raw: unknown, options: GatewayCal
       transactionId: tallabyPayTransactionId(fields.easykashRef),
       paymentData,
     });
+    const credit = {
+      orderId: order.id,
+      storeId: order.storeId!,
+      sellerId: store.sellerId,
+      target,
+      paidPiastres: event.amountPiastres,
+      easykashRef: fields.easykashRef,
+      customerReference: fields.customerReference,
+      paymentMethod: inquiry.paymentMethod ?? (fields.PaymentMethod || null),
+    };
     if (claimed === "paid" || claimed === "deposit_paid") {
-      await creditTallabyPaySale(tx, {
-        orderId: order.id,
-        storeId: order.storeId!,
-        sellerId: store.sellerId,
-        target,
-        paidPiastres: event.amountPiastres,
-        easykashRef: fields.easykashRef,
-        customerReference: fields.customerReference,
-        paymentMethod: inquiry.paymentMethod ?? (fields.PaymentMethod || null),
-      });
+      await creditTallabyPaySale(tx, credit);
+    } else if (claimed === "mismatch" && event.amountPiastres === expectedPiastres(order, target.purpose)) {
+      // The exact amount, refused by the claim: the order was cancelled (or
+      // left the payable states) before the money arrived. Straight to the
+      // Admin refund queue; it can never release.
+      await creditTallabyPaySale(tx, credit, { refundReason: TALLABY_PAY_REFUND_REASONS.paidAfterCancel });
     }
     return claimed;
   });
@@ -150,13 +164,15 @@ export async function handleTallabyPayCallback(raw: unknown, options: GatewayCal
   if (outcome === "duplicate") {
     // A replay of a credited payment is normal. A second, different payment
     // for an order already paid is money in Tallaby's account with no sale:
-    // flag it (the paid-twice path is F-100d).
+    // record it for Admin to refund, never credit it.
     const [sale] = await db
       .select({ id: tallabyPaySales.id })
       .from(tallabyPaySales)
       .where(eq(tallabyPaySales.easykashRef, fields.easykashRef))
       .limit(1);
-    if (!sale) console.error("[tallaby-pay] paid again for an order already paid; not credited", { orderId, purpose: target.purpose });
+    if (!sale) {
+      await recordTallabyPayPaidTwice({ orderId: order.id, event, transactionId: tallabyPayTransactionId(fields.easykashRef), paymentData, purpose: target.purpose });
+    }
     return { status: 200, body: { received: true, duplicate: true } };
   }
   if (outcome === "not_found" || outcome === "foreign") return IGNORED;
@@ -168,11 +184,26 @@ export async function handleTallabyPayCallback(raw: unknown, options: GatewayCal
   };
 }
 
+/** What the order asked for, in piastres: its total, or its deposit (F-21); -1 when unreadable. */
+function expectedPiastres(order: { totalAmount: string; depositAmount: string | null }, purpose: "order" | "deposit"): number {
+  const amount = purpose === "deposit" ? order.depositAmount : order.totalAmount;
+  try {
+    return amount == null ? -1 : amountToPiastres(String(amount));
+  } catch {
+    return -1;
+  }
+}
+
 /**
  * The sale row and its `sale` entry (+net to pending), inside the callback's
  * transaction: any failure rolls the order claim back with it. Gross is the
  * amount EasyKash confirmed (equal to the order total or the deposit, checked
  * by the claim); fee and net come from the order's snapshot.
+ *
+ * With `refundReason` (paid after cancel, design §5) the row is born in the
+ * Admin refund queue (`refund_state = 'requested'`), so it can never release;
+ * if the order already has a sale for this purpose, nothing is written here
+ * (the claim's `payments` row, pending with its reason, is the record).
  */
 async function creditTallabyPaySale(
   tx: Tx,
@@ -186,10 +217,11 @@ async function creditTallabyPaySale(
     customerReference: string;
     paymentMethod: string | null;
   },
+  review?: { refundReason: string },
 ): Promise<void> {
   const { feePiastres, netPiastres } = splitTallabyPay(input.paidPiastres, input.target.snapshot.feeBps);
   const walletId = await ensureTallabyPayWallet(tx, input.storeId, input.sellerId);
-  const [sale] = await tx
+  const insert = tx
     .insert(tallabyPaySales)
     .values({
       walletId,
@@ -207,8 +239,22 @@ async function creditTallabyPaySale(
       holdDays: input.target.snapshot.holdDays,
       status: "pending",
       paidAt: sql`now()`,
-    })
-    .returning({ id: tallabyPaySales.id });
+      ...(review && {
+        refundState: "requested",
+        refundRequestedAt: sql`now()`,
+        refundReason: review.refundReason,
+      }),
+    });
+  const [sale] = review
+    ? await insert.onConflictDoNothing().returning({ id: tallabyPaySales.id })
+    : await insert.returning({ id: tallabyPaySales.id });
+  if (!sale) {
+    console.error("[tallaby-pay] paid after cancel for an order that already has a sale; kept in payments for review", {
+      orderId: input.orderId,
+      purpose: input.target.purpose,
+    });
+    return;
+  }
   await postTallabyPayEntry(tx, {
     storeId: input.storeId,
     sellerId: input.sellerId,
@@ -218,6 +264,53 @@ async function creditTallabyPaySale(
     referenceType: "sale",
     referenceId: sale!.id,
     description: input.target.purpose === "deposit" ? "Tallaby Pay deposit" : "Tallaby Pay sale",
-    metadata: { orderId: input.orderId, purpose: input.target.purpose, feeBps: input.target.snapshot.feeBps },
+    metadata: {
+      orderId: input.orderId,
+      purpose: input.target.purpose,
+      feeBps: input.target.snapshot.feeBps,
+      ...(review && { refundReason: review.refundReason }),
+    },
+  });
+}
+
+/**
+ * A second, different EasyKash payment for an order (or deposit) already
+ * paid (design §5 "two payments for one order"): the money is in Tallaby's
+ * account but must never reach the seller. 0175's sales are UNIQUE (order,
+ * purpose), so it is recorded as a `payments` row pending review with the
+ * reason, once per EasyKash reference, for Admin to refund in EasyKash.
+ */
+async function recordTallabyPayPaidTwice(input: {
+  orderId: string;
+  event: GatewayEvent;
+  transactionId: string;
+  paymentData: Record<string, unknown>;
+  purpose: "order" | "deposit";
+}): Promise<void> {
+  await db.transaction(async (tx) => {
+    // Same lock as the claim, so concurrent replays write one row.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${input.transactionId}))`);
+    const [existing] = await tx
+      .select({ id: payments.id })
+      .from(payments)
+      .where(and(eq(payments.transactionId, input.transactionId), eq(payments.orderId, input.orderId)))
+      .limit(1);
+    if (existing) return;
+    await tx.insert(payments).values({
+      orderId: input.orderId,
+      amount: piastresToAmount(input.event.amountPiastres),
+      method: input.purpose === "deposit" ? "cod_deposit" : "online_payment",
+      currency: input.event.currency || "EGP",
+      transactionId: input.transactionId,
+      paymentData: { ...input.paymentData, review: "paid_twice" },
+      status: "pending",
+      errorMessage: input.purpose === "deposit"
+        ? "Deposit paid twice: the deposit was already paid; refund from Tallaby's EasyKash account"
+        : "Paid twice: the order was already paid; refund from Tallaby's EasyKash account",
+    });
+  });
+  console.error("[tallaby-pay] paid again for an order already paid; recorded for review, not credited", {
+    orderId: input.orderId,
+    purpose: input.purpose,
   });
 }

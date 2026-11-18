@@ -40,7 +40,11 @@ vi.mock("@workspace/db", async (importOriginal) => {
     select: () => chain(mocks.selectQueue.shift() ?? []),
     transaction: async (run: (tx: unknown) => unknown) => {
       mocks.transactions++;
-      const tx = { insert: () => chain([{ id: "sale-1" }], (v) => mocks.inserted.push(v)) };
+      const tx = {
+        insert: () => chain([{ id: "sale-1" }], (v) => mocks.inserted.push(v)),
+        execute: async () => [],
+        select: () => chain([]),
+      };
       return run(tx);
     },
   };
@@ -233,15 +237,44 @@ describe("handleTallabyPayCallback: settlement", () => {
     expect(mocks.postEntry).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pendingPiastres: 9_500 }));
   });
 
-  it("credits nothing on a mismatch or a duplicate claim", async () => {
+  it("credits nothing on an amount mismatch or a replayed duplicate", async () => {
     mocks.claim.mockResolvedValue("mismatch");
-    expect(await handleTallabyPayCallback(signed(), { fetch: inquiry(PAID) })).toMatchObject({ status: 200, body: { outcome: "mismatch" } });
+    const wrong = await handleTallabyPayCallback(signed({ Amount: "90.00" }), { fetch: inquiry({ ...PAID, Amount: "90.00" }) });
+    expect(wrong).toMatchObject({ status: 200, body: { outcome: "mismatch" } });
     mocks.claim.mockResolvedValue("duplicate");
     mocks.selectQueue = [[{ sellerId: SELLER }], [{ id: "sale-1" }]];
     const dup = await handleTallabyPayCallback(signed(), { fetch: inquiry(PAID) });
     expect(dup).toMatchObject({ status: 200, body: { duplicate: true } });
     expect(dup.paidOrderId).toBeUndefined();
     expect(mocks.inserted).toEqual([]);
+    expect(mocks.postEntry).not.toHaveBeenCalled();
+  });
+
+  it("paid after cancel (exact amount, claim refused): a sale born in the refund queue (F-100d)", async () => {
+    mocks.claim.mockResolvedValue("mismatch");
+    const result = await handleTallabyPayCallback(signed(), { fetch: inquiry(PAID) });
+    expect(result).toMatchObject({ status: 200, body: { outcome: "mismatch" } });
+    expect(result.paidOrderId).toBeUndefined();
+    expect(mocks.inserted).toEqual([
+      expect.objectContaining({ net: "97.00", status: "pending", refundState: "requested", refundReason: "paid_after_cancel" }),
+    ]);
+    expect(mocks.postEntry).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ kind: "sale", pendingPiastres: 9_700 }));
+  });
+
+  it("paid twice (no sale for this reference): recorded in payments for review, never credited (F-100d)", async () => {
+    mocks.claim.mockResolvedValue("duplicate");
+    mocks.selectQueue = [[{ sellerId: SELLER }], []];
+    const dup = await handleTallabyPayCallback(signed({ easykashRef: "111" }), { fetch: inquiry(PAID) });
+    expect(dup).toMatchObject({ status: 200, body: { duplicate: true } });
+    expect(mocks.inserted).toEqual([
+      expect.objectContaining({
+        orderId: ORDER,
+        transactionId: "tallaby_pay:111",
+        status: "pending",
+        amount: "100.00",
+        errorMessage: expect.stringContaining("Paid twice"),
+      }),
+    ]);
     expect(mocks.postEntry).not.toHaveBeenCalled();
   });
 

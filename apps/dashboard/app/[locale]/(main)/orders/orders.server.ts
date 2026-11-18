@@ -31,6 +31,8 @@ import {
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
 import { sendOrderEventEmail } from "@workspace/lib/orders";
 import { autoShipOrderWithBosta } from "@workspace/lib/shipping/bosta-ship";
+import { TALLABY_PAY_REFUND_REASONS } from "@workspace/lib/tallaby-pay";
+import { countOpenTallabyPaySales, requestTallabyPayOrderRefund } from "@workspace/lib/tallaby-pay/server";
 import { AccessError, requireOrderSeller, requireOrdersSeller } from "@/lib/auth/require-seller.server";
 import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment";
 import { isShippingStatus, type ShippingStatus } from "@/lib/shipping/shipping-status";
@@ -52,7 +54,8 @@ import {
 import type { StockShortage } from "./orders.types";
 
 type ActionResult =
-  | { success: true }
+  /** `tallabyPayRefundRequested`: the cancel also sent Tallaby a refund request (F-100d); the toast says so. */
+  | { success: true; tallabyPayRefundRequested?: true }
   /** `shortage`: the order needs more stock; the dialog offers to add it and carry on. */
   | { success: false; error: string; shortage?: StockShortage[] };
 
@@ -82,6 +85,8 @@ const inputSchema = z.object({
 /** Statuses an order can be cancelled from: nothing has left yet. */
 const CANCELLABLE_ORDER_STATUSES = ["pending", "confirmed", "shipping_soon", "shipped"] as const;
 const CANCELLABLE_SHIPMENT_STATUSES = ["pending", "assigned"] as const;
+/** Stages a paid Tallaby Pay order can be cancelled and refunded from (nothing has left yet). */
+const TALLABY_PAY_CANCEL_STAGES: readonly string[] = ["new", "to_ship"];
 
 /** Loads the order with everything the flow needs, scoped to this seller. */
 async function loadOrder(orderId: string, sellerId: string) {
@@ -174,8 +179,18 @@ async function confirmOrder({ order }: LoadedOrder, sellerId: string) {
  * hides cancel on prepaid orders; the guards here repeat it). Restocks the
  * lines and drops pending affiliate commission, like a customer cancel. No
  * money moves: nothing was collected.
+ *
+ * `tallabyPayRefund` (ROADMAP.md F-100d, design §5 "Cancel and refund"): the
+ * order (or its deposit) was paid through Tallaby Pay, so the money is in
+ * Tallaby's account. The order may be paid; in the same transaction its
+ * pending sales get a refund request for Admin, so they never release. The
+ * buyer's money goes back when an admin refunds it in EasyKash.
  */
-async function cancelOrder({ order, shipment }: LoadedOrder, sellerId: string) {
+async function cancelOrder(
+  { order, shipment }: LoadedOrder,
+  sellerId: string,
+  { tallabyPayRefund = false }: { tallabyPayRefund?: boolean } = {},
+) {
   const now = new Date().toISOString();
   const stockLines = orderStockLines(order);
 
@@ -187,7 +202,9 @@ async function cancelOrder({ order, shipment }: LoadedOrder, sellerId: string) {
         and(
           eq(orders.id, order.id),
           inArray(orders.status, [...CANCELLABLE_ORDER_STATUSES]),
-          sql`coalesce(${orders.paymentStatus}::text, 'pending') not in ('paid', 'collected')`,
+          tallabyPayRefund
+            ? undefined
+            : sql`coalesce(${orders.paymentStatus}::text, 'pending') not in ('paid', 'collected')`,
         ),
       )
       .returning({ id: orders.id });
@@ -211,6 +228,16 @@ async function cancelOrder({ order, shipment }: LoadedOrder, sellerId: string) {
         )
         .returning({ id: shipments.id });
       if (cancelled.length === 0) throw new OrderActionError("alreadyUpdated");
+    }
+
+    if (tallabyPayRefund) {
+      const requested = await requestTallabyPayOrderRefund(tx, {
+        orderId: order.id,
+        sellerId,
+        requestedBy: sellerId,
+        reason: TALLABY_PAY_REFUND_REASONS.sellerCancelled,
+      });
+      if (requested.length === 0) throw new OrderActionError("alreadyUpdated");
     }
 
     const results = await restoreStock(tx, stockLines, { reason: "cancel", orderId: order.id, actorId: sellerId });
@@ -452,10 +479,22 @@ async function runSellerOrderAction(
   action: SellerOrderAction,
   reason: string | undefined,
   { allowCorrections = false, ...stockOptions }: { allowCorrections?: boolean } & StockOptions = {},
-) {
+): Promise<{ tallabyPayRefundRequested?: true } | void> {
   const loaded = await loadOrder(orderId, sellerId);
 
   if (loaded.flow.readOnly) throw new OrderActionError(`readOnly.${loaded.flow.readOnly}`);
+
+  // Money paid through Tallaby Pay and not yet released: cancelling opens a
+  // refund request for Admin instead of a silent cancel (F-100d). One order
+  // at a time only, so a bulk cancel never sends refund requests.
+  if (action === "cancel" && (await countOpenTallabyPaySales(db, orderId, sellerId)) > 0) {
+    const { stage, carrierManaged } = loaded.flow;
+    if (!allowCorrections || carrierManaged || !TALLABY_PAY_CANCEL_STAGES.includes(stage)) {
+      throw new OrderActionError("notAllowed");
+    }
+    await cancelOrder(loaded, sellerId, { tallabyPayRefund: true });
+    return { tallabyPayRefundRequested: true };
+  }
   if (!loaded.flow.actions.includes(action)) {
     if (allowCorrections && loaded.flow.corrections.includes(action)) {
       await correctClosedOrder(loaded, sellerId, action, reason, stockOptions);
@@ -531,12 +570,14 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
     const { orderId, action, reason, restock, addMissingStock } = inputSchema.parse(input);
     // Locked orders (F-84): the first order can still be worked on, and no other.
     const { sellerId } = await requireOrderSeller(orderId);
+    let refundRequested = false;
     try {
-      await runSellerOrderAction(sellerId, orderId, action, reason, {
+      const outcome = await runSellerOrderAction(sellerId, orderId, action, reason, {
         allowCorrections: true,
         restock,
         addMissingStock,
       });
+      refundRequested = Boolean(outcome?.tallabyPayRefundRequested);
     } catch (error) {
       if (error instanceof OrderActionError && error.key === "outOfStock") {
         return { success: false, error: t("outOfStock"), shortage: await loadStockShortage(orderId, sellerId) };
@@ -545,7 +586,7 @@ export async function updateSellerOrder(input: unknown): Promise<ActionResult> {
     }
 
     revalidateDashboardPath("/orders", "layout");
-    return { success: true };
+    return refundRequested ? { success: true, tallabyPayRefundRequested: true } : { success: true };
   } catch (error) {
     if (error instanceof OrderActionError) return { success: false, error: t(error.key) };
     if (error instanceof AccessError) return { success: false, error: t("unauthorized") };

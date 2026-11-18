@@ -109,6 +109,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   "tallaby_pay_payout_reversed",
   "tallaby_pay_kyc_verified",
   "tallaby_pay_kyc_rejected",
+  // Tallaby Pay refund before delivery (F-100d)
+  "tallaby_pay_sale_refunded",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

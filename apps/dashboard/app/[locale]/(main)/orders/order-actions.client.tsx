@@ -84,7 +84,11 @@ export function OrderActions({
         toast.error(res.error);
         return;
       }
-      toast.success(t(`done.${actionLabelKey(order, action)}`, { number: order.orderNumber }));
+      toast.success(
+        res.tallabyPayRefundRequested
+          ? t("done.cancelRefund", { number: order.orderNumber })
+          : t(`done.${actionLabelKey(order, action)}`, { number: order.orderNumber }),
+      );
       if (action === "confirm" && order.bostaAutoShip) {
         // The Bosta shipment is created after the response (BS-09); show it once it exists.
         toast.info(tBosta("autoSending", { number: order.orderNumber }));

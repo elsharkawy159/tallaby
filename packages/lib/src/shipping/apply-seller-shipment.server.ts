@@ -2,6 +2,7 @@ import { and, db, eq, orderItems, orders, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { sendOrderEventEmail, type OrderEmailEvent } from "../orders";
 import { sendDeliveredMetaPurchase } from "../integrations/meta-tracking.server";
+import { releaseTallabyPayOrderOnDelivery } from "../tallaby-pay/release.server";
 import {
   cancelPendingAffiliateCommission,
   reverseAffiliateCommission,
@@ -148,6 +149,10 @@ export async function applySellerShipmentStatus({
 
     if (inTransaction) await inTransaction(tx);
   });
+
+  // Tallaby Pay (F-100d, hold 0 days): the sale's net becomes available on
+  // delivery. After the commit, never throws; the hourly cron retries.
+  if (status === "delivered") await releaseTallabyPayOrderOnDelivery(orderId);
 
   // Customer mail once the status is committed (best-effort, once per order).
   // A seller cancel tells the customer; the seller themself gets no email.

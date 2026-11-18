@@ -2925,7 +2925,8 @@
         "fail": "Failed attempt saved for #{number}",
         "return": "Order #{number} marked returned",
         "cancel": "Order #{number} cancelled",
-        "reopen": "Order #{number} is ready to ship again"
+        "reopen": "Order #{number} is ready to ship again",
+        "cancelRefund": "Order #{number} cancelled. We sent Tallaby a refund request for the customer. The amount stays in your pending earnings until the refund is done."
       },
       "dialog": {
         "back": "Go back",
