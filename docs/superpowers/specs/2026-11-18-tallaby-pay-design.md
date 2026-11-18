@@ -459,6 +459,8 @@ and Tallaby Pay passes an `onPaid` that writes the sale. Adding `tallaby_pay` to
 
 ## 9. Risks the owner must clear
 
+**Update 2026-11-18 (owner):** EasyKash confirmed that Tallaby may use its gateway behind Tallaby Pay (collecting on sellers' behalf). Keep their written confirmation on file. Still open: the legal/CBE check (§9.1) and the accountant's answer on VAT (§9.7).
+
 1. **Licensing (blocking).** Collecting buyers' money for many sellers and paying it out later is what payment
    facilitators do. In Egypt that is regulated by the Central Bank of Egypt. Tallaby may need to work under EasyKash's (or a
    bank's) licence as a sub-merchant aggregator, or get its own arrangement. **Before launch, the owner needs:** (a) EasyKash's

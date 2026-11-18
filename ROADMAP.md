@@ -1400,7 +1400,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **Status:** designed 2026-11-18, nothing built. Design: [`docs/superpowers/specs/2026-11-18-tallaby-pay-design.md`](docs/superpowers/specs/2026-11-18-tallaby-pay-design.md) (tasks F-100-0, F-100a–i in its §13; owner questions in §14).
 - **Owner decisions (2026-11-18):** 3% platform fee (may rise; snapshotted per order); seller gets 97% in a separate per-store Earnings wallet, pending until delivered + a hold, then available; EasyKash's own fee comes out of the 3%; withdrawals by request, paid by hand from Admin; refunds manual, the 97 taken back and Tallaby keeps nothing.
-- **Blocking before launch:** legal/CBE and EasyKash written OK for collecting on sellers' behalf; the `tallaby_pay_live` switch stays off until then.
+- **Blocking before launch:** EasyKash confirmed Tallaby may collect through it (owner, 2026-11-18; keep it in writing); still open: the legal/CBE check; the `tallaby_pay_live` switch stays off until then.
 - **Env (when building):** `TALLABY_EASYKASH_API_KEY` (ecommerce, backend, admin), `TALLABY_EASYKASH_HMAC_SECRET` (backend); Tallaby's EasyKash callback URL `https://<backend>/api/webhooks/tallaby-pay/easykash`.
 
 ---
