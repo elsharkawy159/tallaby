@@ -30,7 +30,7 @@ You need Node 22+, `ffmpeg` and `ffprobe` on PATH, and `pnpm install` done in th
 5. **Render:** `npx hyperframes render --quality delivery --crf 18 --fps 30 --output renders/raw.mp4`.
 6. **Finish:** `node "Tutorial Videos/_kit/finish.mjs" "Tutorial Videos/T-xx-slug"`. It writes `video.mp4`, `poster.jpg` and `work/stills/`, and prints the numbers of TUTORIALS.md §10. Look at every still.
 7. Write `video.md` from the template in TUTORIALS.md §6.
-8. To upload: `node "Tutorial Videos/_kit/upload-folder.mjs"` copies every video with an empty `youtube_url` into `Tutorial Videos/_upload/batch-1`, `batch-2`, … (15 per batch, YouTube Studio's limit), named by its `youtube_title` (" | " becomes " - "). Drag a batch into YouTube Studio, then fill `youtube_url` and `youtube_embed` in each `video.md` and run it again.
+8. To upload: `node "Tutorial Videos/_kit/upload-folder.mjs"` copies every video with an empty `youtube_url` into `Tutorial Videos/_upload/batch-1`, `batch-2`, … (15 per batch, YouTube Studio's limit), named `T-## <youtube_title>` (" | " becomes " - "; delete the `T-## ` in Studio, it tells you which folder gets the link). Drag a batch into YouTube Studio, then fill `youtube_url` and `youtube_embed` in each `video.md` and run it again.
 
 ## The script (`video.mjs`)
 

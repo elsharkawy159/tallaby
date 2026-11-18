@@ -1,5 +1,5 @@
 // Copies every tutorial that is not on YouTube yet (empty youtube_url) into "Tutorial Videos/_upload/",
-// named by its youtube_title so YouTube Studio fills the title from the file name.
+// named "T-## <youtube_title>" (the owner removes the "T-## " in YouTube Studio; it shows which folder gets the link).
 // Windows file names cannot hold "|", so " | " becomes " - " (paste the exact title from video.md if you want the bar).
 // YouTube Studio takes 15 files at a time, so the files go into batch-1, batch-2, … (ready videos first).
 // Run: node "Tutorial Videos/_kit/upload-folder.mjs"   (re-run after uploading; it rebuilds _upload from scratch)
@@ -29,7 +29,7 @@ videos.forEach((v, i) => {
   if (!v.title) throw new Error(`${v.name}: video.md has no youtube_title`);
   const dir = join(out, `batch-${Math.floor(i / BATCH) + 1}`);
   mkdirSync(dir, { recursive: true });
-  const file = v.title.replace(/\s*\|\s*/g, " - ").replace(/[<>:"/\\?*]/g, "").trim() + ".mp4";
+  const file = `${v.name.match(/^T-\d+/)[0]} ` + v.title.replace(/\s*\|\s*/g, " - ").replace(/[<>:"/\\?*]/g, "").trim() + ".mp4";
   copyFileSync(join(root, v.name, "video.mp4"), join(dir, file));
   console.log(`batch-${Math.floor(i / BATCH) + 1}  ${v.name.padEnd(24)} ${v.status.padEnd(6)} ${file}`);
 });
