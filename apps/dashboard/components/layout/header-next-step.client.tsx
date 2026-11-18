@@ -32,7 +32,16 @@ const STEP_ICONS: Record<HomeStepKey, LucideIcon> = {
  * change and on a setup action (requestSetupPromptCheck), so a finished step
  * moves it on without a reload.
  */
-export function HeaderNextStep({ initial, storeHref }: { initial: SetupNextStep | null; storeHref: string | null }) {
+export function HeaderNextStep({
+  initial,
+  storeHref,
+  siteLive,
+}: {
+  initial: SetupNextStep | null;
+  storeHref: string | null;
+  /** The selected store's site is published: the "Visit store" dot is green, else red. */
+  siteLive: boolean;
+}) {
   const t = useTranslations("header");
   const tSteps = useTranslations("home.setup.tasks");
   const pathname = usePathname();
@@ -69,16 +78,27 @@ export function HeaderNextStep({ initial, storeHref }: { initial: SetupNextStep 
   if (!action) return null;
 
   if (action.kind === "visit") {
+    const siteLabel = t(siteLive ? "siteLive" : "siteOffline");
     return (
       <a
         href={action.href}
         target="_blank"
         rel="noopener noreferrer"
-        title={t("visitStoreHint")}
+        title={`${siteLabel} · ${t("visitStoreHint")}`}
         className={cn(PILL, "bg-(--s-surface) text-(--s-muted) hover:text-(--s-ink)")}
       >
-        <SquareArrowOutUpRight aria-hidden />
+        <span
+          role="img"
+          aria-label={siteLabel}
+          className={cn(
+            "relative size-2 shrink-0 rounded-full",
+            siteLive
+              ? "sui-live-dot bg-[#16a34a] text-[#16a34a] shadow-[0_0_0_3px_rgb(22_163_74/0.15)]"
+              : "bg-[#dc2626] shadow-[0_0_0_3px_rgb(220_38_38/0.15)]",
+          )}
+        />
         <span className="truncate">{t("visitStore")}</span>
+        <SquareArrowOutUpRight aria-hidden />
       </a>
     );
   }

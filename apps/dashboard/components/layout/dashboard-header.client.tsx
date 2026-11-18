@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight, ExternalLink, Menu, Plus } from "lucide-react";
+import { ChevronRight, Menu, Plus } from "lucide-react";
 import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
@@ -19,8 +19,8 @@ import { NotificationBell } from "./notification-bell.client";
 import { ThemeToggle } from "./theme-toggle.client";
 
 /**
- * The top bar (`.top`). It follows the design's widths: up to 1020px the host
- * pill and labels go, up to 720px the title goes, and at 600px and below the
+ * The top bar (`.top`). It follows the design's widths: up to 1020px the
+ * labels go, up to 720px the title goes, and at 600px and below the
  * language, theme and install buttons move into the sidebar drawer.
  */
 export function DashboardHeader({
@@ -70,8 +70,6 @@ export function DashboardHeader({
     };
   }, []);
 
-  const siteLabel = t(siteLive ? "siteLive" : "siteOffline");
-
   return (
     <header className="sticky top-0 z-30 flex h-[68px] items-center gap-2.5 border-b border-(--s-topbar-line) bg-(--s-topbar) px-7 backdrop-blur-[14px] backdrop-saturate-[1.4] max-[1020px]:px-4 max-[600px]:h-[60px] max-[600px]:gap-1.5 max-[600px]:px-2.5 print:hidden">
       <IconButton onClick={() => setMobileOpen(true)} aria-label={t("openMenu")} className="min-[1021px]:hidden">
@@ -92,35 +90,11 @@ export function DashboardHeader({
           </span>
         )}
         <b className="truncate text-[15px] font-bold text-(--s-ink)">{tNav(route.title)}</b>
-        {storeLink && (
-          <a
-            href={storeLink.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={siteLabel}
-            className="inline-flex items-center gap-[7px] rounded-full border border-(--s-field) bg-(--s-surface) px-2.5 py-1 font-montserrat text-xs font-medium text-(--s-subtle) no-underline transition-colors duration-150 hover:border-(--s-outline) hover:text-(--s-ink) max-[1020px]:hidden"
-          >
-            <span
-              role="img"
-              aria-label={siteLabel}
-              className={cn(
-                "relative size-2 shrink-0 rounded-full",
-                siteLive
-                  ? "sui-live-dot bg-[#16a34a] text-[#16a34a] shadow-[0_0_0_3px_rgb(22_163_74/0.15)]"
-                  : "bg-[#dc2626] shadow-[0_0_0_3px_rgb(220_38_38/0.15)]",
-              )}
-            />
-            <bdi dir="ltr" className="max-w-[220px] truncate">
-              {storeLink.host}
-            </bdi>
-            <ExternalLink aria-hidden className="size-[13px] shrink-0" />
-          </a>
-        )}
       </div>
 
       {/* The next setup step, then "Visit store" (owner, 2026-11-18). Always rendered: it keeps the actions at the end. */}
       <div className="mx-auto flex min-w-0 flex-[1_1_0] justify-center max-[720px]:justify-start">
-        <HeaderNextStep key={storeId ?? "none"} initial={setupNextStep} storeHref={storeLink?.href ?? null} />
+        <HeaderNextStep key={storeId ?? "none"} initial={setupNextStep} storeHref={storeLink?.href ?? null} siteLive={siteLive} />
       </div>
 
       {/* Search hidden for now (owner, 2026-11-18): Ctrl/⌘K and the bottom nav's Search still open the palette.
