@@ -139,6 +139,8 @@
       op(e);
     });
 
+    paintStage();
+
     /* The result check sits on the corner of the thing that proves the task is done, inside the safe area. */
     if (V.checkOn) {
       tl.seek(V.checkAt, false);
@@ -152,6 +154,111 @@
     /* Run once from end to start so every tween records its values in order. */
     tl.progress(1, false).progress(0, false);
     return tl;
+
+    /* ───────────── the area outside the screen ───────────── */
+
+    /*
+     * When the camera lifts or shifts the screen (a zoom with `below`, or a video's own #tk-cam move),
+     * part of the frame shows the stage behind it. The stage takes the colour of the page along the
+     * edge it borders, so it reads as the page going on, not as a white band. For every camera move
+     * that ends with an edge off the frame, the kit seeks to the end of the move, reads the page's
+     * colour just inside that edge, and sets it on the stage when the move starts (the band is
+     * 0 px tall at that moment, so the change never shows). `stageBg` in video.mjs fixes the colour.
+     */
+    function paintStage() {
+      var stage = $("#tk-stage");
+      var fit = $("#tk-fit");
+      var fallback = getComputedStyle(stage).backgroundColor;
+      var moves = tl.getChildren(false, true, false).filter(function (tw) {
+        return tw.targets().indexOf(cam) !== -1;
+      });
+      moves.forEach(function (tw) {
+        var color = V.stageBg;
+        if (!color) {
+          tl.seek(tw.endTime(), false);
+          color = edgeColor(fit, fallback);
+        }
+        if (color) tl.set(stage, { backgroundColor: color }, tw.startTime());
+      });
+    }
+
+    /** The page's colour just inside the edge of the screen that has left the frame, or null if none has. */
+    function edgeColor(fit, fallback) {
+      var root = document.getElementById("root").getBoundingClientRect();
+      var r = fit.getBoundingClientRect();
+      var k = W / root.width;
+      var gap = {
+        top: (r.top - root.top) * k,
+        bottom: (root.bottom - r.bottom) * k,
+        left: (r.left - root.left) * k,
+        right: (root.right - r.right) * k,
+      };
+      var side = Object.keys(gap).reduce(function (a, b) {
+        return gap[b] > gap[a] ? b : a;
+      });
+      if (gap[side] < 1) return null;
+      var inset = 2 / k;
+      var points =
+        side === "top" || side === "bottom"
+          ? [0.04, 0.96].map(function (f) {
+              return [r.left + r.width * f, side === "top" ? r.top + inset : r.bottom - inset];
+            })
+          : [0.04, 0.96].map(function (f) {
+              return [side === "left" ? r.left + inset : r.right - inset, r.top + r.height * f];
+            });
+      var colors = points.map(function (p) {
+        return colorAt(fit, p[0], p[1], fallback);
+      });
+      var c = [0, 1, 2].map(function (i) {
+        return Math.round((colors[0][i] + colors[1][i]) / 2);
+      });
+      return "rgb(" + c.join(", ") + ")";
+    }
+
+    /** The colour the page paints at a point: every background under it, composited top-down. */
+    function colorAt(fit, x, y, fallback) {
+      var out = [0, 0, 0];
+      var a = 0;
+      var stack = document.elementsFromPoint ? document.elementsFromPoint(x, y) : [];
+      for (var i = 0; i < stack.length && a < 0.995; i++) {
+        var el = stack[i];
+        if (!fit.contains(el) || el === fit) continue;
+        var c = rgba(getComputedStyle(el).backgroundColor);
+        if (!c || !c[3]) continue;
+        var alpha = c[3] * opacityOf(el, fit);
+        for (var j = 0; j < 3; j++) out[j] += (1 - a) * alpha * c[j];
+        a += (1 - a) * alpha;
+      }
+      // Whatever is still see-through shows the screen's own background, then the dashboard's.
+      var base = rgba(activeScreenColor(fit)) || rgba(fallback) || [250, 250, 248, 1];
+      for (var m = 0; m < 3; m++) out[m] += (1 - a) * base[m];
+      return out;
+    }
+
+    function opacityOf(el, fit) {
+      var o = 1;
+      for (var n = el; n && n !== fit; n = n.parentElement) o *= parseFloat(getComputedStyle(n).opacity) || 0;
+      return o;
+    }
+
+    /** The background colour of the page being shown (the last visible .tk-screen), if it has one. */
+    function activeScreenColor(fit) {
+      var screens = fit.querySelectorAll(".tk-screen");
+      for (var i = screens.length - 1; i >= 0; i--) {
+        var s = getComputedStyle(screens[i]);
+        if (parseFloat(s.opacity) < 0.5 || s.display === "none" || s.visibility === "hidden") continue;
+        var c = rgba(s.backgroundColor);
+        if (c && c[3] > 0.99) return s.backgroundColor;
+      }
+      return null;
+    }
+
+    function rgba(str) {
+      var m = str && str.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?/);
+      if (!m) return null;
+      var alpha = m[4] == null ? 1 : m[4].slice(-1) === "%" ? parseFloat(m[4]) / 100 : parseFloat(m[4]);
+      return [+m[1], +m[2], +m[3], alpha];
+    }
 
     /* ───────────── operations ───────────── */
 

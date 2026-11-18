@@ -50,11 +50,16 @@ body {
 
 /* ───────────── The dashboard screen: fills the frame, no phone mockup ───────────── */
 
+/*
+ * What shows around the screen when the camera lifts or shifts it. kit.js sets the page's own
+ * colour here for each such move; this is the fallback (the dashboard page background). A video
+ * can change the fallback with --tk-stage-bg in its screen.css, or fix the colour with stageBg.
+ */
 #tk-stage {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--tk-stage-bg, #fafaf8);
 }
 
 /* The camera: the kit zooms and moves this element. */
@@ -64,6 +69,16 @@ body {
   top: 0;
   width: 1080px;
   height: 1920px;
+}
+
+/* The screen's edge: a hairline and a soft shadow, outside the frame until the camera moves the screen. */
+#tk-cam::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow:
+    0 0 0 2px rgb(20 81 99 / 0.07),
+    0 10px 36px rgb(13 55 67 / 0.12);
 }
 
 /* 390 x 693 CSS px drawn 2.77 times larger. */

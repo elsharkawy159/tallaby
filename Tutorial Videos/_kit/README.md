@@ -43,6 +43,7 @@ export default {
   checkAt: 27.25,  // the gold check, for 1.5 s
   checkOn: "#new-product", // optional: put the check on this element's corner
   endAt: 29.0,     // end card
+  stageBg: "#faf8f5", // optional: the colour around the screen when the camera lifts it (default: read from the page)
   voice: { /* the voiceover, see "Voiceover" below */ },
   events: [ /* what happens on the page, see below */ ],
 };
@@ -111,4 +112,5 @@ Both also check the size, frame rate, codecs, duration (20–40 s, target 28–3
 - The composition is one generated `index.html`. `hyperframes lint` warns that it is large and not split into sub-compositions; that is expected, because the kit writes it and nobody edits it by hand.
 - The dashboard screen is marked `data-layout-ignore`: it is a page scrolling under fixed bars, so HyperFrames' text-overlap audit does not apply to it. The overlays are still audited.
 - HyperFrames' own safe area for vertical video ends at y 1330. TUTORIALS.md puts the caption's bottom edge at y 1460, so the caption carries `data-layout-allow-safe-zone`.
+- **Around the screen.** When the camera lifts the screen (`zoom` with `below`) or a video moves `#tk-cam` itself, part of the frame shows the stage behind the screen. For each such move the kit seeks to where the move ends, reads the page's colour just inside the edge that left the frame (every background under that point, scrims included), and sets it on the stage as the move starts, so the area reads as the page going on. A hairline and a soft shadow mark the screen's edge; both sit outside the frame until the camera moves. If the colour can't be read, the stage uses `--tk-stage-bg` (default `#fafaf8`, the dashboard page), which a video's `screen.css` can set on `:root`. `stageBg` in `video.mjs` fixes one colour for every move instead.
 - If the dashboard's design changes, update `dashboard/dashboard.css` and `dashboard/topbar.html` from `apps/dashboard`.
