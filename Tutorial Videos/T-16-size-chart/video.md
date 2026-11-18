@@ -6,7 +6,7 @@ roadmap: "F-92 Size chart app (F-92a–c; migration 0169)"
 dashboard_path: /stores/[storeId]/apps/size-chart
 status: draft
 duration_seconds: 34.9
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation ZXBWZFtTNYUFI2OvWSCD"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation QCBKkg6aG3yHRN2AuFsf"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "طريقة إضافة جدول مقاسات لمتجرك على طلبي #Shorts"
@@ -17,30 +17,21 @@ youtube_title_en: "How to add a size chart to your Tallaby store #Shorts"
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–4.75 s | Title card | "إضافة جدول مقاسات", label "شرح سريع" | 0.30–4.60 s «هنضيف جدول مقاسات لمتجرك على طلبي، في أربع خطوات بسيطة.» |
-| 4.75–9.5 s | 1. اضغط «ثبّت» ثم «تثبيت» | مركز التطبيقات › جدول المقاسات › نظرة عامة: tap «ثبّت»; the dialog "تثبيت جدول المقاسات؟" / "هذا التطبيق مجاني، ويعمل على هذا المتجر فقط."; tap «تثبيت»; toast "تم تثبيت التطبيق", badge "مثبّت", the button becomes «افتح الإعدادات» | 5.05–8.03 s «واحد: ثبّت تطبيق جدول المقاسات.» |
-| 9.5–14.7 s | 2. اختر قالب «تيشيرتات وقمصان» | Tap «افتح الإعدادات» → the Settings tab (install card "شغّال", empty "مفيش جداول مقاسات لسه"); tap «جدول مقاسات جديد»; the modal "ابدأ جدول مقاسات"; tap «تيشيرتات وقمصان» → the editor | 9.80–13.80 s «اتنين: اضغط جدول مقاسات جديد، واختار التيشيرتات.» |
-| 14.7–19.4 s | 3. راجع المقاسات واضغط «حفظ الجدول» | Editor "جدول مقاسات جديد" (name تيشيرتات وقمصان / T-shirts & tops, inputs الطول and الوزن); scroll to "المقاسات" (XS … 3XL with height and weight ranges), back up, tap «حفظ الجدول»; back on Settings with the new chart and the toast "جدول المقاسات اتحفظ" | 15.00–18.57 s «تلاتة: راجع المقاسات، واضغط حفظ الجدول.» |
-| 19.4–25.5 s | 4. اضغط «طبّقه على» واختر «تيشيرتات» | Tap «طبّقه على» on the chart row; the dialog "طبّق «تيشيرتات وقمصان»"; tick «تيشيرتات» under "أقسام المتجر"; the screen lifts (23.5–25.3 s, 1.8 s) for «حفظ» in the dialog footer; toast "اتحفظ" | 19.70–23.65 s «أربعة: اربط الجدول بقسم التيشيرتات، واضغط حفظ.» |
-| 25.5–32.4 s | Result | The chart row now reads "تيشيرتات"; then the shopper's product page on "متجر نور" (تيشيرت قطن أساسي, 299 جنيه, sizes S M L XL); tap «اعرف مقاسك»; the bottom sheet with الطول 170 سم, الوزن 65 كجم, «عادي» → "مقاسك المناسب" M; the screen lifts 28.9–31.6 s (2.7 s) so the result sits in the safe area; the gold check on the result | 25.80–31.96 s «وكده العميل هيلاقي زرار اعرف مقاسك في صفحة المنتج، ويعرف مقاسه بسهولة.» |
+| 0–4.75 s | Title card | "إضافة جدول مقاسات", label "شرح سريع" | 0.30–4.63 s «هَنْضِيف جَدْوَل مَقَاسَات لِمَتْجَرَك عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة.» |
+| 4.75–9.5 s | 1. اضغط «ثبّت» ثم «تثبيت» | مركز التطبيقات › جدول المقاسات › نظرة عامة: tap «ثبّت»; the dialog "تثبيت جدول المقاسات؟" / "هذا التطبيق مجاني، ويعمل على هذا المتجر فقط."; tap «تثبيت»; toast "تم تثبيت التطبيق", badge "مثبّت", the button becomes «افتح الإعدادات» | 5.05–7.94 s «وَاحِد: ثَبِّت تَطْبِيق جَدْوَل المَقَاسَات.» |
+| 9.5–14.7 s | 2. اختر قالب «تيشيرتات وقمصان» | Tap «افتح الإعدادات» → the Settings tab (install card "شغّال", empty "مفيش جداول مقاسات لسه"); tap «جدول مقاسات جديد»; the modal "ابدأ جدول مقاسات"; tap «تيشيرتات وقمصان» → the editor | 9.80–13.81 s «اِتْنِين: اِضْغَط جَدْوَل مَقَاسَات جِدِيد، وِاخْتَار التِّيشِيرْتَات.» |
+| 14.7–19.4 s | 3. راجع المقاسات واضغط «حفظ الجدول» | Editor "جدول مقاسات جديد" (name تيشيرتات وقمصان / T-shirts & tops, inputs الطول and الوزن); scroll to "المقاسات" (XS … 3XL with height and weight ranges), back up, tap «حفظ الجدول»; back on Settings with the new chart and the toast "جدول المقاسات اتحفظ" | 15.00–18.33 s «تَلَاتَة: رَاجِع المَقَاسَات، وِاضْغَط حِفْظ الجَدْوَل.» |
+| 19.4–25.5 s | 4. اضغط «طبّقه على» واختر «تيشيرتات» | Tap «طبّقه على» on the chart row; the dialog "طبّق «تيشيرتات وقمصان»"; tick «تيشيرتات» under "أقسام المتجر"; the screen lifts (23.5–25.3 s, 1.8 s) for «حفظ» in the dialog footer; toast "اتحفظ" | 19.70–23.39 s «أَرْبَعَة: اُرْبُط الجَدْوَل بِقِسْم التِّيشِيرْتَات، وِاضْغَط حِفْظ.» |
+| 25.5–32.4 s | Result | The chart row now reads "تيشيرتات"; then the shopper's product page on "متجر نور" (تيشيرت قطن أساسي, 299 جنيه, sizes S M L XL); tap «اعرف مقاسك»; the bottom sheet with الطول 170 سم, الوزن 65 كجم, «عادي» → "مقاسك المناسب" M; the screen lifts 28.9–31.6 s (2.7 s) so the result sits in the safe area; the gold check on the result | 25.80–31.72 s «وِكِدَه العَمِيل هَيْلَاقِي زُرَار اِعْرَف مَقَاسَك فِي صَفْحِة المُنْتَج، وِيِعْرَف مَقَاسُه بِسُهُولَة.» |
 | 32.4–34.9 s | End card | "جرّبها الآن من لوحة التحكم", "مركز التطبيقات ‹ جدول المقاسات" | Nothing is spoken |
 
-## Voiceover script (with diacritics, exactly as generated)
+## Voiceover script (full تشكيل, exactly as generated)
 
-هنضيف جدول مقاسات لمَتجَرَك على طَلَبي، في أربع خطوات بسيطة. واحد: ثبّت تطبيق جدول المقاسات. اتنين: اضغَط جدول مقاسات جديد، واختار التيشيرتات. تلاتة: راجع المقاسات، واضغَط حِفظ الجدول. أربعة: اربط الجدول بقسم التيشيرتات، واضغَط حِفظ. وكده العميل هيلاقي زرار اعرف مقاسك في صفحة المُنتَج، ويعرف مقاسه بسهولة.
+هَنْضِيف جَدْوَل مَقَاسَات لِمَتْجَرَك عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة. وَاحِد: ثَبِّت تَطْبِيق جَدْوَل المَقَاسَات. اِتْنِين: اِضْغَط جَدْوَل مَقَاسَات جِدِيد، وِاخْتَار التِّيشِيرْتَات. تَلَاتَة: رَاجِع المَقَاسَات، وِاضْغَط حِفْظ الجَدْوَل. أَرْبَعَة: اُرْبُط الجَدْوَل بِقِسْم التِّيشِيرْتَات، وِاضْغَط حِفْظ. وِكِدَه العَمِيل هَيْلَاقِي زُرَار اِعْرَف مَقَاسَك فِي صَفْحِة المُنْتَج، وِيِعْرَف مَقَاسُه بِسُهُولَة.
 
-47 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`ZXBWZFtTNYUFI2OvWSCD`, 306 credits, ElevenLabs flow `X0zAtkrUkr8Q6EP8weId`). The take is `work/vo/take.mp3` (24.96 s), cut inside its pauses at 4.30, 7.28, 11.28, 14.85 and 18.80 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word (47 words) with no laugh marker; like earlier videos it returned the script's own diacritics, so it may lean on the text.
+47 words, full تشكيل (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`QCBKkg6aG3yHRN2AuFsf`, 431 credits, ElevenLabs flow `CRCP9NodFJgWlF9UXjLB`), made 2026-11-18. The take is `work/vo/take.mp3` (26.28 s), cut inside its pauses (chunks 0–4.33, 4.8–7.69, 7.97–11.98, 12.3–15.63, 16.05–19.74 and 20.36–26.28 s) and placed one sentence per beat; it is not sped up or stretched. Every sentence fit its old beat, so no step moved. The transcript (`eleven_scribe_v1`) matched the script word for word (47 words) with no laugh marker; it returned the script's own diacritics, so it may lean on the text.
 
-**This take uses the earlier rule (diacritics only where needed).** The owner's new rule (2026-11-18: full تشكيل on every word) came in after the take was generated, so it was not regenerated. If a new take is wanted, the fully vowelled script is:
-
-> هَنْضِيف جَدْوَل مَقاسات لِمَتْجَرَك عَلى طَلَبي، في أَرْبَع خُطُوات بَسيطَة.
-> واحِد: ثَبِّت تَطْبيق جَدْوَل المَقاسات.
-> اِتْنين: اِضْغَط جَدْوَل مَقاسات جِديد، وِاخْتار التيشيرْتات.
-> تَلاتَة: راجِع المَقاسات، وِاضْغَط حِفْظ الجَدْوَل.
-> أَرْبَعَة: اُرْبُط الجَدْوَل بِقِسْم التيشيرْتات، وِاضْغَط حِفْظ.
-> وِكِدَه العَميل هَيْلاقي زُرار اِعْرَف مَقاسَك في صَفْحِةْ المُنْتَج، وِيِعْرَف مَقاسُه بِسُهولَة.
-
-**Nobody has listened to the take yet**: someone who can listen must confirm it sounds calm and natural (and that "ثبّت", "التيشيرتات" and "زرار اعرف مقاسك" sound right) before `status` becomes `ready`.
+**Re-recorded under the full-تشكيل rule (owner, 2026-11-18).** The first take (`ZXBWZFtTNYUFI2OvWSCD`, 306 credits, 24.96 s, marks only on hard words) is kept as `work/vo/take-old.mp3`. The script sent is the fully vowelled draft that was here before, completed so every letter carries its mark (for example فِي، وَاحِد، عَلَى، جِدِيد، التِّيشِيرْتَات). **Nobody has listened to the new take yet**: someone who can listen must confirm it sounds calm and natural (and that "ثَبِّت", "التِّيشِيرْتَات" and "زُرَار اِعْرَف مَقَاسَك" sound right) before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 
@@ -92,7 +83,7 @@ https://tallaby.com
 
 **Fictional data:** store "متجر نور" (top bar wallet "$5.00" from the kit); categories تيشيرتات، بناطيل، فساتين، أحذية; products تيشيرت قطن أساسي (299 جنيه), تيشيرت بولو, بنطلون جينز, فستان صيفي, حذاء رياضي; the T-shirt is drawn with simple shapes; no people or body parts.
 
-**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -1.5 dBTP; the voice alone -16.1 LUFS (peak -2.4 dBFS), the sounds alone -34.4 LUFS and -18 dBFS (18.3 dB under the voice). One gain (+9.4 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.12% of samples (5.5 dB on the tallest peak).
+**Sound:** voice in front, the five kit sounds under it, no music. With the new take the finished video measures -16.2 LUFS and -2.4 dBTP; the voice alone -16.2 LUFS (peak -2.4 dBFS), the sounds alone -34.4 LUFS and -18 dBFS (18.2 dB under the voice). One gain (+8.8 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.04% of samples (2.7 dB on the tallest peak). `finish.mjs`: all rows ok (1080×1920, 30 fps, 34.90 s, 5.95 MB, faststart), rendered with `--workers 1`.
 
 **Checks:** `hyperframes check`: 0 errors; the warnings are the kit's usual ones (one generated composition, nested overlay clips, duplicate logo image), the dead stretch on the title card (1.1–4.6 s, the hold for the opening line) and two TikTok right-edge layout warnings on the kit's title and end cards (not YouTube Shorts zones).
 

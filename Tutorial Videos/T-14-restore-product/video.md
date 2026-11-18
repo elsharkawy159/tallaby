@@ -6,7 +6,7 @@ roadmap: "F-35 Product Trash"
 dashboard_path: /stores/[storeId]/products/trash
 status: draft
 duration_seconds: 33.2
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation gC18cRYAwWiSetdjXMuF"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation ck5IOLpl0aMDm4cUKa44"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "طريقة استرجاع منتج محذوف على طلبي #Shorts"
@@ -17,19 +17,21 @@ youtube_title_en: "How to restore a deleted product on Tallaby #Shorts"
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–5.4 s | Title card | "استرجاع منتج محذوف", label "شرح سريع" | 0.30–5.28 s «هنرجّع مُنتَج اتمسح من سلة المحذوفات على طَلَبي، في أربع خطوات بسيطة.» |
-| 5.4–11.6 s | 1. افتح «سلة المحذوفات» من القائمة | The products list ("المنتجات" 3). The screen shifts down and left so the top bar's menu button is in the safe area (5.6–7.95 s); tap the menu; the drawer opens with "المنتجات" (current, open) and its items; tap "سلة المحذوفات"; the Trash page opens | 5.70–9.47 s «واحد: افتح القايمة، واضغَط سلة المحذوفات.» |
-| 11.6–15.6 s | 2. اختر المنتج | Trash lists "شنطة جلد" (حُذف 16/11/2026، 3:40 م · يتبقى 29 يومًا) and "كوب سيراميك" (يتبقى 14 يومًا). The screen shifts left (11.85–13.95 s) so the row's box is out of the right zone; tick it; "استرجاع (1)" and "حذف نهائي (1)" appear; "تحديد الكل" goes to indeterminate | 11.90–14.98 s «اتنين: علّم على المربع جنب المُنتَج.» |
-| 15.6–19.6 s | 3. اضغط «استرجاع (1)» | Tap "استرجاع (1)"; the row leaves Trash; the message "تم استرجاع منتج واحد"; "تحديد الكل (1)" with "كوب سيراميك" left | 15.90–18.07 s «تلاتة: اضغَط استرجاع.» |
-| 19.6–23.8 s | 4. ارجع إلى «المنتجات» | The screen shifts down and left (20.0–22.25 s); tap the "المنتجات" link above the title; the products list opens with 4 products | 19.90–22.30 s «أربعة: ارجع لصفحة المُنتَجات.» |
-| 23.8–30.4 s | Result | The list scrolls to "شنطة جلد" (850 جنيه, متوفر 6, publish switch on); gold outline and the check on the card | 24.10–30.02 s «وكده المُنتَج رجع زي ما كان، والمُنتَجات المحذوفة بتفضل في السلة تلاتين يوم.» |
+| 0–5.5 s | Title card | "استرجاع منتج محذوف", label "شرح سريع" | 0.30–5.38 s «هَنْرَجَّع مُنْتَج اِتْمَسَح مِن سَلَّة المَحْذُوفَات عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة.» |
+| 5.5–11.6 s | 1. افتح «سلة المحذوفات» من القائمة | The products list ("المنتجات" 3). The screen shifts down and left so the top bar's menu button is in the safe area (5.6–7.95 s); tap the menu; the drawer opens with "المنتجات" (current, open) and its items; tap "سلة المحذوفات"; the Trash page opens | 5.80–9.43 s «وَاحِد: اِفْتَح القَايْمَة، وِاضْغَط سَلَّة المَحْذُوفَات.» |
+| 11.6–15.6 s | 2. اختر المنتج | Trash lists "شنطة جلد" (حُذف 16/11/2026، 3:40 م · يتبقى 29 يومًا) and "كوب سيراميك" (يتبقى 14 يومًا). The screen shifts left (11.85–13.95 s) so the row's box is out of the right zone; tick it; "استرجاع (1)" and "حذف نهائي (1)" appear; "تحديد الكل" goes to indeterminate | 11.90–14.83 s «اِتْنِين: عَلِّم عَلَى المُرَبَّع جَنْب المُنْتَج.» |
+| 15.6–19.6 s | 3. اضغط «استرجاع (1)» | Tap "استرجاع (1)"; the row leaves Trash; the message "تم استرجاع منتج واحد"; "تحديد الكل (1)" with "كوب سيراميك" left | 15.90–17.88 s «تَلَاتَة: اِضْغَط اِسْتِرْجَاع.» |
+| 19.6–23.8 s | 4. ارجع إلى «المنتجات» | The screen shifts down and left (20.0–22.25 s); tap the "المنتجات" link above the title; the products list opens with 4 products | 19.90–22.28 s «أَرْبَعَة: اِرْجَع لِصَفْحِة المُنْتَجَات.» |
+| 23.8–30.4 s | Result | The list scrolls to "شنطة جلد" (850 جنيه, متوفر 6, publish switch on); gold outline and the check on the card | 24.10–29.90 s «وِكِدَه المُنْتَج رِجِع زَيّ مَا كَان، وِالمُنْتَجَات المَحْذُوفَة بِتِفْضَل فِي السَّلَّة تَلَاتِين يُوم.» |
 | 30.4–33.2 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ سلة المحذوفات" | Nothing is spoken |
 
-## Voiceover script (with diacritics, exactly as generated)
+## Voiceover script (full تشكيل, exactly as generated)
 
-هنرجّع مُنتَج اتمسح من سلة المحذوفات على طَلَبي، في أربع خطوات بسيطة. واحد: افتح القايمة، واضغَط سلة المحذوفات. اتنين: علّم على المربع جنب المُنتَج. تلاتة: اضغَط استرجاع. أربعة: ارجع لصفحة المُنتَجات. وكده المُنتَج رجع زي ما كان، والمُنتَجات المحذوفة بتفضل في السلة تلاتين يوم.
+هَنْرَجَّع مُنْتَج اِتْمَسَح مِن سَلَّة المَحْذُوفَات عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة. وَاحِد: اِفْتَح القَايْمَة، وِاضْغَط سَلَّة المَحْذُوفَات. اِتْنِين: عَلِّم عَلَى المُرَبَّع جَنْب المُنْتَج. تَلَاتَة: اِضْغَط اِسْتِرْجَاع. أَرْبَعَة: اِرْجَع لِصَفْحِة المُنْتَجَات. وِكِدَه المُنْتَج رِجِع زَيّ مَا كَان، وِالمُنْتَجَات المَحْذُوفَة بِتِفْضَل فِي السَّلَّة تَلَاتِين يُوم.
 
-44 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`gC18cRYAwWiSetdjXMuF`, 277 credits, ElevenLabs flow `tJAQWlxsqxEjM0cFjKFQ`). The take is `work/vo/take.mp3` (22.3 s), cut inside its pauses at 4.98, 8.75, 11.83, 14.0 and 16.4 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word (44 words), with no laugh marker; like T-06's and T-07's, it returned the script's own diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "القايمة", "علّم" and "اتمسح" sound right) before `status` becomes `ready`.
+44 words, full تشكيل (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`ck5IOLpl0aMDm4cUKa44`, 390 credits, ElevenLabs flow `PjNDavvKOtgcrAKPCEW1`), made 2026-11-18. The take is `work/vo/take.mp3` (23.33 s), cut inside its pauses (chunks 0–5.08, 5.52–9.15, 9.4–12.33, 12.58–14.56, 14.8–17.18 and 17.53–23.33 s) and placed one sentence per beat; it is not sped up or stretched. To keep 0.4 s of quiet after the longer opening, step 1 starts at 5.5 s instead of 5.4 s; nothing else moved. The transcript (`eleven_scribe_v1`) matched the script word for word (44 words), with no laugh marker; it returned the script's own diacritics, so it may lean on the text.
+
+**Re-recorded under the full-تشكيل rule (owner, 2026-11-18).** The first take (`gC18cRYAwWiSetdjXMuF`, 277 credits, 22.3 s, marks only on hard words) is kept as `work/vo/take-old.mp3`. **Nobody has listened to the new take yet**: someone who can listen must confirm it sounds calm and natural (and that "القَايْمَة", "عَلِّم" and "اِتْمَسَح" sound right) before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 
@@ -79,7 +81,7 @@ https://tallaby.com
 
 **Fictional data:** store "متجر نور" (`nour.tallaby.com`), products "شنطة جلد" 850 جنيه and "كوب سيراميك", dates 16/11/2026 and 1/11/2026, wallet "$5.00" (the kit's top bar).
 
-**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -1.5 dBTP; the voice alone -16 LUFS (peak -2.4 dBFS), the sounds alone -34.2 LUFS and -18 dBFS (18.2 dB under the voice). One gain (+10.0 dB) on the whole take; the limiter touches 0.07% of samples (3.3 dB on the tallest peak).
+**Sound:** voice in front, the five kit sounds under it, no music. With the new take the finished video measures -16.1 LUFS and -1.9 dBTP; the voice alone -16.1 LUFS (peak -2.3 dBFS), the sounds alone -34.2 LUFS and -18 dBFS (18.1 dB under the voice). One gain (+9.4 dB) on the whole take; the limiter touches 0.03% of samples (2.6 dB on the tallest peak). `finish.mjs`: all rows ok (1080×1920, 30 fps, 33.20 s, 4.07 MB, faststart).
 
 **Checks:** `hyperframes check`: 0 errors. The warnings are the kit's usual ones (one generated composition, nested overlay clips, the title and end card near the TikTok right edge) plus the deliberate hold on the title card while the opening line plays.
 
