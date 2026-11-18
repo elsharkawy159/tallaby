@@ -15,9 +15,15 @@ import { formatMoney } from "@/lib/i18n/format";
  * and amber as the /earn hero. Amounts come from the referral rules, never typed.
  */
 export async function AffiliateCard() {
-  const [t, locale] = await Promise.all([getTranslations("home.affiliate"), getLocale()]);
+  const [t, locale] = await Promise.all([
+    getTranslations("home.affiliate"),
+    getLocale(),
+  ]);
   const bonusAmount = Math.round(REFERRAL_SIGNUP_BONUS_PIASTRES / 100);
-  const bonus = formatMoney(fromPiastres(REFERRAL_SIGNUP_BONUS_PIASTRES), locale);
+  const bonus = formatMoney(
+    fromPiastres(REFERRAL_SIGNUP_BONUS_PIASTRES),
+    locale,
+  );
   const usd = REFERRAL_SIGNUP_BONUS_THRESHOLD_USD_CENTS / 100;
 
   return (
@@ -34,20 +40,26 @@ export async function AffiliateCard() {
         aria-hidden
         className="relative grid size-[58px] shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-center"
       >
-        <div>
-          <b dir="ltr" className="block font-montserrat text-[19px] font-extrabold leading-none text-(--tallaby-amber-600)">
-            {bonusAmount}
-          </b>
-          <small className="text-[10px] text-[#c6d8dc]">{t("unit")}</small>
-        </div>
+        <b
+          dir="ltr"
+          className="block font-montserrat text-lg font-extrabold leading-none text-(--tallaby-amber-600)"
+        >
+          {bonusAmount} {t("unit")}
+        </b>
       </div>
       <div className="relative min-w-0">
         <h2 id="affiliate-title" className="text-[15px] font-bold">
           {t("title")}
         </h2>
-        <p className="text-pretty text-[13px] text-[#c6d8dc]">{t("description", { bonus, usd })}</p>
+        <p className="text-pretty text-[13px] text-[#c6d8dc]">
+          {t("description", { bonus, usd })}
+        </p>
       </div>
-      <SellerButton asChild size="sm" className="relative max-[720px]:col-span-full max-[720px]:w-full">
+      <SellerButton
+        asChild
+        size="sm"
+        className="relative max-[720px]:col-span-full max-[720px]:w-full"
+      >
         <Link href="/earn">
           <HandCoins aria-hidden />
           {t("cta")}

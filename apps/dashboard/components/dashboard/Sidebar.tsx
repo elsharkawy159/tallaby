@@ -1,13 +1,33 @@
 "use client";
 
-import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
-import { ArrowUpLeft, ChevronDown, LogOut, PanelRightClose, PanelRightOpen, UserIcon, X } from "lucide-react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  ArrowUpLeft,
+  ChevronDown,
+  LogOut,
+  PanelRightClose,
+  PanelRightOpen,
+  UserIcon,
+  X,
+} from "lucide-react";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
 import Image from "next/image";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
 import { IconButton } from "@/components/seller-ui";
 import { InstallAppButton } from "@/components/layout/install-app-button.client";
 import { LanguageToggle } from "@/components/layout/language-toggle.client";
@@ -27,12 +47,15 @@ import {
   type ResolvedLink,
 } from "./sidebar.config";
 import { StoreSwitcher, type SwitcherStore } from "./store-switcher.client";
-import { WhatsAppIcon, useSupportWhatsAppUrl } from "./support-chat-link.client";
+import {
+  WhatsAppIcon,
+  useSupportWhatsAppUrl,
+} from "./support-chat-link.client";
 
 interface SidebarProps {
   /** No first top-up yet: Orders shows a warning (F-68). */
   ordersLocked: boolean;
-  /** The smallest top-up in dollars ("5$"), shown in the warning's tooltip (owner, 2026-11-18). Null when orders aren't locked. */
+  /** The smallest top-up in dollars ("$5"), shown in the warning's tooltip (owner, 2026-11-18). Null when orders aren't locked. */
   minTopUp: string | null;
   counts: SidebarCounts;
   stores: SwitcherStore[];
@@ -50,7 +73,6 @@ const NAV_ITEM_ACTIVE =
   "bg-primary font-bold text-primary-foreground shadow-(--s-shadow-nav) hover:bg-primary hover:text-primary-foreground";
 const NAV_ICON = "size-[18px] shrink-0 text-(--s-subtle)";
 
-
 export const Sidebar = ({
   ordersLocked,
   minTopUp,
@@ -61,7 +83,8 @@ export const Sidebar = ({
   features,
 }: SidebarProps) => {
   const t = useTranslations();
-  const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } = useSidebarStore();
+  const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } =
+    useSidebarStore();
   const pathname = usePathname();
   const closeMobile = () => setMobileOpen(false);
   // Set when a group label navigates, so the drawer stays open on the expanded group.
@@ -93,11 +116,19 @@ export const Sidebar = ({
   }, [isMobileOpen, setMobileOpen]);
 
   const entries = useMemo(
-    () => resolveSidebar(SIDEBAR_CONFIG, { storeId: selectedStoreId, features }),
+    () =>
+      resolveSidebar(SIDEBAR_CONFIG, { storeId: selectedStoreId, features }),
     [selectedStoreId, features],
   );
 
-  const content = { ordersLocked, counts, entries, stores, selectedStoreId, maxStores };
+  const content = {
+    ordersLocked,
+    counts,
+    entries,
+    stores,
+    selectedStoreId,
+    maxStores,
+  };
 
   return (
     <MinTopUpContext.Provider value={minTopUp}>
@@ -109,14 +140,25 @@ export const Sidebar = ({
           isCollapsed ? "w-[76px]" : "w-[264px]",
         )}
       >
-        <div className={cn("flex h-[68px] shrink-0 items-center", isCollapsed ? "justify-center" : "justify-between px-[18px]")}>
+        <div
+          className={cn(
+            "flex h-[68px] shrink-0 items-center",
+            isCollapsed ? "justify-center" : "justify-between px-[18px]",
+          )}
+        >
           {!isCollapsed && <SidebarLogo />}
           <IconButton
             onClick={toggleCollapse}
-            aria-label={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
+            aria-label={
+              isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")
+            }
             aria-expanded={!isCollapsed}
           >
-            {isCollapsed ? <PanelRightOpen className="ltr:-scale-x-100" /> : <PanelRightClose className="ltr:-scale-x-100" />}
+            {isCollapsed ? (
+              <PanelRightOpen className="ltr:-scale-x-100" />
+            ) : (
+              <PanelRightClose className="ltr:-scale-x-100" />
+            )}
           </IconButton>
         </div>
         <SidebarContent {...content} isCollapsed={isCollapsed} />
@@ -137,7 +179,9 @@ export const Sidebar = ({
           // visibility is transitioned too, so the drawer slides out before
           // hiding, and its links leave the tab order while closed.
           "fixed inset-y-0 start-0 z-50 flex w-[280px] flex-col border-e border-(--s-line) bg-(--s-surface) shadow-[0_0_60px_rgb(13_55_67/0.2)] transition-[translate,visibility] duration-[350ms] ease-[cubic-bezier(.2,.7,.2,1)] max-[600px]:w-[min(86vw,300px)] min-[1021px]:hidden",
-          isMobileOpen ? "translate-x-0" : "invisible -translate-x-full rtl:translate-x-full",
+          isMobileOpen
+            ? "translate-x-0"
+            : "invisible -translate-x-full rtl:translate-x-full",
         )}
       >
         <div className="flex h-[68px] shrink-0 items-center justify-between gap-2 px-[18px] max-[600px]:h-[60px]">
@@ -160,7 +204,11 @@ export const Sidebar = ({
 };
 
 const SidebarLogo = () => (
-  <Link href="/" className="flex shrink-0 items-center overflow-hidden" aria-label="Tallaby">
+  <Link
+    href="/"
+    className="flex shrink-0 items-center overflow-hidden"
+    aria-label="Tallaby"
+  >
     <Image
       src="/logo-word.png"
       alt="Tallaby"
@@ -172,7 +220,13 @@ const SidebarLogo = () => (
 );
 
 /** A label beside a collapsed sidebar item (`[data-tip]` in the design). Radix, so the nav can still scroll. */
-function CollapsedTip({ label, children }: { label: string; children: React.ReactElement }) {
+function CollapsedTip({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactElement;
+}) {
   const rtl = useLocale().startsWith("ar");
   return (
     <Tooltip>
@@ -218,9 +272,14 @@ const SidebarContent = ({
   const format = useFormatter();
   const activeHref = findActiveHref(entries, pathname);
   const activeGroupKey =
-    entries.find((e): e is ResolvedGroup => e.kind === "group" && isGroupActive(e, activeHref))?.key ?? null;
+    entries.find(
+      (e): e is ResolvedGroup =>
+        e.kind === "group" && isGroupActive(e, activeHref),
+    )?.key ?? null;
   // Accordion: one group open at a time; the current page's group opens on navigation.
-  const [openGroupKey, setOpenGroupKey] = useState<string | null>(activeGroupKey);
+  const [openGroupKey, setOpenGroupKey] = useState<string | null>(
+    activeGroupKey,
+  );
   // Adjusted while rendering (not in an effect) when the current page moves to another group.
   const [seenActiveGroupKey, setSeenActiveGroupKey] = useState(activeGroupKey);
   if (activeGroupKey !== seenActiveGroupKey) {
@@ -246,12 +305,18 @@ const SidebarContent = ({
         )}
       >
         {Icon && <Icon className={cn(NAV_ICON, isActive && "text-current")} />}
-        {!isCollapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
+        {!isCollapsed && (
+          <span className="min-w-0 flex-1 truncate">{label}</span>
+        )}
         {ordersLocked && LOCKED_HREFS.includes(link.href) && <OrdersWarning />}
         {!isCollapsed && (link.disabled ? <SoonBadge /> : null)}
       </Link>
     );
-    return <li key={link.href}>{isCollapsed ? <CollapsedTip label={label}>{item}</CollapsedTip> : item}</li>;
+    return (
+      <li key={link.href}>
+        {isCollapsed ? <CollapsedTip label={label}>{item}</CollapsedTip> : item}
+      </li>
+    );
   };
 
   const renderGroup = (group: ResolvedGroup) => {
@@ -267,11 +332,19 @@ const SidebarContent = ({
             <Link
               href={group.href ?? "#"}
               aria-label={label}
-              aria-current={group.ownHref && group.href === activeHref ? "page" : undefined}
-              className={cn(NAV_ITEM, active && NAV_ITEM_ACTIVE, "relative justify-center px-0")}
+              aria-current={
+                group.ownHref && group.href === activeHref ? "page" : undefined
+              }
+              className={cn(
+                NAV_ITEM,
+                active && NAV_ITEM_ACTIVE,
+                "relative justify-center px-0",
+              )}
             >
               <group.icon className={cn(NAV_ICON, active && "text-current")} />
-              {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
+              {ordersLocked && LOCKED_GROUPS.includes(group.key) && (
+                <OrdersWarning />
+              )}
               {/* Only the amber (to-do) number fits on an icon. */}
               {strongCount && groupCount > 0 && (
                 <StrongCount
@@ -309,7 +382,12 @@ const SidebarContent = ({
     <div className="flex min-h-0 flex-1 flex-col">
       {stores.length > 0 ? (
         <div className={cn("mb-1.5 shrink-0", isCollapsed ? "mx-3" : "mx-3.5")}>
-          <StoreSwitcher stores={stores} selectedId={selectedStoreId} maxStores={maxStores} isCollapsed={isCollapsed} />
+          <StoreSwitcher
+            stores={stores}
+            selectedId={selectedStoreId}
+            maxStores={maxStores}
+            isCollapsed={isCollapsed}
+          />
         </div>
       ) : (
         <SellerIdentity isCollapsed={isCollapsed} />
@@ -321,9 +399,16 @@ const SidebarContent = ({
           {entries.map((entry, i) =>
             entry.kind === "divider" ? (
               isCollapsed || !entry.label ? (
-                <li key={`divider-${i}`} role="separator" className="mx-1.5 my-2 h-px bg-(--s-line-soft)" />
+                <li
+                  key={`divider-${i}`}
+                  role="separator"
+                  className="mx-1.5 my-2 h-px bg-(--s-line-soft)"
+                />
               ) : (
-                <li key={`section-${entry.label}`} className="px-3 pb-1.5 pt-3.5 text-[11.5px] font-bold text-(--s-faint)">
+                <li
+                  key={`section-${entry.label}`}
+                  className="px-3 pb-1.5 pt-3.5 text-[11.5px] font-bold text-(--s-faint)"
+                >
                   {t(`nav.${entry.label}`)}
                 </li>
               )
@@ -337,7 +422,12 @@ const SidebarContent = ({
       </nav>
 
       {/* Support, then what the top bar hides on phones, then sign out */}
-      <div className={cn("flex shrink-0 flex-col gap-2 border-t border-(--s-line-soft)", isCollapsed ? "p-3" : "px-3.5 pb-4 pt-3")}>
+      <div
+        className={cn(
+          "flex shrink-0 flex-col gap-2 border-t border-(--s-line-soft)",
+          isCollapsed ? "p-3" : "px-3.5 pb-4 pt-3",
+        )}
+      >
         <SupportCard isCollapsed={isCollapsed} />
         {/* Phones: one compact line (owner, 2026-11-16), so the tools don't take the screen. */}
         {showTools && (
@@ -363,11 +453,26 @@ function SellerIdentity({ isCollapsed }: { isCollapsed: boolean }) {
   const t = useTranslations();
   const seller = useSiteData().seller.data ?? null;
   return (
-    <div className={cn("mb-1.5 flex shrink-0 items-center gap-2.5", isCollapsed ? "justify-center" : "mx-3.5 rounded-2xl border border-(--s-field) bg-(--s-surface) p-2.5")}>
+    <div
+      className={cn(
+        "mb-1.5 flex shrink-0 items-center gap-2.5",
+        isCollapsed
+          ? "justify-center"
+          : "mx-3.5 rounded-2xl border border-(--s-field) bg-(--s-surface) p-2.5",
+      )}
+    >
       <Avatar className="size-9 shrink-0 rounded-[11px]">
         <AvatarImage
-          src={seller?.logoUrl ? getPublicUrl(seller.logoUrl, "sellers") : undefined}
-          alt={seller?.businessName ? t("nav.logoAlt", { name: seller.businessName }) : t("nav.vendor")}
+          src={
+            seller?.logoUrl
+              ? getPublicUrl(seller.logoUrl, "sellers")
+              : undefined
+          }
+          alt={
+            seller?.businessName
+              ? t("nav.logoAlt", { name: seller.businessName })
+              : t("nav.vendor")
+          }
         />
         <AvatarFallback className="rounded-[11px] bg-primary-soft text-sm font-semibold text-primary-ink">
           {seller?.businessName?.[0] ?? <UserIcon className="size-4" />}
@@ -406,7 +511,9 @@ function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
         <>
           <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
             <b className="text-[13px] font-bold">{t("helpCardTitle")}</b>
-            <small className="text-[11.5px] text-(--s-whatsapp-sub)">{t("helpCardHint")}</small>
+            <small className="text-[11.5px] text-(--s-whatsapp-sub)">
+              {t("helpCardHint")}
+            </small>
           </span>
           <ArrowUpLeft
             aria-hidden
@@ -416,7 +523,11 @@ function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
       )}
     </a>
   );
-  return isCollapsed ? <CollapsedTip label={t("helpCardTitle")}>{card}</CollapsedTip> : card;
+  return isCollapsed ? (
+    <CollapsedTip label={t("helpCardTitle")}>{card}</CollapsedTip>
+  ) : (
+    card
+  );
 }
 
 function LogoutButton({ isCollapsed }: { isCollapsed: boolean }) {
@@ -435,7 +546,11 @@ function LogoutButton({ isCollapsed }: { isCollapsed: boolean }) {
       {!isCollapsed && t("logout")}
     </button>
   );
-  return isCollapsed ? <CollapsedTip label={t("logout")}>{button}</CollapsedTip> : button;
+  return isCollapsed ? (
+    <CollapsedTip label={t("logout")}>{button}</CollapsedTip>
+  ) : (
+    button
+  );
 }
 
 /**
@@ -450,14 +565,25 @@ function OrdersWarning() {
   const amount = useContext(MinTopUpContext);
   const label = t("sidebar", { min: amount ?? "" });
   return (
-    <span role="img" aria-label={label} title={label} className="shrink-0 text-sm leading-none">
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      className="shrink-0 text-sm leading-none"
+    >
       ⚠️
     </span>
   );
 }
 
 /** Amber number that needs acting on (`.cnt`). */
-function StrongCount({ value, className }: { value: string; className?: string }) {
+function StrongCount({
+  value,
+  className,
+}: {
+  value: string;
+  className?: string;
+}) {
   return (
     <b
       className={cn(
@@ -485,7 +611,9 @@ function CountBadge({ count, strong }: { count: number; strong: boolean }) {
 function SoonBadge() {
   const t = useTranslations("nav");
   return (
-    <span className="shrink-0 rounded-full border border-(--s-field) px-2 text-[10px] text-(--s-subtle)">{t("soon")}</span>
+    <span className="shrink-0 rounded-full border border-(--s-field) px-2 text-[10px] text-(--s-subtle)">
+      {t("soon")}
+    </span>
   );
 }
 
@@ -519,15 +647,25 @@ function SidebarGroup({
   const t = useTranslations("nav");
   const format = useFormatter();
   // The label itself is the current page (the group's own landing page, e.g. All products).
-  const current = group.ownHref && group.href !== null && group.href === activeHref;
+  const current =
+    group.ownHref && group.href !== null && group.href === activeHref;
   const subId = useId();
   const labelContent = (
     <>
-      <group.icon className={cn(NAV_ICON, current ? "text-current" : active && "text-(--s-primary)")} />
+      <group.icon
+        className={cn(
+          NAV_ICON,
+          current ? "text-current" : active && "text-(--s-primary)",
+        )}
+      />
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
       {groupCount > 0 &&
-        (strongCount ? <StrongCount value={format.number(groupCount)} /> : <CountBadge count={groupCount} strong={false} />)}
+        (strongCount ? (
+          <StrongCount value={format.number(groupCount)} />
+        ) : (
+          <CountBadge count={groupCount} strong={false} />
+        ))}
     </>
   );
 
@@ -540,7 +678,12 @@ function SidebarGroup({
             href={group.href}
             aria-current={current ? "page" : undefined}
             onClick={() => onNavigate(group.href!)}
-            className={cn(NAV_ITEM, "pe-10", active && "font-bold text-(--s-ink)", current && NAV_ITEM_ACTIVE)}
+            className={cn(
+              NAV_ITEM,
+              "pe-10",
+              active && "font-bold text-(--s-ink)",
+              current && NAV_ITEM_ACTIVE,
+            )}
           >
             {labelContent}
           </Link>
@@ -548,7 +691,11 @@ function SidebarGroup({
           <button
             type="button"
             onClick={() => onOpenChange(!open)}
-            className={cn(NAV_ITEM, "pe-10", active && "font-bold text-(--s-ink)")}
+            className={cn(
+              NAV_ITEM,
+              "pe-10",
+              active && "font-bold text-(--s-ink)",
+            )}
           >
             {labelContent}
           </button>
@@ -561,12 +708,17 @@ function SidebarGroup({
           onClick={() => onOpenChange(!open)}
           className={cn(
             "absolute inset-y-1 end-1 grid w-8 cursor-pointer place-items-center rounded-lg transition-colors duration-150",
-            current ? "text-primary-foreground hover:bg-white/15" : "text-(--s-subtle) hover:bg-(--s-hover) hover:text-(--s-ink)",
+            current
+              ? "text-primary-foreground hover:bg-white/15"
+              : "text-(--s-subtle) hover:bg-(--s-hover) hover:text-(--s-ink)",
           )}
         >
           <ChevronDown
             aria-hidden
-            className={cn("size-[15px] shrink-0 transition-transform duration-[250ms]", open && "rotate-180")}
+            className={cn(
+              "size-[15px] shrink-0 transition-transform duration-[250ms]",
+              open && "rotate-180",
+            )}
           />
         </button>
       </div>
@@ -591,11 +743,16 @@ function SidebarGroup({
                   )}
                 >
                   <span className="min-w-0 flex-1 truncate">{t(item.key)}</span>
-                  {ordersLocked && LOCKED_HREFS.includes(item.href) && <OrdersWarning />}
+                  {ordersLocked && LOCKED_HREFS.includes(item.href) && (
+                    <OrdersWarning />
+                  )}
                   {item.disabled ? (
                     <SoonBadge />
                   ) : (
-                    <CountBadge count={item.countKey ? counts[item.countKey] : 0} strong={item.href === "/orders"} />
+                    <CountBadge
+                      count={item.countKey ? counts[item.countKey] : 0}
+                      strong={item.href === "/orders"}
+                    />
                   )}
                 </Link>
               </li>

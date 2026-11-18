@@ -20,14 +20,14 @@ Owner request, 2026-11-17. This file is the single source for **what** tutorials
 
 ## 2. Format
 
-| Setting | Value |
-|---|---|
-| Size | **9:16, 1080×1920**, 30 fps |
-| Duration | **28–35 s** target. Hard limits 20–40 s |
-| Sound | **A calm Egyptian voiceover** (§5.1), quiet simple sound effects (§5.2), **no music** |
+| Setting  | Value                                                                                                        |
+| -------- | ------------------------------------------------------------------------------------------------------------ |
+| Size     | **9:16, 1080×1920**, 30 fps                                                                                  |
+| Duration | **28–35 s** target. Hard limits 20–40 s                                                                      |
+| Sound    | **A calm Egyptian voiceover** (§5.1), quiet simple sound effects (§5.2), **no music**                        |
 | Language | Arabic interface and Arabic step captions (the dashboard's default locale); the voiceover is Egyptian Arabic |
-| Codec | H.264 High, `yuv420p`, CRF 18, `-movflags +faststart`; AAC 48 kHz stereo (192k encoder setting) |
-| File | `.mp4`, under 45 MB |
+| Codec    | H.264 High, `yuv420p`, CRF 18, `-movflags +faststart`; AAC 48 kHz stereo (192k encoder setting)              |
+| File     | `.mp4`, under 45 MB                                                                                          |
 
 ## 3. Screen: full-screen mobile, no small mockup
 
@@ -47,28 +47,28 @@ The owner's rule: the screen must be **clear**, so the dashboard fills the whole
 
 Every tutorial uses the same kit, kept in `Tutorial Videos/_kit/` and imported by each video. **Never restyle an overlay inside one video**; change the kit and re-render if the design has to change.
 
-| Element | Spec |
-|---|---|
-| Colours | Teal `#145163`, gold `#fdad28`, off-white `#fafaf8`, white. Nothing else in overlays |
-| Fonts | Noto Kufi Arabic (Arabic), Montserrat (Latin and digits) |
-| **Title card** (from 0 s) | Teal full frame, white logo at top, the task as the title (72–96 px bold, at most 2 lines), small gold label "شرح سريع". It is also frame 0, so it is the YouTube thumbnail |
-| **Step caption** | One card, centred on x = 540, bottom edge at y 1460, 860 px wide, teal `#145163` at 94% opacity, 28 px radius. The card's edge may reach into the right 160 px zone, but the number circle and the text end at x 920. Gold circle with the step number on the right, white text 50–56 px semi-bold, at most 2 lines and about 7 words |
-| **Step progress** | A row of small dots above the caption card: gold for the current step, white 40% for the others |
-| **Tap marker** | Gold ring, 96 px, 6 px stroke, with one soft ripple (400 ms). Shown on every tap, 300 ms before the screen reacts |
-| **Typing** | Text appears letter group by letter group with a caret; Arabic is rendered by the browser, never drawn letter by letter |
-| **Highlight** | A 6 px gold outline around the field or button the step is about, with 16 px radius or the element's own radius when that is larger |
-| **Step change** | One transition for all videos: a 350 ms slide plus blur. Scrolls inside a page use ease-in-out |
-| **Result card** | When the task is done: the real success state of the page, plus a white check in a gold circle (168 px) for 1.5 s, on the corner of the element that proves the result |
-| **End card** (last 2.5–3 s) | Teal full frame, white logo, the line "جرّبها الآن من لوحة التحكم" and the page's path as breadcrumbs (for example "المنتجات ‹ إضافة منتج") |
+| Element                     | Spec                                                                                                                                                                                                                                                                                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Colours                     | Teal `#145163`, gold `#fdad28`, off-white `#fafaf8`, white. Nothing else in overlays                                                                                                                                                                                                                                                  |
+| Fonts                       | Noto Kufi Arabic (Arabic), Montserrat (Latin and digits)                                                                                                                                                                                                                                                                              |
+| **Title card** (from 0 s)   | Teal full frame, white logo at top, the task as the title (72–96 px bold, at most 2 lines), small gold label "شرح سريع". It is also frame 0, so it is the YouTube thumbnail                                                                                                                                                           |
+| **Step caption**            | One card, centred on x = 540, bottom edge at y 1460, 860 px wide, teal `#145163` at 94% opacity, 28 px radius. The card's edge may reach into the right 160 px zone, but the number circle and the text end at x 920. Gold circle with the step number on the right, white text 50–56 px semi-bold, at most 2 lines and about 7 words |
+| **Step progress**           | A row of small dots above the caption card: gold for the current step, white 40% for the others                                                                                                                                                                                                                                       |
+| **Tap marker**              | Gold ring, 96 px, 6 px stroke, with one soft ripple (400 ms). Shown on every tap, 300 ms before the screen reacts                                                                                                                                                                                                                     |
+| **Typing**                  | Text appears letter group by letter group with a caret; Arabic is rendered by the browser, never drawn letter by letter                                                                                                                                                                                                               |
+| **Highlight**               | A 6 px gold outline around the field or button the step is about, with 16 px radius or the element's own radius when that is larger                                                                                                                                                                                                   |
+| **Step change**             | One transition for all videos: a 350 ms slide plus blur. Scrolls inside a page use ease-in-out                                                                                                                                                                                                                                        |
+| **Result card**             | When the task is done: the real success state of the page, plus a white check in a gold circle (168 px) for 1.5 s, on the corner of the element that proves the result                                                                                                                                                                |
+| **End card** (last 2.5–3 s) | Teal full frame, white logo, the line "جرّبها الآن من لوحة التحكم" and the page's path as breadcrumbs (for example "المنتجات ‹ إضافة منتج")                                                                                                                                                                                           |
 
 **Timeline (same for every video):**
 
-| Time | Beat |
-|---|---|
-| 0 to about 4 s | Title card, for as long as the opening sentence lasts (at least 2 s) |
-| then | 3 to 5 numbered steps, 4–6 s each (up to 7 s when the step's sentence needs it). One action per step |
-| about 3 s | The result on the real page, until the closing sentence ends |
-| last 2.5–3 s | End card, nothing spoken |
+| Time           | Beat                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------------------- |
+| 0 to about 4 s | Title card, for as long as the opening sentence lasts (at least 2 s)                                 |
+| then           | 3 to 5 numbered steps, 4–6 s each (up to 7 s when the step's sentence needs it). One action per step |
+| about 3 s      | The result on the real page, until the closing sentence ends                                         |
+| last 2.5–3 s   | End card, nothing spoken                                                                             |
 
 T-01 runs: title 0–4.2 s, steps 4.2–28.4 s, result 28.4–31.7 s, end card 31.7–34.3 s.
 
@@ -82,14 +82,14 @@ Owner, 2026-11-17: every tutorial has a simple, calm, human-sounding voiceover i
 
 **The voice (same in every tutorial)**
 
-| Setting | Value |
-|---|---|
-| Voice | **Hanafi – Educational – Egyptian** (ElevenLabs), `voice_id: DWMVT5WflKt0P8OPpIrY`. Chosen by the owner on 2026-11-17 from nine test takes (`T-01-add-product/work/vo-tests/`) |
-| Model | `eleven_v4`, the connector's default voice settings. Never raise style, expressiveness or speed |
-| Tags | None. No `[excited]`, `[calm]`, `[laughs]` or any other tag; pauses come from punctuation only |
-| Tone | **Calm, professional and a little friendly, never laughing** (owner, 2026-11-17: "a bit fun but not laugh"). Warm like a good trainer, the same from the first word to the last. **No laughing, chuckling, giggling or smiling-while-talking sounds**, no sighs, no playful or joking delivery |
-| Takes | One generation of the whole script. Generate again only when the take fails the checks below, after fixing the script |
-| If Hanafi is unavailable | Stop and ask the owner. Do not switch voice on your own, and never use a non-Egyptian voice |
+| Setting                  | Value                                                                                                                                                                                                                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Voice                    | **Hanafi – Educational – Egyptian** (ElevenLabs), `voice_id: DWMVT5WflKt0P8OPpIrY`. Chosen by the owner on 2026-11-17 from nine test takes (`T-01-add-product/work/vo-tests/`)                                                                                                                 |
+| Model                    | `eleven_v4`, the connector's default voice settings. Never raise style, expressiveness or speed                                                                                                                                                                                                |
+| Tags                     | None. No `[excited]`, `[calm]`, `[laughs]` or any other tag; pauses come from punctuation only                                                                                                                                                                                                 |
+| Tone                     | **Calm, professional and a little friendly, never laughing** (owner, 2026-11-17: "a bit fun but not laugh"). Warm like a good trainer, the same from the first word to the last. **No laughing, chuckling, giggling or smiling-while-talking sounds**, no sighs, no playful or joking delivery |
+| Takes                    | One generation of the whole script. Generate again only when the take fails the checks below, after fixing the script                                                                                                                                                                          |
+| If Hanafi is unavailable | Stop and ask the owner. Do not switch voice on your own, and never use a non-Egyptian voice                                                                                                                                                                                                    |
 
 This voice is for tutorials only. Marketing videos keep their own voice (Tamer).
 
@@ -127,55 +127,55 @@ Every script has the same three parts, so all tutorials sound like one series:
 - **طَلَبي is always written with its diacritics** in every script.
 - Always written this way in scripts (add to this list whenever a take misreads a word):
 
-| Write | So it is not read as | Meaning |
-|---|---|---|
-| طَلَبي | — | the brand name |
-| مُنتَج | مُنتِج (producer) | product |
-| صُوَر | صَوَّر (he photographed) | photos |
-| سِعر | سَعَّر (he priced) | price |
-| نَشر | نَشَرَ (he published) | the Publish button |
-| اكتِب | أَكتُب (I write) | write |
-| اضغَط | ضَغط (pressure) | press |
-| ضيف | ضَيف (guest); write "ضِيف" if a take misreads it | add |
-| فِئة | — | category |
-| طَلَب / طَلَبات | طَلَبَ (he asked) | order / orders |
-| مَتجَر | — | store |
-| مَحفَظة | — | wallet |
-| شَحن | — | shipping, or topping up |
-| خَصم | خِصم (opponent) | discount |
-| عَرض | عُرض (width) | offer |
-| كَمّية | — | quantity |
-| حِفظ | — | the Save button |
-| رَصيد | — | balance |
-| عُملة | عَمَلة | currency |
-| يَدَوِيًّا | — | by hand (the "إضافة يدويًا" choice) |
+| Write           | So it is not read as                             | Meaning                             |
+| --------------- | ------------------------------------------------ | ----------------------------------- |
+| طَلَبي          | —                                                | the brand name                      |
+| مُنتَج          | مُنتِج (producer)                                | product                             |
+| صُوَر           | صَوَّر (he photographed)                         | photos                              |
+| سِعر            | سَعَّر (he priced)                               | price                               |
+| نَشر            | نَشَرَ (he published)                            | the Publish button                  |
+| اكتِب           | أَكتُب (I write)                                 | write                               |
+| اضغَط           | ضَغط (pressure)                                  | press                               |
+| ضيف             | ضَيف (guest); write "ضِيف" if a take misreads it | add                                 |
+| فِئة            | —                                                | category                            |
+| طَلَب / طَلَبات | طَلَبَ (he asked)                                | order / orders                      |
+| مَتجَر          | —                                                | store                               |
+| مَحفَظة         | —                                                | wallet                              |
+| شَحن            | —                                                | shipping, or topping up             |
+| خَصم            | خِصم (opponent)                                  | discount                            |
+| عَرض            | عُرض (width)                                     | offer                               |
+| كَمّية          | —                                                | quantity                            |
+| حِفظ            | —                                                | the Save button                     |
+| رَصيد           | —                                                | balance                             |
+| عُملة           | عَمَلة                                           | currency                            |
+| يَدَوِيًّا      | —                                                | by hand (the "إضافة يدويًا" choice) |
 
 **English words are written in Arabic letters**, so the voice says them clearly. The voice never reads Latin letters.
 
-| English | In the script |
-|---|---|
-| Domain | دومين |
-| Pixel | بيكسِل |
-| Coupon | كوبون |
-| Link | لينك |
-| Email | إيميل |
-| SEO | إس إي أو |
-| AI | إيه آي |
-| MCP | إم سي بي |
-| PDF | بي دي إف |
-| Excel | إكسِل |
-| Pro | برو |
-| WhatsApp | واتساب |
-| InstaPay | إنستا باي |
-| Vodafone Cash | فودافون كاش |
-| Kashier | كاشير |
-| Bosta | بوسطة |
-| Meta | ميتا |
-| TikTok | تيك توك |
-| Google | جوجل |
-| YouTube | يوتيوب |
-| Shopify | شوبيفاي |
-| tallaby.com | طَلَبي دوت كوم |
+| English       | In the script  |
+| ------------- | -------------- |
+| Domain        | دومين          |
+| Pixel         | بيكسِل         |
+| Coupon        | كوبون          |
+| Link          | لينك           |
+| Email         | إيميل          |
+| SEO           | إس إي أو       |
+| AI            | إيه آي         |
+| MCP           | إم سي بي       |
+| PDF           | بي دي إف       |
+| Excel         | إكسِل          |
+| Pro           | برو            |
+| WhatsApp      | واتساب         |
+| InstaPay      | إنستا باي      |
+| Vodafone Cash | فودافون كاش    |
+| Kashier       | كاشير          |
+| Bosta         | بوسطة          |
+| Meta          | ميتا           |
+| TikTok        | تيك توك        |
+| Google        | جوجل           |
+| YouTube       | يوتيوب         |
+| Shopify       | شوبيفاي        |
+| tallaby.com   | طَلَبي دوت كوم |
 
 This is for the voice only. Text on screen keeps the dashboard's own words (for example "النطاق" on the page while the voice says "دومين").
 
@@ -209,13 +209,13 @@ This is for the voice only. Text on screen keeps the dashboard's own words (for 
 
 - One fixed set of sounds, generated once into `_kit/sfx/` and reused by every video, so all tutorials sound the same:
 
-| Sound | When |
-|---|---|
-| `pop` | The title card appears |
-| `tap` | Every tap marker |
-| `key` | Typing (one soft tick per letter group, not per letter) |
-| `whoosh` | Every step change |
-| `success` | The result card |
+| Sound     | When                                                    |
+| --------- | ------------------------------------------------------- |
+| `pop`     | The title card appears                                  |
+| `tap`     | Every tap marker                                        |
+| `key`     | Typing (one soft tick per letter group, not per letter) |
+| `whoosh`  | Every step change                                       |
+| `success` | The result card                                         |
 
 - **Simple, low volume, not bold** (owner, 2026-11-17): each sound is one plain soft tone (the whoosh is a faint breath of air). No layered notes, no clicks or noise bursts, no chimes that draw attention.
 - All effects have a 5–10 ms fade-in and no harsh highs. On their own they peak at most **-16 dBTP** (T-01's effects alone measure -36.3 LUFS, -18 dBTP).
@@ -281,18 +281,23 @@ One line that says what the video shows, the numbered steps, then https://tallab
 ```
 
 ## Steps shown
+
 1. …
 
 ## Voiceover script (with diacritics, exactly as generated)
+
 …
 
 ## Caption / post text
+
 …
 
 ## Tags
+
 …
 
 ## Notes
+
 Source files checked, fictional data used, anything that differs from the real page.
 ```
 
@@ -304,7 +309,7 @@ Source files checked, fictional data used, anything that differs from the real p
 
 ## 8. The dashboard button (`ROADMAP.md` F-97)
 
-- A small button **«كيف يعمل؟»** with a Play icon (owner, 2026-11-18; it replaced "شاهد الشرح") on the part the video teaches: the page header (opposite the title) for a page, or the section or card header for one part of a form. It opens the video in a dialog, never autoplayed or muted. Code: `apps/dashboard/lib/tutorials/tutorial-videos.ts` (one id per video) and `components/tutorials/tutorial-video-button.client.tsx`.
+- A small outline button **"شاهد الشرح"** with a play icon in the page header, on the side opposite the page title (left in Arabic, right in English).
 - It opens the Short in a dialog (YouTube embed, 9:16); on a phone it may open YouTube directly.
 - One registry in the dashboard maps a page path to its video (`dashboard_path` → `youtube_url` and `youtube_embed`). A page with no video shows no button.
 - The button is added only after the video is uploaded.
@@ -340,97 +345,97 @@ The paths come from the dashboard routes in `apps/dashboard/app/[locale]/(main)`
 
 **Four ways to add a product, four videos** (owner, 2026-11-17): the add-product page offers adding by hand, with AI, from a link and from a file. Each way gets its own short video: T-01 (by hand, pilot made), T-02 (AI), T-51 (link) and T-03 (file). Never combine them into one video.
 
-| ID | Video (the task) | Dashboard path | Steps to show | Status |
-|---|---|---|---|---|
-| T-01 | Add a product | `/stores/[storeId]/products/add` | Choose "إضافة يدويًا" → name and short description → photos → category → price and publish → the product in the list | ready (pilot, 34.3 s; look and voice approved by the owner 2026-11-17; the page still needs a check on production before upload) |
-| T-02 | Add a product with AI | `/stores/[storeId]/products/add` (AI card) | Choose "with AI" → add photos → the fields fill in Arabic and English → review → publish | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-03 | Add products from a file | `/stores/[storeId]/products/add/from-file` | Upload the file → check the rows → import → the products list | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-51 | Add a product from a link | `/stores/[storeId]/products/add` (link option) | Choose "from a link" → paste the product's link → the fields and photos fill in → review → publish | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-04 | Choose your store's template | `/stores/[storeId]/website/templates` | Open Templates → preview one → «استخدام القالب» → confirm (goes to the drafts) | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-05 | Edit your website and publish | `/stores/[storeId]/website` | Open the editor → tap the title, «تعديل» → type → pick a photo from the library → «نشر» | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-06 | Set your shipping prices | `/stores/[storeId]/shipping` | Add a delivery area → name it → pick governorates → set the price and save | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-07 | Choose your payment methods | `/stores/[storeId]/settings/payments` | «إعداد» on a method → its receiving details → holder name → «حفظ وتفعيل» | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-08 | Top up your wallet | `/wallet` (Kashier returns to `/wallet/top-up`) | «شحن المحفظة» → pick an amount in $ → pay with Kashier → back to the wallet | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-09 | Follow and confirm an order | `/orders` | Open a new order → review it → «تأكيد الطلب» → «خرج للتوصيل» | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload) |
-| T-10 | Connect an AI assistant to your store (MCP) | `/stores/[storeId]/apps` › AI assistants | Open the app → copy the link → approve the connection → ask the assistant to add a product | todo |
+| ID   | Video (the task)                            | Dashboard path                                  | Steps to show                                                                                                        | Status                                                                                                                           |
+| ---- | ------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| T-01 | Add a product                               | `/stores/[storeId]/products/add`                | Choose "إضافة يدويًا" → name and short description → photos → category → price and publish → the product in the list | ready (pilot, 34.3 s; look and voice approved by the owner 2026-11-17; the page still needs a check on production before upload) |
+| T-02 | Add a product with AI                       | `/stores/[storeId]/products/add` (AI card)      | Choose "with AI" → add photos → the fields fill in Arabic and English → review → publish                             | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-03 | Add products from a file                    | `/stores/[storeId]/products/add/from-file`      | Upload the file → check the rows → import → the products list                                                        | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-51 | Add a product from a link                   | `/stores/[storeId]/products/add` (link option)  | Choose "from a link" → paste the product's link → the fields and photos fill in → review → publish                   | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-04 | Choose your store's template                | `/stores/[storeId]/website/templates`           | Open Templates → preview one → «استخدام القالب» → confirm (goes to the drafts)                                       | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-05 | Edit your website and publish               | `/stores/[storeId]/website`                     | Open the editor → tap the title, «تعديل» → type → pick a photo from the library → «نشر»                              | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-06 | Set your shipping prices                    | `/stores/[storeId]/shipping`                    | Add a delivery area → name it → pick governorates → set the price and save                                           | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-07 | Choose your payment methods                 | `/stores/[storeId]/settings/payments`           | «إعداد» on a method → its receiving details → holder name → «حفظ وتفعيل»                                             | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-08 | Top up your wallet                          | `/wallet` (Kashier returns to `/wallet/top-up`) | «شحن المحفظة» → pick an amount in $ → pay with Kashier → back to the wallet                                          | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-09 | Follow and confirm an order                 | `/orders`                                       | Open a new order → review it → «تأكيد الطلب» → «خرج للتوصيل»                                                         | ready (owner listened and approved 2026-11-18; page still needs a check on production before upload)                             |
+| T-10 | Connect an AI assistant to your store (MCP) | `/stores/[storeId]/apps` › AI assistants        | Open the app → copy the link → approve the connection → ask the assistant to add a product                           | todo                                                                                                                             |
 
 ### Wave 2 — products and stock
 
-| ID | Video (the task) | Dashboard path | Steps to show | Status |
-|---|---|---|---|---|
-| T-11 | Add sizes and colours | product form › المخزون والأنواع | «+ المقاس» → pick sizes → add «اللون» and colours → stock + «تطبيق على الكل» → «حفظ» | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-12 | Main and sub-categories | `/stores/[storeId]/products/categories` | «إضافة فئة» (main) → again with «الفئة الرئيسية» → the sub-category → pick it in the product form → «حفظ» | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-13 | Update stock quickly | `/stores/[storeId]/products/inventory` | «السجل» under a product → type the units that arrived → «إضافة» → the new row in the stock history | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-14 | Restore a deleted product | `/stores/[storeId]/products/trash` | Menu › المنتجات › «سلة المحذوفات» → tick the product → «استرجاع» → back to the products list | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-15 | Ask the customer for details on a product | product form › مطلوب من العميل | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-16 | Add a size chart | `/stores/[storeId]/apps` › جدول المقاسات | «ثبّت» → «تثبيت» → new chart from the «تيشيرتات وقمصان» template → «حفظ الجدول» → «طبّقه على» a category → «اعرف مقاسك» on the product | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-17 | Quantity offers | product edit page › عروض الكمية | Scroll to the section → «أضف شريحة» → the discount → a second tier → «احفظ العروض» → the offers in the store buy box | draft (re-recorded 2026-11-18: Egyptian wording, ج as گ; not listened to yet) |
-| T-52 | Cross-sell offers | product form (cross-sell) + `/orders/cross-sell` report | Search a product to offer → type and value → «إضافة» → the offer on the product page and in the cart | draft (made 2026-11-18; not listened to yet) |
+| ID   | Video (the task)                          | Dashboard path                                          | Steps to show                                                                                                                          | Status                                                                         |
+| ---- | ----------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| T-11 | Add sizes and colours                     | product form › المخزون والأنواع                         | «+ المقاس» → pick sizes → add «اللون» and colours → stock + «تطبيق على الكل» → «حفظ»                                                   | draft                                                                          |
+| T-12 | Main and sub-categories                   | `/stores/[storeId]/products/categories`                 | «إضافة فئة» (main) → again with «الفئة الرئيسية» → the sub-category → pick it in the product form → «حفظ»                              | draft (take made before the full-تشكيل rule)                                   |
+| T-13 | Update stock quickly                      | `/stores/[storeId]/products/inventory`                  | «السجل» under a product → type the units that arrived → «إضافة» → the new row in the stock history                                     | draft (re-recorded 2026-11-18 after a Gulf-sounding take; not listened to yet) |
+| T-14 | Restore a deleted product                 | `/stores/[storeId]/products/trash`                      | Menu › المنتجات › «سلة المحذوفات» → tick the product → «استرجاع» → back to the products list                                           | draft                                                                          |
+| T-15 | Ask the customer for details on a product | product form › مطلوب من العميل                          | Open the section → add a text field → name it (AR + EN) → extra price → «حفظ» → the field on the product page                          | draft (re-recorded 2026-11-18 after a Gulf-sounding take; not listened to yet) |
+| T-16 | Add a size chart                          | `/stores/[storeId]/apps` › جدول المقاسات                | «ثبّت» → «تثبيت» → new chart from the «تيشيرتات وقمصان» template → «حفظ الجدول» → «طبّقه على» a category → «اعرف مقاسك» on the product | draft (take made before the full-تشكيل rule)                                   |
+| T-17 | Quantity offers                           | product edit page › عروض الكمية                         | Scroll to the section → «أضف شريحة» → the discount → a second tier → «احفظ العروض» → the offers in the store buy box                   | draft (full تشكيل)                                                             |
+| T-52 | Cross-sell offers                         | product form (cross-sell) + `/orders/cross-sell` report | Search a product to offer → type and value → «إضافة» → the offer on the product page and in the cart                                   | draft (made 2026-11-18; not listened to yet)                                             |
 
 ### Wave 3 — orders and customers
 
-| ID | Video (the task) | Dashboard path | Steps to show | Status |
-|---|---|---|---|---|
-| T-18 | Add an order by hand | `/orders/new` | Choose products → customer details → create → send the link | draft (made 2026-11-18; not listened to yet) |
-| T-19 | Win back unfinished orders | `/orders/missed` | Open a missed order → contact on WhatsApp → mark contacted | todo |
-| T-20 | Your customers list | `/orders/customers` | Open a customer → add a note and a tag | todo |
-| T-21 | Block fake orders | `/stores/[storeId]/settings/protection` | Turn protection on → block a phone number | todo |
-| T-22 | Ship with your Bosta account | `/stores/[storeId]/apps` › Bosta | Connect the account → ship an order → print the label | todo |
-| T-23 | Add your own delivery riders | `/orders/riders` | Add a rider → assign an order | todo |
-| T-24 | Ask for a deposit on cash orders | store settings (deposit) | Turn the deposit on → set the percent → what the customer sees | todo |
-| T-25 | Change the checkout form | `/stores/[storeId]/settings/checkout` | Choose the fields → the thank-you page | todo |
+| ID   | Video (the task)                 | Dashboard path                          | Steps to show                                                  | Status |
+| ---- | -------------------------------- | --------------------------------------- | -------------------------------------------------------------- | ------ |
+| T-18 | Add an order by hand             | `/orders/new`                           | Choose products → customer details → create → send the link    | draft (made 2026-11-18; not listened to yet)   |
+| T-19 | Win back unfinished orders       | `/orders/missed`                        | Open a missed order → contact on WhatsApp → mark contacted     | todo   |
+| T-20 | Your customers list              | `/orders/customers`                     | Open a customer → add a note and a tag                         | todo   |
+| T-21 | Block fake orders                | `/stores/[storeId]/settings/protection` | Turn protection on → block a phone number                      | todo   |
+| T-22 | Ship with your Bosta account     | `/stores/[storeId]/apps` › Bosta        | Connect the account → ship an order → print the label          | todo   |
+| T-23 | Add your own delivery riders     | `/orders/riders`                        | Add a rider → assign an order                                  | todo   |
+| T-24 | Ask for a deposit on cash orders | store settings (deposit)                | Turn the deposit on → set the percent → what the customer sees | todo   |
+| T-25 | Change the checkout form         | `/stores/[storeId]/settings/checkout`   | Choose the fields → the thank-you page                         | todo   |
 
 ### Wave 4 — marketing
 
-| ID | Video (the task) | Dashboard path | Steps to show | Status |
-|---|---|---|---|---|
-| T-26 | Create a discount coupon | `/coupons` | New coupon → code and value → the customer uses it | todo |
-| T-27 | Show a coupon pop-up in your store | `/coupons` (pop-up settings) | Choose when it appears → the countdown → the pop-up on the store | todo |
-| T-28 | Automatic discounts | `/marketing/discounts` | New rule → condition and discount → it applies in the cart | todo |
-| T-29 | Send an email campaign | `/marketing/emails` | New campaign → write → choose customers → send | todo |
-| T-30 | Show recent sales in your store | `/stores/[storeId]/settings/sales-popup` | Turn it on → choose the timing → the pop-up on the store | todo |
-| T-31 | Connect Meta Pixel | `/stores/[storeId]/apps` › Meta Pixel | Open the app → paste the ID → connected | todo |
-| T-32 | Product catalog for ads | `/marketing/catalog` | Copy the feed link → where to paste it | todo |
-| T-33 | Reviews and customer questions | `/reviews` | Reply to a question → approve a review | todo |
-| T-34 | Earn by inviting sellers | `/earn` | Copy your link → follow your earnings | todo |
+| ID   | Video (the task)                   | Dashboard path                           | Steps to show                                                    | Status |
+| ---- | ---------------------------------- | ---------------------------------------- | ---------------------------------------------------------------- | ------ |
+| T-26 | Create a discount coupon           | `/coupons`                               | New coupon → code and value → the customer uses it               | todo   |
+| T-27 | Show a coupon pop-up in your store | `/coupons` (pop-up settings)             | Choose when it appears → the countdown → the pop-up on the store | todo   |
+| T-28 | Automatic discounts                | `/marketing/discounts`                   | New rule → condition and discount → it applies in the cart       | todo   |
+| T-29 | Send an email campaign             | `/marketing/emails`                      | New campaign → write → choose customers → send                   | todo   |
+| T-30 | Show recent sales in your store    | `/stores/[storeId]/settings/sales-popup` | Turn it on → choose the timing → the pop-up on the store         | todo   |
+| T-31 | Connect Meta Pixel                 | `/stores/[storeId]/apps` › Meta Pixel    | Open the app → paste the ID → connected                          | todo   |
+| T-32 | Product catalog for ads            | `/marketing/catalog`                     | Copy the feed link → where to paste it                           | todo   |
+| T-33 | Reviews and customer questions     | `/reviews`                               | Reply to a question → approve a review                           | todo   |
+| T-34 | Earn by inviting sellers           | `/earn`                                  | Copy your link → follow your earnings                            | todo   |
 
 ### Wave 5 — website
 
-| ID | Video (the task) | Dashboard path | Steps to show | Status |
-|---|---|---|---|---|
-| T-35 | Your brand colours and fonts | `/stores/[storeId]/website/design` | Change the main colour → the font → the whole store changes | todo |
-| T-36 | Add a page | `/stores/[storeId]/website/pages` | New page → add a section → publish | todo |
-| T-37 | Connect your own domain | `/stores/[storeId]/website/domain` | Add the domain → the DNS records → connected | todo |
-| T-38 | Help Google find your store (SEO) | `/stores/[storeId]/website/seo` | Title and description → keywords → save | todo |
-| T-39 | Write a blog post | `/stores/[storeId]/website/blog/new` | Title and text → photo → publish | todo |
-| T-40 | Forms and their replies | `/stores/[storeId]/website/forms` | Create a form → add it to a page → read the replies | todo |
-| T-41 | Your photo library | `/stores/[storeId]/website/media` | Upload → use a photo in the editor | todo |
-| T-42 | Social media links | `/stores/[storeId]/website/social` | Add the links → they show in the footer | todo |
-| T-43 | Your store as an app | `/stores/[storeId]/settings/app` | Set the name and icon → the install button on the store | todo |
-| T-44 | Request a custom theme | `/stores/[storeId]/website/templates` (request) | Describe the design → add photos → send | todo |
+| ID   | Video (the task)                  | Dashboard path                                  | Steps to show                                               | Status |
+| ---- | --------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- | ------ |
+| T-35 | Your brand colours and fonts      | `/stores/[storeId]/website/design`              | Change the main colour → the font → the whole store changes | todo   |
+| T-36 | Add a page                        | `/stores/[storeId]/website/pages`               | New page → add a section → publish                          | todo   |
+| T-37 | Connect your own domain           | `/stores/[storeId]/website/domain`              | Add the domain → the DNS records → connected                | todo   |
+| T-38 | Help Google find your store (SEO) | `/stores/[storeId]/website/seo`                 | Title and description → keywords → save                     | todo   |
+| T-39 | Write a blog post                 | `/stores/[storeId]/website/blog/new`            | Title and text → photo → publish                            | todo   |
+| T-40 | Forms and their replies           | `/stores/[storeId]/website/forms`               | Create a form → add it to a page → read the replies         | todo   |
+| T-41 | Your photo library                | `/stores/[storeId]/website/media`               | Upload → use a photo in the editor                          | todo   |
+| T-42 | Social media links                | `/stores/[storeId]/website/social`              | Add the links → they show in the footer                     | todo   |
+| T-43 | Your store as an app              | `/stores/[storeId]/settings/app`                | Set the name and icon → the install button on the store     | todo   |
+| T-44 | Request a custom theme            | `/stores/[storeId]/website/templates` (request) | Describe the design → add photos → send                     | todo   |
 
 ### Wave 6 — account and money
 
-| ID | Video (the task) | Dashboard path | Steps to show | Status |
-|---|---|---|---|---|
-| T-45 | Open another store | `/stores` | New store → name and link → switch between stores | todo |
-| T-46 | Build a store with AI | `/ai-builder` | Describe the store → the builder works → publish | todo |
-| T-47 | Your plan and usage | `/settings/plan` | Read the plan → usage → upgrade | todo |
-| T-48 | Reports | `/reports` | Choose the period → read sales and best sellers | todo |
-| T-49 | Store visits | `/stores/[storeId]/analytics` | Open Analytics → read the visits | todo |
-| T-50 | Order alerts on your phone | dashboard header (install and notifications) | Install the dashboard as an app → turn alerts on | todo |
+| ID   | Video (the task)           | Dashboard path                               | Steps to show                                     | Status |
+| ---- | -------------------------- | -------------------------------------------- | ------------------------------------------------- | ------ |
+| T-45 | Open another store         | `/stores`                                    | New store → name and link → switch between stores | todo   |
+| T-46 | Build a store with AI      | `/ai-builder`                                | Describe the store → the builder works → publish  | todo   |
+| T-47 | Your plan and usage        | `/settings/plan`                             | Read the plan → usage → upgrade                   | todo   |
+| T-48 | Reports                    | `/reports`                                   | Choose the period → read sales and best sellers   | todo   |
+| T-49 | Store visits               | `/stores/[storeId]/analytics`                | Open Analytics → read the visits                  | todo   |
+| T-50 | Order alerts on your phone | dashboard header (install and notifications) | Install the dashboard as an app → turn alerts on  | todo   |
 
 ## 12. Log
 
-| Date | ID | What happened |
-|---|---|---|
-| 2026-11-17 | — | File created; 50 topics listed from the dashboard routes; no video made yet |
-| 2026-11-17 | T-01 | Pilot rendered without a voice; sounds made simpler and quieter (owner) |
-| 2026-11-17 | — | Voiceover plan added (§5.1): owner chose the Hanafi voice from nine test takes; the pilot does not have the voice yet |
-| 2026-11-17 | T-01 | Approved script generated with Hanafi (transcript matched word for word); kit now places and mixes a voice; pilot retimed to the voice and re-rendered: 34.3 s, -16.1 LUFS, -2.2 dBTP. Not yet listened to by a person |
-| 2026-11-17 | — | Owner: the voiceover stays formal with no laughing (§5.1); one video for each of the four ways to add a product, so T-51 "Add a product from a link" was added (51 topics) |
-| 2026-11-17 | T-01 | Owner heard a laugh on "الموضوع بسيط" in two takes. Opening changed to a plain statement ("هنضيف منتج جديد على طلبي، في خمس خطوات بسيطة."), rule added to §5.1, third take generated and placed. Waiting for the owner to listen |
-| 2026-11-17 | T-01 | Owner approved the pilot (look, sounds, voice). Wave 1 started with the other three add-product videos: T-02, T-51, T-03 |
-| 2026-11-18 | T-01 … T-09, T-51 | Owner listened to T-02 … T-09 and T-51 and approved them ("everything else is very good"); all ten now `ready`. Top bar balance changed to $5.00 in the kit (the real header shows the wallet in $); T-08 now goes $5.00 → $15.00. All ten re-rendered with `--workers 1`, durations unchanged, no new voice |
-| 2026-11-18 | T-04 … T-09 | Built with the kit and the Hanafi voice, one take each (284 + 278 + 299 + 278 + 273 + 312 credits); transcripts match, no laugh marker. Nobody has listened yet. T-10 (MCP) held: ROADMAP F-29 is Delayed, so rule 18 rules it out. Kit gaps found: the kit top bar shows "≈ 270 جنيه" but the real one shows the wallet in $ (`dashboard-header.client.tsx`); render with `--workers 1` (one parallel chunk drifted in T-08) |
-| 2026-11-17 | T-02, T-51, T-03 | Built with the kit and the Hanafi voice (one take each, 280 + 261 + 271 credits; transcripts match). All four add-product videos depend on the method chooser (`ROADMAP.md` F-71), whose roadmap status still reads "Built, not deployed": confirm on production before uploading any of them |
+| Date       | ID                | What happened                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-17 | —                 | File created; 50 topics listed from the dashboard routes; no video made yet                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-11-17 | T-01              | Pilot rendered without a voice; sounds made simpler and quieter (owner)                                                                                                                                                                                                                                                                                                                                                       |
+| 2026-11-17 | —                 | Voiceover plan added (§5.1): owner chose the Hanafi voice from nine test takes; the pilot does not have the voice yet                                                                                                                                                                                                                                                                                                         |
+| 2026-11-17 | T-01              | Approved script generated with Hanafi (transcript matched word for word); kit now places and mixes a voice; pilot retimed to the voice and re-rendered: 34.3 s, -16.1 LUFS, -2.2 dBTP. Not yet listened to by a person                                                                                                                                                                                                        |
+| 2026-11-17 | —                 | Owner: the voiceover stays formal with no laughing (§5.1); one video for each of the four ways to add a product, so T-51 "Add a product from a link" was added (51 topics)                                                                                                                                                                                                                                                    |
+| 2026-11-17 | T-01              | Owner heard a laugh on "الموضوع بسيط" in two takes. Opening changed to a plain statement ("هنضيف منتج جديد على طلبي، في خمس خطوات بسيطة."), rule added to §5.1, third take generated and placed. Waiting for the owner to listen                                                                                                                                                                                              |
+| 2026-11-17 | T-01              | Owner approved the pilot (look, sounds, voice). Wave 1 started with the other three add-product videos: T-02, T-51, T-03                                                                                                                                                                                                                                                                                                      |
+| 2026-11-18 | T-01 … T-09, T-51 | Owner listened to T-02 … T-09 and T-51 and approved them ("everything else is very good"); all ten now `ready`. Top bar balance changed to $5.00 in the kit (the real header shows the wallet in $); T-08 now goes $5.00 → $15.00. All ten re-rendered with `--workers 1`, durations unchanged, no new voice                                                                                                                  |
+| 2026-11-18 | T-04 … T-09       | Built with the kit and the Hanafi voice, one take each (284 + 278 + 299 + 278 + 273 + 312 credits); transcripts match, no laugh marker. Nobody has listened yet. T-10 (MCP) held: ROADMAP F-29 is Delayed, so rule 18 rules it out. Kit gaps found: the kit top bar shows "≈ 270 جنيه" but the real one shows the wallet in $ (`dashboard-header.client.tsx`); render with `--workers 1` (one parallel chunk drifted in T-08) |
+| 2026-11-17 | T-02, T-51, T-03  | Built with the kit and the Hanafi voice (one take each, 280 + 261 + 271 credits; transcripts match). All four add-product videos depend on the method chooser (`ROADMAP.md` F-71), whose roadmap status still reads "Built, not deployed": confirm on production before uploading any of them                                                                                                                                 |

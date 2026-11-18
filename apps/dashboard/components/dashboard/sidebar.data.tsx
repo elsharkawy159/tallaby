@@ -16,23 +16,27 @@ export async function SidebarData() {
   ]);
 
   const ordersLocked = (await loadOrderLock(seller.sellerId)).ordersLocked;
-  // In dollars ("5$"), like the orders-lock banner (owner, 2026-11-18).
-  const minTopUp = ordersLocked ? formatUsdShort(TOP_UP_MIN_USD_CENTS, await getLocale()) : null;
+  // In dollars ("$5"), like the orders-lock banner (owner, 2026-11-18).
+  const minTopUp = ordersLocked
+    ? formatUsdShort(TOP_UP_MIN_USD_CENTS, await getLocale())
+    : null;
 
   return (
     <Sidebar
       ordersLocked={ordersLocked}
       minTopUp={minTopUp}
       counts={counts}
-      stores={stores.map(({ id, name, subdomain, isPrimary, status, logoUrl, siteStatus }) => ({
-        id,
-        name,
-        subdomain,
-        isPrimary,
-        status,
-        logoUrl,
-        siteStatus,
-      }))}
+      stores={stores.map(
+        ({ id, name, subdomain, isPrimary, status, logoUrl, siteStatus }) => ({
+          id,
+          name,
+          subdomain,
+          isPrimary,
+          status,
+          logoUrl,
+          siteStatus,
+        }),
+      )}
       selectedStoreId={selected?.id ?? null}
       maxStores={maxStores}
       features={{ storeBuilder: storeBuilderEnabled(seller.sellerId) }}

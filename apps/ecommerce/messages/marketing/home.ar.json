@@ -160,8 +160,8 @@
       "kicker": "قوالب المتاجر",
       "title": "ابدأ بتصميم مُعدّ لما تبيعه",
       "body": "{count, plural, one {قالب واحد جاهز} two {قالبان جاهزان} few {{count} قوالب جاهزة} many {{count} قالبًا جاهزًا} other {{count} قالب جاهز}}. عدّل أي قسم بأسلوب Drag & Drop، وغيّر القالب متى شئت دون أن تفقد منتجاتك.",
-      "more": "عرض المزيد من القوالب",
-      "moreCount": "اعرض كل القوالب ({count})",
+      "more": "عرض المزيد من الثيمات",
+      "moreCount": "اعرض كل الثيمات ({count})",
       "carousel": "قوالب مختارة",
       "slide": "القالب {index} من {total}",
       "prev": "القالب السابق",
@@ -234,9 +234,24 @@
         },
         "products": ["شنطة يد جلد أحمر", "شنطة توت وردي", "شنطة بارل مطبوعة"],
         "orders": [
-          { "product": "محفظة جلد رجالي", "when": "min6", "total": 500, "status": "pending" },
-          { "product": "شنطة توت وردي", "when": "min18", "total": 1340, "status": "pending" },
-          { "product": "شنطة بارل مطبوعة", "when": "hr1", "total": 1500, "status": "shipped" }
+          {
+            "product": "محفظة جلد رجالي",
+            "when": "min6",
+            "total": 500,
+            "status": "pending"
+          },
+          {
+            "product": "شنطة توت وردي",
+            "when": "min18",
+            "total": 1340,
+            "status": "pending"
+          },
+          {
+            "product": "شنطة بارل مطبوعة",
+            "when": "hr1",
+            "total": 1500,
+            "status": "shipped"
+          }
         ]
       },
       "mcp": {

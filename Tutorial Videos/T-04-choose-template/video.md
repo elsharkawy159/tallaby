@@ -30,7 +30,7 @@ After uploading, paste the Short link in `youtube_url` and the embed link (`http
 ```text
 طريقة اختيار قالب لمتجرك من لوحة التحكم في طلبي، خطوة بخطوة.
 
-1. افتح «القوالب».
+1. افتح «الثيمات».
 2. اضغط على القالب لمعاينته.
 3. اضغط «استخدام القالب».
 4. اضغط «استخدام القالب» للتأكيد.
@@ -42,25 +42,25 @@ https://tallaby.com
 
 ## Steps shown
 
-| Time | Step | What happens on screen | Voice |
-|---|---|---|---|
-| 0–4.8 s | Title card | "اختيار قالب لمتجرك", label "شرح سريع" | 0.30–4.35 s «هنختار تصميم لمتجرك على طلبي، في أربع خطوات بسيطة.» |
-| 4.8–8.8 s | 1. افتح «القوالب» | Website › Overview ("موقعك") of a live store scrolls to "إدارة موقعك"; tap "القوالب – ابدأ من تصميم جاهز"; the Templates page opens | 5.10–7.52 s «واحد: افتح صفحة القوالب.» |
-| 8.8–13.2 s | 2. اضغط على القالب لمعاينته | The gallery ("القوالب", current template "طلبي الكلاسيكي – مطبّق", category chips, search) scrolls to the "فخار" tile; tap the tile; the preview opens (tabs الرئيسية · حكايتنا · تواصل · الأسئلة الشائعة · صفحة المنتج, AR/EN, computer/phone) and the page scrolls | 9.10–12.43 s «اتنين: اضغط على القالب، عشان تشوف المعاينة.» |
-| 13.2–17.6 s | 3. اضغط «استخدام القالب» | The screen lifts so the preview's bottom bar sits at y ≈ 1090; tap "استخدام القالب"; the confirm sheet "استخدام فخار؟" slides up | 13.50–16.03 s «تلاتة: اضغط استخدام القالب.» |
-| 17.6–22.4 s | 4. اضغط «استخدام القالب» للتأكيد | The screen lifts; the note "متجرك المنشور لا يتغير حتى تنشر." is outlined; tap "استخدام القالب"; the button spins | 17.90–21.52 s «أربعة: اضغط استخدام القالب مرة تانية للتأكيد.» |
-| 22.4–29.1 s | Result | Website › Overview again: badges "الموقع متاح الآن" + "تغييرات غير منشورة", the box "تغييرات غير منشورة" with "تجاهل التغييرات" / "نشر التغييرات" (gold check on it), and the page's toast "تم تطبيق فخار على المسودة. انشر الموقع ليظهر في متجرك." | 22.70–28.67 s «وكده القالب الجديد بقى جاهز في مسودة موقعك، ومش هيظهر للعملاء غير لما تنشر.» |
-| 29.1–31.8 s | End card | "جرّبها الآن من لوحة التحكم", "المتجر الإلكتروني ‹ القوالب" | Nothing is spoken |
+| Time        | Step                             | What happens on screen                                                                                                                                                                                                                                               | Voice                                                                                       |
+| ----------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 0–4.8 s     | Title card                       | "اختيار قالب لمتجرك", label "شرح سريع"                                                                                                                                                                                                                               | 0.30–4.35 s «هنختار تصميم لمتجرك على طلبي، في أربع خطوات بسيطة.»                            |
+| 4.8–8.8 s   | 1. افتح «الثيمات»                | Website › Overview ("موقعك") of a live store scrolls to "إدارة موقعك"; tap "الثيمات – ابدأ من تصميم جاهز"; the Templates page opens                                                                                                                                  | 5.10–7.52 s «واحد: افتح صفحة الثيمات.»                                                      |
+| 8.8–13.2 s  | 2. اضغط على القالب لمعاينته      | The gallery ("الثيمات", current template "طلبي الكلاسيكي – مطبّق", category chips, search) scrolls to the "فخار" tile; tap the tile; the preview opens (tabs الرئيسية · حكايتنا · تواصل · الأسئلة الشائعة · صفحة المنتج, AR/EN, computer/phone) and the page scrolls | 9.10–12.43 s «اتنين: اضغط على القالب، عشان تشوف المعاينة.»                                  |
+| 13.2–17.6 s | 3. اضغط «استخدام القالب»         | The screen lifts so the preview's bottom bar sits at y ≈ 1090; tap "استخدام القالب"; the confirm sheet "استخدام فخار؟" slides up                                                                                                                                     | 13.50–16.03 s «تلاتة: اضغط استخدام القالب.»                                                 |
+| 17.6–22.4 s | 4. اضغط «استخدام القالب» للتأكيد | The screen lifts; the note "متجرك المنشور لا يتغير حتى تنشر." is outlined; tap "استخدام القالب"; the button spins                                                                                                                                                    | 17.90–21.52 s «أربعة: اضغط استخدام القالب مرة تانية للتأكيد.»                               |
+| 22.4–29.1 s | Result                           | Website › Overview again: badges "الموقع متاح الآن" + "تغييرات غير منشورة", the box "تغييرات غير منشورة" with "تجاهل التغييرات" / "نشر التغييرات" (gold check on it), and the page's toast "تم تطبيق فخار على المسودة. انشر الموقع ليظهر في متجرك."                  | 22.70–28.67 s «وكده القالب الجديد بقى جاهز في مسودة موقعك، ومش هيظهر للعملاء غير لما تنشر.» |
+| 29.1–31.8 s | End card                         | "جرّبها الآن من لوحة التحكم", "المتجر الإلكتروني ‹ الثيمات"                                                                                                                                                                                                          | Nothing is spoken                                                                           |
 
 ## Voiceover script (with diacritics, exactly as generated)
 
-هنختار تصميم لمَتجَرَك على طَلَبي، في أربع خطوات بسيطة. واحد: افتح صفحة القوالب. اتنين: اضغَط على القالب، عشان تشوف المُعايَنة. تلاتة: اضغَط استخدام القالب. أربعة: اضغَط استخدام القالب مرة تانية للتأكيد. وكده القالب الجديد بقى جاهز في مُسوَّدة موقعك، ومش هيظهر للعملاء غير لما تِنشُر.
+هنختار تصميم لمَتجَرَك على طَلَبي، في أربع خطوات بسيطة. واحد: افتح صفحة الثيمات. اتنين: اضغَط على القالب، عشان تشوف المُعايَنة. تلاتة: اضغَط استخدام القالب. أربعة: اضغَط استخدام القالب مرة تانية للتأكيد. وكده القالب الجديد بقى جاهز في مُسوَّدة موقعك، ومش هيظهر للعملاء غير لما تِنشُر.
 
 45 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`Tsr5WUU2z8X1Fxlmqylj`, flow `Fe2m9J2PKffmwOsrTXxd`, 284 credits). The take is `work/vo/take.mp3` (21.9 s), cut at its sentence pauses (0 / 4.05 / 6.47 / 9.80 / 12.33 / 15.95 / 21.92 s) and placed one sentence per beat; it is not sped up or stretched. Transcribed with `eleven_scribe_v1`: 45 words, the same words as the script, no laugh marker. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural before `status` becomes `ready`.
 
 ## Caption / post text
 
-اختر قالب متجرك في 4 خطوات: افتح «القوالب»، اضغط على القالب لمعاينته، ثم اضغط «استخدام القالب» وأكّد. القالب يُطبَّق على المسودة، ومتجرك المنشور لا يتغير حتى تنشر.
+اختر قالب متجرك في 4 خطوات: افتح «الثيمات»، اضغط على القالب لمعاينته، ثم اضغط «استخدام القالب» وأكّد. القالب يُطبَّق على المسودة، ومتجرك المنشور لا يتغير حتى تنشر.
 
 ## Tags
 

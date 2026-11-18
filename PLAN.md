@@ -435,7 +435,7 @@ Products — المنتجات ▾
 Website — الموقع ▾                                                                     (all Store scope)
   ├─ Overview — نظرة عامة                          /stores/[storeId]/website           New
   ├─ Website builder — محرر الموقع                 /stores/[storeId]/editor            New (full screen)
-  ├─ Templates — القوالب                           /stores/[storeId]/website/templates New
+  ├─ Templates — الثيمات                           /stores/[storeId]/website/templates New
   ├─ Design system — الهوية والتصميم               /stores/[storeId]/website/design    New
   ├─ Domain & SEO — النطاق وتحسين الظهور           /stores/[storeId]/website/domain    New (reuses existing domain components)
   └─ Social media — التواصل الاجتماعي              /stores/[storeId]/website/social    New
@@ -1300,6 +1300,7 @@ Unpublish ([Proposed], P4-04): sets `site_status = 'unpublished'` and keeps `pub
 - **Refunds are deferred** (D3). They will be handled together with the Kashier integration work. Until then, refunds keep today's behaviour, and no automatic wallet or fee adjustment is built.
 
 - **Grace period before top-up (owner, 2026-11-09, ROADMAP.md F-84, 0159; replaces F-76, changes F-68):** a published store is **public from day one and takes real orders** (normal checkout, the Free $0.03 fee from the store wallet, which may go negative), activated or not; there are no more private stores or test orders for activation. A Free seller who is not activated (no approved top-up, never a balance above zero, not Pro) sees their orders during a **grace window** that ends at the earlier of **14 days** after `max(sellers.created_at, 2026-11-09 00:00 Cairo)` or their **second real order**; after that orders, customers and sales totals are hidden again, but the **first order stays visible** in full. A top-up activates for good, as before. **AI (20 requests a month) and campaign / win-back emails still need a top-up**, not the grace window. Existing sellers not activated on 2026-11-09 get 14 days from that day. No money or ledger logic changes.
+
 ### 13.2 Calculation [Proposed] (P6-01)
 
 `packages/lib/src/orders/platform-fee.lib.ts`:
@@ -2460,7 +2461,7 @@ Each phase above has a **Phase acceptance** block, and every task has its own ac
 | D32  | Auto-cancel window for unpaid manual-transfer orders (wallets/InstaPay)                                                                                                                     | 48 hours, configurable per store later                                                                                                                                                                                                                                  |
 | D33  | Is the COD fee (and any shipping) excluded from the 2% fee base?                                                                                                                            | Yes, the fee base is product prices only (consistent with D2)                                                                                                                                                                                                           |
 | D34  | Tallaby's own store-views tag (GTM → GA4) on seller storefronts, and consent                                                                                                                | **Owner, 2026-10-27:** allowed (an exception to P5-05 for this one tag, in its own `tallabyDataLayer`), and it loads **without** the consent banner (an exception to D19 for this tag only; the seller's own apps still wait for consent). SA-01, `docs/store-views.md` |
-| D35  | New plans, USD wallet, AI credits and end of the welcome gift (owner, 2026-11-03) | Approved, not live: §13.1 note and `ROADMAP.md` §4, F-54 … F-57. Also updates D13: AI moves to monthly credits, and the AI Store Builder is planned after a cost study. |
+| D35  | New plans, USD wallet, AI credits and end of the welcome gift (owner, 2026-11-03)                                                                                                           | Approved, not live: §13.1 note and `ROADMAP.md` §4, F-54 … F-57. Also updates D13: AI moves to monthly credits, and the AI Store Builder is planned after a cost study.                                                                                                 |
 
 ### 21.4 Reconciled documentation conflicts
 
@@ -4711,6 +4712,7 @@ Owner asked to keep only the current version of each template in `template_versi
 - Deploy: apply migration `0136` before deploying. Verify on staging with a fresh private-window storefront visit: add an item, complete a guest checkout, then delete a test Auth user and confirm its public profile is removed.
 
 ### 2026-10-31 — Deleting an auth user deletes everything they own (migration 0134)
+
 - Request (owner, 2026-10-31): deleting a user in Supabase Auth left the seller, stores and orders behind; deleting an order by hand failed with `wallet_transactions is append-only … DELETE`.
 - Cause: `public.users` had no foreign key to `auth.users`, so nothing followed the auth delete. 45 child keys were NO ACTION/RESTRICT, so deleting an order, product or seller stopped partway. One of these, `wallet_transactions.order_id`, hit the append-only ledger trigger. Also, `users.referred_by` was ON DELETE CASCADE, so deleting a user would have deleted every user they referred.
 - Fix: `0134_user_delete_cascade.sql` adds `users_id_auth_users_fk` (CASCADE, `NOT VALID`). It sets CASCADE on owned rows (order children, a seller's coupons, shipments, reviews, referral commissions and payouts, welcome gifts, and a user's returns, review comments and search logs). It sets SET NULL on pointers to someone else's rows: admin, rider and reviewer ids, carts, addresses, payment methods, `users.referred_by`, and the welcome-gift ledger entries. It also sets SET NULL on another seller's `wallet_transactions.order_id`, so that seller's ledger and balance are kept. `wallet_transactions_immutable` now also allows `order_id` → NULL. `user_wallet_transactions_immutable` now allows DELETE once the user row is gone. The changes are mirrored in `schema.ts`. Applying the migration twice works.

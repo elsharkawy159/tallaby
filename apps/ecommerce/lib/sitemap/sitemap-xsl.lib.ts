@@ -10,7 +10,10 @@
 export function xmlText(value: string): string {
   // Control characters are not allowed in XML 1.0.
   return Array.from(value)
-    .filter((c) => { const n = c.codePointAt(0) ?? 0; return n >= 0x20 || n === 0x09 || n === 0x0a || n === 0x0d; })
+    .filter((c) => {
+      const n = c.codePointAt(0) ?? 0;
+      return n >= 0x20 || n === 0x09 || n === 0x0a || n === 0x0d;
+    })
     .join("")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -26,25 +29,51 @@ export const SITEMAP_XSL_HEADERS = {
 } as const;
 
 /** An XPath test: does <loc> contain any of these? */
-const has = (...parts: string[]) => parts.map((p) => `contains(s:loc, '${p}')`).join(" or ");
+const has = (...parts: string[]) =>
+  parts.map((p) => `contains(s:loc, '${p}')`).join(" or ");
 
 const amp = (s: string) => s.replace(/&/g, "&amp;");
 
 const GROUPS = [
-  { id: "templates", title: "Templates", ar: "القوالب", test: has("/templates/") },
+  {
+    id: "templates",
+    title: "Templates",
+    ar: "الثيمات",
+    test: has("/templates/"),
+  },
   { id: "blog", title: "Blog", ar: "المدونة", test: has("/blog/") },
   {
     id: "solutions",
     title: "Solutions, industries, features & tools",
     ar: "الحلول والمجالات والمميزات والأدوات",
-    test: has("/solutions/", "/industries/", "/features/", "/tools/", "/integrations/", "/compare/"),
+    test: has(
+      "/solutions/",
+      "/industries/",
+      "/features/",
+      "/tools/",
+      "/integrations/",
+      "/compare/",
+    ),
   },
   // Store hosts: category landings are /products?category=, products /products/{slug}.
-  { id: "categories", title: "Categories", ar: "الأقسام", test: has("?category=", "/categories/") },
-  { id: "products", title: "Products", ar: "المنتجات", test: has("/products/") },
+  {
+    id: "categories",
+    title: "Categories",
+    ar: "الأقسام",
+    test: has("?category=", "/categories/"),
+  },
+  {
+    id: "products",
+    title: "Products",
+    ar: "المنتجات",
+    test: has("/products/"),
+  },
 ];
 const OTHER = `not(${GROUPS.map((g) => `(${g.test})`).join(" or ")})`;
-const SECTIONS = [{ id: "pages", title: "Pages", ar: "الصفحات", test: OTHER }, ...GROUPS];
+const SECTIONS = [
+  { id: "pages", title: "Pages", ar: "الصفحات", test: OTHER },
+  ...GROUPS,
+];
 
 const NAV = SECTIONS.map(
   (g) =>
@@ -65,7 +94,9 @@ export function sitemapStylesheet(siteName?: string | null): string {
   const name = siteName?.trim() ? xmlText(siteName.trim()) : null;
   // tallaby.com keeps its Arabic brand name; a store host shows the store's own name.
   const title = name ? `Sitemap — ${name}` : "Sitemap — طلبي";
-  const heading = name ? `Sitemap — <bdi>${name}</bdi>` : `Sitemap — <span lang="ar" dir="rtl">طلبي</span>`;
+  const heading = name
+    ? `Sitemap — <bdi>${name}</bdi>`
+    : `Sitemap — <span lang="ar" dir="rtl">طلبي</span>`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -217,5 +248,4 @@ export function sitemapStylesheet(siteName?: string | null): string {
   </xsl:template>
 </xsl:stylesheet>
 `;
-
 }

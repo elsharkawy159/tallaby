@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
+import {
+  FREE_ORDER_FEE_USD_CENTS,
+  TOP_UP_MIN_USD_CENTS,
+} from "@workspace/lib/billing";
 import { formatOrderFeeEgp, formatUsdShort } from "./order-lock-copy.lib";
 
 describe("formatUsdShort", () => {
   it("shows whole dollars with the sign after the number in Arabic and before it in English", () => {
-    expect(formatUsdShort(TOP_UP_MIN_USD_CENTS, "ar")).toBe("⁦5$⁩");
+    expect(formatUsdShort(TOP_UP_MIN_USD_CENTS, "ar")).toBe("⁦$5⁩");
     expect(formatUsdShort(TOP_UP_MIN_USD_CENTS, "en")).toBe("$5");
   });
 

@@ -11,6 +11,7 @@ Do the parts in order. **Part A must come first**, because Part B changes stagin
 **Never test payments or run the USD switch on production.** Each app's `.env` points at production, so starting an app the normal way uses real sellers and real money. Always use the steps below.
 
 **1. Get these first:**
+
 - The staging service role key: Supabase › staging project › Project Settings › API. It isn't saved in the repo. Without it, the customer's transfer screenshot and the receipt picture in Admin won't work.
 - A staging Admin login. I don't know which account is an admin on staging.
 
@@ -41,21 +42,23 @@ $env:NEXT_PUBLIC_SUPABASE_PROJECT_ID
 
 **3. Start one app in each terminal:**
 
-| Terminal | Run this first | Then run | Opens at |
-| --- | --- | --- | --- |
-| Store | `$env:NEXT_PUBLIC_SITE_URL = "http://localhost:3000"` | `pnpm --filter ecommerce dev` | `http://YOURSTORE.localhost:3000` |
-| Admin | `$env:NEXT_PUBLIC_SITE_URL = "http://localhost:3001"` | `pnpm --filter admin dev` | `http://localhost:3001` |
-| Dashboard | `$env:NEXT_PUBLIC_SITE_URL = "http://localhost:3002"` | `pnpm --filter dashboard dev` | `http://localhost:3002` |
-| Backend (emails) | nothing | `pnpm --filter backend dev` | no page |
+| Terminal         | Run this first                                        | Then run                      | Opens at                          |
+| ---------------- | ----------------------------------------------------- | ----------------------------- | --------------------------------- |
+| Store            | `$env:NEXT_PUBLIC_SITE_URL = "http://localhost:3000"` | `pnpm --filter ecommerce dev` | `http://YOURSTORE.localhost:3000` |
+| Admin            | `$env:NEXT_PUBLIC_SITE_URL = "http://localhost:3001"` | `pnpm --filter admin dev`     | `http://localhost:3001`           |
+| Dashboard        | `$env:NEXT_PUBLIC_SITE_URL = "http://localhost:3002"` | `pnpm --filter dashboard dev` | `http://localhost:3002`           |
+| Backend (emails) | nothing                                               | `pnpm --filter backend dev`   | no page                           |
 
 Use these commands, not `pnpm dev`. Use Chrome. The first open of each page is slow.
 
 **Real things that still happen:**
+
 - **Real emails go out.** The backend uses the real email key. Use only your own email addresses as customers on the test stores.
 - **AI checks cost a little real money,** because they use the real AI key.
 - **No daily jobs run locally.** Queued campaigns wait until you run the command in A10.
 
 **Test data on staging:**
+
 - **Seller A:** one published store, at least 3 products (one with variants), delivery zones for Cairo and Giza only, cash on delivery on, InstaPay on under Payment methods (طرق الدفع), and one coupon. Use a seller with no running free trial.
 - **Seller B:** a second published store, with one product that has the same title as one of Seller A's.
 - **Customer:** one normal window signed in with an email that isn't a seller's, and one incognito window as a guest.
@@ -63,6 +66,7 @@ Use these commands, not `pnpm dev`. Use Chrome. The first open of each page is s
 **Fake money and fake receipts are fine on staging.** Don't send a real transfer.
 
 **Use realistic test orders.** Tallaby treats some orders as fake and takes no fee until delivery. This is on purpose, but it looks like a bug. To see the fee taken straight away:
+
 - Don't use "test", "asd" or similar in the name or address.
 - Don't use the seller's own phone or email.
 - Don't use a phone like 01000000000.
@@ -209,7 +213,7 @@ Add a product to the cart on Seller A's store as a guest, then open checkout.
 
 ## B4. $5 lock (Seller C, no top-up)
 
-- [ ] ⭐ Place an order on Seller C's store: it goes through. Home shows "اشحن 5$ عشان تشوف طلباتك". Orders, Customers and Pending carts show blurred rows with the top-up message.
+- [ ] ⭐ Place an order on Seller C's store: it goes through. Home shows "اشحن $5 عشان تشوف طلباتك". Orders, Customers and Pending carts show blurred rows with the top-up message.
 - [ ] Orders in the sidebar show ⚠️. The bell still announces the order.
 - [ ] Send a top-up, don't approve yet: the message changes to "طلب الشحن قيد المراجعة". Still locked.
 - [ ] Approve in Admin: everything opens, and the earlier order is there, with its fee.
@@ -291,23 +295,27 @@ The reports say these were never seen in a browser, and the checks above don't c
 # What I couldn't confirm
 
 **About the setup:**
+
 - **The setup was not run end to end.** I tested that the first lines read staging correctly, but I didn't start the apps, to avoid changing files. Tell Claude if a step fails.
 - **A real iPhone has no confirmed route.** The store needs a `*.localhost` address, and the location button needs https. A staging preview deploy or a tunnel may solve it, but neither is set up, and you want to test before pushing.
 - **Dashboard product photos may not load locally.** An older report says the dashboard's image list doesn't include staging. I didn't confirm it's still true. If so, it's not a bug.
 - **Sign-up confirmation links:** I don't know where staging's emails send you. If a link goes to a live address, ask Claude to confirm the account instead.
 
 **Checks that may not be possible:**
+
 - **Abandoned card order (B7).** Setup turns off the Kashier keys, because I can't tell if the ones in `.env` are test keys. It needs a test gateway. Otherwise skip it and write "not tested".
 - **Campaign over the limit.** It should cut the list, newest customers first, but this needs over 500 customers. Tests cover it, not a browser.
 - **The 48-hour link expiry.** Tests cover it. It can't be seen in a 2-hour test.
 - **Pro renewal and the 3 days' grace.** These run from a daily job over a month. Tests cover them.
 
 **For the owner to decide or know:**
+
 - **Removed products go to the store's home.** This is by design (your choice, 2026-11-03), so it isn't a redirect bug.
 - **The fee is taken on orders a locked seller can't see,** and a shipped-order email can still reach their customer. Your rule, but check you're happy with it during B4.
 - **Location button:** it uses a free public map service (Nominatim). Its limits weren't checked for launch traffic.
 
 **Docs that disagree with the code:**
+
 - **`docs/usd-switch-checklist.md` step 9** says to test a Kashier top-up, but the code keeps card as Soon. I followed the code.
 - **The same checklist, step 1,** doesn't list migrations `0144`, `0145` and `0146`. They're on staging only and production needs them. The log says outright that `0145` must land before deploy.
 - **The 22 template removal is not committed.** Those deletions are uncommitted work in the repo, so they aren't part of this list, and they won't go out unless someone commits them.

@@ -15,7 +15,7 @@ import {
 
 /** The wallet balance pill's shape beside it (dashboard-header.client.tsx): height, border, radius, type, padding. */
 const PILL =
-  "inline-flex h-10 min-w-0 shrink items-center gap-2 whitespace-nowrap rounded-full border border-(--s-field) px-3.5 text-[12.5px] font-semibold no-underline transition-colors duration-150 hover:border-(--s-outline) max-[600px]:h-9 max-[600px]:gap-1.5 max-[600px]:px-2.5 [&_svg]:size-[15px] [&_svg]:shrink-0";
+  "inline-flex h-10 min-w-0 shrink items-center gap-2.5 whitespace-nowrap rounded-full border border-(--s-field) px-3.5 text-[12.5px] font-semibold no-underline transition-colors duration-150 hover:border-(--s-outline) max-[600px]:h-9 max-[600px]:gap-2 max-[600px]:px-2.5 [&_svg]:size-[15px] [&_svg]:shrink-0";
 
 /** Same icons as the home setup cards (HOME_STEP_ICONS, a server file). */
 const STEP_ICONS: Record<HomeStepKey, LucideIcon> = {

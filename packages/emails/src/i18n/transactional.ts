@@ -231,7 +231,10 @@ export interface TransactionalCopy {
     topUpAgain: string;
     notYou: string;
     contactUs: string;
-    methods: Record<"kashier" | "card" | "wallet" | "instapay" | "bank_transfer" | "manual", string>;
+    methods: Record<
+      "kashier" | "card" | "wallet" | "instapay" | "bank_transfer" | "manual",
+      string
+    >;
   };
   sellerPayout: {
     subject: string;
@@ -280,15 +283,36 @@ export interface TransactionalCopy {
   };
   /** Store setup reminders (F-94): 24 hours and 7 days after signup, while the store isn't set up. Sent in Arabic. */
   sellerSetupReminder: {
-    day1: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
-    day7: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    day1: {
+      subject: string;
+      preview: string;
+      pill: string;
+      heading: string;
+      lead: string;
+      cta: string;
+    };
+    day7: {
+      subject: string;
+      preview: string;
+      pill: string;
+      heading: string;
+      lead: string;
+      cta: string;
+    };
     /** "{n} steps" phrases: one, two, several ({n}). */
     stepsLeft: { one: string; two: string; many: string };
     stepsTitle: string;
     done: string;
-    steps: Record<"product" | "design" | "payments" | "shipping", [string, string]>;
+    steps: Record<
+      "product" | "design" | "payments" | "shipping",
+      [string, string]
+    >;
     reasonsTitle: string;
-    reasons: { templates: [string, string]; ai: [string, string]; free: [string, string] };
+    reasons: {
+      templates: [string, string];
+      ai: [string, string];
+      free: [string, string];
+    };
     /** {fee}: the free plan's order fee in EGP, already formatted. */
     freeWithFee: string;
     footerReason: string;
@@ -296,8 +320,22 @@ export interface TransactionalCopy {
   };
   /** Website › Templates "Request a theme" (F-77): ready or declined. */
   sellerThemeRequest: {
-    ready: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
-    declined: { subject: string; preview: string; pill: string; heading: string; lead: string; cta: string };
+    ready: {
+      subject: string;
+      preview: string;
+      pill: string;
+      heading: string;
+      lead: string;
+      cta: string;
+    };
+    declined: {
+      subject: string;
+      preview: string;
+      pill: string;
+      heading: string;
+      lead: string;
+      cta: string;
+    };
     replyTitle: string;
     requestTitle: string;
     requested: string;
@@ -335,7 +373,8 @@ export const transactionalEn: TransactionalCopy = {
     track: "Track your order",
     yourItems: "Your items",
     codNote: "Please have {total} ready for the courier.",
-    depositNote: "This store asks for a {deposit} deposit first: pay it to the store from your order page, then have {remainder} ready for the courier. Orders whose deposit isn't paid within 48 hours are cancelled.",
+    depositNote:
+      "This store asks for a {deposit} deposit first: pay it to the store from your order page, then have {remainder} ready for the courier. Orders whose deposit isn't paid within 48 hours are cancelled.",
     help: "Need help with this order?",
     helpTrack: "You can track your order any time from",
     footer: "Confirmation for order {orderNumber}, sent to",
@@ -367,7 +406,8 @@ export const transactionalEn: TransactionalCopy = {
     writeReview: "Write a review",
     returnNote: "Something wrong with it? You can",
     returnLink: "request a return",
-    returnNoteNoLink: "Something wrong with it? Reply to this email and we'll help.",
+    returnNoteNoLink:
+      "Something wrong with it? Reply to this email and we'll help.",
     returnWithin: "within {days} days of delivery",
   },
   orderCancelled: {
@@ -375,12 +415,14 @@ export const transactionalEn: TransactionalCopy = {
     preview: "Order {orderNumber} was cancelled.",
     pill: "Cancelled",
     heading: "Your order was cancelled",
-    leadCustomer: "Order {orderNumber} was cancelled on {date} at your request.",
+    leadCustomer:
+      "Order {orderNumber} was cancelled on {date} at your request.",
     leadSeller: "Order {orderNumber} was cancelled on {date} by the seller.",
     leadSystem: "Order {orderNumber} was cancelled on {date}.",
     reason: "Reason: {reason}",
     codNote: "Since you chose cash on delivery, you won't be charged anything.",
-    refundNote: "Any amount you paid ({amount}) will be refunded. We'll email you when it's done.",
+    refundNote:
+      "Any amount you paid ({amount}) will be refunded. We'll email you when it's done.",
     items: "Cancelled items",
     shopAgain: "Shop again",
   },
@@ -393,7 +435,8 @@ export const transactionalEn: TransactionalCopy = {
     amount: "Amount",
     method: "Method",
     date: "Date",
-    walletNote: "Your wallet balance is available now and you can use it on your next order.",
+    walletNote:
+      "Your wallet balance is available now and you can use it on your next order.",
     viewWallet: "View wallet",
     viewOrder: "View order",
     refundedItems: "Refunded items",
@@ -402,12 +445,17 @@ export const transactionalEn: TransactionalCopy = {
     shipping: "Shipping",
     shippingNotRefunded: "Not refunded",
     total: "Total refund",
-    methods: { wallet: "Tallaby wallet", original: "Original payment method", manual: "Bank transfer" },
+    methods: {
+      wallet: "Tallaby wallet",
+      original: "Original payment method",
+      manual: "Bank transfer",
+    },
   },
   abandonedCart: {
     subject: "You left something in your cart",
     preview: "Your items are still waiting for you.",
-    previewCoupon: "Your items are still waiting. Use code {code} for {discount} off.",
+    previewCoupon:
+      "Your items are still waiting. Use code {code} for {discount} off.",
     eyebrow: "Your cart is waiting",
     heading: "Forgot something in your cart?",
     lead: "We saved the items you added. Stock is limited, so complete your order before they sell out.",
@@ -426,13 +474,15 @@ export const transactionalEn: TransactionalCopy = {
     heading: "It's back!",
     lead: "You asked us to tell you when this item is available again. It is in stock now at {store}, but quantities are limited, so order soon.",
     shop: "Order now",
-    reason: "You get this email because you asked to be told when this item is back in stock.",
+    reason:
+      "You get this email because you asked to be told when this item is back in stock.",
     unsubscribe: "Stop these alerts",
   },
   storeCampaign: {
     shop: "Shop now",
     viewProduct: "View product",
-    reason: "You get this email because you ordered from {store} or subscribed to its newsletter.",
+    reason:
+      "You get this email because you ordered from {store} or subscribed to its newsletter.",
     unsubscribe: "Unsubscribe",
     testBanner: "Test email: only you received this.",
     testSubject: "[Test] {subject}",
@@ -453,7 +503,8 @@ export const transactionalEn: TransactionalCopy = {
     confirm: "Confirm my email",
     linkNote: "The link works for a limited time and can be used once.",
     fallback: "Button not working? Copy this link into your browser:",
-    ignore: "Didn't create a Tallaby account? You can safely ignore this email.",
+    ignore:
+      "Didn't create a Tallaby account? You can safely ignore this email.",
   },
   passwordReset: {
     subject: "Reset your password",
@@ -464,7 +515,8 @@ export const transactionalEn: TransactionalCopy = {
     cta: "Set a new password",
     linkNote: "The link works for a limited time and can be used once.",
     fallback: "Button not working? Copy this link into your browser:",
-    ignore: "Didn't ask for this? Ignore this email and your password stays the same.",
+    ignore:
+      "Didn't ask for this? Ignore this email and your password stays the same.",
   },
   sellerNewOrder: {
     subject: "New order {orderNumber} · {total}",
@@ -542,7 +594,8 @@ export const transactionalEn: TransactionalCopy = {
     eyebrow: "Payout sent",
     heading: "We sent {amount} to your account",
     lead: "It usually arrives within 1 to 3 business days.",
-    leadPeriod: "Earnings for {period}. It usually arrives within 1 to 3 business days.",
+    leadPeriod:
+      "Earnings for {period}. It usually arrives within 1 to 3 business days.",
     reference: "Payout number",
     account: "Account",
     date: "Date",
@@ -555,7 +608,8 @@ export const transactionalEn: TransactionalCopy = {
   sellerLowStock: {
     subject: "Alert: {count} products are running low",
     subjectOne: "Alert: a product is running low",
-    preview: "{count} products are running low. Restock to avoid missing orders.",
+    preview:
+      "{count} products are running low. Restock to avoid missing orders.",
     pill: "Low stock",
     heading: "{count} products are running low",
     headingOne: "A product is running low",
@@ -597,7 +651,8 @@ export const transactionalEn: TransactionalCopy = {
     },
     day7: {
       subject: "Last reminder: your store is still waiting",
-      preview: "Finish your store in minutes. The free plan has no monthly fee.",
+      preview:
+        "Finish your store in minutes. The free plan has no monthly fee.",
       pill: "Last reminder",
       heading: "There's still time to finish your store",
       lead: "Hi {name}, {storeName} isn't ready yet. This is the last email we'll send you about setting it up.",
@@ -608,18 +663,28 @@ export const transactionalEn: TransactionalCopy = {
     done: "Done",
     steps: {
       product: ["Add your first product", "Photos, price and stock"],
-      design: ["Choose your store design", "A ready template, your logo and colours"],
+      design: [
+        "Choose your store design",
+        "A ready template, your logo and colours",
+      ],
       payments: ["Set up payments", "Cash on delivery or online payment"],
       shipping: ["Set up shipping", "Delivery areas and prices"],
     },
     reasonsTitle: "Why finish now",
     reasons: {
-      templates: ["Ready templates for your business", "Pick one and edit it, no code needed."],
-      ai: ["Products with AI", "Snap a product photo and Tallaby writes the name and description in Arabic and English."],
+      templates: [
+        "Ready templates for your business",
+        "Pick one and edit it, no code needed.",
+      ],
+      ai: [
+        "Products with AI",
+        "Snap a product photo and Tallaby writes the name and description in Arabic and English.",
+      ],
       free: ["The free plan", "No monthly fee, only a small fee per order."],
     },
     freeWithFee: "No monthly fee, only {fee} per order.",
-    footerReason: "You get this email because you opened a seller account on Tallaby and your store isn't set up yet.",
+    footerReason:
+      "You get this email because you opened a seller account on Tallaby and your store isn't set up yet.",
     optOut: "Stop these reminders",
   },
   sellerThemeRequest: {
@@ -676,7 +741,8 @@ export const transactionalAr: TransactionalCopy = {
     track: "تتبّع طلبك",
     yourItems: "منتجاتك",
     codNote: "يُرجى تجهيز {total} لمندوب التوصيل.",
-    depositNote: "هذا المتجر يطلب عربونًا {deposit} أولًا: ادفعه للمتجر من صفحة طلبك، ثم جهّز {remainder} لمندوب التوصيل. الطلبات التي لا يُدفع عربونها خلال 48 ساعة تُلغى.",
+    depositNote:
+      "هذا المتجر يطلب عربونًا {deposit} أولًا: ادفعه للمتجر من صفحة طلبك، ثم جهّز {remainder} لمندوب التوصيل. الطلبات التي لا يُدفع عربونها خلال 48 ساعة تُلغى.",
     help: "تحتاج مساعدة بخصوص هذا الطلب؟",
     helpTrack: "ويمكنك تتبّع طلبك في أي وقت من",
     footer: "رسالة تأكيد للطلب رقم {orderNumber}، أُرسلت إلى",
@@ -721,7 +787,8 @@ export const transactionalAr: TransactionalCopy = {
     leadSystem: "أُلغي الطلب رقم {orderNumber} بتاريخ {date}.",
     reason: "السبب: {reason}",
     codNote: "بما أن الدفع عند الاستلام، لن يتم تحصيل أي مبلغ منك.",
-    refundNote: "سيتم رد أي مبلغ دفعته ({amount})، وسنراسلك عند إتمام الاسترداد.",
+    refundNote:
+      "سيتم رد أي مبلغ دفعته ({amount})، وسنراسلك عند إتمام الاسترداد.",
     items: "المنتجات الملغاة",
     shopAgain: "تسوّق مرة أخرى",
   },
@@ -743,12 +810,17 @@ export const transactionalAr: TransactionalCopy = {
     shipping: "رسوم الشحن",
     shippingNotRefunded: "غير مستردة",
     total: "إجمالي الاسترداد",
-    methods: { wallet: "محفظة طلبي", original: "وسيلة الدفع الأصلية", manual: "تحويل بنكي" },
+    methods: {
+      wallet: "محفظة طلبي",
+      original: "وسيلة الدفع الأصلية",
+      manual: "تحويل بنكي",
+    },
   },
   abandonedCart: {
     subject: "نسيت شيئًا في سلتك",
     preview: "منتجاتك ما زالت في انتظارك.",
-    previewCoupon: "منتجاتك ما زالت في انتظارك. استخدم كود {code} لخصم {discount}.",
+    previewCoupon:
+      "منتجاتك ما زالت في انتظارك. استخدم كود {code} لخصم {discount}.",
     eyebrow: "سلتك في انتظارك",
     heading: "نسيت شيئًا في سلتك؟",
     lead: "احتفظنا لك بالمنتجات التي أضفتها. الكميات محدودة، أكمل طلبك قبل نفادها.",
@@ -773,7 +845,8 @@ export const transactionalAr: TransactionalCopy = {
   storeCampaign: {
     shop: "تسوّق دلوقتي",
     viewProduct: "شوف المنتج",
-    reason: "وصلك الإيميل ده لأنك طلبت قبل كده من {store} أو اشتركت في النشرة بتاعته.",
+    reason:
+      "وصلك الإيميل ده لأنك طلبت قبل كده من {store} أو اشتركت في النشرة بتاعته.",
     unsubscribe: "إلغاء الاشتراك",
     testBanner: "إيميل تجربة: وصلك إنت بس.",
     testSubject: "[تجربة] {subject}",
@@ -883,7 +956,8 @@ export const transactionalAr: TransactionalCopy = {
     eyebrow: "تم تحويل الأرباح",
     heading: "أرسلنا {amount} إلى حسابك",
     lead: "يصل المبلغ عادةً خلال 1 إلى 3 أيام عمل.",
-    leadPeriod: "أرباح الفترة {period}. يصل المبلغ عادةً خلال 1 إلى 3 أيام عمل.",
+    leadPeriod:
+      "أرباح الفترة {period}. يصل المبلغ عادةً خلال 1 إلى 3 أيام عمل.",
     reference: "رقم التحويل",
     account: "الحساب",
     date: "التاريخ",
@@ -896,7 +970,8 @@ export const transactionalAr: TransactionalCopy = {
   sellerLowStock: {
     subject: "تنبيه: {count} منتجات أوشكت على النفاد",
     subjectOne: "تنبيه: منتج أوشك على النفاد",
-    preview: "{count} منتجات أوشكت على النفاد. أعد التخزين لتجنب فقدان الطلبات.",
+    preview:
+      "{count} منتجات أوشكت على النفاد. أعد التخزين لتجنب فقدان الطلبات.",
     pill: "مخزون منخفض",
     heading: "{count} منتجات أوشكت على النفاد",
     headingOne: "منتج أوشك على النفاد",
@@ -955,22 +1030,32 @@ export const transactionalAr: TransactionalCopy = {
     },
     reasonsTitle: "ليه تكمّل دلوقتي",
     reasons: {
-      templates: ["قوالب جاهزة لنشاطك", "اختار قالب وعدّل عليه، من غير أي كود."],
-      ai: ["منتجاتك بالذكاء الاصطناعي", "صوّر المنتج وطلبي يكتبلك الاسم والوصف بالعربي والإنجليزي."],
-      free: ["الباقة المجانية", "من غير اشتراك شهري، ورسوم بسيطة على كل طلب بس."],
+      templates: [
+        "قوالب جاهزة لنشاطك",
+        "اختار قالب وعدّل عليه، من غير أي كود.",
+      ],
+      ai: [
+        "منتجاتك بالذكاء الاصطناعي",
+        "صوّر المنتج وطلبي يكتبلك الاسم والوصف بالعربي والإنجليزي.",
+      ],
+      free: [
+        "الباقة المجانية",
+        "من غير اشتراك شهري، ورسوم بسيطة على كل طلب بس.",
+      ],
     },
     freeWithFee: "من غير اشتراك شهري، وعلى كل طلب {fee} بس.",
-    footerReason: "وصلك الإيميل ده لأنك فتحت حساب تاجر على طلبي ولسه متجرك مكملش.",
+    footerReason:
+      "وصلك الإيميل ده لأنك فتحت حساب تاجر على طلبي ولسه متجرك مكملش.",
     optOut: "مش عايز تذكيرات تاني",
   },
   sellerThemeRequest: {
     ready: {
       subject: "القالب الذي طلبته أصبح جاهزًا",
-      preview: "أضفنا القالب الذي طلبته إلى معرض القوالب.",
+      preview: "أضفنا القالب الذي طلبته إلى معرض الثيمات.",
       pill: "القالب جاهز",
       heading: "قالبك جاهز",
-      lead: "أضفنا القالب الذي طلبته إلى معرض القوالب. افتحه واستعرضه ثم استخدمه في متجرك.",
-      cta: "افتح القوالب",
+      lead: "أضفنا القالب الذي طلبته إلى معرض الثيمات. افتحه واستعرضه ثم استخدمه في متجرك.",
+      cta: "افتح الثيمات",
     },
     declined: {
       subject: "بخصوص طلب القالب",
