@@ -9,12 +9,15 @@ duration_seconds: 35.0
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 1Vp8Eumkvb23Jyy8b8lm"
 made_on: 2026-11-18
 youtube_url:
+youtube_embed:
 youtube_title: "تعديل موقع متجرك ونشره في 5 خطوات | Tallaby"
 youtube_title_ar: "طريقة تعديل موقع متجرك ونشره على طلبي #Shorts"
 youtube_title_en: "How to edit and publish your Tallaby store website #Shorts"
 ---
 
 ## YouTube (copy and paste)
+
+After uploading, paste the Short link in `youtube_url` and the embed link (`https://www.youtube.com/embed/<id>`) in `youtube_embed` at the top of this file. The dashboard's «شاهد الشرح» button uses them.
 
 **Title**
 

@@ -9,12 +9,15 @@ duration_seconds: 35
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation rKjdMTN9e3HB6YwYP2Q4"
 made_on: 2026-11-18
 youtube_url:
+youtube_embed:
 youtube_title: "عمل فئات رئيسية وفرعية لمتجرك في 5 خطوات | Tallaby"
 youtube_title_ar: "طريقة عمل فئات رئيسية وفرعية على طلبي #Shorts"
 youtube_title_en: "How to make main and sub-categories on Tallaby #Shorts"
 ---
 
 ## YouTube (copy and paste)
+
+After uploading, paste the Short link in `youtube_url` and the embed link (`https://www.youtube.com/embed/<id>`) in `youtube_embed` at the top of this file. The dashboard's «شاهد الشرح» button uses them.
 
 **Title**
 

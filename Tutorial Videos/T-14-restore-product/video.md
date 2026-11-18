@@ -9,12 +9,15 @@ duration_seconds: 33.2
 voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation 46C09hJ4QKEPhGr0Ojdu"
 made_on: 2026-11-18
 youtube_url:
+youtube_embed:
 youtube_title: "استرجاع منتج محذوف في 4 خطوات | Tallaby"
 youtube_title_ar: "طريقة استرجاع منتج محذوف على طلبي #Shorts"
 youtube_title_en: "How to restore a deleted product on Tallaby #Shorts"
 ---
 
 ## YouTube (copy and paste)
+
+After uploading, paste the Short link in `youtube_url` and the embed link (`https://www.youtube.com/embed/<id>`) in `youtube_embed` at the top of this file. The dashboard's «شاهد الشرح» button uses them.
 
 **Title**
 
