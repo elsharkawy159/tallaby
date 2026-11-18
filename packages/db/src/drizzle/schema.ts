@@ -3427,9 +3427,19 @@ export const billingSettings = pgTable("billing_settings", {
 	rateOverride: numeric("rate_override", { precision: 12, scale: 4 }),
 	taxEnabled: boolean("tax_enabled").default(false).notNull(),
 	taxRateBps: integer("tax_rate_bps").default(1400).notNull(),
+	/** Tallaby Pay fee in basis points (0175, F-100; 300 = 3%, 0–2000). Snapshotted per order. */
+	tallabyPayFeeBps: integer("tallaby_pay_fee_bps").default(300).notNull(),
+	/** Days after delivery until a Tallaby Pay net becomes available (0175; owner 2026-11-18: 0). */
+	tallabyPayHoldDays: integer("tallaby_pay_hold_days").default(0).notNull(),
+	/** Minimum Tallaby Pay withdrawal, EGP (0175; owner 2026-11-18: 500). */
+	tallabyPayMinPayout: numeric("tallaby_pay_min_payout", { precision: 10, scale: 2 }).default('500').notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedBy: uuid("updated_by"),
-});
+}, () => [
+	check("billing_settings_tallaby_pay_fee_bps_check", sql`tallaby_pay_fee_bps BETWEEN 0 AND 2000`),
+	check("billing_settings_tallaby_pay_hold_days_check", sql`tallaby_pay_hold_days BETWEEN 0 AND 60`),
+	check("billing_settings_tallaby_pay_min_payout_check", sql`tallaby_pay_min_payout >= 1`),
+]);
 
 /**
  * One-way platform switches (0160, F-87): `stores_catalog_split` and
@@ -4681,4 +4691,210 @@ export const productCrossSells = pgTable("product_cross_sells", {
 	foreignKey({ columns: [table.productId], foreignColumns: [products.id], name: "product_cross_sells_product_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.offerProductId], foreignColumns: [products.id], name: "product_cross_sells_offer_product_id_fkey" }).onDelete("cascade"),
 	foreignKey({ columns: [table.offerVariantId], foreignColumns: [productVariants.id], name: "product_cross_sells_offer_variant_id_fkey" }).onDelete("cascade"),
+]);
+
+// ---------------------------------------------------------------------------
+// Tallaby Pay (0175, ROADMAP.md F-100; docs/superpowers/specs/2026-11-18-tallaby-pay-design.md §4).
+// A per-store earnings ledger in EGP, separate from the store wallet and from
+// user_wallets. Balances move ONLY through postTallabyPayEntry
+// (@workspace/lib/tallaby-pay/server). All server-only: RLS on, no policies.
+// ---------------------------------------------------------------------------
+
+/** One earnings wallet per store. `available` may go negative only after a refund or an adjustment. */
+export const tallabyPayWallets = pgTable("tallaby_pay_wallets", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	currency: text().default('EGP').notNull(),
+	pending: numeric({ precision: 10, scale: 2 }).default('0').notNull(),
+	available: numeric({ precision: 10, scale: 2 }).default('0').notNull(),
+	reserved: numeric({ precision: 10, scale: 2 }).default('0').notNull(),
+	/** active | frozen (frozen blocks withdrawals only) */
+	status: text().default('active').notNull(),
+	frozenReason: text("frozen_reason"),
+	frozenBy: uuid("frozen_by"),
+	frozenAt: timestamp("frozen_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("tallaby_pay_wallets_store_key").on(table.storeId),
+	unique("tallaby_pay_wallets_id_store_key").on(table.id, table.storeId),
+	index("tallaby_pay_wallets_seller_idx").using("btree", table.sellerId),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "tallaby_pay_wallets_store_id_fkey" }).onDelete("no action"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "tallaby_pay_wallets_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.frozenBy], foreignColumns: [users.id], name: "tallaby_pay_wallets_frozen_by_fkey" }).onDelete("set null"),
+	check("tallaby_pay_wallets_currency_check", sql`currency = 'EGP'`),
+	check("tallaby_pay_wallets_pending_check", sql`pending >= 0`),
+	check("tallaby_pay_wallets_reserved_check", sql`reserved >= 0`),
+	check("tallaby_pay_wallets_status_check", sql`status IN ('active', 'frozen')`),
+	check("tallaby_pay_wallets_frozen_check", sql`status <> 'frozen' OR (frozen_reason IS NOT NULL AND frozen_at IS NOT NULL)`),
+]);
+
+/** One row per paid order and purpose: the idempotency claim, the sales list and the Fees box. */
+export const tallabyPaySales = pgTable("tallaby_pay_sales", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	walletId: uuid("wallet_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	/** Always set on insert; NULL only after the order row was deleted (SET NULL). */
+	orderId: uuid("order_id"),
+	/** order | deposit */
+	purpose: text().default('order').notNull(),
+	easykashRef: text("easykash_ref").notNull(),
+	customerReference: text("customer_reference"),
+	paymentMethod: text("payment_method"),
+	gross: numeric({ precision: 10, scale: 2 }).notNull(),
+	fee: numeric({ precision: 10, scale: 2 }).notNull(),
+	net: numeric({ precision: 10, scale: 2 }).notNull(),
+	feeBps: integer("fee_bps").notNull(),
+	holdDays: integer("hold_days").notNull(),
+	/** pending | available | refunded */
+	status: text().default('pending').notNull(),
+	paidAt: timestamp("paid_at", { withTimezone: true, mode: 'string' }).notNull(),
+	releaseAt: timestamp("release_at", { withTimezone: true, mode: 'string' }),
+	releasedAt: timestamp("released_at", { withTimezone: true, mode: 'string' }),
+	/** NULL | requested | declined */
+	refundState: text("refund_state"),
+	refundRequestedAt: timestamp("refund_requested_at", { withTimezone: true, mode: 'string' }),
+	refundRequestedBy: uuid("refund_requested_by"),
+	refundReason: text("refund_reason"),
+	refundedAt: timestamp("refunded_at", { withTimezone: true, mode: 'string' }),
+	refundedBy: uuid("refunded_by"),
+	refundReference: text("refund_reference"),
+	refundReasonAdmin: text("refund_reason_admin"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("tallaby_pay_sales_order_purpose_key").on(table.orderId, table.purpose),
+	unique("tallaby_pay_sales_easykash_ref_key").on(table.easykashRef),
+	unique("tallaby_pay_sales_id_wallet_key").on(table.id, table.walletId),
+	index("tallaby_pay_sales_store_paid_idx").using("btree", table.storeId, table.paidAt.desc()),
+	index("tallaby_pay_sales_wallet_idx").using("btree", table.walletId),
+	index("tallaby_pay_sales_seller_idx").using("btree", table.sellerId),
+	index("tallaby_pay_sales_pending_idx").using("btree", table.paidAt).where(sql`status = 'pending'`),
+	index("tallaby_pay_sales_refund_requested_idx").using("btree", table.refundRequestedAt).where(sql`refund_state = 'requested'`),
+	foreignKey({ columns: [table.walletId, table.storeId], foreignColumns: [tallabyPayWallets.id, tallabyPayWallets.storeId], name: "tallaby_pay_sales_wallet_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "tallaby_pay_sales_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.orderId], foreignColumns: [orders.id], name: "tallaby_pay_sales_order_id_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.refundRequestedBy], foreignColumns: [users.id], name: "tallaby_pay_sales_refund_requested_by_fkey" }).onDelete("set null"),
+	foreignKey({ columns: [table.refundedBy], foreignColumns: [users.id], name: "tallaby_pay_sales_refunded_by_fkey" }).onDelete("set null"),
+	check("tallaby_pay_sales_purpose_check", sql`purpose IN ('order', 'deposit')`),
+	check("tallaby_pay_sales_ref_check", sql`length(easykash_ref) BETWEEN 1 AND 200`),
+	check("tallaby_pay_sales_amounts_check", sql`gross = fee + net AND fee >= 0 AND net >= 0 AND gross > 0`),
+	check("tallaby_pay_sales_fee_bps_check", sql`fee_bps BETWEEN 0 AND 2000`),
+	check("tallaby_pay_sales_hold_days_check", sql`hold_days BETWEEN 0 AND 60`),
+	check("tallaby_pay_sales_status_check", sql`status IN ('pending', 'available', 'refunded')`),
+	check("tallaby_pay_sales_refund_state_check", sql`refund_state IS NULL OR refund_state IN ('requested', 'declined')`),
+	check("tallaby_pay_sales_released_check", sql`status <> 'available' OR released_at IS NOT NULL`),
+	check("tallaby_pay_sales_refunded_check", sql`status <> 'refunded' OR refunded_at IS NOT NULL`),
+]);
+
+/** Withdrawal requests (0117 shape, per store; one open request per store). Logic: F-100e. */
+export const tallabyPayPayouts = pgTable("tallaby_pay_payouts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	walletId: uuid("wallet_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	/** instapay | bank | mobile_wallet */
+	method: text().notNull(),
+	/** Full destination. Server-only; never sent to the client unmasked. */
+	destination: jsonb().$type<Record<string, unknown>>().notNull(),
+	/** requested | paid | rejected | cancelled | reversed */
+	status: text().default('requested').notNull(),
+	reference: text(),
+	rejectionReason: text("rejection_reason"),
+	reviewedBy: uuid("reviewed_by"),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	reversedAt: timestamp("reversed_at", { withTimezone: true, mode: 'string' }),
+	reversalReason: text("reversal_reason"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("tallaby_pay_payouts_id_wallet_key").on(table.id, table.walletId),
+	uniqueIndex("tallaby_pay_payouts_one_open").using("btree", table.storeId).where(sql`status = 'requested'`),
+	index("tallaby_pay_payouts_store_idx").using("btree", table.storeId, table.createdAt.desc()),
+	index("tallaby_pay_payouts_status_idx").using("btree", table.status, table.createdAt),
+	index("tallaby_pay_payouts_wallet_idx").using("btree", table.walletId),
+	index("tallaby_pay_payouts_seller_idx").using("btree", table.sellerId),
+	foreignKey({ columns: [table.walletId, table.storeId], foreignColumns: [tallabyPayWallets.id, tallabyPayWallets.storeId], name: "tallaby_pay_payouts_wallet_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "tallaby_pay_payouts_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.reviewedBy], foreignColumns: [users.id], name: "tallaby_pay_payouts_reviewed_by_fkey" }).onDelete("set null"),
+	check("tallaby_pay_payouts_amount_check", sql`amount >= 1`),
+	check("tallaby_pay_payouts_method_check", sql`method IN ('instapay', 'bank', 'mobile_wallet')`),
+	check("tallaby_pay_payouts_destination_check", sql`jsonb_typeof(destination) = 'object'`),
+	check("tallaby_pay_payouts_status_check", sql`status IN ('requested', 'paid', 'rejected', 'cancelled', 'reversed')`),
+	check("tallaby_pay_payouts_paid_check", sql`status NOT IN ('paid', 'reversed') OR (reference IS NOT NULL AND reviewed_at IS NOT NULL)`),
+	check("tallaby_pay_payouts_rejected_check", sql`status <> 'rejected' OR (rejection_reason IS NOT NULL AND reviewed_at IS NOT NULL)`),
+	check("tallaby_pay_payouts_reversed_check", sql`status <> 'reversed' OR (reversed_at IS NOT NULL AND reversal_reason IS NOT NULL)`),
+]);
+
+/**
+ * The append-only Tallaby Pay ledger (a trigger rejects UPDATE and DELETE).
+ * Deltas are signed; the *_after columns come from the balance UPDATE … RETURNING.
+ */
+export const tallabyPayEntries = pgTable("tallaby_pay_entries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	walletId: uuid("wallet_id").notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	saleId: uuid("sale_id"),
+	payoutId: uuid("payout_id"),
+	/** sale | release | refund | payout_reserve | payout_unreserve | payout | payout_reversal | adjustment */
+	kind: text().notNull(),
+	pendingDelta: numeric("pending_delta", { precision: 10, scale: 2 }).default('0').notNull(),
+	availableDelta: numeric("available_delta", { precision: 10, scale: 2 }).default('0').notNull(),
+	reservedDelta: numeric("reserved_delta", { precision: 10, scale: 2 }).default('0').notNull(),
+	pendingAfter: numeric("pending_after", { precision: 10, scale: 2 }).notNull(),
+	availableAfter: numeric("available_after", { precision: 10, scale: 2 }).notNull(),
+	reservedAfter: numeric("reserved_after", { precision: 10, scale: 2 }).notNull(),
+	referenceType: text("reference_type").notNull(),
+	referenceId: text("reference_id").notNull(),
+	description: text(),
+	metadata: jsonb().$type<Record<string, unknown>>(),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("tallaby_pay_entries_reference_key").on(table.kind, table.referenceType, table.referenceId),
+	index("tallaby_pay_entries_wallet_created_idx").using("btree", table.walletId, table.createdAt.desc()),
+	index("tallaby_pay_entries_seller_idx").using("btree", table.sellerId),
+	index("tallaby_pay_entries_sale_idx").using("btree", table.saleId).where(sql`sale_id IS NOT NULL`),
+	index("tallaby_pay_entries_payout_idx").using("btree", table.payoutId).where(sql`payout_id IS NOT NULL`),
+	foreignKey({ columns: [table.walletId, table.storeId], foreignColumns: [tallabyPayWallets.id, tallabyPayWallets.storeId], name: "tallaby_pay_entries_wallet_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "tallaby_pay_entries_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.saleId, table.walletId], foreignColumns: [tallabyPaySales.id, tallabyPaySales.walletId], name: "tallaby_pay_entries_sale_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.payoutId, table.walletId], foreignColumns: [tallabyPayPayouts.id, tallabyPayPayouts.walletId], name: "tallaby_pay_entries_payout_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.createdBy], foreignColumns: [users.id], name: "tallaby_pay_entries_created_by_fkey" }).onDelete("set null"),
+	check("tallaby_pay_entries_kind_check", sql`kind IN ('sale', 'release', 'refund', 'payout_reserve', 'payout_unreserve', 'payout', 'payout_reversal', 'adjustment')`),
+	check("tallaby_pay_entries_deltas_check", sql`(kind = 'sale' AND pending_delta > 0 AND available_delta = 0 AND reserved_delta = 0) OR (kind = 'release' AND pending_delta < 0 AND available_delta = -pending_delta AND reserved_delta = 0) OR (kind = 'refund' AND reserved_delta = 0 AND ((pending_delta < 0 AND available_delta = 0) OR (pending_delta = 0 AND available_delta < 0))) OR (kind = 'payout_reserve' AND pending_delta = 0 AND available_delta = 0 AND reserved_delta > 0) OR (kind = 'payout_unreserve' AND pending_delta = 0 AND available_delta = 0 AND reserved_delta < 0) OR (kind = 'payout' AND pending_delta = 0 AND available_delta < 0 AND reserved_delta = available_delta) OR (kind = 'payout_reversal' AND pending_delta = 0 AND available_delta > 0 AND reserved_delta = 0) OR (kind = 'adjustment' AND reserved_delta = 0 AND (pending_delta <> 0 OR available_delta <> 0))`),
+	check("tallaby_pay_entries_sale_ref_check", sql`kind NOT IN ('sale', 'release', 'refund') OR sale_id IS NOT NULL`),
+	check("tallaby_pay_entries_payout_ref_check", sql`kind NOT IN ('payout_reserve', 'payout_unreserve', 'payout', 'payout_reversal') OR payout_id IS NOT NULL`),
+	check("tallaby_pay_entries_adjustment_reason_check", sql`kind <> 'adjustment' OR length(btrim(coalesce(metadata->>'reason', ''))) > 0`),
+	check("tallaby_pay_entries_after_check", sql`pending_after >= 0 AND reserved_after >= 0`),
+	check("tallaby_pay_entries_reference_check", sql`length(reference_type) > 0 AND length(reference_id) > 0`),
+]);
+
+/** The account's legal identity for Tallaby Pay withdrawals (owner 2026-11-18). One per seller account. */
+export const tallabyPayKyc = pgTable("tallaby_pay_kyc", {
+	sellerId: uuid("seller_id").primaryKey().notNull(),
+	legalName: text("legal_name").notNull(),
+	/** national_id | commercial_register */
+	idType: text("id_type").notNull(),
+	idNumber: text("id_number").notNull(),
+	/** submitted | verified | rejected */
+	status: text().default('submitted').notNull(),
+	submittedAt: timestamp("submitted_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	verifiedAt: timestamp("verified_at", { withTimezone: true, mode: 'string' }),
+	verifiedBy: uuid("verified_by"),
+	rejectionReason: text("rejection_reason"),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("tallaby_pay_kyc_submitted_idx").using("btree", table.submittedAt).where(sql`status = 'submitted'`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "tallaby_pay_kyc_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.verifiedBy], foreignColumns: [users.id], name: "tallaby_pay_kyc_verified_by_fkey" }).onDelete("set null"),
+	check("tallaby_pay_kyc_legal_name_check", sql`length(btrim(legal_name)) BETWEEN 2 AND 200`),
+	check("tallaby_pay_kyc_id_type_check", sql`id_type IN ('national_id', 'commercial_register')`),
+	check("tallaby_pay_kyc_id_number_check", sql`CASE id_type WHEN 'national_id' THEN id_number ~ '^[0-9]{14}$' ELSE length(btrim(id_number)) BETWEEN 1 AND 40 END`),
+	check("tallaby_pay_kyc_status_check", sql`status IN ('submitted', 'verified', 'rejected')`),
+	check("tallaby_pay_kyc_verified_check", sql`status <> 'verified' OR verified_at IS NOT NULL`),
+	check("tallaby_pay_kyc_rejected_check", sql`status <> 'rejected' OR rejection_reason IS NOT NULL`),
 ]);

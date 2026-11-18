@@ -267,6 +267,14 @@
       "types": "./src/referrals/server.ts",
       "default": "./src/referrals/server.ts"
     },
+    "./tallaby-pay": {
+      "types": "./src/tallaby-pay/index.ts",
+      "default": "./src/tallaby-pay/index.ts"
+    },
+    "./tallaby-pay/server": {
+      "types": "./src/tallaby-pay/server.ts",
+      "default": "./src/tallaby-pay/server.ts"
+    },
     "./sellers": {
       "types": "./src/sellers/index.ts",
       "default": "./src/sellers/index.ts"

@@ -3,6 +3,7 @@ import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuil
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows, agentPendingActions, agentReadCounts } from "./schema";
 import { productStoreSplit } from "./schema";
 import { storeSizeCharts, storeSizeChartTargets } from "./schema";
+import { tallabyPayWallets, tallabyPaySales, tallabyPayPayouts, tallabyPayEntries, tallabyPayKyc } from "./schema";
 import { sellerSetupReminders } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends, storeAppRequests, storeAppInstalls, themeRequests } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
@@ -1535,4 +1536,42 @@ export const agentPendingActionsRelations = relations(agentPendingActions, ({one
 
 export const agentReadCountsRelations = relations(agentReadCounts, ({one}) => ({
 	seller: one(sellers, { fields: [agentReadCounts.sellerId], references: [sellers.id] }),
+}));
+
+export const tallabyPayWalletsRelations = relations(tallabyPayWallets, ({one, many}) => ({
+	store: one(stores, { fields: [tallabyPayWallets.storeId], references: [stores.id] }),
+	seller: one(sellers, { fields: [tallabyPayWallets.sellerId], references: [sellers.id] }),
+	sales: many(tallabyPaySales),
+	entries: many(tallabyPayEntries),
+	payouts: many(tallabyPayPayouts),
+}));
+
+export const tallabyPaySalesRelations = relations(tallabyPaySales, ({one, many}) => ({
+	wallet: one(tallabyPayWallets, { fields: [tallabyPaySales.walletId], references: [tallabyPayWallets.id] }),
+	store: one(stores, { fields: [tallabyPaySales.storeId], references: [stores.id] }),
+	seller: one(sellers, { fields: [tallabyPaySales.sellerId], references: [sellers.id] }),
+	order: one(orders, { fields: [tallabyPaySales.orderId], references: [orders.id] }),
+	entries: many(tallabyPayEntries),
+}));
+
+export const tallabyPayPayoutsRelations = relations(tallabyPayPayouts, ({one, many}) => ({
+	wallet: one(tallabyPayWallets, { fields: [tallabyPayPayouts.walletId], references: [tallabyPayWallets.id] }),
+	store: one(stores, { fields: [tallabyPayPayouts.storeId], references: [stores.id] }),
+	seller: one(sellers, { fields: [tallabyPayPayouts.sellerId], references: [sellers.id] }),
+	reviewer: one(users, { fields: [tallabyPayPayouts.reviewedBy], references: [users.id] }),
+	entries: many(tallabyPayEntries),
+}));
+
+export const tallabyPayEntriesRelations = relations(tallabyPayEntries, ({one}) => ({
+	wallet: one(tallabyPayWallets, { fields: [tallabyPayEntries.walletId], references: [tallabyPayWallets.id] }),
+	store: one(stores, { fields: [tallabyPayEntries.storeId], references: [stores.id] }),
+	seller: one(sellers, { fields: [tallabyPayEntries.sellerId], references: [sellers.id] }),
+	sale: one(tallabyPaySales, { fields: [tallabyPayEntries.saleId], references: [tallabyPaySales.id] }),
+	payout: one(tallabyPayPayouts, { fields: [tallabyPayEntries.payoutId], references: [tallabyPayPayouts.id] }),
+	creator: one(users, { fields: [tallabyPayEntries.createdBy], references: [users.id] }),
+}));
+
+export const tallabyPayKycRelations = relations(tallabyPayKyc, ({one}) => ({
+	seller: one(sellers, { fields: [tallabyPayKyc.sellerId], references: [sellers.id] }),
+	verifier: one(users, { fields: [tallabyPayKyc.verifiedBy], references: [users.id] }),
 }));

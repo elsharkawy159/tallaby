@@ -30,10 +30,11 @@ const STORE = "22222222-2222-4222-8222-222222222222";
 const PRODUCT = "33333333-3333-4333-8333-333333333333";
 
 describe("platform switch keys", () => {
-  it("knows exactly the two F-87 switches", () => {
-    expect(PLATFORM_SWITCHES).toEqual(["stores_catalog_split", "stores_wallet_split"]);
+  it("knows exactly the two F-87 switches and the Tallaby Pay launch switch", () => {
+    expect(PLATFORM_SWITCHES).toEqual(["stores_catalog_split", "stores_wallet_split", "tallaby_pay_live"]);
     expect(isPlatformSwitchKey("stores_catalog_split")).toBe(true);
     expect(isPlatformSwitchKey("stores_wallet_split")).toBe(true);
+    expect(isPlatformSwitchKey("tallaby_pay_live")).toBe(true);
     expect(isPlatformSwitchKey("usd_live")).toBe(false);
     expect(isPlatformSwitchKey(undefined)).toBe(false);
   });

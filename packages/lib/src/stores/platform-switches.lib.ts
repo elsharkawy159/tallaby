@@ -3,9 +3,10 @@
  * §2.4). Code for a big data move ships dark and reads its switch; the
  * migration that moves the data turns the switch on as its last statement
  * (0163: `stores_catalog_split`, 0164: `stores_wallet_split`). Rows live in
- * `platform_switches` (0160). Pure: safe to import anywhere.
+ * `platform_switches` (0160). `tallaby_pay_live` (0175, F-100) is the Tallaby
+ * Pay launch switch, turned on by the owner. Pure: safe to import anywhere.
  */
-export const PLATFORM_SWITCHES = ["stores_catalog_split", "stores_wallet_split"] as const;
+export const PLATFORM_SWITCHES = ["stores_catalog_split", "stores_wallet_split", "tallaby_pay_live"] as const;
 
 export type PlatformSwitchKey = (typeof PLATFORM_SWITCHES)[number];
 
