@@ -1398,7 +1398,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-100 Tallaby Pay — P1 · Owner request 2026-11-18
 
-- **Status:** built 2026-11-18 (F-100a–g), not deployed; migrations 0175 and 0176 written, not applied; switch `tallaby_pay_live` off. Design: [`docs/superpowers/specs/2026-11-18-tallaby-pay-design.md`](docs/superpowers/specs/2026-11-18-tallaby-pay-design.md) (tasks F-100-0, F-100a–i in its §13; owner questions in §14).
+- **Status:** built 2026-11-18 (F-100a–g); migrations 0175 and 0176 applied on staging and production 2026-11-19 and `main` pushed the same day; switch `tallaby_pay_live` off. Design: [`docs/superpowers/specs/2026-11-18-tallaby-pay-design.md`](docs/superpowers/specs/2026-11-18-tallaby-pay-design.md) (tasks F-100-0, F-100a–i in its §13; owner questions in §14).
 - **Owner decisions (2026-11-18):** 3% platform fee (may rise; snapshotted per order); seller gets 97% in a separate per-store Earnings wallet, pending until delivered + a hold, then available; EasyKash's own fee comes out of the 3%; withdrawals by request, paid by hand from Admin; refunds manual, the 97 taken back and Tallaby keeps nothing.
 - **Blocking before launch:** EasyKash confirmed Tallaby may collect through it (owner, 2026-11-18; keep it in writing); still open: the legal/CBE check; the `tallaby_pay_live` switch stays off until then.
 - **Env (when building):** `TALLABY_EASYKASH_API_KEY` (ecommerce, backend, admin), `TALLABY_EASYKASH_HMAC_SECRET` (backend); Tallaby's EasyKash callback URL `https://<backend>/api/webhooks/tallaby-pay/easykash`.
@@ -1643,9 +1643,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-97d Dashboard «كيف يعمل؟» button — 2026-11-18: a small Play button on the page or section each uploaded video teaches (19 videos; registry `apps/dashboard/lib/tutorials/tutorial-videos.ts`, button `components/tutorials/tutorial-video-button.client.tsx`), opening the youtube-nocookie embed in a dialog, never autoplayed or muted; strings `tutorialVideos` in ar/en; no migration; not checked in a browser yet
 - [ ] F-98a–g EasyKash seller gateway — planned 2026-11-18 (`docs/easykash.md`); waits for the owner's answers (§10 of the doc)
 - [ ] F-99a–g Dropshipping — added to the plan 2026-11-18; waits for the owner's answers (§4 F-99)
-- [x] F-100a–g Tallaby Pay built 2026-11-18 (`2c143e0f`, `41434ccc`, `b80a1fc7`, `cd6265bd`, `8f77bd3c`, `1fb22c57`, `83d158ac`); 0175/0176 not applied
+- [x] F-100a–g Tallaby Pay built 2026-11-18 (`2c143e0f`, `41434ccc`, `b80a1fc7`, `cd6265bd`, `8f77bd3c`, `1fb22c57`, `83d158ac`); 0175/0176 applied on staging and production 2026-11-19
 - [ ] F-100h Manual E2E on staging (needs 0175/0176, env, EasyKash callback URL, switch on)
-- [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17, not deployed; `0173` not applied
+- [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17; `0173` applied on staging and production (checked 2026-11-19)
 - [x] F-90 One template per niche: all 83 niches mapped, every industry switched, 32 templates deleted (116 → 84) — 2026-11-12, not deployed; no migration; not seen in a browser
 - [ ] F-90 Packs and redesigns for the 59 `own` rows (wave 1's six new packs, then waves 2–13 as their photos arrive)
 - [x] F-21c Deposit checkout + seller confirm (checkout summary, deposit payment page by card or transfer + screenshot, dashboard "Awaiting deposit" + confirm/reject, bell, 48 h cron, carrier COD = remainder) — 2026-11-12, not deployed
@@ -1944,6 +1944,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-19 — Tallaby Pay migrations applied, main pushed (F-100, F-96a, F-98)
+
+- **Done:** owner said "push everything to live, I can test Tallaby Pay on production". Applied `0173`–`0176` on staging (each in its own transaction; 0175/0176 re-run to prove idempotent), then `0175` and `0176` on production (`0173`, `0174` were already there), all BEFORE pushing `main`. `tallaby_pay_live` is off on both; `billing_settings` has fee 300 bps, hold 0 days, min payout EGP 500.
+- **Not done:** F-100h E2E (owner tests on production after turning the switch on); the legal/CBE check before launch.
 
 ### 2026-11-18 — Tallaby Pay built (F-100a–g)
 
