@@ -6,7 +6,7 @@ roadmap: "F-10 Stock history and quick restock (Products › Inventory, migratio
 dashboard_path: /stores/[storeId]/products/inventory
 status: draft
 duration_seconds: 31.5
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation Y9bKR2YeXCYWiDroDk6p"
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation KXFw2FsNdnfbZawZQaDE"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "طريقة تحديث المخزون بسرعة على طلبي #Shorts"
@@ -17,19 +17,19 @@ youtube_title_en: "How to update your stock quickly on Tallaby #Shorts"
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–4.9 s | Title card | "تحديث المخزون بسرعة", label "شرح سريع" | 0.30–4.45 s «هنحدّث كمية المخزون على طلبي، في أربع خطوات بسيطة.» |
-| 4.9–9.0 s | 1. اضغط «السجل» تحت اسم المنتج | The page "المخزون" with "قارب على النفاد أو نفد (2)": "كوب سيراميك" (نفد من المخزون) and "شمعة معطّرة" (بقيت 2 قطعة). Tap "السجل" under the mug's name; the card "سجل المخزون · كوب سيراميك" opens on top with the product's line and its history | 5.20–8.37 s «واحد: اضغط السجل تحت اسم المنتج.» |
-| 9.0–14.2 s | 2. اكتب عدد القطع المضافة | Push in (1.12×) on the line; tap "+ كمية" and type 20; "إضافة" becomes active | 9.30–13.55 s «اتنين: اكتب عدد القطع اللي وصلت، زي عشرين قطعة.» |
-| 14.2–19.4 s | 3. اضغط «إضافة» | Tap "إضافة"; the toast "كوب سيراميك: أصبح المخزون 20", the badge turns to "بقيت 20 قطعة", the field clears, a new row is on top of the history, the mug leaves the low-stock list (count 1) | 14.50–18.57 s «تلاتة: اضغط إضافة، والمخزون هيتحدّث على طول.» |
-| 19.4–23.4 s | 4. راجع التغيير في سجل المخزون | Scroll so the line and the history are in view; highlight the new row "تعديل · 18/11/2026، 11:05 ص · بواسطتك", "+20", "المخزون: 20" | 19.70–22.73 s «أربعة: راجع التغيير في سجل المخزون.» |
-| 23.4–28.9 s | Result | The line "بقيت 20 قطعة" and the history row; the gold check on the new row | 23.70–28.51 s «وكده المخزون بقى عشرين قطعة، وكل تغيير بيتسجّل في السجل.» |
+| 0–4.9 s | Title card | "تحديث المخزون بسرعة", label "شرح سريع" | 0.30–4.47 s «هنحدّث كمية المخزون على طلبي، في أربع خطوات بسيطة.» |
+| 4.9–9.0 s | 1. اضغط «السجل» تحت اسم المنتج | The page "المخزون" with "قارب على النفاد أو نفد (2)": "كوب سيراميك" (نفد من المخزون) and "شمعة معطّرة" (بقيت 2 قطعة). Tap "السجل" under the mug's name; the card "سجل المخزون · كوب سيراميك" opens on top with the product's line and its history | 5.20–8.23 s «واحد: اضغط السجل تحت اسم المنتج.» |
+| 9.0–14.2 s | 2. اكتب عدد القطع المضافة | Push in (1.12×) on the line; tap "+ كمية" and type 20; "إضافة" becomes active | 9.30–13.49 s «اتنين: اكتب عدد القطع اللي وصلت، زي عشرين قطعة.» |
+| 14.2–19.4 s | 3. اضغط «إضافة» | Tap "إضافة"; the toast "كوب سيراميك: أصبح المخزون 20", the badge turns to "بقيت 20 قطعة", the field clears, a new row is on top of the history, the mug leaves the low-stock list (count 1) | 14.50–18.46 s «تلاتة: اضغط إضافة، والمخزون هيتحدّث على طول.» |
+| 19.4–23.4 s | 4. راجع التغيير في سجل المخزون | Scroll so the line and the history are in view; highlight the new row "تعديل · 18/11/2026، 11:05 ص · بواسطتك", "+20", "المخزون: 20" | 19.70–22.52 s «أربعة: راجع التغيير في سجل المخزون.» |
+| 23.4–28.9 s | Result | The line "بقيت 20 قطعة" and the history row; the gold check on the new row | 23.70–28.36 s «وكده المخزون بقى عشرين قطعة، وكل تغيير بيتسجّل في السجل.» |
 | 28.9–31.5 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ المخزون" | Nothing is spoken |
 
-## Voiceover script (with diacritics, exactly as generated)
+## Voiceover script (full تشكيل, exactly as generated)
 
-هنحدّث كَمّية المخزون على طَلَبي، في أربع خطوات بسيطة. واحد: اضغَط السِّجِلّ تحت اسم المُنتَج. اتنين: اكتِب عدد القِطَع اللي وصلت، زي عشرين قِطعة. تلاتة: اضغَط إضافة، والمخزون هيتحدّث على طول. أربعة: راجع التغيير في سِجِلّ المخزون. وكده المخزون بقى عشرين قِطعة، وكل تغيير بيتسجّل في السِّجِلّ.
+هَنْحَدِّث كَمِّيِّة المَخْزُون عَلَى طَلَبي، فِي أَرْبَع خُطُوَات بَسِيطَة. وَاحِد: اِضْغَط السِّجِلّ تَحْت اِسْم المُنْتَج. اِتْنِين: اِكْتِب عَدَد القِطَع اللِّي وِصْلِت، زَيّ عِشْرِين قِطْعَة. تَلَاتَة: اِضْغَط إِضَافَة، وَالمَخْزُون هَيِتْحَدِّث عَلَى طُول. أَرْبَعَة: رَاجِع التَّغْيِير فِي سِجِلّ المَخْزُون. وِكِدَه المَخْزُون بَقَى عِشْرِين قِطْعَة، وَكُلّ تَغْيِير بِيِتْسَجِّل فِي السِّجِلّ.
 
-47 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`Y9bKR2YeXCYWiDroDk6p`, 293 credits, ElevenLabs flow `c79cyQUdkbj07XyMydUL`). The take is `work/vo/take.mp3` (23.5 s), cut inside its pauses at 4.15, 7.32, 11.57, 15.64 and 18.67 s and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word (47 words), with no laugh marker; like the earlier videos it returned the script's diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "السِّجِلّ", "قِطعة" and "على طول" sound right) before `status` becomes `ready`.
+47 words, full تشكيل on every word (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`KXFw2FsNdnfbZawZQaDE`, 402 credits, ElevenLabs flow `NGrdgtl3vlUGEO1k76UD`), made 2026-11-18. **It replaced the first take** (`Y9bKR2YeXCYWiDroDk6p`, 293 credits, flow `c79cyQUdkbj07XyMydUL`, marks on hard words only; kept as `work/vo/take-old.mp3`) under the full-تشكيل rule (owner, 2026-11-18). The take is `work/vo/take.mp3` (24.61 s, was 23.5 s), cut inside its pauses (opening 0–4.17, then 4.59–7.62, 7.93–12.12, 12.46–16.42, 16.63–19.45 and 19.84–24.5 s) and placed one sentence per beat; it is not sped up or stretched. Every sentence still fits its beat, so no step moved. The transcript (`eleven_scribe_v1`, 47 words) matched the script word for word, with no laugh marker; it returned the script's diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "طَلَبي", "كَمِّيِّة", "السِّجِلّ", "قِطْعَة", "وِصْلِت" and "عَلَى طُول" sound right) before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 
@@ -70,9 +70,9 @@ https://tallaby.com
 
 **Fictional data:** store "متجر نور" (top bar wallet "$5.00" from the kit); products "كوب سيراميك" (0 → 20, alert at 5) and "شمعة معطّرة" (2, alert at 5), drawn as simple shapes; orders #1042 and #1038; dates 14–18/11/2026.
 
-**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2.4 dBTP; the voice alone -16.1 LUFS (peak -2.4 dBFS), the sounds alone -34 LUFS and -18 dBFS (17.9 dB under the voice). One gain (+10.2 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.07% of samples (4.0 dB on the tallest peak).
+**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16 LUFS and -2.3 dBTP; the voice alone -16 LUFS (peak -2.4 dBFS), the sounds alone -34 LUFS and -18 dBFS (18.0 dB under the voice). One gain (+9.1 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.03% of samples (3.1 dB on the tallest peak).
 
-**Checks:** `hyperframes check`: 0 errors; the warnings are the kit's usual ones (one generated composition, nested overlay clips, duplicate logo image), the dead stretch on the title card (1.1–4.75 s, the deliberate hold for the opening line) and a layout warning that the title card's text reaches TikTok's right-edge zone (kit title card; not a YouTube Shorts zone).
+**Checks:** `hyperframes check` (2026-11-18 re-render): 0 errors, 1 warning: the dead stretch on the title card (1.13–4.75 s, the deliberate hold for the opening line). `finish.mjs` (2026-11-18): every row ok, 31.50 s, 3.28 MB, -16 LUFS, -2.3 dBTP; rendered with `--workers 1`.
 
 **Not checked:** the page was read in the code, not opened on production. Do that before changing `status` to `ready`. The sound was measured, not listened to.
 

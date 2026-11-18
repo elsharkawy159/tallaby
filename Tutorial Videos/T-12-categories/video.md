@@ -5,8 +5,8 @@ feature: Main and sub-categories
 roadmap: "F-95 Nested store categories (Products › Categories, two levels, migration 0171)"
 dashboard_path: /stores/[storeId]/products/categories
 status: draft
-duration_seconds: 34.8
-voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation pGoh0DM4sA34QJ754a9J"
+duration_seconds: 34.9
+voice: "Hanafi – Educational – Egyptian (DWMVT5WflKt0P8OPpIrY), eleven_v4, generation NmnK9mkMRrrhNms7Kqsq"
 made_on: 2026-11-18
 youtube_url:
 youtube_title_ar: "طريقة عمل فئات رئيسية وفرعية على طلبي #Shorts"
@@ -17,20 +17,20 @@ youtube_title_en: "How to make main and sub-categories on Tallaby #Shorts"
 
 | Time | Step | What happens on screen | Voice |
 |---|---|---|---|
-| 0–5.55 s | Title card | "الفئات الرئيسية والفرعية", label "شرح سريع" | 0.30–5.45 s «هنعمل فئة رئيسية وفئة فرعية لمتجرك على طلبي، في خمس خطوات بسيطة.» |
-| 5.55–10.15 s | 1. أضف الفئة الرئيسية «ملابس» | Page "الفئات" (2): "أحذية" and "شنط". Tap "إضافة فئة"; the dialog "إضافة فئة" opens with "الفئة الرئيسية: بدون (فئة رئيسية)"; type "ملابس"; tap the Tallaby suggestion "ملابس"; toast "تمت إضافة «ملابس»", the row "ملابس · لا منتجات · من طلبي" is added (count 3) | 5.85–9.50 s «واحد: اضغط إضافة فئة، وضيف فئة ملابس.» |
-| 10.15–14.95 s | 2. اختر «ملابس» في «الفئة الرئيسية» | Back up; tap "إضافة فئة" again; tap the "الفئة الرئيسية" select; the phone's list opens; tap "ملابس"; the select reads "ملابس" | 10.45–14.70 s «اتنين: اضغط إضافة فئة تاني، واختار ملابس كفئة رئيسية.» |
-| 14.95–19.15 s | 3. اكتب «تيشيرتات» واختر الاقتراح | Type "تيشيرتات"; tap the suggestion "تيشيرتات"; toast "تمت إضافة «تيشيرتات»"; "تيشيرتات" sits indented under "ملابس", which now reads "فئة فرعية واحدة" (count 4) | 15.25–18.85 s «تلاتة: اكتب تيشيرتات، واختار الاقتراح من القائمة.» |
-| 19.15–23.45 s | 4. اختر «تيشيرتات» في صفحة المنتج | "تعديل المنتج" for "تيشيرت قطن أبيض"; tap "الفئة" (was the Tallaby category "تيشيرتات وبولو"); the sheet "اختر الفئة" opens; tap "ملابس › تيشيرتات" under "فئات متجرك"; the field reads "ملابس › تيشيرتات", "من فئات متجرك" | 19.45–22.65 s «أربعة: افتح المنتج، واختار فئة تيشيرتات.» |
-| 23.45–27.35 s | 5. اضغط «حفظ» | The screen lifts (23.55–26.3 s, 2.75 s) so "حفظ" in the fixed bottom bar is at y 1090; tap; "جارٍ الحفظ..."; toast "تم تحديث المنتج بنجاح!" | 23.75–25.50 s «خمسة: اضغط حفظ.» |
-| 27.35–32.15 s | Result | Back on "الفئات": "ملابس · منتج واحد · فئة فرعية واحدة" with "تيشيرتات · منتج واحد" under it; the gold check on "تيشيرتات" | 27.65–32.06 s «وكده المنتج بقى في فئة تيشيرتات، وبيظهر كمان في فئة ملابس.» |
-| 32.15–34.75 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ الفئات" | Nothing is spoken |
+| 0–5.85 s | Title card | "الفئات الرئيسية والفرعية", label "شرح سريع" | 0.30–5.71 s «هنعمل فئة رئيسية وفئة فرعية لمتجرك على طلبي، في خمس خطوات بسيطة.» |
+| 5.85–10.25 s | 1. أضف الفئة الرئيسية «ملابس» | Page "الفئات" (2): "أحذية" and "شنط". Tap "إضافة فئة"; the dialog "إضافة فئة" opens with "الفئة الرئيسية: بدون (فئة رئيسية)"; type "ملابس"; tap the Tallaby suggestion "ملابس"; toast "تمت إضافة «ملابس»", the row "ملابس · لا منتجات · من طلبي" is added (count 3) | 6.15–10.13 s «واحد: اضغط إضافة فئة، وضيف فئة ملابس.» |
+| 10.25–15.1 s | 2. اختر «ملابس» في «الفئة الرئيسية» | Back up; tap "إضافة فئة" again; tap the "الفئة الرئيسية" select; the phone's list opens; tap "ملابس"; the select reads "ملابس" | 10.55–14.99 s «اتنين: اضغط إضافة فئة تاني، واختار ملابس كفئة رئيسية.» |
+| 15.1–19.45 s | 3. اكتب «تيشيرتات» واختر الاقتراح | Type "تيشيرتات"; tap the suggestion "تيشيرتات"; toast "تمت إضافة «تيشيرتات»"; "تيشيرتات" sits indented under "ملابس", which now reads "فئة فرعية واحدة" (count 4) | 15.40–19.34 s «تلاتة: اكتب تيشيرتات، واختار الاقتراح من القائمة.» |
+| 19.45–23.6 s | 4. اختر «تيشيرتات» في صفحة المنتج | "تعديل المنتج" for "تيشيرت قطن أبيض"; tap "الفئة" (was the Tallaby category "تيشيرتات وبولو"); the sheet "اختر الفئة" opens; tap "ملابس › تيشيرتات" under "فئات متجرك"; the field reads "ملابس › تيشيرتات", "من فئات متجرك" | 19.75–23.21 s «أربعة: افتح المنتج، واختار فئة تيشيرتات.» |
+| 23.6–27.55 s | 5. اضغط «حفظ» | The screen lifts (23.7–26.45 s, 2.75 s) so "حفظ" in the fixed bottom bar is at y 1090; tap; "جارٍ الحفظ..."; toast "تم تحديث المنتج بنجاح!" | 23.90–25.48 s «خمسة: اضغط حفظ.» |
+| 27.55–32.35 s | Result | Back on "الفئات": "ملابس · منتج واحد · فئة فرعية واحدة" with "تيشيرتات · منتج واحد" under it; the gold check on "تيشيرتات" | 27.85–32.29 s «وكده المنتج بقى في فئة تيشيرتات، وبيظهر كمان في فئة ملابس.» |
+| 32.35–34.9 s | End card | "جرّبها الآن من لوحة التحكم", "المنتجات ‹ الفئات" | Nothing is spoken |
 
-## Voiceover script (with diacritics, exactly as generated)
+## Voiceover script (full تشكيل, exactly as generated)
 
-هنعمل فِئة رئيسية وفِئة فرعية لمَتجَرَك على طَلَبي، في خمس خطوات بسيطة. واحد: اضغَط إضافة فِئة، وضيف فِئة ملابس. اتنين: اضغَط إضافة فِئة تاني، واختار ملابس كفِئة رئيسية. تلاتة: اكتِب تيشيرتات، واختار الاقتراح من القائمة. أربعة: افتح المُنتَج، واختار فِئة تيشيرتات. خمسة: اضغَط حِفظ. وكده المُنتَج بقى في فِئة تيشيرتات، وبيظهر كمان في فِئة ملابس.
+هَنِعْمِل فِئَة رَئِيسِيَّة وَفِئَة فَرْعِيَّة لِمَتْجَرَك عَلَى طَلَبي، فِي خَمَس خُطُوَات بَسِيطَة. وَاحِد: اِضْغَط إِضَافِة فِئَة، وَضِيف فِئِة مَلَابِس. اِتْنِين: اِضْغَط إِضَافِة فِئَة تَانِي، وَاخْتَار مَلَابِس كَفِئَة رَئِيسِيَّة. تَلَاتَة: اِكْتِب تِيشِيرْتَات، وَاخْتَار الاِقْتِرَاح مِن القَائِمَة. أَرْبَعَة: اِفْتَح المُنْتَج، وَاخْتَار فِئِة تِيشِيرْتَات. خَمْسَة: اِضْغَط حِفْظ. وِكِدَه المُنْتَج بَقَى فِي فِئِة تِيشِيرْتَات، وَبِيِظْهَر كَمَان فِي فِئِة مَلَابِس.
 
-49 words. Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`pGoh0DM4sA34QJ754a9J`, 345 credits, ElevenLabs flow `9ih1RI64uBZDGNVi50jJ`). The take is `work/vo/take.mp3` (27.36 s), cut inside its pauses (opening 0–5.15, then 5.45–9.1, 9.3–13.55, 13.75–17.35, 17.55–20.75, 21.0–22.75 and 22.95–27.36 s) and placed one sentence per beat; it is not sped up or stretched. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker; like the earlier videos it returned the script's diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "فِئة", "كفِئة", "تيشيرتات" and "الاقتراح" sound right) before `status` becomes `ready`.
+49 words by the earlier count (the transcript's word count is 55; same text), full تشكيل on every word (rule of 2026-11-18). Voice: Hanafi – Educational – Egyptian (`DWMVT5WflKt0P8OPpIrY`), `eleven_v4`, no tags, one generation (`NmnK9mkMRrrhNms7Kqsq`, 479 credits, ElevenLabs flow `5uFWtOXUvSYZq379CjjW`), made 2026-11-18. **It replaced the first take** (`pGoh0DM4sA34QJ754a9J`, 345 credits, flow `9ih1RI64uBZDGNVi50jJ`, marks on hard words only; kept as `work/vo/take-old.mp3`) under the full-تشكيل rule (owner, 2026-11-18). The take is `work/vo/take.mp3` (29.47 s, was 27.36 s), cut inside its pauses (opening 0–5.41, then 5.99–9.97, 10.29–14.73, 15.1–19.04, 19.36–22.82, 23.08–24.66 and 25.01–29.45 s) and placed one sentence per beat; it is not sped up or stretched. The longer take moved the steps to 5.85, 10.25, 15.1, 19.45 and 23.6 s and the result to 27.55 s (each step's actions moved with it; step 3's typing and suggestion tap moved 0.4 s more to follow «اِكْتِب تِيشِيرْتَات، وَاخْتَار الاِقْتِرَاح»), the end card to 32.35 s and the video to 34.9 s. In the construct, «فِئَة» is marked «فِئِة» (as Egyptians say «فِئِة مَلَابِس»), like «نِسْبِة» in T-17. The transcript (`eleven_scribe_v1`) matched the script word for word, with no laugh marker; it returned the script's diacritics, so it may lean on the text. **Nobody has listened to it yet**: someone who can listen must confirm it sounds calm and natural (and that "طَلَبي", "فِئَة", "فِئِة", "كَفِئَة", "تِيشِيرْتَات" and "الاِقْتِرَاح" sound right) before `status` becomes `ready`.
 
 ## YouTube description (Arabic)
 
@@ -75,9 +75,9 @@ https://tallaby.com
 
 **Fictional data:** store "متجر نور" (top bar wallet "$5.00" from the kit); categories "أحذية" (2 products), "شنط" (3), "ملابس", "تيشيرتات"; Tallaby suggestions "ملابس" (أزياء), "ملابس رياضية", "ملابس أطفال", "تيشيرتات" (ملابس رجالي), "تيشيرتات نسائي", "تيشيرتات أطفال"; product "تيشيرت قطن أبيض", 350 جنيه, drawn as a plain t-shirt shape.
 
-**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.1 LUFS and -2.3 dBTP; the voice alone -16.1 LUFS (peak -2.4 dBFS), the sounds alone -35.2 LUFS and -18 dBFS (19.1 dB under the voice). One gain (+10.3 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.07% of samples (4.5 dB on the tallest peak). The result check sits at 28.8 s, where the kit's `success` sound does not land on a voice peak (at 28.4 s the mix peaked at -1.2 dBFS).
+**Sound:** voice in front, the five kit sounds under it, no music. The finished video measures -16.3 LUFS and -2.2 dBTP; the voice alone -16.2 LUFS (peak -2.4 dBFS), the sounds alone -35.4 LUFS and -18 dBFS (19.2 dB under the voice). One gain (+9.4 dB, set by hand as `voice.gainDb`: at the automatic gain the tallest peak needed 6.1 dB of limiting, over the kit's 6 dB) on the whole take; the limiter (-2.5 dBFS ceiling) touches 0.06% of samples (5.9 dB on the tallest peak). The result check sits at 29.0 s, where the kit's `success` sound does not land on a voice peak (at 28.4 s the mix peaked at -1.2 dBFS).
 
-**Checks:** `hyperframes check`: 0 errors; the warnings are the kit's usual ones (one generated composition, nested overlay clips), the dead stretch on the title card (the hold for the opening line) and a layout warning that the kit title card's text reaches the right-edge zone.
+**Checks:** `hyperframes check` (2026-11-18 re-render): 0 errors, 1 warning: the dead stretch on the title card (1.12–5.73 s, the hold for the opening line). `finish.mjs` (2026-11-18): every row ok, 34.90 s, 5.22 MB, -16.3 LUFS, -2.2 dBTP; rendered with `--workers 1`.
 
 **Not checked:** the page was read in the code, not opened on production. Do that before changing `status` to `ready`. The sound was measured, not listened to.
 
