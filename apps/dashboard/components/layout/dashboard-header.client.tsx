@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
 import { CommandPalette } from "./command-palette.client";
+import { OPEN_COMMAND_PALETTE_EVENT } from "./command-palette.lib";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
 import { InstallAppButton } from "./install-app-button.client";
 import { LanguageToggle } from "./language-toggle.client";
@@ -53,8 +54,14 @@ export function DashboardHeader({
         setPaletteOpen((open) => !open);
       }
     };
+    // The mobile bottom nav's Search opens this same palette.
+    const onOpenPalette = () => setPaletteOpen(true);
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener(OPEN_COMMAND_PALETTE_EVENT, onOpenPalette);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener(OPEN_COMMAND_PALETTE_EVENT, onOpenPalette);
+    };
   }, []);
 
   const siteLabel = t(siteLive ? "siteLive" : "siteOffline");

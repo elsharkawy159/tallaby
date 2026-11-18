@@ -590,6 +590,24 @@
   }
 }
 
+/*
+ * Mobile bottom nav (components/layout/bottom-nav.client.tsx): the page's end and
+ * toasts stay clear of it (bar ~70px + 12px gap + the home indicator). An open
+ * save or bulk bar takes the bottom instead: the nav steps aside and the rule
+ * below pads the page (it is more specific, so it wins).
+ */
+@media (max-width: 1020px) {
+  :root:has([data-bottom-nav]) .seller-shell main {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+  :root:has([data-save-bar][data-open]) [data-bottom-nav] {
+    display: none;
+  }
+  :root:has([data-bottom-nav]):not(:has([data-save-bar][data-open])) [data-sonner-toaster][data-y-position="bottom"] {
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
 /* A page's end stays clear of an open save or bulk bar. */
 :root:has([data-save-bar][data-open]) .seller-shell main {
   padding-bottom: 96px;

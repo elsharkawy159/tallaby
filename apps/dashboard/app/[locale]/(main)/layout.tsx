@@ -1,4 +1,5 @@
 import { SidebarData } from "@/components/dashboard/sidebar.data";
+import { BottomNav } from "@/components/layout/bottom-nav.client";
 import { DashboardHeader } from "@/components/layout/dashboard-header.client";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 import { NegativeWalletDialog } from "@/components/layout/negative-wallet-dialog.client";
@@ -110,6 +111,8 @@ export default async function DashboardLayout({
             <main className="min-w-0 flex-1">{children}</main>
           </AccountMoneyProvider>
         </MainContentWrapper>
+        {/* Phones and tablets: Home, Products, Orders, Search (owner, 2026-11-18). */}
+        <BottomNav storeId={selected?.id ?? null} />
         <NegativeWalletDialog
           balance={walletBalance}
           currency={wallet?.currency ?? "EGP"}

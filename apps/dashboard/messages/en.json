@@ -1,4 +1,9 @@
 {
+  "bottomNav": {
+    "label": "Main",
+    "home": "Home",
+    "search": "Search"
+  },
   "discountRules": {
     "title": "Automatic discounts",
     "description": "Discounts that apply on their own in this store, with no code: a percent off everything or some categories, a sale with an end date, or buy X get Y. They come out of your own sale.",
