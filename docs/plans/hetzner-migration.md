@@ -59,16 +59,28 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 
 1. ✅ DNS on Cloudflare (§1).
 2. **Code prep, no behaviour change on Vercel** (one commit each, reviewed per rule 21):
-   1. Standalone output + Dockerfiles for each app; backend Node entry.
+   1. Standalone output + Dockerfiles for each app; backend Node entry. **Started 2026-11-19: admin** (see "Admin image" below); dashboard, ecommerce, marketing, shipping and backend still to do.
    2. Shared client-IP and country helper (`CF-Connecting-IP`, `CF-IPCountry`, falling back to today's headers).
    3. Replace `VERCEL_*` env reads.
    4. Custom-domain provider interface: Vercel (today) and Cloudflare for SaaS (new), chosen by env; dashboard DNS instructions follow the provider.
    5. Cron runner config listing all 22 jobs with their UTC schedules.
-   6. CI: build and push images per app.
+   6. CI: build and push images per app. **Started 2026-11-19: admin** (`.github/workflows/admin-image.yml`); the other apps still to do.
 3. **Hetzner staging** on the `stage` branch against staging Supabase. Test: sign-in on every app, card and wallet payments with callbacks, store isolation by host, cache invalidation across apps, images, emails, every cron, MCP/OAuth.
 4. **Move production one app at a time**, lowest risk first: admin → dashboard → `api` → marketing → storefronts. For each: point its Cloudflare record at the VPS, turn on the orange cloud, watch errors for a day. Keep the Vercel project running.
 5. **Seller custom domains:** switch new domains to Cloudflare for SaaS, ask existing sellers to change their DNS (dashboard banner + email), keep Vercel's ecommerce project until the last one moves.
 6. **Retire Vercel** after two stable weeks. Rollback until then = repoint the Cloudflare record at Vercel (instant for proxied records).
+
+### Admin image (step 2.1 + 2.6, started 2026-11-19)
+
+- `apps/admin/next.config.ts` turns on `output: "standalone"` and `outputFileTracingRoot` (repo root) **only** when `NEXT_OUTPUT=standalone`; Vercel never sets it, so Vercel builds are unchanged.
+- `apps/admin/Dockerfile` (context = repo root; the root `.dockerignore` keeps every `.env*` out): `turbo prune admin --docker` → `pnpm install --frozen-lockfile` → `pnpm --filter admin build` → `node:24-slim` runner as user `node`, `node apps/admin/server.js` on port 3000, health check on `/manifest.webmanifest`.
+- `.github/workflows/admin-image.yml` pushes `ghcr.io/<owner>/tallaby-admin:main` and `:sha-<short sha>` (linux/amd64) on pushes to `main` that touch admin, `packages/**`, the lockfile or the build files, or when run by hand.
+- **GitHub repository variables** (Actions › Variables, not secrets; build args inlined in the bundle): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_PROJECT_ID`, `NEXT_PUBLIC_SUPABASE_ADMIN_AUTH_COOKIE_NAME`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_ROOT_DOMAIN`, `NEXT_PUBLIC_ECOMMERCE_URL`, `NEXT_PUBLIC_ECOMMERCE_DOMAIN`, `NEXT_PUBLIC_META_PIXEL_ID`. One set of variables = one environment; a staging image needs its own set.
+- **Coolify runtime env** (names only; values come from the admin Vercel project):
+  - Required: `DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` again (Settings › Services reads them at run time), `REVALIDATE_SECRET`, `ECOMMERCE_URL`, `DASHBOARD_URL`, `ADMIN_URL`, `ECOMMERCE_DOMAIN`, `CRON_SECRET`.
+  - Per feature: `STOREFRONT_VERCEL_TOKEN`, `STOREFRONT_VERCEL_PROJECT_ID`, `STOREFRONT_VERCEL_TEAM_ID` (custom domains, until §2 #1 changes); `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_ENABLED`, `AI_MODEL_SMART`, `AI_MODEL_FALLBACKS`, `AI_ADMIN_PRODUCT_AUTOFILL_DAILY_LIMIT` (AI); `VAPID_PUBLIC_KEY` (or `NEXT_PUBLIC_VAPID_PUBLIC_KEY`), `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (admin push); `TALLABY_EASYKASH_API_KEY` (Tallaby Pay); `EXCHANGE_RATE_API_KEY` (only if the admin billing page refreshes the rate).
+  - Set by the image: `NODE_ENV`, `PORT=3000`, `HOSTNAME=0.0.0.0`. Still read, replaced in step 2.3: `VERCEL_URL` (`app/layout.tsx` metadata base, falls back to `http://localhost:3000` when unset), `VERCEL`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_DEPLOYMENT_ID`.
+- Not done yet: the admin cron (`/api/cron/admin-push`, step 2.5), a first real image build in CI, the Coolify app on the VPS.
 
 ## 7. Before deciding
 
