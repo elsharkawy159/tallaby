@@ -258,12 +258,15 @@ duration_seconds: 30
 voice: Hanafi (DWMVT5WflKt0P8OPpIrY), eleven_v4
 made_on: 2026-11-17
 youtube_url:
+youtube_embed:
 youtube_title: "إضافة منتج جديد لمتجرك في 5 خطوات | Tallaby"   # the title to upload with (owner, 2026-11-18): "<task> في <steps> خطوات | Tallaby", the number = steps in the video
 youtube_title_ar:
 youtube_title_en:
 ---
 
 ## YouTube (copy and paste)
+
+After uploading, paste the Short link in `youtube_url` and the embed link (`https://www.youtube.com/embed/<id>`) in `youtube_embed` at the top of this file. The dashboard's «شاهد الشرح» button uses them.
 
 **Title**
 
@@ -297,13 +300,13 @@ Source files checked, fictional data used, anything that differs from the real p
 
 - Upload as a **Short** (vertical, under 60 s). Title: the video's `youtube_title`, "<task> في <N> خطوات | Tallaby" (owner, 2026-11-18). The title and the description sit together at the top of each `video.md` under "YouTube (copy and paste)", ready to copy.
 - Description: one line that says what the video shows, then the numbered steps, then `https://tallaby.com`.
-- After uploading, write the link in the video's `video.md` (`youtube_url`) and in the dashboard's tutorial registry (§8). The owner uploads, or approves the upload.
+- After uploading, write the Short link (`youtube_url`) and the embed link (`youtube_embed`, `https://www.youtube.com/embed/<id>`) in the video's `video.md` frontmatter, and in the dashboard's tutorial registry (§8). Both stay empty until the upload. The owner uploads, or approves the upload.
 
 ## 8. The dashboard button (`ROADMAP.md` F-97)
 
 - A small outline button **"شاهد الشرح"** with a play icon in the page header, on the side opposite the page title (left in Arabic, right in English).
 - It opens the Short in a dialog (YouTube embed, 9:16); on a phone it may open YouTube directly.
-- One registry in the dashboard maps a page path to its video (`dashboard_path` → `youtube_url`). A page with no video shows no button.
+- One registry in the dashboard maps a page path to its video (`dashboard_path` → `youtube_url` and `youtube_embed`). A page with no video shows no button.
 - The button is added only after the video is uploaded.
 
 ## 9. Keeping videos up to date
