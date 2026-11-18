@@ -67,18 +67,3 @@ const HIDDEN_ROUTES: RegExp[] = [
 export function bottomNavHiddenOn(pathname: string): boolean {
   return HIDDEN_ROUTES.some((route) => route.test(pathname));
 }
-
-export type ScrollState = { visible: boolean; lastY: number };
-
-/** Below this the bar always shows. */
-export const BOTTOM_NAV_TOP_ZONE = 64;
-/** Scroll moves smaller than this are ignored (and add up until they pass it), so the bar doesn't jitter. */
-export const BOTTOM_NAV_THRESHOLD = 8;
-
-/** Hide when scrolling down, show when scrolling up or near the top. */
-export function nextScrollState(state: ScrollState, y: number): ScrollState {
-  if (y <= BOTTOM_NAV_TOP_ZONE) return state.visible && state.lastY === y ? state : { visible: true, lastY: y };
-  const delta = y - state.lastY;
-  if (Math.abs(delta) < BOTTOM_NAV_THRESHOLD) return state;
-  return { visible: delta < 0, lastY: y };
-}

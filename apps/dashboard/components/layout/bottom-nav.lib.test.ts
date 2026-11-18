@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  activeBottomNavKey,
-  BOTTOM_NAV_THRESHOLD,
-  bottomNavEntries,
-  bottomNavHiddenOn,
-  bottomNavLinks,
-  nextScrollState,
-} from "./bottom-nav.lib";
+import { activeBottomNavKey, bottomNavEntries, bottomNavHiddenOn, bottomNavLinks } from "./bottom-nav.lib";
 
 const entries = bottomNavEntries("s1");
 const links = bottomNavLinks(entries);
@@ -68,27 +61,5 @@ describe("bottomNavHiddenOn", () => {
     expect(bottomNavHiddenOn("/stores/s1/products/inventory")).toBe(false);
     expect(bottomNavHiddenOn("/marketing/emails")).toBe(false);
     expect(bottomNavHiddenOn("/orders")).toBe(false);
-  });
-});
-
-describe("nextScrollState", () => {
-  const shown = { visible: true, lastY: 300 };
-
-  it("hides on scrolling down and shows on scrolling up", () => {
-    const down = nextScrollState(shown, 300 + BOTTOM_NAV_THRESHOLD);
-    expect(down).toEqual({ visible: false, lastY: 308 });
-    expect(nextScrollState(down, 308 - BOTTOM_NAV_THRESHOLD)).toEqual({ visible: true, lastY: 300 });
-  });
-
-  it("ignores small moves but lets them add up", () => {
-    const a = nextScrollState(shown, 303);
-    expect(a).toBe(shown);
-    expect(nextScrollState(a, 306)).toBe(shown);
-    expect(nextScrollState(a, 309).visible).toBe(false);
-  });
-
-  it("always shows near the top, including the overscroll bounce", () => {
-    expect(nextScrollState({ visible: false, lastY: 400 }, 40).visible).toBe(true);
-    expect(nextScrollState({ visible: false, lastY: 10 }, -20).visible).toBe(true);
   });
 });
