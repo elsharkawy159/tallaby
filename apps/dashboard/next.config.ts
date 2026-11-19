@@ -1,8 +1,16 @@
+import path from "node:path";
 import { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { OPTIMIZED_IMAGE_HOSTS } from "./lib/image-hosts";
 
+// Self-hosted Docker image (docs/plans/hetzner-migration.md §6 step 2.1):
+// `NEXT_OUTPUT=standalone` (set only by apps/dashboard/Dockerfile) emits
+// `.next/standalone`, traced from the monorepo root so workspace packages are
+// included. Without the flag (Vercel) the config is exactly as before.
+const standalone = process.env.NEXT_OUTPUT === "standalone";
+
 const nextConfig: NextConfig = {
+  ...(standalone ? { output: "standalone" as const, outputFileTracingRoot: path.join(__dirname, "../..") } : {}),
   // Rollout in docs/plans/dashboard-static-shell.md: segments keep
   // `instant = false` until they adopt a static shell.
   cacheComponents: true,

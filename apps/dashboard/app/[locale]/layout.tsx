@@ -79,7 +79,7 @@ export default async function RootLayout({ children, params }: RootLayoutProps) 
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   const direction = locale === "ar" ? "rtl" : "ltr";
-  // Microsoft Clarity: Vercel production only (lib/analytics/clarity.lib.ts).
+  // Microsoft Clarity: production only, on Vercel or self-hosted (lib/analytics/clarity.lib.ts).
   const clarityId = enabledClarityProjectId();
 
   return (

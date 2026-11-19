@@ -3,7 +3,9 @@
  * never in apps/admin, apps/ecommerce (storefronts, tallaby.com) or
  * apps/shipping. The project id is public (it ships in the page).
  *
- * - Loads only in a production build on Vercel's production environment
+ * - Loads only in a production build on Vercel's production environment, or
+ *   in a production build outside Vercel (the self-hosted image, which has no
+ *   `VERCEL_ENV`) unless `APP_ENV` names another environment
  *   (`shouldLoadClarity`, decided on the server), and then only on the real
  *   dashboard host and never inside a frame (`isClarityAllowedHere`, in the
  *   browser), so dev, previews, staging and localhost send nothing.
@@ -27,19 +29,30 @@ export function clarityProjectId(override: string | null | undefined): string | 
   return PROJECT_ID_RE.test(id) ? id : null;
 }
 
-/** Server side: production build on Vercel production, with a valid id. */
+/**
+ * Server side: a production build with a valid id, on Vercel production
+ * (`VERCEL_ENV` is set on every Vercel build and function), or self-hosted
+ * (no `VERCEL_ENV`) with `APP_ENV` unset or "production". The browser gate
+ * below still limits it to dashboard.tallaby.com, so a self-hosted staging or
+ * temporary host never records even without `APP_ENV`.
+ */
 export function shouldLoadClarity(env: {
   nodeEnv: string | undefined;
   vercelEnv: string | undefined;
+  appEnv?: string | undefined;
   projectId: string | null;
 }): boolean {
-  return env.nodeEnv === "production" && env.vercelEnv === "production" && env.projectId !== null;
+  if (env.nodeEnv !== "production" || env.projectId === null) return false;
+  if (env.vercelEnv) return env.vercelEnv === "production";
+  return !env.appEnv || env.appEnv === "production";
 }
 
 /** The project id to load in this deployment, or null (server components). */
 export function enabledClarityProjectId(env: Record<string, string | undefined> = process.env): string | null {
   const projectId = clarityProjectId(env.NEXT_PUBLIC_CLARITY_ID);
-  return shouldLoadClarity({ nodeEnv: env.NODE_ENV, vercelEnv: env.VERCEL_ENV, projectId }) ? projectId : null;
+  return shouldLoadClarity({ nodeEnv: env.NODE_ENV, vercelEnv: env.VERCEL_ENV, appEnv: env.APP_ENV, projectId })
+    ? projectId
+    : null;
 }
 
 export function isClarityHost(host: string | null | undefined): boolean {

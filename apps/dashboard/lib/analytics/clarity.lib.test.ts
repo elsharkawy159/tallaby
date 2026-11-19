@@ -38,12 +38,25 @@ describe("shouldLoadClarity / enabledClarityProjectId", () => {
     expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: "production", projectId: id })).toBe(true);
     expect(shouldLoadClarity({ nodeEnv: "development", vercelEnv: "production", projectId: id })).toBe(false);
     expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: "preview", projectId: id })).toBe(false);
-    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: undefined, projectId: id })).toBe(false);
+    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: "development", projectId: id })).toBe(false);
     expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: "production", projectId: null })).toBe(false);
+  });
+  it("ignores APP_ENV on Vercel", () => {
+    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: "preview", appEnv: "production", projectId: id })).toBe(false);
+    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: "production", appEnv: "staging", projectId: id })).toBe(true);
+  });
+  it("self-hosted (no VERCEL_ENV): production build unless APP_ENV names another environment", () => {
+    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: undefined, projectId: id })).toBe(true);
+    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: "", appEnv: "production", projectId: id })).toBe(true);
+    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: undefined, appEnv: "staging", projectId: id })).toBe(false);
+    expect(shouldLoadClarity({ nodeEnv: "development", vercelEnv: undefined, projectId: id })).toBe(false);
+    expect(shouldLoadClarity({ nodeEnv: "production", vercelEnv: undefined, projectId: null })).toBe(false);
   });
   it("reads the env", () => {
     expect(enabledClarityProjectId({ NODE_ENV: "production", VERCEL_ENV: "production" })).toBe(id);
     expect(enabledClarityProjectId({ NODE_ENV: "production", VERCEL_ENV: "preview" })).toBeNull();
+    expect(enabledClarityProjectId({ NODE_ENV: "production" })).toBe(id);
+    expect(enabledClarityProjectId({ NODE_ENV: "production", APP_ENV: "staging" })).toBeNull();
     expect(enabledClarityProjectId({ NODE_ENV: "test" })).toBeNull();
   });
 });
