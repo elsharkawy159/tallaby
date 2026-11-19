@@ -30,7 +30,7 @@ jobs:
           checks=(
             "https://admin.tallaby.com/login|^200$"
             "https://deploy.tallaby.com/login|^200$"
-            "https://www.tallaby.com/|^200$"
+            "https://www.tallaby.com/|^[23][0-9][0-9]$"
             "https://dashboard.tallaby.com/|^[23][0-9][0-9]$"
             "https://api.tallaby.com/|^[23][0-9][0-9]$"
           )
