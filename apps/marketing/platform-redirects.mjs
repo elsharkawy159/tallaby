@@ -27,6 +27,22 @@ export function platformOrigin(subdomain, root = process.env.NEXT_PUBLIC_ROOT_DO
 
 /** Customer pages served on account.<root> (apps/ecommerce lib/platform-site-routing.ts). */
 export const ACCOUNT_PAGES = ["auth", "cart", "orders", "profile", "returns", "shipping", "payment", "cookies"];
+/**
+ * Storefront API routes that links and callbacks still reach on tallaby.com:
+ * digital download links in sent emails, custom-domain Google sign-in started
+ * or returning there, and Kashier / store payment returns for orders with no
+ * store host. A 308 keeps the method, path and query. This app's own API
+ * routes (/api/auth/signup-callback, /api/geo, ...) are not in the list.
+ */
+export const ACCOUNT_API_ROUTES = [
+  "/api/auth/oauth",
+  "/api/auth/callback",
+  "/api/auth/handoff",
+  "/api/auth/me",
+  "/api/downloads/:path*",
+  "/api/kashier/:path*",
+  "/api/store-payments/:path*",
+];
 /** Pages served on preview.<root>. The card screenshots (/template-previews) stay in this app's public/. */
 export const PREVIEW_PAGES = ["template-preview", "dev-library"];
 
@@ -47,6 +63,7 @@ function pageRedirects(pages, origin) {
 export function platformRedirects(root = process.env.NEXT_PUBLIC_ROOT_DOMAIN) {
   return [
     ...pageRedirects(ACCOUNT_PAGES, platformOrigin("account", root)),
+    ...ACCOUNT_API_ROUTES.map((source) => ({ source, destination: `${platformOrigin("account", root)}${source}`, permanent: true })),
     ...pageRedirects(PREVIEW_PAGES, platformOrigin("preview", root)),
   ];
 }

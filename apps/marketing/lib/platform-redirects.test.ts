@@ -35,14 +35,23 @@ describe("platformRedirects", () => {
     expect(target("/en/dev-library/:path*")).toBe("https://preview.tallaby.com/en/dev-library/:path*");
   });
 
+  it("sends the storefront API routes that old links and callbacks reach to account.<root>", () => {
+    expect(target("/api/downloads/:path*")).toBe("https://account.tallaby.com/api/downloads/:path*");
+    expect(target("/api/auth/oauth")).toBe("https://account.tallaby.com/api/auth/oauth");
+    expect(target("/api/auth/callback")).toBe("https://account.tallaby.com/api/auth/callback");
+    expect(target("/api/kashier/:path*")).toBe("https://account.tallaby.com/api/kashier/:path*");
+    expect(target("/api/store-payments/:path*")).toBe("https://account.tallaby.com/api/store-payments/:path*");
+  });
+
   it("is permanent, never touches this app's own routes and never overlaps redirects.mjs", () => {
-    expect(rows).toHaveLength(40);
+    expect(rows).toHaveLength(47);
     expect(rows.every((row) => row.permanent === true)).toBe(true);
     const sources = rows.map((row) => row.source);
     for (const own of ["/api/auth/signup-callback", "/templates", "/template-previews/:path*", "/pricing", "/"]) {
       expect(sources).not.toContain(own);
     }
-    expect(sources.some((source) => source.startsWith("/api") || source.startsWith("/template-previews"))).toBe(false);
+    expect(sources.some((source) => source.startsWith("/template-previews"))).toBe(false);
+    expect(sources.filter((source) => source.startsWith("/api")).every((source) => !/signup-callback|\/api\/(geo|revalidate|apps|store-build)/.test(source))).toBe(true);
     const existing = new Set(redirects.map((row: { source: string }) => row.source));
     expect(sources.filter((source) => existing.has(source))).toEqual([]);
   });
