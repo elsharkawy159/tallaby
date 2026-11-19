@@ -1,5 +1,6 @@
 import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { type NextRequest, NextResponse } from "next/server";
+import { requestOrigin } from "@workspace/lib/http/request-origin";
 import { exchangeGoogleCode } from "@workspace/lib/integrations";
 import { nonceMatches, saveGoogleSheetsConnection, verifyOAuthState } from "@workspace/lib/integrations/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -19,7 +20,7 @@ import { savedLocaleHref } from "@/lib/i18n/saved-locale-href.lib";
  * logged. 404 when the Google OAuth env is not configured.
  */
 export async function GET(request: NextRequest) {
-  const client = googleOAuthClient(request.nextUrl.origin);
+  const client = googleOAuthClient(requestOrigin(request));
   if (!client) return new NextResponse("Not found", { status: 404 });
 
   const params = request.nextUrl.searchParams;
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
 
   const finish = (path: string) => {
     // Back in the seller's saved language (this handler has no locale segment).
-    const response = NextResponse.redirect(new URL(savedLocaleHref(path, request.cookies.get(LOCALE_COOKIE)?.value), request.url));
+    const response = NextResponse.redirect(new URL(savedLocaleHref(path, request.cookies.get(LOCALE_COOKIE)?.value), requestOrigin(request)));
     response.cookies.set(GOOGLE_OAUTH_NONCE_COOKIE, "", { path: GOOGLE_OAUTH_COOKIE_PATH, maxAge: 0 });
     return response;
   };

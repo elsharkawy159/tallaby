@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requestOrigin } from "@workspace/lib/http/request-origin";
 import type { User } from "@supabase/supabase-js";
 import { db, eq, sellers } from "@workspace/db";
 import {
@@ -66,7 +67,8 @@ async function finish(origin: string, user: User | null) {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = requestOrigin(request);
   const code = searchParams.get("code");
   const supabase = await createClient();
 

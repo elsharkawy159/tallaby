@@ -263,6 +263,10 @@
       "types": "./src/http/client-ip.lib.ts",
       "default": "./src/http/client-ip.lib.ts"
     },
+    "./http/request-origin": {
+      "types": "./src/http/request-origin.lib.ts",
+      "default": "./src/http/request-origin.lib.ts"
+    },
     "./referrals": {
       "types": "./src/referrals/index.ts",
       "default": "./src/referrals/index.ts"

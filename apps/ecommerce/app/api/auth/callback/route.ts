@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { requestOrigin } from "@workspace/lib/http/request-origin";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@/supabase/server";
 import {
@@ -19,7 +20,8 @@ async function mergeGuestAccountSafely() {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = requestOrigin(request);
   const code = searchParams.get("code");
   const type = searchParams.get("type");
   const token = searchParams.get("token");

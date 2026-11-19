@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requestOrigin } from "@workspace/lib/http/request-origin";
 import { INTAKE_SIGNED_IN_MAX_AGE_MS, isIntakeId, isIntakeToken } from "@workspace/lib/store-builds";
 import { claimStoreBuildIntake } from "@workspace/lib/store-builds/server";
 import { loadSeller } from "@/lib/auth/require-seller.server";
@@ -16,7 +17,7 @@ import { savedLocaleHref } from "@/lib/i18n/saved-locale-href.lib";
  */
 function go(request: NextRequest, path: string) {
   // A dashboard page in the seller's saved language; /api paths stay as they are.
-  const response = NextResponse.redirect(new URL(savedLocaleHref(path, request.cookies.get(LOCALE_COOKIE)?.value), request.url));
+  const response = NextResponse.redirect(new URL(savedLocaleHref(path, request.cookies.get(LOCALE_COOKIE)?.value), requestOrigin(request)));
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
   return response;

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requestOrigin } from "@workspace/lib/http/request-origin";
 import { createClient } from "@/supabase/server";
 import { safeNextPath, trustedHandoffOrigin } from "@/lib/auth-handoff.server";
 
@@ -13,7 +14,8 @@ const PROVIDERS = new Set(["google", "github", "facebook", "twitter"]);
  * the callback then hands the session to the store domain.
  */
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
+  const origin = requestOrigin(request);
   const provider = searchParams.get("provider") ?? "";
   const handoff = await trustedHandoffOrigin(searchParams.get("handoff"));
   const next = safeNextPath(searchParams.get("next"));

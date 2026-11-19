@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requestOrigin } from "@workspace/lib/http/request-origin";
 import { buildGoogleAuthUrl } from "@workspace/lib/integrations";
 import { newOAuthNonce, OAUTH_STATE_TTL_MS, signOAuthState } from "@workspace/lib/integrations/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -20,7 +21,7 @@ const limiter = createRateLimiter({ limit: 20, windowMs: 10 * 60_000 });
  * 404 when the Google OAuth env is not configured.
  */
 export async function GET(request: NextRequest) {
-  const client = googleOAuthClient(request.nextUrl.origin);
+  const client = googleOAuthClient(requestOrigin(request));
   if (!client) return new NextResponse("Not found", { status: 404 });
 
   const storeId = request.nextUrl.searchParams.get("storeId") ?? "";
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
     const { seller, store } = await requireStore(storeId, { forWrite: true });
     if (!limiter.check(`google-start:${seller.sellerId}`)) {
       const settings = `/stores/${store.id}/apps/google-sheets/settings?google=rateLimited`;
-      return NextResponse.redirect(new URL(savedLocaleHref(settings, request.cookies.get(LOCALE_COOKIE)?.value), request.url));
+      return NextResponse.redirect(new URL(savedLocaleHref(settings, request.cookies.get(LOCALE_COOKIE)?.value), requestOrigin(request)));
     }
     const nonce = newOAuthNonce();
     const state = signOAuthState({ sellerId: seller.sellerId, storeId: store.id, nonce });
