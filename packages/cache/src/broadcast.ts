@@ -1,20 +1,34 @@
 import type { CacheInvalidation } from "./invalidate";
 
-/** "backend" (apps/backend, the MCP server) only sends: it has no Next.js cache of its own. */
-export type AppId = "ecommerce" | "dashboard" | "admin" | "backend";
+/**
+ * "backend" (apps/backend, the MCP server) only sends: it has no Next.js cache of its own.
+ * "marketing" (apps/marketing, tallaby.com) mostly receives (blog posts, the billing rate).
+ */
+export type AppId = "ecommerce" | "dashboard" | "admin" | "backend" | "marketing";
 
 /**
  * Resolves the peer apps to notify from environment variables.
  *
  * Each app defines its own base URL var (ECOMMERCE_URL / DASHBOARD_URL /
- * ADMIN_URL). ECOMMERCE_DOMAIN is kept as a fallback for the ecommerce peer
- * because it's the variable the existing deployment already has set.
+ * ADMIN_URL / MARKETING_URL). ECOMMERCE_DOMAIN is kept as a fallback for the
+ * ecommerce peer because it's the variable the existing deployment already
+ * has set.
+ *
+ * ECOMMERCE_REVALIDATE_URL, when set, wins for the ecommerce peer.
+ * ECOMMERCE_URL is also used for links to tallaby.com, and once tallaby.com
+ * points at apps/marketing a broadcast sent there would reach the wrong app.
+ * The revalidate peer must be a host the storefront app serves (e.g. its
+ * Vercel production alias). Unset, the old ECOMMERCE_URL fallback applies.
  */
 function peerUrls(from: AppId): Partial<Record<AppId, string>> {
   const all: Record<AppId, string | undefined> = {
-    ecommerce: process.env.ECOMMERCE_URL || process.env.ECOMMERCE_DOMAIN,
+    ecommerce:
+      process.env.ECOMMERCE_REVALIDATE_URL ||
+      process.env.ECOMMERCE_URL ||
+      process.env.ECOMMERCE_DOMAIN,
     dashboard: process.env.DASHBOARD_URL,
     admin: process.env.ADMIN_URL,
+    marketing: process.env.MARKETING_URL,
     // Never a target: the backend has no /api/revalidate.
     backend: undefined,
   };
