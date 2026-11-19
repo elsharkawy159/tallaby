@@ -21,6 +21,7 @@
 | Path | Kind | Responsibility |
 |---|---|---|
 | `apps/ecommerce` | Next.js 16.3.3 | Marketplace, seller storefronts (host-routed), cart and checkout, `/sell` landing page, legacy seller signup wizard (`/onboarding`), Meta Pixel and CAPI, custom-domain cron |
+| `apps/marketing` | Next.js 16.3.3 | tallaby.com / www marketing site, split out of ecommerce 2026-11-19 (seller signup, blog, templates gallery, sitemap). A copy: ecommerce still serves tallaby.com until the DNS switch (`docs/plans/hetzner-migration.md`, "Marketing split") |
 | `apps/dashboard` | Next.js 16.3.3 | Seller dashboard: products, orders, shipping, financial, coupons, reviews, ad requests, settings (subdomain, custom domain), fulfillment view |
 | `apps/admin` | Next.js 16.3.3 | Platform operations: sellers, products, orders, payments, wallets, fulfillment plans, affiliates, external orders, analytics (from the database) |
 | `apps/shipping` | Next.js 16.3.3 | Dispatch admin and rider app (cash-on-delivery collection, shipment status → delivery credit) |

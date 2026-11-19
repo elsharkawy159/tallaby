@@ -1,6 +1,6 @@
 # tallaby.com page rules
 
-For anyone building a page in `apps/ecommerce/app/[locale]/(marketing)`. The design source is the Claude Design project `019e0e12-5b0e-7eca-96d6-6f08dddbbe03`, folder `Marketing Website`. Its files are layout and copy samples; the code decides what is true.
+For anyone building a page in `apps/marketing/app/[locale]/(marketing)` (split out of ecommerce 2026-11-19; until the DNS switch the same page also lives in `apps/ecommerce/app/[locale]/(marketing)`, so change both or neither). The design source is the Claude Design project `019e0e12-5b0e-7eca-96d6-6f08dddbbe03`, folder `Marketing Website`. Its files are layout and copy samples; the code decides what is true.
 
 ## Tokens and components
 
