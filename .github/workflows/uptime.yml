@@ -1,0 +1,48 @@
+# Uptime check for the public hosts (docs/plans/hetzner-migration.md §4,
+# "uptime alerts"). Runs every 10 minutes and fails when any host does not
+# answer with the expected status. GitHub emails the repository owner when a
+# scheduled run fails (Settings > Notifications > Actions), so a red run is the
+# alert. Read-only: plain curl, no secrets, no repository access.
+name: uptime
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check hosts
+        shell: bash
+        run: |
+          # url | accepted status (regex). Codes checked 2026-11-19:
+          # dashboard and api answer 307 (a redirect), so any 2xx/3xx passes.
+          checks=(
+            "https://admin.tallaby.com/login|^200$"
+            "https://deploy.tallaby.com/login|^200$"
+            "https://www.tallaby.com/|^200$"
+            "https://dashboard.tallaby.com/|^[23][0-9][0-9]$"
+            "https://api.tallaby.com/|^[23][0-9][0-9]$"
+          )
+          failed=0
+          printf '%-36s %-6s %-8s %s\n' "URL" "CODE" "TIME" "RESULT"
+          for entry in "${checks[@]}"; do
+            url="${entry%%|*}"; want="${entry#*|}"
+            out=$(curl -sS -o /dev/null --max-time 20 --retry 2 --retry-delay 5 \
+              -w '%{http_code} %{time_total}' "$url" 2>/dev/null) || true
+            code="${out%% *}"; time="${out#* }"
+            [ -z "$code" ] && code="000"
+            if [[ "$code" =~ $want ]]; then result="ok"; else result="FAIL"; failed=1; fi
+            printf '%-36s %-6s %-8s %s\n' "$url" "$code" "${time:--}" "$result"
+          done
+          exit "$failed"
