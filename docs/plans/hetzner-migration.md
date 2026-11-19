@@ -60,12 +60,12 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 
 1. ✅ DNS on Cloudflare (§1).
 2. **Code prep, no behaviour change on Vercel** (one commit each, reviewed per rule 21):
-   1. Standalone output + Dockerfiles for each app; backend Node entry. **Started 2026-11-19: admin** (see "Admin image" below); dashboard, ecommerce, marketing, shipping and backend still to do.
+   1. Standalone output + Dockerfiles for each app; backend Node entry. **Started 2026-11-19: admin** (see "Admin image" below) **and backend** (see "Backend image"); dashboard, ecommerce, marketing and shipping still to do.
    2. Shared client-IP and country helper (`CF-Connecting-IP`, `CF-IPCountry`, falling back to today's headers).
    3. Replace `VERCEL_*` env reads.
    4. Custom-domain provider interface: Vercel (today) and Cloudflare for SaaS (new), chosen by env; dashboard DNS instructions follow the provider.
    5. Cron runner config listing all 22 jobs with their UTC schedules.
-   6. CI: build and push images per app. **Started 2026-11-19: admin** (`.github/workflows/admin-image.yml`); the other apps still to do.
+   6. CI: build and push images per app. **Started 2026-11-19: admin** (`.github/workflows/admin-image.yml`) and backend (`.github/workflows/backend-image.yml`); the other apps still to do.
 3. **Hetzner staging** on the `stage` branch against staging Supabase. Test: sign-in on every app, card and wallet payments with callbacks, store isolation by host, cache invalidation across apps, images, emails, every cron, MCP/OAuth.
 4. **Move production one app at a time**, lowest risk first: admin → dashboard → `api` → marketing → storefronts. For each: point its Cloudflare record at the VPS, turn on the orange cloud, watch errors for a day. Keep the Vercel project running.
 5. **Seller custom domains:** switch new domains to Cloudflare for SaaS, ask existing sellers to change their DNS (dashboard banner + email), keep Vercel's ecommerce project until the last one moves.
@@ -91,6 +91,18 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 - CI: `admin-image.yml` redeploys through Coolify's API after each push of `:main` (secret `COOLIFY_ADMIN_DEPLOY_TOKEN`, Deploy + Read on that app only; Coolify API open to every IP, token-protected).
 - DNS: Cloudflare A `admin.tallaby.com` → 2.28.78.10 (DNS only, TTL 60) overrides the `*` wildcard. **Rollback = delete that record** (traffic goes back to the Vercel admin project, which stays deployed). The first Let's Encrypt try failed because Traefik asked before DNS pointed at the server; restarting `coolify-proxy` fixed it. For the next app: add the DNS record first, then the Coolify domain.
 - No Supabase database webhook calls `/api/cron/admin-push` on production (checked), and admin push has no VAPID keys on Vercel either, so `CRON_SECRET` only has to match the Coolify task.
+
+### Backend image (step 2.1 + 2.6, started 2026-11-19)
+
+- `apps/backend/src/server.ts`: `@hono/node-server` on `0.0.0.0:$PORT` (default 3000) serving the **same** `fetch` as `src/vercel-entry.ts` (MCP paths, `/` → `/api` 307, the `/api` app); it rebuilds the request URL as `https://` when the proxy sends `X-Forwarded-Proto: https`, as Vercel does, so the MCP resource match and the redirect keep their `https` origin. Closes on SIGTERM/SIGINT.
+- `pnpm --filter backend build:node` (`scripts/build-node.mjs`) bundles it to `dist/server.mjs` with the Vercel build's esbuild options (target node22). `pnpm build` (Vercel, `.vercel/output`) is unchanged. The bundle inlines every dependency and reads no files at run time, so the runner holds only that file.
+- `apps/backend/Dockerfile`: `turbo prune backend --docker` → `pnpm install --frozen-lockfile` → `build:node` → `node:24-slim` as user `node`, `node dist/server.mjs` on 3000, health check `GET /api` (public, no DB). No build args besides `DEPLOY_ID`.
+- `.github/workflows/backend-image.yml` pushes `ghcr.io/<owner>/tallaby-backend:main` and `:sha-<short sha>`; the Coolify redeploy runs only once repository variable `COOLIFY_BACKEND_APP_UUID` is set (secret `COOLIFY_BACKEND_DEPLOY_TOKEN`); keeps the newest 10 versions.
+- **Coolify runtime env** (names only; values from the backend Vercel project):
+  - Required: `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `INTERNAL_API_SECRET`, `DASHBOARD_URL`, `ECOMMERCE_URL`, `ADMIN_URL`, `REVALIDATE_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `MCP_RESOURCE_URLS`, `MCP_TOKEN_PEPPER`.
+  - Per feature: `PAYMOB_SECRET_KEY`, `PAYMOB_PUBLIC_KEY`, `PAYMOB_HMAC_SECRET`, `PAYMOB_CARD_INTEGRATION_ID`, `PAYMOB_WEBHOOK_URL` (Paymob); `KASHIER_PAYMENT_API_KEY` (Kashier); `TALLABY_EASYKASH_API_KEY`, `TALLABY_EASYKASH_HMAC_SECRET` (Tallaby Pay); `INTEGRATIONS_ENCRYPTION_KEY` (store gateway and Bosta webhooks); `RESEND_WEBHOOK_SECRET` (email delivery webhook); `EMAIL_FROM_NAME`, `EMAIL_FROM_ORDERS`; `MCP_ISSUER_URL` (else `DASHBOARD_URL`); `ORDER_ACCESS_SECRET`, `ECOMMERCE_DOMAIN`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_ROOT_DOMAIN`, `NEXT_PUBLIC_SUPABASE_PROJECT_ID`, `BACKEND_API_URL`, `META_GRAPH_API_VERSION`.
+  - Set by the image: `NODE_ENV`, `PORT=3000`, `DEPLOY_ID`. Not set: `VERCEL` (unset = long-running server, DB pool 20), `TRUST_CLOUDFLARE_HEADERS` (only after §5).
+- Not done yet: a first image build in CI, the Coolify app (domains `api.tallaby.com`, `mcp.tallaby.com`), DNS, and repointing the Paymob/Kashier/EasyKash/Bosta/Resend webhook senders (their URL stays the same host, so only DNS changes).
 
 ## 7. Before deciding
 

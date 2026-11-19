@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "tsx watch src/dev-server.ts",
     "build": "node scripts/build.mjs",
+    "build:node": "node scripts/build-node.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
