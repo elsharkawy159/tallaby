@@ -1,0 +1,251 @@
+{
+  "meta": {
+    "home": {
+      "title": "Tallaby | Free AI online store builder",
+      "description": "Build your online store with AI on Tallaby. AI writes your products in Arabic and English, you take cash on delivery orders. Start free ({orderFeeUsd} per order)."
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Create your online store <em>in minutes.</em> Free.",
+      "lead": "Add your products, take orders and ship them your way, all from one dashboard. No code.",
+      "cta": "Create your store free",
+      "check1": "Free plan, no card",
+      "check2": "Signup in under a minute",
+      "check3": "About EGP 1.5 fee per order",
+      "sample": "Sample data from a demo store.",
+      "composer": {
+        "label": "Describe your store",
+        "placeholder": "Describe your store: what you sell, who it's for and your brand name",
+        "keyboardHelp": "Press Enter to send and Shift+Enter for a new line.",
+        "counter": "{count}/{max}",
+        "examplesLabel": "Examples to start from",
+        "examples": [
+          "Create a store for my men's fashion brand: cotton T-shirts and shirts",
+          "Create a store for luxury oriental perfumes for men and women",
+          "Create a store for cotton kids' clothes, ages 1 to 8",
+          "Create a store for handmade genuine leather bags for women",
+          "Create a store for natural skin and hair care products",
+          "Create a store for phone accessories and wireless earbuds",
+          "Create a store for homemade desserts and custom cakes"
+        ],
+        "attachments": "Attachments",
+        "attach": "Attach a product file or your logo",
+        "attachHint": "Product file: CSV or Excel, up to 2 MB and 500 products. Logo: PNG, JPG or WebP, up to 1.5 MB.",
+        "reading": "Reading your file…",
+        "fileFound": "{count, plural, =0 {No products found in the file} one {We found 1 product} other {We found {count} products}}",
+        "fileMissing": "{count, plural, one {, 1 without a price} other {, {count} without a price}}",
+        "logoChip": "Logo",
+        "logoColors": "Colours from your logo:",
+        "colorChip": "Brand colour",
+        "color": "Pick your brand colour",
+        "colorTitle": "Your brand colour",
+        "colorHex": "Colour code (hex)",
+        "colorApply": "Apply",
+        "useColor": "Use colour {hex}",
+        "remove": "Remove {name}",
+        "removeColor": "Remove colour",
+        "send": "Build my store",
+        "saving": "Saving…",
+        "uploading": "Uploading files…",
+        "manual": "Or create your store yourself",
+        "errors": {
+          "empty": "Describe your store or attach a file.",
+          "fileType": "That file type isn't supported. Use CSV or Excel for products, and PNG, JPG or WebP for the logo.",
+          "svg": "SVG logos aren't accepted. Use PNG, JPG or WebP.",
+          "fileSize": "The product file is over 2 MB.",
+          "logoSize": "The logo is over 1.5 MB.",
+          "fileRows": "The file has more than 500 products. Attach the first 500 only.",
+          "fileColumns": "The file has more than 30 columns.",
+          "fileRead": "We couldn't read the file. Check that it's a valid CSV or Excel file.",
+          "hex": "Enter the colour as #RRGGBB.",
+          "rateLimited": "Too many requests today. Please try again tomorrow.",
+          "invalidFile": "One of the files couldn't be accepted. Remove it and try again.",
+          "failed": "Something went wrong. Please try again."
+        }
+      },
+      "marqueeLabel": "Some of what Tallaby does",
+      "live": {
+        "industry": "A new <kind>{industry}</kind> store opened <age></age>",
+        "generic": "A new store opened on Tallaby <age></age>",
+        "now": "just now",
+        "minutes": "{count, plural, one {a minute ago} other {<num>{count}</num> minutes ago}}",
+        "hours": "{count, plural, one {an hour ago} other {<num>{count}</num> hours ago}}",
+        "days": "{count, plural, one {a day ago} other {<num>{count}</num> days ago}}",
+        "industries": {
+          "fashion": "fashion",
+          "shoes-bags": "shoes and bags",
+          "electronics": "electronics",
+          "mobile-accessories": "phone accessories",
+          "beauty": "beauty",
+          "home": "home and furniture",
+          "kitchen": "kitchenware",
+          "food": "food",
+          "sweets": "sweets and coffee",
+          "kids": "kids",
+          "sports": "sports",
+          "jewelry": "accessories and jewelry",
+          "books": "books and stationery",
+          "health": "health",
+          "pets": "pet supplies",
+          "auto": "car accessories",
+          "handmade": "handmade and gifts"
+        }
+      },
+      "marquee": [
+        "Drag & Drop builder",
+        "Tallaby AI writes your products",
+        "Run your store from Claude and ChatGPT",
+        "100+ ready templates",
+        "Cash on delivery",
+        "Paymob and Kashier",
+        "Ship with Bosta",
+        "Email campaigns",
+        "WhatsApp follow-up",
+        "Unfinished orders",
+        "Fake order protection",
+        "Discount codes",
+        "Meta Pixel and Conversions API",
+        "Meta and Google catalogs",
+        "Your own domain",
+        "Import from Shopify",
+        "24-hour support"
+      ]
+    },
+    "trusted": {
+      "title": "Stores selling on Tallaby",
+      "all": "See all stores",
+      "listLabel": "Logos of stores on Tallaby"
+    },
+    "what": {
+      "kicker": "Meet Tallaby",
+      "title": "What is Tallaby?",
+      "lead": "Tallaby is an Egyptian platform for building an online store under your own brand and running it yourself.",
+      "who": "For sellers on Facebook, Instagram or WhatsApp who want a real store without code.",
+      "points": {
+        "store": {
+          "title": "A store with your name on it",
+          "body": "Your logo and colours, at <domain>yourbrand.tallaby.com</domain> or on a domain you own."
+        },
+        "money": {
+          "title": "Your sales come to you",
+          "body": "Cash on delivery, InstaPay and wallets, or cards through your own Paymob or Kashier account. Tallaby takes no cut of your sales."
+        },
+        "shipping": {
+          "title": "You choose how to ship",
+          "body": "Tallaby doesn't deliver orders. Ship through your Bosta account or your own riders."
+        },
+        "world": {
+          "title": "Sell in Egypt and abroad",
+          "body": "Choose your store's currency and the countries you ship to."
+        }
+      }
+    },
+    "features": {
+      "kicker": "What's new in Tallaby",
+      "title": "Built for the way people sell online today",
+      "mcpTag": "New",
+      "mcpTitle": "Manage your products by chatting with <claude>Claude</claude> or <chatgpt>ChatGPT</chatgpt>",
+      "mcpBody": "Connect your account once. Then ask the assistant to add products or change prices, and it does it in your store.",
+      "aiTitle": "Tallaby AI writes your products",
+      "aiBody": "From a photo or a few lines: title and description in Arabic and English, with category and SEO.",
+      "marketingTitle": "Bring customers back",
+      "marketingBody": "Email campaigns, discount codes, and WhatsApp follow-up on unfinished orders.",
+      "importTitle": "Bring your products in minutes",
+      "importBody": "From Excel, from a product link, or straight from Shopify.",
+      "adsTitle": "Ads that measure right",
+      "adsBody": "Meta Pixel and Conversions API, GA4 and GTM, plus product feeds for Meta and Google."
+    },
+    "templates": {
+      "kicker": "Store templates",
+      "title": "Start from a design made for what you sell",
+      "body": "{count, plural, one {{count} ready template} other {{count} ready templates}}. Edit any section with Drag & Drop, and switch templates any time without losing your products.",
+      "more": "See more templates",
+      "moreCount": "See all {count} templates",
+      "carousel": "Featured templates",
+      "slide": "Template {index} of {total}",
+      "prev": "Previous template",
+      "next": "Next template"
+    },
+    "pricing": {
+      "kicker": "Pricing",
+      "title": "Two simple plans, switch any time",
+      "body": "Start free and pay a few cents per order, or go Pro for a flat monthly price."
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "title": "Questions before you start",
+      "desc": "Can't find your answer? <link>Message us on WhatsApp.</link>",
+      "items": [
+        {
+          "q": "What does an order cost on the free plan?",
+          "a": "{orderFee} per order, with no monthly fee and no percentage of sales. Make a first top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online."
+        },
+        {
+          "q": "When is Pro worth it?",
+          "a": "From about 1,000 orders a month, the flat {pro} costs less than per-order fees."
+        },
+        {
+          "q": "Can I sell outside Egypt?",
+          "a": "Yes. Choose your store's currency and the countries you ship to, and shoppers see prices in that currency."
+        },
+        {
+          "q": "Can I use my own domain?",
+          "a": "Yes. Your store starts on yourbrand.tallaby.com, and you can connect a domain you own from Website › Domain."
+        },
+        {
+          "q": "Do I need to know how to code?",
+          "a": "No. Design, products, payments and shipping are all set up from your dashboard."
+        }
+      ]
+    },
+    "final": {
+      "title": "Your store link is waiting",
+      "body": "Claim it now. Design and publish whenever you're ready.",
+      "cta": "Create your store"
+    },
+    "demo": {
+      "hero": {
+        "egp": "EGP",
+        "title": "Dashboard",
+        "walletLabel": "Wallet balance",
+        "greeting": "Good morning",
+        "newOrders": "{count, plural, one {You have 1 new order to review.} other {You have {count} new orders to review.}}",
+        "latest": "Latest orders",
+        "newOrder": "New order",
+        "kpi": {
+          "sales": "Sales",
+          "orders": "Orders",
+          "ordersUnit": "orders",
+          "visits": "Store visits",
+          "visitsUnit": "visits",
+          "conversion": "Conversion"
+        },
+        "status": {
+          "pending": "Pending",
+          "shipped": "Shipped",
+          "delivered": "Delivered"
+        },
+        "when": {
+          "justNow": "just now",
+          "min6": "6 min ago",
+          "min18": "18 min ago",
+          "hr1": "1 hr ago"
+        },
+        "products": ["Red leather handbag", "Pink tote bag", "Printed barrel bag"],
+        "orders": [
+          { "product": "Men's leather wallet", "when": "min6", "total": 500, "status": "pending" },
+          { "product": "Pink tote bag", "when": "min18", "total": 1340, "status": "pending" },
+          { "product": "Printed barrel bag", "when": "hr1", "total": 1500, "status": "shipped" }
+        ]
+      },
+      "mcp": {
+        "connected": "Connected to glow store",
+        "user1": "Add a new product: brown leather bag, 950 EGP, here is the photo",
+        "ai1": "Done. \"Brown leather bag\" is live on your store at 950 EGP, in Arabic and English.",
+        "user2": "Cut all T-shirt prices by 10%",
+        "ai2": "Lowered 12 T-shirts by 10%. You can review them on your Products page."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+/**
+ * The storefront tracking consent (D19, PLAN.md P7-03) mirrored into a
+ * host-only cookie, so server-side events (the store's Meta CAPI, P7-05) can
+ * follow the same choice as the browser pixels. The banner writes it; only
+ * "granted" allows a server event. tallaby.com uses the same cookie on its own
+ * host for Tallaby's events (F-70a): it is host-only, so the two never mix.
+ *
+ * Since 2026-11-12 (owner: no cookie pop-up) tracking is on by default: only
+ * an explicit "denied" stops a server event, as it stops the browser tags.
+ */
+export const STORE_TRACKING_CONSENT_COOKIE = "tallaby_store_consent";
+
+export function hasStoreTrackingConsent(value: string | undefined | null): boolean {
+  return value !== "denied";
+}

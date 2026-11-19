@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "templates": {
+      "title": "Free online store templates",
+      "description": "Free store templates for every category, with a home page, product pages, cart and checkout. Change colors and sections any time without losing your products."
+    },
+    "template": {
+      "title": "{name} store template: {category}",
+      "description": "{desc}. Free, fully editable and mobile-ready."
+    }
+  },
+  "templates": {
+    "categories": {
+      "all": "All",
+      "ho": "Home",
+      "fo": "Food and drinks"
+    },
+    "hero": {
+      "eyebrow": "Store templates",
+      "title": "Pick a design. <em>Make it yours.</em>",
+      "lead": "Every template comes with a home page, product pages, cart and checkout. Change colors and sections any time without losing your products.",
+      "cta": "Start with a free template"
+    },
+    "gallery": {
+      "title": "A design made for what you sell"
+    },
+    "included": {
+      "kicker": "In every template",
+      "title": "Ready to sell from the first day",
+      "pagesTitle": "Every page your store needs",
+      "pages": ["Home", "Product", "Category", "Cart", "Checkout"],
+      "phoneTitle": "Built for phones",
+      "phoneBody": "Every layout starts on the phone, then adapts to larger screens.",
+      "langTitle": "Arabic and English",
+      "langBody": "Every template works right-to-left and left-to-right.",
+      "switchTitle": "Switch any time",
+      "switchBody": "Products, orders and settings stay as they are when you change templates."
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "title": "About templates",
+      "desc": "Can't find your answer? <link>Message us on WhatsApp.</link>",
+      "items": [
+        {
+          "q": "Do templates cost extra?",
+          "a": "No. Every template is free on both the Free and Pro plans."
+        },
+        {
+          "q": "Will I lose my products if I change templates?",
+          "a": "No. Products, orders, customers and settings are separate from the design."
+        },
+        {
+          "q": "Can I edit a template?",
+          "a": "Yes. Open it in the builder to change colors, fonts, text and photos, or add and remove sections."
+        },
+        {
+          "q": "Can I use a template from a different category?",
+          "a": "Yes. Categories are only a starting suggestion. Any template works with any products."
+        }
+      ]
+    },
+    "final": {
+      "title": "Pick a template and start today",
+      "body": "Claim your store link. You can change the template later."
+    },
+    "count": "{count, plural, one {{count} template} other {{count} templates}}",
+    "showMore": "Show more ({count} left)",
+    "colors": "Colors:",
+    "use": "Use template",
+    "preview": "Preview",
+    "previewNamed": "Preview {name}",
+    "fullPreview": "Full preview",
+    "pickerLabel": "Templates",
+    "categoriesLabel": "Template categories",
+    "nichesLabel": "Trades in {category}",
+    "nicheAll": "All {category}",
+    "carouselLabel": "Templates",
+    "previous": "Previous",
+    "next": "Next",
+    "blankTitle": "Still not sure?",
+    "blankBody": "Start with Tallaby Classic, and change the template any time from your dashboard.",
+    "blankCta": "Create my store",
+    "detail": {
+      "use": "Use this template",
+      "startWith": "Start with this look",
+      "useHint": "Your store starts on Tallaby Classic. You can apply {name} any time from the Templates page in your dashboard.",
+      "breadcrumb": "Breadcrumb",
+      "metaFallback": "The {name} store template from Tallaby",
+      "demo": "Live demo",
+      "device": "Device",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "about": "About this template",
+      "pages": "Pages included",
+      "details": "Details",
+      "bestFor": "Best for",
+      "price": "Price",
+      "free": "Free",
+      "more": "More templates",
+      "pageCount": "Pages",
+      "colors": "Colors",
+      "edition": "Made for {niche}",
+      "newTab": "Preview",
+      "newTabLabel": "Preview the template in a new tab",
+      "shotRegion": "{name} home page, scroll to see all of it"
+    },
+    "filters": {
+      "title": "Filters",
+      "open": "Filters",
+      "industries": "Industry",
+      "niches": "Trade",
+      "anyNiche": "All trades",
+      "showAll": "Show all ({count})",
+      "showFewer": "Show fewer",
+      "clearAll": "Clear all",
+      "active": "Active filters",
+      "remove": "Remove filter: {name}",
+      "close": "Close filters",
+      "apply": "{count, plural, =0 {No templates to show} one {Show # template} other {Show # templates}}",
+      "sortLabel": "Sort by",
+      "sort": {
+        "featured": "Featured",
+        "newest": "Newest",
+        "name": "Name (A–Z)"
+      },
+      "emptyBody": "No templates match these filters. Clear them to see every template.",
+      "emptyCta": "Clear filters"
+    }
+  }
+}

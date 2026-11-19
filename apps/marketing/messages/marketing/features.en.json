@@ -1,0 +1,2333 @@
+{
+  "meta": {
+    "feature-store-design": {
+      "title": "Design a professional store with drag and drop",
+      "description": "Design your store yourself: ready templates for each kind of business, every element editable, in Arabic and English."
+    },
+    "feature-store-app": {
+      "title": "A store app customers install from the browser",
+      "description": "Customers add your store to their phone with your name and logo from a button in your store, with no app store and no app build."
+    },
+    "feature-product-management": {
+      "title": "Manage products: import, bulk edit and stock",
+      "description": "Add products from Excel, a link or with AI, edit many at once, and follow stock and low-stock alerts from one dashboard."
+    },
+    "feature-order-management": {
+      "title": "Manage your store orders in one place",
+      "description": "All your orders in one list: clear stages, printable invoices and packing slips, manual phone orders and an alert for each new order."
+    },
+    "feature-offers-and-coupons": {
+      "title": "Coupons and quantity offers for bigger orders",
+      "description": "Raise every order's value with coupon pop-ups and countdowns, quantity offers, automatic discounts and products suggested under each item."
+    },
+    "feature-email-marketing": {
+      "title": "Email campaigns and win-back for your store",
+      "description": "Send email campaigns, win back customers who stopped buying and alert shoppers when a product is back. Works after a first top-up."
+    },
+    "feature-reports": {
+      "title": "Sales reports and traffic sources for your store",
+      "description": "See where customers come from, where they stop before buying, which governorates refuse most orders and which products sell."
+    },
+    "feature-store-seo": {
+      "title": "Search-ready online store from day one",
+      "description": "A title and description for every product and page, an automatic sitemap, theme SEO defaults and AI-written product copy."
+    },
+    "feature-online-payments": {
+      "title": "Store payments: cash on delivery, wallets, cards",
+      "description": "Cash on delivery with an optional deposit, InstaPay and wallets to your own number, and cards through your Paymob or Kashier account."
+    },
+    "feature-custom-domain": {
+      "title": "Connect your own domain to your store",
+      "description": "Connect your own domain to your Tallaby store so customers see your brand. Connecting is free on both plans, with a free security certificate."
+    },
+    "feature-ai-online-store": {
+      "title": "AI for your online store: products written for you",
+      "description": "Take a photo or upload a file, and AI writes the name, description and search fields in Arabic and English. Review it, then publish."
+    },
+    "feature-fake-order-protection": {
+      "title": "Stop fake cash on delivery orders",
+      "description": "Cut fake cash on delivery orders: block numbers, see a risk badge on each order, confirm on WhatsApp and limit repeat orders."
+    },
+    "feature-abandoned-checkouts": {
+      "title": "Recover abandoned checkouts and missed orders",
+      "description": "See who started an order and didn't finish, contact them on WhatsApp or by phone from one page, and track who you reached."
+    },
+    "feature-shipping": {
+      "title": "Ship orders across Egypt: Bosta and your riders",
+      "description": "Ship with Bosta from your dashboard or with your own riders, and set prices per area with free shipping over an amount you choose."
+    },
+    "features": {
+      "title": "Online store features: everything you need to sell",
+      "description": "AI that writes your products, cash on delivery, Bosta shipping, fake-order protection and unfinished checkouts, in one dashboard."
+    }
+  },
+  "contentPages": {
+    "createStore": "Create your store for free",
+    "pricing": "Pricing",
+    "whatsapp": "Message us on WhatsApp",
+    "noCode": "Ready to connect, no code",
+    "faqKicker": "Common questions",
+    "faqTitle": "Questions and answers",
+    "faqLead": "Can't find your answer? Message us on WhatsApp.",
+    "benefitsKicker": "Benefits",
+    "benefitsTitle": "Why it matters",
+    "usesKicker": "What it's for",
+    "stepsKicker": "Step by step",
+    "requirementsLead": "Have these ready before you start.",
+    "closingBody": "Start with no monthly subscription and no credit card.",
+    "freeTerms": "The Free plan has no monthly subscription, and you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
+    "dashMock": {
+      "home": "Home",
+      "products": "Products",
+      "orders": "Orders",
+      "shipping": "Shipping and delivery",
+      "website": "Website",
+      "apps": "Apps and integrations"
+    }
+  },
+  "detailPages": {
+    "custom-domain": {
+      "crumbHub": "Features",
+      "crumb": "Custom domain",
+      "title": "Connect your own domain to your store",
+      "lead": "Put your store on an address with your brand's name, like glowskin.com, in a few steps.",
+      "whatTitle": "What is it?",
+      "what": [
+        "Every Tallaby store starts on a free address like glow.tallaby.com. When you're ready, you can connect a domain you own, so customers reach your store at an address with your brand's name.",
+        "You do this in the dashboard under Website › Domain & SEO: enter the domain, add the records shown to the DNS settings where you bought it, and follow its status on the same page. For now it's available on your main store, with one domain per account."
+      ],
+      "benefits": [
+        { "title": "More customer trust", "body": "An address with your brand's name looks more professional in ads and messages." },
+        { "title": "One link for every campaign", "body": "Use the same domain in your posts, ads and WhatsApp messages." },
+        { "title": "Your name in search results", "body": "Your store shows up on Google under your own domain and brand." }
+      ],
+      "stepsTitle": "How to set it up",
+      "steps": [
+        { "title": "Buy a domain, or use yours", "body": "Buy one from any domain registrar, such as GoDaddy or Namecheap, or use a domain you already own." },
+        { "title": "Add it in the dashboard", "body": "Open Website › Domain & SEO, enter the domain and press Connect domain. We connect the domain and its www version together." },
+        { "title": "Add the DNS records", "body": "Copy the records shown and add them to your domain's DNS settings. Remove any other A or CNAME records for @ and www." },
+        { "title": "Wait for the check", "body": "It usually takes a few minutes and can take up to 48 hours. We check automatically every day, and you can press Check now at any time." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Templates", "body": "Ready-made designs for what you sell." },
+        { "title": "Drag & Drop editor", "body": "Design your store's pages without code." },
+        { "title": "Tallaby AI", "body": "Product titles and descriptions in Arabic and English." },
+        { "title": "Meta Pixel", "body": "Measure your Facebook and Instagram ads." }
+      ],
+      "faq": [
+        { "q": "Is connecting a custom domain free?", "a": "Yes. Connecting is free on both Free and Pro. You buy the domain from a registrar, at their price." },
+        { "q": "Where do I buy a domain?", "a": "From any domain registrar, such as GoDaddy or Namecheap. After you buy it, you'll open its DNS settings there to add the records." },
+        { "q": "How long does it take?", "a": "Usually a few minutes. DNS changes can take up to 48 hours, depending on your provider. We check automatically every day, and you can press Check now." },
+        { "q": "Does my store get a security certificate?", "a": "Yes. Your store runs on your domain with a free security certificate once it's connected." },
+        { "q": "Does my tallaby.com address keep working?", "a": "Yes, and it forwards visitors to your domain. If you disconnect the domain, your store goes back to its Tallaby address." },
+        { "q": "Can I connect more than one domain?", "a": "No. For now you can connect one domain per account, on your main store only." },
+        { "q": "I use Cloudflare. What should I do?", "a": "Set the records to DNS only (the grey cloud), or the security certificate can't be issued." }
+      ],
+      "closingTitle": "Connect your domain and sell under your own name",
+      "mock": {
+        "title": "Domain & SEO",
+        "path": "Website › Domain",
+        "live": "Live",
+        "pending": "Waiting for DNS",
+        "available": "Available",
+        "ownTitle": "Your own domain",
+        "ownHint": "Customers see it instead of the free address",
+        "check": "Check now",
+        "connect": "Connect domain",
+        "ssl": "Free security certificate",
+        "dnsTitle": "DNS records",
+        "dnsHint": "Add them at your domain provider",
+        "type": "Type",
+        "name": "Name",
+        "value": "Value",
+        "freeTitle": "Free address",
+        "freeHint": "Forwards visitors to your domain",
+        "registrarLabel": "Search for a domain at a registrar"
+      }
+    },
+    "ai-online-store": {
+      "crumbHub": "Features",
+      "crumb": "AI",
+      "title": "AI that writes your products in two languages",
+      "lead": "Take a photo of your product or describe it in a line, and Tallaby's AI writes the name, description and search fields in Arabic and English. You review, then publish.",
+      "whatTitle": "How does AI help you build your online store?",
+      "what": [
+        "With Tallaby, AI takes on the hardest part of building an online store: writing the product pages. Upload up to 4 photos or a PDF, or type a few words about the product, and AI writes its name, description and search keywords in Arabic and English at once.",
+        "AI never sets the price, stock or SKU; you type those. Everything it writes shows up in the product form for you to edit before you save.",
+        "Got a lot of products? Upload an Excel, CSV or PDF file and it writes their copy in one go. You can also connect your store to Claude or ChatGPT to add and edit products from a chat. The store's design starts from a ready-made template that you pick and edit by drag and drop."
+      ],
+      "benefits": [
+        { "title": "Arabic and English together", "body": "Every product is written in both languages at once, so customers read your store in the language they prefer." },
+        { "title": "Ready for search engines", "body": "A search title, description and keywords with every product, without writing them yourself." },
+        { "title": "You decide", "body": "Price and stock come from you, and you review and edit every line before it goes live." }
+      ],
+      "usesTitle": "Where you use AI in your store",
+      "uses": [
+        { "title": "A product from a photo", "body": "Upload product photos or describe it in a line, and get a complete product page." },
+        { "title": "Many products from a file", "body": "An Excel, CSV or PDF file, with AI writing their copy in one go." },
+        { "title": "From Claude or ChatGPT", "body": "Connect your store, then add, edit or search your products from a chat." },
+        { "title": "Monthly credits", "body": "AI credits every month on both plans, and more on Pro." }
+      ],
+      "stepsTitle": "How to add a product with AI",
+      "steps": [
+        { "title": "Upload photos or a short description", "body": "In Products › Add product, upload up to 4 photos or a PDF, or type a few words about the product." },
+        { "title": "Review what AI wrote", "body": "The name and description in Arabic and English and the search fields fill the form, and you edit any line." },
+        { "title": "Add price and stock, then save", "body": "Price and stock come from you; save the product and it shows in your store." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Create an online store step by step", "body": "From claiming your link to publishing." },
+        { "title": "Free online store", "body": "No monthly fee and no credit card." },
+        { "title": "Store templates", "body": "Start with a design made for what you sell." },
+        { "title": "Pricing and AI credits", "body": "The monthly credits on each plan." }
+      ],
+      "faq": [
+        {
+          "q": "Does AI build my whole store?",
+          "a": "Today AI writes your products: the name, description and search fields in both languages. You start the store's design from a ready-made template and edit it by drag and drop."
+        },
+        { "q": "How often can I use AI?", "a": "Each plan has monthly credits, and Pro has more. You can buy extra credits in your dashboard, where you see their cost before you buy." },
+        { "q": "Does AI set the product's price?", "a": "No. You always type the price, stock and SKU; AI writes only the copy." },
+        { "q": "Which language does it write in?", "a": "It writes every product in Arabic and English, even if you describe it in one language." },
+        { "q": "Can I add many products at once?", "a": "Yes. Upload an Excel, CSV or PDF file on the add products page, AI writes their copy, and you review it before publishing." },
+        {
+          "q": "Can I manage my products from Claude or ChatGPT?",
+          "a": "Yes. Connect your store from your dashboard, then ask the assistant to add, edit or search your products. Orders and settings stay in your dashboard."
+        }
+      ],
+      "closingTitle": "Let AI write your products",
+      "mock": {
+        "title": "Add product",
+        "path": "Products › Add product",
+        "inputTitle": "Product photos or a short description",
+        "inputHint": "Up to 4 photos or a PDF",
+        "write": "Write with AI",
+        "photos": "3 photos",
+        "fieldsTitle": "Product name",
+        "review": "Review before saving",
+        "sampleAr": "شنطة يد جلد طبيعي بني",
+        "sampleEn": "Brown genuine leather handbag",
+        "tags": ["Description", "Search title", "Keywords"],
+        "aiNote": "An illustration. You type the price and stock.",
+        "priceLabel": "Price (EGP)",
+        "stockLabel": "Stock"
+      }
+    },
+    "fake-order-protection": {
+      "crumbHub": "Features",
+      "crumb": "Fake-order protection",
+      "title": "More real orders, fewer returns",
+      "lead": "Block problem numbers, spot a risky order before you ship it, and confirm cash on delivery orders on WhatsApp in one tap.",
+      "whatTitle": "What are fake orders, and how does Tallaby help?",
+      "what": [
+        "Fake orders are cash on delivery orders the customer refuses at the door or never answers the rider about, so you pay shipping both ways and sell nothing. Tallaby gives you tools in your dashboard to cut these orders before you ship them.",
+        "Each order shows a badge when the customer's number refused earlier orders in your store, or when the same number ordered again within minutes. You can block a number so it can't order from your store again, and send a ready confirmation message on WhatsApp before you ship.",
+        "The platform also limits repeat orders from the same number, account or internet connection within a short time, automatically."
+      ],
+      "usesTitle": "Protection tools in your store",
+      "uses": [
+        { "title": "Number blocking", "body": "Block a number from the order or the customer's page, and checkout refuses their next order." },
+        { "title": "A risk badge on each order", "body": "\"Refused earlier orders\" and \"Possible duplicate\" on the order card, so you decide before shipping." },
+        { "title": "WhatsApp confirmation", "body": "A button that opens WhatsApp with the order number, items and address, then you mark it confirmed." },
+        { "title": "A limit on repeat orders", "body": "A small number of orders per number, account and internet connection in a short time, automatically." }
+      ],
+      "stepsTitle": "How to protect your store from fake orders",
+      "steps": [
+        { "title": "Block problem numbers", "body": "In Store settings › Order protection, or with \"Block this customer\" on the order." },
+        { "title": "Watch for the risk badge", "body": "It shows when the number has refused orders in your store, or ordered twice within minutes." },
+        { "title": "Send the confirmation message", "body": "Press \"Ask to confirm\" to open WhatsApp with a ready message you can edit for each store." },
+        { "title": "Mark it confirmed, then ship", "body": "When the customer replies, press \"Confirm order\". Orders still unconfirmed after 24 hours are highlighted." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Cash on delivery store", "body": "Cash on delivery ready from day one." },
+        { "title": "Unfinished checkouts", "body": "Reach people who started an order." },
+        { "title": "Shipping in Egypt", "body": "Shipping zones, Bosta and your riders." },
+        { "title": "Bosta integration", "body": "Send the confirmed order to Bosta." }
+      ],
+      "faq": [
+        {
+          "q": "How can I tell an order is fake?",
+          "a": "There's no sure way, but the badges help: a number that refused earlier orders in your store, or a repeat order from the same number within minutes. Confirm those orders before you ship."
+        },
+        {
+          "q": "Can I block a phone number?",
+          "a": "Yes. Add the number to your blocklist and any new order from it is refused in your store. It matches however the customer types it, such as 010 or +2010."
+        },
+        { "q": "Does Tallaby send the confirmation message automatically?", "a": "No. You press \"Ask to confirm\" and WhatsApp opens on your phone with the message ready; you send it." },
+        { "q": "Does a blocked customer see that they're blocked?", "a": "They see a general message that the order didn't go through, with no mention of the block." },
+        { "q": "Is protection on the Free plan?", "a": "Yes. Every protection tool is on both plans at no extra cost." },
+        {
+          "q": "Can I ask customers for a verification code?",
+          "a": "Not yet. SMS verification isn't available today; what you have is blocking, the risk badge, WhatsApp confirmation and the repeat-order limit."
+        }
+      ],
+      "closingTitle": "Start your store with protection from day one",
+      "mock": {
+        "title": "Orders",
+        "path": "Orders › All orders",
+        "head": ["Order", "Governorate", "Total", "Alert"],
+        "rows": [["Brown handbag", "Giza", "390 EGP"], ["Brown handbag", "Giza", "390 EGP"], ["Wristwatch", "Monufia", "540 EGP"]],
+        "refused": "Refused 2 orders",
+        "duplicate": "Possible duplicate",
+        "confirmed": "Confirmed",
+        "pending": "Awaiting confirmation",
+        "panelTitle": "New order",
+        "panelHint": "This number refused 2 earlier orders in your store",
+        "ask": "Ask to confirm",
+        "confirm": "Confirm order",
+        "block": "Block",
+        "blockTitle": "Order protection › Blocked numbers",
+        "message": "Hi, confirming your order: brown handbag, total EGP 390. Shall we send it to your saved address?"
+      }
+    },
+    "abandoned-checkouts": {
+      "crumbHub": "Features",
+      "crumb": "Unfinished checkouts",
+      "title": "Don't lose a customer who started an order",
+      "lead": "When a customer adds their address at checkout and leaves, they show up under Not completed with their number and items, so you can reach them.",
+      "whatTitle": "What are abandoned checkouts?",
+      "what": [
+        "An abandoned checkout is an order the customer started and didn't finish: they added products and typed their address, then closed the page. It happens a lot with cash on delivery, and many of those customers order if you reach them quickly.",
+        "On Tallaby, an unfinished order is saved when the customer picks or adds a shipping address at checkout, and shows in Orders › Not completed with the name, phone, items and total with shipping. When the customer places the order, it leaves the list by itself.",
+        "From each row you message them on WhatsApp with a ready message or call them, then mark the row as contacted. If the customer has an account on your store, they also get a reminder email under your store's name."
+      ],
+      "benefits": [
+        { "title": "The number and items in front of you", "body": "Name, phone, items and total with shipping on every row." },
+        { "title": "WhatsApp or a call in one tap", "body": "A ready message you can edit for each store, or a direct call from your phone." },
+        { "title": "A list that stays clean", "body": "Anyone who orders leaves the list, and old rows are removed after 30 days." }
+      ],
+      "stepsTitle": "How to win back unfinished checkouts",
+      "steps": [
+        { "title": "The customer adds an address and leaves", "body": "The unfinished order is saved when they pick or add a shipping address, and checkout tells them you may get in touch." },
+        { "title": "It shows in Orders › Not completed", "body": "With the name, phone, items and total, filtered by date and by contact status." },
+        { "title": "Message them on WhatsApp", "body": "Press WhatsApp to open a ready message with the customer's name, items and total." },
+        { "title": "Mark who you reached", "body": "Press \"Mark contacted\" so your team knows who's left; if the customer orders, the row goes away." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Fake-order protection", "body": "Number blocking and WhatsApp confirmation." },
+        { "title": "Cash on delivery store", "body": "Cash on delivery ready from day one." },
+        { "title": "Meta Pixel", "body": "Retarget visitors who didn't order." },
+        { "title": "Pricing", "body": "Plans and fees in detail." }
+      ],
+      "faq": [
+        {
+          "q": "When does an order show as not completed?",
+          "a": "When the customer picks or adds a shipping address at checkout, then leaves without ordering. Customers who only added items, with no address, show under Pending carts."
+        },
+        {
+          "q": "Does Tallaby send WhatsApp messages automatically?",
+          "a": "No. You press WhatsApp, it opens on your phone with a ready message, and you send it. Automatic messages aren't available today."
+        },
+        { "q": "Does the customer get a reminder email?", "a": "Yes, if they have an account on your store: they get a cart reminder under your store's name, and the row shows it was sent." },
+        { "q": "How long do unfinished checkouts stay?", "a": "30 days, then they're removed automatically. Anyone who places the order leaves the list right away." },
+        { "q": "Does the customer know I may contact them?", "a": "Yes. Checkout shows a short line saying the store may get in touch about the order." },
+        { "q": "Is it on the Free plan?", "a": "Yes. Unfinished checkouts are on both plans at no extra cost." }
+      ],
+      "closingTitle": "Win back the orders you almost lost",
+      "mock": {
+        "title": "Not completed",
+        "path": "Orders › Not completed",
+        "rows": [["2 items: handbag, wallet", "610 EGP", "Left 20 minutes ago"], ["1 item: wristwatch", "450 EGP", "Left 2 hours ago"]],
+        "whatsapp": "WhatsApp",
+        "call": "Call",
+        "emailSent": "Reminder email sent",
+        "contacted": "Contacted",
+        "markContacted": "Mark contacted",
+        "message": "Hi, we noticed your order wasn't finished (handbag and wallet, EGP 610). Can we help you complete it?",
+        "ask": "WhatsApp",
+        "formTitle": "Checkout › Shipping address",
+        "addressLabel": "Address"
+      }
+    },
+    "shipping": {
+      "crumbHub": "Features",
+      "crumb": "Shipping",
+      "title": "Ship to every governorate, your way",
+      "lead": "Set a shipping price for each governorate or area, then ship with Bosta from your dashboard, with your own riders, or with a Wassalha sheet for Egypt Post.",
+      "whatTitle": "How does shipping work for online stores in Egypt?",
+      "what": [
+        "Shipping orders in Egypt comes down to two questions: what the customer pays for shipping, and who delivers. On Tallaby you answer the first with shipping zones: a price for each governorate, area or district, free shipping over an amount you choose, and an optional surcharge by weight.",
+        "You answer the second your way: connect your Bosta account and send orders from your dashboard, add your own riders and assign orders to them, or download a ready sheet and upload it to your Wassalha account for Egypt Post.",
+        "Tallaby doesn't deliver orders itself and doesn't set carrier prices. Your Bosta price is your own account's price."
+      ],
+      "usesTitle": "Ways to ship from your store",
+      "uses": [
+        { "title": "Bosta", "body": "Send the order to your Bosta account, print the waybill and follow its status from your dashboard." },
+        { "title": "Wassalha for Egypt Post", "body": "Download the ready orders sheet and upload it to your Wassalha account." },
+        { "title": "Your own riders", "body": "Add your riders and assign orders to them from your dashboard." },
+        { "title": "Zones and prices", "body": "A price per governorate or area, free shipping over an amount, and cash on delivery per zone." }
+      ],
+      "stepsTitle": "How to set up shipping in your store",
+      "steps": [
+        { "title": "Create your shipping zones", "body": "In Shipping and delivery, choose the governorates or areas, each one's price and the delivery time." },
+        { "title": "Set free shipping", "body": "Type the amount above which shipping is free, for each zone." },
+        { "title": "Choose how you deliver", "body": "Connect your Bosta account, add your riders, or set up Wassalha." },
+        { "title": "Follow every shipment", "body": "With Bosta, the order's status updates in your dashboard whenever Bosta updates it." }
+      ],
+      "relatedTitle": "Related pages",
+      "related": [
+        { "title": "Bosta integration", "body": "Send orders and print waybills." },
+        { "title": "An online store in Egypt", "body": "Payments and shipping with local tools." },
+        { "title": "Cash on delivery store", "body": "Cash on delivery per zone." },
+        { "title": "Profit margin calculator", "body": "Work out your profit after shipping." }
+      ],
+      "faq": [
+        { "q": "Does Tallaby deliver orders?", "a": "No. Tallaby doesn't deliver orders itself. You ship with your own Bosta account, your riders, or a Wassalha sheet for Egypt Post." },
+        {
+          "q": "Which shipping companies can I use?",
+          "a": "Bosta connects directly from your dashboard. Wassalha for Egypt Post works through a sheet you download and upload yourself. Others, such as Aramex, J&T and Mylerz, aren't connected yet."
+        },
+        { "q": "What does shipping with Bosta cost?", "a": "Bosta sets the price for your account with them. Tallaby adds nothing to the shipping price." },
+        {
+          "q": "Can I set a different price for each governorate?",
+          "a": "Yes. Create a zone for a governorate, a group of governorates or even a single district, each with its own price and delivery time."
+        },
+        { "q": "Can I offer free shipping?", "a": "Yes. Set an amount above which shipping is free, for each zone." },
+        { "q": "Can I turn off cash on delivery for a far zone?", "a": "Yes. Each shipping zone has its own cash on delivery switch." }
+      ],
+      "closingTitle": "Set up shipping for your store in minutes",
+      "mock": {
+        "title": "Shipping and delivery",
+        "path": "Shipping and delivery › Shipping zones",
+        "zonesTitle": "Shipping zones",
+        "zonesHint": "Customers see the price before ordering",
+        "zonesHead": ["Zone", "Price", "Free over", "COD"],
+        "zones": [["Cairo and Giza", "50 EGP", "1,000 EGP", "on"], ["Alexandria", "60 EGP", "1,200 EGP", "on"], ["South Sinai", "120 EGP", "2,000 EGP", "off"]],
+        "bosta": "Bosta",
+        "rider": "Your riders",
+        "wassalha": "Wassalha",
+        "freeOverLabel": "Free shipping on orders over",
+        "freeOverValue": "1,000 EGP",
+        "states": ["Out for delivery", "Delivered"]
+      }
+    }
+  },
+  "featuresHub": {
+    "crumb": "Features",
+    "eyebrow": "Tallaby features",
+    "title": "Everything your store needs, <em>in one dashboard</em>",
+    "lead": "Tallaby's online store features, each on its own page explaining what it does and how to turn it on.",
+    "search": "Search",
+    "searchPlaceholder": "Search for a feature, e.g. shipping",
+    "categoriesLabel": "Features",
+    "categories": {
+      "all": "All",
+      "build": "Build your store",
+      "run": "Run your business",
+      "market": "Marketing and reports",
+      "paid": "Get paid"
+    },
+    "soon": "Soon",
+    "featured": "Most visited",
+    "featuredCta": "See the feature",
+    "count": "{count} features",
+    "noneTitle": "No results",
+    "noneBody": "Try another word or pick a different category.",
+    "items": {
+      "store-design": "A visual editor and templates for each business, every element editable.",
+      "store-app": "Customers add your store to their phone with your name and icon.",
+      "product-management": "Import from Excel or a link, bulk edits and stock alerts.",
+      "order-management": "Order stages, printing, manual orders and a customer list.",
+      "offers-and-coupons": "Coupons, quantity offers, automatic discounts and suggested products.",
+      "email-marketing": "Campaigns to customers and subscribers, win-back and back-in-stock emails.",
+      "reports": "Visits to delivery, sources and refusals by governorate.",
+      "store-seo": "A title and description per page, a sitemap and AI writing.",
+      "online-payments": "Cash on delivery, deposits, wallets and cards.",
+      "ai-online-store": "Name, description and search fields for every product, in Arabic and English.",
+      "fake-order-protection": "Number blocking, a risk badge on orders and WhatsApp confirmation.",
+      "abandoned-checkouts": "People who added an address but didn't order, to call or message.",
+      "shipping": "Shipping zones by governorate, plus Bosta, your riders and Wassalha.",
+      "custom-domain": "Connect your own domain so your store carries your brand."
+    },
+    "explainerTitle": "Which features does your online store need?",
+    "explainer": "An online store in Egypt needs more than product pages: cash on delivery with protection from refused orders, shipping for each governorate, follow-up for people who didn't finish ordering, and clear product copy in both languages. Every one of these features is on both plans, and each page here explains what the feature does today, with no promises about what isn't built yet. Shipping, payment and tracking integrations have their own page.",
+    "closingTitle": "Try every feature in your store",
+    "closingBody": "Every feature is on the Free plan, with no monthly fee."
+  },
+  "productPages": {
+    "shared": {
+      "crumbHub": "Features",
+      "createStore": "Create your store for free",
+      "pricing": "Pricing",
+      "illustration": "Illustration with made-up names and numbers.",
+      "moreIn": "More in {area}",
+      "relatedTitle": "Related pages"
+    },
+    "store-design": {
+      "crumb": "Store design",
+      "title": "Design your store your way, with no code",
+      "lead": "Start from a template made for your business, then change text, photos and colours with drag and drop. You see every change before your customers do.",
+      "checks": [
+        "Every element on the page can be edited and moved",
+        "Your store in Arabic and English",
+        "Changing template never touches your products or orders"
+      ],
+      "whatTitle": "What is online store design on Tallaby?",
+      "what": [
+        "Store design is what your customer sees: the home page, product pages, menu and footer. On Tallaby you build it yourself in a visual editor, with no developer and no code.",
+        "Pick a template for your business, then edit any section or add ready sections from the library. Your changes stay a draft until you press Publish."
+      ],
+      "rows": [
+        {
+          "title": "Edit every element with drag and drop",
+          "body": "Click any text, photo or button to edit it, and drag sections to change their order.",
+          "points": [
+            "A library of ready sections: banners, categories, products, reviews and FAQs",
+            "A product page built to sell, edited like any other page",
+            "Nothing changes for customers until you publish"
+          ],
+          "mock": {
+            "title": "Website editor",
+            "path": "Website › Home page",
+            "cards": [
+              {
+                "title": "Page sections",
+                "hint": "Drag to reorder",
+                "rows": [
+                  {
+                    "label": "Hero banner",
+                    "pill": "Shown"
+                  },
+                  {
+                    "label": "Store categories",
+                    "pill": "Shown"
+                  },
+                  {
+                    "label": "Best sellers",
+                    "pill": "Shown"
+                  },
+                  {
+                    "label": "Customer reviews",
+                    "pill": "Hidden",
+                    "tone": "gray"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Start from a template for your business",
+          "body": "Templates for clothing, beauty, perfume, furniture, electronics and more, each with its pages and sections ready.",
+          "points": [
+            "Preview a template with sample products before you choose",
+            "Switch templates any time; your products stay as they are",
+            "Every template works on phones and computers"
+          ],
+          "link": "Browse templates"
+        },
+        {
+          "title": "Your brand's colours and fonts on every page",
+          "body": "Set colours and fonts once in the design system, and every section of the store follows.",
+          "points": [
+            "Primary, secondary and background colours",
+            "A heading font, a body font and an Arabic font",
+            "Preview on phone and computer before you publish"
+          ],
+          "mock": {
+            "title": "Design system",
+            "path": "Website › Design system",
+            "cards": [
+              {
+                "title": "Colours",
+                "hint": "Used by every section",
+                "rows": [
+                  {
+                    "label": "Primary",
+                    "value": "#145163"
+                  },
+                  {
+                    "label": "Secondary",
+                    "value": "#FDAD28"
+                  },
+                  {
+                    "label": "Background",
+                    "value": "#FFFFFF"
+                  }
+                ]
+              },
+              {
+                "title": "Fonts",
+                "rows": [
+                  {
+                    "label": "Headings",
+                    "value": "Cairo"
+                  },
+                  {
+                    "label": "Body text",
+                    "value": "Tajawal"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "Everything else your store's website needs",
+      "grid": [
+        {
+          "title": "Arabic and English",
+          "body": "A store in two languages; customers pick theirs."
+        },
+        {
+          "title": "Extra pages",
+          "body": "About, policies, contact and any page you need."
+        },
+        {
+          "title": "A store blog",
+          "body": "Articles that help customers and show up in search."
+        },
+        {
+          "title": "Forms and replies",
+          "body": "Contact and sign-up forms, with replies in your dashboard."
+        },
+        {
+          "title": "Ready for search",
+          "body": "A title and description per page, and an automatic sitemap."
+        },
+        {
+          "title": "Free link or your domain",
+          "body": "A tallaby.com link, or connect your own domain."
+        }
+      ],
+      "related": [
+        {
+          "title": "Templates",
+          "body": "Designs for each kind of store."
+        },
+        {
+          "title": "Custom domain",
+          "body": "Your store under your brand."
+        },
+        {
+          "title": "Store app",
+          "body": "Your store on the customer's phone."
+        },
+        {
+          "title": "AI product writing",
+          "body": "Product copy in both languages."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Do I need coding skills to design my store?",
+          "a": "No. You edit by clicking and dragging in a visual editor, and there is nowhere to write code."
+        },
+        {
+          "q": "Can I change template after my store is live?",
+          "a": "Yes. Choose another template and your products, orders and customers stay as they are. Customers see the new design after you publish."
+        },
+        {
+          "q": "Will my store look right on phones?",
+          "a": "Yes. Every template works on phones and computers, and you can preview both in the editor before publishing."
+        },
+        {
+          "q": "Can my store be in Arabic and English?",
+          "a": "Yes. Your store works in both languages; you choose the main one and customers can switch."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Design your store and publish it today"
+    },
+    "store-app": {
+      "crumb": "Store app",
+      "title": "Your store on your customer's phone",
+      "lead": "A Download app button in your store adds it to the customer's home screen with your store's name and icon, and it opens without a browser.",
+      "checks": [
+        "No app store and no app to build",
+        "Name and icon come from your store",
+        "Works with every template"
+      ],
+      "whatTitle": "What is the Tallaby store app?",
+      "what": [
+        "The store app is your store's website itself, installed on the customer's phone as a web app. It sits on the home screen with your store's icon and opens full screen, without the browser bar.",
+        "You don't publish it on Google Play or the App Store, and you don't need a developer. Anything you change in your store shows in the app right away, because it is the same store."
+      ],
+      "rows": [
+        {
+          "title": "A download button in every template's footer",
+          "body": "The Download app button shows in your store's footer on its own. You can hide it in your store settings at any time.",
+          "points": [
+            "The icon comes from your site icon, then your logo, then your initials",
+            "The name is your store's name",
+            "Hide the button and customers can still install from the browser menu"
+          ],
+          "mock": {
+            "title": "Your store app",
+            "path": "Store settings › App",
+            "cards": [
+              {
+                "title": "App",
+                "rows": [
+                  {
+                    "label": "App name",
+                    "value": "Glow"
+                  },
+                  {
+                    "label": "App icon",
+                    "pill": "From your site icon"
+                  }
+                ]
+              },
+              {
+                "title": "Download app button in the footer",
+                "rows": [
+                  {
+                    "label": "Show the button",
+                    "toggle": "on"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Closer to your customer than any ad",
+          "body": "A customer who installed your store sees it on their screen every day and comes back in one tap instead of searching again.",
+          "points": [
+            "Works on Android phones, and on iPhone from Safari's Share menu",
+            "The same products, prices and payment methods",
+            "The same store link or your own domain"
+          ]
+        }
+      ],
+      "phone": {
+        "appName": "Glow",
+        "initials": "G",
+        "hint": "Add the store to your home screen",
+        "install": "Install"
+      },
+      "gridTitle": "What your customers get",
+      "grid": [
+        {
+          "title": "Android and iPhone",
+          "body": "One app for both kinds of phone."
+        },
+        {
+          "title": "Your name and icon",
+          "body": "Tallaby's name isn't on the icon."
+        },
+        {
+          "title": "The same link",
+          "body": "Your store link or domain, no new address."
+        },
+        {
+          "title": "Always up to date",
+          "body": "No updates to install: it's your store itself."
+        }
+      ],
+      "related": [
+        {
+          "title": "Store design",
+          "body": "Design your store with no code."
+        },
+        {
+          "title": "Custom domain",
+          "body": "Your store under your brand."
+        },
+        {
+          "title": "Create an online store",
+          "body": "The steps from the start."
+        },
+        {
+          "title": "Pricing",
+          "body": "The Free and Pro plans."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is this an app on Google Play or the App Store?",
+          "a": "No. It's a web app customers install straight from your store, with no app store."
+        },
+        {
+          "q": "Can it be installed on iPhone?",
+          "a": "Yes. On iPhone the customer opens your store in Safari and taps Add to Home Screen in the Share menu."
+        },
+        {
+          "q": "Do I need to update the app when I change my store?",
+          "a": "No. The app is your store itself, so every change shows right away."
+        },
+        {
+          "q": "Can I hide the Download app button?",
+          "a": "Yes, in Store settings › App. Customers can still install from the browser menu."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Put your store on every customer's phone"
+    },
+    "product-management": {
+      "crumb": "Product management",
+      "title": "All your products under control",
+      "lead": "Add products the fastest way for you, change prices and stock for many products at once, and know before anything runs out.",
+      "checks": [
+        "Import from Excel, a link or Shopify",
+        "Sizes and colours, each with its own price and stock",
+        "A trash you can restore from for 30 days"
+      ],
+      "whatTitle": "How do you manage your store's products on Tallaby?",
+      "what": [
+        "Product management means adding products, organising them and keeping prices and stock current. On Tallaby that lives on one page per store, with import, bulk edits and stock one click away.",
+        "Add a product by hand, from a photo and a few words with AI, from a file or from a product link. Each store has its own products and stock."
+      ],
+      "rows": [
+        {
+          "title": "Add dozens of products at once",
+          "body": "Upload an Excel file, paste product links or move your store from Shopify, then review the products before saving.",
+          "points": [
+            "One link or many in a single step",
+            "Pick one category for every imported product",
+            "Update prices and stock from one Excel sheet"
+          ],
+          "mock": {
+            "title": "Add products",
+            "path": "Products › Add",
+            "cards": [
+              {
+                "title": "How to add",
+                "rows": [
+                  {
+                    "label": "By hand"
+                  },
+                  {
+                    "label": "With AI",
+                    "pill": "Photo and words"
+                  },
+                  {
+                    "label": "From a file",
+                    "value": "Excel · CSV"
+                  },
+                  {
+                    "label": "From a product link",
+                    "pill": "One link or more"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Edit many products in one step",
+          "body": "Select products, then change the price, discount, stock or status for all of them, with a preview before saving.",
+          "points": [
+            "Undo a bulk edit within 10 minutes",
+            "Main and sub-categories and brands for each store",
+            "Drag to order products inside each category"
+          ],
+          "mock": {
+            "title": "Edit selected",
+            "path": "Products › Edit 24 products",
+            "cards": [
+              {
+                "title": "Change",
+                "hint": "Preview before saving",
+                "rows": [
+                  {
+                    "label": "Price",
+                    "value": "+10%"
+                  },
+                  {
+                    "label": "Stock",
+                    "value": "+20"
+                  },
+                  {
+                    "label": "Status",
+                    "pill": "Active"
+                  }
+                ]
+              },
+              {
+                "title": "After saving",
+                "rows": [
+                  {
+                    "label": "Undo within 10 minutes",
+                    "pill": "Available",
+                    "tone": "amber"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Know before stock runs out",
+          "body": "The inventory page shows what's running low, lets you restock fast and logs every stock change with its reason.",
+          "points": [
+            "An alert on your phone when stock gets low",
+            "A \"Only a few left\" badge on the product page",
+            "Unlimited stock for products you make to order"
+          ],
+          "mock": {
+            "title": "Inventory",
+            "path": "Products › Inventory",
+            "cards": [
+              {
+                "title": "Low stock",
+                "rows": [
+                  {
+                    "label": "White cotton shirt · M",
+                    "value": "3",
+                    "pill": "Low",
+                    "tone": "amber"
+                  },
+                  {
+                    "label": "Brown leather bag",
+                    "value": "2",
+                    "pill": "Low",
+                    "tone": "amber"
+                  },
+                  {
+                    "label": "Woody perfume 100 ml",
+                    "value": "0",
+                    "pill": "Out",
+                    "tone": "gray"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "What every product can have",
+      "grid": [
+        {
+          "title": "Sizes and colours",
+          "body": "Each option with its own price, photos and stock."
+        },
+        {
+          "title": "Trash",
+          "body": "Restore any deleted product within 30 days."
+        },
+        {
+          "title": "Minimum quantity",
+          "body": "Set the smallest quantity a customer can order."
+        },
+        {
+          "title": "Customer requirements",
+          "body": "Text, a photo or a choice the customer sends with the order."
+        },
+        {
+          "title": "AI-written copy",
+          "body": "Name and description in both languages from a photo."
+        },
+        {
+          "title": "Views per product",
+          "body": "How many people viewed it in the last 30 days."
+        }
+      ],
+      "related": [
+        {
+          "title": "AI product writing",
+          "body": "A product from a photo."
+        },
+        {
+          "title": "Order management",
+          "body": "Every order in one place."
+        },
+        {
+          "title": "Offers and coupons",
+          "body": "Quantity offers and discounts."
+        },
+        {
+          "title": "Integrations",
+          "body": "Shopify, Google Sheets and more."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Can I move my products from Shopify?",
+          "a": "Yes. Connect your Shopify store from Apps and your products come over with their photos and prices."
+        },
+        {
+          "q": "Can I upload products from an Excel file?",
+          "a": "Yes. Upload an Excel or CSV file, review the products, then save. You can also update prices and stock of existing products from one sheet."
+        },
+        {
+          "q": "Is there a limit on products?",
+          "a": "There is no product limit on either plan."
+        },
+        {
+          "q": "What if I delete a product by mistake?",
+          "a": "It goes to the trash, and you can restore it within 30 days."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Add your products and start selling today",
+      "mock": {
+        "title": "Products",
+        "path": "Products › All products",
+        "cards": [
+          {
+            "title": "All products",
+            "hint": "Prices in EGP",
+            "rows": [
+              {
+                "label": "White cotton shirt",
+                "value": "450",
+                "pill": "Active"
+              },
+              {
+                "label": "Brown leather bag",
+                "value": "1,250",
+                "pill": "Active"
+              },
+              {
+                "label": "Woody perfume 100 ml",
+                "value": "980",
+                "pill": "Out",
+                "tone": "gray"
+              },
+              {
+                "label": "Silk scarf",
+                "value": "320",
+                "pill": "Draft",
+                "tone": "amber"
+              }
+            ]
+          },
+          {
+            "title": "Stock",
+            "rows": [
+              {
+                "label": "Running low",
+                "value": "3",
+                "pill": "Alert",
+                "tone": "amber"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "order-management": {
+      "crumb": "Order management",
+      "title": "All your orders on one screen",
+      "lead": "Follow each order from arrival to delivery, reach the customer in one tap, and print invoices and packing slips for many orders at once.",
+      "checks": [
+        "An alert on your phone for every new order",
+        "Manual orders for phone and WhatsApp sales",
+        "A customer list with your notes and tags"
+      ],
+      "whatTitle": "What is order management for an online store?",
+      "what": [
+        "Order management is what happens after a customer orders: confirming, packing, shipping and following up until delivery. On Tallaby every order moves through clear stages in one list.",
+        "In the same place you reach your store's orders, your manual orders, your customers and the shoppers who didn't finish."
+      ],
+      "rows": [
+        {
+          "title": "Clear stages for every order",
+          "body": "New, confirmed, out for delivery, delivered. Change the status of one order or many at once.",
+          "points": [
+            "WhatsApp and call buttons on every order",
+            "A warning on orders that look suspicious",
+            "Ship with Bosta from the order itself"
+          ],
+          "mock": {
+            "title": "Orders",
+            "path": "Orders › All",
+            "cards": [
+              {
+                "title": "Today",
+                "rows": [
+                  {
+                    "label": "#1042 · Mona · Cairo",
+                    "value": "850",
+                    "pill": "New",
+                    "tone": "amber"
+                  },
+                  {
+                    "label": "#1041 · Karim · Giza",
+                    "value": "1,240",
+                    "pill": "Confirmed"
+                  },
+                  {
+                    "label": "#1039 · Sara · Alexandria",
+                    "value": "560",
+                    "pill": "Out for delivery",
+                    "tone": "gray"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Print and export in seconds",
+          "body": "Select orders, then print their invoices, packing slips or one picking list of everything ordered today.",
+          "points": [
+            "Invoices in Arabic or English",
+            "Export orders to an Excel file",
+            "Copy orders to Google Sheets automatically"
+          ],
+          "mock": {
+            "title": "Print",
+            "path": "Orders › 12 selected",
+            "cards": [
+              {
+                "title": "What to print",
+                "rows": [
+                  {
+                    "label": "Invoices",
+                    "value": "12"
+                  },
+                  {
+                    "label": "Packing slips",
+                    "value": "12"
+                  },
+                  {
+                    "label": "Picking list",
+                    "value": "1"
+                  },
+                  {
+                    "label": "Export to Excel",
+                    "value": ".xlsx"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Know your customers one by one",
+          "body": "Tallaby groups each customer's orders by phone number: how many orders, total spend and how many they accepted on delivery.",
+          "points": [
+            "Your notes and up to 10 tags per customer",
+            "Export your audience for Meta and TikTok ads",
+            "Create a manual order for a customer who calls"
+          ],
+          "mock": {
+            "title": "Customers",
+            "path": "Orders › Customers",
+            "cards": [
+              {
+                "title": "Top customers",
+                "hint": "Orders and tags",
+                "rows": [
+                  {
+                    "label": "Mona Ahmed",
+                    "value": "7",
+                    "pill": "Regular"
+                  },
+                  {
+                    "label": "Karim Samy",
+                    "value": "4",
+                    "pill": "Wholesale",
+                    "tone": "gray"
+                  },
+                  {
+                    "label": "Hala Youssef",
+                    "value": "1",
+                    "pill": "Refused once",
+                    "tone": "amber"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "Everything else that makes the day easier",
+      "grid": [
+        {
+          "title": "Confirm on WhatsApp",
+          "body": "A ready confirmation message in one tap."
+        },
+        {
+          "title": "Instant alerts",
+          "body": "A notification on phone or computer for each order."
+        },
+        {
+          "title": "Pending carts",
+          "body": "Customers with items in the cart who haven't ordered."
+        },
+        {
+          "title": "Abandoned checkouts",
+          "body": "Shoppers who entered an address but didn't finish."
+        },
+        {
+          "title": "Fake-order protection",
+          "body": "Block numbers and limit repeat orders."
+        },
+        {
+          "title": "Customer emails",
+          "body": "Order status emails through the Order Notifications app."
+        }
+      ],
+      "related": [
+        {
+          "title": "Shipping",
+          "body": "Bosta, riders and zones."
+        },
+        {
+          "title": "Fake-order protection",
+          "body": "Fewer refused orders."
+        },
+        {
+          "title": "Abandoned checkouts",
+          "body": "Reach who didn't finish."
+        },
+        {
+          "title": "Email campaigns",
+          "body": "Bring customers back."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Do I get an alert for every new order?",
+          "a": "Yes. Turn on phone alerts in settings and you get a notification for each new order, even with the dashboard closed."
+        },
+        {
+          "q": "Can I add an order that came by phone or WhatsApp?",
+          "a": "Yes. Create a manual order: pick the products, customer and payment; Tallaby checks the stock and the order joins your others."
+        },
+        {
+          "q": "Can I print invoices and packing slips?",
+          "a": "Yes. Select one order or more, then print invoices, packing slips or a picking list."
+        },
+        {
+          "q": "Does the customer get an email about their order?",
+          "a": "Customer order emails need the Order Notifications app; its cost is shown in your dashboard before you turn it on."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Run your orders from one screen",
+      "mock": {
+        "title": "Orders",
+        "path": "Orders › Today",
+        "cards": [
+          {
+            "title": "Today's orders",
+            "rows": [
+              {
+                "label": "New",
+                "value": "14",
+                "pill": "To confirm",
+                "tone": "amber"
+              },
+              {
+                "label": "Confirmed",
+                "value": "22"
+              },
+              {
+                "label": "Out for delivery",
+                "value": "9"
+              },
+              {
+                "label": "Delivered",
+                "value": "31",
+                "pill": "Today"
+              }
+            ]
+          },
+          {
+            "title": "Phone alert",
+            "rows": [
+              {
+                "label": "New order #1043 · EGP 850",
+                "pill": "Now"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "offers-and-coupons": {
+      "crumb": "Offers and coupons",
+      "title": "Offers that raise every order's value",
+      "lead": "Coupons in a pop-up, a lower price for bigger quantities, and a discounted product suggested under each item. All from your dashboard, with no extra apps.",
+      "checks": [
+        "Discounts come only out of your own price",
+        "Turn any offer on or off in one tap",
+        "A report of what each suggested product sold"
+      ],
+      "whatTitle": "Which offers can you run in your store?",
+      "what": [
+        "Tallaby has four kinds of offer: coupons with a code, automatic discounts with no code, quantity offers on a product, and a product suggested with it at a discount.",
+        "Each offer shows clearly in the store and the cart and is applied to the order on its own, so you never work out a discount by hand."
+      ],
+      "rows": [
+        {
+          "title": "A coupon in a pop-up, with a countdown",
+          "body": "Show the coupon when a shopper arrives or is about to leave, with a countdown on the product page before it ends.",
+          "points": [
+            "A coupon for every product or the ones you pick",
+            "Show available coupons inside the cart",
+            "A minimum order amount for the store"
+          ],
+          "mock": {
+            "title": "Coupons",
+            "path": "Marketing › Coupons",
+            "cards": [
+              {
+                "title": "RAMADAN15",
+                "hint": "All products",
+                "rows": [
+                  {
+                    "label": "Discount",
+                    "value": "15%"
+                  },
+                  {
+                    "label": "Pop-up",
+                    "pill": "On exit"
+                  },
+                  {
+                    "label": "Countdown",
+                    "value": "30 min"
+                  },
+                  {
+                    "label": "Shown in cart",
+                    "toggle": "on"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Quantity offers and a product to buy with it",
+          "body": "Two for 10% off and three for 20% off, or a suggested product at a discount under the item and in the cart.",
+          "points": [
+            "Up to 6 quantity tiers per product",
+            "A percent or an amount off each unit",
+            "The pairing discount applies only while both are in the order"
+          ],
+          "mock": {
+            "title": "Quantity offers",
+            "path": "Products › Edit product",
+            "cards": [
+              {
+                "title": "Quantity offers",
+                "rows": [
+                  {
+                    "label": "2 units",
+                    "value": "-10%",
+                    "toggle": "on"
+                  },
+                  {
+                    "label": "3 units",
+                    "value": "-20%",
+                    "toggle": "on"
+                  }
+                ]
+              },
+              {
+                "title": "Frequently bought with",
+                "rows": [
+                  {
+                    "label": "Brown leather belt",
+                    "value": "-15%",
+                    "toggle": "on"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Discounts that run on their own",
+          "body": "A discount on the whole store or some categories, a gift over an amount, or buy one get one, with no code to type.",
+          "points": [
+            "An end date for each offer",
+            "Customers see the discount's name in the cart and their order",
+            "Notices from your real orders only on your store"
+          ],
+          "mock": {
+            "title": "Automatic discounts",
+            "path": "Marketing › Automatic discounts",
+            "cards": [
+              {
+                "title": "Offers",
+                "rows": [
+                  {
+                    "label": "Summer sale",
+                    "value": "-20%",
+                    "toggle": "on"
+                  },
+                  {
+                    "label": "Gift over EGP 1,000",
+                    "pill": "Gift",
+                    "toggle": "on"
+                  },
+                  {
+                    "label": "Buy 2 get 1",
+                    "toggle": "off"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "What builds shoppers' trust too",
+      "grid": [
+        {
+          "title": "Sales pop-up",
+          "body": "\"Someone from Giza ordered…\", from real orders only."
+        },
+        {
+          "title": "Low-stock badge",
+          "body": "A badge on the product when stock is low."
+        },
+        {
+          "title": "Reviews and questions",
+          "body": "Customer reviews and questions on each product."
+        },
+        {
+          "title": "Viewing now",
+          "body": "How many are viewing the product, if you turn it on."
+        }
+      ],
+      "related": [
+        {
+          "title": "Email campaigns",
+          "body": "Send the offer to customers."
+        },
+        {
+          "title": "Product management",
+          "body": "Prices and stock."
+        },
+        {
+          "title": "Profit margin calculator",
+          "body": "Your profit after a discount."
+        },
+        {
+          "title": "Pricing",
+          "body": "The Free and Pro plans."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Who pays for the discount?",
+          "a": "The discount comes out of your own price. Tallaby adds no discount of its own and charges nothing extra for it."
+        },
+        {
+          "q": "What's the difference between a coupon and an automatic discount?",
+          "a": "A customer types or picks a coupon in the cart; an automatic discount applies on its own to every order that meets its rules."
+        },
+        {
+          "q": "Does the sales pop-up show real orders?",
+          "a": "Yes. It shows the product, governorate and how long ago, from your store's real orders only, with no name or phone number."
+        },
+        {
+          "q": "Can I pause an offer without deleting it?",
+          "a": "Yes. Every offer has an on and off switch."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Launch your store's first offer today",
+      "mock": {
+        "title": "Offers",
+        "path": "Marketing › Active offers",
+        "cards": [
+          {
+            "title": "Active offers",
+            "rows": [
+              {
+                "label": "RAMADAN15 coupon",
+                "value": "-15%",
+                "toggle": "on"
+              },
+              {
+                "label": "Summer sale",
+                "value": "-20%",
+                "toggle": "on"
+              },
+              {
+                "label": "Quantity offers",
+                "value": "12",
+                "pill": "products"
+              },
+              {
+                "label": "Frequently bought with",
+                "value": "8",
+                "pill": "offers"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "email-marketing": {
+      "crumb": "Email campaigns",
+      "title": "Bring your customers back",
+      "lead": "Send your offer or new products to customers and subscribers in an email with your store's name and colours, and let win-back emails run on their own.",
+      "checks": [
+        "500 emails a month on Free, 10,000 on Pro",
+        "An unsubscribe link in every email",
+        "Preview the email before you send"
+      ],
+      "whatTitle": "What is email marketing for an online store?",
+      "what": [
+        "An email campaign is one message you send to your store's customers and newsletter subscribers: a sale, new products or news. On Tallaby you write and send it from your dashboard.",
+        "Campaigns work after your store wallet's first top-up, and your store's website must be published, because the email's buttons open your store."
+      ],
+      "rows": [
+        {
+          "title": "A campaign in your store's name in minutes",
+          "body": "Write the subject and text, pick products, see the email as it will arrive, then send it to customers or subscribers.",
+          "points": [
+            "The email uses your store's colours and name",
+            "Newsletter subscribers from your store's forms",
+            "Buy extra emails in your dashboard when you need them"
+          ],
+          "mock": {
+            "title": "Email campaigns",
+            "path": "Marketing › Email campaigns",
+            "cards": [
+              {
+                "title": "New campaign",
+                "rows": [
+                  {
+                    "label": "Subject",
+                    "pill": "The summer sale is on"
+                  },
+                  {
+                    "label": "Recipients",
+                    "value": "1,240"
+                  },
+                  {
+                    "label": "Emails left this month",
+                    "value": "9,120"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "An email that brings back lapsed buyers",
+          "body": "Turn on the win-back email once and it goes out on its own to every customer who hasn't ordered in a while.",
+          "points": [
+            "Runs by itself, no follow-up needed",
+            "In your store's name and colours",
+            "Never goes to anyone who unsubscribed"
+          ],
+          "mock": {
+            "title": "Win-back email",
+            "path": "Marketing › Email campaigns",
+            "cards": [
+              {
+                "title": "Automatic",
+                "rows": [
+                  {
+                    "label": "Customers who stopped ordering",
+                    "toggle": "on"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "An alert when a product is back",
+          "body": "When a product sells out, shoppers leave their email on its page and get an alert when you restock.",
+          "points": [
+            "See how many are waiting for each product",
+            "Works straight from the inventory page",
+            "No setup needed"
+          ],
+          "mock": {
+            "title": "Inventory",
+            "path": "Products › Inventory",
+            "cards": [
+              {
+                "title": "Waiting for restock",
+                "rows": [
+                  {
+                    "label": "Woody perfume 100 ml",
+                    "value": "18"
+                  },
+                  {
+                    "label": "Brown leather bag",
+                    "value": "6"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "Who your email reaches",
+      "grid": [
+        {
+          "title": "Your customers",
+          "body": "Everyone who ordered from your store."
+        },
+        {
+          "title": "Subscribers",
+          "body": "Who signed up on your store's form."
+        },
+        {
+          "title": "Ad audiences",
+          "body": "Export customers for Meta and TikTok ads."
+        },
+        {
+          "title": "Shoppers who didn't finish",
+          "body": "Follow up from abandoned checkouts."
+        }
+      ],
+      "related": [
+        {
+          "title": "Offers and coupons",
+          "body": "An offer to send."
+        },
+        {
+          "title": "Orders and customers",
+          "body": "Your customer list."
+        },
+        {
+          "title": "Abandoned checkouts",
+          "body": "Who didn't finish."
+        },
+        {
+          "title": "Pricing",
+          "body": "Emails in each plan."
+        }
+      ],
+      "faq": [
+        {
+          "q": "How many emails can I send?",
+          "a": "Free includes 500 emails a month and Pro 10,000. You can buy extra emails in your dashboard, and they don't expire."
+        },
+        {
+          "q": "Why do campaigns need a top-up?",
+          "a": "Campaigns send after your store wallet's first top-up, from {topUpMin}. Before that you can write and prepare them."
+        },
+        {
+          "q": "Can customers unsubscribe?",
+          "a": "Yes. Every email has an unsubscribe link, and campaigns never go to anyone who unsubscribed."
+        },
+        {
+          "q": "Do you send WhatsApp or SMS messages to customers?",
+          "a": "No. Campaigns are email only today. You can message a customer on WhatsApp yourself from their order."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Send your first campaign",
+      "mock": {
+        "title": "Email campaigns",
+        "path": "Marketing › Email campaigns",
+        "cards": [
+          {
+            "title": "Campaigns",
+            "rows": [
+              {
+                "label": "The summer sale is on",
+                "value": "1,240",
+                "pill": "Sent"
+              },
+              {
+                "label": "New arrivals",
+                "pill": "Draft",
+                "tone": "gray"
+              },
+              {
+                "label": "Win-back email",
+                "toggle": "on"
+              }
+            ]
+          },
+          {
+            "title": "Emails this month",
+            "rows": [
+              {
+                "label": "Used of 10,000",
+                "value": "880",
+                "bar": 9
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "reports": {
+      "crumb": "Reports",
+      "title": "Know what sells, and where from",
+      "lead": "A report per store that follows the path from visit to delivery, with your sales sources, refusals in each governorate and your best and worst products.",
+      "checks": [
+        "Delivery rate, refusal rate and average order",
+        "Store visits from Google Analytics",
+        "Meta Pixel and Conversions API"
+      ],
+      "whatTitle": "What do Tallaby's store reports show?",
+      "what": [
+        "Sales reports answer a seller's daily questions: how much you sold, where orders came from and how many were really delivered. On Tallaby they're on the Reports page for each store, for any period you choose.",
+        "With cash on delivery an order isn't done until the customer accepts it, so the report shows refusals and cancellations by governorate next to sales."
+      ],
+      "rows": [
+        {
+          "title": "From visit to delivery",
+          "body": "See how many visited, started checkout, ordered and accepted delivery, so you know where you lose customers.",
+          "points": [
+            "Store sales, order count and average order",
+            "Where each order came from: your site, the Tallaby marketplace or manual",
+            "Visits refresh every hour"
+          ],
+          "mock": {
+            "title": "Reports",
+            "path": "Finance › Reports › Last 30 days",
+            "cards": [
+              {
+                "title": "Conversion funnel",
+                "rows": [
+                  {
+                    "label": "Visits",
+                    "value": "8,420",
+                    "bar": 100
+                  },
+                  {
+                    "label": "Checkouts started",
+                    "value": "610",
+                    "bar": 34
+                  },
+                  {
+                    "label": "Orders",
+                    "value": "402",
+                    "bar": 24
+                  },
+                  {
+                    "label": "Delivered",
+                    "value": "341",
+                    "bar": 20
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Where are your orders refused?",
+          "body": "A table of every governorate with its orders, deliveries and refusals or cancellations, so you know where to ask for a deposit or turn off cash on delivery.",
+          "points": [
+            "Your best and worst selling products",
+            "Views per product in the last 30 days",
+            "Export orders to Excel or Google Sheets"
+          ],
+          "mock": {
+            "title": "Governorates",
+            "path": "Finance › Reports",
+            "cards": [
+              {
+                "title": "Refusals by governorate",
+                "rows": [
+                  {
+                    "label": "Cairo",
+                    "value": "6%",
+                    "bar": 6
+                  },
+                  {
+                    "label": "Giza",
+                    "value": "9%",
+                    "bar": 9
+                  },
+                  {
+                    "label": "Assiut",
+                    "value": "21%",
+                    "bar": 21
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Ads that learn from real orders",
+          "body": "Connect Meta Pixel and the Conversions API, and send the Purchase event when the order is placed or only on delivery, so your ads learn from customers who really paid.",
+          "points": [
+            "Google Analytics 4 and Google Tag Manager",
+            "A product feed ready for Meta and Google",
+            "Turn each event on or off"
+          ],
+          "link": "Connect Meta Pixel",
+          "mock": {
+            "title": "Meta Pixel",
+            "path": "Apps › Meta Pixel",
+            "cards": [
+              {
+                "title": "Purchase event",
+                "hint": "Conversions API",
+                "rows": [
+                  {
+                    "label": "When the order is placed",
+                    "toggle": "off"
+                  },
+                  {
+                    "label": "Only on delivery",
+                    "toggle": "on"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "More data at hand",
+      "grid": [
+        {
+          "title": "Product views",
+          "body": "In the products table and on each product."
+        },
+        {
+          "title": "Google Sheets",
+          "body": "Every new order in a sheet, automatically."
+        },
+        {
+          "title": "Customer audiences",
+          "body": "Buyers and refusers for your ads."
+        },
+        {
+          "title": "Abandoned checkouts",
+          "body": "Part of the report's funnel."
+        }
+      ],
+      "related": [
+        {
+          "title": "Meta Pixel",
+          "body": "Measure your ads."
+        },
+        {
+          "title": "Order management",
+          "body": "Every order in one place."
+        },
+        {
+          "title": "Store SEO",
+          "body": "Visits from search."
+        },
+        {
+          "title": "Integrations",
+          "body": "GA4, GTM and more."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Where do the visit numbers come from?",
+          "a": "From Google Analytics, connected to your store through Tallaby, refreshed every hour. Every other number comes straight from your store's orders."
+        },
+        {
+          "q": "Can I connect my own Google Analytics?",
+          "a": "Yes. Add your GA4 ID or your own Google Tag Manager container from Apps."
+        },
+        {
+          "q": "Does my store support TikTok Pixel?",
+          "a": "Not yet. TikTok and Snapchat pixels show as Soon in Apps. Today you can export your customer audience for TikTok ads."
+        },
+        {
+          "q": "Are reports per store?",
+          "a": "Yes. Pick the store and period, and the report shows that store alone."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Know your store's numbers from the first order",
+      "mock": {
+        "title": "Reports",
+        "path": "Finance › Reports › Last 30 days",
+        "cards": [
+          {
+            "title": "Summary",
+            "rows": [
+              {
+                "label": "Store sales",
+                "value": "48,600"
+              },
+              {
+                "label": "Orders",
+                "value": "402"
+              },
+              {
+                "label": "Delivery rate",
+                "value": "85%",
+                "bar": 85
+              },
+              {
+                "label": "Refusal rate",
+                "value": "9%",
+                "bar": 9
+              }
+            ]
+          },
+          {
+            "title": "Sales by source",
+            "rows": [
+              {
+                "label": "This store's website",
+                "value": "78%",
+                "bar": 78
+              },
+              {
+                "label": "Manual orders",
+                "value": "22%",
+                "bar": 22
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "store-seo": {
+      "crumb": "Store SEO",
+      "title": "A store that's ready for search",
+      "lead": "Your store reaches Google with an automatic sitemap from day one. On one page you write each page's title, description and keywords, or let AI write them.",
+      "checks": [
+        "An automatic sitemap and robots file",
+        "Google Search Console verification",
+        "Every search setting on both plans"
+      ],
+      "whatTitle": "What is SEO for an online store?",
+      "what": [
+        "SEO means customers find your store when they search for something you sell. It starts with a clear title and description for every page, and with Google knowing your store's pages.",
+        "On Tallaby that sits on one page per store: store settings, each page's title and description, and indexing with the sitemap."
+      ],
+      "rows": [
+        {
+          "title": "A title and description for every page",
+          "body": "Write your store's description, keywords and share image, then each page's title and description, and see how it shows in search results.",
+          "points": [
+            "A title pattern that adds your store's name",
+            "An image for when your store is shared on WhatsApp or Facebook",
+            "Templates come with search settings ready"
+          ],
+          "mock": {
+            "title": "SEO",
+            "path": "Website › SEO",
+            "cards": [
+              {
+                "title": "Store SEO",
+                "rows": [
+                  {
+                    "label": "Title pattern",
+                    "value": "%s | Glow"
+                  },
+                  {
+                    "label": "Keywords",
+                    "value": "4"
+                  },
+                  {
+                    "label": "Share image",
+                    "pill": "Added"
+                  }
+                ]
+              },
+              {
+                "title": "Pages SEO",
+                "rows": [
+                  {
+                    "label": "Home page",
+                    "pill": "Complete"
+                  },
+                  {
+                    "label": "About us",
+                    "pill": "Needs a description",
+                    "tone": "amber"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Product copy written by AI",
+          "body": "From a product photo or a few words, AI writes the name, description and search details in Arabic and English.",
+          "points": [
+            "Keywords for every product",
+            "Review every text before it goes live",
+            "Also writes your store pages' titles and descriptions"
+          ],
+          "link": "AI on Tallaby",
+          "mock": {
+            "title": "Search details",
+            "path": "Products › Edit product",
+            "cards": [
+              {
+                "title": "SEO",
+                "rows": [
+                  {
+                    "label": "Search title",
+                    "pill": "Written by AI"
+                  },
+                  {
+                    "label": "Description",
+                    "value": "148 / 160"
+                  },
+                  {
+                    "label": "Keywords",
+                    "value": "6"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Google knows every page",
+          "body": "The sitemap and robots file are made and updated on their own with every new product and page, and you see the indexing status on the same page.",
+          "points": [
+            "Allow or stop search engines from indexing",
+            "Google Search Console verification code",
+            "Old addresses redirect if you change your link"
+          ],
+          "mock": {
+            "title": "Indexing",
+            "path": "Website › SEO › Sitemap",
+            "cards": [
+              {
+                "title": "Sitemap and indexing",
+                "rows": [
+                  {
+                    "label": "Allow indexing",
+                    "toggle": "on"
+                  },
+                  {
+                    "label": "sitemap.xml",
+                    "pill": "Up to date"
+                  },
+                  {
+                    "label": "robots.txt",
+                    "pill": "Ready"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "What else helps your store show up",
+      "grid": [
+        {
+          "title": "Pages in two languages",
+          "body": "Every page in Arabic and English for wider search."
+        },
+        {
+          "title": "Store blog",
+          "body": "Articles that answer your customers' questions."
+        },
+        {
+          "title": "Your own domain",
+          "body": "Connect your domain with a free SSL certificate."
+        },
+        {
+          "title": "Fast on phones",
+          "body": "Templates are built to work well on phones."
+        }
+      ],
+      "related": [
+        {
+          "title": "AI product writing",
+          "body": "Product copy in two languages."
+        },
+        {
+          "title": "Custom domain",
+          "body": "Your store under your brand."
+        },
+        {
+          "title": "Store design",
+          "body": "Pages and a blog."
+        },
+        {
+          "title": "Blog",
+          "body": "Tips for sellers."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Will my store show in Google on its own?",
+          "a": "Your published store has an automatic sitemap that helps Google find its pages. When and where it shows is up to Google; no platform can promise that."
+        },
+        {
+          "q": "Can I write a title and description for each product?",
+          "a": "Yes. Every product has a search title, description and keywords, written by you or by AI."
+        },
+        {
+          "q": "Can I connect Google Search Console?",
+          "a": "Yes. Paste the verification code from Search Console on the SEO page, then submit your sitemap there."
+        },
+        {
+          "q": "Is SEO on the Free plan?",
+          "a": "Yes. Every search setting is on both plans."
+        },
+        {
+          "q": "What does this cost?",
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+        }
+      ],
+      "closingTitle": "Get your store ready for search",
+      "mock": {
+        "title": "SEO",
+        "path": "Website › SEO",
+        "cards": [
+          {
+            "title": "Search result preview",
+            "rows": [
+              {
+                "label": "Glow | Skincare products"
+              },
+              {
+                "label": "glow.tallaby.com"
+              }
+            ]
+          },
+          {
+            "title": "Sitemap and indexing",
+            "rows": [
+              {
+                "label": "Allow indexing",
+                "toggle": "on"
+              },
+              {
+                "label": "Pages in the sitemap",
+                "value": "42"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "online-payments": {
+      "crumb": "Payment methods",
+      "title": "Customers pay the way they prefer",
+      "lead": "Cash on delivery is on from day one. Add InstaPay and wallets to your own numbers, and cards through your own Paymob or Kashier account.",
+      "checks": [
+        "Money comes to you; Tallaby takes no cut of sales",
+        "An optional deposit on cash-on-delivery orders",
+        "Sell in your store's currency, in Egypt and abroad"
+      ],
+      "whatTitle": "Which payment methods can your Tallaby store offer?",
+      "what": [
+        "Your Tallaby store offers three ways to pay: cash on delivery, a transfer to your own InstaPay, Vodafone Cash, e& Cash, WE Pay or Orange Cash number, and cards through your own payment gateway.",
+        "Every method pays you, not Tallaby. Your store wallet on Tallaby is only for platform fees; your order amounts are never added to it."
+      ],
+      "rows": [
+        {
+          "title": "Cash on delivery, your way",
+          "body": "Turn cash on delivery on or off for each shipping zone: accept it in Cairo, for example, and stop it for a far governorate.",
+          "points": [
+            "Block numbers and confirm orders on WhatsApp",
+            "A warning on orders that look suspicious",
+            "Bosta collects the cash for your account with them"
+          ],
+          "link": "Cash-on-delivery store",
+          "mock": {
+            "title": "Payment methods",
+            "path": "Shipping › Shipping zones",
+            "cards": [
+              {
+                "title": "Cash on delivery",
+                "hint": "Per shipping zone",
+                "rows": [
+                  {
+                    "label": "Cairo and Giza",
+                    "toggle": "on"
+                  },
+                  {
+                    "label": "Alexandria",
+                    "toggle": "on"
+                  },
+                  {
+                    "label": "South Sinai",
+                    "toggle": "off"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "A deposit that shows the order is real",
+          "body": "Ask customers to pay 10%, 20%, 30% or 50% of the order up front, and the rest on delivery.",
+          "points": [
+            "The deposit is paid to you by your gateway, wallet or InstaPay",
+            "The customer uploads the transfer receipt and you confirm it",
+            "An order whose deposit isn't paid is cancelled after 48 hours"
+          ],
+          "mock": {
+            "title": "Deposit",
+            "path": "Store settings › Payment methods",
+            "cards": [
+              {
+                "title": "Cash-on-delivery deposit",
+                "hint": "Up front + on delivery",
+                "rows": [
+                  {
+                    "label": "Deposit",
+                    "value": "20%",
+                    "toggle": "on"
+                  },
+                  {
+                    "label": "Order of EGP 1,250",
+                    "value": "250 + 1,000"
+                  }
+                ]
+              },
+              {
+                "title": "Orders awaiting a deposit",
+                "rows": [
+                  {
+                    "label": "#1044",
+                    "pill": "Receipt sent",
+                    "tone": "amber"
+                  },
+                  {
+                    "label": "#1040",
+                    "pill": "Paid"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "Cards through your own Paymob or Kashier",
+          "body": "Connect your Paymob or Kashier account with its keys, and customers pay by card into your account with the gateway.",
+          "points": [
+            "We check the keys before saving",
+            "Gateway fees follow your own agreement with it",
+            "Tallaby takes no percentage of card payments"
+          ],
+          "link": "Connect Paymob",
+          "mock": {
+            "title": "Payment gateways",
+            "path": "Apps › Payments",
+            "cards": [
+              {
+                "title": "Payment gateways",
+                "rows": [
+                  {
+                    "label": "Paymob",
+                    "pill": "Connected"
+                  },
+                  {
+                    "label": "Kashier",
+                    "pill": "Not connected",
+                    "tone": "gray"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "gridTitle": "What else to know about payments",
+      "grid": [
+        {
+          "title": "Wallets to your number",
+          "body": "Vodafone Cash, e& Cash, WE Pay, Orange Cash and InstaPay."
+        },
+        {
+          "title": "You confirm payment",
+          "body": "See the transfer receipt on the order before shipping."
+        },
+        {
+          "title": "Sell abroad",
+          "body": "Choose your store's currency and shipping countries."
+        },
+        {
+          "title": "No cut of sales",
+          "body": "Only your plan's fee, from your store wallet."
+        }
+      ],
+      "related": [
+        {
+          "title": "Cash-on-delivery store",
+          "body": "Start with cash on delivery."
+        },
+        {
+          "title": "Paymob",
+          "body": "Cards into your account."
+        },
+        {
+          "title": "Kashier",
+          "body": "A gateway in your name."
+        },
+        {
+          "title": "Fake-order protection",
+          "body": "Fewer refused orders."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does Tallaby take a cut of my sales?",
+          "a": "No. Money comes straight to you. You pay only your plan: {orderFee} per order on Free, or {pro} a month on Pro with no order fee."
+        },
+        {
+          "q": "How does the deposit work?",
+          "a": "You pick 10%, 20%, 30% or 50%. The customer pays it to you by gateway, wallet or InstaPay, and the rest on delivery. Don't ship before it's paid; the order is cancelled if it isn't paid within 48 hours."
+        },
+        {
+          "q": "Where do InstaPay and wallet transfers go?",
+          "a": "To your own number. You enter it in payment settings, the customer sees it at checkout and uploads the receipt for you to check."
+        },
+        {
+          "q": "Can I accept cards without a company?",
+          "a": "Cards need an account with Paymob or Kashier, and each gateway sets its own conditions for opening one."
+        },
+        {
+          "q": "Can I sell in a currency other than EGP?",
+          "a": "Yes. Your store picks its currency and shipping countries and sells in it, with no price conversion."
+        }
+      ],
+      "closingTitle": "Get paid from your first order",
+      "mock": {
+        "title": "Payment methods",
+        "path": "Store settings › Payment methods",
+        "cards": [
+          {
+            "title": "Your store's payment methods",
+            "hint": "Paid to you",
+            "rows": [
+              {
+                "label": "Cash on delivery",
+                "toggle": "on"
+              },
+              {
+                "label": "InstaPay",
+                "value": "01X XXXX 5678",
+                "toggle": "on"
+              },
+              {
+                "label": "Vodafone Cash",
+                "value": "01X XXXX 5678",
+                "toggle": "on"
+              },
+              {
+                "label": "Card via Paymob",
+                "pill": "Connected"
+              }
+            ]
+          },
+          {
+            "title": "Cash-on-delivery deposit",
+            "rows": [
+              {
+                "label": "Deposit",
+                "value": "20%",
+                "toggle": "on"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

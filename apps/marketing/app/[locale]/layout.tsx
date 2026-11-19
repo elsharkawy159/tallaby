@@ -1,0 +1,97 @@
+import type { Metadata } from "next";
+import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { loadBaseMessages } from "@/i18n/messages";
+import { pickMessages, ROOT_CLIENT_NAMESPACES } from "@/i18n/client-messages.lib";
+import { DirectionProvider } from "@workspace/ui/components/direction";
+import { ANIMATIONS_INIT_SCRIPT } from "@workspace/motion/init-script";
+import { notFound } from "next/navigation";
+import { GoogleAnalytics } from "@/components/layout/google-analytics";
+import { TrackingConsentBanner } from "@/components/layout/tracking-consent-banner.client";
+import { routing } from "@/i18n/routing";
+import { BASE_URL } from "@/lib/constants";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const notoKufiArabic = Noto_Kufi_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-noto-kufi-arabic",
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+// This is the app's root layout, which makes `[locale]` a root param — the
+// segment `i18n/request.ts` reads via `next/root-params`. Enumerating the
+// locales here is what makes every nested page eligible for static rendering.
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+// Resolves relative OG/Twitter image paths ("/og-image.jpg") against the real
+// origin instead of Next's localhost fallback. Titles and descriptions come
+// from the (marketing) and (shop) group layouts.
+export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL || "http://localhost:3000"),
+};
+
+type RootLayoutProps = {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+};
+
+/**
+ * Shared shell only. Styles and providers live in the route groups:
+ * (marketing) is the tallaby.com site, (shop) holds seller storefronts and
+ * the customer pages they use (checkout, auth, orders, profile). Each group
+ * imports its own CSS because the marketing palette overrides Tailwind colors.
+ */
+export default async function RootLayout({
+  children,
+  params,
+}: RootLayoutProps) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
+  // Only the cookie banner's strings: each route group sends its own
+  // (BaseMessagesProvider, or tallaby.com's pick), so no page carries all of them twice.
+  const messages = pickMessages(await loadBaseMessages(locale), ROOT_CLIENT_NAMESPACES);
+  const direction = locale === "ar" ? "rtl" : "ltr";
+
+  return (
+    // Smooth in-page scrolling everywhere; Next turns it off during route changes.
+    // suppressHydrationWarning: the head script adds `js-animations` to the class before React hydrates.
+    <html
+      lang={locale}
+      dir={direction}
+      className="scroll-smooth motion-reduce:scroll-auto"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Scroll animations (@workspace/motion): on before the first paint; without JS nothing is ever hidden. */}
+        <script dangerouslySetInnerHTML={{ __html: ANIMATIONS_INIT_SCRIPT }} />
+      </head>
+      {/* No Kufi variable in English: the shop's body font picks Kufi whenever it is set. */}
+      <body
+        className={`${
+          locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable
+        } antialiased`}
+      >
+        {/* Tallaby's GA4 skips seller storefronts (P5-05) and waits for the banner's
+            Accept (F-70a); the banner too is tallaby.com only. Tallaby's Meta Pixel is
+            mounted only in the tallaby.com layouts, never here: this layout also
+            wraps every storefront (docs/meta-pixel.md). */}
+        <GoogleAnalytics />
+        <NextIntlClientProvider messages={messages}>
+          <TrackingConsentBanner />
+          <DirectionProvider dir={direction}>{children}</DirectionProvider>
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,23 @@
+import { FREE_DELIVERY_MIN_SUBTOTAL, FREE_DELIVERY_THRESHOLD_ENABLED } from "@workspace/lib/shipping";
+import { RETURN_WINDOW_DAYS as AFFILIATE_RETURN_WINDOW_DAYS } from "@workspace/db/affiliates";
+
+/** Canonical site origin, without a trailing slash (canonicals, hreflang, sitemap). */
+export const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
+export const SHIPPING_COST = process.env.NEXT_PUBLIC_SHIPPING_COST || 50;
+export const FREE_SHIPPING_THRESHOLD = FREE_DELIVERY_MIN_SUBTOTAL;
+/** When false, cart-threshold free shipping is off site-wide. */
+export const FREE_SHIPPING_ENABLED = FREE_DELIVERY_THRESHOLD_ENABLED;
+export const DEFAULT_CURRENCY = "EGP";
+/** When false, card payment (Kashier/Paymob) is off at checkout even if the gateway is configured. */
+export const ONLINE_CARD_PAYMENT_ENABLED = false;
+/** When false, the affiliate program is off: no joining, no profile tab, no share codes on product links. */
+export const AFFILIATE_PROGRAM_ENABLED = false;
+
+/** Days from delivery within which a return can be requested (and affiliate commission is held). */
+export const RETURN_WINDOW_DAYS = AFFILIATE_RETURN_WINDOW_DAYS;
+/** Typical delivery estimates in business days. Ranges, never guarantees. */
+export const DELIVERY_ESTIMATE_METRO = "1-3"; // Cairo & Giza
+export const DELIVERY_ESTIMATE_OTHER = "2-5"; // other governorates
+
+/** BASE_URL for sitemap/robots output, which must never contain relative URLs. */
+export const SITEMAP_BASE_URL = BASE_URL || "https://www.tallaby.com";

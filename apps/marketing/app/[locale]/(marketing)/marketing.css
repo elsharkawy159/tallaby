@@ -1,0 +1,433 @@
+@import "@workspace/ui/globals.css";
+/* Scroll animations (data-animate presets) and the hero intro keyframes. */
+@import "@workspace/motion/animations.css";
+
+/*
+ * Marketing site tokens. The palette mirrors the Tallaby design system
+ * (Claude Design project "colors_and_type.css", Home v4 language); shadcn tokens
+ * come from @workspace/ui/globals.css. This file loads only under (marketing).
+ */
+/* English type is tighter and tracked in; `en:` scopes those tweaks. */
+@custom-variant en (&:where(html[lang="en"] *));
+
+:root {
+  --ink-900: #0d3743;
+  --ink-700: #33464b;
+  --ink-600: #43575c;
+  --ink-500: #5a6d72;
+  --ink-400: #7b8f94;
+  --ink-on-dark: #c6d8dc;
+
+  --line: #e3ebed;
+  --line-strong: #dfe8ea;
+  --line-soft: #edf1f2;
+  --line-kick: #e1eaec;
+  --surface: #ffffff;
+  --surface-glass: rgb(255 255 255 / 0.85);
+  --surface-nav: rgb(255 255 255 / 0.8);
+  --surface-dark: #0d3743;
+  --footer-top: #0f3a46;
+  --footer-bar: #082a33;
+
+  --btn-h: 52px;
+  --btn-h-sm: 42px;
+  --ring-focus: 0 0 0 4px rgb(20 81 99 / 0.1);
+  --bg-fog:
+    radial-gradient(1100px 760px at 50% -120px, rgb(20 81 99 / 0.2), rgb(20 81 99 / 0.06) 55%, transparent 78%),
+    radial-gradient(700px 600px at 92% 9%, rgb(253 173 40 / 0.13), transparent 70%),
+    radial-gradient(900px 900px at 0% 30%, rgb(20 81 99 / 0.1), transparent 70%),
+    radial-gradient(800px 800px at 100% 55%, rgb(20 81 99 / 0.09), transparent 70%),
+    radial-gradient(700px 700px at 6% 78%, rgb(253 173 40 / 0.08), transparent 70%),
+    radial-gradient(1000px 700px at 50% 98%, rgb(20 81 99 / 0.1), transparent 72%),
+    linear-gradient(180deg, rgb(20 81 99 / 0.07) 0, transparent 900px);
+  --bg-cta-glow: radial-gradient(50% 50% at 50% 0%, rgb(253 173 40 / 0.18), transparent 70%);
+}
+
+@theme inline {
+  --color-ink-900: var(--ink-900);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
+  --color-ink-400: var(--ink-400);
+  --color-ink-on-dark: var(--ink-on-dark);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-soft: var(--line-soft);
+  --color-line-kick: var(--line-kick);
+  --color-surface: var(--surface);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-nav: var(--surface-nav);
+  --color-surface-dark: var(--surface-dark);
+  --color-footer-top: var(--footer-top);
+  --color-footer-bar: var(--footer-bar);
+
+  --radius-card-sm: 18px;
+  --radius-card: 24px;
+  --radius-card-lg: 28px;
+  --radius-band: 36px;
+
+  --color-teal-50: #eef3f4;
+  --color-teal-100: #cfdde1;
+  --color-teal-300: #89a8b1;
+  --color-teal-500: #2c6e80;
+  --color-teal-700: #145163;
+  --color-teal-800: #0f4555;
+  --color-teal-900: #0d3743;
+  --color-teal-950: #061f27;
+
+  --color-amber-50: #fff7e6;
+  --color-amber-100: #ffeec8;
+  --color-amber-300: #ffd166;
+  --color-amber-500: #ffb43d;
+  --color-amber-600: #fdad28;
+  --color-amber-700: #e89318;
+  --color-amber-ink: #5b3a05;
+
+  --color-paper: #fafaf8;
+  --color-body: #1d2a2e;
+  --color-slate-ink: #4d5f64;
+  --color-mist: #c3d4d9;
+  --color-haze: #a9c0c6;
+
+  --shadow-card: 0 1px 3px rgba(20, 81, 99, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-soft: 0 14px 36px rgba(13, 55, 67, 0.06);
+  --shadow-raise: 0 18px 40px rgba(13, 55, 67, 0.08);
+  --shadow-stage: 0 40px 90px rgba(13, 55, 67, 0.16);
+  --shadow-cta: 0 6px 18px rgba(253, 173, 40, 0.35);
+  --shadow-cta-hover: 0 10px 24px rgba(253, 173, 40, 0.45);
+  --shadow-lift: 0 10px 30px rgba(20, 81, 99, 0.12), 0 4px 10px rgba(20, 81, 99, 0.06);
+
+  --font-latin: var(--font-montserrat), system-ui, sans-serif;
+
+  --animate-rise: rise 0.9s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+  --animate-pop: pop 0.6s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+  --animate-blink: blink 1s steps(1) infinite;
+  --animate-grow: grow 0.7s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+  --animate-pulse-ring: pulse-ring 2s infinite;
+  --animate-bubble: bubble-pop 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) both, bubble-glow 1.2s ease-out 0.35s;
+}
+
+@keyframes bubble-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  80% {
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes bubble-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(253 173 40 / 0);
+  }
+  30% {
+    box-shadow: 0 0 0 6px rgb(253 173 40 / 0.45);
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(26px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes pop {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+  }
+  html[lang="ar"] body {
+    font-family: var(--font-noto-kufi-arabic), var(--font-montserrat), system-ui, sans-serif;
+    line-height: 1.75;
+  }
+  html[lang="en"] body {
+    font-family: var(--font-montserrat), system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  body {
+    background: #fff;
+    color: var(--ink-700);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid rgb(253 173 40 / 0.7);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+}
+
+@layer utilities {
+  /* Arabic headings run taller; English ones are tighter and tracked in. */
+  .display-tight {
+    text-wrap: balance;
+  }
+  html[lang="en"] .display-tight {
+    letter-spacing: -0.03em;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.6, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+  .reveal[data-shown="true"],
+  html:not(.js-animations) .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  /* Every tallaby.com page sits on this soft teal and amber fog. */
+  .site-fog {
+    position: relative;
+    isolation: isolate;
+    background: #fff;
+  }
+  .site-fog::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--bg-fog);
+  }
+  .cta-glow::before {
+    content: "";
+    position: absolute;
+    inset: -40% -10% auto;
+    height: 120%;
+    pointer-events: none;
+    background: var(--bg-cta-glow);
+  }
+  .hero-glow {
+    background:
+      radial-gradient(640px 420px at 85% 10%, rgb(253 173 40 / 0.13), transparent 70%),
+      radial-gradient(500px 400px at 10% 100%, rgb(44 110 128 / 0.35), transparent 70%);
+  }
+  .hero-glow-center {
+    background:
+      radial-gradient(700px 420px at 50% -10%, rgb(253 173 40 / 0.16), transparent 70%),
+      radial-gradient(600px 400px at 0% 100%, rgb(44 110 128 / 0.35), transparent 70%),
+      radial-gradient(600px 400px at 100% 90%, rgb(44 110 128 / 0.3), transparent 70%);
+  }
+  .placeholder-stripes {
+    background: repeating-linear-gradient(135deg, var(--color-teal-50) 0 10px, #fff 10px 20px);
+  }
+  /* Home "stores" row: the list is rendered twice and slides by half its width, so it loops
+     seamlessly. It pauses while the pointer (or keyboard focus) is on it. */
+  .store-marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .store-marquee-track {
+    animation: store-marquee var(--marquee-duration, 60s) linear infinite;
+  }
+  /* Arabic pages: the row moves right, the way the page reads; English moves left (owner, F-73). */
+  .store-marquee[data-direction="rtl"] .store-marquee-track {
+    animation-direction: reverse;
+  }
+  .store-marquee:hover .store-marquee-track,
+  .store-marquee:focus-within .store-marquee-track {
+    animation-play-state: paused;
+  }
+  /* Home store logos: the same loop, sized by its content. */
+  .logo-marquee-track {
+    width: max-content;
+  }
+}
+@keyframes store-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/*
+ * Home hero phone (owner, 2026-11-17): the template's phone screenshot scrolls
+ * itself slowly to the bottom, rests, comes back up, rests, and loops. The
+ * screen is a size container, so 100cqh is its height. One way takes
+ * --hero-phone-run (12–30 s, by the shot's length); it only runs while the
+ * phone is on screen (data-playing), paused in place otherwise. Reduced motion
+ * (the rule below) leaves the shot at its top.
+ */
+.hero-phone {
+  container-type: size;
+}
+.hero-phone__shot {
+  animation: hero-phone-tour calc(var(--hero-phone-run, 20s) * 2 + 3s) linear 0.8s infinite paused;
+}
+.hero-phone[data-playing] .hero-phone__shot {
+  animation-play-state: running;
+}
+@keyframes hero-phone-tour {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  47%,
+  50% {
+    transform: translateY(calc(-100% + 100cqh));
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  97%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Home hero decorations: a slow drift inside a few pixels, on the inner element
+ * (the outer one keeps the pop-in). Each sets its own --float-* so no two move
+ * in step.
+ */
+.hero-float {
+  animation: hero-float var(--float-run, 10s) ease-in-out var(--float-delay, 0s) infinite;
+}
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(calc(var(--float-turn, 2.5deg) * -0.5));
+  }
+  50% {
+    transform: translate3d(var(--float-x, 3px), var(--float-y, -7px), 0) rotate(calc(var(--float-turn, 2.5deg) * 0.5));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  /* No auto-scroll: the row becomes a plain swipeable strip with only the first copy. */
+  .store-marquee {
+    overflow-x: auto;
+  }
+  .store-marquee [data-marquee-copy] {
+    display: none;
+  }
+  /* Store logos: one static row that wraps, centred, with no fade at the edges. */
+  .logo-marquee {
+    overflow: visible;
+    mask-image: none;
+  }
+  .logo-marquee-track {
+    width: auto;
+    justify-content: center;
+    padding-inline: 16px;
+  }
+  .logo-marquee ul {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-inline-end: 0;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@media print {
+  [data-print="hide"] {
+    display: none !important;
+  }
+}
+
+/* Room for the home page's sticky mobile CTA (shown below md). */
+@media (max-width: 767px) {
+  body:has([data-sticky-cta]) footer {
+    padding-bottom: 86px;
+  }
+  /* WhatsApp rides in with the bar: hidden over the hero, then rises and fades in as the bar slides up. */
+  body:has([data-sticky-cta]) [data-whatsapp-float] {
+    bottom: 92px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate3d(0, 24px, 0) scale(0.85);
+    transition:
+      opacity 0.3s ease,
+      transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      scale 0.15s ease,
+      visibility 0s linear 0.45s;
+  }
+  body:has([data-sticky-cta][data-shown="true"]) [data-whatsapp-float] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition:
+      opacity 0.4s ease 0.08s,
+      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.08s,
+      scale 0.15s ease,
+      visibility 0s;
+  }
+}
+
+/*
+ * F-75: an input forced to dir="ltr" (phone, email, price, URL, code) keeps
+ * typing left to right, but its placeholder follows its own text: an Arabic
+ * placeholder sits on the right, a Latin one ("https://", "01XXXXXXXXX")
+ * stays on the left. Only the empty field changes; the typed value, the caret
+ * and explicit text-left/center/end classes keep working as before.
+ * ::placeholder covers Chrome/Edge, :placeholder-shown covers Firefox.
+ */
+@layer base {
+  input[dir="ltr"]::placeholder,
+  textarea[dir="ltr"]::placeholder,
+  input[dir="ltr"]:placeholder-shown,
+  textarea[dir="ltr"]:placeholder-shown {
+    unicode-bidi: plaintext;
+  }
+}

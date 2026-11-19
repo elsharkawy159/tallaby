@@ -1,0 +1,439 @@
+/* Mock storefronts drawn from a StoreLook. Colours come in as CSS variables:
+   --b background, --f text, --a accent, --ac text on accent, --r radius, --m tint. */
+
+/* ---------- mini (cards, builder) ---------- */
+.mini {
+  background: var(--b);
+  color: var(--f);
+  font-family: var(--font-montserrat), sans-serif;
+  padding: 10px;
+  direction: ltr;
+  text-align: left;
+  transition:
+    background 220ms,
+    color 220ms;
+}
+.miniHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding-bottom: 10px;
+}
+.miniHead nav {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 9px;
+  opacity: 0.7;
+}
+.miniLogo {
+  width: 16px;
+  height: 16px;
+  border-radius: calc(var(--r) / 2);
+  background: var(--a);
+  display: block;
+}
+.miniBanner {
+  border-radius: var(--r);
+  overflow: hidden;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  background: var(--m);
+  min-height: 110px;
+  transition: border-radius 220ms;
+}
+.miniText {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.miniText b {
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 800;
+}
+.miniText small {
+  font-size: 8px;
+  opacity: 0.7;
+  line-height: 1.3;
+}
+.miniText em {
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 700;
+  background: var(--a);
+  color: var(--ac, #fff);
+  padding: 4px 10px;
+  border-radius: var(--r);
+  transition: all 220ms;
+}
+.miniImage {
+  align-self: stretch;
+  background-size: cover;
+  background-position: center;
+  min-height: 110px;
+}
+.contain {
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.full {
+  grid-template-columns: 1fr;
+}
+.full .miniImage {
+  position: absolute;
+  inset: 0;
+}
+.full .miniImage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+.full .miniText {
+  position: relative;
+  color: #fff;
+  min-height: 110px;
+  justify-content: center;
+}
+.center {
+  grid-template-columns: 1fr;
+}
+.center .miniImage {
+  display: none;
+}
+.center .miniText {
+  align-items: center;
+  text-align: center;
+  min-height: 110px;
+  justify-content: center;
+}
+.miniProducts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.miniProducts div {
+  font-size: 8px;
+  font-weight: 600;
+}
+.miniProducts span {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: var(--r);
+  background: #fff center / contain no-repeat;
+  margin-bottom: 4px;
+  box-shadow: inset 0 0 0 1px var(--m);
+  transition: border-radius 220ms;
+}
+.miniProducts span.cover {
+  background-size: cover;
+}
+.miniProducts u {
+  text-decoration: none;
+  opacity: 0.6;
+  display: block;
+}
+/* Phone frame in the builder. */
+.phone .miniBanner {
+  grid-template-columns: 1fr;
+}
+.phone .miniImage {
+  min-height: 90px;
+}
+.phone .miniProducts {
+  grid-template-columns: 1fr 1fr;
+}
+.phone .miniHead nav {
+  display: none;
+}
+
+/* ---------- full (template page) ---------- */
+.store {
+  background: var(--b);
+  color: var(--f);
+  font-family: var(--font-montserrat), sans-serif;
+  direction: ltr;
+  text-align: left;
+  transition:
+    background 320ms,
+    color 320ms;
+}
+.store * {
+  transition:
+    border-radius 220ms,
+    background-color 320ms;
+}
+.announce {
+  background: var(--a);
+  color: var(--ac, #fff);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px;
+  letter-spacing: 0.04em;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--m);
+}
+.header b {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header b i {
+  width: 22px;
+  height: 22px;
+  border-radius: calc(var(--r) / 1.5);
+  background: var(--a);
+  display: block;
+}
+.header nav {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+.headerIcons {
+  margin-left: auto;
+  display: flex;
+  gap: 14px;
+  opacity: 0.8;
+}
+.headerIcons svg {
+  width: 17px;
+  height: 17px;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 320px;
+  margin: 20px 28px;
+  border-radius: calc(var(--r) * 1.5);
+  overflow: hidden;
+  background: var(--m);
+  position: relative;
+}
+.heroText {
+  padding: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+.heroText h3 {
+  font-size: 36px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  max-width: 340px;
+}
+.heroText p {
+  font-size: 14px;
+  opacity: 0.75;
+  max-width: 300px;
+}
+.button {
+  background: var(--a);
+  color: var(--ac, #fff);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 11px 22px;
+  border-radius: var(--r);
+}
+.heroImage {
+  background-size: cover;
+  background-position: center;
+}
+.hero.full {
+  grid-template-columns: 1fr;
+}
+.hero.full .heroImage {
+  position: absolute;
+  inset: 0;
+}
+.hero.full .heroImage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.6), transparent 75%);
+}
+.hero.full .heroText {
+  color: #fff;
+}
+.hero.center {
+  grid-template-columns: 1fr;
+}
+.hero.center .heroImage {
+  display: none;
+}
+.hero.center .heroText {
+  align-items: center;
+  text-align: center;
+}
+.hero.center h3,
+.hero.center p {
+  max-width: 480px;
+}
+.cats {
+  display: flex;
+  gap: 10px;
+  padding: 4px 28px 0;
+  flex-wrap: wrap;
+}
+.cats span {
+  border: 1px solid var(--m);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--f) 10%, transparent);
+}
+.cats span:first-child {
+  background: var(--f);
+  color: var(--b);
+}
+.section {
+  padding: 28px;
+}
+.section h4 {
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+.section h4 small {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.6;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.card .cardImage {
+  aspect-ratio: 1;
+  border-radius: var(--r);
+  background: #fff center / contain no-repeat;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--f) 8%, transparent);
+  position: relative;
+  margin-bottom: 10px;
+}
+.card .cardImage.cover {
+  background-size: cover;
+}
+.card .cardImage em {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-style: normal;
+  background: var(--a);
+  color: var(--ac, #fff);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: calc(var(--r) / 2);
+}
+.card b {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+.card span {
+  font-size: 13px;
+  opacity: 0.65;
+}
+.strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 0 28px;
+  padding: 20px 0;
+  border-block: 1px solid color-mix(in oklch, var(--f) 10%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+}
+.strip div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.strip svg {
+  width: 18px;
+  height: 18px;
+  color: var(--a);
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 28px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+/* Mobile frame on the template page. */
+.mobile .header nav,
+.mobile .headerIcons svg:not(:last-child) {
+  display: none;
+}
+.mobile .header {
+  padding: 14px 16px;
+}
+.mobile .hero {
+  grid-template-columns: 1fr;
+  margin: 14px 16px;
+  min-height: 0;
+}
+.mobile .heroImage {
+  min-height: 200px;
+}
+.mobile .hero.full .heroText {
+  min-height: 280px;
+}
+.mobile .heroText {
+  padding: 26px;
+}
+.mobile .heroText h3 {
+  font-size: 26px;
+}
+.mobile .grid {
+  grid-template-columns: 1fr 1fr;
+}
+.mobile .section {
+  padding: 20px 16px;
+}
+.mobile .cats {
+  padding: 0 16px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.mobile .strip {
+  grid-template-columns: 1fr;
+  margin: 0 16px;
+}
+.mobile .strip div {
+  justify-content: flex-start;
+}

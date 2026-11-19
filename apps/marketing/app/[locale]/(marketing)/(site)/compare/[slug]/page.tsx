@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { ComparePageView } from "@/components/marketing/compare/compare-page";
+import { compareRobots, compareSlug, findCompetitorBySlug, publishableCompetitors } from "@/lib/marketing/compare.lib";
+import { pageMetadata } from "@/lib/marketing/metadata.lib";
+
+type Props = { params: Promise<{ locale: string; slug: string }> };
+
+export const dynamicParams = false;
+// Rebuilt daily, so a comparison whose facts pass MAX_FACT_AGE_DAYS turns noindex without a deploy (compare.lib.ts).
+export const revalidate = 86400;
+
+export function generateStaticParams() {
+  return publishableCompetitors().map((competitor) => ({ slug: compareSlug(competitor) }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const competitor = findCompetitorBySlug(slug);
+  if (!competitor) return {};
+  const t = await getTranslations({ locale, namespace: `competitors.${competitor.id}` });
+  // Each comparison has its own title and description (`meta.compare-<id>`).
+  const meta = await pageMetadata({ locale, page: `compare-${competitor.id}`, path: `/compare/${slug}`, values: { name: t("name") } });
+  const robots = compareRobots(competitor);
+  return robots ? { ...meta, robots } : meta;
+}
+
+export default async function CompareEntryPage({ params }: Props) {
+  const { slug } = await params;
+  const competitor = findCompetitorBySlug(slug);
+  if (!competitor) notFound();
+  return <ComparePageView competitor={competitor} />;
+}

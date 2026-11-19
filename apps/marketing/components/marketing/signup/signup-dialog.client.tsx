@@ -1,0 +1,706 @@
+"use client";
+
+import * as React from "react";
+import { ArrowLeft, Check, CircleAlert, CircleCheck, Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
+import { Label } from "@workspace/ui/components/label";
+import { cn } from "@workspace/ui/lib/utils";
+import { Link } from "@/i18n/navigation";
+import { DASHBOARD_URL, LOGIN_URL, ROOT_DOMAIN, hasArabic, slugify } from "@/lib/marketing/site.lib";
+import { CtaButton } from "@/components/marketing/site/cta-button";
+import { trackSignupComplete } from "@/lib/meta/meta.client";
+import { useSlugCheck, type SlugState } from "./slug-check.client";
+import { resendSignupConfirmation, signUpWithEmail, startGoogleSignup } from "./signup.server";
+import { EGYPT_MOBILE, type SignupErrorKey, type SignupIntakeRef, type SignupResult } from "./signup.dto";
+import { PRO_PLAN_PATH, type SignupPlanHint } from "./signup-hint.lib";
+import { isEmailError, isSignupEmail, type SignupStage } from "./signup-step.lib";
+
+/**
+ * `intake`: the hero composer's saved brief (F-82d), claimed by the new account.
+ * `plan: "pro"`: the Pro button. Only where the new seller lands (the dashboard's
+ * Plans page); the upgrade itself is their own click there.
+ */
+type SignupOptions = { plan?: SignupPlanHint };
+type SignupContextValue = { openSignup: (slug?: string, intake?: SignupIntakeRef | null, options?: SignupOptions) => void };
+
+const SignupContext = React.createContext<SignupContextValue | null>(null);
+
+export function useSignup(): SignupContextValue {
+  const ctx = React.useContext(SignupContext);
+  if (!ctx) throw new Error("useSignup must be used inside <SignupProvider>");
+  return ctx;
+}
+
+const KNOWN_ERRORS: SignupErrorKey[] = ["subdomainTaken", "generic"];
+
+/**
+ * Site-wide "create your store" dialog: account (email + password or Google)
+ * and the seller's first store in one step, through the same
+ * `ensureSellerAccount` flow as the dashboard signup (PLAN.md §6).
+ */
+export function SignupProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("signup");
+  const [open, setOpen] = React.useState(false);
+  const [initialSlug, setInitialSlug] = React.useState("");
+  const [initialError, setInitialError] = React.useState<SignupErrorKey | null>(null);
+  const [intake, setIntake] = React.useState<SignupIntakeRef | null>(null);
+  const [plan, setPlan] = React.useState<SignupPlanHint | undefined>(undefined);
+  const [session, setSession] = React.useState(0);
+
+  const openSignup = React.useCallback((slug?: string, nextIntake?: SignupIntakeRef | null, options?: SignupOptions) => {
+    setInitialSlug(slug ? slugify(slug) : "");
+    setIntake(nextIntake ?? null);
+    setPlan(options?.plan);
+    setInitialError(null);
+    setSession((n) => n + 1);
+    setOpen(true);
+  }, []);
+
+  // `/#signup` opens the dialog (design); `?signup_error=` comes back from the auth callback.
+  React.useEffect(() => {
+    const fromUrl = () => {
+      const url = new URL(window.location.href);
+      const error = url.searchParams.get("signup_error") as SignupErrorKey | null;
+      if (error || url.hash === "#signup") {
+        openSignup();
+        if (error && KNOWN_ERRORS.includes(error)) setInitialError(error);
+        if (error) {
+          url.searchParams.delete("signup_error");
+          window.history.replaceState(null, "", url);
+        }
+      }
+    };
+    fromUrl();
+    window.addEventListener("hashchange", fromUrl);
+    return () => window.removeEventListener("hashchange", fromUrl);
+  }, [openSignup]);
+
+  const value = React.useMemo(() => ({ openSignup }), [openSignup]);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  return (
+    <SignupContext.Provider value={value}>
+      {children}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          ref={contentRef}
+          closeLabel={t("close")}
+          // No field gets focus on open (it pops the keyboard on phones): the dialog itself
+          // takes it, so screen readers still land inside and Tab/Escape keep working.
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            contentRef.current?.focus({ preventScroll: true });
+          }}
+          className="max-h-[calc(100vh-32px)] overflow-auto rounded-[20px] p-[26px] outline-none sm:max-w-[440px] sm:p-8"
+        >
+          {open ? <SignupForm key={session} initialSlug={initialSlug} initialError={initialError} intake={intake} plan={plan} /> : null}
+        </DialogContent>
+      </Dialog>
+    </SignupContext.Provider>
+  );
+}
+
+type Step = { kind: "form" } | { kind: "confirm"; email: string } | { kind: "done"; subdomain: string; builderUrl?: string };
+
+const inputBox =
+  "flex h-12 items-center overflow-hidden rounded-[10px] border bg-white transition-[border-color,box-shadow] focus-within:border-teal-700 focus-within:ring-[3px] focus-within:ring-teal-700/12";
+// 16px on phones so iOS Safari does not zoom in when a field gets focus.
+const inputEl = "h-full min-w-0 flex-1 bg-transparent px-3.5 text-base outline-none sm:text-[15px]";
+// A short fade as the step changes; none with reduced motion.
+const stepIn = "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-200";
+
+function SignupForm({
+  initialSlug,
+  initialError,
+  intake,
+  plan,
+}: {
+  initialSlug: string;
+  initialError: SignupErrorKey | null;
+  intake: SignupIntakeRef | null;
+  plan?: SignupPlanHint;
+}) {
+  const t = useTranslations("signup");
+  const [step, setStep] = React.useState<Step>({ kind: "form" });
+  const [stage, setStage] = React.useState<SignupStage>("email");
+  const [emailTouched, setEmailTouched] = React.useState(false);
+  const [slug, setSlug] = React.useState(initialSlug);
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [touched, setTouched] = React.useState(false);
+  const [formError, setFormError] = React.useState<SignupErrorKey | null>(initialError);
+  const [pending, startTransition] = React.useTransition();
+  const [googlePending, setGooglePending] = React.useState(false);
+  const [slugState, setSlugState] = useSlugCheck(slug, initialSlug);
+  const slugRef = React.useRef<HTMLInputElement>(null);
+  const emailRef = React.useRef<HTMLInputElement>(null);
+  const passwordRef = React.useRef<HTMLInputElement>(null);
+  const phoneRef = React.useRef<HTMLInputElement>(null);
+  // Field to focus once the next step has rendered (only after the seller's own click).
+  const focusAfter = React.useRef<React.RefObject<HTMLInputElement | null> | null>(null);
+
+  React.useEffect(() => {
+    focusAfter.current?.current?.focus();
+    focusAfter.current = null;
+  }, [stage, step.kind]);
+
+  const goTo = (next: SignupStage, focus: React.RefObject<HTMLInputElement | null>) => {
+    if (next === stage) {
+      focus.current?.focus();
+      return;
+    }
+    focusAfter.current = focus;
+    setStage(next);
+  };
+
+  const slugStatus = slugState.kind === "result" ? slugState.result.status : null;
+  const slugOk = slugStatus === "available" || slugStatus === "unknown";
+  const slugBad = slugState.kind === "local" || (slugState.kind === "result" && !slugOk);
+  const phoneOk = EGYPT_MOBILE.test(phone.replace(/[\s-]/g, ""));
+  const emailOk = isSignupEmail(email);
+  const busy = pending || googlePending;
+
+  const onSlugChange = (raw: string) => {
+    const next = slugify(raw);
+    setSlug(next);
+    if (next !== raw && hasArabic(raw)) setSlugState({ kind: "local", message: "arabic" });
+  };
+
+  /** Validates the whole form and focuses the first field that is wrong, in form order. */
+  const formValid = () => {
+    if (!slug) setSlugState({ kind: "local", message: "required" });
+    const firstBad = [
+      [Boolean(slug) && slugOk, slugRef],
+      [emailOk, emailRef],
+      [password.length >= 8, passwordRef],
+      [phoneOk, phoneRef],
+    ].find(([ok]) => !ok) as [boolean, React.RefObject<HTMLInputElement | null>] | undefined;
+    firstBad?.[1].current?.focus();
+    return !firstBad;
+  };
+
+  const handleResult = (result: SignupResult) => {
+    if (result.status === "done") {
+      if (result.signupEvent) {
+        trackSignupComplete(result.signupEvent.id, result.signupEvent.method);
+      }
+      setStep({ kind: "done", subdomain: result.subdomain, builderUrl: result.builderUrl });
+    }
+    else if (result.status === "confirm_email") setStep({ kind: "confirm", email: email.trim() });
+    else if (result.status === "error") {
+      setFormError(result.error);
+      // An address problem goes back to step 1, where the error sits under the address.
+      if (isEmailError(result.error)) goTo("email", emailRef);
+    }
+  };
+
+  /** Step 1 → step 2: a valid address only, no network call. */
+  const onContinue = (event: React.FormEvent) => {
+    event.preventDefault();
+    setEmailTouched(true);
+    if (!emailOk) {
+      emailRef.current?.focus();
+      return;
+    }
+    if (isEmailError(formError)) setFormError(null);
+    goTo("details", slug && slugOk ? passwordRef : slugRef);
+  };
+
+  const onSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setTouched(true);
+    setFormError(null);
+    if (!formValid()) return;
+    startTransition(async () => {
+      handleResult(await signUpWithEmail({ subdomain: slug, phone, email: email.trim(), password }, intake, plan));
+    });
+  };
+
+  // With a valid address and phone typed, the callback creates the store with
+  // them; else the dashboard asks, with the typed address pre-filled. A hero
+  // intake (F-82d) needs both first.
+  const onGoogle = async () => {
+    setFormError(null);
+    if (intake) {
+      setTouched(true);
+      if (!slug) setSlugState({ kind: "local", message: "required" });
+      const firstBad = [
+        [Boolean(slug) && slugOk, slugRef],
+        [phoneOk, phoneRef],
+      ].find(([ok]) => !ok) as [boolean, React.RefObject<HTMLInputElement | null>] | undefined;
+      if (firstBad) {
+        setFormError("googleNeedsStore");
+        // From step 1 the store fields are not shown yet: open the Google step with them.
+        if (stage === "email") goTo("google", firstBad[1]);
+        else firstBad[1].current?.focus();
+        return;
+      }
+    }
+    setGooglePending(true);
+    // The server checks both again; an address alone only pre-fills the dashboard's store step.
+    const result = await startGoogleSignup(slug ? { subdomain: slug, phone: phoneOk ? phone : "" } : null, intake, plan);
+    if (result.status !== "ok") {
+      setGooglePending(false);
+      handleResult(result);
+      return;
+    }
+    // Loaded on this click only: supabase-js stays out of every marketing page's first load.
+    const supabase = await import("@/supabase/client").catch(() => null);
+    if (!supabase) {
+      setGooglePending(false);
+      setFormError("generic");
+      return;
+    }
+    const { error } = await supabase.createClient().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/api/auth/signup-callback` },
+    });
+    if (error) {
+      setGooglePending(false);
+      setFormError("generic");
+    }
+  };
+
+  if (step.kind === "done") {
+    return (
+      <div className="text-center">
+        <span className="mx-auto mt-1 mb-[18px] grid size-16 place-items-center rounded-full bg-success-soft text-success">
+          <Check className="size-[30px]" aria-hidden />
+        </span>
+        <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("doneTitle")}</DialogTitle>
+        <DialogDescription asChild>
+          <span
+            dir="ltr"
+            className="mt-2.5 mb-[22px] inline-block max-w-full truncate rounded-[10px] bg-teal-50 px-3.5 py-2 font-latin text-[15px] font-bold text-teal-700"
+          >
+            {step.subdomain}.{ROOT_DOMAIN}
+          </span>
+        </DialogDescription>
+        <div className="grid gap-2">
+          {step.builderUrl ? (
+            <CtaButton asChild className="w-full rounded-xl">
+              <a href={step.builderUrl}>{t("continueBuilder")}</a>
+            </CtaButton>
+          ) : plan === "pro" ? (
+            // The Pro button: the dashboard's Plans page; the upgrade is the seller's own click there.
+            <CtaButton asChild className="w-full rounded-xl">
+              <a href={`${DASHBOARD_URL}${PRO_PLAN_PATH.slice(1)}`}>{t("continuePro")}</a>
+            </CtaButton>
+          ) : (
+            <CtaButton asChild className="w-full rounded-xl">
+              <a href={`${DASHBOARD_URL}products/add`}>{t("addProduct")}</a>
+            </CtaButton>
+          )}
+          <CtaButton asChild tone="outline" className="w-full rounded-xl">
+            <a href={`${DASHBOARD_URL}?welcome=1`}>{t("goDashboard")}</a>
+          </CtaButton>
+        </div>
+      </div>
+    );
+  }
+
+  if (step.kind === "confirm") {
+    return (
+      <ConfirmEmailStep
+        email={step.email}
+        onChangeEmail={() => {
+          goTo("email", emailRef);
+          setStep({ kind: "form" });
+        }}
+      />
+    );
+  }
+
+  const header = (
+    <DialogHeader className="mb-[22px] text-start">
+      <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("title")}</DialogTitle>
+      <DialogDescription className="text-sm text-neutral-600">{t("subtitle")}</DialogDescription>
+    </DialogHeader>
+  );
+
+  const googleButton = (
+    <button
+      type="button"
+      onClick={onGoogle}
+      disabled={busy}
+      className="flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 text-[15px] font-semibold hover:bg-neutral-50 disabled:opacity-60 bg-white"
+    >
+      {googlePending ? (
+        <Loader2 className="size-5 animate-spin" aria-hidden />
+      ) : (
+        <span aria-hidden className="relative size-5 rounded-full bg-[conic-gradient(#ea4335_0_25%,#fbbc05_0_50%,#34a853_0_75%,#4285f4_0)] after:absolute after:inset-1 after:rounded-full after:bg-white after:content-['']" />
+      )}
+      {t("google")}
+    </button>
+  );
+
+  const errorLine = formError ? (
+    <p role="alert" className="mt-1 mb-2 flex items-start gap-1.5 text-sm text-destructive">
+      <CircleAlert className="mt-0.5 size-4 flex-none" aria-hidden />
+      <span>
+        {t.rich(`errors.${formError}`, {
+          login: (c) => (
+            <a href={LOGIN_URL} className="font-semibold underline">
+              {c}
+            </a>
+          ),
+        })}
+      </span>
+    </p>
+  ) : null;
+
+  const terms = (
+    <p className="mt-3.5 text-center text-xs text-neutral-600">
+      {t.rich("terms", {
+        terms: (chunks) => (
+          <Link href="/terms" className="text-teal-700 underline-offset-2 hover:underline">
+            {chunks}
+          </Link>
+        ),
+        privacy: (chunks) => (
+          <Link href="/privacy" className="text-teal-700 underline-offset-2 hover:underline">
+            {chunks}
+          </Link>
+        ),
+      })}
+    </p>
+  );
+
+  const slugField = (
+    <>
+      <FieldLabel htmlFor="signup-slug">{t("slugLabel")}</FieldLabel>
+      <div dir="ltr" className={cn(inputBox, slugBad ? "border-destructive" : "border-neutral-200")}>
+        <input
+          ref={slugRef}
+          id="signup-slug"
+          value={slug}
+          onChange={(e) => onSlugChange(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder="yourbrand"
+          aria-describedby="signup-slug-hint"
+          aria-invalid={slugBad || undefined}
+          className={cn(inputEl, "pe-1 font-latin font-semibold text-teal-900")}
+        />
+        <span className="pe-3.5 font-latin text-[15px] text-neutral-500">.{ROOT_DOMAIN}</span>
+      </div>
+      <SlugHint id="signup-slug-hint" state={slugState} host={`${slug}.${ROOT_DOMAIN}`} onPick={setSlug} />
+    </>
+  );
+
+  const phoneField = (
+    <>
+      <FieldLabel htmlFor="signup-phone" className="mt-1.5">
+        {t("phone")}
+      </FieldLabel>
+      <div className={cn(inputBox, touched && !phoneOk ? "border-destructive" : "border-neutral-200")}>
+        <input
+          ref={phoneRef}
+          id="signup-phone"
+          type="tel"
+          dir="ltr"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="01xxxxxxxxx"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          aria-describedby="signup-phone-hint"
+          aria-invalid={(touched && !phoneOk) || undefined}
+          className={cn(inputEl, "font-latin")}
+        />
+      </div>
+      <Hint id="signup-phone-hint" tone={touched && !phoneOk ? "bad" : "muted"}>
+        {touched && !phoneOk ? t("errors.phoneInvalid") : t("phoneHint")}
+      </Hint>
+    </>
+  );
+
+  // Step 1: Google or an address. Nothing else, so a new seller starts with one choice.
+  if (stage === "email") {
+    const emailBad = emailTouched && !emailOk;
+    return (
+      <form key="email" onSubmit={onContinue} noValidate className={stepIn}>
+        {header}
+        {googleButton}
+        <div className="my-[18px] flex items-center gap-3 text-[13px] text-neutral-500 before:h-px before:flex-1 before:bg-neutral-200 before:content-[''] after:h-px after:flex-1 after:bg-neutral-200 after:content-['']">
+          {t("or")}
+        </div>
+
+        <FieldLabel htmlFor="signup-email">{t("email")}</FieldLabel>
+        <div className={cn(inputBox, emailBad || isEmailError(formError) ? "border-destructive" : "border-neutral-200")}>
+          <input
+            ref={emailRef}
+            id="signup-email"
+            type="email"
+            dir="ltr"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-describedby="signup-email-hint"
+            aria-invalid={emailBad || isEmailError(formError) || undefined}
+            className={inputEl}
+          />
+        </div>
+        <Hint id="signup-email-hint" tone={emailBad ? "bad" : "muted"}>{emailBad ? t("errEmail") : null}</Hint>
+
+        {errorLine}
+
+        <CtaButton type="submit" disabled={busy} className="mt-1.5 w-full rounded-xl">
+          {t("continue")}
+        </CtaButton>
+        {terms}
+      </form>
+    );
+  }
+
+  // Step 2 for a hero intake signing up with Google: the store fields it needs first.
+  if (stage === "google") {
+    return (
+      <div key="google" className={stepIn}>
+        {header}
+        <BackButton
+          label={t("back")}
+          onClick={() => {
+            if (formError === "googleNeedsStore") setFormError(null);
+            goTo("email", emailRef);
+          }}
+        />
+        {slugField}
+        {phoneField}
+        {errorLine}
+        <div className="mt-1.5">{googleButton}</div>
+        {terms}
+      </div>
+    );
+  }
+
+  // Step 2: the rest of the form; the address stays visible, with a way back to change it.
+  return (
+    <form key="details" onSubmit={onSubmit} noValidate className={stepIn}>
+      {header}
+
+      <FieldLabel htmlFor="signup-email">{t("email")}</FieldLabel>
+      <div className={cn(inputBox, "mb-3.5 border-neutral-200 bg-neutral-50")}>
+        <input
+          id="signup-email"
+          type="email"
+          dir="ltr"
+          readOnly
+          autoComplete="email"
+          value={email.trim()}
+          className={cn(inputEl, "truncate text-neutral-700")}
+        />
+        <button
+          type="button"
+          onClick={() => goTo("email", emailRef)}
+          aria-label={t("editEmailLabel")}
+          className="h-full flex-none px-3.5 text-sm font-semibold text-teal-700 underline-offset-2 hover:underline"
+        >
+          {t("editEmail")}
+        </button>
+      </div>
+
+      {slugField}
+
+      <FieldLabel htmlFor="signup-password" className="mt-1.5">
+        {t("password")}
+      </FieldLabel>
+      <div className={cn(inputBox, touched && password.length < 8 ? "border-destructive" : "border-neutral-200")}>
+        <input
+          ref={passwordRef}
+          id="signup-password"
+          type={showPassword ? "text" : "password"}
+          dir="ltr"
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          aria-describedby="signup-password-hint"
+          aria-invalid={(touched && password.length < 8) || undefined}
+          className={inputEl}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((s) => !s)}
+          aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+          className="grid h-full w-11 place-items-center text-neutral-600"
+        >
+          {showPassword ? <EyeOff className="size-[18px]" aria-hidden /> : <Eye className="size-[18px]" aria-hidden />}
+        </button>
+      </div>
+      <Hint id="signup-password-hint" tone={password.length >= 8 ? "ok" : touched ? "bad" : "muted"}>
+        {password.length >= 8 ? t("passwordOk") : t("passwordHint")}
+      </Hint>
+
+      {phoneField}
+
+      {errorLine}
+
+      <CtaButton type="submit" disabled={busy} className="mt-1.5 w-full rounded-xl">
+        {pending ? (
+          <>
+            <Loader2 className="animate-spin" aria-hidden />
+            {t("creating")}
+          </>
+        ) : (
+          t("submit")
+        )}
+      </CtaButton>
+      {terms}
+    </form>
+  );
+}
+
+const RESEND_COOLDOWN_S = 60;
+
+/** "Check your email", with a resend (at most once a minute; the server also rate limits) and a way back to fix a typo. */
+function ConfirmEmailStep({ email, onChangeEmail }: { email: string; onChangeEmail: () => void }) {
+  const t = useTranslations("signup");
+  const [cooldown, setCooldown] = React.useState(RESEND_COOLDOWN_S);
+  const [status, setStatus] = React.useState<{ tone: "ok" | "bad"; text: string } | null>(null);
+  const [pending, startTransition] = React.useTransition();
+
+  React.useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
+
+  const resend = () => {
+    setStatus(null);
+    startTransition(async () => {
+      const { error } = await resendSignupConfirmation(email);
+      if (error) {
+        setStatus({ tone: "bad", text: t(`errors.${error}`) });
+        return;
+      }
+      setStatus({ tone: "ok", text: t("resendSent") });
+      setCooldown(RESEND_COOLDOWN_S);
+    });
+  };
+
+  return (
+    <div className="text-center">
+      <span className="mx-auto mt-1 mb-[18px] grid size-16 place-items-center rounded-full bg-teal-50 text-teal-700">
+        <MailCheck className="size-[30px]" aria-hidden />
+      </span>
+      <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("confirmTitle")}</DialogTitle>
+      <DialogDescription className="mt-2.5 text-sm text-neutral-600">
+        {t.rich("confirmBody", { email, b: (c) => <b dir="ltr">{c}</b> })}
+      </DialogDescription>
+      <p className="mt-4 text-[13px] text-neutral-600">{t("confirmSpam")}</p>
+      <div className="mt-5 grid gap-2">
+        <CtaButton type="button" tone="outline" disabled={pending || cooldown > 0} onClick={resend} className="w-full rounded-xl">
+          {pending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {cooldown > 0 ? t("resendIn", { seconds: cooldown }) : t("resend")}
+        </CtaButton>
+        <button type="button" onClick={onChangeEmail} className="text-sm font-semibold text-teal-700 underline-offset-2 hover:underline">
+          {t("changeEmail")}
+        </button>
+      </div>
+      <p role="status" className={cn("mt-3 min-h-5 text-[13px]", status?.tone === "bad" ? "text-destructive" : "text-success")}>
+        {status?.text}
+      </p>
+    </div>
+  );
+}
+
+/** Back to step 1 (the address); the arrow points back in both directions. */
+function BackButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="-mt-2 mb-3.5 inline-flex items-center gap-1 text-sm font-semibold text-teal-700 underline-offset-2 hover:underline"
+    >
+      <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+      {label}
+    </button>
+  );
+}
+
+function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
+  return <Label className={cn("mb-1.5 text-sm font-semibold text-neutral-800", className)} {...props} />;
+}
+
+function Hint({ id, tone, children }: { id?: string; tone: "ok" | "bad" | "muted"; children: React.ReactNode }) {
+  return (
+    <p
+      id={id}
+      className={cn(
+        "mt-1.5 flex min-h-5 items-center gap-1.5 text-[12.5px]",
+        tone === "ok" ? "text-success" : tone === "bad" ? "text-destructive" : "text-neutral-600",
+      )}
+    >
+      {tone === "ok" && children ? <CircleCheck className="size-3.5" aria-hidden /> : null}
+      {tone === "bad" && children ? <CircleAlert className="size-3.5" aria-hidden /> : null}
+      {children}
+    </p>
+  );
+}
+
+function SlugHint({ id, state, host, onPick }: { id: string; state: SlugState; host: string; onPick: (slug: string) => void }) {
+  const t = useTranslations("signup");
+
+  if (state.kind === "checking") {
+    return (
+      <p id={id} role="status" className="mt-1.5 flex min-h-5 items-center gap-1.5 text-[12.5px] text-neutral-600">
+        <Loader2 className="size-3.5 animate-spin" aria-hidden />
+        {t("checking")}
+      </p>
+    );
+  }
+  if (state.kind === "local") {
+    return (
+      <Hint id={id} tone="bad">
+        {t(state.message)}
+      </Hint>
+    );
+  }
+  if (state.kind === "result") {
+    const { status, suggestions } = state.result;
+    if (status === "available") {
+      return (
+        <Hint id={id} tone="ok">
+          {t("available", { host })}
+        </Hint>
+      );
+    }
+    if (status === "unknown") {
+      return (
+        <Hint id={id} tone="muted">
+          {t("slugHint")}
+        </Hint>
+      );
+    }
+    return (
+      <div id={id} role="status" className="mt-1.5 flex min-h-5 flex-wrap items-center gap-1.5 text-[12.5px] text-destructive">
+        <CircleAlert className="size-3.5" aria-hidden />
+        <span>{t(status)}</span>
+        {suggestions.length ? (
+          <span className="flex flex-wrap items-center gap-1.5 text-neutral-600">
+            {t("suggestions")}
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onPick(s)}
+                className="rounded-full bg-teal-50 px-2 py-0.5 font-latin font-semibold text-teal-700 hover:bg-teal-100"
+              >
+                {s}
+              </button>
+            ))}
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+  return (
+    <Hint id={id} tone="muted">
+      {t("slugHint")}
+    </Hint>
+  );
+}

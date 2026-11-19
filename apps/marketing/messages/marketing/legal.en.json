@@ -1,0 +1,368 @@
+{
+  "legal": {
+    "terms": {
+      "summary": [
+        {
+          "title": "Your store is yours",
+          "body": "You own your brand, products and customer relationships."
+        },
+        {
+          "title": "Fees are simple",
+          "body": "Free plan at {orderFee} per order, or Pro at {pro} a month. No percentage of sales."
+        },
+        {
+          "title": "Leave anytime",
+          "body": "Close your store whenever you want, with no cancellation fee."
+        }
+      ],
+      "sections": [
+        {
+          "id": "accept",
+          "title": "Accepting these terms",
+          "paragraphs": [
+            "By creating an account or using Tallaby, you agree to these terms. If you use Tallaby on behalf of a business, you confirm you can accept them for that business.",
+            "You must be at least 18 years old and able to enter a binding contract under Egyptian law."
+          ]
+        },
+        {
+          "id": "account",
+          "title": "Your account",
+          "paragraphs": [
+            "Keep your login details private and tell us right away if you think someone else has accessed your account. You're responsible for activity under your account."
+          ],
+          "list": [
+            "Use accurate information when signing up.",
+            "One person or business per account.",
+            "Store links must not impersonate another brand."
+          ]
+        },
+        {
+          "id": "store",
+          "title": "Your store and content",
+          "paragraphs": [
+            "You keep ownership of everything you upload: product photos, descriptions, logos and brand assets. You give Tallaby permission to host and display that content so your store can work."
+          ],
+          "note": "We never sell your products or content to anyone else."
+        },
+        {
+          "id": "selling",
+          "title": "Selling rules",
+          "paragraphs": [
+            "You're responsible for the products you sell, their descriptions, pricing, stock and delivery to your customers. You may not sell:"
+          ],
+          "list": [
+            "Items that are illegal in Egypt.",
+            "Counterfeit goods or items that infringe someone's rights."
+          ]
+        },
+        {
+          "id": "fees",
+          "title": "Fees, plans and your wallet",
+          "clauses": [
+            {
+              "title": "Plans",
+              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of {orderFee} per new order. Pro costs {pro} a month and has no order fee. Each account can have up to 3 stores on Free and up to 10 on Pro. Prices are set in US dollars and shown approximately in Egyptian pounds or your local currency at the current exchange rate; top-ups are paid in Egyptian pounds. Prices may change; we will tell you before a change applies to you."
+            },
+            {
+              "title": "Your wallet",
+              "body": "Your account has one Tallaby wallet, held in US dollars. You use it to pay Tallaby for order fees, Pro, AI credits and other paid services. It is for spending on Tallaby only: wallet money is not a bank balance, earns no interest, and can't be withdrawn, refunded in cash or moved to another account. Order money doesn't pass through the wallet, because your customers pay you directly."
+            },
+            {
+              "title": "Topping up",
+              "body": "You choose an amount in US dollars and pay the equivalent in Egyptian pounds. We show the exchange rate and the total before you pay. We add no margin to that rate, and the total is rounded down to a whole pound. If tax applies, it is added to the pounds you pay and shown as its own line. The wallet is credited with the dollar amount shown when you started the top-up. You pay through our payment provider, Kashier, and the wallet is credited once the payment is confirmed."
+            },
+            {
+              "title": "Activating your account",
+              "body": "On the Free plan, your store is public and takes orders from day one. To see your orders you need a first approved top-up, starting from {topUpMin}, or a wallet balance above zero. You have {days} days to make it; after that, every store of yours goes offline until you do. Sending campaigns needs the same top-up, and until then AI features are limited to 20 requests a month. The order fee applies to every order. Once your account is activated, none of this applies."
+            },
+            {
+              "title": "Order fees",
+              "body": "On the Free plan, the fee is taken from your wallet when a new order is placed, or when payment is confirmed for a card order. An order that looks like a test or a duplicate is charged only if it is delivered. The fee doesn't depend on the order's value, and we take no percentage of your sales."
+            },
+            {
+              "title": "Payment and shipping costs",
+              "body": "Your payment gateway and shipping costs are charged separately by those providers."
+            },
+            {
+              "title": "Negative balance",
+              "body": "Order fees can take your balance below zero. A negative balance is an amount you owe Tallaby, and you settle it by topping up. Optional purchases such as Pro and AI credits can't be paid for with money you don't have in the wallet."
+            },
+            {
+              "title": "Pro renewal",
+              "body": "Pro renews every month from your wallet, for as long as it stays on. If your balance can't cover a renewal, you get 3 days to top up, and you keep Pro during that time. After that, your account moves to Free. You can cancel at any time: Pro continues until the end of the month you paid for, with no refund for the unused part."
+            },
+            {
+              "title": "Campaign emails",
+              "body": "Free includes 500 campaign emails a month and Pro includes 10,000, shared across your stores. Monthly emails reset on the 1st and don't carry over. You can buy more from your wallet at the price shown in your dashboard before you buy; bought emails don't expire. You can send campaigns once your account is activated."
+            },
+            {
+              "title": "Customer order emails",
+              "body": "Emails to your customers about their orders need the Order notifications app, whose price is shown in your dashboard before you turn it on. The app is off by default, and you turn it on for each store yourself."
+            },
+            {
+              "title": "AI credits",
+              "body": "AI features use credits. Free includes 100 credits a month and Pro includes 2,000 a month. Monthly credits reset and don't carry over. You can buy more from your wallet at the price shown in your dashboard before you buy; bought credits don't expire and are used after your monthly credits. Credits have no cash value and can't be refunded or transferred."
+            },
+            {
+              "title": "Amounts already taken",
+              "body": "Amounts deducted from your wallet are non-refundable, except where we correct a mistake or where the law requires otherwise. If we cancel a paid service before it starts, the amount goes back to your wallet."
+            },
+            {
+              "title": "The move to US dollars",
+              "body": "On {date}, wallet balances held in Egyptian pounds were converted to US dollars at the market rate of that day, with no margin, and the conversion is listed in your wallet history. Fees from before that date that had not been charged were cancelled.",
+              "needsSwitchDate": true
+            }
+          ]
+        },
+        {
+          "id": "customers",
+          "title": "Orders and customers",
+          "paragraphs": [
+            "Each sale is a contract between you and your customer. You set your own return and refund policy, and it must be visible on your store. Tallaby may help resolve disputes but is not a party to the sale."
+          ]
+        },
+        {
+          "id": "ending",
+          "title": "Closing or suspending a store",
+          "paragraphs": [
+            "You can close your store at any time from Settings. We may suspend a store that breaks these terms, after notifying you where possible. A positive wallet balance isn't paid out or refunded in cash when a store closes, except where the law requires it, and a negative balance is still an amount you owe Tallaby."
+          ]
+        },
+        {
+          "id": "liability",
+          "title": "Liability",
+          "paragraphs": [
+            "We work hard to keep Tallaby available and secure, but we provide the service as is. To the extent the law allows, Tallaby isn't liable for indirect losses such as lost profits."
+          ]
+        },
+        {
+          "id": "changes",
+          "title": "Changes and contact",
+          "paragraphs": [
+            "If we change these terms in a meaningful way, we'll tell you by email or in your dashboard at least 14 days before the change applies. These terms are governed by the laws of Egypt."
+          ],
+          "contact": "Questions? Email"
+        }
+      ],
+      "lead": "The agreement between you and Tallaby when you create a store or shop on one."
+    },
+    "print": "Print or save PDF",
+    "readTime": "About {minutes} minutes to read",
+    "privacy": {
+      "lead": "What we collect, why we collect it, and the choices you have.",
+      "summary": [
+        {
+          "title": "We don't sell your data",
+          "body": "Not to advertisers, not to anyone."
+        },
+        {
+          "title": "Encrypted by default",
+          "body": "Data is encrypted in transit and at rest."
+        },
+        {
+          "title": "Yours to take",
+          "body": "Email us for a copy of your data or to delete it."
+        }
+      ],
+      "table": {
+        "data": "Data",
+        "why": "Why",
+        "kept": "Kept for"
+      },
+      "rows": [
+        [
+          "Account details",
+          "To sign you in and contact you about your store",
+          "While your account is open"
+        ],
+        [
+          "Store content",
+          "To host and display your products",
+          "Until you delete it"
+        ],
+        [
+          "Order details",
+          "To deliver orders and handle returns",
+          "5 years, for tax records"
+        ],
+        [
+          "Payout details",
+          "To pay the affiliate commissions you withdraw",
+          "While your account is open"
+        ],
+        [
+          "Usage data",
+          "To fix bugs and improve the product",
+          "13 months"
+        ]
+      ],
+      "rights": [
+        {
+          "title": "Access",
+          "body": "See the data we hold about you."
+        },
+        {
+          "title": "Correct",
+          "body": "Fix anything that's wrong."
+        },
+        {
+          "title": "Export",
+          "body": "Download your data in a standard format."
+        },
+        {
+          "title": "Delete",
+          "body": "Close your account and erase your data."
+        }
+      ],
+      "sections": [
+        {
+          "id": "who",
+          "title": "Who we are",
+          "paragraphs": [
+            "Tallaby operates the store builder at tallaby.com and the stores hosted on it. This policy covers sellers who use Tallaby and shoppers who buy from Tallaby stores."
+          ]
+        },
+        {
+          "id": "collect",
+          "title": "What we collect",
+          "paragraphs": [
+            "We only collect what we need to run your store and process orders."
+          ],
+          "table": true
+        },
+        {
+          "id": "use",
+          "title": "How we use it",
+          "list": [
+            "Running your store and checkout, and paying affiliate commissions.",
+            "Preventing fraud and keeping accounts secure.",
+            "Sending service messages about orders, fees and changes.",
+            "Marketing emails, only if you opt in. You can unsubscribe anytime."
+          ]
+        },
+        {
+          "id": "share",
+          "title": "Who we share it with",
+          "paragraphs": [
+            "We share data only with service providers who help us run Tallaby, such as payment processors, couriers and hosting providers, and only what they need to do that job. We may also share data if the law requires it."
+          ],
+          "note": "Shopper data belongs to the seller's store. Sellers can use it to fulfil orders, not to resell it."
+        },
+        {
+          "id": "cookies",
+          "title": "Cookies",
+          "paragraphs": [
+            "We use essential cookies to keep you signed in and remember your cart and language. On tallaby.com, Google Analytics and the Meta Pixel load when you visit, and we may send your visit to Meta from our servers to measure our ads. You can turn them off at any time through the Cookie settings link in the footer: they then stop loading, the analytics and advertising cookies they set are removed, and we stop sending your visit to Meta. In the seller dashboard (dashboard.tallaby.com), Tallaby's Meta Pixel loads too. On seller stores, the tracking the seller connected (such as the Meta Pixel, Google Analytics or Google Tag Manager, and the seller's Meta events sent from our servers) runs when you visit, as does Tallaby's own page-view measurement."
+          ]
+        },
+        {
+          "id": "rights",
+          "title": "Your rights",
+          "rights": true
+        },
+        {
+          "id": "security",
+          "title": "Security",
+          "paragraphs": [
+            "Data is encrypted in transit and at rest, access is limited to staff who need it, and card details are handled by certified payment providers. Tallaby never stores full card numbers."
+          ]
+        },
+        {
+          "id": "contact",
+          "title": "Contact",
+          "paragraphs": [
+            "To use any of your rights or ask a question, email us. We reply within 30 days."
+          ],
+          "contact": ""
+        }
+      ]
+    },
+    "related": "Related policies",
+    "refund": {
+      "title": "Refund policy",
+      "lead": "What can and can't be refunded when you pay Tallaby.",
+      "summary": [
+        {
+          "title": "Top-ups aren't refunded",
+          "body": "Money you top up into your Tallaby wallet can't be refunded in cash or withdrawn."
+        },
+        {
+          "title": "Charges are final",
+          "body": "Order fees, Pro and AI credits can't be refunded once they are taken."
+        },
+        {
+          "title": "Store purchases: ask the seller",
+          "body": "When you buy from a store on Tallaby, the seller's own return policy applies."
+        }
+      ],
+      "sections": [
+        {
+          "id": "scope",
+          "title": "What this policy covers",
+          "paragraphs": [
+            "This policy explains what happens to money you pay Tallaby: wallet top-ups, order fees, Pro, AI credits and other paid services. It adds to our Terms of service and doesn't change them.",
+            "It doesn't cover purchases from sellers' stores on Tallaby, which have their own section below."
+          ]
+        },
+        {
+          "id": "top-ups",
+          "title": "Wallet top-ups aren't refunded",
+          "paragraphs": [
+            "Money you top up into your Tallaby wallet is for spending on Tallaby only. It isn't refunded in cash, sent back to a bank account or mobile wallet, or moved to another account, except where the law requires otherwise.",
+            "Your wallet balance isn't a bank balance and earns no interest, so top up the amount you expect to use."
+          ],
+          "note": "In short: what you top up is spent on Tallaby services and doesn't come back to you as cash."
+        },
+        {
+          "id": "charges",
+          "title": "Charges taken from your wallet",
+          "paragraphs": [
+            "Amounts deducted from your wallet are non-refundable, except where we correct a mistake or where the law requires otherwise. This includes:"
+          ],
+          "list": [
+            "Order fees on the Free plan.",
+            "Pro: if you cancel, it continues until the end of the month you paid for, with no refund for the unused part.",
+            "AI credits and campaign emails you buy, which have no cash value.",
+            "Apps and other paid services."
+          ],
+          "note": "If we cancel a paid service before it starts, the amount goes back to your wallet."
+        },
+        {
+          "id": "mistakes",
+          "title": "Charges we got wrong",
+          "paragraphs": [
+            "If we charge you by mistake, such as a duplicate fee or more than you owe, we put the amount back in your wallet after checking it. Corrections go to your wallet balance, not to you in cash.",
+            "If you spot a wrong charge, email us with its date and details from your wallet history."
+          ]
+        },
+        {
+          "id": "failed-top-up",
+          "title": "A top-up that didn't reach your wallet",
+          "paragraphs": [
+            "If you paid for a top-up and it wasn't added to your balance, or you paid for the same top-up twice, email us with proof of payment. We check the payment, and once we confirm we received it, we add it to your wallet."
+          ]
+        },
+        {
+          "id": "closing",
+          "title": "Closing your store or account",
+          "paragraphs": [
+            "When you close your store or account, a positive wallet balance isn't paid out or refunded in cash, except where the law requires it. A negative balance is still an amount you owe Tallaby."
+          ]
+        },
+        {
+          "id": "store-purchases",
+          "title": "Buying from a store on Tallaby",
+          "paragraphs": [
+            "Each sale in a store on Tallaby is between the customer and the seller. The seller sets the return and refund policy, which must be visible on their store, and the customer pays the seller directly, so refunds are requested from the seller.",
+            "Tallaby isn't a party to the sale, but may help resolve disputes."
+          ]
+        },
+        {
+          "id": "contact",
+          "title": "Contact",
+          "contact": "Questions about your wallet or charges? Email"
+        }
+      ]
+    }
+  }
+}
