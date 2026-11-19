@@ -511,6 +511,10 @@
       "types": "./src/storefront/cookie-domain.lib.ts",
       "default": "./src/storefront/cookie-domain.lib.ts"
     },
+    "./storefront/platform-hosts": {
+      "types": "./src/storefront/platform-hosts.lib.ts",
+      "default": "./src/storefront/platform-hosts.lib.ts"
+    },
     "./storefront/server": {
       "types": "./src/storefront/custom-domains.server.ts",
       "default": "./src/storefront/custom-domains.server.ts"

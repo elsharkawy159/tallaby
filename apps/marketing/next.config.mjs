@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import createNextIntlPlugin from "next-intl/plugin";
 import { redirects } from "./redirects.mjs";
+import { platformRedirects } from "./platform-redirects.mjs";
 const withNextIntl = createNextIntlPlugin();
 
 // Self-hosted Docker image (docs/plans/hetzner-migration.md): `NEXT_OUTPUT=standalone`
@@ -60,9 +61,10 @@ const nextConfig = {
       })),
     ];
   },
-  // The list lives in redirects.mjs.
+  // The list lives in redirects.mjs; then the storefront pages that moved to
+  // account.<root> and preview.<root> (platform-redirects.mjs).
   async redirects() {
-    return redirects;
+    return [...redirects, ...platformRedirects()];
   },
   images: {
     // Storage paths are unique (uploads never overwrite), so optimized sizes

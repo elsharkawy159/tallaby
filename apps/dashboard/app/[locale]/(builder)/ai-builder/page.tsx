@@ -14,6 +14,7 @@ import { loadReview } from "@/app/[locale]/(main)/ai-builder/builder-run.server"
 import { loadLatestBuild } from "@/app/[locale]/(main)/ai-builder/builder.store.server";
 import { startBuildFromIntake } from "@/app/[locale]/(main)/ai-builder/builder-chat-v2.server";
 import { BuilderWorkspace } from "./_components/workspace.client";
+import { templatePreviewOrigin } from "@workspace/lib/storefront/platform-hosts";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -46,7 +47,8 @@ export default async function AiBuilderPage({ searchParams }: { searchParams: Pr
   const build = fromIntake?.ok ? fromIntake.build : await loadLatestBuild(seller.sellerId);
   const review = build?.status === "review" ? await loadReview({ sellerId: seller.sellerId, userId: seller.userId, sellerStatus: seller.status }, build) : null;
   const view = build ? toView(build, fromIntake?.ok ? (fromIntake.notice ?? null) : null) : null;
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "tallaby.com";
+  // The full-page template preview lives on preview.<root> (apps/ecommerce).
+  const previewOrigin = templatePreviewOrigin();
   // Meta CompleteRegistration on the first visit after signup (?signup=email|google; checked for a new account inside).
   const pixel = typeof signup === "string" && (
     <Suspense fallback={null}>
@@ -60,7 +62,7 @@ export default async function AiBuilderPage({ searchParams }: { searchParams: Pr
         {pixel}
         <PageContainer narrow>
           {welcome === "1" && <WelcomeBanner />}
-          <BuilderChat initialView={view} initialReview={review} aiReady={aiConfigured()} templatesBaseUrl={`https://${rootDomain}/template-preview`} />
+          <BuilderChat initialView={view} initialReview={review} aiReady={aiConfigured()} templatesBaseUrl={`${previewOrigin}/template-preview`} />
         </PageContainer>
       </div>
     );
@@ -69,7 +71,7 @@ export default async function AiBuilderPage({ searchParams }: { searchParams: Pr
   return (
     <div className="seller-shell">
       {pixel}
-      <BuilderWorkspace initialView={view} initialReview={review} aiReady={aiConfigured()} siteOrigin={`https://${rootDomain}`} welcome={welcome === "1"} />
+      <BuilderWorkspace initialView={view} initialReview={review} aiReady={aiConfigured()} siteOrigin={previewOrigin} welcome={welcome === "1"} />
     </div>
   );
 }

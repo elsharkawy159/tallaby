@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CODE_TEMPLATES, NICHES, getEdition, isRetiredTemplate, readyNicheTemplate } from "@workspace/store-sections/templates";
 import { buildGallery, buildNicheTabs, categoryCode, galleryCards, localized, nicheEntries, pickEdition, tabEdition, templateFrameSrc, type CatalogTemplate, type GalleryNicheTab } from "./templates.lib";
 
@@ -72,13 +72,18 @@ describe("template gallery", () => {
     ]);
   });
 
-  it("builds preview frame URLs", () => {
-    expect(templateFrameSrc("ar", "atelier")).toBe("/template-preview/atelier");
-    expect(templateFrameSrc("en", "atelier", "about", true)).toBe("/en/template-preview/atelier/about?thumb=1");
+  it("builds preview frame URLs on the preview host", () => {
+    vi.stubEnv("NEXT_PUBLIC_ROOT_DOMAIN", "tallaby.com");
+    const origin = "https://preview.tallaby.com";
+    expect(templateFrameSrc("ar", "atelier")).toBe(`${origin}/template-preview/atelier`);
+    expect(templateFrameSrc("en", "atelier", "about", true)).toBe(`${origin}/en/template-preview/atelier/about?thumb=1`);
     // A niche edition (ROADMAP F-90) rides as ?edition=.
-    expect(templateFrameSrc("ar", "kasr", undefined, false, "dresses")).toBe("/template-preview/kasr?edition=dresses");
-    expect(templateFrameSrc("en", "kasr", "about", true, "pants-jeans")).toBe("/en/template-preview/kasr/about?thumb=1&edition=pants-jeans");
-    expect(templateFrameSrc("ar", "kasr", undefined, false, null)).toBe("/template-preview/kasr");
+    expect(templateFrameSrc("ar", "kasr", undefined, false, "dresses")).toBe(`${origin}/template-preview/kasr?edition=dresses`);
+    expect(templateFrameSrc("en", "kasr", "about", true, "pants-jeans")).toBe(`${origin}/en/template-preview/kasr/about?thumb=1&edition=pants-jeans`);
+    expect(templateFrameSrc("ar", "kasr", undefined, false, null)).toBe(`${origin}/template-preview/kasr`);
+    vi.stubEnv("NEXT_PUBLIC_ROOT_DOMAIN", "localhost:3000");
+    expect(templateFrameSrc("ar", "atelier")).toBe("http://preview.localhost:3000/template-preview/atelier");
+    vi.unstubAllEnvs();
   });
 
   it("localizes JSON names with a fallback", () => {

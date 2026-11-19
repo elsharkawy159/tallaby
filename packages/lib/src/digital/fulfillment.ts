@@ -13,6 +13,7 @@ import {
   and,
 } from "@workspace/db";
 import { randomBytes } from "crypto";
+import { accountOrigin } from "../storefront/platform-hosts.lib";
 import { getSignedUrlForPath } from "./storage";
 import { sendDigitalDeliveryEmail } from "./notify";
 import type { DigitalDeliveryPayload, DigitalProductType } from "./types";
@@ -154,7 +155,8 @@ export async function fulfillDigitalOrderItems(
   }
 
   if (notify && buyer?.email && createdRows.some((r) => r.fulfillmentStatus === "delivered")) {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+    // Downloads are served by the storefront app on account.<root> (/api/downloads).
+    const siteUrl = accountOrigin();
     await sendDigitalDeliveryEmail({
       email: buyer.email,
       name: buyer.fullName || "there",
@@ -256,7 +258,7 @@ export async function resendDigitalAccess(digitalOrderId: string, actorUserId?: 
     return { success: false as const, error: "Buyer has no email on file" };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const siteUrl = accountOrigin();
   await sendDigitalDeliveryEmail({
     email: digitalOrder.buyer.email,
     name: digitalOrder.buyer.fullName || "there",

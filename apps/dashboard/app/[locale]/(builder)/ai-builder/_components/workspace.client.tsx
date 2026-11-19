@@ -77,6 +77,7 @@ export function BuilderWorkspace({
   initialView: BuilderView | null;
   initialReview: BuilderReview | null;
   aiReady: boolean;
+  /** Origin of the full-page template preview (preview.tallaby.com, `templatePreviewOrigin`). */
   siteOrigin: string;
   welcome: boolean;
 }) {

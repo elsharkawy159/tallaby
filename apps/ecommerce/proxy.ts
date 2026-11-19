@@ -12,6 +12,8 @@ import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@wo
 import { LOCALE_COOKIE, routing } from "@/i18n/routing";
 import { englishLandingRedirect, LOCALE_LANDING_REDIRECT_HEADERS } from "@/lib/marketing/locale-landing.lib";
 import { LLMS_TXT_PATH } from "@/lib/marketing/llms-txt-path.lib";
+import { SITE_URL } from "@/lib/marketing/site.lib";
+import { markPlatformSite, platformSiteOf, platformSiteRedirect } from "@/lib/platform-site-routing";
 import { geoServerTiming, requestCountry } from "@/lib/marketing/visitor-country.lib";
 import {
   isCrawlFilePath,
@@ -42,7 +44,20 @@ function markStorePreview(request: NextRequest, response: NextResponse): NextRes
   return response;
 }
 
+/**
+ * account.<root> and preview.<root> (lib/platform-site-routing.ts): only their
+ * own pages, routed exactly as on tallaby.com; any other path goes to the
+ * same path on tallaby.com. Every response from them is noindex. Every other
+ * host goes straight to routeRequest, unchanged.
+ */
 export async function proxy(request: NextRequest) {
+  const site = platformSiteOf(request.headers.get("host"));
+  if (!site) return routeRequest(request);
+  const response = platformSiteRedirect(site, request.nextUrl, SITE_URL) ?? (await routeRequest(request));
+  return markPlatformSite(response);
+}
+
+async function routeRequest(request: NextRequest) {
   const host = request.headers.get("host");
 
   // Seller storefronts: {subdomain}.tallaby.com

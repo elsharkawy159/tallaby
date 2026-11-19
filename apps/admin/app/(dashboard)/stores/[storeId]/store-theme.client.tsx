@@ -12,6 +12,7 @@ import { Input } from "@workspace/ui/components/input";
 import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import { cn } from "@workspace/ui/lib/utils";
 import { templatePreviewPageUrl } from "@workspace/store-editor/lib/template-edition.lib";
+import { templatePreviewOrigin } from "@workspace/lib/storefront/platform-hosts";
 import { TemplateLiveThumbnail } from "@workspace/store-editor/preview/template-live-thumbnail.client";
 import type { TemplatePreviewView } from "@workspace/store-editor/templates.dto";
 import { TemplateShot } from "@workspace/ui/components/template-shot";
@@ -26,8 +27,8 @@ import { applyStoreThemeAction } from "./website-actions.server";
 
 export type { ThemeOption } from "./store-theme.lib";
 
-/** tallaby.com, where the full-page template preview lives. */
-const PREVIEW_ORIGIN = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || "tallaby.com"}`;
+/** preview.tallaby.com, where the full-page template preview and its card screenshots live. */
+const PREVIEW_ORIGIN = templatePreviewOrigin();
 
 const HEX = /^#[0-9a-f]{3,8}$/i;
 

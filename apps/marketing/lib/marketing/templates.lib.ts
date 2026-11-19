@@ -1,4 +1,5 @@
 import { routing } from "@/i18n/routing";
+import { templatePreviewOrigin } from "@workspace/lib/storefront/platform-hosts";
 import type { TemplateCategory } from "./templates.data";
 import { previewShot, type PreviewShot } from "@workspace/store-sections/template-preview";
 import type { TemplatePreview } from "@workspace/store-sections/templates";
@@ -100,12 +101,14 @@ function priceOf(row: CatalogTemplate): number | null {
 }
 
 /**
- * The preview frame of a template page (app/[locale]/(template-preview)/template-preview).
- * `edition` is a niche id: the template drawn with that niche's edition (`?edition=`).
+ * The preview frame of a template page: the storefront app's
+ * app/[locale]/(template-preview)/template-preview on preview.tallaby.com
+ * (`templatePreviewOrigin`), not this app. `edition` is a niche id: the
+ * template drawn with that niche's edition (`?edition=`).
  */
 export function templateFrameSrc(locale: string, key: string, slug?: string, thumb = false, edition?: string | null): string {
   const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
-  const path = `${prefix}/template-preview/${encodeURIComponent(key)}${slug ? `/${encodeURIComponent(slug)}` : ""}`;
+  const path = `${templatePreviewOrigin()}${prefix}/template-preview/${encodeURIComponent(key)}${slug ? `/${encodeURIComponent(slug)}` : ""}`;
   const query = [...(thumb ? ["thumb=1"] : []), ...(edition ? [`edition=${encodeURIComponent(edition)}`] : [])].join("&");
   return query ? `${path}?${query}` : path;
 }

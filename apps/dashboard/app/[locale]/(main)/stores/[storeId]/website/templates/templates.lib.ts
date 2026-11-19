@@ -4,6 +4,7 @@
  * page and the editor's Templates tab. No React here.
  */
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
+import { templatePreviewOrigin } from "@workspace/lib/storefront/platform-hosts";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
 import { SWITCHED_INDUSTRIES, getTemplateDesign, isRetiredTemplate, type NicheOption } from "@workspace/store-sections/templates";
 import { sortByRelevance, type TemplateRelevance } from "@workspace/store-editor/lib/template-relevance.lib";
@@ -189,8 +190,8 @@ export function galleryTemplates<T extends { key: string; category: string }>(te
   return templates.filter((tpl) => !isRetiredTemplate(tpl, switched));
 }
 
-/** tallaby.com, where the full-page template preview lives (`/template-preview/<key>`). */
-export const TEMPLATE_PREVIEW_ORIGIN = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || "tallaby.com"}`;
+/** preview.tallaby.com, where the full-page template preview (`/template-preview/<key>`) and the card screenshots (`/template-previews/*`) live. */
+export const TEMPLATE_PREVIEW_ORIGIN = templatePreviewOrigin();
 
 /**
  * The preview dialog's "Preview" link (owner request 2026-11-11): the same
