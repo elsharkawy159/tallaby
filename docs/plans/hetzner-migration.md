@@ -102,7 +102,15 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
   - Required: `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `INTERNAL_API_SECRET`, `DASHBOARD_URL`, `ECOMMERCE_URL`, `ADMIN_URL`, `REVALIDATE_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `MCP_RESOURCE_URLS`, `MCP_TOKEN_PEPPER`.
   - Per feature: `PAYMOB_SECRET_KEY`, `PAYMOB_PUBLIC_KEY`, `PAYMOB_HMAC_SECRET`, `PAYMOB_CARD_INTEGRATION_ID`, `PAYMOB_WEBHOOK_URL` (Paymob); `KASHIER_PAYMENT_API_KEY` (Kashier); `TALLABY_EASYKASH_API_KEY`, `TALLABY_EASYKASH_HMAC_SECRET` (Tallaby Pay); `INTEGRATIONS_ENCRYPTION_KEY` (store gateway and Bosta webhooks); `RESEND_WEBHOOK_SECRET` (email delivery webhook); `EMAIL_FROM_NAME`, `EMAIL_FROM_ORDERS`; `MCP_ISSUER_URL` (else `DASHBOARD_URL`); `ORDER_ACCESS_SECRET`, `ECOMMERCE_DOMAIN`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_ROOT_DOMAIN`, `NEXT_PUBLIC_SUPABASE_PROJECT_ID`, `BACKEND_API_URL`, `META_GRAPH_API_VERSION`.
   - Set by the image: `NODE_ENV`, `PORT=3000`, `DEPLOY_ID`. Not set: `VERCEL` (unset = long-running server, DB pool 20), `TRUST_CLOUDFLARE_HEADERS` (only after §5).
-- Not done yet: a first image build in CI, the Coolify app (domains `api.tallaby.com`, `mcp.tallaby.com`), DNS, and repointing the Paymob/Kashier/EasyKash/Bosta/Resend webhook senders (their URL stays the same host, so only DNS changes).
+- Webhook senders (Paymob, Kashier, EasyKash, Tallaby Pay, Bosta, Resend) call `api.tallaby.com` by name, so only DNS changed for them.
+
+### Backend live on Hetzner (2026-11-19)
+
+- Coolify app `tallaby-backend` (`ghcr.io/elsharkawy159/tallaby-backend:main`, port 3000, ~130 MB RAM), domains `api.tallaby.com` and `mcp.tallaby.com`, 31 runtime env vars (addresses = Vercel's production values; secrets from the production backend env, DB and service key checked against the production project; `INTERNAL_API_SECRET` equals the ecommerce app's).
+- Tested on the temporary `api-hz.tallaby.com` against the live Vercel backend before the switch: identical answers on `/`, `/api`, `/.well-known/oauth-protected-resource`, `/mcp`, protected email routes and the Paymob, Kashier, Tallaby Pay and Resend webhooks.
+- Switch 2026-11-19 02:11Z: Cloudflare A `api` and `mcp` → 2.28.78.10 (DNS only, TTL 60) added FIRST, then the domains added in Coolify; both Let's Encrypt certificates issued in ~25 s. **Rollback = delete those two records** (the Vercel backend project stays deployed; its Git builds are off).
+- CI: `backend-image.yml` redeploys through Coolify with secret `COOLIFY_BACKEND_DEPLOY_TOKEN` (Deploy + Read on that app) and variable `COOLIFY_BACKEND_APP_UUID`. Both redeploy steps retry 3 times (one runner got a stale DNS answer once).
+- Uptime check also covers `mcp.tallaby.com`.
 
 ## 7. Before deciding
 

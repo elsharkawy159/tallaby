@@ -33,6 +33,7 @@ jobs:
             "https://www.tallaby.com/|^[23][0-9][0-9]$"
             "https://dashboard.tallaby.com/|^[23][0-9][0-9]$"
             "https://api.tallaby.com/|^[23][0-9][0-9]$"
+            "https://mcp.tallaby.com/.well-known/oauth-protected-resource|^200$"
           )
           failed=0
           printf '%-36s %-6s %-8s %s\n' "URL" "CODE" "TIME" "RESULT"
