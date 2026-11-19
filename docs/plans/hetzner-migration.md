@@ -54,6 +54,7 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 - **Cache only static assets.** No "Cache Everything" on HTML: carts, orders, wallets, builder drafts and dashboards must never be cached (rule 8).
 - **WAF skip rules** for every machine caller: EasyKash, Kashier, Paymob callbacks; Bosta; Supabase database webhooks (`/api/cron/seller-push`, admin `/api/cron/admin-push`); cron routes; MCP and OAuth (`/oauth/*`, `/api/oauth/*`, `/.well-known/*`, `/mcp`). Keep **Bot Fight Mode off** (Free plan cannot exempt paths).
 - Rate-limit rules on login, checkout and OTP endpoints.
+- **`TRUST_CLOUDFLARE_HEADERS=1`** (runtime env, per app): set it only once that host's Cloudflare proxy is on AND the Hetzner firewall allows 80/443 only from Cloudflare's IP ranges. Then `@workspace/lib/http/client-ip` (`getClientIp`, `getClientCountry`) reads `CF-Connecting-IP` and `CF-IPCountry` (`XX`/`T1` = no country). Unset (Vercel, grey-cloud hosts) those headers are ignored, so a client cannot forge them, and the helper returns what the call sites read before (first `x-forwarded-for` entry, then `x-real-ip`; `x-vercel-ip-country`).
 
 ## 6. Order of work
 
@@ -79,7 +80,8 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 - **Coolify runtime env** (names only; values come from the admin Vercel project):
   - Required: `DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` again (Settings › Services reads them at run time), `REVALIDATE_SECRET`, `ECOMMERCE_URL`, `DASHBOARD_URL`, `ADMIN_URL`, `ECOMMERCE_DOMAIN`, `CRON_SECRET`.
   - Per feature: `STOREFRONT_VERCEL_TOKEN`, `STOREFRONT_VERCEL_PROJECT_ID`, `STOREFRONT_VERCEL_TEAM_ID` (custom domains, until §2 #1 changes); `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_ENABLED`, `AI_MODEL_SMART`, `AI_MODEL_FALLBACKS`, `AI_ADMIN_PRODUCT_AUTOFILL_DAILY_LIMIT` (AI); `VAPID_PUBLIC_KEY` (or `NEXT_PUBLIC_VAPID_PUBLIC_KEY`), `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (admin push); `TALLABY_EASYKASH_API_KEY` (Tallaby Pay); `EXCHANGE_RATE_API_KEY` (only if the admin billing page refreshes the rate).
-  - Set by the image: `NODE_ENV`, `PORT=3000`, `HOSTNAME=0.0.0.0`. Still read, replaced in step 2.3: `VERCEL_URL` (`app/layout.tsx` metadata base, falls back to `http://localhost:3000` when unset), `VERCEL`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_DEPLOYMENT_ID`.
+  - Set by the image: `NODE_ENV`, `PORT=3000`, `HOSTNAME=0.0.0.0`, `DEPLOY_ID` (build arg = commit SHA from CI; `perDeploy` cache keys when `VERCEL_DEPLOYMENT_ID`/`VERCEL_GIT_COMMIT_SHA` are absent). Step 2.3: `app/layout.tsx` metadata base uses `VERCEL_URL` on Vercel, else `NEXT_PUBLIC_SITE_URL`, else `http://localhost:3000`; `VERCEL` (DB pool size) stays: unset = long-running server, pool 20.
+  - Not set yet: `TRUST_CLOUDFLARE_HEADERS` (only after the orange cloud and the Cloudflare-only firewall, §5).
 - Not done yet: the admin cron (`/api/cron/admin-push`, step 2.5), a first real image build in CI, the Coolify app on the VPS.
 
 ### Admin live on Hetzner (2026-11-19)

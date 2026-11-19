@@ -5,6 +5,8 @@
  * Meta deduplicates the two. The CAPI sender is in `meta-signup.server.ts`.
  */
 
+import { getClientIp } from "../http/client-ip.lib";
+
 export type SignupMethod = "email" | "google";
 
 /** Same id in the browser and the CAPI event; one per account. */
@@ -53,7 +55,7 @@ export function signupRequestContext(
   const host = headers.get("x-forwarded-host") || headers.get("host");
   const proto = headers.get("x-forwarded-proto") || "https";
   return {
-    clientIpAddress: headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip") || null,
+    clientIpAddress: getClientIp(headers),
     clientUserAgent: headers.get("user-agent"),
     fbp: cookies.get("_fbp")?.value ?? null,
     fbc: cookies.get("_fbc")?.value ?? null,

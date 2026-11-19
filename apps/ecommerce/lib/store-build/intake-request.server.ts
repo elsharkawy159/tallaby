@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * Shared by the hero composer's intake routes (ROADMAP.md F-82d). The AI Store
@@ -10,7 +11,7 @@ export const storeBuilderEnabled = () => process.env.STORE_BUILDER_AI_ENABLED !=
 
 /** The visitor's address as Vercel forwards it (only ever hashed). */
 export function clientIp(headers: Headers): string {
-  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip") || "unknown";
+  return getClientIp(headers) ?? "unknown";
 }
 
 // Per instance (no shared Redis yet, PLAN.md A4): bursts only; the daily cap is in the DB.

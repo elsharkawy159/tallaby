@@ -6,6 +6,7 @@ import { resolveAgentActor } from "@workspace/lib/agents/server";
 import { logServerError } from "@workspace/db/log";
 import { isSwitchOn } from "@workspace/lib/stores/switches/server";
 import { createTallabyMcpServer } from "./server";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * The MCP endpoint (ROADMAP.md F-29c, design note §4) on mcp.tallaby.com:
@@ -67,7 +68,7 @@ mcpApp.all("/mcp", async (c) => {
   const token = bearerToken(c.req.header("authorization"));
   if (!token) return unauthorized(c.req.url);
 
-  const forwarded = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || null;
+  const forwarded = getClientIp(c.req.raw.headers);
   const actor = await resolveAgentActor(token, { ip: forwarded, userAgent: c.req.header("user-agent") ?? null });
   if (!actor) return unauthorized(c.req.url, "invalid_token");
 

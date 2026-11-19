@@ -17,6 +17,7 @@ import {
   setLogoColors,
   startDashboardBuild,
 } from "@/app/[locale]/(main)/ai-builder/builder-chat-v2.server";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * The AI Store Builder's conversation (ROADMAP.md F-54c). The seller comes from
@@ -43,7 +44,7 @@ const STATUS: Partial<Record<BuilderErrorCode, number>> = {
 
 const fail = (error: BuilderErrorCode, status = STATUS[error] ?? 422) => NextResponse.json<BuilderChatResponse>({ ok: false, error }, { status });
 
-const clientIp = (request: NextRequest) => request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || null;
+const clientIp = (request: NextRequest) => getClientIp(request.headers);
 
 const answer = (result: ChatResult) =>
   result.error

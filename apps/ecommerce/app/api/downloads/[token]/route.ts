@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateAndConsumeDownload } from "@workspace/lib/digital";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * Secure digital delivery endpoint. Never exposes a raw storage URL directly:
@@ -18,8 +19,7 @@ export async function GET(
   }
 
   const requesterUserId = await getCurrentUserId();
-  const ipAddress =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+  const ipAddress = getClientIp(request.headers);
   const userAgent = request.headers.get("user-agent");
 
   const result = await validateAndConsumeDownload(token, {

@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers'
+import { getClientIp } from '@workspace/lib/http/client-ip'
 import type { MetaCapiUserDataInput } from './meta.types'
 
 export async function getMetaRequestContext (): Promise<{
@@ -11,11 +12,7 @@ export async function getMetaRequestContext (): Promise<{
   const headerStore = await headers()
   const cookieStore = await cookies()
 
-  const forwardedFor = headerStore.get('x-forwarded-for')
-  const clientIpAddress =
-    forwardedFor?.split(',')[0]?.trim() ||
-    headerStore.get('x-real-ip') ||
-    null
+  const clientIpAddress = getClientIp(headerStore)
 
   const clientUserAgent = headerStore.get('user-agent')
   const fbp = cookieStore.get('_fbp')?.value ?? null

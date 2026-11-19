@@ -21,6 +21,7 @@ import {
   type SubdomainCheckResult,
   afterSignupPath,
 } from "./signup.dto";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * Minimal seller signup (PLAN.md §6, P2-02 / P2-03). The user id always comes
@@ -36,7 +37,7 @@ const NO_SELLER = "00000000-0000-0000-0000-000000000000";
 
 async function clientKey(): Promise<string> {
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  return getClientIp(h) ?? "unknown";
 }
 
 async function sessionUser() {

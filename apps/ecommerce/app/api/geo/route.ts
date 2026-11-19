@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { requestCountry } from "@/lib/marketing/visitor-country.lib";
+import { getClientCountry } from "@workspace/lib/http/client-ip";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
  */
 export function GET(request: NextRequest) {
   const country = requestCountry({
-    header: request.headers.get("x-vercel-ip-country"),
+    header: getClientCountry(request.headers),
     override: request.nextUrl.searchParams.get("country"),
     production: process.env.NODE_ENV === "production",
   });

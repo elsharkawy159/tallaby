@@ -62,11 +62,17 @@ ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL} \
 # a build step, and turbo's strict env mode would drop NEXT_OUTPUT and the
 # NEXT_PUBLIC_* values not listed in turbo.json.
 ENV NEXT_OUTPUT=standalone
+# Commit SHA from CI: the deploy id of `perDeploy` cache keys
+# (packages/cache DEPLOY_ID), here for prerendering and in the runner at run time.
+ARG DEPLOY_ID
+ENV DEPLOY_ID=${DEPLOY_ID}
 RUN pnpm --filter admin build
 
 # ---- 4. Runtime: only the traced standalone output ----
 FROM ${NODE_IMAGE} AS runner
 WORKDIR /app
+ARG DEPLOY_ID
+ENV DEPLOY_ID=${DEPLOY_ID}
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \

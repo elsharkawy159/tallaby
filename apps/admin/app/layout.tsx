@@ -18,9 +18,11 @@ const notoKufiArabic = Noto_Kufi_Arabic({
   weight: ["400", "500", "600", "700"],
 });
 
+// Vercel: the deployment URL. Self-hosted (Hetzner): the image's public URL
+// (NEXT_PUBLIC_SITE_URL, baked at build time). Else local dev.
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+  : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),

@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import { subscribeToStockAlert } from "@workspace/lib/stock-alerts/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { getCartScope, isRequestStoreOffline } from "@/lib/storefront.server";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 // Per visitor and store, and a ceiling per store against floods from many IPs.
 const visitorLimiter = createRateLimiter({ limit: 6, windowMs: 10 * 60_000 });
@@ -33,7 +34,7 @@ export async function subscribeStockAlert(input: {
   if (typeof input?.honeypot === "string" && input.honeypot) return { ok: true };
 
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  const ip = getClientIp(h) ?? "unknown";
   if (!visitorLimiter.check(`${scope.storeId}:${ip}`) || !storeLimiter.check(scope.storeId)) {
     return { ok: false, error: "rateLimited" };
   }

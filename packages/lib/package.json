@@ -259,6 +259,10 @@
       "types": "./src/notifications/server.ts",
       "default": "./src/notifications/server.ts"
     },
+    "./http/client-ip": {
+      "types": "./src/http/client-ip.lib.ts",
+      "default": "./src/http/client-ip.lib.ts"
+    },
     "./referrals": {
       "types": "./src/referrals/index.ts",
       "default": "./src/referrals/index.ts"

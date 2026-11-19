@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { normalizeIssuer, OAuthError } from "@workspace/lib/agents";
 import { logServerError } from "@workspace/db/log";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * HTTP helpers for the MCP OAuth endpoints (ROADMAP.md F-29b). These endpoints
@@ -65,7 +66,7 @@ const limiters = {
 };
 
 export function clientIp(request: Request): string {
-  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+  return getClientIp(request.headers) ?? "unknown";
 }
 
 export function rateLimited(kind: keyof typeof limiters, request: Request): NextResponse | null {

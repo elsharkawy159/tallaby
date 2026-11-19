@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { contacts, db } from "@workspace/db";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { contactSchema, type ContactInput, type ContactResult } from "./contact.dto";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 const limiter = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 });
 
@@ -16,7 +17,7 @@ export async function submitContactMessage(input: ContactInput): Promise<Contact
   if (!parsed.success) return { ok: false, error: "invalid" };
 
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  const ip = getClientIp(h) ?? "unknown";
   if (!limiter.check(ip)) return { ok: false, error: "rateLimited" };
 
   const { role, topic, fullName, email, storeLink, message } = parsed.data;

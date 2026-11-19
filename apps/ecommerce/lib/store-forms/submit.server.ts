@@ -8,6 +8,7 @@ import { getAuthUser } from "@/lib/auth/current-user";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { getCartScope } from "@/lib/storefront.server";
 import { storeFormSubmitSchema, type StoreFormSubmitResult } from "./submit.dto";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 // Per visitor and store, and a ceiling per store against floods from many IPs.
 const visitorLimiter = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 });
@@ -55,7 +56,7 @@ export async function submitStorefrontForm(input: unknown): Promise<StoreFormSub
   if (honeypot) return { ok: true, message: "" };
 
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  const ip = getClientIp(h) ?? "unknown";
   if (!visitorLimiter.check(`${scope.storeId}:${ip}`) || !storeLimiter.check(scope.storeId)) {
     return { ok: false, error: "rateLimited" };
   }

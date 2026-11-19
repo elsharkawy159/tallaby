@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { db, newsletterSubscribers, sql } from "@workspace/db";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { newsletterSchema, type NewsletterInput, type NewsletterResult } from "./newsletter.dto";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 const limiter = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 });
 
@@ -19,7 +20,7 @@ export async function subscribeToNewsletter(input: NewsletterInput): Promise<New
   if (parsed.data.website) return { ok: true };
 
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  const ip = getClientIp(h) ?? "unknown";
   if (!limiter.check(ip)) return { ok: false, error: "rateLimited" };
 
   const email = parsed.data.email.trim().toLowerCase();

@@ -7,6 +7,7 @@ import { signCustomerUpload } from "@workspace/lib/products/customer-fields/serv
 import { getOrCreateCurrentUserId } from "@/lib/get-current-user-id";
 import { getCartScope } from "@/lib/storefront.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * Signs one customer photo upload for a product's "Customer requirements"
@@ -32,7 +33,7 @@ export async function createCustomerUploadUrl(input: { productId: string; mime: 
     if (!UUID.test(productId)) return { success: false, error: "notAllowed" };
 
     const h = await headers();
-    const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+    const ip = getClientIp(h) ?? "unknown";
     if (!perIp.check(`customer-upload-ip:${ip}`)) return { success: false, error: "rateLimited" };
 
     const [product, scope] = await Promise.all([

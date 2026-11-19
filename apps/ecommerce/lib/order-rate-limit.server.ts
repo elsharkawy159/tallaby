@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { and, db, eq, userAddresses } from "@workspace/db";
 import { createOrderRateLimit, orderRateLimitKeys, type OrderRateKeys } from "@/lib/order-rate-limit.lib";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * Store-website order rate limit (ROADMAP.md F-02e), on the server. Every
@@ -18,7 +19,7 @@ export async function storeOrderRateKeys(input: {
 }): Promise<OrderRateKeys | null> {
   try {
     const h = await headers();
-    const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || null;
+    const ip = getClientIp(h);
     let phone: string | null = null;
     if (input.shippingAddressId) {
       const address = await db.query.userAddresses.findFirst({

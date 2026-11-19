@@ -6,6 +6,7 @@ import { redirect } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getAuthResult } from "@/lib/auth/session.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * Auth actions return their error text instead of throwing it: in production
@@ -23,7 +24,7 @@ const resendLimiter = createRateLimiter({ limit: 3, windowMs: 10 * 60_000 });
 
 async function clientKey(): Promise<string> {
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  return getClientIp(h) ?? "unknown";
 }
 
 export const getUser = async () => {

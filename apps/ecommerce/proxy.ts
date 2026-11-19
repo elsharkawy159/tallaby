@@ -25,6 +25,7 @@ import {
   storeHostForSubdomain,
 } from "@/lib/custom-domain-lookup";
 import { updateSession } from "./supabase/middleware";
+import { getClientCountry } from "@workspace/lib/http/client-ip";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -92,7 +93,7 @@ export async function proxy(request: NextRequest) {
   const marketplace = isMarketplaceHost(host);
   const country = marketplace
     ? requestCountry({
-        header: request.headers.get("x-vercel-ip-country"),
+        header: getClientCountry(request.headers),
         override: request.nextUrl.searchParams.get("country"),
         production: process.env.NODE_ENV === "production",
       })

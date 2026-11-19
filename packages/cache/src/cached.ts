@@ -22,8 +22,13 @@ export interface CachedQueryConfig<A extends readonly unknown[], R> {
   perDeploy?: boolean;
 }
 
-/** This deploy (Vercel system env), or "local". Part of the key of `perDeploy` queries. */
-export const DEPLOY_ID = process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_GIT_COMMIT_SHA || "local";
+/**
+ * This deploy: Vercel's system env, else `DEPLOY_ID` (self-hosted images bake
+ * the commit SHA, see apps/admin/Dockerfile), else "local". Part of the key of
+ * `perDeploy` queries.
+ */
+export const DEPLOY_ID =
+  process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_GIT_COMMIT_SHA || process.env.DEPLOY_ID || "local";
 
 const cachedQueryWrappers = new Map<string, (...args: unknown[]) => Promise<unknown>>();
 

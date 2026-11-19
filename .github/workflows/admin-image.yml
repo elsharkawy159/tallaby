@@ -68,6 +68,7 @@ jobs:
           cache-from: type=gha,scope=admin
           cache-to: type=gha,scope=admin,mode=max
           build-args: |
+            DEPLOY_ID=${{ github.sha }}
             NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
             NEXT_PUBLIC_SUPABASE_PROJECT_ID=${{ vars.NEXT_PUBLIC_SUPABASE_PROJECT_ID }}

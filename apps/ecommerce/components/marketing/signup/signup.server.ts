@@ -21,6 +21,7 @@ import {
   type SignupResult,
   type StoreChoiceInput,
 } from "./signup.dto";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * Seller signup from the marketing site (PLAN.md §6). Same flow and checks as
@@ -36,7 +37,7 @@ const fail = (error: SignupErrorKey): SignupResult => ({ status: "error", error 
 
 async function clientKey(): Promise<string> {
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  return getClientIp(h) ?? "unknown";
 }
 
 async function checkChoice(input: StoreChoiceInput) {

@@ -19,6 +19,7 @@ import { SELECTED_STORE_COOKIE } from "@/lib/stores/current-store.server";
 import { STORE_INDUSTRIES } from "@/lib/stores/industries.lib";
 import type { SubdomainCheckResult } from "@/components/stores/subdomain-field.client";
 import type { StoreActionResult } from "./stores.dto";
+import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
  * My stores (PLAN.md §8.0, P3-02). The seller comes from the session; the
@@ -31,7 +32,7 @@ const createLimiter = createRateLimiter({ limit: 10, windowMs: 60 * 60_000 });
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  return `${prefix}:${h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown"}`;
+  return `${prefix}:${getClientIp(h) ?? "unknown"}`;
 }
 
 /**
