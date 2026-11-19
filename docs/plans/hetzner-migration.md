@@ -82,6 +82,14 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
   - Set by the image: `NODE_ENV`, `PORT=3000`, `HOSTNAME=0.0.0.0`. Still read, replaced in step 2.3: `VERCEL_URL` (`app/layout.tsx` metadata base, falls back to `http://localhost:3000` when unset), `VERCEL`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_DEPLOYMENT_ID`.
 - Not done yet: the admin cron (`/api/cron/admin-push`, step 2.5), a first real image build in CI, the Coolify app on the VPS.
 
+### Admin live on Hetzner (2026-11-19)
+
+- Server `tallaby-prod-1` (Hetzner CPX22, Nuremberg, 2.28.78.10, Ubuntu 26.04): SSH key only, unattended upgrades, fail2ban, 4 GB swap, backups on, firewall `tallaby-prod` (22, 80, 443, ICMP open; 8000 from the owner's IP only, to be closed now that Coolify is at `deploy.tallaby.com`).
+- Coolify v4.7.5 at `https://deploy.tallaby.com`. Project "Tallaby" › production › app `tallaby-admin` (`ghcr.io/elsharkawy159/tallaby-admin:main`, port 3000), domains `admin.tallaby.com` and `admin-hz.tallaby.com`, 17 runtime env vars (Vercel's admin production list), scheduled task `admin-push` at `50 4 * * *` UTC. The server pulls from GHCR with a `read:packages` token (expires 2027-11-18).
+- CI: `admin-image.yml` redeploys through Coolify's API after each push of `:main` (secret `COOLIFY_ADMIN_DEPLOY_TOKEN`, Deploy + Read on that app only; Coolify API open to every IP, token-protected).
+- DNS: Cloudflare A `admin.tallaby.com` → 2.28.78.10 (DNS only, TTL 60) overrides the `*` wildcard. **Rollback = delete that record** (traffic goes back to the Vercel admin project, which stays deployed). The first Let's Encrypt try failed because Traefik asked before DNS pointed at the server; restarting `coolify-proxy` fixed it. For the next app: add the DNS record first, then the Coolify domain.
+- No Supabase database webhook calls `/api/cron/admin-push` on production (checked), and admin push has no VAPID keys on Vercel either, so `CRON_SECRET` only has to match the Coolify task.
+
 ## 7. Before deciding
 
 - Compare the real Vercel bill with Hetzner + Cloudflare for SaaS + the ops time a self-managed server needs.
