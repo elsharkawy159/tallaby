@@ -149,6 +149,14 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 - **External callers** (WAF skip list, §5): Supabase Database Webhook on `seller_notifications` INSERT → `POST /api/cron/seller-push` (Bearer `CRON_SECRET`, so the webhook header must match the Coolify value); MCP OAuth `/.well-known/oauth-authorization-server`, `/oauth/authorize` (page), `/api/oauth/register|token|revoke`; Supabase Auth redirects to `/api/auth/callback`; Google OAuth redirects to `/api/integrations/google/callback` (redirect URI built from the request origin, so the proxy must pass `Host` and `X-Forwarded-Proto: https`); `/api/revalidate` (cache broadcast from the other apps, `REVALIDATE_SECRET`); `/api/email/setup-reminders/unsubscribe` (links in emails). Payment and Bosta webhooks go to `api.tallaby.com` (backend), not the dashboard.
 - **Vercel assumptions:** `maxDuration` is ignored self-hosted (no limit; Traefik/Coolify timeouts apply, keep them ≥ 300 s for the long crons, `marketing/emails` and the AI routes); `after()` runs in the same Node process; image optimization runs on our CPU (`sharp`); no ISR/`revalidate` exports; `VERCEL` only sizes the DB pool.
 
+### Dashboard live on Hetzner (2026-11-19)
+
+- Coolify app `tallaby-dashboard` (`ghcr.io/elsharkawy159/tallaby-dashboard:main`, port 3000, ~150 MB RAM), domain `dashboard.tallaby.com`, 34 runtime env vars (Vercel's production list; addresses from Vercel, secrets from the production env files, DB/service key checked; `INTERNAL_API_SECRET`, `MCP_TOKEN_PEPPER`, `INTEGRATIONS_ENCRYPTION_KEY`, `REVALIDATE_SECRET` match the backend's), `TRUST_CLOUDFLARE_HEADERS=1`.
+- Tested on the proxied temporary `dashboard-hz.tallaby.com` against Vercel: 16 routes identical after the `requestOrigin` fix (route handlers had redirected to `https://0.0.0.0:3000`; `@workspace/lib/http/request-origin`). The owner signed in and checked pages there.
+- **Crons:** the 7 jobs run as Coolify scheduled tasks inside the container (`node -e fetch('http://127.0.0.1:3000/api/cron/<path>', Bearer $CRON_SECRET)`, UTC schedules as in `vercel.json`, timeouts 330 s for the 300 s routes). `exchange-rate` run once by hand: 200. **Vercel cron jobs disabled** for `tallaby-dashboard` and `tallaby-admin` (Project › Schedules › Cron Jobs › Disable; they stay off even after a deploy).
+- Switch 2026-11-19 10:04Z: Cloudflare A `dashboard` → 2.28.78.10 **proxied** added first, then the Coolify domain; the origin certificate was issued through Cloudflare (HTTP-01 on port 80). **Rollback = delete that record and re-enable the Vercel cron jobs.** Vercel dashboard Git builds are off (`apps/dashboard/vercel.json`); the last deployment stays live as the rollback.
+- CI: `dashboard-image.yml` redeploys through Coolify (`COOLIFY_DASHBOARD_DEPLOY_TOKEN`, `COOLIFY_DASHBOARD_APP_UUID`).
+
 ## 7. Before deciding
 
 - Compare the real Vercel bill with Hetzner + Cloudflare for SaaS + the ops time a self-managed server needs.
