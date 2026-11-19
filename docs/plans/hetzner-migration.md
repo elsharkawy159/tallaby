@@ -56,6 +56,17 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 - Rate-limit rules on login, checkout and OTP endpoints.
 - **`TRUST_CLOUDFLARE_HEADERS=1`** (runtime env, per app): set it only once that host's Cloudflare proxy is on AND the Hetzner firewall allows 80/443 only from Cloudflare's IP ranges. Then `@workspace/lib/http/client-ip` (`getClientIp`, `getClientCountry`) reads `CF-Connecting-IP` and `CF-IPCountry` (`XX`/`T1` = no country). Unset (Vercel, grey-cloud hosts) those headers are ignored, so a client cannot forge them, and the helper returns what the call sites read before (first `x-forwarded-for` entry, then `x-real-ip`; `x-vercel-ip-country`).
 
+### Done 2026-11-19 (admin, deploy, api, mcp)
+
+- **Edge certificate:** Cloudflare Universal SSL (`tallaby.com`, `*.tallaby.com`, Let's Encrypt, active 03:05Z, renews about every 90 days). It validates by TXT at `_acme-challenge.tallaby.com`, which is NS-delegated to Vercel DNS for Vercel's wildcard renewals, so **Cloudflare's two TXT values were added to Vercel's DNS zone** (records `_acme-challenge`, comment "Cloudflare Universal SSL validation"). On each Cloudflare renewal, new TXT values must be added there until the delegation is removed (when no `*.tallaby.com` store is served by Vercel). The first proxy attempt (02:0xZ) failed TLS at the edge for ~2 minutes because the certificate was still pending; check `ssl/certificate_packs` is `active` before proxying a host.
+- **Origin certificates:** the server keeps its own Let's Encrypt certificates (Full (strict) works with them, no Origin CA needed). Zone "Always use HTTPS" is **off** so port-80 ACME challenges reach Traefik through Cloudflare; Traefik itself redirects HTTP to HTTPS (checked: `/login` 302, `/.well-known/acme-challenge/*` reaches Traefik).
+- **Zone settings:** SSL Full (strict), minimum TLS 1.2, Bot Fight Mode off.
+- **Configuration rule:** `api.tallaby.com`, `mcp.tallaby.com` → Browser Integrity Check off, security level "essentially off" (webhook senders and MCP agents; tested with an empty User-Agent).
+- **Rate limit:** `admin.tallaby.com` `POST /login` max 10 per 10 s per IP (block 10 s; Free plan limits).
+- **Proxied (orange):** `admin`, `deploy`, `api`, `mcp`. **Hetzner firewall:** 80/443 only from Cloudflare's 15 IPv4 + 7 IPv6 ranges (from `GET /ips`; update if Cloudflare changes them), 22 and ICMP open; direct HTTP(S) to 2.28.78.10 times out.
+- **`TRUST_CLOUDFLARE_HEADERS=1`** on Coolify apps `tallaby-admin` and `tallaby-backend`.
+- Any new app on this server must be proxied before it can be reached (the firewall now blocks direct access).
+
 ## 6. Order of work
 
 1. ✅ DNS on Cloudflare (§1).
