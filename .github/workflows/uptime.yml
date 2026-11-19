@@ -1,5 +1,5 @@
 # Uptime check for the public hosts (docs/plans/hetzner-migration.md §4,
-# "uptime alerts"). Runs every 10 minutes and fails when any host does not
+# "uptime alerts"). Runs every 30 minutes and fails when any host does not
 # answer with the expected status. GitHub emails the repository owner when a
 # scheduled run fails (Settings > Notifications > Actions), so a red run is the
 # alert. Read-only: plain curl, no secrets, no repository access.
@@ -7,7 +7,7 @@ name: uptime
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 permissions:

@@ -94,3 +94,14 @@ jobs:
             "${COOLIFY_URL}/api/v1/deploy" -d "{\"uuid\":\"${COOLIFY_APP_UUID}\"}")
           cat response.json; echo
           test "$status" -ge 200 && test "$status" -lt 300
+
+      # Keep GHCR storage small: each admin image is ~460 MB and every build
+      # adds versions (plus untagged attestation manifests). Keep the newest 10.
+      - name: Prune old admin images
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: tallaby-admin
+          package-type: container
+          min-versions-to-keep: 10
