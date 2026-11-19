@@ -6,7 +6,7 @@ import { REFERRAL_COOKIE, normalizeReferralCode } from "@workspace/lib/referrals
 import { signupInputSchema } from "@workspace/lib/sellers";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
 import { isStoreBuildIntakeOpen } from "@workspace/lib/store-builds/server";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import { createClient } from "@/supabase/server";
 import { builderUrlFor, completeSignup } from "./signup-complete.server";

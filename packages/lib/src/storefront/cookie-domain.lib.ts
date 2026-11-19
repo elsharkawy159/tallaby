@@ -1,4 +1,4 @@
-import { isPlatformHost } from "@workspace/lib/storefront";
+import { isPlatformHost } from "./index";
 
 /**
  * The `domain` for Supabase auth cookies on a request to `host`.

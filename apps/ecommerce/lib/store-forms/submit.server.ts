@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { submitStoreForm } from "@workspace/lib/store-forms/server";
 import { hostnameOf } from "@workspace/lib/storefront";
 import { getAuthUser } from "@/lib/auth/current-user";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { getCartScope } from "@/lib/storefront.server";
 import { storeFormSubmitSchema, type StoreFormSubmitResult } from "./submit.dto";
 import { getClientIp } from "@workspace/lib/http/client-ip";

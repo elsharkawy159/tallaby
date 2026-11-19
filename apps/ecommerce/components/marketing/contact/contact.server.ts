@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { contacts, db } from "@workspace/db";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { contactSchema, type ContactInput, type ContactResult } from "./contact.dto";
 import { getClientIp } from "@workspace/lib/http/client-ip";
 

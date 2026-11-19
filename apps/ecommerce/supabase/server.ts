@@ -2,7 +2,7 @@
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies, headers } from "next/headers";
-import { cookieDomainForHost } from "./cookie-domain";
+import { cookieDomainForHost } from "@workspace/lib/storefront/cookie-domain";
 
 export async function createClient() {
   const cookieStore = await cookies();

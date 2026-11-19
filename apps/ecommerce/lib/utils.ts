@@ -1,4 +1,4 @@
-import { ProductCardProps } from "@/components/product";
+import type { ProductCardProps } from "@/components/product";
 import { getPriceFinal, getPriceList, parsePriceJson } from "@workspace/lib";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { clsx, type ClassValue } from "clsx";

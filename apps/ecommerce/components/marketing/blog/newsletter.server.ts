@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { db, newsletterSubscribers, sql } from "@workspace/db";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { newsletterSchema, type NewsletterInput, type NewsletterResult } from "./newsletter.dto";
 import { getClientIp } from "@workspace/lib/http/client-ip";
 

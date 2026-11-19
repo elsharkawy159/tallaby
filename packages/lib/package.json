@@ -267,6 +267,10 @@
       "types": "./src/http/request-origin.lib.ts",
       "default": "./src/http/request-origin.lib.ts"
     },
+    "./http/rate-limit": {
+      "types": "./src/http/rate-limit.lib.ts",
+      "default": "./src/http/rate-limit.lib.ts"
+    },
     "./referrals": {
       "types": "./src/referrals/index.ts",
       "default": "./src/referrals/index.ts"
@@ -502,6 +506,10 @@
     "./storefront": {
       "types": "./src/storefront/index.ts",
       "default": "./src/storefront/index.ts"
+    },
+    "./storefront/cookie-domain": {
+      "types": "./src/storefront/cookie-domain.lib.ts",
+      "default": "./src/storefront/cookie-domain.lib.ts"
     },
     "./storefront/server": {
       "types": "./src/storefront/custom-domains.server.ts",

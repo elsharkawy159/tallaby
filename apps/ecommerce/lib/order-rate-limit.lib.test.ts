@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRateLimiter } from "./rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { createOrderRateLimit, ORDER_RATE_LIMITS, orderRateLimitKeys, orderRatePhone } from "./order-rate-limit.lib";
 
 const STORE = "store-1";

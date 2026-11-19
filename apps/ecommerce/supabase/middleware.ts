@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
-import { cookieDomainForHost } from "./cookie-domain";
+import { cookieDomainForHost } from "@workspace/lib/storefront/cookie-domain";
 
 /** Strips a leading locale prefix (`/en`, or `/ar`: the prefixed language of an
  * English-default store) so path checks below work the same under `/auth`,

@@ -6,7 +6,7 @@ import { parseCustomerFields } from "@workspace/lib/products/customer-fields";
 import { signCustomerUpload } from "@workspace/lib/products/customer-fields/server";
 import { getOrCreateCurrentUserId } from "@/lib/get-current-user-id";
 import { getCartScope } from "@/lib/storefront.server";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**

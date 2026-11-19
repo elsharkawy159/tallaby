@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { checkStoreSubdomain } from "@workspace/lib/stores/server";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import type { SubdomainAvailability } from "./subdomain.dto";
 import { getClientIp } from "@workspace/lib/http/client-ip";
 

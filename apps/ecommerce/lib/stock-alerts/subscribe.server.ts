@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { subscribeToStockAlert } from "@workspace/lib/stock-alerts/server";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { getCartScope, isRequestStoreOffline } from "@/lib/storefront.server";
 import { getClientIp } from "@workspace/lib/http/client-ip";
 

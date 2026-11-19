@@ -1,5 +1,5 @@
 import { normalizeBlockedPhone } from "@workspace/lib/stores/blocked-phones";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 
 /**
  * Store-website checkout rate limit (ROADMAP.md F-02e). Counts placed orders

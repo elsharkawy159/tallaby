@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { getServiceClient } from "@workspace/db/supabase/service";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 
 /**
  * Signs one review photo or video upload into the customer's own folder of the

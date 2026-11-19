@@ -5,7 +5,7 @@ import { saveStoreCheckoutLead } from "@workspace/lib/checkout-leads/server";
 import type { CheckoutLeadItem } from "@workspace/lib/checkout-leads";
 import { getLocale } from "next-intl/server";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { getCheckoutShipping } from "@/lib/shipping.server";
 import { activeCartWhere, getCartScope, isRequestStoreOffline } from "@/lib/storefront.server";
 import { mergeProductWithTranslation, pickTranslationFromArray, type ProductLocale } from "@/lib/product-translations";

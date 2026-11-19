@@ -8,7 +8,7 @@ import {
 } from "@workspace/lib/shipping/checkout-address";
 import { saveCheckoutAddressRow } from "@workspace/lib/shipping/checkout-address/server";
 import { getOrCreateCurrentUserId } from "@/lib/get-current-user-id";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 
 /**
  * The simple checkout form (ROADMAP.md F-64). The user comes from the session

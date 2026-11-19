@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { createRateLimiter } from "@workspace/lib/http/rate-limit";
 import { getClientIp } from "@workspace/lib/http/client-ip";
 
 /**
