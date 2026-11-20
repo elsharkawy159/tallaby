@@ -1406,6 +1406,16 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### F-102 Store-less dashboard links, support copy-link and more notification audiences — P1 · Owner request 2026-11-20
+
+- **Status:** built 2026-11-20 (F-102a `4cc9c9d2`, F-102b, F-102c `24e1d99c`); not deployed; not checked in a signed-in browser.
+- **Why:** the owner answers sellers ("where is the shipping settings page?") and writes Admin notifications with links, and a link can't carry each seller's own store id.
+- **F-102a · P1 · deps: —** Store-less links: `/settings/payments`, `/website`, `/stores/website`, `/analytics` … open that page for the seller's selected store (the sidebar's store; for a seller who never switched it is the primary or first store), like `/welcome` and `/products` already do. Mapping in `apps/dashboard/lib/navigation/storeless-routes.lib.ts` (both directions, tested); account pages unchanged; no open redirect.
+- **F-102b · P1 · deps: F-102a** Support account only (`seller@tallaby.com`): a copy icon on hover on each sidebar item copies the page's store-less link.
+- **F-102c · P1 · deps: —** Admin › Seller notifications audiences: Tallaby Pay not connected, no active product, site not published, no shipping zones, Free plan, Pro plan, joined in the last 7 days. No migration.
+
+---
+
 ### F-101 Code sections (custom CSS + Liquid) in the website builder — P1 · Owner request 2026-11-20 · Approved
 
 - **Status:** approved 2026-11-20 (owner): sellers and their developers may add their own code; CLAUDE.md rule 9 changed the same day. Design written 2026-11-20: [`docs/superpowers/specs/2026-11-20-code-sections-design.md`](docs/superpowers/specs/2026-11-20-code-sections-design.md) (its §9 task list F-101a–i replaces the draft tasks below); owner accepted every default in its §10 on 2026-11-20, so F-101a is done. Nothing built; next F-101b and F-101c.
@@ -1435,6 +1445,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Feature ID                                                                                       | Status                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-11-20 | "I need to make good redirection system on the dashboard … dashboard.tallaby.com/settings/payments go to …/stores/<first store>/settings/payments … for the account seller@tallaby.com … on the sidebar navigation items make a simple copy icon appears on hover … copy the link of that page without the storeid … add more filters to admin seller-notifications … like Tallaby pay not integrated, etc" | F-102 | In progress 2026-11-20: store-less links, support copy-link icon, more notification audiences |
 | 2026-11-20 | "some sellers ask if possible to add code so I need to extend my current builder so that work with both drag/drop and code … I need to let sellers or their developers to be able to build something customized, also for the AI website builder assistant to be able to build sections customized with liquid" | F-101 | Approved 2026-11-20 (hybrid: Liquid code sections inside the tree, no JS); rule 9 changed; design note next |
 | 2026-11-20 | "improve the email designs, and add our social media icons in the footer of every email so people follow us" | — (polish, no feature ID) | Built 2026-11-20 (uncommitted): social row in every email footer, 3 legacy emails moved to the kit; icons live after apps/marketing deploys; Supabase auth templates need re-pasting |
 | 2026-11-18 | "I need to build Tallaby Pay based on Easy Kash … Sellers have a separated Tallaby Earning wallet … Tallaby Platform for now is 3% … if order amount is 100 EGP … seller's earning wallet should be toped up with 97 EGP and 3 EGP on Fees box" | F-100 | Designed 2026-11-18 |
@@ -1671,6 +1682,9 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-99a–g Dropshipping — added to the plan 2026-11-18; waits for the owner's answers (§4 F-99)
 - [x] F-100a–g Tallaby Pay built 2026-11-18 (`2c143e0f`, `41434ccc`, `b80a1fc7`, `cd6265bd`, `8f77bd3c`, `1fb22c57`, `83d158ac`); 0175/0176 applied on staging and production 2026-11-19
 - [ ] F-100h Manual E2E on staging (needs 0175/0176, env, EasyKash callback URL, switch on)
+- [x] F-102a Store-less dashboard links — 2026-11-20 (`4cc9c9d2`); dashboard build passes; not tried signed in
+- [x] F-102b Support account copy-link icon in the sidebar (`seller@tallaby.com`) — 2026-11-20; not tried signed in
+- [x] F-102c Seven more Admin seller-notification audiences — 2026-11-20 (`24e1d99c`); SQL checked with read-only counts on production
 - [x] F-101a Code sections design note — 2026-11-20 (`docs/superpowers/specs/2026-11-20-code-sections-design.md`); owner accepted all §10 defaults
 - [ ] F-101b–i Code sections build (custom CSS, `code` element, objects, editor, security review, AI, docs, script CSP) — approved 2026-11-20 for every seller
 - [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17; `0173` applied on staging and production (checked 2026-11-19)
@@ -1972,6 +1986,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-20 — Store-less links, support copy-link, more audiences (F-102, owner request)
+
+- **Done:** F-102a store-less links (`/settings/payments`, `/website`, `/stores/<section>/…`, `/analytics`, `/apps`, `/catalog`, `/earnings`) redirect to the seller's selected store; one page per section rather than a root catch-all, so unknown URLs 404 as before. F-102b a hover copy icon on sidebar links for `seller@tallaby.com` (server-decided boolean, `lib/auth/support-accounts.lib.ts`), copying the store-less link without a locale prefix. F-102c Admin audiences `tallaby_pay_not_connected`, `no_active_product`, `site_not_published`, `no_shipping_zones`, `free_plan`, `pro_plan`, `joined_last_7_days` in four groups; read-only production counts 194 / 104 / 87 / 153 / 195 / 0 / 78 of 195 sellers, 60–72 ms each. No migration.
+- **Not done:** nothing tried in a signed-in browser; not deployed; the copy icon is desktop only (no hover on touch).
 
 ### 2026-11-20 — Code sections planned (F-101, owner request)
 
