@@ -1408,7 +1408,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-101 Code sections (custom CSS + Liquid) in the website builder — P1 · Owner request 2026-11-20 · Approved
 
-- **Status:** approved 2026-11-20 (owner): sellers and their developers may add their own code; CLAUDE.md rule 9 changed the same day. Nothing designed or built. Next step: a design note (`docs/superpowers/specs/<date>-code-sections-design.md`).
+- **Status:** approved 2026-11-20 (owner): sellers and their developers may add their own code; CLAUDE.md rule 9 changed the same day. Design written 2026-11-20: [`docs/superpowers/specs/2026-11-20-code-sections-design.md`](docs/superpowers/specs/2026-11-20-code-sections-design.md) (its §9 task list F-101a–i replaces the draft tasks below; owner questions in its §10). Nothing built.
 - **Why:** sellers asked to add their own code. Developers and agencies working for sellers need custom layouts the visual sections can't make. The AI website builder can also write a custom section faster as Liquid than as a node tree.
 - **Shape (hybrid, owner 2026-11-20):** the page stays a JSON element tree (rule 17), and drag and drop, reorder, templates and existing stores are unchanged. A new `code-section` node holds HTML + Liquid + CSS plus a settings schema; its fields appear in the builder sidebar, so a seller edits a developer's section without touching code. Rendered on the server with `liquidjs` (parse, render and memory limits), the HTML cleaned (no `<script>`, `on*` attributes or `javascript:` URLs), CSS scoped to the section, inside the React page (cart, carousels and pop-ups keep working). **No JavaScript.** Never on checkout pages.
 - **Not in scope (for now):** custom JavaScript; full developer-built Liquid themes, a developer CLI or a theme marketplace (re-check after we see how much code sections are used); converting existing templates to Liquid.
@@ -1976,6 +1976,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 - **Done:** owner approved a hybrid builder: Liquid code sections (HTML + Liquid + CSS, no JS) inside the drag-and-drop tree, editable through schema fields, for sellers, their developers and the AI builder. Added F-101 (§3, §4, §5, §6) and changed CLAUDE.md rule 9 to allow it. No code, no migration.
 - **Owner answer:** every seller gets it (Free and Pro).
+- **Design note** written the same day (`docs/superpowers/specs/2026-11-20-code-sections-design.md`). Code facts that shaped it: no template engine installed; the session cookie is shared by every `*.tallaby.com` host; checkout runs on the store host; no CSP anywhere. So render-time HTML cleaning is the security boundary, plus a basic CSP, an XSS test corpus and a kill switch (`platform_switches.code_sections`, planned migration `0178`) before go-live.
 - **Not done:** design note (F-101a); the owner's 2 open questions (CSS scope, sharing).
 
 ### 2026-11-20 — Email polish: social icons in every footer (owner request)
