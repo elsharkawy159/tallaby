@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import en from "../../../../../../../messages/en.json";
 import ar from "../../../../../../../messages/ar.json";
 import { DOMAIN_PROVIDERS } from "./domain-providers.lib";
-import { APEX_A_RECORD, CNAME_TARGET, MAX_TTL, MIN_TTL, RECOMMENDED_TTL, REGISTRAR_GUIDES, dnsRecords, splitDomain } from "./domain-dns.lib";
+import {
+  VERCEL_APEX_A_RECORD as APEX_A_RECORD,
+  VERCEL_CNAME_TARGET as CNAME_TARGET,
+  cloudflareRoutingRecords,
+  vercelRoutingRecords,
+} from "@workspace/lib/storefront/custom-domain-provider.lib";
+import { MAX_TTL, MIN_TTL, RECOMMENDED_TTL, REGISTRAR_GUIDES, dnsRecords, splitDomain } from "./domain-dns.lib";
 
 describe("TTL", () => {
   it("recommends a value every registrar accepts (60–3600)", () => {
@@ -29,22 +35,35 @@ describe("splitDomain", () => {
 
 describe("dnsRecords", () => {
   it("uses @ and www for a root domain, each with the recommended TTL", () => {
-    expect(dnsRecords("faster-eg.com")).toEqual([
+    expect(dnsRecords("faster-eg.com", vercelRoutingRecords("faster-eg.com"))).toEqual([
       { type: "A", name: "@", value: APEX_A_RECORD, ttl: RECOMMENDED_TTL },
       { type: "CNAME", name: "www", value: CNAME_TARGET, ttl: RECOMMENDED_TTL },
     ]);
   });
 
   it("uses the subdomain label and CNAMEs for a subdomain", () => {
-    expect(dnsRecords("shop.faster-eg.com").map((r) => [r.type, r.name, r.value])).toEqual([
+    expect(dnsRecords("shop.faster-eg.com", vercelRoutingRecords("shop.faster-eg.com")).map((r) => [r.type, r.name, r.value])).toEqual([
       ["CNAME", "shop", CNAME_TARGET],
       ["CNAME", "www.shop", CNAME_TARGET],
     ]);
   });
 
   it("shows Vercel's TXT records by their host part", () => {
-    const records = dnsRecords("shop.faster-eg.com", [{ type: "TXT", domain: "_vercel.faster-eg.com", value: "vc-domain-verify=x" }]);
+    const records = dnsRecords("shop.faster-eg.com", vercelRoutingRecords("shop.faster-eg.com"), [
+      { type: "TXT", domain: "_vercel.faster-eg.com", value: "vc-domain-verify=x" },
+    ]);
     expect(records.at(-1)).toEqual({ type: "TXT", name: "_vercel", value: "vc-domain-verify=x", ttl: RECOMMENDED_TTL });
+  });
+
+  it("shows Cloudflare's CNAME target, an ALIAS at the root, and its TXT records by host part", () => {
+    const records = dnsRecords("faster-eg.com", cloudflareRoutingRecords("faster-eg.com", "shops.tallaby.com"), [
+      { type: "TXT", domain: "_cf-custom-hostname.www.faster-eg.com", value: "uuid-1" },
+    ]);
+    expect(records).toEqual([
+      { type: "ALIAS", name: "@", value: "shops.tallaby.com", ttl: RECOMMENDED_TTL },
+      { type: "CNAME", name: "www", value: "shops.tallaby.com", ttl: RECOMMENDED_TTL },
+      { type: "TXT", name: "_cf-custom-hostname.www", value: "uuid-1", ttl: RECOMMENDED_TTL },
+    ]);
   });
 });
 

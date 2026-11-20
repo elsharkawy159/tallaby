@@ -47,10 +47,6 @@ import {
   INPUT_IN_GROUP_CLASS,
 } from './settings-ui'
 
-/** Vercel's targets; mirrors packages/lib/src/storefront/vercel-domains.ts. */
-const APEX_A_RECORD = '76.76.21.21'
-const WWW_CNAME = 'cname.vercel-dns.com'
-
 /** Reasons `checkCustomDomain` reports while a domain isn't live. */
 const CHECK_KEYS = new Set(['unverified', 'dns', 'not_attached'])
 
@@ -58,11 +54,9 @@ const STEPS = ['buy', 'enter', 'dns'] as const
 
 type DnsRecord = { type: string; name: string; value: string }
 
+/** The provider's routing records (from the server), then its TXT records. */
 function dnsRecords (view: CustomDomainView): DnsRecord[] {
-  const records: DnsRecord[] = [
-    { type: 'A', name: '@', value: APEX_A_RECORD },
-    { type: 'CNAME', name: 'www', value: WWW_CNAME },
-  ]
+  const records: DnsRecord[] = view.routing.map((r) => ({ type: r.type, name: r.name, value: r.value }))
   for (const v of view.verification) {
     // `_vercel.faster-eg.com` → `_vercel` (registrars want the host part).
     const name = v.domain.endsWith(`.${view.domain}`)
@@ -326,6 +320,7 @@ export function CustomDomainSection ({
                     </tbody>
                   </table>
                 </div>
+                {view.routing.some((r) => r.type === 'ALIAS') && <FieldHint>{t('aliasHint')}</FieldHint>}
                 {view.lastError && (
                   <FieldHint>
                     {t(`checks.${CHECK_KEYS.has(view.lastError) ? view.lastError : 'dns'}`)}

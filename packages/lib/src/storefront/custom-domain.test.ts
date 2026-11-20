@@ -20,6 +20,12 @@ describe("validateSubdomain reserved names", () => {
     expect(validateSubdomain(normalizeSubdomain(input))).toBe("reserved");
   });
 
+  // `shops` is the Cloudflare for SaaS fallback origin (shops.tallaby.com); also in
+  // is_reserved_subdomain() since 0044 (kept by 0154).
+  it.each(["shops", "SHOPS", " shops "])("rejects %j as reserved", (input) => {
+    expect(validateSubdomain(normalizeSubdomain(input))).toBe("reserved");
+  });
+
   it("still accepts names that only contain it", () => {
     expect(validateSubdomain("glow-beauty")).toBeNull();
     expect(validateSubdomain("myglow")).toBeNull();

@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Daily (vercel.json): re-checks every seller custom domain with Vercel.
+ * Daily (vercel.json): re-checks every seller custom domain with its own
+ * provider (`seller_custom_domains.provider`: Vercel or Cloudflare).
  * Pending domains whose DNS is now right go live without the seller pressing
  * "Check now"; live domains whose DNS broke are marked failed so they stop
  * resolving and the seller sees why in the dashboard.

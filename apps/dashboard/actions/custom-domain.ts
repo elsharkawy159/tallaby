@@ -15,21 +15,24 @@ import {
   type CustomDomainStatus,
 } from "@workspace/lib/storefront/server";
 import {
-  addProjectDomain,
-  removeProjectDomain,
-  wwwOf,
-  VercelDomainsError,
-  type VercelDomainError,
-  type VercelVerificationRecord,
-} from "@workspace/lib/storefront/vercel-domains";
+  CustomDomainProviderError,
+  customDomainProvider,
+  newCustomDomainProviderId,
+  type CustomDomainProvider,
+  type CustomDomainProviderErrorCode,
+  type DnsTarget,
+  type DomainVerificationRecord,
+} from "@workspace/lib/storefront/custom-domain-provider";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 
 /** What the settings card shows about the seller's own domain. */
 export type CustomDomainView = {
   domain: string;
   status: CustomDomainStatus;
-  /** TXT records Vercel wants before it trusts the domain, if any. */
-  verification: VercelVerificationRecord[];
+  /** TXT records the provider wants before it trusts the domain, if any. */
+  verification: DomainVerificationRecord[];
+  /** The records that point the domain at us (from the row's provider). */
+  routing: DnsTarget[];
   /** "unverified" | "dns" | "not_attached" while not active. */
   lastError: string | null;
   lastCheckedAt: string | null;
@@ -46,7 +49,7 @@ export type CustomDomainResult =
         | "notApproved"
         | "unauthorized"
         | "primaryOnly"
-        | Exclude<VercelDomainError, "taken">
+        | Exclude<CustomDomainProviderErrorCode, "taken">
         | "failed";
     };
 
@@ -55,8 +58,9 @@ function toView(row: CustomDomainRow): CustomDomainView {
     domain: row.domain,
     status: row.status as CustomDomainStatus,
     verification: Array.isArray(row.verification)
-      ? (row.verification as VercelVerificationRecord[])
+      ? (row.verification as DomainVerificationRecord[])
       : [],
+    routing: customDomainProvider(row.provider).routingRecords(row.domain),
     lastError: row.lastError,
     lastCheckedAt: row.lastCheckedAt,
   };
@@ -106,9 +110,9 @@ async function invalidate(store: CurrentStore, domain: string) {
   revalidateDashboardPath("/stores/[storeId]/website/domain", "layout");
 }
 
-function vercelFailure(error: unknown): CustomDomainResult {
-  if (error instanceof VercelDomainsError) {
-    console.error("Vercel domains API:", error.vercelCode, error.message);
+function providerFailure(error: unknown): CustomDomainResult {
+  if (error instanceof CustomDomainProviderError) {
+    console.error(`Custom domain provider (${error.provider ?? "none"}):`, error.providerCode, error.message);
     return { success: false, error: error.code === "taken" ? "taken" : error.code };
   }
   console.error("Custom domain error:", error);
@@ -125,8 +129,9 @@ export async function getCustomDomain(storeId: string): Promise<CustomDomainResu
 
 /**
  * Connects `input` (e.g. faster-eg.com) to the store: attaches the apex and
- * its www redirect to the ecommerce project on Vercel, then saves it as
- * pending until DNS is set up and verified. Primary store only until P3-03b.
+ * its www at the provider for new domains (CUSTOM_DOMAIN_PROVIDER, Vercel by
+ * default; never from the client), then saves it as pending with that provider
+ * until DNS is set up and verified. Primary store only until P3-03b.
  */
 export async function addCustomDomain(storeId: string, input: string): Promise<CustomDomainResult> {
   const store = await currentStore(storeId, { forWrite: true });
@@ -151,29 +156,24 @@ export async function addCustomDomain(storeId: string, input: string): Promise<C
     .limit(1);
   if (owner) return { success: false, error: "taken" };
 
+  let provider: CustomDomainProvider;
+  let meta: Awaited<ReturnType<CustomDomainProvider["attach"]>>["meta"];
   try {
-    await addProjectDomain(domain);
-    await addProjectDomain(wwwOf(domain), { redirect: domain });
+    provider = customDomainProvider(newCustomDomainProviderId());
+    // attach() detaches what it attached when it fails part-way.
+    ({ meta } = await provider.attach(domain));
   } catch (error) {
-    // Don't leave a half-attached domain behind.
-    await Promise.allSettled([
-      removeProjectDomain(wwwOf(domain)),
-      removeProjectDomain(domain),
-    ]);
-    return vercelFailure(error);
+    return providerFailure(error);
   }
 
   let row: CustomDomainRow | undefined;
   try {
     [row] = await db
       .insert(sellerCustomDomains)
-      .values({ sellerId: store.sellerId, storeId: store.storeId, domain })
+      .values({ sellerId: store.sellerId, storeId: store.storeId, domain, provider: provider.id, providerMeta: meta })
       .returning();
   } catch (error) {
-    await Promise.allSettled([
-      removeProjectDomain(wwwOf(domain)),
-      removeProjectDomain(domain),
-    ]);
+    await provider.detach(domain, { meta, bestEffort: true });
     // 23505: another seller (or another tab) added it in the meantime.
     const code =
       (error as { cause?: { code?: string } })?.cause?.code ??
@@ -184,7 +184,7 @@ export async function addCustomDomain(storeId: string, input: string): Promise<C
   }
   if (!row) return { success: false, error: "failed" };
 
-  // Fill in Vercel's verification records right away.
+  // Fill in the provider's verification records right away.
   try {
     row = await refreshCustomDomain(row);
   } catch (error) {
@@ -194,7 +194,7 @@ export async function addCustomDomain(storeId: string, input: string): Promise<C
   return { success: true, domain: toView(row) };
 }
 
-/** Re-checks verification and DNS with Vercel (the seller's "Verify" button). */
+/** Re-checks verification and DNS with the domain's provider (the seller's "Verify" button). */
 export async function verifyCustomDomain(storeId: string): Promise<CustomDomainResult> {
   // It saves the refreshed status, so it is a write: a suspended seller is refused.
   const store = await currentStore(storeId, { forWrite: true });
@@ -207,7 +207,7 @@ export async function verifyCustomDomain(storeId: string): Promise<CustomDomainR
     if (updated.status !== row.status) await invalidate(store, row.domain);
     return { success: true, domain: toView(updated) };
   } catch (error) {
-    return vercelFailure(error);
+    return providerFailure(error);
   }
 }
 
@@ -219,10 +219,9 @@ export async function removeCustomDomain(storeId: string): Promise<CustomDomainR
   if (!row) return { success: true, domain: null };
 
   try {
-    await removeProjectDomain(wwwOf(row.domain));
-    await removeProjectDomain(row.domain);
+    await customDomainProvider(row.provider).detach(row.domain, { meta: row.providerMeta });
   } catch (error) {
-    return vercelFailure(error);
+    return providerFailure(error);
   }
   await db
     .delete(sellerCustomDomains)

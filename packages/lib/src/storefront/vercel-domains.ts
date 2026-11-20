@@ -7,18 +7,17 @@
  * project) and, for team projects, STOREFRONT_VERCEL_TEAM_ID.
  */
 
+import {
+  CustomDomainProviderError,
+  type CustomDomainProviderErrorCode,
+  type DomainVerificationRecord,
+} from "./custom-domain-provider.lib";
+
+export { VERCEL_APEX_A_RECORD, VERCEL_CNAME_TARGET, wwwOf } from "./custom-domain-provider.lib";
+
 const API = "https://api.vercel.com";
 
-/** DNS records the seller creates so the domain points at Vercel. */
-export const VERCEL_APEX_A_RECORD = "76.76.21.21";
-export const VERCEL_CNAME_TARGET = "cname.vercel-dns.com";
-
-export type VercelVerificationRecord = {
-  type: string; // "TXT"
-  domain: string; // "_vercel.faster-eg.com"
-  value: string; // "vc-domain-verify=…"
-  reason: string;
-};
+export type VercelVerificationRecord = DomainVerificationRecord;
 
 export type VercelProjectDomain = {
   name: string;
@@ -28,24 +27,16 @@ export type VercelProjectDomain = {
   verification?: VercelVerificationRecord[];
 };
 
-export type VercelDomainError =
-  /** Attached to another Vercel project or account. */
-  | "taken"
-  /** Vercel refused the name (malformed, reserved, unsupported TLD). */
-  | "invalid"
-  /** Project domain limit reached. */
-  | "limit"
-  /** Missing or wrong env, or the token lacks access. */
-  | "config"
-  | "failed";
+/** taken | invalid | limit | config | failed (see CustomDomainProviderErrorCode). */
+export type VercelDomainError = CustomDomainProviderErrorCode;
 
-export class VercelDomainsError extends Error {
+export class VercelDomainsError extends CustomDomainProviderError {
   constructor(
-    readonly code: VercelDomainError,
+    code: VercelDomainError,
     message: string,
     readonly vercelCode?: string,
   ) {
-    super(message);
+    super("vercel", code, message, vercelCode);
   }
 }
 
@@ -193,9 +184,4 @@ export async function isDomainMisconfigured(name: string): Promise<boolean> {
 /** Detaches `name` from the project. Missing domains are fine. */
 export async function removeProjectDomain(name: string): Promise<void> {
   await vercel("DELETE", `/v9${projectPath(`/${encodeURIComponent(name)}`)}`);
-}
-
-/** `www.` + apex, the redirect that goes with every custom domain. */
-export function wwwOf(domain: string): string {
-  return `www.${domain}`;
 }

@@ -1,13 +1,15 @@
 /**
  * Admin custom domains (docs/admin-saas.md §3.7). Re-check and remove use the
- * same Vercel calls as the seller's own buttons (apps/dashboard/actions/
- * custom-domain.ts), so the admin app needs the STOREFRONT_VERCEL_* env vars.
+ * same provider calls as the seller's own buttons (apps/dashboard/actions/
+ * custom-domain.ts), each row with its own provider, so the admin app needs
+ * the STOREFRONT_VERCEL_* env vars (and the CLOUDFLARE_* ones for Cloudflare
+ * rows; CUSTOM_DOMAIN_PROVIDER picks the provider of a newly assigned domain).
  */
 import { and, db, eq, isNull, or, sellerCustomDomains, sellers, sql, stores } from "@workspace/db";
 import type { SQL } from "drizzle-orm";
 import { normalizeCustomDomain, validateCustomDomain } from "../storefront";
 import { refreshCustomDomain, type CustomDomainRow } from "../storefront/custom-domains.server";
-import { addProjectDomain, removeProjectDomain, wwwOf } from "../storefront/vercel-domains";
+import { customDomainProvider, newCustomDomainProviderId } from "../storefront/custom-domain-provider";
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
 import { adminOrderBy, type AdminListSort } from "./list-sort.server";
 import { ADMIN_LIST_PAGE_SIZE, domainAdminActionSchema, domainAssignSchema, likePattern, type SaasAdminError } from "./saas.lib";
@@ -41,6 +43,7 @@ export async function listDomainsForAdmin(input: AdminDomainListInput, q: Querya
       id: sellerCustomDomains.id,
       domain: sellerCustomDomains.domain,
       status: sellerCustomDomains.status,
+      provider: sellerCustomDomains.provider,
       lastError: sellerCustomDomains.lastError,
       lastCheckedAt: sellerCustomDomains.lastCheckedAt,
       verifiedAt: sellerCustomDomains.verifiedAt,
@@ -79,8 +82,8 @@ export type DomainAdminResult = {
 };
 
 /**
- * - recheck: asks Vercel again and saves the result (no setting changes, no audit).
- * - remove_domain: detaches the domain (and its www.) from Vercel, deletes the
+ * - recheck: asks the row's provider again and saves the result (no setting changes, no audit).
+ * - remove_domain: detaches the domain (and its www.) from its provider, deletes the
  *   row and writes the audit row; the store goes back to its subdomain.
  */
 export async function applyDomainAdminAction(
@@ -111,9 +114,8 @@ export async function applyDomainAdminAction(
     return { success: true, data: { domain: row.domain, subdomain, status: updated.status, statusChanged: updated.status !== row.status } };
   }
 
-  // Vercel first (as the seller flow does): a failure leaves the row in place to retry.
-  await removeProjectDomain(wwwOf(row.domain));
-  await removeProjectDomain(row.domain);
+  // The provider first (as the seller flow does): a failure leaves the row in place to retry.
+  await customDomainProvider(row.provider).detach(row.domain, { meta: row.providerMeta });
   await q.transaction(async (tx) => {
     await assertAdminActor(tx, actorId);
     await tx.delete(sellerCustomDomains).where(and(eq(sellerCustomDomains.id, row.id), eq(sellerCustomDomains.sellerId, row.sellerId)));
@@ -143,8 +145,9 @@ export type DomainAssignResult = { domainId: string; domain: string; subdomain: 
 /**
  * An admin connects a custom domain to a store, the same way the seller's
  * "Connect" button does (apps/dashboard/actions/custom-domain.ts): the apex
- * and its www redirect are attached to the ecommerce project on Vercel, then
- * the row is saved as pending with an audit row. Any store of the seller,
+ * and its www are attached at the provider for new domains
+ * (CUSTOM_DOMAIN_PROVIDER, Vercel by default), then the row is saved as
+ * pending with its provider and an audit row. Any store of the seller,
  * but still one domain per seller until P3-03b drops
  * `seller_custom_domains_seller_id_key`. The seller then sets up DNS from the
  * records shown in their dashboard (or here).
@@ -189,15 +192,10 @@ export async function assignDomainForAdmin(
   if (existing.some((row) => row.storeId === store.id)) return { success: false, error: "store_has_domain" };
   if (existing.length > 0) return { success: false, error: "seller_has_domain" };
 
-  const detach = () => Promise.allSettled([removeProjectDomain(wwwOf(domain)), removeProjectDomain(domain)]);
-  try {
-    await addProjectDomain(domain);
-    await addProjectDomain(wwwOf(domain), { redirect: domain });
-  } catch (error) {
-    // Don't leave a half-attached domain behind.
-    await detach();
-    throw error;
-  }
+  // attach() detaches what it attached when it fails part-way.
+  const provider = customDomainProvider(newCustomDomainProviderId());
+  const { meta } = await provider.attach(domain);
+  const detach = () => provider.detach(domain, { meta, bestEffort: true });
 
   let row: CustomDomainRow | undefined;
   try {
@@ -205,7 +203,7 @@ export async function assignDomainForAdmin(
       await assertAdminActor(tx, actorId);
       const [inserted] = await tx
         .insert(sellerCustomDomains)
-        .values({ sellerId: store.sellerId, storeId: store.id, domain })
+        .values({ sellerId: store.sellerId, storeId: store.id, domain, provider: provider.id, providerMeta: meta })
         .returning();
       await writeAdminAudit(tx, {
         actorId,
@@ -227,7 +225,7 @@ export async function assignDomainForAdmin(
   }
   if (!row) return { success: false, error: "not_found" };
 
-  // Fill in Vercel's verification records right away; the cron re-checks later.
+  // Fill in the provider's verification records right away; the cron re-checks later.
   try {
     row = await refreshCustomDomain(row);
   } catch (error) {

@@ -1,18 +1,17 @@
 /**
  * Seller custom domains (faster-eg.com) on the server: the DB lookups and
- * the Vercel status check shared by the dashboard, the ecommerce proxy and the
- * re-check cron.
+ * the provider status check (Vercel or Cloudflare, per row) shared by the
+ * dashboard, the ecommerce proxy and the re-check cron.
  */
 
 import { db, and, eq, isNull, sellerCustomDomains, sellers, stores } from "@workspace/db";
 import {
-  getProjectDomain,
-  isDomainMisconfigured,
-  verifyProjectDomain,
-  type VercelVerificationRecord,
-} from "./vercel-domains";
+  customDomainProvider,
+  type CustomDomainCheck,
+  type CustomDomainStatus,
+} from "./custom-domain-provider";
 
-export type CustomDomainStatus = "pending" | "active" | "failed";
+export type { CustomDomainCheck, CustomDomainStatus };
 
 export type CustomDomainRow = typeof sellerCustomDomains.$inferSelect;
 
@@ -132,46 +131,26 @@ export async function isActiveCustomDomain(domain: string): Promise<boolean> {
   return (await findSubdomainForCustomDomain(domain)) !== null;
 }
 
-export type CustomDomainCheck = {
-  status: CustomDomainStatus;
-  verification: VercelVerificationRecord[] | null;
-  lastError: string | null;
-};
-
 /**
- * Asks Vercel where `domain` stands. Active once Vercel has verified
- * ownership and DNS points at it; a domain that was active and stops being
- * so becomes `failed`, otherwise it stays `pending`.
+ * Asks the domain's provider where `domain` stands (`vercel` unless told
+ * otherwise, as before 0177). Active once the provider routes it with a valid
+ * certificate; a domain that was active and stops being so becomes `failed`,
+ * otherwise it stays `pending`.
  */
 export async function checkCustomDomain(
   domain: string,
   previous: CustomDomainStatus,
+  options: { provider?: string; meta?: unknown } = {},
 ): Promise<CustomDomainCheck> {
-  let project = await getProjectDomain(domain);
-  if (project && !project.verified) {
-    project = (await verifyProjectDomain(domain)) ?? project;
-  }
-
-  const notReady = previous === "active" ? "failed" : "pending";
-  if (!project) {
-    return { status: "failed", verification: null, lastError: "not_attached" };
-  }
-  if (!project.verified) {
-    return {
-      status: notReady,
-      verification: project.verification ?? null,
-      lastError: "unverified",
-    };
-  }
-  if (await isDomainMisconfigured(domain)) {
-    return { status: notReady, verification: null, lastError: "dns" };
-  }
-  return { status: "active", verification: null, lastError: null };
+  return customDomainProvider(options.provider ?? "vercel").check(domain, previous, { meta: options.meta });
 }
 
-/** Runs `checkCustomDomain` and saves the result. Returns the updated row. */
+/** Runs `checkCustomDomain` with the row's own provider and saves the result. Returns the updated row. */
 export async function refreshCustomDomain(row: CustomDomainRow): Promise<CustomDomainRow> {
-  const check = await checkCustomDomain(row.domain, row.status as CustomDomainStatus);
+  const check = await checkCustomDomain(row.domain, row.status as CustomDomainStatus, {
+    provider: row.provider,
+    meta: row.providerMeta,
+  });
   const now = new Date().toISOString();
   const [updated] = await db
     .update(sellerCustomDomains)

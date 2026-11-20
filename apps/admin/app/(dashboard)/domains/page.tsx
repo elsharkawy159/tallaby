@@ -56,7 +56,7 @@ export default async function DomainsPage({ searchParams }: PageProps) {
       <div>
         <h1 className="text-2xl font-semibold">Domains</h1>
         <p className="text-sm text-muted-foreground">
-          Custom domains connected to seller stores. Re-check asks Vercel for the current DNS state.
+          Custom domains connected to seller stores. Re-check asks the domain&apos;s provider (Vercel or Cloudflare) for the current DNS state.
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -116,9 +116,12 @@ async function DomainsTable({
             className: "align-top",
             cells: {
               domain: (
-                <span className="font-medium" dir="ltr">
-                  {row.domain}
-                </span>
+                <>
+                  <span className="font-medium" dir="ltr">
+                    {row.domain}
+                  </span>
+                  <p className="text-xs text-muted-foreground capitalize">{row.provider}</p>
+                </>
               ),
               store: (
                 <div className="text-sm">

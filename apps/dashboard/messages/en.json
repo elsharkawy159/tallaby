@@ -2634,6 +2634,7 @@
       "copyName": "Copy name",
       "copyTtl": "Copy TTL",
       "nameHint": "@ means the domain itself. If your provider won't accept @, leave Name empty.",
+      "aliasHint": "The @ record must be of type ALIAS (some providers call it ANAME or CNAME flattening). If your provider doesn't offer it, contact support before you change anything.",
       "ttlNote": "TTL: if your provider asks for a number, type 3600. Any number from 60 to 3600 works (Hostinger also accepts 60, for a faster start). If it shows Auto or Default, leave it.",
       "guide": {
         "title": "Steps for your domain provider",

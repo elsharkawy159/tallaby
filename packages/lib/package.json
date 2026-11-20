@@ -519,6 +519,14 @@
       "types": "./src/storefront/custom-domains.server.ts",
       "default": "./src/storefront/custom-domains.server.ts"
     },
+    "./storefront/custom-domain-provider": {
+      "types": "./src/storefront/custom-domain-provider.ts",
+      "default": "./src/storefront/custom-domain-provider.ts"
+    },
+    "./storefront/custom-domain-provider.lib": {
+      "types": "./src/storefront/custom-domain-provider.lib.ts",
+      "default": "./src/storefront/custom-domain-provider.lib.ts"
+    },
     "./storefront/vercel-domains": {
       "types": "./src/storefront/vercel-domains.ts",
       "default": "./src/storefront/vercel-domains.ts"

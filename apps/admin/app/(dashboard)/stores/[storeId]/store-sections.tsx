@@ -26,10 +26,9 @@ import { storeAdminAction } from "../../sellers/[id]/seller-admin.server";
 import { PAYMENT_METHOD_LABELS, formatAdminDate, formatBytes, localizedText } from "../stores.lib";
 import { unpublishCmsItemAction } from "../stores.server";
 import {
-  VERCEL_APEX_A_RECORD,
-  VERCEL_CNAME_TARGET,
-  type VercelVerificationRecord,
-} from "@workspace/lib/storefront/vercel-domains";
+  customDomainProvider,
+  type DomainVerificationRecord,
+} from "@workspace/lib/storefront/custom-domain-provider";
 import { domainAdminAction } from "../../domains/domains.server";
 import { AssignDomainButton } from "./assign-domain.client";
 import { EditSubdomainButton } from "./store-subdomain.client";
@@ -69,14 +68,14 @@ function Empty({ children }: { children: React.ReactNode }) {
  * The DNS records a pending domain still needs, as registrars want them (the
  * same as the seller's domain tab): the Host is relative to the domain, so
  * `@`, `www`, `_vercel`. Typing the full name there makes Namecheap and others
- * create `faster-eg.com.faster-eg.com`.
+ * create `faster-eg.com.faster-eg.com`. The routing records come from the
+ * row's provider (Vercel or Cloudflare).
  */
-function DomainDnsRecords({ domain, verification }: { domain: string; verification: unknown }) {
+function DomainDnsRecords({ domain, verification, provider }: { domain: string; verification: unknown; provider: string }) {
   const host = (name: string) => (name.endsWith(`.${domain}`) ? name.slice(0, -(domain.length + 1)) : name);
   const records = [
-    { type: "A", name: "@", value: VERCEL_APEX_A_RECORD },
-    { type: "CNAME", name: "www", value: VERCEL_CNAME_TARGET },
-    ...(Array.isArray(verification) ? (verification as VercelVerificationRecord[]) : []).map((record) => ({
+    ...customDomainProvider(provider).routingRecords(domain),
+    ...(Array.isArray(verification) ? (verification as DomainVerificationRecord[]) : []).map((record) => ({
       type: record.type,
       name: host(record.domain),
       value: record.value,
@@ -106,6 +105,11 @@ function DomainDnsRecords({ domain, verification }: { domain: string; verificati
           ))}
         </tbody>
       </table>
+      {records.some((record) => record.type === "ALIAS") && (
+        <p className="mt-1 text-muted-foreground">
+          ALIAS: the DNS host may call it ANAME or CNAME flattening. Without it the root domain cannot point to Cloudflare.
+        </p>
+      )}
     </div>
   );
 }
@@ -163,6 +167,7 @@ export async function StoreOverviewSection({ store, canWrite }: SectionProps & {
                       <Badge variant="outline" className="font-normal capitalize">
                         {domain.status}
                       </Badge>
+                      <span className="text-xs text-muted-foreground capitalize">{domain.provider}</span>
                       {domain.lastError && <span className="text-xs text-destructive">{domain.lastError}</span>}
                       <Link href={`/domains?q=${encodeURIComponent(domain.domain)}`} className="text-xs text-muted-foreground hover:underline">
                         Manage
@@ -188,7 +193,7 @@ export async function StoreOverviewSection({ store, canWrite }: SectionProps & {
                         </>
                       )}
                     </div>
-                    {domain.status !== "active" && <DomainDnsRecords domain={domain.domain} verification={domain.verification} />}
+                    {domain.status !== "active" && <DomainDnsRecords domain={domain.domain} verification={domain.verification} provider={domain.provider} />}
                   </li>
                 ))}
               </ul>

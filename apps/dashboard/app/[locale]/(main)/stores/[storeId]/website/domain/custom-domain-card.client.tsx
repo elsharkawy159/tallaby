@@ -74,7 +74,7 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
     run("remove", () => removeCustomDomain(storeId), () => toast.success(t("removed")));
   };
 
-  const records = view ? dnsRecords(view.domain, view.verification) : [];
+  const records = view ? dnsRecords(view.domain, view.routing, view.verification) : [];
 
   const copy = async (value: string) => {
     try {
@@ -202,6 +202,7 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
                 ]}
               />
               {records.some((r) => r.name === "@") && <p className="text-pretty text-xs text-(--s-faint)">{t("nameHint")}</p>}
+              {records.some((r) => r.type === "ALIAS") && <p className="text-pretty text-xs text-(--s-faint)">{t("aliasHint")}</p>}
               <p className="text-pretty text-xs text-(--s-faint)">{t("ttlNote")}</p>
               {view.lastError && <Note>{t(`checks.${CHECK_KEYS.has(view.lastError) ? view.lastError : "dns"}`)}</Note>}
               <DnsRegistrarSteps names={cleanupNames(records)} />
@@ -227,9 +228,9 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
   );
 }
 
-/** The A/CNAME record names, for "delete old records with the same name". */
+/** The A/ALIAS/CNAME record names, for "delete old records with the same name". */
 function cleanupNames(records: DnsRecord[]): string {
-  return [...new Set(records.filter((r) => r.type === "A" || r.type === "CNAME").map((r) => r.name))].join(" / ");
+  return [...new Set(records.filter((r) => r.type === "A" || r.type === "ALIAS" || r.type === "CNAME").map((r) => r.name))].join(" / ");
 }
 
 /** A record field in Latin with its copy button; `suffix` is a small note after it (the TTL in words). */

@@ -4,10 +4,24 @@ import { revalidatePath } from "next/cache";
 import { applyInvalidation, invalidateCustomDomain } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import { applyDomainAdminAction, assignDomainForAdmin } from "@workspace/lib/admin/server";
-import { VercelDomainsError } from "@workspace/lib/storefront/vercel-domains";
+import { CustomDomainProviderError } from "@workspace/lib/storefront/custom-domain-provider";
 import { adminActorId, saasError, type AdminActionResult } from "../_lib/saas-admin.server";
 
-function vercelError(error: VercelDomainsError): AdminActionResult {
+function providerError(error: CustomDomainProviderError): AdminActionResult {
+  if (error.provider === "cloudflare") {
+    return {
+      success: false,
+      error:
+        error.code === "config"
+          ? "Cloudflare is not configured for the admin app (CLOUDFLARE_SAAS_API_TOKEN, CLOUDFLARE_ZONE_ID)."
+          : error.code === "taken"
+            ? "That domain is already a custom hostname on another Cloudflare account. Its owner must remove it there first."
+            : `Cloudflare refused the request (${error.code}).`,
+    };
+  }
+  if (error.provider === null) {
+    return { success: false, error: `Custom domain provider is misconfigured: ${error.message}` };
+  }
   return {
     success: false,
     error:
@@ -19,7 +33,7 @@ function vercelError(error: VercelDomainsError): AdminActionResult {
   };
 }
 
-/** Re-check a custom domain with Vercel, or remove it with a logged reason (docs/admin-saas.md §3.7). */
+/** Re-check a custom domain with its provider, or remove it with a logged reason (docs/admin-saas.md §3.7). */
 export async function domainAdminAction(input: unknown): Promise<AdminActionResult> {
   const actorId = await adminActorId("canManageUsers");
   if (!actorId) return saasError("not_admin");
@@ -36,7 +50,7 @@ export async function domainAdminAction(input: unknown): Promise<AdminActionResu
     }
     return { success: true, message: `${domain}: ${status ?? "checked"}` };
   } catch (error) {
-    if (error instanceof VercelDomainsError) return vercelError(error);
+    if (error instanceof CustomDomainProviderError) return providerError(error);
     logServerError("admin", "domain action failed", {}, error);
     return saasError("generic");
   }
@@ -55,7 +69,7 @@ export async function assignDomainAction(input: unknown): Promise<AdminActionRes
     revalidatePath("/stores", "layout");
     return { success: true, message: `${domain} assigned (${status}) and logged` };
   } catch (error) {
-    if (error instanceof VercelDomainsError) return vercelError(error);
+    if (error instanceof CustomDomainProviderError) return providerError(error);
     logServerError("admin", "domain assign failed", {}, error);
     return saasError("generic");
   }

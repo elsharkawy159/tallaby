@@ -565,7 +565,13 @@ export const sellerCustomDomains = pgTable("seller_custom_domains", {
 	lastCheckedAt: timestamp("last_checked_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	/** vercel | cloudflare: who serves this domain (0177). New rows take CUSTOM_DOMAIN_PROVIDER. */
+	provider: text().default('vercel').notNull(),
+	/** What the provider returned on attach (0177), e.g. Cloudflare's `{ hostnames: { [host]: id } }`, or null. */
+	providerMeta: jsonb("provider_meta"),
 }, (table) => [
+	check("seller_custom_domains_provider_check", sql`provider IN ('vercel', 'cloudflare')`),
+	check("seller_custom_domains_provider_meta_check", sql`provider_meta IS NULL OR jsonb_typeof(provider_meta) = 'object'`),
 	uniqueIndex("seller_custom_domains_seller_id_key").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	uniqueIndex("seller_custom_domains_domain_key").using("btree", table.domain.asc().nullsLast().op("text_ops")),
 	index("seller_custom_domains_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
