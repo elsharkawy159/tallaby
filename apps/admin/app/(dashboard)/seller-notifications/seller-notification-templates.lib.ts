@@ -167,4 +167,34 @@ export const SELLER_AUDIENCE_LABELS: Record<SellerAudience, { label: string; hin
     label: "Not activated yet",
     hint: "Never topped up, never had a balance above 0 and not on Pro. Empty before the USD switch.",
   },
+  tallaby_pay_not_connected: {
+    label: "Tallaby Pay not connected",
+    hint: "Has a store, and no store has Tallaby Pay turned on.",
+  },
+  no_active_product: {
+    label: "No active product",
+    hint: "Has a store, and no store has an active product (drafts and Trash don't count).",
+  },
+  site_not_published: {
+    label: "Website not published",
+    hint: "Has a store, and no store's website is published.",
+  },
+  no_shipping_zones: {
+    label: "No shipping zones",
+    hint: "Has a store, and no store has an enabled shipping zone.",
+  },
+  free_plan: { label: "Free plan", hint: "On Free now. A Pro plan that ended counts as Free." },
+  pro_plan: { label: "Pro plan", hint: "On an active Pro plan now." },
+  joined_last_7_days: { label: "Joined in the last 7 days", hint: "Signed up in the last 7 days." },
 };
+
+/**
+ * How the audience list is grouped on the page. Every audience is in exactly
+ * one group (checked by the test). Archived and deleted stores never count.
+ */
+export const SELLER_AUDIENCE_GROUPS: readonly { label: string; audiences: readonly SellerAudience[] }[] = [
+  { label: "Everyone", audiences: ["all", "joined_last_7_days"] },
+  { label: "Wallet", audiences: ["wallet_empty", "not_activated"] },
+  { label: "Setup", audiences: ["no_active_product", "site_not_published", "no_shipping_zones", "tallaby_pay_not_connected"] },
+  { label: "Plan", audiences: ["free_plan", "pro_plan"] },
+];

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { SELLER_AUDIENCES } from "@workspace/lib/admin";
 import { ADMIN_MESSAGE_BODY_MAX, ADMIN_MESSAGE_TITLE_MAX, isDashboardPath } from "@workspace/lib/notifications";
 import {
+  SELLER_AUDIENCE_GROUPS,
   SELLER_AUDIENCE_LABELS,
   SELLER_NOTIFICATION_TEMPLATES,
   findSellerNotificationTemplate,
@@ -70,6 +71,17 @@ describe("seller notification templates", () => {
   });
 
   it("labels every audience", () => {
-    for (const audience of SELLER_AUDIENCES) expect(SELLER_AUDIENCE_LABELS[audience].label).toBeTruthy();
+    for (const audience of SELLER_AUDIENCES) {
+      expect(SELLER_AUDIENCE_LABELS[audience].label).toBeTruthy();
+      expect(SELLER_AUDIENCE_LABELS[audience].hint).toBeTruthy();
+    }
+    expect(SELLER_AUDIENCE_LABELS.tallaby_pay_not_connected.label).toBe("Tallaby Pay not connected");
+  });
+
+  it("groups every audience exactly once", () => {
+    const grouped = SELLER_AUDIENCE_GROUPS.flatMap((group) => group.audiences);
+    expect([...grouped].sort()).toEqual([...SELLER_AUDIENCES].sort());
+    expect(new Set(grouped).size).toBe(grouped.length);
+    expect(SELLER_AUDIENCE_GROUPS[0]!.audiences[0]).toBe("all");
   });
 });

@@ -19,7 +19,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { cn } from "@workspace/ui/lib/utils";
-import { SELLER_AUDIENCES, type SellerAudience } from "@workspace/lib/admin";
+import type { SellerAudience } from "@workspace/lib/admin";
 import {
   ADMIN_MESSAGE_BODY_MAX,
   ADMIN_MESSAGE_LINK_MAX,
@@ -28,6 +28,7 @@ import {
 } from "@workspace/lib/notifications";
 import { countSellerAudienceAction, sendSellerBroadcastAction } from "./seller-notifications.server";
 import {
+  SELLER_AUDIENCE_GROUPS,
   SELLER_AUDIENCE_LABELS,
   findSellerNotificationTemplate,
   templateFields,
@@ -177,22 +178,30 @@ export function SellerNotificationsForm() {
           </div>
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">Send to</legend>
-            {SELLER_AUDIENCES.map((value) => (
-              <label key={value} className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 has-[:checked]:border-primary">
-                <input
-                  type="radio"
-                  name="audience"
-                  value={value}
-                  checked={audience === value}
-                  onChange={() => setAudience(value)}
-                  disabled={sending}
-                  className="mt-1"
-                />
-                <span>
-                  <span className="block text-sm font-medium">{SELLER_AUDIENCE_LABELS[value].label}</span>
-                  <span className="block text-xs text-muted-foreground">{SELLER_AUDIENCE_LABELS[value].hint}</span>
-                </span>
-              </label>
+            {SELLER_AUDIENCE_GROUPS.map((group) => (
+              <div key={group.label} className="space-y-2">
+                <p className="pt-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{group.label}</p>
+                {group.audiences.map((value) => (
+                  <label
+                    key={value}
+                    className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 has-[:checked]:border-primary"
+                  >
+                    <input
+                      type="radio"
+                      name="audience"
+                      value={value}
+                      checked={audience === value}
+                      onChange={() => setAudience(value)}
+                      disabled={sending}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block text-sm font-medium">{SELLER_AUDIENCE_LABELS[value].label}</span>
+                      <span className="block text-xs text-muted-foreground">{SELLER_AUDIENCE_LABELS[value].hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
             ))}
           </fieldset>
         </CardContent>

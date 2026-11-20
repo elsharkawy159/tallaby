@@ -15,7 +15,23 @@ import type { AdminResult } from "./admin.lib";
 import { AdminActorError, assertAdminActor, type Queryable } from "./guard.server";
 
 /**
+ * isProActive (billing.lib.ts) in SQL: plan 'pro' and the later of
+ * plan_expires_at / plan_grace_until is unset or still ahead. `greatest`
+ * ignores NULLs like isProActive's filter, and `plan` is NOT NULL, so this is
+ * never NULL.
+ */
+const proActive = sql`(s.plan = 'pro' AND (greatest(s.plan_expires_at, s.plan_grace_until) IS NULL
+  OR greatest(s.plan_expires_at, s.plan_grace_until) > now()))`;
+
+/** A store of seller `s` that the seller still has: not deleted, not archived. */
+const liveStore = (alias: string) =>
+  sql.raw(`${alias}.seller_id = s.id AND ${alias}.deleted_at IS NULL AND ${alias}.status <> 'archived'`);
+const hasLiveStore = sql`EXISTS (SELECT 1 FROM stores st WHERE ${liveStore("st")})`;
+
+/**
  * The WHERE condition over `sellers s` for an audience. Exported for tests.
+ * The count, the "count changed" check and the send all use it, so they
+ * always agree.
  *
  * - Every audience: the seller and its user aren't suspended.
  * - `wallet_empty`: the dashboard Wallet page's balance,
@@ -25,6 +41,18 @@ import { AdminActorError, assertAdminActor, type Queryable } from "./guard.serve
  *   set query: the USD switch is on, no active Pro (isProActive), no succeeded
  *   top-up, no `top_up` ledger entry, no balance above 0 now and no USD entry
  *   that left it above 0.
+ * - Store audiences need a live store (`liveStore`) and look at live stores only:
+ *   - `tallaby_pay_not_connected`: no `store_integrations` row with provider
+ *     `tallaby_pay` and status `connected` (getStorefrontGateway's rule; a
+ *     turned-off row is kept as `disconnected`). The `tallaby_pay_live`
+ *     launch switch is not checked.
+ *   - `no_active_product`: storeHasActiveProduct's rule (store-sites/server.ts):
+ *     status 'active' and not in Trash.
+ *   - `site_not_published`: no `site_status = 'published'`.
+ *   - `no_shipping_zones`: no `enabled` zone (store-quote.ts only uses enabled
+ *     zones).
+ * - `free_plan` / `pro_plan`: `proActive` false / true.
+ * - `joined_last_7_days`: `sellers.created_at` within the last 7 days.
  */
 export function sellerAudienceCondition(audience: SellerAudience): SQL {
   const base = sql`s.status IS DISTINCT FROM 'suspended'
@@ -39,13 +67,33 @@ export function sellerAudienceCondition(audience: SellerAudience): SQL {
     case "not_activated":
       return sql`${base}
         AND EXISTS (SELECT 1 FROM billing_settings b WHERE b.usd_live IS TRUE)
-        AND NOT (s.plan = 'pro' AND (greatest(s.plan_expires_at, s.plan_grace_until) IS NULL
-          OR greatest(s.plan_expires_at, s.plan_grace_until) > now()))
+        AND NOT ${proActive}
         AND NOT EXISTS (SELECT 1 FROM seller_wallet_top_ups t WHERE t.seller_id = s.id AND t.status = 'succeeded')
         AND NOT EXISTS (SELECT 1 FROM wallet_transactions wt WHERE wt.seller_id = s.id AND wt.type = 'top_up')
         AND ${walletBalance} <= 0
         AND NOT EXISTS (SELECT 1 FROM wallet_transactions wt
           WHERE wt.seller_id = s.id AND wt.currency = 'USD' AND wt.balance_after > 0)`;
+    case "tallaby_pay_not_connected":
+      return sql`${base} AND ${hasLiveStore}
+        AND NOT EXISTS (SELECT 1 FROM stores st JOIN store_integrations si ON si.store_id = st.id AND si.seller_id = s.id
+          WHERE ${liveStore("st")} AND si.provider = 'tallaby_pay' AND si.status = 'connected')`;
+    case "no_active_product":
+      return sql`${base} AND ${hasLiveStore}
+        AND NOT EXISTS (SELECT 1 FROM stores st JOIN products p ON p.store_id = st.id AND p.seller_id = s.id
+          WHERE ${liveStore("st")} AND p.status = 'active' AND p.deleted_at IS NULL)`;
+    case "site_not_published":
+      return sql`${base} AND ${hasLiveStore}
+        AND NOT EXISTS (SELECT 1 FROM stores st WHERE ${liveStore("st")} AND st.site_status = 'published')`;
+    case "no_shipping_zones":
+      return sql`${base} AND ${hasLiveStore}
+        AND NOT EXISTS (SELECT 1 FROM stores st JOIN store_shipping_zones z ON z.store_id = st.id
+          WHERE ${liveStore("st")} AND z.enabled IS TRUE)`;
+    case "free_plan":
+      return sql`${base} AND NOT ${proActive}`;
+    case "pro_plan":
+      return sql`${base} AND ${proActive}`;
+    case "joined_last_7_days":
+      return sql`${base} AND s.created_at >= now() - interval '7 days'`;
   }
 }
 

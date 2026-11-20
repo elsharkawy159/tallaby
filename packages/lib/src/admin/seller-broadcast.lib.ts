@@ -17,8 +17,30 @@ import { ADMIN_MESSAGE_BODY_MAX, ADMIN_MESSAGE_TITLE_MAX, isDashboardPath } from
  * - `not_activated`: never topped up, never had a balance above 0, no active
  *   Pro (getOrderLock's activation rule). Empty before the USD switch, when
  *   activation doesn't apply.
+ * Store audiences look only at the seller's live stores (not deleted, not
+ * archived) and need at least one, so sellers with no store are left out:
+ * - `tallaby_pay_not_connected`: no live store has a `connected` Tallaby Pay
+ *   row (the row checkout reads; a turned-off one is `disconnected`).
+ * - `no_active_product`: no active product outside Trash in a live store.
+ * - `site_not_published`: no live store's website is published.
+ * - `no_shipping_zones`: no enabled shipping zone in any live store (checkout
+ *   then uses Tallaby's rates).
+ * - `free_plan` / `pro_plan`: the plan that applies now (isProActive; a lapsed
+ *   Pro counts as Free).
+ * - `joined_last_7_days`: signed up in the last 7 days.
  */
-export const SELLER_AUDIENCES = ["all", "wallet_empty", "not_activated"] as const;
+export const SELLER_AUDIENCES = [
+  "all",
+  "wallet_empty",
+  "not_activated",
+  "tallaby_pay_not_connected",
+  "no_active_product",
+  "site_not_published",
+  "no_shipping_zones",
+  "free_plan",
+  "pro_plan",
+  "joined_last_7_days",
+] as const;
 export type SellerAudience = (typeof SELLER_AUDIENCES)[number];
 
 export function isSellerAudience(value: unknown): value is SellerAudience {
