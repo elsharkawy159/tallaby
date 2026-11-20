@@ -48,6 +48,11 @@ import {
 } from "./sidebar.config";
 import { StoreSwitcher, type SwitcherStore } from "./store-switcher.client";
 import {
+  CopyPageLinkButton,
+  SupportToolsContext,
+  useSupportTools,
+} from "./copy-page-link.client";
+import {
   WhatsAppIcon,
   useSupportWhatsAppUrl,
 } from "./support-chat-link.client";
@@ -62,6 +67,8 @@ interface SidebarProps {
   selectedStoreId: string | null;
   maxStores: number;
   features: Partial<Record<NavFeature, boolean>>;
+  /** A Tallaby support account (decided on the server): links get a "copy page link" button. */
+  supportTools?: boolean;
 }
 
 const MinTopUpContext = createContext<string | null>(null);
@@ -81,6 +88,7 @@ export const Sidebar = ({
   selectedStoreId,
   maxStores,
   features,
+  supportTools = false,
 }: SidebarProps) => {
   const t = useTranslations();
   const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } =
@@ -161,7 +169,10 @@ export const Sidebar = ({
             )}
           </IconButton>
         </div>
-        <SidebarContent {...content} isCollapsed={isCollapsed} />
+        {/* Desktop only: the copy button shows on hover, which touch screens don't have. */}
+        <SupportToolsContext.Provider value={supportTools}>
+          <SidebarContent {...content} isCollapsed={isCollapsed} />
+        </SupportToolsContext.Provider>
       </aside>
 
       {/* Up to 1020px: a drawer over a scrim. */}
@@ -270,6 +281,7 @@ const SidebarContent = ({
   const pathname = usePathname();
   const t = useTranslations();
   const format = useFormatter();
+  const supportTools = useSupportTools();
   const activeHref = findActiveHref(entries, pathname);
   const activeGroupKey =
     entries.find(
@@ -291,6 +303,8 @@ const SidebarContent = ({
     const isActive = link.href === activeHref;
     const Icon = link.icon;
     const label = t(`nav.${link.key}`);
+    // Not on the icon-only sidebar: there is no room beside the icon.
+    const copyLink = supportTools && !isCollapsed && !link.disabled;
     const item = (
       <Link
         href={link.disabled ? "#" : link.href}
@@ -302,6 +316,7 @@ const SidebarContent = ({
           isActive && NAV_ITEM_ACTIVE,
           link.disabled && "pointer-events-none opacity-60",
           isCollapsed && "relative justify-center px-0",
+          copyLink && "pe-10",
         )}
       >
         {Icon && <Icon className={cn(NAV_ICON, isActive && "text-current")} />}
@@ -312,6 +327,18 @@ const SidebarContent = ({
         {!isCollapsed && (link.disabled ? <SoonBadge /> : null)}
       </Link>
     );
+    if (copyLink) {
+      return (
+        <li key={link.href} className="group/copy relative">
+          {item}
+          <CopyPageLinkButton
+            href={link.href}
+            onActive={isActive}
+            className="end-1.5"
+          />
+        </li>
+      );
+    }
     return (
       <li key={link.href}>
         {isCollapsed ? <CollapsedTip label={label}>{item}</CollapsedTip> : item}
@@ -650,6 +677,7 @@ function SidebarGroup({
   const current =
     group.ownHref && group.href !== null && group.href === activeHref;
   const subId = useId();
+  const supportTools = useSupportTools();
   const labelContent = (
     <>
       <group.icon
@@ -672,7 +700,7 @@ function SidebarGroup({
   return (
     <li>
       {/* The label goes to the group's page and opens it; the chevron only opens or closes it. */}
-      <div className="relative">
+      <div className={cn("relative", supportTools && group.href && "group/copy")}>
         {group.href ? (
           <Link
             href={group.href}
@@ -680,7 +708,8 @@ function SidebarGroup({
             onClick={() => onNavigate(group.href!)}
             className={cn(
               NAV_ITEM,
-              "pe-10",
+              // Room for the copy button beside the chevron.
+              supportTools ? "pe-[4.5rem]" : "pe-10",
               active && "font-bold text-(--s-ink)",
               current && NAV_ITEM_ACTIVE,
             )}
@@ -699,6 +728,13 @@ function SidebarGroup({
           >
             {labelContent}
           </button>
+        )}
+        {supportTools && group.href && (
+          <CopyPageLinkButton
+            href={group.href}
+            onActive={current}
+            className="end-9"
+          />
         )}
         <button
           type="button"
@@ -729,8 +765,12 @@ function SidebarGroup({
         >
           {group.items.map((item) => {
             const isActive = item.href === activeHref;
+            const copyLink = supportTools && !item.disabled;
             return (
-              <li key={item.href}>
+              <li
+                key={item.href}
+                className={copyLink ? "group/copy relative" : undefined}
+              >
                 <Link
                   href={item.disabled ? "#" : item.href}
                   aria-disabled={item.disabled || undefined}
@@ -740,6 +780,7 @@ function SidebarGroup({
                     isActive &&
                       "bg-(--s-hover) font-bold text-(--s-ink) before:absolute before:inset-y-[7px] before:-start-4 before:w-[3px] before:rounded-[3px] before:bg-(--s-primary)",
                     item.disabled && "pointer-events-none opacity-60",
+                    copyLink && "pe-9",
                   )}
                 >
                   <span className="min-w-0 flex-1 truncate">{t(item.key)}</span>
@@ -755,6 +796,9 @@ function SidebarGroup({
                     />
                   )}
                 </Link>
+                {copyLink && (
+                  <CopyPageLinkButton href={item.href} className="end-1" />
+                )}
               </li>
             );
           })}

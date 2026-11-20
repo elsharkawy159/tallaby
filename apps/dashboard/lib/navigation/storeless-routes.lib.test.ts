@@ -146,7 +146,6 @@ describe("toStorelessPath", () => {
 
   it.each([
     "/orders",
-    "/en/orders",
     "/settings",
     "/settings/plan",
     "/stores",
@@ -156,6 +155,20 @@ describe("toStorelessPath", () => {
     "",
   ])("leaves %s unchanged", (p) => {
     expect(toStorelessPath(p)).toBe(p);
+  });
+
+  // A copied link opens in the seller's own language, so the locale always goes.
+  it.each([
+    ["/en/orders", "/orders"],
+    ["/ar/orders?status=new", "/orders?status=new"],
+    ["/en/settings/plan", "/settings/plan"],
+    [`/en${S}/editor`, `${S}/editor`],
+    ["/en/stores/not-a-uuid/website", "/stores/not-a-uuid/website"],
+    ["/en", "/"],
+    ["/ar?x=1", "/?x=1"],
+    ["/english/orders", "/english/orders"],
+  ])("drops the locale of %s → %s", (from, to) => {
+    expect(toStorelessPath(from)).toBe(to);
   });
 
   it("round trip: every store page maps back to itself", () => {

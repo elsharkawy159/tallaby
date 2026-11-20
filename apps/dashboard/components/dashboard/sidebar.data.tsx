@@ -1,4 +1,6 @@
 import { loadOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
+import { getSessionUser } from "@/lib/auth/session.server";
+import { isSupportAccount } from "@/lib/auth/support-accounts.lib";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getLocale } from "next-intl/server";
 import { TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
@@ -10,10 +12,12 @@ import { storeHasTallabyPay } from "@workspace/lib/tallaby-pay/server";
 
 export async function SidebarData() {
   // requireSeller and getSellerStores are memoized per request (the layout already gated access).
-  const [seller, counts, { stores, selected, maxStores }] = await Promise.all([
+  // getSessionUser is memoized too (requireSeller already read it), so the email costs no extra call.
+  const [seller, counts, { stores, selected, maxStores }, user] = await Promise.all([
     requireSeller(),
     getSidebarCounts(),
     getSellerStores(),
+    getSessionUser(),
   ]);
 
   const [ordersLocked, tallabyPayEarnings] = await Promise.all([
@@ -45,6 +49,8 @@ export async function SidebarData() {
       )}
       selectedStoreId={selected?.id ?? null}
       maxStores={maxStores}
+      // Only the boolean reaches the client, never the account list.
+      supportTools={isSupportAccount(user?.email)}
       features={{ storeBuilder: storeBuilderEnabled(seller.sellerId), tallabyPayEarnings }}
     />
   );

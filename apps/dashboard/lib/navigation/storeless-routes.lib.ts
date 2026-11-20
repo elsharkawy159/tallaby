@@ -90,25 +90,29 @@ export function storelessTarget(pathSegments: readonly string[], storeId: string
 
 /**
  * The store-less form of a dashboard path, for a "copy link" anyone can open
- * for their own store: an optional locale prefix is dropped and
+ * for their own store, in their own language: a locale prefix is always
+ * dropped (account paths too, `/en/orders` → `/orders`), and
  * `/stores/<uuid>/<rest>` becomes the path that reaches the same page
  * (`storelessTarget`, or the `/products` and `/welcome` redirect pages).
  * `/stores/<uuid>` alone becomes My stores. Any other path (account pages,
  * a store route with no store-less form such as the builder's `editor`) is
- * returned unchanged. A query string or hash is kept.
+ * returned as is, minus the locale prefix. A query string or hash is kept.
  */
 export function toStorelessPath(pathname: string): string {
   const cut = pathname.search(/[?#]/);
   const path = cut === -1 ? pathname : pathname.slice(0, cut);
   const suffix = cut === -1 ? "" : pathname.slice(cut);
 
-  const match = /^\/stores\/([^/]+)((?:\/[^/]*)*)$/.exec(path.replace(LOCALE_PREFIX_RE, "") || "/");
-  if (!match || !isUuid(match[1]!)) return pathname;
+  const bare = path.replace(LOCALE_PREFIX_RE, "") || (path ? "/" : "");
+  const unchanged = `${bare}${suffix}`;
+
+  const match = /^\/stores\/([^/]+)((?:\/[^/]*)*)$/.exec(bare);
+  if (!match || !isUuid(match[1]!)) return unchanged;
 
   const segments = (match[2] ?? "").split("/").filter(Boolean);
   const [section, ...more] = segments;
   if (section === undefined) return `/stores${suffix}`;
-  if (!includes(STORE_SECTIONS, section)) return pathname;
+  if (!includes(STORE_SECTIONS, section)) return unchanged;
 
   const joined = `/${segments.join("/")}`;
   if (includes(TOP_LEVEL_STORE_SECTIONS, section) || section === "products") return `${joined}${suffix}`;
