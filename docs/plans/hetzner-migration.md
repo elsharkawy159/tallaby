@@ -251,6 +251,14 @@ Open technical points to prove on one hostname before rollout: (1) with Full (st
 
 `next/image` resizing moves to our CPU (sharp). Plan: Cloudflare Cache Rule on `/_next/image*` (so each size is made once and served from the edge), keep webp-only (Next default; Cloudflare ignores `Vary: Accept`, which is only safe while one format is served), `.next/cache` on a volume. Watch Sentinel CPU in the first days; if it saturates, cap with a container CPU limit or move store images to Cloudflare Image Transformations (Free: 5,000 unique transformations/month, then $0.50 per 1,000; a loader change). `images.unoptimized` is the emergency switch (bigger pages, no CPU).
 
+### 7.10 Progress (2026-11-20)
+
+- **Code (committed on main, not pushed):** `9a0a5e4e` image + CI (7.3 #1), `2a0b4096` `www.` → apex redirect in the proxy (7.3 #2), `85eab2e6` custom-domain provider switch + migration 0177 (7.3 #3).
+- **0177 applied on staging** (re-run idempotent; staging has no custom-domain rows). **Production: not yet (owner gate).** Because Drizzle selects every `seller_custom_domains` column, the push that ships `85eab2e6` (admin, dashboard and backend images redeploy, Vercel rebuilds ecommerce) must come **after** 0177 is on production.
+- **DNS:** `dispatch.tallaby.com` (the shipping app, Vercel project `tallaby-shipping`) now has its own DNS-only CNAME to Vercel, so moving `*` will not take it. `shipping.tallaby.com` is only a reserved name the storefront answers; it keeps following `*`.
+- **Origin CA:** certificate id `445448311530526031252787974360530513369542357936` (`tallaby.com`, `*.tallaby.com`, ECC, expires **2041-11-16**). Private key generated on the server, never left it: `/data/coolify/proxy/certs/tallaby-origin.{pem,key}`; Traefik default certificate via `/data/coolify/proxy/dynamic/tallaby-origin-cert.yaml` (served only when no router certificate matches the SNI; checked: unknown names get Origin CA, admin/dashboard/api/www/deploy keep Let's Encrypt). Rollback: delete that dynamic file.
+- **Next (blocked on gates):** apply 0177 on production → push → CI builds `tallaby-ecommerce` → Coolify app `tallaby-storefront` + env + tests on the server (7.4 #3–#5) → switch 1 (7.5).
+
 ### 7.9 Owner decisions
 
 **Answered 2026-11-20:**
