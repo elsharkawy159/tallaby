@@ -321,6 +321,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 76  | F-98 | EasyKash: the seller's own EasyKash account as a store payment gateway (cards, wallets, Fawry, Aman, instalments) | P1                          | yes (0174)      | Owner request 2026-11-18; plan written (`docs/easykash.md`); not built; 5 owner questions open                 |
 | 77  | F-99 | Dropshipping: sell supplier products without holding stock; the supplier ships the order                          | P2 (owner to set)           | likely          | Owner request 2026-11-18; added to the plan only; design note and owner decisions first                        |
 | 78  | F-100 | Tallaby Pay: shoppers pay online through Tallaby's EasyKash account; seller gets 97% in a separate Earnings wallet (3% platform fee), released after delivery, withdrawn on request | P1 | yes (0175, 0176) | Owner request 2026-11-18; design written (`docs/superpowers/specs/2026-11-18-tallaby-pay-design.md`); waits for owner answers (§14) and legal clearance |
+| 79  | F-101 | Code sections in the builder: custom CSS and Liquid (HTML + Liquid + CSS, no JS) sections inside the drag-and-drop tree, editable through schema fields; the AI builder can write them too | P1 | likely (store data) | Owner request 2026-11-20; approved (rule 9 changed); design note first |
 
 ---
 
@@ -1405,12 +1406,36 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### F-101 Code sections (custom CSS + Liquid) in the website builder — P1 · Owner request 2026-11-20 · Approved
+
+- **Status:** approved 2026-11-20 (owner): sellers and their developers may add their own code; CLAUDE.md rule 9 changed the same day. Nothing designed or built. Next step: a design note (`docs/superpowers/specs/<date>-code-sections-design.md`).
+- **Why:** sellers asked to add their own code. Developers and agencies working for sellers need custom layouts the visual sections can't make. The AI website builder can also write a custom section faster as Liquid than as a node tree.
+- **Shape (hybrid, owner 2026-11-20):** the page stays a JSON element tree (rule 17), and drag and drop, reorder, templates and existing stores are unchanged. A new `code-section` node holds HTML + Liquid + CSS plus a settings schema; its fields appear in the builder sidebar, so a seller edits a developer's section without touching code. Rendered on the server with `liquidjs` (parse, render and memory limits), the HTML cleaned (no `<script>`, `on*` attributes or `javascript:` URLs), CSS scoped to the section, inside the React page (cart, carousels and pop-ups keep working). **No JavaScript.** Never on checkout pages.
+- **Not in scope (for now):** custom JavaScript; full developer-built Liquid themes, a developer CLI or a theme marketplace (re-check after we see how much code sections are used); converting existing templates to Liquid.
+- **AI builder rule:** the AI keeps building normal sections as element trees (every element editable). It writes a code section only when no tree design fits, and always with schema fields for its text, images and colours. Rule 20 applies: output size capped, `generateStructured`, cost measured.
+- **Owner questions (before the design):**
+  1. Who gets it: every seller, or Pro only?
+  2. Custom CSS: per element, per section, per store, or all three?
+  3. Should sellers be able to share or copy code sections between their stores?
+- **Draft tasks:**
+  - **F-101a · P1 · deps: —** Design note: node shape, data objects (`store`, `product`, `collection`, `cart` summary, `settings`, all store-scoped), versioning (a stable data API: published fields are never renamed), cleaning and limits, caching, migration if any, threat list.
+  - **F-101b · P1 · deps: F-101a** Custom CSS (scoped, cleaned) on elements and sections.
+  - **F-101c · P1 · deps: F-101a** `code-section` node, server render path (`liquidjs` + sanitizer + cache), storefront and builder preview.
+  - **F-101d · P1 · deps: F-101c** Data objects and filters (`money`, `image_url`, `t` for ar/en), documented.
+  - **F-101e · P1 · deps: F-101c** Builder: code editor with live preview, schema → sidebar fields, both languages.
+  - **F-101f · P1 · deps: F-101c** Security tests: XSS payloads, CSS escape, render limits, tenant isolation.
+  - **F-101g · P2 · deps: F-101e** AI builder writes code sections (rule above).
+  - **F-101h · P2 · deps: F-101e** Seller docs page and a starter set of example code sections.
+
+---
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Feature ID                                                                                       | Status                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-11-20 | "some sellers ask if possible to add code so I need to extend my current builder so that work with both drag/drop and code … I need to let sellers or their developers to be able to build something customized, also for the AI website builder assistant to be able to build sections customized with liquid" | F-101 | Approved 2026-11-20 (hybrid: Liquid code sections inside the tree, no JS); rule 9 changed; design note next |
 | 2026-11-20 | "improve the email designs, and add our social media icons in the footer of every email so people follow us" | — (polish, no feature ID) | Built 2026-11-20 (uncommitted): social row in every email footer, 3 legacy emails moved to the kit; icons live after apps/marketing deploys; Supabase auth templates need re-pasting |
 | 2026-11-18 | "I need to build Tallaby Pay based on Easy Kash … Sellers have a separated Tallaby Earning wallet … Tallaby Platform for now is 3% … if order amount is 100 EGP … seller's earning wallet should be toped up with 97 EGP and 3 EGP on Fees box" | F-100 | Designed 2026-11-18 |
 | 2026-11-18 | "I need to allow Dropshipping system feature into our Tallaby / just add it in the plan for now"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | F-99                                                                                             | Planned 2026-11-18 (questions for the owner in §4)                                                                                                                                                                                                                                                                                                                                                                 |
@@ -1646,6 +1671,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-99a–g Dropshipping — added to the plan 2026-11-18; waits for the owner's answers (§4 F-99)
 - [x] F-100a–g Tallaby Pay built 2026-11-18 (`2c143e0f`, `41434ccc`, `b80a1fc7`, `cd6265bd`, `8f77bd3c`, `1fb22c57`, `83d158ac`); 0175/0176 applied on staging and production 2026-11-19
 - [ ] F-100h Manual E2E on staging (needs 0175/0176, env, EasyKash callback URL, switch on)
+- [ ] F-101a–h Code sections (custom CSS + Liquid) — approved 2026-11-20; waits for the design note and the owner's 3 questions (§4 F-101)
 - [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17; `0173` applied on staging and production (checked 2026-11-19)
 - [x] F-90 One template per niche: all 83 niches mapped, every industry switched, 32 templates deleted (116 → 84) — 2026-11-12, not deployed; no migration; not seen in a browser
 - [ ] F-90 Packs and redesigns for the 59 `own` rows (wave 1's six new packs, then waves 2–13 as their photos arrive)
@@ -1945,6 +1971,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-20 — Code sections planned (F-101, owner request)
+
+- **Done:** owner approved a hybrid builder: Liquid code sections (HTML + Liquid + CSS, no JS) inside the drag-and-drop tree, editable through schema fields, for sellers, their developers and the AI builder. Added F-101 (§3, §4, §5, §6) and changed CLAUDE.md rule 9 to allow it. No code, no migration.
+- **Not done:** design note (F-101a); the owner's 3 questions (plan, CSS scope, sharing).
 
 ### 2026-11-20 — Email polish: social icons in every footer (owner request)
 
