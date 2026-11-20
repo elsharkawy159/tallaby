@@ -160,9 +160,9 @@ export const updateAdminProfile = async (updates: {
     throw new Error("User profile not found");
   }
 
-  // Only super_admin can update roles
-  if (updates.role && currentProfile.role !== "super_admin") {
-    throw new Error("Only super administrators can update user roles");
+  // Only admin or super_admin can update roles (owner, 2026-11-20)
+  if (updates.role && currentProfile.role !== "admin" && currentProfile.role !== "super_admin") {
+    throw new Error("Only administrators can update user roles");
   }
 
   const { data, error } = await supabase

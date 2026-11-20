@@ -151,13 +151,14 @@ export const getAdminPermissions = (role: AdminRole): AdminPermissions => {
       canViewAnalytics: true,
       canManageRoles: true,
     },
+    // admin has every super_admin permission (owner, 2026-11-20).
     admin: {
       canManageUsers: true,
       canManageProducts: true,
       canManageOrders: true,
-      canManageSettings: false,
+      canManageSettings: true,
       canViewAnalytics: true,
-      canManageRoles: false,
+      canManageRoles: true,
     },
     moderator: {
       canManageUsers: false,

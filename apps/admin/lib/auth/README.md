@@ -46,9 +46,9 @@ supabase/
 | `canManageUsers`    | ❌        | ✅    | ✅          |
 | `canManageProducts` | ✅        | ✅    | ✅          |
 | `canManageOrders`   | ✅        | ✅    | ✅          |
-| `canManageSettings` | ❌        | ❌    | ✅          |
+| `canManageSettings` | ❌        | ✅    | ✅          |
 | `canViewAnalytics`  | ✅        | ✅    | ✅          |
-| `canManageRoles`    | ❌        | ❌    | ✅          |
+| `canManageRoles`    | ❌        | ✅    | ✅          |
 
 `checkAdminPermission()` / `canManageUsers()` / etc. in `admin-auth.ts` are
 the server-side checks for these; call them from a Server Action before a

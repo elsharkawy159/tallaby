@@ -104,12 +104,13 @@ export const getCurrentAdminPermissions =
   };
 
 /**
- * Server-side function to check if user is super admin
+ * Server-side function to check for super admin rights. `admin` has every
+ * super_admin right (owner, 2026-11-20), so it passes too.
  */
 export const isSuperAdmin = async (): Promise<boolean> => {
   try {
     const user = await getCurrentAdminUser();
-    return user.role === "super_admin";
+    return ["admin", "super_admin"].includes(user.role);
   } catch {
     return false;
   }
@@ -141,10 +142,12 @@ export const validateAdminAccess = async (
   }
 
   if (requiredRole) {
+    // admin ranks with super_admin: it has every super_admin right
+    // (owner, 2026-11-20).
     const roleHierarchy: Record<AdminRole, number> = {
       moderator: 1,
       admin: 2,
-      super_admin: 3,
+      super_admin: 2,
     };
 
     if (roleHierarchy[user.role] < roleHierarchy[requiredRole]) {

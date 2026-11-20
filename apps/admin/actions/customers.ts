@@ -169,13 +169,13 @@ export async function updateCustomerStatus(
   try {
     const currentAdmin = await getCurrentAdminUser(); // Verify admin access + get own role
 
-    // Role changes are a privilege escalation vector — only super_admin may
-    // grant/change a role (previously any admin/moderator could promote a
-    // user, including themselves, to super_admin via this action).
-    if (updates.role && currentAdmin.role !== "super_admin") {
+    // Role changes are a privilege escalation vector — only admin or
+    // super_admin may grant/change a role (owner, 2026-11-20: admin has every
+    // super_admin right); a moderator never can.
+    if (updates.role && currentAdmin.role !== "admin" && currentAdmin.role !== "super_admin") {
       return {
         success: false,
-        error: "Only super administrators can change user roles",
+        error: "Only administrators can change user roles",
       };
     }
 
