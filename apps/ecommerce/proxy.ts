@@ -45,6 +45,22 @@ function markStorePreview(request: NextRequest, response: NextResponse): NextRes
 }
 
 /**
+ * `www.faster-eg.com` with no row of its own → 308 to `https://faster-eg.com`,
+ * same path and query, as Vercel's attached `www.` redirect does. Only to an
+ * apex that is itself an active custom domain (one more cached lookup), so the
+ * Host header can never pick the target. Null when there is nothing to send to.
+ */
+async function wwwToApexRedirect(request: NextRequest, hostname: string): Promise<NextResponse | null> {
+  if (!hostname.startsWith("www.")) return null;
+  const apex = hostname.slice("www.".length);
+  if (!apex) return null;
+  const apexHost = await storeHostForCustomDomain(apex);
+  if (apexHost?.customDomain !== apex) return null;
+  const { pathname, search } = request.nextUrl;
+  return NextResponse.redirect(`https://${apex}${pathname}${search}`, 308);
+}
+
+/**
  * account.<root> and preview.<root> (lib/platform-site-routing.ts): only their
  * own pages, routed exactly as on tallaby.com; any other path goes to the
  * same path on tallaby.com. Every response from them is noindex. Every other
@@ -81,8 +97,14 @@ async function routeRequest(request: NextRequest) {
   } else if (!isPlatformHost(host)) {
     // A seller's own domain (faster-eg.com). Vercel only routes domains we
     // attached, but an inactive or removed one must not show anything.
-    const storeHost = await storeHostForCustomDomain(hostnameOf(host));
-    if (!storeHost) return new NextResponse(null, { status: 404 });
+    // The host as-is first, so an apex (or a store kept on www.) costs one
+    // cached lookup.
+    const hostname = hostnameOf(host);
+    const storeHost = await storeHostForCustomDomain(hostname);
+    if (!storeHost) {
+      const redirect = await wwwToApexRedirect(request, hostname);
+      return redirect ?? new NextResponse(null, { status: 404 });
+    }
     const subdomain = storeHost.subdomain;
     const crawlFile = routeStoreCrawlFile(request, subdomain);
     if (crawlFile) return crawlFile;

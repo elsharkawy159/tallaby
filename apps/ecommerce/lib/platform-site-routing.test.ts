@@ -5,8 +5,14 @@ import { isPlatformSitePath, platformSiteOf } from "./platform-site-routing";
 // The proxy's database lookups and Supabase session refresh are not what these tests cover.
 vi.mock("@/lib/custom-domain-lookup", () => ({
   storeHostForSubdomain: vi.fn(async () => null),
+  // faster-eg.com is stored as the apex (today's rows); www.ward-eg.com is a
+  // store kept on its www. host (a DNS host with no apex ALIAS).
   storeHostForCustomDomain: vi.fn(async (domain: string) =>
-    domain === "faster-eg.com" ? { subdomain: "faster", customDomain: "faster-eg.com", defaultLocale: "ar", locales: ["ar", "en"] } : null,
+    domain === "faster-eg.com"
+      ? { subdomain: "faster", customDomain: "faster-eg.com", defaultLocale: "ar", locales: ["ar", "en"] }
+      : domain === "www.ward-eg.com"
+        ? { subdomain: "ward", customDomain: "www.ward-eg.com", defaultLocale: "ar", locales: ["ar", "en"] }
+        : null,
   ),
 }));
 vi.mock("@/supabase/middleware", () => ({
@@ -108,5 +114,46 @@ describe("proxy on every other host (unchanged)", () => {
     expect((await shape("faster-eg.com", "/products/bag")).rewrite).toContain("/ar/storefront/faster/products/bag");
     expect((await shape("faster-eg.com", "/products/bag")).robots).toBeNull();
     expect((await shape("unknown-shop.com", "/")).status).toBe(404);
+  });
+});
+
+describe("proxy on www. of a custom domain", () => {
+  it("sends www. to the apex row (308), keeping the path and query", async () => {
+    expect(await shape("www.faster-eg.com", "/products/bag?color=red&utm_source=fb")).toMatchObject({
+      status: 308,
+      location: "https://faster-eg.com/products/bag?color=red&utm_source=fb",
+      rewrite: null,
+    });
+    expect((await shape("www.faster-eg.com", "/")).location).toBe("https://faster-eg.com/");
+  });
+
+  it("keeps serving the apex itself, with no redirect", async () => {
+    const apex = await shape("faster-eg.com", "/");
+    expect(apex.status).not.toBe(308);
+    expect(apex.location).toBeNull();
+    expect(apex.rewrite).toContain("/ar/storefront/faster");
+  });
+
+  it("serves a store stored on its www. host as-is", async () => {
+    const www = await shape("www.ward-eg.com", "/products/rose");
+    expect(www.location).toBeNull();
+    expect(www.rewrite).toContain("/ar/storefront/ward/products/rose");
+  });
+
+  it("404s a www. host whose apex is not an active custom domain", async () => {
+    for (const host of ["www.unknown-shop.com", "ward-eg.com", "www.www.faster-eg.com"]) {
+      expect(await shape(host, "/")).toMatchObject({ status: 404, location: null });
+    }
+  });
+
+  it("leaves store subdomains and tallaby hosts unchanged", async () => {
+    const { storeHostForCustomDomain } = await import("@/lib/custom-domain-lookup");
+    vi.mocked(storeHostForCustomDomain).mockClear();
+    expect((await shape("sara.tallaby.com", "/")).rewrite).toContain("/ar/storefront/sara");
+    for (const host of ["tallaby.com", "www.tallaby.com", "account.tallaby.com"]) {
+      expect((await shape(host, "/")).status).not.toBe(404);
+    }
+    // Platform hosts never reach the custom-domain lookup (or its www. fallback).
+    expect(storeHostForCustomDomain).not.toHaveBeenCalled();
   });
 });
