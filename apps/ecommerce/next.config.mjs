@@ -1,8 +1,17 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import createNextIntlPlugin from "next-intl/plugin";
 import { redirects } from "./redirects.mjs";
 const withNextIntl = createNextIntlPlugin();
 
+// Self-hosted Docker image (docs/plans/hetzner-migration.md §7.3): `NEXT_OUTPUT=standalone`
+// emits `.next/standalone`, traced from the monorepo root so workspace packages
+// are included (same switch as apps/marketing/next.config.mjs). Vercel never sets it.
+const standalone = process.env.NEXT_OUTPUT === "standalone";
+const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
 const nextConfig = {
+  ...(standalone ? { output: "standalone", outputFileTracingRoot: repoRoot } : {}),
   typescript: { ignoreBuildErrors: true },
   transpilePackages: ["@workspace/ui"],
   // Avoid serving stale homepage RSC payloads on client-side navigation.
