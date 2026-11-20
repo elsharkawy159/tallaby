@@ -180,7 +180,88 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
 - **Rollback:** delete the `www` A record (the `*` CNAME sends it back to Vercel), set the apex back to CNAME `ab23bb2578e60837.vercel-dns-017.com` DNS only, delete the redirect rule. The Vercel ecommerce project still serves tallaby.com and keeps its Git builds and crons.
 - **Still on Vercel:** storefronts, custom domains, `account.` and `preview.`, and all 14 ecommerce crons. Next: after a stable week, delete the marketing copy from `apps/ecommerce` (routes, components, lib, messages, tallaby.com proxy branch, robots/sitemap, redirect rows) and split `ECOMMERCE_URL`'s uses.
 
-## 7. Before deciding
+## 7. Plan: storefront (apps/ecommerce) to Hetzner (written 2026-11-20, **not started**)
+
+Status: **plan only, waiting for owner decisions (§7.9)**. Nothing below is built or switched. Research notes (side-session folder): `ecommerce-move-code.md` (code, crons, images), `ecommerce-move-tls.md` (TLS options with sources), `ecommerce-move-live-facts.md` (live DNS checks). Rules 3, 5, 7, 8, 10 and 21 apply; ask the owner before every DNS switch, production env change, money-related step and before turning off Vercel crons.
+
+### 7.1 What moves and what we know (checked 2026-11-20)
+
+- **Hosts:** every `{sub}.tallaby.com` store, `account.tallaby.com`, `preview.tallaby.com` (all through Cloudflare's `*` CNAME → Vercel, DNS only) and the sellers' own domains.
+- **Seller custom domains on the Vercel project (6 apexes, each with a `www` that 308s to the apex):** only **4 are live on us**: `faster-egy.com`, `egylancer.com` (DNS at Namecheap), `tafawokcom.site`, `yjo-brand.shop` (DNS at Hostinger). `paintoeg.store` points at Shopify, `stitchcrochet.con` is a typo TLD that never resolves. Few enough to move each seller by hand, with them.
+- **Custom-domain code** (table `seller_custom_domains`, migrations 0048/0050; `status pending|active|failed`, `verification` = Vercel TXT records; stored without `www.`): add flow in `apps/dashboard/actions/custom-domain.ts:131-195` and `packages/lib/src/admin/domains-admin.server.ts:152-237` (attach apex + `www.` with a 308), check in `packages/lib/src/storefront/custom-domains.server.ts:146-170`, daily cron `custom-domains`, Vercel API in `packages/lib/src/storefront/vercel-domains.ts` (5 endpoints). Seller DNS instructions (`A @ 76.76.21.21`, `CNAME www cname.vercel-dns.com`) are hard-coded in 3 places (the lib, dashboard `domain-dns.lib.ts:16-17`, `custom-domain.client.tsx:51-52`). **Vercel answers `www.<domain>` itself today; off Vercel, `proxy.ts` would 404 it** unless we add that redirect.
+- **Crons (14):** all GET with `Bearer CRON_SECRET`, nothing Vercel-only, and **all safe to run twice**. Money jobs: `tallaby-pay-release` locks the wallet row and claims with `status = 'pending' AND refund_state IS NULL` (`release.server.ts:80-114`), and the ledger insert is `ON CONFLICT (kind, reference_type, reference_id) DO NOTHING` (`ledger.server.ts:271`, unique constraint from 0175); `cod-deposits` cancels with a guarded update `deposit_status = 'awaiting' AND status IN ('pending','confirmed')` and stops on 0 rows (`cod-deposit.server.ts:193-209`), stock back in the same transaction, email after commit. `welcome-gifts` locks the seller and inserts with ON CONFLICT. Email crons are guarded by the backend's unique delivery claim. Soft spots only: two overlapping `seller-setup-reminders` runs can overshoot the 40-a-day cap; two `custom-domains` runs double the Vercel API calls.
+- **Images:** 55 files use `next/image` (22 are marketing), storefront sections go through `optimizeStoreImage`, Next defaults (webp only), `minimumCacheTTL` 30 days, no custom loader. About 20–40 images × 2–4 sizes per store page. The proxy skips `/_next/image`, so responses carry no cookies or per-store state.
+- **Other Vercel ties:** none left in code (no `x-vercel-*`, `@vercel/*`, edge runtime, `waitUntil`; IP/country via the shared helper; `VERCEL` only sizes the DB pool; 5 `after()` calls work self-hosted). Missing: the `NEXT_OUTPUT=standalone` switch, a Dockerfile and a CI workflow. Unused env on Vercel: `UPSTASH_REDIS_REST_*`, `PEXELS_API_KEY`, `RESEND_API_KEY` (not read by ecommerce).
+- **Third parties calling store hosts** (need WAF/security skips like `api.`): `/api/kashier/redirect`, `/api/store-payments/return*` (EasyKash may POST a form), `/api/revalidate`, `/api/feeds/*`, `/api/meta/catalog`, the two unsubscribe routes. Server webhooks already go to `api.tallaby.com`.
+- **Server:** CPX32, 4 vCPU, 7.7 GB RAM (2.0 GB used with 4 apps), 61 GB disk free, load ~0.2.
+- **`shipping.tallaby.com`** is `apps/shipping` on Vercel project `tallaby-shipping` (deployed by hand) and has **no DNS record of its own**: it rides the `*` wildcard. Repointing `*` would send it to the storefront and break it.
+
+### 7.2 TLS and seller domains: options
+
+| | A. Cloudflare all the way (**recommended**) | B. Open the firewall, certs on the server (Caddy on-demand, or Traefik + one router per domain) | C. Hybrid: subdomains to Hetzner, custom domains stay on Vercel |
+| --- | --- | --- | --- |
+| `*.tallaby.com` | proxied `*` → VPS; edge cert = Universal SSL (already covers `*.tallaby.com`); origin cert = **Cloudflare Origin CA** `tallaby.com` + `*.tallaby.com` (free, up to 15 years, Full strict OK) loaded as Traefik's default cert | same as A | same as A |
+| Seller domains | **Cloudflare for SaaS** custom hostnames (Free plan: 100 hostnames included, then $0.10/hostname/month; apex + www = 2). Seller CNAMEs `www` to our fallback origin (e.g. `shops.tallaby.com`); cert issued by Cloudflare (HTTP DCV), can be **pre-validated by TXT** before the seller changes DNS | seller A record → VPS public IP; Let's Encrypt per domain (HTTP-01) | stay on Vercel until later |
+| Origin firewall | stays Cloudflare-only (everything arrives through the edge) | 80/443 open to the world: DDoS straight to the VPS, IP becomes public and fixed (a server move breaks every seller) | stays |
+| Apex domains | **Free plan has no apex A records** (Enterprise add-on): seller needs ALIAS/CNAME flattening at their DNS host, or forwards the apex to `www` | plain A record works | as today |
+| Cost / ops | $0 for ≤ 50 domains; Cloudflare manages certs | rate limits (LE), Caddy `ask` endpoint can take sites down | keeps paying Vercel; two copies of the app, caches can go stale between them (broadcast has one ecommerce peer) |
+
+**Recommendation: A.** It keeps the origin locked, sellers never see an IP, and the server can be replaced freely. B is rejected for the open firewall. C is fine only as a short transition (step 7.5 runs subdomains first, custom domains a few days later).
+
+Open technical points to prove on one hostname before rollout: (1) with Full (strict), Cloudflare sends the seller's hostname as SNI; Traefik answers with the default Origin CA cert, which does not name it. If Cloudflare rejects that, add a Configuration Rule "SSL: Full" for hosts outside `tallaby.com` (the firewall still keeps the origin Cloudflare-only); consider Authenticated Origin Pulls so only our zone's traffic is accepted. (2) The catch-all Traefik router must answer unknown hosts (custom hostnames), and the app's proxy already 404s hosts it does not know.
+
+### 7.3 Code slices (rule 21: subagent per slice, review, checks, commit on main; no push until the owner says "push")
+
+1. **Image and CI:** `NEXT_OUTPUT=standalone` switch in `apps/ecommerce/next.config.mjs`, `apps/ecommerce/Dockerfile` (copy of marketing's, health check on a static route outside the proxy matcher), `.github/workflows/ecommerce-image.yml` (`ECOMMERCE_NEXT_PUBLIC_*` variables; build-time DB secret only if prerendering needs it). No behaviour change on Vercel.
+2. **`www.` of custom domains:** in `proxy.ts`'s custom-domain branch, `www.<known apex>` → 308 to the apex (what Vercel does today), with tests. Needed before any custom domain leaves Vercel.
+3. **Custom-domain provider switch:** `CustomDomainProvider` (`attach`, `detach`, `check`, `routingRecords`) in `packages/lib/src/storefront/`, Vercel implementation = today's code, Cloudflare implementation = custom hostnames API (`POST/GET/DELETE /zones/{zone}/custom_hostnames`), chosen per row: migration **0177** adds `seller_custom_domains.provider` (`vercel` default, so existing rows are untouched). Dashboard and admin DNS instructions come from `routingRecords()`; cron `custom-domains` checks each row with its own provider. New env `CLOUDFLARE_SAAS_API_TOKEN` (Custom Hostnames edit only), `CLOUDFLARE_ZONE_ID`, `CUSTOM_DOMAIN_PROVIDER` (default for new domains). About 18 files; migration on staging, then production with owner approval (rule 4/6).
+4. **Marketing cleanup in ecommerce** (not before 2026-11-26, a stable week after the tallaby.com switch): delete the ~296 marketing files, the tallaby.com branch of `proxy.ts`, host-limited `redirects.mjs` rows and the marketing message merge. Move, don't delete, what storefront code still imports: the template-preview page's template libs, `CONTACT` (used by `order-confirmation.data.tsx`), `api/geo`, `store-build/intake/complete`, the `llms.txt`/`sitemap.xml` routes (decide whether ecommerce still needs them on `account.`/`preview.`). Split `ECOMMERCE_URL`'s three uses.
+
+### 7.4 Infra prep (no traffic change)
+
+1. **Protect what rides `*`:** add an explicit DNS-only CNAME `shipping` → Vercel (`ab23bb2578e60837.vercel-dns-017.com`) and check the Vercel team for any other `*.tallaby.com` label in use (staging, previews) and give each its own record. Rollback: delete the records.
+2. **Origin CA cert** for `tallaby.com` + `*.tallaby.com` (Cloudflare dashboard, 15 years; note the expiry date here). Install as Traefik's default certificate in `/data/coolify/proxy/certs/` + a dynamic config file (Coolify docs: custom SSL certs). Existing apps keep their Let's Encrypt certs (more specific routers win). Rollback: remove the dynamic file.
+3. **Coolify app `tallaby-storefront`** from `ghcr.io/elsharkawy159/tallaby-ecommerce:main`, port 3000, no certificate resolver, a low-priority catch-all router (`HostRegexp` any host) so store subdomains and custom hostnames reach it, plus a persistent volume on `.next/cache` (image cache survives redeploys). Runtime env: the variables the Vercel production project sets that the code reads, copied encrypted from existing Coolify apps where the values are the same (as for marketing), the rest from Vercel; not `UPSTASH_*`, `PEXELS_API_KEY`, `RESEND_API_KEY`. `TRUST_CLOUDFLARE_HEADERS=1`. CI deploy token scoped to this app.
+4. **Test before any switch**, on the server with `Host:` headers and through a temporary proxied test label: a store home, product, cart, checkout up to the payment page (no real order), `account.` sign-in page, `preview.` template, robots/sitemap of a store, a custom-domain host header, `/_next/image`. Crons: hit each once **without** the secret (expect 401), no real runs.
+5. **Cloudflare rules ready:** Cache Rule `/_next/image*` → eligible for cache, Edge TTL respects origin (Next sends 30 days); configuration rule for the payment-return/feed/unsubscribe paths (BIC off, low security level), like `api.`.
+
+### 7.5 Switch 1: store subdomains, `account.`, `preview.` (owner approval)
+
+1. Cloudflare `*` CNAME (DNS only, Vercel) → A 2.28.78.10 **proxied**. Explicit records (`www`, `admin`, `dashboard`, `api`, `mcp`, `deploy`, `shipping`) are unaffected. Takes effect within the old TTL (5 min).
+2. **Crons, same hour:** add the 14 Coolify scheduled tasks (UI in Chrome; command `node -e 'fetch("http://127.0.0.1:3000/api/cron/<path>",{headers:{authorization:"Bearer "+process.env.CRON_SECRET}}).then(async r=>{console.log(r.status,(await r.text()).slice(0,300));process.exit(r.ok?0:1)})'`, same UTC schedules, timeout 330 s), then right away Vercel › tallaby-ecommerce › Schedules › Cron Jobs › **Disable**. Do it between `:40` and `:55` so neither `cod-deposits` (`:25`) nor `tallaby-pay-release` (`:35`) is mid-run; a double run would be harmless anyway (7.1).
+3. Watch for a day: Coolify logs, Sentinel CPU/RAM, order count vs. the day before, payment returns, custom-domain sign-in hand-off (starts on `account.`, now Hetzner, returns to the Vercel-served custom domain: both read the same DB, so it works).
+4. **Rollback:** set `*` back to CNAME `ab23bb2578e60837.vercel-dns-017.com` DNS only and re-enable the Vercel crons (disable the Coolify tasks). Keep `_acme-challenge` delegated to Vercel until 7.7 so Vercel's wildcard cert stays valid for this rollback.
+
+### 7.6 Switch 2: seller custom domains (after slices 2 and 3 are live; owner approval per seller)
+
+1. Enable Cloudflare for SaaS on the zone (owner: billing profile; $0 up to 100 hostnames). Fallback origin `shops.tallaby.com` (A 2.28.78.10 proxied).
+2. Per seller (4 today), in one session with them: create the custom hostnames (`www.<domain>`, and the apex where their DNS host supports ALIAS/flattening), give them the TXT records to pre-validate, wait for `active`; then they change `www` to `CNAME shops.tallaby.com` and the apex to ALIAS (or registrar forwarding to `www`). Set the row's `provider` to `cloudflare`; remove the domain from the Vercel project only after traffic has moved. Expected gap: none (both sides serve valid TLS).
+3. Apex limitation: if a seller's DNS host has no ALIAS/flattening (check Namecheap and Hostinger), their apex can only forward to `www`, so the store's address becomes `www.<domain>` (owner decision, 7.9 #2).
+4. New domains from then on use Cloudflare (`CUSTOM_DOMAIN_PROVIDER=cloudflare`); dashboard instructions say `CNAME → shops.tallaby.com`.
+5. **Rollback per seller:** they restore `A 76.76.21.21` / `CNAME cname.vercel-dns.com` (domain still attached on Vercel until confirmed), row back to `vercel`.
+
+### 7.7 After both switches are stable (≈ 1–2 weeks)
+
+1. Remove the `_acme-challenge` NS delegation to Vercel (Universal SSL validation goes back to Cloudflare-managed TXT; no more copying TXT values into Vercel DNS). Ends the instant rollback to Vercel for `*`.
+2. `apps/ecommerce/vercel.json` `deploymentEnabled` off (owner rule: only after the switch is verified); keep the last Vercel deployment as rollback for two weeks, then the owner decides on deleting the project.
+3. Marketing cleanup slice (7.3 #4).
+4. Fresh Hetzner snapshot ("after storefront move"), then offer to delete "tallaby-prod-1 before backups off 2026-11-20".
+
+### 7.8 Image optimization on the server
+
+`next/image` resizing moves to our CPU (sharp). Plan: Cloudflare Cache Rule on `/_next/image*` (so each size is made once and served from the edge), keep webp-only (Next default; Cloudflare ignores `Vary: Accept`, which is only safe while one format is served), `.next/cache` on a volume. Watch Sentinel CPU in the first days; if it saturates, cap with a container CPU limit or move store images to Cloudflare Image Transformations (Free: 5,000 unique transformations/month, then $0.50 per 1,000; a loader change). `images.unoptimized` is the emergency switch (bigger pages, no CPU).
+
+### 7.9 Owner decisions needed before work starts
+
+1. **TLS/custom-domain approach:** A (Cloudflare Origin CA + Cloudflare for SaaS, recommended), B (open the firewall, server-side certs) or C (keep custom domains on Vercel for longer).
+2. **Seller apex domains:** where a seller's DNS host has no ALIAS/flattening, accept that their store moves to `www.<domain>` with the apex forwarded (changes the canonical address of those stores).
+3. **Enable Cloudflare for SaaS** on the zone (billing profile; free up to 100 hostnames).
+4. **The 4 live sellers:** who contacts them and when; remove the dead `paintoeg.store` and `stitchcrochet.con` entries?
+5. **`shipping.tallaby.com`:** move later (recommended; it only gets its own DNS record now) or include it.
+6. **Timing** of switch 1 (low-traffic hour; crons cut over in the same hour) and approval to disable the Vercel crons then.
+7. **Images:** server CPU + Cloudflare cache (recommended) or Cloudflare Image Transformations (paid beyond 5,000/month).
+
+## 8. Before deciding
 
 - Compare the real Vercel bill with Hetzner + Cloudflare for SaaS + the ops time a self-managed server needs.
 - Owner decisions: custom-domain provider (Cloudflare for SaaS vs Caddy), where staging runs, whether `apps/shipping` moves.
