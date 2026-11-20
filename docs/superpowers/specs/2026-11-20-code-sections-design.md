@@ -2,7 +2,7 @@
 
 - **Feature:** ROADMAP.md F-101 (owner request and approval 2026-11-20; every seller, Free and Pro).
 - **Rule:** CLAUDE.md rule 9 (HTML + Liquid + CSS only, server-rendered, cleaned, scoped, no JavaScript, never on checkout).
-- **Status:** design. No code. Nothing in this note is built.
+- **Status:** design approved by the owner 2026-11-20 (§10). No code. Nothing in this note is built.
 
 ## 1. Goal
 
@@ -229,9 +229,9 @@ Today no model output becomes markup (§2). Code sections are the first place it
 
 Checks for every task: `pnpm lint`, `pnpm typecheck` and `pnpm test` (rule 15).
 
-## 10. Questions for the owner
+## 10. Owner decisions (2026-11-20, all defaults accepted)
 
-1. **CSS scope:** per element + per section in v1, no store-wide stylesheet (§3.3). OK?
-2. **Copying between stores:** yes, product and category settings cleared on copy (§5.2). OK?
-3. **Header and footer code:** skipped on cart and checkout pages (§4.8). OK?
-4. **Video embeds:** v1 allows no `<iframe>`; videos use the existing video element. Allow YouTube/Vimeo iframes in code sections later?
+1. **CSS scope:** per element + per section in v1, no store-wide stylesheet (§3.3).
+2. **Copying between stores:** allowed; product and category settings are cleared on copy (§5.2).
+3. **Header and footer code:** skipped on cart and checkout pages (§4.8).
+4. **Video embeds:** no `<iframe>` in v1; videos use the existing video element. YouTube/Vimeo iframes may be reconsidered later.
