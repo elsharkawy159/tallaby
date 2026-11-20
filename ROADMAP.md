@@ -1414,7 +1414,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **Not in scope (for now):** custom JavaScript; full developer-built Liquid themes, a developer CLI or a theme marketplace (re-check after we see how much code sections are used); converting existing templates to Liquid.
 - **AI builder rule:** the AI keeps building normal sections as element trees (every element editable). It writes a code section only when no tree design fits, and always with schema fields for its text, images and colours. Rule 20 applies: output size capped, `generateStructured`, cost measured.
 - **Owner questions (before the design):**
-  1. Who gets it: every seller, or Pro only?
+  1. ~~Who gets it: every seller, or Pro only?~~ **Every seller, Free and Pro (owner, 2026-11-20).**
   2. Custom CSS: per element, per section, per store, or all three?
   3. Should sellers be able to share or copy code sections between their stores?
 - **Draft tasks:**
@@ -1671,7 +1671,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-99a–g Dropshipping — added to the plan 2026-11-18; waits for the owner's answers (§4 F-99)
 - [x] F-100a–g Tallaby Pay built 2026-11-18 (`2c143e0f`, `41434ccc`, `b80a1fc7`, `cd6265bd`, `8f77bd3c`, `1fb22c57`, `83d158ac`); 0175/0176 applied on staging and production 2026-11-19
 - [ ] F-100h Manual E2E on staging (needs 0175/0176, env, EasyKash callback URL, switch on)
-- [ ] F-101a–h Code sections (custom CSS + Liquid) — approved 2026-11-20; waits for the design note and the owner's 3 questions (§4 F-101)
+- [ ] F-101a–h Code sections (custom CSS + Liquid) — approved 2026-11-20 for every seller; waits for the design note and the owner's 2 open questions (§4 F-101)
 - [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17; `0173` applied on staging and production (checked 2026-11-19)
 - [x] F-90 One template per niche: all 83 niches mapped, every industry switched, 32 templates deleted (116 → 84) — 2026-11-12, not deployed; no migration; not seen in a browser
 - [ ] F-90 Packs and redesigns for the 59 `own` rows (wave 1's six new packs, then waves 2–13 as their photos arrive)
@@ -1975,7 +1975,8 @@ Add each new request here first, with the date and the owner's words, then turn 
 ### 2026-11-20 — Code sections planned (F-101, owner request)
 
 - **Done:** owner approved a hybrid builder: Liquid code sections (HTML + Liquid + CSS, no JS) inside the drag-and-drop tree, editable through schema fields, for sellers, their developers and the AI builder. Added F-101 (§3, §4, §5, §6) and changed CLAUDE.md rule 9 to allow it. No code, no migration.
-- **Not done:** design note (F-101a); the owner's 3 questions (plan, CSS scope, sharing).
+- **Owner answer:** every seller gets it (Free and Pro).
+- **Not done:** design note (F-101a); the owner's 2 open questions (CSS scope, sharing).
 
 ### 2026-11-20 — Email polish: social icons in every footer (owner request)
 
