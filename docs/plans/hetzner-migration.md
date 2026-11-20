@@ -251,7 +251,19 @@ Open technical points to prove on one hostname before rollout: (1) with Full (st
 
 `next/image` resizing moves to our CPU (sharp). Plan: Cloudflare Cache Rule on `/_next/image*` (so each size is made once and served from the edge), keep webp-only (Next default; Cloudflare ignores `Vary: Accept`, which is only safe while one format is served), `.next/cache` on a volume. Watch Sentinel CPU in the first days; if it saturates, cap with a container CPU limit or move store images to Cloudflare Image Transformations (Free: 5,000 unique transformations/month, then $0.50 per 1,000; a loader change). `images.unoptimized` is the emergency switch (bigger pages, no CPU).
 
-### 7.9 Owner decisions needed before work starts
+### 7.9 Owner decisions
+
+**Answered 2026-11-20:**
+
+- **TLS:** option **A**, Cloudflare all the way (Origin CA cert for `*.tallaby.com` on the server, Cloudflare for SaaS for seller domains, firewall stays Cloudflare-only).
+- **Apex domains:** approved. Where a seller's DNS host has no ALIAS/flattening, that store moves to `www.<domain>` and the apex forwards to it.
+- **`shipping.tallaby.com`:** gets its own DNS-only CNAME to Vercel now (7.4 #1); the app moves later, not in this move.
+- **Go-ahead to build:** code slices 7.3 #1, #2, #3 (migration 0177 on **staging only** for now) and infra prep 7.4 (shipping record, Origin CA cert, the Coolify app and tests on the server).
+- **Still ask first:** any DNS switch of `*` or a seller domain; applying 0177 on production; any production env change beyond creating the new Coolify app's env; turning off the Vercel crons; enabling Cloudflare for SaaS (billing profile). Marketing cleanup (7.3 #4) waits until 2026-11-26.
+
+**Still open (ask later):** who contacts the 4 live sellers and when; deleting the dead `paintoeg.store` and `stitchcrochet.con` rows; the timing of switch 1; images (server CPU + Cloudflare cache is the default).
+
+The questions as first asked:
 
 1. **TLS/custom-domain approach:** A (Cloudflare Origin CA + Cloudflare for SaaS, recommended), B (open the firewall, server-side certs) or C (keep custom domains on Vercel for longer).
 2. **Seller apex domains:** where a seller's DNS host has no ALIAS/flattening, accept that their store moves to `www.<domain>` with the apex forwarded (changes the canonical address of those stores).
