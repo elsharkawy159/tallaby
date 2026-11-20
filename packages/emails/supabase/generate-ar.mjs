@@ -34,6 +34,50 @@ const styles = `    <style>
       }
     </style>`;
 
+// Same social row as SocialRow in src/kit/components.tsx (Arabic), so every
+// auth email links Tallaby's accounts. Keep in sync with EMAIL_SOCIAL_LINKS.
+const SOCIAL_LINKS = [
+  ["facebook", "Facebook", "https://www.facebook.com/usetallaby"],
+  ["instagram", "Instagram", "https://www.instagram.com/usetallaby"],
+  ["tiktok", "TikTok", "https://www.tiktok.com/@tallaby_"],
+  ["youtube", "YouTube", "https://www.youtube.com/@usetallaby"],
+  ["x", "X", "https://x.com/usetallaby"],
+  ["linkedin", "LinkedIn", "https://www.linkedin.com/company/tallaby"],
+];
+
+const socialRow = `            <tr>
+              <td class="email-pad" align="center" style="padding: 0 24px 16px">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="rtl" align="center" style="margin: 0 auto">
+                  <tr>
+                    <td align="center" style="padding-bottom: 10px; font-size: 13px; line-height: 20px; font-weight: 600; color: #6b7280; text-align: center">تابع طلبي</td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="ltr" align="center" style="margin: 0 auto">
+                        <tr>
+${SOCIAL_LINKS.map(
+  ([id, label, href]) => `                          <td style="padding: 0 6px"><a href="${href}" style="display: inline-block; text-decoration: none"><img src="https://www.tallaby.com/email/social/${id}.png" width="32" height="32" alt="${label}" style="display: inline-block; width: 32px; height: 32px; border: 0" /></a></td>`,
+).join("\n")}
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+`;
+
+const FOOTER_ROW = `            <tr>
+              <td
+                class="email-pad"
+                style="padding: 0 24px 28px; text-align: center"`;
+
+/** Puts the social row just above the help/legal footer. */
+function withSocialRow(html) {
+  if (!html.includes(FOOTER_ROW)) throw new Error("footer row not found");
+  return html.replace(FOOTER_ROW, () => socialRow + FOOTER_ROW);
+}
+
 function buildLinkTemplate({
   title,
   slot,
@@ -407,7 +451,7 @@ const linkTemplates = [
 
 for (const t of linkTemplates) {
   const { file, ...rest } = t;
-  writeFileSync(join(dir, file), buildLinkTemplate(rest), "utf8");
+  writeFileSync(join(dir, file), withSocialRow(buildLinkTemplate(rest)), "utf8");
   console.log("wrote", file);
 }
 
@@ -707,5 +751,5 @@ ${styles}
 </html>
 `;
 
-writeFileSync(join(dir, "reauthentication.ar.html"), reauthHtml, "utf8");
+writeFileSync(join(dir, "reauthentication.ar.html"), withSocialRow(reauthHtml), "utf8");
 console.log("wrote reauthentication.ar.html");

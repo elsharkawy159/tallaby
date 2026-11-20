@@ -3,7 +3,7 @@ import { Body, Head, Html, Preview } from "@react-email/components";
 import { getEmailMessages, interpolate } from "../i18n/index.js";
 import type { EmailLocale } from "../i18n/locale.js";
 import { isRtlLocale } from "../i18n/locale.js";
-import { EMAIL_SITE_URL, EMAIL_WHATSAPP_URL } from "../theme/tokens.js";
+import { EMAIL_SITE_URL, EMAIL_SOCIAL_LINKS, EMAIL_WHATSAPP_URL } from "../theme/tokens.js";
 import type { EmailBrand } from "./brand.js";
 
 /*
@@ -193,10 +193,15 @@ export function EmailShell({ f, preview, title, audience, headerMeta, footer, ch
                   </tr>
                   {children}
                   <tr>
+                    <td align="center" className="px" style={{ padding: "28px 32px 16px" }}>
+                      <SocialRow f={f} />
+                    </td>
+                  </tr>
+                  <tr>
                     <td
                       align="center"
                       className="px"
-                      style={{ padding: "24px 32px 0", fontFamily: f.font, fontSize: 12, lineHeight: "22px", color: FAINT }}
+                      style={{ padding: "0 32px", fontFamily: f.font, fontSize: 12, lineHeight: "22px", color: FAINT }}
                     >
                       {footer}
                     </td>
@@ -208,6 +213,51 @@ export function EmailShell({ f, preview, title, audience, headerMeta, footer, ch
         </Table>
       </Body>
     </Html>
+  );
+}
+
+/**
+ * "Follow Tallaby" and Tallaby's social icons. Rendered by `EmailShell` above
+ * every footer; store mail gets it too (the accounts are Tallaby's).
+ */
+export function SocialRow({ f }: { f: EmailFrame }) {
+  const copy = getEmailMessages(f.locale).kit;
+  return (
+    <table {...tableProps} dir={f.dir} align="center" style={{ margin: "0 auto" }}>
+      <tbody>
+        <tr>
+          <td
+            align="center"
+            style={{ paddingBottom: 10, fontFamily: f.font, fontSize: 13, lineHeight: "20px", fontWeight: 600, color: SOFT, textAlign: "center" }}
+          >
+            {copy.followUs}
+          </td>
+        </tr>
+        <tr>
+          <td align="center">
+            <table {...tableProps} dir="ltr" align="center" style={{ margin: "0 auto" }}>
+              <tbody>
+                <tr>
+                  {EMAIL_SOCIAL_LINKS.map((link) => (
+                    <td key={link.id} style={{ padding: "0 6px" }}>
+                      <a href={link.href} style={{ display: "inline-block", textDecoration: "none" }}>
+                        <img
+                          src={link.iconUrl}
+                          width={32}
+                          height={32}
+                          alt={link.label}
+                          style={{ display: "inline-block", width: 32, height: 32, border: 0 }}
+                        />
+                      </a>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   );
 }
 
@@ -582,7 +632,7 @@ export function Cta({ f, href, label, links = [] }: { f: EmailFrame; href: strin
   return (
     <Table f={f} style={{ marginTop: 24 }}>
       <tr>
-        <td align="center" bgcolor={brand.accent} style={{ backgroundColor: brand.accent, borderRadius: 16 }}>
+        <td align="center" bgcolor={brand.accent} style={{ backgroundColor: brand.accent, borderRadius: 12 }}>
           <a
             href={href}
             style={{
@@ -594,7 +644,7 @@ export function Cta({ f, href, label, links = [] }: { f: EmailFrame; href: strin
               fontWeight: 700,
               color: brand.onAccent,
               textDecoration: "none",
-              borderRadius: 16,
+              borderRadius: 12,
             }}
           >
             {label}

@@ -99,7 +99,8 @@ export const PLATFORM_BRAND: EmailBrand = {
   tint: "#eef3f4",
   tintLabel: "#2c6e80",
   tintBorder: "#cfdde1",
-  border: emailColor.border,
+  // Neutral teal-grey hairline (emailColor.border is the pinkish UI token).
+  border: "#e3eaec",
   canvas: emailColor.background,
   fontFamily: null,
   fontUrl: null,

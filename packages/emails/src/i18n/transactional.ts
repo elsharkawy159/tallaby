@@ -12,6 +12,8 @@ export interface KitCopy {
   replyOrWrite: string;
   sentTo: string;
   poweredBy: string;
+  /** Label above the social icons in every footer. */
+  followUs: string;
   sellerReason: string;
   sellerHelp: string;
   orWhatsApp: string;
@@ -363,6 +365,7 @@ export const transactionalEn: TransactionalCopy = {
     replyOrWrite: "Reply to this email or write to",
     sentTo: "This email was sent to",
     poweredBy: "Powered by Tallaby",
+    followUs: "Follow Tallaby",
     sellerReason: "You get this email because you sell on Tallaby.",
     sellerHelp: "Need help? Email",
     orWhatsApp: "or message us on",
@@ -762,6 +765,7 @@ export const transactionalAr: TransactionalCopy = {
     replyOrWrite: "رُد على هذه الرسالة أو راسلنا على",
     sentTo: "أُرسلت هذه الرسالة إلى",
     poweredBy: "يعمل على طلبي",
+    followUs: "تابع طلبي",
     sellerReason: "تصلك هذه الرسالة لأنك تبيع على طلبي.",
     sellerHelp: "تحتاج مساعدة؟ راسلنا على",
     orWhatsApp: "أو تواصل معنا عبر",

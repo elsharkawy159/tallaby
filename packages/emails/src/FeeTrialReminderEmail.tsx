@@ -1,8 +1,8 @@
-import { Button, Section, Text } from "@react-email/components";
 import { getEmailMessages, interpolate } from "./i18n/index.js";
 import type { EmailLocale } from "./i18n/locale.js";
 import { emailDateLocale } from "./i18n/locale.js";
-import { EmailLayout } from "./layout/email-layout.js";
+import { PLATFORM_BRAND } from "./kit/brand.js";
+import { Block, Callout, Cta, emailFrame, EmailShell, H1, Lead, SellerFooter } from "./kit/components.js";
 
 export type FeeTrialReminderStage = "t7" | "t1";
 
@@ -33,38 +33,41 @@ export const FeeTrialReminderEmail = ({
   usdLive = false,
   orderFeeEgp,
 }: FeeTrialReminderEmailProps) => {
+  const f = emailFrame(PLATFORM_BRAND, locale);
   const copy = getEmailMessages(locale).feeTrialReminder;
   const date = new Date(endsAt).toLocaleDateString(emailDateLocale(locale), {
     dateStyle: "long",
     timeZone: "Africa/Cairo",
   });
   const t1 = stage === "t1";
+  const preview = interpolate(t1 ? copy.previewT1 : copy.previewT7, { date });
+  // Same page the other seller mail links to (`<dashboard>/settings`).
+  const settingsUrl = `${dashboardUrl.replace(/\/+$/, "")}/settings`;
+  const feeNote = usdLive
+    ? orderFeeEgp
+      ? interpolate(copy.feeNoteUsd, { fee: orderFeeEgp })
+      : copy.feeNoteUsdNoAmount
+    : copy.feeNote;
 
   return (
-    <EmailLayout
-      locale={locale}
-      preview={interpolate(t1 ? copy.previewT1 : copy.previewT7, { date })}
-      showContactLine={true}
+    <EmailShell
+      f={f}
+      audience="seller"
+      title={preview}
+      preview={preview}
+      footer={<SellerFooter f={f} settingsUrl={settingsUrl} />}
     >
-      <Section className="email-pad px-6 pt-7">
-        <Text className="m-0 mb-4 text-[20px] font-semibold text-foreground">
+      <Block f={f} last padding="36px 32px 32px">
+        <H1 f={f} flush>
           {interpolate(copy.greeting, { name: sellerName })}
-        </Text>
-        <Text className="m-0 mb-4 text-[16px] leading-[1.6] text-[#555555]">
-          {interpolate(t1 ? copy.bodyT1 : copy.bodyT7, { date })}
-        </Text>
-        <Text className="m-0 text-[14px] leading-[1.6] text-secondary">{usdLive ? (orderFeeEgp ? interpolate(copy.feeNoteUsd, { fee: orderFeeEgp }) : copy.feeNoteUsdNoAmount) : copy.feeNote}</Text>
-      </Section>
-
-      <Section className="email-pad px-6 py-6">
-        <Button
-          className="cta-btn box-border block w-full rounded-md bg-primary py-3 text-center text-[16px] font-semibold text-primary-foreground no-underline"
-          href={dashboardUrl}
-        >
-          {copy.cta}
-        </Button>
-      </Section>
-    </EmailLayout>
+        </H1>
+        <Lead f={f}>{interpolate(t1 ? copy.bodyT1 : copy.bodyT7, { date })}</Lead>
+        <Callout f={f} tone={t1 ? "warning" : "info"}>
+          {feeNote}
+        </Callout>
+        <Cta f={f} href={dashboardUrl} label={copy.cta} />
+      </Block>
+    </EmailShell>
   );
 };
 

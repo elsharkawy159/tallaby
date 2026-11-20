@@ -1,13 +1,21 @@
-import {
-  Button,
-  Column,
-  Row,
-  Section,
-  Text,
-} from "@react-email/components";
 import { getEmailMessages, interpolate } from "./i18n/index.js";
 import type { EmailLocale } from "./i18n/locale.js";
-import { EmailLayout } from "./layout/email-layout.js";
+import { PLATFORM_BRAND } from "./kit/brand.js";
+import {
+  BigAmount,
+  Block,
+  CodeBox,
+  Cta,
+  emailFrame,
+  EmailShell,
+  Eyebrow,
+  FooterLines,
+  H1,
+  Lead,
+  MailLink,
+  Strong,
+  Text,
+} from "./kit/components.js";
 import { EMAIL_SITE_URL } from "./theme/tokens.js";
 
 export interface WelcomeEmailProps {
@@ -23,84 +31,83 @@ export const WelcomeEmail = ({
   discountPercent = 10,
   locale = "en",
 }: WelcomeEmailProps) => {
-  const copy = getEmailMessages(locale).welcome;
+  const f = emailFrame(PLATFORM_BRAND, locale);
+  const messages = getEmailMessages(locale);
+  const copy = messages.welcome;
+  const benefits = [copy.benefitShipping, copy.benefitReturns, copy.benefitSecure];
 
   return (
-    <EmailLayout
-      locale={locale}
+    <EmailShell
+      f={f}
+      audience="customer"
+      title={copy.subject}
       preview={copy.preview}
-      showContactLine={true}
+      footer={
+        <FooterLines
+          f={f}
+          lead={
+            <>
+              {messages.common.contactPrefix} <MailLink f={f} email={f.brand.supportEmail} />
+            </>
+          }
+        />
+      }
     >
-      <Section className="email-pad mt-4 px-4">
-        <Section className="w-full rounded-[10px] bg-muted px-6 py-8 text-center">
-          <Text className="m-0 mb-3 text-[26px] font-bold leading-8 text-foreground">
-            {copy.heroHeading}
-          </Text>
-          <Text className="m-0 text-[16px] text-secondary">{copy.heroSubheading}</Text>
-        </Section>
-      </Section>
-
-      <Section className="email-pad px-6 pt-8">
-        <Text className="m-0 mb-4 text-[20px] font-semibold text-foreground">
-          {interpolate(copy.greeting, { name: customerName })}
+      <Block f={f} padding="36px 32px 8px">
+        <H1 f={f} flush>
+          {copy.heroHeading}
+        </H1>
+        <Lead f={f}>{copy.heroSubheading}</Lead>
+        <Text f={f} pad={20}>
+          <Strong>{interpolate(copy.greeting, { name: customerName })}</Strong>
         </Text>
-        <Text className="m-0 mb-4 text-[16px] leading-[1.6] text-[#555555]">
+        <Text f={f} pad={8}>
           {copy.body1}
         </Text>
-        <Text className="m-0 mb-0 text-[16px] leading-[1.6] text-[#555555]">
+        <Text f={f} pad={8}>
           {copy.body2}
         </Text>
-      </Section>
-
-      <Section className="email-pad px-4 py-6">
-        <Section className="rounded-[10px] border-2 border-solid border-border bg-muted px-6 py-8 text-center">
-          <Text className="m-0 mb-3 text-[12px] font-bold uppercase tracking-[1px] text-secondary">
-            {copy.offerLabel}
-          </Text>
-          <Text className="m-0 text-[48px] font-bold leading-[1.2] text-accent">
-            {discountPercent}%
-          </Text>
-          <Text className="mb-5 mt-2 text-[14px] text-secondary">
-            {copy.offerDescription}
-          </Text>
-          <Text className="m-0 rounded-md bg-card px-3 py-3 font-mono text-[14px] text-foreground">
-            {copy.useCode} <strong>{discountCode}</strong>
-          </Text>
-        </Section>
-      </Section>
-
-      <Section className="email-pad px-6 pb-2">
-        <Button
-          className="cta-btn box-border block w-full rounded-md bg-primary py-3 text-center text-[16px] font-semibold text-primary-foreground no-underline"
-          href={EMAIL_SITE_URL}
-        >
-          {copy.shopNow}
-        </Button>
-      </Section>
-
-      <Section className="email-pad px-6 py-6 text-center">
-        <Row>
-          <Column>
-            <Text className="m-0 mb-1 text-[32px]">🚚</Text>
-            <Text className="m-0 text-[14px] font-semibold text-foreground">
-              {copy.benefitShipping}
-            </Text>
-          </Column>
-          <Column>
-            <Text className="m-0 mb-1 text-[32px]">↩️</Text>
-            <Text className="m-0 text-[14px] font-semibold text-foreground">
-              {copy.benefitReturns}
-            </Text>
-          </Column>
-          <Column>
-            <Text className="m-0 mb-1 text-[32px]">🔒</Text>
-            <Text className="m-0 text-[14px] font-semibold text-foreground">
-              {copy.benefitSecure}
-            </Text>
-          </Column>
-        </Row>
-      </Section>
-    </EmailLayout>
+      </Block>
+      <Block f={f} divider padding="20px 32px 0">
+        <Eyebrow f={f}>{copy.offerLabel}</Eyebrow>
+        <BigAmount f={f}>{discountPercent}%</BigAmount>
+        <Text f={f} muted>
+          {copy.offerDescription}
+        </Text>
+        <Text f={f} pad={16}>
+          {copy.useCode}
+        </Text>
+        <CodeBox f={f}>{discountCode}</CodeBox>
+        <Cta f={f} href={EMAIL_SITE_URL} label={copy.shopNow} />
+      </Block>
+      <Block f={f} divider last padding="20px 32px 28px">
+        <table role="presentation" cellPadding={0} cellSpacing={0} border={0} width="100%" dir={f.dir}>
+          <tbody>
+            <tr>
+              {benefits.map((label) => (
+                <td
+                  key={label}
+                  className="col"
+                  width="33%"
+                  align="center"
+                  style={{
+                    padding: "4px 6px",
+                    textAlign: "center",
+                    fontFamily: f.font,
+                    fontSize: 14,
+                    lineHeight: "22px",
+                    fontWeight: 600,
+                    color: f.brand.primary,
+                  }}
+                >
+                  {label}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </Block>
+    </EmailShell>
   );
 };
 
