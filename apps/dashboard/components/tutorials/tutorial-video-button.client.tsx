@@ -41,7 +41,8 @@ export function TutorialVideoButton({
           variant="mini"
           size="xs"
           title={compact ? t("button") : undefined}
-          className={cn("max-[600px]:h-9", compact && "max-[600px]:w-9 max-[600px]:px-0", className)}
+          // Brand yellow/orange border so the video button stands out (owner, 2026-11-20).
+          className={cn("border-(--accent) hover:border-(--accent)", "max-[600px]:h-9", compact && "max-[600px]:w-9 max-[600px]:px-0", className)}
         >
           {/* The play icon in its own small rounded square, so it reads as a video button (owner, 2026-11-18). */}
           <span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-[6px] border border-(--s-field) bg-(--s-fill) text-(--s-ink)">
