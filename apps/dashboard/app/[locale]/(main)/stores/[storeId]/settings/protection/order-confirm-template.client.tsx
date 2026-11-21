@@ -46,6 +46,9 @@ export function OrderConfirmTemplateSettings({
     order: {
       customerName: t("sample.name"),
       orderNumber: "1042",
+      subtotal: "320",
+      shippingCost: "35",
+      discountAmount: "0",
       totalAmount: "355",
       lines: [{ productName: t("sample.product"), variantName: null, quantity: 1 }],
       address: { line: t("sample.line"), area: t("sample.area") },

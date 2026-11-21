@@ -53,6 +53,7 @@ export function OrderCard({
   const quick = orderQuickContacts({
     phone: order.customerPhone,
     confirmMessage: order.confirmMessage,
+    detailsMessage: order.detailsMessage,
     chatText: t("details.whatsappText", { number: order.orderNumber }),
   });
   const hasQuickContacts = quick.whatsapp != null || quick.tel != null;

@@ -113,6 +113,8 @@ export interface SellerOrderRow {
   canRestockReturn: boolean;
   /** Prefilled WhatsApp "please confirm" text for a new store order (ROADMAP.md F-02g). */
   confirmMessage: string | null;
+  /** The order's details for WhatsApp, without "please confirm", when there is no confirmMessage (store order with a phone, not a test). */
+  detailsMessage: string | null;
   /** Hours a new order has waited unconfirmed, once past UNCONFIRMED_AFTER_HOURS. */
   unconfirmedHours: number | null;
   shippedAt: string | null;

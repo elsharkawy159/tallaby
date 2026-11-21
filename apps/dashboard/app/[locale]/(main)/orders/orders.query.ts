@@ -23,6 +23,7 @@ import { canRestockReturn } from "./order-stock.lib";
 import {
   parseOrderConfirmTemplate,
   renderOrderConfirmMessage,
+  renderOrderDetailsMessage,
   unconfirmedHours,
 } from "./order-confirm.lib";
 import { DEFAULT_CURRENCY } from "@workspace/lib";
@@ -342,6 +343,30 @@ export async function loadSellerOrders(
 
     const confirm = o.storeId ? confirmByStore.get(o.storeId) : undefined;
     const createdAt = o.createdAt ?? new Date(now).toISOString();
+    // What the WhatsApp buttons send (F-02g): a store order with a phone, never a test order.
+    const messageSource =
+      store && customerPhone && !o.isTest
+        ? {
+            order: {
+              customerName: resolveCustomerName(o, ""),
+              orderNumber: o.orderNumber,
+              subtotal: o.subtotal ?? "0",
+              shippingCost: o.shippingCost ?? "0",
+              discountAmount: o.discountAmount ?? "0",
+              totalAmount: o.totalAmount ?? "0",
+              currency: o.currency,
+              lines: mine.map((i) => ({ productName: i.productName, variantName: i.variantName, quantity: i.quantity ?? 1 })),
+              address: addr
+                ? {
+                    line: [addr.addressLine1, addr.addressLine2].filter(Boolean).join(", "),
+                    area: [addr.city, addr.state].filter(Boolean).join(" , "),
+                  }
+                : null,
+            },
+            storeName: store.name,
+            locale: confirm?.locale ?? ("ar" as const),
+          }
+        : null;
 
     return {
       id: o.id,
@@ -432,25 +457,11 @@ export async function loadSellerOrders(
       canRestockReturn: canRestockReturn(flow.stage, o.metadata, Boolean(flow.readOnly)),
       confirmMessage:
         // Never a WhatsApp message for a test order: its buyer is the seller (F-76).
-        store && confirm && customerPhone && flow.stage === "new" && !o.isTest
-          ? renderOrderConfirmMessage(confirm.template, {
-              order: {
-                customerName: resolveCustomerName(o, ""),
-                orderNumber: o.orderNumber,
-                totalAmount: o.totalAmount ?? "0",
-                currency: o.currency,
-                lines: mine.map((i) => ({ productName: i.productName, variantName: i.variantName, quantity: i.quantity ?? 1 })),
-                address: addr
-                  ? {
-                      line: [addr.addressLine1, addr.addressLine2].filter(Boolean).join(", "),
-                      area: [addr.city, addr.state].filter(Boolean).join(", "),
-                    }
-                  : null,
-              },
-              storeName: store.name,
-              locale: confirm.locale,
-            })
+        messageSource && confirm && flow.stage === "new"
+          ? renderOrderConfirmMessage(confirm.template, messageSource)
           : null,
+      detailsMessage:
+        messageSource && !(confirm && flow.stage === "new") ? renderOrderDetailsMessage(messageSource) : null,
       unconfirmedHours: unconfirmedHours(flow.stage, createdAt, now),
       shippedAt: o.shippedAt,
       deliveredAt: o.deliveredAt,

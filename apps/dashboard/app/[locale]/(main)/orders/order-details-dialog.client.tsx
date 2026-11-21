@@ -341,7 +341,10 @@ export function OrderDetailsDialog({
                         {order.customerEmail && <p className="break-all text-[13px] text-(--s-muted)">{order.customerEmail}</p>}
                       </div>
                       {order.customerPhone && (
-                        <ContactButtons phone={order.customerPhone} whatsappText={t("whatsappText", { number: order.orderNumber })} />
+                        <ContactButtons
+                          phone={order.customerPhone}
+                          whatsappText={order.confirmMessage ?? order.detailsMessage ?? t("whatsappText", { number: order.orderNumber })}
+                        />
                       )}
                       <BlockCustomerButton key={`${order.id}:${order.customerBlocked}`} order={order} />
                     </div>
