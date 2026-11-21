@@ -6,12 +6,15 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toStorelessPath } from "@/lib/navigation/storeless-routes.lib";
+import { formatPageLinkText } from "./copy-page-link.lib";
 
 /**
  * Support accounts only (`isSupportAccount`, decided on the server): each
- * sidebar link gets a "copy page link" button that copies its store-less URL
- * (`/settings/payments`, not `/stores/<uuid>/settings/payments`), which opens
- * the same page for whichever seller it is sent to.
+ * sidebar link gets a "copy page link" button that copies the page's sidebar
+ * path in the current UI language (`"Settings" > "Payments"`), then on the next
+ * line its store-less URL (`/settings/payments`, not
+ * `/stores/<uuid>/settings/payments`), which opens the same page for whichever
+ * seller it is sent to.
  */
 export const SupportToolsContext = createContext(false);
 
@@ -30,10 +33,13 @@ function storelessUrl(href: string) {
  */
 export function CopyPageLinkButton({
   href,
+  trail,
   onActive = false,
   className,
 }: {
   href: string;
+  /** The row's sidebar path, as shown (group label, then item label). */
+  trail: string[];
   /** The row is the current page (filled primary), so the icon takes the row's text colour. */
   onActive?: boolean;
   className?: string;
@@ -52,12 +58,12 @@ export function CopyPageLinkButton({
   const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const url = storelessUrl(href);
+    const text = formatPageLinkText(trail, storelessUrl(href));
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(text);
     } catch {
       // No clipboard (permission, insecure context): let the owner copy it by hand.
-      window.prompt(t("copyLinkManually"), url);
+      window.prompt(t("copyLinkManually"), text);
       return;
     }
     setCopied(true);

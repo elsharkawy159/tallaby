@@ -333,6 +333,7 @@ const SidebarContent = ({
           {item}
           <CopyPageLinkButton
             href={link.href}
+            trail={[label]}
             onActive={isActive}
             className="end-1.5"
           />
@@ -732,6 +733,7 @@ function SidebarGroup({
         {supportTools && group.href && (
           <CopyPageLinkButton
             href={group.href}
+            trail={[label]}
             onActive={current}
             className="end-9"
           />
@@ -797,7 +799,11 @@ function SidebarGroup({
                   )}
                 </Link>
                 {copyLink && (
-                  <CopyPageLinkButton href={item.href} className="end-1" />
+                  <CopyPageLinkButton
+                    href={item.href}
+                    trail={[label, t(item.key)]}
+                    className="end-1"
+                  />
                 )}
               </li>
             );
