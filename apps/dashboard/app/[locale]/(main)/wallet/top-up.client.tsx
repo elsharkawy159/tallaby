@@ -54,8 +54,8 @@ import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-butto
  * don't divide the cards evenly, min-h keeps a full row square and the short last row wider than tall.
  */
 const PRESET_CARD_LAYOUT: Record<number, string> = {
-  // USD: 2 x 2 a little wider than tall, then 4 square (the same 400px line as 8's four-across).
-  4: "aspect-[5/4] basis-[calc((100%-10px)/2)] @[400px]:aspect-square @[400px]:basis-[calc((100%-30px)/4)]",
+  // USD: 2 x 2, then 4 across from 400px (where the longest line still fits); as tall as the content, not square (owner, 2026-11-21).
+  4: "min-h-[84px] basis-[calc((100%-10px)/2)] @[400px]:basis-[calc((100%-30px)/4)]",
   // 2 square, then 3 + 3 + 2, then 4 + 4 square, then 8 square.
   8: "aspect-square basis-[calc((100%-10px)/2)] @[290px]:aspect-auto @[290px]:min-h-[calc((100cqw-20px)/3)] @[290px]:basis-[calc((100%-20px)/3)] @[400px]:aspect-square @[400px]:min-h-auto @[400px]:basis-[calc((100%-30px)/4)] @[820px]:basis-[calc((100%-70px)/8)]",
   // 3 + 2, then 5 square.
