@@ -1993,6 +1993,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 - **Checked:** `proxy.ts` skips `/api/`, so Next's 10 MB `proxyClientMaxBodySize` buffer does not touch the route; `serverActions.bodySizeLimit` only covers Server Actions; the repo has no reverse-proxy body limit and Traefik (Coolify) has none by default (not checked on the server); Cloudflare's plan allows 100 MB.
 - **Not done:** not tried with real 12 MP phone photos in a browser; not deployed.
 
+### 2026-11-21 — Support copy-link copies the page path too (F-102b, owner request)
+
+- **Done:** the support account's sidebar copy button now copies the page's sidebar path in the UI language (`"المتجر الإلكتروني" > "تعديل الموقع"`), then the store-less link on the next line (`formatPageLinkText` in `components/dashboard/copy-page-link.lib.ts`, unit tested). No migration; not deployed.
+
 ### 2026-11-20 — Store-less links, support copy-link, more audiences (F-102, owner request)
 
 - **Done:** F-102a store-less links (`/settings/payments`, `/website`, `/stores/<section>/…`, `/analytics`, `/apps`, `/catalog`, `/earnings`) redirect to the seller's selected store; one page per section rather than a root catch-all, so unknown URLs 404 as before. F-102b a hover copy icon on sidebar links for `seller@tallaby.com` (server-decided boolean, `lib/auth/support-accounts.lib.ts`), copying the store-less link without a locale prefix. F-102c Admin audiences `tallaby_pay_not_connected`, `no_active_product`, `site_not_published`, `no_shipping_zones`, `free_plan`, `pro_plan`, `joined_last_7_days` in four groups; read-only production counts 194 / 104 / 87 / 153 / 195 / 0 / 78 of 195 sellers, 60–72 ms each. No migration.
