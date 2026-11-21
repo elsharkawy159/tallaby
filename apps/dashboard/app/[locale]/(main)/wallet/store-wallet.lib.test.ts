@@ -43,7 +43,7 @@ describe("ordersCovered", () => {
 
 describe("USD presets", () => {
   it("are all valid top-ups, and the default and popular cards are among them", () => {
-    expect(TOP_UP_PRESETS_USD).toEqual([5, 10, 20, 50, 100, 200, 500, 1000]);
+    expect(TOP_UP_PRESETS_USD).toEqual([5, 10, 20, 50]);
     for (const preset of TOP_UP_PRESETS_USD) {
       expect(parseUsdTopUp(String(preset))).toEqual({ success: true, usdCents: preset * 100 });
     }

@@ -21,8 +21,11 @@ export const POPULAR_TOP_UP = 500;
 /** The +/- buttons beside the amount field move by this much (EGP). */
 export const TOP_UP_STEP_EGP = 50;
 
-/** USD wallet (0136): one-tap top-ups in dollars, and the +/- step. */
-export const TOP_UP_PRESETS_USD = [5, 10, 20, 50, 100, 200, 500, 1000] as const;
+/**
+ * USD wallet (0136): one-tap top-ups in dollars, and the +/- step. Four cards only (owner, 2026-11-21);
+ * more than $50 is typed or stepped up to the usual maximum.
+ */
+export const TOP_UP_PRESETS_USD = [5, 10, 20, 50] as const;
 export const POPULAR_TOP_UP_USD = 10;
 /** The card already chosen when the page opens. */
 export const DEFAULT_TOP_UP_USD = 5;

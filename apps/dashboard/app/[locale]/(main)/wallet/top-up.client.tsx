@@ -54,6 +54,8 @@ import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-butto
  * don't divide the cards evenly, min-h keeps a full row square and the short last row wider than tall.
  */
 const PRESET_CARD_LAYOUT: Record<number, string> = {
+  // USD: 2 x 2 a little wider than tall, then 4 square (the same 400px line as 8's four-across).
+  4: "aspect-[5/4] basis-[calc((100%-10px)/2)] @[400px]:aspect-square @[400px]:basis-[calc((100%-30px)/4)]",
   // 2 square, then 3 + 3 + 2, then 4 + 4 square, then 8 square.
   8: "aspect-square basis-[calc((100%-10px)/2)] @[290px]:aspect-auto @[290px]:min-h-[calc((100cqw-20px)/3)] @[290px]:basis-[calc((100%-20px)/3)] @[400px]:aspect-square @[400px]:min-h-auto @[400px]:basis-[calc((100%-30px)/4)] @[820px]:basis-[calc((100%-70px)/8)]",
   // 3 + 2, then 5 square.
@@ -259,6 +261,109 @@ export function TopUpPanel({
   const afterBalance = parsed.success ? balance + Number(parsed.amount) : null;
   const walletCurrency = usd ? "USD" : "EGP";
 
+  // Each method's details, shown inside its own card once chosen.
+  const kashierDetails = (
+    <div className="flex min-w-0 flex-col gap-2.5 p-4">
+      <PaymentMethodLogos />
+      <p className="text-pretty text-[13.5px] font-semibold text-(--s-ink)">{t("panel.payMethods")}</p>
+      <p className="text-pretty text-xs text-(--s-subtle)">{t("panel.payHint")}</p>
+      <p className="mt-0.5 flex items-center gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
+        <LockKeyhole className="size-3.5 shrink-0 text-success" aria-hidden />
+        {t("panel.secure")}
+      </p>
+    </div>
+  );
+  const sentDetails = sent && (
+    <div role="status" className="flex min-w-0 flex-col items-center gap-2.5 px-4 py-5 text-center">
+      <span className="grid size-14 place-items-center rounded-full bg-accent-soft text-accent-ink">
+        <Hourglass className="size-[26px]" aria-hidden />
+      </span>
+      <p className="text-[15px] font-bold text-(--s-ink)">{tInsta("done.title")}</p>
+      <p className="max-w-[360px] text-pretty text-[13px] text-(--s-muted)">
+        {tInsta("done.body", { amount: sent })}
+      </p>
+      <SellerButton variant="outline" size="xs" className="mt-1" onClick={sendAnother}>
+        {tInsta("done.again")}
+      </SellerButton>
+    </div>
+  );
+  const transferDetails = (
+    <fieldset disabled={disabled || busy} className="flex min-w-0 flex-col gap-3.5 p-4">
+      <legend className="sr-only">{t("panel.methods.instapay.name")}</legend>
+      <div className="flex flex-col gap-2">
+        <CopyRow
+          label={tInsta("sendExactly")}
+          copyLabel={tInsta("copyAmount")}
+          done={copied === "amount"}
+          disabled={!parsed.success}
+          onCopy={() => parsed.success && copy(String(quote ? quote.totalPiastres / 100 : Number(parsed.amount)), "amount")}
+        >
+          <bdi>{total}</bdi>
+        </CopyRow>
+        <CopyRow
+          label={tInsta("to")}
+          note={tInsta("holder", { name: TALLABY_INSTAPAY_ACCOUNT.holder })}
+          copyLabel={tInsta("copyNumber")}
+          done={copied === "number"}
+          onCopy={() => copy(TALLABY_INSTAPAY_ACCOUNT.number, "number")}
+        >
+          <bdi dir="ltr">{groupNumber(TALLABY_INSTAPAY_ACCOUNT.number)}</bdi>
+        </CopyRow>
+      </div>
+
+      <Field label={tInsta("sender")} hint={tInsta("optional")} note={tInsta("senderHint")} htmlFor={`${ids}-sender`}>
+        <TextInput
+          id={`${ids}-sender`}
+          dir="ltr"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="01XXXXXXXXX"
+          className="text-start font-montserrat"
+          value={senderPhone}
+          onChange={(e) => setSenderPhone(toAsciiDigits(e.target.value))}
+        />
+      </Field>
+
+      {preview && file ? (
+        <div className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-success/40 bg-success-soft/40 p-3">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
+          <img src={preview} alt={tInsta("receipt.previewAlt")} className="h-16 w-14 shrink-0 rounded-[10px] border border-(--s-line) object-cover" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13.5px] font-bold text-(--s-ink)" dir="auto">
+              {file.name}
+            </p>
+            <p className="text-xs text-(--s-subtle)" dir="ltr">
+              {(file.size / 1024 / 1024).toFixed(1)} MB
+            </p>
+          </div>
+          <IconButton aria-label={tInsta("receipt.remove")} onClick={clearFile}>
+            <X aria-hidden />
+          </IconButton>
+        </div>
+      ) : (
+        <DropZone
+          icon={ImageUp}
+          title={tInsta("receipt.pick")}
+          hint={tInsta("receipt.pickHint")}
+          accept={TOP_UP_PROOF_TYPES.join(",")}
+          disabled={disabled || busy}
+          onFiles={([picked]) => pickFile(picked)}
+          className={cn("p-[22px]", fileError && "border-destructive/60")}
+        />
+      )}
+      {fileError && (
+        <p role="alert" className="text-xs font-medium text-destructive">
+          {fileError}
+        </p>
+      )}
+      <Note tone="amber">{tInsta("receipt.clarity")}</Note>
+      <p className="flex items-start gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
+        <ShieldCheck className="mt-px size-3.5 shrink-0 text-success" aria-hidden />
+        {tInsta("reviewNote")}
+      </p>
+    </fieldset>
+  );
+
   return (
     <div data-clarity-mask="true" className="grid grid-cols-[minmax(0,1fr)_360px] grid-rows-[auto_1fr] items-start gap-x-5 gap-y-4 max-[1180px]:grid-cols-1 max-[1180px]:grid-rows-none">
       <SellerCard
@@ -410,139 +515,53 @@ export function TopUpPanel({
           </h3>
           <fieldset disabled={disabled || busy} className="ms-10 flex min-w-0 flex-col gap-2.5 max-[720px]:ms-0">
             <legend className="sr-only">{t("panel.pay")}</legend>
-            <div className="grid grid-cols-2 gap-2.5 max-[720px]:grid-cols-1">
-              {PAY_METHODS.map((m) => (
-                <label
+            {/* Each method is one card: its radio row, then its details right under it once chosen, so the
+                details never read as a third option on a phone (owner, 2026-11-21). */}
+            {PAY_METHODS.map((m) => {
+              const selected = method === m;
+              return (
+                <div
                   key={m}
-                  className="relative flex cursor-pointer items-center gap-3 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-3.5 transition-[border-color,background-color,box-shadow] duration-150 hover:border-(--s-outline) has-checked:border-(--s-primary) has-checked:bg-(--s-tint) has-checked:shadow-[0_0_0_3px_var(--s-focus-soft)] has-focus-visible:outline-[3px] has-focus-visible:outline-offset-2 has-focus-visible:outline-(--s-focus) has-disabled:cursor-not-allowed has-disabled:opacity-60"
-                >
-                  <input
-                    type="radio"
-                    name={`${ids}-method`}
-                    value={m}
-                    className="peer absolute size-px opacity-0"
-                    checked={method === m}
-                    onChange={() => setMethod(m)}
-                  />
-                  {m === "instapay" ? (
-                    <PaymentMethodLogo method="instapay" label={t("panel.methods.instapay.name")} className="size-[42px] rounded-[13px] border-(--s-line)" />
-                  ) : (
-                    <span aria-hidden className="grid size-[42px] shrink-0 place-items-center rounded-[13px] border border-(--s-line) bg-(--s-tint) text-(--s-primary)">
-                      <CreditCard className="size-5" />
-                    </span>
+                  className={cn(
+                    "min-w-0 rounded-[18px] border-[1.5px] bg-(--s-surface) transition-[border-color,box-shadow] duration-150",
+                    selected ? "border-(--s-primary) shadow-[0_0_0_3px_var(--s-focus-soft)]" : "border-(--s-field) hover:border-(--s-outline)",
                   )}
-                  <span className="min-w-0 flex-1">
-                    <b className="block text-sm font-bold text-(--s-ink)">{t(`panel.methods.${m}.name`)}</b>
-                    <small className="block text-pretty text-xs text-(--s-subtle)">{t(`panel.methods.${m}.hint`)}</small>
-                  </span>
-                  <span
-                    aria-hidden
-                    className="size-5 shrink-0 rounded-full border-2 border-(--s-field-strong) transition-all duration-150 peer-checked:border-[6px] peer-checked:border-(--s-primary)"
-                  />
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          {!instapay ? (
-            <div className="ms-10 flex min-w-0 flex-col gap-2.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 max-[720px]:ms-0">
-              <PaymentMethodLogos />
-              <p className="text-pretty text-[13.5px] font-semibold text-(--s-ink)">{t("panel.payMethods")}</p>
-              <p className="text-pretty text-xs text-(--s-subtle)">{t("panel.payHint")}</p>
-              <p className="mt-0.5 flex items-center gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
-                <LockKeyhole className="size-3.5 shrink-0 text-success" aria-hidden />
-                {t("panel.secure")}
-              </p>
-            </div>
-          ) : sent ? (
-            <div role="status" className="ms-10 flex min-w-0 flex-col items-center gap-2.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) px-4 py-5 text-center max-[720px]:ms-0">
-              <span className="grid size-14 place-items-center rounded-full bg-accent-soft text-accent-ink">
-                <Hourglass className="size-[26px]" aria-hidden />
-              </span>
-              <p className="text-[15px] font-bold text-(--s-ink)">{tInsta("done.title")}</p>
-              <p className="max-w-[360px] text-pretty text-[13px] text-(--s-muted)">
-                {tInsta("done.body", { amount: sent })}
-              </p>
-              <SellerButton variant="outline" size="xs" className="mt-1" onClick={sendAnother}>
-                {tInsta("done.again")}
-              </SellerButton>
-            </div>
-          ) : (
-            <fieldset disabled={disabled || busy} className="ms-10 flex min-w-0 flex-col gap-3.5 rounded-[18px] border-[1.5px] border-(--s-field) bg-(--s-surface) p-4 max-[720px]:ms-0">
-              <legend className="sr-only">{t("panel.methods.instapay.name")}</legend>
-              <div className="flex flex-col gap-2">
-                <CopyRow
-                  label={tInsta("sendExactly")}
-                  copyLabel={tInsta("copyAmount")}
-                  done={copied === "amount"}
-                  disabled={!parsed.success}
-                  onCopy={() => parsed.success && copy(String(quote ? quote.totalPiastres / 100 : Number(parsed.amount)), "amount")}
                 >
-                  <bdi>{total}</bdi>
-                </CopyRow>
-                <CopyRow
-                  label={tInsta("to")}
-                  note={tInsta("holder", { name: TALLABY_INSTAPAY_ACCOUNT.holder })}
-                  copyLabel={tInsta("copyNumber")}
-                  done={copied === "number"}
-                  onCopy={() => copy(TALLABY_INSTAPAY_ACCOUNT.number, "number")}
-                >
-                  <bdi dir="ltr">{groupNumber(TALLABY_INSTAPAY_ACCOUNT.number)}</bdi>
-                </CopyRow>
-              </div>
-
-              <Field label={tInsta("sender")} hint={tInsta("optional")} note={tInsta("senderHint")} htmlFor={`${ids}-sender`}>
-                <TextInput
-                  id={`${ids}-sender`}
-                  dir="ltr"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="01XXXXXXXXX"
-                  className="text-start font-montserrat"
-                  value={senderPhone}
-                  onChange={(e) => setSenderPhone(toAsciiDigits(e.target.value))}
-                />
-              </Field>
-
-              {preview && file ? (
-                <div className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-success/40 bg-success-soft/40 p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
-                  <img src={preview} alt={tInsta("receipt.previewAlt")} className="h-16 w-14 shrink-0 rounded-[10px] border border-(--s-line) object-cover" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13.5px] font-bold text-(--s-ink)" dir="auto">
-                      {file.name}
-                    </p>
-                    <p className="text-xs text-(--s-subtle)" dir="ltr">
-                      {(file.size / 1024 / 1024).toFixed(1)} MB
-                    </p>
-                  </div>
-                  <IconButton aria-label={tInsta("receipt.remove")} onClick={clearFile}>
-                    <X aria-hidden />
-                  </IconButton>
+                  <label
+                    className={cn(
+                      "relative flex cursor-pointer items-center gap-3 rounded-[16.5px] p-3.5 transition-colors duration-150 has-checked:bg-(--s-tint) has-focus-visible:outline-[3px] has-focus-visible:outline-offset-2 has-focus-visible:outline-(--s-focus) has-disabled:cursor-not-allowed has-disabled:opacity-60",
+                      selected && "rounded-b-none",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name={`${ids}-method`}
+                      value={m}
+                      className="peer absolute size-px opacity-0"
+                      checked={selected}
+                      onChange={() => setMethod(m)}
+                    />
+                    {m === "instapay" ? (
+                      <PaymentMethodLogo method="instapay" label={t("panel.methods.instapay.name")} className="size-[42px] rounded-[13px] border-(--s-line)" />
+                    ) : (
+                      <span aria-hidden className="grid size-[42px] shrink-0 place-items-center rounded-[13px] border border-(--s-line) bg-(--s-tint) text-(--s-primary)">
+                        <CreditCard className="size-5" />
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <b className="block text-sm font-bold text-(--s-ink)">{t(`panel.methods.${m}.name`)}</b>
+                      <small className="block text-pretty text-xs text-(--s-subtle)">{t(`panel.methods.${m}.hint`)}</small>
+                    </span>
+                    <span
+                      aria-hidden
+                      className="size-5 shrink-0 rounded-full border-2 border-(--s-field-strong) transition-all duration-150 peer-checked:border-[6px] peer-checked:border-(--s-primary)"
+                    />
+                  </label>
+                  {selected && <MethodDetails>{m === "kashier" ? kashierDetails : sent ? sentDetails : transferDetails}</MethodDetails>}
                 </div>
-              ) : (
-                <DropZone
-                  icon={ImageUp}
-                  title={tInsta("receipt.pick")}
-                  hint={tInsta("receipt.pickHint")}
-                  accept={TOP_UP_PROOF_TYPES.join(",")}
-                  disabled={disabled || busy}
-                  onFiles={([picked]) => pickFile(picked)}
-                  className={cn("p-[22px]", fileError && "border-destructive/60")}
-                />
-              )}
-              {fileError && (
-                <p role="alert" className="text-xs font-medium text-destructive">
-                  {fileError}
-                </p>
-              )}
-              <Note tone="amber">{tInsta("receipt.clarity")}</Note>
-              <p className="flex items-start gap-1.5 border-t border-(--s-line-soft) pt-2.5 text-xs font-semibold text-(--s-muted)">
-                <ShieldCheck className="mt-px size-3.5 shrink-0 text-success" aria-hidden />
-                {tInsta("reviewNote")}
-              </p>
-            </fieldset>
-          )}
+              );
+            })}
+          </fieldset>
         </section>
       </SellerCard>
 
@@ -611,6 +630,15 @@ export function TopUpPanel({
 
       <div className="flex min-w-0 flex-col gap-4">{below}</div>
 
+    </div>
+  );
+}
+
+/** A chosen method's details, attached under its radio row; it fades in (none with reduced motion). */
+function MethodDetails({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-w-0 border-t border-(--s-line-soft) animate-[ai-fade-up_.22s_cubic-bezier(.2,.7,.2,1)] motion-reduce:animate-none">
+      {children}
     </div>
   );
 }

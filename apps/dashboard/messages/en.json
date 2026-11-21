@@ -6479,7 +6479,7 @@
       }
     },
     "manualTopUp": {
-      "limitsUsd": "Type the wallet amount in US dollars, {minUsd} to {maxUsd} (from {min} to {max} at today's rate). You pay in EGP.",
+      "limitsUsd": "Type the wallet amount in US dollars, {minUsd} to {maxUsd}. You pay in EGP.",
       "button": "Top up wallet",
       "panel": {
         "title": "Top up wallet",
