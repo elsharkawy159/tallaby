@@ -1931,6 +1931,7 @@
         "disabled": "AI is not available right now.",
         "empty": "Add a description, a photo or a PDF first.",
         "tooLarge": "The files are too large. Use fewer or smaller photos.",
+        "photosTooLarge": "A photo is too large, even after shrinking. Try another photo.",
         "badFile": "Only JPG, PNG or WebP photos and PDF files are supported.",
         "rateLimited": "Too many requests. Wait a minute and try again.",
         "dailyLimit": "You've used today's AI fills. Try again tomorrow.",

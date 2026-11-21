@@ -36,6 +36,8 @@ const STATUS: Record<AutofillErrorCode, number> = {
   disabled: 503,
   empty: 400,
   tooLarge: 413,
+  photosTooLarge: 413,
+  pdfTooLarge: 413,
   pdfTooLong: 413,
   badFile: 415,
   rateLimited: 429,

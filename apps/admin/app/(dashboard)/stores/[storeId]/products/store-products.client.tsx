@@ -115,6 +115,8 @@ const AI_ERRORS: Record<AutofillErrorCode, string> = {
   disabled: "AI is not set up on Admin (GOOGLE_GENERATIVE_AI_API_KEY).",
   empty: "Describe the product or add a photo first.",
   tooLarge: `Too much to send: up to ${AUTOFILL_LIMITS.maxImages} photos and ${AUTOFILL_LIMITS.maxTextLength} characters.`,
+  photosTooLarge: "A photo is too large. Use a smaller one.",
+  pdfTooLarge: `The PDF must be ${AUTOFILL_LIMITS.maxPdfBytes / 1024 / 1024} MB or smaller.`,
   pdfTooLong: "The PDF is too long.",
   badFile: "Use JPEG, PNG or WebP photos.",
   rateLimited: "Too many tries in a minute. Wait a moment.",

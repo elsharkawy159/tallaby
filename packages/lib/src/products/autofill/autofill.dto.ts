@@ -22,8 +22,15 @@ export const AUTOFILL_LIMITS = {
   maxPdfBytes: 4 * 1024 * 1024,
   /** Each PDF page is billed like an image. */
   maxPdfPages: 5,
-  /** Under Vercel's 4.5 MB request body limit. */
-  maxTotalBytes: 4.4 * 1024 * 1024,
+  /**
+   * Room for every file at its own cap (4 × 1.5 MB photos + a 4 MB PDF = 10 MB)
+   * plus the text, so the total alone never refuses an input the per-file
+   * limits allow. The dashboard and Admin are self-hosted (Coolify/Traefik, no
+   * body limit) behind Cloudflare (100 MB); proxy.ts skips /api/, so Next's
+   * 10 MB proxy buffer does not apply. Kept near the files' sum because the
+   * route holds the whole body in memory.
+   */
+  maxTotalBytes: 10.5 * 1024 * 1024,
   /** Enough for a description or a spec list, not a whole pasted web page. */
   maxTextLength: 1500,
   /** The current listing sent along when editing a product (JSON). */
@@ -49,6 +56,9 @@ export type AutofillErrorCode =
   | "disabled"
   | "empty"
   | "tooLarge"
+  /** One photo is over maxImageBytes (the browser shrinks them first, so this is rare). */
+  | "photosTooLarge"
+  | "pdfTooLarge"
   | "pdfTooLong"
   | "badFile"
   | "rateLimited"
@@ -247,11 +257,11 @@ export function validateAutofillInput(input: AutofillInput): AutofillErrorCode |
   if (input.images.length > AUTOFILL_LIMITS.maxImages) return "tooLarge"
   for (const image of input.images) {
     if (!(AUTOFILL_IMAGE_TYPES as readonly string[]).includes(image.mediaType)) return "badFile"
-    if (image.size > AUTOFILL_LIMITS.maxImageBytes) return "tooLarge"
+    if (image.size > AUTOFILL_LIMITS.maxImageBytes) return "photosTooLarge"
   }
   if (input.pdf) {
     if (input.pdf.mediaType !== AUTOFILL_PDF_TYPE) return "badFile"
-    if (input.pdf.size > AUTOFILL_LIMITS.maxPdfBytes) return "tooLarge"
+    if (input.pdf.size > AUTOFILL_LIMITS.maxPdfBytes) return "pdfTooLarge"
     if ((countPdfPages(input.pdf.data) ?? 0) > AUTOFILL_LIMITS.maxPdfPages) return "pdfTooLong"
   }
   const total = sizeOf(input.images) + (input.pdf?.size ?? 0) + input.text.length + (input.current?.length ?? 0)

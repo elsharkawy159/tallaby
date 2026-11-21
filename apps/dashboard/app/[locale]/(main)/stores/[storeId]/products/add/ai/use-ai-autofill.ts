@@ -31,6 +31,7 @@ import {
   type AutofillChange,
   type AutofillMode,
 } from "./ai-autofill.lib"
+import { fitAiImages, utf8Bytes } from "./ai-image-fit.lib"
 
 /**
  * The AI fill behind both screens: the add page's chat stage and the edit page's
@@ -41,8 +42,6 @@ import {
 
 /** Matches the form's image limit (basic-section MAX_PRODUCT_IMAGES). */
 const MAX_PRODUCT_IMAGES = 8
-/** Longest side of the copy sent to the model. */
-const AI_IMAGE_MAX_SIDE = 1536
 /** Product images the existing uploader accepts as they are. */
 const UPLOADABLE_TYPES = ["image/jpeg", "image/png"]
 const LOCALES: SupportedLocale[] = ["ar", "en"]
@@ -222,18 +221,28 @@ export function useAiAutofill ({
 
   /** Sends the prompt and files; `sent` lists the images in the order the model numbers them. */
   const requestAutofill = async (text: string, sent: PickedImage[]): Promise<ProductAutofillResponse> => {
+    const current = isEdit ? describeCurrentListing(form.getValues(), AUTOFILL_LIMITS.maxCurrentLength) : null
+    // The AI copies are re-encoded smaller until each photo and the whole request
+    // fit the limits, so a large phone photo never fails the request.
+    const fitted = await fitAiImages(
+      images.length,
+      (index, step) => toJpeg(images[index]!.file, step.maxSide, step.quality).catch(() => null),
+      (jpeg) => jpeg.size,
+      { pdfBytes: pdf?.size ?? 0, textBytes: utf8Bytes(text) + utf8Bytes(current ?? "") }
+    )
+    if (!fitted.ok) return { ok: false, error: fitted.error }
+
     const body = new FormData()
     // The page's store: its own category names guide the model (F-87d); the route checks it against the session.
     body.set("storeId", productStoreId)
     body.set("text", text)
-    for (const item of images) {
-      const jpeg = await toJpeg(item.file, AI_IMAGE_MAX_SIDE).catch(() => null)
-      if (!jpeg) continue
-      body.append("images", jpeg, renamed(item.file.name, "jpg"))
+    for (const { index, encoded } of fitted.images) {
+      const item = images[index]!
+      body.append("images", encoded, renamed(item.file.name, "jpg"))
       sent.push(item)
     }
     if (pdf) body.set("pdf", pdf, pdf.name)
-    if (isEdit) body.set("current", describeCurrentListing(form.getValues(), AUTOFILL_LIMITS.maxCurrentLength))
+    if (current !== null) body.set("current", current)
     const response = await fetch("/api/ai/product-autofill", { method: "POST", body })
     try {
       return (await response.json()) as ProductAutofillResponse

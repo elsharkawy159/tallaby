@@ -1987,6 +1987,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-21 — AI add product: no more "too large" for photos (fix, no migration)
+
+- **Done:** the browser now fits the AI copies of the photos into the limits before sending (`ai-image-fit.lib.ts`, unit tested): each copy steps down from 1536 px at quality 0.85 to 0.7, 0.55, then 1280 and 1024 px until it is ≤ 1.5 MB and the request is under the total cap; the original photos still go to storage untouched. Total cap `AUTOFILL_LIMITS.maxTotalBytes` 4.4 MB → 10.5 MB (every file at its own cap plus the text; the Vercel 4.5 MB body limit no longer applies since the dashboard and Admin run on Hetzner behind Cloudflare). New error codes `photosTooLarge` and `pdfTooLarge` (server and client), so a big PDF and a big photo get their own message; `tooLarge` stays for too many photos, long text and the total. Image count, media resolution, model and prompt unchanged, so AI cost is unchanged.
+- **Checked:** `proxy.ts` skips `/api/`, so Next's 10 MB `proxyClientMaxBodySize` buffer does not touch the route; `serverActions.bodySizeLimit` only covers Server Actions; the repo has no reverse-proxy body limit and Traefik (Coolify) has none by default (not checked on the server); Cloudflare's plan allows 100 MB.
+- **Not done:** not tried with real 12 MP phone photos in a browser; not deployed.
+
 ### 2026-11-20 — Store-less links, support copy-link, more audiences (F-102, owner request)
 
 - **Done:** F-102a store-less links (`/settings/payments`, `/website`, `/stores/<section>/…`, `/analytics`, `/apps`, `/catalog`, `/earnings`) redirect to the seller's selected store; one page per section rather than a root catch-all, so unknown URLs 404 as before. F-102b a hover copy icon on sidebar links for `seller@tallaby.com` (server-decided boolean, `lib/auth/support-accounts.lib.ts`), copying the store-less link without a locale prefix. F-102c Admin audiences `tallaby_pay_not_connected`, `no_active_product`, `site_not_published`, `no_shipping_zones`, `free_plan`, `pro_plan`, `joined_last_7_days` in four groups; read-only production counts 194 / 104 / 87 / 153 / 195 / 0 / 78 of 195 sellers, 60–72 ms each. No migration.
