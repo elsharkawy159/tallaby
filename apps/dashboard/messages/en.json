@@ -726,7 +726,8 @@
     "pleaseWriteAnswerFirst": "Please write an answer first",
     "answerSubmitted": "Answer submitted",
     "failedToSubmitAnswer": "Failed to submit answer",
-    "imageFormatInvalid": "File format must be jpg or png",
+    "imageFormatInvalid": "Use a JPG, PNG, WebP, GIF, AVIF or HEIC photo.",
+    "imageUnreadable": "Couldn't read this photo. Use JPG, PNG or WebP, or set your iPhone camera to Most Compatible.",
     "imageTooLarge": "File size must not exceed 2 MB"
   },
   "fulfillment": {
@@ -1932,7 +1933,7 @@
         "empty": "Add a description, a photo or a PDF first.",
         "tooLarge": "The files are too large. Use fewer or smaller photos.",
         "photosTooLarge": "A photo is too large, even after shrinking. Try another photo.",
-        "badFile": "Only JPG, PNG or WebP photos and PDF files are supported.",
+        "badFile": "Use a photo (JPG, PNG, WebP, GIF, AVIF or HEIC) or a PDF file.",
         "rateLimited": "Too many requests. Wait a minute and try again.",
         "dailyLimit": "You've used today's AI fills. Try again tomorrow.",
         "noCredits": "You've used your AI credits. Buy more from Plan & usage.",
@@ -2291,7 +2292,7 @@
       "media": {
         "title": "Images & media",
         "description": "The first image is the cover. Drag images to reorder them.",
-        "hint": "PNG, JPG or WebP · max 2 MB · 1000×1000 on a light background works best"
+        "hint": "JPG, PNG, WebP, GIF, AVIF or HEIC · max 2 MB · 1000×1000 on a light background works best"
       },
       "content": {
         "title": "Detailed description & highlights",

@@ -18,6 +18,7 @@ import {
 import { CollapsibleSection } from "./collapsible-section";
 import { EDITOR_PHONE_TOOLBAR_CLASS } from "./fields";
 import { useContentImageUpload } from "./use-content-image-upload";
+import { PRODUCT_IMAGE_ACCEPT_ATTR } from "@/lib/images/image-format.lib";
 import { isEmptyHtml } from "../prepare-product-submit.lib";
 import type { AddProductFormData, SupportedLocale } from "../add-product.schema";
 
@@ -90,6 +91,7 @@ export function ContentSection({
                   className={EDITOR_PHONE_TOOLBAR_CLASS}
                   dir={loc === "ar" ? "rtl" : "ltr"}
                   onImageUpload={uploadContentImage}
+                  imageAccept={PRODUCT_IMAGE_ACCEPT_ATTR}
                 />
               )}
             />

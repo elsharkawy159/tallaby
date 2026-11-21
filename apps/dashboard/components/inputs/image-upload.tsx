@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { uploadProductImage } from "@/components/inputs/use-seller-upload";
-import { cn, getPublicUrl, validateImage } from "@/lib/utils";
+import { cn, getPublicUrl } from "@/lib/utils";
+import { PRODUCT_IMAGE_ACCEPT } from "@/lib/images/image-format.lib";
+import { prepareImageForUpload } from "@/lib/images/prepare-image.client";
 import { RemoteImage } from "@/components/media/remote-image";
 
 interface FileToUpload {
@@ -126,8 +128,8 @@ export function ImageUpload({
       const checked = await Promise.all(
         toProcess.map(async (file) => {
           try {
-            await validateImage(file);
-            return file;
+            // HEIC, BMP, TIFF… become a JPEG here, so the preview and upload use that copy.
+            return await prepareImageForUpload(file);
           } catch (error) {
             toast.error(
               error instanceof Error
@@ -162,7 +164,7 @@ export function ImageUpload({
   const isMaxReached = files.length >= maxImages;
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { "image/png": [], "image/jpeg": [], "image/webp": [] },
+    accept: PRODUCT_IMAGE_ACCEPT,
     onDrop,
     disabled: isMaxReached,
     maxFiles: maxImages,

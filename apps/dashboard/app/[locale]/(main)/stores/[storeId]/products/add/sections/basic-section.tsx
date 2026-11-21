@@ -16,6 +16,7 @@ import { CategoryField } from "../category-field";
 import { isEmptyHtml, slugFromNames, toSlug } from "../prepare-product-submit.lib";
 import { EDITOR_PHONE_TOOLBAR_CLASS, useFieldError } from "./fields";
 import { useContentImageUpload } from "./use-content-image-upload";
+import { PRODUCT_IMAGE_ACCEPT_ATTR } from "@/lib/images/image-format.lib";
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema";
 
 const TITLE_MAX = 255;
@@ -144,6 +145,7 @@ export function BasicSection({ id = "sec-basic", categories, activeLocale, actio
                   className={EDITOR_PHONE_TOOLBAR_CLASS}
                   dir={loc === "ar" ? "rtl" : "ltr"}
                   onImageUpload={uploadContentImage}
+                  imageAccept={PRODUCT_IMAGE_ACCEPT_ATTR}
                 />
               )}
             />

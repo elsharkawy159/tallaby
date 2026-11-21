@@ -2,6 +2,7 @@ import { createClient } from "@/supabase/client";
 import { clsx } from "clsx";
 import slugify from "slugify";
 import { twMerge } from "tailwind-merge";
+import { isAcceptedImageFile } from "./images/image-format.lib";
 
 export function cn(...inputs: any) {
   return twMerge(clsx(inputs));
@@ -52,12 +53,17 @@ export const generateSlug = (text: any) => {
     .replace(/\-\-+/g, "-"); // Replace multiple - with single -
 };
 
-const MAX_SIZE = 20 * 1024 * 1024; // 2 MB
-const VALID_FORMATS = ["image/jpeg", "image/png"];
+const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
 
+/**
+ * Checks a photo's format and size. JPEG, PNG, WebP, GIF and AVIF pass, and so
+ * does any other image the uploaders convert to JPEG (HEIC, BMP, TIFF…); SVG and
+ * non-images don't (lib/images/image-format.lib.ts). Use `prepareImageForUpload`
+ * to get the file to upload.
+ */
 export const validateImage = (file: any) => {
   return new Promise((resolve, reject: any) => {
-    if (!VALID_FORMATS.includes(file.type)) {
+    if (!isAcceptedImageFile({ name: String(file?.name ?? ""), type: String(file?.type ?? "") })) {
       // Message is a "toast" namespace key; callers translate it.
       reject(new Error("imageFormatInvalid"));
     } else if (file.size > MAX_SIZE) {

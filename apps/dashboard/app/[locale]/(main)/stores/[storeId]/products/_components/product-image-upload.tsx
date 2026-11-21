@@ -8,7 +8,8 @@ import { getPublicUrl } from "@/lib/utils";
 import { updateProduct } from "@/actions/products";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { validateImage } from "@/lib/utils";
+import { PRODUCT_IMAGE_ACCEPT } from "@/lib/images/image-format.lib";
+import { prepareImageForUpload } from "@/lib/images/prepare-image.client";
 import { uploadProductImage } from "@/components/inputs/use-seller-upload";
 import { useProductStoreId } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
 
@@ -31,14 +32,19 @@ export function ProductImageUpload({
   const handleFileUpload = useCallback(
     async (file: File): Promise<string | null> => {
       try {
-        // Validate image
-        await validateImage(file);
+        // Checks the format and size; HEIC, BMP, TIFF… are uploaded as a JPEG.
+        const upload = await prepareImageForUpload(file);
 
         // Signed upload into the seller's own folder (the bucket refuses direct writes, 0153).
-        return await uploadProductImage(file);
+        return await uploadProductImage(upload);
       } catch (error) {
         console.error("File upload error:", error);
-        toast.error(tToast("failedToUploadImage"));
+        const key = error instanceof Error ? error.message : "";
+        toast.error(
+          ["imageFormatInvalid", "imageTooLarge", "imageUnreadable"].includes(key)
+            ? tToast(key)
+            : tToast("failedToUploadImage")
+        );
         return null;
       }
     },
@@ -92,9 +98,7 @@ export function ProductImageUpload({
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: {
-      "image/*": [],
-    },
+    accept: PRODUCT_IMAGE_ACCEPT,
     onDrop,
     disabled: isUploading,
     maxFiles: 5,

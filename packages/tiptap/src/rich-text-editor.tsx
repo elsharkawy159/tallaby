@@ -68,6 +68,10 @@ interface RichTextEditorProps {
 
   onImageUpload?: (file: File) => Promise<string | null>
 
+  /** The image picker's `accept` list (default JPEG and PNG). */
+
+  imageAccept?: string
+
 }
 
 
@@ -147,6 +151,8 @@ export function RichTextEditor({
   disabled = false,
 
   onImageUpload,
+
+  imageAccept = "image/jpeg,image/png",
 
 }: RichTextEditorProps) {
 
@@ -342,7 +348,7 @@ export function RichTextEditor({
 
         type="file"
 
-        accept="image/jpeg,image/png"
+        accept={imageAccept}
 
         className="hidden"
 

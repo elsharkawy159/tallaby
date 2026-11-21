@@ -23,7 +23,8 @@ import { addProductFormSchema, defaultValues, type AddProductFormData, type Cate
 import { toProductPayload } from "../prepare-product-submit.lib"
 import { MoneyField } from "../sections/fields"
 import { storeProductDraft } from "../use-product-draft"
-import { AUTOFILL_IMAGE_TYPES, AUTOFILL_LIMITS } from "./ai-autofill.dto"
+import { AUTOFILL_LIMITS } from "./ai-autofill.dto"
+import { isAcceptedImageFile, PRODUCT_IMAGE_ACCEPT_ATTR } from "@/lib/images/image-format.lib"
 import { quickProductCardFrom, quickProductMissing, sellerPriceFields, type QuickProductCard } from "./ai-product-uploader.lib"
 import { markProductAiAssisted } from "./ai-source.server"
 import { useAiAutofill, type AutofillProgress } from "./use-ai-autofill"
@@ -72,8 +73,6 @@ type Phase =
   /** The fill isn't a valid product. `stored`: the add page will open with it. */
   | { kind: "incomplete"; stored: boolean }
   | { kind: "created"; product: QuickProductCard }
-
-const PHOTO_ACCEPT = AUTOFILL_IMAGE_TYPES.join(",")
 
 function Uploader ({
   storeId,
@@ -300,12 +299,12 @@ function Uploader ({
           <input
             ref={pickerRef}
             type="file"
-            accept={PHOTO_ACCEPT}
+            accept={PRODUCT_IMAGE_ACCEPT_ATTR}
             multiple
             hidden
             onChange={(event) => {
               // Photos only here: the add page's AI stage also takes a PDF.
-              const files = Array.from(event.target.files ?? []).filter((file) => (AUTOFILL_IMAGE_TYPES as readonly string[]).includes(file.type))
+              const files = Array.from(event.target.files ?? []).filter(isAcceptedImageFile)
               if (files.length) ai.addFiles(files)
               event.target.value = ""
             }}

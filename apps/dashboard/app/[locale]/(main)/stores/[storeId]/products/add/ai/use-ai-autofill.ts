@@ -1,19 +1,20 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useForm, useWatch, type UseFormReturn } from "react-hook-form"
 import { useDropzone } from "react-dropzone"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 import { getPublicUrl } from "@/lib/utils"
 import { uploadProductImage } from "@/components/inputs/use-seller-upload"
+import { classifyImageFile, PRODUCT_IMAGE_ACCEPT } from "@/lib/images/image-format.lib"
+import { convertToJpegFile, toJpeg } from "@/lib/images/prepare-image.client"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema"
 import { buildFormValuesFromImport } from "../build-form-values-from-import.lib"
 import { OPEN_SECTION_EVENT } from "../add-product.lib"
 import { useProductStoreId } from "../../_components/product-store.client"
 import {
-  AUTOFILL_IMAGE_TYPES,
   AUTOFILL_LIMITS,
   AUTOFILL_PDF_TYPE,
   type AutofillErrorCode,
@@ -69,39 +70,6 @@ export type AutofillProgress =
 
 type PromptValues = { prompt: string }
 
-function loadImage (file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const image = new Image()
-    image.onload = () => {
-      URL.revokeObjectURL(url)
-      resolve(image)
-    }
-    image.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error("image"))
-    }
-    image.src = url
-  })
-}
-
-/** A JPEG copy whose longest side is at most `maxSide` (white behind transparency). */
-async function toJpeg (file: File, maxSide: number, quality = 0.85): Promise<Blob> {
-  const image = await loadImage(file)
-  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight))
-  const canvas = document.createElement("canvas")
-  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
-  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
-  const context = canvas.getContext("2d")
-  if (!context) throw new Error("canvas")
-  context.fillStyle = "#fff"
-  context.fillRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(image, 0, 0, canvas.width, canvas.height)
-  return new Promise((resolve, reject) =>
-    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("blob"))), "image/jpeg", quality)
-  )
-}
-
 const renamed = (name: string, ext: string) => `${name.replace(/\.[^.]+$/, "") || "photo"}.${ext}`
 
 /** Puts back what a fill changed. */
@@ -130,6 +98,7 @@ export function useAiAutofill ({
   onProgress?: (progress: AutofillProgress) => void
 }) {
   const t = useTranslations("productForm.ai")
+  const tToast = useTranslations("toast")
   const isEdit = mode === "edit"
   const productStoreId = useProductStoreId()
   // The prompt has its own small form: registered (uncontrolled), so typing
@@ -151,11 +120,16 @@ export function useAiAutofill ({
   const addFiles = (files: File[]) => {
     const nextImages = [...images]
     let nextPdf = pdf
+    const toConvert: File[] = []
     for (const file of files) {
+      const format = file.type === AUTOFILL_PDF_TYPE ? null : classifyImageFile(file).kind
       if (file.type === AUTOFILL_PDF_TYPE) {
         if (file.size > AUTOFILL_LIMITS.maxPdfBytes) toast.error(t("errors.pdfTooLarge"))
         else nextPdf = file
-      } else if ((AUTOFILL_IMAGE_TYPES as readonly string[]).includes(file.type)) {
+      } else if (format === "convert") {
+        // HEIC, BMP, TIFF…: a JPEG copy first, so the preview shows and both the AI and the upload use it.
+        toConvert.push(file)
+      } else if (format === "keep") {
         if (nextImages.length >= AUTOFILL_LIMITS.maxImages) {
           toast.error(t("errors.tooManyImages", { max: AUTOFILL_LIMITS.maxImages }))
           break
@@ -167,7 +141,25 @@ export function useAiAutofill ({
     }
     setImages(nextImages)
     setPdf(nextPdf)
+    if (toConvert.length) {
+      void Promise.all(
+        toConvert.map((file) =>
+          convertToJpegFile(file).catch(() => {
+            toast.error(tToast("imageUnreadable"))
+            return null
+          })
+        )
+      ).then((converted) => {
+        const ready = converted.filter((file): file is File => file !== null)
+        // The latest addFiles, so photos picked meanwhile are kept.
+        if (ready.length) addFilesLatest.current(ready)
+      })
+    }
   }
+  const addFilesLatest = useRef(addFiles)
+  useEffect(() => {
+    addFilesLatest.current = addFiles
+  })
 
   const removeImage = (id: string) =>
     setImages((current) => {
@@ -181,15 +173,14 @@ export function useAiAutofill ({
     noClick: true,
     noKeyboard: true,
     disabled: running,
+    // Every photo format the product uploader takes; the AI always gets a JPEG copy.
     accept: {
-      "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"],
-      "image/webp": [".webp"],
+      ...PRODUCT_IMAGE_ACCEPT,
       [AUTOFILL_PDF_TYPE]: [".pdf"],
     },
   })
 
-  /** Product photos join the product's images (up to the form limit); webp is stored as JPEG. Returns the ones added. */
+  /** Product photos join the product's images (up to the form limit); anything but JPEG and PNG is stored as JPEG. Returns the ones added. */
   const uploadProductImages = async (picked: PickedImage[]): Promise<PickedImage[]> => {
     const current = form.getValues("images") ?? []
     const room = Math.max(0, MAX_PRODUCT_IMAGES - current.length)
@@ -200,7 +191,7 @@ export function useAiAutofill ({
         try {
           const upload = UPLOADABLE_TYPES.includes(file.type)
             ? file
-            : new File([await toJpeg(file, 2400, 0.9)], renamed(file.name, "jpg"), { type: "image/jpeg" })
+            : await convertToJpegFile(file)
           // Signed upload into the seller's own folder (the bucket refuses direct writes, 0153).
           return await uploadProductImage(upload)
         } catch {
