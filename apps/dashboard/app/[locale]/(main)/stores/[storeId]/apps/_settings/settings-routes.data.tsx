@@ -27,6 +27,7 @@ import { storeFeedUrls } from "../product-feeds.lib";
 import { AiAssistantsApp } from "./ai-assistants/ai-assistants.client";
 import { BostaApp } from "./bosta/bosta.client";
 import { IntegrationSettings } from "./integration-settings.client";
+import { StoreQrCodesScreen } from "./qr-codes/qr-codes.data";
 import { SizeChartApp } from "./size-chart/size-chart.client";
 import { WassalhaApp } from "./wassalha/wassalha.client";
 
@@ -156,5 +157,6 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
     const published = store.siteStatus === "published";
     return <ProductFeeds urls={storeFeedUrls(storeUrl(store.subdomain, customDomain), store.supportedLocales)} published={published} />;
   },
+  qr_codes: async ({ store }) => <StoreQrCodesScreen store={store} />,
 };
 

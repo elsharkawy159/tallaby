@@ -87,7 +87,7 @@ describe("app manifests", () => {
   });
 
   it("groups apps by category in order", () => {
-    expect(appsInCategory("storefront").map((a) => a.id)).toEqual(["size_chart"]);
+    expect(appsInCategory("storefront").map((a) => a.id)).toEqual(["size_chart", "qr_codes"]);
     expect(appsInCategory("shipping").map((a) => a.id)).toEqual(["bosta", "wassalha", "mylerz", "jt_express", "aramex"]);
   });
 

@@ -70,6 +70,7 @@ describe("store apps catalog", () => {
     const before = [
       { key: "ai_assistants", group: "ai", kind: "agent", live: true, pricing: FREE, defaultInstalled: true },
       { key: "size_chart", group: "storefront", kind: "widget", live: true, pricing: FREE },
+      { key: "qr_codes", group: "storefront", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
       { key: "meta_pixel", group: "tracking", kind: "script", provider: "meta_pixel", pricing: FREE },
       { key: "google_analytics", group: "tracking", kind: "script", provider: "google_analytics", pricing: FREE },
       { key: "google_tag_manager", group: "tracking", kind: "script", provider: "google_tag_manager", pricing: FREE },
@@ -107,9 +108,9 @@ describe("store apps catalog", () => {
     expect(storeAppPricing(getStoreApp("customer_notifications")!)).toEqual({ model: "per_order", usdCents: 1 });
   });
 
-  it("installs only AI assistants and Product feeds by default, and every default app is live (F-47, F-93)", () => {
+  it("lists the built-in apps, and every built-in app is live", () => {
     const defaults = STORE_APPS.filter(isStoreAppDefaultInstalled);
-    expect(defaults.map((a) => a.key)).toEqual(["ai_assistants", "product_feeds"]);
+    expect(defaults.map((a) => a.key)).toEqual(["ai_assistants", "qr_codes", "product_feeds"]);
     for (const app of defaults) expect(isStoreAppLive(app), app.key).toBe(true);
   });
 
@@ -127,6 +128,6 @@ describe("store apps catalog", () => {
     expect(storeAppPricing(app)).toEqual({ model: "free" });
     expect(storeAppHref("s1", app)).toBe("/stores/s1/apps/size-chart");
     expect(storeAppSettingsHref("s1", app)).toBe("/stores/s1/apps/size-chart/settings");
-    expect(storeAppsInGroup("storefront").map((a) => a.key)).toEqual(["size_chart"]);
+    expect(storeAppsInGroup("storefront").map((a) => a.key)).toEqual(["size_chart", "qr_codes"]);
   });
 });

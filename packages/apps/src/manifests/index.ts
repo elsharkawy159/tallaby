@@ -21,6 +21,7 @@ import paymob from "./paymob";
 import paypal from "./paypal";
 import paytabs from "./paytabs";
 import productFeeds from "./product-feeds";
+import qrCodes from "./qr-codes";
 import shopifyImport from "./shopify-import";
 import sizeChart from "./size-chart";
 import sms from "./sms";
@@ -33,6 +34,7 @@ import wassalha from "./wassalha";
 export const MANIFESTS = [
   aiAssistants,
   sizeChart,
+  qrCodes,
   metaPixel,
   googleAnalytics,
   googleTagManager,

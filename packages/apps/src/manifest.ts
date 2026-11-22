@@ -12,6 +12,7 @@ import { z } from "zod";
 export const APP_IDS = [
   "ai_assistants",
   "size_chart",
+  "qr_codes",
   "meta_pixel",
   "google_analytics",
   "google_tag_manager",
@@ -90,6 +91,7 @@ export const APP_SETTINGS_ROUTES = [
   "wassalha",
   "gateway",
   "size_chart",
+  "qr_codes",
   "ai_assistants",
   "product_feeds",
 ] as const;

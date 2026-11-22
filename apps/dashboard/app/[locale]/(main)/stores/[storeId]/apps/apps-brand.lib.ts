@@ -74,6 +74,7 @@ const GLYPHS: Record<AppId, Pick<SimpleIcon, "path">> = {
   sms: MESSAGE_ICON,
   size_chart: RULER_ICON,
   product_feeds: FEED_ICON,
+  qr_codes: { path: "M2 2h8v8H2zm2 2v4h4V4zm10-2h8v8h-8zm2 2v4h4V4zM2 14h8v8H2zm2 2v4h4v-4zm10-2h4v4h-4zm4 4h4v4h-4zm2-4h2v2h-2zm-6 6h2v2h-2z" },
   meta_pixel: siMeta,
   meta_capi: siMeta,
   google_analytics: siGoogleanalytics,

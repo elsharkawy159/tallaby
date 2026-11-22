@@ -5445,6 +5445,27 @@
       "note": "Applies to your zones. A zone with its own free-delivery amount keeps it, and places your zones don't cover keep the default rates."
     }
   },
+  "qrCodes": {
+    "title": "QR codes",
+    "description": "Choose the link you want people to open when they scan the code.",
+    "offline": "Publish your store and make it available to visitors to create a QR code.",
+    "destination": "QR destination",
+    "home": "Store homepage",
+    "page": "Store page",
+    "product": "Product",
+    "selectPage": "Choose a page",
+    "noPages": "No other published pages",
+    "searchProducts": "Search products",
+    "selectProduct": "Choose a product",
+    "noProducts": "No matching products",
+    "loadingProducts": "Loading products",
+    "searchError": "Couldn’t load products. Change your search and try again.",
+    "link": "Link opened by the code",
+    "chooseDestination": "Choose a page or product to see the code.",
+    "generating": "Creating your code",
+    "generationError": "Couldn’t create the code. Reload the page and try again.",
+    "download": "Download PNG"
+  },
   "productFeeds": {
     "title": "Product feeds",
     "count": "{count} catalogs",
