@@ -119,7 +119,7 @@ export function StoreGallery({
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       priority={index === 0}
                       fetchPriority={index === 0 ? "high" : "low"}
-                      className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none"
+                      className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none bg-white"
                       style={
                         lens && index === current
                           ? { transform: "scale(1.8)", transformOrigin: `${lens.x}% ${lens.y}%` }
