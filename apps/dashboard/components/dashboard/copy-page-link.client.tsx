@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toStorelessPath } from "@/lib/navigation/storeless-routes.lib";
@@ -11,7 +11,7 @@ import { formatPageLinkText } from "./copy-page-link.lib";
 /**
  * Support accounts only (`isSupportAccount`, decided on the server): each
  * sidebar link gets a "copy page link" button that copies the page's sidebar
- * path in the current UI language (`"Settings" > "Payments"`), then on the next
+ * path in the current UI language (`*إعدادات المتجر* ← *طرق الدفع*`), then on the next
  * line its store-less URL (`/settings/payments`, not
  * `/stores/<uuid>/settings/payments`), which opens the same page for whichever
  * seller it is sent to.
@@ -45,6 +45,7 @@ export function CopyPageLinkButton({
   className?: string;
 }) {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -58,7 +59,7 @@ export function CopyPageLinkButton({
   const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const text = formatPageLinkText(trail, storelessUrl(href));
+    const text = formatPageLinkText(trail, storelessUrl(href), locale);
     try {
       await navigator.clipboard.writeText(text);
     } catch {
