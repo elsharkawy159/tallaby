@@ -320,6 +320,9 @@ export async function sendSellerWalletTopUp(topUpId: string, balanceAfter?: stri
   });
 }
 
+/** The store-ready email is always in Arabic, whatever the seller's language (owner, 2026-11-22). */
+const STORE_CREATED_LOCALE: EmailLocale = "ar";
+
 /** Onboarding email for a newly created store (signup's primary store or an extra one). */
 export async function sendSellerStoreCreated(storeId: string): Promise<SendOnceResult> {
   const [store] = await db
@@ -337,9 +340,9 @@ export async function sendSellerStoreCreated(storeId: string): Promise<SendOnceR
     emailType: EMAIL_TYPES.sellerStoreCreated,
     referenceId: store.id,
     recipient: seller.email,
-    subject: getEmailMessages(seller.locale).sellerStoreCreated.subject,
+    subject: getEmailMessages(STORE_CREATED_LOCALE).sellerStoreCreated.subject,
     content: createElement(SellerStoreCreatedEmail, {
-      locale: seller.locale,
+      locale: STORE_CREATED_LOCALE,
       storeName: store.name,
       settingsUrl: SETTINGS_URL,
       storeUrl: storeUrl(store.subdomain, customDomain),
