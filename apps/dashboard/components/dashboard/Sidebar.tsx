@@ -8,9 +8,9 @@ import {
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from "react";
 import {
-  ArrowUpLeft,
   ChevronDown,
   LogOut,
   PanelRightClose,
@@ -449,7 +449,7 @@ const SidebarContent = ({
         </ul>
       </nav>
 
-      {/* Support, then what the top bar hides on phones, then sign out */}
+      {/* Support, then what the top bar hides on phones. Log out is in the Stores menu; a seller with no store gets it here. */}
       <div
         className={cn(
           "flex shrink-0 flex-col gap-2 border-t border-(--s-line-soft)",
@@ -463,14 +463,9 @@ const SidebarContent = ({
             <LanguageToggle labelled />
             <ThemeToggle />
             <InstallAppButton />
-            <span className="ms-auto">
-              <LogoutButton isCollapsed={false} />
-            </span>
           </div>
         )}
-        <div className={cn(showTools && "max-[600px]:hidden", "flex flex-col")}>
-          <LogoutButton isCollapsed={isCollapsed} />
-        </div>
+        {stores.length === 0 && <LogoutButton isCollapsed={isCollapsed} />}
       </div>
     </div>
   );
@@ -515,7 +510,7 @@ function SellerIdentity({ isCollapsed }: { isCollapsed: boolean }) {
   );
 }
 
-/** WhatsApp help card (`.help`). */
+/** WhatsApp support link: one compact row like the nav items (owner, 2026-11-22). */
 function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
   const t = useTranslations("nav");
   const href = useSupportWhatsAppUrl();
@@ -526,29 +521,12 @@ function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
       rel="noopener noreferrer"
       aria-label={isCollapsed ? t("helpCardTitle") : undefined}
       className={cn(
-        "group flex items-center gap-2.5 rounded-2xl no-underline transition-colors duration-150",
-        isCollapsed
-          ? "justify-center p-1.5"
-          : "border border-(--s-whatsapp-line) bg-(--s-whatsapp-soft) p-2 text-(--s-whatsapp-ink) hover:border-(--s-whatsapp) hover:text-(--s-whatsapp-ink)",
+        "flex min-h-10 items-center gap-[11px] rounded-xl text-[13.5px] font-semibold text-(--s-whatsapp-ink) no-underline transition-colors duration-150 hover:bg-(--s-whatsapp-soft) hover:text-(--s-whatsapp-ink)",
+        isCollapsed ? "justify-center" : "px-3 py-2",
       )}
     >
-      <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-[#25d366] text-white shadow-[0_4px_10px_rgb(37_211_102/0.3)]">
-        <WhatsAppIcon className="size-5" />
-      </span>
-      {!isCollapsed && (
-        <>
-          <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
-            <b className="text-[13px] font-bold">{t("helpCardTitle")}</b>
-            <small className="text-[11.5px] text-(--s-whatsapp-sub)">
-              {t("helpCardHint")}
-            </small>
-          </span>
-          <ArrowUpLeft
-            aria-hidden
-            className="size-[15px] shrink-0 text-(--s-whatsapp-sub) transition-transform duration-150 ltr:-scale-x-100 group-hover:-translate-y-0.5"
-          />
-        </>
-      )}
+      <WhatsAppIcon className="size-[18px] shrink-0 text-(--s-whatsapp)" />
+      {!isCollapsed && <span className="truncate">{t("helpCardTitle")}</span>}
     </a>
   );
   return isCollapsed ? (
@@ -560,13 +538,21 @@ function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
 
 function LogoutButton({ isCollapsed }: { isCollapsed: boolean }) {
   const t = useTranslations("nav");
+  const [isPending, startTransition] = useTransition();
   const button = (
     <button
       type="button"
-      onClick={() => void logout()}
+      disabled={isPending}
+      aria-busy={isPending || undefined}
+      onClick={() => {
+        if (isPending) return;
+        startTransition(async () => {
+          await logout();
+        });
+      }}
       aria-label={t("logout")}
       className={cn(
-        "flex min-h-10 cursor-pointer items-center gap-[11px] rounded-xl text-[13px] font-medium text-(--s-muted) transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink)",
+        "flex min-h-10 cursor-pointer items-center gap-[11px] rounded-xl text-[13px] font-medium text-(--s-muted) transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) disabled:cursor-wait disabled:opacity-60",
         isCollapsed ? "justify-center" : "px-3",
       )}
     >

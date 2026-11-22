@@ -3,12 +3,13 @@
 import { useState, useTransition } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Check, ChevronsUpDown, ExternalLink, Plus, Store } from "lucide-react";
+import { Check, ChevronsUpDown, ExternalLink, LogOut, Plus, Store } from "lucide-react";
 import { storeHostname } from "@workspace/lib/storefront";
 import { AnchoredSheet, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { useSidebarStore } from "@/stores";
+import { logout } from "@/actions/auth";
 import { selectStore } from "./store-switcher.server";
 
 export type SwitcherStore = {
@@ -56,6 +57,7 @@ export function StoreSwitcher({
   const setMobileOpen = useSidebarStore((state) => state.setMobileOpen);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [isLoggingOut, startLogout] = useTransition();
   const selected = stores.find((s) => s.id === selectedId) ?? stores[0];
   if (!selected) return null;
 
@@ -170,6 +172,25 @@ export function StoreSwitcher({
           <Store aria-hidden />
           {t("manageStores")}
         </Link>
+      </div>
+      <hr className="mx-3 border-(--s-line-soft)" />
+      <div className="flex flex-col p-2 pt-1">
+        {/* Stays open while signing out, so the disabled row shows it's working; the redirect then leaves the page. */}
+        <button
+          type="button"
+          disabled={isLoggingOut}
+          aria-busy={isLoggingOut || undefined}
+          onClick={() => {
+            if (isLoggingOut) return;
+            startLogout(async () => {
+              await logout();
+            });
+          }}
+          className={cn(ACTION, "w-full cursor-pointer text-start disabled:cursor-wait disabled:opacity-60")}
+        >
+          <LogOut aria-hidden className="rtl:-scale-x-100" />
+          {t("logout")}
+        </button>
       </div>
     </AnchoredSheet>
   );
