@@ -18,7 +18,7 @@ export default defineApp({
   },
   highlights: [],
   keywords: ["Tabby", "installments", "BNPL"],
-  icon: { background: "#3BFFC1", foreground: "#292929" },
+  icon: { background: "#3BFFC1", foreground: "#292929", image: "/app-logos/tabby.png" },
   screenshots: [],
   pricing: { model: "free" },
   providerFees: true,

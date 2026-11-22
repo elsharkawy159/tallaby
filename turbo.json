@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalPassThroughEnv": ["CRON_SECRET"],
   "globalEnv": [
     "DATABASE_URL",
     "REVALIDATE_SECRET",

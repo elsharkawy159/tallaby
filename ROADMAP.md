@@ -323,6 +323,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 78  | F-100 | Tallaby Pay: shoppers pay online through Tallaby's EasyKash account; seller gets 97% in a separate Earnings wallet (3% platform fee), released after delivery, withdrawn on request | P1 | yes (0175, 0176) | Owner request 2026-11-18; design written (`docs/superpowers/specs/2026-11-18-tallaby-pay-design.md`); waits for owner answers (§14) and legal clearance |
 | 79  | F-101 | Code sections in the builder: custom CSS and Liquid (HTML + Liquid + CSS, no JS) sections inside the drag-and-drop tree, editable through schema fields; the AI builder can write them too | P1 | likely (store data) | Owner request 2026-11-20; approved (rule 9 changed); design note first |
 | 80  | F-103 | TikTok Pixel and Snapchat Pixel store apps (browser pixels, consent-gated, shared event ids) | P1 | no | Owner request 2026-11-22; **Live** 2026-11-22 (`04df0063`) |
+| 81  | F-104 | First-week store insights email for sellers | P1 | no | Built locally, rollout pending |
 
 ---
 
@@ -1450,6 +1451,12 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ---
 
+### F-104 First-week store insights email — P1 · Owner request 2026-11-22
+
+**Status:** Built locally. Backend and ecommerce deployments and backend GA4 configuration are pending.
+
+- **F-104a:** Send one first-week recap via the existing email service. Include store visits, real orders received, and a dashboard analytics link. Use Arabic for delivery and provide an English template.
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
@@ -1458,6 +1465,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 2026-11-22 | "the seller email 'Your store is ready on Tallaby' must always be sent in Arabic" | — (polish, no feature ID) | Built 2026-11-22: `sendSellerStoreCreated` always uses `ar`; no migration |
 | 2026-11-22 | "analyze TikTok and Snapchat pixel docs and build those two apps on the dashboard" | F-103 | **Live** 2026-11-22 (browser pixels only, no migration); real-pixel test pending |
+| 2026-11-22 | "Using our current Email service and emails design system, Create a new email to Send emails with insights to seller after first week of sign up like store visits, etc" | F-104 | Built locally, rollout pending |
 | 2026-11-20 | "I need to make good redirection system on the dashboard … dashboard.tallaby.com/settings/payments go to …/stores/<first store>/settings/payments … for the account seller@tallaby.com … on the sidebar navigation items make a simple copy icon appears on hover … copy the link of that page without the storeid … add more filters to admin seller-notifications … like Tallaby pay not integrated, etc" | F-102 | In progress 2026-11-20: store-less links, support copy-link icon, more notification audiences |
 | 2026-11-20 | "some sellers ask if possible to add code so I need to extend my current builder so that work with both drag/drop and code … I need to let sellers or their developers to be able to build something customized, also for the AI website builder assistant to be able to build sections customized with liquid" | F-101 | Approved 2026-11-20 (hybrid: Liquid code sections inside the tree, no JS); rule 9 changed; design note next |
 | 2026-11-20 | "improve the email designs, and add our social media icons in the footer of every email so people follow us" | — (polish, no feature ID) | Built 2026-11-20 (uncommitted): social row in every email footer, 3 legacy emails moved to the kit; icons live after apps/marketing deploys; Supabase auth templates need re-pasting |
@@ -1700,6 +1708,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-102c Seven more Admin seller-notification audiences — 2026-11-20 (`24e1d99c`); SQL checked with read-only counts on production
 - [x] F-103a TikTok Pixel and Snapchat Pixel apps (browser pixels) — 2026-11-22; no migration; unit tests, typecheck and lint pass
 - [ ] F-103b Real-pixel check on a store host (TikTok and Snap pixel helpers)
+- [x] F-104a First-week seller insights email and hourly batch — built locally, no migration
 - [x] F-101a Code sections design note — 2026-11-20 (`docs/superpowers/specs/2026-11-20-code-sections-design.md`); owner accepted all §10 defaults
 - [ ] F-101b–i Code sections build (custom CSS, `code` element, objects, editor, security review, AI, docs, script CSP) — approved 2026-11-20 for every seller
 - [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17; `0173` applied on staging and production (checked 2026-11-19)
@@ -2001,6 +2010,10 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-22 — First-week seller insights email (F-104)
+
+Added a one-time Arabic recap with storefront visits and order counts via the existing email service. See [email inventory](docs/email-inventory.md) for rollout configuration.
 
 ### 2026-11-22 — Store-ready email always in Arabic (owner request, no migration)
 

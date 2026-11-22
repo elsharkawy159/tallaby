@@ -18,7 +18,7 @@ export default defineApp({
   },
   highlights: [],
   keywords: ["Moyasar", "card", "Saudi", "payment gateway"],
-  icon: { background: "#0E7C66", foreground: "#FFFFFF", dark: true },
+  icon: { background: "#0E7C66", foreground: "#FFFFFF", dark: true, image: "/app-logos/moyasar.png" },
   screenshots: [],
   pricing: { model: "free" },
   providerFees: true,

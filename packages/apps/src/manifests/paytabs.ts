@@ -18,7 +18,7 @@ export default defineApp({
   },
   highlights: [],
   keywords: ["PayTabs", "card", "payment gateway"],
-  icon: { background: "#1F3A5F", foreground: "#FFFFFF", dark: true },
+  icon: { background: "#1F3A5F", foreground: "#FFFFFF", dark: true, image: "/app-logos/paytabs.png" },
   screenshots: [],
   pricing: { model: "free" },
   providerFees: true,

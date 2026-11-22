@@ -31,6 +31,7 @@ import {
 } from "../lib/emails/seller-emails";
 import { sendFeeTrialReminder } from "../lib/fee-trial-reminder";
 import { sendSellerSetupReminder } from "../lib/emails/setup-reminder-email";
+import { sendSellerFirstWeekEmails } from "../lib/emails/seller-first-week-email";
 import { sendBackInStock } from "../lib/emails/stock-alert-email";
 import {
   renderStoreCampaignPreview,
@@ -243,6 +244,15 @@ app.post("/fee-trial-reminder", async (c) => {
   } catch (error) {
     console.error("Error sending fee trial reminder:", error);
     return c.json({ error: "Failed to send fee trial reminder" }, 500);
+  }
+});
+
+app.post("/seller-first-week", async (c) => {
+  try {
+    return c.json(await sendSellerFirstWeekEmails());
+  } catch {
+    console.error("[email] first-week insights batch failed");
+    return c.json({ error: "Failed to run first-week insights batch" }, 500);
   }
 });
 

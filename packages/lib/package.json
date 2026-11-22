@@ -27,6 +27,8 @@
   },
   "types": "index.ts",
   "exports": {
+    "./analytics/ga4": "./src/analytics/ga4.server.ts",
+    "./analytics/store-views": "./src/analytics/store-views.lib.ts",
     ".": {
       "types": "./index.ts",
       "default": "./index.ts"

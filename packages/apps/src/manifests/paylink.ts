@@ -18,7 +18,7 @@ export default defineApp({
   },
   highlights: [],
   keywords: ["Paylink", "Saudi", "payment gateway"],
-  icon: { background: "#2B4C9B", foreground: "#FFFFFF", dark: true },
+  icon: { background: "#2B4C9B", foreground: "#FFFFFF", dark: true, image: "/app-logos/paylink.png" },
   screenshots: [],
   pricing: { model: "free" },
   providerFees: true,

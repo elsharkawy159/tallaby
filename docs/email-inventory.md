@@ -32,6 +32,7 @@ These send only for a store subscribed to the app (catalog key `customer_notific
 | Email | Type | Why |
 | --- | --- | --- |
 | "Your store is ready on Tallaby" | `seller_store_created` | The one seller email the owner kept. Always sends. |
+| First-week store insights (Arabic) | `seller_first_week` | Once per seller, after 168 hours from signup. Shows visits and real orders for the seller's primary store over the first seven Cairo calendar days. |
 | Theme request ready / declined | `theme_request_ready`, `theme_request_declined` | Owner, 2026-11-06 (ROADMAP.md F-77): the seller asked for it. Always sends, once per request and outcome. |
 | Store setup reminders (Arabic) | `seller_setup_reminder_day1`, `seller_setup_reminder_day7` | Owner, 2026-11-13 (ROADMAP.md F-94): 24 hours and 7 days after signup while the store is not set up; once each per seller (own claim table `seller_setup_reminders`, 0170, not `email_deliveries`), capped 40 a Cairo day and 10 a run, one-click opt-out. Always sends. |
 
@@ -61,3 +62,11 @@ These send only for a store subscribed to the app (catalog key `customer_notific
 ## Enforcement
 
 `sendEmail` in `apps/backend/src/lib/resend.ts` requires a send decision, so a new call site doesn't compile without asking `decideEmail`. `sendOnce` asks before taking a delivery claim.
+
+## First-week insights (F-104)
+
+The hourly ecommerce job calls `GET /api/cron/seller-first-week` using `CRON_SECRET`. It sends an empty `POST /api/emails/seller-first-week` to the backend with `INTERNAL_API_SECRET` as a bearer token. The response is `{ sent, failed, skipped }`. Batch errors return HTTP 500 from the backend and 502 from the cron. An individual send failure can retry until the seller is ten days old.
+
+The job selects up to five eligible sellers per batch and budgets ten delivery claims per Cairo day. It uses confirmed login addresses, honors setup-reminder opt-outs, and uses the primary store or oldest eligible store from the reporting week. The existing delivery record and Resend idempotency key deduplicate by seller.
+
+Configure `GA4_PROPERTY_ID`, `GA4_SERVICE_ACCOUNT_EMAIL`, and `GA4_SERVICE_ACCOUNT_PRIVATE_KEY` on the backend using the dashboard's storefront GA4 setup. The recap labels visits as unavailable when GA4 cannot report them. Deploy the backend before the ecommerce cron. No migration is required.

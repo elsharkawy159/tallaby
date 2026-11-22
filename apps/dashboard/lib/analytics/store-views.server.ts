@@ -1,67 +1,16 @@
-import { createSign } from "node:crypto";
 import { createCachedQuery, storeTags } from "@workspace/cache";
+import { runGa4Report } from "@workspace/lib/analytics/ga4";
 import {
-  GOOGLE_TOKEN_URL,
   STORE_VIEWS_TIME_ZONE,
   STORE_VIEWS_TTL_SECONDS,
-  base64Url,
   dayInZone,
   parseStoreViewsReport,
-  readGa4Env,
-  serviceAccountJwtInput,
   storeViewsReportBody,
-  type Ga4Env,
   type StoreViewsRange,
   type StoreViewsReport,
 } from "./store-views.lib";
 
-/**
- * Reads one store's views from Tallaby's GA4 property (PLAN.md SA-01) with a
- * service account; the key never leaves the server. Callers pass a store that
- * requireStore already checked belongs to the session's seller.
- */
-
-export function isStoreViewsConfigured(): boolean {
-  return readGa4Env() !== null;
-}
-
-let token: { value: string; expiresAt: number } | null = null;
-
-async function accessToken(env: Ga4Env): Promise<string> {
-  const now = Date.now();
-  if (token && token.expiresAt - 60_000 > now) return token.value;
-
-  const input = serviceAccountJwtInput(env.clientEmail, Math.floor(now / 1000));
-  const signature = createSign("RSA-SHA256").update(input).sign(env.privateKey);
-  const response = await fetch(GOOGLE_TOKEN_URL, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion: `${input}.${base64Url(signature)}`,
-    }),
-    cache: "no-store",
-  });
-  if (!response.ok) throw new Error(`GA4 token request failed (${response.status})`);
-  const json = (await response.json()) as { access_token?: string; expires_in?: number };
-  if (!json.access_token) throw new Error("GA4 token response had no access_token");
-  token = { value: json.access_token, expiresAt: now + (json.expires_in ?? 3600) * 1000 };
-  return token.value;
-}
-
-/** One GA4 Data API `runReport` on Tallaby's storefront property; returns the raw JSON. */
-export async function runGa4Report(body: unknown): Promise<unknown> {
-  const env = readGa4Env();
-  if (!env) throw new Error("GA4 is not configured");
-  const response = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${env.propertyId}:runReport`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${await accessToken(env)}`, "content-type": "application/json" },
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
-  if (!response.ok) throw new Error(`GA4 runReport failed (${response.status})`);
-  return response.json();
-}
+export { isStoreViewsConfigured, runGa4Report } from "@workspace/lib/analytics/ga4";
 
 async function fetchStoreViews(storeId: string, range: StoreViewsRange): Promise<StoreViewsReport> {
   const json = await runGa4Report(storeViewsReportBody(storeId, range));

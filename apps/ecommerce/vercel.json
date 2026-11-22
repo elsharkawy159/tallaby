@@ -18,6 +18,7 @@
     { "path": "/api/cron/cod-deposits", "schedule": "25 * * * *" },
     { "path": "/api/cron/customer-uploads", "schedule": "40 4 * * *" },
     { "path": "/api/cron/seller-setup-reminders", "schedule": "10 * * * *" },
+    { "path": "/api/cron/seller-first-week", "schedule": "45 * * * *" },
     { "path": "/api/cron/tallaby-pay-release", "schedule": "35 * * * *" }
   ]
 }

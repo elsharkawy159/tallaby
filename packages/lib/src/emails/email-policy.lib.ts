@@ -39,6 +39,7 @@ export const EMAIL_RULES = {
   // Store setup reminders, 24 hours and 7 days after signup (F-94; own claim table, 0170)
   seller_setup_reminder_day1: "keep",
   seller_setup_reminder_day7: "keep",
+  seller_first_week: "keep",
   // Campaigns a seller sends, and their test sends
   store_campaign: "manual",
   store_campaign_test: "manual",
