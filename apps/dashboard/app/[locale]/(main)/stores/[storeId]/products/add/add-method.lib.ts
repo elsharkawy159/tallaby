@@ -1,21 +1,17 @@
 /** How the seller adds a product. File is its own page (/products/add/from-file), so it isn't a view here. */
-export type AddView = "pending" | "choose" | "ai" | "url" | "manual";
-
-/** What the page found when it opened: "pending" until the browser can read the stored draft. */
-export type AddEntry = "pending" | "draft" | "fresh";
+export type AddView = "choose" | "ai" | "url" | "manual";
 
 /**
- * Which view `?method=` and the stored draft ask for. The param only picks a view:
- * "ai" without AI falls back to the choice, and anything unknown counts as no param.
- * No param with a draft opens the form with it, so this step never hides a seller's work.
+ * Which view `?method=` asks for. The param only picks a view: "ai" without AI
+ * falls back to the choice, and no param or an unknown one is the choice. A
+ * stored draft never opens the form by itself (owner, 2026-11-22): the choice
+ * shows it with Continue and Delete.
  */
-export function resolveAddView(param: string | null, entry: AddEntry, aiEnabled: boolean): AddView {
+export function resolveAddView(param: string | null, aiEnabled: boolean): AddView {
   if (param === "manual") return "manual";
   if (param === "url") return "url";
   if (param === "ai") return aiEnabled ? "ai" : "choose";
-  if (param === "choose") return "choose";
-  if (entry === "pending") return "pending";
-  return entry === "draft" ? "manual" : "choose";
+  return "choose";
 }
 
 /**

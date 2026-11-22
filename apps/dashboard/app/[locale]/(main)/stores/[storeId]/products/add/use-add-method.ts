@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
-import { resolveAddView, type AddEntry } from "./add-method.lib";
-import { hasStoredDraft } from "./use-product-draft";
+import { resolveAddView } from "./add-method.lib";
+import { clearStoredDraft, hasStoredDraft } from "./use-product-draft";
 
 const subscribeNever = () => () => {};
 
@@ -18,33 +18,33 @@ const FOCUS_TARGET = {
 /**
  * The view on /products/add. The URL holds the method, through the History API
  * (next/navigation stays in sync with no server round trip), so the back button and
- * a reload behave. The stored draft is checked once when the page opens: pressing
- * back after typing still reaches the choice.
+ * a reload behave. Opening the page always lands on the choice (`?method=choose`);
+ * a stored draft only shows there, with Continue and Delete (owner, 2026-11-22).
  */
 export function useAddMethod(aiEnabled: boolean) {
   const param = useSearchParams().get("method");
   const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false);
-  const [entry, setEntry] = useState<AddEntry>("pending");
-  if (hydrated && entry === "pending") setEntry(hasStoredDraft() ? "draft" : "fresh");
-
-  const view = resolveAddView(param, entry, aiEnabled);
+  const view = resolveAddView(param, aiEnabled);
 
   // Once open, the form stays mounted (hidden) so its values, a running AI fill
   // and the autosave timer all survive a visit to the choice.
   const [formOpened, setFormOpened] = useState(false);
   if (!formOpened && (view === "ai" || view === "url" || view === "manual")) setFormOpened(true);
 
-  // A draft opened the form on its own: name that in the URL, so a reload stays there.
-  const resumedDraft = !param && view === "manual";
+  // No (or an unknown) method: name the choice in the URL, keeping the other params (`from=welcome`).
+  const nameChoice = view === "choose" && param !== "choose";
   useEffect(() => {
-    if (resumedDraft) window.history.replaceState(null, "", "?method=manual");
-  }, [resumedDraft]);
+    if (!nameChoice) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("method", "choose");
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }, [nameChoice]);
 
   const previous = useRef(view);
   useEffect(() => {
     const from = previous.current;
     previous.current = view;
-    if (from === view || from === "pending" || view === "pending") return;
+    if (from === view) return;
     window.scrollTo(0, 0);
     document.getElementById(FOCUS_TARGET[view])?.focus({ preventScroll: true });
   }, [view]);
@@ -53,10 +53,20 @@ export function useAddMethod(aiEnabled: boolean) {
     window.history.pushState(null, "", `?method=${method}`);
   }, []);
 
+  // Bumped after "Delete draft", so `draftStored` reads the storage again.
+  const [, setDraftReads] = useState(0);
+  /** Forget the stored draft. A hidden form still holding it is closed too, so it can't save it back. */
+  const deleteDraft = useCallback(() => {
+    clearStoredDraft();
+    setFormOpened(false);
+    setDraftReads((n) => n + 1);
+  }, []);
+
   return {
     view,
     formOpened,
     pick,
+    deleteDraft,
     draftStored: view === "choose" && hydrated && hasStoredDraft(),
   };
 }

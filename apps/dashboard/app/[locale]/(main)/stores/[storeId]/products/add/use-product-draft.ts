@@ -49,6 +49,15 @@ export function hasStoredDraft() {
   return Boolean(draft && hasContent(draft.values));
 }
 
+/** Forget the stored draft without the form (the choice step's "Delete draft"). Browser only. */
+export function clearStoredDraft() {
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Storage blocked: nothing is stored to forget.
+  }
+}
+
 /**
  * Hands unfinished values to the add page, which restores them on open (the
  * quick AI uploader's "finish in the full form"). Never replaces a draft the
@@ -137,11 +146,7 @@ export function useProductDraft(
   /** Forget the stored draft, e.g. after publishing or "Start over". */
   const clear = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // ignore
-    }
+    clearStoredDraft();
     setStatus("idle");
     setHasDraft(false);
   }, []);

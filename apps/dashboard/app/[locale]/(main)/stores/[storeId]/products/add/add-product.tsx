@@ -81,7 +81,6 @@ import { undoAutofill, type AutofillReview } from "./ai/use-ai-autofill";
 import { markProductAiAssisted } from "./ai/ai-source.server";
 import { AddMethodChooser } from "./add-method-chooser.client";
 import { UrlAddStage } from "./url-add-stage.client";
-import { AddMethodSkeleton } from "./add-method-skeleton";
 import { useAddMethod } from "./use-add-method";
 import { addProductReturnHref } from "./add-method.lib";
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto";
@@ -126,20 +125,19 @@ export default function AddProduct(props: AddProductProps) {
   );
 }
 
-/** A new product starts at the choice of method; a stored draft goes straight to the form. */
+/** A new product starts at the choice of method; a stored draft waits there for Continue or Delete. */
 function NewProduct(props: AddProductProps) {
-  const { view, formOpened, pick, draftStored } = useAddMethod(props.aiEnabled ?? false);
+  const { view, formOpened, pick, deleteDraft, draftStored } = useAddMethod(props.aiEnabled ?? false);
   // Read once: switching methods rewrites the query, and the welcome page still wants the product back.
   const from = useSearchParams().get("from");
   const [returnFrom] = useState(from);
   return (
     <>
-      {view === "pending" && <AddMethodSkeleton />}
       {view === "choose" && (
-        <AddMethodChooser aiEnabled={props.aiEnabled ?? false} draftStored={draftStored} onPick={pick} />
+        <AddMethodChooser aiEnabled={props.aiEnabled ?? false} draftStored={draftStored} onPick={pick} onDeleteDraft={deleteDraft} />
       )}
       {formOpened && (
-        <div className={cn((view === "choose" || view === "pending") && "hidden")}>
+        <div className={cn(view === "choose" && "hidden")}>
           <AddProductForm {...props} aiStageOpen={view === "ai"} urlStageOpen={view === "url"} onPickMethod={pick} returnFrom={returnFrom} />
         </div>
       )}

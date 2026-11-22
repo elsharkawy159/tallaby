@@ -5,6 +5,17 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@workspace/ui/components/alert-dialog";
 import { Note, SellerButton, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { BULK_LIMITS } from "./from-file/from-file.dto";
@@ -58,12 +69,16 @@ export function AddMethodChooser({
   aiEnabled,
   draftStored,
   onPick,
+  onDeleteDraft,
 }: {
   aiEnabled: boolean;
   draftStored: boolean;
   onPick: (method: "ai" | "url" | "manual") => void;
+  /** Forget the stored draft; the note then goes away. */
+  onDeleteDraft: () => void;
 }) {
   const t = useTranslations("productForm.method");
+  const tCommon = useTranslations("common");
   const productsHref = useProductsHref();
 
   return (
@@ -79,9 +94,34 @@ export function AddMethodChooser({
         {draftStored && (
           <Note tone="amber">
             <span className="block">{t("draftNote")}</span>
-            <SellerButton type="button" variant="outline" size="sm" className="mt-2" onClick={() => onPick("manual")}>
-              {t("draftContinue")}
-            </SellerButton>
+            <span className="mt-2 flex flex-wrap gap-2">
+              <SellerButton type="button" variant="outline" size="sm" onClick={() => onPick("manual")}>
+                {t("draftContinue")}
+              </SellerButton>
+              {/* Asks first, like the form's "Clear": it deletes the seller's work. */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="h-9 cursor-pointer rounded-full px-3.5 text-[13px] font-bold text-destructive transition-colors duration-150 hover:bg-destructive-soft max-[600px]:h-10"
+                  >
+                    {t("draftDelete")}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t("draftDeleteTitle")}</AlertDialogTitle>
+                    <AlertDialogDescription>{t("draftDeleteBody")}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={onDeleteDraft} className="bg-destructive text-white hover:bg-destructive/90">
+                      {t("draftDelete")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </span>
           </Note>
         )}
 
