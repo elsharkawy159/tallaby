@@ -425,6 +425,23 @@ export async function OrderConfirmationContent({
                     </div>
                   )}
 
+              {summary.paymentFee > 0 && (
+                <div className="flex justify-between text-xs md:text-sm">
+                  <span className="text-muted-foreground">
+                    {summary.paymentFeePercent
+                      ? tCheckout("onlinePaymentFee", { percent: summary.paymentFeePercent })
+                      : tCheckout("onlinePaymentFeeNoRate")}
+                    :
+                  </span>
+                  <span
+                    className="text-foreground font-medium"
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(summary.paymentFee, locale, "sm", currencyLabel),
+                    }}
+                  />
+                </div>
+              )}
+
               <div className="flex justify-between pt-2 md:pt-3 border-t">
                 <span className="text-sm md:text-base font-semibold text-foreground">
                   {t("totalAmount")}:

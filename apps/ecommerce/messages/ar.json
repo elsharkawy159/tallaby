@@ -329,6 +329,8 @@
       }
     },
     "onlinePayment": "الدفع الإلكتروني",
+    "onlinePaymentFee": "رسوم الدفع الإلكتروني ({percent}%)",
+    "onlinePaymentFeeNoRate": "رسوم الدفع الإلكتروني",
     "onlinePaymentDescription": "ادفع عبر إنستاباي أو فودافون كاش أو e& كاش.",
     "codUnavailableHighShipping": "غير متاح لتكاليف الشحن المرتفعة",
     "codUnavailableAboveMax": "غير متاح للطلبات التي تتجاوز حد المتجر",

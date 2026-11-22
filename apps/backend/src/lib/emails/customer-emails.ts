@@ -19,6 +19,7 @@ import {
 import { formatVariantTitleFromCart, pickProductTitle } from "@workspace/lib/orders";
 import { cashDuePiastres, readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
 import { describeCustomerInputs, parseCustomerInputsSnapshot } from "@workspace/lib/products/customer-fields";
+import { readOrderTallabyPay } from "@workspace/lib/payments/store-gateways";
 
 /**
  * A line's customer requirements (F-91) as plain text beside its variant:
@@ -75,6 +76,9 @@ export async function buildOrderConfirmation(orderId: string) {
   if (!ctx.recipient) return { ok: false as const, status: 422 as const, error: "Customer has no email address on file" };
 
   const discount = Number(ctx.order.discountAmount ?? 0);
+  // Tallaby Pay fee the customer paid on top (F-100j, 0178); already in totalAmount.
+  const paymentFee = Number(ctx.order.paymentFeeAmount ?? 0);
+  const paymentFeeBps = paymentFee > 0 ? (readOrderTallabyPay(ctx.order.metadata)?.feeBps ?? null) : null;
   const props = {
     locale: ctx.locale,
     brand: ctx.brand,
@@ -101,6 +105,8 @@ export async function buildOrderConfirmation(orderId: string) {
       shipping: ctx.money(ctx.order.shippingCost),
       discount: discount > 0 ? ctx.money(discount) : null,
       couponCode: ctx.order.couponCode ?? null,
+      paymentFee: paymentFee > 0 ? ctx.money(paymentFee) : null,
+      paymentFeePercent: paymentFeeBps == null ? null : (paymentFeeBps / 100).toLocaleString("en", { maximumFractionDigits: 2 }),
       total: ctx.money(ctx.order.totalAmount),
     },
     paymentMethod: ctx.paymentMethod,

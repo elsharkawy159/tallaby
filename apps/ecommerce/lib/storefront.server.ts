@@ -43,6 +43,7 @@ import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
 import type { StoreCatalogScope } from "@workspace/lib/stores/scope/server";
 import { isSwitchOn } from "@/lib/platform-switches.server";
 import { getStorefrontGateway, isTallabyPayConfigured } from "@workspace/lib/payments/store-gateways/server";
+import { getTallabyPaySettings } from "@workspace/lib/tallaby-pay/server";
 import { storeCategoryGroups, type StoreCategoryFilter } from "@workspace/lib/store-sites/catalog-data";
 import { parseStoreApp } from "@workspace/lib/stores/app";
 import { parseStoreSalesPopup } from "@workspace/lib/stores/sales-popup";
@@ -427,7 +428,16 @@ export async function getStorefrontCheckoutPayments(): Promise<StorefrontCheckou
   // while this app has no Tallaby EasyKash key, so checkout never offers a payment it can't start.
   const connected = row ? await getStorefrontGateway(scope.storeId, scope.sellerId) : null;
   const gateway = connected?.provider === "tallaby_pay" && !isTallabyPayConfigured() ? null : connected;
-  return storefrontCheckoutMethods(parseStorePayments(settings?.payments), gateway, parseStoreCurrency(settings).currency, parseCodDeposit(settings));
+  // F-100j: when the store's customers pay the Tallaby Pay fee, checkout shows the live
+  // rate (read fresh, like getStorefrontGateway, so an Admin change shows on the next page).
+  const feeBps = gateway?.provider === "tallaby_pay" && gateway.feePayer === "customer" ? (await getTallabyPaySettings()).feeBps : null;
+  return storefrontCheckoutMethods(
+    parseStorePayments(settings?.payments),
+    gateway,
+    parseStoreCurrency(settings).currency,
+    parseCodDeposit(settings),
+    feeBps,
+  );
 }
 
 /** The label a store's checkout shows prices with, read fresh. */

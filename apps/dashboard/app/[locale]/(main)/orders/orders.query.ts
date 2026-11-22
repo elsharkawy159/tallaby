@@ -172,6 +172,7 @@ export async function loadSellerOrders(
       shippingCost: true,
       discountAmount: true,
       totalAmount: true,
+      paymentFeeAmount: true,
       depositAmount: true,
       depositPercent: true,
       depositStatus: true,
@@ -403,6 +404,7 @@ export async function loadSellerOrders(
       shippingCost: o.shippingCost ?? "0",
       discountAmount: o.discountAmount ?? "0",
       totalAmount: o.totalAmount ?? "0",
+      paymentFee: o.paymentFeeAmount ?? "0",
       currency: o.currency ?? DEFAULT_CURRENCY,
       deposit: (() => {
         const deposit = readOrderDeposit(o);

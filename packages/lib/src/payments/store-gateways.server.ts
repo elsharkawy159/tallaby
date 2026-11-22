@@ -46,6 +46,7 @@ import {
   readGatewayConfig,
   readOrderDepositGateway,
   readOrderGateway,
+  readTallabyPayFeePayer,
   storeGatewayReturnPath,
   storeGatewayWebhookUrl,
   tallabyPayCallbackUrl,
@@ -62,8 +63,10 @@ import {
   type StoreGatewayConfig,
   type StoreGatewayProvider,
   type StoreGatewaySecret,
+  type StorefrontGatewayMeta,
   type TallabyPayGatewayConfig,
 } from "./store-gateways.lib";
+import { isTallabyPayFeePayer, type TallabyPayFeePayer } from "../tallaby-pay/fee.lib";
 
 /**
  * The seller's own payment gateway (ROADMAP.md F-39). Server-only. Modelled
@@ -87,6 +90,8 @@ export type StoreGatewayOverview = {
   webhooksReady: boolean;
   /** Tallaby Pay's live fee, hold, minimum withdrawal and launch switch, for its Turn on sheet (F-100). */
   tallabyPay: TallabyPaySettings;
+  /** Who pays the Tallaby Pay fee on this store (F-100j); `seller` unless the seller chose `customer` (missing = `seller`). */
+  tallabyPayFeePayer?: TallabyPayFeePayer;
 };
 
 /**
@@ -121,6 +126,7 @@ export async function getStoreGatewayOverview(
     connected: row ? { ...toIntegrationSummary(row.provider as StoreGatewayProvider, row), provider: row.provider as StoreGatewayProvider } : null,
     webhooksReady: storeGatewayWebhookUrl("00000000-0000-0000-0000-000000000000") !== null,
     tallabyPay,
+    tallabyPayFeePayer: row?.provider === "tallaby_pay" ? readTallabyPayFeePayer(row.config) : "seller",
   };
 }
 
@@ -366,12 +372,16 @@ export async function enableTallabyPay(
     if (!settings.live) return { success: false, error: "not_live" } as const;
     if (await hasOtherGateway(tx, storeId, sellerId, others)) return { success: false, error: "other_gateway_connected" } as const;
 
+    // Turning it on again keeps the seller's earlier "who pays the fee" choice (F-100j).
+    const previous = await readRow(tx, storeId, sellerId, provider);
+    const feePayer = previous ? readTallabyPayFeePayer(previous.config) : "seller";
     const now = new Date().toISOString();
     const config: TallabyPayGatewayConfig = {
       mode: "live",
       termsVersion: TALLABY_PAY_TERMS_VERSION,
       termsAcceptedAt: now,
       enabledAt: now,
+      ...(feePayer === "customer" && { feePayer }),
     };
     const [row] = await tx
       .insert(storeIntegrations)
@@ -410,8 +420,68 @@ export async function enableTallabyPay(
 
     return {
       success: true,
-      data: { connected: { ...toIntegrationSummary(provider, row!), provider }, webhooksReady: true, tallabyPay: settings },
+      data: {
+        connected: { ...toIntegrationSummary(provider, row!), provider },
+        webhooksReady: true,
+        tallabyPay: settings,
+        tallabyPayFeePayer: feePayer,
+      },
     } as const;
+  });
+}
+
+export type TallabyPayFeePayerError = "not_found" | "store_read_only" | "invalid_fee_payer" | "not_connected";
+
+/**
+ * Who pays the Tallaby Pay fee on this store (ROADMAP.md F-100j): `seller`
+ * (default, fee taken from the paid amount) or `customer` (checkout adds it
+ * on top). Saved in the connected `tallaby_pay` row's config (no secret), so
+ * it applies to the next order placed; placed orders keep their snapshot.
+ * The session seller must own the active store (rule 5); audited.
+ */
+export async function setTallabyPayFeePayer(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  feePayer: unknown,
+  q: Queryable = db,
+): Promise<IntegrationResult<{ feePayer: TallabyPayFeePayer }, TallabyPayFeePayerError>> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  if (!isTallabyPayFeePayer(feePayer)) return { success: false, error: "invalid_fee_payer" };
+  return q.transaction(async (tx) => {
+    const store = await ownStoreStatus(tx, sellerId, storeId, true);
+    if (!store) return { success: false, error: "not_found" } as const;
+    if (store.status !== "active") return { success: false, error: "store_read_only" } as const;
+    const [row] = await tx
+      .select({ id: storeIntegrations.id, config: storeIntegrations.config })
+      .from(storeIntegrations)
+      .where(
+        and(
+          eq(storeIntegrations.storeId, storeId),
+          eq(storeIntegrations.sellerId, sellerId),
+          eq(storeIntegrations.provider, "tallaby_pay"),
+          eq(storeIntegrations.status, "connected"),
+        ),
+      )
+      .for("update")
+      .limit(1);
+    if (!row) return { success: false, error: "not_connected" } as const;
+    const before = readTallabyPayFeePayer(row.config);
+    if (before === feePayer) return { success: true, data: { feePayer } } as const;
+    // Seller-pays is the missing key, like every row written before F-100j.
+    const config: Record<string, unknown> = { ...((row.config ?? {}) as Record<string, unknown>) };
+    delete config.feePayer;
+    if (feePayer === "customer") config.feePayer = feePayer;
+    await tx.update(storeIntegrations).set({ config, updatedAt: sql`now()` }).where(eq(storeIntegrations.id, row.id));
+    await tx.insert(storeSettingsAudit).values({
+      storeId,
+      sellerId,
+      actorId,
+      section: "payments",
+      action: "tallaby_pay_fee_payer_changed",
+      changes: { gateway: "tallaby_pay", feePayer: { from: before, to: feePayer } },
+    });
+    return { success: true, data: { feePayer } } as const;
   });
 }
 
@@ -589,7 +659,7 @@ async function verifyCheckoutKeys(
  * resolves the store from the request host and passes its owner. Tallaby Pay
  * counts only while its launch switch is on (design §10).
  */
-export async function getStorefrontGateway(storeId: string, sellerId: string, q: Queryable = db): Promise<OrderGatewayMeta | null> {
+export async function getStorefrontGateway(storeId: string, sellerId: string, q: Queryable = db): Promise<StorefrontGatewayMeta | null> {
   if (!UUID_RE.test(storeId)) return null;
   const rows = await q
     .select({ id: storeIntegrations.id, provider: storeIntegrations.provider, config: storeIntegrations.config })
@@ -604,7 +674,10 @@ export async function getStorefrontGateway(storeId: string, sellerId: string, q:
     );
   const row = rows.find((r) => isStoreGatewayProvider(r.provider) && readGatewayConfig(r.config));
   if (!row) return null;
-  if (row.provider === "tallaby_pay" && !(await isSwitchOn("tallaby_pay_live", q))) return null;
+  if (row.provider === "tallaby_pay") {
+    if (!(await isSwitchOn("tallaby_pay_live", q))) return null;
+    return { provider: "tallaby_pay", integrationId: row.id, feePayer: readTallabyPayFeePayer(row.config) };
+  }
   return { provider: row.provider as StoreGatewayProvider, integrationId: row.id };
 }
 

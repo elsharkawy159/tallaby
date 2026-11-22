@@ -16,6 +16,7 @@ import { z } from "zod";
 import { buildKashierOrderReference, parseKashierOrderReference, verifyKashierWebhookSignature } from "../kashier/kashier.lib";
 import { verifyPaymobTransactionHmac } from "../paymob/paymob.lib";
 import type { PaymobTransactionObj } from "../paymob/paymob.types";
+import { isTallabyPayFeePayer, type TallabyPayFeePayer } from "../tallaby-pay/fee.lib";
 
 export const STORE_GATEWAY_PROVIDERS = ["paymob", "kashier", "easykash", "tallaby_pay"] as const;
 export type StoreGatewayProvider = (typeof STORE_GATEWAY_PROVIDERS)[number];
@@ -256,6 +257,13 @@ export type OrderGatewayMeta = {
   lastReference?: string;
 };
 
+/**
+ * The store's gateway as checkout sees it: the order snapshot fields plus,
+ * for Tallaby Pay, who pays its fee (F-100j). `feePayer` never reaches an
+ * order snapshot (storeGatewayOrderMetadata copies provider and integration only).
+ */
+export type StorefrontGatewayMeta = OrderGatewayMeta & { feePayer?: TallabyPayFeePayer };
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function readOrderGateway(metadata: unknown): OrderGatewayMeta | null {
@@ -321,23 +329,51 @@ export type TallabyPayGatewayConfig = {
   termsVersion: string;
   termsAcceptedAt: string;
   enabledAt: string;
+  /**
+   * Who pays the Tallaby Pay fee (F-100j). Missing means `seller`, the
+   * behaviour before F-100j, so rows written earlier keep it.
+   */
+  feePayer?: TallabyPayFeePayer;
 };
+
+/** The fee payer saved on a Tallaby Pay row's config; anything unreadable is `seller` (the default). */
+export function readTallabyPayFeePayer(config: unknown): TallabyPayFeePayer {
+  if (!config || typeof config !== "object") return "seller";
+  const value = (config as Record<string, unknown>).feePayer;
+  return isTallabyPayFeePayer(value) ? value : "seller";
+}
 
 /**
  * `orders.metadata.tallabyPay`: the fee and hold read once at placement
  * (design §3), so a later rate change never alters an order already placed.
+ *
+ * F-100j: when the shopper paid the fee, `feePayer` is `'customer'` and
+ * `customerFeePiastres` is the surcharge added to the order total at
+ * placement (also stored as `orders.payment_fee_amount`). A snapshot without
+ * `feePayer` is seller-pays (every order before F-100j, and every seller-pays
+ * order after it: their snapshot is unchanged).
  */
-export type TallabyPayOrderSnapshot = { feeBps: number; holdDays: number; termsVersion: string };
+export type TallabyPayOrderSnapshot = {
+  feeBps: number;
+  holdDays: number;
+  termsVersion: string;
+  feePayer?: "customer";
+  customerFeePiastres?: number;
+};
 
 export function readOrderTallabyPay(metadata: unknown): TallabyPayOrderSnapshot | null {
   if (!metadata || typeof metadata !== "object") return null;
   const raw = (metadata as Record<string, unknown>).tallabyPay;
   if (!raw || typeof raw !== "object") return null;
-  const { feeBps, holdDays, termsVersion } = raw as Record<string, unknown>;
+  const { feeBps, holdDays, termsVersion, feePayer, customerFeePiastres } = raw as Record<string, unknown>;
   if (typeof feeBps !== "number" || !Number.isInteger(feeBps) || feeBps < 0 || feeBps > 2_000) return null;
   if (typeof holdDays !== "number" || !Number.isInteger(holdDays) || holdDays < 0 || holdDays > 60) return null;
   if (typeof termsVersion !== "string" || !termsVersion) return null;
-  return { feeBps, holdDays, termsVersion };
+  if (feePayer === undefined || feePayer === "seller") return { feeBps, holdDays, termsVersion };
+  // An unreadable customer-pays snapshot must never settle at a guessed split.
+  if (feePayer !== "customer") return null;
+  if (typeof customerFeePiastres !== "number" || !Number.isSafeInteger(customerFeePiastres) || customerFeePiastres < 0) return null;
+  return { feeBps, holdDays, termsVersion, feePayer, customerFeePiastres };
 }
 
 /**
@@ -349,6 +385,8 @@ export function readOrderTallabyPay(metadata: unknown): TallabyPayOrderSnapshot 
 export function storeGatewayOrderMetadata(
   gateway: { provider: StoreGatewayProvider; integrationId: string },
   settings: { feeBps: number; holdDays: number } | null,
+  /** F-100j: the surcharge the shopper pays on top (customer-pays orders only). */
+  customerFee: { feePiastres: number } | null = null,
 ): {
   paymentCollector: "seller" | "tallaby";
   paymentGateway: { provider: StoreGatewayProvider; integrationId: string };
@@ -361,7 +399,12 @@ export function storeGatewayOrderMetadata(
   return {
     paymentCollector,
     paymentGateway,
-    tallabyPay: { feeBps: settings.feeBps, holdDays: settings.holdDays, termsVersion: TALLABY_PAY_TERMS_VERSION },
+    tallabyPay: {
+      feeBps: settings.feeBps,
+      holdDays: settings.holdDays,
+      termsVersion: TALLABY_PAY_TERMS_VERSION,
+      ...(customerFee && { feePayer: "customer" as const, customerFeePiastres: customerFee.feePiastres }),
+    },
   };
 }
 

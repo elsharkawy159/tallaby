@@ -82,6 +82,11 @@ export interface SellerOrderRow {
   discountAmount: string;
   /** What the customer pays for the whole order. */
   totalAmount: string;
+  /**
+   * Tallaby Pay fee the customer paid on top (0178, ROADMAP.md F-100j); already
+   * inside totalAmount and kept by Tallaby, so not the seller's. "0" when none.
+   */
+  paymentFee?: string;
   /** The order's own currency: every amount on this row is in it. */
   currency: string;
   /** COD deposit (0166, F-21), paid to the seller; null = none. */

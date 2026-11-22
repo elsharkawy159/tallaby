@@ -28,6 +28,9 @@ export interface OrderConfirmationCopy {
   shipping: string;
   discount: string;
   discountWithCoupon: string;
+  /** Tallaby Pay fee the customer paid (F-100j). */
+  onlinePaymentFee: string;
+  onlinePaymentFeeNoRate: string;
   total: string;
   shippingTo: string;
   estimatedDelivery: string;
@@ -124,6 +127,8 @@ const en: EmailMessages = {
     shipping: "Shipping",
     discount: "Discount",
     discountWithCoupon: "Discount · {couponCode}",
+    onlinePaymentFee: "Online payment fee ({percent}%)",
+    onlinePaymentFeeNoRate: "Online payment fee",
     total: "Total",
     shippingTo: "Shipping to",
     estimatedDelivery: "Estimated delivery",
@@ -221,6 +226,8 @@ const ar: EmailMessages = {
     shipping: "الشحن",
     discount: "الخصم",
     discountWithCoupon: "الخصم · {couponCode}",
+    onlinePaymentFee: "رسوم الدفع الإلكتروني ({percent}%)",
+    onlinePaymentFeeNoRate: "رسوم الدفع الإلكتروني",
     total: "الإجمالي",
     shippingTo: "الشحن إلى",
     estimatedDelivery: "التوصيل المتوقع",

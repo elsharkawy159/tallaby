@@ -113,6 +113,10 @@ export interface OrderConfirmationData {
       code?: string;
     }>;
     totalAmount: number;
+    /** Tallaby Pay fee the customer paid on top (F-100j); included in totalAmount. 0 when none. */
+    paymentFee: number;
+    /** The rate it was charged at, e.g. "3"; null when unknown. */
+    paymentFeePercent: string | null;
     itemCount: number;
   };
 }

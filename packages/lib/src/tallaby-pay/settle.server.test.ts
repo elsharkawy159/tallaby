@@ -237,6 +237,45 @@ describe("handleTallabyPayCallback: settlement", () => {
     expect(mocks.postEntry).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pendingPiastres: 9_500 }));
   });
 
+  it("customer pays the fee (F-100j): fee = the recorded surcharge, the seller nets the 100.00 base", async () => {
+    mocks.order = orderRow({
+      totalAmount: "103.00",
+      paymentFeeAmount: "3.00",
+      metadata: {
+        ...orderRow().metadata,
+        tallabyPay: { feeBps: 300, holdDays: 0, termsVersion: "2026-11-18", feePayer: "customer", customerFeePiastres: 300 },
+      },
+    });
+    const result = await handleTallabyPayCallback(signed({ Amount: "103.00" }), { fetch: inquiry({ ...PAID, Amount: "103.00" }) });
+    expect(result).toMatchObject({ status: 200, body: { outcome: "paid" } });
+    expect(mocks.inserted[0]).toMatchObject({ gross: "103.00", fee: "3.00", net: "100.00", feeBps: 300 });
+    expect(mocks.postEntry).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ kind: "sale", pendingPiastres: 10_000, metadata: expect.objectContaining({ feePayer: "customer" }) }),
+    );
+  });
+
+  it("customer pays the fee: the surcharge is never recomputed from a later rate", async () => {
+    // 1,000.00 base at 3% = 30.00 surcharge, recorded; even if the snapshot bps were edited later, the fee stays 30.00.
+    mocks.order = orderRow({
+      totalAmount: "1030.00",
+      metadata: {
+        ...orderRow().metadata,
+        tallabyPay: { feeBps: 500, holdDays: 0, termsVersion: "2026-11-18", feePayer: "customer", customerFeePiastres: 3_000 },
+      },
+    });
+    await handleTallabyPayCallback(signed({ Amount: "1030.00" }), { fetch: inquiry({ ...PAID, Amount: "1030.00" }) });
+    expect(mocks.inserted[0]).toMatchObject({ gross: "1030.00", fee: "30.00", net: "1000.00" });
+  });
+
+  it("500 for a customer-pays snapshot without its surcharge (never a guessed split)", async () => {
+    mocks.order = orderRow({
+      metadata: { ...orderRow().metadata, tallabyPay: { feeBps: 300, holdDays: 0, termsVersion: "2026-11-18", feePayer: "customer" } },
+    });
+    expect((await handleTallabyPayCallback(signed(), { fetch: inquiry(PAID) })).status).toBe(500);
+    expect(mocks.transactions).toBe(0);
+  });
+
   it("credits nothing on an amount mismatch or a replayed duplicate", async () => {
     mocks.claim.mockResolvedValue("mismatch");
     const wrong = await handleTallabyPayCallback(signed({ Amount: "90.00" }), { fetch: inquiry({ ...PAID, Amount: "90.00" }) });

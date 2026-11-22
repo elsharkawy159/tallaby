@@ -304,6 +304,46 @@ and no second ledger that could disagree.
 `available = Σ available_delta`, and `pending + available = Σ net of non-refunded sales − Σ paid payouts + Σ reversals ±
 adjustments`.
 
+### 4.6 Who pays the fee (F-100j, owner 2026-11-22)
+
+Each store chooses who pays the fee: **`seller`** (the default, everything above, unchanged) or **`customer`**. The
+choice is `feePayer` in the store's `tallaby_pay` `store_integrations.config` (no column; a missing key is `seller`, so
+every row written before F-100j keeps the old behaviour; turning Tallaby Pay off and on keeps the choice). The seller
+sets it on the Tallaby Pay card; `setTallabyPayFeePayer` checks the store belongs to the session seller and audits
+`tallaby_pay_fee_payer_changed`. It applies to the next order only.
+
+When the store's customers pay it **and the shopper pays the whole order with Tallaby Pay** (never COD, a deposit, or
+another gateway), `placeOrderFromCart` reads `billing_settings.tallaby_pay_fee_bps` fresh (the same reader Admin edits;
+not cached) and adds, in integer piastres:
+
+```
+fee     = round_half_up(base × bps / 10000)   // customerTallabyPayFee: same rounding as splitTallabyPay
+charged = base + fee                           // base = subtotal + shipping + tax − discounts
+```
+
+| Stored on the order | Value |
+|---|---|
+| `orders.total_amount` | `charged` (what the shopper pays: the EasyKash amount, the paid claim's exact-amount check, the refund, the customer's "spent", Meta/TikTok/Snap Purchase value) |
+| `orders.payment_fee_amount` (0178) | `fee` (0 on every other order) |
+| `metadata.tallabyPay` | `{ feeBps, holdDays, termsVersion, feePayer: 'customer', customerFeePiastres: fee }` (seller-pays snapshots have no new keys) |
+
+Settlement (`tallabyPaySaleSplit`) never recomputes it: gross = paid, **fee = `customerFeePiastres`**, net = paid − fee
+= base. 100 EGP at 3%: the shopper pays 103, the sale is gross 103 / fee 3 / net 100, pending +100, Fees box +3. A
+customer-pays snapshot without a readable surcharge is "no snapshot" (500, never a guessed split). Refunds need no new
+code: a refund sets the sale `refunded` (its fee leaves the Fees box) and posts `refund −net`; Admin refunds the whole
+gross in EasyKash, so the customer gets back everything they paid and Tallaby earns nothing. The plan's per-order fee
+($0.03) and the store wallet are untouched; the seller's revenue figures come from order lines, never the fee.
+
+Checkout shows the live rate as a summary line «رسوم الدفع الإلكتروني (3%)» / "Online payment fee (3%)" while Tallaby
+Pay is selected (display only; the server recomputes). The order page, the customer confirmation email, the dashboard
+order panel and Admin's order detail show the fee line from `payment_fee_amount`. An Admin price edit keeps the fee in
+the total.
+
+**COD deposits stay seller-pays.** A deposit's amount is a percent of the order total, rounded up to 5
+(`splitDeposit`), and `total − deposit` is what the carrier collects in cash; the deposit claim checks the paid amount
+against `deposit_amount`. A surcharge on the deposit would need a second fee field on the deposit, a deposit amount
+that is no longer "percent of total", and changes to the COD amount shown to riders and carriers, so it is left out.
+
 ---
 
 ## 5. State machine

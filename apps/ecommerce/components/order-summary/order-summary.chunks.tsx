@@ -456,6 +456,22 @@ export function OrderSummaryTotalRow ({ total }: OrderSummaryTotalRowProps) {
   )
 }
 
+/** "Online payment fee (3%)" above the total (Tallaby Pay, customer pays the fee; ROADMAP.md F-100j). */
+export function OrderSummaryOnlinePaymentFeeRow ({ fee }: { fee: { amount: number; percent: string } }) {
+  const locale = useLocale()
+  const currencyLabel = useCurrencyLabel()
+  const t = useTranslations('checkout')
+  return (
+    <div className='flex items-center justify-between text-xs md:text-sm' aria-live='polite'>
+      <span className='text-gray-600'>{t('onlinePaymentFee', { percent: fee.percent })}</span>
+      <span
+        className='font-medium text-gray-900'
+        dangerouslySetInnerHTML={{ __html: formatPrice(fee.amount, locale, 'sm', currencyLabel) }}
+      />
+    </div>
+  )
+}
+
 export interface OrderSummaryDeposit {
   /** Currency units, already rounded (cod-deposit.lib). */
   amount: number

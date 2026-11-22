@@ -54,7 +54,8 @@ describe.skipIf(!TEST_DATABASE_URL)("Tallaby Pay release and refunds (integratio
   }
   type Store = Awaited<ReturnType<typeof makeStore>>;
 
-  async function makeOrder(store: Store, total = "100.00") {
+  /** `customerFee` (F-100j): the store's customers pay the fee; `total` already includes it. */
+  async function makeOrder(store: Store, total = "100.00", customerFee?: { amount: string; piastres: number }) {
     const id = randomUUID();
     orderIds.push(id);
     await db.insert(s.orders).values({
@@ -65,13 +66,19 @@ describe.skipIf(!TEST_DATABASE_URL)("Tallaby Pay release and refunds (integratio
       currency: "EGP",
       subtotal: total,
       totalAmount: total,
+      ...(customerFee && { paymentFeeAmount: customerFee.amount }),
       status: "payment_processing",
       paymentStatus: "pending",
       paymentMethod: "online_payment",
       metadata: {
         paymentCollector: "tallaby",
         paymentGateway: { provider: "tallaby_pay", integrationId: randomUUID() },
-        tallabyPay: { feeBps: 300, holdDays: 0, termsVersion: "2026-11-18" },
+        tallabyPay: {
+          feeBps: 300,
+          holdDays: 0,
+          termsVersion: "2026-11-18",
+          ...(customerFee && { feePayer: "customer", customerFeePiastres: customerFee.piastres }),
+        },
       },
     });
     return id;
@@ -94,8 +101,8 @@ describe.skipIf(!TEST_DATABASE_URL)("Tallaby Pay release and refunds (integratio
   const inquiry = (amount = "100.00") =>
     vi.fn(async () => new Response(JSON.stringify({ status: "PAID", Amount: amount, PaymentMethod: "Credit & Debit Card" }), { status: 200 })) as unknown as typeof fetch;
 
-  async function paidOrder(store: Store, total = "100.00") {
-    const orderId = await makeOrder(store, total);
+  async function paidOrder(store: Store, total = "100.00", customerFee?: { amount: string; piastres: number }) {
+    const orderId = await makeOrder(store, total, customerFee);
     const result = await settle.handleTallabyPayCallback(callback(orderId, { amount: total }), { fetch: inquiry(total) });
     expect(result).toMatchObject({ status: 200, body: { outcome: "paid" } });
     const [sale] = await sales(orderId);
@@ -216,6 +223,32 @@ describe.skipIf(!TEST_DATABASE_URL)("Tallaby Pay release and refunds (integratio
     await deliver(orderId);
     expect(await release.releaseTallabyPaySale(saleId, db as never)).toMatchObject({ released: false });
     expect(await totals(store)).toMatchObject({ pending: "0.00", available: "0.00" });
+  });
+
+  it("customer pays the fee (F-100j): 103.00 paid → net 100.00, fee 3.00; a refund reverses both exactly", async () => {
+    const store = await makeStore();
+    const { orderId, saleId } = await paidOrder(store, "103.00", { amount: "3.00", piastres: 300 });
+    expect(await saleRow(saleId)).toMatchObject({ gross: "103.00", fee: "3.00", net: "100.00", feeBps: 300 });
+    expect(await totals(store)).toMatchObject({ pending: "100.00" });
+    expect(await feesBox(store)).toBe("3.00");
+
+    expect(await release.refundTallabyPaySale({ saleId, adminId, reason: "Customer cancelled" }, db as never)).toMatchObject({
+      success: true,
+    });
+    // The customer gets back everything they paid (gross 103.00); Tallaby keeps no fee.
+    expect(await saleRow(saleId)).toMatchObject({ status: "refunded", gross: "103.00" });
+    expect(await feesBox(store)).toBe("0.00");
+    expect(await totals(store)).toMatchObject({ pending: "0.00", available: "0.00" });
+    const [order] = await db.select({ paymentStatus: s.orders.paymentStatus }).from(s.orders).where(eq(s.orders.id, orderId));
+    expect(order!.paymentStatus).toBe("refunded");
+  });
+
+  it("customer pays the fee: delivery releases the full base to available", async () => {
+    const store = await makeStore();
+    const { orderId, saleId } = await paidOrder(store, "103.00", { amount: "3.00", piastres: 300 });
+    await deliver(orderId);
+    expect(await release.releaseTallabyPaySale(saleId, db as never)).toMatchObject({ released: true });
+    expect(await totals(store)).toMatchObject({ pending: "0.00", available: "100.00" });
   });
 
   it("after delivery Tallaby changes nothing, released or not, even once returned", async () => {

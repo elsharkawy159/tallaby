@@ -42,6 +42,7 @@ import { useCheckoutAddress, type CheckoutCountries, type SavedCheckoutAddress }
 import { isAddressInCountries } from "@workspace/lib/shipping/store-quote";
 import { CreditCard, ArrowLeft, Banknote } from "lucide-react";
 import { OrderSummary } from "@/components/order-summary";
+import { customerTallabyPayFee } from "@workspace/lib/tallaby-pay";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
@@ -363,6 +364,19 @@ export const CheckoutData = ({
       ? { amount: split.depositPiastres / 100, remainder: split.remainderPiastres / 100, percent: codDeposit.percent }
       : null;
   }, [codDeposit, paymentMethod, summary.totalAfterDiscount, summary.total]);
+
+  // Tallaby Pay with the customer paying its fee (ROADMAP.md F-100j): a summary
+  // row while Tallaby Pay is selected, at the live rate. Display only: the server
+  // recomputes the fee from its own total and rate when the order is placed.
+  const onlineFeeBps = storePayments?.onlinePaymentFee?.feeBps ?? null;
+  const onlinePaymentFee = useMemo(() => {
+    if (onlineFeeBps == null || paymentMethod !== "online_payment") return null;
+    const basePiastres = Math.max(0, Math.round((summary.totalAfterDiscount ?? summary.total ?? 0) * 100));
+    return {
+      amount: customerTallabyPayFee(basePiastres, onlineFeeBps).feePiastres / 100,
+      percent: (onlineFeeBps / 100).toLocaleString("en", { maximumFractionDigits: 2 }),
+    };
+  }, [onlineFeeBps, paymentMethod, summary.totalAfterDiscount, summary.total]);
 
   const walletAvailableBalance =
     checkoutData.walletAvailableBalance != null
@@ -935,6 +949,7 @@ export const CheckoutData = ({
               onCouponRemoved={handleCouponRemoved}
               appliedCoupon={appliedCoupon}
               deposit={depositRows}
+              onlinePaymentFee={onlinePaymentFee}
             >
               {shippingRefusal ? (
                 <p role="alert" className="text-xs md:text-sm text-orange-600">

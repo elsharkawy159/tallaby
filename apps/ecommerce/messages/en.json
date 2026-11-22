@@ -329,6 +329,8 @@
       }
     },
     "onlinePayment": "Online Payment",
+    "onlinePaymentFee": "Online payment fee ({percent}%)",
+    "onlinePaymentFeeNoRate": "Online payment fee",
     "onlinePaymentDescription": "Pay via InstaPay, Vodafone Cash, or E& Cash.",
     "codUnavailableHighShipping": "Not available for high shipping costs",
     "codUnavailableAboveMax": "Not available for orders above the store limit",

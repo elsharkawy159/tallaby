@@ -84,4 +84,10 @@ export interface OrderSummaryProps {
   busyItemId?: string | null
   /** Cash on delivery with a deposit (F-21): shown under the total. */
   deposit?: { amount: number; remainder: number; percent: number } | null
+  /**
+   * Tallaby Pay with the customer paying its fee (ROADMAP.md F-100j), while
+   * the shopper has Tallaby Pay selected: a row above the total, added to it.
+   * `amount` in currency units (fee.lib rounding); the server recomputes it.
+   */
+  onlinePaymentFee?: { amount: number; percent: string } | null
 }

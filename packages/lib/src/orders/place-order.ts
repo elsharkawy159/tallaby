@@ -71,6 +71,7 @@ import {
 } from '../payments/store-methods'
 import { gatewayCollector, storeGatewayOrderMetadata } from '../payments/store-gateways.lib'
 import { getTallabyPaySettings } from '../tallaby-pay/settings.server'
+import { amountToPiastres, customerTallabyPayFee, piastresToAmount } from '../tallaby-pay/fee.lib'
 import {
   resolveStoreOrderShipping,
   zoneSellerFreeDeliveryDiscount,
@@ -923,9 +924,25 @@ export async function placeOrderFromCart(
   // Tallaby Pay (F-100): the fee and hold are read once, here, so a later rate
   // change never alters this order (design §3); a COD deposit paid with it
   // carries the same snapshot.
-  const tallabyPayMeta =
+  const tallabyPaySettings =
     storefrontPayments?.gateway?.provider === 'tallaby_pay' && (storeGateway || deposit)
-      ? storeGatewayOrderMetadata(storefrontPayments.gateway, await getTallabyPaySettings())
+      ? await getTallabyPaySettings()
+      : null
+  // F-100j: a store whose customers pay the Tallaby Pay fee adds it on top of
+  // the order when the shopper pays the whole order with Tallaby Pay (never COD,
+  // a deposit, or another gateway). Worked out here from the fee just read,
+  // never from a client number: total = base + round_half_up(base × bps).
+  // The stored total is what the shopper pays; the fee is also kept on its own
+  // (orders.payment_fee_amount) and in the snapshot, so settlement credits the
+  // seller exactly the base.
+  const customerFee =
+    tallabyPaySettings && storeGateway?.provider === 'tallaby_pay' && storeGateway.feePayer === 'customer'
+      ? customerTallabyPayFee(amountToPiastres(formatDecimal(totalAmount)), tallabyPaySettings.feeBps)
+      : null
+  const chargedTotalAmount = customerFee ? piastresToAmount(customerFee.chargedPiastres) : formatDecimal(totalAmount)
+  const tallabyPayMeta =
+    tallabyPaySettings && storefrontPayments?.gateway
+      ? storeGatewayOrderMetadata(storefrontPayments.gateway, tallabyPaySettings, customerFee)
       : null
   const gatewayMeta = storeGateway
     ? (tallabyPayMeta ?? storeGatewayOrderMetadata(storeGateway, null))
@@ -1084,7 +1101,8 @@ export async function placeOrderFromCart(
           tax: formatDecimal(tax),
           discountAmount: formatDecimal(totalDiscount),
           discounts: discountLines,
-          totalAmount: formatDecimal(totalAmount),
+          totalAmount: chargedTotalAmount,
+          ...(customerFee && { paymentFeeAmount: piastresToAmount(customerFee.feePiastres) }),
           currency: orderCurrency,
           status: resolvedStatus,
           paymentStatus: resolvedPaymentStatus,
@@ -1208,7 +1226,7 @@ export async function placeOrderFromCart(
       if (paymentOverrides?.recordPayment) {
         await tx.insert(payments).values({
           orderId: newOrder!.id,
-          amount: formatDecimal(totalAmount),
+          amount: chargedTotalAmount,
           method: resolvedPaymentMethod,
           currency: orderCurrency,
           status: resolvedPaymentStatus,

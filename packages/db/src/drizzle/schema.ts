@@ -1751,6 +1751,12 @@ export const orders = pgTable("orders", {
 	/** awaiting | reported (customer says sent) | paid (0166); NULL = no deposit. */
 	depositStatus: text("deposit_status"),
 	depositPaidAt: timestamp("deposit_paid_at", { withTimezone: true, mode: 'string' }),
+	/**
+	 * Tallaby Pay fee the shopper paid on top (0178, F-100j: the store chose
+	 * "customer pays"). Already inside total_amount (= what the shopper paid);
+	 * the seller's earnings get total_amount - payment_fee_amount. 0 otherwise.
+	 */
+	paymentFeeAmount: numeric("payment_fee_amount", { precision: 10, scale:  2 }).default('0').notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	processedAt: timestamp("processed_at", { withTimezone: true, mode: 'string' }),
@@ -1766,6 +1772,7 @@ export const orders = pgTable("orders", {
 	index("orders_store_created_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`store_id IS NOT NULL`),
 	index("orders_deposit_pending_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamptz_ops")).where(sql`deposit_status IN ('awaiting', 'reported')`),
 	check("orders_deposit_check", sql`(deposit_status IS NULL OR deposit_status IN ('awaiting', 'reported', 'paid')) AND (deposit_percent IS NULL OR deposit_percent IN (10, 20, 30, 50)) AND (deposit_amount IS NULL OR deposit_amount >= 0) AND ((deposit_status IS NULL) = (deposit_amount IS NULL))`),
+	check("orders_payment_fee_amount_check", sql`payment_fee_amount >= 0`),
 	index("orders_is_test_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`is_test`),
 	foreignKey({
 			columns: [table.storeId],

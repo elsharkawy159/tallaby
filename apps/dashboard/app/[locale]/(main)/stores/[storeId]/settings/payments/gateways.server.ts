@@ -7,6 +7,7 @@ import {
   disableTallabyPay,
   disconnectStoreGateway,
   enableTallabyPay,
+  setTallabyPayFeePayer,
   type StoreGatewayOverview,
 } from "@workspace/lib/payments/store-gateways/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
@@ -46,6 +47,8 @@ const ERRORS: Record<string, GatewayErrorKey> = {
   currency_not_supported: "currencyNotSupported",
   store_read_only: "readOnly",
   not_found: "notFound",
+  not_connected: "notAvailable",
+  invalid_fee_payer: "generic",
 };
 
 export type GatewayForm = Record<string, string>;
@@ -125,6 +128,30 @@ export async function turnOffTallabyPay(storeId: string): Promise<GatewayResult<
   } catch (error) {
     if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
     console.error("[store-gateways] tallaby pay turn off failed", (error as Error)?.name);
+    return { success: false, error: "generic" };
+  }
+}
+
+/**
+ * Tallaby Pay › Who pays the fee (ROADMAP.md F-100j): `seller` or `customer`.
+ * Only the value is sent; ownership and the connected row are checked in
+ * @workspace/lib. Applies to the next order placed.
+ */
+export async function chooseTallabyPayFeePayer(
+  storeId: string,
+  feePayer: string,
+): Promise<GatewayResult<{ feePayer: "seller" | "customer" }>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    if (!tallabyPayLimiter.check(`tallaby-pay:${store.id}`)) return { success: false, error: "rateLimited" };
+    const result = await setTallabyPayFeePayer(seller.sellerId, seller.userId, store.id, feePayer);
+    if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
+    revalidateDashboardPath(`/stores/${store.id}/settings/payments`);
+    revalidateDashboardPath(`/stores/${store.id}/${TALLABY_PAY_APP_PATH}/settings`);
+    return { success: true, data: result.data };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
+    console.error("[store-gateways] tallaby pay fee payer failed", (error as Error)?.name);
     return { success: false, error: "generic" };
   }
 }

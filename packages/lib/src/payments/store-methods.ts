@@ -11,7 +11,7 @@
 import { z } from "zod";
 import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
 import { parseStoreCurrency } from "../utils/formatPrice";
-import type { OrderGatewayMeta } from "./store-gateways.lib";
+import type { OrderGatewayMeta, StorefrontGatewayMeta } from "./store-gateways.lib";
 import { codDepositFor, depositPayable, type CodDepositSetting } from "../orders/cod-deposit.lib";
 
 export type PaymentCollector = "seller" | "tallaby" | "delivery";
@@ -363,7 +363,14 @@ export type StorefrontCheckoutPayments = {
    * The seller's own connected card gateway (ROADMAP.md F-39), or null. When
    * set, `online_payment` is offered and the order is paid to the seller.
    */
-  gateway?: OrderGatewayMeta | null;
+  gateway?: StorefrontGatewayMeta | null;
+  /**
+   * Tallaby Pay with the customer paying its fee (ROADMAP.md F-100j): the live
+   * rate from `billing_settings`, shown as "Online payment fee (3%)" when the
+   * shopper picks `online_payment`. Display only: createOrder recomputes the
+   * fee from the settings it reads itself. Null/absent otherwise.
+   */
+  onlinePaymentFee?: { feeBps: number } | null;
   /** The store's currency the methods were picked for (gateway logos depend on it). */
   currency?: string;
   /** COD is refused for order totals above this (EGP). */
@@ -391,10 +398,12 @@ export type StorefrontCheckoutPayments = {
  */
 export function storefrontCheckoutMethods(
   payments: StorePayments,
-  gateway: OrderGatewayMeta | null = null,
+  gateway: StorefrontGatewayMeta | null = null,
   currency: string = "EGP",
   /** `stores.settings.codDeposit` (parseCodDeposit), F-21. */
   depositSetting: CodDepositSetting | null = null,
+  /** The live Tallaby Pay fee (billing_settings), used only when the store's customers pay it (F-100j). */
+  tallabyPayFeeBps: number | null = null,
 ): StorefrontCheckoutPayments {
   const methods: StorefrontCheckoutMethod[] = [];
   const transfers: StorefrontCheckoutPayments["transfers"] = {};
@@ -417,6 +426,9 @@ export function storefrontCheckoutMethods(
     methods,
     defaultMethod: payments.defaultMethod && methods.includes(payments.defaultMethod) ? payments.defaultMethod : null,
     gateway: offeredGateway,
+    ...(offeredGateway?.provider === "tallaby_pay" &&
+      offeredGateway.feePayer === "customer" &&
+      tallabyPayFeeBps != null && { onlinePaymentFee: { feeBps: tallabyPayFeeBps } }),
     currency,
     codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
     codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,

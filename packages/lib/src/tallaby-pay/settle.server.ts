@@ -32,7 +32,7 @@ import {
   type GatewayCallOptions,
   type GatewayWebhookResult,
 } from "../payments/store-gateways.server";
-import { amountToPiastres, piastresToAmount, splitTallabyPay } from "./fee.lib";
+import { amountToPiastres, piastresToAmount, tallabyPaySaleSplit } from "./fee.lib";
 import { ensureTallabyPayWallet, postTallabyPayEntry } from "./ledger.server";
 import { TALLABY_PAY_REFUND_REASONS } from "./release.lib";
 import { isValidEasykashRef, readTallabyPaySettleTarget, tallabyPayTransactionId, type TallabyPaySettleTarget } from "./settle.lib";
@@ -198,7 +198,9 @@ function expectedPiastres(order: { totalAmount: string; depositAmount: string | 
  * The sale row and its `sale` entry (+net to pending), inside the callback's
  * transaction: any failure rolls the order claim back with it. Gross is the
  * amount EasyKash confirmed (equal to the order total or the deposit, checked
- * by the claim); fee and net come from the order's snapshot.
+ * by the claim); fee and net come from the order's snapshot. When the customer
+ * paid the fee (F-100j) the total already includes it, so the fee is the
+ * recorded surcharge and the net is the order's base (tallabyPaySaleSplit).
  *
  * With `refundReason` (paid after cancel, design §5) the row is born in the
  * Admin refund queue (`refund_state = 'requested'`), so it can never release;
@@ -219,7 +221,7 @@ async function creditTallabyPaySale(
   },
   review?: { refundReason: string },
 ): Promise<void> {
-  const { feePiastres, netPiastres } = splitTallabyPay(input.paidPiastres, input.target.snapshot.feeBps);
+  const { feePiastres, netPiastres } = tallabyPaySaleSplit(input.paidPiastres, input.target.snapshot);
   const walletId = await ensureTallabyPayWallet(tx, input.storeId, input.sellerId);
   const insert = tx
     .insert(tallabyPaySales)
@@ -268,6 +270,7 @@ async function creditTallabyPaySale(
       orderId: input.orderId,
       purpose: input.target.purpose,
       feeBps: input.target.snapshot.feeBps,
+      ...(input.target.snapshot.feePayer === "customer" && { feePayer: "customer" }),
       ...(review && { refundReason: review.refundReason }),
     },
   });

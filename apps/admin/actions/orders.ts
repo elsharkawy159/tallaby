@@ -456,7 +456,10 @@ export async function updateOrderPricing(orderId: string, input: unknown) {
       discountAmount
     );
 
-    const computedTotal = subtotal + shippingCost + tax - effectiveDiscount;
+    // A Tallaby Pay fee the customer pays on top (0178, F-100j) stays in the
+    // total: settlement credits the seller total − payment_fee_amount.
+    const computedTotal =
+      subtotal + shippingCost + tax - effectiveDiscount + Number(existing.paymentFeeAmount ?? 0);
     const totalAmount = parsed.data.totalAmount ?? computedTotal;
 
     if (totalAmount < 0) {

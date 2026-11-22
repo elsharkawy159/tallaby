@@ -303,6 +303,14 @@ export function OrderDetailsDialog({
                       <OrderDepositCard order={order} />
                       <OrderTallabyPay order={order} />
                       <OrderPaymentProof orderId={order.id} />
+                      {Number(order.paymentFee ?? 0) > 0 && (
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-4 text-[13px]">
+                          <span className="text-(--s-subtle)">{t("onlinePaymentFee")}</span>
+                          <span className="font-montserrat tabular-nums text-(--s-subtle)" dir={moneyDir(locale, unit)}>
+                            <Money value={order.paymentFee!} locale={locale} unit={unit} />
+                          </span>
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 border-t border-(--s-line-soft) pt-2">
                         <span className="text-[13px] font-bold text-(--s-text)">{t("orderTotal")}</span>
                         <span className="break-words font-montserrat text-lg font-bold text-(--s-ink) tabular-nums" dir={moneyDir(locale, unit)}>

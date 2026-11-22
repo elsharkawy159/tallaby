@@ -18,7 +18,7 @@ import { ConfirmActionDialog } from "@/components/layout/confirm-action-dialog.c
 import { cn } from "@/lib/utils";
 import { APP_DRAWER_CLASS, APP_DRAWER_FOOTER_CLASS } from "../../apps/app-drawer.lib";
 import { AppLogo } from "../../apps/app-logo";
-import { connectGateway, disconnectGateway, turnOffTallabyPay, turnOnTallabyPay } from "./gateways.server";
+import { chooseTallabyPayFeePayer, connectGateway, disconnectGateway, turnOffTallabyPay, turnOnTallabyPay } from "./gateways.server";
 import { GATEWAY_FIELDS } from "./gateways.dto";
 
 /** Tallaby Pay first, then Paymob, Kashier, EasyKash and PayPal: the catalog's payments group. */
@@ -172,6 +172,15 @@ export function StoreGatewaysCard({
             )}
           </div>
         )}
+        {live && tallabyPay && isConnected && (
+          <TallabyPayFeePayerChoice
+            storeId={storeId}
+            feeBps={overview.tallabyPay.feeBps}
+            value={overview.tallabyPayFeePayer ?? "seller"}
+            disabled={readOnly || isPending}
+            onSaved={(feePayer) => setOverview((o) => ({ ...o, tallabyPayFeePayer: feePayer }))}
+          />
+        )}
         {live && !tallabyPay && (
           <div className="ms-auto flex items-center gap-1.5">
             {isConnected ? (
@@ -259,6 +268,59 @@ export function StoreGatewaysCard({
         />
       )}
     </SectionCard>
+  );
+}
+
+/**
+ * Tallaby Pay › Who pays the fee (ROADMAP.md F-100j): the seller (default,
+ * the fee comes out of each paid order) or the customer (checkout adds it on
+ * top). Shows the live fee from billing_settings; saved on change.
+ */
+function TallabyPayFeePayerChoice({
+  storeId,
+  feeBps,
+  value,
+  disabled,
+  onSaved,
+}: {
+  storeId: string;
+  feeBps: number;
+  value: "seller" | "customer";
+  disabled: boolean;
+  onSaved: (feePayer: "seller" | "customer") => void;
+}) {
+  const t = useTranslations("storePayments.gateways");
+  const [pending, startTransition] = useTransition();
+  const percent = (feeBps / 100).toLocaleString("en", { maximumFractionDigits: 2 });
+  const choose = (next: "seller" | "customer") => {
+    if (next === value) return;
+    startTransition(async () => {
+      const result = await chooseTallabyPayFeePayer(storeId, next);
+      if (result.success) {
+        onSaved(result.data.feePayer);
+        toast.success(t("tallabyPay.feePayer.saved"));
+      } else {
+        toast.error(t(`errors.${result.error}`));
+      }
+    });
+  };
+  return (
+    <fieldset className="basis-full" disabled={disabled || pending}>
+      <legend className="mb-1.5 text-[13px] font-bold text-(--s-text)">{t("tallabyPay.feePayer.title")}</legend>
+      <OptionCards>
+        {(["seller", "customer"] as const).map((option) => (
+          <OptionCard
+            key={option}
+            name={`tallaby-pay-fee-payer-${storeId}`}
+            title={t(`tallabyPay.feePayer.${option}`)}
+            description={t(`tallabyPay.feePayer.${option}Hint`, { percent })}
+            checked={value === option}
+            onChange={() => choose(option)}
+          />
+        ))}
+      </OptionCards>
+      <p className="mt-1.5 text-xs text-(--s-muted)">{t("tallabyPay.feePayer.note")}</p>
+    </fieldset>
   );
 }
 

@@ -17,6 +17,7 @@ import {
 } from "@/lib/product-translations";
 import { readPaymentProof } from "@workspace/lib/orders/payment-proof";
 import { readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
+import { readOrderTallabyPay } from "@workspace/lib/payments/store-gateways";
 
 export async function getOrderConfirmationData(
   orderId: string,
@@ -104,6 +105,9 @@ export async function getOrderConfirmationData(
     const discountAmount = Number(order.discountAmount) || 0;
     const discounts = parseOrderDiscountLines(order.discounts);
     const totalAmount = Number(order.totalAmount);
+    // Tallaby Pay fee the customer paid on top (F-100j, 0178); already in totalAmount.
+    const paymentFee = Number(order.paymentFeeAmount) || 0;
+    const paymentFeeBps = paymentFee > 0 ? (readOrderTallabyPay(order.metadata)?.feeBps ?? null) : null;
     const itemCount = order.orderItems.reduce(
       (sum, item) => sum + item.quantity,
       0
@@ -264,6 +268,8 @@ export async function getOrderConfirmationData(
         discountAmount,
         discounts,
         totalAmount,
+        paymentFee,
+        paymentFeePercent: paymentFeeBps == null ? null : (paymentFeeBps / 100).toLocaleString("en", { maximumFractionDigits: 2 }),
         itemCount,
       },
     };

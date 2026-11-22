@@ -21,6 +21,8 @@ export interface OrderDetailWithRelations {
   }> | null;
   giftWrapCost: string;
   totalAmount: string;
+  /** Tallaby Pay fee the customer paid on top (0178, F-100j); included in totalAmount. */
+  paymentFeeAmount?: string | null;
   currency: string | null;
   status:
     | "pending"

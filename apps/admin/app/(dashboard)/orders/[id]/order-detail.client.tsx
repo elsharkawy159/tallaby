@@ -182,6 +182,8 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
   const discountAmount = Number(order.discountAmount);
   const discountLines = Array.isArray(order.discounts) ? order.discounts : [];
   const totalAmount = Number(order.totalAmount);
+  // F-100j: the Tallaby Pay fee the customer paid on top; already in totalAmount.
+  const paymentFee = Number(order.paymentFeeAmount ?? 0);
 
   return (
     <div className="space-y-6">
@@ -468,6 +470,12 @@ export function OrderDetailContent({ order, header, customerCard }: OrderDetailC
                       <span>-{formatCurrency(discountAmount, order.currency)}</span>
                     </div>
                   )
+                )}
+                {paymentFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Online payment fee (Tallaby Pay, paid by the customer)</span>
+                    <span>{formatCurrency(paymentFee, order.currency)}</span>
+                  </div>
                 )}
                 <div className="flex justify-between pt-2 border-t font-semibold text-lg">
                   <span>Total</span>

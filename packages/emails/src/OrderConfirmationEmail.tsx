@@ -58,6 +58,10 @@ export interface OrderConfirmationPricing {
   /** Pre-formatted discount; omit or leave null when no discount applied. */
   discount?: string | null;
   couponCode?: string | null;
+  /** Pre-formatted Tallaby Pay fee the customer paid on top (F-100j); null when none. Already in `total`. */
+  paymentFee?: string | null;
+  /** The fee's rate, e.g. "3"; null when unknown. */
+  paymentFeePercent?: string | null;
   total: string;
 }
 
@@ -142,6 +146,14 @@ export const OrderConfirmationEmail = ({
       label: pricing.couponCode ? interpolate(legacy.discountWithCoupon, { couponCode: pricing.couponCode }) : legacy.discount,
       value: `−${pricing.discount}`,
       positive: true,
+    });
+  }
+  if (pricing.paymentFee) {
+    rows.push({
+      label: pricing.paymentFeePercent
+        ? interpolate(legacy.onlinePaymentFee, { percent: pricing.paymentFeePercent })
+        : legacy.onlinePaymentFeeNoRate,
+      value: pricing.paymentFee,
     });
   }
 

@@ -3055,6 +3055,7 @@
       },
       "paymentStatus": "Payment status",
       "orderTotal": "Order total",
+      "onlinePaymentFee": "Online payment fee (paid by the customer)",
       "placedOn": "Placed {date} on {channel}",
       "lastAttempt": "Last attempt: {reason}",
       "useRider": "Assign one of your riders instead",
@@ -5112,7 +5113,16 @@
           "title": "Turn off Tallaby Pay?",
           "description": "\"Pay online (Tallaby Pay)\" will disappear from your checkout. Orders already paid still reach your earnings, and you can still withdraw them."
         },
-        "viewEarnings": "Earnings"
+        "viewEarnings": "Earnings",
+        "feePayer": {
+          "title": "Who pays the Tallaby Pay fee?",
+          "seller": "You",
+          "sellerHint": "{percent}% is taken from each paid order. You get the rest.",
+          "customer": "Your customer",
+          "customerHint": "{percent}% is added to the order total at checkout. You get the full amount.",
+          "note": "A change applies to new orders only.",
+          "saved": "Saved. It applies to new orders."
+        }
       },
       "fields": {
         "mode": "Account mode",

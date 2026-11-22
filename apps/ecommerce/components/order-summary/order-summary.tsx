@@ -12,6 +12,7 @@ import {
   OrderSummaryCostRows,
   OrderSummaryLineItems,
   OrderSummaryDepositRows,
+  OrderSummaryOnlinePaymentFeeRow,
   OrderSummaryTotalRow,
 } from './order-summary.chunks'
 import { useCurrencyCode } from '@/lib/currency-label.client'
@@ -34,6 +35,7 @@ export function OrderSummary ({
   onQuantityChange,
   busyItemId,
   deposit,
+  onlinePaymentFee,
 }: OrderSummaryProps) {
   const t = useTranslations('checkout')
 
@@ -48,7 +50,11 @@ export function OrderSummary ({
     cartHasPhysicalItems(items) &&
     !cartFullyCoveredBySellerFreeDelivery(items)
 
-  const displayTotal = summary.totalAfterDiscount ?? summary.total ?? 0
+  // F-100j: the fee is added in piastres so the total matches what the server charges.
+  const baseTotal = summary.totalAfterDiscount ?? summary.total ?? 0
+  const displayTotal = onlinePaymentFee
+    ? (Math.round(baseTotal * 100) + Math.round(onlinePaymentFee.amount * 100)) / 100
+    : baseTotal
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
@@ -86,6 +92,7 @@ export function OrderSummary ({
             </div>
           )}
 
+          {onlinePaymentFee && <OrderSummaryOnlinePaymentFeeRow fee={onlinePaymentFee} />}
           <OrderSummaryTotalRow total={displayTotal} />
           {deposit && <OrderSummaryDepositRows deposit={deposit} />}
         </div>
