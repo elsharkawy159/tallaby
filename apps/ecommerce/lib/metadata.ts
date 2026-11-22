@@ -5,6 +5,13 @@ import { contentParams } from "./content-params";
 import { routing } from "@/i18n/routing";
 import { buildAlternates, buildLocalizedUrl } from "./sitemap/sitemap.lib";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
+import {
+  ownShareImageSource,
+  ownStorageOrigin,
+  SHARE_IMAGE_SIZE,
+  SHARE_IMAGE_TYPE,
+  shareImageRoutePath,
+} from "./share-image/share-image.lib";
 
 export type SeoLocale = (typeof routing.locales)[number];
 
@@ -38,36 +45,31 @@ export function absoluteProductImageUrl(image: string): string {
 /**
  * Social-share preview image. Link unfurlers (notably WhatsApp) silently drop
  * previews for large images, and seller uploads are often 1MB+ PNGs, so serve
- * a downscaled copy through Supabase image transformations.
+ * a downscaled copy through our own share image route.
  */
-export function socialShareImageUrl(image: string): string {
-  return socialShareImage(image).url;
+export function socialShareImageUrl(image: string, origin: string): string {
+  return socialShareImage(image, origin).url;
 }
 
-/** The 1200×630 share card size every link preview (Facebook, WhatsApp, X, LinkedIn) lays out best. */
-export const SHARE_IMAGE_SIZE = { width: 1200, height: 630 } as const;
-
-const IMAGE_TYPES: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+export { SHARE_IMAGE_SIZE };
 
 /**
- * The share image with what is known about it. A Supabase upload is served
- * through image transformations cropped (`resize=cover`) to exactly 1200×630:
- * `contain` returned a smaller copy (a square photo came back 630×630, a small
- * thumbnail in WhatsApp). The type is the upload's own, which is what a
- * crawler that doesn't ask for WebP (facebookexternalhit, WhatsApp) receives.
- * Any other URL is passed through with no size, as its size is unknown.
+ * The share image with what is known about it. A photo in our own `products`
+ * bucket is served by `/api/share-image/…` on `origin` (the host the page is
+ * served from), cropped (`fit: cover`) to exactly 1200×630 and always JPEG:
+ * `contain` gave a smaller copy (a square photo came back 630×630, a small
+ * thumbnail in WhatsApp). Supabase image transformations are no longer used
+ * (billed per origin image, 2026-11-22). Any other URL is passed through with
+ * no size, as its size is unknown.
  */
-export function socialShareImage(image: string): { url: string; width?: number; height?: number; type?: string } {
+export function socialShareImage(image: string, origin: string): { url: string; width?: number; height?: number; type?: string } {
   const url = absoluteProductImageUrl(image);
-  if (!url.includes(".supabase.co/storage/v1/object/public/")) return { url };
-  const ext = /\.([a-z0-9]+)$/i.exec(url.split(/[?#]/)[0] ?? "")?.[1]?.toLowerCase();
-  const type = ext ? IMAGE_TYPES[ext] : undefined;
+  const source = ownShareImageSource(url, ownStorageOrigin());
+  if (!source) return { url };
   return {
-    url:
-      url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
-      `?width=${SHARE_IMAGE_SIZE.width}&height=${SHARE_IMAGE_SIZE.height}&resize=cover&quality=80`,
+    url: `${origin.replace(/\/+$/, "")}${shareImageRoutePath(source.bucket, source.path)}`,
     ...SHARE_IMAGE_SIZE,
-    ...(type && { type }),
+    type: SHARE_IMAGE_TYPE,
   };
 }
 
@@ -165,7 +167,7 @@ export async function generateProductMetadata({
 
   const firstImage = product.images?.find((image) => image?.trim());
   const shareImage = firstImage
-    ? { url: socialShareImageUrl(firstImage), alt: product.title }
+    ? { url: socialShareImageUrl(firstImage, BASE_URL), alt: product.title }
     : { url: "/og-image.jpg", width: 1200, height: 630, alt: product.title };
   const otherLocale: SeoLocale = locale === "en" ? "ar" : "en";
   const productUrl = localizedUrl(locale, `/products/${product.slug}`);

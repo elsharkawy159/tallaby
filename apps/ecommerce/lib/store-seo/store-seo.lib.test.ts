@@ -199,7 +199,7 @@ describe("store product page share card", () => {
       paths: { ar: "/products/messi-wall-art", en: "/products/messi-wall-art-en" },
       title: "لوحة ميسي",
       description: "لوحة فنية",
-      image: { url: "https://x.supabase.co/storage/v1/render/image/public/products/a.jpg?width=1200&height=630&resize=cover&quality=80", width: 1200, height: 630, type: "image/jpeg" },
+      image: { url: "https://sandy.tallaby.com/api/share-image/products/a.jpg", width: 1200, height: 630, type: "image/jpeg" },
       imageAlt: "لوحة ميسي",
       price: { amount: 450, currency: "EGP" },
       ...overrides,
@@ -216,7 +216,7 @@ describe("store product page share card", () => {
   it("gives the first product image with its size, type and alt, and the price in the store's currency", () => {
     const meta = product();
     expect(meta.openGraph?.images).toEqual([
-      { url: expect.stringContaining("resize=cover"), width: 1200, height: 630, type: "image/jpeg", alt: "لوحة ميسي" },
+      { url: "https://sandy.tallaby.com/api/share-image/products/a.jpg", width: 1200, height: 630, type: "image/jpeg", alt: "لوحة ميسي" },
     ]);
     expect(meta.other).toEqual({ "product:price:amount": "450", "product:price:currency": "EGP" });
     expect(product({ price: { amount: 99.5, currency: "SAR" } }).other).toEqual({ "product:price:amount": "99.50", "product:price:currency": "SAR" });

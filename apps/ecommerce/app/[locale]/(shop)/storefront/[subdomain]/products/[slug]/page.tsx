@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cacheProfiles, createCachedQuery, productTags, storeTags } from "@workspace/cache";
 import { redirect } from "next/navigation";
-import { storeLocalePath } from "@workspace/lib/storefront";
+import { storeLocalePath, storeUrl } from "@workspace/lib/storefront";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
 import { productPageOf } from "@workspace/store-sections/config";
@@ -103,8 +103,8 @@ export async function generateMetadata({
       paths: await storeProductPaths(store.id, store.storeId, product.id, slug, locale, await isSwitchOn("stores_catalog_split")),
       title: seo?.metaTitle?.trim() || product.title,
       description: seo?.metaDescription?.trim() || product.description,
-      // The first product photo, cropped to the 1200×630 share card; else the store's share image.
-      image: firstImage ? socialShareImage(firstImage) : null,
+      // The first product photo, cropped to the 1200×630 share card on this store's own host; else the store's share image.
+      image: firstImage ? socialShareImage(firstImage, storeUrl(store.subdomain, store.customDomain)) : null,
       imageAlt: firstImage ? product.title : undefined,
       // The price shown on load (default variant, else the product), in the store's currency.
       price: { amount: productPricing(product, getDefaultProductVariant(product.productVariants)).price, currency: store.currency },

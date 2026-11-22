@@ -14,7 +14,7 @@
  * those only the database driver's own message is kept.
  */
 
-export type LogScope = "publish" | "fee" | "integration" | "wallet" | "admin" | "email";
+export type LogScope = "publish" | "fee" | "integration" | "wallet" | "admin" | "email" | "image";
 
 export type LogContext = Record<string, string | number | boolean | null | undefined>;
 

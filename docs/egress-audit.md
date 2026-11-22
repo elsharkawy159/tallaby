@@ -165,6 +165,12 @@ Expected: from about 10 MB × hundreds a day down to about 10 MB × (deploys + a
 - Fix: `minimumCacheTTL: 31536000`, `cacheControl: "31536000"` for new uploads
   (existing objects unchanged), and route those images through the optimizer.
 - Size: unknown until the storage logs are read.
+- 2026-11-22: share images (`og:image`) no longer use Supabase image
+  transformations (billed per origin image). They come from
+  `/api/share-image/<bucket>/<path>` in the ecommerce app (sharp, 1200×630
+  JPEG, cached a year on the CDN, since paths are unique), which reads the
+  original object once per path. No other code builds `render/image` URLs, so
+  Image Transformations can be switched off in Supabase once it is deployed.
 
 ### 10. Polling and refresh loops (small each, constant)
 
