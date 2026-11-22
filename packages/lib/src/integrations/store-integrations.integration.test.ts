@@ -49,10 +49,12 @@ describe.skipIf(!TEST_DATABASE_URL)("store integrations (integration)", { timeou
       metaPixelId: "123456789012345",
       ga4MeasurementId: "G-AAAAAA1111",
       gtmContainerId: null,
+      tiktokPixelId: null,
+      snapPixelId: null,
       // F-30 defaults: Lead is off, everything else on, Purchase at order.
       metaBlockedEvents: ["Lead"],
     });
-    const none = { metaPixelId: null, ga4MeasurementId: null, gtmContainerId: null };
+    const none = { metaPixelId: null, ga4MeasurementId: null, gtmContainerId: null, tiktokPixelId: null, snapPixelId: null };
     expect(await getStorefrontTracking(w.a.a2, db)).toEqual(none);
     expect(await getStorefrontTracking(w.b.b1, db)).toEqual(none);
     expect(await getStorefrontTracking("not-a-uuid", db)).toEqual(none);
@@ -78,7 +80,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store integrations (integration)", { timeou
     expect((await getStorefrontTracking(w.a.a1, db)).metaPixelId).toBe("9999999999999999");
   });
 
-  it("refuses bad ids, unknown and unreleased providers", async () => {
+  it("refuses bad ids and unknown providers", async () => {
     expect(await connectIdentifierIntegration(w.a.sellerId, w.a.sellerId, w.a.a2, "google_tag_manager", "GTM-<x>", db)).toEqual({
       success: false,
       error: "invalid_id",
@@ -87,10 +89,25 @@ describe.skipIf(!TEST_DATABASE_URL)("store integrations (integration)", { timeou
       success: false,
       error: "unsupported",
     });
-    expect(await connectIdentifierIntegration(w.a.sellerId, w.a.sellerId, w.a.a2, "tiktok_pixel", "C4A1B2C3D4E5F6G7H8I9", db)).toEqual({
-      success: false,
-      error: "not_available",
+  });
+
+  it("F-103: TikTok and Snap pixels reach only their own store's storefront", async () => {
+    expect(await connectIdentifierIntegration(w.a.sellerId, w.a.sellerId, w.a.a2, "tiktok_pixel", " c4a1b2c3d4e5f6g7h8i9 ", db)).toMatchObject({
+      success: true,
+      data: { provider: "tiktok_pixel", identifier: "C4A1B2C3D4E5F6G7H8I9" },
     });
+    expect(
+      await connectIdentifierIntegration(w.a.sellerId, w.a.sellerId, w.a.a2, "snapchat_pixel", "0F6C4C5A-1B2C-4D3E-8F90-123456789ABC", db),
+    ).toMatchObject({ success: true, data: { provider: "snapchat_pixel", identifier: "0f6c4c5a-1b2c-4d3e-8f90-123456789abc" } });
+    expect(await getStorefrontTracking(w.a.a2, db)).toMatchObject({
+      tiktokPixelId: "C4A1B2C3D4E5F6G7H8I9",
+      snapPixelId: "0f6c4c5a-1b2c-4d3e-8f90-123456789abc",
+    });
+    expect(await getStorefrontTracking(w.a.a1, db)).toMatchObject({ tiktokPixelId: null, snapPixelId: null });
+    expect(await getStorefrontTracking(w.b.b1, db)).toMatchObject({ tiktokPixelId: null, snapPixelId: null });
+    await disconnectStoreIntegration(w.a.sellerId, w.a.a2, "tiktok_pixel", db);
+    await disconnectStoreIntegration(w.a.sellerId, w.a.a2, "snapchat_pixel", db);
+    expect(await getStorefrontTracking(w.a.a2, db)).toMatchObject({ tiktokPixelId: null, snapPixelId: null });
   });
 
   it("disconnecting removes the id from the storefront", async () => {

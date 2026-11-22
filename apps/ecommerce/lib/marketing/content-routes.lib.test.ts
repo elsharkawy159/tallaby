@@ -34,7 +34,9 @@ describe("integrations hub", () => {
 
   it("marks what the code does not have yet as soon", () => {
     const soon = INTEGRATION_ITEMS.filter((item) => item.soon).map((item) => item.id);
-    expect(soon).toEqual(expect.arrayContaining(["aramex", "jt", "mylerz", "whatsapp", "tiktok-pixel", "snap-pixel"]));
+    expect(soon).toEqual(expect.arrayContaining(["aramex", "jt", "mylerz", "whatsapp"]));
+    expect(soon).not.toContain("tiktok-pixel");
+    expect(soon).not.toContain("snap-pixel");
     expect(soon).not.toContain("wassalha");
   });
 });

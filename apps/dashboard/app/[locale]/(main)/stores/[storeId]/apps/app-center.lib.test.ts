@@ -57,7 +57,11 @@ describe("App Center state (F-93)", () => {
   it("shows coming-soon apps with no action", () => {
     expect(stateOf("mylerz").badge).toBe("coming_soon");
     expect(actionOf("mylerz")).toBe("none");
-    expect(actionOf("tiktok_pixel")).toBe("none");
+  });
+
+  it("opens the identifier settings for the TikTok and Snap pixels (F-103)", () => {
+    expect(actionOf("tiktok_pixel")).toBe("settings");
+    expect(actionOf("snapchat_pixel")).toBe("settings");
   });
 
   it("hides Google Sheets when its OAuth env is missing", () => {

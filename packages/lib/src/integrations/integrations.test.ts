@@ -38,13 +38,15 @@ describe("registry", () => {
     for (const provider of INTEGRATION_PROVIDERS) expect(INTEGRATIONS[provider].provider).toBe(provider);
   });
 
-  it("launches Pixel, GA4, GTM, Meta CAPI, Sheets, Shopify, Bosta and the payment gateways; GTM carries the D18 warning", () => {
+  it("launches Pixel, GA4, GTM, Meta CAPI, TikTok and Snap pixels (F-103), Sheets, Shopify, Bosta and the payment gateways; GTM carries the D18 warning", () => {
     const available = INTEGRATION_PROVIDERS.filter((p) => INTEGRATIONS[p].availability === "available");
     expect(available).toEqual([
       "meta_pixel",
       "google_analytics",
       "google_tag_manager",
       "meta_capi",
+      "tiktok_pixel",
+      "snapchat_pixel",
       "google_sheets",
       "shopify_import",
       "bosta",

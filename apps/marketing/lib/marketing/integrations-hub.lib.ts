@@ -39,8 +39,8 @@ export const INTEGRATION_ITEMS: readonly IntegrationItem[] = [
   { id: "meta-pixel", category: "ads", mark: { initial: "M", color: "#0866ff" }, keywords: "Meta Pixel Facebook Instagram Conversions API", featured: true },
   { id: "ga4", category: "ads", mark: { initial: "G", color: "#f9ab00", onColor: "#0f3a46" }, keywords: "Google Analytics GA4" },
   { id: "gtm", category: "ads", mark: { initial: "G", color: "#4285f4" }, keywords: "Google Tag Manager GTM" },
-  { id: "tiktok-pixel", category: "ads", mark: { initial: "T", color: "#111111" }, keywords: "TikTok Pixel", soon: true },
-  { id: "snap-pixel", category: "ads", mark: { initial: "S", color: "#fffc00", onColor: "#111111" }, keywords: "Snapchat Pixel", soon: true },
+  { id: "tiktok-pixel", category: "ads", mark: { initial: "T", color: "#111111" }, keywords: "TikTok Pixel" },
+  { id: "snap-pixel", category: "ads", mark: { initial: "S", color: "#fffc00", onColor: "#111111" }, keywords: "Snapchat Pixel" },
 
   { id: "meta-catalog", category: "catalog", mark: { initial: "M", color: "#0866ff" }, keywords: "Meta catalog Commerce Manager feed" },
   { id: "gmc", category: "catalog", mark: { initial: "G", color: "#4285f4" }, keywords: "Google Merchant Center feed" },

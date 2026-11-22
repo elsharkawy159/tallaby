@@ -69,8 +69,9 @@ export const INTEGRATIONS: Record<IntegrationProvider, IntegrationDefinition> = 
     warnsAboutSellerScripts: true,
   },
   meta_capi: { provider: "meta_capi", category: "tracking", kind: "credentials", availability: "available" },
-  tiktok_pixel: { provider: "tiktok_pixel", category: "tracking", kind: "identifier", availability: "soon", idField: "pixelId" },
-  snapchat_pixel: { provider: "snapchat_pixel", category: "tracking", kind: "identifier", availability: "soon", idField: "pixelId" },
+  // Browser pixels only (ROADMAP.md F-103); no server-side Events API yet.
+  tiktok_pixel: { provider: "tiktok_pixel", category: "tracking", kind: "identifier", availability: "available", idField: "pixelId" },
+  snapchat_pixel: { provider: "snapchat_pixel", category: "tracking", kind: "identifier", availability: "available", idField: "pixelId" },
   google_sheets: { provider: "google_sheets", category: "export", kind: "oauth", availability: "available" },
   shopify_import: { provider: "shopify_import", category: "import", kind: "credentials", availability: "available" },
   bosta: { provider: "bosta", category: "shipping", kind: "credentials", availability: "available" },
@@ -104,6 +105,9 @@ export type StorefrontTrackingConfig = {
   metaPixelId: string | null;
   ga4MeasurementId: string | null;
   gtmContainerId: string | null;
+  /** F-103: the store's TikTok Pixel and Snap Pixel, browser only. */
+  tiktokPixelId: string | null;
+  snapPixelId: string | null;
   /**
    * Meta events the store's browser Pixel must not send (F-30): switched-off
    * events, plus Purchase when it is sent on delivery. Absent = none blocked.

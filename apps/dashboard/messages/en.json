@@ -5998,12 +5998,26 @@
       "tiktok_pixel": {
         "name": "TikTok Pixel",
         "description": "Measure your TikTok ads.",
-        "vendor": "TikTok"
+        "idLabel": "Pixel ID",
+        "placeholder": "C4A1B2C3D4E5F6G7H8I9",
+        "hint": "20 letters and digits, from TikTok Events Manager.",
+        "invalid": "A TikTok Pixel ID is 20 letters and digits.",
+        "vendor": "TikTok",
+        "step1": "In TikTok Ads Manager, open <b>Tools › Events</b>",
+        "step2": "Pick your pixel under <b>Web events</b>",
+        "step3": "Copy the <b>Pixel ID</b> and paste it below"
       },
       "snapchat_pixel": {
         "name": "Snapchat Pixel",
         "description": "Measure your Snapchat ads.",
-        "vendor": "Snap Inc."
+        "idLabel": "Pixel ID",
+        "placeholder": "0f6c4c5a-1b2c-4d3e-8f90-123456789abc",
+        "hint": "36 characters like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, from Snapchat Events Manager.",
+        "invalid": "A Snap Pixel ID looks like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.",
+        "vendor": "Snap Inc.",
+        "step1": "In Snapchat Ads Manager, open <b>Events Manager</b>",
+        "step2": "Select your store pixel",
+        "step3": "Copy the <b>Pixel ID</b> and paste it below"
       },
       "google_sheets": {
         "name": "Google Sheets",

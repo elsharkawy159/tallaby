@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { isValidIntegrationId, type StorefrontTrackingConfig } from "@workspace/lib/integrations";
 import { markStoreTrackingReady, setStoreMetaBlockedEvents } from "@/lib/storefront-events.client";
@@ -23,7 +24,9 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
   const pixelId = isValidIntegrationId("meta_pixel", config.metaPixelId) ? config.metaPixelId : null;
   const ga4Id = isValidIntegrationId("google_analytics", config.ga4MeasurementId) ? config.ga4MeasurementId : null;
   const gtmId = isValidIntegrationId("google_tag_manager", config.gtmContainerId) ? config.gtmContainerId : null;
-  const any = Boolean(pixelId || ga4Id || gtmId);
+  const tiktokId = isValidIntegrationId("tiktok_pixel", config.tiktokPixelId) ? config.tiktokPixelId : null;
+  const snapId = isValidIntegrationId("snapchat_pixel", config.snapPixelId) ? config.snapPixelId : null;
+  const any = Boolean(pixelId || ga4Id || gtmId || tiktokId || snapId);
   // F-30: Meta events this store does not send from the browser (server-computed).
   const metaBlockedKey = (config.metaBlockedEvents ?? []).join(",");
 
@@ -34,7 +37,7 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
     }
   }, [consent]);
 
-  // Once the snippets have defined their queues (fbq / gtag / dataLayer),
+  // Once the snippets have defined their queues (fbq / gtag / dataLayer / ttq / snaptr),
   // release the commerce events that fired before (P7-04).
   useEffect(() => {
     if (!any || consent !== "granted") return;
@@ -43,7 +46,9 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
       const loaded =
         (!pixelId || typeof window.fbq === "function") &&
         (!ga4Id || typeof window.gtag === "function") &&
-        (!gtmId || Array.isArray(window.dataLayer));
+        (!gtmId || Array.isArray(window.dataLayer)) &&
+        (!tiktokId || typeof window.ttq?.track === "function") &&
+        (!snapId || typeof window.snaptr === "function");
       if (loaded || ++tries > 100) {
         clearInterval(timer);
         if (loaded) {
@@ -53,7 +58,7 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
       }
     }, 100);
     return () => clearInterval(timer);
-  }, [any, consent, pixelId, ga4Id, gtmId, metaBlockedKey]);
+  }, [any, consent, pixelId, ga4Id, gtmId, tiktokId, snapId, metaBlockedKey]);
 
   if (!any) return null;
 
@@ -123,6 +128,55 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
           }}
         />
       )}
+      {tiktokId && (
+        <Script
+          id="store-tiktok-pixel"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            // TikTok's base code (Pixel v1.3). Its history observer sends the page view on client navigation.
+            __html: `!function (w, d, t) {w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)}; ttq.load('${tiktokId}'); ttq.page();}(window, document, 'ttq');`,
+          }}
+        />
+      )}
+      {snapId && (
+        <>
+          <Script
+            id="store-snap-pixel"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              // Snap's standard snippet, with its implicit global `r` declared.
+              __html: `(function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function(){a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};a.queue=[];var s='script';var r=t.createElement(s);r.async=!0;r.src=n;var u=t.getElementsByTagName(s)[0];u.parentNode.insertBefore(r,u);})(window,document,'https://sc-static.net/scevent.min.js');snaptr('init','${snapId}',{});snaptr('track','PAGE_VIEW');`,
+            }}
+          />
+          <SnapPageViews />
+        </>
+      )}
     </>
   );
+}
+
+/**
+ * The page the Snap snippet already counted. Module scope, not a ref, so a
+ * remount (storefront ↔ checkout layouts, where next/script does not run the
+ * snippet again) still counts the page it lands on.
+ */
+let snapLastPath: string | null = null;
+
+/** Snap does not follow client navigation: one PAGE_VIEW per new path (F-103). */
+function SnapPageViews() {
+  const pathname = usePathname();
+  useEffect(() => {
+    if (snapLastPath === null) {
+      snapLastPath = pathname;
+      return;
+    }
+    if (pathname === snapLastPath) return;
+    snapLastPath = pathname;
+    try {
+      if (typeof window.snaptr === "function") window.snaptr("track", "PAGE_VIEW");
+    } catch {
+      // A blocked tracker must never break the store.
+    }
+  }, [pathname]);
+  return null;
 }

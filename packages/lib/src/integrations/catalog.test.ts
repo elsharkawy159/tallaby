@@ -39,7 +39,8 @@ describe("store apps catalog", () => {
   it("is live only for available providers; catalog-only entries are soon", () => {
     expect(isStoreAppLive(getStoreApp("bosta")!)).toBe(true);
     expect(isStoreAppLive(getStoreApp("wassalha")!)).toBe(true);
-    expect(isStoreAppLive(getStoreApp("tiktok_pixel")!)).toBe(false);
+    expect(isStoreAppLive(getStoreApp("tiktok_pixel")!)).toBe(true);
+    expect(isStoreAppLive(getStoreApp("snapchat_pixel")!)).toBe(true);
     expect(isStoreAppLive(getStoreApp("tallaby_pay")!)).toBe(true);
     for (const key of ["mylerz", "jt_express", "aramex", "paytabs", "moyasar", "paylink", "tabby", "paypal"]) {
       expect(isStoreAppLive(getStoreApp(key)!), key).toBe(false);

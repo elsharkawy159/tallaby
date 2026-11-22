@@ -5997,13 +5997,27 @@
       },
       "tiktok_pixel": {
         "name": "TikTok Pixel",
-        "description": "قِس نتائج إعلاناتك على تيك توك.",
-        "vendor": "TikTok"
+        "description": "قِس نتائج إعلاناتك على TikTok.",
+        "idLabel": "معرّف البكسل (Pixel ID)",
+        "placeholder": "C4A1B2C3D4E5F6G7H8I9",
+        "hint": "20 حرفًا ورقمًا بالإنجليزية، تجده في TikTok Events Manager.",
+        "invalid": "معرّف بكسل TikTok مكوّن من 20 حرفًا ورقمًا بالإنجليزية.",
+        "vendor": "TikTok",
+        "step1": "في TikTok Ads Manager افتح <b>Tools › Events</b>",
+        "step2": "اختر البكسل من <b>Web events</b>",
+        "step3": "انسخ <b>Pixel ID</b> والصقه بالأسفل"
       },
       "snapchat_pixel": {
         "name": "Snapchat Pixel",
-        "description": "قِس نتائج إعلاناتك على سناب شات.",
-        "vendor": "Snap Inc."
+        "description": "قِس نتائج إعلاناتك على Snapchat.",
+        "idLabel": "معرّف البكسل (Pixel ID)",
+        "placeholder": "0f6c4c5a-1b2c-4d3e-8f90-123456789abc",
+        "hint": "36 خانة بالشكل xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx، تجده في Snapchat Events Manager.",
+        "invalid": "معرّف بكسل Snap يكون بالشكل xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.",
+        "vendor": "Snap Inc.",
+        "step1": "في Snapchat Ads Manager افتح <b>Events Manager</b>",
+        "step2": "اختر بكسل متجرك",
+        "step3": "انسخ <b>Pixel ID</b> والصقه بالأسفل"
       },
       "google_sheets": {
         "name": "Google Sheets",

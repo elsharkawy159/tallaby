@@ -274,7 +274,13 @@ export async function disconnectStoreIntegration(
  * store from the request host, never from client input.
  */
 export async function getStorefrontTracking(storeId: string, q: Queryable = db): Promise<StorefrontTrackingConfig> {
-  const empty: StorefrontTrackingConfig = { metaPixelId: null, ga4MeasurementId: null, gtmContainerId: null };
+  const empty: StorefrontTrackingConfig = {
+    metaPixelId: null,
+    ga4MeasurementId: null,
+    gtmContainerId: null,
+    tiktokPixelId: null,
+    snapPixelId: null,
+  };
   if (!UUID_RE.test(storeId)) return empty;
 
   const all = await q
@@ -306,6 +312,8 @@ export async function getStorefrontTracking(storeId: string, q: Queryable = db):
     metaPixelId,
     ga4MeasurementId: idFor("google_analytics"),
     gtmContainerId: idFor("google_tag_manager"),
+    tiktokPixelId: idFor("tiktok_pixel"),
+    snapPixelId: idFor("snapchat_pixel"),
   };
   if (metaPixelId) {
     // F-30: the events this store's browser Pixel must not send. CAPI counts
