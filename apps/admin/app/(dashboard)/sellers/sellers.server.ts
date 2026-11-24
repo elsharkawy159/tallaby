@@ -44,6 +44,8 @@ import {
 } from "./sellers.dto";
 import { buildSellersWhere } from "./sellers.query";
 import { getSellerWhatsAppMessages } from "./seller-message.server";
+import { sellerTrialStatus } from "./seller-trial.lib";
+import { sellerActivatedSql, sellerPendingManualTopUpSql, sellersTrialColumns, usdLiveSql } from "./seller-trial.query";
 import type {
   HeardAboutUsCount,
   Seller,
@@ -77,6 +79,8 @@ export interface SellersQuery {
   source?: string[];
   /** "published" | "not_published": has at least one published store website. */
   site?: string[];
+  /** SELLER_TRIAL_STATES (seller-trial.lib.ts): the trial before a top-up. */
+  trial?: string[];
   joinedFrom?: string;
   joinedTo?: string;
   sort?: { id: SellersSortId; desc: boolean } | null;
@@ -164,6 +168,10 @@ export async function getSellers(query: SellersQuery = {}) {
         ownerPhone: users.phone,
         storeCount: sql<number>`(SELECT count(*)::int FROM stores st WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL)`,
         lastOrderAt: sql<string | null>`(SELECT max(oi.created_at)::text FROM order_items oi WHERE oi.seller_id = ${sellers.id})`,
+        // The trial before a top-up (seller-trial.lib.ts), in this query: no per-row round trip.
+        usdLive: sql<boolean>`${usdLiveSql}`,
+        activated: sql<boolean>`${sellerActivatedSql(sellersTrialColumns)}`,
+        hasPendingManualTopUp: sql<boolean>`${sellerPendingManualTopUpSql(sellers.id)}`,
       })
       .from(sellers)
       .leftJoin(users, eq(users.id, sellers.id))
@@ -183,8 +191,16 @@ export async function getSellers(query: SellersQuery = {}) {
     const whatsAppMessages = await getSellerWhatsAppMessages(sellersData.map((seller) => seller.id));
 
     // Cast the JSON fields to proper types
-    const typedSellersData = sellersData.map((seller) => ({
+    const now = new Date();
+    const typedSellersData = sellersData.map(({ usdLive, activated, hasPendingManualTopUp, ...seller }) => ({
       ...seller,
+      trial: sellerTrialStatus({
+        usdLive: usdLive === true,
+        activated: activated === true,
+        hasPendingManualTopUp: hasPendingManualTopUp === true,
+        createdAt: seller.createdAt,
+        at: now,
+      }),
       legalAddress: seller.legalAddress as Record<string, unknown>,
       verificationDetails: seller.verificationDetails as Record<string, unknown> | null,
       approvedCategories: seller.approvedCategories as string[] | null,

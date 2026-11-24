@@ -25,6 +25,7 @@ export function parseSellersParams(searchParams: RawSearchParams): SellersQuery 
       "source",
       "site",
       "wallet",
+      "trial",
     ] as const,
     sortable: SORTABLE,
     defaultSort: SELLERS_DEFAULT_SORT,

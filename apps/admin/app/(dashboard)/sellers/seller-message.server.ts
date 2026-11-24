@@ -9,6 +9,7 @@ import {
   sellerMessageActivation,
   sellerMessageStep,
 } from "./seller-message.lib";
+import { sellerHadPositiveBalanceSql, sellerHasTopUpSql, sellerPendingManualTopUpSql } from "./seller-trial.query";
 
 /**
  * Server side of the Admin → seller WhatsApp message (seller-message.lib.ts):
@@ -76,16 +77,9 @@ async function loadFacts(sellerIds: string[]): Promise<FactsRow[]> {
         SELECT 1 FROM products p
         WHERE p.seller_id = s.id AND p.status = 'active' AND p.deleted_at IS NULL
       ) AS has_active_product,
-      (EXISTS (SELECT 1 FROM seller_wallet_top_ups t WHERE t.seller_id = s.id AND t.status = 'succeeded')
-        OR EXISTS (SELECT 1 FROM wallet_transactions wt WHERE wt.seller_id = s.id AND wt.type = 'top_up')
-      ) AS has_top_up,
-      (coalesce((SELECT w.balance FROM seller_wallet w WHERE w.seller_id = s.id), 0) > 0
-        OR EXISTS (SELECT 1 FROM wallet_transactions wt WHERE wt.seller_id = s.id AND wt.currency = 'USD' AND wt.balance_after > 0)
-      ) AS had_positive_balance,
-      EXISTS (
-        SELECT 1 FROM seller_wallet_top_ups t
-        WHERE t.seller_id = s.id AND t.status = 'pending' AND t.provider IN ('instapay', 'vodafone_cash')
-      ) AS has_pending_top_up
+      ${sellerHasTopUpSql(sql`s.id`)} AS has_top_up,
+      ${sellerHadPositiveBalanceSql(sql`s.id`)} AS had_positive_balance,
+      ${sellerPendingManualTopUpSql(sql`s.id`)} AS has_pending_top_up
     FROM sellers s
     LEFT JOIN users u ON u.id = s.id
     LEFT JOIN LATERAL (

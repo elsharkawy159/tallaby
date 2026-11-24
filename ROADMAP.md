@@ -325,6 +325,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 80  | F-103 | TikTok Pixel and Snapchat Pixel store apps (browser pixels, consent-gated, shared event ids) | P1 | no | Owner request 2026-11-22; **Live** 2026-11-22 (`04df0063`) |
 | 81  | F-104 | First-week store insights email for sellers | P1 | no | Built locally, rollout pending |
 | 82  | F-105 | QR codes for the storefront, published pages and products | P1 | no | Built locally, rollout pending |
+| 83  | F-106 | Admin sellers list: trial filter and "offline, no top-up" badge | P1 | no | Built 2026-11-24 (uncommitted); not tried in a browser |
 
 ---
 
@@ -1463,12 +1464,19 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 **Status:** Built locally. The built-in App Center tool creates a downloadable PNG for the store homepage, a published page, or a product visible on the storefront. The QR payload is the direct public URL. Generation runs in the browser with no API key or paid service.
 
+### F-106 Admin sellers list: trial filter and billing-offline badge — P1 · Owner request 2026-11-24
+
+**Status:** Built 2026-11-24 (uncommitted). No migration.
+
+- **F-106a:** A **Trial** filter on Admin › Sellers (`trial` URL param; Trial ended — stores offline, Trial ended — top-up in review, In trial, Activated), done in SQL in the list query so the page count and total stay right, and honoured by the export (it shares `buildSellersWhere`). A badge under the status of each seller whose trial ended without a top-up ("Offline — no top-up · <date the trial ended, Cairo>", or "Top-up in review"). The rule is `docs/seller-top-up-rules.md` / `order-lock.lib.ts`: `sellerTrialStatus` (`apps/admin/app/(dashboard)/sellers/seller-trial.lib.ts`) and its SQL twin `sellerTrialStateSql` (`seller-trial.query.ts`, constants passed as parameters); the WhatsApp message facts now use the same SQL fragments.
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Feature ID                                                                                       | Status                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-11-24 | On Admin › Sellers, show the sellers whose trial ended without a top-up, so all their stores are offline: a filter and a badge on each row | F-106 | Built 2026-11-24 (uncommitted); no migration; not tried in a browser |
 | 2026-11-22 | Supabase bills "Storage Image Transformations" (649 origin images, 100 included): replace the only use, the social share image, with our own image route | — (cost fix, no feature ID) | Built 2026-11-22 (uncommitted): `/api/share-image/<bucket>/<path>` (sharp, 1200×630 JPEG); no migration; see §7 |
 | 2026-11-22 | "move Log out into the Stores dropdown under Manage stores; make the desktop WhatsApp support card simpler" | — (polish, no feature ID) | Built 2026-11-22 (not checked in a browser): see §7 |
 | 2026-11-22 | "going to Add product sometimes opens the manual form with the stored draft … it must never auto-open the draft; always land on the choose step; if a draft is stored show Continue or Delete" | — (polish, no feature ID) | Built 2026-11-22: `/products/add` always lands on `?method=choose`; the draft note has Continue and Delete (with confirm); no migration |
@@ -1722,6 +1730,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-103b Real-pixel check on a store host (TikTok and Snap pixel helpers)
 - [x] F-104a First-week seller insights email and hourly batch — built locally, no migration
 - [x] F-105a Store QR codes app with a public link picker and PNG download — built locally, no migration
+- [x] F-106a Admin sellers Trial filter (SQL, list + export) and "Offline — no top-up" badge — 2026-11-24; no migration; unit tests pass; not tried in a browser
 - [x] F-101a Code sections design note — 2026-11-20 (`docs/superpowers/specs/2026-11-20-code-sections-design.md`); owner accepted all §10 defaults
 - [ ] F-101b–i Code sections build (custom CSS, `code` element, objects, editor, security review, AI, docs, script CSP) — approved 2026-11-20 for every seller
 - [x] F-96a Admin bell `top_up_paid` + `referral_signup` (migration `0173`, bell + push text, links) — 2026-11-17; `0173` applied on staging and production (checked 2026-11-19)
@@ -2023,6 +2032,11 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-24 — Admin sellers: trial filter and "offline, no top-up" badge (F-106, owner request, no migration)
+
+- **Done:** Admin › Sellers has a **Trial** filter (`?trial=offline|in_review|in_trial|activated`) and a badge under the status of each seller whose trial ended without a top-up (red "Offline — no top-up · <date>", amber "Top-up in review · <date>" when a manual top-up waits for review, so the stores are still online). The filter is SQL in `buildSellersWhere` (`sellerTrialStateSql`), so pagination, the total and the export follow it; the row facts (USD switch, activated, manual top-up pending) are read in the same list query, and `sellerTrialStatus` turns them into the state with `orderGraceStart`/`orderGraceDays`. Trial end in SQL: `greatest(created_at, ORDER_GRACE_START_FLOOR) + 24 h × (7 if created_at ≥ SHORT_GRACE_FROM else 14)`, all constants bound as parameters from `order-lock.lib.ts`. `seller-message.server.ts` now uses the same activation SQL fragments (its manual-provider list now comes from `MANUAL_TOP_UP_METHODS`, same values). Admin strings stay English (the admin dashboard has no message files).
+- **Not done:** not tried in a browser or against a database.
 
 ### 2026-11-22 — Share images without Supabase image transformations (owner request, no migration)
 

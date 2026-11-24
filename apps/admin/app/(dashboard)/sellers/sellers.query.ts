@@ -1,6 +1,8 @@
 import { sellers, stores, users } from "@workspace/db";
 import { isHeardAboutUsSource } from "@workspace/lib/sellers";
 import { and, eq, gte, ilike, inArray, lt, or, sql, type SQL } from "drizzle-orm";
+import { isSellerTrialState } from "./seller-trial.lib";
+import { sellerTrialStateSql, sellersTrialColumns } from "./seller-trial.query";
 import type { SellersQuery } from "./sellers.server";
 import type { SellerStatus } from "./sellers.types";
 
@@ -65,6 +67,14 @@ export function buildSellersWhere(query: SellersQuery): SQL | undefined {
       WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL AND st.site_status = 'published'
     )`;
     conditions.push(site.has("published") ? hasPublished : sql`NOT ${hasPublished}`);
+  }
+
+  // Trial before a top-up (docs/seller-top-up-rules.md): the same state as the row badge.
+  const trial = [...new Set((query.trial ?? []).filter(isSellerTrialState))];
+  if (trial.length) {
+    conditions.push(
+      sql`${sellerTrialStateSql(sellersTrialColumns)} IN (${sql.join(trial.map((state) => sql`${state}`), sql`, `)})`
+    );
   }
 
   if (query.joinedFrom) conditions.push(gte(sellers.joinDate, query.joinedFrom));

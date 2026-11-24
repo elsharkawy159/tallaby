@@ -37,6 +37,7 @@ import {
 import type { Seller, SellerStatus } from "./sellers.types";
 import { customerHref, ordersHref, sellerHref, sellerWalletHref } from "../_components/entity/entity-href.lib";
 import type { HeardAboutUsCount, SellerStats } from "./sellers.types";
+import type { SellerTrialStatus } from "./seller-trial.lib";
 import {
   getStatusColor,
   getStatusLabel,
@@ -73,6 +74,28 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
     >
       {getIcon()}
       {getStatusLabel(status)}
+    </Badge>
+  );
+};
+
+const cairoDay = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-US", { timeZone: "Africa/Cairo", month: "short", day: "numeric", year: "numeric" });
+
+/**
+ * The trial ended without a top-up (seller-trial.lib.ts): every store is offline,
+ * or a manual top-up in review keeps them online. Nothing for other sellers.
+ */
+export const SellerTrialBadge = ({ trial }: { trial: SellerTrialStatus | undefined }) => {
+  if (!trial?.endsAt || (trial.state !== "offline" && trial.state !== "in_review")) return null;
+  const offline = trial.state === "offline";
+  const since = cairoDay(trial.endsAt);
+  return (
+    <Badge
+      className={`${offline ? "bg-red-100 text-red-800 hover:bg-red-100" : "bg-amber-100 text-amber-800 hover:bg-amber-100"} px-2 flex items-center gap-1 justify-center whitespace-nowrap`}
+      title={offline ? `Trial ended ${since} with no top-up: every store is offline` : `Trial ended ${since}; a manual top-up in review keeps the stores online`}
+    >
+      {offline ? <Globe className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+      {offline ? `Offline — no top-up · ${since}` : `Top-up in review · ${since}`}
     </Badge>
   );
 };

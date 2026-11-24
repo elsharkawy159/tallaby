@@ -1,5 +1,6 @@
 import type { AiStoreBuild } from "@workspace/lib/admin";
 import type { HeardAboutUsSource } from "@workspace/lib/sellers";
+import type { SellerTrialStatus } from "./seller-trial.lib";
 
 export type SellerStatus = "pending" | "approved" | "suspended" | "restricted";
 
@@ -40,6 +41,8 @@ export interface Seller {
   adminContactedAt?: string | null;
   /** The WhatsApp message for this seller's setup step, built on the server (seller-message.server.ts); missing = the plain welcome. */
   whatsAppMessage?: string | null;
+  /** The trial before a top-up (seller-trial.lib.ts); missing outside the sellers list. */
+  trial?: SellerTrialStatus;
   /** The owner's user account (sellers.id = users.id). */
   ownerName?: string | null;
   ownerEmail?: string | null;

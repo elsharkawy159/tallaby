@@ -20,7 +20,8 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { DataTableColumnHeader } from "../../_components/data-table/data-table-column-header";
 import type { DataTableFilter } from "../../_components/data-table/data-table.types";
-import { StatusBadge } from "../sellers.chunks";
+import { SellerTrialBadge, StatusBadge } from "../sellers.chunks";
+import { SELLER_TRIAL_LABELS, SELLER_TRIAL_STATES } from "../seller-trial.lib";
 import {
   canApproveSeller,
   canReactivateSeller,
@@ -76,6 +77,11 @@ export const sellersFilters: DataTableFilter[] = [
       { value: "negative", label: "Negative balance" },
       { value: "non_negative", label: "Zero or positive" },
     ],
+  },
+  {
+    id: "trial",
+    title: "Trial",
+    options: SELLER_TRIAL_STATES.map((value) => ({ value, label: SELLER_TRIAL_LABELS[value] })),
   },
   { id: "joined", title: "Joined", type: "dateRange" },
 ];
@@ -181,7 +187,12 @@ export function getSellersColumns(
       header: "Status",
       enableSorting: false,
       meta: { label: "Status" },
-      cell: ({ row }) => <StatusBadge status={row.original.status || "pending"} />,
+      cell: ({ row }) => (
+        <div className="flex flex-col items-start gap-1">
+          <StatusBadge status={row.original.status || "pending"} />
+          <SellerTrialBadge trial={row.original.trial} />
+        </div>
+      ),
     },
     {
       accessorKey: "productCount",
