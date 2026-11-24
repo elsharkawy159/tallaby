@@ -59,3 +59,4 @@ Store sections never import this package's runtime. Each section has an
 Animation setting (Same as site, None, or a preset), Theme › Motion has the
 master switch, a default and a speed, and `resolveAnimation` decides what a
 section plays (`docs/section-rules.md` §6.6–6.9).
+
