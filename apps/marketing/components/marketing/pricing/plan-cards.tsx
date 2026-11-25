@@ -70,6 +70,7 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
       ribbon: t("proRibbon"),
       features: [
         t("featureEverything"),
+        t("featureSetup"),
         t("featureCredits", { count: formatNumber(pro.aiCredits) }),
         t("featureEmails", { count: formatNumber(pro.emails) }),
         t("featureShared"),
