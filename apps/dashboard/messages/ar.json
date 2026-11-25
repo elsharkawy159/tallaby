@@ -1065,7 +1065,8 @@
       "salePriceBelowPrice": "يجب أن يكون السعر بعد الخصم أقل من سعر المنتج",
       "titleRequired": "اكتب اسم المنتج (بالعربية أو بالإنجليزية)",
       "descriptionRequired": "اكتب وصفًا مختصرًا للمنتج (بالعربية أو بالإنجليزية)",
-      "reviewerNameRequired": "اكتب اسم العميل"
+      "reviewerNameRequired": "اكتب اسم العميل",
+      "preorderDateRequired": "اختر موعد تسليم من اليوم فصاعدًا"
     },
     "seller": {
       "businessNameRequired": "اسم النشاط التجاري مطلوب",
@@ -2356,7 +2357,13 @@
         "variantsHeading": "الأنواع والخيارات",
         "summaryVariants": "{count, plural, one {نوع واحد} two {نوعان} few {# أنواع} many {# نوعًا} other {# نوع}} · {stock} قطعة",
         "summaryStock": "{stock} قطعة متاحة",
-        "summaryNeedQuantity": "مطلوب: الكمية"
+        "summaryNeedQuantity": "مطلوب: الكمية",
+        "preorder": "حجز مسبق",
+        "preorderHint": "اقبل الطلبات قبل وصول المنتج وحدد موعد التسليم المتوقع. لا يُحسب المخزون أثناء الحجز المسبق.",
+        "preorderDate": "موعد التسليم المتوقع",
+        "preorderDateHint": "يظهر للعملاء في صفحة المنتج، ويُحفظ مع كل طلب.",
+        "trackStockPreorder": "متوقفة أثناء الحجز المسبق.",
+        "summaryPreorder": "حجز مسبق · التسليم {date}"
       },
       "shipping": {
         "title": "الشحن والتجهيز",
@@ -3029,6 +3036,7 @@
       "giftMessage": "رسالة الهدية:",
       "items": "المنتجات ({count})",
       "itemLine": "{quantity} × {price}",
+      "preorderLine": "حجز مسبق · التسليم {date}",
       "summary": "الملخص",
       "source": "المصدر",
       "sourceManual": "طلب أدخلته بنفسك",

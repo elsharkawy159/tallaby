@@ -108,6 +108,8 @@ export function toProductPayload (data: AddProductFormData) {
     showLowStockBadge: _lowStockBadge,
     lowStockThreshold: _lowStockThreshold,
     minOrderQuantity: _minOrderQuantity,
+    preorderEnabled: _preorderEnabled,
+    preorderShipsAt: _preorderShipsAt,
     sellerReviews: _reviews,
     customerFields: _customerFields,
     ...payload

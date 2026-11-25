@@ -1373,6 +1373,8 @@ export const orderItems = pgTable("order_items", {
 	metadata: jsonb(),
 	/** Snapshot of the customer requirements (0167, F-91): both labels, value, extra, image storage paths. */
 	customerInputs: jsonb("customer_inputs"),
+	/** Pre-order snapshot (0179, F-23b): the product's expected delivery date when the order was placed; null = not a pre-order line. */
+	preorderShipsAt: date("preorder_ships_at", { mode: "string" }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -1595,6 +1597,10 @@ export const products = pgTable("products", {
 	showLiveViews: boolean("show_live_views").default(false).notNull(),
 	/** Unlimited stock (0138, F-51): false = never counted, never sold out; variants inherit it. `quantity` stays as stored. */
 	trackStock: boolean("track_stock").default(true).notNull(),
+	/** Pre-order (0179, F-23b): orders are taken without stock; a trigger forces `track_stock` false while it is on. */
+	preorderEnabled: boolean("preorder_enabled").default(false).notNull(),
+	/** Pre-order expected delivery date (0179), YYYY-MM-DD; required while `preorder_enabled`. */
+	preorderShipsAt: date("preorder_ships_at", { mode: "string" }),
 	/** Store product page urgency badge and card tag at low real stock (0122, F-34; off by default). */
 	showLowStockBadge: boolean("show_low_stock_badge").default(false).notNull(),
 	/** Badge threshold, 1-99; null = 5 (0122). */
@@ -1628,6 +1634,7 @@ export const products = pgTable("products", {
 	check("products_min_order_quantity_check", sql`min_order_quantity BETWEEN 1 AND 10000`),
 	check("products_customer_fields_check", sql`customer_fields IS NULL OR jsonb_typeof(customer_fields) = 'array'`),
 	check("products_ai_source_check", sql`ai_source IS NULL OR ai_source IN ('autofill_add', 'autofill_edit')`),
+	check("products_preorder_date_check", sql`NOT preorder_enabled OR preorder_ships_at IS NOT NULL`),
 	foreignKey({
 			columns: [table.sellerCategoryId],
 			foreignColumns: [sellerProductCategories.id],

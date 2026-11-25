@@ -3,6 +3,7 @@ import { normalizePrice } from "@/lib/utils/product-pricing.lib";
 import { META_KEYWORD_MAX_LENGTH, META_KEYWORDS_MAX } from "./meta-keywords.lib";
 import { lowStockThresholdSchema, minOrderQuantitySchema, SELLER_REVIEWS_MAX, sellerReviewSchema } from "../social-proof/social-proof.dto";
 import { customerFieldsSchema } from "@workspace/lib/products/customer-fields";
+import { isAllowedPreorderDay } from "@workspace/lib/products/preorder";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -197,6 +198,9 @@ export const addProductFormSchema = z
     lowStockThreshold: lowStockThresholdSchema.default(null),
     /** Empty means no minimum: it saves as 1. */
     minOrderQuantity: minOrderQuantitySchema,
+    /** Pre-order (0179, F-23b): stock isn't counted while it is on; the date is YYYY-MM-DD (Cairo day). */
+    preorderEnabled: z.boolean().default(false),
+    preorderShipsAt: z.string().nullable().default(null),
     sellerReviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX).default([]),
     // Saved by saveProductCustomerFields (0167, F-91), not createProduct / updateProduct.
     customerFields: customerFieldsSchema.default([]),
@@ -273,6 +277,15 @@ export const addProductFormSchema = z
       })
     }
     // The packed weight is optional (owner, 2026-10-26): shipping counts a missing weight as no extra weight.
+
+    // Pre-order (F-23b): a delivery date from today (Cairo); saveProductSocialProof checks it again.
+    if (data.preorderEnabled && !isAllowedPreorderDay(data.preorderShipsAt)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "product.preorderDateRequired",
+        path: ["preorderShipsAt"],
+      })
+    }
   })
 
 export const defaultLocalizedFields = (): LocalizedFields => ({
@@ -327,6 +340,8 @@ export const defaultValues = {
   showLowStockBadge: false,
   lowStockThreshold: null,
   minOrderQuantity: 1,
+  preorderEnabled: false,
+  preorderShipsAt: null,
   sellerReviews: [],
   customerFields: [],
   variantTypes: [],

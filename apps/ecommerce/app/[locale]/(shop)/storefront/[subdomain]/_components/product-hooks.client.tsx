@@ -21,7 +21,8 @@ import type { ProductLocale } from "@/lib/product-translations";
 import { getVariantImageUrls } from "@/lib/variant-images";
 import { StoreBuyBox, StoreQuantity } from "./store-buy-box.client";
 import { StoreGallery } from "./store-product-gallery.client";
-import { StoreLiveViews, StoreLowStockAlert, StorePriceBlock, StoreStockLine } from "./store-product-info.client";
+import { StoreLiveViews, StoreLowStockAlert, StorePreorderNote, StorePriceBlock, StoreStockLine } from "./store-product-info.client";
+import { storefrontPreorder } from "@workspace/lib/products/preorder";
 import { StoreVariantPicker } from "./store-variant-picker.client";
 import { StorePieceChoices } from "./store-piece-choices.client";
 import { countPieces, resolvePieces } from "@/components/product-page/variant-options.lib";
@@ -112,7 +113,10 @@ function useLowStockLeft() {
  * this line leaves the alert to it (and shows nothing while it applies).
  */
 export function StoreProductStock({ alertElsewhere = false }: { alertElsewhere?: boolean }) {
+  const { product } = useProductPage();
   const { hasStock, stock, left } = useLowStockLeft();
+  // A pre-order (F-23b) has no stock to tell: the buy box says "Pre-order" instead.
+  if (storefrontPreorder(product)) return null;
   // The seller's low-stock alert (F-34) follows the selected variant and replaces the pill, so it isn't said twice.
   if (left != null) return alertElsewhere ? null : <StoreLowStockAlert left={left} />;
   return <StoreStockLine hasStock={hasStock} isLowStock={hasStock && stock <= LOW_STOCK_THRESHOLD} stock={stock} />;
@@ -151,6 +155,9 @@ export function StoreProductBuyBox({
   const { product, variantId, inCart, cartQuantity, customer } = useProductPage();
   const { stock, price } = useSelectedPricing();
   const tCommon = useTranslations("common");
+  const locale = useLocale() as ProductLocale;
+  // Pre-order (0179, F-23b): bought with no stock (it is never stock-counted); the note sits above the buttons.
+  const preorder = storefrontPreorder(product);
   const { cartItems } = useCart();
   // As ProductActions: starts at the cart's quantity (or 1). Shared by the in-page box and the phone dock.
   const [picked, setQuantity] = useState(cartQuantity || 1);
@@ -228,8 +235,10 @@ export function StoreProductBuyBox({
   // Customer requirements (F-91): right above the add buttons, wherever the box is.
   const requirements = hasStock ? <CustomerFieldsForm className="mb-5" /> : null;
   // Sets the same quantity as the stepper (F-07c), so it lives with the box.
+  const preorderNote = preorder && hasStock ? <StorePreorderNote shipsAt={preorder.shipsAt} locale={locale} /> : null;
   const tiers = hasStock ? (
     <>
+      {preorderNote && <div className="mb-4">{preorderNote}</div>}
       {requirements}
       {minOrder.minimum > 1 && <p className="mb-3 text-sm font-semibold text-(--sf-ink)">{tCommon("minOrderLine", { count: minOrder.minimum })}</p>}
       <StoreQuantityOffers productId={product.id} price={unitPriceWithExtras(price, customer.extrasPiastres)} stock={maxQuantity} quantity={quantity} floor={minOrder.floor} readOnly={inCart} onSelect={changeQuantity} />

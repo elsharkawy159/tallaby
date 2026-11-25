@@ -361,6 +361,10 @@
       "types": "./src/products/customer-fields.lib.ts",
       "default": "./src/products/customer-fields.lib.ts"
     },
+    "./products/preorder": {
+      "types": "./src/products/preorder.lib.ts",
+      "default": "./src/products/preorder.lib.ts"
+    },
     "./products/customer-fields/server": {
       "types": "./src/products/customer-fields.server.ts",
       "default": "./src/products/customer-fields.server.ts"

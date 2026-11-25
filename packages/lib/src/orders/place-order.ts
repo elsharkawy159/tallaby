@@ -84,6 +84,7 @@ import { couponInStore } from '../stores/store-scope.server'
 import { DEFAULT_CURRENCY, parseStoreCurrency } from '../utils/formatPrice'
 import { minOrderShortfalls, shouldEnforceMinOrder, type MinOrderShortfall } from './min-order-quantity.lib'
 import { splitDeposit } from './cod-deposit.lib'
+import { preorderSnapshotDate } from '../products/preorder.lib'
 import {
   parseCustomerFields,
   parseCustomerInputsSnapshot,
@@ -613,6 +614,8 @@ export async function placeOrderFromCart(
       metadata: null as ({ platformFee?: PlatformFeeSnapshot } & Record<string, unknown>) | null,
       // Snapshot of the customer requirements (F-91); `price` already includes their extras.
       customerInputs: customerInputsByLine.get(item.id) ?? null,
+      // Pre-order (0179, F-23b): the product's expected delivery date, read from the row here, never from the client.
+      preorderShipsAt: preorderSnapshotDate(item.product),
       currency: orderCurrency,
       condition: item.product.condition,
       fulfillmentType: item.product.fulfillmentType,

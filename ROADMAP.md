@@ -555,10 +555,17 @@ Task format: **ID · Priority · deps** — what to do. Files are proposals; re-
 ### F-23 Back-in-stock alerts & pre-orders — P2
 
 **What:** "Notify me" on out-of-stock products and variants (phone or email); a message when stock returns. Optional pre-order: accept orders for an out-of-stock product with an expected date. The `popup-restock` design exists but is static.
-**Status:** [In progress] F-23a back-in-stock email alerts built 2026-10-30 (uncommitted; 0126 on staging; daily cron). Left: F-23b pre-orders.
+**Status:** [In progress] F-23a back-in-stock email alerts built 2026-10-30 (uncommitted; 0126 on staging; daily cron). F-23b pre-orders: first slice built 2026-11-25 (owner request; migration 0179 **not applied**, apply before deploying): pre-order switch and expected delivery date on the product form, a "Pre-order · expected delivery" note on the store product page, the date snapshotted on the order line and shown in the seller's order details. Browser E2E pending.
 
 - **F-23a · P2 · deps: F-10b** Migration `store_stock_subscriptions` (RLS on, no policies), storefront form, send on restock.
-- **F-23b · P3 · deps: F-23a** Pre-order flag and date on products; order stage label.
+- **F-23b · P3 · deps: F-23a** Pre-order flag and date on products; order stage label. Owner asked 2026-11-25 ("add option to product حجز مسبق and the delivery date").
+  - [x] F-23b1 Migration 0179 (not applied): `products.preorder_enabled`/`preorder_ships_at` (CHECK: date required while on), trigger `products_preorder_untracked`, `order_items.preorder_ships_at`. Pure rules in `@workspace/lib/products/preorder` (tested).
+  - [x] F-23b2 Product form › Inventory: "Pre-order" switch and expected delivery date, saved by `saveProductSocialProof` (zod on the client and the server, store ownership checked in the same UPDATE).
+  - [x] F-23b3 Store product page: the note above the buy buttons; the stock pill is hidden for a pre-order.
+  - [x] F-23b4 Order: `placeOrderFromCart` snapshots the product's date on `order_items`; Orders › order details shows "Pre-order · delivery <date>" on the line.
+  - [ ] F-23b5 Browser E2E on staging after 0179 is applied there (add, store page, order, order details).
+  - Default decisions (owner can change): (1) a pre-order product is never stock-counted: it reuses unlimited stock (0138), forced by a DB trigger for every writer (bulk edit, Excel, Inventory, MCP), so checkout needed no new stock rule and cancelling restores nothing; (2) the date is required, a Cairo calendar day from today up to two years ahead; (3) the flag is per product, so every variant is pre-order too; (4) once the date has passed the store shows "Pre-order" without a date and still takes orders, and a product with a passed date can't be saved until the seller picks a new date; (5) the order line keeps the product's date even if it has passed, so the seller sees what was promised; (6) turning pre-order off clears the date and gives the "Track stock" switch back its earlier value in that session (else it stays off; the seller turns it on); (7) the note is in the buy box, not the stock pill, so every product page template shows it.
+  - Follow-ups (not built): pre-order label in the cart, checkout, thank-you page, buyer and seller emails, print sheet and orders list; deposits for pre-orders (with F-21); a pre-order cap or quantity limit; per-variant pre-order; automatic messages or a reminder when the date passes; marketplace listings and marketplace product page note; MCP/AI tools (`create_product`/`update_product`); product card badge on store listings; Excel import/export columns.
 
 ### F-24 Bulk product editing — P1
 
@@ -1480,6 +1487,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 | 2026-11-25 | "Shipping countries/prices auto applies on the store (sync) prices (cron jobs daily update if possible)" | F-107 | Planned; source = the shipping company's rates (owner, 2026-11-25); to scope: which carriers expose a rate API, and whether a seller's own zone prices may be overwritten |
 | 2026-11-25 | "Digital product (Audio, text/code, image, pdf, etc)" | F-108 | Planned; the schema already has `products.type = digital`, `digital_products.digital_type` (audio, ebook, software, license_key, …) and `digital_files` from the marketplace; to check what the store dashboard and storefront checkout already support before building |
 | 2026-11-25 | "Make (Tallaby Pay) vat option inclusive or exclusive" (owner: "I mean include or exclude the 3% of Tallaby Pay") | F-100j | Already built and deployed (5d3912a2, 0178 applied on production): Settings › Payments › Tallaby Pay › "Who pays the Tallaby Pay fee?" (you = fee included, customer = added on top) |
+| 2026-11-25 | "add option to product حجز مسبق and the delivery date" | F-23b | In progress: first slice built 2026-11-25 (0179 not applied; see F-23b) |
 | 2026-11-24 | On Admin › Sellers, show the sellers whose trial ended without a top-up, so all their stores are offline: a filter and a badge on each row | F-106 | Built 2026-11-24 (uncommitted); no migration; not tried in a browser |
 | 2026-11-22 | Supabase bills "Storage Image Transformations" (649 origin images, 100 included): replace the only use, the social share image, with our own image route | — (cost fix, no feature ID) | Built 2026-11-22 (uncommitted): `/api/share-image/<bucket>/<path>` (sharp, 1200×630 JPEG); no migration; see §7 |
 | 2026-11-22 | "move Log out into the Stores dropdown under Manage stores; make the desktop WhatsApp support card simpler" | — (polish, no feature ID) | Built 2026-11-22 (not checked in a browser): see §7 |
@@ -1813,7 +1821,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-16d Subscribers list (2026-10-30, uncommitted; `/marketing/subscribers`; browser E2E pending)
 - [ ] F-17a Public API & webhooks (delayed by owner 2026-11-04)
 - [x] F-23a Back-in-stock alerts (2026-10-30, uncommitted; 0126 on staging; email E2E pending)
-- [ ] F-23b Pre-orders (delayed by owner 2026-11-04)
+- [~] F-23b Pre-orders (delayed by owner 2026-11-04; restarted by owner request 2026-11-25: first slice built, 0179 not applied, E2E pending)
 - [x] F-26a Campaign tracking (UTM) (2026-10-30, uncommitted; `orders.metadata.utm`, no migration; Reports › Campaigns)
 - [ ] F-18 Store affiliates / referral links (delayed by owner 2026-11-04)
 - [ ] F-19 Gift cards & store credit (delayed by owner 2026-11-04)
@@ -2036,6 +2044,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 ---
 
 ## 7. Log
+
+### 2026-11-25 — Pre-orders, first slice (F-23b, owner request, migration 0179 not applied)
+
+- Owner: "add option to product حجز مسبق and the delivery date". Product form › Inventory has a "Pre-order" switch and an expected delivery date; the store product page shows "Pre-order · expected delivery <date>" above the buy buttons and lets shoppers order with no stock; `placeOrderFromCart` snapshots the date on `order_items.preorder_ships_at` (read from the product row, never from the client); Orders › order details shows it on the line.
+- Migration `0179_product_preorder.sql` (**not applied anywhere**; additive; apply on staging, then production with owner approval, BEFORE deploying, since Drizzle selects every `products` and `order_items` column): two `products` columns with a guarded CHECK, the trigger `products_preorder_untracked` (forces `track_stock = false` while pre-order is on) and `order_items.preorder_ships_at`.
+- No money logic changed. Default decisions and follow-ups are listed under F-23b.
 
 ### 2026-11-25 — tallaby.com homepage redesign (owner request, no migration)
 

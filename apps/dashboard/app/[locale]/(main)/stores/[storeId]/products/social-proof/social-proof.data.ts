@@ -16,11 +16,14 @@ export async function loadProductSocialProof(sellerId: string, productId: string
       showLowStockBadge: products.showLowStockBadge,
       lowStockThreshold: products.lowStockThreshold,
       minOrderQuantity: products.minOrderQuantity,
+      preorderEnabled: products.preorderEnabled,
+      preorderShipsAt: products.preorderShipsAt,
     })
     .from(products)
     .where(and(eq(products.id, productId), eq(products.sellerId, sellerId), inStore))
     .limit(1);
-  if (!product) return { showLiveViews: false, trackStock: true, showLowStockBadge: false, lowStockThreshold: null, minOrderQuantity: 1, reviews: [] };
+  if (!product)
+    return { showLiveViews: false, trackStock: true, showLowStockBadge: false, lowStockThreshold: null, minOrderQuantity: 1, preorderEnabled: false, preorderShipsAt: null, reviews: [] };
 
   const rows = await db
     .select({ id: reviews.id, reviewerName: reviews.reviewerName, rating: reviews.rating, comment: reviews.comment })
@@ -34,6 +37,8 @@ export async function loadProductSocialProof(sellerId: string, productId: string
     showLowStockBadge: product.showLowStockBadge,
     lowStockThreshold: product.lowStockThreshold,
     minOrderQuantity: product.minOrderQuantity,
+    preorderEnabled: product.preorderEnabled,
+    preorderShipsAt: product.preorderShipsAt,
     reviews: rows.map((row) => ({ id: row.id, reviewerName: row.reviewerName ?? "", rating: row.rating, comment: row.comment ?? "" })),
   };
 }

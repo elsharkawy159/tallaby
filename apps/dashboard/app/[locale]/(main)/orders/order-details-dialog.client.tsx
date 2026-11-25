@@ -9,7 +9,8 @@ import { buildTelUrl, buildWhatsAppUrl } from "@workspace/ui/lib/contact";
 import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import { Note, SellerButton } from "@/components/seller-ui";
 import { getPublicUrl, cn } from "@/lib/utils";
-import { formatDateTime, formatMoney, moneyDir } from "@/lib/i18n/format";
+import { formatDate, formatDateTime, formatMoney, moneyDir } from "@/lib/i18n/format";
+import { preorderDayToDate } from "@workspace/lib/products/preorder";
 import { Money } from "@/components/money";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 import { BlockCustomerButton } from "./block-customer.client";
@@ -259,6 +260,11 @@ export function OrderDetailsDialog({
                               <span className="line-clamp-2 break-words text-[13.5px] font-semibold text-(--s-text)">{line.productName}</span>
                             )}
                             {line.variantName && <div className="text-xs text-(--s-subtle)">{line.variantName}</div>}
+                            {line.preorderShipsAt && (
+                              <div className="w-fit rounded-full bg-(--s-fill) px-2 py-0.5 text-[11.5px] font-semibold text-(--s-ink)">
+                                {t("preorderLine", { date: formatDate(preorderDayToDate(line.preorderShipsAt), locale, { dateStyle: "medium", timeZone: "UTC" }) })}
+                              </div>
+                            )}
                             <div className="break-words text-xs text-(--s-subtle)" dir="auto">
                               {t("itemLine", {
                                 quantity: line.quantity,

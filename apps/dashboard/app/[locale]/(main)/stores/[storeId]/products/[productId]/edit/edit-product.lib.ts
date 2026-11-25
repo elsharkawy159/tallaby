@@ -228,6 +228,8 @@ export function buildEditDefaultValues(
     showLowStockBadge: false,
     lowStockThreshold: null,
     minOrderQuantity: 1,
+    preorderEnabled: false,
+    preorderShipsAt: null,
     sellerReviews: [],
     // Filled from products.customer_fields by the edit page (F-91).
     customerFields: [],

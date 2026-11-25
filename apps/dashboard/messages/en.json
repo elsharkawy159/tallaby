@@ -1065,7 +1065,8 @@
       "salePriceBelowPrice": "The sale price must be lower than the product price",
       "titleRequired": "Enter the product name (in Arabic or English)",
       "descriptionRequired": "Enter a short description (in Arabic or English)",
-      "reviewerNameRequired": "Enter the customer's name"
+      "reviewerNameRequired": "Enter the customer's name",
+      "preorderDateRequired": "Pick a delivery date from today on"
     },
     "seller": {
       "businessNameRequired": "Business name is required",
@@ -2356,7 +2357,13 @@
         "variantsHeading": "Variants & options",
         "summaryVariants": "{count, plural, one {# variant} other {# variants}} · {stock} in stock",
         "summaryStock": "{stock} in stock",
-        "summaryNeedQuantity": "Needed: quantity"
+        "summaryNeedQuantity": "Needed: quantity",
+        "preorder": "Pre-order",
+        "preorderHint": "Take orders before the product arrives and set the expected delivery date. Stock isn't counted while pre-order is on.",
+        "preorderDate": "Expected delivery date",
+        "preorderDateHint": "Customers see it on the product page, and it's saved with each order.",
+        "trackStockPreorder": "Off while pre-order is on.",
+        "summaryPreorder": "Pre-order · delivery {date}"
       },
       "shipping": {
         "title": "Shipping & handling",
@@ -3029,6 +3036,7 @@
       "giftMessage": "Gift message:",
       "items": "Items ({count})",
       "itemLine": "{quantity} × {price}",
+      "preorderLine": "Pre-order · delivery {date}",
       "summary": "Summary",
       "source": "Source",
       "sourceManual": "Entered by you",

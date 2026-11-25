@@ -16,6 +16,8 @@ export interface SellerOrderLine {
   productUrl: string | null;
   /** What the customer filled for the product's requirements (0167, F-91); null = none. */
   customerInputs: unknown;
+  /** Pre-order line (0179, F-23b): the expected delivery date promised at checkout, YYYY-MM-DD; null = not a pre-order. */
+  preorderShipsAt: string | null;
 }
 
 export interface SellerOrderAddress {

@@ -61,12 +61,20 @@ export async function saveProductSocialProof(storeId: string, productId: string,
     const { seller, inStore } = await requireProductStore(storeId);
     const parsed = productSocialProofSchema.safeParse(input);
     if (!parsed.success || typeof productId !== "string") return { success: false, error: "invalidInput" };
-    const { showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, minOrderQuantity, reviews: list } = parsed.data;
+    const { showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, minOrderQuantity, preorderEnabled, preorderShipsAt, reviews: list } = parsed.data;
+    // Pre-order (0179, F-23b): on, the stock is never counted (the DB trigger
+    // enforces it for every writer too); off, the date is cleared.
+    const preorder =
+      preorderEnabled === undefined
+        ? {}
+        : preorderEnabled
+          ? { preorderEnabled: true, preorderShipsAt: preorderShipsAt ?? null, trackStock: false }
+          : { preorderEnabled: false, preorderShipsAt: null };
 
     const owned = await db.transaction(async (tx) => {
       const updated = await tx
         .update(products)
-        .set({ showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, ...(minOrderQuantity !== undefined && { minOrderQuantity }) })
+        .set({ showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, ...(minOrderQuantity !== undefined && { minOrderQuantity }), ...preorder })
         .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), inStore))
         .returning({ id: products.id });
       if (!updated.length) return false;

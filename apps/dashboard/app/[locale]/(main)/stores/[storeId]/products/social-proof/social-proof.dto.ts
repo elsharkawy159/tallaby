@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MIN_ORDER_QUANTITY_MAX } from "@workspace/lib/orders/min-order-quantity";
 import { LOW_STOCK_THRESHOLD_MAX, LOW_STOCK_THRESHOLD_MIN } from "@workspace/store-sections/low-stock";
+import { isAllowedPreorderDay } from "@workspace/lib/products/preorder";
 
 /**
  * The product form's "Reviews and live views" part (0111): reviews the seller
@@ -31,14 +32,27 @@ export const lowStockThresholdSchema = z.number().int().min(LOW_STOCK_THRESHOLD_
 /** Fewest units per order. Left out, the saved value stays as it is. */
 export const minOrderQuantitySchema = z.number().int().min(1).max(MIN_ORDER_QUANTITY_MAX).optional();
 
-export const productSocialProofSchema = z.object({
-  showLiveViews: z.boolean(),
-  trackStock: z.boolean().default(true),
-  showLowStockBadge: z.boolean().default(false),
-  lowStockThreshold: lowStockThresholdSchema.default(null),
-  minOrderQuantity: minOrderQuantitySchema,
-  reviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX),
-});
+export const productSocialProofSchema = z
+  .object({
+    showLiveViews: z.boolean(),
+    trackStock: z.boolean().default(true),
+    showLowStockBadge: z.boolean().default(false),
+    lowStockThreshold: lowStockThresholdSchema.default(null),
+    minOrderQuantity: minOrderQuantitySchema,
+    /**
+     * Pre-order (0179, F-23b). Left out, the saved values stay as they are (the
+     * AI and link importers don't send them). On, it needs a date from today
+     * (Cairo) and the stock is never counted.
+     */
+    preorderEnabled: z.boolean().optional(),
+    preorderShipsAt: z.string().nullable().optional(),
+    reviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX),
+  })
+  .superRefine((data, ctx) => {
+    if (data.preorderEnabled === true && !isAllowedPreorderDay(data.preorderShipsAt)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "product.preorderDateRequired", path: ["preorderShipsAt"] });
+    }
+  });
 
 export type ProductSocialProofInput = z.infer<typeof productSocialProofSchema>;
 

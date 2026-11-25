@@ -283,6 +283,8 @@ function AddProductForm({
       showLowStockBadge: data.showLowStockBadge ?? false,
       lowStockThreshold: data.lowStockThreshold ?? null,
       minOrderQuantity: data.minOrderQuantity ?? 1,
+      preorderEnabled: data.preorderEnabled ?? false,
+      preorderShipsAt: data.preorderEnabled ? (data.preorderShipsAt ?? null) : null,
       reviews: data.sellerReviews ?? [],
     });
     if (!saved.success) toast.warning(tSocialProof("saveFailed"));

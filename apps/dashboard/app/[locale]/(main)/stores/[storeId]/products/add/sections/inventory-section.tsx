@@ -1,8 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import { Controller, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { useLocale, useTranslations } from "next-intl";
-import { formatNumber } from "@/lib/i18n/format";
+import { formatDate, formatNumber } from "@/lib/i18n/format";
 import { Boxes, Wand2 } from "lucide-react";
 import { Switch } from "@workspace/ui/components/switch";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
@@ -14,8 +15,10 @@ import {
   InputGroup,
   NumberStepper,
   SubHeading,
+  ToggleRow,
 } from "@/app/[locale]/(main)/stores/[storeId]/products/add/form-kit";
 import { MIN_ORDER_QUANTITY_MAX } from "@workspace/lib/orders/min-order-quantity";
+import { cairoToday, isPreorderDay, latestPreorderDay, preorderDayToDate } from "@workspace/lib/products/preorder";
 import { generateSku } from "../add-product.lib";
 import { useFieldError } from "./fields";
 import { VariantsEditor } from "./variants-editor";
@@ -38,7 +41,15 @@ export function InventorySection({
   const form = useFormContext<AddProductFormData>();
   const quantityError = useFieldError("quantity");
   const variantsError = useFieldError("variants");
-  const [variants, quantity, sku, trackStockValue, minOrderQuantity] = useWatch({ control: form.control, name: ["variants", "quantity", "sku", "trackStock", "minOrderQuantity"] });
+  const preorderDateError = useFieldError("preorderShipsAt");
+  const [variants, quantity, sku, trackStockValue, minOrderQuantity, preorderEnabled, preorderShipsAt] = useWatch({
+    control: form.control,
+    name: ["variants", "quantity", "sku", "trackStock", "minOrderQuantity", "preorderEnabled", "preorderShipsAt"],
+  });
+  // Pre-order (0179, F-23b): stock isn't counted while it is on; turning it off gives back the switch's earlier value.
+  const trackStockBeforePreorder = useRef<boolean | null>(null);
+  const preorder = preorderEnabled === true;
+  const today = cairoToday();
   // Unlimited stock (0138, F-51): the count is hidden, and stays saved as it was.
   const trackStock = trackStockValue !== false;
   const variantCount = (variants ?? []).length;
@@ -49,7 +60,9 @@ export function InventorySection({
     : typeof quantity === "number"
       ? quantity
       : 0;
-  const summary = !trackStock
+  const summary = preorder
+    ? t("summaryPreorder", { date: isPreorderDay(preorderShipsAt) ? formatDate(preorderDayToDate(preorderShipsAt), locale, { dateStyle: "medium", timeZone: "UTC" }) : "—" })
+    : !trackStock
     ? t("summaryUnlimited")
     : hasVariants
     ? t("summaryVariants", { count: variantCount, stock })
@@ -65,9 +78,9 @@ export function InventorySection({
       help={<TutorialVideoButton video="T-11" compact />}
       description={t("description")}
       summary={summary}
-      summaryTone={!trackStock || stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
-      invalid={Boolean(quantityError || variantsError)}
-      filled={hasVariants || !trackStock || Boolean(sku?.trim()) || quantity !== defaultValues.quantity || (minOrderQuantity ?? 1) > 1}
+      summaryTone={preorder ? (preorderDateError ? "bad" : "ok") : !trackStock || stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
+      invalid={Boolean(quantityError || variantsError || preorderDateError)}
+      filled={hasVariants || !trackStock || preorder || Boolean(sku?.trim()) || quantity !== defaultValues.quantity || (minOrderQuantity ?? 1) > 1}
     >
       <Controller
         control={form.control}
@@ -76,12 +89,66 @@ export function InventorySection({
           <label htmlFor="track-stock" className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border-[1.5px] border-(--s-field) bg-(--s-surface) px-4 py-3.5">
             <span className="flex min-w-0 flex-col gap-0.5">
               <span className="text-[13.5px] font-bold text-(--s-ink)">{t("trackStock")}</span>
-              <span className="text-xs text-(--s-subtle)">{t(field.value === false ? "trackStockOff" : "trackStockOn")}</span>
+              <span className="text-xs text-(--s-subtle)">{t(preorder ? "trackStockPreorder" : field.value === false ? "trackStockOff" : "trackStockOn")}</span>
             </span>
-            <Switch id="track-stock" checked={field.value !== false} onCheckedChange={field.onChange} />
+            <Switch id="track-stock" checked={field.value !== false} onCheckedChange={field.onChange} disabled={preorder} />
           </label>
         )}
       />
+
+      <Controller
+        control={form.control}
+        name="preorderEnabled"
+        render={({ field }) => (
+          <ToggleRow
+            id="preorder"
+            boxed
+            checked={field.value === true}
+            onCheckedChange={(on) => {
+              if (on) {
+                trackStockBeforePreorder.current = form.getValues("trackStock") !== false;
+                form.setValue("trackStock", false, { shouldDirty: true });
+              } else {
+                form.setValue("trackStock", trackStockBeforePreorder.current ?? false, { shouldDirty: true });
+                form.setValue("preorderShipsAt", null, { shouldDirty: true });
+                trackStockBeforePreorder.current = null;
+              }
+              field.onChange(on);
+            }}
+            title={t("preorder")}
+            description={t("preorderHint")}
+          />
+        )}
+      />
+
+      {preorder && (
+        <div className="flex flex-col gap-1.5">
+          <FieldLabel htmlFor="preorder-ships-at" required>
+            {t("preorderDate")}
+          </FieldLabel>
+          <Controller
+            control={form.control}
+            name="preorderShipsAt"
+            render={({ field }) => (
+              <InputGroup invalid={Boolean(preorderDateError)} className="sm:max-w-xs">
+                <GroupInput
+                  id="preorder-ships-at"
+                  type="date"
+                  dir="ltr"
+                  min={today}
+                  max={latestPreorderDay(today)}
+                  value={field.value ?? ""}
+                  onChange={(event) => field.onChange(event.target.value || null)}
+                  onBlur={field.onBlur}
+                  className="font-montserrat rtl:text-right"
+                />
+              </InputGroup>
+            )}
+          />
+          <FieldHint>{t("preorderDateHint")}</FieldHint>
+          <FieldError>{preorderDateError}</FieldError>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">

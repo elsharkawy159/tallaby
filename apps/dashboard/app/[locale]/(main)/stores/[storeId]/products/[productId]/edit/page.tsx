@@ -88,6 +88,8 @@ export default async function EditProductPage({
     showLowStockBadge: socialProof.showLowStockBadge,
     lowStockThreshold: socialProof.lowStockThreshold,
     minOrderQuantity: socialProof.minOrderQuantity,
+    preorderEnabled: socialProof.preorderEnabled ?? false,
+    preorderShipsAt: socialProof.preorderShipsAt ?? null,
     sellerReviews: socialProof.reviews,
     customerFields: parseCustomerFields((product as { customerFields?: unknown }).customerFields),
   };

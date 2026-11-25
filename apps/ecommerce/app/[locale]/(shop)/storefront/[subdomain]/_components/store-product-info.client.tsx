@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Flame, Truck } from "lucide-react";
+import { CalendarClock, Flame, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatPrice, formatPriceMarked } from "@workspace/lib";
 import { PriceText } from "@/components/storefront/price-text";
@@ -9,6 +9,7 @@ import { LIVE_VIEWS_TICK_MS, liveViewsBase, nextLiveViews } from "@/components/p
 import { DealCountdown } from "@/components/storefront/deal-countdown.client";
 import { useCurrencyLabel } from "@/lib/currency-label.client";
 import type { ProductLocale } from "@/lib/product-translations";
+import { preorderDayToDate } from "@workspace/lib/products/preorder";
 import s from "../storefront.module.css";
 
 /**
@@ -119,6 +120,29 @@ export function StoreLowStockAlert({ left }: { left: number }) {
     >
       <Flame aria-hidden className="size-4 shrink-0 motion-safe:animate-pulse" style={{ color: DANGER }} />
       {t("lowStockAlert", { count: left })}
+    </p>
+  );
+}
+
+/**
+ * Pre-order (0179, F-23b): "Pre-order · expected delivery 10 December 2026",
+ * or just "Pre-order" once the seller's date has passed. In the store accent
+ * mixed toward ink, so it reads on light and dark templates.
+ */
+export function StorePreorderNote({ shipsAt, locale }: { shipsAt: string | null; locale: ProductLocale }) {
+  const t = useTranslations("storeProduct");
+  const date = shipsAt
+    ? new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "ar-EG", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(
+        preorderDayToDate(shipsAt),
+      )
+    : null;
+  return (
+    <p
+      className="inline-flex w-fit items-center gap-2 rounded-(--sf-radius,12px) px-3.5 py-2 text-sm font-bold leading-snug"
+      style={{ background: "color-mix(in srgb, var(--sf-brand,#2563eb) 12%, transparent)", color: "color-mix(in srgb, var(--sf-brand,#2563eb) 70%, var(--sf-ink))" }}
+    >
+      <CalendarClock aria-hidden className="size-4 shrink-0" />
+      {date ? t("preorderShipsAt", { date }) : t("preorder")}
     </p>
   );
 }
