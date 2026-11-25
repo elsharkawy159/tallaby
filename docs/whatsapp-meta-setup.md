@@ -4,7 +4,7 @@ Everything you set up by hand in Meta, once, so Tallaby can send WhatsApp order 
 
 You need: admin access to Tallaby's Meta Business portfolio (business.facebook.com), a phone number that is **not** used in the WhatsApp or WhatsApp Business app (a new SIM or a landline that can receive an SMS or a call), and a card for Meta's billing.
 
-Meta renamed several menus in 2025–2026. If a name below differs, search for it in the portfolio's settings.
+Checked against Meta's "WhatsApp Cloud API Get Started" page on 2026-11-26 (developers.facebook.com/documentation/business-messaging/whatsapp/get-started). Its curl samples use `v23.0`; Tallaby uses `v27.0` (set by `WHATSAPP_GRAPH_VERSION`). Its temporary token and test webhook app are for trying things out only. Meta renamed several menus in 2025–2026. If a name below differs, search for it in the portfolio's settings.
 
 ---
 
@@ -24,13 +24,13 @@ Why: without verification Tallaby can message only **250 different customers a d
 
 ## 3. WhatsApp Business Account and the phone number
 
-1. In the app → **WhatsApp → API Setup** (or **Quickstart**). Meta creates a WhatsApp Business Account (WABA) and a **test number**. The test number can message only up to 5 numbers you add by hand; use it for a first test, never in production.
+1. In the app → **Customize use case → Connect on WhatsApp → Quickstart → Start using the API** → **API Setup**. Connect a **Messaging account** (Meta's new name for the WhatsApp Business Account, WABA): pick Tallaby's if one exists, otherwise **Create a WhatsApp Business account**. Meta also gives a **test number**. The test number can message only up to 5 numbers you add by hand; use it for a first test, never in production.
 2. **Add phone number**:
    - Display name: **Tallaby** (or **طلبي | Tallaby**). It must match the brand on `tallaby.com`. Never use a store's name.
    - Category: Shopping and retail. Description: "Order updates for stores on Tallaby".
    - Verify the number by SMS or voice call.
 3. Wait for the **display name** to be approved (WhatsApp Manager → Phone numbers → Name status).
-4. Copy the **Phone number ID** (`WHATSAPP_PHONE_NUMBER_ID`) and the **WhatsApp Business Account ID** (`WHATSAPP_WABA_ID`) from API Setup.
+4. Copy the **Phone number ID** (`WHATSAPP_PHONE_NUMBER_ID`) and the **Messaging account ID** (WhatsApp Business Account ID, `WHATSAPP_WABA_ID`) from API Setup.
 5. Set a **two-step verification PIN** (WhatsApp Manager → Phone numbers → the number → Two-step verification): 6 digits. Keep it in the password manager. Then register the number for the Cloud API once. Ask me to run this, or run it with the token from step 4:
    ```
    curl -X POST "https://graph.facebook.com/v27.0/<PHONE_NUMBER_ID>/register" \
@@ -43,7 +43,7 @@ Why: without verification Tallaby can message only **250 different customers a d
 ## 4. A permanent access token (system user)
 
 1. business.facebook.com → **Settings → Users → System users** → **Add**: name `tallaby-whatsapp`, role **Admin**.
-2. **Assign assets**: the app `Tallaby WhatsApp` (Full control / Develop app) and the WhatsApp account (Full control / Manage).
+2. Select the system user → **Assign assets**: the app `Tallaby WhatsApp` with **Manage app** under **Full control**, and the WhatsApp account with **Manage WhatsApp Business accounts** under **Full control** → **Assign assets**.
 3. **Generate token**:
    - App: `Tallaby WhatsApp`
    - Expiry: **Never**
