@@ -3201,15 +3201,14 @@
       "kicker": "Terms",
       "title": "The program's terms, plainly",
       "items": [
-        "You earn EGP 100 once for every seller account that signs up through your link and whose successful store-wallet top-ups reach $5 in total.",
-        "Rewards are paid in cash to a bank account or Vodafone Cash, never as credit in your store wallet.",
-        "The reward is per seller account, not per store: a seller who opens 3 stores still earns you EGP 100 once.",
+        "Joining is free for every Tallaby seller account, and you don't need to top up your wallet to join or to withdraw your earnings.",
+        "You earn EGP 100 once for every seller who signs up through your link and whose store-wallet top-ups reach $5 in total.",
+        "The reward is per seller, not per store: a seller who opens 3 stores still earns you EGP 100 once.",
+        "Your earnings are paid in cash to a bank account or Vodafone Cash, never as credit in your store wallet.",
+        "You can withdraw once your balance reaches EGP 500, with no waiting period. Each request covers your whole balance, and you can have one open request at a time.",
+        "Your link is remembered for 60 days, and the first link a person opens is the one that counts. The referrer can't change after signup, and you can't refer yourself.",
         "Percentage commissions you earned before 2026-11-12 stay in your balance and can be withdrawn.",
-        "The minimum withdrawal is EGP 500, each request covers your whole available balance, and you can have one open request at a time.",
-        "A reward can be withdrawn as soon as it is credited, with no waiting period.",
-        "Your link is remembered for 60 days and the first link a person opens is the one that counts. The referrer can't be changed after signup, and you can't refer yourself.",
-        "Referral links are for Tallaby seller accounts only.",
-        "You don't need to top up your wallet to join the program or withdraw your earnings. Tallaby cancels rewards from fake accounts and self-referrals, and withdrawals pause only if the Tallaby team suspends your account."
+        "Tallaby cancels rewards from fake accounts and self-referrals."
       ]
     },
     "faq": {
@@ -3219,6 +3218,10 @@
         {
           "q": "Who can join?",
           "a": "Anyone with a Tallaby seller account. Creating one is free, and your link is ready on the “Affiliate program” page of your dashboard."
+        },
+        {
+          "q": "Do I need to top up my wallet to join or withdraw?",
+          "a": "No. Joining and withdrawing need no top-up from you. The only top-up that counts is the one by the seller who signed up through your link: $5 or more."
         },
         {
           "q": "When do I earn the EGP 100?",
