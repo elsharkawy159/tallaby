@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
+import { CardOverlayLink } from "./setup-card-link";
 import { cookies } from "next/headers";
 import { ArrowLeft, Check, CreditCard, FileText, Package, Palette, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -129,12 +130,15 @@ export async function SetupChecklistData() {
                   key={task.key}
                   className={cn(
                     "relative flex min-h-[178px] flex-col gap-2 rounded-[20px] border border-white/10 bg-white/6 p-4 max-[720px]:min-h-0",
+                    // The whole card opens the step (owner, 2026-11-26).
+                    !done && !blocker && !next && "transition-colors duration-150 hover:border-white/25 hover:bg-white/10",
                     done && "border-dashed bg-transparent",
                     nextKey && !next && "max-[600px]:hidden max-[600px]:group-data-open/setup:flex",
                     next &&
                       "-translate-y-1 border-(--s-surface) bg-(--s-surface) text-(--s-ink) shadow-[0_18px_40px_rgb(0_0_0/0.18)] max-[1180px]:translate-y-0",
                   )}
                 >
+                  {!done && !blocker && <CardOverlayLink href={task.href} />}
                   {next && (
                     // On the card's edge: a four-column row is too narrow to share a line with the icon.
                     <span className="absolute -top-2.5 start-3.5 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-(--tallaby-teal-900)">
@@ -191,7 +195,7 @@ export async function SetupChecklistData() {
                         <small className="text-pretty text-xs text-[#a9c3c9]">{t(`locked.${blocker}`)}</small>
                       </div>
                     ) : next ? (
-                      <SellerButton asChild size="sm">
+                      <SellerButton asChild size="sm" className="relative z-[1]">
                         <Link href={task.href}>
                           {t(`tasks.${task.key}.cta`)}
                           <ArrowLeft className="ltr:rotate-180" aria-hidden />
@@ -200,7 +204,7 @@ export async function SetupChecklistData() {
                     ) : (
                       <Link
                         href={task.href}
-                        className="inline-flex h-[34px] items-center gap-1.5 rounded-full border border-white/20 px-3 text-[12.5px] font-bold text-white no-underline transition-colors duration-150 hover:bg-white/8 hover:text-white max-[600px]:h-10"
+                        className="relative z-[1] inline-flex h-[34px] items-center gap-1.5 rounded-full border border-white/20 px-3 text-[12.5px] font-bold text-white no-underline transition-colors duration-150 hover:bg-white/8 hover:text-white max-[600px]:h-10"
                       >
                         {t(`tasks.${task.key}.cta`)}
                         <ArrowLeft className="size-[15px] ltr:rotate-180" aria-hidden />
