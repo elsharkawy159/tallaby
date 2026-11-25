@@ -339,7 +339,137 @@
   }
 }
 
+/*
+ * Home page mock-ups (2026-11-25): small loops inside the feature boxes and
+ * step cards. Transform and opacity only; the reduced-motion rule below stops
+ * them all and leaves each at its resting look.
+ */
+.mk-bob {
+  animation: mk-bob var(--mk-run, 5s) ease-in-out var(--mk-delay, 0s) infinite;
+}
+@keyframes mk-bob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+/* Three typing dots. */
+.mk-dot {
+  animation: mk-dot 1.2s ease-in-out var(--mk-delay, 0s) infinite;
+}
+@keyframes mk-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+/* A light band sweeping over a "being written" line. */
+.mk-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.mk-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.75), transparent);
+  transform: translateX(-100%);
+  animation: mk-shimmer 2.2s ease-in-out var(--mk-delay, 0s) infinite;
+}
+@keyframes mk-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+/* A bar that fills from the reading start, holds, and starts again. */
+.mk-fill {
+  transform-origin: left center;
+  animation: mk-fill var(--mk-run, 4s) cubic-bezier(0.3, 0.7, 0.3, 1) var(--mk-delay, 0s) infinite;
+}
+.mk-fill:dir(rtl) {
+  transform-origin: right center;
+}
+@keyframes mk-fill {
+  0% {
+    transform: scaleX(0.04);
+  }
+  60%,
+  90% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+/* A toast that rises in, rests, and fades out. */
+.mk-toast {
+  animation: mk-toast var(--mk-run, 6s) cubic-bezier(0.2, 0.7, 0.2, 1) var(--mk-delay, 0s) infinite both;
+}
+@keyframes mk-toast {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.96);
+  }
+  12%,
+  78% {
+    opacity: 1;
+    transform: none;
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0);
+  }
+}
+/* Items that appear one after another (set --mk-delay per item), then all reset together. */
+.mk-seq {
+  animation: mk-seq var(--mk-run, 6s) ease-out var(--mk-delay, 0s) infinite both;
+}
+@keyframes mk-seq {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  10%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* A soft pulse on a live dot or a selected tile. */
+.mk-pulse {
+  animation: mk-pulse 2.4s ease-in-out var(--mk-delay, 0s) infinite;
+}
+@keyframes mk-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.7;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  /* Mock-ups rest fully shown. */
+  .mk-shimmer::after {
+    display: none;
+  }
   *,
   *::before,
   *::after {

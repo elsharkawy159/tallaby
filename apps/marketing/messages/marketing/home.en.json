@@ -117,44 +117,270 @@
       "all": "See all stores",
       "listLabel": "Logos of stores on Tallaby"
     },
-    "what": {
+    "common": {
+      "soon": "Soon",
+      "new": "New"
+    },
+    "stats": {
+      "label": "Tallaby in numbers",
+      "stores": "stores created on Tallaby",
+      "products": "products on sale",
+      "orders": "orders placed with sellers",
+      "templates": "ready store templates",
+      "minutes": "minutes to create your store",
+      "ai": "writes your products in Arabic and English",
+      "languages": "your store in Arabic and English",
+      "noCode": "lines of code needed"
+    },
+    "bento": {
       "kicker": "Meet Tallaby",
       "title": "What is Tallaby?",
-      "lead": "Tallaby is an Egyptian platform for building an online store under your own brand and running it yourself.",
-      "who": "For sellers on Facebook, Instagram or WhatsApp who want a real store without code.",
+      "lead": "A platform to build an online store under your own brand and run it yourself, with no code.",
+      "platform": {
+        "title": "All-in-one platform",
+        "body": "Your store, products, orders, payments, shipping and marketing, in one dashboard."
+      },
+      "support": {
+        "title": "24/7 customer support",
+        "body": "Message us on WhatsApp whenever you need us, and we'll help you set up and run your store."
+      },
+      "marketers": {
+        "title": "Certified marketers for sellers",
+        "body": "We connect you with Tallaby-certified marketers who help with your ads and growth."
+      },
+      "world": {
+        "title": "Sell in Egypt and abroad",
+        "body": "Choose your store's currency and the countries you ship to."
+      },
+      "marketing": {
+        "title": "Bring customers back",
+        "body": "Email campaigns, discount codes, and WhatsApp follow-up on unfinished orders."
+      },
+      "import": {
+        "title": "Bring your products in minutes",
+        "body": "From Excel, from a product link, or straight from Shopify."
+      },
+      "ads": {
+        "title": "Ads that measure right",
+        "body": "Meta Pixel and Conversions API, GA4 and GTM, plus product feeds for Meta and Google."
+      },
+      "domain": {
+        "title": "A store with your name on it",
+        "body": "Your logo and colours, at <domain>yourbrand.tallaby.com</domain> or on a domain you own."
+      },
+      "mock": {
+        "dashboard": "Dashboard",
+        "live": "Live",
+        "store": "Store",
+        "products": "Products",
+        "orders": "Orders",
+        "payments": "Payments",
+        "shipping": "Shipping",
+        "marketing": "Marketing",
+        "supportAsk": "How do I connect my domain?",
+        "marketer1": "Meta ads",
+        "marketer2": "Content creation",
+        "marketer3": "Store launch",
+        "campaign": "Campaign: this week's offer",
+        "sending": "Sending",
+        "shipTo": "Ship to the countries you choose",
+        "yourLogo": "Your logo",
+        "yourColors": "Your colours",
+        "productLink": "Product link",
+        "yourStore": "Your store"
+      }
+    },
+    "steps": {
+      "kicker": "Get started",
+      "title": "Create your store in <em>3 minutes</em>",
+      "lead": "Three steps, no technical skills needed.",
+      "one": {
+        "title": "Sign up free",
+        "body": "With Google or your email, then claim your store link.",
+        "google": "Continue with Google",
+        "or": "or",
+        "claim": "Claim link"
+      },
+      "two": {
+        "title": "Pick a template, add products with AI",
+        "body": "Upload a photo and write a few words. Tallaby AI writes the title and description in Arabic and English.",
+        "product": "Brown leather bag",
+        "ai": "Write with AI"
+      },
+      "three": {
+        "title": "Connect shipping and payments",
+        "body": "Ship with Bosta, your own riders or a Wassalha sheet, and get paid through Tallaby Pay, Paymob, Kashier or cash on delivery.",
+        "bodyNoPay": "Ship with Bosta, your own riders or a Wassalha sheet, and get paid through Paymob, Kashier or cash on delivery.",
+        "shipping": "Shipping",
+        "payments": "Payments",
+        "wassalha": "Wassalha",
+        "riders": "Your riders",
+        "tallabyPay": "Tallaby Pay",
+        "cod": "Cash on delivery",
+        "toast": "New order",
+        "currency": "EGP"
+      }
+    },
+    "pay": {
+      "kicker": "New",
+      "title": "<em>Tallaby Pay</em>: online payments with no gateway account",
+      "lead": "Turn it on in your store in one step, with no payment company account or keys.",
       "points": {
-        "store": {
-          "title": "A store with your name on it",
-          "body": "Your logo and colours, at <domain>yourbrand.tallaby.com</domain> or on a domain you own."
+        "methods": "Customers pay by card, mobile wallet or Meeza, in cash at Fawry and Aman, or in instalments.",
+        "fee": "<fee></fee> of each paid order, payment company fee included.",
+        "release": "Your money is available once the order is delivered. Withdraw it to InstaPay, a bank account or a mobile wallet.",
+        "egp": "For stores selling in EGP. Verify your ID once before your first withdrawal."
+      },
+      "cta": "Create your store free",
+      "mock": {
+        "checkout": "Payment",
+        "card": "Card",
+        "wallet": "Mobile wallet",
+        "meeza": "Meeza",
+        "cash": "Cash at Fawry or Aman",
+        "pay": "Pay",
+        "currency": "EGP",
+        "delivered": "Order delivered",
+        "available": "Ready to withdraw"
+      }
+    },
+    "builder": {
+      "kicker": "Store design",
+      "title": "Design your store <em>with AI</em> or drag and drop",
+      "lead": "Start from a short description or a ready template, then edit any section yourself.",
+      "rows": {
+        "ai": {
+          "title": "Tallaby AI builds your store",
+          "body": "Describe your store in a line. It suggests three templates and builds your store with copy, products and shipping policies."
         },
-        "money": {
-          "title": "Your sales come to you",
-          "body": "Cash on delivery, InstaPay and wallets, or cards through your own Paymob or Kashier account. Tallaby takes no cut of your sales."
+        "dnd": {
+          "title": "Drag & Drop editor",
+          "body": "Drag sections into order and change any text, photo or colour."
         },
-        "shipping": {
-          "title": "You choose how to ship",
-          "body": "Tallaby doesn't deliver orders. Ship through your Bosta account or your own riders."
-        },
-        "world": {
-          "title": "Sell in Egypt and abroad",
-          "body": "Choose your store's currency and the countries you ship to."
+        "publish": {
+          "title": "Publish when you're ready",
+          "body": "Your changes stay a draft. Your live store changes only when you publish."
+        }
+      },
+      "mock": {
+        "editor": "Store editor",
+        "publish": "Publish",
+        "sections": "Sections",
+        "header": "Header",
+        "hero": "Hero",
+        "products": "Products",
+        "footer": "Footer",
+        "prompt": "A luxury oriental perfume store called Misk"
+      }
+    },
+    "customers": {
+      "kicker": "For your customers",
+      "title": "Features your customers notice",
+      "lead": "Tools that protect your orders and make buying from your store easier.",
+      "deposit": {
+        "title": "Deposit on cash orders",
+        "body": "On cash on delivery orders, ask for 10%, 20%, 30% or 50% up front, paid straight to you."
+      },
+      "confirm": {
+        "title": "Automatic order confirmation",
+        "body": "Your customer gets an email confirming the order right away, and shipping and delivery updates with the Order notifications app."
+      },
+      "record": {
+        "title": "Customer delivery rate",
+        "body": "See, for each phone number, how many orders were received or refused in your store before you ship."
+      },
+      "app": {
+        "title": "Your store app on their phone",
+        "body": "Customers add your store to their home screen with your name and logo, and come back in one tap."
+      },
+      "account": {
+        "title": "Customer account and wallet",
+        "body": "Customers sign in to your store, follow their orders and pay from their Tallaby wallet, in full or in part."
+      },
+      "more": {
+        "title": "And more",
+        "body": "Fake order protection, phone blocking, unfinished orders, discount codes and reviews."
+      },
+      "mock": {
+        "depositNow": "Deposit up front",
+        "emailSent": "Order confirmation sent",
+        "whatsapp": "Automatic WhatsApp message",
+        "delivered": "Received",
+        "refused": "Refused",
+        "install": "Install app",
+        "signedIn": "Signed in",
+        "wallet": "Wallet balance",
+        "currency": "EGP",
+        "more": {
+          "fake": "Fake orders",
+          "block": "Block a number",
+          "unfinished": "Unfinished orders",
+          "coupons": "Discount codes",
+          "reviews": "Reviews"
         }
       }
     },
-    "features": {
-      "kicker": "What's new in Tallaby",
-      "title": "Built for the way people sell online today",
-      "mcpTag": "New",
-      "mcpTitle": "Manage your products by chatting with <claude>Claude</claude> or <chatgpt>ChatGPT</chatgpt>",
-      "mcpBody": "Connect your account once. Then ask the assistant to add products or change prices, and it does it in your store.",
-      "aiTitle": "Tallaby AI writes your products",
-      "aiBody": "From a photo or a few lines: title and description in Arabic and English, with category and SEO.",
-      "marketingTitle": "Bring customers back",
-      "marketingBody": "Email campaigns, discount codes, and WhatsApp follow-up on unfinished orders.",
-      "importTitle": "Bring your products in minutes",
-      "importBody": "From Excel, from a product link, or straight from Shopify.",
-      "adsTitle": "Ads that measure right",
-      "adsBody": "Meta Pixel and Conversions API, GA4 and GTM, plus product feeds for Meta and Google."
+    "ai": {
+      "kicker": "Tallaby AI",
+      "title": "AI that <em>works for your store</em>",
+      "lead": "Tools that save you time adding products, designing your store and running it.",
+      "assistant": {
+        "title": "An AI assistant for your store",
+        "body": "Connect <claude>Claude</claude> or <chatgpt>ChatGPT</chatgpt> to your account once. Then ask it to add products or change prices, and it does it in your store."
+      },
+      "product": {
+        "title": "Add products with AI",
+        "body": "From a photo or a few lines: title and description in Arabic and English, with category and SEO."
+      },
+      "design": {
+        "title": "Design your store with AI",
+        "body": "Describe your store and Tallaby AI builds a full store from a template that fits it."
+      },
+      "review": {
+        "title": "Store review",
+        "body": "A report on what your store is missing and how to sell more."
+      },
+      "blog": {
+        "title": "Write your blog posts",
+        "body": "Posts for your store's blog that help customers find you on Google."
+      },
+      "mock": {
+        "writing": "Tallaby AI is writing…",
+        "prompt": "A store for cotton kids' clothes",
+        "blog": "New post",
+        "review": {
+          "speed": "Store speed",
+          "photos": "Product photos",
+          "seo": "SEO"
+        }
+      }
+    },
+    "apps": {
+      "kicker": "Store apps",
+      "title": "Apps that add what your store needs",
+      "lead": "Turn on what you need from your dashboard, and turn it off any time.",
+      "cost": "Each app's cost is shown in your dashboard before you turn it on.",
+      "more": "All integrations",
+      "items": {
+        "tallaby_pay": "Online payments with no gateway account. Withdraw your earnings to your account.",
+        "ai_assistants": "Manage your products by chatting with Claude or ChatGPT.",
+        "bosta": "Ship with Bosta in one click, with tracking updates.",
+        "customer_notifications": "Emails your customer when the order ships, arrives or is cancelled.",
+        "easykash": "Cards, wallets, Fawry and Aman, paid to your own EasyKash account.",
+        "google_analytics": "Your store's traffic and sales in Google Analytics.",
+        "google_sheets": "Export your orders to a spreadsheet.",
+        "google_tag_manager": "Manage your tags from one GTM container.",
+        "kashier": "Card and wallet payments to your own Kashier account.",
+        "meta_pixel": "Track your Facebook and Instagram ads, with Conversions API.",
+        "tiktok_pixel": "Measure your TikTok ads from your store's visits and orders.",
+        "snapchat_pixel": "Measure your Snapchat ads from your store's visits and orders.",
+        "paymob": "Cards, Meeza and wallets, paid to your own Paymob account.",
+        "product_feeds": "A product link for Meta and Google catalog ads.",
+        "qr_codes": "A QR code for your store, a page or a product.",
+        "shopify_import": "Copy your products from a Shopify store.",
+        "size_chart": "Shoppers see the size that fits them on the product page.",
+        "wassalha": "Export your orders as a sheet for Wassalha's dashboard."
+      }
     },
     "templates": {
       "kicker": "Store templates",
@@ -232,11 +458,30 @@
           "min18": "18 min ago",
           "hr1": "1 hr ago"
         },
-        "products": ["Red leather handbag", "Pink tote bag", "Printed barrel bag"],
+        "products": [
+          "Red leather handbag",
+          "Pink tote bag",
+          "Printed barrel bag"
+        ],
         "orders": [
-          { "product": "Men's leather wallet", "when": "min6", "total": 500, "status": "pending" },
-          { "product": "Pink tote bag", "when": "min18", "total": 1340, "status": "pending" },
-          { "product": "Printed barrel bag", "when": "hr1", "total": 1500, "status": "shipped" }
+          {
+            "product": "Men's leather wallet",
+            "when": "min6",
+            "total": 500,
+            "status": "pending"
+          },
+          {
+            "product": "Pink tote bag",
+            "when": "min18",
+            "total": 1340,
+            "status": "pending"
+          },
+          {
+            "product": "Printed barrel bag",
+            "when": "hr1",
+            "total": 1500,
+            "status": "shipped"
+          }
         ]
       },
       "mcp": {
