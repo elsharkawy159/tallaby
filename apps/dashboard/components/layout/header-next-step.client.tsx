@@ -104,12 +104,26 @@ export function HeaderNextStep({
   }
 
   const Icon = STEP_ICONS[action.key];
-  const label = t("nextStep", { step: tSteps(`${action.key}.title`) });
+  const stepTitle = tSteps(`${action.key}.title`);
+  const label = t("nextStep", { step: stepTitle });
+  // Mobile (owner, 2026-11-26): the pill names the step itself, and a tiny
+  // "Next step" badge sits centred on its top border.
   return (
-    <Link href={action.href} aria-label={label} title={label} className={cn(PILL, "bg-primary-soft text-primary-ink")}>
+    <Link
+      href={action.href}
+      aria-label={label}
+      title={label}
+      className={cn(PILL, "relative bg-primary-soft text-primary-ink")}
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary px-1.5 py-px text-[9px] leading-[1.35] font-bold whitespace-nowrap text-primary-foreground min-[601px]:hidden"
+      >
+        {t("nextStepShort")}
+      </span>
       <Icon aria-hidden />
       <span className="truncate max-[600px]:hidden">{label}</span>
-      <span className="min-[601px]:hidden">{t("nextStepShort")}</span>
+      <span className="truncate min-[601px]:hidden">{stepTitle}</span>
     </Link>
   );
 }
