@@ -116,11 +116,11 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
     <div className="min-[1081px]:grid min-[1081px]:grid-cols-[248px_minmax(0,1fr)] min-[1081px]:items-start min-[1081px]:gap-10">
       <aside aria-labelledby="gallery-filters-title" className="hidden min-[1081px]:sticky min-[1081px]:top-[92px] min-[1081px]:block min-[1081px]:max-h-[calc(100dvh-108px)] min-[1081px]:overflow-y-auto min-[1081px]:pe-1 no-scrollbar">
         <div className="mb-3 flex items-baseline justify-between gap-3 px-2">
-          <h3 id="gallery-filters-title" className="text-[17px] font-bold text-teal-900">
+          <h3 id="gallery-filters-title" className="text-[17px] font-bold text-ink-900">
             {t("filters.title")}
           </h3>
           {active ? (
-            <button type="button" onClick={clearAll} className="rounded-md text-sm font-semibold text-teal-700 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-teal-500/50">
+            <button type="button" onClick={clearAll} className="rounded-md text-sm font-semibold text-ink-brand outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-teal-500/50">
               {t("filters.clearAll")}
             </button>
           ) : null}
@@ -134,18 +134,18 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="flex h-10 flex-none items-center gap-2 rounded-full border border-line-strong bg-white px-3.5 text-sm font-semibold text-ink-600 outline-none hover:border-teal-300 focus-visible:ring-[3px] focus-visible:ring-teal-500/50 min-[1081px]:hidden"
+                className="flex h-10 flex-none items-center gap-2 rounded-full border border-line-strong bg-surface px-3.5 text-sm font-semibold text-ink-600 outline-none hover:border-teal-300 focus-visible:ring-[3px] focus-visible:ring-teal-500/50 min-[1081px]:hidden"
               >
                 <SlidersHorizontal className="size-4" aria-hidden />
                 {t("filters.open")}
                 {activeCount ? <span className="grid size-5 place-items-center rounded-full bg-teal-900 text-[11px] font-bold text-white tabular-nums">{activeCount}</span> : null}
               </button>
             </SheetTrigger>
-            <SheetContent side={dir === "rtl" ? "right" : "left"} dir={dir} hideClose className="w-[88vw] max-w-[360px] gap-0 border-line bg-white p-0 sm:max-w-[360px]">
+            <SheetContent side={dir === "rtl" ? "right" : "left"} dir={dir} hideClose className="w-[88vw] max-w-[360px] gap-0 border-line bg-surface p-0 sm:max-w-[360px]">
               <SheetHeader className="flex-row items-center justify-between gap-3 border-b border-line px-5 py-4">
-                <SheetTitle className="text-[17px] font-bold text-teal-900">{t("filters.title")}</SheetTitle>
+                <SheetTitle className="text-[17px] font-bold text-ink-900">{t("filters.title")}</SheetTitle>
                 <SheetDescription className="sr-only">{t("count", { count: matching.length })}</SheetDescription>
-                <SheetClose className="grid size-9 place-items-center rounded-full text-ink-500 outline-none hover:bg-teal-50 focus-visible:ring-[3px] focus-visible:ring-teal-500/50" aria-label={t("filters.close")}>
+                <SheetClose className="grid size-9 place-items-center rounded-full text-ink-500 outline-none hover:bg-tint focus-visible:ring-[3px] focus-visible:ring-teal-500/50" aria-label={t("filters.close")}>
                   <X className="size-5" aria-hidden />
                 </SheetClose>
               </SheetHeader>
@@ -174,7 +174,7 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
             <select
               value={filters.sort}
               onChange={(event) => apply({ ...filters, sort: event.target.value as GallerySort })}
-              className="h-10 max-w-[150px] rounded-full border border-line-strong bg-white ps-3 pe-2 text-[13px] min-[641px]:max-w-none min-[641px]:ps-4 min-[641px]:pe-3 min-[641px]:text-sm font-semibold text-ink-600 outline-none hover:border-teal-300 focus-visible:ring-[3px] focus-visible:ring-teal-500/50"
+              className="h-10 max-w-[150px] rounded-full border border-line-strong bg-surface ps-3 pe-2 text-[13px] min-[641px]:max-w-none min-[641px]:ps-4 min-[641px]:pe-3 min-[641px]:text-sm font-semibold text-ink-600 outline-none hover:border-teal-300 focus-visible:ring-[3px] focus-visible:ring-teal-500/50"
             >
               {GALLERY_SORTS.map((sort) => (
                 <option key={sort} value={sort}>
@@ -196,7 +196,7 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
                 <ActiveChip label={pickedNiche.name} removeLabel={t("filters.remove", { name: pickedNiche.name })} onRemove={() => onPickNiche(null)} />
               </>
             ) : null}
-            <button type="button" onClick={clearAll} className="rounded-md px-1.5 text-sm font-semibold text-teal-700 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-teal-500/50">
+            <button type="button" onClick={clearAll} className="rounded-md px-1.5 text-sm font-semibold text-ink-brand outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-teal-500/50">
               {t("filters.clearAll")}
             </button>
           </div>
@@ -205,7 +205,7 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
         )}
 
         {matching.length ? null : (
-          <div className="mb-10 flex flex-col items-center gap-4 rounded-[18px] border border-dashed border-line-strong bg-white/60 px-6 py-12 text-center">
+          <div className="mb-10 flex flex-col items-center gap-4 rounded-[18px] border border-dashed border-line-strong bg-surface/60 px-6 py-12 text-center">
             <p className="max-w-[420px] text-[15px] text-pretty text-ink-500">{t("filters.emptyBody")}</p>
             <CtaButton type="button" tone="outline" onClick={clearAll}>
               {t("filters.emptyCta")}
@@ -241,11 +241,11 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
 
           {matching.length ? (
             <div className="flex min-w-0 flex-col">
-              <div className="flex aspect-[3/4] flex-col items-center justify-center gap-2.5 rounded-[18px] border-2 border-dashed border-[#d6e3e6] bg-white/60 p-8 text-center">
+              <div className="flex aspect-[3/4] flex-col items-center justify-center gap-2.5 rounded-[18px] border-2 border-dashed border-[#d6e3e6] dark:border-line bg-surface/60 p-8 text-center">
                 <IconTile>
                   <Plus aria-hidden />
                 </IconTile>
-                <b className="text-[17px] text-teal-900">{t("blankTitle")}</b>
+                <b className="text-[17px] text-ink-900">{t("blankTitle")}</b>
                 <p className="max-w-[260px] text-sm text-ink-500">{t("blankBody")}</p>
                 <SignupTrigger tone="outline" size="sm">
                   {t("blankCta")}
@@ -270,9 +270,9 @@ export function TemplateGallery({ entries, niches = [] }: { entries: GalleryEntr
 /** A picked filter above the grid; the X removes it. */
 function ActiveChip({ label, removeLabel, onRemove }: { label: string; removeLabel: string; onRemove: () => void }) {
   return (
-    <span className="flex h-8 items-center gap-1 rounded-full border border-teal-900/15 bg-teal-50 ps-3 pe-1 text-[13px] font-semibold text-teal-900">
+    <span className="flex h-8 items-center gap-1 rounded-full border border-teal-900/15 bg-tint ps-3 pe-1 text-[13px] font-semibold text-ink-900">
       {label}
-      <button type="button" onClick={onRemove} aria-label={removeLabel} className="grid size-6 place-items-center rounded-full outline-none hover:bg-teal-100 focus-visible:ring-2 focus-visible:ring-teal-500">
+      <button type="button" onClick={onRemove} aria-label={removeLabel} className="grid size-6 place-items-center rounded-full outline-none hover:bg-tint-strong focus-visible:ring-2 focus-visible:ring-teal-500">
         <X className="size-3.5" aria-hidden />
       </button>
     </span>

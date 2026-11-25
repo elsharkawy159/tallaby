@@ -7,10 +7,10 @@ import { formatLongDate } from "@/lib/marketing/format.lib";
 export function PostMeta({ post, locale, className }: { post: BlogPost; locale: string; className?: string }) {
   const t = useTranslations("blog");
   const tc = useTranslations("common");
-  const dot = <i aria-hidden className="block size-1 rounded-full bg-neutral-300" />;
+  const dot = <i aria-hidden className="block size-1 rounded-full bg-neutral-300 dark:bg-tint-strong" />;
   return (
-    <div className={cn("flex flex-wrap items-center gap-3.5 text-[13px] text-neutral-600", className)}>
-      <span className="rounded-full bg-teal-50 px-2.5 py-px font-bold text-teal-700">{t(`categories.${post.category}`)}</span>
+    <div className={cn("flex flex-wrap items-center gap-3.5 text-[13px] text-neutral-600 dark:text-ink-700", className)}>
+      <span className="rounded-full bg-tint px-2.5 py-px font-bold text-ink-brand">{t(`categories.${post.category}`)}</span>
       {dot}
       <time dateTime={post.date}>{formatLongDate(post.date, locale)}</time>
       {post.hasArticle ? (

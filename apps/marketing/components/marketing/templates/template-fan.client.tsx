@@ -38,7 +38,7 @@ export function TemplateFan({ images = [] }: { images?: readonly string[] }) {
         <div
           key={tpl.id}
           className={cn(
-            "absolute top-1/2 left-1/2 w-[62%] overflow-hidden rounded-[14px] bg-white shadow-[0_30px_70px_rgba(0,0,0,0.4)] transition-transform duration-[800ms] ease-[cubic-bezier(.2,.6,.2,1)]",
+            "absolute top-1/2 left-1/2 w-[62%] overflow-hidden rounded-[14px] bg-surface shadow-[0_30px_70px_rgba(0,0,0,0.4)] transition-transform duration-[800ms] ease-[cubic-bezier(.2,.6,.2,1)]",
             POSITIONS[order.indexOf(i)],
           )}
         >

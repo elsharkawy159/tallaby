@@ -21,11 +21,11 @@ export function Breadcrumb({ items, className }: { items: BreadcrumbItem[]; clas
           return (
             <li key={item.label} className="flex items-center gap-1.5">
               {item.href && !last ? (
-                <Link href={item.href} className="text-ink-500 hover:text-teal-900">
+                <Link href={item.href} className="text-ink-500 hover:text-ink-900">
                   {item.label}
                 </Link>
               ) : (
-                <span aria-current={last ? "page" : undefined} className={last ? "font-semibold text-teal-900" : undefined}>
+                <span aria-current={last ? "page" : undefined} className={last ? "font-semibold text-ink-900" : undefined}>
                   {item.label}
                 </span>
               )}

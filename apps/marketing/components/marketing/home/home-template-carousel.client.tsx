@@ -20,7 +20,7 @@ export type HomeCarouselCard = {
 };
 
 const ARROW_CLASS =
-  "inline-flex size-11 items-center justify-center rounded-full border border-line bg-white text-teal-800 shadow-soft transition-colors outline-none hover:bg-teal-50 focus-visible:ring-[3px] focus-visible:ring-teal-500 focus-visible:ring-offset-2";
+  "inline-flex size-11 items-center justify-center rounded-full border border-line bg-surface text-teal-800 shadow-soft transition-colors outline-none hover:bg-tint focus-visible:ring-[3px] focus-visible:ring-teal-500 focus-visible:ring-offset-2";
 
 function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

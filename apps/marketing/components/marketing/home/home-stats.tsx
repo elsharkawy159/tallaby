@@ -42,7 +42,7 @@ export async function HomeStats() {
                 index === 2 ? "min-[861px]:border-s" : "",
               ].join(" ")}
             >
-              <span className="text-[clamp(28px,4vw,42px)] leading-tight font-bold text-teal-900">
+              <span className="text-[clamp(28px,4vw,42px)] leading-tight font-bold text-ink-900">
                 {cell.value !== null ? <CountUp value={cell.value} locale={locale} /> : <Ltr className="font-latin">{cell.text}</Ltr>}
               </span>
               <span className="text-[13.5px] text-pretty text-ink-500 min-[641px]:text-[15px]">{cell.label}</span>

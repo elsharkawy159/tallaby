@@ -78,7 +78,7 @@ export function SlugBadge({ state, demo, className }: { state: SlugState; demo?:
         PILL,
         tone === "ok" && "bg-success-soft text-[#166534]",
         tone === "bad" && "bg-destructive/10 text-destructive",
-        tone === "wait" && "bg-neutral-100 text-neutral-600",
+        tone === "wait" && "bg-neutral-100 dark:bg-surface-muted text-neutral-600 dark:text-ink-700",
         (!tone || demo === false) && "scale-90 opacity-0",
         className,
       )}

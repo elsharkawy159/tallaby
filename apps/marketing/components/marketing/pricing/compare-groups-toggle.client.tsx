@@ -41,7 +41,7 @@ export function CompareGroupsToggle({ containerId, openLabel, closeLabel }: { co
         });
         setAllOpen(next);
       }}
-      className="rounded-full px-3 py-1.5 text-[13px] font-semibold text-teal-700 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-700"
+      className="rounded-full px-3 py-1.5 text-[13px] font-semibold text-ink-brand hover:bg-tint focus-visible:outline-2 focus-visible:outline-ink-brand"
     >
       {allOpen ? closeLabel : openLabel}
     </button>

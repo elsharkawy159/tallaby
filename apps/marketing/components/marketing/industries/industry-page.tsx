@@ -69,7 +69,7 @@ export function buildMockStore(words: StoreMessages, industry: Pick<Industry, "p
   };
 }
 
-const ROW = "flex items-center justify-between gap-3 rounded-[10px] bg-white px-3 py-2 text-[13px] shadow-[0_0_0_1px_#e6eef0]";
+const ROW = "flex items-center justify-between gap-3 rounded-[10px] bg-surface px-3 py-2 text-[13px] shadow-[0_0_0_1px_#e6eef0]";
 
 function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisual; need: NeedMessages; store: MockStore; labels: { hours: string; minutes: string; seconds: string } }) {
   const product = store.products[0]!;
@@ -84,8 +84,8 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
             <span
               key={size}
               className={cn(
-                "grid h-[34px] min-w-[38px] place-items-center rounded-[10px] border-[1.5px] border-line-strong bg-white px-2.5 font-latin text-[13px] font-bold text-ink-700",
-                i === store.selectedSize && "border-teal-700 bg-teal-700 text-white",
+                "grid h-[34px] min-w-[38px] place-items-center rounded-[10px] border-[1.5px] border-line-strong bg-surface px-2.5 font-latin text-[13px] font-bold text-ink-700",
+                i === store.selectedSize && "border-ink-brand bg-teal-700 text-white",
               )}
             >
               {size}
@@ -121,7 +121,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
       </>
     ),
     catalog: () => (
-      <div dir="ltr" className="overflow-hidden rounded-[14px] border border-[#edf1f2] bg-white">
+      <div dir="ltr" className="overflow-hidden rounded-[14px] border border-line-soft bg-surface">
         <div className="flex items-center gap-2 px-2.5 py-2 font-latin text-xs font-bold">
           <span className="grid size-[22px] place-items-center rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white">
             <BrandIcon name="instagram" className="size-3" />
@@ -130,11 +130,11 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
         </div>
         <div className="relative h-24 overflow-hidden bg-[#e8e1d6]">
           <Image src={product.image ?? store.photo} alt="" fill sizes="240px" className="object-cover" style={{ objectPosition: product.image ? "50% 50%" : "60% 45%" }} />
-          <span dir="auto" className="absolute start-2.5 bottom-2.5 z-[1] rounded-lg bg-white/95 px-2 py-1 text-[11.5px] font-bold text-[#1f2326]">
+          <span dir="auto" className="absolute start-2.5 bottom-2.5 z-[1] rounded-lg bg-surface/95 px-2 py-1 text-[11.5px] font-bold text-[#1f2326] dark:text-ink-900">
             {need.tag}
           </span>
         </div>
-        <div className="flex items-center justify-between border-t border-[#f0f0f0] px-2.5 py-2 text-xs font-semibold">
+        <div className="flex items-center justify-between border-t border-[#f0f0f0] dark:border-line px-2.5 py-2 text-xs font-semibold">
           <span dir="auto">{need.viewProducts}</span>
           <ShoppingBag className="size-3.5" />
         </div>
@@ -145,7 +145,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
         <span className="text-xs font-semibold text-ink-400">{need.label}</span>
         <div className="grid grid-cols-3 gap-1.5">
           {need.options?.map((option, i) => (
-            <span key={option.label} className={cn("rounded-[10px] border-[1.5px] border-line-strong bg-white px-1.5 py-2 text-center text-ink-700", i === 1 && "border-teal-700 bg-teal-700 text-white")}>
+            <span key={option.label} className={cn("rounded-[10px] border-[1.5px] border-line-strong bg-surface px-1.5 py-2 text-center text-ink-700", i === 1 && "border-ink-brand bg-teal-700 text-white")}>
               <b className="block text-[13px]">{option.label}</b>
               <small className="text-[11.5px] opacity-80">
                 {option.price} {store.currency}
@@ -167,7 +167,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
           {need.rows?.map((row) => (
             <div key={row.k} className={ROW}>
               <dt className="text-ink-400">{row.k}</dt>
-              <dd className="font-semibold text-teal-900">{row.v}</dd>
+              <dd className="font-semibold text-ink-900">{row.v}</dd>
             </div>
           ))}
         </dl>
@@ -179,7 +179,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
           {need.rows?.map((row) => (
             <div key={row.k} className={ROW}>
               <span className="text-ink-700">{row.k}</span>
-              <b className="text-teal-900">
+              <b className="text-ink-900">
                 {row.v} {store.currency}
               </b>
             </div>
@@ -194,13 +194,13 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
         <div className="grid gap-1.5">
           {need.tiers?.map((tier, i) => (
             <div key={tier.qty} className={cn(ROW, i === 1 && "shadow-[0_0_0_2px_var(--color-teal-700)]")}>
-              <span className="flex items-center gap-2 font-semibold text-teal-900">
-                <i className={cn("block size-3.5 rounded-full border-2 border-line-strong", i === 1 && "border-[4px] border-teal-700")} />
+              <span className="flex items-center gap-2 font-semibold text-ink-900">
+                <i className={cn("block size-3.5 rounded-full border-2 border-line-strong", i === 1 && "border-[4px] border-ink-brand")} />
                 {tier.qty}
               </span>
               <span className="flex items-center gap-1.5">
                 {tier.save ? <small className="rounded-full bg-amber-100 px-2 text-[11px] font-bold text-[#7a4a00]">{tier.save}</small> : null}
-                <b className="text-teal-900">
+                <b className="text-ink-900">
                   {tier.price} {store.currency}
                 </b>
               </span>
@@ -212,7 +212,7 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
     reviews: () => (
       <>
         {need.reviews?.map((review) => (
-          <div key={review.text} className="rounded-[12px] bg-white p-3 shadow-[0_0_0_1px_#e6eef0]">
+          <div key={review.text} className="rounded-[12px] bg-surface p-3 shadow-[0_0_0_1px_#e6eef0]">
             <span className="mb-1 flex text-amber-600">
               {[0, 1, 2, 3, 4].map((i) => (
                 <Star key={i} className="size-3 fill-current" />
@@ -227,12 +227,12 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
     notes: () => (
       <>
         <span className="text-xs font-semibold text-ink-400">{need.label}</span>
-        <div className="min-h-[76px] rounded-[12px] border-[1.5px] border-teal-700 bg-white p-3 text-[13px] text-ink-700">{need.text}</div>
+        <div className="min-h-[76px] rounded-[12px] border-[1.5px] border-ink-brand bg-surface p-3 text-[13px] text-ink-700">{need.text}</div>
         {need.note ? <span className="text-xs font-semibold text-[#15803d]">{need.note}</span> : null}
       </>
     ),
     alert: () => (
-      <div className="rounded-[16px] bg-white p-3 shadow-[0_10px_26px_rgba(13,55,67,0.12)]">
+      <div className="rounded-[16px] bg-surface p-3 shadow-[0_10px_26px_rgba(13,55,67,0.12)]">
         <div className="mb-1 flex items-center justify-between gap-2 text-[11.5px] text-ink-400">
           <span className="flex items-center gap-1.5 font-semibold">
             <span className="grid size-5 place-items-center rounded-md bg-teal-900 text-amber-600">
@@ -242,20 +242,20 @@ function NeedVisual({ visual, need, store, labels }: { visual: IndustryNeedVisua
           </span>
           {need.time}
         </div>
-        <b className="block text-[14px] text-teal-900">{need.label}</b>
+        <b className="block text-[14px] text-ink-900">{need.label}</b>
         <span className="text-[13px] text-ink-500">{need.body}</span>
       </div>
     ),
     restock: () => (
       <>
         <span className="self-start rounded-full bg-[#fde8e4] px-2.5 py-0.5 text-[11.5px] font-bold text-[#b4412f]">{need.label}</span>
-        <span className="rounded-[10px] border-[1.5px] border-line-strong bg-white px-3 py-2 text-[13px] text-ink-400">{need.placeholder}</span>
+        <span className="rounded-[10px] border-[1.5px] border-line-strong bg-surface px-3 py-2 text-[13px] text-ink-400">{need.placeholder}</span>
         <span className="rounded-[10px] bg-teal-900 py-2 text-center text-[13px] font-bold text-white">{need.button}</span>
       </>
     ),
   };
   return (
-    <div aria-hidden className="flex min-h-[190px] min-w-0 flex-col justify-center gap-2.5 rounded-[20px] border border-[#edf1f2] bg-gradient-to-b from-[#f2f7f8] to-white p-4">
+    <div aria-hidden className="flex min-h-[190px] min-w-0 flex-col justify-center gap-2.5 rounded-[20px] border border-line-soft bg-gradient-to-b from-[#f2f7f8] dark:from-surface-muted to-surface p-4">
       {views[visual]()}
     </div>
   );
@@ -296,13 +296,13 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
       <section className="overflow-hidden pt-7 pb-14 sm:pt-10 sm:pb-20">
         <Container className="grid items-center gap-12 min-[1081px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
           <div className="flex min-w-0 flex-col items-center gap-5 text-center min-[1081px]:items-start min-[1081px]:text-start">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#e1eaec] bg-white py-[5px] ps-1.5 pe-3.5 text-[13.5px] font-bold text-teal-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-line-kick bg-surface py-[5px] ps-1.5 pe-3.5 text-[13.5px] font-bold text-ink-brand">
               <span className="grid size-7 place-items-center rounded-full bg-amber-600 text-teal-900">
                 <Tag className="size-[15px]" aria-hidden />
               </span>
               {t("tag")}
             </span>
-            <h1 className="text-[clamp(32px,4.8vw,56px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.12] en:tracking-[-0.015em] [&_em]:text-amber-700">{t.rich("title", richTags)}</h1>
+            <h1 className="text-[clamp(32px,4.8vw,56px)] leading-[1.3] font-bold text-balance text-ink-900 en:leading-[1.12] en:tracking-[-0.015em] [&_em]:text-amber-700">{t.rich("title", richTags)}</h1>
             <p className="max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">
               <BidiText text={t("lead")} />
             </p>
@@ -328,7 +328,7 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
                 <span
                   key={text}
                   className={cn(
-                    "absolute z-[4] rounded-[14px] bg-white px-2.5 py-1.5 text-[11.5px] font-bold whitespace-nowrap text-teal-900 shadow-[0_12px_30px_rgba(13,55,67,0.18)] sm:px-3 sm:py-2 sm:text-[13px]",
+                    "absolute z-[4] rounded-[14px] bg-surface px-2.5 py-1.5 text-[11.5px] font-bold whitespace-nowrap text-ink-900 shadow-[0_12px_30px_rgba(13,55,67,0.18)] sm:px-3 sm:py-2 sm:text-[13px]",
                     i === 0 ? "start-[2%] top-10" : "start-[-2%] bottom-[70px] hidden sm:block",
                   )}
                 >
@@ -347,9 +347,9 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
             {needs.map((need, i) => {
               const { visual, icon: Icon } = industry.needs[i]!;
               return (
-                <Reveal as="article" key={need.title} className="grid items-center gap-[22px] rounded-[26px] border border-[#e6eef0] bg-white/90 p-[18px] sm:p-6 min-[1081px]:grid-cols-2">
+                <Reveal as="article" key={need.title} className="grid items-center gap-[22px] rounded-[26px] border border-[#e6eef0] dark:border-line bg-surface/90 p-[18px] sm:p-6 min-[1081px]:grid-cols-2">
                   <div className="min-w-0">
-                    <h3 className="mb-2.5 flex items-center gap-2.5 text-[19px] leading-normal font-bold text-teal-900">
+                    <h3 className="mb-2.5 flex items-center gap-2.5 text-[19px] leading-normal font-bold text-ink-900">
                       <IconTile className="size-10 rounded-xl">
                         <Icon aria-hidden />
                       </IconTile>
@@ -408,10 +408,10 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
             {steps.map((step, i) => {
               const Icon = industry.stepIcons[i]!;
               return (
-                <Reveal as="article" key={step.title} className="relative flex flex-col gap-2.5 rounded-[26px] border border-[#e6eef0] bg-white/90 p-6">
+                <Reveal as="article" key={step.title} className="relative flex flex-col gap-2.5 rounded-[26px] border border-[#e6eef0] dark:border-line bg-surface/90 p-6">
                   <Num className="grid size-9 place-items-center rounded-full bg-amber-600 text-sm font-bold text-teal-900">{i + 1}</Num>
                   <Icon className="absolute end-6 top-6 size-[26px] text-teal-300" aria-hidden />
-                  <h3 className="text-[17px] leading-normal font-bold text-teal-900">{step.title}</h3>
+                  <h3 className="text-[17px] leading-normal font-bold text-ink-900">{step.title}</h3>
                   <p className="text-sm text-pretty text-ink-500">
                     <BidiText text={step.body} />
                   </p>
@@ -432,16 +432,16 @@ export async function IndustryPageView({ industry }: { industry: Industry }) {
               <Link
                 key={key}
                 href={href}
-                className="group inline-flex h-12 items-center gap-2 rounded-full border border-[#e3ebed] bg-white px-5 text-[15px] font-semibold text-teal-900 transition-colors duration-150 hover:border-teal-700 hover:bg-teal-900 hover:text-white hover:no-underline"
+                className="group inline-flex h-12 items-center gap-2 rounded-full border border-line bg-surface px-5 text-[15px] font-semibold text-ink-900 transition-colors duration-150 hover:border-ink-brand hover:bg-teal-900 hover:text-white hover:no-underline"
               >
-                <Icon className="size-[17px] text-teal-700 group-hover:text-amber-600" aria-hidden />
+                <Icon className="size-[17px] text-ink-brand group-hover:text-amber-600" aria-hidden />
                 {kinds(key)}
               </Link>
             ))}
           </div>
           <nav aria-label={shared("relatedLabel")} className="mx-auto mt-8 flex max-w-[900px] flex-wrap justify-center gap-x-6 gap-y-1 text-[15px] font-semibold">
             {RELATED_LINKS.map(({ key, href }) => (
-              <Link key={key} href={href} className="inline-flex min-h-11 items-center text-teal-700 underline-offset-4 hover:underline">
+              <Link key={key} href={href} className="inline-flex min-h-11 items-center text-ink-brand underline-offset-4 hover:underline">
                 {shared(`related.${key}`)}
               </Link>
             ))}

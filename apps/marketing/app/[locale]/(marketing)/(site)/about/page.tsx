@@ -36,16 +36,16 @@ export default async function AboutPage() {
       <section className="pt-11 sm:pt-20">
         <Container>
           <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <h1 className="max-w-[1000px] text-[clamp(40px,6.4vw,84px)] leading-[1.2] font-bold text-balance text-teal-900 en:leading-none en:tracking-[-0.04em]">
+          <h1 className="max-w-[1000px] text-[clamp(40px,6.4vw,84px)] leading-[1.2] font-bold text-balance text-ink-900 en:leading-none en:tracking-[-0.04em]">
             {t.rich("title", {
               ...richTags,
               u: (chunks: ReactNode) => <span className="text-amber-700 sm:whitespace-nowrap">{chunks}</span>,
             })}
           </h1>
           <div className="mt-10 flex flex-wrap items-end justify-between gap-10 pb-16">
-            <p className="max-w-[520px] text-lg text-pretty text-[#56696e]">{t("lead")}</p>
+            <p className="max-w-[520px] text-lg text-pretty text-[#56696e] dark:text-ink-500">{t("lead")}</p>
             <div className="flex items-center gap-4 text-sm text-ink-500">
-              <b className="font-noto-kufi-arabic text-[44px] leading-none font-bold text-teal-900">طلبي</b>
+              <b className="font-noto-kufi-arabic text-[44px] leading-none font-bold text-ink-900">طلبي</b>
               <span className="border-s border-line-strong ps-4 leading-normal">{t.rich("word", richTags)}</span>
             </div>
           </div>
@@ -68,9 +68,9 @@ export default async function AboutPage() {
             <Kicker>{t("storyKicker")}</Kicker>
           </Reveal>
           <Reveal>
-            <p className="text-[clamp(22px,2.4vw,30px)] leading-[1.6] font-semibold text-teal-900 en:leading-[1.4] en:tracking-[-0.01em]">
+            <p className="text-[clamp(22px,2.4vw,30px)] leading-[1.6] font-semibold text-ink-900 en:leading-[1.4] en:tracking-[-0.01em]">
               {t.rich("story", {
-                em: (chunks) => <em className="bg-[linear-gradient(transparent_62%,var(--color-amber-100)_62%)] not-italic">{chunks}</em>,
+                em: (chunks) => <em className="bg-[linear-gradient(transparent_62%,var(--color-amber-100)_62%)] dark:bg-[linear-gradient(transparent_62%,rgb(253_173_40/0.32)_62%)] not-italic">{chunks}</em>,
               })}
             </p>
             <p className="mt-9 text-[15px] text-slate-ink">{t("story2")}</p>
@@ -93,7 +93,7 @@ export default async function AboutPage() {
                 <span className="row-span-2 font-latin text-[40px] leading-none font-extrabold tracking-[-0.04em] text-teal-100 transition-colors group-hover:text-amber-600 lg:row-span-1 lg:text-[56px]">
                   0{i + 1}
                 </span>
-                <h3 className="text-2xl leading-[1.35] font-bold text-teal-900">{p.title}</h3>
+                <h3 className="text-2xl leading-[1.35] font-bold text-ink-900">{p.title}</h3>
                 <p className="text-base text-slate-ink">{p.body}</p>
               </Reveal>
             ))}
@@ -121,7 +121,7 @@ export default async function AboutPage() {
           <Reveal>
             <SiteCard size="lg" glass className="grid items-center gap-8 p-[26px] sm:grid-cols-[minmax(0,1fr)_auto] sm:p-10">
               <div>
-                <h2 className="text-2xl font-bold text-teal-900">{t("hiring")}</h2>
+                <h2 className="text-2xl font-bold text-ink-900">{t("hiring")}</h2>
                 <p className="mt-1.5 text-slate-ink">{t("hiringBody")}</p>
               </div>
               <div className="flex flex-wrap gap-2.5">

@@ -29,17 +29,17 @@ export function HeroPhoneScreen({ shots, className }: { shots: readonly HeroPhon
     <div
       ref={ref}
       data-playing={inView && loaded ? "true" : undefined}
-      className={cn("hero-phone relative overflow-hidden bg-[#f3f5f5]", className)}
+      className={cn("hero-phone relative overflow-hidden bg-[#f3f5f5] dark:bg-surface-muted", className)}
       style={shot ? ({ "--hero-phone-run": `${heroPhoneTourSeconds(shot.width, shot.height)}s` } as React.CSSProperties) : undefined}
     >
       {/* A blank store page until the shot has loaded. */}
       <div className={cn("absolute inset-0 flex flex-col gap-[5%] p-[7%] pt-[16%] transition-opacity duration-500", loaded && "opacity-0")}>
-        <span className="h-[3%] w-2/5 rounded-full bg-[#e2e7e8]" />
-        <span className="h-[34%] rounded-xl bg-[#e2e7e8]" />
-        <span className="h-[3%] w-3/5 rounded-full bg-[#e2e7e8]" />
+        <span className="h-[3%] w-2/5 rounded-full bg-[#e2e7e8] dark:bg-surface-muted" />
+        <span className="h-[34%] rounded-xl bg-[#e2e7e8] dark:bg-surface-muted" />
+        <span className="h-[3%] w-3/5 rounded-full bg-[#e2e7e8] dark:bg-surface-muted" />
         <span className="flex flex-1 gap-[6%]">
-          <i className="flex-1 rounded-xl bg-[#e9edee]" />
-          <i className="flex-1 rounded-xl bg-[#e9edee]" />
+          <i className="flex-1 rounded-xl bg-[#e9edee] dark:bg-surface-muted" />
+          <i className="flex-1 rounded-xl bg-[#e9edee] dark:bg-surface-muted" />
         </span>
       </div>
       {img && (

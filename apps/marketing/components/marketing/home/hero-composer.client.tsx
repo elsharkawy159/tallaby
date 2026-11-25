@@ -58,7 +58,7 @@ const HOLD_MS = 2200;
 const STATIC_MS = 4000;
 
 const iconButton =
-  "grid size-11 flex-none place-items-center rounded-full text-ink-700 transition-colors outline-none hover:bg-teal-50 hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30 disabled:opacity-50";
+  "grid size-11 flex-none place-items-center rounded-full text-ink-700 transition-colors outline-none hover:bg-tint hover:text-ink-900 focus-visible:ring-[3px] focus-visible:ring-ink-brand/30 disabled:opacity-50";
 
 type IntakeResponse =
   | { ok: true; intakeId: string; token: string; uploads: { kind: "file" | "logo"; path: string; token: string; contentType: string }[] }
@@ -286,7 +286,7 @@ export function HeroComposer({ className }: { className?: string }) {
           void submit();
         }}
         aria-busy={busy || undefined}
-        className="rounded-[24px] border-[1.5px] border-line-strong bg-white p-2 shadow-[0_10px_30px_rgba(20,81,99,0.08)] transition-[border-color,box-shadow] focus-within:border-teal-700 focus-within:shadow-[0_10px_30px_rgba(20,81,99,0.14)] sm:p-2.5"
+        className="rounded-[24px] border-[1.5px] border-line-strong bg-surface p-2 shadow-[0_10px_30px_rgba(20,81,99,0.08)] transition-[border-color,box-shadow] focus-within:border-ink-brand focus-within:shadow-[0_10px_30px_rgba(20,81,99,0.14)] sm:p-2.5"
       >
         <label htmlFor={`${ids}-prompt`} className="sr-only">
           {t("label")}
@@ -303,7 +303,7 @@ export function HeroComposer({ className }: { className?: string }) {
           aria-describedby={`${ids}-help ${ids}-count`}
           aria-invalid={error === "empty" || undefined}
           disabled={busy}
-          className="block max-h-[220px] min-h-[64px] w-full resize-none bg-transparent px-3 pt-2.5 text-base leading-relaxed text-teal-900 outline-none placeholder:text-ink-400 disabled:opacity-70 sm:text-[17px]"
+          className="block max-h-[220px] min-h-[64px] w-full resize-none bg-transparent px-3 pt-2.5 text-base leading-relaxed text-ink-900 outline-none placeholder:text-ink-400 disabled:opacity-70 sm:text-[17px]"
         />
         <p id={`${ids}-help`} className="sr-only">
           {t("keyboardHelp")}
@@ -313,7 +313,7 @@ export function HeroComposer({ className }: { className?: string }) {
           <ul className="m-0 flex list-none flex-wrap gap-2 px-2 pt-1.5 pb-1" aria-label={t("attachments")}>
             {file ? (
               <AttachmentChip
-                icon={reading ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <FileSpreadsheet className="size-4 text-teal-700" aria-hidden />}
+                icon={reading ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <FileSpreadsheet className="size-4 text-ink-brand" aria-hidden />}
                 title={file.file.name}
                 detail={fileText}
                 removeLabel={t("remove", { name: file.file.name })}
@@ -356,8 +356,8 @@ export function HeroComposer({ className }: { className?: string }) {
                 aria-label={t("useColor", { hex })}
                 aria-pressed={color === hex}
                 className={cn(
-                  "grid size-11 place-items-center rounded-full outline-none focus-visible:ring-[3px] focus-visible:ring-teal-700/30",
-                  color === hex && "ring-2 ring-teal-700",
+                  "grid size-11 place-items-center rounded-full outline-none focus-visible:ring-[3px] focus-visible:ring-ink-brand/30",
+                  color === hex && "ring-2 ring-ink-brand",
                 )}
               >
                 <span aria-hidden className="size-7 rounded-full border border-black/10" style={{ backgroundColor: hex }} />
@@ -390,7 +390,7 @@ export function HeroComposer({ className }: { className?: string }) {
               </button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-[min(288px,calc(100vw-32px))] rounded-2xl p-4">
-              <p className="mb-2.5 text-sm font-semibold text-teal-900">{t("colorTitle")}</p>
+              <p className="mb-2.5 text-sm font-semibold text-ink-900">{t("colorTitle")}</p>
               <div className="grid grid-cols-5 gap-1">
                 {PRESETS.map((hex) => (
                   <button
@@ -403,8 +403,8 @@ export function HeroComposer({ className }: { className?: string }) {
                     aria-label={t("useColor", { hex })}
                     aria-pressed={color === hex}
                     className={cn(
-                      "grid size-11 place-items-center rounded-full outline-none focus-visible:ring-[3px] focus-visible:ring-teal-700/30",
-                      color === hex && "ring-2 ring-teal-700",
+                      "grid size-11 place-items-center rounded-full outline-none focus-visible:ring-[3px] focus-visible:ring-ink-brand/30",
+                      color === hex && "ring-2 ring-ink-brand",
                     )}
                   >
                     <span aria-hidden className="size-8 rounded-full border border-black/10" style={{ backgroundColor: hex }} />
@@ -428,12 +428,12 @@ export function HeroComposer({ className }: { className?: string }) {
                   placeholder="#0f766e"
                   spellCheck={false}
                   autoComplete="off"
-                  className="h-11 min-w-0 flex-1 rounded-[10px] border border-neutral-200 px-3 font-latin text-base outline-none focus:border-teal-700 focus:ring-[3px] focus:ring-teal-700/12"
+                  className="h-11 min-w-0 flex-1 rounded-[10px] border border-neutral-200 dark:border-line px-3 font-latin text-base outline-none focus:border-ink-brand focus:ring-[3px] focus:ring-ink-brand/12"
                 />
                 <button
                   type="button"
                   onClick={applyHex}
-                  className="h-11 rounded-[10px] bg-teal-900 px-4 text-sm font-bold text-white outline-none hover:bg-[#0b3542] focus-visible:ring-[3px] focus-visible:ring-teal-700/30"
+                  className="h-11 rounded-[10px] bg-teal-900 px-4 text-sm font-bold text-white outline-none hover:bg-[#0b3542] focus-visible:ring-[3px] focus-visible:ring-ink-brand/30"
                 >
                   {t("colorApply")}
                 </button>
@@ -447,7 +447,7 @@ export function HeroComposer({ className }: { className?: string }) {
           <button
             type="submit"
             disabled={busy || reading}
-            className="inline-flex h-11 flex-none items-center gap-2 rounded-full bg-amber-600 ps-4 pe-3 text-[15px] font-bold whitespace-nowrap text-teal-900 shadow-cta outline-none transition-[background-color,transform] hover:bg-amber-700 focus-visible:ring-[3px] focus-visible:ring-teal-700/30 active:scale-[.98] disabled:opacity-70 sm:ps-5"
+            className="inline-flex h-11 flex-none items-center gap-2 rounded-full bg-amber-600 ps-4 pe-3 text-[15px] font-bold whitespace-nowrap text-teal-900 shadow-cta outline-none transition-[background-color,transform] hover:bg-amber-700 focus-visible:ring-[3px] focus-visible:ring-ink-brand/30 active:scale-[.98] disabled:opacity-70 sm:ps-5"
           >
             {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
             <span>{phase === "uploading" ? t("uploading") : phase === "saving" ? t("saving") : t("send")}</span>
@@ -484,10 +484,10 @@ function AttachmentChip({
   disabled?: boolean;
 }) {
   return (
-    <li className="flex max-w-full min-w-0 items-center gap-2 rounded-2xl border border-line bg-[#f6f9f9] py-1 ps-2.5 pe-1">
+    <li className="flex max-w-full min-w-0 items-center gap-2 rounded-2xl border border-line bg-[#f6f9f9] dark:bg-surface-muted py-1 ps-2.5 pe-1">
       {icon}
       <span className="flex min-w-0 flex-col leading-tight">
-        <span className="truncate text-[13px] font-semibold text-teal-900">{title}</span>
+        <span className="truncate text-[13px] font-semibold text-ink-900">{title}</span>
         <span className="truncate text-xs text-ink-500" aria-live="polite">
           {detail}
         </span>
@@ -497,7 +497,7 @@ function AttachmentChip({
         onClick={onRemove}
         disabled={disabled}
         aria-label={removeLabel}
-        className="grid size-11 flex-none place-items-center rounded-full text-ink-500 outline-none hover:bg-white hover:text-teal-900 focus-visible:ring-[3px] focus-visible:ring-teal-700/30"
+        className="grid size-11 flex-none place-items-center rounded-full text-ink-500 outline-none hover:bg-surface hover:text-ink-900 focus-visible:ring-[3px] focus-visible:ring-ink-brand/30"
       >
         <X className="size-4" aria-hidden />
       </button>

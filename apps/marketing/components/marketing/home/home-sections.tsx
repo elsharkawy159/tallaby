@@ -86,7 +86,7 @@ export async function HomeHero() {
           competes with the title for bandwidth; it fades out before the demo ends. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[min(100%,1100px)] bg-[url(/marketing/home/home-hero-pattern.webp)] bg-cover bg-top opacity-70 [mask-image:linear-gradient(to_bottom,#000_60%,transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[min(100%,1100px)] bg-[url(/marketing/home/home-hero-pattern.webp)] bg-cover bg-top opacity-70 [mask-image:linear-gradient(to_bottom,#000_60%,transparent)] dark:opacity-[0.06]"
       />
       <Container className="relative flex flex-col items-center text-center">
         {/* First thing in the hero, above the title (owner, 2026-11-06; was after the call to action),
@@ -98,7 +98,7 @@ export async function HomeHero() {
         ) : null}
         <h1
           id="home-h1"
-          className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic"
+          className="max-w-[900px] text-[clamp(34px,6.2vw,68px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.08] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic"
         >
           {t.rich("title", richTags)}
         </h1>
@@ -111,7 +111,7 @@ export async function HomeHero() {
               {check.href ? (
                 <a
                   href={check.href}
-                  className="flex items-center gap-1.5 rounded-sm underline-offset-2 hover:text-teal-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                  className="flex items-center gap-1.5 rounded-sm underline-offset-2 hover:text-ink-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-brand"
                 >
                   {checkIcon}
                   <span>{check.label}</span>
@@ -147,7 +147,7 @@ export async function HomeHero() {
               {features.map((label, index) => {
                 const Icon = MARQUEE_ICONS[index] ?? Sparkles;
                 return (
-                  <li key={label} dir={locale === "ar" ? "rtl" : "ltr"} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-white/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-ink-700">
+                  <li key={label} dir={locale === "ar" ? "rtl" : "ltr"} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-surface/75 px-4 text-[13.5px] font-semibold whitespace-nowrap text-ink-700">
                     <Icon aria-hidden className="size-4 shrink-0 text-amber-600" strokeWidth={2} />
                     {label}
                   </li>
@@ -294,7 +294,7 @@ export async function HomeFaq() {
     <Section id="faq" aria-labelledby="faq-title">
       <Container className="grid gap-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-14">
         <Reveal className="flex flex-col">
-          <SectionHeading id="faq-title" kicker={t("kicker")} title={t("title")} className="mb-0" description={t.rich("desc", { link: (chunks) => <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 underline-offset-2 hover:underline">{chunks}</a> })} />
+          <SectionHeading id="faq-title" kicker={t("kicker")} title={t("title")} className="mb-0" description={t.rich("desc", { link: (chunks) => <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-ink-brand underline-offset-2 hover:underline">{chunks}</a> })} />
           {/* Fills the empty height under the heading on wide screens only. */}
           <Image src="/marketing/home/home-faq.webp" alt="" width={440} height={440} unoptimized className="mt-6 hidden h-auto w-[220px] self-center min-[1081px]:block" />
         </Reveal>

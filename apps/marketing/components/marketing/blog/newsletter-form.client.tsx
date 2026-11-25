@@ -38,7 +38,7 @@ export function NewsletterForm() {
 
   return (
     <div className="relative z-[1]">
-      <form onSubmit={onSubmit} className="flex flex-col gap-1.5 rounded-[18px] bg-white p-1.5 focus-within:shadow-[0_0_0_3px_rgb(253_173_40/0.7)] sm:flex-row sm:rounded-full">
+      <form onSubmit={onSubmit} className="flex flex-col gap-1.5 rounded-[18px] bg-surface p-1.5 focus-within:shadow-[0_0_0_3px_rgb(253_173_40/0.7)] sm:flex-row sm:rounded-full">
         <input
           type="email"
           name="email"
@@ -48,7 +48,7 @@ export function NewsletterForm() {
           dir="ltr"
           placeholder="you@example.com"
           aria-label={tc("email")}
-          className="h-[46px] min-w-0 flex-1 bg-transparent px-[18px] text-teal-900 outline-none sm:h-auto"
+          className="h-[46px] min-w-0 flex-1 bg-transparent px-[18px] text-ink-900 outline-none sm:h-auto"
         />
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
         <CtaButton type="submit" disabled={pending}>

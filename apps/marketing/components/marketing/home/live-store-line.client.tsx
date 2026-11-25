@@ -69,13 +69,13 @@ export function LiveStoreLine({ stores, readAt }: { stores: RecentStore[]; readA
   const age = storeAge(store.publishedAtMs, now);
   const tags = {
     industry: store.industry ? t(`industries.${store.industry}`) : "",
-    kind: (chunks: React.ReactNode) => <b className="min-w-0 truncate font-bold text-teal-900">{chunks}</b>,
+    kind: (chunks: React.ReactNode) => <b className="min-w-0 truncate font-bold text-ink-900">{chunks}</b>,
     age: () =>
       age.unit === "now"
         ? t("now")
         : t.rich(age.unit, {
             count: age.count,
-            num: (chunks) => <Num className="font-bold text-teal-900">{chunks}</Num>,
+            num: (chunks) => <Num className="font-bold text-ink-900">{chunks}</Num>,
           }),
   };
 
@@ -84,7 +84,7 @@ export function LiveStoreLine({ stores, readAt }: { stores: RecentStore[]; readA
       ref={ref}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`${LINE_CLASS} inline-flex items-center gap-2 rounded-full border border-[#e3ebed]/80 bg-white/80 backdrop-blur-sm ps-3 pe-3.5 text-[12.5px] whitespace-nowrap min-[641px]:gap-2.5 min-[641px]:ps-3.5 min-[641px]:pe-4 min-[641px]:text-sm text-ink-600 shadow-[0_2px_10px_rgba(20,81,99,0.06)]`}
+      className={`${LINE_CLASS} inline-flex items-center gap-2 rounded-full border border-line/80 bg-surface/80 backdrop-blur-sm ps-3 pe-3.5 text-[12.5px] whitespace-nowrap min-[641px]:gap-2.5 min-[641px]:ps-3.5 min-[641px]:pe-4 min-[641px]:text-sm text-ink-600 shadow-[0_2px_10px_rgba(20,81,99,0.06)]`}
     >
       <i aria-hidden className={`size-[9px] flex-none rounded-full bg-[#16a34a] ${line.kind === "recent" ? "animate-pulse-ring" : ""}`} />
       {/* Only the industry shrinks on a narrow phone: every other run keeps its width (whitespace-pre). */}

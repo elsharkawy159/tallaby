@@ -70,12 +70,12 @@ export function SlugClaimForm({
         openSignup(slug);
       }}
       className={cn(
-        "flex max-w-[540px] flex-col items-stretch gap-1.5 rounded-[18px] bg-white p-1.5 sm:flex-row sm:items-center sm:gap-0 sm:rounded-full",
+        "flex max-w-[540px] flex-col items-stretch gap-1.5 rounded-[18px] bg-surface p-1.5 sm:flex-row sm:items-center sm:gap-0 sm:rounded-full",
         !flat && "border-[1.5px] border-line-strong shadow-[0_10px_30px_rgba(20,81,99,0.08)]",
         className,
       )}
     >
-      <label dir="ltr" className="flex h-12 min-w-0 flex-1 cursor-text items-center px-3 text-base text-neutral-600 sm:h-auto sm:text-[15px] sm:ps-[18px] sm:pe-2">
+      <label dir="ltr" className="flex h-12 min-w-0 flex-1 cursor-text items-center px-3 text-base text-neutral-600 dark:text-ink-700 sm:h-auto sm:text-[15px] sm:ps-[18px] sm:pe-2">
         <span className="sr-only">{t("storeLink")}</span>
         <input
           id={inputId}
@@ -90,9 +90,9 @@ export function SlugClaimForm({
           autoComplete="off"
           spellCheck={false}
           aria-label={t("storeLink")}
-          className="min-w-0 flex-1 bg-transparent p-0 text-left font-latin text-base font-semibold text-teal-900 outline-none"
+          className="min-w-0 flex-1 bg-transparent p-0 text-left font-latin text-base font-semibold text-ink-900 outline-none"
         />
-        <span className="font-latin font-medium text-neutral-500">.{ROOT_DOMAIN}</span>
+        <span className="font-latin font-medium text-neutral-500 dark:text-ink-500">.{ROOT_DOMAIN}</span>
       </label>
       <CtaButton type="submit" className="w-full rounded-xl sm:w-auto sm:rounded-full">
         {submitLabel ?? t("claimLink")}

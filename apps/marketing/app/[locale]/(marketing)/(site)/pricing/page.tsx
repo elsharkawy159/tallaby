@@ -70,16 +70,16 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <h2 className="sr-only">{t("plans.heading")}</h2>
           {/* Above the fold: no fade-in, so the cards paint with the server HTML (a late reveal was the LCP). */}
           <PlanCards reveal={false} />
-          <Reveal className="mx-auto mt-7 flex max-w-[880px] flex-wrap justify-center gap-x-[22px] gap-y-2.5 text-sm text-[#3f5358]">
+          <Reveal className="mx-auto mt-7 flex max-w-[880px] flex-wrap justify-center gap-x-[22px] gap-y-2.5 text-sm text-[#3f5358] dark:text-ink-700">
             {included.map((item) => (
               <span key={item.label} className="inline-flex items-center gap-1.5">
-                <item.icon className="size-4 text-teal-700" aria-hidden />
+                <item.icon className="size-4 text-ink-brand" aria-hidden />
                 {item.label}
               </span>
             ))}
           </Reveal>
           <p className="mt-5 text-center">
-            <a href="#compare" className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-teal-700 underline-offset-4 hover:underline">
+            <a href="#compare" className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-ink-brand underline-offset-4 hover:underline">
               {t("compare.jump")}
               <ChevronDown className="size-4" aria-hidden />
             </a>
@@ -119,8 +119,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                   <IconTile className="mb-1">
                     <item.icon aria-hidden />
                   </IconTile>
-                  <h3 className="text-[17px] leading-normal font-bold text-teal-900">{item.title}</h3>
-                  <p className="text-sm text-pretty text-[#5f7277]">{item.body}</p>
+                  <h3 className="text-[17px] leading-normal font-bold text-ink-900">{item.title}</h3>
+                  <p className="text-sm text-pretty text-[#5f7277] dark:text-ink-500">{item.body}</p>
                 </SiteCard>
               </Reveal>
             ))}
@@ -130,8 +130,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               <div key={item.title} className="flex gap-3.5 rounded-card-sm border border-dashed border-line-strong p-[22px]">
                 <item.icon className="mt-1 size-[18px] flex-none text-ink-500" aria-hidden />
                 <div className="min-w-0 flex-1">
-                  <b className="block text-teal-900">{item.title}</b>
-                  <span className="text-sm text-[#5f7277]">{item.body}</span>
+                  <b className="block text-ink-900">{item.title}</b>
+                  <span className="text-sm text-[#5f7277] dark:text-ink-500">{item.body}</span>
                 </div>
               </div>
             ))}
@@ -149,7 +149,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               className="mb-0"
               description={t.rich("faq.desc", {
                 link: (chunks) => (
-                  <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 underline-offset-2 hover:underline">
+                  <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-ink-brand underline-offset-2 hover:underline">
                     {chunks}
                   </a>
                 ),

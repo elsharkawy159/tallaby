@@ -14,7 +14,7 @@ import { CONTACT } from "@/lib/marketing/site.lib";
 import { cn } from "@workspace/ui/lib/utils";
 import { CompareSources, CompareTable, CompetitorChip, TallabyChip } from "./compare-table";
 
-const H2 = "mb-[22px] text-[clamp(24px,3.2vw,34px)] leading-[1.35] font-bold text-balance text-teal-900";
+const H2 = "mb-[22px] text-[clamp(24px,3.2vw,34px)] leading-[1.35] font-bold text-balance text-ink-900";
 
 /** One comparison (`SEO_PLAN.md` §9.2). Everything about the competitor comes from its sourced facts; a missing fact is left out. */
 export async function ComparePageView({ competitor }: { competitor: Competitor }) {
@@ -56,10 +56,10 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
             <span className="grid size-[38px] flex-none place-items-center rounded-full bg-teal-900 text-[11px] font-bold text-white shadow-[0_0_0_6px_rgba(20,81,99,0.08)] sm:size-[46px] sm:text-xs">{t("vs")}</span>
             <CompetitorChip name={name} />
           </div>
-          <h1 className="mx-auto max-w-[860px] text-[clamp(28px,4.6vw,50px)] leading-[1.35] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">{t("title", { name })}</h1>
+          <h1 className="mx-auto max-w-[860px] text-[clamp(28px,4.6vw,50px)] leading-[1.35] font-bold text-balance text-ink-900 en:leading-[1.15] en:tracking-[-0.01em]">{t("title", { name })}</h1>
           <p className="mx-auto mt-5 max-w-[720px] text-[clamp(16px,2vw,18px)] text-pretty text-ink-500">{withPrices(c("intro", prices), bidi)}</p>
           <div className="mt-[22px] flex flex-wrap items-center justify-center gap-x-[22px] gap-y-2.5 text-sm text-ink-500">
-            <a href="#sources" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-teal-100 bg-white px-3.5 text-[13.5px] font-semibold text-teal-900 hover:no-underline">
+            <a href="#sources" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-tint-strong bg-surface px-3.5 text-[13.5px] font-semibold text-ink-900 hover:no-underline">
               <Calendar className="size-4 text-teal-500" aria-hidden />
               {t("checkedOn", { date: dateOf(factsCheckedOn(competitor)) })}
             </a>
@@ -70,8 +70,8 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
 
       <section className="pt-2 pb-10">
         <Container>
-          <Reveal className="overflow-hidden rounded-card-lg border border-[#e3ebed] bg-white shadow-[0_18px_44px_rgba(13,55,67,0.07)]">
-            <div className="flex items-center gap-2.5 border-b border-[#edf1f2] px-5 py-[18px] font-bold text-teal-900 sm:px-7">
+          <Reveal className="overflow-hidden rounded-card-lg border border-line bg-surface shadow-[0_18px_44px_rgba(13,55,67,0.07)]">
+            <div className="flex items-center gap-2.5 border-b border-line-soft px-5 py-[18px] font-bold text-ink-900 sm:px-7">
               <Scale className="size-5 text-amber-700" aria-hidden />
               {t("verdictTitle")}
             </div>
@@ -84,14 +84,14 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
                   key={column.title}
                   className={cn(
                     "px-5 pt-[26px] pb-[30px] sm:px-7",
-                    column.tallaby ? "bg-[rgba(20,81,99,0.045)]" : "border-t border-[#edf1f2] min-[761px]:border-s min-[761px]:border-t-0",
+                    column.tallaby ? "bg-[rgba(20,81,99,0.045)]" : "border-t border-line-soft min-[761px]:border-s min-[761px]:border-t-0",
                   )}
                 >
-                  <h2 className="mb-3.5 text-[19px] font-bold text-teal-900">{column.title}</h2>
+                  <h2 className="mb-3.5 text-[19px] font-bold text-ink-900">{column.title}</h2>
                   <ul className="grid gap-3">
                     {column.items.map((item) => (
-                      <li key={item} className="grid grid-cols-[22px_1fr] gap-2.5 text-[15px] text-pretty text-[#3d5055]">
-                        <CircleCheck className={cn("mt-1 size-5", column.tallaby ? "text-teal-700" : "text-[#7d8a8d]")} aria-hidden />
+                      <li key={item} className="grid grid-cols-[22px_1fr] gap-2.5 text-[15px] text-pretty text-[#3d5055] dark:text-ink-700">
+                        <CircleCheck className={cn("mt-1 size-5", column.tallaby ? "text-ink-brand" : "text-[#7d8a8d] dark:text-ink-500")} aria-hidden />
                         <span>{withPrices(item, bidi)}</span>
                       </li>
                     ))}
@@ -100,21 +100,21 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
               ))}
             </div>
           </Reveal>
-          <div className="mt-5 flex gap-3 rounded-card border border-amber-100 bg-[rgba(255,248,235,0.7)] px-5 py-4 text-[14.5px] text-pretty text-[#4a5c61]">
+          <div className="mt-5 flex gap-3 rounded-card border border-amber-100 bg-[rgba(255,248,235,0.7)] px-5 py-4 text-[14.5px] text-pretty text-[#4a5c61] dark:text-ink-500">
             <ReceiptText className="mt-0.5 size-5 flex-none text-amber-700" aria-hidden />
             <p>
-              <b className="text-teal-900">{t("priceNoteTitle")} </b>
+              <b className="text-ink-900">{t("priceNoteTitle")} </b>
               {withPrices(c("priceNote", prices), bidi)}
             </p>
           </div>
           {hasCostExample(competitor) ? (
-            <div id="cost" className="mt-5 rounded-card border border-[#e3ebed] bg-white px-5 py-5 sm:px-7">
-              <h2 className="mb-1.5 flex items-center gap-2.5 text-[19px] font-bold text-teal-900">
+            <div id="cost" className="mt-5 rounded-card border border-line bg-surface px-5 py-5 sm:px-7">
+              <h2 className="mb-1.5 flex items-center gap-2.5 text-[19px] font-bold text-ink-900">
                 <Calculator className="size-5 text-amber-700" aria-hidden />
                 {t("costTitle", prices)}
               </h2>
               <p className="mb-3 text-[14px] text-pretty text-ink-500">{t("costLead")}</p>
-              <ul className="grid gap-2 text-[15px] text-pretty text-[#3d5055]">
+              <ul className="grid gap-2 text-[15px] text-pretty text-[#3d5055] dark:text-ink-700">
                 <li>{withPrices(t("costTallaby", prices), bidi)}</li>
                 <li>{withPrices(c("cost", prices), bidi)}</li>
               </ul>
@@ -152,14 +152,14 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
                 key={column.title}
                 className={cn(
                   "rounded-[26px] border p-5 sm:p-7",
-                  column.tallaby ? "border-teal-100 bg-gradient-to-b from-[rgba(20,81,99,0.06)] to-[rgba(20,81,99,0.02)]" : "border-[#e3ebed] bg-white",
+                  column.tallaby ? "border-tint-strong bg-gradient-to-b from-[rgba(20,81,99,0.06)] to-[rgba(20,81,99,0.02)]" : "border-line bg-surface",
                 )}
               >
-                <h3 className="mb-[18px] text-xl font-bold text-teal-900">{column.title}</h3>
+                <h3 className="mb-[18px] text-xl font-bold text-ink-900">{column.title}</h3>
                 <ul className="grid gap-[18px]">
                   {column.items.map((item) => (
                     <li key={item.title}>
-                      <b className="block text-[15.5px] text-teal-900">
+                      <b className="block text-[15.5px] text-ink-900">
                         <BidiText text={item.title} />
                       </b>
                       <p className="text-[14.5px] text-pretty text-ink-500">{withPrices(item.body, bidi)}</p>
@@ -177,9 +177,9 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
           <h2 className={H2}>{t("moveTitle", { name })}</h2>
           <ol className="grid gap-[18px] min-[961px]:grid-cols-3">
             {steps.map((step, i) => (
-              <Reveal key={step.title} as="li" className="rounded-card border border-[#e3ebed] bg-white p-[26px]">
+              <Reveal key={step.title} as="li" className="rounded-card border border-line bg-surface p-[26px]">
                 <Num className="mb-4 grid size-10 place-items-center rounded-full bg-amber-600 text-[15px] font-bold text-teal-900">{i + 1}</Num>
-                <h3 className="mb-1.5 text-lg font-bold text-teal-900">{i === 1 ? t("moveProducts", { name }) : step.title}</h3>
+                <h3 className="mb-1.5 text-lg font-bold text-ink-900">{i === 1 ? t("moveProducts", { name }) : step.title}</h3>
                 <p className="text-[14.5px] text-pretty text-ink-500">
                   <BidiText text={i === 1 ? moveBody : step.body} />
                 </p>
@@ -202,10 +202,10 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
               {alternatives ? (
                 <Link
                   href={alternatives}
-                  className="grid gap-2.5 rounded-[20px] border border-teal-100 bg-[rgba(20,81,99,0.045)] p-[18px] text-inherit hover:border-teal-300 hover:no-underline"
+                  className="grid gap-2.5 rounded-[20px] border border-tint-strong bg-[rgba(20,81,99,0.045)] p-[18px] text-inherit hover:border-teal-300 hover:no-underline"
                 >
                   <CompetitorChip name={name} small />
-                  <b className="flex items-center justify-between gap-2 text-[15.5px] text-teal-900">
+                  <b className="flex items-center justify-between gap-2 text-[15.5px] text-ink-900">
                     {t("alternativesLink", { name })}
                     <ForwardArrow className="flex-none text-teal-500" />
                   </b>
@@ -214,8 +214,8 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
               {others.map((other) => (
                 <OtherCard key={other.id} competitor={other} />
               ))}
-              <Link href="/pricing" className="grid gap-2.5 rounded-[20px] border border-[#e3ebed] bg-white p-[18px] text-inherit hover:border-teal-300 hover:no-underline">
-                <b className="flex items-center justify-between gap-2 text-[15.5px] text-teal-900">
+              <Link href="/pricing" className="grid gap-2.5 rounded-[20px] border border-line bg-surface p-[18px] text-inherit hover:border-teal-300 hover:no-underline">
+                <b className="flex items-center justify-between gap-2 text-[15.5px] text-ink-900">
                   {t("pricingLink")}
                   <ForwardArrow className="flex-none text-teal-500" />
                 </b>
@@ -232,12 +232,12 @@ export async function ComparePageView({ competitor }: { competitor: Competitor }
 }
 
 function LegendDot({ status }: { status: "y" | "n" | "p" }) {
-  const styles = { y: "bg-teal-700", n: "bg-[#c9d0d1]", p: "bg-amber-400" };
+  const styles = { y: "bg-teal-700", n: "bg-[#c9d0d1] dark:bg-tint-strong", p: "bg-amber-400" };
   return <span className={cn("size-3 rounded-full", styles[status])} aria-hidden />;
 }
 
 function StepLink({ target, label }: { target: string; label: string }) {
-  const className = "mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-teal-700";
+  const className = "mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-ink-brand";
   if (target === "signup") {
     return (
       <div className="mt-3">
@@ -267,10 +267,10 @@ export async function OtherCard({ competitor }: { competitor: Competitor }) {
   return (
     <Link
       href={`/compare/${compareSlug(competitor)}`}
-      className="grid gap-2.5 rounded-[20px] border border-[#e3ebed] bg-white p-[18px] text-inherit transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-[3px] hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)] motion-reduce:hover:translate-y-0"
+      className="grid gap-2.5 rounded-[20px] border border-line bg-surface p-[18px] text-inherit transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-[3px] hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)] motion-reduce:hover:translate-y-0"
     >
       <CompetitorChip name={name} small />
-      <b className="flex items-center justify-between gap-2 text-[15.5px] text-teal-900">
+      <b className="flex items-center justify-between gap-2 text-[15.5px] text-ink-900">
         {t("vsLabel", { name })}
         <ForwardArrow className="flex-none text-teal-500" />
       </b>

@@ -39,9 +39,9 @@ function PlanColumn({ name, cost, best, t }: { name: string; cost: PlanCost; bes
     [t("results.domain"), cost.domain],
   ];
   return (
-    <div className={cn("rounded-[18px] border bg-white p-4", best ? "border-teal-700 shadow-[0_0_0_3px_rgba(20,81,99,0.1)]" : "border-line")}>
+    <div className={cn("rounded-[18px] border bg-surface p-4", best ? "border-ink-brand shadow-[0_0_0_3px_rgba(20,81,99,0.1)]" : "border-line")}>
       <div className="flex items-center justify-between gap-2">
-        <b className="font-latin text-base text-teal-900">{name}</b>
+        <b className="font-latin text-base text-ink-900">{name}</b>
         {best ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-[#e9f7ee] px-2.5 py-0.5 text-xs font-bold text-[#166534]">
             <CircleCheck className="size-3.5" aria-hidden />
@@ -58,7 +58,7 @@ function PlanColumn({ name, cost, best, t }: { name: string; cost: PlanCost; bes
             </dd>
           </div>
         ))}
-        <div className="mt-1 flex items-center justify-between gap-2 border-t border-line-soft pt-2 font-bold text-teal-900">
+        <div className="mt-1 flex items-center justify-between gap-2 border-t border-line-soft pt-2 font-bold text-ink-900">
           <dt>{t("results.total")}</dt>
           <dd>
             <Num className="text-lg">{format(cost.total)}</Num> {unit}
@@ -114,18 +114,18 @@ export function StoreCostCalculator({ egpPerUsd }: { egpPerUsd: number }) {
     <form
       onSubmit={(e) => e.preventDefault()}
       aria-label={t("title")}
-      className="grid overflow-hidden rounded-3xl border border-line bg-white shadow-stage sm:rounded-[32px] min-[961px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+      className="grid overflow-hidden rounded-3xl border border-line bg-surface shadow-stage sm:rounded-[32px] min-[961px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
     >
       <div className="grid content-start gap-4 p-[18px] py-[22px] sm:px-8 sm:py-[30px]">
         <div className="flex items-center justify-between gap-2.5">
-          <b className="flex items-center gap-2 text-[17px] text-teal-900">
+          <b className="flex items-center gap-2 text-[17px] text-ink-900">
             <Calculator className="size-5 text-amber-700" aria-hidden />
             {t("title")}
           </b>
           <button
             type="button"
             onClick={() => setDraft(defaultDraft())}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2.5 text-[13.5px] font-semibold text-ink-500 transition-colors hover:bg-neutral-50 hover:text-teal-900"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2.5 text-[13.5px] font-semibold text-ink-500 transition-colors hover:bg-neutral-50 dark:hover:bg-surface-muted hover:text-ink-900"
           >
             <RotateCcw className="size-[15px]" aria-hidden />
             {t("reset")}
@@ -138,7 +138,7 @@ export function StoreCostCalculator({ egpPerUsd }: { egpPerUsd: number }) {
                 {t(`fields.${id}`)}
                 <small className="text-xs font-medium text-ink-400">{t(`fields.${id}Hint`)}</small>
               </label>
-              <div className="flex h-[52px] items-center gap-2.5 rounded-2xl border-[1.5px] border-line-strong bg-white px-4 transition-[border-color,box-shadow] duration-150 focus-within:border-teal-700 focus-within:shadow-[var(--ring-focus)]">
+              <div className="flex h-[52px] items-center gap-2.5 rounded-2xl border-[1.5px] border-line-strong bg-surface px-4 transition-[border-color,box-shadow] duration-150 focus-within:border-ink-brand focus-within:shadow-[var(--ring-focus)]">
                 <input
                   id={`store-cost-${id}`}
                   dir="ltr"
@@ -147,7 +147,7 @@ export function StoreCostCalculator({ egpPerUsd }: { egpPerUsd: number }) {
                   value={draft[id]}
                   onChange={(e) => setDraft((current) => ({ ...current, [id]: e.target.value }))}
                   onFocus={(e) => e.target.select()}
-                  className="w-full min-w-0 flex-1 bg-transparent font-latin text-xl font-bold text-teal-900 outline-none ltr:text-left rtl:text-right"
+                  className="w-full min-w-0 flex-1 bg-transparent font-latin text-xl font-bold text-ink-900 outline-none ltr:text-left rtl:text-right"
                 />
                 <span className="text-sm font-semibold whitespace-nowrap text-ink-400">{unitLabel(id)}</span>
               </div>
@@ -157,7 +157,7 @@ export function StoreCostCalculator({ egpPerUsd }: { egpPerUsd: number }) {
         <p className="text-[12.5px] text-ink-400">{t("note")}</p>
       </div>
 
-      <div aria-live="polite" className="flex flex-col gap-4 border-t border-line bg-gradient-to-b from-[#f1f7f8] to-[#f8fbfb] p-[18px] py-[22px] sm:px-8 sm:py-[30px] min-[961px]:border-s min-[961px]:border-t-0">
+      <div aria-live="polite" className="flex flex-col gap-4 border-t border-line bg-gradient-to-b from-[#f1f7f8] dark:from-surface-muted to-[#f8fbfb] dark:to-surface-muted p-[18px] py-[22px] sm:px-8 sm:py-[30px] min-[961px]:border-s min-[961px]:border-t-0">
         <span className="text-sm font-semibold text-ink-500">{t("results.title")}</span>
         <div className="grid gap-3 sm:grid-cols-2">
           <PlanColumn name="Free" cost={result.free} best={result.cheaper !== "pro"} t={t} />

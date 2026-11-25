@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { getTranslations } from "next-intl/server";
 import { AnimationObserver } from "@workspace/motion";
 import { MetaPixel } from "@/components/meta/meta-pixel";
+import { MarketingThemeProvider } from "@/components/marketing/site/theme-provider.client";
 import { NextIntlClientProvider } from "next-intl";
 import { loadAllMessages } from "@/i18n/messages";
 import { MARKETING_CLIENT_NAMESPACES, pickMessages } from "@/i18n/client-messages.lib";
@@ -23,7 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export const viewport: Viewport = { themeColor: "#ffffff" };
+// The browser bar follows the theme: white, or the dark page colour (marketing.css .dark --page).
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#061f27" },
+  ],
+};
 
 /** One AnimationObserver plays every `data-animate` element on the tallaby.com pages (@workspace/motion). */
 export default async function MarketingLayout({
@@ -37,7 +44,7 @@ export default async function MarketingLayout({
   return (
     // Only what client components read (i18n/client-messages.lib.ts), not all of ar.json and every marketing group.
     <NextIntlClientProvider messages={pickMessages(await loadAllMessages(locale), MARKETING_CLIENT_NAMESPACES)}>
-      {children}
+      <MarketingThemeProvider>{children}</MarketingThemeProvider>
       <AnimationObserver />
       <MetaPixel />
     </NextIntlClientProvider>

@@ -65,16 +65,16 @@ export async function StoreCostToolPage() {
 
       <Container className="pt-8 pb-7 text-center">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
-        <h1 className="text-[clamp(28px,4.4vw,48px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">{t.rich("title", richTags)}</h1>
+        <h1 className="text-[clamp(28px,4.4vw,48px)] leading-[1.3] font-bold text-balance text-ink-900 en:leading-[1.15] en:tracking-[-0.01em]">{t.rich("title", richTags)}</h1>
         <p className="mx-auto mt-3 max-w-[680px] text-[clamp(16px,1.8vw,18px)] text-pretty text-ink-500">{withPrices(t("lead", PRICE_TOKENS), bidi)}</p>
       </Container>
 
       <section className="pb-14">
         <Container>
           <StoreCostCalculator egpPerUsd={egpPerUsd} />
-          <div className="mt-[18px] flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-dashed border-teal-300 bg-white p-4 sm:px-[22px] sm:py-[18px]">
+          <div className="mt-[18px] flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-dashed border-teal-300 bg-surface p-4 sm:px-[22px] sm:py-[18px]">
             <div className="min-w-0 flex-1 basis-[320px]">
-              <b className="text-base text-teal-900">{t("soft.title")}</b>
+              <b className="text-base text-ink-900">{t("soft.title")}</b>
               <span className="block text-sm text-ink-500">{t("soft.body")}</span>
               <FreeTermsNote className="mt-1" />
             </div>
@@ -88,8 +88,8 @@ export async function StoreCostToolPage() {
           <SectionHeading title={t("costs.title")} description={t("costs.lead")} centered />
           <div className="grid gap-4 min-[761px]:grid-cols-2 min-[1081px]:grid-cols-3">
             {costs.map((item) => (
-              <article key={item.title} className="rounded-card border border-line bg-white p-6">
-                <h3 className="mb-1.5 text-[17px] font-bold text-teal-900">
+              <article key={item.title} className="rounded-card border border-line bg-surface p-6">
+                <h3 className="mb-1.5 text-[17px] font-bold text-ink-900">
                   <BidiText text={item.title} />
                 </h3>
                 <p className="text-[14.5px] text-pretty text-ink-500">{withPrices(item.body, bidi)}</p>
@@ -102,11 +102,11 @@ export async function StoreCostToolPage() {
       <Section>
         <Container className="max-w-[860px]">
           <SectionHeading title={t("example.title")} description={t("example.lead", values)} centered />
-          <div className="overflow-x-auto rounded-card border border-line bg-white">
+          <div className="overflow-x-auto rounded-card border border-line bg-surface">
             <table className="w-full border-collapse text-[15px]">
               <caption className="sr-only">{t("example.title")}</caption>
               <thead>
-                <tr className="bg-[#f8fbfb] text-teal-900">
+                <tr className="bg-[#f8fbfb] dark:bg-surface-muted text-ink-900">
                   <th scope="col" className="px-4 py-3 text-start sm:px-5">
                     <span className="sr-only">{t("example.item")}</span>
                   </th>
@@ -120,7 +120,7 @@ export async function StoreCostToolPage() {
               </thead>
               <tbody>
                 {rows.map((row, i) => (
-                  <tr key={row.label} className={i === rows.length - 1 ? "border-t border-line bg-teal-50 font-bold text-teal-900" : "border-t border-[#f0f3f4]"}>
+                  <tr key={row.label} className={i === rows.length - 1 ? "border-t border-line bg-tint font-bold text-ink-900" : "border-t border-[#f0f3f4] dark:border-line"}>
                     <th scope="row" className="px-4 py-[11px] text-start font-semibold sm:px-5">
                       {row.label}
                     </th>

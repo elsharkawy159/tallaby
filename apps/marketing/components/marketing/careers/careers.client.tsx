@@ -94,31 +94,31 @@ export function RolesList() {
       {visible.length ? (
         <Accordion type="multiple" key={dept} className="flex flex-col gap-2.5">
           {visible.map((role) => (
-            <AccordionItem key={role.id} value={role.id} className="rounded-[20px] border! border-[#e6eef0] bg-white transition-shadow duration-300 data-[state=open]:shadow-[0_10px_30px_rgba(13,55,67,0.06)] [&_[data-slot=accordion-content]]:p-0">
-              <AccordionTrigger className="group grid grid-cols-[1fr_40px] items-center gap-4 rounded-[20px] bg-transparent px-[22px] py-5! text-start hover:bg-[#f8fbfb] hover:no-underline md:grid-cols-[minmax(0,1fr)_180px_160px_40px] [&>svg:last-child]:hidden">
+            <AccordionItem key={role.id} value={role.id} className="rounded-[20px] border! border-[#e6eef0] dark:border-line bg-surface transition-shadow duration-300 data-[state=open]:shadow-[0_10px_30px_rgba(13,55,67,0.06)] [&_[data-slot=accordion-content]]:p-0">
+              <AccordionTrigger className="group grid grid-cols-[1fr_40px] items-center gap-4 rounded-[20px] bg-transparent px-[22px] py-5! text-start hover:bg-[#f8fbfb] dark:hover:bg-surface-muted hover:no-underline md:grid-cols-[minmax(0,1fr)_180px_160px_40px] [&>svg:last-child]:hidden">
                 <div>
-                  <span className="block text-[19px] font-bold text-teal-900">{role.title}</span>
+                  <span className="block text-[19px] font-bold text-ink-900">{role.title}</span>
                   <span className="text-[13px] font-semibold text-amber-700">{t(`departments.${role.dept}`)}</span>
                 </div>
-                <span className="hidden items-center gap-1.5 text-[13px] font-normal text-neutral-600 md:flex">
+                <span className="hidden items-center gap-1.5 text-[13px] font-normal text-neutral-600 dark:text-ink-700 md:flex">
                   <MapPin className="size-[15px]" aria-hidden />
                   {role.location}
                 </span>
-                <span className="hidden items-center gap-1.5 text-[13px] font-normal text-neutral-600 md:flex">
+                <span className="hidden items-center gap-1.5 text-[13px] font-normal text-neutral-600 dark:text-ink-700 md:flex">
                   <Clock className="size-[15px]" aria-hidden />
                   {role.type}
                 </span>
-                <span className="grid size-10 place-items-center rounded-full bg-teal-50 text-teal-700 transition-[transform,background-color] duration-200 group-data-[state=open]:bg-amber-600 group-data-[state=open]:text-teal-900 ltr:group-data-[state=open]:rotate-90 rtl:group-data-[state=open]:-rotate-90">
+                <span className="grid size-10 place-items-center rounded-full bg-tint text-ink-brand transition-[transform,background-color] duration-200 group-data-[state=open]:bg-amber-600 group-data-[state=open]:text-teal-900 ltr:group-data-[state=open]:rotate-90 rtl:group-data-[state=open]:-rotate-90">
                   <ForwardChevron className="size-[18px]" />
                 </span>
               </AccordionTrigger>
               <AccordionContent className="grid gap-8 px-[22px] pt-0 pb-6 text-[15px] text-slate-ink md:grid-cols-[1fr_1fr_auto]">
                 <div>
-                  <h4 className="mb-2 text-sm font-bold text-teal-900">{t("theRole")}</h4>
+                  <h4 className="mb-2 text-sm font-bold text-ink-900">{t("theRole")}</h4>
                   <p>{role.about}</p>
                 </div>
                 <div>
-                  <h4 className="mb-2 text-sm font-bold text-teal-900">{t("youBring")}</h4>
+                  <h4 className="mb-2 text-sm font-bold text-ink-900">{t("youBring")}</h4>
                   <ul className="m-0 grid list-disc gap-1 ps-[18px]">
                     {role.needs.map((n) => (
                       <li key={n}>{n}</li>
@@ -133,7 +133,7 @@ export function RolesList() {
           ))}
         </Accordion>
       ) : (
-        <div className="rounded-2xl border border-dashed border-line-strong p-10 text-center text-neutral-600">{t("empty")}</div>
+        <div className="rounded-2xl border border-dashed border-line-strong p-10 text-center text-neutral-600 dark:text-ink-700">{t("empty")}</div>
       )}
     </>
   );

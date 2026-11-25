@@ -25,12 +25,12 @@ export function StoreLogoStrip({ stores, labels, locale }: { stores: readonly Di
   return (
     <section aria-labelledby="trusted-stores-title" className="py-10 min-[641px]:py-14">
       <Container className="mb-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-        <h2 id="trusted-stores-title" className="text-[clamp(20px,2.4vw,26px)] leading-snug font-bold text-teal-900">
+        <h2 id="trusted-stores-title" className="text-[clamp(20px,2.4vw,26px)] leading-snug font-bold text-ink-900">
           {labels.title}
         </h2>
         <Link
           href="/stores"
-          className="rounded-sm text-sm font-bold text-teal-700 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          className="rounded-sm text-sm font-bold text-ink-brand underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-brand"
         >
           {labels.all}
         </Link>
@@ -62,7 +62,7 @@ export function StoreLogoStrip({ stores, labels, locale }: { stores: readonly Di
                     tabIndex={copy === 1 ? -1 : undefined}
                     title={store.name}
                     // A fixed size whether or not the category line shows, so nothing moves.
-                    className="flex h-[96px] w-[168px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-line bg-white px-4 transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    className="flex h-[96px] w-[168px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-line bg-surface px-4 transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-brand"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- seller logos can live on any https host */}
                     <img

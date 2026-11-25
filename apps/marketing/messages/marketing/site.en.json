@@ -124,7 +124,11 @@
     "solutionCod": "Cash on delivery",
     "solutionClothing": "Clothing store",
     "solutionCostTool": "Store cost calculator",
-    "stores": "Stores on Tallaby"
+    "stores": "Stores on Tallaby",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark"
   },
   "site": {
     "breadcrumb": "Breadcrumb",

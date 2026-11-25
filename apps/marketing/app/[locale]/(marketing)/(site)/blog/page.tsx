@@ -33,10 +33,10 @@ export default async function BlogPage() {
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
             <div>
               <Eyebrow>{t("index.eyebrow")}</Eyebrow>
-              <h1 className="text-[clamp(40px,6vw,80px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
+              <h1 className="text-[clamp(40px,6vw,80px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
                 {t.rich("index.title", richTags)}
               </h1>
-              <p className="mt-2.5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e]">{t("index.lead")}</p>
+              <p className="mt-2.5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-[#56696e] dark:text-ink-500">{t("index.lead")}</p>
             </div>
             <CtaButton asChild tone="outline">
               <a href="#news">
@@ -49,7 +49,7 @@ export default async function BlogPage() {
           {featured ? (
             <Link
               href={`/blog/${featured.id}`}
-              className="grid overflow-hidden rounded-card-lg border border-line bg-white text-body shadow-[0_20px_50px_rgba(13,55,67,0.08)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:text-body hover:no-underline hover:shadow-[0_28px_60px_rgba(13,55,67,0.12)] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
+              className="grid overflow-hidden rounded-card-lg border border-line bg-surface text-body shadow-[0_20px_50px_rgba(13,55,67,0.08)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:text-body hover:no-underline hover:shadow-[0_28px_60px_rgba(13,55,67,0.12)] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
             >
               <div className="relative min-h-60 lg:min-h-[380px]">
                 <Image src={featured.image} alt="" fill priority unoptimized={!isOptimizableImage(featured.image)} sizes="(min-width: 1024px) 700px, 100vw" className="object-cover" />
@@ -59,11 +59,11 @@ export default async function BlogPage() {
               </div>
               <div className="flex flex-col justify-center gap-3.5 p-[26px] lg:p-11">
                 <PostMeta post={featured} locale={locale} />
-                <h2 className="text-[clamp(24px,2.8vw,36px)] leading-[1.35] font-bold text-teal-900 en:leading-[1.15] en:tracking-[-0.02em]">
+                <h2 className="text-[clamp(24px,2.8vw,36px)] leading-[1.35] font-bold text-ink-900 en:leading-[1.15] en:tracking-[-0.02em]">
                   {featured.title}
                 </h2>
                 <p className="text-base text-slate-ink">{featured.excerpt}</p>
-                <span className="mt-2 flex items-center gap-1.5 font-bold text-teal-700">
+                <span className="mt-2 flex items-center gap-1.5 font-bold text-ink-brand">
                   {t("index.read")}
                   <ForwardArrow />
                 </span>

@@ -62,7 +62,7 @@ export function FaqAccordionList({ items, defaultOpen, className }: { items: Faq
             data-state={state}
             className={cn(
               "border-b-0!",
-              "rounded-card-sm border! border-[#e6eef0] bg-white transition-shadow duration-300 data-[state=open]:shadow-[0_10px_30px_rgba(13,55,67,0.06)]",
+              "rounded-card-sm border! border-[#e6eef0] dark:border-line bg-surface transition-shadow duration-300 data-[state=open]:shadow-[0_10px_30px_rgba(13,55,67,0.06)]",
             )}
           >
             <h3 data-state={state} className="flex">
@@ -78,11 +78,11 @@ export function FaqAccordionList({ items, defaultOpen, className }: { items: Faq
                 onKeyDown={onKeyDown}
                 className={cn(
                   TRIGGER_BASE,
-                  "group items-center gap-4 rounded-card-sm bg-transparent px-[22px] py-[18px]! text-[15.5px] font-semibold text-teal-900 hover:no-underline",
+                  "group items-center gap-4 rounded-card-sm bg-transparent px-[22px] py-[18px]! text-[15.5px] font-semibold text-ink-900 hover:no-underline",
                 )}
               >
                 <span>{item.q}</span>
-                <span className="grid size-7 flex-none place-items-center text-teal-700 transition-transform duration-200 group-data-[state=open]:rotate-45">
+                <span className="grid size-7 flex-none place-items-center text-ink-brand transition-transform duration-200 group-data-[state=open]:rotate-45">
                   <Plus className="size-[18px]" aria-hidden />
                 </span>
               </button>

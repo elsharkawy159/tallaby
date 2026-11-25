@@ -73,14 +73,14 @@ export default async function TemplatePage({ params }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbs} />
-      <div className="relative pt-9 pb-[120px] text-[#33464b]">
+      <div className="relative pt-9 pb-[120px] text-ink-700">
         <Container>
           <Breadcrumb items={[{ label: t("hero.eyebrow"), href: "/templates" }, { label: entry.name }]} className="mb-[22px]" />
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <Eyebrow>{category}</Eyebrow>
-              <h1 className="font-latin text-[clamp(40px,6vw,72px)] leading-none font-extrabold tracking-[-0.03em] text-teal-900">{entry.name}</h1>
-              {entry.description ? <p className="mt-3.5 max-w-[560px] text-[17px] text-[#56696e]">{entry.description}</p> : null}
+              <h1 className="font-latin text-[clamp(40px,6vw,72px)] leading-none font-extrabold tracking-[-0.03em] text-ink-900">{entry.name}</h1>
+              {entry.description ? <p className="mt-3.5 max-w-[560px] text-[17px] text-[#56696e] dark:text-ink-500">{entry.description}</p> : null}
             </div>
             <div className="grid gap-2">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -116,16 +116,16 @@ export default async function TemplatePage({ params }: Props) {
       <Container>
         <div className="grid gap-7 pt-16 pb-6 min-[901px]:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] min-[901px]:gap-10">
           <div>
-            <h2 className="mb-3.5 text-[15px] font-bold text-teal-900">{t("detail.about")}</h2>
-            <p className="text-base text-[#4d5f64]">{entry.description ?? t("detail.metaFallback", { name: entry.name })}</p>
+            <h2 className="mb-3.5 text-[15px] font-bold text-ink-900">{t("detail.about")}</h2>
+            <p className="text-base text-[#4d5f64] dark:text-ink-500">{entry.description ?? t("detail.metaFallback", { name: entry.name })}</p>
           </div>
           <div>
-            <h2 className="mb-3.5 text-[15px] font-bold text-teal-900">{t("detail.pages")}</h2>
+            <h2 className="mb-3.5 text-[15px] font-bold text-ink-900">{t("detail.pages")}</h2>
             <ul className="m-0 grid list-none gap-2.5 p-0">
               {entry.pages.map((p) => {
                 const Icon = p.isHome ? House : FileText;
                 return (
-                  <li key={p.slug} className="flex items-center gap-2.5 text-[15px] text-[#33454a]">
+                  <li key={p.slug} className="flex items-center gap-2.5 text-[15px] text-[#33454a] dark:text-ink-700">
                     <Icon className="size-[17px] text-teal-500" aria-hidden />
                     {p.name}
                   </li>
@@ -134,12 +134,12 @@ export default async function TemplatePage({ params }: Props) {
             </ul>
           </div>
           <div>
-            <h2 className="mb-3.5 text-[15px] font-bold text-teal-900">{t("detail.details")}</h2>
+            <h2 className="mb-3.5 text-[15px] font-bold text-ink-900">{t("detail.details")}</h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-[18px] gap-y-2.5 text-sm">
               <dt className="text-ink-500">{t("detail.bestFor")}</dt>
-              <dd className="m-0 font-semibold text-teal-900">{category}</dd>
+              <dd className="m-0 font-semibold text-ink-900">{category}</dd>
               <dt className="text-ink-500">{t("detail.pageCount")}</dt>
-              <dd className="m-0 font-latin font-semibold text-teal-900">{entry.pages.length}</dd>
+              <dd className="m-0 font-latin font-semibold text-ink-900">{entry.pages.length}</dd>
               {entry.palette.length ? (
                 <>
                   <dt className="text-ink-500">{t("detail.colors")}</dt>
@@ -151,28 +151,28 @@ export default async function TemplatePage({ params }: Props) {
                 </>
               ) : null}
               <dt className="text-ink-500">{t("detail.price")}</dt>
-              <dd className="m-0 font-semibold text-teal-900">{t("detail.free")}</dd>
+              <dd className="m-0 font-semibold text-ink-900">{t("detail.free")}</dd>
             </dl>
           </div>
         </div>
 
         {more.length ? (
           <section className="pt-12 pb-16">
-            <h2 className="mb-8 text-[28px] font-bold text-teal-900">{t("detail.more")}</h2>
+            <h2 className="mb-8 text-[28px] font-bold text-ink-900">{t("detail.more")}</h2>
             <div className="grid gap-6 min-[601px]:grid-cols-2 min-[901px]:grid-cols-3">
               {more.map((x) => (
                 <Link key={x.id} href={x.shot?.edition ? `/templates/${x.id}?edition=${encodeURIComponent(x.shot.edition)}` : `/templates/${x.id}`} className="group grid gap-2.5 hover:no-underline">
                   <TemplateFrame shot={x.shot} liveSrc={templateFrameSrc(locale, x.id, undefined, true)} className="rounded-card border-line shadow-soft group-hover:-translate-y-1" />
-                  <b className="font-latin text-base text-teal-900">{x.name}</b>
+                  <b className="font-latin text-base text-ink-900">{x.name}</b>
                 </Link>
               ))}
             </div>
             <div className="mt-12 flex justify-between gap-4 border-t border-line pt-6">
-              <Link href={`/templates/${prev.id}`} className="flex items-center gap-2 font-bold text-teal-700">
+              <Link href={`/templates/${prev.id}`} className="flex items-center gap-2 font-bold text-ink-brand">
                 <BackArrow />
                 <span className="font-latin">{prev.name}</span>
               </Link>
-              <Link href={`/templates/${next.id}`} className="flex items-center gap-2 font-bold text-teal-700">
+              <Link href={`/templates/${next.id}`} className="flex items-center gap-2 font-bold text-ink-brand">
                 <span className="font-latin">{next.name}</span>
                 <ForwardArrow />
               </Link>

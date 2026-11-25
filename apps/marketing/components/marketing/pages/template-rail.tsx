@@ -10,17 +10,17 @@ export function TemplateRailCard({ entry, locale, previewLabel, className }: { e
     <Link
       href={href}
       className={cn(
-        "group flex snap-center flex-col overflow-hidden rounded-card border border-[#e3ebed] bg-white p-2.5 text-inherit transition-shadow duration-200 hover:no-underline hover:shadow-[0_16px_36px_rgba(13,55,67,0.1)]",
+        "group flex snap-center flex-col overflow-hidden rounded-card border border-line bg-surface p-2.5 text-inherit transition-shadow duration-200 hover:no-underline hover:shadow-[0_16px_36px_rgba(13,55,67,0.1)]",
         className,
       )}
     >
       <TemplateFrame shot={entry.shot} liveSrc={templateFrameSrc(locale, entry.id, undefined, true)} className="shadow-none" />
       <div className="flex items-center justify-between gap-2.5 px-1.5 pt-3 pb-1.5">
         <div className="min-w-0">
-          <b className="block truncate text-[15px] text-teal-900">{entry.name}</b>
+          <b className="block truncate text-[15px] text-ink-900">{entry.name}</b>
           {entry.description ? <small className="line-clamp-1 text-[13px] text-ink-500">{entry.description}</small> : null}
         </div>
-        <span className="text-[13px] font-bold whitespace-nowrap text-teal-700">{previewLabel}</span>
+        <span className="text-[13px] font-bold whitespace-nowrap text-ink-brand">{previewLabel}</span>
       </div>
     </Link>
   );

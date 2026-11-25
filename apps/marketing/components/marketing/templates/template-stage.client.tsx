@@ -34,8 +34,8 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-3 rounded-t-card border border-b-0 border-line bg-white px-3.5 py-3">
-        <div role="group" aria-label={t("device")} className="flex rounded-full bg-[#f1f5f6] p-[3px]">
+      <div className="flex flex-wrap items-center gap-3 rounded-t-card border border-b-0 border-line bg-surface px-3.5 py-3">
+        <div role="group" aria-label={t("device")} className="flex rounded-full bg-[#f1f5f6] dark:bg-surface-muted p-[3px]">
           {(["desktop", "mobile"] as const).map((d) => {
             const Icon = d === "desktop" ? Monitor : Smartphone;
             return (
@@ -46,7 +46,7 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
                 onClick={() => setDevice(d)}
                 className={cn(
                   "flex h-[34px] items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold transition-colors",
-                  device === d ? "bg-white text-teal-900 shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "text-ink-600",
+                  device === d ? "bg-surface text-ink-900 shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "text-ink-600",
                 )}
               >
                 <Icon className="size-[15px]" aria-hidden />
@@ -65,7 +65,7 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
                 onClick={() => setSlug(page.slug)}
                 className={cn(
                   "h-[34px] flex-none rounded-full px-3 text-[13px] whitespace-nowrap transition-colors max-[600px]:h-10",
-                  page.slug === slug ? "bg-teal-50 font-bold text-teal-900" : "text-ink-600 hover:bg-neutral-100",
+                  page.slug === slug ? "bg-tint font-bold text-ink-900" : "text-ink-600 hover:bg-neutral-100 dark:hover:bg-surface-muted",
                 )}
               >
                 {page.name}
@@ -75,7 +75,7 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
         ) : (
           <span className="flex-1" />
         )}
-        {editionName ? <span className="flex-none rounded-full bg-teal-50 px-3 py-1 text-[12.5px] font-bold whitespace-nowrap text-teal-700">{t("edition", { niche: editionName })}</span> : null}
+        {editionName ? <span className="flex-none rounded-full bg-tint px-3 py-1 text-[12.5px] font-bold whitespace-nowrap text-ink-brand">{t("edition", { niche: editionName })}</span> : null}
         {/* The frame's page in a new tab, with the same page and edition (owner, 2026-11-11). */}
         <CtaButton asChild tone="outline" size="sm" className="max-[600px]:flex-1">
           <a href={src} target="_blank" rel="noopener noreferrer" aria-label={t("newTabLabel")}>
@@ -87,23 +87,23 @@ export function TemplateStage({ templateKey, pages, editions = [] }: { templateK
           {t("startWith")}
         </SignupTrigger>
       </div>
-      <div className="grid place-items-center rounded-b-card border border-line bg-[#eef3f4] p-3.5 shadow-[0_30px_70px_rgba(13,55,67,0.1)] min-[901px]:p-7">
+      <div className="grid place-items-center rounded-b-card border border-line bg-tint p-3.5 shadow-[0_30px_70px_rgba(13,55,67,0.1)] min-[901px]:p-7">
         <div
           className={cn(
-            "w-full overflow-hidden bg-white shadow-raise transition-[max-width] duration-300",
+            "w-full overflow-hidden bg-surface shadow-raise transition-[max-width] duration-300",
             mobile ? "max-w-[360px] rounded-[32px] border-8 border-[#0b0f10]" : "max-w-[1040px] rounded-xl",
           )}
         >
           {mobile ? null : <BrowserBar url={`${templateKey}.tallaby.com`} />}
-          <div className="relative h-[min(78vh,820px)] bg-white">
+          <div className="relative h-[min(78vh,820px)] bg-surface">
             <iframe
               key={src}
               src={src}
               title={pages.find((p) => p.slug === slug)?.name ?? templateKey}
               onLoad={() => setLoaded(src)}
-              className={cn("block size-full border-0 bg-white transition-opacity duration-300", loaded === src ? "opacity-100" : "opacity-0")}
+              className={cn("block size-full border-0 bg-surface transition-opacity duration-300", loaded === src ? "opacity-100" : "opacity-0")}
             />
-            {loaded === src ? null : <div className="absolute inset-0 animate-pulse bg-neutral-100" />}
+            {loaded === src ? null : <div className="absolute inset-0 animate-pulse bg-neutral-100 dark:bg-surface-muted" />}
           </div>
         </div>
       </div>

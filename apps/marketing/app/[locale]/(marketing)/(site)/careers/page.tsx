@@ -46,16 +46,16 @@ export default async function CareersPage() {
           <SiteCard size="lg" glass className="grid gap-4 p-7">
             {roleCount ? (
               <>
-                <Num className="text-[80px] leading-none font-extrabold tracking-[-0.04em] text-teal-900">{roleCount}</Num>
-                <p className="text-[#56696e]">{t("openCount", { count: roleCount })}</p>
+                <Num className="text-[80px] leading-none font-extrabold tracking-[-0.04em] text-ink-900">{roleCount}</Num>
+                <p className="text-[#56696e] dark:text-ink-500">{t("openCount", { count: roleCount })}</p>
                 <CtaButton asChild className="justify-self-start">
                   <a href="#roles">{t("openCta")}</a>
                 </CtaButton>
               </>
             ) : (
               <>
-                <b className="text-2xl leading-[1.3] text-teal-900">{t("noneTitle")}</b>
-                <p className="text-[#56696e]">{t("noneBody")}</p>
+                <b className="text-2xl leading-[1.3] text-ink-900">{t("noneTitle")}</b>
+                <p className="text-[#56696e] dark:text-ink-500">{t("noneBody")}</p>
                 <CtaButton asChild className="justify-self-start">
                   <a href={mailto}>{t("emailUs")}</a>
                 </CtaButton>
@@ -81,12 +81,12 @@ export default async function CareersPage() {
             {perks.map((p) => (
               <Reveal
                 key={p.title}
-                className="grid content-start gap-2 rounded-card border border-[#e6eef0] bg-surface-glass p-[26px] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-raise"
+                className="grid content-start gap-2 rounded-card border border-[#e6eef0] dark:border-line bg-surface-glass p-[26px] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-raise"
               >
                 <IconTile className="mb-2">
                   <p.icon aria-hidden />
                 </IconTile>
-                <b className="text-[17px] text-teal-900">{p.title}</b>
+                <b className="text-[17px] text-ink-900">{p.title}</b>
                 <span className="text-sm text-slate-ink">{p.body}</span>
               </Reveal>
             ))}
@@ -113,7 +113,7 @@ export default async function CareersPage() {
                 <span className="absolute -start-[15px] top-[22px] size-7 rounded-full bg-teal-900 text-center font-latin text-[13px] leading-7 font-bold text-white">
                   {i + 1}
                 </span>
-                <b className="mb-1.5 block ps-2.5 text-teal-900">{s.title}</b>
+                <b className="mb-1.5 block ps-2.5 text-ink-900">{s.title}</b>
                 <span className="block ps-2.5 text-sm text-slate-ink">{s.body}</span>
               </li>
             ))}

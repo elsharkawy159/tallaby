@@ -75,7 +75,7 @@ export async function LegalPage({
       <div className="pt-11 pb-16 sm:pt-[72px]">
         <Container>
           <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <h1 className="text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em]">{t(`${doc}.title`)}</h1>
+          <h1 className="text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.1] en:tracking-[-0.02em]">{t(`${doc}.title`)}</h1>
           <p className="mt-5 max-w-[600px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">{t(`${doc}.lead`)}</p>
           <div className="mt-[22px] flex flex-wrap gap-[18px] text-sm text-ink-400">
             <span className="flex items-center gap-1.5">
@@ -96,10 +96,10 @@ export async function LegalPage({
             const Icon = summaryIcons[i] ?? Info;
             return (
               <div key={item.title} className="grid content-start gap-1.5 rounded-card border border-line bg-surface-glass p-[22px] shadow-[0_14px_36px_rgba(13,55,67,0.07)]">
-                <span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
+                <span className="grid size-10 place-items-center rounded-xl bg-tint text-ink-brand">
                   <Icon className="size-[18px]" />
                 </span>
-                <b className="text-[15px] text-teal-900">{item.title}</b>
+                <b className="text-[15px] text-ink-900">{item.title}</b>
                 <span className="text-sm text-slate-ink">{withPrices(item.body)}</span>
               </div>
             );
@@ -111,7 +111,7 @@ export async function LegalPage({
           <article id="legal-doc">
             {sections.map((s, i) => (
               <section key={s.id} id={s.id} className="mb-10 scroll-mt-[100px] border-b border-line pb-10 last:border-0">
-                <h2 className="mb-3.5 flex items-baseline gap-3.5 text-2xl font-bold text-teal-900">
+                <h2 className="mb-3.5 flex items-baseline gap-3.5 text-2xl font-bold text-ink-900">
                   <span className="font-latin text-[15px] font-extrabold text-amber-700">{String(i + 1).padStart(2, "0")}</span>
                   {s.title}
                 </h2>
@@ -119,7 +119,7 @@ export async function LegalPage({
                   {s.paragraphs?.map((p) => <p key={p}>{p}</p>)}
                   {publishedClauses(s.clauses ?? [], switchDate).map((c) => (
                     <p key={c.title}>
-                      <b className="font-bold text-teal-900">{c.title}.</b> {withPrices(c.body)}
+                      <b className="font-bold text-ink-900">{c.title}.</b> {withPrices(c.body)}
                     </p>
                   ))}
                 </div>
@@ -133,29 +133,29 @@ export async function LegalPage({
                 {s.table ? <PrivacyTable /> : null}
                 {s.rights ? <RightsGrid /> : null}
                 {s.note ? (
-                  <div className="mt-3.5 flex gap-2.5 rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-900">
-                    <Info className="mt-[5px] size-4 flex-none text-teal-700" aria-hidden />
+                  <div className="mt-3.5 flex gap-2.5 rounded-xl bg-tint px-4 py-3 text-sm text-ink-900">
+                    <Info className="mt-[5px] size-4 flex-none text-ink-brand" aria-hidden />
                     <span>{s.note}</span>
                   </div>
                 ) : null}
                 {s.contact !== undefined ? (
                   <p className="mt-3 text-base text-ink-700">
                     {s.contact ? `${s.contact} ` : null}
-                    <a href={`mailto:${CONTACT.email}`} className="font-latin text-teal-700">
+                    <a href={`mailto:${CONTACT.email}`} className="font-latin text-ink-brand">
                       {CONTACT.email}
                     </a>
                   </p>
                 ) : null}
               </section>
             ))}
-            <nav aria-labelledby="legal-related" data-print="hide" className="rounded-2xl border border-line bg-white p-5">
-              <h2 id="legal-related" className="mb-2.5 text-base font-bold text-teal-900">
+            <nav aria-labelledby="legal-related" data-print="hide" className="rounded-2xl border border-line bg-surface p-5">
+              <h2 id="legal-related" className="mb-2.5 text-base font-bold text-ink-900">
                 {t("related")}
               </h2>
               <ul className="flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
                 {related.map((r) => (
                   <li key={r.href}>
-                    <Link href={r.href} className="font-semibold text-teal-700 underline-offset-4 hover:underline">
+                    <Link href={r.href} className="font-semibold text-ink-brand underline-offset-4 hover:underline">
                       {tm(`${r.doc}.title`)}
                     </Link>
                   </li>
@@ -173,12 +173,12 @@ async function PrivacyTable() {
   const t = await getTranslations("legal.privacy");
   const rows = t.raw("rows") as [string, string, string][];
   return (
-    <div className="mt-4 overflow-x-auto rounded-[14px] border border-neutral-200">
+    <div className="mt-4 overflow-x-auto rounded-[14px] border border-neutral-200 dark:border-line">
       <table className="w-full border-separate border-spacing-0 text-sm">
         <thead>
           <tr>
             {[t("table.data"), t("table.why"), t("table.kept")].map((h) => (
-              <th key={h} className="bg-neutral-50 px-3.5 py-3 text-start font-bold text-teal-900">
+              <th key={h} className="bg-neutral-50 dark:bg-surface-muted px-3.5 py-3 text-start font-bold text-ink-900">
                 {h}
               </th>
             ))}
@@ -188,7 +188,7 @@ async function PrivacyTable() {
           {rows.map((row) => (
             <tr key={row[0]}>
               {row.map((cell, i) => (
-                <td key={i} className={cn("border-t border-neutral-200 px-3.5 py-3 align-top leading-[1.6] text-ink-700", i === 0 && "font-semibold text-teal-900")}>
+                <td key={i} className={cn("border-t border-neutral-200 dark:border-line px-3.5 py-3 align-top leading-[1.6] text-ink-700", i === 0 && "font-semibold text-ink-900")}>
                   {cell}
                 </td>
               ))}
@@ -208,10 +208,10 @@ async function RightsGrid() {
       {rights.map((r, i) => {
         const Icon = RIGHT_ICONS[i] ?? Info;
         return (
-          <div key={r.title} className="flex items-start gap-3 rounded-[14px] border border-neutral-200 px-4 py-3.5 text-sm text-ink-700">
+          <div key={r.title} className="flex items-start gap-3 rounded-[14px] border border-neutral-200 dark:border-line px-4 py-3.5 text-sm text-ink-700">
             <Icon className="mt-[3px] size-[18px] flex-none text-teal-500" aria-hidden />
             <div>
-              <b className="block text-[15px] text-teal-900">{r.title}</b>
+              <b className="block text-[15px] text-ink-900">{r.title}</b>
               <span>{r.body}</span>
             </div>
           </div>

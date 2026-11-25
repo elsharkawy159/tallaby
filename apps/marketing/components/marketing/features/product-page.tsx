@@ -46,13 +46,13 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
       <section className="pt-6 pb-8 sm:pt-9 sm:pb-10">
         <Container className="grid items-center gap-10 min-[1081px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] min-[1081px]:gap-14">
           <div className="flex min-w-0 flex-col items-start gap-[18px]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#e1eaec] bg-white py-[5px] ps-1.5 pe-3.5 text-[13.5px] font-bold text-teal-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-line-kick bg-surface py-[5px] ps-1.5 pe-3.5 text-[13.5px] font-bold text-ink-brand">
               <span className="grid size-7 place-items-center rounded-full bg-teal-700 text-white">
                 <page.icon className="size-[15px]" aria-hidden />
               </span>
               {nav(`areas.${page.area}.title`)}
             </span>
-            <h1 className="text-[clamp(32px,4.4vw,52px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.015em]">
+            <h1 className="text-[clamp(32px,4.4vw,52px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.1] en:tracking-[-0.015em]">
               <BidiText text={t("title")} />
             </h1>
             <p className="max-w-[560px] text-lg text-pretty text-ink-500">
@@ -61,7 +61,7 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
             <ul className="grid gap-2 text-[15px] text-ink-700">
               {checks.map((check) => (
                 <li key={check} className="flex items-start gap-2">
-                  <CircleCheck className="mt-[3px] size-[17px] flex-none text-teal-700" aria-hidden />
+                  <CircleCheck className="mt-[3px] size-[17px] flex-none text-ink-brand" aria-hidden />
                   <span>
                     <BidiText text={check} />
                   </span>
@@ -85,7 +85,7 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
         </Container>
       </section>
 
-      <nav aria-label={shared("moreIn", { area: nav(`areas.${page.area}.title`) })} className="border-y border-line-soft bg-white/60">
+      <nav aria-label={shared("moreIn", { area: nav(`areas.${page.area}.title`) })} className="border-y border-line-soft bg-surface/60">
         <Container className="flex flex-col gap-2 py-3.5 min-[761px]:flex-row min-[761px]:items-center min-[761px]:gap-4">
           <span className="flex-none text-[13.5px] font-bold text-ink-600">{shared("moreIn", { area: nav(`areas.${page.area}.title`) })}</span>
           <ChipRow className="-mx-0.5">
@@ -101,10 +101,10 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
 
       <Section>
         <Container className="grid items-start gap-4 min-[1081px]:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] min-[1081px]:gap-14">
-          <h2 className="text-[clamp(26px,3.4vw,36px)] leading-[1.35] font-bold text-balance text-teal-900">
+          <h2 className="text-[clamp(26px,3.4vw,36px)] leading-[1.35] font-bold text-balance text-ink-900">
             <BidiText text={t("whatTitle")} />
           </h2>
-          <div className="grid gap-4 text-[17px] leading-[1.95] text-[#3d5055]">
+          <div className="grid gap-4 text-[17px] leading-[1.95] text-[#3d5055] dark:text-ink-700">
             {what.map((paragraph) => (
               <p key={paragraph} className="text-pretty">
                 <BidiText text={paragraph} />
@@ -124,7 +124,7 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
                   <IconTile>
                     <entry.icon aria-hidden />
                   </IconTile>
-                  <h2 id={`row-${i}`} className="text-[clamp(24px,3vw,34px)] leading-[1.35] font-bold text-balance text-teal-900 en:leading-[1.2]">
+                  <h2 id={`row-${i}`} className="text-[clamp(24px,3vw,34px)] leading-[1.35] font-bold text-balance text-ink-900 en:leading-[1.2]">
                     <BidiText text={row.title} />
                   </h2>
                   <p className="text-[17px] text-pretty text-ink-500">
@@ -138,7 +138,7 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
                     ))}
                   </ul>
                   {entry.href && row.link ? (
-                    <Link href={entry.href} className="inline-flex items-center gap-1.5 text-[15px] font-bold text-teal-700 hover:text-teal-900">
+                    <Link href={entry.href} className="inline-flex items-center gap-1.5 text-[15px] font-bold text-ink-brand hover:text-ink-900">
                       <BidiText text={row.link} />
                       <ForwardArrow className="size-4" />
                     </Link>
@@ -161,9 +161,9 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
               const Icon = page.grid[i]!;
               return (
                 <li key={item.title} className="grid grid-cols-[28px_minmax(0,1fr)] gap-3">
-                  <Icon className="mt-1 size-[22px] text-teal-700" aria-hidden />
+                  <Icon className="mt-1 size-[22px] text-ink-brand" aria-hidden />
                   <div>
-                    <h3 className="mb-1 text-[17px] font-bold text-teal-900">
+                    <h3 className="mb-1 text-[17px] font-bold text-ink-900">
                       <BidiText text={item.title} />
                     </h3>
                     <p className="text-[15px] text-pretty text-ink-500">
@@ -187,10 +187,10 @@ export async function ProductPageView({ page }: { page: ProductPage }) {
                 <Link
                   key={href}
                   href={href}
-                  className="flex flex-col gap-2 rounded-[22px] border border-[#e3ebed] bg-white p-5 text-inherit transition-[border-color,box-shadow] duration-200 hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)]"
+                  className="flex flex-col gap-2 rounded-[22px] border border-line bg-surface p-5 text-inherit transition-[border-color,box-shadow] duration-200 hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)]"
                 >
-                  <Icon className="mb-1 size-6 text-teal-700" aria-hidden />
-                  <b className="flex items-center justify-between gap-2 text-base text-teal-900">
+                  <Icon className="mb-1 size-6 text-ink-brand" aria-hidden />
+                  <b className="flex items-center justify-between gap-2 text-base text-ink-900">
                     <span>
                       <BidiText text={item.title} />
                     </span>

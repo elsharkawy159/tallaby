@@ -79,7 +79,7 @@ export async function MarginToolPage() {
 
       <Container className="pt-8 pb-7 text-center">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
-        <h1 className="text-[clamp(28px,4.4vw,48px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">
+        <h1 className="text-[clamp(28px,4.4vw,48px)] leading-[1.3] font-bold text-balance text-ink-900 en:leading-[1.15] en:tracking-[-0.01em]">
           {t.rich("title", richTags)}
         </h1>
         <p className="mt-3 text-[clamp(16px,1.8vw,18px)] text-pretty text-ink-500">{t("lead")}</p>
@@ -88,9 +88,9 @@ export async function MarginToolPage() {
       <section className="pb-14">
         <Container>
           <MarginCalculator egpPerUsd={egpPerUsd} prices={prices} />
-          <div className="mt-[18px] flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-dashed border-teal-300 bg-white p-4 sm:px-[22px] sm:py-[18px]">
+          <div className="mt-[18px] flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-dashed border-teal-300 bg-surface p-4 sm:px-[22px] sm:py-[18px]">
             <div className="min-w-0 flex-1 basis-[320px]">
-              <b className="text-base text-teal-900">{t("soft.title")}</b>
+              <b className="text-base text-ink-900">{t("soft.title")}</b>
               <span className="block text-sm text-ink-500">{t("soft.body")}</span>
               <FreeTermsNote className="mt-1" />
             </div>
@@ -104,9 +104,9 @@ export async function MarginToolPage() {
           <SectionHeading title={t("how.title")} centered />
           <div className="grid gap-4 min-[961px]:grid-cols-3">
             {steps.map((step, i) => (
-              <article key={step.title} className="rounded-card border border-line bg-white p-6">
+              <article key={step.title} className="rounded-card border border-line bg-surface p-6">
                 <Num className="mb-3.5 grid size-[38px] place-items-center rounded-full bg-amber-600 text-[15px] font-bold text-teal-900">{i + 1}</Num>
-                <h3 className="mb-1.5 text-[17px] font-bold text-teal-900">{step.title}</h3>
+                <h3 className="mb-1.5 text-[17px] font-bold text-ink-900">{step.title}</h3>
                 <p className="text-[14.5px] text-pretty text-ink-500">{step.body}</p>
               </article>
             ))}
@@ -119,7 +119,7 @@ export async function MarginToolPage() {
           <SectionHeading title={t("formula.title")} centered />
           <div className="grid items-start gap-5 min-[961px]:grid-cols-2 min-[961px]:gap-6">
             <div>
-              <p className="mb-3.5 text-[16.5px] leading-[1.95] text-pretty text-[#3d5055]">{t("formula.body")}</p>
+              <p className="mb-3.5 text-[16.5px] leading-[1.95] text-pretty text-[#3d5055] dark:text-ink-700">{t("formula.body")}</p>
               <div className="mt-1.5 grid gap-3 rounded-[22px] bg-teal-900 px-6 py-[22px] text-white">
                 {FORMULA_KEYS.map((key) => (
                   <div key={key} className="flex flex-wrap items-center gap-2 text-[15.5px] leading-[1.6]">
@@ -130,8 +130,8 @@ export async function MarginToolPage() {
                 ))}
               </div>
             </div>
-            <div className="overflow-hidden rounded-card border border-line bg-white">
-              <h3 className="flex items-center gap-2 border-b border-line-soft px-5 py-4 text-base font-bold text-teal-900">
+            <div className="overflow-hidden rounded-card border border-line bg-surface">
+              <h3 className="flex items-center gap-2 border-b border-line-soft px-5 py-4 text-base font-bold text-ink-900">
                 <Lightbulb className="size-5 text-amber-700" aria-hidden />
                 {t("example.title")}
               </h3>
@@ -141,10 +141,10 @@ export async function MarginToolPage() {
                     <tr
                       key={row.label}
                       className={cn(
-                        "border-t border-[#f0f3f4] first:border-t-0",
-                        row.tone === "sub" && "bg-[#f8fbfb] font-bold text-teal-900",
+                        "border-t border-[#f0f3f4] dark:border-line first:border-t-0",
+                        row.tone === "sub" && "bg-[#f8fbfb] dark:bg-surface-muted font-bold text-ink-900",
                         row.tone === "result" && "bg-[#e9f7ee] font-bold text-[#166534]",
-                        row.tone === "suggested" && "bg-teal-50 font-bold",
+                        row.tone === "suggested" && "bg-tint font-bold",
                       )}
                     >
                       <td className="px-4 py-[11px] sm:px-5">

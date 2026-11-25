@@ -38,20 +38,20 @@ function StoreCard({ store, locale, products }: { store: DirectoryStore; locale:
     <li>
       <a
         href={store.url}
-        className="flex h-full items-center gap-4 rounded-[20px] border border-line bg-white/90 p-4 text-body transition-colors duration-150 hover:border-line-strong hover:text-body hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+        className="flex h-full items-center gap-4 rounded-[20px] border border-line bg-surface/90 p-4 text-body transition-colors duration-150 hover:border-line-strong hover:text-body hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-brand"
       >
-        <span className="flex size-16 flex-none items-center justify-center overflow-hidden rounded-2xl border border-line-soft bg-white">
+        <span className="flex size-16 flex-none items-center justify-center overflow-hidden rounded-2xl border border-line-soft bg-surface">
           {store.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- seller logos can live on any https host
             <img src={store.logoUrl} alt="" width={56} height={56} loading="lazy" decoding="async" className="size-14 object-contain" />
           ) : (
-            <span aria-hidden className="flex size-full items-center justify-center bg-teal-50 text-2xl font-bold text-teal-700">
+            <span aria-hidden className="flex size-full items-center justify-center bg-tint text-2xl font-bold text-ink-brand">
               {initial(store.name)}
             </span>
           )}
         </span>
         <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="truncate text-base font-bold text-teal-900" dir="auto">
+          <span className="truncate text-base font-bold text-ink-900" dir="auto">
             {store.name}
           </span>
           {industry ? <span className="truncate text-[13px] text-ink-500">{industry}</span> : null}
@@ -94,7 +94,7 @@ export async function StoreDirectoryPage({ page }: { page: number }) {
             className="mb-[22px]"
           />
           <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <h1 className="text-[clamp(34px,5vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em]">
+          <h1 className="text-[clamp(34px,5vw,60px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.1] en:tracking-[-0.02em]">
             {t("title")}
           </h1>
           <p className="mt-3 mb-10 max-w-[640px] text-[clamp(16px,2vw,18px)] text-pretty text-ink-500">{t("lead")}</p>
@@ -106,13 +106,13 @@ export async function StoreDirectoryPage({ page }: { page: number }) {
               ))}
             </ul>
           ) : (
-            <p className="rounded-[20px] border border-line bg-white/80 p-6 text-ink-500">{t("empty")}</p>
+            <p className="rounded-[20px] border border-line bg-surface/80 p-6 text-ink-500">{t("empty")}</p>
           )}
 
           {pages > 1 ? (
             <nav aria-label={t("pagination")} className="mt-10 flex flex-wrap items-center justify-between gap-4 text-sm">
               {page > 1 ? (
-                <Link href={directoryPagePath(page - 1)} rel="prev" className="flex items-center gap-1.5 font-bold text-teal-700 hover:underline">
+                <Link href={directoryPagePath(page - 1)} rel="prev" className="flex items-center gap-1.5 font-bold text-ink-brand hover:underline">
                   <BackArrow />
                   {t("previous")}
                 </Link>
@@ -123,7 +123,7 @@ export async function StoreDirectoryPage({ page }: { page: number }) {
                 {t("pageOf", { page, pages })}
               </span>
               {page < pages ? (
-                <Link href={directoryPagePath(page + 1)} rel="next" className="flex items-center gap-1.5 font-bold text-teal-700 hover:underline">
+                <Link href={directoryPagePath(page + 1)} rel="next" className="flex items-center gap-1.5 font-bold text-ink-brand hover:underline">
                   {t("next")}
                   <ForwardArrow />
                 </Link>

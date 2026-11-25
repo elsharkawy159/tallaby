@@ -44,7 +44,7 @@ export function TemplateLiveThumb({
   }, []);
 
   return (
-    <div ref={box} className={cn("relative aspect-[4/3] w-full overflow-hidden bg-neutral-100", className)} aria-hidden>
+    <div ref={box} className={cn("relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 dark:bg-surface-muted", className)} aria-hidden>
       {scale ? (
         <iframe
           src={src}
@@ -54,7 +54,7 @@ export function TemplateLiveThumb({
           scrolling="no"
           onLoad={() => setLoaded(true)}
           className={cn(
-            "pointer-events-none absolute start-0 top-0 origin-top-left border-0 bg-white transition-opacity duration-300 rtl:origin-top-right",
+            "pointer-events-none absolute start-0 top-0 origin-top-left border-0 bg-surface transition-opacity duration-300 rtl:origin-top-right",
             loaded ? "opacity-100" : "opacity-0",
           )}
           // A box taller than its aspect class (a phone card at 70svh) gets a taller frame, so the page still fills it.

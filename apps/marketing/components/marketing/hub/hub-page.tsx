@@ -7,11 +7,11 @@ import type { HubMark } from "@/lib/marketing/integrations-hub.lib";
 
 /** A hub's picture: a coloured tile with the brand's initial, or an icon for our own features. */
 export function HubMarkView({ mark }: { mark: HubMark }) {
-  const box = "grid size-[46px] flex-none place-items-center overflow-hidden rounded-2xl border border-[#e3ebed] min-[561px]:size-[52px]";
+  const box = "grid size-[46px] flex-none place-items-center overflow-hidden rounded-2xl border border-line min-[561px]:size-[52px]";
   if ("icon" in mark) {
     const Icon = mark.icon;
     return (
-      <span className={`${box} bg-white text-teal-700`} aria-hidden>
+      <span className={`${box} bg-surface text-ink-brand`} aria-hidden>
         <Icon className="size-6" />
       </span>
     );
@@ -45,7 +45,7 @@ export async function HubPageFrame({
       <section className="pt-8 pb-6 text-center sm:pt-12 sm:pb-9">
         <Container>
           <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <h1 className="text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em]">
+          <h1 className="text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.1] en:tracking-[-0.02em]">
             {t.rich("title", richTags)}
           </h1>
           <p className="mx-auto mt-5 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">
@@ -56,8 +56,8 @@ export async function HubPageFrame({
       </section>
       <section>
         <Container className="max-w-[860px] pt-6 pb-[72px]">
-          <h2 className="mb-3.5 text-[clamp(24px,3vw,32px)] leading-[1.4] font-bold text-teal-900">{t("explainerTitle")}</h2>
-          <p className="text-[17px] leading-[1.95] text-pretty text-[#3d5055]">
+          <h2 className="mb-3.5 text-[clamp(24px,3vw,32px)] leading-[1.4] font-bold text-ink-900">{t("explainerTitle")}</h2>
+          <p className="text-[17px] leading-[1.95] text-pretty text-[#3d5055] dark:text-ink-700">
             <BidiText text={t("explainer")} />
           </p>
         </Container>

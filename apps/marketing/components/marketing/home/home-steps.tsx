@@ -26,14 +26,14 @@ export function LogoTile({ src, icon: Icon, label, highlight }: { src?: string; 
   return (
     <span
       className={cn(
-        "flex min-w-0 flex-col items-center gap-1 rounded-xl border bg-white px-1.5 py-2 text-center shadow-soft",
+        "flex min-w-0 flex-col items-center gap-1 rounded-xl border bg-surface px-1.5 py-2 text-center shadow-soft",
         highlight ? "border-amber-500 ring-2 ring-amber-100" : "border-line",
       )}
     >
       {src ? (
         <Image src={src} alt="" width={32} height={32} className="size-8 rounded-lg object-contain" />
       ) : Icon ? (
-        <span className="grid size-8 place-items-center rounded-lg bg-teal-50 text-teal-700">
+        <span className="grid size-8 place-items-center rounded-lg bg-tint text-ink-brand">
           <Icon className="size-[18px]" />
         </span>
       ) : null}
@@ -44,13 +44,13 @@ export function LogoTile({ src, icon: Icon, label, highlight }: { src?: string; 
 
 function StepCard({ index, title, body, children }: { index: number; title: string; body: string; children: React.ReactNode }) {
   return (
-    <Reveal as="li" className="flex min-w-0 flex-col gap-4 rounded-card-lg border border-line bg-white p-4 shadow-soft min-[641px]:p-5">
+    <Reveal as="li" className="flex min-w-0 flex-col gap-4 rounded-card-lg border border-line bg-surface p-4 shadow-soft min-[641px]:p-5">
       <div className="flex items-center gap-3">
         <Num className="grid size-10 flex-none place-items-center rounded-full bg-amber-500 text-[17px] font-bold text-amber-ink">{index}</Num>
-        <h3 className="text-[18px] leading-snug font-bold text-teal-900">{title}</h3>
+        <h3 className="text-[18px] leading-snug font-bold text-ink-900">{title}</h3>
       </div>
       <p className="text-sm text-pretty text-ink-500">{body}</p>
-      <div className="relative mt-auto flex min-h-[230px] flex-col justify-center gap-3 overflow-hidden rounded-card-sm border border-line-soft bg-[linear-gradient(160deg,#f3f8f9_0%,#fff_70%)] p-3.5">
+      <div className="relative mt-auto flex min-h-[230px] flex-col justify-center gap-3 overflow-hidden rounded-card-sm border border-line-soft bg-[linear-gradient(160deg,#f3f8f9_0%,#fff_70%)] dark:bg-[linear-gradient(160deg,var(--tint)_0%,var(--surface)_70%)] p-3.5">
         {children}
       </div>
     </Reveal>
@@ -67,7 +67,7 @@ export async function HomeSteps() {
   const payLive = Boolean(pay?.live);
   const themes = [
     { key: "a", top: "bg-teal-700", tile: "bg-amber-100" },
-    { key: "b", top: "bg-amber-500", tile: "bg-teal-50" },
+    { key: "b", top: "bg-amber-500", tile: "bg-tint" },
     { key: "c", top: "bg-ink-700", tile: "bg-[#f4e9e1]" },
   ];
 
@@ -79,7 +79,7 @@ export async function HomeSteps() {
         </Reveal>
         <ol className="m-0 grid list-none gap-4 p-0 min-[1081px]:grid-cols-3 min-[1081px]:gap-5">
           <StepCard index={1} title={t("one.title")} body={t("one.body")}>
-            <SignupTrigger tone="outline" className="w-full gap-2.5 bg-white">
+            <SignupTrigger tone="outline" className="w-full gap-2.5 bg-surface">
               <GoogleMark />
               {t("one.google")}
             </SignupTrigger>
@@ -94,12 +94,12 @@ export async function HomeSteps() {
           <StepCard index={2} title={t("two.title")} body={t("two.body")}>
             <div aria-hidden className="grid grid-cols-3 gap-2">
               {themes.map((theme, index) => (
-                <span key={theme.key} className={cn("relative flex flex-col gap-1 rounded-lg border bg-white p-1.5", index === 0 ? "border-amber-500 ring-2 ring-amber-100" : "border-line")}>
+                <span key={theme.key} className={cn("relative flex flex-col gap-1 rounded-lg border bg-surface p-1.5", index === 0 ? "border-amber-500 ring-2 ring-amber-100" : "border-line")}>
                   <span className={cn("h-2 rounded-sm", theme.top)} />
                   <span className={cn("h-7 rounded-sm", theme.tile)} />
                   <span className="grid grid-cols-2 gap-1">
-                    <span className="h-3 rounded-sm bg-teal-50" />
-                    <span className="h-3 rounded-sm bg-teal-50" />
+                    <span className="h-3 rounded-sm bg-tint" />
+                    <span className="h-3 rounded-sm bg-tint" />
                   </span>
                   {index === 0 ? (
                     <span className="absolute -top-1.5 -end-1.5 grid size-4 place-items-center rounded-full bg-amber-500 text-amber-ink">
@@ -109,14 +109,14 @@ export async function HomeSteps() {
                 </span>
               ))}
             </div>
-            <div aria-hidden className="flex items-center gap-3 rounded-xl border border-line bg-white p-2.5 shadow-soft">
-              <span className="grid size-12 flex-none place-items-center rounded-lg bg-[linear-gradient(135deg,var(--color-amber-100),var(--color-teal-50))]">
-                <ShoppingBag className="size-5 text-teal-700" />
+            <div aria-hidden className="flex items-center gap-3 rounded-xl border border-line bg-surface p-2.5 shadow-soft">
+              <span className="grid size-12 flex-none place-items-center rounded-lg bg-[linear-gradient(135deg,var(--color-amber-100),var(--color-teal-50))] dark:bg-[linear-gradient(135deg,rgb(253_173_40/0.16),var(--tint))]">
+                <ShoppingBag className="size-5 text-ink-brand" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <span className="truncate text-[12px] font-bold text-teal-900">{t("two.product")}</span>
-                <span style={loop(0)} className="mk-shimmer h-1.5 w-full rounded-full bg-teal-100" />
-                <span style={loop(0.3)} className="mk-shimmer h-1.5 w-3/4 rounded-full bg-teal-100" />
+                <span className="truncate text-[12px] font-bold text-ink-900">{t("two.product")}</span>
+                <span style={loop(0)} className="mk-shimmer h-1.5 w-full rounded-full bg-tint-strong" />
+                <span style={loop(0.3)} className="mk-shimmer h-1.5 w-3/4 rounded-full bg-tint-strong" />
               </span>
             </div>
             <span aria-hidden className="inline-flex items-center gap-1.5 self-start rounded-full bg-teal-900 px-3 py-1.5 text-[11.5px] font-bold text-white">

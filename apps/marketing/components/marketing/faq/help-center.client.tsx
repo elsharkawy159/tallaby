@@ -79,7 +79,7 @@ export function HelpSearch() {
 
   return (
     <>
-      <label className="mt-8 flex h-[62px] w-full max-w-[640px] items-center gap-2.5 rounded-full border-[1.5px] border-line-strong bg-white px-[22px] text-ink-400 shadow-[0_10px_30px_rgba(20,81,99,0.08)] transition-[border-color,box-shadow] duration-150 focus-within:border-teal-700 focus-within:shadow-[var(--ring-focus),0_10px_30px_rgba(20,81,99,0.08)]">
+      <label className="mt-8 flex h-[62px] w-full max-w-[640px] items-center gap-2.5 rounded-full border-[1.5px] border-line-strong bg-surface px-[22px] text-ink-400 shadow-[0_10px_30px_rgba(20,81,99,0.08)] transition-[border-color,box-shadow] duration-150 focus-within:border-ink-brand focus-within:shadow-[var(--ring-focus),0_10px_30px_rgba(20,81,99,0.08)]">
         <Search className="size-5" aria-hidden />
         <span className="sr-only">{t("search")}</span>
         <input
@@ -89,9 +89,9 @@ export function HelpSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("placeholder")}
-          className="h-full min-w-0 flex-1 bg-transparent text-[17px] text-teal-900 outline-none"
+          className="h-full min-w-0 flex-1 bg-transparent text-[17px] text-ink-900 outline-none"
         />
-        <kbd className="hidden rounded-md border border-neutral-200 px-2 py-0.5 font-latin text-xs font-semibold text-neutral-500 sm:inline">/</kbd>
+        <kbd className="hidden rounded-md border border-neutral-200 dark:border-line px-2 py-0.5 font-latin text-xs font-semibold text-neutral-500 dark:text-ink-500 sm:inline">/</kbd>
       </label>
       <div className="mt-[18px] flex flex-wrap items-center justify-center gap-2 text-[13px] text-ink-400">
         <span>{t("popular")}</span>
@@ -103,7 +103,7 @@ export function HelpSearch() {
               setQuery(term);
               setGroup(null);
             }}
-            className="rounded-full border border-line-strong bg-white px-3.5 py-1 text-[13px] font-semibold text-ink-600 transition-colors hover:border-teal-300 hover:text-teal-900"
+            className="rounded-full border border-line-strong bg-surface px-3.5 py-1 text-[13px] font-semibold text-ink-600 transition-colors hover:border-teal-300 hover:text-ink-900"
           >
             {term}
           </button>
@@ -140,13 +140,13 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
             type="button"
             aria-pressed={group === g.id}
             onClick={() => setGroup(group === g.id ? null : g.id)}
-            className="group grid content-start gap-1 rounded-card border border-line bg-surface-glass p-[22px] text-start shadow-soft transition-[transform,border-color] duration-200 hover:-translate-y-[3px] hover:border-teal-300 aria-pressed:border-teal-700 aria-pressed:shadow-[0_0_0_1px_var(--color-teal-700)]"
+            className="group grid content-start gap-1 rounded-card border border-line bg-surface-glass p-[22px] text-start shadow-soft transition-[transform,border-color] duration-200 hover:-translate-y-[3px] hover:border-teal-300 aria-pressed:border-ink-brand aria-pressed:shadow-[0_0_0_1px_var(--color-teal-700)]"
           >
-            <span className="mb-2 grid size-[42px] place-items-center rounded-xl bg-teal-50 text-teal-700 group-aria-pressed:bg-amber-600 group-aria-pressed:text-teal-900">
+            <span className="mb-2 grid size-[42px] place-items-center rounded-xl bg-tint text-ink-brand group-aria-pressed:bg-amber-600 group-aria-pressed:text-teal-900">
               <g.icon className="size-[18px]" aria-hidden />
             </span>
-            <b className="text-base text-teal-900">{t(`groups.${g.id}.title`)}</b>
-            <span className="text-[13px] text-neutral-600">{t(`groups.${g.id}.sub`)}</span>
+            <b className="text-base text-ink-900">{t(`groups.${g.id}.title`)}</b>
+            <span className="text-[13px] text-neutral-600 dark:text-ink-700">{t(`groups.${g.id}.sub`)}</span>
           </button>
         ))}
       </div>
@@ -161,8 +161,8 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
                 if (group && group !== g.id) setGroup(null);
               }}
               className={cn(
-                "flex justify-between rounded-[10px] px-3.5 py-[9px] text-sm font-semibold text-slate-ink hover:bg-neutral-50 hover:no-underline",
-                (group ?? active) === g.id && "bg-teal-50 text-teal-900",
+                "flex justify-between rounded-[10px] px-3.5 py-[9px] text-sm font-semibold text-slate-ink hover:bg-neutral-50 dark:hover:bg-surface-muted hover:no-underline",
+                (group ?? active) === g.id && "bg-tint text-ink-900",
               )}
             >
               {t(`groups.${g.id}.title`)}
@@ -175,7 +175,7 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
             groups.map((g) =>
               g.items.length ? (
                 <div key={g.id} id={g.id} className="mb-12 scroll-mt-24">
-                  <h2 className="mb-2 flex items-center gap-2.5 text-[22px] font-bold text-teal-900">
+                  <h2 className="mb-2 flex items-center gap-2.5 text-[22px] font-bold text-ink-900">
                     <g.icon className="size-5 text-amber-700" aria-hidden />
                     {t(`groups.${g.id}.title`)}
                   </h2>
@@ -188,7 +188,7 @@ export function HelpResults({ still }: { still: React.ReactNode }) {
             )
           ) : (
             <div className="rounded-card border border-dashed border-line-strong p-12 text-center text-slate-ink">
-              <b className="mb-1 block text-lg text-teal-900">{t("noResults")}</b>
+              <b className="mb-1 block text-lg text-ink-900">{t("noResults")}</b>
               {t("noResultsBody")}
             </div>
           )}

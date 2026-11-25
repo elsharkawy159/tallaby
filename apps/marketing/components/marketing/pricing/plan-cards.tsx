@@ -87,7 +87,7 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
             key={card.name}
             className={cn(
               "relative flex flex-col gap-3.5 rounded-card border p-6 min-[641px]:rounded-card-lg min-[641px]:p-8",
-              card.featured ? "border-teal-900 bg-teal-900 text-white shadow-raise" : "border-line bg-white shadow-soft",
+              card.featured ? "border-teal-900 bg-teal-900 text-white shadow-raise" : "border-line bg-surface shadow-soft",
             )}
           >
             {/* One child: Reveal passes its children on as a prop array, which made React ask for keys. */}
@@ -103,7 +103,7 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
                 </span>
               ) : null}
               <div>
-                <h3 className={cn("text-[22px] font-bold", card.featured ? "text-white" : "text-teal-900", card.latinName && "font-latin")}>{card.name}</h3>
+                <h3 className={cn("text-[22px] font-bold", card.featured ? "text-white" : "text-ink-900", card.latinName && "font-latin")}>{card.name}</h3>
                 <p className={cn("text-sm", card.featured ? "text-white/75" : "text-ink-500")}>{card.tagline}</p>
               </div>
               <PlanPrice cents={card.cents} per={card.per} note={card.note} inverted={card.featured} />

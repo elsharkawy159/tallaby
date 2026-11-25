@@ -32,15 +32,15 @@ function MockRow({ row }: { row: MockRowWords }) {
   return (
     <div className="grid gap-1 rounded-[9px] bg-[#f7faf9] px-2.5 py-[7px]">
       <div className="flex min-w-0 items-center justify-between gap-2">
-        <span className="min-w-0 truncate font-semibold text-[#171717]">{row.label}</span>
+        <span className="min-w-0 truncate font-semibold text-[#171717] dark:text-ink-900">{row.label}</span>
         <span className="flex flex-none items-center gap-2">
-          {row.value ? <bdi className="font-latin text-[11.5px] font-semibold text-[#55605f] tabular-nums">{row.value}</bdi> : null}
+          {row.value ? <bdi className="font-latin text-[11.5px] font-semibold text-[#55605f] dark:text-ink-500 tabular-nums">{row.value}</bdi> : null}
           {row.pill ? <MockPill tone={row.tone}>{row.pill}</MockPill> : null}
           {row.toggle ? <MockToggle off={row.toggle === "off"} /> : null}
         </span>
       </div>
       {row.bar !== undefined ? (
-        <span className="block h-1.5 overflow-hidden rounded-full bg-[#e5eced]">
+        <span className="block h-1.5 overflow-hidden rounded-full bg-[#e5eced] dark:bg-surface-muted">
           <i className="block h-full rounded-full bg-teal-700" style={{ width: `${Math.max(4, Math.min(100, row.bar))}%` }} />
         </span>
       ) : null}
@@ -70,8 +70,8 @@ export async function DashShot({ words, active }: { words: MockWords; active: st
   return (
     <DashFrame active={active} title={words.title}>
       <div>
-        <b className="block text-base text-[#171717]">{words.title}</b>
-        <small className="text-[11.5px] text-[#808080]">{words.path}</small>
+        <b className="block text-base text-[#171717] dark:text-ink-900">{words.title}</b>
+        <small className="text-[11.5px] text-[#808080] dark:text-ink-500">{words.path}</small>
       </div>
       <MockCards cards={words.cards} />
     </DashFrame>
@@ -81,8 +81,8 @@ export async function DashShot({ words, active }: { words: MockWords; active: st
 /** A section's picture: the same cards on a quiet panel, without the frame. */
 export function DashPanel({ words }: { words: MockWords }) {
   return (
-    <div aria-hidden className="flex flex-col gap-3 rounded-card border border-[#e3ebed] bg-[#f4f6f6] p-3.5 text-start sm:p-5">
-      <small className="text-[11.5px] font-semibold text-[#808080]">{words.path}</small>
+    <div aria-hidden className="flex flex-col gap-3 rounded-card border border-line bg-[#f4f6f6] dark:bg-surface-muted p-3.5 text-start sm:p-5">
+      <small className="text-[11.5px] font-semibold text-[#808080] dark:text-ink-500">{words.path}</small>
       <MockCards cards={words.cards} />
     </div>
   );
@@ -93,7 +93,7 @@ const preview = (key: string, locale: string, mobile?: boolean) => `/template-pr
 function PhoneFrame({ src, className, children }: { src: string; className?: string; children?: React.ReactNode }) {
   return (
     <div className={cn("relative rounded-[30px] bg-[#0f1d21] p-[7px] shadow-[0_24px_56px_rgba(13,55,67,0.22)]", className)}>
-      <div className="relative aspect-[9/19] overflow-hidden rounded-[24px] bg-white">
+      <div className="relative aspect-[9/19] overflow-hidden rounded-[24px] bg-surface">
         <Image src={src} alt="" fill sizes="220px" className="object-cover object-top" />
         {children}
       </div>
@@ -106,7 +106,7 @@ export async function TemplateScreens({ templates, priority }: { templates: read
   const locale = await getLocale();
   return (
     <div aria-hidden className="relative pb-6 sm:pe-10">
-      <div className="overflow-hidden rounded-[14px] border border-[#e3ebed] bg-white shadow-[0_24px_56px_rgba(13,55,67,0.14)]">
+      <div className="overflow-hidden rounded-[14px] border border-line bg-surface shadow-[0_24px_56px_rgba(13,55,67,0.14)]">
         <BrowserBar url={<span>{templates[0]}.tallaby.com</span>} />
         <div className="relative aspect-[4/3]">
           <Image src={preview(templates[0], locale)} alt="" fill priority={priority} sizes="(min-width: 1081px) 640px, 92vw" className="object-cover object-top" />
@@ -123,11 +123,11 @@ export async function PhoneAppShot({ template }: { template: string }) {
   return (
     <div aria-hidden className="mx-auto w-full max-w-[290px]">
       <PhoneFrame src={preview(template, locale, true)}>
-        <div className="absolute inset-x-2.5 bottom-2.5 flex items-center gap-2.5 rounded-2xl bg-white/95 p-2.5 text-start shadow-[0_10px_30px_rgba(13,55,67,0.25)] backdrop-blur">
+        <div className="absolute inset-x-2.5 bottom-2.5 flex items-center gap-2.5 rounded-2xl bg-surface/95 p-2.5 text-start shadow-[0_10px_30px_rgba(13,55,67,0.25)] backdrop-blur">
           <span className="grid size-10 flex-none place-items-center rounded-xl bg-teal-900 font-latin text-sm font-bold text-white">{t("initials")}</span>
           <span className="min-w-0 flex-1">
-            <b className="block truncate text-[13px] text-[#171717]">{t("appName")}</b>
-            <small className="block truncate text-[11px] text-[#808080]">{t("hint")}</small>
+            <b className="block truncate text-[13px] text-[#171717] dark:text-ink-900">{t("appName")}</b>
+            <small className="block truncate text-[11px] text-[#808080] dark:text-ink-500">{t("hint")}</small>
           </span>
           <span className="inline-flex h-8 flex-none items-center gap-1 rounded-[9px] bg-teal-700 px-2.5 text-[11.5px] font-bold text-white">
             <Download className="size-3.5" />

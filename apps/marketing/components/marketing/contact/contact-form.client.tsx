@@ -23,7 +23,7 @@ const ROLE_ICONS: Record<ContactRole, React.ComponentType<{ className?: string }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const fieldClass =
-  "h-[50px] rounded-[14px] border-[1.5px] border-line-strong bg-white px-3.5 text-[15px] shadow-none focus-visible:border-teal-700 focus-visible:ring-[4px] focus-visible:ring-teal-700/10";
+  "h-[50px] rounded-[14px] border-[1.5px] border-line-strong bg-surface px-3.5 text-[15px] shadow-none focus-visible:border-ink-brand focus-visible:ring-[4px] focus-visible:ring-ink-brand/10";
 
 type Errors = Partial<Record<"name" | "email" | "message" | "form", string>>;
 
@@ -82,7 +82,7 @@ export function ContactForm() {
         <span className="mx-auto mb-[18px] grid size-[72px] place-items-center rounded-full bg-success-soft text-success">
           <Check className="size-[34px]" aria-hidden />
         </span>
-        <h2 ref={sentRef} tabIndex={-1} className="text-[26px] font-bold text-teal-900 outline-none">
+        <h2 ref={sentRef} tabIndex={-1} className="text-[26px] font-bold text-ink-900 outline-none">
           {t("sent")}
         </h2>
         <p className="mt-2 mb-6 text-slate-ink">{t("sentBody")}</p>
@@ -101,10 +101,10 @@ export function ContactForm() {
 
   return (
     <form ref={formRef} onSubmit={onSubmit} noValidate>
-      <h2 className="text-[26px] font-bold text-teal-900">{t("formTitle")}</h2>
-      <p className="mt-1.5 mb-[26px] text-[15px] text-neutral-600">{t("formBody")}</p>
+      <h2 className="text-[26px] font-bold text-ink-900">{t("formTitle")}</h2>
+      <p className="mt-1.5 mb-[26px] text-[15px] text-neutral-600 dark:text-ink-700">{t("formBody")}</p>
 
-      <span className="mb-1.5 block text-sm font-semibold text-neutral-800">{t("iAm")}</span>
+      <span className="mb-1.5 block text-sm font-semibold text-neutral-800 dark:text-ink-900">{t("iAm")}</span>
       <ToggleGroup
         type="single"
         value={role}
@@ -122,7 +122,7 @@ export function ContactForm() {
             <ToggleGroupItem
               key={r}
               value={r}
-              className="group h-auto flex-col gap-1.5 rounded-card-sm! border-[1.5px] border-[#e6eef0] px-2.5 py-3.5 text-[13px] font-semibold whitespace-normal text-neutral-700 hover:bg-white data-[state=on]:border-teal-900 data-[state=on]:bg-teal-900 data-[state=on]:text-white"
+              className="group h-auto flex-col gap-1.5 rounded-card-sm! border-[1.5px] border-[#e6eef0] dark:border-line px-2.5 py-3.5 text-[13px] font-semibold whitespace-normal text-neutral-700 dark:text-ink-700 hover:bg-surface data-[state=on]:border-teal-900 data-[state=on]:bg-teal-900 data-[state=on]:text-white"
             >
               <Icon className="size-[22px]! text-teal-500 group-data-[state=on]:text-amber-600" />
               {t(`who.${r}`)}
@@ -152,15 +152,15 @@ export function ContactForm() {
 
       {role === "seller" ? (
         <Field id="contact-store" label={t("storeLink")}>
-          <div dir="ltr" className={cn("flex items-center border", fieldClass, "focus-within:border-teal-700 focus-within:ring-[4px] focus-within:ring-teal-700/10")}>
+          <div dir="ltr" className={cn("flex items-center border", fieldClass, "focus-within:border-ink-brand focus-within:ring-[4px] focus-within:ring-ink-brand/10")}>
             <input id="contact-store" name="store" placeholder="yourbrand" className="min-w-0 flex-1 bg-transparent font-latin font-semibold outline-none" />
-            <span className="font-latin text-neutral-500">.{ROOT_DOMAIN}</span>
+            <span className="font-latin text-neutral-500 dark:text-ink-500">.{ROOT_DOMAIN}</span>
           </div>
         </Field>
       ) : null}
 
       <div className="mb-4">
-        <span className="mb-1.5 block text-sm font-semibold text-neutral-800">{t("topic")}</span>
+        <span className="mb-1.5 block text-sm font-semibold text-neutral-800 dark:text-ink-900">{t("topic")}</span>
         <ChoiceGroup
           value={topic}
           onChange={setTopic}
@@ -197,7 +197,7 @@ export function ContactForm() {
 function Field({ id, label, error, children }: { id: string; label: string; error?: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <Label htmlFor={id} className="mb-1.5 text-sm font-semibold text-neutral-800">
+      <Label htmlFor={id} className="mb-1.5 text-sm font-semibold text-neutral-800 dark:text-ink-900">
         {label}
       </Label>
       {children}

@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@workspace/ui/lib/utils";
 
 const inputBase =
-  "w-full rounded-[14px] border-[1.5px] border-line-strong bg-white px-3.5 text-[15px] outline-0 transition-[border-color,box-shadow] duration-150 focus:border-teal-700 focus:shadow-[var(--ring-focus)]";
+  "w-full rounded-[14px] border-[1.5px] border-line-strong bg-surface px-3.5 text-[15px] outline-0 transition-[border-color,box-shadow] duration-150 focus:border-ink-brand focus:shadow-[var(--ring-focus)]";
 
 /** For inputs built by another component (a select, a phone field). */
 export const fieldInputClassName = cn(inputBase, "h-[50px]");

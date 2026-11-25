@@ -5,6 +5,7 @@ For anyone building a page in `apps/marketing/app/[locale]/(marketing)` (split o
 ## Tokens and components
 
 - **Tailwind utilities (`marketing.css`):** `text-ink-900/700/600/500/400`, `text-ink-on-dark`, `border-line`, `border-line-strong`, `border-line-soft`, `border-line-kick`, `bg-surface-glass`, `bg-footer-top`, `bg-footer-bar`, `rounded-card-sm` (18), `rounded-card` (24), `rounded-card-lg` (28), `rounded-band` (36), `shadow-soft`, `shadow-raise`, `shadow-stage`, `shadow-cta`, `font-latin`, plus the `teal-*` and `amber-*` scales. In plain CSS: `var(--bg-fog)`, `var(--bg-cta-glow)`, `var(--ring-focus)`, `var(--btn-h)`.
+- **Dark mode (2026-11-25):** the site follows the visitor's device, with a System / Light / Dark switch in the footer (next-themes puts `dark` on `<html>`). Colour everything with the tokens above (`text-ink-*`, `bg-surface`, `bg-surface-muted`, `bg-tint`, `bg-tint-strong`, `text-ink-brand`, `border-line*`), which change with the theme, or add a `dark:` variant; never a raw `bg-white`, `text-teal-900` or hex colour on its own. Dark bands (`bg-teal-900`, the footer) stay dark in both themes; check each new page in both.
 - **Classes:** `cta-glow` adds the amber glow to a dark box (needs `relative overflow-hidden`). The fog is already on every page under `(site)`.
 - **From `components/marketing/site/`:**
   - `layout-primitives`: `Container`, `Section`, `SectionHeading` (`kicker`, `title`, `description`, `centered`; `<em>` in a title turns amber), `Kicker`, `Eyebrow`, `Num`, `Ltr`, `PhotoPlaceholder`

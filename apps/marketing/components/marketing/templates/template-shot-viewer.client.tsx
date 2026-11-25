@@ -45,13 +45,13 @@ export function TemplateShotViewer({ name, shot, host }: { name: string; shot: P
   const desktopSrcSet = shot.large ? `${shot.src} ${shot.width}w, ${shot.large.src} ${shot.large.width}w` : undefined;
   const region = t("shotRegion", { name });
 
-  const scrollBox = "block w-full overflow-y-auto overscroll-contain bg-white outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-teal-500";
+  const scrollBox = "block w-full overflow-y-auto overscroll-contain bg-surface outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-teal-500";
 
   return (
-    <div className="rounded-card border border-line bg-[#eef3f4] shadow-[0_30px_70px_rgba(13,55,67,0.1)]">
+    <div className="rounded-card border border-line bg-tint shadow-[0_30px_70px_rgba(13,55,67,0.1)]">
       {shot.mobile ? (
         <div className="flex justify-center px-3.5 pt-3.5 min-[901px]:pt-5">
-          <div role="group" aria-label={t("device")} className="flex rounded-full bg-white p-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+          <div role="group" aria-label={t("device")} className="flex rounded-full bg-surface p-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
             {(["desktop", "mobile"] as const).map((d) => {
               const Icon = d === "desktop" ? Monitor : Smartphone;
               return (
@@ -62,7 +62,7 @@ export function TemplateShotViewer({ name, shot, host }: { name: string; shot: P
                   onClick={() => setChoice(d)}
                   className={cn(
                     "flex h-9 items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold transition-colors focus-visible:ring-[3px] focus-visible:ring-teal-500 focus-visible:outline-none",
-                    device === d ? "bg-teal-900 text-white" : "text-ink-600 hover:text-teal-900",
+                    device === d ? "bg-teal-900 text-white" : "text-ink-600 hover:text-ink-900",
                   )}
                 >
                   <Icon className="size-[15px]" aria-hidden />
@@ -76,7 +76,7 @@ export function TemplateShotViewer({ name, shot, host }: { name: string; shot: P
 
       <div className="grid place-items-center p-3.5 min-[901px]:p-7">
         {device === "mobile" && shot.mobile ? (
-          <div className="w-full max-w-[390px] overflow-hidden rounded-[36px] border-[10px] border-[#0b0f10] bg-white shadow-raise">
+          <div className="w-full max-w-[390px] overflow-hidden rounded-[36px] border-[10px] border-[#0b0f10] bg-surface shadow-raise">
             {/* A scrollable region: keyboard users scroll it once it has focus. */}
             <div tabIndex={0} role="region" aria-label={region} className={cn(scrollBox, "h-[min(78vh,780px)]")}>
               {/* eslint-disable-next-line @next/next/no-img-element -- stored WebP shot, served as is */}
@@ -84,7 +84,7 @@ export function TemplateShotViewer({ name, shot, host }: { name: string; shot: P
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-[1200px] overflow-hidden rounded-xl bg-white shadow-raise">
+          <div className="w-full max-w-[1200px] overflow-hidden rounded-xl bg-surface shadow-raise">
             <BrowserBar url={host} />
             <div tabIndex={0} role="region" aria-label={region} className={cn(scrollBox, "h-[min(78vh,880px)]")}>
               <picture>

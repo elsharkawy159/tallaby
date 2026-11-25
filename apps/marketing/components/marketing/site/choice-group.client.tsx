@@ -10,7 +10,7 @@ const groupVariants = cva("", {
     look: {
       chips: "no-scrollbar max-w-full gap-1.5 overflow-x-auto rounded-none p-0.5",
       dark: "rounded-[10px] bg-white/10 p-[3px]",
-      light: "rounded-[10px] bg-neutral-100 p-[3px]",
+      light: "rounded-[10px] bg-neutral-100 dark:bg-surface-muted p-[3px]",
     },
   },
 });
@@ -21,10 +21,10 @@ const itemVariants = cva(
     variants: {
       look: {
         chips:
-          "min-h-10 rounded-full! border border-neutral-200 bg-white px-4 text-sm text-neutral-700 hover:border-teal-300 hover:bg-white hover:text-neutral-700 data-[state=on]:border-teal-900 data-[state=on]:bg-teal-900 data-[state=on]:text-white",
-        dark: "h-[34px] rounded-lg! px-3 text-[13px] text-mist hover:bg-transparent hover:text-white data-[state=on]:bg-white data-[state=on]:text-teal-900",
+          "min-h-10 rounded-full! border border-neutral-200 dark:border-line bg-surface px-4 text-sm text-neutral-700 dark:text-ink-700 hover:border-teal-300 hover:bg-surface hover:text-neutral-700 dark:hover:text-ink-700 data-[state=on]:border-teal-900 data-[state=on]:bg-teal-900 data-[state=on]:text-white",
+        dark: "h-[34px] rounded-lg! px-3 text-[13px] text-mist hover:bg-transparent hover:text-white data-[state=on]:bg-surface data-[state=on]:text-ink-900",
         light:
-          "h-[34px] rounded-lg! px-3 text-[13px] text-neutral-700 hover:bg-transparent data-[state=on]:bg-white data-[state=on]:text-teal-900 data-[state=on]:shadow-xs",
+          "h-[34px] rounded-lg! px-3 text-[13px] text-neutral-700 dark:text-ink-700 hover:bg-transparent data-[state=on]:bg-surface data-[state=on]:text-ink-900 data-[state=on]:shadow-xs",
       },
     },
   },

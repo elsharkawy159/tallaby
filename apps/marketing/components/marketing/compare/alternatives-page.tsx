@@ -13,7 +13,7 @@ import { CONTACT } from "@/lib/marketing/site.lib";
 import { cn } from "@workspace/ui/lib/utils";
 import { CompareSources, CompareTable, CompetitorChip, TallabyChip } from "./compare-table";
 
-const H2 = "mb-[22px] text-[clamp(24px,3.2vw,34px)] leading-[1.35] font-bold text-balance text-teal-900";
+const H2 = "mb-[22px] text-[clamp(24px,3.2vw,34px)] leading-[1.35] font-bold text-balance text-ink-900";
 
 type ShortlistPick = { bestFor: string; pros: string[]; cons: string[] };
 
@@ -51,10 +51,10 @@ export async function AlternativesPageView({ competitor }: { competitor: Competi
 
       <section className="pt-8 pb-8 text-center sm:pt-12 sm:pb-10">
         <Container>
-          <h1 className="mx-auto max-w-[860px] text-[clamp(28px,4.6vw,50px)] leading-[1.35] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">{t("title", { name })}</h1>
+          <h1 className="mx-auto max-w-[860px] text-[clamp(28px,4.6vw,50px)] leading-[1.35] font-bold text-balance text-ink-900 en:leading-[1.15] en:tracking-[-0.01em]">{t("title", { name })}</h1>
           <p className="mx-auto mt-5 max-w-[720px] text-[clamp(16px,2vw,18px)] text-pretty text-ink-500">{withPrices(c("alternatives.intro", PRICE_TOKENS), bidi)}</p>
           <div className="mt-[22px] flex flex-wrap items-center justify-center gap-x-[22px] gap-y-2.5 text-sm text-ink-500">
-            <a href="#sources" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-teal-100 bg-white px-3.5 text-[13.5px] font-semibold text-teal-900 hover:no-underline">
+            <a href="#sources" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-tint-strong bg-surface px-3.5 text-[13.5px] font-semibold text-ink-900 hover:no-underline">
               <Calendar className="size-4 text-teal-500" aria-hidden />
               {t("checkedOn", { date: dateOf(factsCheckedOn(competitor)) })}
             </a>
@@ -68,8 +68,8 @@ export async function AlternativesPageView({ competitor }: { competitor: Competi
           <h2 className={H2}>{t("whyTitle", { name })}</h2>
           <div className="grid gap-4 min-[761px]:grid-cols-3">
             {why.map((item) => (
-              <div key={item.title} className="rounded-card border border-[#e3ebed] bg-white p-6">
-                <h3 className="mb-1.5 text-[17px] font-bold text-teal-900">
+              <div key={item.title} className="rounded-card border border-line bg-surface p-6">
+                <h3 className="mb-1.5 text-[17px] font-bold text-ink-900">
                   <BidiText text={item.title} />
                 </h3>
                 <p className="text-[14.5px] text-pretty text-ink-500">{withPrices(item.body, bidi)}</p>
@@ -106,7 +106,7 @@ export async function AlternativesPageView({ competitor }: { competitor: Competi
         <Container>
           <h2 className={H2}>{t("tableTitle", { name })}</h2>
           <CompareTable competitor={competitor} name={name} />
-          <Link href={`/compare/${compareSlug(competitor)}`} className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-teal-700">
+          <Link href={`/compare/${compareSlug(competitor)}`} className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-ink-brand">
             {t("fullCompare", { name })}
             <ForwardArrow />
           </Link>
@@ -118,9 +118,9 @@ export async function AlternativesPageView({ competitor }: { competitor: Competi
           <h2 className={H2}>{t("moveTitle", { name })}</h2>
           <ol className="grid gap-[18px] min-[961px]:grid-cols-3">
             {steps.map((step, i) => (
-              <li key={step.title} className="rounded-card border border-[#e3ebed] bg-white p-[26px]">
+              <li key={step.title} className="rounded-card border border-line bg-surface p-[26px]">
                 <Num className="mb-4 grid size-10 place-items-center rounded-full bg-amber-600 text-[15px] font-bold text-teal-900">{i + 1}</Num>
-                <h3 className="mb-1.5 text-lg font-bold text-teal-900">
+                <h3 className="mb-1.5 text-lg font-bold text-ink-900">
                   <BidiText text={step.title} />
                 </h3>
                 <p className="text-[14.5px] text-pretty text-ink-500">
@@ -164,15 +164,15 @@ function PickCard({
 }) {
   const bidi = (part: string) => <BidiText text={part} />;
   return (
-    <li className={cn("rounded-[26px] border p-5 sm:p-7", highlight ? "border-teal-100 bg-gradient-to-b from-[rgba(20,81,99,0.06)] to-[rgba(20,81,99,0.02)]" : "border-[#e3ebed] bg-white")}>
+    <li className={cn("rounded-[26px] border p-5 sm:p-7", highlight ? "border-tint-strong bg-gradient-to-b from-[rgba(20,81,99,0.06)] to-[rgba(20,81,99,0.02)]" : "border-line bg-surface")}>
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <Num className="grid size-9 place-items-center rounded-full bg-amber-600 text-sm font-bold text-teal-900">{rank}</Num>
         {chip}
         <h3 className="sr-only">{title}</h3>
         {badge ? <span className="rounded-full bg-teal-900 px-3 py-1 text-xs font-bold text-white">{badge}</span> : null}
       </div>
-      <p className="mb-2 text-[15px] text-pretty text-[#3d5055]">
-        <b className="text-teal-900">{labels.bestFor} </b>
+      <p className="mb-2 text-[15px] text-pretty text-[#3d5055] dark:text-ink-700">
+        <b className="text-ink-900">{labels.bestFor} </b>
         <BidiText text={pick.bestFor} />
       </p>
       <p className="mb-4 text-[14px] text-pretty text-ink-500">{withPrices(price, bidi)}</p>
@@ -182,11 +182,11 @@ function PickCard({
           { title: labels.cons, items: pick.cons, good: false },
         ].map((column) => (
           <div key={column.title}>
-            <b className="mb-2 block text-[14.5px] text-teal-900">{column.title}</b>
+            <b className="mb-2 block text-[14.5px] text-ink-900">{column.title}</b>
             <ul className="grid gap-2">
               {column.items.map((item) => (
-                <li key={item} className="grid grid-cols-[20px_1fr] gap-2 text-[14.5px] text-pretty text-[#4a5c61]">
-                  {column.good ? <CircleCheck className="mt-0.5 size-[18px] text-teal-700" aria-hidden /> : <CircleMinus className="mt-0.5 size-[18px] text-[#8a989b]" aria-hidden />}
+                <li key={item} className="grid grid-cols-[20px_1fr] gap-2 text-[14.5px] text-pretty text-[#4a5c61] dark:text-ink-500">
+                  {column.good ? <CircleCheck className="mt-0.5 size-[18px] text-ink-brand" aria-hidden /> : <CircleMinus className="mt-0.5 size-[18px] text-[#8a989b]" aria-hidden />}
                   <span>{withPrices(item, bidi)}</span>
                 </li>
               ))}
@@ -195,7 +195,7 @@ function PickCard({
         ))}
       </div>
       {link ? (
-        <Link href={link.href} className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-teal-700">
+        <Link href={link.href} className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-ink-brand">
           {link.label}
           <ForwardArrow />
         </Link>

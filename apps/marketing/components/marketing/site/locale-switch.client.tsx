@@ -37,7 +37,7 @@ export function LocaleSwitch({ className }: { className?: string }) {
         });
       }}
       className={cn(
-        "flex h-[42px] items-center gap-1.5 rounded-[10px] px-3 text-sm font-semibold whitespace-nowrap text-ink-600 hover:bg-teal-50 hover:text-teal-900 hover:no-underline hover:no-underline aria-disabled:opacity-60",
+        "flex h-[42px] items-center gap-1.5 rounded-[10px] px-3 text-sm font-semibold whitespace-nowrap text-ink-600 hover:bg-tint hover:text-ink-900 hover:no-underline hover:no-underline aria-disabled:opacity-60",
         className,
       )}
     >

@@ -40,15 +40,16 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
             {page.partner ? (
               <>
                 <div className="flex items-center" aria-hidden>
-                  <span className="flex h-[46px] items-center rounded-full border-[1.5px] border-teal-100 bg-white px-3.5 shadow-[0_10px_28px_rgba(20,81,99,0.1)] sm:h-[54px] sm:px-[22px]">
-                    <Image src="/logo-primary.png" alt="" width={94} height={24} className="h-5 w-auto sm:h-6" />
+                  <span className="flex h-[46px] items-center rounded-full border-[1.5px] border-tint-strong bg-surface px-3.5 shadow-[0_10px_28px_rgba(20,81,99,0.1)] sm:h-[54px] sm:px-[22px]">
+                    <Image src="/logo-primary.png" alt="" width={94} height={24} className="h-5 w-auto sm:h-6 dark:hidden" />
+                    <Image src="/logo-white.png" alt="" width={94} height={24} className="h-5 w-auto sm:h-6 hidden dark:block" />
                   </span>
                   <span className="relative block h-0.5 w-[52px] bg-[repeating-linear-gradient(90deg,var(--color-teal-300)_0_6px,transparent_6px_11px)] sm:w-[84px]">
                     <span className="absolute start-1/2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-amber-600 text-teal-900 shadow-[0_0_0_6px_rgba(253,173,40,0.18)] ltr:-translate-x-1/2 rtl:translate-x-1/2 sm:size-[38px]">
                       <Plug className="size-[18px]" />
                     </span>
                   </span>
-                  <span dir="ltr" className="flex h-[46px] items-center rounded-full border-[1.5px] border-[#e2e5e6] bg-[#eef0f1] px-3.5 font-latin text-sm font-bold whitespace-nowrap text-[#3f4a4d] sm:h-[54px] sm:px-[22px] sm:text-base">
+                  <span dir="ltr" className="flex h-[46px] items-center rounded-full border-[1.5px] border-[#e2e5e6] dark:border-line bg-[#eef0f1] dark:bg-surface-muted px-3.5 font-latin text-sm font-bold whitespace-nowrap text-[#3f4a4d] dark:text-ink-700 sm:h-[54px] sm:px-[22px] sm:text-base">
                     {page.partner}
                   </span>
                 </div>
@@ -58,14 +59,14 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
                 </span>
               </>
             ) : (
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#e1eaec] bg-white py-[5px] ps-1.5 pe-3.5 text-[13.5px] font-bold whitespace-nowrap text-teal-700">
+              <span className="inline-flex items-center gap-2 rounded-full border border-line-kick bg-surface py-[5px] ps-1.5 pe-3.5 text-[13.5px] font-bold whitespace-nowrap text-ink-brand">
                 <span className="grid size-7 place-items-center rounded-full bg-teal-700 text-white">
                   <page.icon className="size-[15px]" aria-hidden />
                 </span>
                 <BidiText text={t("crumb")} />
               </span>
             )}
-            <h1 className="text-[clamp(30px,4vw,48px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em]">
+            <h1 className="text-[clamp(30px,4vw,48px)] leading-[1.3] font-bold text-balance text-ink-900 en:leading-[1.15] en:tracking-[-0.01em]">
               <BidiText text={t("title")} />
             </h1>
             <p className="text-lg text-pretty text-ink-500">
@@ -86,10 +87,10 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
 
       <Section>
         <Container className="grid items-start gap-4 min-[1081px]:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] min-[1081px]:gap-14">
-          <Reveal as="h2" className="text-[clamp(26px,3.4vw,36px)] leading-[1.35] font-bold text-teal-900">
+          <Reveal as="h2" className="text-[clamp(26px,3.4vw,36px)] leading-[1.35] font-bold text-ink-900">
             <BidiText text={t("whatTitle")} />
           </Reveal>
-          <Reveal className="grid gap-4 text-[17px] leading-[1.95] text-[#3d5055]">
+          <Reveal className="grid gap-4 text-[17px] leading-[1.95] text-[#3d5055] dark:text-ink-700">
             {what.map((paragraph) => (
               <p key={paragraph} className="text-pretty">
                 <BidiText text={paragraph} />
@@ -127,8 +128,8 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm text-ink-500">
                 <span>{t("eventsLabel")}</span>
                 {page.events.map((name) => (
-                  <span key={name} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-[#e3ebed] bg-white px-3.5 font-semibold text-ink-700">
-                    <b dir="ltr" className="font-latin text-[12.5px] text-teal-700">
+                  <span key={name} className="inline-flex h-[38px] items-center gap-2 rounded-full border border-line bg-surface px-3.5 font-semibold text-ink-700">
+                    <b dir="ltr" className="font-latin text-[12.5px] text-ink-brand">
                       {name}
                     </b>
                     {t(`events.${name}`)}
@@ -144,17 +145,17 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
       {isIntegration ? (
         <section className="pt-14 min-[861px]:pt-[72px]">
           <Container>
-            <Reveal className="grid items-start gap-4 rounded-card-lg border border-[#dbe8eb] bg-teal-50 p-5 sm:p-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-8">
+            <Reveal className="grid items-start gap-4 rounded-card-lg border border-[#dbe8eb] dark:border-line bg-tint p-5 sm:p-7 min-[1081px]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] min-[1081px]:gap-8">
               <div>
-                <h2 className="text-[clamp(24px,3vw,32px)] leading-[1.35] font-bold text-teal-900">{t("requirementsTitle")}</h2>
+                <h2 className="text-[clamp(24px,3vw,32px)] leading-[1.35] font-bold text-ink-900">{t("requirementsTitle")}</h2>
                 <p className="mt-2 text-[15px] text-ink-500">{shared("requirementsLead")}</p>
               </div>
               <ul className="grid gap-2.5 min-[761px]:grid-cols-2">
                 {requirements.map((item) => (
-                  <li key={item.title} className="grid grid-cols-[24px_1fr] gap-2.5 rounded-2xl bg-white px-4 py-3.5">
-                    <CircleCheck className="mt-[3px] size-5 text-teal-700" aria-hidden />
+                  <li key={item.title} className="grid grid-cols-[24px_1fr] gap-2.5 rounded-2xl bg-surface px-4 py-3.5">
+                    <CircleCheck className="mt-[3px] size-5 text-ink-brand" aria-hidden />
                     <div>
-                      <b className="block text-[15px] text-teal-900">
+                      <b className="block text-[15px] text-ink-900">
                         <BidiText text={item.title} />
                       </b>
                       <span className="text-[13.5px] text-ink-500">
@@ -177,11 +178,11 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
               <Reveal
                 as="article"
                 key={step.title}
-                className="grid items-center gap-[18px] rounded-[26px] border border-[#e6eef0] bg-white/90 p-[18px] sm:p-[22px] min-[641px]:grid-cols-[48px_minmax(0,1fr)] min-[1081px]:grid-cols-[48px_minmax(0,1fr)_minmax(0,1.1fr)] min-[1081px]:gap-[22px]"
+                className="grid items-center gap-[18px] rounded-[26px] border border-[#e6eef0] dark:border-line bg-surface/90 p-[18px] sm:p-[22px] min-[641px]:grid-cols-[48px_minmax(0,1fr)] min-[1081px]:grid-cols-[48px_minmax(0,1fr)_minmax(0,1.1fr)] min-[1081px]:gap-[22px]"
               >
                 <Num className="grid size-10 place-items-center self-start rounded-[14px] bg-amber-600 text-base font-extrabold text-teal-900 sm:size-12 sm:text-lg">{i + 1}</Num>
                 <div className="min-w-0">
-                  <h3 className="mb-1.5 text-lg leading-normal font-bold text-teal-900">
+                  <h3 className="mb-1.5 text-lg leading-normal font-bold text-ink-900">
                     <BidiText text={step.title} />
                   </h3>
                   <p className="text-[15px] text-pretty text-ink-500">
@@ -207,12 +208,12 @@ export async function DetailPageView({ page }: { page: DetailPage }) {
                 <Link
                   key={href}
                   href={href}
-                  className="flex flex-col gap-2 rounded-[22px] border border-[#e3ebed] bg-white p-5 text-inherit transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-[3px] hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)] motion-reduce:hover:translate-y-0"
+                  className="flex flex-col gap-2 rounded-[22px] border border-line bg-surface p-5 text-inherit transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-[3px] hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)] motion-reduce:hover:translate-y-0"
                 >
                   <IconTile className="mb-1">
                     <Icon aria-hidden />
                   </IconTile>
-                  <b className="flex items-center justify-between gap-2 text-base text-teal-900">
+                  <b className="flex items-center justify-between gap-2 text-base text-ink-900">
                     <span>
                       <BidiText text={item.title} />
                     </span>
@@ -241,7 +242,7 @@ function IconCard({ Icon, item }: { Icon: DetailPage["icon"]; item: Titled }) {
         <IconTile className="mb-4">
           <Icon aria-hidden />
         </IconTile>
-        <h3 className="mb-1.5 text-lg font-bold text-teal-900">
+        <h3 className="mb-1.5 text-lg font-bold text-ink-900">
           <BidiText text={item.title} />
         </h3>
         <p className="text-[15px] text-pretty text-ink-500">

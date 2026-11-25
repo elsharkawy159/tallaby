@@ -37,7 +37,7 @@ export default async function CompareHubPage() {
         featured: competitor.featured,
         href: `/compare/${compareSlug(competitor)}`,
         mark: (
-          <span className="inline-flex h-8 items-center rounded-full border-[1.5px] border-[#e2e5e6] bg-[#eef0f1] px-2.5 text-[13px] font-bold whitespace-nowrap text-[#4a5558]">{name}</span>
+          <span className="inline-flex h-8 items-center rounded-full border-[1.5px] border-[#e2e5e6] dark:border-line bg-[#eef0f1] dark:bg-surface-muted px-2.5 text-[13px] font-bold whitespace-nowrap text-[#4a5558] dark:text-ink-700">{name}</span>
         ),
       };
     }),
@@ -64,7 +64,7 @@ export default async function CompareHubPage() {
         }}
       />
       {alternativesLinkTargets().length ? (
-        <Link href="/alternatives" className="mt-8 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-bold text-teal-700">
+        <Link href="/alternatives" className="mt-8 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-bold text-ink-brand">
           {t("alternativesLink")}
           <ForwardArrow />
         </Link>

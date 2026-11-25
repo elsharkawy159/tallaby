@@ -104,7 +104,7 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
 type Step = { kind: "form" } | { kind: "confirm"; email: string } | { kind: "done"; subdomain: string; builderUrl?: string };
 
 const inputBox =
-  "flex h-12 items-center overflow-hidden rounded-[10px] border bg-white transition-[border-color,box-shadow] focus-within:border-teal-700 focus-within:ring-[3px] focus-within:ring-teal-700/12";
+  "flex h-12 items-center overflow-hidden rounded-[10px] border bg-surface transition-[border-color,box-shadow] focus-within:border-ink-brand focus-within:ring-[3px] focus-within:ring-ink-brand/12";
 // 16px on phones so iOS Safari does not zoom in when a field gets focus.
 const inputEl = "h-full min-w-0 flex-1 bg-transparent px-3.5 text-base outline-none sm:text-[15px]";
 // A short fade as the step changes; none with reduced motion.
@@ -270,11 +270,11 @@ function SignupForm({
         <span className="mx-auto mt-1 mb-[18px] grid size-16 place-items-center rounded-full bg-success-soft text-success">
           <Check className="size-[30px]" aria-hidden />
         </span>
-        <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("doneTitle")}</DialogTitle>
+        <DialogTitle className="text-2xl font-extrabold text-ink-900">{t("doneTitle")}</DialogTitle>
         <DialogDescription asChild>
           <span
             dir="ltr"
-            className="mt-2.5 mb-[22px] inline-block max-w-full truncate rounded-[10px] bg-teal-50 px-3.5 py-2 font-latin text-[15px] font-bold text-teal-700"
+            className="mt-2.5 mb-[22px] inline-block max-w-full truncate rounded-[10px] bg-tint px-3.5 py-2 font-latin text-[15px] font-bold text-ink-brand"
           >
             {step.subdomain}.{ROOT_DOMAIN}
           </span>
@@ -316,8 +316,8 @@ function SignupForm({
 
   const header = (
     <DialogHeader className="mb-[22px] text-start">
-      <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("title")}</DialogTitle>
-      <DialogDescription className="text-sm text-neutral-600">{t("subtitle")}</DialogDescription>
+      <DialogTitle className="text-2xl font-extrabold text-ink-900">{t("title")}</DialogTitle>
+      <DialogDescription className="text-sm text-neutral-600 dark:text-ink-700">{t("subtitle")}</DialogDescription>
     </DialogHeader>
   );
 
@@ -326,12 +326,12 @@ function SignupForm({
       type="button"
       onClick={onGoogle}
       disabled={busy}
-      className="flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 text-[15px] font-semibold hover:bg-neutral-50 disabled:opacity-60 bg-white"
+      className="flex h-[50px] w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 dark:border-line text-[15px] font-semibold hover:bg-neutral-50 dark:hover:bg-surface-muted disabled:opacity-60 bg-surface"
     >
       {googlePending ? (
         <Loader2 className="size-5 animate-spin" aria-hidden />
       ) : (
-        <span aria-hidden className="relative size-5 rounded-full bg-[conic-gradient(#ea4335_0_25%,#fbbc05_0_50%,#34a853_0_75%,#4285f4_0)] after:absolute after:inset-1 after:rounded-full after:bg-white after:content-['']" />
+        <span aria-hidden className="relative size-5 rounded-full bg-[conic-gradient(#ea4335_0_25%,#fbbc05_0_50%,#34a853_0_75%,#4285f4_0)] after:absolute after:inset-1 after:rounded-full after:bg-surface after:content-['']" />
       )}
       {t("google")}
     </button>
@@ -353,15 +353,15 @@ function SignupForm({
   ) : null;
 
   const terms = (
-    <p className="mt-3.5 text-center text-xs text-neutral-600">
+    <p className="mt-3.5 text-center text-xs text-neutral-600 dark:text-ink-700">
       {t.rich("terms", {
         terms: (chunks) => (
-          <Link href="/terms" className="text-teal-700 underline-offset-2 hover:underline">
+          <Link href="/terms" className="text-ink-brand underline-offset-2 hover:underline">
             {chunks}
           </Link>
         ),
         privacy: (chunks) => (
-          <Link href="/privacy" className="text-teal-700 underline-offset-2 hover:underline">
+          <Link href="/privacy" className="text-ink-brand underline-offset-2 hover:underline">
             {chunks}
           </Link>
         ),
@@ -372,7 +372,7 @@ function SignupForm({
   const slugField = (
     <>
       <FieldLabel htmlFor="signup-slug">{t("slugLabel")}</FieldLabel>
-      <div dir="ltr" className={cn(inputBox, slugBad ? "border-destructive" : "border-neutral-200")}>
+      <div dir="ltr" className={cn(inputBox, slugBad ? "border-destructive" : "border-neutral-200 dark:border-line")}>
         <input
           ref={slugRef}
           id="signup-slug"
@@ -383,9 +383,9 @@ function SignupForm({
           placeholder="yourbrand"
           aria-describedby="signup-slug-hint"
           aria-invalid={slugBad || undefined}
-          className={cn(inputEl, "pe-1 font-latin font-semibold text-teal-900")}
+          className={cn(inputEl, "pe-1 font-latin font-semibold text-ink-900")}
         />
-        <span className="pe-3.5 font-latin text-[15px] text-neutral-500">.{ROOT_DOMAIN}</span>
+        <span className="pe-3.5 font-latin text-[15px] text-neutral-500 dark:text-ink-500">.{ROOT_DOMAIN}</span>
       </div>
       <SlugHint id="signup-slug-hint" state={slugState} host={`${slug}.${ROOT_DOMAIN}`} onPick={setSlug} />
     </>
@@ -396,7 +396,7 @@ function SignupForm({
       <FieldLabel htmlFor="signup-phone" className="mt-1.5">
         {t("phone")}
       </FieldLabel>
-      <div className={cn(inputBox, touched && !phoneOk ? "border-destructive" : "border-neutral-200")}>
+      <div className={cn(inputBox, touched && !phoneOk ? "border-destructive" : "border-neutral-200 dark:border-line")}>
         <input
           ref={phoneRef}
           id="signup-phone"
@@ -425,12 +425,12 @@ function SignupForm({
       <form key="email" onSubmit={onContinue} noValidate className={stepIn}>
         {header}
         {googleButton}
-        <div className="my-[18px] flex items-center gap-3 text-[13px] text-neutral-500 before:h-px before:flex-1 before:bg-neutral-200 before:content-[''] after:h-px after:flex-1 after:bg-neutral-200 after:content-['']">
+        <div className="my-[18px] flex items-center gap-3 text-[13px] text-neutral-500 dark:text-ink-500 before:h-px before:flex-1 before:bg-neutral-200 dark:before:bg-surface-muted before:content-[''] after:h-px after:flex-1 after:bg-neutral-200 dark:after:bg-surface-muted after:content-['']">
           {t("or")}
         </div>
 
         <FieldLabel htmlFor="signup-email">{t("email")}</FieldLabel>
-        <div className={cn(inputBox, emailBad || isEmailError(formError) ? "border-destructive" : "border-neutral-200")}>
+        <div className={cn(inputBox, emailBad || isEmailError(formError) ? "border-destructive" : "border-neutral-200 dark:border-line")}>
           <input
             ref={emailRef}
             id="signup-email"
@@ -484,7 +484,7 @@ function SignupForm({
       {header}
 
       <FieldLabel htmlFor="signup-email">{t("email")}</FieldLabel>
-      <div className={cn(inputBox, "mb-3.5 border-neutral-200 bg-neutral-50")}>
+      <div className={cn(inputBox, "mb-3.5 border-neutral-200 dark:border-line bg-neutral-50 dark:bg-surface-muted")}>
         <input
           id="signup-email"
           type="email"
@@ -492,13 +492,13 @@ function SignupForm({
           readOnly
           autoComplete="email"
           value={email.trim()}
-          className={cn(inputEl, "truncate text-neutral-700")}
+          className={cn(inputEl, "truncate text-neutral-700 dark:text-ink-700")}
         />
         <button
           type="button"
           onClick={() => goTo("email", emailRef)}
           aria-label={t("editEmailLabel")}
-          className="h-full flex-none px-3.5 text-sm font-semibold text-teal-700 underline-offset-2 hover:underline"
+          className="h-full flex-none px-3.5 text-sm font-semibold text-ink-brand underline-offset-2 hover:underline"
         >
           {t("editEmail")}
         </button>
@@ -509,7 +509,7 @@ function SignupForm({
       <FieldLabel htmlFor="signup-password" className="mt-1.5">
         {t("password")}
       </FieldLabel>
-      <div className={cn(inputBox, touched && password.length < 8 ? "border-destructive" : "border-neutral-200")}>
+      <div className={cn(inputBox, touched && password.length < 8 ? "border-destructive" : "border-neutral-200 dark:border-line")}>
         <input
           ref={passwordRef}
           id="signup-password"
@@ -526,7 +526,7 @@ function SignupForm({
           type="button"
           onClick={() => setShowPassword((s) => !s)}
           aria-label={showPassword ? t("hidePassword") : t("showPassword")}
-          className="grid h-full w-11 place-items-center text-neutral-600"
+          className="grid h-full w-11 place-items-center text-neutral-600 dark:text-ink-700"
         >
           {showPassword ? <EyeOff className="size-[18px]" aria-hidden /> : <Eye className="size-[18px]" aria-hidden />}
         </button>
@@ -584,20 +584,20 @@ function ConfirmEmailStep({ email, onChangeEmail }: { email: string; onChangeEma
 
   return (
     <div className="text-center">
-      <span className="mx-auto mt-1 mb-[18px] grid size-16 place-items-center rounded-full bg-teal-50 text-teal-700">
+      <span className="mx-auto mt-1 mb-[18px] grid size-16 place-items-center rounded-full bg-tint text-ink-brand">
         <MailCheck className="size-[30px]" aria-hidden />
       </span>
-      <DialogTitle className="text-2xl font-extrabold text-teal-900">{t("confirmTitle")}</DialogTitle>
-      <DialogDescription className="mt-2.5 text-sm text-neutral-600">
+      <DialogTitle className="text-2xl font-extrabold text-ink-900">{t("confirmTitle")}</DialogTitle>
+      <DialogDescription className="mt-2.5 text-sm text-neutral-600 dark:text-ink-700">
         {t.rich("confirmBody", { email, b: (c) => <b dir="ltr">{c}</b> })}
       </DialogDescription>
-      <p className="mt-4 text-[13px] text-neutral-600">{t("confirmSpam")}</p>
+      <p className="mt-4 text-[13px] text-neutral-600 dark:text-ink-700">{t("confirmSpam")}</p>
       <div className="mt-5 grid gap-2">
         <CtaButton type="button" tone="outline" disabled={pending || cooldown > 0} onClick={resend} className="w-full rounded-xl">
           {pending ? <Loader2 className="animate-spin" aria-hidden /> : null}
           {cooldown > 0 ? t("resendIn", { seconds: cooldown }) : t("resend")}
         </CtaButton>
-        <button type="button" onClick={onChangeEmail} className="text-sm font-semibold text-teal-700 underline-offset-2 hover:underline">
+        <button type="button" onClick={onChangeEmail} className="text-sm font-semibold text-ink-brand underline-offset-2 hover:underline">
           {t("changeEmail")}
         </button>
       </div>
@@ -614,7 +614,7 @@ function BackButton({ label, onClick }: { label: string; onClick: () => void }) 
     <button
       type="button"
       onClick={onClick}
-      className="-mt-2 mb-3.5 inline-flex items-center gap-1 text-sm font-semibold text-teal-700 underline-offset-2 hover:underline"
+      className="-mt-2 mb-3.5 inline-flex items-center gap-1 text-sm font-semibold text-ink-brand underline-offset-2 hover:underline"
     >
       <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
       {label}
@@ -623,7 +623,7 @@ function BackButton({ label, onClick }: { label: string; onClick: () => void }) 
 }
 
 function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
-  return <Label className={cn("mb-1.5 text-sm font-semibold text-neutral-800", className)} {...props} />;
+  return <Label className={cn("mb-1.5 text-sm font-semibold text-neutral-800 dark:text-ink-900", className)} {...props} />;
 }
 
 function Hint({ id, tone, children }: { id?: string; tone: "ok" | "bad" | "muted"; children: React.ReactNode }) {
@@ -632,7 +632,7 @@ function Hint({ id, tone, children }: { id?: string; tone: "ok" | "bad" | "muted
       id={id}
       className={cn(
         "mt-1.5 flex min-h-5 items-center gap-1.5 text-[12.5px]",
-        tone === "ok" ? "text-success" : tone === "bad" ? "text-destructive" : "text-neutral-600",
+        tone === "ok" ? "text-success" : tone === "bad" ? "text-destructive" : "text-neutral-600 dark:text-ink-700",
       )}
     >
       {tone === "ok" && children ? <CircleCheck className="size-3.5" aria-hidden /> : null}
@@ -647,7 +647,7 @@ function SlugHint({ id, state, host, onPick }: { id: string; state: SlugState; h
 
   if (state.kind === "checking") {
     return (
-      <p id={id} role="status" className="mt-1.5 flex min-h-5 items-center gap-1.5 text-[12.5px] text-neutral-600">
+      <p id={id} role="status" className="mt-1.5 flex min-h-5 items-center gap-1.5 text-[12.5px] text-neutral-600 dark:text-ink-700">
         <Loader2 className="size-3.5 animate-spin" aria-hidden />
         {t("checking")}
       </p>
@@ -681,14 +681,14 @@ function SlugHint({ id, state, host, onPick }: { id: string; state: SlugState; h
         <CircleAlert className="size-3.5" aria-hidden />
         <span>{t(status)}</span>
         {suggestions.length ? (
-          <span className="flex flex-wrap items-center gap-1.5 text-neutral-600">
+          <span className="flex flex-wrap items-center gap-1.5 text-neutral-600 dark:text-ink-700">
             {t("suggestions")}
             {suggestions.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => onPick(s)}
-                className="rounded-full bg-teal-50 px-2 py-0.5 font-latin font-semibold text-teal-700 hover:bg-teal-100"
+                className="rounded-full bg-tint px-2 py-0.5 font-latin font-semibold text-ink-brand hover:bg-tint-strong"
               >
                 {s}
               </button>

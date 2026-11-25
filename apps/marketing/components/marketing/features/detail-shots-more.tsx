@@ -52,8 +52,8 @@ function Head({ t, latin }: { t: T; latin?: boolean }) {
   return (
     <div className="flex items-end justify-between gap-2.5">
       <div>
-        <b className={`block text-base text-[#171717] ${latin ? "font-latin" : ""}`}>{t("title")}</b>
-        <small className="text-[11.5px] text-[#808080]">{t("path")}</small>
+        <b className={`block text-base text-[#171717] dark:text-ink-900 ${latin ? "font-latin" : ""}`}>{t("title")}</b>
+        <small className="text-[11.5px] text-[#808080] dark:text-ink-500">{t("path")}</small>
       </div>
       {t.has("live") ? <MockPill>{t("live")}</MockPill> : null}
     </div>
@@ -69,9 +69,9 @@ async function AiShot() {
         <MockCardHead title={t("inputTitle")} hint={t("inputHint")} />
         <div className="flex items-center gap-2">
           {["#e8e4da", "#c9b79c", "#3b5878"].map((color) => (
-            <span key={color} className="block size-11 rounded-[10px] border border-[#e7e9e8]" style={{ backgroundColor: color }} />
+            <span key={color} className="block size-11 rounded-[10px] border border-[#e7e9e8] dark:border-line" style={{ backgroundColor: color }} />
           ))}
-          <span className="grid size-11 place-items-center rounded-[10px] border border-dashed border-[#c9d3d5] text-[#808080]">
+          <span className="grid size-11 place-items-center rounded-[10px] border border-dashed border-[#c9d3d5] dark:border-line text-[#808080] dark:text-ink-500">
             <ImagePlus className="size-4" />
           </span>
           <span className="ms-auto">
@@ -87,8 +87,8 @@ async function AiShot() {
         <div className="grid gap-1.5">
           {[t("sampleAr"), t("sampleEn")].map((name, i) => (
             <div key={name} className="flex items-center justify-between gap-2 rounded-[9px] bg-[#f7faf9] px-2.5 py-[7px]">
-              <span className="text-[11px] font-semibold text-[#808080]">{i === 0 ? "AR" : "EN"}</span>
-              <b dir={i === 0 ? "rtl" : "ltr"} className="truncate text-[#171717]">
+              <span className="text-[11px] font-semibold text-[#808080] dark:text-ink-500">{i === 0 ? "AR" : "EN"}</span>
+              <b dir={i === 0 ? "rtl" : "ltr"} className="truncate text-[#171717] dark:text-ink-900">
                 {name}
               </b>
             </div>
@@ -102,7 +102,7 @@ async function AiShot() {
           ))}
         </div>
       </MockCard>
-      <small className="text-[11px] text-[#808080]">{t("aiNote")}</small>
+      <small className="text-[11px] text-[#808080] dark:text-ink-500">{t("aiNote")}</small>
     </DashFrame>
   );
 }
@@ -162,7 +162,7 @@ async function MissedShot() {
           <MockCardHead title={items} hint={left} end={<MockCode>{total}</MockCode>} />
           <div className="flex flex-wrap items-center gap-2">
             <WhatsAppButton>{t("whatsapp")}</WhatsAppButton>
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-[9px] border border-[#d9dddc] px-3 text-xs font-bold text-teal-900">
+            <span className="inline-flex h-8 items-center gap-1.5 rounded-[9px] border border-[#d9dddc] dark:border-line px-3 text-xs font-bold text-ink-900">
               <Phone className="size-3.5" />
               {t("call")}
             </span>
@@ -200,8 +200,8 @@ async function ZonesShot() {
           { Icon: FileSpreadsheet, label: t("wassalha") },
         ].map(({ Icon, label }) => (
           <MockCard key={label} className="items-center gap-1.5 px-2 py-2.5 text-center">
-            <Icon className="size-4 text-teal-700" />
-            <b className="text-[11.5px] text-[#171717]">{label}</b>
+            <Icon className="size-4 text-ink-brand" />
+            <b className="text-[11.5px] text-[#171717] dark:text-ink-900">{label}</b>
           </MockCard>
         ))}
       </div>
@@ -218,8 +218,8 @@ async function WaybillShot() {
         <MockCardHead title={t("dialogTitle")} hint={t("pickup")} />
         {(t.raw("fields") as string[][]).map(([label, value]) => (
           <div key={label} className="flex items-center justify-between gap-2 rounded-[9px] bg-[#f7faf9] px-2.5 py-[7px]">
-            <span className="text-[#55605f]">{label}</span>
-            <b className="text-[#171717]">{value}</b>
+            <span className="text-[#55605f] dark:text-ink-500">{label}</span>
+            <b className="text-[#171717] dark:text-ink-900">{value}</b>
           </div>
         ))}
         <span className="self-end">
@@ -252,14 +252,14 @@ async function GatewayShot({ slug, partner }: { slug: string; partner: string })
           title={partner}
           hint={t("cardHint")}
           end={
-            <span className="grid size-[34px] flex-none place-items-center rounded-[10px] bg-[#eef3f4] text-teal-700">
+            <span className="grid size-[34px] flex-none place-items-center rounded-[10px] bg-tint text-ink-brand">
               <CreditCard className="size-[17px]" />
             </span>
           }
         />
         {(t.raw("keys") as string[]).map((name) => (
           <div key={name} className="grid gap-1">
-            <span className="text-[11px] font-semibold text-[#808080]">{name}</span>
+            <span className="text-[11px] font-semibold text-[#808080] dark:text-ink-500">{name}</span>
             <MockField>
               <KeyRound />
               ••••••••••••••••
@@ -274,9 +274,9 @@ async function GatewayShot({ slug, partner }: { slug: string; partner: string })
       <MockCard>
         <MockCardHead title={t("checkoutTitle")} />
         {[t("card"), t("cod")].map((label, i) => (
-          <div key={label} className="flex items-center justify-between gap-2 rounded-[9px] border border-[#e7e9e8] px-2.5 py-2">
-            <span className="flex items-center gap-2 font-semibold text-[#171717]">
-              {i === 0 ? <CreditCard className="size-3.5 text-teal-700" /> : <Banknote className="size-3.5 text-teal-700" />}
+          <div key={label} className="flex items-center justify-between gap-2 rounded-[9px] border border-[#e7e9e8] dark:border-line px-2.5 py-2">
+            <span className="flex items-center gap-2 font-semibold text-[#171717] dark:text-ink-900">
+              {i === 0 ? <CreditCard className="size-3.5 text-ink-brand" /> : <Banknote className="size-3.5 text-ink-brand" />}
               {label}
             </span>
             <MockToggle />
@@ -308,9 +308,9 @@ export type MoreStepVisual = Exclude<DetailStepVisual, "registrar" | "connect" |
 
 /** The step pictures of the newer pages. `t` is the page's `mock` translator. */
 export function moreStepContent(t: T, partner: string | undefined): Record<MoreStepVisual, () => React.ReactNode> {
-  const label = (text: string) => <span className="text-[11px] font-semibold text-[#808080]">{text}</span>;
+  const label = (text: string) => <span className="text-[11px] font-semibold text-[#808080] dark:text-ink-500">{text}</span>;
   const row = (a: React.ReactNode, b: React.ReactNode) => (
-    <div className="flex items-center justify-between gap-2 rounded-[9px] bg-white px-2.5 py-[7px]">
+    <div className="flex items-center justify-between gap-2 rounded-[9px] bg-surface px-2.5 py-[7px]">
       {a}
       {b}
     </div>
@@ -366,14 +366,14 @@ export function moreStepContent(t: T, partner: string | undefined): Record<MoreS
     ),
     whatsapp: () => (
       <>
-        <span className="max-w-[260px] rounded-[12px] rounded-ss-sm bg-white px-3 py-2 text-[11.5px] leading-relaxed text-[#333]">{t("message")}</span>
+        <span className="max-w-[260px] rounded-[12px] rounded-ss-sm bg-surface px-3 py-2 text-[11.5px] leading-relaxed text-[#333] dark:text-ink-700">{t("message")}</span>
         <WhatsAppButton>{t("ask")}</WhatsAppButton>
       </>
     ),
     confirmed: () => (
       <>
-        {row(<b className="text-teal-900">{t("panelTitle")}</b>, <MockPill tone="amber">{t("pending")}</MockPill>)}
-        {row(<b className="text-teal-900">{t("panelTitle")}</b>, <MockPill>{t("confirmed")}</MockPill>)}
+        {row(<b className="text-ink-900">{t("panelTitle")}</b>, <MockPill tone="amber">{t("pending")}</MockPill>)}
+        {row(<b className="text-ink-900">{t("panelTitle")}</b>, <MockPill>{t("confirmed")}</MockPill>)}
       </>
     ),
     leadForm: () => (
@@ -406,7 +406,7 @@ export function moreStepContent(t: T, partner: string | undefined): Record<MoreS
     zoneRow: () => (
       <>
         {(t.raw("zones") as string[][]).slice(0, 2).map(([name, price]) => (
-          <React.Fragment key={name}>{row(<b className="text-teal-900">{name}</b>, <MockCode>{price}</MockCode>)}</React.Fragment>
+          <React.Fragment key={name}>{row(<b className="text-ink-900">{name}</b>, <MockCode>{price}</MockCode>)}</React.Fragment>
         ))}
       </>
     ),
@@ -420,14 +420,14 @@ export function moreStepContent(t: T, partner: string | undefined): Record<MoreS
       <div className="grid gap-1.5">
         {row(
           <span className="flex items-center gap-1.5">
-            <PackageCheck className="size-3.5 text-teal-700" />
+            <PackageCheck className="size-3.5 text-ink-brand" />
             {t("bosta")}
           </span>,
           <MockToggle />,
         )}
         {row(
           <span className="flex items-center gap-1.5">
-            <Bike className="size-3.5 text-teal-700" />
+            <Bike className="size-3.5 text-ink-brand" />
             {t("rider")}
           </span>,
           <MockToggle off />,
@@ -489,14 +489,14 @@ export function moreStepContent(t: T, partner: string | undefined): Record<MoreS
       <>
         {row(
           <span className="flex items-center gap-1.5 font-semibold">
-            <CreditCard className="size-3.5 text-teal-700" />
+            <CreditCard className="size-3.5 text-ink-brand" />
             {t("card")}
           </span>,
           <MockToggle />,
         )}
         {row(
           <span className="flex items-center gap-1.5 font-semibold">
-            <Banknote className="size-3.5 text-teal-700" />
+            <Banknote className="size-3.5 text-ink-brand" />
             {t("cod")}
           </span>,
           <MockToggle />,

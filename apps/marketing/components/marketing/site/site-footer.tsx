@@ -10,6 +10,7 @@ import { PRODUCT_AREAS, PRODUCT_MENU } from "@/lib/marketing/product-pages.lib";
 import { CONTACT, DASHBOARD_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
 import { BrandIcon, type BrandIconName } from "./brand-icon";
 import { Container } from "./layout-primitives";
+import { ThemeSwitch } from "./theme-switch.client";
 
 const PAYMENT_METHODS: PaymentMethod[] = ["visa", "mastercard", "meeza", "apple-pay", "google-pay"];
 
@@ -166,6 +167,9 @@ export async function SiteFooter() {
               {t("cookies")}
             </Link>
             <CookieSettingsButton className={`${link} ${tap}`} />
+            <div className="mt-2.5">
+              <ThemeSwitch labels={{ group: t("theme"), system: t("themeSystem"), light: t("themeLight"), dark: t("themeDark") }} />
+            </div>
           </div>
           <div className="flex flex-col items-start gap-3.5 min-[861px]:items-end">
             <div className="flex flex-wrap gap-2" aria-label={t("social")} role="list">

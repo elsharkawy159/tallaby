@@ -37,7 +37,7 @@ const bidi = (part: string) => <BidiText text={part} />;
 function OrdersCard({ words }: { words: DashboardWords }) {
   return (
     <MockCard className="gap-0 overflow-hidden p-0">
-      <div className="px-3.5 py-2.5 text-[13px] font-bold text-[#171717]">{words.ordersTitle}</div>
+      <div className="px-3.5 py-2.5 text-[13px] font-bold text-[#171717] dark:text-ink-900">{words.ordersTitle}</div>
       <MockTable
         head={words.ordersHead}
         rows={words.orders.map(([product, governorate, total, status], i) => [
@@ -71,16 +71,16 @@ async function DashboardScreen({ slug, scene }: { slug: string; scene: Dashboard
   return (
     <DashFrame active={active} title={words.title}>
       <div>
-        <b className="block text-sm text-[#171717]">{words.greeting}</b>
-        <small className="text-[11.5px] text-[#808080]">{words.sub}</small>
+        <b className="block text-sm text-[#171717] dark:text-ink-900">{words.greeting}</b>
+        <small className="text-[11.5px] text-[#808080] dark:text-ink-500">{words.sub}</small>
       </div>
       {scene === "orders" ? (
         <div className="grid grid-cols-2 gap-2.5 min-[861px]:grid-cols-4">
           {(t.raw("kpis") as { label: string; value: string; unit: string }[]).map((kpi) => (
             <MockCard key={kpi.label} className="gap-1 px-3 py-2.5">
-              <span className="text-[11px] text-[#808080]">{kpi.label}</span>
+              <span className="text-[11px] text-[#808080] dark:text-ink-500">{kpi.label}</span>
               <span>
-                <b className="font-latin text-[17px] text-[#171717]">{kpi.value}</b> <small className="text-[10.5px] text-[#808080]">{kpi.unit}</small>
+                <b className="font-latin text-[17px] text-[#171717] dark:text-ink-900">{kpi.value}</b> <small className="text-[10.5px] text-[#808080] dark:text-ink-500">{kpi.unit}</small>
               </span>
             </MockCard>
           ))}
@@ -92,8 +92,8 @@ async function DashboardScreen({ slug, scene }: { slug: string; scene: Dashboard
           <div className="grid gap-1.5">
             {(t.raw("planRows") as { label: string; value: string }[]).map((row) => (
               <div key={row.label} className="flex items-center justify-between gap-2 rounded-[9px] bg-[#f7faf9] px-2.5 py-[7px]">
-                <span className="text-[#55605f]">{row.label}</span>
-                <b className="text-[#171717]">{withPrices(row.value, bidi)}</b>
+                <span className="text-[#55605f] dark:text-ink-500">{row.label}</span>
+                <b className="text-[#171717] dark:text-ink-900">{withPrices(row.value, bidi)}</b>
               </div>
             ))}
           </div>
@@ -121,7 +121,7 @@ async function StepPicture({ visual, productName, photo }: { visual: SolutionSte
   const pictures: Record<SolutionStepVisual, () => React.ReactNode> = {
     link: () => (
       <>
-        <div dir="ltr" className="flex h-[38px] items-center rounded-full border-[1.5px] border-teal-700 bg-white px-3 font-latin text-[13px] font-semibold text-teal-900 shadow-[0_0_0_4px_rgba(20,81,99,0.08)]">
+        <div dir="ltr" className="flex h-[38px] items-center rounded-full border-[1.5px] border-ink-brand bg-surface px-3 font-latin text-[13px] font-semibold text-ink-900 shadow-[0_0_0_4px_rgba(20,81,99,0.08)]">
           glow<span className="font-medium text-[#8a989b]">.{ROOT_DOMAIN}</span>
         </div>
         <span className="flex items-center gap-1.5 text-xs font-semibold text-[#15803d]">
@@ -133,20 +133,20 @@ async function StepPicture({ visual, productName, photo }: { visual: SolutionSte
     template: () => (
       <div className="grid grid-cols-3 gap-1.5">
         {["#f6f3ee", "#0f1315", "#f2e7dc"].map((color) => (
-          <span key={color} className="grid h-[76px] place-items-end rounded-lg border border-[#e6eef0] p-1.5" style={{ backgroundColor: color }}>
+          <span key={color} className="grid h-[76px] place-items-end rounded-lg border border-[#e6eef0] dark:border-line p-1.5" style={{ backgroundColor: color }}>
             <i className="block h-1.5 w-full rounded-sm bg-amber-600" />
           </span>
         ))}
       </div>
     ),
     product: () => (
-      <div className="grid grid-cols-[54px_1fr] items-center gap-2.5 rounded-[14px] border border-[#e6eef0] bg-white p-2">
-        <span className="relative block size-[54px] overflow-hidden rounded-[10px] bg-[#f4f7f8]">
+      <div className="grid grid-cols-[54px_1fr] items-center gap-2.5 rounded-[14px] border border-[#e6eef0] dark:border-line bg-surface p-2">
+        <span className="relative block size-[54px] overflow-hidden rounded-[10px] bg-[#f4f7f8] dark:bg-surface-muted">
           <Image src={photo} alt="" fill sizes="54px" className="object-cover" style={{ objectPosition: "60% 45%" }} />
         </span>
         <div className="min-w-0">
-          <b className="block truncate text-[13px] text-teal-900">{productName}</b>
-          <small className="flex items-center gap-1 text-xs font-semibold text-teal-700">
+          <b className="block truncate text-[13px] text-ink-900">{productName}</b>
+          <small className="flex items-center gap-1 text-xs font-semibold text-ink-brand">
             <Sparkles className="size-3 text-amber-700" />
             {t("aiDraft")}
           </small>
@@ -157,7 +157,7 @@ async function StepPicture({ visual, productName, photo }: { visual: SolutionSte
       <>
         <div className="flex flex-wrap gap-1.5">
           {(t.raw("publishTags") as string[]).map((tag) => (
-            <span key={tag} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#e3ebed] bg-white px-2.5 text-xs font-semibold text-ink-700">
+            <span key={tag} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-xs font-semibold text-ink-700">
               <i className="size-[7px] rounded-full bg-[#16a34a]" />
               <bdi>{tag}</bdi>
             </span>
@@ -170,9 +170,9 @@ async function StepPicture({ visual, productName, photo }: { visual: SolutionSte
       </>
     ),
     cod: () => (
-      <div className="flex items-center justify-between gap-2 rounded-[12px] border border-[#e6eef0] bg-white px-3 py-2.5 text-xs font-semibold text-teal-900">
+      <div className="flex items-center justify-between gap-2 rounded-[12px] border border-[#e6eef0] dark:border-line bg-surface px-3 py-2.5 text-xs font-semibold text-ink-900">
         <span className="flex items-center gap-2">
-          <Banknote className="size-4 text-teal-700" />
+          <Banknote className="size-4 text-ink-brand" />
           {t("stepMock.cod")}
         </span>
         <MockToggle />
@@ -181,8 +181,8 @@ async function StepPicture({ visual, productName, photo }: { visual: SolutionSte
     zones: () => (
       <div className="grid gap-1.5">
         {(t.raw("stepMock.zones") as string[][]).map(([name, price]) => (
-          <div key={name} className="flex items-center justify-between gap-2 rounded-[10px] border border-[#e6eef0] bg-white px-2.5 py-1.5 text-xs">
-            <span className="font-semibold text-teal-900">{name}</span>
+          <div key={name} className="flex items-center justify-between gap-2 rounded-[10px] border border-[#e6eef0] dark:border-line bg-surface px-2.5 py-1.5 text-xs">
+            <span className="font-semibold text-ink-900">{name}</span>
             <MockCode>{price}</MockCode>
           </div>
         ))}
@@ -226,13 +226,13 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
 
       <section className="pt-8 pb-10 text-center sm:pt-11">
         <Container>
-          <h1 className="mx-auto max-w-[900px] text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700">{t.rich("title", richTags)}</h1>
+          <h1 className="mx-auto max-w-[900px] text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700">{t.rich("title", richTags)}</h1>
           <p className="mx-auto mt-5 max-w-[640px] text-[clamp(16px,2vw,19px)] text-pretty text-ink-500">
             {withPrices(t("lead", PRICE_TOKENS), bidi)}
           </p>
           <div className="mt-7 flex flex-col items-center gap-3">
             <SlugClaimForm className="w-full sm:w-[480px]" submitLabel={shared("createStore")} />
-            <Link href="/pricing" className="text-sm font-bold text-teal-700">
+            <Link href="/pricing" className="text-sm font-bold text-ink-brand">
               {shared("seePricing")}
             </Link>
             <FreeTermsNote className="mx-auto max-w-[560px]" />
@@ -248,11 +248,11 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
 
       <section className="pt-6 pb-2">
         <Container>
-          <Reveal as="ul" className="grid rounded-card border border-[#e3ebed] bg-white shadow-[0_10px_30px_rgba(13,55,67,0.05)] min-[641px]:grid-cols-2 min-[1081px]:grid-cols-4">
+          <Reveal as="ul" className="grid rounded-card border border-line bg-surface shadow-[0_10px_30px_rgba(13,55,67,0.05)] min-[641px]:grid-cols-2 min-[1081px]:grid-cols-4">
             {trust.map((item, i) => {
               const Icon = solution.trustIcons[i]!;
               return (
-                <li key={item} className="flex items-center gap-3 border-[#edf1f2] px-[18px] py-3.5 text-[15px] font-semibold text-teal-900 not-first:border-t min-[641px]:even:border-s min-[641px]:[&:nth-child(2)]:border-t-0 min-[1081px]:border-t-0 min-[1081px]:not-first:border-s min-[1081px]:px-[22px] min-[1081px]:py-5">
+                <li key={item} className="flex items-center gap-3 border-line-soft px-[18px] py-3.5 text-[15px] font-semibold text-ink-900 not-first:border-t min-[641px]:even:border-s min-[641px]:[&:nth-child(2)]:border-t-0 min-[1081px]:border-t-0 min-[1081px]:not-first:border-s min-[1081px]:px-[22px] min-[1081px]:py-5">
                   <IconTile className="size-10 rounded-xl">
                     <Icon aria-hidden />
                   </IconTile>
@@ -266,8 +266,8 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
 
       <Section>
         <Container className="grid items-start gap-5 min-[1081px]:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] min-[1081px]:gap-14">
-          <h2 className="text-[clamp(28px,4vw,40px)] leading-[1.35] font-bold text-balance text-teal-900 min-[1081px]:sticky min-[1081px]:top-24">{t("introTitle")}</h2>
-          <Reveal className="grid gap-[18px] text-[17px] leading-[1.95] text-[#3d5055]">
+          <h2 className="text-[clamp(28px,4vw,40px)] leading-[1.35] font-bold text-balance text-ink-900 min-[1081px]:sticky min-[1081px]:top-24">{t("introTitle")}</h2>
+          <Reveal className="grid gap-[18px] text-[17px] leading-[1.95] text-[#3d5055] dark:text-ink-700">
             {intro.map((paragraph) => (
               <p key={paragraph} className="text-pretty">
                 {withPrices(paragraph, bidi)}
@@ -282,12 +282,12 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
           <SectionHeading kicker={shared("stepsKicker")} title={t("stepsTitle")} centered />
           <div className="grid gap-4 min-[641px]:grid-cols-2 min-[1081px]:grid-cols-4">
             {steps.map((step, i) => (
-              <Reveal as="article" key={step.title} className="flex flex-col gap-3 rounded-[26px] border border-[#e6eef0] bg-white/90 p-5">
-                <div aria-hidden className="flex h-[120px] flex-col justify-center gap-2 overflow-hidden rounded-[18px] border border-[#edf1f2] bg-gradient-to-b from-[#f2f7f8] to-white p-3.5">
+              <Reveal as="article" key={step.title} className="flex flex-col gap-3 rounded-[26px] border border-[#e6eef0] dark:border-line bg-surface/90 p-5">
+                <div aria-hidden className="flex h-[120px] flex-col justify-center gap-2 overflow-hidden rounded-[18px] border border-line-soft bg-gradient-to-b from-[#f2f7f8] dark:from-surface-muted to-surface p-3.5">
                   <StepPicture visual={solution.stepVisuals[i]!} productName={store.products[0]!.name} photo={industry.photo} />
                 </div>
                 <Num className="grid size-[34px] place-items-center rounded-full bg-amber-600 text-sm font-bold text-teal-900">{i + 1}</Num>
-                <h3 className="text-[17px] leading-normal font-bold text-teal-900">{step.title}</h3>
+                <h3 className="text-[17px] leading-normal font-bold text-ink-900">{step.title}</h3>
                 <p className="text-sm text-pretty text-ink-500">
                   {withPrices(step.body, bidi)}
                 </p>
@@ -310,9 +310,9 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
                     <IconTile className="mb-3.5">
                       <Icon aria-hidden />
                     </IconTile>
-                    <h3 className="mb-1.5 text-[17px] font-bold text-teal-900">
+                    <h3 className="mb-1.5 text-[17px] font-bold text-ink-900">
                       {href ? (
-                        <Link href={href} className="text-inherit underline decoration-teal-300 underline-offset-4 hover:decoration-teal-700">
+                        <Link href={href} className="text-inherit underline decoration-teal-300 underline-offset-4 hover:decoration-ink-brand">
                           <BidiText text={item.title} />
                         </Link>
                       ) : (
@@ -330,7 +330,7 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
         </Container>
       </Section>
 
-      <Section id="templates" className="bg-white/50">
+      <Section id="templates" className="bg-surface/50">
         <Container>
           <SectionHeading kicker={shared("templatesKicker")} title={shared("templatesTitle")} description={shared("templatesLead")} centered />
           <TemplateRail
@@ -355,27 +355,28 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
         <Section>
           <Container>
             <SectionHeading kicker={shared("costKicker")} title={t("costTitle")} description={shared("costLead")} centered />
-            <Reveal className="grid grid-cols-2 overflow-hidden rounded-card-lg border border-[#e3ebed] bg-white shadow-[0_18px_44px_rgba(13,55,67,0.06)] min-[761px]:grid-cols-3">
+            <Reveal className="grid grid-cols-2 overflow-hidden rounded-card-lg border border-line bg-surface shadow-[0_18px_44px_rgba(13,55,67,0.06)] min-[761px]:grid-cols-3">
               <div className="hidden p-5 min-[761px]:block" />
               <div className="flex items-center bg-[rgba(20,81,99,0.05)] px-4 py-5 min-[761px]:px-[22px]">
-                <Image src="/logo-primary.png" alt="طلبي" width={94} height={24} className="h-6 w-auto" />
+                <Image src="/logo-primary.png" alt="طلبي" width={94} height={24} className="h-6 w-auto dark:hidden" />
+                <Image src="/logo-white.png" alt="طلبي" width={94} height={24} className="h-6 w-auto hidden dark:block" />
               </div>
               <div className="flex items-center px-4 py-5 min-[761px]:px-[22px]">
-                <span className="inline-flex min-h-8 items-center rounded-[14px] bg-[#eef0f1] px-3.5 py-1 text-sm font-bold text-balance text-[#4a5558]">{shared("costOther")}</span>
+                <span className="inline-flex min-h-8 items-center rounded-[14px] bg-[#eef0f1] dark:bg-surface-muted px-3.5 py-1 text-sm font-bold text-balance text-[#4a5558] dark:text-ink-700">{shared("costOther")}</span>
               </div>
               {cost.map((row) => (
                 <div key={row.label} className="contents">
-                  <div className="col-span-2 border-t border-[#edf1f2] px-4 pt-3.5 pb-0.5 text-[15px] font-semibold text-ink-700 min-[761px]:col-span-1 min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.label}</div>
-                  <div className="bg-[rgba(20,81,99,0.05)] px-4 pt-1 pb-3.5 text-[15px] font-semibold text-teal-900 min-[761px]:border-t min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">
+                  <div className="col-span-2 border-t border-line-soft px-4 pt-3.5 pb-0.5 text-[15px] font-semibold text-ink-700 min-[761px]:col-span-1 min-[761px]:border-[#f0f3f4] dark:min-[761px]:border-line min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.label}</div>
+                  <div className="bg-[rgba(20,81,99,0.05)] px-4 pt-1 pb-3.5 text-[15px] font-semibold text-ink-900 min-[761px]:border-t min-[761px]:border-[#f0f3f4] dark:min-[761px]:border-line min-[761px]:px-[22px] min-[761px]:py-[15px]">
                     {withPrices(row.tallaby, bidi)}
                   </div>
-                  <div className="px-4 pt-1 pb-3.5 text-[15px] text-[#4a5c61] min-[761px]:border-t min-[761px]:border-[#f0f3f4] min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.other}</div>
+                  <div className="px-4 pt-1 pb-3.5 text-[15px] text-[#4a5c61] dark:text-ink-500 min-[761px]:border-t min-[761px]:border-[#f0f3f4] dark:min-[761px]:border-line min-[761px]:px-[22px] min-[761px]:py-[15px]">{row.other}</div>
                 </div>
               ))}
             </Reveal>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-sm text-ink-500">
               <span>{shared("costNote")}</span>
-              <Link href="/pricing" className="inline-flex items-center gap-1.5 font-bold text-teal-700">
+              <Link href="/pricing" className="inline-flex items-center gap-1.5 font-bold text-ink-brand">
                 {shared("costPricing")}
                 <ForwardArrow />
               </Link>
@@ -393,9 +394,9 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
               <Link
                 key={key}
                 href={href}
-                className="group inline-flex h-12 items-center gap-2 rounded-full border border-[#e3ebed] bg-white px-5 text-[15px] font-semibold text-teal-900 transition-colors duration-150 hover:border-teal-700 hover:bg-teal-900 hover:text-white hover:no-underline"
+                className="group inline-flex h-12 items-center gap-2 rounded-full border border-line bg-surface px-5 text-[15px] font-semibold text-ink-900 transition-colors duration-150 hover:border-ink-brand hover:bg-teal-900 hover:text-white hover:no-underline"
               >
-                <Icon className="size-[17px] text-teal-700 group-hover:text-amber-600" aria-hidden />
+                <Icon className="size-[17px] text-ink-brand group-hover:text-amber-600" aria-hidden />
                 {kinds(key)}
               </Link>
             ))}
@@ -415,12 +416,12 @@ export async function SolutionPageView({ solution }: { solution: Solution }) {
                 <Link
                   key={href}
                   href={href}
-                  className="flex flex-col gap-2 rounded-[22px] border border-[#e3ebed] bg-white p-5 text-inherit transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-[3px] hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)] motion-reduce:hover:translate-y-0"
+                  className="flex flex-col gap-2 rounded-[22px] border border-line bg-surface p-5 text-inherit transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-[3px] hover:border-teal-300 hover:no-underline hover:shadow-[0_14px_32px_rgba(13,55,67,0.08)] motion-reduce:hover:translate-y-0"
                 >
                   <IconTile className="mb-1">
                     <Icon aria-hidden />
                   </IconTile>
-                  <b className="flex items-center justify-between gap-2 text-base text-teal-900">
+                  <b className="flex items-center justify-between gap-2 text-base text-ink-900">
                     {item.title}
                     <ForwardArrow className="flex-none text-teal-500" />
                   </b>

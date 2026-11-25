@@ -15,7 +15,7 @@ export function SiteCard({
     <div
       className={cn(
         "border border-line shadow-soft",
-        glass ? "bg-surface-glass" : "bg-white",
+        glass ? "bg-surface-glass" : "bg-surface",
         SIZES[size],
         interactive && "transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-raise",
         className,
@@ -29,7 +29,7 @@ export function SiteCard({
 export function IconTile({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
-      className={cn("grid size-11 flex-none place-items-center rounded-[14px] bg-teal-50 text-teal-700 [&_svg]:size-[22px]", className)}
+      className={cn("grid size-11 flex-none place-items-center rounded-[14px] bg-tint text-ink-brand [&_svg]:size-[22px]", className)}
       {...props}
     />
   );

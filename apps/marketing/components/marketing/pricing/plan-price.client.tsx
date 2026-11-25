@@ -15,7 +15,7 @@ import { useVisitorPrices } from "./visitor-prices.client";
 export function PlanPrice({ cents, per, note, inverted = false }: { cents: number; per: string; note: string; /** White text, on the highlighted (brand-colour) card. */ inverted?: boolean }) {
   const visitor = useVisitorPrices();
   const amount = visitor ? formatLocalAmount(cents, visitor.currency, visitor.rate) : "";
-  const strong = inverted ? "text-white" : "text-teal-900";
+  const strong = inverted ? "text-white" : "text-ink-900";
   const soft = inverted ? "text-white/75" : "text-ink-500";
   return (
     <div className="flex flex-col gap-1.5">

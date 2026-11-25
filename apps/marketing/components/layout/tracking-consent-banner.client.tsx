@@ -29,8 +29,8 @@ const POSITION =
 // Phones (≤ 640px) get the compact banner: one line, two small buttons, under 96px in all.
 // Accept and Decline always share one style and size: neither is pushed.
 const BUTTON =
-  "h-[42px] max-[640px]:h-9 max-[640px]:text-[13px] min-w-0 flex-1 rounded-full border-[1.5px] border-[#dfe8ea] bg-white px-4 text-sm font-bold text-[#0d3743] " +
-  "transition-colors duration-150 hover:border-[#0d3743] aria-pressed:border-[#0d3743] " +
+  "h-[42px] max-[640px]:h-9 max-[640px]:text-[13px] min-w-0 flex-1 rounded-full border-[1.5px] border-[#dfe8ea] bg-white px-4 text-sm font-bold text-[#0d3743] dark:border-[#234751] dark:bg-[#0b2a33] dark:text-[#eaf3f5] " +
+  "transition-colors duration-150 hover:border-[#0d3743] aria-pressed:border-[#0d3743] dark:hover:border-[#7fc4d5] dark:aria-pressed:border-[#7fc4d5] " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d3743]";
 
 /**
@@ -80,17 +80,17 @@ export function TrackingConsentBanner() {
       onKeyDown={(event) => {
         if (event.key === "Escape" && settingsOpen && consent !== "unset") closeSettings();
       }}
-      className={`${POSITION} rounded-[18px] border border-[#e3ebed] bg-white p-4 text-[13px] leading-[1.7] text-[#43575c] shadow-[0_10px_28px_rgba(13,55,67,0.12)] max-[640px]:p-3`}
+      className={`${POSITION} rounded-[18px] border border-[#e3ebed] bg-white p-4 text-[13px] leading-[1.7] text-[#43575c] dark:border-[#1d3f49] dark:bg-[#0b2a33] dark:text-[#c5d5d9] shadow-[0_10px_28px_rgba(13,55,67,0.12)] max-[640px]:p-3`}
     >
       <p className="flex items-center gap-2 min-[641px]:hidden">
         <span className="min-w-0 truncate">{t("textShort")}</span>
-        <Link href="/privacy#cookies" className="flex-none font-semibold whitespace-nowrap text-[#0d3743] underline underline-offset-2">
+        <Link href="/privacy#cookies" className="flex-none font-semibold whitespace-nowrap text-[#0d3743] underline underline-offset-2 dark:text-[#eaf3f5]">
           {t("details")}
         </Link>
       </p>
       <p className="text-pretty max-[640px]:hidden">
         {t("text")}{" "}
-        <Link href="/privacy#cookies" className="font-semibold whitespace-nowrap text-[#0d3743] underline underline-offset-2">
+        <Link href="/privacy#cookies" className="font-semibold whitespace-nowrap text-[#0d3743] underline underline-offset-2 dark:text-[#eaf3f5]">
           {t("learnMore")}
         </Link>
       </p>

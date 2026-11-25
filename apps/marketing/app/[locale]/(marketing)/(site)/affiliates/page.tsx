@@ -96,14 +96,14 @@ export default async function AffiliatesPage() {
             {steps.map((step, i) => {
               const Icon = STEP_ICONS[i] ?? Check;
               return (
-                <div key={step.title} className="grid content-start gap-2 rounded-[18px] border border-neutral-200 bg-white p-[22px]">
+                <div key={step.title} className="grid content-start gap-2 rounded-[18px] border border-neutral-200 dark:border-line bg-surface p-[22px]">
                   <div className="flex items-center justify-between">
-                    <span className="grid size-[42px] place-items-center rounded-xl bg-teal-50 text-teal-700">
+                    <span className="grid size-[42px] place-items-center rounded-xl bg-tint text-ink-brand">
                       <Icon className="size-[18px]" aria-hidden />
                     </span>
                     <Num className="text-[28px] font-extrabold text-neutral-200">{i + 1}</Num>
                   </div>
-                  <b className="text-teal-900">{step.title}</b>
+                  <b className="text-ink-900">{step.title}</b>
                   <span className="text-sm text-slate-ink">{step.body}</span>
                 </div>
               );
@@ -146,7 +146,7 @@ export default async function AffiliatesPage() {
           <Reveal>
             <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2">
               {terms.map((term) => (
-                <li key={term} className="flex gap-3 rounded-[18px] border border-neutral-200 bg-white p-[18px] text-[15px] text-slate-ink">
+                <li key={term} className="flex gap-3 rounded-[18px] border border-neutral-200 dark:border-line bg-surface p-[18px] text-[15px] text-slate-ink">
                   <Check className="mt-1 size-[17px] flex-none text-amber-600" aria-hidden />
                   <span>{term}</span>
                 </li>

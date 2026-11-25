@@ -16,17 +16,17 @@ const NICHES_SHOWN = 8;
 const ANY_NICHE = "__any";
 
 const rowClassName =
-  "flex min-h-9 cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 text-[14.5px] text-ink-600 transition-colors duration-150 hover:bg-teal-50/70 motion-reduce:transition-none has-[[data-state=checked]]:font-semibold has-[[data-state=checked]]:text-teal-900";
+  "flex min-h-9 cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 text-[14.5px] text-ink-600 transition-colors duration-150 hover:bg-tint/70 motion-reduce:transition-none has-[[data-state=checked]]:font-semibold has-[[data-state=checked]]:text-ink-900";
 
 const controlClassName =
-  "size-[18px] border-line-strong bg-white shadow-none focus-visible:border-teal-700 focus-visible:ring-teal-500/40 data-[state=checked]:border-teal-900 data-[state=checked]:bg-teal-900 data-[state=checked]:text-white";
+  "size-[18px] border-line-strong bg-surface shadow-none focus-visible:border-ink-brand focus-visible:ring-teal-500/40 data-[state=checked]:border-teal-900 data-[state=checked]:bg-teal-900 data-[state=checked]:text-white";
 
 /** A collapsible filter group: a quiet title row over its options. */
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   const [open, setOpen] = React.useState(true);
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="border-b border-line py-4 first:pt-0 last:border-b-0">
-      <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1 text-start text-[15px] font-bold text-teal-900 outline-none focus-visible:ring-[3px] focus-visible:ring-teal-500/50">
+      <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1 text-start text-[15px] font-bold text-ink-900 outline-none focus-visible:ring-[3px] focus-visible:ring-teal-500/50">
         {title}
         <ChevronDown aria-hidden className={cn("size-4 text-ink-400 transition-transform duration-150 motion-reduce:transition-none", open && "rotate-180")} />
       </CollapsibleTrigger>
@@ -101,7 +101,7 @@ export function TemplateFilterPanel({
               const id = `${idPrefix}-niche-${option.id}`;
               return (
                 <label key={option.id} htmlFor={id} className={rowClassName}>
-                  <RadioGroupItem id={id} value={option.id} className={cn(controlClassName, "data-[state=checked]:bg-white [&_svg]:fill-teal-900 [&_svg]:text-teal-900")} />
+                  <RadioGroupItem id={id} value={option.id} className={cn(controlClassName, "data-[state=checked]:bg-surface [&_svg]:fill-ink-900 [&_svg]:text-ink-900")} />
                   <span className="min-w-0 truncate">{option.name}</span>
                   <Count value={option.count} />
                 </label>
@@ -113,7 +113,7 @@ export function TemplateFilterPanel({
               type="button"
               aria-expanded={expanded}
               onClick={() => setAllNiches((value) => !value)}
-              className="mt-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-teal-700 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-teal-500/50"
+              className="mt-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-ink-brand outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-teal-500/50"
             >
               {expanded ? t("showFewer") : t("showAll", { count: niches.length })}
             </button>

@@ -37,7 +37,7 @@ export function BlogIndex({ posts: all }: { posts: MarketingPost[] }) {
           label={t("index.search")}
           options={categories.map((c) => ({ value: c, label: t(`categories.${c}`) }))}
         />
-        <label className="flex h-[42px] w-full items-center gap-2 rounded-full border border-line-strong bg-white px-4 text-neutral-500 transition-[border-color,box-shadow] duration-150 focus-within:border-teal-700 focus-within:shadow-[var(--ring-focus)] sm:w-auto sm:min-w-60">
+        <label className="flex h-[42px] w-full items-center gap-2 rounded-full border border-line-strong bg-surface px-4 text-neutral-500 dark:text-ink-500 transition-[border-color,box-shadow] duration-150 focus-within:border-ink-brand focus-within:shadow-[var(--ring-focus)] sm:w-auto sm:min-w-60">
           <Search className="size-[18px]" aria-hidden />
           <span className="sr-only">{t("index.search")}</span>
           <input
@@ -45,7 +45,7 @@ export function BlogIndex({ posts: all }: { posts: MarketingPost[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("index.search")}
-            className="min-w-0 flex-1 bg-transparent text-sm text-teal-900 outline-none"
+            className="min-w-0 flex-1 bg-transparent text-sm text-ink-900 outline-none"
           />
         </label>
       </div>
@@ -54,7 +54,7 @@ export function BlogIndex({ posts: all }: { posts: MarketingPost[] }) {
         {posts.length ? (
           posts.map((post, i) => <PostCard key={post.id} post={post} locale={locale} wide={browsing && i === 0} />)
         ) : (
-          <div className="col-span-full rounded-[20px] border border-dashed border-line-strong p-12 text-center text-neutral-600">{t("index.none")}</div>
+          <div className="col-span-full rounded-[20px] border border-dashed border-line-strong p-12 text-center text-neutral-600 dark:text-ink-700">{t("index.none")}</div>
         )}
       </div>
     </>
@@ -66,7 +66,7 @@ function PostCard({ post, locale, wide }: { post: MarketingPost; locale: string;
     <Link
       href={`/blog/${post.id}`}
       className={cn(
-        "group flex flex-col gap-3 rounded-card border border-line bg-white px-3 pt-3 pb-5 text-inherit shadow-[0_14px_36px_rgba(13,55,67,0.05)] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:no-underline hover:shadow-raise",
+        "group flex flex-col gap-3 rounded-card border border-line bg-surface px-3 pt-3 pb-5 text-inherit shadow-[0_14px_36px_rgba(13,55,67,0.05)] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:no-underline hover:shadow-raise",
         wide && "sm:col-span-2 sm:grid sm:grid-cols-[1.1fr_1fr] sm:items-center sm:gap-6",
       )}
     >
@@ -76,7 +76,7 @@ function PostCard({ post, locale, wide }: { post: MarketingPost; locale: string;
       </div>
       <div className="grid gap-2.5 px-2">
         <PostMeta post={post} locale={locale} />
-        <h3 className="text-[19px] leading-[1.5] font-bold text-teal-900 transition-colors group-hover:text-teal-700 en:leading-[1.25] en:tracking-[-0.01em]">
+        <h3 className="text-[19px] leading-[1.5] font-bold text-ink-900 transition-colors group-hover:text-ink-brand en:leading-[1.25] en:tracking-[-0.01em]">
           {post.title}
         </h3>
         <p className="text-[15px] text-slate-ink">{post.excerpt}</p>

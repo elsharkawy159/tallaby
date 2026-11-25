@@ -20,8 +20,8 @@ export async function McpChatDemo() {
   ] as const;
 
   return (
-    <div aria-hidden className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[18px] border border-line bg-white p-3 min-[641px]:p-4">
-      <div className="flex items-center gap-2 border-b border-[#f0f4f5] pb-2.5 text-[12.5px] text-ink-400">
+    <div aria-hidden className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[18px] border border-line bg-surface p-3 min-[641px]:p-4">
+      <div className="flex items-center gap-2 border-b border-[#f0f4f5] dark:border-line pb-2.5 text-[12.5px] text-ink-400">
         <span dir="ltr" className="flex gap-1 font-latin text-[11px] font-bold text-ink-600">
           <ClaudeMark className="size-3.5" />
           <ChatGptMark className="size-3.5" />
@@ -31,7 +31,7 @@ export async function McpChatDemo() {
       <div className="flex min-h-0 flex-1 flex-col justify-end gap-2.5 overflow-hidden pt-2.5 [mask-image:linear-gradient(180deg,transparent,#000_40px)]">
         {lines.map((line, i) =>
           line.kind === "tool" ? (
-            <span key={i} dir="ltr" className="flex flex-none items-center gap-2 self-end rounded-[10px] border border-dashed border-[#cfdde1] px-2.5 py-1.5 font-latin text-xs font-semibold text-ink-600">
+            <span key={i} dir="ltr" className="flex flex-none items-center gap-2 self-end rounded-[10px] border border-dashed border-tint-strong px-2.5 py-1.5 font-latin text-xs font-semibold text-ink-600">
               <CircleCheck className="size-3.5 text-[#16a34a]" />
               {line.text}
             </span>
@@ -40,7 +40,7 @@ export async function McpChatDemo() {
               key={i}
               className={cn(
                 "max-w-[88%] flex-none rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-[1.65]",
-                line.kind === "user" ? "self-start rounded-es-[4px] bg-teal-700 text-white" : "self-end rounded-ee-[4px] bg-[#f4f7f8] text-ink-700",
+                line.kind === "user" ? "self-start rounded-es-[4px] bg-teal-700 text-white" : "self-end rounded-ee-[4px] bg-[#f4f7f8] dark:bg-surface-muted text-ink-700",
               )}
             >
               {line.text}

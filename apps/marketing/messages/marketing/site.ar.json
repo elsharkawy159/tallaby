@@ -124,7 +124,11 @@
     "solutionCod": "الدفع عند الاستلام",
     "solutionClothing": "متجر ملابس",
     "solutionCostTool": "حاسبة تكلفة المتجر",
-    "stores": "متاجر على طلبي"
+    "stores": "متاجر على طلبي",
+    "theme": "المظهر",
+    "themeSystem": "حسب الجهاز",
+    "themeLight": "فاتح",
+    "themeDark": "داكن"
   },
   "site": {
     "breadcrumb": "مسار التنقل",

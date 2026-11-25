@@ -22,7 +22,7 @@ export function Kicker({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "inline-flex w-max max-w-full items-center gap-1.5 rounded-full border border-line-kick bg-teal-50 px-3 py-1 text-[13px] font-bold whitespace-nowrap text-teal-700",
+        "inline-flex w-max max-w-full items-center gap-1.5 rounded-full border border-line-kick bg-tint px-3 py-1 text-[13px] font-bold whitespace-nowrap text-ink-brand",
         className,
       )}
       {...props}
@@ -58,7 +58,7 @@ export function SectionHeading({
       {kicker ? <Kicker>{kicker}</Kicker> : null}
       <h2
         id={id}
-        className="text-[clamp(28px,4vw,44px)] leading-[1.3] font-bold text-balance text-teal-900 en:leading-[1.15] en:tracking-[-0.01em] [&_em]:text-amber-700 [&_em]:not-italic"
+        className="text-[clamp(28px,4vw,44px)] leading-[1.3] font-bold text-balance text-ink-900 en:leading-[1.15] en:tracking-[-0.01em] [&_em]:text-amber-700 [&_em]:not-italic"
       >
         {title}
       </h2>
@@ -83,7 +83,7 @@ export function PhotoPlaceholder({ className, ...props }: React.ComponentProps<"
   return (
     <div
       className={cn(
-        "placeholder-stripes grid place-items-center border border-teal-100 p-3 text-center font-mono text-xs font-medium text-teal-500",
+        "placeholder-stripes grid place-items-center border border-tint-strong p-3 text-center font-mono text-xs font-medium text-teal-500",
         className,
       )}
       {...props}

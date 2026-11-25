@@ -19,8 +19,8 @@ async function DomainShot() {
     <DashFrame active="website" title={t("title")}>
       <div className="flex items-end justify-between gap-2.5">
         <div>
-          <b className="block text-base text-[#171717]">{t("title")}</b>
-          <small className="text-[11.5px] text-[#808080]">{t("path")}</small>
+          <b className="block text-base text-[#171717] dark:text-ink-900">{t("title")}</b>
+          <small className="text-[11.5px] text-[#808080] dark:text-ink-500">{t("path")}</small>
         </div>
         <MockPill>{t("live")}</MockPill>
       </div>
@@ -50,7 +50,7 @@ async function DomainShot() {
       <MockCard>
         <MockCardHead title={t("freeTitle")} hint={t("freeHint")} />
         <MockField>
-          glow<span className="font-medium text-[#808080]">.tallaby.com</span>
+          glow<span className="font-medium text-[#808080] dark:text-ink-500">.tallaby.com</span>
         </MockField>
       </MockCard>
     </DashFrame>
@@ -64,8 +64,8 @@ async function PixelShot() {
     <DashFrame active="apps" title={t("apps")}>
       <div className="flex items-end justify-between gap-2.5">
         <div>
-          <b className="block font-latin text-base text-[#171717]">Meta Pixel</b>
-          <small className="text-[11.5px] text-[#808080]">{t("path")}</small>
+          <b className="block font-latin text-base text-[#171717] dark:text-ink-900">Meta Pixel</b>
+          <small className="text-[11.5px] text-[#808080] dark:text-ink-500">{t("path")}</small>
         </div>
         <MockPill>{t("connected")}</MockPill>
       </div>
@@ -74,7 +74,7 @@ async function PixelShot() {
           title={t("idTitle")}
           hint={t("idHint")}
           end={
-            <span className="grid size-[34px] flex-none place-items-center rounded-[10px] bg-[#eef3f4] text-teal-700">
+            <span className="grid size-[34px] flex-none place-items-center rounded-[10px] bg-tint text-ink-brand">
               <Activity className="size-[17px]" />
             </span>
           }
@@ -93,7 +93,7 @@ async function PixelShot() {
         <div className="grid gap-1.5">
           {events.map((name) => (
             <div key={name} className="flex items-center justify-between gap-2 rounded-[9px] bg-[#f7faf9] px-2.5 py-[7px]">
-              <b className="font-latin text-xs text-[#171717]">{name}</b>
+              <b className="font-latin text-xs text-[#171717] dark:text-ink-900">{name}</b>
               <MockToggle />
             </div>
           ))}
@@ -112,14 +112,14 @@ export function DetailShotView({ shot, slug, partner }: { shot: DetailShot; slug
 /** The small picture beside a step. Its words live under the page's `mock`. */
 export async function StepVisual({ visual, slug, partner }: { visual: DetailStepVisual; slug: string; partner?: string }) {
   const t = await getTranslations(`detailPages.${slug}.mock`);
-  const label = (text: string) => <span className="text-[11px] font-semibold text-[#808080]">{text}</span>;
+  const label = (text: string) => <span className="text-[11px] font-semibold text-[#808080] dark:text-ink-500">{text}</span>;
   const content: Record<DetailStepVisual, () => React.ReactNode> = {
     ...moreStepContent(t, partner),
     registrar: () => (
       <>
         {label(t("registrarLabel"))}
         <MockField>
-          glowskin<span className="font-medium text-[#808080]">.com</span>
+          glowskin<span className="font-medium text-[#808080] dark:text-ink-500">.com</span>
         </MockField>
         <MockPill className="self-start">{t("available")}</MockPill>
       </>
@@ -148,7 +148,7 @@ export async function StepVisual({ visual, slug, partner }: { visual: DetailStep
     ),
     copyId: () => (
       <>
-        <span dir="ltr" className="text-[11px] font-semibold text-[#808080] rtl:text-right">
+        <span dir="ltr" className="text-[11px] font-semibold text-[#808080] dark:text-ink-500 rtl:text-right">
           Events Manager › Data sources
         </span>
         <div className="flex items-center gap-2">
@@ -181,8 +181,8 @@ export async function StepVisual({ visual, slug, partner }: { visual: DetailStep
       <>
         {label("Test Events")}
         {["PageView", "AddToCart"].map((name) => (
-          <div key={name} className="flex items-center justify-between gap-2 rounded-[9px] bg-white px-2.5 py-[7px]">
-            <b className="font-latin text-xs text-[#171717]">{name}</b>
+          <div key={name} className="flex items-center justify-between gap-2 rounded-[9px] bg-surface px-2.5 py-[7px]">
+            <b className="font-latin text-xs text-[#171717] dark:text-ink-900">{name}</b>
             <Check className="size-3.5 text-[#16a34a]" />
           </div>
         ))}
@@ -190,7 +190,7 @@ export async function StepVisual({ visual, slug, partner }: { visual: DetailStep
     ),
   };
   return (
-    <div aria-hidden className="flex min-h-[120px] min-w-0 flex-col justify-center gap-2 overflow-hidden rounded-2xl border border-[#e7e9e8] bg-[#f4f6f6] p-3.5 text-xs text-[#333]">
+    <div aria-hidden className="flex min-h-[120px] min-w-0 flex-col justify-center gap-2 overflow-hidden rounded-2xl border border-[#e7e9e8] dark:border-line bg-[#f4f6f6] dark:bg-surface-muted p-3.5 text-xs text-[#333] dark:text-ink-700">
       {content[visual]()}
     </div>
   );

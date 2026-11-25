@@ -39,7 +39,7 @@ export function PageHero({
         <h1
           className={cn(
             "text-[clamp(34px,5.6vw,60px)] leading-[1.25] font-bold text-balance en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic",
-            dark ? "text-white" : "text-teal-900",
+            dark ? "text-white" : "text-ink-900",
             titleClassName,
           )}
         >

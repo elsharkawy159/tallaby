@@ -23,6 +23,14 @@
   --line-soft: #edf1f2;
   --line-kick: #e1eaec;
   --surface: #ffffff;
+  --surface-muted: #f8fbfb;
+  --tint: #eef3f4;
+  --tint-strong: #cfdde1;
+  --ink-brand: #145163;
+  --slate-ink: #4d5f64;
+  --body-ink: #1d2a2e;
+  --paper: #fafaf8;
+  --page: #ffffff;
   --surface-glass: rgb(255 255 255 / 0.85);
   --surface-nav: rgb(255 255 255 / 0.8);
   --surface-dark: #0d3743;
@@ -41,6 +49,70 @@
     radial-gradient(1000px 700px at 50% 98%, rgb(20 81 99 / 0.1), transparent 72%),
     linear-gradient(180deg, rgb(20 81 99 / 0.07) 0, transparent 900px);
   --bg-cta-glow: radial-gradient(50% 50% at 50% 0%, rgb(253 173 40 / 0.18), transparent 70%);
+  color-scheme: light;
+}
+
+/*
+ * Dark mode (owner, 2026-11-25): next-themes puts `dark` on <html> for tallaby.com
+ * pages only (the provider lives in (marketing)/layout.tsx) and follows the
+ * device by default. Deep teal-ink surfaces, light ink, amber stays the accent.
+ * The shadcn tokens are retinted too, so Button, Dialog and inputs from
+ * @workspace/ui match (this file loads only under (marketing)). Pages use the
+ * tokens above (or `dark:` variants), never raw bg-white or hex colours.
+ */
+.dark {
+  --ink-900: #eaf3f5;
+  --ink-700: #c5d5d9;
+  --ink-600: #adc0c5;
+  --ink-500: #92a8ae;
+  --ink-400: #7a9197;
+  --ink-on-dark: #c6d8dc;
+
+  --line: #1d3f49;
+  --line-strong: #234751;
+  --line-soft: #163742;
+  --line-kick: #1f424c;
+  --page: #061f27;
+  --surface: #0b2a33;
+  --surface-muted: #09252e;
+  --tint: #123c47;
+  --tint-strong: #1b4b58;
+  --ink-brand: #7fc4d5;
+  --slate-ink: #a9bcc1;
+  --body-ink: #dce7ea;
+  --paper: #082630;
+  --surface-glass: rgb(11 42 51 / 0.82);
+  --surface-nav: rgb(6 31 39 / 0.8);
+  --surface-dark: #0d3743;
+  --footer-top: #0a2d37;
+  --footer-bar: #041a20;
+
+  --ring-focus: 0 0 0 4px rgb(127 196 213 / 0.18);
+  --bg-fog:
+    radial-gradient(1100px 760px at 50% -120px, rgb(44 110 128 / 0.34), rgb(44 110 128 / 0.1) 55%, transparent 78%),
+    radial-gradient(700px 600px at 92% 9%, rgb(253 173 40 / 0.08), transparent 70%),
+    radial-gradient(900px 900px at 0% 30%, rgb(44 110 128 / 0.14), transparent 70%),
+    radial-gradient(800px 800px at 100% 55%, rgb(44 110 128 / 0.12), transparent 70%),
+    radial-gradient(700px 700px at 6% 78%, rgb(253 173 40 / 0.05), transparent 70%),
+    radial-gradient(1000px 700px at 50% 98%, rgb(44 110 128 / 0.14), transparent 72%);
+  --bg-cta-glow: radial-gradient(50% 50% at 50% 0%, rgb(253 173 40 / 0.2), transparent 70%);
+
+  --background: #061f27;
+  --foreground: #e6eff1;
+  --card: #0b2a33;
+  --card-foreground: #eaf3f5;
+  --popover: #0b2a33;
+  --popover-foreground: #eaf3f5;
+  --primary: #7fc4d5;
+  --primary-foreground: #061f27;
+  --secondary: #1b4b58;
+  --secondary-foreground: #eaf3f5;
+  --muted: #0f323c;
+  --muted-foreground: #92a8ae;
+  --border: #1d3f49;
+  --input: #2a4f59;
+  --ring: #7fc4d5;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -55,6 +127,10 @@
   --color-line-soft: var(--line-soft);
   --color-line-kick: var(--line-kick);
   --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-tint: var(--tint);
+  --color-tint-strong: var(--tint-strong);
+  --color-ink-brand: var(--ink-brand);
   --color-surface-glass: var(--surface-glass);
   --color-surface-nav: var(--surface-nav);
   --color-surface-dark: var(--surface-dark);
@@ -83,9 +159,9 @@
   --color-amber-700: #e89318;
   --color-amber-ink: #5b3a05;
 
-  --color-paper: #fafaf8;
-  --color-body: #1d2a2e;
-  --color-slate-ink: #4d5f64;
+  --color-paper: var(--paper);
+  --color-body: var(--body-ink);
+  --color-slate-ink: var(--slate-ink);
   --color-mist: #c3d4d9;
   --color-haze: #a9c0c6;
 
@@ -188,7 +264,7 @@
     line-height: 1.6;
   }
   body {
-    background: #fff;
+    background: var(--page);
     color: var(--ink-700);
     -webkit-font-smoothing: antialiased;
   }
@@ -229,7 +305,7 @@
   .site-fog {
     position: relative;
     isolation: isolate;
-    background: #fff;
+    background: var(--page);
   }
   .site-fog::before {
     content: "";
@@ -259,7 +335,7 @@
       radial-gradient(600px 400px at 100% 90%, rgb(44 110 128 / 0.3), transparent 70%);
   }
   .placeholder-stripes {
-    background: repeating-linear-gradient(135deg, var(--color-teal-50) 0 10px, #fff 10px 20px);
+    background: repeating-linear-gradient(135deg, var(--tint) 0 10px, var(--surface) 10px 20px);
   }
   /* Home "stores" row: the list is rendered twice and slides by half its width, so it loops
      seamlessly. It pauses while the pointer (or keyboard focus) is on it. */
@@ -381,7 +457,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.75), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 75%, transparent), transparent);
   transform: translateX(-100%);
   animation: mk-shimmer 2.2s ease-in-out var(--mk-delay, 0s) infinite;
 }

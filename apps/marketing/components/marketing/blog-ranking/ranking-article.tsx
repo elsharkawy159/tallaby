@@ -16,7 +16,7 @@ import { localizedUrl } from "@/lib/marketing/seo.lib";
 import { cn } from "@workspace/ui/lib/utils";
 import { CopyLinkButton, RankingToc, ReadingProgress, SummaryRow } from "./ranking-tools.client";
 
-const H2 = "mt-[52px] mb-[18px] scroll-mt-[100px] text-[28px] leading-[1.35] font-bold text-teal-900 first:mt-0";
+const H2 = "mt-[52px] mb-[18px] scroll-mt-[100px] text-[28px] leading-[1.35] font-bold text-ink-900 first:mt-0";
 const pad = (rank: number) => String(rank).padStart(2, "0");
 
 function Stars({ rating }: { rating: number }) {
@@ -34,7 +34,7 @@ function Stars({ rating }: { rating: number }) {
           ))}
         </span>
       </span>
-      <b className="font-latin text-sm text-teal-900">{rating.toFixed(1)}</b>
+      <b className="font-latin text-sm text-ink-900">{rating.toFixed(1)}</b>
     </span>
   );
 }
@@ -45,7 +45,7 @@ async function ItemCard({ item, rank }: { item: RankingItem; rank: number }) {
     <article
       id={item.id}
       className={cn(
-        "relative scroll-mt-[100px] rounded-[26px] border border-[#e3ebed] bg-white p-5 text-base leading-[1.8] sm:p-[26px]",
+        "relative scroll-mt-[100px] rounded-[26px] border border-line bg-surface p-5 text-base leading-[1.8] sm:p-[26px]",
         item.pick && "border-2 border-amber-600 pt-[30px] shadow-[0_22px_50px_rgba(253,173,40,0.16)] sm:pt-[34px]",
       )}
     >
@@ -58,7 +58,7 @@ async function ItemCard({ item, rank }: { item: RankingItem; rank: number }) {
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 min-[601px]:grid-cols-[auto_minmax(0,1fr)_auto]">
         <span
           className={cn(
-            "relative grid size-[54px] place-items-center rounded-[15px] bg-[#f1f4f5] font-latin text-[22px] font-extrabold text-teal-900 sm:size-16 sm:rounded-[18px] sm:text-[26px]",
+            "relative grid size-[54px] place-items-center rounded-[15px] bg-[#f1f4f5] dark:bg-surface-muted font-latin text-[22px] font-extrabold text-ink-900 sm:size-16 sm:rounded-[18px] sm:text-[26px]",
             item.pick && "bg-amber-600",
           )}
         >
@@ -66,19 +66,19 @@ async function ItemCard({ item, rank }: { item: RankingItem; rank: number }) {
           {pad(rank)}
         </span>
         <div className="min-w-0">
-          <h3 className="flex flex-wrap items-center gap-2.5 text-[19px] leading-[1.35] font-bold text-teal-900 sm:text-[22px]">
+          <h3 className="flex flex-wrap items-center gap-2.5 text-[19px] leading-[1.35] font-bold text-ink-900 sm:text-[22px]">
             {item.logo ? <Image src={item.logo} alt={item.name} width={102} height={26} className="h-[26px] w-auto" /> : item.name}
           </h3>
           {item.rating !== undefined ? <Stars rating={item.rating} /> : null}
         </div>
         {item.bestFor ? (
-          <span className={cn("col-span-full justify-self-start rounded-full border border-[#dbe8eb] bg-teal-50 px-3 py-[3px] text-[13px] leading-normal font-semibold text-teal-700 min-[601px]:col-span-1 min-[601px]:max-w-[220px] min-[601px]:text-center", item.pick && "border-amber-100 bg-amber-50 text-[#7a4a00]")}>
+          <span className={cn("col-span-full justify-self-start rounded-full border border-[#dbe8eb] dark:border-line bg-tint px-3 py-[3px] text-[13px] leading-normal font-semibold text-ink-brand min-[601px]:col-span-1 min-[601px]:max-w-[220px] min-[601px]:text-center", item.pick && "border-amber-100 bg-amber-50 text-[#7a4a00]")}>
             {t("bestFor")} <BidiText text={item.bestFor} />
           </span>
         ) : null}
       </div>
       {item.description ? (
-        <p className="mt-4 mb-[18px] text-pretty text-[#3d5055]">
+        <p className="mt-4 mb-[18px] text-pretty text-[#3d5055] dark:text-ink-700">
           <BidiText text={item.description} />
         </p>
       ) : null}
@@ -123,11 +123,11 @@ async function ItemCard({ item, rank }: { item: RankingItem; rank: number }) {
         </div>
       ) : null}
       {item.price || item.pick || item.compareHref ? (
-        <div className="mt-[18px] flex flex-wrap items-center justify-between gap-3.5 border-t border-[#edf1f2] pt-4">
+        <div className="mt-[18px] flex flex-wrap items-center justify-between gap-3.5 border-t border-line-soft pt-4">
           {item.price ? (
             <div>
               <small className="block text-[12.5px] text-ink-400">{t("startingPrice")}</small>
-              <b className="text-base text-teal-900">
+              <b className="text-base text-ink-900">
                 <BidiText text={item.price} />
               </b>
             </div>
@@ -137,7 +137,7 @@ async function ItemCard({ item, rank }: { item: RankingItem; rank: number }) {
           {item.pick ? (
             <SignupTrigger>{t("createStore")}</SignupTrigger>
           ) : item.compareHref ? (
-            <Link href={item.compareHref} className="inline-flex items-center gap-1.5 text-[15px] font-bold text-teal-700">
+            <Link href={item.compareHref} className="inline-flex items-center gap-1.5 text-[15px] font-bold text-ink-brand">
               {t("readComparison")}
               <ForwardArrow />
             </Link>
@@ -175,14 +175,14 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
       <div className="pt-10 text-ink-700">
         <Container>
           <Breadcrumb items={[{ label: t("crumb"), href: "/blog" }, { label: article.title }]} className="mb-[26px]" />
-          <h1 className="max-w-[900px] text-[clamp(30px,4.4vw,52px)] leading-[1.35] font-bold text-balance text-teal-900 en:leading-[1.15]">{article.title}</h1>
+          <h1 className="max-w-[900px] text-[clamp(30px,4.4vw,52px)] leading-[1.35] font-bold text-balance text-ink-900 en:leading-[1.15]">{article.title}</h1>
           <div className="my-[26px] flex flex-wrap items-center gap-3 text-sm text-ink-400">
             <Image src="/logo-mark.png" alt="" width={40} height={40} className="size-10 rounded-xl" />
             <div>
-              <b className="block text-teal-900">{article.author}</b>
+              <b className="block text-ink-900">{article.author}</b>
               <span>{t("published", { date: formatLongDate(article.publishedAt, locale) })}</span>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-0.5 text-[13px] font-semibold text-teal-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-tint px-2.5 py-0.5 text-[13px] font-semibold text-ink-brand">
               <RefreshCw className="size-3.5" aria-hidden />
               {t("updated", { date: formatLongDate(article.updatedAt, locale) })}
             </span>
@@ -198,18 +198,18 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
 
       <Container className="grid gap-14 pt-8 pb-20 min-[821px]:grid-cols-[minmax(0,1fr)_220px] min-[821px]:pt-14 min-[1101px]:grid-cols-[200px_minmax(0,700px)_1fr]">
         <aside className="order-3 flex flex-wrap items-center gap-2 self-start min-[821px]:col-span-full min-[1101px]:sticky min-[1101px]:top-[110px] min-[1101px]:order-none min-[1101px]:col-span-1 min-[1101px]:grid min-[1101px]:justify-items-start">
-          <small className="text-xs font-semibold text-neutral-500 min-[1101px]:mb-1">{t("share")}</small>
+          <small className="text-xs font-semibold text-neutral-500 dark:text-ink-500 min-[1101px]:mb-1">{t("share")}</small>
           {share.map((item) => (
-            <a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" aria-label={item.label} className="grid size-10 place-items-center rounded-full border border-[#dfe8ea] bg-white text-teal-700 hover:bg-teal-50">
+            <a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" aria-label={item.label} className="grid size-10 place-items-center rounded-full border border-line-strong bg-surface text-ink-brand hover:bg-tint">
               <BrandIcon name={item.name} className="size-4" />
             </a>
           ))}
           <CopyLinkButton url={url} label={t("copyLink")} doneLabel={t("copied")} />
         </aside>
 
-        <article id="ranking-article" className="min-w-0 text-[17px] leading-[1.95] text-[#2a3a3f] min-[821px]:text-lg">
-          <details className="group mb-7 rounded-[18px] border border-[#e3ebed] bg-white min-[821px]:hidden">
-            <summary className="flex cursor-pointer list-none items-center justify-between px-[18px] py-3.5 text-[15px] font-bold text-teal-900 [&::-webkit-details-marker]:hidden">
+        <article id="ranking-article" className="min-w-0 text-[17px] leading-[1.95] text-[#2a3a3f] dark:text-ink-700 min-[821px]:text-lg">
+          <details className="group mb-7 rounded-[18px] border border-line bg-surface min-[821px]:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-[18px] py-3.5 text-[15px] font-bold text-ink-900 [&::-webkit-details-marker]:hidden">
               <span className="flex items-center gap-2">
                 <List className="size-[18px]" aria-hidden />
                 {t("contents")}
@@ -218,7 +218,7 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
             </summary>
             <nav className="grid px-[18px] pb-3.5 text-[14.5px] leading-normal">
               {toc.map((entry) => (
-                <a key={entry.id} href={`#${entry.id}`} className={cn("border-t border-[#f0f3f4] py-2 text-ink-700", "rank" in entry && "ps-4 text-[13.5px] text-ink-500")}>
+                <a key={entry.id} href={`#${entry.id}`} className={cn("border-t border-[#f0f3f4] dark:border-line py-2 text-ink-700", "rank" in entry && "ps-4 text-[13.5px] text-ink-500")}>
                   {entry.title}
                 </a>
               ))}
@@ -233,10 +233,10 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
             {t("summaryTitle")}
           </h2>
           <p className="mb-2 text-[13px] text-ink-400">{t("summaryHint")}</p>
-          <div className="mb-3 overflow-x-auto rounded-[22px] border border-[#e3ebed] bg-white shadow-[0_14px_36px_rgba(13,55,67,0.05)]">
+          <div className="mb-3 overflow-x-auto rounded-[22px] border border-line bg-surface shadow-[0_14px_36px_rgba(13,55,67,0.05)]">
             <table className="w-full border-collapse text-[13.5px] leading-[1.6] sm:text-[14.5px]">
               <thead>
-                <tr className="bg-[#f6fafb] text-[13px] font-semibold whitespace-nowrap text-ink-500 [&_th]:p-2.5 [&_th]:text-start sm:[&_th]:px-3.5 sm:[&_th]:py-3">
+                <tr className="bg-[#f6fafb] dark:bg-surface-muted text-[13px] font-semibold whitespace-nowrap text-ink-500 [&_th]:p-2.5 [&_th]:text-start sm:[&_th]:px-3.5 sm:[&_th]:py-3">
                   <th>{t("columns.rank")}</th>
                   <th>{t("columns.platform")}</th>
                   {hasBestFor ? <th className="hidden min-[821px]:table-cell">{t("columns.bestFor")}</th> : null}
@@ -247,15 +247,15 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
               <tbody>
                 {article.items.map((item, i) => (
                   <SummaryRow key={item.id} target={item.id} highlighted={item.pick}>
-                    <td className={cn("w-11 border-t border-[#edf1f2] p-2.5 font-latin text-[15px] font-extrabold text-teal-700 sm:px-3.5 sm:py-3", item.pick && "text-amber-700")}>{pad(i + 1)}</td>
-                    <td className="border-t border-[#edf1f2] p-2.5 sm:px-3.5 sm:py-3">
-                      <a href={`#${item.id}`} className="font-bold text-teal-900">
+                    <td className={cn("w-11 border-t border-line-soft p-2.5 font-latin text-[15px] font-extrabold text-ink-brand sm:px-3.5 sm:py-3", item.pick && "text-amber-700")}>{pad(i + 1)}</td>
+                    <td className="border-t border-line-soft p-2.5 sm:px-3.5 sm:py-3">
+                      <a href={`#${item.id}`} className="font-bold text-ink-900">
                         {item.name}
                       </a>
                     </td>
-                    {hasBestFor ? <td className="hidden border-t border-[#edf1f2] p-2.5 text-[#4d5f64] sm:px-3.5 sm:py-3 min-[821px]:table-cell">{item.bestFor ? <BidiText text={item.bestFor} /> : null}</td> : null}
-                    {hasPrice ? <td className="border-t border-[#edf1f2] p-2.5 whitespace-nowrap sm:px-3.5 sm:py-3">{item.price ? <BidiText text={item.price} /> : null}</td> : null}
-                    {hasRating ? <td className="border-t border-[#edf1f2] p-2.5 sm:px-3.5 sm:py-3">{item.rating !== undefined ? <Stars rating={item.rating} /> : null}</td> : null}
+                    {hasBestFor ? <td className="hidden border-t border-line-soft p-2.5 text-[#4d5f64] dark:text-ink-500 sm:px-3.5 sm:py-3 min-[821px]:table-cell">{item.bestFor ? <BidiText text={item.bestFor} /> : null}</td> : null}
+                    {hasPrice ? <td className="border-t border-line-soft p-2.5 whitespace-nowrap sm:px-3.5 sm:py-3">{item.price ? <BidiText text={item.price} /> : null}</td> : null}
+                    {hasRating ? <td className="border-t border-line-soft p-2.5 sm:px-3.5 sm:py-3">{item.rating !== undefined ? <Stars rating={item.rating} /> : null}</td> : null}
                   </SummaryRow>
                 ))}
               </tbody>
@@ -265,17 +265,17 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
           <h2 id="method" className={H2}>
             {t("methodTitle")}
           </h2>
-          <div className="rounded-card border border-[#dbe8eb] bg-teal-50 p-[26px]">
-            <p className="mb-[18px] text-base text-pretty text-[#3d5055]">
+          <div className="rounded-card border border-[#dbe8eb] dark:border-line bg-tint p-[26px]">
+            <p className="mb-[18px] text-base text-pretty text-[#3d5055] dark:text-ink-700">
               <BidiText text={article.method} />
             </p>
             <ul className="grid grid-cols-2 gap-2.5 min-[601px]:grid-cols-3 min-[1101px]:grid-cols-5">
               {article.criteria.map(({ icon: Icon, title, body }) => (
-                <li key={title} className="grid justify-items-start gap-2 rounded-2xl bg-white px-3 py-3.5 text-sm leading-normal text-ink-700">
+                <li key={title} className="grid justify-items-start gap-2 rounded-2xl bg-surface px-3 py-3.5 text-sm leading-normal text-ink-700">
                   <span className="grid size-9 place-items-center rounded-[11px] bg-teal-700 text-white">
                     <Icon className="size-[17px]" aria-hidden />
                   </span>
-                  <b className="text-[14.5px] text-teal-900">{title}</b>
+                  <b className="text-[14.5px] text-ink-900">{title}</b>
                   <BidiText text={body} />
                 </li>
               ))}
@@ -309,10 +309,10 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
           <ul className="mb-[22px] grid gap-2.5">
             {article.checklist.map((item) => (
               <li key={item.title}>
-                <label className="grid cursor-pointer grid-cols-[26px_1fr] items-start gap-3 rounded-2xl border border-[#e3ebed] bg-white px-4 py-3.5 text-base leading-[1.7] transition-colors duration-150 hover:border-teal-300 has-checked:bg-[#f6fafb]">
+                <label className="grid cursor-pointer grid-cols-[26px_1fr] items-start gap-3 rounded-2xl border border-line bg-surface px-4 py-3.5 text-base leading-[1.7] transition-colors duration-150 hover:border-teal-300 has-checked:bg-[#f6fafb] dark:has-checked:bg-surface-muted">
                   <input type="checkbox" className="mt-1 size-5 accent-teal-700" />
                   <div>
-                    <b className="block text-teal-900">{item.title}</b>
+                    <b className="block text-ink-900">{item.title}</b>
                     <span className="text-[15px] text-ink-500">
                       <BidiText text={item.body} />
                     </span>
@@ -332,17 +332,17 @@ export async function RankingArticleView({ article }: { article: RankingArticle 
       </Container>
 
       {article.related?.length ? (
-        <section className="border-t border-[#e3ebed] pt-16 pb-6">
+        <section className="border-t border-line pt-16 pb-6">
           <Container>
-            <h2 className="mb-8 text-[28px] font-bold text-teal-900">{t("readAlso")}</h2>
+            <h2 className="mb-8 text-[28px] font-bold text-ink-900">{t("readAlso")}</h2>
             <div className="grid gap-6 min-[821px]:grid-cols-3">
               {article.related.map((post) => (
                 <Link key={post.href} href={post.href} className="grid gap-2.5 text-inherit hover:no-underline">
                   <span className="relative block aspect-[16/10] overflow-hidden rounded-[20px]">
                     <Image src={post.image} alt="" fill sizes="(min-width: 821px) 33vw, 100vw" className="object-cover" />
                   </span>
-                  <span className="text-[13px] text-neutral-600">{post.category}</span>
-                  <b className="text-[17px] leading-[1.4] text-teal-900">{post.title}</b>
+                  <span className="text-[13px] text-neutral-600 dark:text-ink-700">{post.category}</span>
+                  <b className="text-[17px] leading-[1.4] text-ink-900">{post.title}</b>
                 </Link>
               ))}
             </div>

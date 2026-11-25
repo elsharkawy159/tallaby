@@ -61,17 +61,17 @@ export async function HeroDemo() {
   ];
 
   return (
-    <div aria-hidden className="relative mx-auto mt-[68px] w-full max-w-[1060px] text-start text-[13px] text-[#333] min-[641px]:mt-20">
+    <div aria-hidden className="relative mx-auto mt-[68px] w-full max-w-[1060px] text-start text-[13px] text-[#333] dark:text-ink-700 min-[641px]:mt-20">
       {/* The phone covers only the dashboard's last 30 px (its padding): the end margin and the top bar's wider end padding keep the bell, amounts and statuses clear of it. */}
-      <div className={cn("overflow-hidden rounded-2xl border border-[#e7e9e8] bg-[#f8f9f8] shadow-soft min-[641px]:rounded-[20px]", hasPhone && "min-[641px]:me-[190px] min-[1081px]:me-[210px]")}>
-        <div className={cn("flex h-[50px] items-center gap-2 border-b border-[#e7e9e8] bg-white px-3 min-[641px]:ps-4", hasPhone ? "min-[641px]:pe-12" : "min-[641px]:pe-4")}>
-          <b className="flex-1 text-[14px] font-bold text-[#171717] min-[641px]:text-[15px]">{t("title")}</b>
-          <span className="flex h-[30px] items-center gap-1.5 rounded-full border border-[#e7e9e8] px-2.5 text-[11.5px] whitespace-nowrap text-[#5f6b6e]">
+      <div className={cn("overflow-hidden rounded-2xl border border-[#e7e9e8] dark:border-line bg-[#f8f9f8] dark:bg-surface-muted shadow-soft min-[641px]:rounded-[20px]", hasPhone && "min-[641px]:me-[190px] min-[1081px]:me-[210px]")}>
+        <div className={cn("flex h-[50px] items-center gap-2 border-b border-[#e7e9e8] dark:border-line bg-surface px-3 min-[641px]:ps-4", hasPhone ? "min-[641px]:pe-12" : "min-[641px]:pe-4")}>
+          <b className="flex-1 text-[14px] font-bold text-[#171717] dark:text-ink-900 min-[641px]:text-[15px]">{t("title")}</b>
+          <span className="flex h-[30px] items-center gap-1.5 rounded-full border border-[#e7e9e8] dark:border-line px-2.5 text-[11.5px] whitespace-nowrap text-[#5f6b6e] dark:text-ink-500">
             <Wallet className="size-3.5" />
             <span className="hidden min-[641px]:inline">{t("walletLabel")}</span>
-            <b className="text-[12px] text-[#171717]"><Money cents={HERO_DEMO_WALLET_USD_CENTS} /></b>
+            <b className="text-[12px] text-[#171717] dark:text-ink-900"><Money cents={HERO_DEMO_WALLET_USD_CENTS} /></b>
           </span>
-          <span className="relative grid size-[30px] place-items-center text-[#808080]">
+          <span className="relative grid size-[30px] place-items-center text-[#808080] dark:text-ink-500">
             <Bell className="size-4" />
             <i className="absolute -end-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-amber-600 font-latin text-[9px] font-bold text-teal-900 not-italic">1</i>
           </span>
@@ -80,29 +80,29 @@ export async function HeroDemo() {
         {/* Under 641 px the phone stands in the space kept below the order list. */}
         <div className={cn("flex flex-col gap-3 p-3 min-[641px]:p-[18px]", hasPhone && "pb-[160px]")}>
           <div>
-            <b className="block text-[16px] font-bold text-[#171717] min-[641px]:text-xl">{t("greeting")}</b>
-            <small className="text-xs text-[#808080]">{t("newOrders", { count: pending })}</small>
+            <b className="block text-[16px] font-bold text-[#171717] dark:text-ink-900 min-[641px]:text-xl">{t("greeting")}</b>
+            <small className="text-xs text-[#808080] dark:text-ink-500">{t("newOrders", { count: pending })}</small>
           </div>
           <div className="grid grid-cols-2 gap-2 min-[641px]:gap-2.5 min-[861px]:grid-cols-4">
             {kpis.map((kpi) => (
-              <div key={kpi.label} className={cn("rounded-2xl border border-[#e7e9e8] bg-white p-3", kpi.wide && "hidden min-[861px]:block")}>
-                <span className="block truncate text-xs font-semibold text-[#3f4a4d]">{kpi.label}</span>
-                <b className="font-latin text-[18px] font-bold text-[#171717] min-[641px]:text-[22px]">{kpi.value}</b> <span className="text-[11.5px] text-[#808080]">{kpi.unit}</span>
+              <div key={kpi.label} className={cn("rounded-2xl border border-[#e7e9e8] dark:border-line bg-surface p-3", kpi.wide && "hidden min-[861px]:block")}>
+                <span className="block truncate text-xs font-semibold text-[#3f4a4d] dark:text-ink-700">{kpi.label}</span>
+                <b className="font-latin text-[18px] font-bold text-[#171717] dark:text-ink-900 min-[641px]:text-[22px]">{kpi.value}</b> <span className="text-[11.5px] text-[#808080] dark:text-ink-500">{kpi.unit}</span>
                 {/* The week as seven bars; today's, the last one, is solid. */}
                 <div className="mt-2 flex h-7 items-end gap-[3px] min-[641px]:h-8">
                   {kpi.trend.map((height, day) => (
-                    <i key={day} className={cn("flex-1 rounded-t-[3px]", day === kpi.trend.length - 1 ? "bg-teal-700" : "bg-teal-100")} style={{ height: `${height}%` }} />
+                    <i key={day} className={cn("flex-1 rounded-t-[3px]", day === kpi.trend.length - 1 ? "bg-teal-700" : "bg-tint-strong")} style={{ height: `${height}%` }} />
                   ))}
                 </div>
               </div>
             ))}
           </div>
-          <ul className="m-0 list-none overflow-hidden rounded-2xl border border-[#e7e9e8] bg-white p-0">
-            <li className="px-3.5 py-2.5 text-[14px] font-bold text-[#171717]">{t("latest")}</li>
+          <ul className="m-0 list-none overflow-hidden rounded-2xl border border-[#e7e9e8] dark:border-line bg-surface p-0">
+            <li className="px-3.5 py-2.5 text-[14px] font-bold text-[#171717] dark:text-ink-900">{t("latest")}</li>
             {orders.map((o, i) => (
-              <li key={i} className={cn("flex items-center gap-2.5 border-t border-[#e7e9e8] px-3.5 py-2 text-xs", i === 0 && "bg-[#fff4dc]")}>
+              <li key={i} className={cn("flex items-center gap-2.5 border-t border-[#e7e9e8] dark:border-line px-3.5 py-2 text-xs", i === 0 && "bg-[#fff4dc]")}>
                 <span className="min-w-0 flex-1 truncate">{o.product}</span>
-                <span className="hidden text-[#808080] min-[861px]:block">{t(`when.${o.when}`)}</span>
+                <span className="hidden text-[#808080] dark:text-ink-500 min-[861px]:block">{t(`when.${o.when}`)}</span>
                 <span className="font-semibold whitespace-nowrap">
                   <span className="font-latin">{money(o.total)}</span> {egp}
                 </span>
@@ -135,12 +135,12 @@ export async function HeroDemo() {
       />
 
       {/* The new order's notice, above the dashboard's start corner (clear of its title). */}
-      <div className="absolute -top-[56px] start-2 z-[4] flex items-center gap-2.5 rounded-2xl border border-line bg-white px-3 py-2 shadow-raise min-[641px]:start-7">
+      <div className="absolute -top-[56px] start-2 z-[4] flex items-center gap-2.5 rounded-2xl border border-line bg-surface px-3 py-2 shadow-raise min-[641px]:start-7">
         <span className="grid size-8 place-items-center rounded-xl bg-amber-100 text-amber-700">
           <ShoppingBag className="size-[18px]" />
         </span>
         <div>
-          <b className="block text-[13.5px] text-teal-900">{t("newOrder")}</b>
+          <b className="block text-[13.5px] text-ink-900">{t("newOrder")}</b>
           <small className="text-xs text-ink-400">
             {fresh.product} · <span className="font-latin">{money(fresh.total)}</span> {egp}
           </small>

@@ -134,7 +134,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
         }}
         className="relative h-[580px] cursor-grab touch-pan-y overflow-hidden select-none active:cursor-grabbing min-[641px]:h-[620px]"
       >
-        <button type="button" aria-label={t("previous")} onClick={() => go(active - 1)} className="absolute start-[max(20px,calc(50%-400px))] top-1/2 z-20 hidden size-12 -translate-y-1/2 place-items-center rounded-full border border-line bg-white text-teal-900 shadow-[0_6px_18px_rgba(13,55,67,0.1)] min-[641px]:grid">
+        <button type="button" aria-label={t("previous")} onClick={() => go(active - 1)} className="absolute start-[max(20px,calc(50%-400px))] top-1/2 z-20 hidden size-12 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface text-ink-900 shadow-[0_6px_18px_rgba(13,55,67,0.1)] min-[641px]:grid">
           <ChevronRight className="size-5 ltr:rotate-180" aria-hidden />
         </button>
         {entries.map((entry, i) => {
@@ -149,7 +149,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
               aria-hidden={!on}
               aria-label={entry.name}
               className={cn(
-                "absolute top-2.5 left-1/2 flex w-[min(300px,78vw)] flex-col overflow-hidden rounded-[30px] border border-line bg-white shadow-[0_14px_36px_rgba(13,55,67,0.09)] min-[641px]:w-[330px]",
+                "absolute top-2.5 left-1/2 flex w-[min(300px,78vw)] flex-col overflow-hidden rounded-[30px] border border-line bg-surface shadow-[0_14px_36px_rgba(13,55,67,0.09)] min-[641px]:w-[330px]",
                 // Only the centre card scrolls its screenshot on hover.
                 on ? "tpl-shot-trigger cursor-default" : "cursor-pointer",
                 dragging ? "transition-none" : "transition-[transform,opacity] duration-500 ease-[cubic-bezier(.2,.7,.2,1)]",
@@ -162,16 +162,16 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
             >
               <div className="flex items-center justify-between gap-2.5 px-[18px] pt-4 pb-3">
                 <div className="min-w-0">
-                  <b className="block truncate font-latin text-base text-teal-900">{entry.name}</b>
+                  <b className="block truncate font-latin text-base text-ink-900">{entry.name}</b>
                   <small className="line-clamp-1 text-[12.5px] text-ink-400">{entry.description ?? ""}</small>
                 </div>
-                <span className="flex-none rounded-full bg-teal-50 px-2.5 py-0.5 text-[11.5px] font-bold whitespace-nowrap text-teal-700">{t(`categories.${entry.category}`)}</span>
+                <span className="flex-none rounded-full bg-tint px-2.5 py-0.5 text-[11.5px] font-bold whitespace-nowrap text-ink-brand">{t(`categories.${entry.category}`)}</span>
               </div>
-              <div className="mx-3 overflow-hidden rounded-[18px] border border-[#edf1f2]">
+              <div className="mx-3 overflow-hidden rounded-[18px] border border-line-soft">
                 {seen.has(i) ? (
                   <TemplateThumb shot={entry.shot} liveSrc={templateFrameSrc(locale, entry.id, undefined, true)} sizes="330px" />
                 ) : (
-                  <div className="aspect-[3/4] bg-neutral-100" />
+                  <div className="aspect-[3/4] bg-neutral-100 dark:bg-surface-muted" />
                 )}
               </div>
               <div className="flex items-center gap-1.5 px-[18px] pt-3 text-xs text-ink-400">
@@ -194,7 +194,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
             </article>
           );
         })}
-        <button type="button" aria-label={t("next")} onClick={() => go(active + 1)} className="absolute end-[max(20px,calc(50%-400px))] top-1/2 z-20 hidden size-12 -translate-y-1/2 place-items-center rounded-full border border-line bg-white text-teal-900 shadow-[0_6px_18px_rgba(13,55,67,0.1)] min-[641px]:grid">
+        <button type="button" aria-label={t("next")} onClick={() => go(active + 1)} className="absolute end-[max(20px,calc(50%-400px))] top-1/2 z-20 hidden size-12 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface text-ink-900 shadow-[0_6px_18px_rgba(13,55,67,0.1)] min-[641px]:grid">
           <ChevronLeft className="size-5 ltr:rotate-180" aria-hidden />
         </button>
       </div>
@@ -209,7 +209,7 @@ export function TemplateCarousel({ entries }: { entries: GalleryEntry[] }) {
             onClick={() => go(i)}
             className={cn("group grid h-6 min-w-6 place-items-center px-[3px]", TAP_44)}
           >
-            <span className={cn("block h-2 rounded-full transition-[width,background-color] duration-300", i === active ? "w-7 bg-teal-700" : "w-2 bg-[#cfdde1] group-hover:bg-[#9fb6bc]")} />
+            <span className={cn("block h-2 rounded-full transition-[width,background-color] duration-300", i === active ? "w-7 bg-teal-700" : "w-2 bg-tint-strong group-hover:bg-[#9fb6bc]")} />
           </button>
         ))}
       </div>

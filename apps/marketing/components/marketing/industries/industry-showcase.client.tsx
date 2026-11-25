@@ -33,12 +33,12 @@ export function IndustryShowcase({
 
   return (
     <div className="grid items-center gap-8 min-[1081px]:grid-cols-[minmax(0,1fr)_300px]">
-      <div aria-hidden className="overflow-hidden rounded-[20px] border border-[#e3ebed] bg-white shadow-[0_22px_56px_rgba(13,55,67,0.12)]">
-        <div dir="ltr" className="flex h-10 items-center gap-3 border-b border-[#edf1f2] bg-[#fafcfc] px-3.5">
+      <div aria-hidden className="overflow-hidden rounded-[20px] border border-line bg-surface shadow-[0_22px_56px_rgba(13,55,67,0.12)]">
+        <div dir="ltr" className="flex h-10 items-center gap-3 border-b border-line-soft bg-[#fafcfc] dark:bg-surface-muted px-3.5">
           {[0, 1, 2].map((i) => (
-            <i key={i} className="block size-2.5 rounded-full bg-[#dfe5e6]" />
+            <i key={i} className="block size-2.5 rounded-full bg-[#dfe5e6] dark:bg-surface-muted" />
           ))}
-          <span className="mx-auto grid h-[26px] max-w-[320px] flex-1 place-items-center rounded-lg bg-[#f1f4f5] font-latin text-xs font-medium text-ink-400">{url}</span>
+          <span className="mx-auto grid h-[26px] max-w-[320px] flex-1 place-items-center rounded-lg bg-[#f1f4f5] dark:bg-surface-muted font-latin text-xs font-medium text-ink-400">{url}</span>
         </div>
         <StoreMock store={store} pin={pin} />
       </div>
@@ -50,12 +50,12 @@ export function IndustryShowcase({
             onMouseLeave={() => setActive(null)}
             className={cn(
               "grid grid-cols-[30px_1fr] gap-3 rounded-2xl border border-transparent px-3.5 py-3 transition-[background-color,border-color,box-shadow] duration-150",
-              active === i && "border-[#e3ebed] bg-white shadow-[0_10px_26px_rgba(13,55,67,0.07)]",
+              active === i && "border-line bg-surface shadow-[0_10px_26px_rgba(13,55,67,0.07)]",
             )}
           >
             <Num className={cn("grid size-[30px] place-items-center rounded-full bg-amber-100 text-[13px] font-extrabold text-[#7a4a00]", active === i && "bg-teal-900 text-white")}>{i + 1}</Num>
             <div>
-              <b className="block text-[15px] text-teal-900">{item.title}</b>
+              <b className="block text-[15px] text-ink-900">{item.title}</b>
               <span className="text-[13.5px] text-ink-500">{item.body}</span>
             </div>
           </li>

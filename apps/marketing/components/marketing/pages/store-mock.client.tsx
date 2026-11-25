@@ -82,7 +82,7 @@ const COUNTDOWN = 2 * 3600 + 14 * 60 + 36;
 export function StoreMock({ store, pin }: { store: MockStore; pin?: (index: number) => React.ReactNode }) {
   return (
     <div className="bg-[#f6f3ee] [container-type:inline-size]">
-      <div className="text-[1.45cqw] leading-normal text-[#1f2326]">
+      <div className="text-[1.45cqw] leading-normal text-[#1f2326] dark:text-ink-900">
         <div className="relative flex justify-center gap-[0.8em] bg-[#1f2326] p-[0.55em] text-center text-[0.9em] font-semibold text-[#efe9df]">
           {store.announcement}
           <DemoCountdown seconds={COUNTDOWN}>
@@ -121,7 +121,7 @@ export function StoreMock({ store, pin }: { store: MockStore; pin?: (index: numb
           <div className="absolute inset-y-0 start-0 flex max-w-[52%] flex-col items-start justify-center gap-[0.7em] p-[2.4em] text-white">
             <small className="text-[0.85em] font-semibold opacity-85">{store.heroSmall}</small>
             <b className="text-[2.6em] leading-[1.25]">{store.hero}</b>
-            <span className="relative bg-[#c9b79c] px-[1.4em] py-[0.6em] text-[0.95em] font-bold text-[#1f2326]">
+            <span className="relative bg-[#c9b79c] px-[1.4em] py-[0.6em] text-[0.95em] font-bold text-[#1f2326] dark:text-ink-900">
               {store.cta}
               {pin?.(1)}
             </span>
@@ -148,7 +148,7 @@ export function StoreMock({ store, pin }: { store: MockStore; pin?: (index: numb
               </span>
               {product.was ? (
                 <span className="relative">
-                  <s className="ms-[0.4em] font-latin text-[0.85em] font-medium text-[#8a8580]">{product.was}</s>
+                  <s className="ms-[0.4em] font-latin text-[0.85em] font-medium text-[#8a8580] dark:text-ink-500">{product.was}</s>
                   {i === 0 ? pin?.(3) : null}
                 </span>
               ) : null}
@@ -172,7 +172,7 @@ export function ProductMock({ store }: { store: MockStore }) {
   const product = store.products[0]!;
   return (
     <div className="h-full bg-[#f6f3ee] [container-type:inline-size]">
-      <div className="flex h-full flex-col text-[5.2cqw] leading-normal text-[#1f2326]">
+      <div className="flex h-full flex-col text-[5.2cqw] leading-normal text-[#1f2326] dark:text-ink-900">
         <div className="flex items-center justify-between px-[0.9em] pt-[2.6em] pb-[0.5em] font-latin font-extrabold tracking-[0.2em] [&_svg]:size-[1.1em]">
           <Menu />
           <span dir="ltr">{store.brand}</span>
@@ -186,7 +186,7 @@ export function ProductMock({ store }: { store: MockStore }) {
           <span dir="ltr" className="font-latin text-[1.05em] font-bold rtl:text-right">
             {product.price} {store.currency}
           </span>
-          <span className="text-[0.75em] font-semibold text-[#6d6862]">{store.sizeLabel}</span>
+          <span className="text-[0.75em] font-semibold text-[#6d6862] dark:text-ink-500">{store.sizeLabel}</span>
           <div className="flex gap-[0.35em]">
             {store.sizes.map((size, i) => (
               <span key={size} className={cn("flex-1 border border-[#1f232633] py-[0.25em] text-center font-latin text-[0.78em] font-semibold", i === store.selectedSize && "border-[#1f2326] bg-[#1f2326] text-white")}>
@@ -194,7 +194,7 @@ export function ProductMock({ store }: { store: MockStore }) {
               </span>
             ))}
           </div>
-          {product.colors.length ? <span className="text-[0.75em] font-semibold text-[#6d6862]">{store.colorLabel}</span> : null}
+          {product.colors.length ? <span className="text-[0.75em] font-semibold text-[#6d6862] dark:text-ink-500">{store.colorLabel}</span> : null}
           <div className="flex gap-[0.45em]">
             {product.colors.map((color, i) => (
               <i
@@ -220,10 +220,10 @@ export function DeviceStage({ store, floats, children }: { store: MockStore; flo
         <div className="rounded-t-xl bg-[#0f1d21] px-1.5 pt-1.5 shadow-[0_22px_50px_rgba(13,55,67,0.25)] sm:rounded-t-[18px] sm:px-[9px] sm:pt-[9px]">
           <div className="overflow-hidden rounded-t-lg">{children ?? <StoreMock store={store} />}</div>
         </div>
-        <div className="relative mx-[-5%] h-3.5 rounded-b-[14px] bg-gradient-to-b from-[#dfe6e8] to-[#b9c5c8]" />
+        <div className="relative mx-[-5%] h-3.5 rounded-b-[14px] bg-gradient-to-b from-[#dfe6e8] dark:from-surface-muted to-[#b9c5c8] dark:to-tint-strong" />
       </div>
       <div className="absolute end-[-6px] -bottom-6 z-[3] aspect-[9/18.5] w-[120px] rounded-[20px] bg-[#0f1d21] p-[5px] shadow-[0_22px_50px_rgba(13,55,67,0.3)] sm:end-0 sm:bottom-1.5 sm:w-[200px] sm:rounded-[32px] sm:p-[7px]">
-        <div className="h-full overflow-hidden rounded-2xl bg-white sm:rounded-[26px]">
+        <div className="h-full overflow-hidden rounded-2xl bg-surface sm:rounded-[26px]">
           <ProductMock store={store} />
         </div>
       </div>

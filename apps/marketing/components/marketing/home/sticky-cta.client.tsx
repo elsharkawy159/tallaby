@@ -29,7 +29,7 @@ export function StickyCta() {
       data-shown={show ? "true" : "false"}
       data-print="hide"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-[60] border-t border-neutral-200 bg-white px-4 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] transition-transform duration-300 md:hidden",
+        "fixed inset-x-0 bottom-0 z-[60] border-t border-neutral-200 dark:border-line bg-surface px-4 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] transition-transform duration-300 md:hidden",
         show ? "translate-y-0" : "translate-y-full",
       )}
     >

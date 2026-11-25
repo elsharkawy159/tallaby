@@ -27,7 +27,7 @@ export async function TemplatesPageContent({ entries, niches = [] }: { entries: 
         <Container>
           <div className="mb-8 flex flex-col gap-4 min-[861px]:mb-10 min-[861px]:flex-row min-[861px]:items-end min-[861px]:justify-between min-[861px]:gap-10">
             <div className="max-w-[760px]">
-              <h1 id="templates-h1" className="text-[clamp(30px,4.4vw,48px)] leading-[1.25] font-bold text-balance text-teal-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
+              <h1 id="templates-h1" className="text-[clamp(30px,4.4vw,48px)] leading-[1.25] font-bold text-balance text-ink-900 en:leading-[1.1] en:tracking-[-0.02em] [&_em]:text-amber-700 [&_em]:not-italic">
                 {t.rich("hero.title", richTags)}
               </h1>
               <p className="mt-3 max-w-[640px] text-[clamp(15px,1.6vw,17px)] text-pretty text-ink-500">{t("hero.lead")}</p>
@@ -50,10 +50,10 @@ export async function TemplatesPageContent({ entries, niches = [] }: { entries: 
                 <IconTile className="mb-1">
                   <LayoutTemplate aria-hidden />
                 </IconTile>
-                <h3 className="text-[17px] leading-normal font-bold text-teal-900">{t("included.pagesTitle")}</h3>
+                <h3 className="text-[17px] leading-normal font-bold text-ink-900">{t("included.pagesTitle")}</h3>
                 <div className="mt-auto flex flex-wrap gap-1.5">
                   {(t.raw("included.pages") as string[]).map((page) => (
-                    <span key={page} className="rounded-full bg-teal-50 px-2.5 py-[3px] text-xs font-semibold text-teal-700">{page}</span>
+                    <span key={page} className="rounded-full bg-tint px-2.5 py-[3px] text-xs font-semibold text-ink-brand">{page}</span>
                   ))}
                 </div>
               </SiteCard>
@@ -64,7 +64,7 @@ export async function TemplatesPageContent({ entries, niches = [] }: { entries: 
                   <IconTile className="mb-1">
                     <item.icon aria-hidden />
                   </IconTile>
-                  <h3 className="text-[17px] leading-normal font-bold text-teal-900">{item.title}</h3>
+                  <h3 className="text-[17px] leading-normal font-bold text-ink-900">{item.title}</h3>
                   <p className="text-sm text-pretty text-ink-500">{item.body}</p>
                 </SiteCard>
               </Reveal>
@@ -83,7 +83,7 @@ export async function TemplatesPageContent({ entries, niches = [] }: { entries: 
               className="mb-0"
               description={t.rich("faq.desc", {
                 link: (chunks) => (
-                  <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 underline-offset-2 hover:underline">
+                  <a href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" className="font-semibold text-ink-brand underline-offset-2 hover:underline">
                     {chunks}
                   </a>
                 ),

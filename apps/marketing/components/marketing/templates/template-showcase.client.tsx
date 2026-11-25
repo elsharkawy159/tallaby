@@ -44,9 +44,9 @@ export function TemplateShowcase({ entries }: { entries: ShowcaseEntry[] }) {
 
   return (
     <div className="w-full">
-      <div ref={ref} className="mx-auto mt-9 w-full max-w-[1080px] overflow-hidden rounded-2xl border border-line bg-white text-start shadow-stage min-[641px]:mt-[52px] min-[641px]:rounded-[22px]">
+      <div ref={ref} className="mx-auto mt-9 w-full max-w-[1080px] overflow-hidden rounded-2xl border border-line bg-surface text-start shadow-stage min-[641px]:mt-[52px] min-[641px]:rounded-[22px]">
         <BrowserBar url={`${entry.id}.tallaby.com`} />
-        <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100 min-[861px]:aspect-[16/10]">
+        <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100 dark:bg-surface-muted min-[861px]:aspect-[16/10]">
           {entries.map((item, i) =>
             mounted.has(i) ? (
               <div key={item.id} className={cn("absolute inset-0 transition-opacity duration-300", i === current ? "opacity-100" : "opacity-0")}>
@@ -57,7 +57,7 @@ export function TemplateShowcase({ entries }: { entries: ShowcaseEntry[] }) {
         </div>
       </div>
 
-      <div role="group" aria-label={t("pickerLabel")} className="no-scrollbar relative z-[2] mx-auto -mt-[22px] flex w-max max-w-full items-center gap-1 overflow-x-auto rounded-full border border-line bg-white p-1.5 shadow-[0_14px_36px_rgba(13,55,67,0.12)] min-[641px]:-mt-[26px]">
+      <div role="group" aria-label={t("pickerLabel")} className="no-scrollbar relative z-[2] mx-auto -mt-[22px] flex w-max max-w-full items-center gap-1 overflow-x-auto rounded-full border border-line bg-surface p-1.5 shadow-[0_14px_36px_rgba(13,55,67,0.12)] min-[641px]:-mt-[26px]">
         {entries.map((item, i) => (
           <button
             key={item.id}
@@ -69,7 +69,7 @@ export function TemplateShowcase({ entries }: { entries: ShowcaseEntry[] }) {
             }}
             className={cn(
               "flex h-9 flex-none items-center gap-2 rounded-full px-3 font-latin text-[13px] font-semibold whitespace-nowrap transition-colors duration-150 min-[641px]:h-10 min-[641px]:px-4 min-[641px]:text-sm",
-              i === current ? "bg-teal-900 text-white" : "text-ink-600 hover:bg-[#f3f7f8]",
+              i === current ? "bg-teal-900 text-white" : "text-ink-600 hover:bg-[#f3f7f8] dark:hover:bg-surface-muted",
             )}
           >
             {item.palette[0] ? <i className="size-2.5 flex-none rounded-full shadow-[0_0_0_1px_rgba(0,0,0,0.08)]" style={{ background: item.palette[0] }} /> : null}

@@ -35,15 +35,15 @@ export function RankingToc({ entries, title }: { entries: TocEntry[]; title: str
   const active = useScrollSpy(entries.map((entry) => entry.id));
   return (
     <nav aria-label={title} className="sticky top-[110px] hidden max-h-[calc(100vh-130px)] content-start gap-0.5 self-start overflow-auto text-sm min-[821px]:grid">
-      <b className="mb-1.5 text-xs text-neutral-500">{title}</b>
+      <b className="mb-1.5 text-xs text-neutral-500 dark:text-ink-500">{title}</b>
       {entries.map((entry) => (
         <a
           key={entry.id}
           href={`#${entry.id}`}
           className={cn(
-            "border-s-2 border-neutral-200 px-3 py-1.5 leading-[1.45] text-[#4d5f64] hover:text-teal-900 hover:no-underline",
+            "border-s-2 border-neutral-200 dark:border-line px-3 py-1.5 leading-[1.45] text-[#4d5f64] dark:text-ink-500 hover:text-ink-900 hover:no-underline",
             entry.rank && "ps-6 py-1 text-[13px]",
-            active === entry.id && "border-amber-600 font-semibold text-teal-900",
+            active === entry.id && "border-amber-600 font-semibold text-ink-900",
           )}
         >
           {entry.rank ? <span className="me-1.5 font-latin text-[#a3b1b4]">{pad(entry.rank)}</span> : null}
@@ -63,7 +63,7 @@ export function CopyLinkButton({ url, label, doneLabel }: { url: string; label: 
         void navigator.clipboard?.writeText(url);
         setDone(true);
       }}
-      className="flex h-10 items-center gap-1.5 rounded-full border border-[#dfe8ea] bg-white px-3.5 text-[13px] font-semibold text-teal-700 hover:bg-teal-50"
+      className="flex h-10 items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3.5 text-[13px] font-semibold text-ink-brand hover:bg-tint"
     >
       <Link2 className="size-[15px]" aria-hidden />
       <span aria-live="polite">{done ? doneLabel : label}</span>
@@ -79,7 +79,7 @@ export function SummaryRow({ target, highlighted, children }: { target: string; 
         if ((e.target as HTMLElement).closest("a")) return;
         window.location.hash = target;
       }}
-      className={cn("cursor-pointer transition-colors duration-150 hover:bg-[#f8fbfb]", highlighted && "bg-amber-600/[0.07] hover:bg-amber-600/[0.12]")}
+      className={cn("cursor-pointer transition-colors duration-150 hover:bg-[#f8fbfb] dark:hover:bg-surface-muted", highlighted && "bg-amber-600/[0.07] hover:bg-amber-600/[0.12]")}
     >
       {children}
     </tr>

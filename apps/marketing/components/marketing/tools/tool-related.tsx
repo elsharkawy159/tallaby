@@ -18,9 +18,9 @@ export async function ToolRelated({ slug }: { slug: ToolSlug }) {
             <Link
               key={TOOL_RELATED[slug][i]}
               href={TOOL_RELATED[slug][i]!}
-              className="flex flex-col gap-2 rounded-[22px] border border-line bg-white p-5 text-inherit transition-colors duration-200 hover:border-teal-300 hover:no-underline"
+              className="flex flex-col gap-2 rounded-[22px] border border-line bg-surface p-5 text-inherit transition-colors duration-200 hover:border-teal-300 hover:no-underline"
             >
-              <b className="flex items-center justify-between gap-2 text-base text-teal-900">
+              <b className="flex items-center justify-between gap-2 text-base text-ink-900">
                 <BidiText text={item.title} />
                 <ForwardArrow className="flex-none text-teal-500" />
               </b>

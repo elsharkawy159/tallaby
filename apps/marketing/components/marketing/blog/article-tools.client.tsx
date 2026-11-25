@@ -37,13 +37,13 @@ export function ArticleToc({ title, sections }: { title: string; sections: { id:
   const active = useScrollSpy(sections.map((s) => s.id));
   return (
     <nav aria-label={title} className="sticky top-[110px] hidden gap-0.5 self-start text-sm md:grid">
-      <b className="mb-1.5 text-xs text-neutral-500">{title}</b>
+      <b className="mb-1.5 text-xs text-neutral-500 dark:text-ink-500">{title}</b>
       {sections.map((s) => (
         <a
           key={s.id}
           href={`#${s.id}`}
           aria-current={active === s.id ? "true" : undefined}
-          className="border-s-2 border-neutral-200 px-3 py-1.5 leading-[1.45] text-slate-ink hover:text-teal-900 hover:no-underline aria-[current=true]:border-amber-600 aria-[current=true]:font-semibold aria-[current=true]:text-teal-900"
+          className="border-s-2 border-neutral-200 dark:border-line px-3 py-1.5 leading-[1.45] text-slate-ink hover:text-ink-900 hover:no-underline aria-[current=true]:border-amber-600 aria-[current=true]:font-semibold aria-[current=true]:text-ink-900"
         >
           {s.label}
         </a>
@@ -59,7 +59,7 @@ export function ShareBar({ title }: { title: string }) {
   const [url, setUrl] = React.useState("");
   React.useEffect(() => setUrl(window.location.href), []);
 
-  const btn = "grid size-10 place-items-center rounded-full border border-line-strong bg-white text-teal-700 hover:bg-teal-50";
+  const btn = "grid size-10 place-items-center rounded-full border border-line-strong bg-surface text-ink-brand hover:bg-tint";
   const enc = encodeURIComponent;
 
   return (
@@ -67,7 +67,7 @@ export function ShareBar({ title }: { title: string }) {
       data-print="hide"
       className="col-span-full flex flex-wrap items-center gap-2 lg:sticky lg:top-[110px] lg:col-span-1 lg:grid lg:justify-items-start lg:self-start"
     >
-      <small className="text-xs font-semibold text-neutral-500 lg:mb-1">{t("share")}</small>
+      <small className="text-xs font-semibold text-neutral-500 dark:text-ink-500 lg:mb-1">{t("share")}</small>
       <a className={btn} aria-label="Facebook" target="_blank" rel="noopener noreferrer" href={`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`}>
         <BrandIcon name="facebook" className="size-4" />
       </a>

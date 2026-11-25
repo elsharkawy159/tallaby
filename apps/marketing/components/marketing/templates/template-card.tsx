@@ -37,7 +37,7 @@ export function TemplateFrame({
     return (
       <div
         className={cn(
-          "tpl-shot-trigger relative overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-card transition-[transform,box-shadow] duration-200 group-hover:-translate-y-1.5 group-hover:shadow-lift",
+          "tpl-shot-trigger relative overflow-hidden rounded-2xl border border-neutral-200 dark:border-line bg-surface shadow-card transition-[transform,box-shadow] duration-200 group-hover:-translate-y-1.5 group-hover:shadow-lift",
           className,
         )}
       >
@@ -49,7 +49,7 @@ export function TemplateFrame({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-card transition-[transform,box-shadow] duration-200 group-hover:-translate-y-1.5 group-hover:shadow-lift",
+        "relative overflow-hidden rounded-2xl border border-neutral-200 dark:border-line bg-surface shadow-card transition-[transform,box-shadow] duration-200 group-hover:-translate-y-1.5 group-hover:shadow-lift",
         className,
       )}
     >
@@ -69,7 +69,7 @@ export function TemplateFrame({
       ) : liveSrc ? (
         <TemplateLiveThumb src={liveSrc} />
       ) : (
-        <div className="aspect-[4/3] bg-neutral-100" />
+        <div className="aspect-[4/3] bg-neutral-100 dark:bg-surface-muted" />
       )}
       {badge ? <div className={cn("pointer-events-none absolute end-3", image ? "top-3" : "top-[42px]")}>{badge}</div> : null}
       {overlay ? (

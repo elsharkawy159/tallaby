@@ -50,13 +50,14 @@ export function SiteHeader() {
       data-print="hide"
       className={cn(
         "sticky top-0 z-[60] border-b border-transparent transition-[background-color,border-color] duration-200",
-        scrolled && "border-b-teal-700/10 bg-surface-nav backdrop-blur-[14px] backdrop-saturate-[1.4]",
-        menuOpen && "bg-white",
+        scrolled && "border-b-ink-brand/10 bg-surface-nav backdrop-blur-[14px] backdrop-saturate-[1.4]",
+        menuOpen && "bg-surface",
       )}
     >
       <Container className="flex h-[68px] items-center gap-7">
         <Link href="/" aria-label="Tallaby" className="shrink-0">
-          <Image src="/logo-primary.png" alt="طلبي" width={118} height={30} priority className="block h-[30px] w-auto" />
+          <Image src="/logo-primary.png" alt="طلبي" width={118} height={30} priority className="block h-[30px] w-auto dark:hidden" />
+          <Image src="/logo-white.png" alt="طلبي" width={118} height={30} className="h-[30px] w-auto hidden dark:block" />
         </Link>
         <nav aria-label={t("main")} className="hidden flex-1 gap-0.5 min-[1081px]:flex">
           {NAV_ITEMS.map((item) =>
@@ -67,7 +68,7 @@ export function SiteHeader() {
                 key={item.key}
                 href={item.href}
                 aria-current={active === item.key ? "page" : undefined}
-                className="rounded-[10px] px-3 py-2 text-[14.5px] font-semibold whitespace-nowrap text-ink-600 hover:bg-teal-50 hover:text-teal-900 hover:no-underline aria-[current=page]:bg-teal-50 aria-[current=page]:text-teal-900"
+                className="rounded-[10px] px-3 py-2 text-[14.5px] font-semibold whitespace-nowrap text-ink-600 hover:bg-tint hover:text-ink-900 hover:no-underline aria-[current=page]:bg-tint aria-[current=page]:text-ink-900"
               >
                 {t(item.key)}
               </Link>
@@ -78,7 +79,7 @@ export function SiteHeader() {
           <LocaleSwitch />
           <a
             href={LOGIN_URL}
-            className="hidden h-[42px] items-center rounded-[10px] px-3 text-sm font-semibold whitespace-nowrap text-ink-600 hover:bg-teal-50 hover:text-teal-900 hover:no-underline min-[1081px]:inline-flex"
+            className="hidden h-[42px] items-center rounded-[10px] px-3 text-sm font-semibold whitespace-nowrap text-ink-600 hover:bg-tint hover:text-ink-900 hover:no-underline min-[1081px]:inline-flex"
           >
             {t("login")}
           </a>
@@ -91,7 +92,7 @@ export function SiteHeader() {
             aria-controls={MENU_ID}
             aria-label={menuOpen ? t("closeMenu") : t("menu")}
             onClick={() => setMenuOpen((open) => !open)}
-            className="grid size-11 place-items-center rounded-xl text-teal-900 min-[1081px]:hidden"
+            className="grid size-11 place-items-center rounded-xl text-ink-900 min-[1081px]:hidden"
           >
             {menuOpen ? <X className="size-5" aria-hidden /> : <Menu className="size-5" aria-hidden />}
           </button>
@@ -101,9 +102,9 @@ export function SiteHeader() {
         id={MENU_ID}
         aria-label={t("mobile")}
         hidden={!menuOpen}
-        className="border-t border-line-soft bg-white px-5 pt-2 pb-[18px] min-[1081px]:hidden"
+        className="border-t border-line-soft bg-surface px-5 pt-2 pb-[18px] min-[1081px]:hidden"
       >
-        <div className="grid [&>a]:border-b [&>a]:border-[#f1f4f5] [&>a]:px-1 [&>a]:py-3.5 [&>a]:font-semibold [&>a]:text-teal-900 [&>a]:hover:no-underline">
+        <div className="grid [&>a]:border-b [&>a]:border-[#f1f4f5] dark:[&>a]:border-line [&>a]:px-1 [&>a]:py-3.5 [&>a]:font-semibold [&>a]:text-ink-900 [&>a]:hover:no-underline">
           {NAV_ITEMS.map((item) =>
             item.key === "features" ? (
               <ProductMenuMobile key={item.key} label={t(item.key)} onNavigate={() => setMenuOpen(false)} />

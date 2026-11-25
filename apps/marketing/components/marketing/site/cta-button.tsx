@@ -17,7 +17,7 @@ export const ctaButtonVariants = cva(
         teal: "bg-teal-900 text-white hover:bg-[#0b3542] hover:text-white",
         dark: "bg-teal-900 text-white hover:bg-[#0b3542] hover:text-white",
         outline:
-          "border-[1.5px] border-teal-100 bg-white text-teal-900 hover:-translate-y-px hover:border-teal-700 hover:bg-white hover:text-teal-900 hover:shadow-[0_8px_20px_rgba(13,55,67,0.08)]",
+          "border-[1.5px] border-tint-strong bg-surface text-ink-900 hover:-translate-y-px hover:border-ink-brand hover:bg-surface hover:text-ink-900 hover:shadow-[0_8px_20px_rgba(13,55,67,0.08)]",
         ghost: "border-[1.5px] border-white/30 bg-transparent text-white hover:border-white/50 hover:bg-white/10 hover:text-white",
       },
       size: {
