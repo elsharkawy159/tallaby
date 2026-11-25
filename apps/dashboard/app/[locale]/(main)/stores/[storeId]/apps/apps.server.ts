@@ -9,6 +9,7 @@ import {
   disconnectStoreIntegration,
   type StoreIntegrationSummary,
 } from "@workspace/lib/integrations/server";
+import { WHATSAPP_APP, setStoreWhatsAppEnabled } from "@workspace/lib/whatsapp/store/server";
 import { requireStore } from "@/lib/auth/require-seller.server";
 import { afterAppChange, appsAccessError, appsSaveLimiter } from "./apps-action.lib";
 import type { StoreAppsErrorKey, StoreAppsResult } from "./apps.dto";
@@ -87,6 +88,14 @@ export async function installApp(storeId: string, appKey: string): Promise<Store
     const { seller, store } = await requireStore(String(storeId), { forWrite: true });
     if (!appsSaveLimiter.check(`apps:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
 
+    // WhatsApp (F-109): free, and its on/off is store_whatsapp_settings.enabled, not an install row.
+    if (String(appKey) === WHATSAPP_APP) {
+      const turnedOn = await setStoreWhatsAppEnabled(seller.sellerId, store.id, true);
+      if (!turnedOn.success) return { success: false, error: "notAvailable" };
+      await afterAppChange(seller.sellerId, store.id, WHATSAPP_APP);
+      return { success: true, data: null };
+    }
+
     const result = await installStoreApp({
       sellerId: seller.sellerId,
       storeId: store.id,
@@ -110,6 +119,13 @@ export async function uninstallApp(storeId: string, appKey: string): Promise<Sto
   try {
     const { seller, store } = await requireStore(String(storeId), { forWrite: true });
     if (!appsSaveLimiter.check(`apps:${seller.sellerId}`)) return { success: false, error: "rateLimited" };
+
+    if (String(appKey) === WHATSAPP_APP) {
+      const turnedOff = await setStoreWhatsAppEnabled(seller.sellerId, store.id, false);
+      if (!turnedOff.success) return { success: false, error: "notAvailable" };
+      await afterAppChange(seller.sellerId, store.id, WHATSAPP_APP);
+      return { success: true, data: { endsAt: null } };
+    }
 
     const result = await uninstallStoreApp({ sellerId: seller.sellerId, storeId: store.id, appKey: String(appKey) });
     if (!result.success) return { success: false, error: "notInstalled" };

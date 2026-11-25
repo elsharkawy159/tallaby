@@ -5671,6 +5671,124 @@
       "draft": "Draft"
     }
   },
+  "whatsappApp": {
+    "free": "Free for now",
+    "readOnly": "This store is read-only right now, so these settings can't change.",
+    "switch": {
+      "title": "WhatsApp updates for this store",
+      "on": "On",
+      "off": "Off",
+      "onBody": "Customers who agreed at checkout get a WhatsApp update at each step you choose.",
+      "offBody": "Your customers get no WhatsApp updates. Turn it on to offer them the option at checkout.",
+      "from": "Messages come from Tallaby's official number and name your store.",
+      "turnedOn": "WhatsApp updates are on",
+      "turnedOff": "WhatsApp updates are off"
+    },
+    "comingSoon": {
+      "badge": "Coming soon",
+      "title": "WhatsApp updates are coming soon",
+      "body": "We're getting this ready. Once it launches you can turn it on here. Nothing changes on your store until then.",
+      "switchBody": "You can turn it on here as soon as it launches."
+    },
+    "events": {
+      "title": "Updates your customer gets",
+      "description": "Pick the steps. Each message is a fixed Tallaby text; here's a preview with your store's name.",
+      "save": "Save",
+      "saved": "Updates saved",
+      "preview": "Preview",
+      "hidePreview": "Hide preview",
+      "pausedGlobally": "Paused by Tallaby for now",
+      "previewLanguage": {
+        "ar": "In Arabic",
+        "en": "In English"
+      },
+      "items": {
+        "order_placed": {
+          "label": "Order received",
+          "description": "With buttons to confirm or cancel the order"
+        },
+        "order_confirmed": {
+          "label": "Order confirmed",
+          "description": "When you confirm the order"
+        },
+        "order_shipped": {
+          "label": "Order shipped",
+          "description": "With a link to track the parcel"
+        },
+        "order_out_for_delivery": {
+          "label": "Out for delivery",
+          "description": "When the courier sets out to deliver"
+        },
+        "order_delivered": {
+          "label": "Order delivered",
+          "description": "Once the order arrives"
+        },
+        "order_cancelled": {
+          "label": "Order cancelled",
+          "description": "When the order is cancelled"
+        }
+      }
+    },
+    "stats": {
+      "title": "Last {days} days",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "failed": "Failed",
+      "confirmed": "Confirmed by button",
+      "cancelled": "Cancelled by button",
+      "cost": "Cost"
+    },
+    "price": {
+      "free": "Free"
+    },
+    "history": {
+      "title": "Message history",
+      "description": "Every message sent to this store's customers, newest first.",
+      "reply": "Reply to customer",
+      "filters": {
+        "status": "Filter by status",
+        "event": "Filter by update",
+        "allStatuses": "All statuses",
+        "allEvents": "All updates"
+      },
+      "columns": {
+        "time": "Time",
+        "order": "Order",
+        "event": "Update",
+        "phone": "Phone",
+        "status": "Status",
+        "price": "Price"
+      },
+      "status": {
+        "queued": "Waiting",
+        "sending": "Sending",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "read": "Read",
+        "failed": "Failed",
+        "skipped": "Not sent",
+        "unknown": "Not confirmed"
+      },
+      "emptyTitle": "No messages yet",
+      "emptyBody": "Messages to your customers will show here.",
+      "emptyFilteredTitle": "No results",
+      "emptyFilteredBody": "No messages match this filter.",
+      "pagination": "Message history pages",
+      "page": "Page {page} of {pages}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "errors": {
+      "disabled": "WhatsApp updates aren't available yet.",
+      "invalid": "That choice isn't valid. Refresh the page and try again.",
+      "noEvents": "Choose at least one update.",
+      "notFound": "We couldn't find this store.",
+      "readOnly": "This store is read-only right now.",
+      "rateLimited": "Too many tries. Wait a little and try again.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
   "appCenter": {
     "title": "App Center",
     "description": "Every app and integration for this store, in one place: shipping, payments, ads tracking and tools for your product pages.",

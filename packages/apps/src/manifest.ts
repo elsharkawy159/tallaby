@@ -37,6 +37,7 @@ export const APP_IDS = [
   "google_sheets",
   "shopify_import",
   "customer_notifications",
+  "whatsapp",
   "sms",
 ] as const;
 export type AppId = (typeof APP_IDS)[number];
@@ -94,6 +95,7 @@ export const APP_SETTINGS_ROUTES = [
   "qr_codes",
   "ai_assistants",
   "product_feeds",
+  "whatsapp",
 ] as const;
 export type AppSettingsRoute = (typeof APP_SETTINGS_ROUTES)[number];
 

@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, LoaderCircle, LocateFixed, MapPin, Pencil, Plus } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Card, CardContent, CardTitle } from "@workspace/ui/components/card";
 import {
   Dialog,
@@ -36,12 +37,15 @@ export function SimpleCheckoutForm({
   address,
   saved,
   email,
+  whatsapp,
   children,
 }: {
   address: ReturnType<typeof useCheckoutAddress>;
   saved: SavedCheckoutAddress[];
   /** Store websites, for a customer with no real email: the order's confirmation goes there. */
   email?: { value: string; invalid: boolean; onChange: (value: string) => void } | null;
+  /** Store websites where WhatsApp is live (F-109): the unticked opt-in under the phone. Absent everywhere else. */
+  whatsapp?: { checked: boolean; onChange: (checked: boolean) => void } | null;
   children?: ReactNode;
 }) {
   const t = useTranslations("checkout.simpleForm");
@@ -140,6 +144,20 @@ export function SimpleCheckoutForm({
             )}
           </div>
         </div>
+
+        {whatsapp && (
+          <div className="-mt-1 flex items-start gap-2.5">
+            <Checkbox
+              id="checkout-whatsapp"
+              className="mt-0.5"
+              checked={whatsapp.checked}
+              onCheckedChange={(value) => whatsapp.onChange(value === true)}
+            />
+            <Label htmlFor="checkout-whatsapp" className="text-sm font-normal leading-snug text-gray-700">
+              {t("whatsappOptIn")}
+            </Label>
+          </div>
+        )}
 
         {email && (
           <div className="grid gap-1.5">

@@ -74,6 +74,12 @@ import { isStoreOrderAllowed, recordStoreOrder, storeOrderRateKeys } from "@/lib
 import type { OrderRateKeys } from "@/lib/order-rate-limit.lib";
 import { activeMinOrderPiastres, checkMinOrder, itemsSubtotalPiastres, piastresToEgpText } from "@workspace/lib/stores/min-order";
 import { CAMPAIGN_COOKIE, decodeCampaignCookie } from "@workspace/lib/campaigns/utm";
+import {
+  isWhatsAppLiveForStore,
+  recordWhatsAppConsent,
+  whatsAppConsentMetadata,
+  type WhatsAppOrderConsent,
+} from "@workspace/lib/whatsapp/consent/server";
 
 /** placeOrderFromCart's store-shipping refusals → checkout message keys. */
 const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod" | "orderNotAccepted" | "paymentNotInCurrency"> = {
@@ -109,6 +115,8 @@ export async function createOrder(data: {
   checkoutAnswers?: { email?: string; secondPhone?: string; customAnswer?: string };
   /** Optional, for this order's updates (F-64). Only kept where the store offers the field. */
   notificationEmail?: string;
+  /** Store websites (F-109): the shopper ticked the WhatsApp box. Kept only while WhatsApp is live for the host's store. */
+  whatsappOptIn?: boolean;
 }) {
   try {
     const userId = await getCurrentUserId();
@@ -163,6 +171,8 @@ export async function createOrder(data: {
     // order notes. Without saved settings the notes pass through unchanged.
     let notes = data.notes;
     let notificationEmail: string | null = null;
+    // Store websites (F-109): the WhatsApp consent, built on the server; the client only sends the tick.
+    let whatsappConsent: WhatsAppOrderConsent | null = null;
     // Store websites: orders per IP, phone and user (ROADMAP.md F-02e).
     let orderRateKeys: OrderRateKeys | null = null;
     if (storefrontPayments) {
@@ -230,7 +240,17 @@ export async function createOrder(data: {
         }
         notificationEmail = email.email;
       }
+
+      // Opt-in only, and only while WhatsApp is live for the host's store (the box isn't shown otherwise).
+      if (rateScope && data.whatsappOptIn === true && (await isWhatsAppLiveForStore(rateScope.storeId))) {
+        whatsappConsent = whatsAppConsentMetadata(await getLocale());
+      }
     }
+
+    const orderMetadata = {
+      ...(notificationEmail && { notificationEmail }),
+      ...(whatsappConsent && { whatsapp: whatsappConsent }),
+    };
 
     const result = await placeOrderFromCart({
       userId,
@@ -245,7 +265,7 @@ export async function createOrder(data: {
       orderSource: storefrontPayments ? "storefront" : "website",
       locale: "en",
       storefrontPayments: storefrontPayments ?? undefined,
-      ...(notificationEmail && { orderMetadata: { notificationEmail } }),
+      ...(Object.keys(orderMetadata).length > 0 && { orderMetadata }),
     });
 
     if (!result.success) {
@@ -286,6 +306,12 @@ export async function createOrder(data: {
 
     const { order, orderItems: createdOrderItems, inventoryItems } = result.data;
     recordStoreOrder(orderRateKeys);
+
+    // F-109: the ticked consent on the shopper's phone (best-effort, never throws). The order's own
+    // `metadata.whatsapp.at` is the consent the first message is checked against; this row keeps it per phone.
+    if (whatsappConsent && order.storeId) {
+      await recordWhatsAppConsent({ orderId: order.id, storeId: order.storeId });
+    }
 
     await applyInvalidation(invalidateProductInventory(inventoryItems), {
       from: "ecommerce",

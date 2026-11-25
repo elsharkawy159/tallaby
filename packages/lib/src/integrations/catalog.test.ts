@@ -95,6 +95,8 @@ describe("store apps catalog", () => {
       { key: "google_sheets", group: "data", kind: "account", provider: "google_sheets", pricing: FREE },
       { key: "shopify_import", group: "data", kind: "import", provider: "shopify_import", pricing: FREE },
       { key: "customer_notifications", group: "messaging", kind: "notifications", live: true, pricing: { model: "per_order", usdCents: 1 } },
+      // F-109: free WhatsApp order updates; on/off lives in store_whatsapp_settings.
+      { key: "whatsapp", group: "messaging", kind: "notifications", live: true, pricing: FREE },
       { key: "sms", group: "messaging", kind: "notifications", requestable: true, pricing: FREE },
     ];
     expect(STORE_APPS.map(({ slug: _slug, ...rest }) => rest)).toEqual(before);

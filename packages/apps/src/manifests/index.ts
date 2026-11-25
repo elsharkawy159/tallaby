@@ -30,6 +30,7 @@ import tabby from "./tabby";
 import tallabyPay from "./tallaby-pay";
 import tiktokPixel from "./tiktok-pixel";
 import wassalha from "./wassalha";
+import whatsapp from "./whatsapp";
 
 export const MANIFESTS = [
   aiAssistants,
@@ -60,5 +61,6 @@ export const MANIFESTS = [
   googleSheets,
   shopifyImport,
   customerNotifications,
+  whatsapp,
   sms,
 ] as const;

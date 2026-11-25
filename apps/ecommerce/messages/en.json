@@ -262,6 +262,7 @@
       "governorateHint": "We use it to work out your delivery price.",
       "email": "Email (optional)",
       "emailHint": "Only for updates about this order.",
+      "whatsappOptIn": "Send me order updates on WhatsApp from Tallaby (طلبي)",
       "editAddress": "Edit Address",
       "chooseAddress": "Choose an address",
       "newAddress": "Add a new address",

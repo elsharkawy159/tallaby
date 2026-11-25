@@ -31,6 +31,7 @@ import { getCheckoutShipping } from "@/lib/shipping.server";
 import { getStorefrontShippingContext } from "@workspace/lib/stores/server";
 import { checkoutCountries, isAddressInCountries } from "@workspace/lib/shipping/store-quote";
 import { getStorefrontCheckoutForm, getStorefrontMinOrder } from "@/lib/storefront-checkout-form.server";
+import { isWhatsAppLiveForStore } from "@workspace/lib/whatsapp/consent/server";
 import {
   buildSummaryWithCoupon,
   type CheckoutStoreShipping,
@@ -329,6 +330,9 @@ export async function getCheckoutData() {
     // store's own checkout form already asks for one.
     const emailField = storePayments && scope ? await getOrderEmailField(userId, scope.storeId) : null;
     const formAsksEmail = storeCheckoutForm ? visibleCheckoutFields(storeCheckoutForm).some((f) => f.key === "email") : false;
+    // Store websites: the WhatsApp opt-in box (F-109), only while WhatsApp is live for the host's store.
+    // Uncached; any read error is false, so the checkout never breaks on it.
+    const whatsappOptIn = storePayments && scope ? await isWhatsAppLiveForStore(scope.storeId) : false;
 
     return {
       success: true,
@@ -360,6 +364,7 @@ export async function getCheckoutData() {
         currency: scope?.currency ?? "EGP",
         currencyLabel: scope ? (await getStoreCurrencyLabel(scope.storeId)) : "EGP",
         orderEmail: emailField?.show && !formAsksEmail ? { lastEmail: emailField.lastEmail } : null,
+        whatsappOptIn,
       },
     };
   } catch (error) {

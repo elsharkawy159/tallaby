@@ -7,6 +7,7 @@ import {
   siShopify,
   siSnapchat,
   siTiktok,
+  siWhatsapp,
   type SimpleIcon,
 } from "simple-icons";
 import { APPS, type AppId } from "@workspace/apps";
@@ -71,6 +72,7 @@ const RULER_ICON = {
 const GLYPHS: Record<AppId, Pick<SimpleIcon, "path">> = {
   ai_assistants: SPARKLES_ICON,
   customer_notifications: BELL_ICON,
+  whatsapp: siWhatsapp,
   sms: MESSAGE_ICON,
   size_chart: RULER_ICON,
   product_feeds: FEED_ICON,

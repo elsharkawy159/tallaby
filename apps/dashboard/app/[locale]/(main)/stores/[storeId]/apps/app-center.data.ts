@@ -4,6 +4,7 @@ import { listStoreAppInstalls } from "@workspace/lib/billing/apps";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { listStoreAppRequests, listStoreIntegrations, type StoreIntegrationSummary } from "@workspace/lib/integrations/server";
 import type { StoreRow } from "@workspace/lib/stores/server";
+import { WHATSAPP_APP, getWhatsAppGlobalSettings, isStoreWhatsAppOn } from "@workspace/lib/whatsapp/store/server";
 import { isGoogleSheetsConfigured } from "@/lib/integrations/google-oauth.server";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import type { AppCenterStoreState } from "./app-center.lib";
@@ -15,20 +16,28 @@ import type { AppCenterStoreState } from "./app-center.lib";
  * per store and changes on every connect (rule 8).
  */
 export async function loadAppCenterState(store: StoreRow): Promise<AppCenterStoreState & { summaries: StoreIntegrationSummary[] }> {
-  const [integrations, installs, requests, billing] = await Promise.all([
+  const [integrations, installs, requests, billing, whatsappOn, whatsappGlobal] = await Promise.all([
     listStoreIntegrations(store.sellerId, store.id),
     listStoreAppInstalls(store.sellerId, store.id),
     listStoreAppRequests(store.sellerId, store.id),
     getBillingState(),
+    // WhatsApp (F-109) has no install row: store_whatsapp_settings.enabled is its installed state.
+    // A read failure (0180 not applied yet) shows it as not installed instead of breaking the App Center.
+    isStoreWhatsAppOn(store.sellerId, store.id).catch(() => false),
+    getWhatsAppGlobalSettings(),
   ]);
   if (!integrations) notFound();
   return {
     summaries: integrations,
     integrations: integrations.map(({ provider, status }) => ({ provider, status })),
-    installs: installs.map(({ appKey, cancelAtPeriodEnd }) => ({ appKey, cancelAtPeriodEnd })),
+    installs: [
+      ...installs.filter(({ appKey }) => appKey !== WHATSAPP_APP).map(({ appKey, cancelAtPeriodEnd }) => ({ appKey, cancelAtPeriodEnd })),
+      ...(whatsappOn ? [{ appKey: WHATSAPP_APP, cancelAtPeriodEnd: false }] : []),
+    ],
     requests,
     googleSheetsEnabled: isGoogleSheetsConfigured(),
     usdLive: billing.usdLive,
+    whatsappLive: whatsappGlobal.enabled,
   };
 }
 

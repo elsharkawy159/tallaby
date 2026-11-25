@@ -135,6 +135,9 @@ export const CheckoutData = ({
   const orderEmailField: { lastEmail: string | null } | null = checkoutData.orderEmail ?? null;
   const [orderEmail, setOrderEmail] = useState<string>(orderEmailField?.lastEmail ?? "");
   const [orderEmailInvalid, setOrderEmailInvalid] = useState(false);
+  // Store websites where WhatsApp is live (F-109): unticked until the shopper ticks it.
+  const whatsappOffered = checkoutData.whatsappOptIn === true;
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   // Bumped when the saved address or the cart changes, to price the order again.
   const [priceRevision, setPriceRevision] = useState(0);
 
@@ -593,6 +596,7 @@ export const CheckoutData = ({
           giftMessage: data.giftMessage,
           ...(storeCheckoutForm && { checkoutAnswers }),
           ...(orderEmailField && { notificationEmail: orderEmail }),
+          ...(whatsappOffered && whatsappOptIn && { whatsappOptIn: true }),
         });
 
         if (result.success) {
@@ -724,6 +728,7 @@ export const CheckoutData = ({
                     }
                   : null
               }
+              whatsapp={whatsappOffered ? { checked: whatsappOptIn, onChange: setWhatsappOptIn } : null}
             >
               {!storeCheckoutForm && noteField}
             </SimpleCheckoutForm>

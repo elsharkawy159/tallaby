@@ -32,6 +32,8 @@ export type AppCenterStoreState = {
   googleSheetsEnabled: boolean;
   /** The USD switch (0136): a paid app can't be bought before it. */
   usdLive: boolean;
+  /** The admin's WhatsApp switch (F-109, 0180). Off or unknown: the WhatsApp app is "Coming soon". */
+  whatsappLive?: boolean;
 };
 
 /** The one badge a card shows, most important first. */
@@ -70,7 +72,11 @@ export function appState(app: StoreApp, store: AppCenterStoreState): AppState {
   const row = provider ? store.integrations.find((item) => item.provider === provider) : undefined;
   const install = store.installs.find((item) => item.appKey === app.key);
   const request = store.requests.find((item) => item.appKey === app.key);
-  const available = isStoreAppLive(app) && (app.key !== "google_sheets" || store.googleSheetsEnabled);
+  const available =
+    isStoreAppLive(app) &&
+    (app.key !== "google_sheets" || store.googleSheetsEnabled) &&
+    // WhatsApp ships dark (owner, 2026-11-26): coming soon until the admin turns it on.
+    (app.key !== "whatsapp" || store.whatsappLive === true);
   // A turned-off Tallaby Pay keeps its row as `disconnected` (F-100), so in-flight orders still settle.
   const connected = Boolean(row) && !(row?.provider === "tallaby_pay" && row.status === "disconnected");
   const failing = row?.status === "error";

@@ -12,6 +12,7 @@ import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/
 import { TALLABY_PAY_DEFAULT_SETTINGS } from "@workspace/lib/tallaby-pay";
 import { SIZE_CHART_APP, listStoreSizeCharts } from "@workspace/lib/size-charts/server";
 import { storeUrl } from "@workspace/lib/storefront";
+import { getStoreWhatsAppOverview, listStoreWhatsAppMessages } from "@workspace/lib/whatsapp/store/server";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { taxonomyInStore } from "@workspace/lib/stores/scope/server";
@@ -30,6 +31,7 @@ import { IntegrationSettings } from "./integration-settings.client";
 import { StoreQrCodesScreen } from "./qr-codes/qr-codes.data";
 import { SizeChartApp } from "./size-chart/size-chart.client";
 import { WassalhaApp } from "./wassalha/wassalha.client";
+import { WhatsAppApp } from "./whatsapp/whatsapp.client";
 
 /**
  * Every `settingsRoute` key of the registry (@workspace/apps) mapped to the
@@ -158,5 +160,15 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
     return <ProductFeeds urls={storeFeedUrls(storeUrl(store.subdomain, customDomain), store.supportedLocales)} published={published} />;
   },
   qr_codes: async ({ store }) => <StoreQrCodesScreen store={store} />,
+
+  // F-109: on/off, chosen events with previews, 30-day numbers and history. Read-only "Coming soon" while the
+  // admin has WhatsApp off; every read falls back to that when 0180 is missing (shipped dark, owner 2026-11-26).
+  whatsapp: async ({ store, readOnly }) => {
+    const [overview, messages] = await Promise.all([
+      getStoreWhatsAppOverview(store.sellerId, store.id),
+      listStoreWhatsAppMessages(store.sellerId, store.id, { page: 1 }),
+    ]);
+    return <WhatsAppApp storeId={store.id} storeName={store.name} readOnly={readOnly} overview={overview} initialMessages={messages} />;
+  },
 };
 

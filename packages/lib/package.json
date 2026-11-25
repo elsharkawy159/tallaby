@@ -405,6 +405,18 @@
       "types": "./src/orders/customer-order-actions.server.ts",
       "default": "./src/orders/customer-order-actions.server.ts"
     },
+    "./whatsapp/events": {
+      "types": "./src/whatsapp/events.lib.ts",
+      "default": "./src/whatsapp/events.lib.ts"
+    },
+    "./whatsapp/store/server": {
+      "types": "./src/whatsapp/store.server.ts",
+      "default": "./src/whatsapp/store.server.ts"
+    },
+    "./whatsapp/consent/server": {
+      "types": "./src/whatsapp/consent.server.ts",
+      "default": "./src/whatsapp/consent.server.ts"
+    },
     "./products/trash": {
       "types": "./src/products/trash.lib.ts",
       "default": "./src/products/trash.lib.ts"
