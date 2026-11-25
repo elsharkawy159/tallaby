@@ -11,7 +11,7 @@ import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { SetupDismissible } from "./setup-dismiss.client";
 import { SetupStepsToggle } from "./setup-steps-toggle.client";
 
-import { buildHomeSteps, isSetupDone, type HomeStepKey } from "./setup-checklist.lib";
+import { buildHomeSteps, homeStepBlocker, isSetupDone, type HomeStepKey } from "./setup-checklist.lib";
 
 export const HOME_STEP_ICONS: Record<HomeStepKey, LucideIcon> = {
   product: Package,
@@ -123,6 +123,7 @@ export async function SetupChecklistData() {
             {TASKS.map((task, i) => {
               const done = task.done;
               const next = task.key === nextKey;
+              const blocker = homeStepBlocker(TASKS, task.key, snapshot.setup);
               return (
                 <li
                   key={task.key}
@@ -178,6 +179,17 @@ export async function SetupChecklistData() {
                         <Check className="size-3.5" aria-hidden />
                         {t("stepDone")}
                       </span>
+                    ) : blocker ? (
+                      // Waits for an earlier step (owner, 2026-11-25): no link, and what to do first.
+                      <div className="flex flex-col gap-1.5">
+                        <span
+                          aria-disabled
+                          className="inline-flex h-[34px] cursor-not-allowed items-center self-start rounded-full border border-white/10 px-3 text-[12.5px] font-bold text-white/45 max-[600px]:h-10"
+                        >
+                          {t(`tasks.${task.key}.cta`)}
+                        </span>
+                        <small className="text-pretty text-xs text-[#a9c3c9]">{t(`locked.${blocker}`)}</small>
+                      </div>
                     ) : next ? (
                       <SellerButton asChild size="sm">
                         <Link href={task.href}>

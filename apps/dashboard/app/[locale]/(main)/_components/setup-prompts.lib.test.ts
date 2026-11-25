@@ -15,7 +15,7 @@ const STORE = "33333333-3333-4333-8333-333333333333";
 const none: SetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false };
 const all: SetupFlags = { template: true, brand: true, product: true, publish: true, shipping: true, payments: true };
 const fresh = parseSetupPromptState(null);
-const withToast = (over: Partial<SetupPromptState> = {}): SetupPromptState => ({ ...fresh, toastStep: "template", ...over });
+const withToast = (over: Partial<SetupPromptState> = {}): SetupPromptState => ({ ...fresh, toastStep: "product", ...over });
 
 describe("parseSetupPromptState", () => {
   it("starts empty and drops anything unknown", () => {
@@ -40,7 +40,7 @@ describe("parseSetupPromptEvent", () => {
 
 describe("applySetupPromptEvent", () => {
   it("keeps the first toast step and adds a dismissal once", () => {
-    expect(applySetupPromptEvent(withToast(), { type: "toast_shown", step: "brand" }).toastStep).toBe("template");
+    expect(applySetupPromptEvent(withToast(), { type: "toast_shown", step: "brand" }).toastStep).toBe("product");
     const once = applySetupPromptEvent(fresh, { type: "dismissed", step: "brand" });
     expect(applySetupPromptEvent(once, { type: "dismissed", step: "brand" }).dismissed).toEqual(["brand"]);
   });
@@ -59,8 +59,8 @@ describe("recordCompletedSteps", () => {
 });
 
 describe("nextPromptStep", () => {
-  it("follows the owner's order: template, brand, product, shipping", () => {
-    const keys = ["template", "brand", "product", "shipping"] as const;
+  it("follows the owner's order: product, template, brand, shipping (2026-11-25)", () => {
+    const keys = ["product", "template", "brand", "shipping"] as const;
     const order = keys.map((_, i) => {
       const flags = { ...none };
       for (const key of keys.slice(0, i)) flags[key] = true;
@@ -80,7 +80,7 @@ describe("nextPromptStep", () => {
 
 describe("decideSetupPrompt", () => {
   it("shows the toast first, pointing to the current step", () => {
-    expect(decideSetupPrompt({ ...none, template: true }, STORE, fresh)).toEqual({
+    expect(decideSetupPrompt({ ...none, product: true, template: true }, STORE, fresh)).toEqual({
       prompt: { kind: "toast", key: "brand", href: `/stores/${STORE}/website/design` },
       finished: false,
     });
@@ -91,7 +91,7 @@ describe("decideSetupPrompt", () => {
   });
 
   it("shows a banner for the next step once a step is completed", () => {
-    expect(decideSetupPrompt({ ...none, template: true }, STORE, withToast()).prompt).toEqual({
+    expect(decideSetupPrompt({ ...none, product: true, template: true }, STORE, withToast()).prompt).toEqual({
       kind: "banner",
       key: "brand",
       href: `/stores/${STORE}/website/design`,
@@ -100,8 +100,8 @@ describe("decideSetupPrompt", () => {
 
   it("keeps a dismissed banner away but keeps watching for the next step", () => {
     const state = withToast({ dismissed: ["brand"] });
-    expect(decideSetupPrompt({ ...none, template: true }, STORE, state)).toEqual({ prompt: null, finished: false });
-    expect(decideSetupPrompt({ ...none, template: true, brand: true }, STORE, state).prompt?.key).toBe("product");
+    expect(decideSetupPrompt({ ...none, product: true, template: true }, STORE, state)).toEqual({ prompt: null, finished: false });
+    expect(decideSetupPrompt({ ...none, product: true, template: true, brand: true }, STORE, state).prompt?.key).toBe("shipping");
   });
 
   it("finishes when the guide is dismissed or every step is done", () => {

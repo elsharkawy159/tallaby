@@ -139,4 +139,10 @@ describe("v2 build steps", () => {
     expect(codes.map((issue) => issue.code)).toEqual(["publishFailed", "productsWithoutPhoto", "productsWithoutStock", "sectionsHidden"]);
     expect(codes.find((issue) => issue.code === "productsWithoutPhoto")?.params).toEqual({ count: 2 });
   });
+
+  it("asks for a live product when the site waited for one (owner, 2026-11-25)", () => {
+    const issues = reviewIssuesV2(snapshot({ published: false, publishError: "no_active_product" }));
+    expect(issues.map((issue) => issue.code)).toEqual(["publishNeedsProduct", "addFirstProduct"]);
+    expect(issues[0]?.href).toBe("/stores/s1/products");
+  });
 });

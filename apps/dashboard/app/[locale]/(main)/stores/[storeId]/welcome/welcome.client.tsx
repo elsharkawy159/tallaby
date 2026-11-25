@@ -22,6 +22,7 @@ import {
   welcomeLiveState,
   welcomeProductHref,
   welcomeProgress,
+  welcomeStepBlocker,
   welcomeSteps,
   welcomeThemeNeedsConfirm,
   type WelcomeStepKey,
@@ -31,7 +32,9 @@ import type { WelcomeData } from "./welcome.types";
 /**
  * The welcome page (docs/plans/seller-welcome.md, owner 2026-11-17): one flat
  * list of at most three steps with one counter, one step open at a time (the
- * first unfinished one on arrival, or the one a `#hash` names), then the
+ * first unfinished one on arrival, or the one a `#hash` names), in order: a
+ * step waiting for an earlier one is greyed with what to do first and can't
+ * be opened (owner, 2026-11-25). Then the
  * "store is live" card and the top-up line. Every save uses an existing
  * action, then `router.refresh()` re-reads the done-states.
  */
@@ -104,32 +107,36 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
 
       <SellerCard className="overflow-hidden py-2">
         <ol className="flex flex-col">
-          {steps.map((step, index) => (
-            <WelcomeStep
-              key={step.key}
-              stepKey={step.key}
-              number={index + 1}
-              done={step.done}
-              current={step.key === next}
-              open={step.key === open}
-              last={index === steps.length - 1}
-              summary={step.key === "shipping" ? t("steps.shipping.zonesSummary", { count: data.delivery.shipping.zones.length }) : t(`steps.${step.key}.doneNote`)}
-              onToggle={() => setOpen((current) => (current === step.key ? "" : step.key))}
-            >
-              {step.key === "theme" && (
-                <WelcomeThemeStep
-                  storeId={data.storeId}
-                  done={step.done}
-                  needsConfirm={welcomeThemeNeedsConfirm({ templateChosen: data.flags.template, siteStatus: data.share.siteStatus })}
-                  disabled={disabled}
-                  fontClassName={fontClassName}
-                  industry={<WelcomeIndustryLine storeId={data.storeId} industry={data.industry} disabled={disabled} />}
-                />
-              )}
-              {step.key === "product" && <ProductStep data={data} done={step.done} disabled={disabled} />}
-              {step.key === "shipping" && <WelcomeShippingStep storeId={data.storeId} delivery={data.delivery} disabled={disabled} />}
-            </WelcomeStep>
-          ))}
+          {steps.map((step, index) => {
+            const blocker = welcomeStepBlocker(steps, step.key);
+            return (
+              <WelcomeStep
+                key={step.key}
+                stepKey={step.key}
+                number={index + 1}
+                done={step.done}
+                current={step.key === next}
+                open={!blocker && step.key === open}
+                locked={blocker ? t(`locked.${blocker}`) : null}
+                last={index === steps.length - 1}
+                summary={step.key === "shipping" ? t("steps.shipping.zonesSummary", { count: data.delivery.shipping.zones.length }) : t(`steps.${step.key}.doneNote`)}
+                onToggle={() => setOpen((current) => (current === step.key ? "" : step.key))}
+              >
+                {step.key === "theme" && (
+                  <WelcomeThemeStep
+                    storeId={data.storeId}
+                    done={step.done}
+                    needsConfirm={welcomeThemeNeedsConfirm({ templateChosen: data.flags.template, siteStatus: data.share.siteStatus })}
+                    disabled={disabled}
+                    fontClassName={fontClassName}
+                    industry={<WelcomeIndustryLine storeId={data.storeId} industry={data.industry} disabled={disabled} />}
+                  />
+                )}
+                {step.key === "product" && <ProductStep data={data} done={step.done} disabled={disabled} />}
+                {step.key === "shipping" && <WelcomeShippingStep storeId={data.storeId} delivery={data.delivery} disabled={disabled} />}
+              </WelcomeStep>
+            );
+          })}
         </ol>
       </SellerCard>
 
@@ -144,7 +151,8 @@ export function StoreWelcome({ data, fontClassName }: { data: WelcomeData; fontC
 /**
  * One step of the list: a numbered marker on a line and a header that opens
  * and closes it. Closed, a done step shows its one-line summary; an open one
- * shows what to do.
+ * shows what to do. A locked step (`locked`: what to do first) is greyed and
+ * its header can't be pressed.
  */
 function WelcomeStep({
   stepKey,
@@ -152,6 +160,7 @@ function WelcomeStep({
   done,
   current,
   open,
+  locked,
   last,
   summary,
   onToggle,
@@ -162,6 +171,7 @@ function WelcomeStep({
   done: boolean;
   current: boolean;
   open: boolean;
+  locked: string | null;
   last: boolean;
   summary: string;
   onToggle: () => void;
@@ -188,18 +198,22 @@ function WelcomeStep({
           <button
             type="button"
             onClick={onToggle}
-            aria-expanded={open}
+            disabled={Boolean(locked)}
+            aria-expanded={locked ? undefined : open}
             aria-controls={open ? panelId : undefined}
-            className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[14px] py-2 text-start outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[14px] py-2 text-start outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
           >
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-[15px] font-bold leading-normal text-(--s-ink)">
+              <span className={cn("text-[15px] font-bold leading-normal text-(--s-ink)", locked && "text-(--s-subtle)")}>
                 {t(`steps.${stepKey}.title`)}
                 {done && <span className="sr-only"> ({t("done")})</span>}
               </span>
+              {locked && <span className="text-[13px] font-normal text-(--s-subtle)">{locked}</span>}
               {!open && done && <span className="truncate text-[13px] font-normal text-(--s-muted)">{summary}</span>}
             </span>
-            <ChevronDown className={cn("size-5 shrink-0 text-(--s-subtle) transition-transform duration-200 motion-reduce:transition-none", open && "rotate-180")} aria-hidden />
+            {!locked && (
+              <ChevronDown className={cn("size-5 shrink-0 text-(--s-subtle) transition-transform duration-200 motion-reduce:transition-none", open && "rotate-180")} aria-hidden />
+            )}
           </button>
         </h2>
         {open && (

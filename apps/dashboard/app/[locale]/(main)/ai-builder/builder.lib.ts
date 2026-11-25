@@ -512,7 +512,14 @@ export function reviewIssuesV2(snapshot: ReviewSnapshotV2): BuilderIssue[] {
   const store = `/stores/${storeId}`;
   const issues: BuilderIssue[] = [];
 
-  if (!snapshot.published) issues.push({ code: "publishFailed", href: `${store}/website` });
+  // No live product: the site waits for one (owner, 2026-11-25), so the fix is adding a product.
+  if (!snapshot.published) {
+    issues.push(
+      snapshot.publishError === "no_active_product"
+        ? { code: "publishNeedsProduct", href: `${store}/products` }
+        : { code: "publishFailed", href: `${store}/website` },
+    );
+  }
 
   const noPrice = state.fileRows.filter((row) => row.price === null).length;
   if (!built.length && !noPrice) issues.push({ code: "addFirstProduct", href: `${store}/products/add` });

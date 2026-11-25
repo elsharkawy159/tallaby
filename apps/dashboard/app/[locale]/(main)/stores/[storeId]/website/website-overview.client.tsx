@@ -57,6 +57,7 @@ import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-butto
 import { discardDraft, publish, restoreRevision, unpublish } from "@/app/[locale]/(builder)/stores/[storeId]/editor/server/editor.server";
 import { useStorePreview } from "@/app/[locale]/(builder)/stores/[storeId]/editor/use-store-preview.client";
 import { PublishCelebration, type LiveSite } from "@/app/[locale]/(main)/_components/publish-celebration.client";
+import { usePublishNeedsProductToast } from "@/lib/stores/publish-needs-product.client";
 import type { WebsiteOverviewData } from "./website.types";
 
 type ManageLink = { key: string; path: string; icon: LucideIcon };
@@ -105,6 +106,7 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
   const tl = useTranslations("settings.storeLink");
   const format = useFormatter();
   const router = useRouter();
+  const needsProduct = usePublishNeedsProductToast(data.storeId);
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -138,7 +140,8 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
           else if (result.error === "topUpRequired") {
             // Offline for billing: the wallet page shows the message (docs/seller-top-up-rules.md §4).
             router.push(TOP_UP_TO_GO_ONLINE_HREF);
-          } else toast.error(te(`errors.${result.error}` as "errors.generic"));
+          } else if (result.error === "noActiveProduct") needsProduct();
+          else toast.error(te(`errors.${result.error}` as "errors.generic"));
         }
       } catch {
         onFail?.();

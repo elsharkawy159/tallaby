@@ -1,16 +1,18 @@
 /**
  * The home "get your store ready" setup (PLAN.md §6.6, P3-04; ROADMAP.md F-86),
  * computed from data, never stored. Four steps, all required (owner,
- * 2026-11-10): add a product, choose the store design (template and brand
- * together), set up payments, set up shipping. Store steps belong to the store
- * selected in the sidebar.
+ * 2026-11-10), in this order (owner, 2026-11-25): add a product, choose the
+ * store design (template and brand together), set up shipping, set up
+ * payments. A step opens only once the steps before it are done
+ * (`stepBlocker`); a done step always keeps its link. Store steps belong to
+ * the store selected in the sidebar.
  *
  * Until those are done and the seller has no real order yet, the home shows
  * only the setup cards, no metrics (`showSetupOnlyHome`).
  *
  * The guided prompts (setup-prompts.lib.ts) still walk the older, finer step
- * list (`buildSetupTasks`: template, brand, product, shipping), so their saved
- * progress keeps its meaning.
+ * list (`buildSetupTasks`: product, template, brand, shipping), keyed as
+ * before, so their saved progress keeps its meaning.
  */
 
 import { STORE_SETUP_STEP_DONE, type StoreSetupFlags } from "@workspace/lib/sellers";
@@ -27,7 +29,7 @@ export type SetupFlags = StoreSetupFlags;
 // Home setup steps (the setup-only home and the checklist card).
 // ---------------------------------------------------------------------------
 
-export type HomeStepKey = "product" | "design" | "payments" | "shipping";
+export type HomeStepKey = "product" | "design" | "shipping" | "payments";
 
 export type HomeStep = { key: HomeStepKey; href: string; done: boolean };
 
@@ -41,8 +43,8 @@ const HOME_STEPS: { key: HomeStepKey; done: (f: SetupFlags) => boolean; href: (s
     // No template yet: the gallery first; then the brand (logo, colours, fonts).
     href: (id, f) => (f.template ? `/stores/${id}/website/design` : `/stores/${id}/website/templates`),
   },
-  { key: "payments", done: STORE_SETUP_STEP_DONE.payments, href: (id) => `/stores/${id}/settings/payments` },
   { key: "shipping", done: STORE_SETUP_STEP_DONE.shipping, href: (id) => `/stores/${id}/shipping` },
+  { key: "payments", done: STORE_SETUP_STEP_DONE.payments, href: (id) => `/stores/${id}/settings/payments` },
 ];
 
 export function buildHomeSteps(flags: SetupFlags, storeId: string | null): HomeStep[] {
@@ -51,6 +53,31 @@ export function buildHomeSteps(flags: SetupFlags, storeId: string | null): HomeS
     href: step.href(storeId ?? "", flags),
     done: step.done(flags),
   }));
+}
+
+/**
+ * Steps go in order (owner, 2026-11-25): a step that isn't done waits for the
+ * first earlier step that isn't done, returned here so the page can say what
+ * to do first. Null when the step can be started, and always for a done step,
+ * so a seller who did steps out of order is never stuck. Shared with the
+ * store welcome page.
+ */
+export function stepBlocker<K extends string>(steps: readonly { key: K; done: boolean }[], key: K): K | null {
+  const index = steps.findIndex((step) => step.key === key);
+  if (index < 0 || steps[index]!.done) return null;
+  return steps.slice(0, index).find((step) => !step.done)?.key ?? null;
+}
+
+/**
+ * `stepBlocker` for the home steps: the steps after the design wait only for a
+ * chosen template (the user's flow is product > theme > shipping, owner
+ * 2026-11-25), not for the brand that also counts toward the design step.
+ */
+export function homeStepBlocker(steps: readonly HomeStep[], key: HomeStepKey, flags: SetupFlags): HomeStepKey | null {
+  return stepBlocker(
+    steps.map((step) => (step.key === "design" && step.key !== key ? { ...step, done: step.done || flags.template } : step)),
+    key,
+  );
 }
 
 /** Every step is done: the store is ready for its first order, and the guide can go away. */
@@ -68,7 +95,7 @@ export function showSetupOnlyHome(input: { flags: SetupFlags; storeId: string | 
 }
 
 // ---------------------------------------------------------------------------
-// Prompt steps (setup-prompts.lib.ts). Unchanged order and keys.
+// Prompt steps (setup-prompts.lib.ts). Same keys; the product leads (owner, 2026-11-25).
 // ---------------------------------------------------------------------------
 
 export type SetupKey = "template" | "brand" | "product" | "publish" | "shipping";
@@ -81,9 +108,9 @@ const STORE_STEPS = new Set<SetupKey>(["template", "brand", "shipping"]);
 const OPTIONAL_STEPS = new Set<SetupKey>(["shipping"]);
 
 const STEPS: { key: SetupKey; href: (storeId: string) => string }[] = [
+  { key: "product", href: (id) => storeProductsHref(id || null, "/add") },
   { key: "template", href: (id) => `/stores/${id}/website/templates` },
   { key: "brand", href: (id) => `/stores/${id}/website/design` },
-  { key: "product", href: (id) => storeProductsHref(id || null, "/add") },
   { key: "shipping", href: (id) => `/stores/${id}/shipping` },
 ];
 

@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { publish, saveDesignSystem, saveDraft } from "@/app/[locale]/(builder)/stores/[storeId]/editor/server/editor.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
+import { usePublishNeedsProductToast } from "@/lib/stores/publish-needs-product.client";
 import { saveStoreGeneral } from "../../settings/store-settings.server";
 import { SitePreview, type PreviewCatalog, type PreviewDevice } from "../_components/site-preview.client";
 import {
@@ -106,6 +107,7 @@ export function DesignSystemEditor({
 }) {
   const t = useTranslations("websiteDesign");
   const router = useRouter();
+  const needsProduct = usePublishNeedsProductToast(storeId);
   const [tab, setTab] = useState<SectionId>("brand");
   const [ds, setDs] = useState(initial.designSystem);
   const [savedDs, setSavedDs] = useState(JSON.stringify(initial.designSystem));
@@ -178,7 +180,8 @@ export function DesignSystemEditor({
       } else if (result.error === "topUpRequired") {
         // Offline for billing: the wallet page shows the message (docs/seller-top-up-rules.md §4).
         router.push(TOP_UP_TO_GO_ONLINE_HREF);
-      } else toast.error(t(`errors.${result.error}` as never));
+      } else if (result.error === "noActiveProduct") needsProduct();
+      else toast.error(t(`errors.${result.error}` as never));
     });
 
   const onSaveBrand = () =>

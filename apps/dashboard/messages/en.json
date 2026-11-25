@@ -1225,7 +1225,12 @@
         "link": "Edit policies"
       },
       "stepDone": "Done",
-      "later": "Later"
+      "later": "Later",
+      "locked": {
+        "product": "Add your first product first.",
+        "design": "Choose your store design first.",
+        "shipping": "Set up shipping first."
+      }
     },
     "setupHome": {
       "title": "Let’s set up your store",
@@ -4389,6 +4394,7 @@
       "shippingNotSet": "Delivery areas aren't set up.",
       "noReturnPolicy": "No return policy.",
       "publishFailed": "The site wasn't published. Publish it from the website page.",
+      "publishNeedsProduct": "The site isn't live yet: publish a product first, then publish the site.",
       "addFirstProduct": "Add your first product.",
       "fileRowsNoPrice": "{count} products from your file weren't added because they have no price.",
       "fileProductsNotAdded": "{count} products from your file weren't added. Add them from the file import page.",
@@ -9141,6 +9147,10 @@
         "locked": "Your orders are hidden until you top up."
       },
       "cta": "Top up your wallet"
+    },
+    "locked": {
+      "product": "Add your first product first.",
+      "theme": "Choose your theme first."
     }
   },
   "setupReminderUnsubscribe": {
@@ -9356,5 +9366,9 @@
       "submitted": "Sent for review.",
       "privacy": "Only the Tallaby team sees these details, to verify withdrawals."
     }
+  },
+  "publishNeedsProduct": {
+    "message": "Add your first product before you publish your store.",
+    "action": "Add product"
   }
 }

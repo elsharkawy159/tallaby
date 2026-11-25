@@ -2,7 +2,7 @@
  * The header's "Next step" button (owner, 2026-11-18). It replaced the guided
  * setup prompts (setup-prompts.*) in the layout: while the home setup isn't
  * finished it links to the next open home step (setup-checklist.lib.ts, same
- * order: product, design, payments, shipping); once it is, the same slot opens
+ * order: product, design, shipping, payments); once it is, the same slot opens
  * the store in a new tab.
  */
 
@@ -17,7 +17,7 @@ export type HeaderSetupAction =
   | { kind: "visit"; href: string }
   | null;
 
-const HOME_STEP_KEYS: readonly HomeStepKey[] = ["product", "design", "payments", "shipping"];
+const HOME_STEP_KEYS: readonly HomeStepKey[] = ["product", "design", "shipping", "payments"];
 
 /** The first open home step, in the home checklist's order, or done. */
 export function pickSetupNextStep(flags: SetupFlags, storeId: string | null): SetupNextStep {

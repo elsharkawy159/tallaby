@@ -12,14 +12,14 @@ describe("pickSetupNextStep", () => {
     expect(pickSetupNextStep(none, STORE)).toEqual({ done: false, key: "product", href: `/stores/${STORE}/products/add` });
   });
 
-  it("follows the home order: design, then payments, then shipping", () => {
+  it("follows the home order: design, then shipping, then payments (owner, 2026-11-25)", () => {
     expect(pickSetupNextStep({ ...none, product: true }, STORE)).toMatchObject({ key: "design", href: `/stores/${STORE}/website/templates` });
     expect(pickSetupNextStep({ ...none, product: true, template: true }, STORE)).toMatchObject({
       key: "design",
       href: `/stores/${STORE}/website/design`,
     });
-    expect(pickSetupNextStep({ ...none, product: true, template: true, brand: true }, STORE)).toMatchObject({ key: "payments" });
-    expect(pickSetupNextStep({ ...all, shipping: false }, STORE)).toMatchObject({ key: "shipping", href: `/stores/${STORE}/shipping` });
+    expect(pickSetupNextStep({ ...none, product: true, template: true, brand: true }, STORE)).toMatchObject({ key: "shipping", href: `/stores/${STORE}/shipping` });
+    expect(pickSetupNextStep({ ...all, payments: false }, STORE)).toMatchObject({ key: "payments" });
   });
 
   it("skips a done step even if an earlier one is open", () => {

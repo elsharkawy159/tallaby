@@ -128,9 +128,14 @@ beforeEach(() => {
 });
 
 describe("publish (D1, D3, D4)", () => {
-  it("publishes the site of a store with zero products (D3), only if never published, and records it", async () => {
+  it("publishes the site only if never published and with a live product (owner, 2026-11-25), and records it", async () => {
     const outcome = await run("publish");
-    expect(mocks.publishStoreSite).toHaveBeenCalledWith(CTX.sellerId, STORE, CTX.userId, expect.objectContaining({ onlyIfNeverPublished: true, requireTemplateChoice: true }));
+    expect(mocks.publishStoreSite).toHaveBeenCalledWith(
+      CTX.sellerId,
+      STORE,
+      CTX.userId,
+      expect.objectContaining({ onlyIfNeverPublished: true, requireTemplateChoice: true, requireActiveProductOnFirstPublish: true }),
+    );
     expect(outcome.data).toMatchObject({ live: 0, published: true, publishError: null });
     expect(mocks.saveBuild).toHaveBeenCalledWith(CTX.sellerId, expect.any(String), { publishedAt: expect.any(String) });
   });
@@ -156,6 +161,9 @@ describe("publish (D1, D3, D4)", () => {
     const blocked = await run("publish");
     expect(blocked.status).toBeUndefined();
     expect(blocked.data).toMatchObject({ published: false, publishError: "publish_blocked" });
+
+    mocks.publishStoreSite.mockResolvedValue({ success: false, error: "no_active_product" });
+    expect((await run("publish")).data).toMatchObject({ published: false, publishError: "no_active_product" });
   });
 
   it("does not publish twice when the step runs again after it published", async () => {

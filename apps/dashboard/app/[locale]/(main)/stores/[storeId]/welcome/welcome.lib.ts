@@ -11,6 +11,7 @@ import { daysUntilOffline, type OrderLock } from "@workspace/lib/billing/order-g
 import type { StoreSetupFlags } from "@workspace/lib/sellers";
 import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
 import { currencyCountry } from "../shipping/shipping.dto";
+import { stepBlocker } from "../../../_components/setup-checklist.lib";
 
 /** The page's steps, in order: one flat list (owner, 2026-11-17). */
 export type WelcomeStepKey = "theme" | "product" | "shipping";
@@ -18,25 +19,34 @@ export type WelcomeStepKey = "theme" | "product" | "shipping";
 export type WelcomeStep = { key: WelcomeStepKey; done: boolean };
 
 /**
- * The steps the page shows: a theme (only inside the store-builder rollout),
- * the first product, the delivery price. Done from the home's flags. Brand
- * and payments are not steps here: they live in Store settings, and cash on
- * delivery is on by default.
+ * The steps the page shows, in this order (owner, 2026-11-25): the first
+ * product, a theme (only inside the store-builder rollout), the delivery
+ * price. Done from the home's flags. Brand and payments are not steps here:
+ * they live in Store settings, and cash on delivery is on by default.
  */
 export function welcomeSteps(input: {
   flags: StoreSetupFlags;
   /** The seller can use Website › Templates (store-builder rollout); else no theme step. */
   themesAvailable: boolean;
 }): WelcomeStep[] {
-  const steps: WelcomeStep[] = [];
+  const steps: WelcomeStep[] = [{ key: "product", done: input.flags.product }];
   if (input.themesAvailable) steps.push({ key: "theme", done: input.flags.template });
-  steps.push({ key: "product", done: input.flags.product }, { key: "shipping", done: input.flags.shipping });
+  steps.push({ key: "shipping", done: input.flags.shipping });
   return steps;
 }
 
 /** The first step still open, or null when every step is done. */
 export function nextWelcomeStep(steps: readonly WelcomeStep[]): WelcomeStepKey | null {
   return steps.find((step) => !step.done)?.key ?? null;
+}
+
+/**
+ * The earlier step a step waits for (owner, 2026-11-25): a step can't be
+ * opened until the steps before it are done. Null when it can, and always
+ * for a done step, which keeps its edit link.
+ */
+export function welcomeStepBlocker(steps: readonly WelcomeStep[], key: WelcomeStepKey): WelcomeStepKey | null {
+  return stepBlocker(steps, key);
 }
 
 /** "x of N": the page's one counter, over exactly the steps it shows. */
@@ -62,12 +72,17 @@ export type WelcomeArrival = { open: WelcomeStepKey | ""; scrollTo: WelcomeStepK
  * Where a visit lands: the step open on arrival (the one a `#hash` names when
  * the page shows it, else the first unfinished one, else none) and the element
  * to scroll to (`welcome-<scrollTo>`), or null without a known hash. Old links
- * (`#brand`, `#payments`…) fall back to the first unfinished step.
+ * (`#brand`, `#payments`…) fall back to the first unfinished step, and so
+ * does a step still waiting for an earlier one (it can't be opened yet).
  */
 export function welcomeArrival(hash: string, steps: readonly WelcomeStep[]): WelcomeArrival {
   const id = hash.replace(/^#/, "");
   const named = Object.hasOwn(HASH_STEP, id) ? HASH_STEP[id] : undefined;
-  if (named && steps.some((step) => step.key === named)) return { open: named, scrollTo: named };
+  if (named && steps.some((step) => step.key === named)) {
+    if (!welcomeStepBlocker(steps, named)) return { open: named, scrollTo: named };
+    const next = nextWelcomeStep(steps);
+    return { open: next ?? "", scrollTo: next };
+  }
   const anchor = Object.hasOwn(HASH_ANCHOR, id) ? HASH_ANCHOR[id] : undefined;
   return { open: nextWelcomeStep(steps) ?? "", scrollTo: anchor ?? null };
 }

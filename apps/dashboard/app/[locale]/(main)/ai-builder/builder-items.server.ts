@@ -305,17 +305,23 @@ async function applyChecks(ctx: RunContext, build: BuildRow, items: ReadonlyMap<
 // ── Publish (D1, D3, D4) ────────────────────────────────────────────────────
 
 /**
- * The safe path of the automatic publish (`publishNewStoreIfReady`), without
- * its "one published product" rule: "Build and publish" is the seller's
- * consent, so the site goes live even with no products (D3). Only a store
- * never published (checked under the row lock), with its template chosen,
- * and never while the seller's stores are offline for billing
- * (`top_up_required`, docs/seller-top-up-rules.md §4); the cache is cleared;
- * an error is returned, never thrown.
+ * The safe path of the automatic publish (`publishNewStoreIfReady`): only a
+ * store never published (checked under the row lock), with its template
+ * chosen and at least one published product (`no_active_product`; owner,
+ * 2026-11-25, replacing D3's "even with no products"), and never while the
+ * seller's stores are offline for billing (`top_up_required`,
+ * docs/seller-top-up-rules.md §4); the cache is cleared; an error is
+ * returned, never thrown.
  */
 async function publishBuiltStore(ctx: RunContext, store: { id: string; subdomain: string }): Promise<{ ok: boolean; error: string | null }> {
   try {
-    const result = await publishStoreSite(ctx.sellerId, store.id, ctx.userId, { allowedSections: ALLOWED, requireTemplateChoice: true, onlyIfNeverPublished: true, refuseWhenBillingOffline: true });
+    const result = await publishStoreSite(ctx.sellerId, store.id, ctx.userId, {
+      allowedSections: ALLOWED,
+      requireTemplateChoice: true,
+      onlyIfNeverPublished: true,
+      requireActiveProductOnFirstPublish: true,
+      refuseWhenBillingOffline: true,
+    });
     if (!result.success) return { ok: false, error: result.error };
     await grantWelcomeGiftSafely(ctx.sellerId);
     await applyInvalidation(invalidateStoreSite(ctx.sellerId, store.id, store.subdomain), { from: "dashboard", mode: "route" });
@@ -329,7 +335,8 @@ async function publishBuiltStore(ctx: RunContext, store: { id: string; subdomain
 /**
  * Pressing "Build and publish" was the seller's consent (D1). Complete
  * products go live (photo, price and a stock answer: D4; the rest stay drafts
- * on the to-do list), then the site, even with no products (D3). Only the
+ * on the to-do list), then the site, only once one product is live (owner,
+ * 2026-11-25; with none it stays offline and the review says to add one). Only the
  * build's own store, and only if it was never published: a store the seller
  * published or switched off is never touched. A publish error never fails the
  * build; it is recorded for the review.

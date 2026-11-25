@@ -4,6 +4,8 @@ import {
   buildSetupTasks,
   isSetupDone,
   showSetupOnlyHome,
+  homeStepBlocker,
+  stepBlocker,
   type SetupFlags,
 } from "./setup-checklist.lib";
 
@@ -12,8 +14,8 @@ const none: SetupFlags = { template: false, brand: false, product: false, publis
 const all: SetupFlags = { template: true, brand: true, product: true, publish: true, shipping: true, payments: true };
 
 describe("buildHomeSteps", () => {
-  it("orders the steps product, design, payments, shipping (owner 2026-11-10)", () => {
-    expect(buildHomeSteps(none, STORE).map((s) => s.key)).toEqual(["product", "design", "payments", "shipping"]);
+  it("orders the steps product, design, shipping, payments (owner 2026-11-25)", () => {
+    expect(buildHomeSteps(none, STORE).map((s) => s.key)).toEqual(["product", "design", "shipping", "payments"]);
   });
 
   it("links store steps to the selected store", () => {
@@ -38,6 +40,38 @@ describe("buildHomeSteps", () => {
 
   it("drops store steps when the seller has no store", () => {
     expect(buildHomeSteps(none, null).map((s) => s.key)).toEqual(["product"]);
+  });
+});
+
+describe("homeStepBlocker (shipping waits for a template, not the brand)", () => {
+  it("unlocks shipping once a template is chosen", () => {
+    const productOnly: SetupFlags = { ...none, product: true };
+    const withTemplate: SetupFlags = { ...productOnly, template: true };
+    expect(homeStepBlocker(buildHomeSteps(withTemplate, STORE), "shipping", withTemplate)).toBeNull();
+    expect(homeStepBlocker(buildHomeSteps(withTemplate, STORE), "design", withTemplate)).toBeNull();
+    expect(homeStepBlocker(buildHomeSteps(productOnly, STORE), "shipping", productOnly)).toBe("design");
+    expect(homeStepBlocker(buildHomeSteps(none, STORE), "shipping", none)).toBe("product");
+  });
+});
+
+describe("stepBlocker (steps in order, owner 2026-11-25)", () => {
+  const blockers = (f: SetupFlags) => {
+    const steps = buildHomeSteps(f, STORE);
+    return Object.fromEntries(steps.map((s) => [s.key, stepBlocker(steps, s.key)]));
+  };
+
+  it("lets only the first open step start; the rest wait for the first open step before them", () => {
+    expect(blockers(none)).toEqual({ product: null, design: "product", shipping: "product", payments: "product" });
+    expect(blockers({ ...none, product: true })).toEqual({ product: null, design: null, shipping: "design", payments: "design" });
+    expect(blockers({ ...none, product: true, template: true, brand: true })).toEqual({ product: null, design: null, shipping: null, payments: "shipping" });
+  });
+
+  it("never locks a done step, so a seller who did steps out of order keeps every edit link", () => {
+    expect(blockers({ ...none, shipping: true, payments: true })).toEqual({ product: null, design: "product", shipping: null, payments: null });
+  });
+
+  it("is null for a key that isn't in the list", () => {
+    expect(stepBlocker(buildHomeSteps(none, null), "design")).toBeNull();
   });
 });
 
@@ -71,9 +105,9 @@ describe("showSetupOnlyHome", () => {
   });
 });
 
-describe("buildSetupTasks (prompt steps, unchanged)", () => {
-  it("keeps the prompt order template, brand, product, shipping", () => {
-    expect(buildSetupTasks(none, STORE).map((t) => t.key)).toEqual(["template", "brand", "product", "shipping"]);
+describe("buildSetupTasks (prompt steps, same keys)", () => {
+  it("leads with the product: product, template, brand, shipping (owner 2026-11-25)", () => {
+    expect(buildSetupTasks(none, STORE).map((t) => t.key)).toEqual(["product", "template", "brand", "shipping"]);
     expect(buildSetupTasks(none, null).map((t) => t.key)).toEqual(["product"]);
     expect(buildSetupTasks(none, STORE).filter((t) => t.optional).map((t) => t.key)).toEqual(["shipping"]);
   });
@@ -82,7 +116,8 @@ describe("buildSetupTasks (prompt steps, unchanged)", () => {
 describe("shared setup rule (F-94 reminder emails)", () => {
   it("is the same rule as @workspace/lib's isStoreSetupDone for every flag combination", async () => {
     const { STORE_SETUP_STEP_KEYS, isStoreSetupDone } = await import("@workspace/lib/sellers");
-    expect(buildHomeSteps(none, STORE).map((s) => s.key)).toEqual([...STORE_SETUP_STEP_KEYS]);
+    // Same steps; the home orders them for the seller flow (owner, 2026-11-25), the emails keep theirs.
+    expect(buildHomeSteps(none, STORE).map((s) => s.key).sort()).toEqual([...STORE_SETUP_STEP_KEYS].sort());
     const keys = Object.keys(none) as (keyof SetupFlags)[];
     for (let mask = 0; mask < 1 << keys.length; mask++) {
       const flags = Object.fromEntries(keys.map((k, i) => [k, Boolean(mask & (1 << i))])) as SetupFlags;

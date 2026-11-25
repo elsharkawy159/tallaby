@@ -6,7 +6,7 @@ import { SellerButton, SellerCard } from "@/components/seller-ui";
 import { cn } from "@workspace/ui/lib/utils";
 import type { HomeSnapshot } from "./home.queries";
 import { HOME_STEP_ICONS, HOME_STEP_IMAGES } from "./setup-checklist.data";
-import { buildHomeSteps } from "./setup-checklist.lib";
+import { buildHomeSteps, homeStepBlocker } from "./setup-checklist.lib";
 import { storeWelcomeHref } from "../stores/[storeId]/welcome/welcome.lib";
 
 /** Length of the progress ring's circle (r = 26). */
@@ -15,7 +15,8 @@ const RING = 163.4;
 /**
  * The setup-only home (ROADMAP.md F-86): a new seller with setup open and no
  * real order sees just these four steps, no metrics. Not dismissible, so the
- * seller can't land on an empty metrics page.
+ * seller can't land on an empty metrics page. A step waiting for an earlier
+ * one shows a disabled button and what to do first (owner, 2026-11-25).
  */
 export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
   const t = await getTranslations("home.setupHome");
@@ -75,6 +76,7 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
           const Icon = HOME_STEP_ICONS[step.key];
           const image = HOME_STEP_IMAGES[step.key];
           const next = step.key === nextKey;
+          const blocker = homeStepBlocker(steps, step.key, snapshot.setup);
           return (
             <li key={step.key} className="flex">
               <SellerCard
@@ -128,6 +130,13 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                       <Link href={step.href} className="text-[12.5px] font-bold text-(--s-subtle) no-underline hover:text-(--s-ink) hover:underline">
                         {t("edit")}
                       </Link>
+                    </div>
+                  ) : blocker ? (
+                    <div className="flex flex-col gap-1.5">
+                      <SellerButton size="sm" variant="outline" disabled className="max-[600px]:w-full">
+                        {tSetup(`tasks.${step.key}.cta`)}
+                      </SellerButton>
+                      <p className="text-pretty text-[12.5px] text-(--s-muted)">{tSetup(`locked.${blocker}`)}</p>
                     </div>
                   ) : (
                     <SellerButton asChild size="sm" variant={next ? "amber" : "outline"} className="max-[600px]:w-full">

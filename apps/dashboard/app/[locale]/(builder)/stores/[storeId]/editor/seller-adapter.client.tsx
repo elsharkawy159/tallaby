@@ -31,6 +31,7 @@ import {
 import { importStockPhoto, searchStockPhotos } from "./server/explore.server";
 import { translateSiteWithAi } from "./server/ai-translate.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
+import { usePublishNeedsProductToast } from "@/lib/stores/publish-needs-product.client";
 
 /** The seller's editor has everything. */
 const SELLER_CAPABILITIES: EditorCapabilities = {
@@ -60,6 +61,7 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
   // eslint-disable-next-line react-hooks/exhaustive-deps -- overridesKey stands for `capabilities`
   const merged = useMemo(() => ({ ...SELLER_CAPABILITIES, ...capabilities }), [overridesKey]);
   const router = useRouter();
+  const needsProduct = usePublishNeedsProductToast(storeId);
   return useMemo<EditorAdapter>(
     () => ({
       capabilities: merged,
@@ -77,6 +79,11 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
         if (result.success) requestWelcomeGiftCheck();
         // Offline for billing: the editor shows the message, and the seller lands on the wallet's top-up.
         else if (result.error === "topUpRequired") router.push(TOP_UP_TO_GO_ONLINE_HREF);
+        // A never-published store needs a product first: our toast has the add button, so the editor shows none.
+        else if (result.error === "noActiveProduct") {
+          needsProduct();
+          return { success: false, error: "cancelled" };
+        }
         return result;
       },
       pages: {
@@ -108,6 +115,6 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       },
       media: sellerMediaAdapter(storeId),
     }),
-    [storeId, merged, router],
+    [storeId, merged, router, needsProduct],
   );
 }

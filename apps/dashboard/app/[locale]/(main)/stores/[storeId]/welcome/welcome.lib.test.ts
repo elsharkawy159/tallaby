@@ -21,6 +21,7 @@ import {
   welcomeProgress,
   welcomeShareMessage,
   welcomeShippingDefault,
+  welcomeStepBlocker,
   welcomeSteps,
   welcomeThemeNeedsConfirm,
   welcomeTopUpLine,
@@ -31,14 +32,14 @@ const STORE = "11111111-1111-4111-8111-111111111111";
 const none: StoreSetupFlags = { template: false, brand: false, product: false, publish: false, shipping: false, payments: false };
 
 describe("welcomeSteps", () => {
-  it("lists theme, product and delivery price, done from the home's flags", () => {
-    const steps = welcomeSteps({ flags: { ...none, template: true }, themesAvailable: true });
+  it("lists product, theme and delivery price in that order (owner, 2026-11-25), done from the home's flags", () => {
+    const steps = welcomeSteps({ flags: { ...none, product: true }, themesAvailable: true });
     expect(steps).toEqual([
-      { key: "theme", done: true },
-      { key: "product", done: false },
+      { key: "product", done: true },
+      { key: "theme", done: false },
       { key: "shipping", done: false },
     ]);
-    expect(nextWelcomeStep(steps)).toBe("product");
+    expect(nextWelcomeStep(steps)).toBe("theme");
   });
 
   it("has no theme step outside the store-builder rollout", () => {
@@ -54,6 +55,28 @@ describe("welcomeSteps", () => {
   });
 });
 
+describe("welcomeStepBlocker (owner, 2026-11-25)", () => {
+  const blockers = (flags: StoreSetupFlags, themesAvailable = true) => {
+    const steps = welcomeSteps({ flags, themesAvailable });
+    return Object.fromEntries(steps.map((step) => [step.key, welcomeStepBlocker(steps, step.key)]));
+  };
+
+  it("opens only the first open step: the theme waits for a product, shipping for the theme", () => {
+    expect(blockers(none)).toEqual({ product: null, theme: "product", shipping: "product" });
+    expect(blockers({ ...none, product: true })).toEqual({ product: null, theme: null, shipping: "theme" });
+    expect(blockers({ ...none, product: true, template: true })).toEqual({ product: null, theme: null, shipping: null });
+  });
+
+  it("makes shipping wait only for the product outside the store-builder rollout", () => {
+    expect(blockers(none, false)).toEqual({ product: null, shipping: "product" });
+    expect(blockers({ ...none, product: true }, false)).toEqual({ product: null, shipping: null });
+  });
+
+  it("never locks a done step (a seller who chose a theme before adding a product keeps it open)", () => {
+    expect(blockers({ ...none, template: true, shipping: true })).toEqual({ product: null, theme: null, shipping: null });
+  });
+});
+
 describe("welcomeProgress", () => {
   it("is one counter over exactly the steps shown", () => {
     expect(welcomeProgress(welcomeSteps({ flags: none, themesAvailable: true }))).toEqual({ done: 0, total: 3 });
@@ -65,33 +88,41 @@ describe("welcomeProgress", () => {
 
 describe("welcomeArrival", () => {
   const open = welcomeSteps({ flags: none, themesAvailable: true });
-  const themeDone = welcomeSteps({ flags: { ...none, template: true }, themesAvailable: true });
+  const productDone = welcomeSteps({ flags: { ...none, product: true }, themesAvailable: true });
+  const themeDone = welcomeSteps({ flags: { ...none, product: true, template: true }, themesAvailable: true });
   const finished = welcomeSteps({ flags: { ...none, template: true, product: true, shipping: true }, themesAvailable: true });
   const noThemes = welcomeSteps({ flags: none, themesAvailable: false });
 
   it("opens the first unfinished step, or none when all are done", () => {
-    expect(welcomeArrival("", open)).toEqual({ open: "theme", scrollTo: null });
-    expect(welcomeArrival("", themeDone)).toEqual({ open: "product", scrollTo: null });
+    expect(welcomeArrival("", open)).toEqual({ open: "product", scrollTo: null });
+    expect(welcomeArrival("", productDone)).toEqual({ open: "theme", scrollTo: null });
+    expect(welcomeArrival("", themeDone)).toEqual({ open: "shipping", scrollTo: null });
     expect(welcomeArrival("", finished)).toEqual({ open: "", scrollTo: null });
   });
 
   it("opens the step a hash names, even when done", () => {
     expect(welcomeArrival("#theme", finished)).toEqual({ open: "theme", scrollTo: "theme" });
     expect(welcomeArrival("#product", finished)).toEqual({ open: "product", scrollTo: "product" });
-    expect(welcomeArrival("#shipping", open)).toEqual({ open: "shipping", scrollTo: "shipping" });
+    expect(welcomeArrival("#shipping", themeDone)).toEqual({ open: "shipping", scrollTo: "shipping" });
+  });
+
+  it("opens the first open step instead of a step that is still locked", () => {
+    expect(welcomeArrival("#shipping", open)).toEqual({ open: "product", scrollTo: "product" });
+    expect(welcomeArrival("#theme", open)).toEqual({ open: "product", scrollTo: "product" });
+    expect(welcomeArrival("#shipping", productDone)).toEqual({ open: "theme", scrollTo: "theme" });
   });
 
   it("maps the old section and step names", () => {
     expect(welcomeArrival("#industry", themeDone)).toEqual({ open: "theme", scrollTo: "theme" });
     expect(welcomeArrival("#setup", themeDone)).toEqual({ open: "theme", scrollTo: "theme" });
-    expect(welcomeArrival("#delivery", open)).toEqual({ open: "shipping", scrollTo: "shipping" });
+    expect(welcomeArrival("#delivery", themeDone)).toEqual({ open: "shipping", scrollTo: "shipping" });
   });
 
   it("falls back to the first unfinished step for a step the page no longer has", () => {
-    expect(welcomeArrival("#brand", themeDone)).toEqual({ open: "product", scrollTo: null });
-    expect(welcomeArrival("#payments", themeDone)).toEqual({ open: "product", scrollTo: null });
+    expect(welcomeArrival("#brand", themeDone)).toEqual({ open: "shipping", scrollTo: null });
+    expect(welcomeArrival("#payments", productDone)).toEqual({ open: "theme", scrollTo: null });
     expect(welcomeArrival("#nope", finished)).toEqual({ open: "", scrollTo: null });
-    expect(welcomeArrival("#constructor", open)).toEqual({ open: "theme", scrollTo: null });
+    expect(welcomeArrival("#constructor", open)).toEqual({ open: "product", scrollTo: null });
     // No theme step outside the rollout: its hashes open the first unfinished step.
     expect(welcomeArrival("#theme", noThemes)).toEqual({ open: "product", scrollTo: null });
     expect(welcomeArrival("#industry", noThemes)).toEqual({ open: "product", scrollTo: null });
@@ -99,7 +130,7 @@ describe("welcomeArrival", () => {
 
   it("scrolls share to the live card and topUp to the top-up line", () => {
     expect(welcomeArrival("#share", finished)).toEqual({ open: "", scrollTo: "live" });
-    expect(welcomeArrival("#topUp", themeDone)).toEqual({ open: "product", scrollTo: "topUp" });
+    expect(welcomeArrival("#topUp", productDone)).toEqual({ open: "theme", scrollTo: "topUp" });
   });
 });
 

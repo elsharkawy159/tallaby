@@ -276,9 +276,17 @@ export type PublishOptions = BuilderOptions & {
    * `products` row of this store and this seller that is `active` and not in
    * Trash, checked under the row lock; otherwise `no_active_product`. A new
    * store goes live by itself only with a chosen template AND such a product
-   * (owner, 2026-11-17). The seller's own Publish button never passes it.
+   * (owner, 2026-11-17).
    */
   requireActiveProduct?: boolean;
+  /**
+   * The same product rule, only for a store that was never published
+   * (`site_status = 'draft'`, read from the locked row): its first publish
+   * needs a published product, else `no_active_product`. A store that was
+   * ever published keeps publishing design changes with no products. Every
+   * seller publish path passes it (owner, 2026-11-25); Admin never does.
+   */
+  requireActiveProductOnFirstPublish?: boolean;
   /**
    * Refuse with `top_up_required` while the seller's stores are offline for
    * billing (`getOrderLock().storeOffline`: not activated, the trial's days are
@@ -333,7 +341,8 @@ export async function publishStoreSite(
       if (store.sellerStatus !== "approved") throw new SiteError("publish_blocked");
       if (options.onlyIfNeverPublished && store.siteStatus !== "draft") throw new SiteError("already_published");
       if (options.requireTemplateChoice && !(await storeTemplateChosen(tx, store.id))) throw new SiteError("template_not_chosen");
-      if (options.requireActiveProduct && !(await storeHasActiveProduct(tx, sellerId, store.id))) throw new SiteError("no_active_product");
+      const needsProduct = options.requireActiveProduct || (options.requireActiveProductOnFirstPublish && store.siteStatus === "draft");
+      if (needsProduct && !(await storeHasActiveProduct(tx, sellerId, store.id))) throw new SiteError("no_active_product");
 
       const raw = await buildDraftSiteConfig(tx, store);
       const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections });

@@ -233,9 +233,12 @@ export async function publish(storeId: string) {
     // checked in the publish transaction for this seller's store. While the seller's
     // stores are offline for billing it is refused (`topUpRequired`) and the client
     // sends the seller to the wallet (owner 2026-11-17, docs/seller-top-up-rules.md §4).
+    // A store that was never published also needs a published product (`noActiveProduct`,
+    // owner 2026-11-25); a store that was ever live keeps publishing with none.
     const result = await publishStoreSite(access.seller.sellerId, access.store.id, access.seller.userId, {
       allowedSections: ALLOWED,
       requireTemplateChoice: true,
+      requireActiveProductOnFirstPublish: true,
       refuseWhenBillingOffline: true,
     });
     if (!result.success) return fail(result.error);
