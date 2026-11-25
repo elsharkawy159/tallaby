@@ -1478,6 +1478,18 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 - **F-106a:** A **Trial** filter on Admin › Sellers (`trial` URL param; Trial ended — stores offline, Trial ended — top-up in review, In trial, Activated), done in SQL in the list query so the page count and total stay right, and honoured by the export (it shares `buildSellersWhere`). A badge under the status of each seller whose trial ended without a top-up ("Offline — no top-up · <date the trial ended, Cairo>", or "Top-up in review"). The rule is `docs/seller-top-up-rules.md` / `order-lock.lib.ts`: `sellerTrialStatus` (`apps/admin/app/(dashboard)/sellers/seller-trial.lib.ts`) and its SQL twin `sellerTrialStateSql` (`seller-trial.query.ts`, constants passed as parameters); the WhatsApp message facts now use the same SQL fragments.
 
+### F-109 WhatsApp order notifications (Meta Cloud API, one Tallaby number) — P1 · Owner request 2026-11-26
+
+**Why:** Shoppers in Egypt live on WhatsApp; order updates and a one-tap Confirm/Cancel cut fake COD orders (F-02) and support load. Replaces the automatic part of F-14.
+**What:** Design `docs/whatsapp.md`, Meta setup `docs/whatsapp-meta-setup.md`. One official Tallaby number sends utility templates (ar/en) for order placed (Confirm/Cancel buttons), confirmed, shipped (tracking link), out for delivery, delivered and cancelled, only to shoppers who ticked the checkout opt-in. Seller page Apps › WhatsApp; Admin › WhatsApp (settings, connection, templates, usage and profit, failed-message retries).
+**Status:** [Built, off] 2026-11-26 (commits eda1f6f2 … 007d9314). Free for sellers (owner): price per message 0, no wallet charge. Ships **disabled** until Tallaby has its business registration number and Meta account (owner, 2026-11-26): migration `0180` not applied anywhere; no backend env; Admin refuses to turn it on until the backend reports Meta configured. Not tried end to end (needs Meta).
+
+- **F-109a · P1** Data (`0180`), pure modules (phones, templates, signed button payloads, webhook signature, retries). Done.
+- **F-109b · P1 · deps: F-109a** Backend sending, outbox and worker, signed Meta webhook, Confirm/Cancel by button, order hooks, tracking redirect `tallaby.com/wa/t/<token>`. Done.
+- **F-109c · P1 · deps: F-109a** Seller app page and checkout opt-in. Done.
+- **F-109d · P1 · deps: F-109a** Admin page. Done.
+- **F-109e · P1 · deps: owner** Go-live: Meta setup (guide), env on `tallaby-backend` (+ `ORDER_ACCESS_SECRET` on `tallaby-marketing` for tracking links), apply `0180` on staging then production (owner approval), submit templates, end-to-end test, then Admin switch on.
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
@@ -2059,7 +2071,22 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ---
 
+- [x] F-109a WhatsApp data (0180, not applied) and pure modules — 2026-11-26; 80 unit tests
+- [x] F-109b WhatsApp backend sending, webhook, buttons, order hooks — 2026-11-26; unit tests pass, DB integration tests not run (no TEST_DATABASE_URL)
+- [x] F-109c Seller WhatsApp page and checkout opt-in — 2026-11-26; not tried in a browser
+- [x] F-109d Admin WhatsApp page — 2026-11-26; not tried in a browser
+- [ ] F-109e WhatsApp go-live (owner: Meta account, env, 0180 approval)
+
 ## 7. Log
+
+### 2026-11-26 — WhatsApp order notifications, built and off (F-109, owner request; migration 0180 not applied)
+
+- **Owner:** Meta's official Cloud API, one Tallaby number for every store, order updates with Confirm/Cancel buttons, ar/en, checkout consent, seller and admin pages, setup guide. Then: free for sellers for now; then: keep it ready but disabled until Tallaby has its business registration number.
+- **Built:** see F-109 and `docs/whatsapp.md` (decisions D1–D7, flow, security). Code: `packages/lib/src/whatsapp/`, `packages/lib/src/orders/customer-order-actions.*`, `apps/backend/src/routes/whatsapp.ts` (+ worker in `server.ts`), `apps/marketing/app/wa/t/[token]`, dashboard `apps/_settings/whatsapp`, admin `whatsapp/`, checkout opt-in in ecommerce.
+- **Where the code differs from the first plan:** cancel by button refuses paid, wallet-paid, deposit-paid or shipped orders (the shopper is told to contact the store); a shopper's own cancel in the store sends no WhatsApp; leaving with the courier (`out_for_delivery` in the seller/Bosta/shipping flows) sends the "shipped" message; 5 sends in total per message; the webhook answers 500 on a processing error so Meta retries; Arabic opt-in text is «أرسل لي تحديثات الطلب على واتساب من طلبي» (`wa-consent-v1`, owner to confirm).
+- **Off by default, several ways:** no backend env → every hook returns at once; `whatsapp_settings.enabled` false; a missing table counts as off (one log line per process, 5-minute backoff); the app shows Coming soon; no checkout box.
+- **Migration 0180:** additive, server-only tables, seller bell types `whatsapp_order_confirmed`/`whatsapp_order_cancelled`. Not applied on staging or production.
+- **Checks:** lib tests pass (unit); backend, dashboard, admin, shipping, marketing typecheck 0; ecommerce typecheck has 16 pre-existing errors in `profile.chunks.tsx` (not from this work). DB integration tests and a browser check not run.
 
 ### 2026-11-25 — Sidebar WhatsApp support: bigger icon and an online dot (owner request, no migration)
 
