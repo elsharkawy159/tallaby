@@ -377,6 +377,14 @@
       "types": "./src/size-charts/size-chart.server.ts",
       "default": "./src/size-charts/size-chart.server.ts"
     },
+    "./whatsapp": {
+      "types": "./src/whatsapp/index.ts",
+      "default": "./src/whatsapp/index.ts"
+    },
+    "./whatsapp/templates": {
+      "types": "./src/whatsapp/templates.lib.ts",
+      "default": "./src/whatsapp/templates.lib.ts"
+    },
     "./products/trash": {
       "types": "./src/products/trash.lib.ts",
       "default": "./src/products/trash.lib.ts"

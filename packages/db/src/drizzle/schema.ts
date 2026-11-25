@@ -3720,7 +3720,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
 	storeId: uuid("store_id"),
-	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) | deposit_reported, deposit_paid (0166, F-21: `data` = { orderId, orderNumber }) | top_up_reminder (0172: `data` = {}, the 24-hour top-up reminder) | tallaby_pay_sale_credited, tallaby_pay_earnings_available, tallaby_pay_refunded, tallaby_pay_refund_declined (0176, F-100g: `data` = { saleId, orderId, orderNumber, amount, currency, purpose, storeId }) | tallaby_pay_payout_paid, tallaby_pay_payout_rejected (0176: `data` = { payoutId, amount, currency, storeId }) | tallaby_pay_kyc_verified, tallaby_pay_kyc_rejected (0176: `data` = { storeId? }); rows written by 0176's triggers */
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received | carrier_shipment_failed | carrier_needs_attention | referral_commission_earned | referral_payout_paid | referral_payout_rejected (0117) | welcome_gift_granted | welcome_gift_expiring | welcome_gift_expired (0119) | low_stock (0125) | admin_message (0131: `data` = { title, body, link? }, sent from Admin) | agent_connected (0133, F-29d) | theme_request_updated (0156, F-77: `data` = { requestId, status, storeId? }) | first_order_top_up (0159, F-84: `data` = { orderId, orderNumber }) | deposit_reported, deposit_paid (0166, F-21: `data` = { orderId, orderNumber }) | top_up_reminder (0172: `data` = {}, the 24-hour top-up reminder) | tallaby_pay_sale_credited, tallaby_pay_earnings_available, tallaby_pay_refunded, tallaby_pay_refund_declined (0176, F-100g: `data` = { saleId, orderId, orderNumber, amount, currency, purpose, storeId }) | tallaby_pay_payout_paid, tallaby_pay_payout_rejected (0176: `data` = { payoutId, amount, currency, storeId }) | tallaby_pay_kyc_verified, tallaby_pay_kyc_rejected (0176: `data` = { storeId? }); rows written by 0176's triggers | whatsapp_order_confirmed, whatsapp_order_cancelled (0180, F-109: the shopper confirmed or cancelled by WhatsApp button) */
 	type: text().notNull(),
 	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
 	dedupeKey: text("dedupe_key").notNull(),
@@ -3743,7 +3743,7 @@ export const sellerNotifications = pgTable("seller_notifications", {
 			foreignColumns: [stores.id],
 			name: "seller_notifications_store_id_fkey"
 		}).onDelete("set null"),
-	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended', 'app_renewed', 'app_renewal_failed', 'app_ended', 'deposit_reported', 'deposit_paid', 'top_up_reminder')`),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received', 'carrier_shipment_failed', 'carrier_needs_attention', 'referral_commission_earned', 'referral_payout_paid', 'referral_payout_rejected', 'welcome_gift_granted', 'welcome_gift_expiring', 'welcome_gift_expired', 'low_stock', 'admin_message', 'agent_connected', 'plan_renewed', 'plan_renewal_failed', 'plan_ended', 'app_renewed', 'app_renewal_failed', 'app_ended', 'deposit_reported', 'deposit_paid', 'top_up_reminder', 'whatsapp_order_confirmed', 'whatsapp_order_cancelled')`),
 ]);
 
 /** A carrier's status history for a shipment (0106). One row per (shipment, state, time). Server-only. */
@@ -4917,4 +4917,184 @@ export const tallabyPayKyc = pgTable("tallaby_pay_kyc", {
 	check("tallaby_pay_kyc_status_check", sql`status IN ('submitted', 'verified', 'rejected')`),
 	check("tallaby_pay_kyc_verified_check", sql`status <> 'verified' OR verified_at IS NOT NULL`),
 	check("tallaby_pay_kyc_rejected_check", sql`status <> 'rejected' OR rejection_reason IS NOT NULL`),
+]);
+
+// ---------------------------------------------------------------------------
+// WhatsApp order notifications (0180, ROADMAP.md F-109, docs/whatsapp.md §3).
+// All server-only: RLS on, no policies. Pure rules in @workspace/lib/whatsapp.
+// ---------------------------------------------------------------------------
+
+/** The admin's WhatsApp settings: a single row (id = 1). Server-only: RLS on, no policies. */
+export const whatsappSettings = pgTable("whatsapp_settings", {
+	id: integer().default(1).primaryKey().notNull(),
+	enabled: boolean().default(false).notNull(),
+	storesDefaultOn: boolean("stores_default_on").default(false).notNull(),
+	/** What a seller pays per message, in US cents. 0 = free (D3). */
+	sellerPriceUsdCents: integer("seller_price_usd_cents").default(0).notNull(),
+	/** Micro-USD per message by Meta pricing category: { utility, authentication, marketing, service }. */
+	metaRateMicros: jsonb("meta_rate_micros").$type<Record<string, number>>().default({ utility: 3600, authentication: 3600, marketing: 64400, service: 3600 }).notNull(),
+	/** Global per-event switch (WHATSAPP_EVENTS). */
+	eventsEnabled: text("events_enabled").array().default(["order_placed", "order_confirmed", "order_shipped", "order_out_for_delivery", "order_delivered", "order_cancelled"]).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedBy: uuid("updated_by"),
+}, (table) => [
+	foreignKey({ columns: [table.updatedBy], foreignColumns: [users.id], name: "whatsapp_settings_updated_by_fkey" }).onDelete("set null"),
+	check("whatsapp_settings_singleton_check", sql`id = 1`),
+	check("whatsapp_settings_price_check", sql`seller_price_usd_cents >= 0`),
+	check("whatsapp_settings_rates_check", sql`jsonb_typeof(meta_rate_micros) = 'object'`),
+	check("whatsapp_settings_events_check", sql`events_enabled <@ ARRAY['order_placed', 'order_confirmed', 'order_shipped', 'order_out_for_delivery', 'order_delivered', 'order_cancelled']`),
+]);
+
+/** A store's WhatsApp on/off and chosen events. No row = the admin default. Server-only: RLS on, no policies. */
+export const storeWhatsappSettings = pgTable("store_whatsapp_settings", {
+	storeId: uuid("store_id").primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	enabled: boolean().default(false).notNull(),
+	events: text().array().default(["order_placed", "order_confirmed", "order_shipped", "order_out_for_delivery", "order_delivered", "order_cancelled"]).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_whatsapp_settings_seller_idx").using("btree", table.sellerId),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "store_whatsapp_settings_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "store_whatsapp_settings_seller_id_fkey" }).onDelete("cascade"),
+	check("store_whatsapp_settings_events_check", sql`events <@ ARRAY['order_placed', 'order_confirmed', 'order_shipped', 'order_out_for_delivery', 'order_delivered', 'order_cancelled']`),
+]);
+
+/** Consent and opt-out per phone (E.164 digits, no '+'); opt-out is global. Server-only: RLS on, no policies. */
+export const whatsappContacts = pgTable("whatsapp_contacts", {
+	phone: text().primaryKey().notNull(),
+	/** Meta business-scoped user id (BSUID). */
+	waUserId: text("wa_user_id"),
+	optedInAt: timestamp("opted_in_at", { withTimezone: true, mode: 'string' }),
+	optedOutAt: timestamp("opted_out_at", { withTimezone: true, mode: 'string' }),
+	/** 'checkout' */
+	optInSource: text("opt_in_source"),
+	consentVersion: text("consent_version"),
+	lastStoreId: uuid("last_store_id"),
+	/** Opens the 24 h service window. */
+	lastInboundAt: timestamp("last_inbound_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("whatsapp_contacts_wa_user_id_idx").using("btree", table.waUserId).where(sql`wa_user_id IS NOT NULL`),
+	index("whatsapp_contacts_last_store_idx").using("btree", table.lastStoreId).where(sql`last_store_id IS NOT NULL`),
+	foreignKey({ columns: [table.lastStoreId], foreignColumns: [stores.id], name: "whatsapp_contacts_last_store_id_fkey" }).onDelete("set null"),
+	check("whatsapp_contacts_phone_check", sql`phone ~ '^[1-9][0-9]{7,14}$'`),
+	check("whatsapp_contacts_opt_in_source_check", sql`opt_in_source IS NULL OR opt_in_source IN ('checkout')`),
+	check("whatsapp_contacts_wa_user_id_check", sql`wa_user_id IS NULL OR char_length(wa_user_id) BETWEEN 1 AND 200`),
+	check("whatsapp_contacts_consent_version_check", sql`consent_version IS NULL OR char_length(consent_version) BETWEEN 1 AND 50`),
+]);
+
+/**
+ * The WhatsApp outbox and history. `dedupe_key` = `order:<orderId>:<event>` or
+ * `reply:<inboundWamid>`; status only moves forward (canAdvanceStatus).
+ * Server-only: RLS on, no policies.
+ */
+export const whatsappMessages = pgTable("whatsapp_messages", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	/** Set on every order event; may be null only on a `reply`. */
+	sellerId: uuid("seller_id"),
+	storeId: uuid("store_id"),
+	orderId: uuid("order_id"),
+	/** WhatsAppEvent | 'reply' */
+	event: text().notNull(),
+	dedupeKey: text("dedupe_key").notNull(),
+	toPhone: text("to_phone").notNull(),
+	/** 'ar' | 'en' */
+	locale: text().default('ar').notNull(),
+	/** 'template' | 'text' */
+	kind: text().default('template').notNull(),
+	templateName: text("template_name"),
+	templateLanguage: text("template_language"),
+	/** The rendered parameters (no secrets). */
+	payload: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
+	/** queued | sending | sent | delivered | read | failed | skipped | unknown */
+	status: text().default('queued').notNull(),
+	attempts: integer().default(0).notNull(),
+	nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	claimedAt: timestamp("claimed_at", { withTimezone: true, mode: 'string' }),
+	wamid: text(),
+	errorCode: integer("error_code"),
+	errorTitle: text("error_title"),
+	errorDetail: text("error_detail"),
+	pricingCategory: text("pricing_category"),
+	pricingType: text("pricing_type"),
+	/** Meta's cost in micro-USD, set from a paid status webhook. */
+	metaCostMicros: integer("meta_cost_micros"),
+	/** What the seller was charged, in US cents (0 for now). */
+	priceUsdCents: integer("price_usd_cents").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
+	readAt: timestamp("read_at", { withTimezone: true, mode: 'string' }),
+	failedAt: timestamp("failed_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("whatsapp_messages_dedupe_key_key").on(table.dedupeKey),
+	unique("whatsapp_messages_wamid_key").on(table.wamid),
+	index("whatsapp_messages_queued_idx").using("btree", table.nextAttemptAt).where(sql`status = 'queued'`),
+	index("whatsapp_messages_store_created_idx").using("btree", table.storeId, table.createdAt.desc()),
+	index("whatsapp_messages_status_created_idx").using("btree", table.status, table.createdAt.desc()),
+	index("whatsapp_messages_order_idx").using("btree", table.orderId).where(sql`order_id IS NOT NULL`),
+	foreignKey({ columns: [table.sellerId], foreignColumns: [sellers.id], name: "whatsapp_messages_seller_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.storeId], foreignColumns: [stores.id], name: "whatsapp_messages_store_id_fkey" }).onDelete("cascade"),
+	foreignKey({ columns: [table.orderId], foreignColumns: [orders.id], name: "whatsapp_messages_order_id_fkey" }).onDelete("cascade"),
+	check("whatsapp_messages_event_check", sql`event IN ('order_placed', 'order_confirmed', 'order_shipped', 'order_out_for_delivery', 'order_delivered', 'order_cancelled', 'reply')`),
+	check("whatsapp_messages_order_event_check", sql`event = 'reply' OR (seller_id IS NOT NULL AND store_id IS NOT NULL AND order_id IS NOT NULL)`),
+	check("whatsapp_messages_dedupe_key_check", sql`char_length(dedupe_key) BETWEEN 1 AND 200`),
+	check("whatsapp_messages_to_phone_check", sql`to_phone ~ '^[1-9][0-9]{7,14}$'`),
+	check("whatsapp_messages_locale_check", sql`locale IN ('ar', 'en')`),
+	check("whatsapp_messages_kind_check", sql`kind IN ('template', 'text')`),
+	check("whatsapp_messages_template_check", sql`kind <> 'template' OR (template_name IS NOT NULL AND template_language IS NOT NULL)`),
+	check("whatsapp_messages_payload_check", sql`jsonb_typeof(payload) = 'object' AND octet_length(payload::text) <= 16384`),
+	check("whatsapp_messages_status_check", sql`status IN ('queued', 'sending', 'sent', 'delivered', 'read', 'failed', 'skipped', 'unknown')`),
+	check("whatsapp_messages_attempts_check", sql`attempts BETWEEN 0 AND 100`),
+	check("whatsapp_messages_error_title_check", sql`error_title IS NULL OR char_length(error_title) <= 500`),
+	check("whatsapp_messages_error_detail_check", sql`error_detail IS NULL OR char_length(error_detail) <= 2000`),
+	check("whatsapp_messages_meta_cost_check", sql`meta_cost_micros IS NULL OR meta_cost_micros >= 0`),
+	check("whatsapp_messages_price_check", sql`price_usd_cents >= 0`),
+]);
+
+/** Inbound WhatsApp messages, deduped by Meta's wamid; kept 90 days. Server-only: RLS on, no policies. */
+export const whatsappInbound = pgTable("whatsapp_inbound", {
+	wamid: text().primaryKey().notNull(),
+	fromPhone: text("from_phone"),
+	waUserId: text("wa_user_id"),
+	type: text().notNull(),
+	contextWamid: text("context_wamid"),
+	/** Capped at 1000 chars; data, never instructions or HTML. */
+	body: text(),
+	/** confirm | cancel | stop | other */
+	action: text().default('other').notNull(),
+	orderId: uuid("order_id"),
+	/** confirmed | cancelled | already | refused | not_found | opted_out | ignored */
+	result: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("whatsapp_inbound_created_idx").using("btree", table.createdAt),
+	index("whatsapp_inbound_order_idx").using("btree", table.orderId).where(sql`order_id IS NOT NULL`),
+	foreignKey({ columns: [table.orderId], foreignColumns: [orders.id], name: "whatsapp_inbound_order_id_fkey" }).onDelete("set null"),
+	check("whatsapp_inbound_sender_check", sql`num_nonnulls(from_phone, wa_user_id) >= 1`),
+	check("whatsapp_inbound_from_phone_check", sql`from_phone IS NULL OR from_phone ~ '^[1-9][0-9]{7,14}$'`),
+	check("whatsapp_inbound_type_check", sql`char_length(type) BETWEEN 1 AND 50`),
+	check("whatsapp_inbound_body_check", sql`body IS NULL OR char_length(body) <= 1000`),
+	check("whatsapp_inbound_action_check", sql`action IN ('confirm', 'cancel', 'stop', 'other')`),
+	check("whatsapp_inbound_result_check", sql`result IS NULL OR result IN ('confirmed', 'cancelled', 'already', 'refused', 'not_found', 'opted_out', 'ignored')`),
+]);
+
+/** Meta's state of each code template × language, for Admin. Server-only: RLS on, no policies. */
+export const whatsappTemplates = pgTable("whatsapp_templates", {
+	name: text().notNull(),
+	/** 'ar' | 'en' */
+	language: text().notNull(),
+	metaTemplateId: text("meta_template_id"),
+	category: text(),
+	/** not_submitted | pending | approved | rejected | paused | disabled */
+	status: text().default('not_submitted').notNull(),
+	rejectedReason: text("rejected_reason"),
+	quality: text(),
+	syncedAt: timestamp("synced_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	primaryKey({ columns: [table.name, table.language], name: "whatsapp_templates_pkey" }),
+	check("whatsapp_templates_name_check", sql`name ~ '^[a-z0-9_]{1,512}$'`),
+	check("whatsapp_templates_language_check", sql`language IN ('ar', 'en')`),
+	check("whatsapp_templates_status_check", sql`status IN ('not_submitted', 'pending', 'approved', 'rejected', 'paused', 'disabled')`),
 ]);
