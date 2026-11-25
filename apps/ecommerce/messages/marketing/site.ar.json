@@ -36,7 +36,7 @@
       "items": {
         "store-design": {
           "title": "تصميم المتجر",
-          "body": "عدّل كل عنصر بالسحب والإفلات."
+          "body": "عدّل كل عنصر بـ Drag & Drop."
         },
         "templates": {
           "title": "الثيمات",

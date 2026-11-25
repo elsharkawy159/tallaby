@@ -30,7 +30,7 @@ For anyone building a page in `apps/marketing/app/[locale]/(marketing)` (split o
 ## Copy
 
 - Arabic is the default: simple, formal Modern Standard Arabic, short sentences, benefit first. Use هل يمكنني، يمكنك، لا، نعم، البريد الإلكتروني، الهاتف، النطاق، العلامة التجارية، التاجر. Never إزاي، عشان، مفيش، بتاع، إيميل، الجوال، موبايل، البائع، دومين، براند, even where a design file uses them (owner, 2026-11-06: الهاتف for phone, التاجر for the seller).
-- Currency is "350 جنيه", never ج.م (owner, 2026-11-06). Digits go in `Num`, and Latin runs (domains, brands, emails) in `Ltr`.
+- Currency is "350 جنيه", never ج.م (owner, 2026-11-06). The editor is "Drag & Drop" in Arabic copy too, never السحب والإفلات (owner, 2026-11-25). Digits go in `Num`, and Latin runs (domains, brands, emails) in `Ltr`.
 - English is natural English, not a word-for-word translation. Use sentence case and plain verbs; no em dashes in body copy, no emoji.
 
 ## Facts: check the code before keeping a claim

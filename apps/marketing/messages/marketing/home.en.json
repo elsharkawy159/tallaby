@@ -227,7 +227,6 @@
       "lead": "Turn it on in your store in one step, with no payment company account or keys.",
       "points": {
         "methods": "Customers pay by card, mobile wallet or Meeza, in cash at Fawry and Aman, or in instalments.",
-        "fee": "<fee></fee> of each paid order, payment company fee included.",
         "release": "Your money is available once the order is delivered. Withdraw it to InstaPay, a bank account or a mobile wallet.",
         "egp": "For stores selling in EGP. Verify your ID once before your first withdrawal."
       },

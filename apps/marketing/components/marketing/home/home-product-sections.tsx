@@ -69,7 +69,7 @@ export async function HomeTallabyPay() {
   const facts = await getTallabyPayFacts();
   if (!facts?.live) return null;
   const t = await getTranslations("home.pay");
-  const points = ["methods", "fee", "release", "egp"] as const;
+  const points = ["methods", "release", "egp"] as const;
   const methods = [
     { key: "card", icon: CreditCard, marks: [{ src: "/icons/payments/visa.svg", alt: "Visa" }, { src: "/icons/payments/mastercard.svg", alt: "Mastercard" }] },
     { key: "wallet", icon: Smartphone, marks: [{ src: "/icons/payments/vodafone-cash.png", alt: "Vodafone Cash" }] },
@@ -94,7 +94,7 @@ export async function HomeTallabyPay() {
               {points.map((point) => (
                 <li key={point} className="flex items-start gap-2.5 text-[15px] text-white/90">
                   <CircleCheck className="mt-1 size-[18px] flex-none text-amber-300" aria-hidden />
-                  <span>{t.rich(`points.${point}`, { fee: () => <Num className="font-bold text-white">{facts.feePercent}%</Num> })}</span>
+                  <span>{t(`points.${point}`)}</span>
                 </li>
               ))}
             </ul>
