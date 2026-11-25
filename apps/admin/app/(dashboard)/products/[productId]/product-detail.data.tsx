@@ -45,6 +45,8 @@ import {
 } from "../products.lib";
 import { ProductDetailSkeleton } from "./product-detail.skeleton";
 import { loadProductStoreLink } from "./product-store-link.server";
+import { ProductAiPromptsCard } from "./product-ai-prompts.data";
+import { listProductAiPrompts } from "@workspace/lib/products/ai-prompts/server";
 import { EntityChip } from "../../_components/entity/entity-chip";
 import { sellerHref } from "../../_components/entity/entity-href.lib";
 import { accountChips } from "../../_components/entity/relation-chips.lib";
@@ -171,10 +173,13 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
 
   const product = transformProductForDetail(productResult.data, salesSummary);
   // Products reach a store only through their seller (no products.store_id).
-  const [sellerAccount, storeLink] = await Promise.all([
+  const [sellerAccount, storeLink, aiPrompts] = await Promise.all([
     product.seller ? getAccountRelations(product.seller.id).catch(() => null) : null,
     loadProductStoreLink({ id: product.id, slug: product.slug, sellerId: product.seller?.id ?? null }).catch(() => null),
+    // Best-effort (0181): null when the table is missing.
+    listProductAiPrompts(product.id),
   ]);
+  const showAiPrompts = Boolean(aiSourceLabel(product.aiSource)) || Boolean(aiPrompts?.length);
   const relations = sellerAccount
     ? accountChips(sellerAccount, { personRole: "Owner", omit: ["wallet", "orders"] })
     : [];
@@ -524,6 +529,8 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
               </div>
             </CardContent>
           </Card>
+
+          {showAiPrompts && <ProductAiPromptsCard prompts={aiPrompts} />}
         </TabsContent>
 
         <TabsContent value="variants" className="py-4">

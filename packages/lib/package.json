@@ -385,14 +385,6 @@
       "types": "./src/whatsapp/templates.lib.ts",
       "default": "./src/whatsapp/templates.lib.ts"
     },
-    "./whatsapp/admin": {
-      "types": "./src/whatsapp/admin.lib.ts",
-      "default": "./src/whatsapp/admin.lib.ts"
-    },
-    "./whatsapp/admin/server": {
-      "types": "./src/whatsapp/admin.server.ts",
-      "default": "./src/whatsapp/admin.server.ts"
-    },
     "./whatsapp/server": {
       "types": "./src/whatsapp/server.ts",
       "default": "./src/whatsapp/server.ts"
@@ -417,6 +409,14 @@
       "types": "./src/whatsapp/consent.server.ts",
       "default": "./src/whatsapp/consent.server.ts"
     },
+    "./whatsapp/admin": {
+      "types": "./src/whatsapp/admin.lib.ts",
+      "default": "./src/whatsapp/admin.lib.ts"
+    },
+    "./whatsapp/admin/server": {
+      "types": "./src/whatsapp/admin.server.ts",
+      "default": "./src/whatsapp/admin.server.ts"
+    },
     "./products/trash": {
       "types": "./src/products/trash.lib.ts",
       "default": "./src/products/trash.lib.ts"
@@ -436,6 +436,10 @@
     "./products/autofill": {
       "types": "./src/products/autofill/index.ts",
       "default": "./src/products/autofill/index.ts"
+    },
+    "./products/ai-prompts/server": {
+      "types": "./src/products/ai-prompts.server.ts",
+      "default": "./src/products/ai-prompts.server.ts"
     },
     "./products/agent/server": {
       "types": "./src/products/agent-products.server.ts",

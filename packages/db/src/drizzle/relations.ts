@@ -3,6 +3,7 @@ import { productCrossSells, productQuantityOffers, storeDiscountRules, storeBuil
 import { sellerCategoryProductPositions, oauthClients, agentGrants, oauthAuthCodes, agentTokens, agentToolCalls, agentRateWindows, agentPendingActions, agentReadCounts } from "./schema";
 import { productStoreSplit } from "./schema";
 import { storeSizeCharts, storeSizeChartTargets } from "./schema";
+import { productAiPrompts } from "./schema";
 import { tallabyPayWallets, tallabyPaySales, tallabyPayPayouts, tallabyPayEntries, tallabyPayKyc } from "./schema";
 import { sellerSetupReminders } from "./schema";
 import { storeWhatsappSettings, whatsappSettings, whatsappContacts, whatsappMessages, whatsappInbound } from "./schema";
@@ -1518,6 +1519,13 @@ export const storeSizeChartTargetsRelations = relations(storeSizeChartTargets, (
 	store: one(stores, { fields: [storeSizeChartTargets.storeId], references: [stores.id] }),
 	product: one(products, { fields: [storeSizeChartTargets.productId], references: [products.id] }),
 	category: one(sellerProductCategories, { fields: [storeSizeChartTargets.categoryId], references: [sellerProductCategories.id] }),
+}));
+
+export const productAiPromptsRelations = relations(productAiPrompts, ({one}) => ({
+	seller: one(sellers, { fields: [productAiPrompts.sellerId], references: [sellers.id] }),
+	store: one(stores, { fields: [productAiPrompts.storeId], references: [stores.id] }),
+	product: one(products, { fields: [productAiPrompts.productId], references: [products.id] }),
+	admin: one(users, { fields: [productAiPrompts.adminId], references: [users.id] }),
 }));
 
 export const sellerSetupRemindersRelations = relations(sellerSetupReminders, ({one}) => ({

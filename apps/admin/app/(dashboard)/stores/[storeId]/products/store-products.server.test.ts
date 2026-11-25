@@ -18,6 +18,7 @@ vi.mock("@workspace/lib/products/agent/server", () => {
     agentTrashProducts: vi.fn(),
   };
 });
+vi.mock("@workspace/lib/products/ai-prompts/server", () => ({ linkAutofillPrompts: vi.fn(async () => 0) }));
 vi.mock("./store-products-access.server", () => {
   class StoreProductsAccessError extends Error {
     constructor(readonly code: "not_admin" | "not_found") {

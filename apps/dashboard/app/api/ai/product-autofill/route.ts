@@ -4,6 +4,7 @@ import { db, eq, sellers } from "@workspace/db"
 import { isProActive } from "@workspace/lib/billing"
 import { claimAiCredit, getAiCreditStatus, refundAiCredit } from "@workspace/lib/billing/credits"
 import { getBillingState } from "@workspace/lib/billing/server"
+import { recordAutofillPrompt } from "@workspace/lib/products/ai-prompts/server"
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server"
 import { requireProductStore, taxonomyScopeOf } from "@/lib/products/product-store.server"
 import { createRateLimiter } from "@/lib/rate-limit.lib"
@@ -94,8 +95,11 @@ export async function POST(request: NextRequest) {
   // against the session like every store id from a client; a foreign, deleted
   // or forged one is refused before any AI is used.
   let taxonomy
+  let storeId: string
   try {
-    taxonomy = taxonomyScopeOf(await requireProductStore(form.get("storeId"), { read: true }))
+    const productStore = await requireProductStore(form.get("storeId"), { read: true })
+    storeId = productStore.store.id
+    taxonomy = taxonomyScopeOf(productStore)
   } catch (error) {
     if (isAccessError(error)) return fail("unauthorized")
     throw error
@@ -142,6 +146,16 @@ export async function POST(request: NextRequest) {
   try {
     const { output, cached } = await autofillProduct(taxonomy, input)
     if (cached) await giveBack()
+    // For Admin's product page (0181): the text and file counts only. Best-effort, never throws.
+    await recordAutofillPrompt({
+      sellerId,
+      storeId,
+      mode: current ? "edit" : "add",
+      text,
+      imageCount: images.length,
+      hasPdf: pdf !== null,
+      cached,
+    })
     const credits = billing.usdLive ? await getAiCreditStatus(sellerId).catch(() => null) : null
     return NextResponse.json<ProductAutofillResponse>({
       ok: true,

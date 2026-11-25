@@ -8,6 +8,7 @@ import {
   type AutofillFile,
   type ProductAutofillOutput,
 } from "@workspace/lib/products/autofill";
+import { recordAutofillPrompt } from "@workspace/lib/products/ai-prompts/server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import {
   StoreProductsAccessError,
@@ -106,6 +107,18 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ storeI
 
   try {
     const { output, cached } = await adminAutofillProduct(access, input);
+    // For the product page's "AI prompt" card (0181): the text and photo count only. Best-effort, never throws.
+    await recordAutofillPrompt({
+      sellerId: access.store.sellerId,
+      storeId: access.store.id,
+      mode: "add",
+      text,
+      imageCount: images.length,
+      hasPdf: false,
+      cached,
+      source: "admin",
+      adminId: access.adminId,
+    });
     // The model's English hint, then its last word ("running shoes" → "shoes"), matched in code.
     const hint = (output.categoryHint || output.localized.en.title).trim();
     const words = hint.split(/\s+/).filter((w) => w.length > 2);

@@ -3380,6 +3380,36 @@ export const storeSizeChartTargets = pgTable("store_size_chart_targets", {
 ]);
 
 /**
+ * What the seller (or an admin for the store) typed for an AI product fill
+ * (0181): text and file counts only, never the files. `productId` is set when
+ * the product is saved. Server-only: RLS on, no policies.
+ * packages/lib/src/products/ai-prompts.server.ts.
+ */
+export const productAiPrompts = pgTable("product_ai_prompts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	storeId: uuid("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+	productId: uuid("product_id").references(() => products.id, { onDelete: "cascade" }),
+	mode: text().notNull(),
+	source: text().default('seller').notNull(),
+	adminId: uuid("admin_id").references(() => users.id, { onDelete: "set null" }),
+	promptText: text("prompt_text").notNull(),
+	imageCount: integer("image_count").default(0).notNull(),
+	hasPdf: boolean("has_pdf").default(false).notNull(),
+	cached: boolean().default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	linkedAt: timestamp("linked_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("product_ai_prompts_unlinked_idx").using("btree", table.sellerId, table.storeId, table.createdAt.desc()).where(sql`product_id IS NULL`),
+	index("product_ai_prompts_product_idx").using("btree", table.productId, table.createdAt).where(sql`product_id IS NOT NULL`),
+	index("product_ai_prompts_store_idx").using("btree", table.storeId),
+	check("product_ai_prompts_mode_check", sql`mode IN ('add', 'edit')`),
+	check("product_ai_prompts_source_check", sql`source IN ('seller', 'admin')`),
+	check("product_ai_prompts_text_check", sql`char_length(prompt_text) <= 1500`),
+	check("product_ai_prompts_image_count_check", sql`image_count >= 0`),
+]);
+
+/**
  * Store setup reminder emails (0170, ROADMAP.md F-94): one row per (seller,
  * kind), claimed before sending; `opt_out` stops later reminders. Server-only:
  * RLS on, no policies. Rules in packages/lib/src/sellers/setup-reminders.lib.ts.

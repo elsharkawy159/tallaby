@@ -11,6 +11,7 @@ import {
   agentSetProductStatus,
   agentTrashProducts,
 } from "@workspace/lib/products/agent/server";
+import { linkAutofillPrompts } from "@workspace/lib/products/ai-prompts/server";
 type CategoryRow = Awaited<ReturnType<typeof agentSearchCategories>>[number];
 
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -109,6 +110,15 @@ export async function createStoreProductAction(
     if (!built.ok) return { success: false, error: built.error };
     const created = await agentCreateProduct(access.ctx, built.input, sellerFolderImageUploader(access.store.sellerId));
     await applyInvalidation(created.invalidation, { from: "admin", mode: "action" });
+    // This admin's unlinked "Fill with AI" prompts for the store (0181). Best-effort, never throws.
+    await linkAutofillPrompts({
+      sellerId: access.store.sellerId,
+      storeId: access.store.id,
+      productId: created.productId,
+      mode: "add",
+      source: "admin",
+      adminId: access.adminId,
+    });
     await auditStoreProducts(access, "create_store_product", {
       productId: created.productId,
       status: created.status,
