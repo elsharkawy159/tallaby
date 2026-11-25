@@ -4,9 +4,10 @@
  * white paper, light-grey panels, a calm blue, Alexandria throughout, square
  * corners and a 1320px container. The icon header, a panel slider with the
  * product beside the copy, grey category circles with counts, new arrivals
- * under category tabs, three plain feature columns, four collection panels of
- * uneven widths, a centred best sellers row and the dark footer bar (all
- * built for this look on 2026-10-29). Built from section library designs (`fromLibrary`).
+ * under category tabs, three plain feature columns, the cases as a carousel
+ * (the store's 1st category; 2026-11-25), four collection panels of uneven
+ * widths, a centred best sellers row and the dark footer bar (all built for
+ * this look on 2026-10-29). Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-29): accessories only on plain
  * backgrounds, no people or hands, no readable brand lettering or logos, none
@@ -82,6 +83,8 @@ const home: Design[] = [
   lib("categories-counts"),
   lib("products-category-tabs"),
   lib("features-columns"),
+  // The store's 1st category (cases, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("categories-panels", {
     photo: [PHOTOS.panelCases, PHOTOS.panelStraps, PHOTOS.panelCableSet, PHOTOS.panelPad],
     text: {
@@ -160,7 +163,8 @@ const DEMO = demoStore({
 
 export const WASLA = libraryTemplate({
   key: WASLA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Wasla v2: a cases carousel (the store's 1st category) on the home",
   name: NAME,
   description: L(
     "متجر إكسسوارات مرتب: شرائح بلوح فاتح، دوائر أقسام، منتجات بتبويبات وألواح عروض رمادية. لمتاجر الجرابات والشواحن والكابلات.",

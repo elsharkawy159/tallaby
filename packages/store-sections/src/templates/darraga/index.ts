@@ -3,7 +3,8 @@
  * Templates"): pale sage paper, a burnt orange for actions and a lime
  * highlight, Readex Pro throughout and 10px corners. A bike shop with a
  * workshop in Zamalek: a split opening, service in a day, workshop prices,
- * essentials before your first ride and where to come by. Built from
+ * essentials before your first ride, where to come by and the lights and
+ * gear as a carousel (the store's 3rd category). Built from
  * section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): parked city bikes,
@@ -125,6 +126,8 @@ const home: Design[] = [
     },
     links: { "https://maps.google.com": "https://maps.google.com/" },
   }),
+  // The store's 3rd category (lights and gear, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [{ offset: 2 }, { categoryIndex: 3, limit: 4 }] }),
 ];
 
 const about: Design[] = [
@@ -165,13 +168,16 @@ const DEMO = demoStore({
     ["commuter-pack", "bags", "حقيبة تنقل ٢٠ لتر", "Commuter Pack 20 L", PHOTOS.pack, 1650, { sold90: 44 }],
     ["orange-city-bike", "bikes", "دراجة مدينة برتقالية", "Orange City Bike", PHOTOS.orangeBikesSmall, 14500, { isFeatured: true, rating: 4.9, sold90: 22 }],
     ["red-step-through", "bikes", "دراجة حمراء بإطار منخفض", "Red Step-Through Bike", PHOTOS.redBike, 12900, { compareAtPrice: 13900, sold90: 18 }],
+    // Two more for lights and gear, so its carousel fills a row of four (v5).
+    ["handlebar-bell", "gear", "جرس للمقود", "Handlebar Bell", PHOTOS.bell, 190, { sold90: 16 }],
+    ["rear-carrier", "gear", "حامل أمتعة خلفي", "Rear Carrier", PHOTOS.rearRack, 750, { sold90: 14 }],
   ],
 });
 
 export const DARRAGA = libraryTemplate({
   key: DARRAGA_KEY,
-  version: 4,
-  changelog: "Darraga v4: a products grid on the home",
+  version: 5,
+  changelog: "Darraga v5: a lights and gear carousel (the store's 3rd category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء راكبي الدراجات", "From the riders"), related: L("إكسسوارات أخرى لدراجتك", "More for your bike") } },
   name: L("عجلة", "Darraga"),
   description: L(

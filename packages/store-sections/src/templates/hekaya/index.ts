@@ -89,6 +89,8 @@ const home: Design[] = [
       "التفاصيل في صفحة السياسات": L("صور وتفاصيل لكل كتاب.", "Photos and details for every book."),
     },
   }),
+  // v5 (2026-11-25, owner): the store's 1st category as a carousel after the reasons.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("stats-sentence", {
     text: {
       "وصّلنا": L("قرأ عملاؤنا", "Our readers finished"),
@@ -134,9 +136,10 @@ const DEMO = demoStore({
   name: NAME,
   description: L("قصص بالعربية والإنجليزية للقرّاء الصغار.", "Arabic and English stories for little readers."),
   categories: [
+    // v5: learn and play first, so the category carousel (the 1st category) shows a full row.
+    ["play", "تعلّم والعب", "Learn & play", PHOTOS.alphabet],
     ["arabic", "قصص عربية", "Arabic stories", PHOTOS.shelfBooks],
     ["english", "كتب إنجليزية", "English books", PHOTOS.bookcase],
-    ["play", "تعلّم والعب", "Learn & play", PHOTOS.alphabet],
     ["blocks", "مكعبات", "Blocks", PHOTOS.numberBlocks],
     ["animals", "حكايات الحيوانات", "Animal tales", PHOTOS.animalsOnBooks],
   ],
@@ -148,14 +151,15 @@ const DEMO = demoStore({
     ["arabic-letters-blocks", "play", "مكعبات الحروف", "Arabic Letters Blocks", PHOTOS.alphabet, 590, { isFeatured: true, sold90: 72 }],
     ["counting-blocks", "blocks", "مكعبات العد", "Rainbow Counting Blocks", PHOTOS.numberBlocks, 520, { compareAtPrice: 620, sold90: 118 }],
     ["shape-sorter", "play", "لعبة الأشكال", "Shape Sorter", PHOTOS.sorter, 320, { sold90: 41 }],
+    ["learn-to-count-blocks", "play", "مكعبات تعلّم العد", "Learn-to-Count Blocks", PHOTOS.numberBlocks, 450, { sold90: 52 }],
     ["learning-stacker", "play", "برج الحلقات", "Learning Stacker", PHOTOS.stacker, 260, { inStock: false, sold90: 30 }],
   ],
 });
 
 export const HEKAYA = libraryTemplate({
   key: HEKAYA_KEY,
-  version: 4,
-  changelog: "Hekaya v4: new hero, categories, section order",
+  version: 5,
+  changelog: "Hekaya v5: products by category as a carousel on the home",
   name: L("حكاية", "Hekaya"),
   description: L(
     "كتب أطفال: جديد الشهر، اختيار عمر القارئ، لماذا حكاية ودور النشر. أربع صفحات جاهزة.",

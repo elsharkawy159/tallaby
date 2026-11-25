@@ -97,6 +97,9 @@ const home: Design[] = [
       "٩٥ ج.م": L("٧٥ ج.م", "EGP 75"),
     },
   }),
+  // v4 (2026-11-25, owner): every home has products by category in a swipe row: the store's 2nd category.
+  // 2 across: the demo's category holds 2 (one full row, the row rule); a store's own category fills the swipe.
+  lib("products-category-carousel", { lists: [{ offset: 1 }, { categoryIndex: 2, limit: 2 }], nodes: { "منتجات القسم": { style: { columns: 2 }, tablet: { columns: 2 } } } }),
   lib("testimonials-wall", {
     text: {
       "ماذا يقولون عنا": L("آراء الصيف", "Summer reviews"),
@@ -178,8 +181,8 @@ const DEMO = demoStore({
 
 export const SABAHA = libraryTemplate({
   key: SABAHA_KEY,
-  version: 3,
-  changelog: "Sabaha v3: wide pool hero, categories, no coupon, section order",
+  version: 4,
+  changelog: "Sabaha v4: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("منتجات أخرى للشاطئ", "More for the beach") } },
   name: L("سباحة", "Sabaha"),
   description: L(

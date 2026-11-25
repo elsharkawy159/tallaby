@@ -202,6 +202,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       },
     }),
     lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
+    // v6 (2026-11-25, owner): the store's 1st category as a carousel (`journey.rows`), right under the categories.
+    lib("products-category-carousel", {
+      lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 4 }],
+    }),
     lib("products-rows", {
       text: { "إكسسوارات بأسعار مناسبة": c.products.primary.title },
       links: { "/products": primaryHref(journey.primary) },
@@ -304,6 +308,8 @@ const DEMO = demoStore({
     ["car-mount-360", "car", "حامل عربية ٣٦٠°", "360° Car Mount", PHOTOS.dashMount, 420, { sold90: 301 }],
     ["mini-power-stick", "power", "باور ستيك ميني", "Mini Power Stick", PHOTOS.miniSticks, 480, { compareAtPrice: 560, sold90: 61 }],
     ["fast-charger-20w", "chargers", "شاحن سريع ٢٠ وات", "20W Fast Charger", PHOTOS.whiteCharger, 290, { sold90: 180 }],
+    // v6: a fourth charger, so the category carousel (the 1st category) shows a full row.
+    ["wall-charger-usb-c-cable", "chargers", "شاحن حائط مع كابل USB-C", "Wall Charger with USB-C Cable", PHOTOS.flatLay, 340, { sold90: 58 }],
     ["usb-a-charger", "chargers", "شاحن USB-A مع كابل", "USB-A Charger with Cable", PHOTOS.usbCharger, 220, { compareAtPrice: 260, sold90: 95 }],
     ["magnetic-vent-mount", "car", "حامل مغناطيس للتكييف", "Magnetic Vent Mount", PHOTOS.ventMount, 350, { sold90: 140 }],
     ["braided-usb-c-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cableC, 260, { isFeatured: true, rating: 4.9, sold90: 260 }],
@@ -317,8 +323,8 @@ export const KABL = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KABL_KEY, "chargers-cables", { ar: 1625, en: 1625 }),
   key: KABL_KEY,
-  version: 5,
-  changelog: "Kabl v5: a products grid on the home",
+  version: 6,
+  changelog: "Kabl v6: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("كابل", "Kabl"),
   description: L(
@@ -370,8 +376,8 @@ export const KABL = editionTemplate({
   ],
   // Buyer quotes are demo claims: a pack writes real ones or leaves the group out (the section is then not built).
   optional: ["reviews"],
-  // Six best sellers in compact rows; no category rows.
-  journey: { primary: "best-sellers", rows: [] },
+  // Six best sellers in compact rows; the category carousel shows the store's 1st category.
+  journey: { primary: "best-sellers", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

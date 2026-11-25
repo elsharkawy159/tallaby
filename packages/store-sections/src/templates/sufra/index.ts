@@ -110,7 +110,7 @@ const DEFAULT_CONTENT: LookDefaults = {
  * (Shop all, New in, Top rated, Delivery and payment), the open-box and
  * budget blocks and the layout stay here.
  */
-function look(c: LookContent, _journey: LookJourney): LookParts {
+function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const initial = initialOf(name);
   const aboutName = L(`عن ${name.ar}`, `About ${name.en}`);
@@ -167,6 +167,9 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
       lists: [{ source: "best-sellers", limit: 8 }],
     }),
     lib("finder-budget"),
+    // v7 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 2 across: the demo's category holds 2 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 2 }], nodes: { "منتجات القسم": { style: { columns: 2 }, tablet: { columns: 2 } } } }),
     lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("التوصيل والدفع", "Delivery and payment") } }),
   ];
 
@@ -233,8 +236,8 @@ export const SUFRA = editionTemplate({
   key: SUFRA_KEY,
   // v5 (2026-11-16, owner): Noto Kufi Arabic headings replace Reem Kufi, which read oddly to shoppers.
   // v6 (2026-11-16, owner): every home has at least one real products grid.
-  version: 6,
-  changelog: "Sufra v6: a products grid on the home",
+  version: 7,
+  changelog: "Sufra v7: products by category in a swipe row on the home",
   productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("سفرة", "Sufra"),
   description: L(
@@ -276,9 +279,9 @@ export const SUFRA = editionTemplate({
     "photos.hero.wide",
     "photos.story",
   ],
-  // The featured block shows the store's featured products, so `primary` is not read; no category rows.
+  // The featured block shows the store's featured products, so `primary` is not read; one category carousel, of the store's 1st category (an edition can pick another).
   optional: [],
-  journey: { primary: "featured", rows: [] },
+  journey: { primary: "featured", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

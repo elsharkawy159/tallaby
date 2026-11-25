@@ -106,6 +106,8 @@ const home: Design[] = [
       "في أي سؤال عن منتجاتنا.": L("في عبوات زجاجية عسلية اللون.", "In amber glass bottles."),
     },
   }),
+  // v6 (2026-11-25, owner): the store's 1st category as a carousel after the stories.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("features-bento", {
     text: {
       "وعدنا لك": L("ما يميز منتجاتنا", "What sets our products apart"),
@@ -193,6 +195,9 @@ const DEMO = demoStore({
   products: [
     ["rosemary-hair-oil", "hair", "زيت شعر روزماري", "Rosemary Hair Oil", PHOTOS.amberBottles, 420, { isFeatured: true, rating: 4.8, sold90: 520 }],
     ["black-seed-hair-oil", "hair", "زيت شعر حبة البركة", "Black Seed Hair Oil", PHOTOS.oilRow, 390, { sold90: 120 }],
+    // v6: two more hair oils, so the category carousel (the 1st category) shows a full row.
+    ["eucalyptus-hair-oil", "hair", "زيت شعر بالكافور", "Eucalyptus Hair Oil", PHOTOS.eucalyptusOil, 360, { sold90: 66 }],
+    ["hair-oil-trio", "hair", "ثلاثي زيوت الشعر", "Hair Oil Trio", PHOTOS.oilsDisplay, 990, { sold90: 41 }],
     ["sesame-body-oil", "body", "زيت جسم سمسم", "Sesame Body Oil", PHOTOS.eucalyptusOil, 380, { sold90: 88 }],
     ["olive-oil-soap-trio", "soap", "٣ قطع صابون بزيت الزيتون", "Olive Oil Soap Trio", PHOTOS.soapRow, 240, { compareAtPrice: 290, sold90: 206 }],
     ["siwa-soap-selection", "soap", "تشكيلة صابون سيوة", "Siwa Soap Selection", PHOTOS.soapStack, 320, { sold90: 74 }],
@@ -205,8 +210,8 @@ const DEMO = demoStore({
 
 export const BOTANICA = libraryTemplate({
   key: BOTANICA_KEY,
-  version: 5,
-  changelog: "Sage v5: hero, categories, section order",
+  version: 6,
+  changelog: "Sage v6: products by category as a carousel on the home",
   name: L("سيج", "Sage"),
   description: L("عناية طبيعية بالشعر والجسم: من النبتة إلى العبوة، أحجام متعددة، تقييمات ورسالة المتجر. أربع صفحات جاهزة.", "Natural hair and body care: plant to bottle, several sizes, reviews and the store's letter. Four ready pages."),
   category: "beauty",

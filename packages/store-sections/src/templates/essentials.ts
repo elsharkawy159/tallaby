@@ -5,8 +5,16 @@
  *
  * - Home page: its hero (the first `hero` section, else the page's first
  *   section) and every section that lists store records (products,
- *   categories, blog posts). The first product grid after the hero shows 12
- *   products per page with page links (`paginate`).
+ *   categories, blog posts). The home's real grid shows 12 products per page
+ *   with page links (`paginate`): the first product list of a products
+ *   section that is not a carousel (`rail`) and shows at least 3 across on
+ *   desktop (2026-11-25). With none, the first product section's list, else
+ *   the first product list after the hero. Every category carousel (a
+ *   `source: "category"` list with `rail`) shows up to
+ *   `HOME_CATEGORY_RAIL_LIMIT` of the store's own products of that category,
+ *   not the few the template's demo catalog fits (owner, 2026-11-25); a
+ *   store with no such category or no products in it gets no row (the
+ *   catalog returns none and the renderer hides the section).
  * - Other pages: their page header and every section with store records or a
  *   store form (a contact page keeps its form).
  * - The product page (`kind: "product"`): every section with a product element
@@ -27,6 +35,9 @@ import { getTemplateDesign } from "./catalog";
 
 /** Products per page of the home page's main product grid. */
 export const HOME_GRID_PAGE_SIZE = 12;
+
+/** Products a home category carousel shows in a store (a template's demo may set fewer). */
+export const HOME_CATEGORY_RAIL_LIMIT = 12;
 
 const RECORD_LISTS = new Set(["productList", "categoryList", "postList"]);
 
@@ -65,12 +76,18 @@ function hasNode(nodes: readonly ComponentNode[] | undefined, match: (node: Comp
 const listsRecords = (section: SectionInstance) => hasNode(section.componentTree, (node) => RECORD_LISTS.has(node.type));
 const hasForm = (section: SectionInstance) => hasNode(section.componentTree, (node) => node.type === "storeForm");
 
-/** The section with its first product list paginated, or null when it has none. */
-function paginateFirstList(section: SectionInstance): SectionInstance | null {
+const isProductList = (node: ComponentNode) => node.type === "productList";
+
+/** A grid list: a product list that is not a carousel and shows at least 3 across on desktop. */
+export const isGridProductList = (node: ComponentNode) =>
+  isProductList(node) && node.props?.rail !== true && Number(node.style?.columns) >= 3;
+
+/** The section with its first list that `match`es paginated, or null when it has none. */
+function paginateFirstList(section: SectionInstance, match: (node: ComponentNode) => boolean): SectionInstance | null {
   let done = false;
   const visit = (node: ComponentNode): ComponentNode => {
     if (done) return node;
-    if (node.type === "productList") {
+    if (match(node)) {
       done = true;
       const { offset: _offset, ...props } = node.props ?? {};
       return { ...node, props: { ...props, limit: HOME_GRID_PAGE_SIZE, paginate: true } };
@@ -81,13 +98,34 @@ function paginateFirstList(section: SectionInstance): SectionInstance | null {
   return done ? { ...section, componentTree } : null;
 }
 
+const isCategoryRail = (node: ComponentNode) => isProductList(node) && node.props?.source === "category" && node.props?.rail === true;
+
+/**
+ * The section with its category carousels at the store's limit. Their
+ * desktop `columns` stay: a carousel sizes its cards four in view whatever
+ * they say (`RAIL_CLASS`, elements/render.tsx).
+ */
+function widenCategoryRails(section: SectionInstance): SectionInstance {
+  if (!hasNode(section.componentTree, isCategoryRail)) return section;
+  const visit = (node: ComponentNode): ComponentNode =>
+    isCategoryRail(node) && node.props?.paginate !== true
+      ? { ...node, props: { ...node.props, limit: HOME_CATEGORY_RAIL_LIMIT } }
+      : { ...node, children: node.children.map(visit) };
+  return { ...section, componentTree: section.componentTree?.map(visit) };
+}
+
 function homeSections(sections: readonly SectionInstance[]): SectionInstance[] {
   const hero = sections.find((s) => sectionCategory(s) === "hero") ?? sections[0];
   const kept = sections.filter((s) => s === hero || listsRecords(s));
-  // The main grid: the first product section's list, else the first list after the hero.
-  const grid = kept.find((s) => s !== hero && sectionCategory(s) === "products" && hasNode(s.componentTree, (n) => n.type === "productList"))
-    ?? kept.find((s) => s !== hero && hasNode(s.componentTree, (n) => n.type === "productList"));
-  return kept.map((s) => (s === grid ? (paginateFirstList(s) ?? s) : s));
+  const others = kept.filter((s) => s !== hero);
+  const isProducts = (s: SectionInstance) => sectionCategory(s) === "products";
+  // The home's real grid; else the first product section's list; else the first list after the hero.
+  const grid = others.find((s) => isProducts(s) && hasNode(s.componentTree, isGridProductList));
+  const fallback = others.find((s) => isProducts(s) && hasNode(s.componentTree, isProductList))
+    ?? others.find((s) => hasNode(s.componentTree, isProductList));
+  const target = grid ?? fallback;
+  const match = grid ? isGridProductList : isProductList;
+  return kept.map((s) => widenCategoryRails(s === target ? (paginateFirstList(s, match) ?? s) : s));
 }
 
 function pageSections(sections: readonly SectionInstance[]): SectionInstance[] {

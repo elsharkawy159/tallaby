@@ -222,6 +222,11 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "٨٠ ج.م": x["service-3-2-price"]!,
       },
     }),
+    // v5 (2026-11-25, owner): the store's 1st category as a carousel (`journey.rows`), three across: the look's packs hold three products a category (the row rule).
+    lib("products-category-carousel", {
+      lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }],
+      nodes: { "منتجات القسم": { style: { columns: 3 } } },
+    }),
     ...(reviews && reply
       ? [
           lib("testimonials-chat", {
@@ -296,6 +301,8 @@ const DEMO = demoStore({
     ["shaving-soap", "shave", "صابون حلاقة", "Shaving Soap", PHOTOS.shavingSoap, 190, { rating: 4.7, sold90: 130 }],
     ["barber-kit", "kits", "طقم الحلاقة", "Barber Kit", PHOTOS.barberKit, 1150, { isFeatured: true, rating: 4.9, sold90: 60 }],
     ["sandalwood-beard-oil", "beard", "زيت لحية بالصندل", "Sandalwood Beard Oil", PHOTOS.sandalOil, 340, { sold90: 72 }],
+    // v5: a third beard product, so the category carousel (the 1st category) shows a full row.
+    ["cedar-beard-balm", "beard", "بلسم لحية بالسيدار", "Cedar Beard Balm", PHOTOS.beardBalm, 280, { sold90: 48 }],
     ["safety-razor", "razors", "موس أمان", "Safety Razor", PHOTOS.safetyRazor, 450, { sold90: 54 }],
     ["shaving-brush-stand", "brushes", "فرشاة حلاقة مع حامل", "Shaving Brush & Stand", PHOTOS.brushStand, 690, { compareAtPrice: 820, sold90: 30 }],
     ["cooling-aftershave", "aftershave", "كولونيا منعشة بعد الحلاقة", "Cooling Aftershave", PHOTOS.aftershave, 280, { sold90: 66 }],
@@ -306,8 +313,9 @@ const DEMO = demoStore({
 
 export const BARBER = editionTemplate({
   key: BARBER_KEY,
-  version: 4,
-  changelog: "Barber v3: categories, one service block, section order",
+  // v5 (2026-11-25, owner): products by category as a carousel after the service prices.
+  version: 5,
+  changelog: "Barber v5: products by category as a carousel on the home",
   productPage: { surface: "flat", thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("باربر", "Barber"),
   description: L(
@@ -368,9 +376,9 @@ export const BARBER = editionTemplate({
     "custom.service-3-2-price",
   ],
   // Buyer quotes are demo claims: a pack writes real ones (with the store's reply) or leaves them out (the section is then not built).
-  // A grid of the newest products; no category rows.
+  // A grid of the newest products; the category carousel shows the store's 1st category.
   optional: ["reviews", "custom.reviews-reply"],
-  journey: { primary: "newest", rows: [] },
+  journey: { primary: "newest", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

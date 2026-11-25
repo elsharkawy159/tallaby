@@ -189,6 +189,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     }),
     // v5 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
     lib("products-grid", gridPatch(journey.primary)),
+    // v6 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
     ...(reviews && rating
       ? [
           lib("testimonials-bento", {
@@ -279,8 +282,8 @@ const DEMO = demoStore({
 
 export const QAHWA = editionTemplate({
   key: QAHWA_KEY,
-  version: 5,
-  changelog: "Qahwa v5: a products grid on the home",
+  version: 6,
+  changelog: "Qahwa v6: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("قهوة", "Qahwa"),
   description: L(
@@ -318,9 +321,9 @@ export const QAHWA = editionTemplate({
     "custom.best-label",
   ],
   // Buyer quotes and a rating are demo claims: a pack writes real ones (rating, count and cities too) or leaves them out (the section is then not built).
-  // The rail shows the design's own list, so `primary` is not read; no category rows.
+  // The rail shows the design's own list, so `primary` is not read; one category carousel, of the store's 1st category (an edition can pick another).
   optional: ["reviews", "custom.reviews-rating", "custom.reviews-count", "custom.reviews-city-1", "custom.reviews-city-2", "custom.reviews-city-3"],
-  journey: { primary: "featured", rows: [] },
+  journey: { primary: "featured", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

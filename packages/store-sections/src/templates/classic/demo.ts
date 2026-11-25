@@ -6,7 +6,9 @@
  * Photos (Pexels, checked 2026-11-11, white-studio packshots, no people, no
  * logos). Earbuds 7417547, 3825517, 4812959; headphones 11199906, 3394666,
  * 7772547; smart watches 393047, 12307366, 31406895; power and chargers
- * 34338614, 3921700, 3921699. Category tiles: earbuds 3945697, headphones
+ * 34338614, 3921700, 3921699; and since v9 a fourth earbuds product on the
+ * earbuds tile photo (3945697), so the home's category carousel fills its
+ * row of four. Category tiles: earbuds 3945697, headphones
  * 9058883; smart watches and power reuse their best product photo (393047,
  * 3921700). The earlier speakers and cables categories had no clean packshot
  * left and were dropped.
@@ -65,6 +67,8 @@ const PRODUCTS: DemoProduct[] = [
   product("compact-wall-charger", "demo-power", "شاحن حائط مدمج", "Compact Wall Charger", 3921699, 290, { rating: 4.3, sold90: 54 }),
   product("pulse-smartwatch", "demo-watches", "ساعة ذكية رياضية", "Pulse Smartwatch", 31406895, 1250, { rating: 4.2, sold90: 31 }),
   product("maggo-10k", "demo-power", "بطارية متنقلة مغناطيسية 10K", "MagGo 10K Power Bank", 34338614, 1835, { rating: 4.4, sold90: 26 }),
+  // The oldest and least sold: it shows only in the earbuds carousel (v9).
+  product("everyday-buds", "demo-earbuds", "سماعة أذن لاسلكية يومية", "Everyday Buds", 3945697, 890, { rating: 4.4, sold90: 20 }),
 ];
 
 export const CLASSIC_DEMO: TemplateDemo = {

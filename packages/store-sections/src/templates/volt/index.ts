@@ -163,6 +163,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     ...(journey.primary === "newest"
       ? [lib("products-grid", { text: { "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"), "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products.") }, links: { "/products": BEST }, lists: [{ source: "best-sellers", limit: 8 }] })]
       : [lib("products-grid", { text: { "وصل حديثًا": L("وصل حديثًا", "New in") }, links: { "/products": NEW }, lists: [{ source: "newest", limit: 8 }] })]),
+    // v7 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
     ...(reviews && reply
       ? [
           lib("testimonials-chat", {
@@ -252,8 +255,8 @@ export const VOLT = editionTemplate({
   preview: templatePreview(VOLT_KEY, "phone-cases", { ar: 1683, en: 1683 }),
   key: VOLT_KEY,
   // v6 (2026-11-16, owner): every home has at least one real products grid.
-  version: 6,
-  changelog: "Volt v6: a products grid on the home",
+  version: 7,
+  changelog: "Volt v7: products by category in a swipe row on the home",
   name: L("فولت", "Volt"),
   description: L(
     "إكسسوارات موبايل: كلمة كبيرة للمنتج، صفوف شراء سريع ومقارنة. أربع صفحات جاهزة.",
@@ -290,8 +293,8 @@ export const VOLT = editionTemplate({
   ],
   // Buyer messages are demo claims: a pack writes real ones (with the store's reply) or leaves both out, and the section is then not built.
   optional: ["reviews", "custom.reviews-reply"],
-  // Best sellers in compact rows; no category rows.
-  journey: { primary: "best-sellers", rows: [] },
+  // Best sellers in compact rows; one category carousel, of the store's 1st category (an edition can pick another).
+  journey: { primary: "best-sellers", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },

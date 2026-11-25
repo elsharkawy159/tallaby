@@ -211,10 +211,10 @@ describe("a look builds without reviews", () => {
 
   it("the page around the dropped section still reads well", () => {
     const home = (key: string) => build(key).pages.find((p) => p.isHome)!.content.sections.map((s) => s.id.replace(`${key}-`, ""));
-    // karat: the shelf is followed by the Instagram bento (not by another product section).
-    expect(home("karat")).toEqual(["hero-poster", "categories-stories", "products-shelf", "gallery-bento"]);
-    // zay: the home page ends on the best-seller carousel, with the comparison between it and the shelf.
-    expect(home("zay")).toEqual(["hero-collage", "categories-big-type", "products-shelf", "features-compare", "products-carousel"]);
+    // karat: the shelf is followed by the Instagram bento (not by another product section), then the category carousel (v5).
+    expect(home("karat")).toEqual(["hero-poster", "categories-stories", "products-shelf", "gallery-bento", "products-category-carousel"]);
+    // zay: the home page ends on the category carousel (v5), with the comparison between it and the shelf.
+    expect(home("zay")).toEqual(["hero-collage", "categories-big-type", "products-shelf", "features-compare", "products-category-carousel"]);
     // streetwear: the about page is its header and the story.
     const about = build("streetwear").pages.find((p) => p.slug === "about")!.content.sections.map((s) => s.id);
     expect(about).toEqual(["streetwear-about-header", "streetwear-about-classic"]);

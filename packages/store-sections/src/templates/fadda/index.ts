@@ -128,6 +128,8 @@ const home: Design[] = [
       "الفاتورة والعلبة الأصلية.": L("امسحها بقطعة قماش ناعمة.", "Wipe with a soft cloth."),
     },
   }),
+  // v6 (2026-11-25, owner): the store's 1st category as a carousel, three across (the demo holds three rings).
+  lib("products-category-carousel", { lists: [undefined, { limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
   lib("testimonials-ruled", {
     text: {
       "آراء العملاء": L("التقييمات", "Reviews"),
@@ -189,7 +191,8 @@ const DEMO = demoStore({
     ["leaf-pair-rings", "rings", "زوج خواتم فضة", "Silver Ring Pair", shot("leaf-pair-rings"), 1150, { sold90: 60 }],
     ["everyday-stack", "stacks", "طقم ٥ خواتم متراكبة", "Everyday Stack of Five", shot("everyday-stack"), 1650, { rating: 4.8, sold90: 96 }],
     ["eternity-stack", "stacks", "طقم خواتم بأحجار", "Stone-set Stack", shot("eternity-stack"), 2100, { sold90: 40 }],
-    ["promise-ring", "bridal", "خاتم وعد بحجر", "Gem-set Promise Ring", shot("promise-ring"), 2400, { isFeatured: true, sold90: 44 }],
+    // v6: with the rings, so the category carousel (the 1st category) shows a full row of three.
+    ["promise-ring", "rings", "خاتم وعد بحجر", "Gem-set Promise Ring", shot("promise-ring"), 2400, { isFeatured: true, sold90: 44 }],
     ["engagement-ring-box", "bridal", "خاتم خطوبة في علبة", "Engagement Ring in a Box", shot("engagement-ring-box"), 2900, { sold90: 30 }],
     ["engraved-bands", "bands", "دبلتان محفورتان", "Engraved Band Pair", shot("engraved-bands"), 1250, { sold90: 71 }],
     ["ring-tray-set", "sets", "تشكيلة خواتم", "Ring Selection", shot("ring-tray-set"), 1100, { compareAtPrice: 1290, inStock: false, sold90: 58 }],
@@ -198,8 +201,8 @@ const DEMO = demoStore({
 
 export const FADDA = libraryTemplate({
   key: FADDA_KEY,
-  version: 5,
-  changelog: "Fadda v5: a products grid on the home",
+  version: 6,
+  changelog: "Fadda v6: products by category as a carousel on the home",
   name: L("فضة", "Fadda"),
   description: L(
     "ستوديو فضة: واجهة بخاتم واحد، الجديد، آراء الصحافة، الخامات والعناية ورسالة المتجر. أربع صفحات جاهزة.",

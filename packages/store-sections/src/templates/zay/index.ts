@@ -3,7 +3,11 @@
  * cool grey paper, near-black ink, a navy for actions and a periwinkle
  * highlight, Readex Pro throughout and sharp 4px corners. A basics shop
  * (v3): the weekday kit as a three-photo collage, the categories in big
- * type, this week’s shelf, why Zay, the reorders and WhatsApp reviews. Built
+ * type, this week’s shelf, why Zay, the reorders and WhatsApp reviews. v5
+ * (owner, 2026-11-25: every home has products by category and a carousel):
+ * the reorders row (`products-carousel`, best sellers) became a carousel of
+ * the store's 2nd category, since anywhere else it would sit right next to
+ * another product section; the shelf keeps its Best sellers tab. Built
  * from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): tees and shirts on rails
@@ -34,6 +38,10 @@ const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
+
+/** One category's products as a carousel, by its place in the store (`journey.rows[0]`, 1 = the first). */
+const categoryCarousel = (place: number): Design =>
+  lib("products-category-carousel", { lists: [place > 1 ? { offset: place - 1 } : undefined, { categoryIndex: place, limit: 4 }] });
 
 const PHOTOS = {
   teeRail: pexels(39277919, 900),
@@ -143,7 +151,7 @@ const DEFAULT_CONTENT: LookDefaults = {
  * edition's). What names the trade or the demo store is a slot of `c`;
  * generic shop labels (Top rated, Reviews) and the layout stay here.
  */
-function look(c: LookContent, _journey: LookJourney): LookParts {
+function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const x = c.custom;
   const short = x["store-short"]!;
@@ -201,10 +209,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
         "مقاسات وتفاصيل دقيقة": x["compare-row-3"]!,
       },
     }),
-    lib("products-carousel", {
-      text: { "الأكثر مبيعاً": c.rows[0]!.title },
-      links: { "/products": BEST },
-    }),
+    categoryCarousel(journey.rows[0] ?? 2),
     ...(reviews && reply
       ? [
           lib("testimonials-chat", {
@@ -284,6 +289,9 @@ const DEMO = demoStore({
     ["unlined-suit-jacket", "tailoring", "جاكيت بدلة بدون بطانة", "Unlined Suit Jacket", PHOTOS.suitJacket, 2900, { sold90: 21 }],
     ["salmon-dress-shirt", "formal", "قميص سلمون", "Salmon Dress Shirt", PHOTOS.dressShirt, 1150, { compareAtPrice: 1350, sold90: 30 }],
     ["rib-beanie", "accessories", "طاقية تريكو مقلّمة", "Striped Rib Beanie", PHOTOS.beanie, 350, { inStock: false, sold90: 18 }],
+    // Two more shirts, so the shirts carousel fills its row of four (v5).
+    ["shirt-trio", "shirts", "٣ قمصان", "Shirt Trio", pexels(29765480, 900), 2400, { sold90: 16 }],
+    ["light-overshirt", "shirts", "قميص خارجي خفيف", "Light Overshirt", PHOTOS.overshirt, 1590, { sold90: 14 }],
   ],
 });
 
@@ -291,13 +299,13 @@ export const ZAY = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ZAY_KEY, "menswear", { ar: 2100, en: 2140 }),
   key: ZAY_KEY,
-  version: 4,
-  changelog: "Zay v3: new hero, categories, section order",
+  version: 5,
+  changelog: "Zay v5: the reorders row became a carousel of the store's 2nd category",
   productPage: { thumbs: "side", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("زي", "Zay"),
   description: L(
-    "أساسيات رجالي: طقم الأسبوع، الأقسام، رف الأسبوع، المقارنة، اللي بيرجعوا يطلبوه وآراء واتساب. أربع صفحات جاهزة.",
-    "Men’s essentials: the weekday kit, categories, this week’s shelf, a comparison, the reorders and WhatsApp reviews. Four ready pages.",
+    "أساسيات رجالي: طقم الأسبوع، الأقسام، رف الأسبوع، المقارنة، منتجات قسم وآراء واتساب. أربع صفحات جاهزة.",
+    "Men’s essentials: the weekday kit, categories, this week’s shelf, a comparison, one category’s row and WhatsApp reviews. Four ready pages.",
   ),
   category: "fashion",
   style: ["minimal", "classic"],
@@ -335,7 +343,6 @@ export const ZAY = editionTemplate({
     "custom.compare-row-1",
     "custom.compare-row-2",
     "custom.compare-row-3",
-    "rows.0.title",
     "about",
     "contact",
     "faq",
@@ -343,8 +350,8 @@ export const ZAY = editionTemplate({
   ],
   // The chat of three buyer messages and the store's reply, together: without either the section is not built (the home then ends on the carousel).
   optional: ["reviews", "custom.reviews-reply"],
-  // The shelf has its own tabs (new, best sellers, top rated), so `primary` is not read; the look has no category rows.
-  journey: { primary: "newest", rows: [] },
+  // The shelf has its own tabs (new, best sellers, top rated), so `primary` is not read; one category row, the carousel (the store's 2nd category).
+  journey: { primary: "newest", rows: [2] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

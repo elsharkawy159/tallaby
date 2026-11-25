@@ -222,6 +222,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "أكثر من ١٬٥٠٠": x["price-band-3"]!,
       },
     }),
+    // v6 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
     lib("products-list", {
       text: {
         "الكتالوج": c.products.primary.eyebrow,
@@ -311,8 +314,8 @@ const DEMO = demoStore({
 
 export const ROKN = editionTemplate({
   key: ROKN_KEY,
-  version: 5,
-  changelog: "Rokn v5: a products grid on the home",
+  version: 6,
+  changelog: "Rokn v6: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("ركن", "Rokn"),
   description: L(
@@ -357,9 +360,9 @@ export const ROKN = editionTemplate({
     "custom.price-band-3",
   ],
   // A buyer quote is a demo claim: a pack writes a real one (with its city) or leaves it out (the section is then not built).
-  // A list of six best sellers; no category rows.
+  // A list of six best sellers; one category carousel, of the store's 1st category (an edition can pick another).
   optional: ["reviews", "custom.reviews-city"],
-  journey: { primary: "best-sellers", rows: [] },
+  journey: { primary: "best-sellers", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

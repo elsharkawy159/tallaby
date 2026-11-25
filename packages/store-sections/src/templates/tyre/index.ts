@@ -3,8 +3,8 @@
  * Templates"): light grey paper, near-black type and an amber for actions,
  * Changa headings over Cairo text and tight 6px corners. A tyre centre:
  * search by size, fitting at home or at the centre, book a fitting slot,
- * pay in instalments, add-ons while the van is there, and help finding your
- * size. Built from section library designs (`fromLibrary`).
+ * pay in instalments, the tyres as a carousel (the store's 1st category),
+ * add-ons while the van is there, and help finding your size. Built from section library designs (`fromLibrary`).
  *
  * The design has no tyre-size filter: sizes are searched as text, so every
  * demo tyre carries its size in its name.
@@ -104,6 +104,8 @@ const home: Design[] = [
     },
     lists: [{ source: "featured" }],
   }),
+  // The store's 1st category (tyres, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("service-support", {
     text: {
       "الدعم": L("مساعدة", "Help"),
@@ -149,13 +151,15 @@ const DEMO = demoStore({
     ["rubber-floor-mats", "extras", "دواسات مطاطية", "Rubber Floor Mats", PHOTOS.floorMat, 950, { compareAtPrice: 1100, sold90: 120 }],
     ["dash-camera", "electronics", "كاميرا لوحة القيادة", "Dash Camera", PHOTOS.camera, 2400, { sold90: 41 }],
     ["jump-power-bank", "electronics", "شاحن متنقل للسيارة", "Car Power Bank", PHOTOS.powerBank, 790, { inStock: false, sold90: 36 }],
+    // The fourth tyre, so the tyres carousel fills its row of four (v5).
+    ["highway-215-60-r16", "tyres", "إطار طرق سريعة 215/60 R16", "Highway Tyre 215/60 R16", PHOTOS.stacks, 3900, { sold90: 18 }],
   ],
 });
 
 export const TYRE = libraryTemplate({
   key: TYRE_KEY,
-  version: 4,
-  changelog: "Tyre v4: a products grid on the home",
+  version: 5,
+  changelog: "Tyre v5: a tyres carousel (the store's 1st category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("إضافات لسيارتك", "Add-ons for your car") } },
   name: L("إطارات", "Kawetch"),
   description: L(

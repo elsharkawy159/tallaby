@@ -110,6 +110,8 @@ const home: Design[] = [
       "اعرف أكثر": L("اعرف أكثر", "Learn more"),
     },
   }),
+  // v4 (2026-11-25, owner): every home has products by category in a swipe row: the store's 2nd category.
+  lib("products-category-carousel", { lists: [{ offset: 1 }, { categoryIndex: 2, limit: 4 }] }),
   lib("testimonials-chat", {
     text: {
       "رسائل تسعدنا": L("رسائل من العدّائين", "Notes from runners"),
@@ -165,8 +167,8 @@ const DEMO = demoStore({
 
 export const STRIDE = libraryTemplate({
   key: STRIDE_KEY,
-  version: 3,
-  changelog: "Stride v3: product page",
+  version: 4,
+  changelog: "Stride v4: products by category in a swipe row on the home",
   name: L("سترايد", "Stride"),
   description: L(
     "جري واستشفاء: شرائح تذاكر، أقسام بنتو ورسائل العملاء. أربع صفحات جاهزة.",

@@ -2,8 +2,9 @@
  * Core (template 34, strength equipment; Claude Design "Storefront
  * Templates"): off-white paper, near-black type and a hot red for actions,
  * Cairo throughout and square corners. A gym supplier: one featured
- * product, the equipment aisles, the most ordered, the numbers, who we are
- * and reviews. Built from section library designs (`fromLibrary`).
+ * product, the equipment aisles, the most ordered, the numbers, the
+ * dumbbells as a carousel (the store's 2nd category), who we are and
+ * reviews. Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): kettlebell racks,
  * dumbbells, plates, ropes and mats. No people and no brand marks.
@@ -92,6 +93,8 @@ const home: Design[] = [
       "يومًا للاسترجاع": L("أقسام للمعدات", "Equipment aisles"),
     },
   }),
+  // The store's 2nd category (dumbbells in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [{ offset: 1 }, { categoryIndex: 2, limit: 4 }] }),
   lib("text-columns", {
     text: {
       "عن متجرنا": L("من نحن", "Who we are"),
@@ -155,13 +158,15 @@ const DEMO = demoStore({
     ["mat-and-weights-bundle", "mats", "مجموعة سجادة وأوزان", "Mat & Weights Bundle", PHOTOS.matDumbbells, 1250, { inStock: false, sold90: 33 }],
     ["home-gym-package", "home-gym", "مجموعة الصالة المنزلية", "Home Gym Package", PHOTOS.gymRoomSmall, 24500, { compareAtPrice: 28000, sold90: 12 }],
     ["dumbbell-storage-rack", "racks", "حامل دمبل ٣ أدوار", "3-Tier Dumbbell Rack", PHOTOS.kettlebellRack, 3900, { sold90: 27 }],
+    // The fourth dumbbell, so the dumbbells carousel fills its row of four (v5).
+    ["dumbbell-pair-5kg", "dumbbells", "زوج دمبل ٥ كجم", "5 kg Dumbbell Pair", PHOTOS.matDumbbells, 690, { sold90: 20 }],
   ],
 });
 
 export const CORE = libraryTemplate({
   key: CORE_KEY,
-  version: 4,
-  changelog: "Core v4: categories, section order, no launch offer",
+  version: 5,
+  changelog: "Core v5: a dumbbells carousel (the store's 2nd category) on the home",
   name: L("كور", "Core"),
   description: L(
     "معدات قوة: منتج مميز، الأرقام والأكثر طلباً. أربع صفحات جاهزة.",

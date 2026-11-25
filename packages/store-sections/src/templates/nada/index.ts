@@ -102,6 +102,9 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن منتج أو طلب.", "With any question about a product or order."),
     },
   }),
+  // v4 (2026-11-25, owner): every home has products by category in a swipe row: the store's 1st category.
+  // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+  lib("products-category-carousel", { lists: [{ offset: 0 }, { categoryIndex: 1, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
   lib("text-steps", {
     as: "points",
     text: {
@@ -169,8 +172,8 @@ const DEMO = demoStore({
 
 export const NADA = libraryTemplate({
   key: NADA_KEY,
-  version: 3,
-  changelog: "Nada v3: categories, section order",
+  version: 4,
+  changelog: "Nada v4: products by category in a swipe row on the home",
   productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل روتينك", "Complete your routine") } },
   name: L("ندى", "Nada"),
   description: L(

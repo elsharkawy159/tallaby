@@ -3,7 +3,8 @@
  * Templates"): sand paper, a deep forest ink for type and a burnt orange for
  * actions, Changa headings over Cairo text and tight 6px corners. A trip
  * outfitter: a road-trip poster, the desert kit, browse by category, fresh
- * gear, delivery days to Siwa and Sinai and messages from the road. Built
+ * gear, delivery days to Siwa and Sinai, the tents as a carousel (the
+ * store's 1st category) and messages from the road. Built
  * from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): tents by a lake and in a
@@ -95,6 +96,8 @@ const home: Design[] = [
       "الصعيد، البحر الأحمر، سيناء": L("سيوة وسيناء", "Siwa and Sinai"),
     },
   }),
+  // The store's 1st category (camp, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("testimonials-chat", {
     text: {
       "رسائل تسعدنا": L("من الطريق", "From the road"),
@@ -153,13 +156,17 @@ const DEMO = demoStore({
     ["air-pillow-pad", "sleep", "وسادة هوائية ومرتبة نوم", "Air Pillow and Sleeping Pad", PHOTOS.airPillow, 1350, { sold90: 40 }],
     ["folding-camp-chair", "chairs", "كرسي رحلات قابل للطي", "Folding Camp Chair", PHOTOS.chair, 780, { compareAtPrice: 900, sold90: 110 }],
     ["beach-cooler-bag", "coolers", "حقيبة تبريد للشاطئ", "Beach Cooler Bag", PHOTOS.beachBags, 650, { inStock: false, sold90: 70 }],
+    // Three more for camp, so its carousel fills a row of four (v3).
+    ["lakeside-tent", "camp", "خيمة لأربعة أفراد", "Four-Person Tent", pexels(6271632, 900), 5600, { sold90: 18 }],
+    ["tent-with-porch", "camp", "خيمة بمظلة أمامية", "Tent with Porch", pexels(6271630, 900), 4800, { sold90: 16 }],
+    ["camp-chair-pair", "camp", "كرسيان للتخييم", "Camp Chair Pair", PHOTOS.chair, 1450, { sold90: 14 }],
   ],
 });
 
 export const SAFAR = libraryTemplate({
   key: SAFAR_KEY,
-  version: 2,
-  changelog: "Safar v2: product page",
+  version: 3,
+  changelog: "Safar v3: a camp carousel (the store's 1st category) on the home",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رسائل من الطريق", "Messages from the road"), related: L("جهّز رحلتك", "Pack for your trip") } },
   name: L("سفر", "Safar"),
   description: L(

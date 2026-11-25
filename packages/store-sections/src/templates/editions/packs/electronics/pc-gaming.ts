@@ -51,7 +51,7 @@
  * 14205160 and the light story 28350931.
  *
  * Looks: `arena` (dark page: its about photo comes from `photos.dark.story`),
- * then `volt`. Neither has category rows. Four featured products: `volt`'s
+ * then `volt`. `arena` shows the 1st category (keyboards) as a carousel. Four featured products: `volt`'s
  * hero shows the first featured one (the full-size keyboard, wide, so it
  * stays first). `arena`'s brand cards are left out (no invented brands);
  * its three figures are the store's own terms (warranty, returns, delivery).

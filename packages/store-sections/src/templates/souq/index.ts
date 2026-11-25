@@ -3,7 +3,8 @@
  * Templates"): pale green-white paper, a leaf green for actions and a
  * sunny yellow highlight, Lalezar headings on Changa and 16px corners.
  * Fresh groceries the same day: banners for fruit and veg, bakery and
- * pantry, aisles, today's shelf, 45-minute zones and help on WhatsApp.
+ * pantry, aisles, today's shelf, 45-minute zones, the fruit and veg as a
+ * carousel (the store's 1st category) and help on WhatsApp.
  * Built from section library designs
  * (`fromLibrary`).
  *
@@ -137,6 +138,8 @@ const home: Design[] = [
       "٩٥ ج.م": L("٢٥ ج.م", "EGP 25"),
     },
   }),
+  // The store's 1st category (fruit and veg, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("service-support", {
     text: {
       "الدعم": L("الدعم", "Support"),
@@ -183,13 +186,15 @@ const DEMO = demoStore({
     ["fresh-milk", "dairy", "حليب طازج ١ لتر", "Fresh Milk, 1 L", PHOTOS.milk, 45, { sold90: 280 }],
     ["white-cheese", "dairy", "جبن أبيض ٥٠٠ جم", "White Cheese, 500 g", PHOTOS.cheese, 110, { rating: 4.8, sold90: 150 }],
     ["lemons-1kg", "produce", "ليمون ١ كيلو", "Lemons, 1 kg", PHOTOS.lemons, 30, { compareAtPrice: 40, inStock: false, sold90: 90 }],
+    // The fourth for fruit and veg, so its carousel fills a row of four (v4).
+    ["mixed-fruit-bowl", "produce", "تشكيلة فاكهة", "Mixed Fruit Selection", PHOTOS.fruitBowls, 220, { sold90: 18 }],
   ],
 });
 
 export const SOUQ = libraryTemplate({
   key: SOUQ_KEY,
-  version: 3,
-  changelog: "Souq v3: hero first, section order",
+  version: 4,
+  changelog: "Souq v4: a fruit and veg carousel (the store's 1st category) on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء المشترين", "Shopper reviews"), related: L("أضف إلى سلتك", "Add to your basket") } },
   name: L("سوق", "Souq"),
   description: L(

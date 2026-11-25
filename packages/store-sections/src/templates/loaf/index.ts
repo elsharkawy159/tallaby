@@ -138,7 +138,7 @@ const DEFAULT_CONTENT: LookDefaults = {
  * (Order, FAQ, New, Top rated, Order now, Good to know) and the layout stay
  * here.
  */
-function look(c: LookContent, _journey: LookJourney): LookParts {
+function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const x = c.custom;
   const aboutLabel = x["about-label"]!;
@@ -213,6 +213,9 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
         "تسوّق الآن": L("اطلب الآن", "Order now"),
       },
     }),
+    // v6 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 2 across: the demo's category holds 2 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 2 }], nodes: { "منتجات القسم": { style: { columns: 2 }, tablet: { columns: 2 } } } }),
     ...(r && city
       ? [
           lib("testimonials-wall", {
@@ -322,8 +325,8 @@ const DEMO = demoStore({
 
 export const LOAF = editionTemplate({
   key: LOAF_KEY,
-  version: 5,
-  changelog: "Loaf v4: categories, section order, wide hero photo",
+  version: 6,
+  changelog: "Loaf v6: products by category in a swipe row on the home",
   name: L("لوف", "Loaf"),
   description: L(
     "مخبز واشتراكات ساوردو: كلمة كبيرة، رف طازة النهارده واشتراك أسبوعي. أربع صفحات جاهزة.",
@@ -376,9 +379,9 @@ export const LOAF = editionTemplate({
     "custom.faq-2-answer",
   ],
   // Buyer quotes are demo claims: a pack writes real ones (with six cities) or leaves them out (the section is then not built); `photos.about` falls back to the story's.
-  // The shelf has its own tabs, so `primary` is not read; no category rows.
+  // The shelf has its own tabs, so `primary` is not read; one category carousel, of the store's 1st category (an edition can pick another).
   optional: ["reviews", "photos.about", "custom.reviews-city-1", "custom.reviews-city-2", "custom.reviews-city-3", "custom.reviews-city-4", "custom.reviews-city-5", "custom.reviews-city-6"],
-  journey: { primary: "newest", rows: [] },
+  journey: { primary: "newest", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },

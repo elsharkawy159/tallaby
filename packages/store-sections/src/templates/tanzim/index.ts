@@ -181,6 +181,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     ...(journey.primary === "newest"
       ? [lib("products-grid", { text: { "وصل حديثًا": L("الأكثر طلبًا", "Best sellers"), "أحدث المنتجات في المتجر.": L("المنتجات الأكثر طلبًا في المتجر.", "The store's most ordered products.") }, links: { "/products": BEST }, lists: [{ source: "best-sellers", limit: 8 }] })]
       : [lib("products-grid", { text: { "وصل حديثًا": L("وصل حديثًا", "New in") }, links: { "/products": NEW }, lists: [{ source: "newest", limit: 8 }] })]),
+    // v6 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
     lib("faq-columns", {
       as: "faq-home",
       text: {
@@ -268,8 +271,8 @@ const DEMO = demoStore({
 export const TANZIM = editionTemplate({
   key: TANZIM_KEY,
   // v5 (2026-11-16, owner): every home has at least one real products grid.
-  version: 5,
-  changelog: "Tanzim v5: a products grid on the home",
+  version: 6,
+  changelog: "Tanzim v6: products by category in a swipe row on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("تنظيم", "Tanzim"),
   description: L(
@@ -321,9 +324,9 @@ export const TANZIM = editionTemplate({
     "custom.faq-6-question",
     "custom.faq-6-answer",
   ],
-  // Six best sellers in compact rows; no category rows.
+  // Six best sellers in compact rows; one category carousel, of the store's 2nd category (an edition can pick another).
   optional: [],
-  journey: { primary: "best-sellers", rows: [] },
+  journey: { primary: "best-sellers", rows: [2] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

@@ -129,17 +129,8 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن منتج", "With any question about a product"),
     },
   }),
-  lib("brands-quotes", {
-    text: {
-      "«من أكثر المتاجر الموثوقة للتسوق عبر الإنترنت.»": L(
-        "«تشكيلة واضحة من معدات التخييم والرحلات.»",
-        "“A clear range of camping and trip gear.”",
-      ),
-      "ساحل": "Rahhala",
-      "أوربت": "Sahraa Mag",
-      "ميزان": "Trip Notes",
-    },
-  }),
+  // v6 (2026-11-25, owner): the store's 1st category as a carousel in place of the press quotes.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("newsletter-big", {
     text: {
       "اشترك في نشرتنا البريدية": L("جديد معدات التخييم", "New camping gear"),
@@ -176,6 +167,8 @@ const DEMO = demoStore({
     ["dome-tent-3p", "tents", "خيمة قبة ٣ أفراد", "Dome Tent, 3 Person", PHOTOS.whiteSandTent, 4200, { isFeatured: true, rating: 4.8, sold90: 74 }],
     ["canyon-tent-2p", "tents", "خيمة خفيفة لفردين", "Light Tent, 2 Person", PHOTOS.canyonTentsSmall, 3100, { sold90: 58 }],
     ["desert-camp-kit", "tents", "طقم مخيم الصحراء", "Desert Camp Kit", PHOTOS.desertCampSmall, 8900, { compareAtPrice: 9900, isFeatured: true, sold90: 21 }],
+    // v6: a fourth camp product, so the category carousel (the 1st category) shows a full row.
+    ["camp-starter-kit", "tents", "طقم بداية التخييم", "Camp Starter Kit", PHOTOS.flatLay, 1650, { sold90: 34 }],
     ["trek-pack-45l", "packs", "حقيبة ظهر ٤٥ لتر", "Trek Pack 45 L", PHOTOS.packOnRock, 2650, { rating: 4.7, sold90: 66 }],
     ["canvas-daypack", "packs", "حقيبة يومية من قماش الكانفاس", "Canvas Daypack", PHOTOS.daypack, 1350, { sold90: 90 }],
     ["trail-essentials-set", "trail", "طقم أساسيات الرحلة", "Trail Essentials Set", PHOTOS.flatLay, 1150, { sold90: 102 }],
@@ -187,8 +180,8 @@ const DEMO = demoStore({
 
 export const BASECAMP = libraryTemplate({
   key: BASECAMP_KEY,
-  version: 5,
-  changelog: "Basecamp v5: a products grid on the home",
+  version: 6,
+  changelog: "Basecamp v6: products by category as a carousel on the home",
   name: L("بيس كامب", "Basecamp"),
   description: L(
     "تخييم ورحلات: موسم التخييم، ما يميزنا، العلامات التجارية وخطوات الطلب. أربع صفحات جاهزة.",

@@ -68,6 +68,8 @@ describe("library sections seed", () => {
     ...["about-product-anatomy", "gallery-shop-look"],
     // Look-first pilot L7 (F-89, 2026-11-11): the two-tone editorial banner.
     ...["about-two-tone"],
+    // Classic v9's home (2026-11-25): the category carousel.
+    ...["tallaby-classic-products-category-carousel"],
   ]);
 
   it("every design from before 0109 was seeded by some migration", () => {

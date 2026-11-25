@@ -115,6 +115,8 @@ const home: Design[] = [
       "مواعيد الزيارات": L("مواعيد المعاينة", "Survey times"),
     },
   }),
+  // v5 (2026-11-25, owner): the store's 1st category as a carousel after the booking.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("faq-columns", {
     as: "faq-home",
     text: {
@@ -169,6 +171,8 @@ const DEMO = demoStore({
     ["portable-charger", "on-the-go", "شاحن متنقل للسفر", "Portable Travel Charger", PHOTOS.yellowPort, 14500, { compareAtPrice: 16000, sold90: 31 }],
     ["wall-cable-holster", "charging", "حامل كابل حائط", "Wall Cable Holster", PHOTOS.holster, 1200, { sold90: 58 }],
     ["charging-port-cover", "charging", "غطاء مدخل الشحن", "Charging Port Cover", PHOTOS.whitePortSmall, 350, { sold90: 44 }],
+    // v5: a fourth charging product, so the category carousel (the 1st category) shows a full row.
+    ["type-2-cable-10m", "charging", "كابل شحن Type 2، ١٠ متر", "Type 2 Charging Cable, 10 m", PHOTOS.yellowPort, 9400, { sold90: 24 }],
     ["rubber-floor-mats", "cabin", "دواسات مطاطية", "Rubber Floor Mats", PHOTOS.floorMat, 950, { sold90: 120 }],
     ["vent-phone-mount", "cabin", "حامل هاتف لفتحة التكييف", "Vent Phone Mount", PHOTOS.ventMount, 480, { isFeatured: true, sold90: 160 }],
     ["dash-camera", "tech", "كاميرا لوحة القيادة", "Dash Camera", PHOTOS.camera, 2400, { rating: 4.6, sold90: 66 }],
@@ -178,8 +182,8 @@ const DEMO = demoStore({
 
 export const KAHRABA = libraryTemplate({
   key: KAHRABA_KEY,
-  version: 4,
-  changelog: "Kahraba v4: a products grid on the home",
+  version: 5,
+  changelog: "Kahraba v5: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء مستخدمي الشواحن", "From charger owners"), related: L("إكسسوارات للسيارة", "Accessories for the car") } },
   name: L("كهربا", "Kahraba"),
   description: L(

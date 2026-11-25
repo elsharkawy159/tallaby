@@ -81,6 +81,8 @@ const home: Design[] = [
     links: { "/products": ["/contact", BEST] },
   }),
   lib("categories-chips", { text: { "عمّ تبحث؟": L("ما الذي تحتاجه سيارتك؟", "What does your car need?") } }),
+  // v4 (2026-11-25, owner): the store's 1st category as a carousel right under the categories.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("service-plans", {
     text: {
       "الضمان": L("الأطقم", "Kits"),
@@ -147,10 +149,11 @@ const DEMO = demoStore({
   name: NAME,
   description: L("منتجات عناية وإكسسوارات لسيارتك.", "Care products and accessories for your car."),
   categories: [
+    // v4: wash first, so the category carousel (the 1st category) shows a full row.
+    ["wash", "غسيل", "Wash", PHOTOS.windowFoam],
     ["care", "عناية", "Care", PHOTOS.towels],
     ["interior", "داخل السيارة", "Interior", PHOTOS.organizer],
     ["tech", "تكنولوجيا", "Car tech", PHOTOS.camera],
-    ["wash", "غسيل", "Wash", PHOTOS.windowFoam],
     ["mats", "دواسات", "Floor mats", PHOTOS.floorMat],
     ["charms", "معلّقات المرآة", "Mirror charms", PHOTOS.turboCharm],
     ["mounts", "حوامل", "Mounts", PHOTOS.dashMount],
@@ -160,6 +163,8 @@ const DEMO = demoStore({
     ["microfiber-towel-set", "care", "طقم مناشف ألياف دقيقة", "Microfiber Towel Set", PHOTOS.towels, 420, { isFeatured: true, rating: 4.8, sold90: 210 }],
     ["snow-foam-wash", "wash", "رغوة غسيل كثيفة", "Snow Foam Wash", PHOTOS.windowFoam, 380, { sold90: 150 }],
     ["wax-car-shampoo", "wash", "شامبو سيارات بالشمع", "Wax Car Shampoo", PHOTOS.doorFoam, 290, { compareAtPrice: 340, sold90: 180 }],
+    ["glass-foam-cleaner", "wash", "منظف زجاج رغوي", "Foaming Glass Cleaner", PHOTOS.mirrorFoam, 180, { sold90: 92 }],
+    ["drying-towels-pair", "wash", "منشفتا تجفيف", "Drying Towels, Pair", PHOTOS.towels, 260, { sold90: 70 }],
     ["rubber-floor-mats", "mats", "دواسات مطاط", "Rubber Floor Mats", PHOTOS.floorMat, 950, { rating: 4.7, sold90: 96 }],
     ["seat-back-organizer", "interior", "منظم لظهر المقعد", "Seat-Back Organiser", PHOTOS.organizer, 520, { sold90: 64 }],
     ["turbo-mirror-charm", "charms", "معلّقة تيربو للمرآة", "Turbo Mirror Charm", PHOTOS.turboCharm, 180, { sold90: 72 }],
@@ -171,8 +176,8 @@ const DEMO = demoStore({
 
 export const GARAGY = libraryTemplate({
   key: GARAGY_KEY,
-  version: 3,
-  changelog: "Garagy v3: categories after the hero",
+  version: 4,
+  changelog: "Garagy v4: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("منتجات أخرى لسيارتك", "More for your car") } },
   name: L("جراجي", "Garagy"),
   description: L(

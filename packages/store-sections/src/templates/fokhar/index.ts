@@ -126,6 +126,8 @@ const home: Design[] = [
       "مواعيد التوصيل": L("مراحل الطلب", "Order stages"),
     },
   }),
+  // v6 (2026-11-25, owner): the store's 1st category as a carousel after the payment promise.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("gallery-polaroids", {
     photo: [undefined, undefined, undefined, PHOTOS.windowsill, PHOTOS.lotusBowls, PHOTOS.whiteTable, PHOTOS.mugPile, PHOTOS.mugTray],
     text: {
@@ -161,8 +163,9 @@ const DEMO = demoStore({
   name: NAME,
   description: L("أطباق وأكواب من الخزف.", "Ceramic plates and mugs."),
   categories: [
-    ["plates", "أطباق", "Plates", PHOTOS.whitePlates],
+    // v6: mugs first, so the category carousel (the 1st category) shows a full row.
     ["mugs", "أكواب", "Mugs", PHOTOS.glazedMugs],
+    ["plates", "أطباق", "Plates", PHOTOS.whitePlates],
     ["bowls-vases", "أوعية ومزهريات", "Bowls & vases", PHOTOS.jugShelf],
     ["cups", "فناجين", "Cups", PHOTOS.rawCups],
     ["dinner-sets", "أطقم سفرة", "Dinner sets", PHOTOS.dinnerSet],
@@ -175,6 +178,7 @@ const DEMO = demoStore({
     ["raw-clay-cups", "cups", "٤ فناجين طين خام", "Raw Clay Cups, Set of 4", PHOTOS.rawCups, 380, { sold90: 70 }],
     ["glazed-mug-set", "mugs", "طقم أكواب مزججة", "Glazed Mug Set", PHOTOS.glazedMugs, 640, { rating: 4.8, sold90: 57 }],
     ["stoneware-mugs", "mugs", "أكواب حجرية مدخنة", "Smoked Stoneware Mugs", PHOTOS.stonewareMugs, 520, { sold90: 46 }],
+    ["kiln-fired-mugs", "mugs", "أكواب فخار محروقة في الفرن", "Kiln-Fired Clay Mugs", PHOTOS.firedMugs, 480, { sold90: 31 }],
     ["footed-bowl", "bowls-vases", "طبق تقديم بقاعدة", "Footed Serving Bowl", PHOTOS.footedBowl, 560, { sold90: 33 }],
     ["bowl-and-vase", "bowls-vases", "وعاء ومزهرية", "Bowl & Vase Pair", PHOTOS.bowlVase, 890, { sold90: 28 }],
     ["clay-jug", "bowls-vases", "إبريق فخار", "Clay Jug", PHOTOS.jugShelf, 740, { inStock: false, sold90: 19 }],
@@ -185,8 +189,8 @@ export const FOKHAR = libraryTemplate({
   key: FOKHAR_KEY,
   // v4 (2026-11-16, owner): Noto Naskh Arabic headings replace Reem Kufi, which read oddly to shoppers.
   // v5 (2026-11-16, owner): every home has at least one real products grid.
-  version: 5,
-  changelog: "Fokhar v5: a products grid on the home",
+  version: 6,
+  changelog: "Fokhar v6: products by category as a carousel on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قطع أخرى قد تعجبك", "More pieces you may like") } },
   name: L("فخار", "Fokhar"),
   description: L(

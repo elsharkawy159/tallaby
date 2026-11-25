@@ -97,6 +97,9 @@ const home: Design[] = [
     text: { "فولتا": "NOVA", "نورو": "ARC", "كيان": "KITE", "ساحل": "LUMEN" },
     links: { "/products": [undefined, search("Nova"), search("Arc"), search("Kite"), search("Lumen"), undefined, undefined, undefined, undefined] },
   }),
+  // v4 (2026-11-25, owner): every home has products by category in a swipe row: the store's 2nd category (phones here).
+  // 3 across: the demo's phones hold 3 (one full row); "Use template" lifts the limit so a store's own category fills the swipe.
+  lib("products-category-carousel", { lists: [{ offset: 1 }, { categoryIndex: 2, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
   lib("features-ruled", {
     text: {
       "الشحن": L("صور ومواصفات لكل جهاز", "Photos and specs for every device"),
@@ -158,6 +161,7 @@ const DEMO = demoStore({
     ["nova-pulse-buds-pro", "earbuds", "سماعة Nova Pulse Buds Pro", "Nova Pulse Buds Pro", PHOTOS.budsBlack, 2450, { compareAtPrice: 2899, isFeatured: true, rating: 4.6, sold90: 241 }],
     ["nova-air-buds", "earbuds", "سماعة Nova Air Buds", "Nova Air Buds", PHOTOS.budsOpen, 1990, { sold90: 57 }],
     ["arc-x14-5g", "phones", "هاتف Arc X14 5G", "Arc X14 5G Smartphone", PHOTOS.phone, 18999, { isFeatured: true, rating: 4.7, sold90: 96 }],
+    ["arc-x14-duo", "phones", "هاتف Arc X14 Duo", "Arc X14 Duo", PHOTOS.phonePair, 15499, { sold90: 52 }],
     ["arc-x14-lite", "phones", "هاتف Arc X14 Lite", "Arc X14 Lite", PHOTOS.phoneSlim, 12499, { compareAtPrice: 13999, sold90: 174 }],
     ["kite-air-14", "laptops", "حاسوب محمول Kite Air 14", "Kite Air 14 Laptop", PHOTOS.laptop, 38500, { isFeatured: true, rating: 4.8, sold90: 63 }],
     ["kite-pro-16", "laptops", "حاسوب محمول Kite Pro 16", "Kite Pro 16 Laptop", PHOTOS.laptopDesk, 54900, { isFeatured: true, sold90: 21 }],
@@ -173,8 +177,8 @@ const DEMO = demoStore({
 
 export const TECHHUB = libraryTemplate({
   key: TECHHUB_KEY,
-  version: 3,
-  changelog: "TechHub v3: product page",
+  version: 4,
+  changelog: "TechHub v4: products by category in a swipe row (phones) after the brands",
   name: L("تك هب", "TechHub"),
   description: L(
     "إلكترونيات حديثة: بحث في الأول، أقسام، الأجهزة الرئيسية وماركات. أربع صفحات جاهزة.",

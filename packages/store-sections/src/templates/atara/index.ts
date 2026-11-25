@@ -227,6 +227,11 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       links: { "/products": primaryHref(journey.primary) },
       lists: [{ source: journey.primary, limit: 4 }],
     }),
+    // v7 (2026-11-25, owner): the store's 1st category as a carousel (`journey.rows`), three across: the look's packs hold three products a category (the row rule).
+    lib("products-category-carousel", {
+      lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }],
+      nodes: { "منتجات القسم": { style: { columns: 3 } } },
+    }),
     lib("text-lead", {
       text: {
         "بدأنا المتجر لنجمع منتجات جيدة بسعر عادل في مكان واحد.": x["lead-1"]!,
@@ -294,10 +299,11 @@ const DEMO = demoStore({
   name: NAME,
   description: L("توابل صحيحة ومطحونة وأعشاب وحبوب.", "Whole and ground spices, herbs and grains."),
   categories: [
+    // v7: whole spices first, so the category carousel (the 1st category) shows a full row.
+    ["whole-spices", "توابل صحيحة", "Whole spices", PHOTOS.cinnamon],
     ["spices", "توابل", "Spices", PHOTOS.groundBowls],
     ["pantry", "بقالة", "Pantry", PHOTOS.pantryJars],
     ["jars", "برطمانات", "Jars", PHOTOS.refillShelf],
-    ["whole-spices", "توابل صحيحة", "Whole spices", PHOTOS.cinnamon],
     ["herbs", "أعشاب", "Herbs", PHOTOS.thyme],
     ["herbal-tea", "مشروبات أعشاب", "Herbal teas", PHOTOS.herbalTea],
     ["grains", "حبوب", "Grains", PHOTOS.grains],
@@ -310,6 +316,7 @@ const DEMO = demoStore({
     ["baharat-mix", "spices", "بهارات مشكلة ٢٥٠ جم", "Baharat Mix, 250 g", PHOTOS.groundBowls, 95, { compareAtPrice: 120, sold90: 210 }],
     ["cinnamon-sticks", "whole-spices", "قرفة عيدان ١٠٠ جم", "Cinnamon Sticks, 100 g", PHOTOS.cinnamon, 60, { sold90: 150 }],
     ["whole-cloves", "whole-spices", "قرنفل صحيح ٥٠ جم", "Whole Cloves, 50 g", PHOTOS.cloves, 55, { sold90: 90 }],
+    ["whole-spice-mix", "whole-spices", "توابل صحيحة مشكلة ٢٥٠ جم", "Whole Spice Mix, 250 g", PHOTOS.wholeSpices, 130, { sold90: 64 }],
     ["dried-thyme", "herbs", "زعتر مجفف ١٠٠ جم", "Dried Thyme, 100 g", PHOTOS.thyme, 45, { rating: 4.9, sold90: 120 }],
     ["grain-sampler", "grains", "حبوب مشكلة", "Grain Sampler", PHOTOS.grains, 150, { sold90: 44 }],
     ["herbal-tea", "herbal-tea", "شاي أعشاب مشكل", "Herbal Tea Mix", PHOTOS.herbalTea, 85, { sold90: 70 }],
@@ -320,8 +327,9 @@ const DEMO = demoStore({
 export const ATARA = editionTemplate({
   key: ATARA_KEY,
   // v5 (2026-11-16, owner): El Messiri headings replace Reem Kufi, which read oddly to shoppers.
-  version: 6,
-  changelog: "Atara v6: a products grid on the home",
+  // v7 (2026-11-25, owner): products by category as a carousel after the best sellers.
+  version: 7,
+  changelog: "Atara v7: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("عطارة", "Atara"),
   description: L(
@@ -369,9 +377,9 @@ export const ATARA = editionTemplate({
     "custom.lead-3",
   ],
   // Buyer quotes are demo claims: a pack writes real ones (with three areas) or leaves them out (the section is then not built).
-  // A numbered list of four best sellers; no category rows.
+  // A numbered list of four best sellers; the category carousel shows the store's 1st category.
   optional: ["reviews", "custom.reviews-city-1", "custom.reviews-city-2", "custom.reviews-city-3"],
-  journey: { primary: "best-sellers", rows: [] },
+  journey: { primary: "best-sellers", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

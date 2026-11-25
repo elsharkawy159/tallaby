@@ -3,7 +3,8 @@
  * Templates"): mint paper, a cherry red for actions and a sunny yellow
  * highlight, Lemonada display type over Tajawal and round 24px corners. A
  * bright toy shop: a bento opening, category circles, kids' favourites,
- * why wood, new arrivals, promises and photo reviews. Built from section library designs
+ * why wood, new arrivals, promises, the blocks as a carousel (the store's
+ * 1st category) and photo reviews. Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): wooden blocks,
@@ -100,6 +101,8 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن لعبة", "With any question about a toy"),
     },
   }),
+  // The store's 1st category (blocks in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("testimonials-photos", {
     photo: [undefined, undefined, PHOTOS.numberBlocks, PHOTOS.dinoTrio, PHOTOS.trucks, PHOTOS.safari],
     text: {
@@ -164,13 +167,15 @@ const DEMO = demoStore({
     ["rainbow-xylophone", "music", "إكسيليفون قوس قزح", "Rainbow Xylophone", PHOTOS.xylophone, 390, { sold90: 60 }],
     ["playroom-starter", "sets", "طقم غرفة اللعب", "Playroom Starter", PHOTOS.blocksPillow, 1450, { isFeatured: true, sold90: 22 }],
     ["pull-along-cat", "pull-along", "قطة بخيط للسحب", "Pull-along Cat", PHOTOS.cat, 220, { inStock: false, sold90: 30 }],
+    // The fourth blocks set, so the blocks carousel fills its row of four (v5).
+    ["mini-block-set", "blocks", "طقم مكعبات صغير", "Mini Block Set", PHOTOS.blocksPillow, 520, { sold90: 18 }],
   ],
 });
 
 export const DOODLE = libraryTemplate({
   key: DOODLE_KEY,
-  version: 4,
-  changelog: "Doodle v4: categories, new arrivals, section order",
+  version: 5,
+  changelog: "Doodle v5: a blocks carousel (the store's 1st category) on the home",
   name: L("دودل", "Doodle"),
   description: L(
     "ألعاب خشبية مرحة: افتتاحية بنتو، المفضلة عند الأطفال ولماذا الخشب. أربع صفحات جاهزة.",

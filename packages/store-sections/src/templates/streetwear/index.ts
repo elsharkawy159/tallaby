@@ -3,7 +3,9 @@
  * Templates"): white, concrete grey, acid lime and pure black, square
  * corners and heavy Rubik type. Built from section library designs
  * (`fromLibrary`), so every element is a tree node the seller can select,
- * restyle and move.
+ * restyle and move. v6 (owner, 2026-11-25: every home has products by
+ * category and a carousel) adds one category as a carousel before the
+ * lookbook.
  *
  * Photos: Pexels, each checked by eye (2026-10-20): hoodies and tees on
  * rails, folded joggers, sneakers, a streetwear shop and graffiti walls. No
@@ -29,6 +31,10 @@ const lib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary(STREET
 
 const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
+
+/** One category's products as a carousel, by its place in the store (`journey.rows[0]`, 1 = the first). */
+const categoryCarousel = (place: number): Design =>
+  lib("products-category-carousel", { lists: [place > 1 ? { offset: place - 1 } : undefined, { categoryIndex: place, limit: 4 }] });
 
 const PHOTOS = {
   alley: pexels(11251399),
@@ -237,6 +243,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       },
       links: { "/shipping": NEW },
     }),
+    categoryCarousel(journey.rows[0] ?? 1),
     lib("gallery-bento", {
       photo: [
         c.photos.custom["lookbook-1"]!,
@@ -346,6 +353,9 @@ const DEMO = demoStore({
     ["grey-canvas-sneakers", "shoes", "حذاء رياضي كانفاس رمادي", "Grey Canvas Sneakers", PHOTOS.sneakers, 1300, { sold90: 18 }],
     ["leather-messenger", "bags", "حقيبة كتف جلد", "Leather Messenger", PHOTOS.messenger, 1300, { inStock: false, sold90: 39 }],
     ["oversized-work-shirt", "shirts", "قميص بمقاس واسع", "Oversized Work Shirt", PHOTOS.shirtRack, 1150, { sold90: 26 }],
+    // Two more hoodies, so the hoodies carousel fills its row of four (v6).
+    ["pastel-hoodie", "hoodies", "هودي بألوان فاتحة", "Pastel Hoodie", pexels(9594667, 900), 1400, { sold90: 16 }],
+    ["black-heavy-hoodie", "hoodies", "هودي أسود ثقيل", "Black Heavy Hoodie", PHOTOS.blackHoodieRack, 1600, { sold90: 14 }],
   ],
 });
 
@@ -353,8 +363,8 @@ export const STREETWEAR = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(STREETWEAR_KEY, "tshirts", { ar: 2577, en: 2610 }),
   key: STREETWEAR_KEY,
-  version: 5,
-  changelog: "Streetwear v4: categories, section order",
+  version: 6,
+  changelog: "Streetwear v6: a carousel of one category (the store's 1st) on the home",
   name: L("ستريت وير", "Streetwear"),
   description: L(
     "موضة شارع جريئة: أبيض وأسود وأخضر ليموني، زوايا حادة وخط عريض. أربع صفحات جاهزة.",
@@ -412,8 +422,8 @@ export const STREETWEAR = editionTemplate({
   ],
   // The about page's three buyer quotes: without `reviews` the section is not built.
   optional: ["reviews"],
-  // The rail shows the newest products; the look has no category rows.
-  journey: { primary: "newest", rows: [] },
+  // The rail shows the newest products; one category row, the carousel (the store's 1st category).
+  journey: { primary: "newest", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },

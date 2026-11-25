@@ -3,7 +3,8 @@
  * Templates"): warm blush paper, deep ink, a plum for actions and a peach
  * highlight, El Messiri headings over Tajawal text and soft 14px corners. A
  * modest-wear boutique: new season slides, category rings, most loved, gift
- * cards, ways to pay and customer quotes. Built from section library designs
+ * cards, ways to pay, customer quotes and the layers and scarves as a
+ * carousel (the store's 3rd category). Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): dresses, blouses, coats
@@ -151,6 +152,8 @@ const home: Design[] = [
       "نور ح.": L("شهد ك.", "Shahd K."),
     },
   }),
+  // The store's 3rd category (layers and scarves, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [{ offset: 2 }, { categoryIndex: 3, limit: 4 }] }),
 ];
 
 const about: Design[] = [
@@ -193,8 +196,9 @@ const DEMO = demoStore({
 export const SITARA = libraryTemplate({
   key: SITARA_KEY,
   // v3 (2026-11-16, owner): every home has at least one real products grid.
-  version: 3,
-  changelog: "Sitara v3: a products grid on the home",
+  // v4 (2026-11-25, owner): every home has products by category and a carousel.
+  version: 4,
+  changelog: "Sitara v4: a layers carousel (the store's 3rd category) on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("تنسيقات تكمّلها", "Styles to go with it") } },
   name: L("سِتارة", "Sitara"),
   description: L(

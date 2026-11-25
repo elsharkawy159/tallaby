@@ -4,7 +4,8 @@
  * a marigold highlight, Readex Pro throughout and 12px corners. Everything
  * the kitchen needs: banners for tableware, prep and storage, departments,
  * this week's tabbed shelf, a budget shelf, the week's offers, open before
- * you pay and simple promises. Built from section library designs
+ * you pay, simple promises and the tableware as a carousel (the store's
+ * 1st category). Built from section library designs
  * (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-23): stoneware and boards
@@ -132,6 +133,8 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن منتج.", "With any question about a product."),
     },
   }),
+  // The store's 1st category (tableware, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("newsletter-strip", {
     text: {
       "اعرف الجديد أولًا": L("جديد المطبخ", "New for the kitchen"),
@@ -173,13 +176,15 @@ const DEMO = demoStore({
     ["speckled-cup-set", "tableware", "طقم فناجين منقطة", "Speckled Cup & Saucer Set", PHOTOS.speckledCups, 780, { sold90: 52 }],
     ["striped-tea-towels", "linen", "فوط مطبخ مقلمة ٤ قطع", "Striped Tea Towels, Set of 4", PHOTOS.towels, 280, { sold90: 70 }],
     ["silicone-spatula-set", "prep", "طقم مغارف سيليكون", "Silicone Spatula Set", PHOTOS.spatulas, 260, { compareAtPrice: 320, inStock: false, sold90: 95 }],
+    // The fourth tableware piece, so the tableware carousel fills its row of four (v4).
+    ["stoneware-plate-stack", "tableware", "أطباق حجرية ٤ قطع", "Stoneware Plates, Set of 4", PHOTOS.stackedPlates, 690, { sold90: 18 }],
   ],
 });
 
 export const BEITY = libraryTemplate({
   key: BEITY_KEY,
-  version: 3,
-  changelog: "Beity v3: one trust block, no budget finder, newsletter close",
+  version: 4,
+  changelog: "Beity v4: a tableware carousel (the store's 1st category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء المشترين", "Buyer reviews"), related: L("منتجات أخرى للمطبخ", "More for your kitchen") } },
   name: L("بيتي", "Beity"),
   description: L(

@@ -4,7 +4,10 @@
  * improvement reaches the default template (docs/systems/plan.md §1 row 3).
  * In order: the banner carousel, photo category tiles, best sellers in the
  * clean grid, the two-tone story banner, new arrivals on the tinted rail,
- * the four promises, the FAQ split and the big-type newsletter.
+ * the FAQ split, a carousel of the store's first category and the big-type
+ * newsletter. v9 (owner, 2026-11-25: every home has products by category and
+ * a carousel) swapped the four promises for the category carousel; the
+ * promises design stays for the stores that hold it.
  *
  * Classic is every new store's first site, so the copy fits any store and
  * promises nothing the seller has not set: no discounts, no typed figures,
@@ -81,6 +84,17 @@ export const classicHomeNewArrivals = classicLib("products-rail", {
   lists: [{ source: "newest", limit: 4 }],
 });
 
+/**
+ * The store's first category as a carousel: its name and View all, then
+ * four cards in view with arrows on desktop and a swipe on phones. The
+ * same hairline round every photo as the best sellers grid.
+ */
+export const classicHomeCategoryCarousel = classicLib("products-category-carousel", {
+  lists: [undefined, { limit: 4 }],
+  nodes: { "صورة المنتج": { style: { borderWidth: 1, borderColor: "border" } } },
+});
+
+/** The four promises (v8's sixth section; off the v9 home, kept for the stores that hold it). */
 export const classicHomePromises = classicLib("features-icon-cards", {
   text: {
     "لماذا تشتري منا": L("لماذا تتسوّق معنا", "Why shop with us"),
@@ -109,8 +123,8 @@ export const classicHomeNewsletter = classicLib("newsletter-big", {
 });
 
 /**
- * Hero, categories, then products with a photo-led break between the two
- * product sections, trust and questions after the products they support, and
+ * Hero, categories, then products with a photo-led break between any two
+ * product sections (the story banner, then the FAQ beside its photo), and
  * the newsletter last (docs/template-rules.md §2, §2a). One scroll effect:
  * the story banner settles as it enters the screen.
  */
@@ -120,7 +134,7 @@ export const CLASSIC_HOME = [
   classicHomeBestSellers,
   classicHomeStory,
   classicHomeNewArrivals,
-  classicHomePromises,
   classicHomeFaq,
+  classicHomeCategoryCarousel,
   classicHomeNewsletter,
 ] as const;

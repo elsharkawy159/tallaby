@@ -99,6 +99,8 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن مقاس أو منتج.", "With any question about a size or product."),
     },
   }),
+  // v5 (2026-11-25, owner): the store's 1st category as a carousel between the promises and the steps.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("features-steps", {
     text: {
       "الطلب في ٤ خطوات": L("اطلب في ٤ خطوات", "Order in 4 steps"),
@@ -151,9 +153,10 @@ const DEMO = demoStore({
   name: NAME,
   description: L("ملابس قطنية وألعاب ومستلزمات للمولود.", "Cotton clothes, toys and essentials for babies."),
   categories: [
+    // v5: play and learn first, so the category carousel (the 1st category) shows a full row.
+    ["play", "لعب وتعلّم", "Play & learn", PHOTOS.stackBoard],
     ["clothes", "ملابس وبطاطين", "Clothes & blankets", PHOTOS.knits],
     ["toys", "أول ألعاب", "First toys", PHOTOS.stackerGrey],
-    ["play", "لعب وتعلّم", "Play & learn", PHOTOS.stackBoard],
     ["gifts", "علب الهدايا", "Gift boxes", PHOTOS.plushBasket],
     ["blankets", "بطاطين", "Blankets", PHOTOS.elephantBlanket],
     ["nappies", "حفاضات", "Nappies", PHOTOS.diapers],
@@ -168,6 +171,8 @@ const DEMO = demoStore({
     ["wooden-maracas", "music", "شخاليل خشب", "Wooden Maracas", PHOTOS.maracas, 220, { sold90: 66 }],
     ["shape-sorter", "play", "لعبة الأشكال", "Shape Sorter", PHOTOS.sorter, 320, { sold90: 54 }],
     ["stack-and-sort-board", "play", "لوحة تركيب وفرز", "Stack & Sort Board", PHOTOS.stackBoard, 560, { compareAtPrice: 650, sold90: 54 }],
+    ["stacking-tower", "play", "برج تركيب", "Stacking Tower", PHOTOS.stackerGrey, 290, { sold90: 46 }],
+    ["rhythm-shakers-set", "play", "طقم شخاليل إيقاع", "Rhythm Shakers Set", PHOTOS.maracas, 340, { sold90: 38 }],
     ["welcome-baby-box", "gifts", "علبة هدايا المولود", "Welcome Baby Box", PHOTOS.plushBasket, 1250, { compareAtPrice: 1450, isFeatured: true, sold90: 88 }],
     ["nursery-basket-set", "nursery", "طقم سلال غرفة الطفل", "Nursery Basket Set", PHOTOS.nursery, 890, { inStock: false, sold90: 20 }],
   ],
@@ -175,8 +180,8 @@ const DEMO = demoStore({
 
 export const BAMBINO = libraryTemplate({
   key: BAMBINO_KEY,
-  version: 4,
-  changelog: "Bambino v4: one categories section, section order",
+  version: 5,
+  changelog: "Bambino v5: products by category as a carousel on the home",
   name: L("بامبينو", "Bambino"),
   description: L(
     "مستلزمات الأطفال: افتتاحية ناعمة، الطلب في ٤ خطوات وما يميز المنتجات. أربع صفحات جاهزة.",

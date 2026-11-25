@@ -205,8 +205,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
 
   /**
    * Home (v4, template-rules §2a): a full-bleed desk photo as the hero, the
-   * categories, then players' picks, the brands they trust, the setup video,
-   * the numbers behind the warranty, help topics and the interests sign-up.
+   * categories, then players' picks, the brands they trust, the numbers
+   * behind the warranty, one category's carousel, the setup video, the grid
+   * and the interests sign-up (v7: the carousel replaces the help topics).
    */
   const home: Design[] = [
     lib("hero-fullbleed", {
@@ -262,6 +263,10 @@ function look(c: LookContent, journey: LookJourney): LookParts {
           }),
         ]
       : []),
+    // v7 (2026-11-25, owner): one category's products as a carousel, at the place `journey.rows` names.
+    lib("products-category-carousel", {
+      lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 4 }],
+    }),
     lib("video-shop", {
       photo: [undefined, c.photos.custom["video-poster"]!],
       text: {
@@ -272,9 +277,6 @@ function look(c: LookContent, journey: LookJourney): LookParts {
     }),
     // v6 (2026-11-16, owner): every home has a real products grid; it shows what the main list does not.
     lib("products-grid", gridPatch(journey.primary)),
-    lib("faq-topics", {
-      text: { "عمّ تسأل؟": L("كيف يمكننا مساعدتك؟", "How can we help?") },
-    }),
     lib("newsletter-interests", {
       text: {
         "ما الذي يهمك؟": c.newsletter.title,
@@ -332,10 +334,11 @@ const DEMO = demoStore({
   name: NAME,
   description: L("أدوات ألعاب الفيديو للاعبين.", "Gaming gear for players."),
   categories: [
+    // v7: full setups first, so the category carousel (the 1st category) shows a full row.
+    ["setups", "تجهيزات كاملة", "Full setups", PHOTOS.pcDesk],
     ["keyboards", "لوحات مفاتيح", "Keyboards", PHOTOS.rgbKeyboard],
     ["mice", "ماوسات", "Mice", PHOTOS.mouseTop],
     ["audio", "سماعات", "Headsets", PHOTOS.headset],
-    ["setups", "تجهيزات كاملة", "Full setups", PHOTOS.pcDesk],
     ["power", "شواحن وبطاريات", "Power", PHOTOS.cable],
     ["controllers", "أذرع تحكم", "Controllers", PHOTOS.glowControllers],
     ["switches", "مفاتيح ميكانيكية", "Switches", PHOTOS.switches],
@@ -348,6 +351,9 @@ const DEMO = demoStore({
     ["pro-gaming-headset", "audio", "سماعة ألعاب احترافية", "Pro Gaming Headset", PHOTOS.headset, 2650, { isFeatured: true, sold90: 98 }],
     ["streamer-desk-bundle", "setups", "باقة مكتب البث", "Streamer Desk Bundle", PHOTOS.editDesk, 9900, { compareAtPrice: 11400, isFeatured: true, sold90: 22 }],
     ["console-corner-kit", "setups", "باقة ركن الكونسول", "Console Corner Kit", PHOTOS.neonController, 4200, { sold90: 17 }],
+    // v7: two more setups, so the category carousel's row is full.
+    ["gaming-desk-setup", "setups", "تجهيزة مكتب ألعاب", "Gaming Desk Setup", PHOTOS.pcDesk, 12500, { sold90: 12 }],
+    ["monitor-headset-setup", "setups", "تجهيزة شاشة وسماعة", "Monitor & Headset Setup", PHOTOS.arenaDesk, 8400, { sold90: 9 }],
     ["glow-controller", "controllers", "ذراع تحكم بإضاءة", "Glow Controller", PHOTOS.glowControllers, 1590, { compareAtPrice: 1790, sold90: 40 }],
     ["fast-power-bank", "power", "شاحن متنقل سريع", "Fast Power Bank", PHOTOS.powerBank, 890, { inStock: false, rating: 4.6, sold90: 140 }],
     ["braided-usb-c-cable", "cables", "كابل USB-C مضفّر", "Braided USB-C Cable", PHOTOS.cable, 190, { sold90: 210 }],
@@ -358,9 +364,9 @@ export const ARENA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ARENA_KEY, "pc-gaming", { ar: 1836, en: 1835 }),
   key: ARENA_KEY,
-  // v6 (2026-11-16, owner): a products grid of the newest after the setup video.
-  version: 6,
-  changelog: "Arena v6: a products grid on the home",
+  // v6 (2026-11-16, owner): a products grid of the newest after the setup video. v7 (2026-11-25, owner): a category carousel in place of the help topics.
+  version: 7,
+  changelog: "Arena v7: products by category as a carousel on the home",
   name: L("أرينا", "Arena"),
   description: L(
     "أدوات جيمنج بالوضع الداكن: صورة كبيرة، اختيارات اللعيبة، ماركات وفيديو السيت أب. أربع صفحات جاهزة.",
@@ -423,8 +429,8 @@ export const ARENA = editionTemplate({
   ],
   // The page is dark: an edition's `photos.dark` replaces its light photos.
   dark: true,
-  // Best sellers in the panel rail; no category rows.
-  journey: { primary: "best-sellers", rows: [] },
+  // Best sellers in the panel rail; the category carousel shows the store's 1st category.
+  journey: { primary: "best-sellers", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { thumbs: "bottom", surface: "shelf", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },

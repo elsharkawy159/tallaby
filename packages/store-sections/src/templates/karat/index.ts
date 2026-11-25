@@ -167,7 +167,7 @@ const DEFAULT_CONTENT: LookDefaults = {
  * (New, Best sellers, Top rated, About, Verified buyer, the reviewers'
  * cities) and the layout stay here.
  */
-function look(c: LookContent, _journey: LookJourney): LookParts {
+function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const short = c.custom["store-short"]!;
   const aboutName = L(`عن ${short.ar}`, `About ${short.en}`);
@@ -266,6 +266,10 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
         "تابع أحدث صورنا": c.custom["lookbook-line"]!,
       },
     }),
+    // v5 (2026-11-25, owner): the store's 1st category as a carousel (`journey.rows`), after the lookbook's photos.
+    lib("products-category-carousel", {
+      lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 4 }],
+    }),
   ];
 
   const about: Design[] = [
@@ -308,9 +312,10 @@ const DEMO = demoStore({
   name: NAME,
   description: L("إكسسوارات وساعات وحقائب لكل يوم.", "Accessories, watches and bags for every day."),
   categories: [
+    // v5: rings first, so the category carousel (the 1st category) shows a full row.
+    ["rings", "خواتم", "Rings", PHOTOS.colourRings],
     ["earrings", "حلقان", "Earrings", PHOTOS.hoops],
     ["bracelets", "أساور", "Bracelets", PHOTOS.chain],
-    ["rings", "خواتم", "Rings", PHOTOS.colourRings],
     ["watches", "ساعات", "Watches", PHOTOS.watch],
     ["bags", "حقائب", "Bags", PHOTOS.tote],
   ],
@@ -321,6 +326,7 @@ const DEMO = demoStore({
     ["braided-bracelet", "bracelets", "إسورة مضفّرة", "Braided Bracelet", PHOTOS.braided, 490, { sold90: 80 }],
     ["colour-stack-rings", "rings", "مجموعة خواتم ملوّنة", "Colour Stack Rings", PHOTOS.colourRings, 520, { sold90: 98 }],
     ["ring-box-set", "rings", "طقم خواتم بالعلبة", "Ring Set with Box", PHOTOS.ringBox, 690, { sold90: 44 }],
+    ["vintage-ring-set", "rings", "طقم خواتم بطابع كلاسيكي", "Vintage-style Ring Set", PHOTOS.vintageTray, 620, { sold90: 52 }],
     ["layered-necklaces", "rings", "سلاسل طبقات", "Layered Necklaces", PHOTOS.necklaceRack, 560, { sold90: 70 }],
     ["everyday-smartwatch", "watches", "ساعة ذكية يومية", "Everyday Smartwatch", PHOTOS.watch, 1450, { compareAtPrice: 1690, isFeatured: true, sold90: 132 }],
     ["tan-tote", "bags", "حقيبة توت بلون جملي", "Tan Tote", PHOTOS.tote, 1850, { sold90: 44 }],
@@ -332,8 +338,9 @@ export const KARAT = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KARAT_KEY, "glasses", { ar: 1682, en: 1694 }),
   key: KARAT_KEY,
-  version: 4,
-  changelog: "Karat v3: product page",
+  // v5 (2026-11-25, owner): products by category as a carousel after the lookbook.
+  version: 5,
+  changelog: "Karat v5: products by category as a carousel on the home",
   name: L("قيراط", "Karat"),
   description: L(
     "إكسسوارات يومية: بوستر، أقسام دائرية وصور العميلات. أربع صفحات جاهزة.",
@@ -392,8 +399,8 @@ export const KARAT = editionTemplate({
     "custom.reviews-photo-alt",
     "custom.reviews-verified",
   ],
-  // The shelf has its own tabs (new, best sellers, top rated), so `primary` is not read; the look has no category rows.
-  journey: { primary: "newest", rows: [] },
+  // The shelf has its own tabs (new, best sellers, top rated), so `primary` is not read; the category carousel shows the store's 1st category.
+  journey: { primary: "newest", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },

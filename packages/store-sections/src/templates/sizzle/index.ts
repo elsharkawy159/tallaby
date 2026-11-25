@@ -134,6 +134,9 @@ const home: Design[] = [
       "تواصل معنا لأي سؤال قبل الطلب أو بعده.": L("عجينة تُخبز في فرن حجري حتى تصبح هشة ومحمّرة.", "Dough baked in a stone oven until light and blistered."),
     },
   }),
+  // v4 (2026-11-25, owner): every home has products by category in a swipe row: the store's 1st category.
+  // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+  lib("products-category-carousel", { lists: [{ offset: 0 }, { categoryIndex: 1, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
   lib("testimonials-wall", {
     text: {
       "ماذا يقولون عنا": L("آراء عملائنا", "What our customers say"),
@@ -230,8 +233,8 @@ const DEMO = demoStore({
 
 export const SIZZLE = libraryTemplate({
   key: SIZZLE_KEY,
-  version: 3,
-  changelog: "Sizzle v3: product page",
+  version: 4,
+  changelog: "Sizzle v4: products by category in a swipe row on the home",
   name: L("سيزل", "Sizzle"),
   description: L(
     "برجر وشاورما وبيتزا: الطعام في العنوان، كيف نطبخ وآراء العملاء. أربع صفحات جاهزة.",

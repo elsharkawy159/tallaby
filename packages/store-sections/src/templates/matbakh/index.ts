@@ -4,7 +4,7 @@
  * actions and a butter-yellow highlight, Readex Pro throughout and 14px
  * corners. A practical kitchen shop: a "what are you cooking?" search,
  * departments, this week's tabbed shelf, a budget shelf, the week's offers,
- * open before you pay and simple promises. Built from section library
+ * open before you pay, one category as a carousel and simple promises. Built from section library
  * designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): dinnerware, mugs,
@@ -15,6 +15,8 @@
  * built by `look(content, journey)`, and `DEFAULT_CONTENT` with `DEMO` is
  * Matbakh Shop itself. The output is unchanged from before the conversion
  * (`../editions/look-guard.test.ts`), so the version stays as it was.
+ * v4 (owner, 2026-11-25: every home has products by category and a
+ * carousel) adds the category carousel before the promises.
  */
 import { getDesign, type Design } from "../../designs";
 import { L } from "../../designs/_kit";
@@ -34,6 +36,18 @@ const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
 const LOW = "/products?sort=price-low";
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
+
+/**
+ * One category's products as a carousel (`journey.rows[0]`: its place in
+ * the store, 1 = the first), three across: this niche's pack has three
+ * products per category, and a category row needs one full row (editions
+ * README §3). On desktop the carousel still sizes its cards four in view.
+ */
+const categoryCarousel = (place: number): Design =>
+  lib("products-category-carousel", {
+    lists: [place > 1 ? { offset: place - 1 } : undefined, { categoryIndex: place, limit: 3 }],
+    nodes: { "منتجات القسم": { style: { columns: 3 } } },
+  });
 
 const PHOTOS = {
   dinnerSet: pexels(6213678, 900),
@@ -135,7 +149,7 @@ const DEFAULT_CONTENT: LookDefaults = {
  * (Best sellers, All products, New in, Lowest price, Why us) and the layout
  * stay here.
  */
-function look(c: LookContent, _journey: LookJourney): LookParts {
+function look(c: LookContent, journey: LookJourney): LookParts {
   const name = c.store.name;
   const initial = initialOf(name);
   const x = c.custom;
@@ -210,6 +224,7 @@ function look(c: LookContent, _journey: LookJourney): LookParts {
         "إذا وجدت أي مشكلة، أعد الطلب للمندوب دون أن تدفع شيئًا.": x["open-box-3"]!,
       },
     }),
+    categoryCarousel(journey.rows[0] ?? 1),
     lib("features-icon-cards", {
       text: {
         "لماذا تشتري منا": L("لماذا نحن", "Why us"),
@@ -289,8 +304,8 @@ const DEMO = demoStore({
 
 export const MATBAKH = editionTemplate({
   key: MATBAKH_KEY,
-  version: 3,
-  changelog: "Matbakh v2: product page",
+  version: 4,
+  changelog: "Matbakh v4: a carousel of one category (the store's 1st) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("مطبخ", "Matbakh"),
   description: L(
@@ -339,9 +354,9 @@ export const MATBAKH = editionTemplate({
     "custom.open-box-3",
     "custom.trust-title",
   ],
-  // The tabbed block has its own tabs, so `primary` is not read; the four category tiles read `photos.tiles` and `nav`; no category rows.
+  // The tabbed block has its own tabs, so `primary` is not read; the four category tiles read `photos.tiles` and `nav`; one category row, the carousel (the store's 1st category).
   optional: [],
-  journey: { primary: "newest", rows: [] },
+  journey: { primary: "newest", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

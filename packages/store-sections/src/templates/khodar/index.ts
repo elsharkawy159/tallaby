@@ -197,6 +197,11 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       },
     }),
     lib("categories-photo-tiles", { text: { "تسوّق حسب القسم": c.categories.title } }),
+    // v6 (2026-11-25, owner): the store's 1st category as a carousel (`journey.rows`), right under the categories, three across: the look's packs hold three products a category (the row rule).
+    lib("products-category-carousel", {
+      lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 6 }],
+      nodes: { "منتجات القسم": { style: { columns: 3 } } },
+    }),
     lib("products-rows", {
       text: { "إكسسوارات بأسعار مناسبة": c.products.primary.title },
       links: { "/products": primaryHref(journey.primary) },
@@ -286,14 +291,14 @@ const DEMO = demoStore({
     ["bananas-1kg", "produce", "موز ١ كيلو", "Bananas, 1 kg", PHOTOS.bananas, 35, { sold90: 260 }],
     ["potatoes-2kg", "produce", "بطاطس ٢ كيلو", "Potatoes, 2 kg", PHOTOS.potatoes, 40, { sold90: 200 }],
     ["aubergines-peppers", "produce", "باذنجان وفلفل رومي", "Aubergines & Peppers", PHOTOS.aubergines, 45, { inStock: false, sold90: 70 }],
-    ["lemons-1kg", "citrus", "ليمون بلدي ١ كيلو", "Local Lemons, 1 kg", PHOTOS.lemons, 30, { compareAtPrice: 40, sold90: 150 }],
+    ["lemons-1kg", "produce", "ليمون بلدي ١ كيلو", "Local Lemons, 1 kg", PHOTOS.lemons, 30, { compareAtPrice: 40, sold90: 150 }],
   ],
 });
 
 export const KHODAR = editionTemplate({
   key: KHODAR_KEY,
-  version: 5,
-  changelog: "Khodar v5: a products grid on the home",
+  version: 6,
+  changelog: "Khodar v6: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("خضار", "Khodar"),
   description: L(
@@ -343,9 +348,9 @@ export const KHODAR = editionTemplate({
     "custom.promise-step-3",
   ],
   // A buyer quote is a demo claim: a pack writes a real one (with its city) or leaves it out (the section is then not built).
-  // Six best sellers in compact rows; no category rows.
+  // Six best sellers in compact rows; the category carousel shows the store's 1st category.
   optional: ["reviews", "custom.reviews-city"],
-  journey: { primary: "best-sellers", rows: [] },
+  journey: { primary: "best-sellers", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

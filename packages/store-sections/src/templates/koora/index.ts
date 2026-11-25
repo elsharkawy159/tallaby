@@ -81,6 +81,8 @@ const home: Design[] = [
     text: { "الأكثر طلبًا": L("التمرين", "Training"), "منتجات يكثر الطلب عليها": L("اختيارات المدرب", "Coach picks") },
     links: { "/products": BEST },
   }),
+  // v5 (2026-11-25, owner): the store's 1st category as a carousel after the most ordered.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("testimonials-chat", {
     text: {
       "من الواتساب": L("الآراء", "Reviews"),
@@ -133,9 +135,10 @@ const DEMO = demoStore({
   name: NAME,
   description: L("كرات وأطقم وأدوات تمرين لكرة القدم.", "Balls, kits and training gear for football."),
   categories: [
+    // v5: training gear first, so the category carousel (the 1st category) shows a full row.
+    ["training", "أدوات تمرين", "Training gear", PHOTOS.cones],
     ["kits", "أطقم الفرق", "Team kits", PHOTOS.teamShirts],
     ["balls", "كرات", "Balls", PHOTOS.threeBalls],
-    ["training", "أدوات تمرين", "Training gear", PHOTOS.cones],
     ["goals", "مرامٍ وشباك", "Goals & nets", PHOTOS.goalSmall],
     ["bibs", "صدريات تمرين", "Bibs", PHOTOS.ballsBibs],
     ["leather", "كرات جلد", "Leather balls", PHOTOS.leatherBall],
@@ -149,6 +152,9 @@ const DEMO = demoStore({
     ["five-a-side-ball", "balls", "كرة خماسي", "Five-a-Side Ball", PHOTOS.twoBalls, 520, { isFeatured: true, sold90: 210 }],
     ["classic-leather-ball", "leather", "كرة جلد كلاسيكية", "Classic Leather Ball", PHOTOS.leatherBall, 790, { sold90: 44 }],
     ["marker-cones", "training", "أقماع تمرين (٥٠ قطعة)", "Marker Cones (50)", PHOTOS.cones, 320, { sold90: 170 }],
+    ["agility-ladder-4m", "training", "سلم رشاقة ٤ متر", "Agility Ladder 4 m", PHOTOS.ladder, 290, { sold90: 64 }],
+    ["training-bibs-5", "training", "صدريات تمرين (٥ قطع)", "Training Bibs (5)", PHOTOS.ballsBibs, 260, { sold90: 58 }],
+    ["drill-balls-cones-set", "training", "طقم تمارين كرات وأقماع", "Drill Set, Balls and Cones", PHOTOS.ballsCones, 1450, { sold90: 19 }],
     ["agility-ladder", "agility", "سلم رشاقة ٦ متر", "Agility Ladder 6 m", PHOTOS.ladder, 390, { sold90: 120 }],
     ["academy-set", "academy", "طقم أكاديمية كرات وأقماع", "Academy Balls & Cones Set", PHOTOS.ballsCones, 2650, { compareAtPrice: 2950, sold90: 26 }],
     ["portable-goal", "goals", "مرمى متنقل ٣×٢ متر", "Portable Goal 3×2 m", PHOTOS.parkGoal, 4200, { inStock: false, sold90: 8 }],
@@ -158,8 +164,8 @@ const DEMO = demoStore({
 
 export const KOORA = libraryTemplate({
   key: KOORA_KEY,
-  version: 4,
-  changelog: "Koora v4: a products grid on the home",
+  version: 5,
+  changelog: "Koora v5: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الفرق", "From teams"), related: L("جهّز الفريق", "Kit out the team") } },
   name: L("كورة", "Koora"),
   description: L(

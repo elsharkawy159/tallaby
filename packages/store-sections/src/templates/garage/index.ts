@@ -89,6 +89,8 @@ const home: Design[] = [
       "تواصل سهل لأي سؤال": L("بيانات التوافق موضحة لكل منتج", "Fit details for every product"),
     },
   }),
+  // v6 (2026-11-25, owner): the store's 1st category as a carousel between the comparison and the newest.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   // v5: the newest upgrades as a grid of bordered cards with the cart button (they were slim rows).
   lib("products-classic", {
     text: { "وصل حديثًا": L("إضافات صغيرة لسيارتك", "Small upgrades for your car") },
@@ -130,9 +132,10 @@ const DEMO = demoStore({
   name: NAME,
   description: L("إكسسوارات وعُدد للسيارات بمواصفات ومقاسات واضحة.", "Car accessories and tools with clear specs and sizes."),
   categories: [
+    // v6: tools first, so the category carousel (the 1st category) shows a full row.
+    ["tools", "عُدد وطوارئ", "Tools & emergency", PHOTOS.spanners],
     ["mounts", "حوامل الهاتف", "Phone mounts", PHOTOS.dashMount],
     ["interior", "المقصورة الداخلية", "Interior", PHOTOS.leatherSeat],
-    ["tools", "عُدد وطوارئ", "Tools & emergency", PHOTOS.spanners],
     ["extras", "إضافات", "Extras", PHOTOS.keys],
     ["seats", "أغطية المقاعد", "Seat covers", PHOTOS.plaidSeat],
     ["steering", "عجلة القيادة", "Steering", PHOTOS.steering],
@@ -148,6 +151,8 @@ const DEMO = demoStore({
     ["steering-wheel-cover", "steering", "غطاء عجلة القيادة", "Steering Wheel Cover", PHOTOS.steering, 320, { sold90: 220 }],
     ["emergency-kit", "tools", "حقيبة طوارئ للسيارة", "Car Emergency Kit", PHOTOS.jumperCables, 890, { compareAtPrice: 1270, rating: 4.9, sold90: 132 }],
     ["spanner-set", "tools", "طقم مفاتيح ١٢ قطعة", "12-Piece Spanner Set", PHOTOS.spanners, 750, { sold90: 74 }],
+    ["pegboard-tool-set", "tools", "طقم عُدد بلوحة تعليق", "Tool Set with Pegboard", PHOTOS.toolWall, 1650, { sold90: 22 }],
+    ["workshop-starter-set", "tools", "طقم عُدد للورشة", "Workshop Starter Set", PHOTOS.workshopSmall, 2900, { sold90: 15 }],
     ["garage-tool-board", "garage", "لوحة تعليق عُدد للمرآب", "Garage Tool Board", PHOTOS.toolWall, 2400, { inStock: false, sold90: 18 }],
     ["key-holder-set", "extras", "حلقة مفاتيح وغطاء للمفتاح", "Key Ring & Fob Case", PHOTOS.keys, 180, { sold90: 260 }],
     ["car-power-bank", "power", "بطارية شحن متنقلة للسيارة", "Car Power Bank", PHOTOS.powerBank, 790, { sold90: 88 }],
@@ -157,8 +162,8 @@ const DEMO = demoStore({
 export const GARAGE = libraryTemplate({
   key: GARAGE_KEY,
   // v5 (2026-11-16, owner): every home has at least one real products grid (the newest upgrades, rows before).
-  version: 5,
-  changelog: "Garage v5: a products grid on the home",
+  version: 6,
+  changelog: "Garage v6: products by category as a carousel on the home",
   name: L("جراج", "Garage"),
   description: L(
     "إكسسوارات سيارات: ملصق الموسم، اختيارات السائقين، مقارنة ورسائل واتساب. أربع صفحات جاهزة.",

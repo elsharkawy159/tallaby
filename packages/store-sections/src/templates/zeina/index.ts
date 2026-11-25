@@ -127,6 +127,8 @@ const home: Design[] = [
     text: { "تسوّق حسب اختيارك": L("المتجر", "Shop") },
     links: { "/products": [NEW, BEST, undefined, undefined] },
   }),
+  // v3 (2026-11-25, owner): every home has products by category in a swipe row: the store's 1st category.
+  lib("products-category-carousel", { lists: [{ offset: 0 }, { categoryIndex: 1, limit: 4 }] }),
   lib("testimonials-wall", {
     text: {
       "ماذا يقولون عنا": L("آراء عملائنا", "What our customers say"),
@@ -191,8 +193,8 @@ const DEMO = demoStore({
 
 export const ZEINA = libraryTemplate({
   key: ZEINA_KEY,
-  version: 2,
-  changelog: "Zeina v2: product page",
+  version: 3,
+  changelog: "Zeina v3: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "bottom", gallery: "end", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("منتجات أخرى لداخل السيارة", "More for the interior") } },
   name: L("زينة", "Zeina"),
   description: L(

@@ -23,9 +23,13 @@
  *   3. `products-grid` v3: best sellers (8), a hairline round each photo
  *   4. `about-two-tone`: the store's promise beside a photo (the page's one scroll effect)
  *   5. `products-rail` v2: new arrivals (4) on the tinted band
- *   6. `features-icon-cards` v2: delivery, cash on delivery, returns, WhatsApp
- *   7. `faq-side` v2
+ *   6. `faq-side` v2
+ *   7. `products-category-carousel` v2: the store's first category (4), a hairline round each photo
  *   8. `newsletter-big` v2 on the pale `secondary` colour, no discount copy
+ * v9 (owner, 2026-11-25: every home has a products-by-category section and a
+ * carousel; the owner approved changing Classic for it): the category
+ * carousel took the place of v8's `features-icon-cards` promises, and the FAQ
+ * moved up to be the photo-led break between the two product rows.
  * No typed figures (v7's statistics band is gone). The header stays Classic's
  * own (`tallaby-header`: search box, account, wishlist and cart; no library
  * header has all of them, and the renderer keeps its account icon on phones
@@ -53,7 +57,7 @@ import type { TemplateDefinition } from "../types";
 import { classicFooter, classicHeader } from "./chrome";
 import { CLASSIC_DEMO } from "./demo";
 import { CLASSIC_LEGACY_HOME, classicOffers } from "./home";
-import { CLASSIC_HOME } from "./home-library";
+import { CLASSIC_HOME, classicHomePromises } from "./home-library";
 import {
   classicAboutHeader,
   classicAboutStats,
@@ -137,6 +141,8 @@ export function classicConfig(): SiteConfig {
 export const CLASSIC_DESIGNS: readonly Design[] = [
   classicHeader,
   ...CLASSIC_HOME,
+  // v8's promises (off the v9 home): stores made from v8 still hold it.
+  classicHomePromises,
   // The home page of v3 to v7: stores made from them still hold these.
   ...CLASSIC_LEGACY_HOME,
   classicOffers,
@@ -159,7 +165,7 @@ export const CLASSIC_DESIGNS: readonly Design[] = [
 
 export const CLASSIC: TemplateDefinition = {
   key: CLASSIC_KEY,
-  version: 8,
+  version: 9,
   isDefault: true,
   folder: "classic",
   name: { ar: "طلبي الكلاسيكي", en: "Tallaby Classic" },
@@ -170,7 +176,7 @@ export const CLASSIC: TemplateDefinition = {
   category: "general",
   style: ["classic", "minimal"],
   sortOrder: 0,
-  changelog: "Tallaby Classic v8: the home page from section-library designs (full-width banner carousel, photo category tiles, the premium product card, a two-tone story banner, FAQ split, one-row newsletter), no typed figures, and a calm footer band",
+  changelog: "Tallaby Classic v9: a carousel of the store's first category on the home, in place of the four promises",
   palette: ["#f7f6f2", "#eef3f3", "#fdad28", "#145163"],
   config: classicConfig,
   pageNames: {

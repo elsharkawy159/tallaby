@@ -123,6 +123,8 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لتختار اللعبة المناسبة.", "So you pick the right toy."),
     },
   }),
+  // v5 (2026-11-25, owner): the store's 1st category as a carousel after the promises.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   // v4 (2026-11-16, owner): every home has at least one real products grid.
   lib("products-grid", {
     as: "new-in",
@@ -189,6 +191,8 @@ const DEMO = demoStore({
     ["bedtime-stories-box", "books", "علبة قصص قبل النوم", "Bedtime Stories Box", PHOTOS.animalsOnBooks, 520, { rating: 4.8, sold90: 88 }],
     ["building-bricks-tub", "build", "علبة قطع تركيب ٣٠٠ قطعة", "Building Bricks Tub, 300 pieces", PHOTOS.bricks, 890, { rating: 4.8, sold90: 130 }],
     ["natural-blocks-bucket", "build", "دلو مكعبات خشب طبيعي", "Natural Wooden Blocks Bucket", PHOTOS.naturalBlocks, 720, { sold90: 52 }],
+    // v5: a fourth building toy, so the category carousel (the 1st category) shows a full row.
+    ["stack-and-build-set", "build", "طقم حلقات للتركيب", "Stack & Build Rings", PHOTOS.stacker, 340, { sold90: 36 }],
     ["safari-figures", "pretend", "مجسمات حيوانات السفاري", "Safari Animal Figures", PHOTOS.safari, 240, { sold90: 66 }],
     ["dinosaur-figures", "dinos", "مجسمات ديناصورات", "Dinosaur Figures", PHOTOS.dinosBrown, 260, { compareAtPrice: 320, sold90: 40 }],
     ["baby-stacking-rings", "baby", "حلقات تركيب للرضّع", "Baby Stacking Rings", PHOTOS.stacker, 280, { inStock: false, sold90: 70 }],
@@ -197,8 +201,8 @@ const DEMO = demoStore({
 
 export const FARHA = libraryTemplate({
   key: FARHA_KEY,
-  version: 4,
-  changelog: "Farha v4: a products grid on the home",
+  version: 5,
+  changelog: "Farha v5: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الأهالي", "What parents say"), related: L("ألعاب أخرى قد تعجبك", "More toys to love") } },
   name: L("فرحة", "Farha"),
   description: L(

@@ -3,8 +3,8 @@
  * Templates"): cool grey-white paper, slate ink, a strong blue for actions
  * and a yellow highlight, Cairo throughout and 10px corners. Original
  * electronics with local warranty: banners for audio, watches and TV, the
- * best sellers, more warranty cover, open before you pay, delivery days and
- * order tracking. Built from section library designs (`fromLibrary`).
+ * best sellers, more warranty cover, open before you pay, the audio as a
+ * carousel (the store's 1st category), delivery days and order tracking. Built from section library designs (`fromLibrary`).
  *
  * The design's "Protection plans" lists a free 6-month plan beside the paid
  * ones; the library section has three paid plans with shared perk lines, so
@@ -129,6 +129,8 @@ const home: Design[] = [
       "جرّب المنتج أمام المندوب.": L("شغّل الجهاز وتأكد منه أمام المندوب.", "Switch the device on and check it in front of the courier."),
     },
   }),
+  // The store's 1st category (audio, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("track-ask"),
 ];
 
@@ -169,13 +171,16 @@ const DEMO = demoStore({
     ["wifi-router", "networking", "راوتر Wi-Fi", "Wi-Fi Router", PHOTOS.router, 1290, { sold90: 36 }],
     ["mini-smart-speaker", "speakers", "مكبر صوت ذكي صغير", "Mini Smart Speaker", PHOTOS.speaker, 990, { inStock: false, sold90: 18 }],
     ["charger-and-cable-kit", "chargers", "شاحن سريع وكابلات", "Fast Charger & Cable Kit", PHOTOS.chargers, 450, { compareAtPrice: 690, sold90: 120 }],
+    // Two more for audio, so its carousel fills a row of four (v5).
+    ["wireless-over-ear", "audio", "سماعة رأس لاسلكية", "Wireless Over-Ear Headphones", PHOTOS.headphones, 1290, { sold90: 16 }],
+    ["home-speaker", "audio", "مكبر صوت منزلي", "Home Speaker", PHOTOS.speaker, 1190, { sold90: 14 }],
   ],
 });
 
 export const SHASHA = libraryTemplate({
   key: SHASHA_KEY,
-  version: 4,
-  changelog: "Shasha v4: a products grid on the home",
+  version: 5,
+  changelog: "Shasha v5: an audio carousel (the store's 1st category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء المستخدمين", "Customer reviews"), related: L("أجهزة تكمّل جهازك", "Pairs well with this") } },
   name: L("شاشة", "Shasha"),
   description: L(

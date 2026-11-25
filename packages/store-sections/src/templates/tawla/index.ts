@@ -3,7 +3,8 @@
  * Templates"): oatmeal paper, an indigo blue for actions and a straw
  * highlight, El Messiri headings over Noto Sans Arabic text and crisp 8px
  * corners. A Mahalla weaver: dress the table, why our linen, the full
- * table set, fresh from the loom, care and reviews. Built from section
+ * table set, fresh from the loom, care, the napkins as a carousel (the
+ * store's 2nd category) and reviews. Built from section
  * library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): runners on set tables,
@@ -109,6 +110,8 @@ const home: Design[] = [
       "الفاتورة والعلبة الأصلية.": L("مطويًا في درج جاف، دون أكياس بلاستيك.", "Folded in a dry drawer, never in plastic."),
     },
   }),
+  // The store's 2nd category (napkins, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [{ offset: 1 }, { categoryIndex: 2, limit: 4 }] }),
   lib("testimonials-ruled", {
     text: {
       "آراء العملاء": L("الآراء", "Reviews"),
@@ -181,8 +184,8 @@ const DEMO = demoStore({
 
 export const TAWLA = libraryTemplate({
   key: TAWLA_KEY,
-  version: 3,
-  changelog: "Tawla v3: categories, section order",
+  version: 4,
+  changelog: "Tawla v4: a napkins carousel (the store's 2nd category) on the home",
   productPage: { gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل طاولتك", "Dress the whole table") } },
   name: L("طاولة", "Tawla"),
   description: L(

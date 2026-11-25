@@ -3,8 +3,8 @@
  * Templates"): pale green-grey paper, deep green ink, a teal for actions and
  * a warm yellow highlight, Noto Kufi Arabic throughout and 14px corners. An
  * installer's shop: smart TV in an afternoon, the categories, devices we
- * install, installation prices, most installed, extend your warranty and
- * questions.
+ * install, installation prices, most installed, extend your warranty, one
+ * category as a carousel (v6, owner 2026-11-25) and questions.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): wall-mounted TVs in empty
@@ -34,6 +34,10 @@ const NEW = "/products?sort=newest";
 const BEST = "/products?sort=popularity";
 const RATED = "/products?sort=rating";
 const search = (q: string) => `/products?search=${encodeURIComponent(q)}`;
+
+/** One category's products as a carousel, by its place in the store (`journey.rows[0]`, 1 = the first). */
+const categoryCarousel = (place: number): Design =>
+  lib("products-category-carousel", { lists: [place > 1 ? { offset: place - 1 } : undefined, { categoryIndex: place, limit: 4 }] });
 
 const PHOTOS = {
   tvConsole: pexels(6020432),
@@ -259,6 +263,7 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "كسر الشاشة مرة واحدة": x("service-plans-4"),
       },
     }),
+    categoryCarousel(journey.rows[0] ?? 1),
     lib("faq-columns", {
       as: "faq-home",
       text: {
@@ -336,6 +341,9 @@ const DEMO = demoStore({
     ["mini-smart-speaker", "audio", "مكبر صوت ذكي صغير", "Mini Smart Speaker", PHOTOS.speaker, 1450, { inStock: false, sold90: 20 }],
     ["maggo-10k-power-bank", "power", "شاحن متنقل MagGo 10K", "MagGo 10K Power Bank", PHOTOS.powerBank, 1835, { sold90: 40 }],
     ["dual-usb-c-charger", "chargers", "شاحن USB-C مزدوج", "Dual USB-C Charger", PHOTOS.charger, 390, { compareAtPrice: 460, sold90: 210 }],
+    // Two more TVs, so the TV carousel fills its row of four (v6).
+    ["smart-tv-50", "tv", "شاشة ذكية ٥٠ بوصة", "50-inch Smart TV", pexels(6020432, 900), 15400, { sold90: 16 }],
+    ["smart-tv-65", "tv", "شاشة ذكية ٦٥ بوصة", "65-inch Smart TV", pexels(39338464, 900), 24900, { sold90: 14 }],
   ],
 });
 
@@ -343,8 +351,8 @@ export const ZAKI = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ZAKI_KEY, "lighting-smart-home", { ar: 2508, en: 2519 }),
   key: ZAKI_KEY,
-  version: 5,
-  changelog: "Zaki v4: categories, section order, trimmed service blocks",
+  version: 6,
+  changelog: "Zaki v6: a carousel of one category (the store's 1st) on the home",
   productPage: { thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("زكي", "Zaki"),
   description: L(
@@ -422,7 +430,7 @@ export const ZAKI = editionTemplate({
     "photos.story",
   ],
   // Four featured products in the grid; the rail is always the best sellers. No category rows.
-  journey: { primary: "featured", rows: [] },
+  journey: { primary: "featured", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

@@ -58,8 +58,8 @@ const footer = lib("footer-wordmark", {
 /**
  * Home (v4, template-rules §2a): the roaster drum as a full-bleed hero, the
  * categories, then the coffee journey: this week's roast first, the roast-day
- * promises right under it, bean to cup, your morning cups, FAQs and the
- * roast notes sign-up.
+ * promises right under it, bean to cup, one category's coffees in a swipe
+ * row (v6), FAQs and the roast notes sign-up.
  */
 const home: Design[] = [
   lib("hero-fullbleed", {
@@ -119,14 +119,10 @@ const home: Design[] = [
       "في أي سؤال عن منتجاتنا.": L("حبوب كاملة، أو مطحون للتركي والإسبريسو.", "Whole beans, or ground for Turkish and espresso."),
     },
   }),
-  lib("gallery-side", {
-    photo: [PHOTOS.beansDark, PHOTOS.beansClose, PHOTOS.cezve, PHOTOS.sandCezve, PHOTOS.greenBeans, PHOTOS.roasterDrop],
-    text: {
-      "صوّر وأشِر إلينا": L("شاركنا صورة قهوتك", "Share your coffee photo"),
-      "استخدم #اسم_متجرك وقد تظهر صورتك هنا.": L("استخدم ‎#bunnhouse وقد تظهر صورتك هنا.", "Tag your photo with #bunnhouse to appear here."),
-      "صورة إنستجرام": L("صورة قهوة من إنستجرام", "A coffee photo from Instagram"),
-    },
-  }),
+  // v6 (2026-11-25, owner): every home has products by category in a swipe row: the store's 1st category. It takes the
+  // place of the photo feed (gallery-side), the home's weakest section, so the home stays at nine.
+  // 2 across: the demo's category holds 2 (one full row, the row rule); a store's own category fills the swipe.
+  lib("products-category-carousel", { lists: [{ offset: 0 }, { categoryIndex: 1, limit: 2 }], nodes: { "منتجات القسم": { style: { columns: 2 }, tablet: { columns: 2 } } } }),
   lib("faq-numbered", {
     text: {
       "أسئلة مهمة": L("أسئلة مهمة", "Good to know"),
@@ -184,8 +180,8 @@ const DEMO = demoStore({
 
 export const ROAST = libraryTemplate({
   key: ROAST_KEY,
-  version: 5,
-  changelog: "Roast v5: a products grid on the home",
+  version: 6,
+  changelog: "Roast v6: products by category in a swipe row on the home, in place of the photo feed",
   name: L("روست", "Roast"),
   description: L(
     "محمصة بن: صورة المحمصة بعرض الشاشة، تحميص الأسبوع، وعود يوم التحميص ومن الحبة إلى الفنجان. أربع صفحات جاهزة.",

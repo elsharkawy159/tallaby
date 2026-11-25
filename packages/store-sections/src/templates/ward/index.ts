@@ -115,6 +115,9 @@ const home: Design[] = [
       "لأي سؤال عن طلب أو منتج": L("لأي سؤال عن منتج.", "With any question about a product."),
     },
   }),
+  // v4 (2026-11-25, owner): every home has products by category in a swipe row: the store's 2nd category.
+  // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+  lib("products-category-carousel", { lists: [{ offset: 1 }, { categoryIndex: 2, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
   lib("text-steps", {
     as: "points",
     name: L("كيف تطلب", "How to order"),
@@ -185,8 +188,8 @@ const DEMO = demoStore({
 
 export const WARD = libraryTemplate({
   key: WARD_KEY,
-  version: 3,
-  changelog: "Ward v3: categories after the hero, products before the promises",
+  version: 4,
+  changelog: "Ward v4: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل روتينك", "Finish the routine") } },
   name: L("ورد", "Ward"),
   description: L(

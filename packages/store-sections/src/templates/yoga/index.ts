@@ -110,6 +110,8 @@ const home: Design[] = [
       "التوصيل": L("يوجا هادئة وتأمل", "Restorative and meditation"),
     },
   }),
+  // v4 (2026-11-25, owner): every home has products by category in a swipe row: the store's 1st category.
+  lib("products-category-carousel", { lists: [{ offset: 0 }, { categoryIndex: 1, limit: 4 }] }),
   lib("service-booking", {
     form: "contact",
     text: {
@@ -197,8 +199,8 @@ const DEMO = demoStore({
 
 export const YOGA = libraryTemplate({
   key: YOGA_KEY,
-  version: 3,
-  changelog: "Yoga v3: categories after the hero, one class block, section order",
+  version: 4,
+  changelog: "Yoga v4: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "side", button: "outline", gallery: "end", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أدوات أخرى لتمرينك", "More gear for your practice") } },
   name: L("سكون", "Sukoon"),
   description: L(

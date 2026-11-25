@@ -143,6 +143,8 @@ const home: Design[] = [
       "متجرنا الإلكتروني الجديد": L("متجر إلكتروني", "Online store"),
     },
   }),
+  // v3 (2026-11-25, owner): the store's 1st category as a carousel after the story.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("faq-columns", { as: "faq-home", text: { "أسئلة شائعة": L("أسئلة", "Questions"), ...QA } }),
 ];
 
@@ -184,8 +186,8 @@ const DEMO = demoStore({
 
 export const HALAWA = libraryTemplate({
   key: HALAWA_KEY,
-  version: 2,
-  changelog: "Halawa v2: product page",
+  version: 3,
+  changelog: "Halawa v3: products by category as a carousel on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل طلبك", "Complete your order") } },
   name: L("حلاوة", "Halawa"),
   description: L(

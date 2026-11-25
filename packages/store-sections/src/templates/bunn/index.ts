@@ -109,6 +109,8 @@ const home: Design[] = [
       "الفاتورة والعلبة الأصلية.": L("طحنة خشنة و٤ دقائق قبل الضغط.", "Coarse grind and four minutes before you press."),
     },
   }),
+  // v5 (2026-11-25, owner): the store's 1st category as a carousel after the terms.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
   lib("testimonials-chat", {
     text: {
       "رسائل تسعدنا": L("رسائل العملاء", "Customer messages"),
@@ -150,6 +152,9 @@ const DEMO = demoStore({
   products: [
     ["ethiopia-sidamo", "beans", "إثيوبيا سيدامو ٢٥٠ جم", "Ethiopia Sidamo, 250 g", PHOTOS.beansClose, 420, { isFeatured: true, rating: 4.9, sold90: 180 }],
     ["colombia-huila", "beans", "كولومبيا هويلا ٢٥٠ جم", "Colombia Huila, 250 g", PHOTOS.beansPile, 440, { sold90: 150 }],
+    // v5: two more beans, so the category carousel (the 1st category) shows a full row.
+    ["brazil-santos", "beans", "البرازيل سانتوس ٢٥٠ جم", "Brazil Santos, 250 g", PHOTOS.espressoBeans, 380, { sold90: 110 }],
+    ["green-arabica-250g", "beans", "أرابيكا خضراء للتحميص المنزلي ٢٥٠ جم", "Green Arabica for Home Roasting, 250 g", PHOTOS.greenBeans, 220, { sold90: 26 }],
     ["house-turkish", "turkish", "بن تركي بالحبهان ٥٠٠ جم", "House Turkish with Cardamom, 500 g", PHOTOS.turkishCup, 360, { sold90: 220 }],
     ["green-arabica", "green", "أرابيكا أخضر ١ كيلو", "Green Arabica, 1 kg", PHOTOS.greenBeans, 780, { compareAtPrice: 900, sold90: 30 }],
     ["espresso-blend", "espresso", "خلطة إسبريسو ٢٥٠ جم", "Espresso Blend, 250 g", PHOTOS.espressoBeans, 390, { sold90: 120 }],
@@ -163,8 +168,8 @@ const DEMO = demoStore({
 
 export const BUNN = libraryTemplate({
   key: BUNN_KEY,
-  version: 4,
-  changelog: "Bunn v4: a products grid on the home",
+  version: 5,
+  changelog: "Bunn v5: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "brand", copy: { reviews: L("آراء محبي القهوة", "From coffee drinkers"), related: L("قد يعجبك أيضًا", "More to try") } },
   name: L("بُن", "Bunn"),
   description: L("قهوة مختصة: كلمة تحميص الكبيرة، ابدأ من هنا، طريقة التحضير ورسائل العملاء. أربع صفحات جاهزة.", "Specialty coffee: the big ROAST word, start here, a brewing guide and customer messages. Four ready pages."),

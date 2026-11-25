@@ -4,7 +4,8 @@
  * highlight, Baloo Bhaijaan 2 throughout and round 22px corners. A
  * birthday shop (v3, section order): a rainbow poster with the free-wrap
  * sticker, what they love to play with, gifted most, our promises, gifts
- * by budget and parents' reviews. Built from section library designs
+ * by budget, parents' reviews and the building toys as a carousel (the
+ * store's 1st category). Built from section library designs
  * (`fromLibrary`).
  *
  * Gift wrap is free on every order; there is no wrap option or gift message
@@ -146,6 +147,8 @@ const home: Design[] = [
     },
     links: { "/products": RATED },
   }),
+  // The store's 1st category (building toys in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [undefined, { limit: 4 }] }),
 ];
 
 const about: Design[] = [
@@ -186,13 +189,16 @@ const DEMO = demoStore({
     ["playroom-starter-set", "build", "طقم غرفة اللعب", "Playroom Starter Set", PHOTOS.bricks, 1450, { sold90: 19 }],
     ["party-gift-box", "gifts", "علبة هدايا الحفلة", "Party Gift Box", PHOTOS.giftsSmall, 890, { inStock: false, sold90: 24 }],
     ["rainbow-ring-stacker", "baby", "برج حلقات ملون", "Rainbow Ring Stacker", PHOTOS.stacker, 320, { sold90: 66 }],
+    // Two more building toys, so the building carousel fills its row of four (v4).
+    ["dinosaur-block-set", "build", "مكعبات ديناصورات", "Dinosaur Block Set", PHOTOS.dinos, 480, { sold90: 16 }],
+    ["wooden-stacking-tower", "build", "برج تركيب خشبي", "Wooden Stacking Tower", PHOTOS.stacker, 360, { sold90: 14 }],
   ],
 });
 
 export const HADAYA = libraryTemplate({
   key: HADAYA_KEY,
-  version: 3,
-  changelog: "Hadaya v3: poster hero, categories, no coupon, section order",
+  version: 4,
+  changelog: "Hadaya v4: a building-toys carousel (the store's 1st category) on the home",
   productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الأهل", "What parents say"), related: L("هدايا أخرى قد تعجبك", "More gifts they will love") } },
   name: L("هدايا", "Hadaya"),
   description: L(

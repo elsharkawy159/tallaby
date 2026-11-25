@@ -3,7 +3,8 @@
  * Templates"): warm grey paper, near-black type and a racing red for
  * actions, Changa throughout and tight 4px corners. A riders' shop: a split hero
  * on a helmet, the garage's categories, riders' favourites, why certified
- * only, most ordered, certified brands and good to know. Built from section
+ * only, most ordered, certified brands, the bike's own kit as a carousel
+ * (the store's 3rd category) and good to know. Built from section
  * library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): helmets resting on
@@ -135,6 +136,8 @@ const home: Design[] = [
     },
     links: { "/products": [undefined, ...BRANDS.map(search)] },
   }),
+  // The store's 3rd category (for the bike, in the demo) as a carousel.
+  lib("products-category-carousel", { lists: [{ offset: 2 }, { categoryIndex: 3, limit: 4 }] }),
   lib("faq-numbered", {
     text: {
       "قبل أن تطلب": L("قبل أن تطلب", "Before you order"),
@@ -182,13 +185,17 @@ const DEMO = demoStore({
     ["handlebar-phone-mount", "mounts", "حامل هاتف للمقود", "Handlebar Phone Mount", PHOTOS.ventMount, 480, { sold90: 210 }],
     ["ride-power-bank", "power", "بطارية متنقلة للرحلات", "Ride Power Bank", PHOTOS.powerBank, 790, { compareAtPrice: 890, sold90: 64 }],
     ["new-rider-set", "riding-sets", "طقم الراكب الجديد", "New Rider Set", PHOTOS.whiteHelmetWide, 6200, { compareAtPrice: 7100, sold90: 24 }],
+    // Three more for the bike, so its carousel fills a row of four (v5).
+    ["rear-brake-disc", "bike", "قرص فرامل خلفي", "Rear Brake Disc", PHOTOS.rearWheel, 1250, { sold90: 18 }],
+    ["quick-release-phone-mount", "bike", "حامل هاتف سريع الفك", "Quick-Release Phone Mount", PHOTOS.ventMount, 560, { sold90: 16 }],
+    ["compact-power-bank", "bike", "بطارية متنقلة صغيرة", "Compact Power Bank", PHOTOS.powerBank, 650, { sold90: 14 }],
   ],
 });
 
 export const MOTO = libraryTemplate({
   key: MOTO_KEY,
-  version: 4,
-  changelog: "Moto v4: new hero, categories, section order",
+  version: 5,
+  changelog: "Moto v5: a carousel of the bike's own kit (the store's 3rd category) on the home",
   name: L("موتو", "Moto"),
   description: L(
     "أدوات ركوب الدراجات النارية: خوذ، اختيارات الراكبين وماركات مختارة. أربع صفحات جاهزة.",

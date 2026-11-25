@@ -232,6 +232,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
       },
       links: { "/products": BEST },
     }),
+    // v6 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
     lib("pay-zones", {
       text: {
         "التوصيل": x["zones-eyebrow"]!,
@@ -341,8 +344,8 @@ const DEMO = demoStore({
 
 export const LAHMA = editionTemplate({
   key: LAHMA_KEY,
-  version: 5,
-  changelog: "Lahma v5: a products grid on the home",
+  version: 6,
+  changelog: "Lahma v6: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("لحمة", "Lahma"),
   description: L(
@@ -404,9 +407,9 @@ export const LAHMA = editionTemplate({
     "custom.zone-5-price",
   ],
   // Buyer quotes are demo claims: a pack writes real ones (with four cities) or leaves them out (the section is then not built).
-  // The bento block shows the design's own list, so `primary` is not read; no category rows.
+  // The bento block shows the design's own list, so `primary` is not read; one category carousel, of the store's 1st category (an edition can pick another).
   optional: ["reviews", "custom.reviews-city-1", "custom.reviews-city-2", "custom.reviews-city-3", "custom.reviews-city-4"],
-  journey: { primary: "best-sellers", rows: [] },
+  journey: { primary: "best-sellers", rows: [1] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
 });

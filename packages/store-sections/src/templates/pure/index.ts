@@ -220,6 +220,9 @@ function look(c: LookContent, journey: LookJourney): LookParts {
         "يصلك الطلب على عنوانك": c.custom["routine-4-line"]!,
       },
     }),
+    // v6 (2026-11-25, owner): every home has products by category in a swipe row: the store's category at `journey.rows[0]`.
+    // 3 across: the demo's category holds 3 (one full row, the row rule); a store's own category fills the swipe.
+    lib("products-category-carousel", { lists: [{ offset: journey.rows[0]! - 1 }, { categoryIndex: journey.rows[0]!, limit: 3 }], nodes: { "منتجات القسم": { style: { columns: 3 } } } }),
     lib("about-list", {
       photo: [undefined, undefined, undefined, undefined, undefined, c.photos.story],
       text: {
@@ -312,8 +315,8 @@ const DEMO = demoStore({
 
 export const PURE = editionTemplate({
   key: PURE_KEY,
-  version: 5,
-  changelog: "Pure v4: categories, section order",
+  version: 6,
+  changelog: "Pure v6: products by category in a swipe row on the home",
   name: L("بيور", "Pure"),
   description: L(
     "عناية بالبشرة بهدوء: مكونات واضحة، روتين من ٤ خطوات وتقييمات. أربع صفحات جاهزة.",
@@ -369,8 +372,8 @@ export const PURE = editionTemplate({
   // Buyer quotes are demo claims: a pack writes real ones or leaves the group out (the section is then not built).
   // `photos.about`: the about page's photo (falls back to the story's).
   optional: ["reviews", "photos.about"],
-  // Four best sellers in a grid; no category rows.
-  journey: { primary: "best-sellers", rows: [] },
+  // Four best sellers in a grid; one category carousel, of the store's 2nd category (an edition can pick another).
+  journey: { primary: "best-sellers", rows: [2] },
   defaultContent: DEFAULT_CONTENT,
   demo: DEMO,
   productPage: { thumbs: "bottom", surface: "shelf", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("تكمل روتينك", "Complete your routine") } },
