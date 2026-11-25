@@ -11,6 +11,7 @@ import { parseStoreTopUpReference } from '@workspace/lib/store-wallet'
 import { applyStoreTopUpWebhook } from '@workspace/lib/store-wallet/server'
 import { sendRefundIssued } from '../lib/emails/customer-emails'
 import { sendSellerLowStock, sendSellerNewOrders, sendSellerWalletTopUp } from '../lib/emails/seller-emails'
+import { queueOrderWhatsApp } from '../lib/whatsapp-order'
 
 /** Lifecycle mail after a committed webhook: best-effort, never fails the webhook. */
 function emailAfterCommit(label: string, send: () => Promise<unknown>): Promise<void> {
@@ -250,6 +251,8 @@ async function processKashierEvent(
     // The order left payment_processing: now the sellers hear about it.
     await emailAfterCommit('seller new order', () => sendSellerNewOrders(orderId))
     await emailAfterCommit('low stock', () => sendSellerLowStock(orderId))
+    // The shopper's WhatsApp receipt (F-109); a no-op while WhatsApp is off, never throws.
+    await queueOrderWhatsApp(orderId, 'order_placed')
   }
 
   return outcome

@@ -393,6 +393,18 @@
       "types": "./src/whatsapp/admin.server.ts",
       "default": "./src/whatsapp/admin.server.ts"
     },
+    "./whatsapp/server": {
+      "types": "./src/whatsapp/server.ts",
+      "default": "./src/whatsapp/server.ts"
+    },
+    "./whatsapp/tracking": {
+      "types": "./src/whatsapp/tracking.server.ts",
+      "default": "./src/whatsapp/tracking.server.ts"
+    },
+    "./orders/customer-actions/server": {
+      "types": "./src/orders/customer-order-actions.server.ts",
+      "default": "./src/orders/customer-order-actions.server.ts"
+    },
     "./products/trash": {
       "types": "./src/products/trash.lib.ts",
       "default": "./src/products/trash.lib.ts"

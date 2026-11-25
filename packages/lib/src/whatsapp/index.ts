@@ -8,3 +8,4 @@ export * from "./payload.lib";
 export * from "./errors.lib";
 export * from "./signature.lib";
 export * from "./inbound.lib";
+export * from "./order-message.lib";

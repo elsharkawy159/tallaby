@@ -129,3 +129,73 @@ export async function sendTallabyPayPayoutEmail(payoutId: string): Promise<Email
 export async function sendTallabyPayKycRejectedEmail(sellerId: string): Promise<EmailResult> {
   return postEmail('tallaby-pay-kyc-rejected', { sellerId })
 }
+
+// ── WhatsApp order messages (ROADMAP.md F-109, docs/whatsapp.md §4) ──────
+
+export type OrderWhatsAppEvent =
+  | 'order_placed'
+  | 'order_confirmed'
+  | 'order_shipped'
+  | 'order_out_for_delivery'
+  | 'order_delivered'
+  | 'order_cancelled'
+
+/** A failed read (0180 not applied, DB hiccup) keeps WhatsApp off this long, so order paths don't retry it. */
+const WHATSAPP_OFF_BACKOFF_MS = 5 * 60_000
+const WHATSAPP_POST_TIMEOUT_MS = 3_000
+let whatsAppOffUntil = 0
+let whatsAppWarned = false
+
+/**
+ * Admin's WhatsApp switch (`whatsapp_settings.enabled`), one primary-key read.
+ * Uncached on purpose (rule 8); a failure counts as off and is logged once
+ * per process.
+ */
+async function isWhatsAppSwitchedOn(): Promise<boolean> {
+  if (Date.now() < whatsAppOffUntil) return false
+  try {
+    const { db, eq, whatsappSettings } = await import('@workspace/db')
+    const [row] = await db
+      .select({ enabled: whatsappSettings.enabled })
+      .from(whatsappSettings)
+      .where(eq(whatsappSettings.id, 1))
+      .limit(1)
+    return row?.enabled === true
+  } catch (error) {
+    whatsAppOffUntil = Date.now() + WHATSAPP_OFF_BACKOFF_MS
+    if (!whatsAppWarned) {
+      whatsAppWarned = true
+      console.error('whatsapp: settings unavailable, treating WhatsApp as off', (error as Error)?.name)
+    }
+    return false
+  }
+}
+
+/**
+ * Queue a WhatsApp message for an order event, AFTER the caller's commit.
+ * Best-effort and cheap: while Admin's switch is off (the default) it is one
+ * small read and no network call; it never throws, and the backend call is
+ * capped at 3 s. The backend applies every other gate and the dedupe (one
+ * message per order and event), so calling it twice is harmless.
+ */
+export async function notifyOrderWhatsApp(
+  orderId: string,
+  event: OrderWhatsAppEvent,
+  opts: { byCustomerButton?: boolean } = {},
+): Promise<void> {
+  try {
+    const backendUrl = process.env.BACKEND_API_URL
+    const apiSecret = process.env.INTERNAL_API_SECRET
+    if (!backendUrl || !apiSecret) return
+    if (!(await isWhatsAppSwitchedOn())) return
+    const res = await fetch(`${backendUrl}/api/whatsapp/order-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiSecret}` },
+      body: JSON.stringify({ orderId, event, ...(opts.byCustomerButton ? { byCustomerButton: true } : {}) }),
+      signal: AbortSignal.timeout(WHATSAPP_POST_TIMEOUT_MS),
+    })
+    if (!res.ok && res.status !== 404) console.error(`whatsapp order-event: backend returned ${res.status}`)
+  } catch (error) {
+    console.error('whatsapp order-event: failed to reach backend', (error as Error)?.name)
+  }
+}

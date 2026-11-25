@@ -55,7 +55,7 @@ import {
   buildOrderDiscountLines,
   type OrderDiscountLine,
 } from './order-discounts'
-import { sendOrderConfirmationEmail, sendOrderEventEmail } from './notify'
+import { notifyOrderWhatsApp, sendOrderConfirmationEmail, sendOrderEventEmail } from './notify'
 import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
 import { detectFeeHolds } from './fee-hold.server'
 import { getBillingState } from '../billing/billing.server'
@@ -1306,6 +1306,9 @@ export async function placeOrderFromCart(
     // Seller "new order" + low-stock mail. Orders awaiting an online payment
     // are skipped by the backend; the payment webhook sends them on confirm.
     await sendOrderEventEmail(newOrder!.id, 'placed')
+    // The shopper's WhatsApp receipt (F-109): never for a test order; the backend skips
+    // payment_processing orders (the payment webhook queues them on confirm).
+    if (!testOrder) await notifyOrderWhatsApp(newOrder!.id, 'order_placed')
   }
 
   const inventoryItems: PlaceOrderInventoryItem[] = stockResults.map((r) => {

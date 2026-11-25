@@ -6,7 +6,7 @@ import { eq, and, desc, sql, gte, lte, like, or, inArray, notInArray } from "dri
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { sendOrderEventEmail } from "@workspace/lib/orders";
+import { notifyOrderWhatsApp, sendOrderEventEmail } from "@workspace/lib/orders";
 import { sendDeliveredMetaPurchase } from "@workspace/lib/integrations/server";
 import {
   scheduleAffiliateCommissionRelease,
@@ -247,6 +247,12 @@ export async function updateOrderStatus(
           ? status
           : null;
     if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "system");
+    // The shopper's WhatsApp update (F-109); a no-op while WhatsApp is off, never throws.
+    const whatsAppEvent =
+      status === "confirmed" || status === "shipped" || status === "out_for_delivery" || status === "delivered" || status === "cancelled"
+        ? (`order_${status}` as const)
+        : null;
+    if (whatsAppEvent) await notifyOrderWhatsApp(orderId, whatsAppEvent);
     // The store's Meta Purchase on delivery (F-30a); a no-op unless deferred, never throws.
     if (status === "delivered") await sendDeliveredMetaPurchase(orderId);
 

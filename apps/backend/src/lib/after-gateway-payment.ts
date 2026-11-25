@@ -1,6 +1,7 @@
 import type { GatewayWebhookResult } from "@workspace/lib/payments/store-gateways/server";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import { sendSellerLowStock, sendSellerNewOrders } from "./emails/seller-emails";
+import { queueOrderWhatsApp } from "./whatsapp-order";
 
 /**
  * A store gateway payment (the seller's own gateway or Tallaby Pay) moved the
@@ -16,4 +17,6 @@ export async function afterGatewayPayment(result: GatewayWebhookResult) {
   await sendSellerNewOrders(orderId)
     .then(() => sendSellerLowStock(orderId))
     .catch((error) => console.error("Seller emails after store gateway payment failed:", error));
+  // The shopper's WhatsApp receipt (F-109); a no-op while WhatsApp is off, never throws.
+  await queueOrderWhatsApp(orderId, "order_placed");
 }

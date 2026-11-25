@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { fetch as handle } from "./vercel-entry";
+import { dispatchWhatsAppMessages, getWhatsAppConfig } from "@workspace/lib/whatsapp/server";
 
 /**
  * Production Node entry for the self-hosted image (apps/backend/Dockerfile,
@@ -27,8 +28,32 @@ const server = serve({ fetch: (request) => handle(withForwardedProto(request)), 
   console.log(`Backend listening on http://${hostname}:${info.port} (API at /api, MCP at /mcp)`);
 });
 
+/**
+ * WhatsApp dispatch loop (ROADMAP.md F-109, docs/whatsapp.md §4): every 15 s
+ * when WHATSAPP_WORKER=1 and the WhatsApp env is complete; otherwise it never
+ * starts. One pass at a time; a pass with Admin's switch off reads one row
+ * and sends nothing.
+ */
+const WHATSAPP_TICK_MS = 15_000;
+let whatsAppTimer: NodeJS.Timeout | null = null;
+if (process.env.WHATSAPP_WORKER === "1" && getWhatsAppConfig()) {
+  let inFlight = false;
+  whatsAppTimer = setInterval(() => {
+    if (inFlight) return;
+    inFlight = true;
+    dispatchWhatsAppMessages()
+      .catch(() => undefined)
+      .finally(() => {
+        inFlight = false;
+      });
+  }, WHATSAPP_TICK_MS);
+  whatsAppTimer.unref();
+  console.log("WhatsApp worker started");
+}
+
 function shutdown(signal: NodeJS.Signals): void {
   console.log(`Backend received ${signal}, closing`);
+  if (whatsAppTimer) clearInterval(whatsAppTimer);
   server.close((error) => {
     if (error) {
       console.error("Backend close failed", error);

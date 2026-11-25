@@ -17,9 +17,12 @@ function signPayload(payload: string): string {
   return createHmac("sha256", getSecret()).update(payload).digest("base64url");
 }
 
-/** Issue a signed access token for guest/cross-device order page access. */
-export function signOrderAccess(orderId: string): string {
-  const expiry = Date.now() + TTL_MS;
+/**
+ * Issue a signed access token for guest/cross-device order page access.
+ * `ttlMs` defaults to 90 days; WhatsApp tracking links use 60 (F-109).
+ */
+export function signOrderAccess(orderId: string, ttlMs: number = TTL_MS): string {
+  const expiry = Date.now() + ttlMs;
   const payload = `${orderId}:${expiry}`;
   const encoded = Buffer.from(payload, "utf8").toString("base64url");
   const signature = signPayload(payload);

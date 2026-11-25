@@ -29,7 +29,7 @@ import {
   type StockResult,
 } from "@workspace/db/inventory";
 import { WALLET_REFERENCE_TYPES } from "@workspace/db/wallet";
-import { sendOrderEventEmail } from "@workspace/lib/orders";
+import { notifyOrderWhatsApp, sendOrderEventEmail } from "@workspace/lib/orders";
 import { autoShipOrderWithBosta } from "@workspace/lib/shipping/bosta-ship";
 import { TALLABY_PAY_REFUND_REASONS } from "@workspace/lib/tallaby-pay";
 import { countOpenTallabyPaySales, requestTallabyPayOrderRefund } from "@workspace/lib/tallaby-pay/server";
@@ -247,6 +247,8 @@ async function cancelOrder(
 
   await invalidateOrderStock(order, stockResults);
   await sendOrderEventEmail(order.id, "cancelled", "seller");
+  // The shopper's WhatsApp update (F-109); a no-op while WhatsApp is off, never throws.
+  await notifyOrderWhatsApp(order.id, "order_cancelled");
 }
 
 function orderStockLines(order: LoadedOrder["order"]): StockLine[] {
@@ -510,6 +512,8 @@ async function runSellerOrderAction(
     if (storeId) {
       after(() => autoShipOrderWithBosta(storeId, orderId, sellerId));
     }
+    // The shopper's WhatsApp update (F-109), after the response; a no-op while WhatsApp is off.
+    after(() => notifyOrderWhatsApp(orderId, "order_confirmed"));
   }
   else if (action === "cancel") await cancelOrder(loaded, sellerId);
   else {

@@ -30,7 +30,7 @@ import {
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
 import { restoreStock, type StockLine } from "@workspace/db/inventory";
 import { depositCutoff } from "./cod-deposit.lib";
-import { sendOrderEventEmail } from "./notify";
+import { notifyOrderWhatsApp, sendOrderEventEmail } from "./notify";
 
 export type DepositActionError = "not_found" | "not_pending" | "already_paid";
 
@@ -232,6 +232,7 @@ export async function expireUnpaidDeposits(now: Date = new Date()): Promise<{ ex
       if (done) {
         counts.expired += 1;
         await sendOrderEventEmail(order.id, "cancelled", "system").catch(() => undefined);
+        await notifyOrderWhatsApp(order.id, "order_cancelled");
       }
     } catch (error) {
       counts.failed += 1;

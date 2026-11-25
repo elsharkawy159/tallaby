@@ -1,6 +1,6 @@
 import { and, db, deliveries, eq, orderItems, orders, payments, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
-import { sendOrderEventEmail, type OrderEmailEvent } from "@workspace/lib/orders";
+import { notifyOrderWhatsApp, sendOrderEventEmail, type OrderEmailEvent, type OrderWhatsAppEvent } from "@workspace/lib/orders";
 import { sendDeliveredMetaPurchase } from "@workspace/lib/integrations/server";
 import {
   scheduleAffiliateCommissionRelease,
@@ -219,6 +219,9 @@ export async function applyShipmentStatus({
   // Best-effort; the backend sends each email at most once per order.
   const emailEvent = SHIPMENT_EMAIL_EVENTS[status];
   if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "system");
+  // The shopper's WhatsApp update (F-109); a no-op while WhatsApp is off, never throws.
+  const whatsAppEvent = SHIPMENT_WHATSAPP_EVENTS[status];
+  if (whatsAppEvent) await notifyOrderWhatsApp(orderId, whatsAppEvent);
   // The store's Meta Purchase on delivery (F-30a); a no-op unless deferred, never throws.
   if (status === "delivered") await sendDeliveredMetaPurchase(orderId);
 }
@@ -228,4 +231,11 @@ const SHIPMENT_EMAIL_EVENTS: Partial<Record<ShippingStatus, OrderEmailEvent>> = 
   out_for_delivery: "shipped",
   delivered: "delivered",
   cancelled: "cancelled",
+};
+
+/** The WhatsApp event of each move (docs/whatsapp.md §2); leaving with the courier is "shipped". */
+const SHIPMENT_WHATSAPP_EVENTS: Partial<Record<ShippingStatus, OrderWhatsAppEvent>> = {
+  out_for_delivery: "order_shipped",
+  delivered: "order_delivered",
+  cancelled: "order_cancelled",
 };

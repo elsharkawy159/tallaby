@@ -29,6 +29,10 @@ export async function proxy(request: NextRequest) {
     // scoped to the store; on tallaby.com they would show the wrong cart.
     return new NextResponse(null, { status: 404 });
   }
+  if (request.nextUrl.pathname.startsWith("/wa/t/")) {
+    // WhatsApp tracking links (F-109, app/wa/t/[token]/route.ts): a redirect, no locale, no session.
+    return NextResponse.next();
+  }
   if (isCrawlFilePath(request.nextUrl.pathname) || request.nextUrl.pathname === LLMS_TXT_PATH) {
     // tallaby.com's robots.txt / sitemap files and /llms.txt: no locale
     // routing, no session.

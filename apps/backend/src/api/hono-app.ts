@@ -7,6 +7,7 @@ import webhookRoutes from "../routes/webhooks";
 import bostaWebhookRoutes from "../routes/bosta";
 import storePaymentsWebhookRoutes from "../routes/store-payments";
 import tallabyPayWebhookRoutes from "../routes/tallaby-pay";
+import { internal as whatsAppRoutes, webhook as whatsAppWebhookRoutes } from "../routes/whatsapp";
 import { internalApiAuth } from "../lib/middleware";
 
 export const app = new Hono().basePath("/api");
@@ -52,4 +53,6 @@ app.route("/kashier", kashierRoutes);
 app.route("/webhooks/bosta", bostaWebhookRoutes);
 app.route("/webhooks/store-payments", storePaymentsWebhookRoutes);
 app.route("/webhooks/tallaby-pay", tallabyPayWebhookRoutes);
+app.route("/webhooks/whatsapp", whatsAppWebhookRoutes);
+app.route("/whatsapp", whatsAppRoutes);
 app.route("/webhooks", webhookRoutes);

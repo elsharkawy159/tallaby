@@ -1,6 +1,6 @@
 import { and, db, eq, orderItems, orders, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
-import { sendOrderEventEmail, type OrderEmailEvent } from "../orders";
+import { notifyOrderWhatsApp, sendOrderEventEmail, type OrderEmailEvent, type OrderWhatsAppEvent } from "../orders";
 import { sendDeliveredMetaPurchase } from "../integrations/meta-tracking.server";
 import { releaseTallabyPayOrderOnDelivery } from "../tallaby-pay/release.server";
 import {
@@ -158,6 +158,9 @@ export async function applySellerShipmentStatus({
   // A seller cancel tells the customer; the seller themself gets no email.
   const emailEvent = SHIPMENT_EMAIL_EVENTS[status];
   if (emailEvent) await sendOrderEventEmail(orderId, emailEvent, "seller");
+  // The shopper's WhatsApp update (F-109); a no-op while WhatsApp is off, never throws.
+  const whatsAppEvent = SHIPMENT_WHATSAPP_EVENTS[status];
+  if (whatsAppEvent) await notifyOrderWhatsApp(orderId, whatsAppEvent);
   // The store's Meta Purchase on delivery (F-30a); a no-op unless deferred, never throws.
   if (status === "delivered") await sendDeliveredMetaPurchase(orderId);
 }
@@ -167,4 +170,15 @@ const SHIPMENT_EMAIL_EVENTS: Partial<Record<ShippingStatus, OrderEmailEvent>> = 
   out_for_delivery: "shipped",
   delivered: "delivered",
   cancelled: "cancelled",
+};
+
+/**
+ * The WhatsApp event of each move (docs/whatsapp.md §2). The parcel leaves with
+ * the courier at out_for_delivery (there is no separate "shipped" step here), so
+ * that is the "shipped" message, with the carrier and tracking number.
+ */
+const SHIPMENT_WHATSAPP_EVENTS: Partial<Record<ShippingStatus, OrderWhatsAppEvent>> = {
+  out_for_delivery: "order_shipped",
+  delivered: "order_delivered",
+  cancelled: "order_cancelled",
 };

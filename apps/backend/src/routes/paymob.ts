@@ -20,6 +20,7 @@ import {
 } from '@workspace/lib/paymob'
 import { fulfillDigitalOrderItems } from '@workspace/lib/digital'
 import { sendSellerLowStock, sendSellerNewOrders } from '../lib/emails/seller-emails'
+import { queueOrderWhatsApp } from '../lib/whatsapp-order'
 import type { PaymobWebhookBody } from '@workspace/lib/paymob'
 import {
   handleWalletTopUpWebhook,
@@ -260,6 +261,8 @@ app.post('/webhook', async (c) => {
       await sendSellerNewOrders(orderId)
         .then(() => sendSellerLowStock(orderId))
         .catch((error) => console.error('Seller emails after Paymob payment failed:', error))
+      // The shopper's WhatsApp receipt (F-109); a no-op while WhatsApp is off, never throws.
+      await queueOrderWhatsApp(orderId, 'order_placed')
     } else {
       const duplicateFailed = await db.query.payments.findFirst({
         where: eq(payments.transactionId, transactionId),

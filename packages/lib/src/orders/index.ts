@@ -20,8 +20,10 @@ export {
   sendTallabyPayKycRejectedEmail,
   sendTallabyPayPayoutEmail,
   sendThemeRequestUpdateEmail,
+  notifyOrderWhatsApp,
   type OrderCancelledBy,
   type OrderEmailEvent,
+  type OrderWhatsAppEvent,
 } from './notify'
 
 export {
