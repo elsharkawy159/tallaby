@@ -104,10 +104,10 @@ COPY --from=builder --chown=node:node /repo/apps/marketing/public ./apps/marketi
 USER node
 EXPOSE 3000
 
-# /manifest.webmanifest (app/manifest.ts, a constant) is outside the proxy.ts
+# /favicon.ico (app/favicon.ico, a static file) is outside the proxy.ts
 # matcher (no Supabase session call, no locale rewrite), so it only checks the
 # server is up.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD ["node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/manifest.webmanifest').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+  CMD ["node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/favicon.ico').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
 
 CMD ["node", "apps/marketing/server.js"]
