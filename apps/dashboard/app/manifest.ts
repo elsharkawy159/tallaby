@@ -4,8 +4,8 @@ import { defaultLocale } from "@/i18n/config";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Tallaby Seller Dashboard",
-    short_name: "Tallaby Seller",
+    name: "Tallaby",
+    short_name: "Tallaby",
     description:
       "Manage your Tallaby store — products, orders, payouts and marketing.",
     start_url: "/",

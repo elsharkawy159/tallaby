@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: Pick<RootLayoutProps, "params
     manifest: "/manifest.webmanifest",
     appleWebApp: {
       capable: true,
-      title: "Tallaby Seller",
+      title: "Tallaby",
       statusBarStyle: "default",
     },
     robots: {
