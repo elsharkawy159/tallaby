@@ -1,5 +1,5 @@
 import { Check, Info } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { TopUpCopy } from "@/components/marketing/site/top-up-copy.client";
@@ -22,7 +22,7 @@ import { withPrices } from "./with-prices";
  */
 export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
   const Card = reveal ? Reveal : "article";
-  const t = await getTranslations("pricing.plans");
+  const [t, locale] = await Promise.all([getTranslations("pricing.plans"), getLocale()]);
   const { free, pro } = PLAN_PRICES;
 
   // F-84i: stores take orders from day one; orders stay hidden until the first
@@ -57,8 +57,8 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
     },
     {
       plan: "pro" as const,
-      name: "Pro",
-      latinName: true,
+      name: t("proName"),
+      latinName: locale === "en",
       tagline: t("proTagline"),
       cents: pro.monthlyCents,
       per: t("perMonth"),

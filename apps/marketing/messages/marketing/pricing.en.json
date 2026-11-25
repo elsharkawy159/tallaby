@@ -17,6 +17,7 @@
     "plans": {
       "heading": "Plans",
       "freeName": "Free",
+      "proName": "Pro",
       "freeTagline": "For starting out and growing.",
       "perOrder": "per order",
       "freeNote": "no monthly fee",

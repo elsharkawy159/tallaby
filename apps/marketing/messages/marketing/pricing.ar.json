@@ -16,7 +16,8 @@
     },
     "plans": {
       "heading": "الخطط",
-      "freeName": "مجاني",
+      "freeName": "الباقة المجانية",
+      "proName": "الباقة الاحترافية",
       "freeTagline": "للبداية والنمو.",
       "perOrder": "لكل طلب",
       "freeNote": "دون اشتراك شهري",
