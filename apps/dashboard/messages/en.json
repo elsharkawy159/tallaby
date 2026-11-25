@@ -9128,7 +9128,7 @@
       "status": {
         "review": "Your top-up is being reviewed. We’ll let you know once it’s approved.",
         "offlineNow": "Your store is offline. Top up to bring it back.",
-        "offlineIn": "{days, plural, one {# day} other {# days}} left before your store goes offline.",
+        "offlineIn": "Your Tallaby wallet balance is 0, so your store goes offline and customers can’t see it in {days, plural, one {# day} other {# days}}. Top up your wallet to keep your store open.",
         "locked": "Your orders are hidden until you top up."
       },
       "cta": "Top up your wallet"
