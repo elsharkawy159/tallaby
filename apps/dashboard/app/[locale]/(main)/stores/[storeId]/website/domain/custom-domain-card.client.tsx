@@ -63,7 +63,7 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
 
   const verify = () =>
     run("verify", () => verifyCustomDomain(storeId), (domain) => {
-      if (domain?.status === "active") toast.success(t("nowLive", { host: domain.domain }));
+      if (domain?.status === "active") toast.success(t("nowLive", { host: domain.publicHost }));
       else toast.info(t("notYet"));
     });
 
@@ -149,11 +149,11 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
         <>
           <div className="flex flex-wrap items-center gap-2 max-[720px]:[&>button]:flex-1 max-[720px]:[&>a]:flex-1">
             <div dir="ltr" className="min-w-[220px] flex-1 max-[720px]:basis-full">
-              <InputGroup readOnly value={view.domain} start="https://" aria-label={t("fieldLabel")} inputClassName="font-montserrat text-[13px]" />
+              <InputGroup readOnly value={view.status === "active" ? view.publicHost : view.domain} start="https://" aria-label={t("fieldLabel")} inputClassName="font-montserrat text-[13px]" />
             </div>
             {view.status === "active" ? (
               <SellerButton asChild variant="mini" size="sm">
-                <a href={storeUrl("", view.domain)} target="_blank" rel="noopener noreferrer">
+                <a href={storeUrl("", view.publicHost)} target="_blank" rel="noopener noreferrer">
                   <ExternalLink aria-hidden className="rtl:-scale-x-100" />
                   {t("open")}
                 </a>
@@ -202,7 +202,7 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
                 ]}
               />
               {records.some((r) => r.name === "@") && <p className="text-pretty text-xs text-(--s-faint)">{t("nameHint")}</p>}
-              {records.some((r) => r.type === "ALIAS") && <p className="text-pretty text-xs text-(--s-faint)">{t("aliasHint")}</p>}
+              {records.some((r) => r.type === "ALIAS") && <p className="text-pretty text-xs text-(--s-faint)">{t("aliasHint", { domain: view.domain })}</p>}
               <p className="text-pretty text-xs text-(--s-faint)">{t("ttlNote")}</p>
               {view.lastError && <Note>{t(`checks.${CHECK_KEYS.has(view.lastError) ? view.lastError : "dns"}`)}</Note>}
               <DnsRegistrarSteps names={cleanupNames(records)} />
@@ -220,6 +220,7 @@ export function CustomDomainCard({ storeId, initial, readOnly }: { storeId: stri
           {view.status === "active" && (
             <Note tone="success" icon={CircleCheck}>
               {t("activeNote")}
+              {view.wwwPrimary && <span className="mt-1 block">{t("wwwPrimaryNote", { domain: view.domain })}</span>}
             </Note>
           )}
         </>

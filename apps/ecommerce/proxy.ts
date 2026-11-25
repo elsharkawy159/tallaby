@@ -49,6 +49,9 @@ function markStorePreview(request: NextRequest, response: NextResponse): NextRes
  * same path and query, as Vercel's attached `www.` redirect does. Only to an
  * apex that is itself an active custom domain (one more cached lookup), so the
  * Host header can never pick the target. Null when there is nothing to send to.
+ * A www-primary domain (Cloudflare, root not live) never gets here: its
+ * `www.` host is found directly, and its root has no public host (404), so
+ * `customDomain !== apex` keeps it from being sent to the dead root.
  */
 async function wwwToApexRedirect(request: NextRequest, hostname: string): Promise<NextResponse | null> {
   if (!hostname.startsWith("www.")) return null;

@@ -1,5 +1,6 @@
 import { db, sql } from "@workspace/db";
 import { storeUrl } from "../storefront";
+import { customDomainPublicHostRawSql } from "../storefront/custom-domains.server";
 import {
   LEAD_RETENTION_DAYS,
   LEAD_TEMPLATE_MAX,
@@ -137,7 +138,7 @@ export async function listStoreCheckoutLeads(
   const rows = rowsOf(
     await q.execute(sql`
       SELECT l.id, l.store_id, st.name AS store_name, st.subdomain, st.default_locale, st.settings,
-             (SELECT d.domain FROM seller_custom_domains d
+             (SELECT ${customDomainPublicHostRawSql("d")} FROM seller_custom_domains d
                WHERE d.store_id = st.id AND d.status = 'active' ORDER BY d.created_at LIMIT 1) AS custom_domain,
              l.full_name, l.phone, l.governorate, l.city, l.items,
              l.subtotal::text AS subtotal, l.shipping::text AS shipping, l.total::text AS total,
@@ -254,7 +255,7 @@ export async function listStoreLeadSettings(sellerId: string, q: Queryable = db)
   const rows = rowsOf(
     await q.execute(sql`
       SELECT st.id, st.name, st.subdomain, st.default_locale, st.settings,
-             (SELECT d.domain FROM seller_custom_domains d
+             (SELECT ${customDomainPublicHostRawSql("d")} FROM seller_custom_domains d
                WHERE d.store_id = st.id AND d.status = 'active' ORDER BY d.created_at LIMIT 1) AS custom_domain
         FROM stores st
        WHERE st.seller_id = ${sellerId} AND st.deleted_at IS NULL

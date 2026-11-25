@@ -122,7 +122,7 @@ export function CustomDomainSection ({
 
   const verify = () =>
     run('verify', () => verifyCustomDomain(storeId), (domain) => {
-      if (domain?.status === 'active') toast.success(t('nowLive', { host: domain.domain }))
+      if (domain?.status === 'active') toast.success(t('nowLive', { host: domain.publicHost }))
       else toast.info(t('notYet'))
     })
 
@@ -237,11 +237,11 @@ export function CustomDomainSection ({
                 dir='ltr'
                 className='flex h-11 min-w-[200px] flex-1 items-center truncate rounded-[10px] border border-input bg-muted px-3.5 font-mono text-[13px]'
               >
-                {view.domain}
+                {view.status === 'active' ? view.publicHost : view.domain}
               </span>
               {view.status === 'active' ? (
                 <Button variant='neutral' className={cn(BUTTON_CLASS, 'flex-1 sm:flex-none')} asChild>
-                  <a href={storeUrl('', view.domain)} target='_blank' rel='noopener noreferrer'>
+                  <a href={storeUrl('', view.publicHost)} target='_blank' rel='noopener noreferrer'>
                     <ExternalLink className='rtl:-scale-x-100' />
                     {t('open')}
                   </a>
@@ -320,7 +320,7 @@ export function CustomDomainSection ({
                     </tbody>
                   </table>
                 </div>
-                {view.routing.some((r) => r.type === 'ALIAS') && <FieldHint>{t('aliasHint')}</FieldHint>}
+                {view.routing.some((r) => r.type === 'ALIAS') && <FieldHint>{t('aliasHint', { domain: view.domain })}</FieldHint>}
                 {view.lastError && (
                   <FieldHint>
                     {t(`checks.${CHECK_KEYS.has(view.lastError) ? view.lastError : 'dns'}`)}
@@ -332,6 +332,7 @@ export function CustomDomainSection ({
             )}
 
             {view.status === 'active' && <FieldHint>{t('activeNote')}</FieldHint>}
+            {view.status === 'active' && view.wwwPrimary && <FieldHint>{t('wwwPrimaryNote', { domain: view.domain })}</FieldHint>}
           </div>
         )}
       </CollapsibleContent>

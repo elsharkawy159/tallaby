@@ -23,6 +23,7 @@ import {
   sql,
   type SQL,
 } from "drizzle-orm";
+import { customDomainPublicHostSql } from "@workspace/lib/storefront/server";
 import { getAdminUser } from "./auth";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -99,7 +100,7 @@ const originStoreId = sql<string | null>`(
 /** The store's active custom domain, if any (for its storefront link). */
 // Nested sql keeps the table name on outer columns; a no-join select strips it from a bare field (outer-column.test.ts).
 const storeActiveDomain = sql<string | null>`${sql`(
-  SELECT ${sellerCustomDomains.domain} FROM ${sellerCustomDomains}
+  SELECT ${customDomainPublicHostSql()} FROM ${sellerCustomDomains}
   WHERE ${sellerCustomDomains.storeId} = ${stores.id} AND ${sellerCustomDomains.status} = 'active'
   ORDER BY ${sellerCustomDomains.verifiedAt} DESC NULLS LAST LIMIT 1
 )`}`;

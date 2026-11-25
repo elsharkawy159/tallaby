@@ -3,6 +3,7 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { isStoreSiteLive, productPageUrl, type ProductViewTarget } from "@/lib/products/product-view-url.lib";
+import { customDomainPublicHostSql } from "@workspace/lib/storefront/server";
 
 /**
  * Address and liveness of the store a product form saves into, for the
@@ -18,7 +19,7 @@ export async function loadProductViewTarget(sellerId: string, storeId: string): 
       .where(and(eq(storesTable.id, storeId), eq(storesTable.sellerId, sellerId)))
       .limit(1),
     db
-      .select({ domain: sellerCustomDomains.domain })
+      .select({ domain: customDomainPublicHostSql() })
       .from(sellerCustomDomains)
       .where(
         and(
@@ -62,7 +63,7 @@ export async function loadProductStoreLinks(
       .from(storesTable)
       .where(and(eq(storesTable.sellerId, seller.sellerId), inArray(storesTable.id, ids))),
     db
-      .select({ storeId: sellerCustomDomains.storeId, domain: sellerCustomDomains.domain })
+      .select({ storeId: sellerCustomDomains.storeId, domain: customDomainPublicHostSql() })
       .from(sellerCustomDomains)
       .where(and(eq(sellerCustomDomains.sellerId, seller.sellerId), eq(sellerCustomDomains.status, "active"))),
   ]);

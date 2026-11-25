@@ -29,7 +29,7 @@ export async function SellerSettingsData() {
   if (error || !profile || !account) {
     throw new Error(error || "Failed to load seller settings");
   }
-  const liveDomain = customDomain?.status === "active" ? customDomain.domain : null;
+  const liveDomain = customDomain?.status === "active" ? customDomain.publicHost : null;
   const initial: SellerSettingsInitialData = {
     profile: {
       id: profile.id,

@@ -7,13 +7,14 @@ import { getSellerStores } from "@/lib/stores/current-store.server";
 import { builderEnabled } from "../ai-builder/builder-access.server";
 import { StoresView } from "./stores.client";
 import type { StoreCardData } from "./stores.dto";
+import { customDomainPublicHostSql } from "@workspace/lib/storefront/server";
 
 export async function StoresData({ openCreate }: { openCreate: boolean }) {
   const [seller, { stores, selected, maxStores, upgradeMaxStores }, locale] = await Promise.all([requireSeller(), getSellerStores(), getLocale()]);
 
   // Active custom domains (one per store) so cards link to the address customers use.
   const domains = await db
-    .select({ storeId: sellerCustomDomains.storeId, domain: sellerCustomDomains.domain })
+    .select({ storeId: sellerCustomDomains.storeId, domain: customDomainPublicHostSql() })
     .from(sellerCustomDomains)
     .where(and(eq(sellerCustomDomains.sellerId, seller.sellerId), eq(sellerCustomDomains.status, "active")));
   const domainByStore = new Map(domains.map((d) => [d.storeId, d.domain]));

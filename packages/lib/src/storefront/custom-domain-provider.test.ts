@@ -3,6 +3,8 @@ import {
   CustomDomainProviderError,
   cloudflareDomainProvider,
   customDomainProvider,
+  customDomainPublicHost,
+  isWwwPrimary,
   newCustomDomainProviderId,
   vercelDomainProvider,
 } from "./custom-domain-provider";
@@ -210,7 +212,55 @@ describe("cloudflare provider", () => {
       [`GET ${CF}/id-www`]: ok(cfHost("www.faster-eg.com", "id-www", "pending")),
     });
     const meta = { hostnames: { "faster-eg.com": "id-apex", "www.faster-eg.com": "id-www" } };
-    await expect(cloudflareDomainProvider.check("faster-eg.com", "pending", { meta })).resolves.toEqual({ status: "active", verification: null, lastError: null });
+    await expect(cloudflareDomainProvider.check("faster-eg.com", "pending", { meta })).resolves.toEqual({
+      status: "active",
+      verification: null,
+      lastError: null,
+      meta: { hostnames: meta.hostnames },
+    });
+  });
+
+  it("is active on www. (primary www) when only www. is live: a DNS host with no ALIAS for the root", async () => {
+    mockFetch({
+      [`GET ${CF}/id-apex`]: ok(cfHost("faster-eg.com", "id-apex", "pending")),
+      [`GET ${CF}/id-www`]: ok(cfHost("www.faster-eg.com", "id-www", "active", { status: "active" })),
+    });
+    const meta = { hostnames: { "faster-eg.com": "id-apex", "www.faster-eg.com": "id-www" } };
+    for (const previous of ["pending", "active", "failed"] as const) {
+      await expect(cloudflareDomainProvider.check("faster-eg.com", previous, { meta })).resolves.toEqual({
+        status: "active",
+        verification: null,
+        lastError: null,
+        meta: { hostnames: meta.hostnames, primary: "www" },
+      });
+    }
+  });
+
+  it("is not active on a www. whose certificate is still pending", async () => {
+    mockFetch({
+      [`GET ${CF}/id-apex`]: ok(cfHost("faster-eg.com", "id-apex", "pending")),
+      [`GET ${CF}/id-www`]: ok(cfHost("www.faster-eg.com", "id-www", "active", { status: "pending_validation" })),
+    });
+    const meta = { hostnames: { "faster-eg.com": "id-apex", "www.faster-eg.com": "id-www" } };
+    await expect(cloudflareDomainProvider.check("faster-eg.com", "pending", { meta })).resolves.toMatchObject({ status: "pending", lastError: "dns" });
+    const failed = await cloudflareDomainProvider.check("faster-eg.com", "active", { meta: { ...meta, primary: "www" } });
+    expect(failed).toMatchObject({ status: "failed", lastError: "dns" });
+    // Not live: the stored meta (and its primary) is left as it is.
+    expect(failed).not.toHaveProperty("meta");
+  });
+
+  it("goes back to the root once it is live, dropping primary and keeping the ids", async () => {
+    mockFetch({
+      [`GET ${CF}/id-apex`]: ok(cfHost("faster-eg.com", "id-apex", "active", { status: "active" })),
+      [`GET ${CF}/id-www`]: ok(cfHost("www.faster-eg.com", "id-www", "active", { status: "active" })),
+    });
+    const hostnames = { "faster-eg.com": "id-apex", "www.faster-eg.com": "id-www" };
+    await expect(cloudflareDomainProvider.check("faster-eg.com", "active", { meta: { hostnames, primary: "www" } })).resolves.toEqual({
+      status: "active",
+      verification: null,
+      lastError: null,
+      meta: { hostnames },
+    });
   });
 
   it("shows ownership and certificate TXT records while pending, and fails a domain that was active", async () => {
@@ -274,6 +324,19 @@ describe("cloudflare provider", () => {
       { type: "CNAME", name: "shop", value: "stores.example.net" },
       { type: "CNAME", name: "www.shop", value: "stores.example.net" },
     ]);
+  });
+});
+
+describe("customDomainPublicHost", () => {
+  it("is www. only for a www-primary row; the root for Vercel (null meta) and every other row", () => {
+    expect(customDomainPublicHost("faster-eg.com", { hostnames: {}, primary: "www" })).toBe("www.faster-eg.com");
+    expect(customDomainPublicHost("shop.faster.com.eg", { primary: "www" })).toBe("www.shop.faster.com.eg");
+    expect(customDomainPublicHost("faster-eg.com", { hostnames: { "faster-eg.com": "id" } })).toBe("faster-eg.com");
+    expect(customDomainPublicHost("faster-eg.com", null)).toBe("faster-eg.com");
+    expect(customDomainPublicHost("faster-eg.com", { primary: "root" })).toBe("faster-eg.com");
+    expect(customDomainPublicHost("faster-eg.com", "www")).toBe("faster-eg.com");
+    expect(isWwwPrimary({ primary: "www" })).toBe(true);
+    expect(isWwwPrimary(undefined)).toBe(false);
   });
 });
 

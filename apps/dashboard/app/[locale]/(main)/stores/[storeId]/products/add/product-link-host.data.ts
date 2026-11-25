@@ -1,5 +1,6 @@
 import { db, sellerCustomDomains } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
+import { customDomainPublicHostSql } from "@workspace/lib/storefront/server";
 
 /**
  * The seller's live custom domain (e.g. faster-egy.com), shown in the product
@@ -8,7 +9,7 @@ import { and, eq } from "drizzle-orm";
  */
 export async function loadProductLinkHost(sellerId: string): Promise<string | null> {
   const [row] = await db
-    .select({ domain: sellerCustomDomains.domain })
+    .select({ domain: customDomainPublicHostSql() })
     .from(sellerCustomDomains)
     .where(and(eq(sellerCustomDomains.sellerId, sellerId), eq(sellerCustomDomains.status, "active")))
     .limit(1);

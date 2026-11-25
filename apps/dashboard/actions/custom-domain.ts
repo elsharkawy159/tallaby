@@ -16,7 +16,9 @@ import {
 } from "@workspace/lib/storefront/server";
 import {
   CustomDomainProviderError,
+  customDomainPublicHost,
   customDomainProvider,
+  isWwwPrimary,
   newCustomDomainProviderId,
   type CustomDomainProvider,
   type CustomDomainProviderErrorCode,
@@ -28,6 +30,10 @@ import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 /** What the settings card shows about the seller's own domain. */
 export type CustomDomainView = {
   domain: string;
+  /** The host visitors open: `domain`, or `www.<domain>` while its root isn't live (Cloudflare). */
+  publicHost: string;
+  /** True when the store is served on `www.<domain>` (the seller should forward the root there). */
+  wwwPrimary: boolean;
   status: CustomDomainStatus;
   /** TXT records the provider wants before it trusts the domain, if any. */
   verification: DomainVerificationRecord[];
@@ -56,6 +62,8 @@ export type CustomDomainResult =
 function toView(row: CustomDomainRow): CustomDomainView {
   return {
     domain: row.domain,
+    publicHost: customDomainPublicHost(row.domain, row.providerMeta),
+    wwwPrimary: isWwwPrimary(row.providerMeta),
     status: row.status as CustomDomainStatus,
     verification: Array.isArray(row.verification)
       ? (row.verification as DomainVerificationRecord[])
@@ -204,7 +212,9 @@ export async function verifyCustomDomain(storeId: string): Promise<CustomDomainR
 
   try {
     const updated = await refreshCustomDomain(row);
-    if (updated.status !== row.status) await invalidate(store, row.domain);
+    const hostChanged =
+      customDomainPublicHost(updated.domain, updated.providerMeta) !== customDomainPublicHost(row.domain, row.providerMeta);
+    if (updated.status !== row.status || hostChanged) await invalidate(store, row.domain);
     return { success: true, domain: toView(updated) };
   } catch (error) {
     return providerFailure(error);

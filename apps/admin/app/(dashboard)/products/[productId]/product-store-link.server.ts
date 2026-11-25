@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, asc, db, eq, isNull, ne, sellerCustomDomains, storeProducts, stores } from "@workspace/db";
 import { storeUrl } from "@workspace/lib/storefront";
+import { customDomainPublicHostSql } from "@workspace/lib/storefront/server";
 
 /**
  * "View on Site" for a product: its page on one of the seller's stores
@@ -38,7 +39,7 @@ export async function loadProductStoreLink(
   if (!store) return null;
 
   const [domain] = await db
-    .select({ domain: sellerCustomDomains.domain })
+    .select({ domain: customDomainPublicHostSql() })
     .from(sellerCustomDomains)
     .where(and(eq(sellerCustomDomains.storeId, store.id), eq(sellerCustomDomains.status, "active")))
     .limit(1);

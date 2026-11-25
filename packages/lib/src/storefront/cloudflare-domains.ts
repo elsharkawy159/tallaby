@@ -10,6 +10,7 @@
  */
 
 import {
+  CUSTOM_DOMAIN_PRIMARY_WWW,
   CustomDomainProviderError,
   DEFAULT_CLOUDFLARE_CNAME_TARGET,
   type CustomDomainCheck,
@@ -39,8 +40,11 @@ export type CloudflareCustomHostname = {
   ownership_verification?: { type?: string; name?: string; value?: string } | null;
 };
 
-/** `provider_meta` for a Cloudflare row: the hostname ids, keyed by hostname. */
-export type CloudflareProviderMeta = { hostnames: Record<string, string> };
+/**
+ * `provider_meta` for a Cloudflare row: the hostname ids, keyed by hostname,
+ * and `primary: "www"` while the domain is served on its `www.` host.
+ */
+export type CloudflareProviderMeta = { hostnames: Record<string, string>; primary?: typeof CUSTOM_DOMAIN_PRIMARY_WWW };
 
 type CloudflareEnvelope<T> = {
   success?: boolean;
@@ -218,11 +222,25 @@ export function hostnameVerificationRecords(hostname: CloudflareCustomHostname):
 }
 
 /**
+ * The stored meta with `primary` set for a www-primary domain and removed
+ * otherwise; the hostname ids (and anything else stored) are kept.
+ */
+function metaWithPrimary(meta: unknown, wwwPrimary: boolean): Record<string, unknown> {
+  const base = meta && typeof meta === "object" && !Array.isArray(meta) ? { ...(meta as Record<string, unknown>) } : {};
+  delete base.primary;
+  return wwwPrimary ? { ...base, primary: CUSTOM_DOMAIN_PRIMARY_WWW } : base;
+}
+
+/**
  * Where `domain` stands on Cloudflare. Active once its hostname and its
- * certificate are both active (the www. hostname is reported but, as on
- * Vercel, does not hold the domain back). Until then the seller sees the
- * routing records plus any TXT records that validate ahead of the DNS move.
- * A domain that was active and stops being so becomes `failed`.
+ * certificate are both active; the root is then the public host and `www.`
+ * redirects to it. A root that is not live while `www.` is (a DNS host with
+ * no ALIAS/ANAME for the root) also makes the domain active, served on
+ * `www.` (`meta.primary = "www"`); once the root goes live, the next check
+ * makes the root public again. An active check always returns the meta to
+ * save. Until then the seller sees the routing records plus any TXT records
+ * that validate ahead of the DNS move. A domain that was active and stops
+ * being so becomes `failed`.
  */
 export async function checkCloudflareDomain(
   domain: string,
@@ -234,7 +252,12 @@ export async function checkCloudflareDomain(
     resolveHostname(wwwOf(domain), options.meta),
   ]);
   if (!apex) return { status: "failed", verification: null, lastError: "not_attached" };
-  if (isHostnameLive(apex)) return { status: "active", verification: null, lastError: null };
+  if (isHostnameLive(apex)) {
+    return { status: "active", verification: null, lastError: null, meta: metaWithPrimary(options.meta, false) };
+  }
+  if (www && isHostnameLive(www)) {
+    return { status: "active", verification: null, lastError: null, meta: metaWithPrimary(options.meta, true) };
+  }
 
   const seen = new Set<string>();
   const verification = [apex, ...(www && !isHostnameLive(www) ? [www] : [])]

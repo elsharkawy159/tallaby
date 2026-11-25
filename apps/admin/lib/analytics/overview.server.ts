@@ -4,6 +4,7 @@
 import { cache } from 'react'
 import { db } from '@workspace/db'
 import { sql } from 'drizzle-orm'
+import { customDomainPublicHostRawSql } from '@workspace/lib/storefront/server'
 import { getAdminUser } from '@/actions/auth'
 import { runLimited, toNumber } from './analytics.lib'
 import {
@@ -212,7 +213,7 @@ export async function getOverviewStores (range: OverviewRange): Promise<{
         prev.gmv::numeric(14,2)::text AS prev_gmv,
         sw.balance::text AS wallet,
         sw.currency AS wallet_currency,
-        (SELECT d.domain FROM seller_custom_domains d
+        (SELECT ${customDomainPublicHostRawSql('d')} FROM seller_custom_domains d
           WHERE d.store_id = st.id AND d.status = 'active' LIMIT 1) AS custom_domain
       FROM cur
       JOIN stores st ON st.id = cur.store_id AND st.deleted_at IS NULL

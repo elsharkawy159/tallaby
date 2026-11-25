@@ -2,6 +2,7 @@ import { db, sql } from "@workspace/db";
 import { isProActive } from "@workspace/lib/billing";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { storeUrl } from "@workspace/lib/storefront";
+import { customDomainPublicHostRawSql } from "@workspace/lib/storefront/server";
 import {
   buildSellerWhatsAppMessage,
   dialectFor,
@@ -64,7 +65,7 @@ async function loadFacts(sellerIds: string[]): Promise<FactsRow[]> {
       ps.settings->>'currency' AS store_currency,
       ps.subdomain AS store_subdomain,
       ps.site_status AS store_site_status,
-      (SELECT d.domain FROM seller_custom_domains d
+      (SELECT ${customDomainPublicHostRawSql("d")} FROM seller_custom_domains d
         WHERE d.store_id = ps.id AND d.status = 'active' LIMIT 1) AS store_custom_domain,
       EXISTS (
         SELECT 1 FROM stores st

@@ -277,10 +277,11 @@ export function invalidateStorefront(subdomains: string[]): CacheInvalidation {
 
 /**
  * A store's custom domain (faster-eg.com) was added, went live, broke or was
- * removed: the store profile (which carries it) and the domain lookup.
+ * removed: the store profile (which carries it) and the domain lookup, for
+ * the domain and its www. (a Cloudflare domain may be served on www.).
  */
 export function invalidateCustomDomain(subdomain: string, domain: string): CacheInvalidation {
-  return inv([sellerTags.subdomain(subdomain), sellerTags.customDomain(domain)]);
+  return inv([sellerTags.subdomain(subdomain), sellerTags.customDomain(domain), sellerTags.customDomain(`www.${domain}`)]);
 }
 
 /** A store published or unpublished its builder site: that store's site and storefront profile only. */

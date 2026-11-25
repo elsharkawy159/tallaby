@@ -3,6 +3,7 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { resolveCustomerName, resolveCustomerPhone } from "@/app/[locale]/(main)/orders/orders.lib";
 import { amountToCollect } from "./print-orders.lib";
 import type { PrintOrder, PrintSender } from "./print-orders.types";
+import { customDomainPublicHostSql } from "@workspace/lib/storefront/server";
 
 const toPiastres = (value: string | null | undefined) => Math.round((Number(value) || 0) * 100);
 
@@ -106,7 +107,7 @@ export async function loadPrintOrders(
           .from(stores)
           .where(and(eq(stores.sellerId, sellerId), inArray(stores.id, storeIds))),
         db
-          .select({ storeId: sellerCustomDomains.storeId, domain: sellerCustomDomains.domain })
+          .select({ storeId: sellerCustomDomains.storeId, domain: customDomainPublicHostSql() })
           .from(sellerCustomDomains)
           .where(
             and(

@@ -35,6 +35,11 @@ export type CustomDomainCheck = {
   verification: DomainVerificationRecord[] | null;
   /** "unverified" | "dns" | "not_attached" while not active. */
   lastError: string | null;
+  /**
+   * The row's new `provider_meta`, when the check decides it (Cloudflare
+   * records which host is public). Absent: the stored meta stays as it is.
+   */
+  meta?: Record<string, unknown>;
 };
 
 /**
@@ -79,6 +84,31 @@ export const DEFAULT_CLOUDFLARE_CNAME_TARGET = "shops.tallaby.com";
 /** `www.` + the domain: the second host every custom domain gets. */
 export function wwwOf(domain: string): string {
   return `www.${domain}`;
+}
+
+/**
+ * `provider_meta.primary`: "www" when the domain is served on `www.<domain>`
+ * because its root never went live (a DNS host with no ALIAS/ANAME; Cloudflare
+ * rows only). Absent on every other row (Vercel rows have null meta): the root
+ * is the public host and `www.` redirects to it.
+ */
+export const CUSTOM_DOMAIN_PRIMARY_WWW = "www";
+
+/** True when the row's meta says the domain is served on its `www.` host. */
+export function isWwwPrimary(providerMeta: unknown): boolean {
+  return (
+    typeof providerMeta === "object" &&
+    providerMeta !== null &&
+    (providerMeta as { primary?: unknown }).primary === CUSTOM_DOMAIN_PRIMARY_WWW
+  );
+}
+
+/**
+ * The host visitors open for a custom domain row: `www.<domain>` for a
+ * www-primary row, else the domain itself. `domain` stays what the seller typed.
+ */
+export function customDomainPublicHost(domain: string, providerMeta: unknown): string {
+  return isWwwPrimary(providerMeta) ? wwwOf(domain) : domain;
 }
 
 /** Second-level labels used under country TLDs (`store.com.eg` is a root domain, not a subdomain). */

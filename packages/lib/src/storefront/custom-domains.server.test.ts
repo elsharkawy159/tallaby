@@ -18,6 +18,8 @@ vi.mock("@workspace/db", () => ({
   and: () => null,
   eq: () => null,
   isNull: () => null,
+  or: () => null,
+  sql: () => null,
   sellerCustomDomains: { id: "id" },
   sellers: {},
   stores: {},
@@ -75,5 +77,17 @@ describe("refreshCustomDomain", () => {
     await refreshCustomDomain(row("cloudflare"));
     expect(mocks.updates[0]).toMatchObject({ status: "pending", verification, lastError: "dns" });
     expect(mocks.updates[0]).not.toHaveProperty("verifiedAt");
+    expect(mocks.updates[0]).not.toHaveProperty("providerMeta");
+  });
+
+  it("saves the meta only when the check returns one (Cloudflare www-primary), never for Vercel", async () => {
+    const meta = { hostnames: { "faster-eg.com": "id-apex" }, primary: "www" };
+    mocks.check.mockResolvedValueOnce({ status: "active", verification: null, lastError: null, meta });
+    await refreshCustomDomain(row("cloudflare", { hostnames: { "faster-eg.com": "id-apex" } }));
+    expect(mocks.updates[0]).toMatchObject({ status: "active", providerMeta: meta });
+
+    mocks.check.mockResolvedValueOnce({ status: "active", verification: null, lastError: null });
+    await refreshCustomDomain(row("vercel"));
+    expect(mocks.updates[1]).not.toHaveProperty("providerMeta");
   });
 });

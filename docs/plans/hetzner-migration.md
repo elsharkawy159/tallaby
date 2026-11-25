@@ -236,7 +236,7 @@ Open technical points to prove on one hostname before rollout: (1) with Full (st
 
 1. Enable Cloudflare for SaaS on the zone (owner: billing profile; $0 up to 100 hostnames). Fallback origin `shops.tallaby.com` (A 2.28.78.10 proxied).
 2. Per seller (4 today), in one session with them: create the custom hostnames (`www.<domain>`, and the apex where their DNS host supports ALIAS/flattening), give them the TXT records to pre-validate, wait for `active`; then they change `www` to `CNAME shops.tallaby.com` and the apex to ALIAS (or registrar forwarding to `www`). Set the row's `provider` to `cloudflare`; remove the domain from the Vercel project only after traffic has moved. Expected gap: none (both sides serve valid TLS).
-3. Apex limitation: if a seller's DNS host has no ALIAS/flattening (check Namecheap and Hostinger), their apex can only forward to `www`, so the store's address becomes `www.<domain>` (owner decision, 7.9 #2).
+3. Apex limitation: if a seller's DNS host has no ALIAS/flattening (check Namecheap and Hostinger), their apex can only forward to `www`, so the store's address becomes `www.<domain>` (owner decision, 7.9 #2). **Done in code 2026-11-25 (no migration):** a Cloudflare domain whose `www.` is live but root is not goes `active` as www-primary (`provider_meta.primary = "www"`): the store is served on `www.<domain>`, every link uses it, and the root flips back to public once it goes live (ROADMAP.md §7, 2026-11-25).
 4. New domains from then on use Cloudflare (`CUSTOM_DOMAIN_PROVIDER=cloudflare`); dashboard instructions say `CNAME → shops.tallaby.com`.
 5. **Rollback per seller:** they restore `A 76.76.21.21` / `CNAME cname.vercel-dns.com` (domain still attached on Vercel until confirmed), row back to `vercel`.
 

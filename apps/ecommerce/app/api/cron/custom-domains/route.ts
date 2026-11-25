@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db, sellers, sellerCustomDomains, eq } from "@workspace/db";
 import { applyInvalidation, invalidateCustomDomain } from "@workspace/cache";
 import { refreshCustomDomain } from "@workspace/lib/storefront/server";
+import { customDomainPublicHost } from "@workspace/lib/storefront/custom-domain-provider.lib";
 import { purgeExpiredHandoffCodes } from "@/lib/auth-handoff.server";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,10 @@ export async function GET(request: NextRequest) {
     try {
       const updated = await refreshCustomDomain(row);
       summary.checked++;
-      if (updated.status !== row.status) {
+      // A Cloudflare domain can also move between its root and www. while live.
+      const hostChanged =
+        customDomainPublicHost(updated.domain, updated.providerMeta) !== customDomainPublicHost(row.domain, row.providerMeta);
+      if (updated.status !== row.status || hostChanged) {
         summary.changed++;
         await applyInvalidation(invalidateCustomDomain(subdomain, row.domain), {
           from: "ecommerce",

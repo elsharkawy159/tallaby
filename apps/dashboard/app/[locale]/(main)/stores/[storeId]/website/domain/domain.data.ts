@@ -8,7 +8,7 @@ import { getCustomDomain, type CustomDomainView } from "@/actions/custom-domain"
 
 export type DomainTabData = {
   customDomain: CustomDomainView | null;
-  /** The live custom domain, if any (the address to share). */
+  /** The live custom domain's public host, if any (the address to share). */
   liveDomain: string | null;
   redirects: { subdomain: string; createdAt: string }[];
   /** For a non-primary store: where custom domains are managed today. */
@@ -24,7 +24,7 @@ export async function loadDomainTab(store: StoreRow): Promise<DomainTabData> {
   const customDomain = domainRes.success ? domainRes.domain : null;
   return {
     customDomain,
-    liveDomain: customDomain?.status === "active" ? customDomain.domain : null,
+    liveDomain: customDomain?.status === "active" ? customDomain.publicHost : null,
     redirects,
     primaryStore: primary ? { id: primary.id, name: primary.name } : null,
   };
@@ -33,5 +33,5 @@ export async function loadDomainTab(store: StoreRow): Promise<DomainTabData> {
 /** The store's live (active) custom domain, or null when it only has its subdomain. */
 export async function loadLiveDomain(store: StoreRow): Promise<string | null> {
   const res = await getCustomDomain(store.id);
-  return res.success && res.domain?.status === "active" ? res.domain.domain : null;
+  return res.success && res.domain?.status === "active" ? res.domain.publicHost : null;
 }

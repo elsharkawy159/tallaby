@@ -35,7 +35,7 @@ import {
   storeUrl,
   type StorefrontLocale,
 } from "@workspace/lib/storefront";
-import { findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
+import { customDomainPublicHostSql, findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
 import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { parseStoreSeo } from "@workspace/lib/stores";
@@ -250,7 +250,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
       if (!row) return null;
 
       const [domain] = await db
-        .select({ domain: sellerCustomDomains.domain })
+        .select({ domain: customDomainPublicHostSql() })
         .from(sellerCustomDomains)
         .where(and(eq(sellerCustomDomains.storeId, row.storeId), eq(sellerCustomDomains.status, "active")))
         .limit(1);

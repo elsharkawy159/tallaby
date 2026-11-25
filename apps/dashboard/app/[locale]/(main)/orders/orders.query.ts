@@ -35,6 +35,7 @@ import {
   resolveCustomerPhone,
 } from "./orders.lib";
 import type { OrderSummary, SellerOrderRow } from "./orders.types";
+import { customDomainPublicHostSql } from "@workspace/lib/storefront/server";
 
 const toNumber = (value: string | number | null | undefined) => {
   const n = Number(value);
@@ -269,7 +270,7 @@ export async function loadSellerOrders(
       ? db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, riderIds))
       : Promise.resolve([]),
     db
-      .select({ storeId: sellerCustomDomains.storeId, domain: sellerCustomDomains.domain })
+      .select({ storeId: sellerCustomDomains.storeId, domain: customDomainPublicHostSql() })
       .from(sellerCustomDomains)
       .where(and(eq(sellerCustomDomains.sellerId, sellerId), eq(sellerCustomDomains.status, "active"))),
     // Marketplace orders have no store: link the store site that shows the product.

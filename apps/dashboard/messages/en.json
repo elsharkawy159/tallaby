@@ -2599,6 +2599,7 @@
       "propagation": "DNS changes take from a few minutes up to a few hours (rarely up to 48 hours). We check every day on our own, or press “Check now”.",
       "cloudflare": "Using Cloudflare? Set these records to “DNS only” (grey cloud), or the secure certificate can't be issued.",
       "activeNote": "Your store is live on your domain with a free secure certificate. Your Tallaby address now forwards here.",
+      "wwwPrimaryNote": "Your store opens on www.{domain}. Forward {domain} to https://www.{domain} from your domain provider, so visitors who type it without www still reach your store.",
       "checks": {
         "unverified": "Waiting for the TXT record that proves you own this domain.",
         "dns": "Your domain doesn't point to Tallaby yet. Check the A and CNAME records.",
@@ -2642,7 +2643,7 @@
       "copyName": "Copy name",
       "copyTtl": "Copy TTL",
       "nameHint": "@ means the domain itself. If your provider won't accept @, leave Name empty.",
-      "aliasHint": "The @ record must be of type ALIAS (some providers call it ANAME or CNAME flattening). If your provider doesn't offer it, contact support before you change anything.",
+      "aliasHint": "The @ record must be of type ALIAS (some providers call it ANAME or CNAME flattening). If your provider doesn't offer it, skip this record and add only the www one: your store will open on www.{domain}. Then forward {domain} to https://www.{domain} from your provider.",
       "ttlNote": "TTL: if your provider asks for a number, type 3600. Any number from 60 to 3600 works (Hostinger also accepts 60, for a faster start). If it shows Auto or Default, leave it.",
       "guide": {
         "title": "Steps for your domain provider",

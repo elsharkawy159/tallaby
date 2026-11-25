@@ -3,6 +3,7 @@ import { createCachedQuery, marketingStoreTags } from "@workspace/cache";
 import { db, sql } from "@workspace/db";
 import { products } from "@workspace/db/schema";
 import { storeUrl } from "@workspace/lib/storefront";
+import { customDomainPublicHostRawSql } from "@workspace/lib/storefront/server";
 import { productInStoreOf } from "@workspace/lib/stores/scope/server";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { isSwitchOn } from "@/lib/platform-switches.server";
@@ -84,7 +85,7 @@ const DIRECTORY_MAX_ROWS = 3000;
 export async function readDirectoryStores(catalogSplit: boolean): Promise<DirectoryStore[]> {
   const result = await db.execute(sql`
     SELECT st.name, st.subdomain, st.logo_url, st.store_category, st.store_category_ar, pc.product_count,
-      (SELECT d.domain FROM seller_custom_domains d
+      (SELECT ${customDomainPublicHostRawSql("d")} FROM seller_custom_domains d
         WHERE d.store_id = st.id AND d.status = 'active'
         ORDER BY d.verified_at DESC NULLS LAST LIMIT 1) AS custom_domain
     FROM stores st
