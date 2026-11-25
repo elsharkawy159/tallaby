@@ -81,7 +81,9 @@ export async function HomeHero() {
   const showLine = selectStoreLine(recent.stores, recent.readAt).kind !== "none";
 
   return (
-    <section id="top" aria-labelledby="home-h1" className="relative isolate overflow-hidden pt-10 pb-24 min-[641px]:pt-16">
+    <section id="top" aria-labelledby="home-h1" className="relative isolate -mt-[69px] overflow-hidden pt-[calc(2.5rem+69px)] pb-24 min-[641px]:pt-[calc(4rem+69px)]">
+      {/* Pulled up 69px (the header: 68px plus its 1px border) so the pattern also runs behind the transparent header at the
+          top of the page (owner, 2026-11-25: no header band at scroll 0). */}
       {/* A soft, near-white pattern over the fog (home-hero-pattern, 4 KB). A CSS background, so it never
           competes with the title for bandwidth; it fades out before the demo ends. */}
       <div
