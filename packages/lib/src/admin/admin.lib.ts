@@ -118,6 +118,10 @@ export const ADMIN_AUDIT_ACTIONS = [
   "tallaby_pay_duplicate_refunded",
   "tallaby_pay_refund_declined",
   "tallaby_pay_settings_updated",
+  // Admin › WhatsApp (0180, F-109; the action check is a pattern, no migration)
+  "update_whatsapp_settings",
+  "retry_whatsapp_messages",
+  "submit_whatsapp_templates",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

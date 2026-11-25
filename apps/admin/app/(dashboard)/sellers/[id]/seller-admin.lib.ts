@@ -80,6 +80,9 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   tallaby_pay_duplicate_refunded: "Tallaby Pay second payment refunded",
   tallaby_pay_refund_declined: "Tallaby Pay refund request declined",
   tallaby_pay_settings_updated: "Tallaby Pay settings changed",
+  update_whatsapp_settings: "WhatsApp settings changed",
+  retry_whatsapp_messages: "WhatsApp messages retried",
+  submit_whatsapp_templates: "WhatsApp templates sent to Meta",
 };
 
 export function auditActionLabel(action: string): string {

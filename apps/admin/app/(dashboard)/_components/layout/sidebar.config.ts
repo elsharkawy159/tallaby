@@ -12,6 +12,7 @@ import {
   Newspaper,
   Package,
   MessageSquarePlus,
+  MessageCircle,
   LayoutTemplate,
   PlugZap,
   Settings,
@@ -201,6 +202,8 @@ export const sidebarSections: SidebarSection[] = [
       { key: "payments", title: "Payments", href: "/payments", icon: CreditCard },
       // USD switch, exchange rates and Pro income (F-55f, F-56).
       { key: "billing", title: "Billing", href: "/billing", icon: Coins },
+      // WhatsApp order notifications: settings, templates, usage and failed messages (F-109).
+      { key: "whatsapp", title: "WhatsApp", href: "/whatsapp", icon: MessageCircle },
       // Hidden 2026-10-18 (SaaS pivot), see docs/admin-saas.md §2.2.
       { key: "pricingCalculator", title: "Pricing calculator", href: "/pricing-calculator", icon: Banknote, hidden: true },
     ],
