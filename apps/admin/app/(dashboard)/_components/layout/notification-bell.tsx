@@ -38,11 +38,14 @@ const POLL_MS = 60_000
 function useAdminNotificationFeed() {
   const [feed, setFeed] = useState<Feed | null>(null)
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<Feed | null> => {
     try {
-      setFeed(await getAdminNotificationFeed())
+      const next = await getAdminNotificationFeed()
+      setFeed(next)
+      return next
     } catch {
       // Signed out or offline: keep what is shown.
+      return null
     }
   }, [])
 
@@ -90,6 +93,9 @@ function useAdminNotificationFeed() {
 export function NotificationBell() {
   const { feed, setFeed, refresh } = useAdminNotificationFeed()
   const [open, setOpen] = useState(false)
+  // Ids that were unread when the panel opened: opening marks them read, but
+  // they keep their "new" look until the panel closes.
+  const [seenNow, setSeenNow] = useState<ReadonlySet<string>>(() => new Set())
   const unread = feed?.unreadCount ?? 0
 
   const markRead = useCallback(
@@ -118,7 +124,16 @@ export function NotificationBell() {
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
-        if (next) void refresh()
+        setSeenNow(new Set())
+        if (!next) return
+        // Opening the bell marks what it shows as read (owner, 2026-11-25).
+        void (async () => {
+          const current = (await refresh()) ?? feed
+          const ids = current?.items.filter((item) => !item.readAt).map((item) => item.id) ?? []
+          if (ids.length === 0) return
+          setSeenNow(new Set(ids))
+          await markRead(ids)
+        })()
       }}
     >
       <PopoverTrigger asChild>
@@ -157,6 +172,7 @@ export function NotificationBell() {
                 <NotificationRow
                   key={item.id}
                   item={item}
+                  isNew={!item.readAt || seenNow.has(item.id)}
                   onOpen={() => {
                     setOpen(false)
                     if (!item.readAt) void markRead([item.id])
@@ -174,9 +190,11 @@ export function NotificationBell() {
 
 function NotificationRow({
   item,
+  isNew,
   onOpen,
 }: {
   item: NotificationItem<AdminNotificationType>
+  isNew: boolean
   onOpen: () => void
 }) {
   const { title, body } = describeAdminNotification(item)
@@ -185,10 +203,10 @@ function NotificationRow({
     <>
       <span
         aria-hidden
-        className={cn('mt-1.5 size-2 shrink-0 rounded-full', item.readAt ? 'bg-transparent' : 'bg-primary')}
+        className={cn('mt-1.5 size-2 shrink-0 rounded-full', isNew ? 'bg-primary' : 'bg-transparent')}
       />
       <span className="min-w-0 flex-1">
-        <span className={cn('block text-sm', !item.readAt && 'font-semibold')}>{title}</span>
+        <span className={cn('block text-sm', isNew && 'font-semibold')}>{title}</span>
         {body && <span className="block truncate text-xs text-muted-foreground">{body}</span>}
         <time dateTime={item.createdAt} className="mt-0.5 block text-[11px] text-muted-foreground">
           {relativeTime(item.createdAt)}
