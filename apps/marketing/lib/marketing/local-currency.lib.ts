@@ -1,11 +1,13 @@
 import { formatEgpApprox } from "@workspace/lib/billing";
+import { ARAB_COUNTRIES } from "./locale-landing.lib";
 import { type MarketingPriceVars, formatEgp, priceVarsWith, usdCentsToEgp } from "./pricing.lib";
 
 /**
  * tallaby.com's plan prices in the visitor's own currency (owner, 2026-11-08;
- * every country, owner 2026-11-10). The country comes from the visitor's IP
- * (the proxy's `Server-Timing: geo`, else `/api/geo`). A known country shows
- * its own currency when the exchange-rate feed has a rate for it, else USD.
+ * every country, owner 2026-11-10; Arab countries only, USD elsewhere, owner
+ * 2026-11-25). The country comes from the visitor's IP (the proxy's
+ * `Server-Timing: geo`, else `/api/geo`). An Arab country shows its own
+ * currency when the exchange-rate feed has a rate for it, else USD.
  * EGP uses the dashboard wallet's rate and rounding, USD is the billing
  * currency itself (no "≈"), every other currency the open exchange-rate feed.
  */
@@ -99,11 +101,14 @@ export function defaultCurrency(_locale: string): string {
 
 /**
  * The currency to show a visitor: the page's default while the country is
- * unknown (`null`), else the country's own currency when `available` (we have
- * a rate for it), else USD.
+ * unknown (`null`); in Egypt and the Arab world (`ARAB_COUNTRIES`, the same
+ * list that keeps the Arabic page) the country's own currency when
+ * `available` (we have a rate for it); everywhere else, and as the fallback,
+ * USD (owner, 2026-11-25).
  */
 export function visitorCurrency(country: string | null, locale: string, available: (code: string) => boolean): string {
   if (!country) return defaultCurrency(locale);
+  if (!ARAB_COUNTRIES.has(country.toUpperCase())) return USD;
   const code = currencyForCountry(country);
   return code && available(code) ? code : USD;
 }

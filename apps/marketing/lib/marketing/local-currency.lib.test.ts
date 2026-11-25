@@ -76,16 +76,17 @@ describe("visitorCurrency", () => {
   });
 
   it.each([
-    ["SE", "SEK"],
-    ["IE", "EUR"],
-    ["DE", "EUR"],
-    ["ME", "EUR"],
-    ["GB", "GBP"],
-    ["CN", "CNY"],
+    ["SE", "USD"],
+    ["IE", "USD"],
+    ["DE", "USD"],
+    ["ME", "USD"],
+    ["GB", "USD"],
+    ["CN", "USD"],
     ["SA", "SAR"],
+    ["sa", "SAR"],
     ["EG", "EGP"],
     ["US", "USD"],
-  ])("%s shows %s on either page", (country, currency) => {
+  ])("%s shows %s on either page (local currency only in the Arab world)", (country, currency) => {
     expect(visitorCurrency(country, "ar", available)).toBe(currency);
     expect(visitorCurrency(country, "en", available)).toBe(currency);
   });
