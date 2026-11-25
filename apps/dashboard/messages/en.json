@@ -8080,7 +8080,7 @@
       "support": "Contact support on WhatsApp",
       "supportMessage": "Hi, I have a question about my Tallaby affiliate commission.",
       "blocked": {
-        "suspended": "Your account is not active, so withdrawals are paused. Contact support.",
+        "suspended": "The Tallaby team suspended your account, so withdrawals are paused. Contact support.",
         "open_request": "You already have a withdrawal request. The Tallaby team will pay it soon.",
         "below_minimum": "You need at least {amount} available to withdraw."
       },
@@ -8098,7 +8098,7 @@
       "success": "Request sent. The Tallaby team will pay {amount} and notify you.",
       "errors": {
         "invalid_input": "Check the payment details and try again.",
-        "suspended": "Your account is not active, so withdrawals are paused.",
+        "suspended": "The Tallaby team suspended your account, so withdrawals are paused.",
         "open_request": "You already have a withdrawal request.",
         "below_minimum": "Your available balance is below the minimum.",
         "not_found": "Something went wrong. Try again.",
