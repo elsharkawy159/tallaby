@@ -48,6 +48,26 @@ describe("App Center state (F-93)", () => {
     expect(stateOf("customer_notifications", { usdLive: false, installs: [{ appKey: "customer_notifications", cancelAtPeriodEnd: false }] }).paidLocked).toBe(false);
   });
 
+  it("asks for a top-up when the wallet holds less than a monthly app's price (F-110)", () => {
+    expect(actionOf("remove_branding", { walletUsdCents: 0 })).toBe("top_up");
+    expect(actionOf("remove_branding", { walletUsdCents: 99 })).toBe("top_up");
+    expect(actionOf("remove_branding", { walletUsdCents: 100 })).toBe("install");
+    // Unknown balance: the server decides.
+    expect(actionOf("remove_branding", { walletUsdCents: null })).toBe("install");
+    // Removed but still paid for: keeping it again is free.
+    expect(actionOf("remove_branding", { walletUsdCents: 0, installs: [{ appKey: "remove_branding", cancelAtPeriodEnd: true }] })).toBe("install");
+    expect(actionOf("remove_branding", { walletUsdCents: 0, installs: [{ appKey: "remove_branding", cancelAtPeriodEnd: false }] })).toBe("remove");
+    // Per-order apps charge nothing on install.
+    expect(actionOf("customer_notifications", { walletUsdCents: 0 })).toBe("install");
+  });
+
+  it("makes a free-with-Pro app free for Pro sellers, with no top-up (F-110)", () => {
+    expect(stateOf("remove_branding", { isPro: true, walletUsdCents: 0 })).toMatchObject({ freeWithPro: true, needsTopUp: false });
+    expect(actionOf("remove_branding", { isPro: true, walletUsdCents: 0 })).toBe("install");
+    expect(stateOf("remove_branding", { isPro: false }).freeWithPro).toBe(false);
+    expect(stateOf("customer_notifications", { isPro: true }).freeWithPro).toBe(false);
+  });
+
   it("offers a request for requestable apps, once", () => {
     expect(actionOf("sms")).toBe("request");
     expect(actionOf("sms", { requests: [{ appKey: "sms", status: "requested" }] })).toBe("requested");

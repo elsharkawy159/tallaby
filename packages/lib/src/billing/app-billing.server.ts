@@ -1,4 +1,4 @@
-import { and, db, eq, isNull, lte, or, sellerNotifications, storeAppInstalls, stores, walletTransactions } from "@workspace/db";
+import { and, db, eq, isNull, lte, or, sellerNotifications, sellers, storeAppInstalls, stores, walletTransactions } from "@workspace/db";
 import {
   DuplicateStoreWalletEntryError,
   getStoreWalletSummary,
@@ -8,7 +8,7 @@ import {
   StoreWalletLimitError,
   StoreWalletNotActiveError,
 } from "@workspace/db/wallet";
-import { getStoreApp, isStoreAppLive, storeAppPricing } from "../integrations/catalog";
+import { getStoreApp, isStoreAppFreeWithPro, isStoreAppLive, storeAppPricing } from "../integrations/catalog";
 import {
   appChargeAmount,
   appChargeReference,
@@ -20,7 +20,7 @@ import {
   type AppPricingModel,
   type AppUsageUnit,
 } from "./app-pricing.lib";
-import { addOneMonth, PLAN_GRACE_DAYS } from "./billing.lib";
+import { addOneMonth, isProActive, PLAN_GRACE_DAYS } from "./billing.lib";
 import { getBillingState } from "./billing.server";
 
 /**
@@ -37,14 +37,16 @@ type InstallRow = typeof storeAppInstalls.$inferSelect;
 /** What the seller reads on their wallet ledger. */
 const APP_CHARGE_DESCRIPTIONS: Record<string, string> = {
   customer_notifications: "Order notifications",
+  remove_branding: "Remove Tallaby badge",
 };
 
-export type BillableApp = { key: string; pricing: AppPricing; live: boolean };
+/** `freeWithPro`: a monthly app that charges nothing for a period that starts while the seller is on Pro (F-110). */
+export type BillableApp = { key: string; pricing: AppPricing; live: boolean; freeWithPro?: boolean };
 export type AppResolver = (key: string) => BillableApp | null;
 
 const catalogApp: AppResolver = (key) => {
   const app = getStoreApp(key);
-  return app ? { key: app.key, pricing: storeAppPricing(app), live: isStoreAppLive(app) } : null;
+  return app ? { key: app.key, pricing: storeAppPricing(app), live: isStoreAppLive(app), freeWithPro: isStoreAppFreeWithPro(app) } : null;
 };
 
 type AppTarget = { sellerId: string; storeId: string; appKey: string };
@@ -110,6 +112,31 @@ async function charge(
     createdBy: extra.actorId ?? null,
     enforceNegativeLimit: true,
   });
+}
+
+/** Whether the seller's Pro plan is active at `at` (isProActive: the plan dates decide). */
+async function sellerOnPro(tx: Tx, sellerId: string, at: Date): Promise<boolean> {
+  const [seller] = await tx
+    .select({ plan: sellers.plan, planExpiresAt: sellers.planExpiresAt, planGraceUntil: sellers.planGraceUntil })
+    .from(sellers)
+    .where(eq(sellers.id, sellerId));
+  return seller ? isProActive(seller, at) : false;
+}
+
+/** Whether this period of a monthly install was charged (its claim is in the ledger). */
+async function monthlyPeriodPaid(tx: Tx, target: AppTarget, periodStart: Date): Promise<boolean> {
+  const [paid] = await tx
+    .select({ id: walletTransactions.id })
+    .from(walletTransactions)
+    .where(
+      and(
+        eq(walletTransactions.sellerId, target.sellerId),
+        eq(walletTransactions.type, "service_charge"),
+        eq(walletTransactions.referenceType, STORE_WALLET_REFERENCE_TYPES.storeApp),
+        eq(walletTransactions.referenceId, appChargeReference(target.storeId, target.appKey, { model: "monthly", periodStart })),
+      ),
+    );
+  return Boolean(paid);
 }
 
 function walletRefusal(error: unknown): "insufficient_balance" | "wallet_inactive" | "wallet_not_usd" | null {
@@ -186,7 +213,8 @@ export async function chargeAndInstallApp(
           // A bought app stays bought: the claim is taken, so this reinstall is free.
           if (!(error instanceof DuplicateStoreWalletEntryError)) throw error;
         }
-      } else if (monthly) {
+      } else if (monthly && !(app.freeWithPro && (await sellerOnPro(tx, input.sellerId, now)))) {
+        // A free-with-Pro app on Pro starts its month with no charge; the next renewal decides again (F-110).
         await charge(tx, input, pricing.usdCents, { model: "monthly", periodStart: now }, { actorId: input.actorId });
       }
       return { success: true };
@@ -207,7 +235,8 @@ function endInstall(tx: Tx, installId: string, reason: "seller" | "payment_faile
 
 /**
  * Removes an app. A monthly app in a paid period stays until the period ends,
- * with no refund (`endsAt`); everything else goes right away.
+ * with no refund (`endsAt`); everything else goes right away, including a
+ * month that was free with Pro (F-110: nothing was paid for it).
  */
 export async function uninstallStoreApp(target: AppTarget, now: Date = new Date()): Promise<AppUninstallResult> {
   return db.transaction(async (tx): Promise<AppUninstallResult> => {
@@ -216,7 +245,8 @@ export async function uninstallStoreApp(target: AppTarget, now: Date = new Date(
 
     const stamp = now.toISOString();
     const paidUntil = install.currentPeriodEnd ? new Date(install.currentPeriodEnd) : null;
-    if (install.pricingModel === "monthly" && !install.graceUntil && paidUntil && paidUntil > now) {
+    const inPeriod = install.pricingModel === "monthly" && !install.graceUntil && paidUntil && paidUntil > now;
+    if (inPeriod && install.currentPeriodStart && (await monthlyPeriodPaid(tx, target, new Date(install.currentPeriodStart)))) {
       await tx
         .update(storeAppInstalls)
         .set({ cancelAtPeriodEnd: true, updatedAt: stamp })
@@ -356,11 +386,14 @@ export async function renewOneApp(
     const periodEnd = new Date(install.currentPeriodEnd!);
     if (periodEnd > now) return "skipped";
     if (install.cancelAtPeriodEnd) return end("seller", install.currentPeriodEnd!);
-    if (!resolveApp(install.appKey)) return end("retired", install.currentPeriodEnd!);
+    const app = resolveApp(install.appKey);
+    if (!app) return end("retired", install.currentPeriodEnd!);
 
     const target = { sellerId: install.sellerId, storeId: install.storeId, appKey: install.appKey };
+    // Free with Pro (F-110): Pro at the renewal date means a free month; after Pro, it is charged like any Free seller.
+    const free = Boolean(app.freeWithPro) && (await sellerOnPro(tx, install.sellerId, now));
     try {
-      await charge(tx, target, install.priceUsdCents, { model: "monthly", periodStart: periodEnd });
+      if (!free) await charge(tx, target, install.priceUsdCents, { model: "monthly", periodStart: periodEnd });
     } catch (error) {
       if (error instanceof DuplicateStoreWalletEntryError) {
         // Already charged for this period: only the dates were left behind.
@@ -382,7 +415,8 @@ export async function renewOneApp(
         updatedAt: stamp,
       })
       .where(eq(storeAppInstalls.id, install.id));
-    await notify(tx, install, "app_renewed", install.currentPeriodEnd!);
+    // The bell says the wallet paid, so a free month sends none.
+    if (!free) await notify(tx, install, "app_renewed", install.currentPeriodEnd!);
     return "renewed";
   });
 }
@@ -440,4 +474,19 @@ export async function listStoreAppInstalls(sellerId: string, storeId: string): P
     .from(storeAppInstalls)
     .where(and(eq(storeAppInstalls.sellerId, sellerId), eq(storeAppInstalls.storeId, storeId), isNull(storeAppInstalls.uninstalledAt)));
   return rows as StoreAppInstallSummary[];
+}
+
+/**
+ * Whether a store has an app active now: a live install row (the engine's
+ * definition, so an app in grace still counts, and one the renewal job ended
+ * does not). Filters on seller and store (rule 5); callers pass the store
+ * resolved on the server, never a client id.
+ */
+export async function isStoreAppActive(sellerId: string, storeId: string, appKey: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: storeAppInstalls.id })
+    .from(storeAppInstalls)
+    .where(liveInstall({ sellerId, storeId, appKey }))
+    .limit(1);
+  return Boolean(row);
 }

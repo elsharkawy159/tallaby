@@ -18,7 +18,8 @@ const MONTHLY = testApp("qa_monthly", { model: "monthly", usdCents: 500 });
 const PER_ORDER = testApp("qa_per_order", { model: "per_order", usdCents: 25 });
 const USAGE = testApp("qa_usage", { model: "usage", usdCents: 2, unit: "action" });
 const FREE = testApp("qa_free", { model: "free" });
-const resolveTestApp: AppResolver = (key) => [ONE_TIME, MONTHLY, PER_ORDER, USAGE, FREE].find((a) => a.key === key) ?? null;
+const PRO_FREE: BillableApp = { ...testApp("qa_pro_free", { model: "monthly", usdCents: 100 }), freeWithPro: true };
+const resolveTestApp: AppResolver = (key) => [ONE_TIME, MONTHLY, PER_ORDER, USAGE, FREE, PRO_FREE].find((a) => a.key === key) ?? null;
 
 describe.skipIf(!TEST_DATABASE_URL)("store app billing (integration)", { timeout: 120_000 }, () => {
   const sellerId = randomUUID();
@@ -233,6 +234,68 @@ describe.skipIf(!TEST_DATABASE_URL)("store app billing (integration)", { timeout
     expect(await renewOneApp(id, new Date(), resolveTestApp)).toBe("ended");
     expect(await row(MONTHLY.key)).toBeNull();
     expect(await balance()).toBe(15);
+  });
+
+  describe("free with Pro (F-110)", () => {
+    const setPlan = async (plan: "free" | "pro", expiresAt: Date | null = null) => {
+      const { db, sellers, eq } = await load();
+      await db
+        .update(sellers)
+        .set({ plan, planExpiresAt: expiresAt?.toISOString() ?? null, planGraceUntil: null })
+        .where(eq(sellers.id, sellerId));
+    };
+    afterAll(async () => setPlan("free"));
+
+    it("installs and renews for free on Pro, and a removal ends it at once", async () => {
+      const { renewOneApp, uninstallStoreApp, db, storeAppInstalls, eq } = await load();
+      await setPlan("pro", new Date(Date.now() + 90 * 86_400_000));
+      await setBalance("0.00");
+      expect(await install(PRO_FREE, new Date(Date.now() - 32 * 86_400_000))).toEqual({ success: true });
+      expect(await balance()).toBe(0);
+      const id = (await row(PRO_FREE.key))!.id;
+
+      expect(await renewOneApp(id, new Date(), resolveTestApp)).toBe("renewed");
+      expect(await balance()).toBe(0);
+      expect((await row(PRO_FREE.key))!.graceUntil).toBeNull();
+      expect((await entries()).filter((e) => e.referenceId?.startsWith(`${storeId}:${PRO_FREE.key}`))).toHaveLength(0);
+
+      // Nothing was paid for this month, so removing it doesn't keep it to the period end.
+      expect(await uninstallStoreApp({ sellerId, storeId, appKey: PRO_FREE.key })).toEqual({ success: true, endsAt: null });
+      expect(await row(PRO_FREE.key)).toBeNull();
+      await db.delete(storeAppInstalls).where(eq(storeAppInstalls.id, id));
+    });
+
+    it("charges like any Free seller once Pro has ended, and lapses when the wallet can't pay", async () => {
+      const { renewOneApp, db, storeAppInstalls, eq } = await load();
+      await setPlan("pro", new Date(Date.now() + 90 * 86_400_000));
+      await setBalance("1.50");
+      await install(PRO_FREE, new Date(Date.now() - 32 * 86_400_000));
+      const id = (await row(PRO_FREE.key))!.id;
+      expect(await balance()).toBe(1.5);
+
+      await setPlan("pro", new Date(Date.now() - 86_400_000));
+      expect(await renewOneApp(id, new Date(), resolveTestApp)).toBe("renewed");
+      expect(await balance()).toBe(0.5);
+
+      const past = new Date(Date.now() - 1000).toISOString();
+      await db.update(storeAppInstalls).set({ currentPeriodEnd: past }).where(eq(storeAppInstalls.id, id));
+      expect(await renewOneApp(id, new Date(), resolveTestApp)).toBe("grace");
+      await db.update(storeAppInstalls).set({ currentPeriodEnd: past, graceUntil: past }).where(eq(storeAppInstalls.id, id));
+      expect(await renewOneApp(id, new Date(), resolveTestApp)).toBe("ended");
+      expect(await row(PRO_FREE.key)).toBeNull();
+      expect(await balance()).toBe(0.5);
+    });
+
+    it("charges a Free seller on install and keeps a paid month after removal", async () => {
+      const { uninstallStoreApp } = await load();
+      await setPlan("free");
+      await setBalance("0.99");
+      expect(await install(PRO_FREE)).toEqual({ success: false, error: "insufficient_balance" });
+      await setBalance("1.00");
+      expect(await install(PRO_FREE)).toEqual({ success: true });
+      expect(await balance()).toBe(0);
+      expect(await uninstallStoreApp({ sellerId, storeId, appKey: PRO_FREE.key })).toMatchObject({ success: true, endsAt: expect.any(String) });
+    });
   });
 
   it("removes a retired app without charging", async () => {

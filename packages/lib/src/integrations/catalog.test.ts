@@ -7,6 +7,7 @@ import {
   STORE_APP_GROUPS,
   getStoreApp,
   isStoreAppDefaultInstalled,
+  isStoreAppFreeWithPro,
   isStoreAppLive,
   storeAppHref,
   storeAppPricing,
@@ -71,6 +72,7 @@ describe("store apps catalog", () => {
       { key: "ai_assistants", group: "ai", kind: "agent", live: true, pricing: FREE, defaultInstalled: true },
       { key: "size_chart", group: "storefront", kind: "widget", live: true, pricing: FREE },
       { key: "qr_codes", group: "storefront", kind: "widget", live: true, pricing: FREE, defaultInstalled: true },
+      { key: "remove_branding", group: "storefront", kind: "widget", live: true, pricing: { model: "monthly", usdCents: 100 }, freeWithPro: true },
       { key: "meta_pixel", group: "tracking", kind: "script", provider: "meta_pixel", pricing: FREE },
       { key: "google_analytics", group: "tracking", kind: "script", provider: "google_analytics", pricing: FREE },
       { key: "google_tag_manager", group: "tracking", kind: "script", provider: "google_tag_manager", pricing: FREE },
@@ -102,11 +104,13 @@ describe("store apps catalog", () => {
     expect(STORE_APPS.map(({ slug: _slug, ...rest }) => rest)).toEqual(before);
   });
 
-  it("has only Order notifications as a paid app, and every price is valid (F-47, F-63)", () => {
+  it("has only Order notifications and Remove Tallaby badge as paid apps, and every price is valid (F-47, F-63, F-110)", () => {
     for (const app of STORE_APPS) {
       expect(isValidAppPricing(storeAppPricing(app)), app.key).toBe(true);
-      expect(isPaidAppPricing(storeAppPricing(app)), app.key).toBe(app.key === "customer_notifications");
+      expect(isPaidAppPricing(storeAppPricing(app)), app.key).toBe(app.key === "customer_notifications" || app.key === "remove_branding");
+      expect(isStoreAppFreeWithPro(app), app.key).toBe(app.key === "remove_branding");
     }
+    expect(storeAppPricing(getStoreApp("remove_branding")!)).toEqual({ model: "monthly", usdCents: 100 });
     expect(storeAppPricing(getStoreApp("customer_notifications")!)).toEqual({ model: "per_order", usdCents: 1 });
   });
 
@@ -130,6 +134,6 @@ describe("store apps catalog", () => {
     expect(storeAppPricing(app)).toEqual({ model: "free" });
     expect(storeAppHref("s1", app)).toBe("/stores/s1/apps/size-chart");
     expect(storeAppSettingsHref("s1", app)).toBe("/stores/s1/apps/size-chart/settings");
-    expect(storeAppsInGroup("storefront").map((a) => a.key)).toEqual(["size_chart", "qr_codes"]);
+    expect(storeAppsInGroup("storefront").map((a) => a.key)).toEqual(["size_chart", "qr_codes", "remove_branding"]);
   });
 });

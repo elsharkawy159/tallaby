@@ -113,10 +113,11 @@ export default async function AppDetailPage({ params }: { params: Promise<{ stor
             readOnly={readOnly}
             settingsHref={manifest.settingsRoute ? appPaths.settings(store.id, manifest) : null}
             connectFirst={manifest.installMode === "connect" && !current.connected}
+            freeWithPro={current.freeWithPro}
           />
           <dl className="flex flex-col divide-y divide-(--s-line-soft) border-t border-(--s-line-soft) text-[13px]">
             <Row label={t("detail.pricing")}>
-              <AppPrice appId={manifest.id} />
+              <AppPrice appId={manifest.id} freeWithPro={current.freeWithPro} />
             </Row>
             <Row label={t("detail.plans")}>{bothPlans ? t("detail.allPlans") : manifest.plans.join(", ")}</Row>
             <Row label={t("detail.category")}>{tApps(`groups.${manifest.category}`)}</Row>

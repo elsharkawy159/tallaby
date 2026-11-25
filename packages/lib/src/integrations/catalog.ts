@@ -30,6 +30,8 @@ export type StoreApp = {
   live?: true;
   /** What Tallaby charges for the app (F-47). Prices are US cents. */
   pricing: AppPricing;
+  /** A monthly app that charges nothing while the seller's Pro plan is active (F-110). */
+  freeWithPro?: true;
   /** Comes with every store and needs no connecting, so it is always under Installed (F-47). */
   defaultInstalled?: true;
   /** Not open yet, but a seller can ask for it (F-62). */
@@ -51,6 +53,7 @@ function toStoreApp(app: AppManifest): StoreApp {
     ...(provider ? { provider } : {}),
     ...(!provider && app.status === "live" ? { live: true as const } : {}),
     pricing: app.pricing,
+    ...(app.freeWithPro ? { freeWithPro: true as const } : {}),
     ...(app.installMode === "builtin" ? { defaultInstalled: true as const } : {}),
     ...(app.installMode === "request" ? { requestable: true as const } : {}),
   };
@@ -74,6 +77,11 @@ export function storeAppProvider(app: StoreApp): IntegrationProvider | null {
 /** Widened, so callers handle every model before a paid app ships. */
 export function storeAppPricing(app: StoreApp): AppPricing {
   return app.pricing;
+}
+
+/** Free while the seller's Pro plan is active (F-110): installs and renewals charge nothing then. */
+export function isStoreAppFreeWithPro(app: StoreApp): boolean {
+  return app.freeWithPro === true;
 }
 
 export function isStoreAppRequestable(app: StoreApp): boolean {

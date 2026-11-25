@@ -9,6 +9,7 @@ import { storeCategoryLabel, type Storefront } from "@/lib/storefront.server";
 import { StoreLogo } from "./store-logo";
 import { PoweredByTallaby } from "./powered-by-tallaby";
 import { StoreAppInstallButton } from "./store-app-install.client";
+import { storeHidesTallabyCredit } from "@/lib/store-site/remove-branding.server";
 import s from "../storefront.module.css";
 
 /** Egyptian numbers as wa.me expects them: country code, digits only. */
@@ -24,10 +25,12 @@ export function whatsappNumber(phone: string): string | null {
  * sign, here set large and faint along the bottom edge.
  */
 export async function StorefrontFooter({ store }: { store: Storefront }) {
-  const [t, format, locale] = await Promise.all([
+  const [t, format, locale, hideTallabyCredit] = await Promise.all([
     getTranslations("storefront"),
     getFormatter(),
     getLocale(),
+    // Remove Tallaby badge app (F-110), read on the server for this store.
+    storeHidesTallabyCredit(store.id, store.storeId),
   ]);
   const bio = store.description || store.storeDescription;
   const whatsapp = store.supportPhone ? whatsappNumber(store.supportPhone) : null;
@@ -145,7 +148,7 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
         <div className={cn(s.wrap, "flex flex-col gap-3 py-5 text-sm sm:flex-row sm:items-center sm:justify-between")}>
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-3.5">
             <span>{t("copyright", { year: new Date().getFullYear(), store: store.displayName })}</span>
-            <PoweredByTallaby />
+            {!hideTallabyCredit && <PoweredByTallaby />}
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {store.app.showDownloadButton && <StoreAppInstallButton storeName={store.displayName} />}

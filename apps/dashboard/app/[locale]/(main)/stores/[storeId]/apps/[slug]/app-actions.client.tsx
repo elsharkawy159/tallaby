@@ -9,14 +9,14 @@ import { Clock, Download, LoaderCircle, Plug, Settings2, Trash2, Wallet } from "
 import type { AppId } from "@workspace/apps";
 import { getStoreApp, storeAppPricing } from "@workspace/lib/integrations";
 import { SellerButton } from "@/components/seller-ui";
-import { AppInstallDialog, useAppPriceLabel } from "../app-install.client";
+import { AppInstallDialog, useAppPriceLabel, WALLET_TOP_UP_HREF } from "../app-install.client";
 import { requestApp } from "../apps.server";
 import type { AppPrimaryAction } from "../app-center.lib";
 
-/** The app's price line (US cents shown in EGP at the live rate, F-47). */
-export function AppPrice({ appId }: { appId: AppId }) {
+/** The app's price line (US cents shown in EGP at the live rate, F-47); "Free with Pro" for a Pro seller (F-110). */
+export function AppPrice({ appId, freeWithPro = false }: { appId: AppId; freeWithPro?: boolean }) {
   const priceLabel = useAppPriceLabel();
-  return <>{priceLabel(storeAppPricing(getStoreApp(appId)!))}</>;
+  return <>{priceLabel(storeAppPricing(getStoreApp(appId)!), freeWithPro)}</>;
 }
 
 /**
@@ -33,6 +33,7 @@ export function AppActions({
   readOnly,
   settingsHref,
   connectFirst,
+  freeWithPro = false,
 }: {
   storeId: string;
   appId: AppId;
@@ -44,6 +45,8 @@ export function AppActions({
   settingsHref: string | null;
   /** A connect-type app that isn't connected yet: the settings button reads "Connect". */
   connectFirst: boolean;
+  /** Free with Pro and the seller is on Pro (F-110): the install dialog says so. */
+  freeWithPro?: boolean;
 }) {
   const t = useTranslations("appCenter.action");
   const tApps = useTranslations("storeApps");
@@ -80,6 +83,17 @@ export function AppActions({
           {t("install")}
         </SellerButton>
       )}
+      {action === "top_up" && (
+        <>
+          <SellerButton asChild className="w-full">
+            <Link href={WALLET_TOP_UP_HREF}>
+              <Wallet aria-hidden />
+              {t("topUp")}
+            </Link>
+          </SellerButton>
+          <p className="text-xs leading-[1.7] text-(--s-subtle)">{t("topUpNote")}</p>
+        </>
+      )}
       {action === "remove" && (
         <SellerButton variant="outline" className="w-full" disabled={readOnly || pending} onClick={() => setDialog("remove")}>
           <Trash2 aria-hidden />
@@ -113,7 +127,7 @@ export function AppActions({
 
       <AppInstallDialog
         storeId={storeId}
-        target={dialog ? { key: appId, name, pricing, installed: dialog === "remove" } : null}
+        target={dialog ? { key: appId, name, pricing, installed: dialog === "remove", freeWithPro } : null}
         onClose={() => setDialog(null)}
       />
     </div>

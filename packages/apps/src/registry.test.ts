@@ -44,8 +44,8 @@ describe("app manifests", () => {
   it("gives every live app a way to be set up, and no coming-soon app settings", () => {
     for (const app of APPS) {
       if (app.status === "coming_soon") expect(app.settingsRoute, app.id).toBeNull();
-      // Only Order notifications installs with nothing to set.
-      if (app.status === "live" && app.settingsRoute === null) expect(app.id).toBe("customer_notifications");
+      // Only Order notifications and Remove Tallaby badge install with nothing to set.
+      if (app.status === "live" && app.settingsRoute === null) expect(["customer_notifications", "remove_branding"]).toContain(app.id);
     }
   });
 
@@ -61,6 +61,13 @@ describe("app manifests", () => {
     expect(appManifestSchema.safeParse({ ...metaPixel, paymentMethods: ["card"] }).success).toBe(false);
     const easykash = MANIFESTS.find((m) => m.id === "easykash")!;
     expect(appManifestSchema.safeParse({ ...easykash, paymentMethods: ["card", "card"] }).success).toBe(false);
+  });
+
+  it("makes only Remove Tallaby badge free with Pro, and only a monthly app can be (F-110)", () => {
+    expect(APPS.filter((app) => app.freeWithPro).map((app) => app.id)).toEqual(["remove_branding"]);
+    expect(getApp("remove_branding")!.pricing).toEqual({ model: "monthly", usdCents: 100 });
+    const notifications = MANIFESTS.find((m) => m.id === "customer_notifications")!;
+    expect(appManifestSchema.safeParse({ ...notifications, freeWithPro: true }).success).toBe(false);
   });
 
   it("keeps the old dashboard URLs: slugs bosta, wassalha, size-chart and ai-assistants", () => {
@@ -87,7 +94,7 @@ describe("app manifests", () => {
   });
 
   it("groups apps by category in order", () => {
-    expect(appsInCategory("storefront").map((a) => a.id)).toEqual(["size_chart", "qr_codes"]);
+    expect(appsInCategory("storefront").map((a) => a.id)).toEqual(["size_chart", "qr_codes", "remove_branding"]);
     expect(appsInCategory("shipping").map((a) => a.id)).toEqual(["bosta", "wassalha", "mylerz", "jt_express", "aramex"]);
   });
 

@@ -22,6 +22,7 @@ import paypal from "./paypal";
 import paytabs from "./paytabs";
 import productFeeds from "./product-feeds";
 import qrCodes from "./qr-codes";
+import removeBranding from "./remove-branding";
 import shopifyImport from "./shopify-import";
 import sizeChart from "./size-chart";
 import sms from "./sms";
@@ -36,6 +37,7 @@ export const MANIFESTS = [
   aiAssistants,
   sizeChart,
   qrCodes,
+  removeBranding,
   metaPixel,
   googleAnalytics,
   googleTagManager,

@@ -5859,12 +5859,15 @@
       "request": "Request it",
       "requested": "Requested",
       "comingSoon": "Coming soon",
-      "paidLocked": "Available after the dollar wallet"
+      "paidLocked": "Available after the dollar wallet",
+      "topUp": "Top up wallet",
+      "topUpNote": "Your wallet has less than this app costs. Top up, then install it."
     },
     "surface": {
       "storefront_product_page": "Product pages",
       "storefront_script": "Every page of your store",
       "storefront_checkout": "Checkout",
+      "storefront_footer": "Your store's footer",
       "server_events": "Tallaby's servers",
       "orders": "Orders",
       "orders_export": "Order exports",
@@ -5959,6 +5962,7 @@
     },
     "price": {
       "free": "Free",
+      "freeWithPro": "Free with Pro",
       "one_time": "{price} once",
       "monthly": "{price} a month",
       "per_order": "{price} per order",
@@ -5985,7 +5989,9 @@
       "removedAt": "The app stays until {date} and won't renew after that.",
       "freeBody": "This app is free and runs only on this store.",
       "paidBody": "Price: {price}. It's charged to your store wallet, and it can't take your balance below zero.",
-      "removeBody": "A paid monthly app stays until the end of the paid month, with no refund."
+      "removeBody": "A paid monthly app stays until the end of the paid month, with no refund.",
+      "freeWithProBody": "Free while you are on Pro, and it runs only on this store. If Pro ends, it costs {price} from the next renewal date.",
+      "topUp": "Top up wallet"
     },
     "error": "Error",
     "lastError": "Last error",

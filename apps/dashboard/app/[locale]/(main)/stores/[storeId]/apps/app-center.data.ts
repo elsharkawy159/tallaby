@@ -1,12 +1,15 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { isProActive } from "@workspace/lib/billing";
 import { listStoreAppInstalls } from "@workspace/lib/billing/apps";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { listStoreAppRequests, listStoreIntegrations, type StoreIntegrationSummary } from "@workspace/lib/integrations/server";
 import type { StoreRow } from "@workspace/lib/stores/server";
 import { WHATSAPP_APP, getWhatsAppGlobalSettings, isStoreWhatsAppOn } from "@workspace/lib/whatsapp/store/server";
+import { loadSeller } from "@/lib/auth/require-seller.server";
 import { isGoogleSheetsConfigured } from "@/lib/integrations/google-oauth.server";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { getStoreWalletBalance } from "../../../wallet/store-wallet.server";
 import type { AppCenterStoreState } from "./app-center.lib";
 
 /**
@@ -16,7 +19,7 @@ import type { AppCenterStoreState } from "./app-center.lib";
  * per store and changes on every connect (rule 8).
  */
 export async function loadAppCenterState(store: StoreRow): Promise<AppCenterStoreState & { summaries: StoreIntegrationSummary[] }> {
-  const [integrations, installs, requests, billing, whatsappOn, whatsappGlobal] = await Promise.all([
+  const [integrations, installs, requests, billing, whatsappOn, whatsappGlobal, seller, wallet] = await Promise.all([
     listStoreIntegrations(store.sellerId, store.id),
     listStoreAppInstalls(store.sellerId, store.id),
     listStoreAppRequests(store.sellerId, store.id),
@@ -25,6 +28,9 @@ export async function loadAppCenterState(store: StoreRow): Promise<AppCenterStor
     // A read failure (0180 not applied yet) shows it as not installed instead of breaking the App Center.
     isStoreWhatsAppOn(store.sellerId, store.id).catch(() => false),
     getWhatsAppGlobalSettings(),
+    // F-110: Pro makes a free-with-Pro app free; the wallet balance decides the "Top up wallet" hint (sellers.id = the store's seller, rule 5).
+    loadSeller(store.sellerId),
+    getStoreWalletBalance(store.sellerId),
   ]);
   if (!integrations) notFound();
   return {
@@ -38,6 +44,8 @@ export async function loadAppCenterState(store: StoreRow): Promise<AppCenterStor
     googleSheetsEnabled: isGoogleSheetsConfigured(),
     usdLive: billing.usdLive,
     whatsappLive: whatsappGlobal.enabled,
+    isPro: seller ? isProActive(seller) : false,
+    walletUsdCents: wallet?.currency === "USD" ? Math.round(wallet.balance * 100) : null,
   };
 }
 

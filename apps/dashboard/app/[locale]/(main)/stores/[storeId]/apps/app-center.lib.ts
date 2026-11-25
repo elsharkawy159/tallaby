@@ -3,6 +3,7 @@ import { isPaidAppPricing } from "@workspace/lib/billing/app-pricing";
 import {
   getStoreApp,
   isStoreAppDefaultInstalled,
+  isStoreAppFreeWithPro,
   isStoreAppLive,
   isStoreAppRequestable,
   storeAppPricing,
@@ -34,6 +35,10 @@ export type AppCenterStoreState = {
   usdLive: boolean;
   /** The admin's WhatsApp switch (F-109, 0180). Off or unknown: the WhatsApp app is "Coming soon". */
   whatsappLive?: boolean;
+  /** The seller's Pro plan is active (isProActive): a free-with-Pro app costs nothing (F-110). */
+  isPro?: boolean;
+  /** The store wallet's balance in US cents, read fresh; null when unknown or not in dollars (the server then decides). */
+  walletUsdCents?: number | null;
 };
 
 /** The one badge a card shows, most important first. */
@@ -62,6 +67,10 @@ export type AppState = {
   cancelAtPeriodEnd: boolean;
   /** Paid, not bought, and the wallet is not in dollars yet. */
   paidLocked: boolean;
+  /** Free for this seller because the app is free with Pro and they are on Pro (F-110). */
+  freeWithPro: boolean;
+  /** Paid for this seller, not bought, and the wallet holds less than its price: offer a top-up (F-110). */
+  needsTopUp: boolean;
   requestable: boolean;
   requestStatus: AppRequestStatus | null;
   badge: AppBadge;
@@ -82,7 +91,19 @@ export function appState(app: StoreApp, store: AppCenterStoreState): AppState {
   const failing = row?.status === "error";
   const hasInstallRow = Boolean(install);
   const installed = available && (isStoreAppDefaultInstalled(app) || connected || hasInstallRow);
-  const paidLocked = isPaidAppPricing(storeAppPricing(app)) && !store.usdLive && !hasInstallRow;
+  const pricing = storeAppPricing(app);
+  const paidLocked = isPaidAppPricing(pricing) && !store.usdLive && !hasInstallRow;
+  const freeWithPro = isStoreAppFreeWithPro(app) && store.isPro === true;
+  // A hint only: the install engine checks the wallet again and decides. A removed app still
+  // in its paid month reinstalls for free, so it never asks for a top-up. Only the models
+  // charged on install (per-order and usage apps install with no charge).
+  const needsTopUp =
+    (pricing.model === "monthly" || pricing.model === "one_time") &&
+    !freeWithPro &&
+    !paidLocked &&
+    !hasInstallRow &&
+    store.walletUsdCents != null &&
+    store.walletUsdCents < pricing.usdCents;
   const requestable = isStoreAppRequestable(app);
   const requestStatus = request?.status ?? null;
 
@@ -113,6 +134,8 @@ export function appState(app: StoreApp, store: AppCenterStoreState): AppState {
     hasInstallRow,
     cancelAtPeriodEnd: install?.cancelAtPeriodEnd ?? false,
     paidLocked,
+    freeWithPro,
+    needsTopUp,
     requestable,
     requestStatus,
     badge,
@@ -124,15 +147,16 @@ export function appState(app: StoreApp, store: AppCenterStoreState): AppState {
  * - `settings`: open its settings (connect flows start there too).
  * - `install` / `remove`: the install engine's confirm dialog.
  * - `request`: ask for it (F-62). `requested`: already asked.
+ * - `top_up`: paid, and the wallet holds less than its price: top up first (F-110).
  * - `none`: coming soon, or locked until the USD switch.
  */
-export type AppPrimaryAction = "settings" | "install" | "remove" | "request" | "requested" | "none";
+export type AppPrimaryAction = "settings" | "install" | "top_up" | "remove" | "request" | "requested" | "none";
 
 export function appPrimaryAction(manifest: AppManifest, state: AppState): AppPrimaryAction {
   if (state.requestable) return state.requestStatus ? "requested" : "request";
   if (!state.available) return "none";
   if (manifest.installMode === "toggle") {
-    if (!state.hasInstallRow || state.cancelAtPeriodEnd) return state.paidLocked ? "none" : "install";
+    if (!state.hasInstallRow || state.cancelAtPeriodEnd) return state.paidLocked ? "none" : state.needsTopUp ? "top_up" : "install";
     return manifest.settingsRoute ? "settings" : "remove";
   }
   return manifest.settingsRoute ? "settings" : "none";

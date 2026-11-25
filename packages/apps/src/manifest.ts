@@ -39,6 +39,7 @@ export const APP_IDS = [
   "customer_notifications",
   "whatsapp",
   "sms",
+  "remove_branding",
 ] as const;
 export type AppId = (typeof APP_IDS)[number];
 
@@ -104,6 +105,7 @@ export const APP_SURFACES = [
   "storefront.product_page",
   "storefront.script",
   "storefront.checkout",
+  "storefront.footer",
   "server.events",
   "orders",
   "orders.export",
@@ -192,6 +194,8 @@ export const appManifestSchema = z
     }),
     screenshots: z.array(z.strictObject({ src: z.string().regex(/^\/[\w./-]+\.(png|jpg|webp)$/), alt: localized })).max(8),
     pricing: appPricingSchema,
+    /** A monthly app that charges nothing while the seller's Pro plan is active (F-110, owner 2026-11-26). */
+    freeWithPro: z.boolean().default(false),
     /** The other company charges its own fees on its own account (shipping, card fees). Tallaby takes nothing. */
     providerFees: z.boolean().default(false),
     plans: z.array(z.enum(APP_PLANS)).min(1),
@@ -232,6 +236,9 @@ export const appManifestSchema = z
     }
     if (new Set(manifest.paymentMethods).size !== manifest.paymentMethods.length) {
       ctx.addIssue({ code: "custom", path: ["paymentMethods"], message: "payment methods must not repeat" });
+    }
+    if (manifest.freeWithPro && manifest.pricing.model !== "monthly") {
+      ctx.addIssue({ code: "custom", path: ["freeWithPro"], message: "only a monthly app can be free with Pro" });
     }
     if (manifest.requires.includes(manifest.id)) {
       ctx.addIssue({ code: "custom", path: ["requires"], message: "an app cannot require itself" });

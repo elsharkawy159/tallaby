@@ -426,6 +426,47 @@ describe("header and footer options (drawChrome)", () => {
     },
   );
 
+  describe("hideTallabyCredit (Remove Tallaby badge app, F-110)", () => {
+    const tallabyLinks = (tree: Tree | undefined) => {
+      const hrefs: unknown[] = [];
+      const walk = (list: Tree) => list.forEach((node) => (hrefs.push(node.props.href), walk(node.children)));
+      walk(tree ?? []);
+      return hrefs.filter((h) => typeof h === "string" && /tallaby\.com/i.test(h) && h !== TALLABY_MARK_URL);
+    };
+
+    it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the footer draws no credit, and everything else as before", (_key, template) => {
+      const opts = { translated: false, hasLogo: false, locale: "ar" } as const;
+      const shown = drawChrome(template.config().footer, "footer", opts);
+      const hidden = drawChrome(template.config().footer, "footer", { ...opts, hideTallabyCredit: true });
+      expect(tallabyLinks(hidden?.componentTree)).toEqual([]);
+      const ids = (tree: Tree | undefined) => {
+        const out: string[] = [];
+        const walk = (list: Tree) => list.forEach((node) => (out.push(node.id), walk(node.children)));
+        walk(tree ?? []);
+        return out;
+      };
+      // Only the credit and the row drawn for it go.
+      const drawnForCredit = (id: string) => id.includes("-powered-by") || id.endsWith("-legal");
+      expect(ids(hidden?.componentTree)).toEqual(ids(shown?.componentTree).filter((id) => !drawnForCredit(id)));
+    });
+
+    it("drops a credit the tree carries itself, keeps the copyright, and leaves the header alone", () => {
+      const input = chrome([
+        n("box", "container", {}, [
+          n("copy", "text", { text: "© 2026 Store" }),
+          n("old", "linkBlock", { href: "https://tallaby.com", role: "poweredBy" }, [n("old-text", "text", { text: "Powered by Tallaby" })]),
+        ]),
+      ]);
+      const out = drawChrome(input, "footer", { translated: false, hasLogo: false, locale: "en", hideTallabyCredit: true })!;
+      expect(findNode(out.componentTree!, "old")).toBeNull();
+      expect(findNode(out.componentTree!, "c-powered-by")).toBeNull();
+      expect(findNode(out.componentTree!, "copy")).not.toBeNull();
+      expect(tallabyLinks(out.componentTree)).toEqual([]);
+      const header = drawChrome(input, "header", { translated: false, hasLogo: false, hideTallabyCredit: true })!;
+      expect(header).toEqual(drawChrome(input, "header", { translated: false, hasLogo: false }));
+    });
+  });
+
   it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s: the footer gets one Download application button when the store allows it", (_key, template) => {
     const { header, footer } = template.config();
     const types = (instance: SectionInstance | null | undefined) => {

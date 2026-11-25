@@ -664,13 +664,16 @@ function withTallabyCredit(tree: Node[], id: string, locale: string): Node[] {
  * only): without a logo, the logo node still goes in, beside the store name,
  * so the canvas can show its uploader there. `locale`: the language shown
  * (the footer's Tallaby badge; Arabic when not given). `appInstall`:
- * the footer gets the store app's Download application button. Never
+ * the footer gets the store app's Download application button.
+ * `hideTallabyCredit`: the store has the Remove Tallaby badge app (F-110),
+ * so the footer gets no credit (a credit the tree carries itself is still
+ * dropped, so none shows); the caller reads it on the server, per store. Never
  * mutates its input, and returns a header unchanged when nothing applies.
  */
 export function drawChrome(
   instance: SectionInstance | null | undefined,
   part: ChromePart,
-  opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean; locale?: string; appInstall?: boolean },
+  opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean; locale?: string; appInstall?: boolean; hideTallabyCredit?: boolean },
 ): SectionInstance | null | undefined {
   const tree = instance?.componentTree;
   if (!instance || !tree?.length) return instance;
@@ -707,7 +710,9 @@ export function drawChrome(
     nodes = appendFooterTools(nodes, row);
   }
   if (part === "header") nodes = withMobileMenu(nodes, instance.id, opts.locale ?? "ar", readMobileMenu(instance));
-  if (part === "footer") nodes = withTallabyCredit(nodes, instance.id, opts.locale ?? "ar");
+  if (part === "footer") {
+    nodes = opts.hideTallabyCredit ? withoutNodes(nodes, isTallabyCredit) : withTallabyCredit(nodes, instance.id, opts.locale ?? "ar");
+  }
   return nodes === tree ? instance : { ...instance, componentTree: nodes };
 }
 

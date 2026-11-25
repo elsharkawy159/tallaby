@@ -300,7 +300,7 @@ function AppCard({ storeId, id, state }: { storeId: string; id: AppId; state: Ap
       </div>
       <p className="line-clamp-2 flex-1 text-pretty text-[12.5px] leading-[1.7] text-(--s-muted)">{localize(manifest.summary, locale)}</p>
       <div className="flex items-center justify-between gap-2 border-t border-(--s-line-soft) pt-2.5">
-        <span className="text-[12px] font-semibold text-(--s-subtle)">{priceLabel(storeAppPricing(app))}</span>
+        <span className="text-[12px] font-semibold text-(--s-subtle)">{priceLabel(storeAppPricing(app), state.freeWithPro)}</span>
         <ChevronRight className="size-4 text-(--s-faint) transition-transform duration-150 group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
       </div>
     </Link>

@@ -44,6 +44,7 @@ import { StickyStoreHeader } from "./sticky-store-header.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
 import { PoweredByTallaby } from "./powered-by-tallaby";
+import { storeHidesTallabyCredit } from "@/lib/store-site/remove-branding.server";
 import { SizeFinder } from "@/components/storefront/size-finder.client";
 import type { ProductSizeChart } from "@workspace/lib/size-charts/server";
 import { OfferCountdown } from "@/components/storefront/store-offer.client";
@@ -218,6 +219,8 @@ export async function StoreSiteChrome({
   locale: string;
   part: "header" | "footer";
 }): Promise<ReactNode> {
+  // Remove Tallaby badge app (F-110): read on the server for the store the request host resolved.
+  const hideTallabyCredit = part === "footer" && (await storeHidesTallabyCredit(store.id, store.storeId));
   // The logo and tools the seller turned on (Content › Header/Footer options), drawn and never saved.
   const opts = {
     translated: new Set(store.supportedLocales).size > 1,
@@ -225,13 +228,14 @@ export async function StoreSiteChrome({
     locale,
     // Store settings › App (ROADMAP.md F-36): the footer's Download application button.
     appInstall: store.app.showDownloadButton,
+    hideTallabyCredit,
   };
   const instance = part === "header" ? drawChrome(flushHeaderOnMobile(site.header), "header", opts) : drawChrome(site.footer, "footer", opts);
   // drawChrome credits the platform in every footer tree; a footer without one (or no footer) gets the line here.
-  const credit = part === "footer" && !instance?.componentTree?.length && (
+  const credit = part === "footer" && !instance?.componentTree?.length && (store.app.showDownloadButton || !hideTallabyCredit) && (
     <footer className="flex flex-col items-center gap-3 py-5 text-center text-xs">
       {store.app.showDownloadButton && <StoreAppInstallButton storeName={store.displayName} />}
-      <PoweredByTallaby />
+      {!hideTallabyCredit && <PoweredByTallaby />}
     </footer>
   );
   if (!instance) return credit || null;

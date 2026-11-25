@@ -69,12 +69,18 @@ const RULER_ICON = {
   path: "M3.5 7h17A1.5 1.5 0 0 1 22 8.5v7a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 15.5v-7A1.5 1.5 0 0 1 3.5 7Zm2 2v3.5h1.5V9H5.5Zm3.5 0v2.5h1.5V9H9Zm3.5 0v3.5H14V9h-1.5Zm3.5 0v2.5h1.5V9H16Z",
 };
 
+/** A "no" sign: Remove Tallaby badge (F-110). */
+const HIDE_ICON = {
+  path: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 0 1 6.32 12.9L7.1 5.68A7.96 7.96 0 0 1 12 4Zm-8 8c0-1.85.63-3.55 1.68-4.9L16.9 18.32A8 8 0 0 1 4 12Z",
+};
+
 const GLYPHS: Record<AppId, Pick<SimpleIcon, "path">> = {
   ai_assistants: SPARKLES_ICON,
   customer_notifications: BELL_ICON,
   whatsapp: siWhatsapp,
   sms: MESSAGE_ICON,
   size_chart: RULER_ICON,
+  remove_branding: HIDE_ICON,
   product_feeds: FEED_ICON,
   qr_codes: { path: "M2 2h8v8H2zm2 2v4h4V4zm10-2h8v8h-8zm2 2v4h4V4zM2 14h8v8H2zm2 2v4h4v-4zm10-2h4v4h-4zm4 4h4v4h-4zm2-4h2v2h-2zm-6 6h2v2h-2z" },
   meta_pixel: siMeta,
