@@ -5,7 +5,6 @@ import {
   HomeHero,
   PricingTeaser,
   TemplatesSection,
-  TrustedStoresSection,
 } from "@/components/marketing/home/home-sections";
 import { HomeBento } from "@/components/marketing/home/home-bento";
 import { HomeApps, HomeBuilder, HomeCustomers, HomeTallabyAi, HomeTallabyPay } from "@/components/marketing/home/home-product-sections";
@@ -36,7 +35,7 @@ export default function HomePage() {
       <FaqJsonLd namespace="home.faq" />
       <HomeHero />
       <HomeStats />
-      <TrustedStoresSection />
+      {/* The store logos (TrustedStoresSection) are hidden for now (owner, 2026-11-25); add it back here and to the import. */}
       <HomeBento />
       <HomeSteps />
       <HomeTallabyPay />

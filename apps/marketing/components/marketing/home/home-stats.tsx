@@ -1,6 +1,7 @@
+import { APPS } from "@workspace/apps";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Container, Ltr } from "@/components/marketing/site/layout-primitives";
-import { roundDownClean } from "@/lib/marketing/platform-stats.lib";
+import { roundUpStat } from "@/lib/marketing/platform-stats.lib";
 import { getPlatformStats } from "@/lib/marketing/platform-stats.server";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { CountUp } from "./count-up.client";
@@ -8,19 +9,22 @@ import { CountUp } from "./count-up.client";
 type Stat = { key: string; value: number | null; text?: string; label: string };
 
 /**
- * The strip right after the hero (2026-11-25): real counts only, rounded down
- * (platform-stats.lib). A count too small to show gives way to a true fact, so
+ * The strip right after the hero (2026-11-25): real counts only, rounded up
+ * to a round step (platform-stats.lib). A count too small to show gives way to a true fact, so
  * the strip always has four cells and never an invented number.
  */
 export async function HomeStats() {
   const locale = await getLocale();
   const [t, stats, templates] = await Promise.all([getTranslations("home.stats"), getPlatformStats(), getTemplateGallery(locale)]);
-  const templateCount = templates.length >= 10 ? roundDownClean(templates.length) : null;
+  const templateCount = templates.length >= 10 ? roundUpStat(templates.length) : null;
+  // Live App Center apps (code catalog), rounded up like the other figures.
+  const liveApps = APPS.filter((app) => app.status === "live").length;
+  const appCount = roundUpStat(liveApps);
 
   const cells: Stat[] = [
     stats.stores !== null ? { key: "stores", value: stats.stores, label: t("stores") } : { key: "minutes", value: null, text: "3", label: t("minutes") },
     stats.products !== null ? { key: "products", value: stats.products, label: t("products") } : { key: "ai", value: null, text: "AI", label: t("ai") },
-    stats.orders !== null ? { key: "orders", value: stats.orders, label: t("orders") } : { key: "languages", value: null, text: "AR · EN", label: t("languages") },
+    stats.orders !== null ? { key: "orders", value: stats.orders, label: t("orders") } : { key: "apps", value: appCount, label: t("apps") },
     templateCount !== null ? { key: "templates", value: templateCount, label: t("templates") } : { key: "noCode", value: null, text: "0", label: t("noCode") },
   ];
 

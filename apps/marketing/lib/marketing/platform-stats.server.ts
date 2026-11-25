@@ -23,8 +23,8 @@ export async function readPlatformCounts(): Promise<PlatformCounts> {
 }
 
 /**
- * Read at most once a day for every visitor (the figures are rounded down, so a
- * day-old count is still true). It also clears with the store directory's tag.
+ * Read at most once a day for every visitor (the figures are rounded up to a round step, so a
+ * day-old count is close enough). It also clears with the store directory's tag.
  */
 const getCachedPlatformCounts = createCachedQuery({
   name: "marketing:platform-stats:v1",
@@ -33,7 +33,7 @@ const getCachedPlatformCounts = createCachedQuery({
   query: () => readPlatformCounts(),
 });
 
-/** The home page's stats, rounded down; every figure null when the database can't be read in time. */
+/** The home page's stats, rounded up; every figure null when the database can't be read in time. */
 export const getPlatformStats = cache(async (): Promise<PlatformStats> => {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {

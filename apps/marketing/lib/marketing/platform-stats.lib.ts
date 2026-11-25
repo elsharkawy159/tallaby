@@ -1,6 +1,6 @@
 /**
- * The home page's stats strip (2026-11-25): real platform counts, rounded down
- * to a clean figure so the page never claims more than the database holds.
+ * The home page's stats strip (2026-11-25): real platform counts, rounded up
+ * to a round step (owner's choice, 2026-11-25).
  * A count under its floor is too small to show and gives `null`, so the strip
  * shows a true non-number fact in its place (owner rule: no invented numbers).
  */
@@ -12,22 +12,22 @@ export type PlatformStats = { stores: number | null; products: number | null; or
 export const STAT_FLOORS: PlatformCounts = { stores: 100, products: 500, orders: 1000 };
 
 /**
- * Rounds down to one significant digit under 10,000 (230 → 200, 1,155 → 1,000,
- * 4,870 → 4,000) and to whole thousands from there (12,345 → 12,000).
- * Never rounds up. Not a finite positive number → 0.
+ * Rounds up to a round step (owner, 2026-11-25: "250, 300, 350, 400 … round
+ * up"): steps of 10 under 100, 50 under 1,000 (230 → 250, 251 → 300), 100
+ * under 10,000 (1,155 → 1,200) and 1,000 from there (12,345 → 13,000). An
+ * exact step stays as it is. Not a finite positive number → 0.
  */
-export function roundDownClean(value: number): number {
+export function roundUpStat(value: number): number {
   if (!Number.isFinite(value) || value <= 0) return 0;
-  const n = Math.floor(value);
-  if (n >= 10_000) return Math.floor(n / 1000) * 1000;
-  const step = 10 ** (String(n).length - 1);
-  return Math.floor(n / step) * step;
+  const n = Math.ceil(value);
+  const step = n < 100 ? 10 : n < 1000 ? 50 : n < 10_000 ? 100 : 1000;
+  return Math.ceil(n / step) * step;
 }
 
 /** The figure to show for one count, or null when it is under its floor. */
 export function statFigure(count: number, floor: number): number | null {
   if (!Number.isFinite(count) || count < floor) return null;
-  return roundDownClean(count);
+  return roundUpStat(count);
 }
 
 export function toPlatformStats(counts: PlatformCounts | null): PlatformStats {
