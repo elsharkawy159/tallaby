@@ -183,6 +183,19 @@ export function HomeSetupLayout(slots: {
   );
 }
 
+/**
+ * Every store offline: the trial's days ended with no top-up (docs/seller-top-up-rules.md §4).
+ * Only the reason and the top-up; no metric or list section, so none of their queries run.
+ */
+export function HomeOfflineLayout(slots: { header: React.ReactNode; offline: React.ReactNode }) {
+  return (
+    <PageContainer>
+      <div className="sui-rise">{slots.header}</div>
+      <div className="sui-rise [animation-delay:.06s]">{slots.offline}</div>
+    </PageContainer>
+  );
+}
+
 /** Grid shared by the page and its skeleton (Seller Home v3). */
 export function HomeLayout(slots: {
   header: React.ReactNode;

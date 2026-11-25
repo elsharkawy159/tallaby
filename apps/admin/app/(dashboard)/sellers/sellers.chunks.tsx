@@ -37,7 +37,11 @@ import {
 import type { Seller, SellerStatus } from "./sellers.types";
 import { customerHref, ordersHref, sellerHref, sellerWalletHref } from "../_components/entity/entity-href.lib";
 import type { HeardAboutUsCount, SellerStats } from "./sellers.types";
-import type { SellerTrialStatus } from "./seller-trial.lib";
+import {
+  sellerTrialBadge,
+  type SellerTrialBadge as SellerTrialBadgeView,
+  type SellerTrialStatus,
+} from "./seller-trial.lib";
 import {
   getStatusColor,
   getStatusLabel,
@@ -78,24 +82,28 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
   );
 };
 
-const cairoDay = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", { timeZone: "Africa/Cairo", month: "short", day: "numeric", year: "numeric" });
+const TRIAL_BADGE_TONES: Record<SellerTrialBadgeView["tone"], string> = {
+  offline: "bg-red-100 text-red-800 hover:bg-red-100",
+  in_review: "bg-amber-100 text-amber-800 hover:bg-amber-100",
+  soon: "bg-amber-100 text-amber-800 hover:bg-amber-100",
+  in_trial: "bg-blue-100 text-blue-800 hover:bg-blue-100",
+};
 
 /**
- * The trial ended without a top-up (seller-trial.lib.ts): every store is offline,
- * or a manual top-up in review keeps them online. Nothing for other sellers.
+ * Where the seller stands with the trial (seller-trial.lib.ts): days left before
+ * every store goes offline, the stores offline since the trial ended, or a manual
+ * top-up in review keeping them online. Nothing for an activated seller.
  */
 export const SellerTrialBadge = ({ trial }: { trial: SellerTrialStatus | undefined }) => {
-  if (!trial?.endsAt || (trial.state !== "offline" && trial.state !== "in_review")) return null;
-  const offline = trial.state === "offline";
-  const since = cairoDay(trial.endsAt);
+  const badge = sellerTrialBadge(trial);
+  if (!badge) return null;
   return (
     <Badge
-      className={`${offline ? "bg-red-100 text-red-800 hover:bg-red-100" : "bg-amber-100 text-amber-800 hover:bg-amber-100"} px-2 flex items-center gap-1 justify-center whitespace-nowrap`}
-      title={offline ? `Trial ended ${since} with no top-up: every store is offline` : `Trial ended ${since}; a manual top-up in review keeps the stores online`}
+      className={`${TRIAL_BADGE_TONES[badge.tone]} px-2 flex items-center gap-1 justify-center whitespace-nowrap`}
+      title={badge.title}
     >
-      {offline ? <Globe className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-      {offline ? `Offline — no top-up · ${since}` : `Top-up in review · ${since}`}
+      {badge.tone === "offline" ? <Globe className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+      {badge.label}
     </Badge>
   );
 };

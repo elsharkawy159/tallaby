@@ -12,13 +12,14 @@ import { TrafficSourcesData } from "./_components/traffic-sources.data";
 import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_components/home-range.client";
 import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
-import { OrdersLockedNotice } from "@/components/orders/orders-locked";
+import { OrdersLockedNotice, StoreOfflineHomeCard } from "@/components/orders/orders-locked";
 import { currentGraceNoticeStoreReady } from "@/lib/billing/grace-notice.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
   ChartSkeleton,
   HomeLayout,
   HomeLockedLayout,
+  HomeOfflineLayout,
   HomeSetupLayout,
   KpisSkeleton,
   MetricsSkeleton,
@@ -86,6 +87,20 @@ export default async function VendorDashboardPage({
       <HomeSubtitle channel={channel} />
     </Suspense>
   );
+
+  // Every store offline (the trial's days ended with no top-up, docs/seller-top-up-rules.md §4): only the
+  // reason and the top-up, ahead of the setup-only home too; no metric, list or setup section renders, so
+  // none of their queries run (ROADMAP.md F-84j). No subtitle: its "almost ready" and "how your store is
+  // doing" lines don't fit an offline store.
+  if (orderLock.storeOffline) {
+    return (
+      <HomeOfflineLayout
+        header={<HomeHeaderView title={title} subtitle={null} rangeControl={null} />}
+        offline={<StoreOfflineHomeCard lock={orderLock} />}
+      />
+    );
+  }
+
   const notices = (
     <>
       {/* Before any order, the top-up notice also waits for the whole home setup (owner, 2026-11-18): sellers left on seeing it too early. */}

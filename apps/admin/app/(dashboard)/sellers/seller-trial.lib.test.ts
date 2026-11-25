@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { orderLockState } from "@workspace/lib/billing/order-grace";
-import { isSellerTrialState, sellerTrialStatus } from "./seller-trial.lib";
+import { isSellerTrialState, sellerTrialBadge, sellerTrialStatus } from "./seller-trial.lib";
 
 const base = { usdLive: true, activated: false, hasPendingManualTopUp: false };
 
@@ -70,5 +70,50 @@ describe("sellerTrialStatus", () => {
   it("knows its states", () => {
     expect(isSellerTrialState("offline")).toBe(true);
     expect(isSellerTrialState("nope")).toBe(false);
+  });
+});
+
+describe("sellerTrialBadge", () => {
+  const endsAt = "2026-11-22T22:00:00.000Z"; // 2026-11-23 00:00 Cairo
+
+  it("shows nothing for an activated seller or no status", () => {
+    expect(sellerTrialBadge({ state: "activated", endsAt: null })).toBeNull();
+    expect(sellerTrialBadge(undefined)).toBeNull();
+  });
+
+  it("counts whole days left, rounded up, with the Cairo offline day", () => {
+    const badge = sellerTrialBadge({ state: "in_trial", endsAt }, new Date("2026-11-19T12:00:00Z"));
+    expect(badge).toEqual({
+      tone: "in_trial",
+      label: "4 days left · offline Nov 23, 2026",
+      title: "Trial ends Nov 23, 2026; every store goes offline unless the seller tops up",
+    });
+  });
+
+  it("turns amber at two days or less and says 1 day in the last day", () => {
+    expect(sellerTrialBadge({ state: "in_trial", endsAt }, new Date("2026-11-20T22:00:00Z"))).toMatchObject({
+      tone: "soon",
+      label: "2 days left · offline Nov 23, 2026",
+    });
+    expect(sellerTrialBadge({ state: "in_trial", endsAt }, new Date("2026-11-22T21:00:00Z"))).toMatchObject({
+      tone: "soon",
+      label: "1 day left · offline Nov 23, 2026",
+    });
+    // A server-read in_trial state is never shown as 0 days on a later clock.
+    expect(sellerTrialBadge({ state: "in_trial", endsAt }, new Date("2026-11-23T01:00:00Z"))?.label).toBe(
+      "1 day left · offline Nov 23, 2026",
+    );
+  });
+
+  it("says when the trial ended and the stores went offline", () => {
+    expect(sellerTrialBadge({ state: "offline", endsAt })).toEqual({
+      tone: "offline",
+      label: "Trial ended · stores offline since Nov 23, 2026",
+      title: "Trial ended Nov 23, 2026 with no top-up: every store is offline",
+    });
+  });
+
+  it("keeps the top-up in review wording", () => {
+    expect(sellerTrialBadge({ state: "in_review", endsAt })?.label).toBe("Top-up in review · Nov 23, 2026");
   });
 });

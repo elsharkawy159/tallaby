@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Clock, Wallet } from "lucide-react";
+import { Clock, PowerOff, Wallet } from "lucide-react";
 import {
   daysUntilOffline,
   type OrderLock,
@@ -16,6 +16,8 @@ import {
 } from "@/lib/billing/min-top-up-egp.server";
 import { formatUsdShort } from "@/lib/billing/order-lock-copy.lib";
 import { showGraceNotice } from "@/lib/billing/grace-notice.lib";
+import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
+import { IconTile, SellerButton, SellerCard } from "@/components/seller-ui";
 
 const PLACEHOLDER_ROWS = ["w-3/4", "w-2/3", "w-4/5", "w-1/2", "w-3/5", "w-2/3"];
 
@@ -158,5 +160,36 @@ export async function OrdersLockedNotice({
         </Link>
       </Button>
     </div>
+  );
+}
+
+/**
+ * The whole dashboard home while every store is offline because the trial's days
+ * ended with no top-up (`storeOffline`, docs/seller-top-up-rules.md §4): why, and
+ * the top-up that brings the stores back (the same target as a refused Publish).
+ */
+export async function StoreOfflineHomeCard({ lock }: { lock: OrderLock }) {
+  const [t, title, body] = await Promise.all([
+    getTranslations("orderLock"),
+    lockTitle(lock),
+    lockBody(lock),
+  ]);
+  return (
+    <SellerCard className="px-6 py-7 max-[600px]:px-4 max-[600px]:py-5">
+      <div className="flex items-start gap-4 max-[480px]:flex-col max-[480px]:gap-3">
+        <IconTile icon={PowerOff} tone="accent" size="lg" />
+        <div className="min-w-0 flex-1 break-words">
+          <h2 className="text-lg font-bold leading-snug text-(--s-ink)">{title}</h2>
+          <p className="mt-2 text-pretty text-sm leading-relaxed">{body}</p>
+          <p className="mt-2 text-pretty text-[13px] text-(--s-subtle)">{t("offlineHomeNote")}</p>
+          <SellerButton asChild className="mt-5 max-[480px]:w-full">
+            <Link href={TOP_UP_TO_GO_ONLINE_HREF}>
+              <Wallet aria-hidden />
+              {t("topUp")}
+            </Link>
+          </SellerButton>
+        </div>
+      </div>
+    </SellerCard>
   );
 }

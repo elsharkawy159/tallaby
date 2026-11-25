@@ -199,6 +199,7 @@
     "offlineTitle": "Your store is offline: top up to bring it back",
     "goOnlineTopUp": "Top up your wallet to bring your store back online.",
     "offlineBody": "Your free days are over, so your store is closed to visitors and takes no new orders. Top up your wallet{amount, select, none {} other {, starting from {amount} only,}} and your store comes back online at once.",
+    "offlineHomeNote": "Your dashboard, store builder and products keep working, so you can keep preparing your store.",
     "sidebar": "Please top up your wallet, from just {min}, to see your orders"
   },
   "bulkFileImport": {
