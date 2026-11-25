@@ -525,14 +525,33 @@ function SupportCard({ isCollapsed }: { isCollapsed: boolean }) {
         isCollapsed ? "justify-center" : "px-3 py-2",
       )}
     >
-      <WhatsAppIcon className="size-[18px] shrink-0 text-(--s-whatsapp)" />
-      {!isCollapsed && <span className="truncate">{t("helpCardTitle")}</span>}
+      <span className="relative shrink-0">
+        <WhatsAppIcon className="size-[22px] text-(--s-whatsapp)" />
+        {isCollapsed && <OnlineDot className="absolute -end-0.5 -top-0.5" />}
+      </span>
+      {!isCollapsed && (
+        <>
+          <span className="truncate">{t("helpCardTitle")}</span>
+          <OnlineDot className="-ms-1" />
+        </>
+      )}
+      <span className="sr-only">{t("supportOnline")}</span>
     </a>
   );
   return isCollapsed ? (
     <CollapsedTip label={t("helpCardTitle")}>{card}</CollapsedTip>
   ) : (
     card
+  );
+}
+
+/** A green "we're online" dot with a soft pulse (owner, 2026-11-25); the pulse stops with reduced motion. */
+function OnlineDot({ className }: { className?: string }) {
+  return (
+    <span aria-hidden className={cn("relative flex size-2.5 shrink-0", className)}>
+      <span className="absolute inset-0 rounded-full bg-(--s-whatsapp) opacity-60 motion-safe:animate-ping" />
+      <span className="relative size-2.5 rounded-full bg-(--s-whatsapp) ring-2 ring-(--s-surface)" />
+    </span>
   );
 }
 
