@@ -5,7 +5,6 @@ describe("domain providers", () => {
   it("lists EGP providers first, then the global ones, each by rank", () => {
     expect(SORTED_DOMAIN_PROVIDERS.map((p) => p.id)).toEqual([
       "hostinger",
-      "egyhosting",
       "namecheap",
       "godaddy",
       "cloudflare",
@@ -27,8 +26,8 @@ describe("domain providers", () => {
     expect(list.map((p) => p.id)).toEqual(["b", "a", "c"]);
   });
 
-  it("keeps 5–8 providers with unique ids, https links and no tracking params", () => {
-    expect(DOMAIN_PROVIDERS.length).toBeGreaterThanOrEqual(5);
+  it("keeps 4–8 providers with unique ids, https links and no tracking params", () => {
+    expect(DOMAIN_PROVIDERS.length).toBeGreaterThanOrEqual(4);
     expect(DOMAIN_PROVIDERS.length).toBeLessThanOrEqual(8);
     expect(new Set(DOMAIN_PROVIDERS.map((p) => p.id)).size).toBe(DOMAIN_PROVIDERS.length);
     for (const p of DOMAIN_PROVIDERS) {

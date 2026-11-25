@@ -25,7 +25,6 @@ export const DOMAIN_PROVIDERS: readonly DomainProvider[] = [
   { id: "godaddy", name: "GoDaddy", url: "https://www.godaddy.com/", paysInEgp: false, logo: "/domain-logos/godaddy.png", rank: 2 },
   { id: "hostinger", name: "Hostinger", url: "https://www.hostinger.com/eg/domain-name-search", paysInEgp: true, logo: "/domain-logos/hostinger.png", rank: 1 },
   { id: "cloudflare", name: "Cloudflare Registrar", url: "https://www.cloudflare.com/products/registrar/", paysInEgp: false, logo: "/domain-logos/cloudflare.png", rank: 3 },
-  { id: "egyhosting", name: "EgyHosting", url: "https://egyhosting.com/", paysInEgp: true, logo: "/domain-logos/egyhosting.png", rank: 2 },
 ];
 
 /** EGP-paying providers first, then the rest; each group by `rank`. Does not mutate. */
