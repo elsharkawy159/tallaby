@@ -8,6 +8,9 @@
  * (no tinted panel), beside four premium cards (`_shared.ts`); the heading
  * rises word by word (motion v2) and every photo sits on the site's product
  * stage when it has one.
+ *
+ * v3 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -17,7 +20,7 @@ const NO_PAD = { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0
 
 export const productsFeature = defineDesign({
   id: "products-feature",
-  version: 2,
+  version: 3,
   category: "products",
   subcategory: "featured",
   name: L("منتج مميز وأربعة", "Feature and four"),
@@ -38,8 +41,8 @@ export const productsFeature = defineDesign({
                         [
                           t.link(
                             SHOP_LINK,
-                            [t.image("", PRODUCT_NAME, { label: L("صورة البطاقة", "Card photo"), bind: "image", style: { aspectRatio: "square", objectFit: "cover", width: "100%" } })],
-                            { label: L("صورة المنتج", "Product photo"), bind: "href", style: { ...NO_PAD, radius: 12, overflow: "hidden", background: "secondary" } },
+                            [t.image("", PRODUCT_NAME, { label: L("صورة البطاقة", "Card photo"), bind: "image", style: { aspectRatio: "square", objectFit: "contain", width: "100%" } })],
+                            { label: L("صورة المنتج", "Product photo"), bind: "href", style: { ...NO_PAD, radius: 12, overflow: "hidden", background: "white" } },
                           ),
                         ],
                         { label: L("الصورة", "Photo"), style: { position: "relative", ...NO_PAD, background: "transparent" } },

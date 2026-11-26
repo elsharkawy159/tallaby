@@ -365,7 +365,7 @@ export const ARENA = editionTemplate({
   preview: templatePreview(ARENA_KEY, "pc-gaming", { ar: 1836, en: 1835 }),
   key: ARENA_KEY,
   // v6 (2026-11-16, owner): a products grid of the newest after the setup video. v7 (2026-11-25, owner): a category carousel in place of the help topics.
-  version: 7,
+  version: 8,
   changelog: "Arena v7: products by category as a carousel on the home",
   name: L("أرينا", "Arena"),
   description: L(

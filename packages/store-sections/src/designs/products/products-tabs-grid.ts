@@ -4,6 +4,9 @@
  * link to that sort of the shop) and the newest products below, two across
  * on phones and four on desktop, with an outlined "View all" under the grid.
  * There is no tabs element, so the chips are links rather than panes.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -19,7 +22,7 @@ const TABS = [
 
 export const productsTabsGrid = defineDesign({
   id: "products-tabs-grid",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "new-arrivals",
   name: L("شبكة بشرائح", "Grid with tabs"),

@@ -11,7 +11,8 @@ import type { NodeTemplate } from "../../elements/tree";
 import { getDesign } from "..";
 import { instantiateDesign, treeBuilder } from "../builder";
 import { libraryTemplate, type LibraryTemplateSpec } from "../../templates/library-template";
-import { premiumCard, productsHead } from "./_shared";
+import { plainCard } from "./_premium";
+import { premiumCard, productCard, productsHead } from "./_shared";
 
 const flat = (node: NodeTemplate): NodeTemplate[] => [node, ...(node.children ?? []).flatMap(flat)];
 const binds = (node: NodeTemplate) => flat(node).map((n) => (n.props as { bind?: string }).bind).filter(Boolean);
@@ -39,10 +40,21 @@ describe("premium product card", () => {
     expect(chip.style).toMatchObject({ position: "absolute", insetTop: "10px", insetStart: "10px" });
   });
 
-  it("the frame falls back to the design's ratio on the secondary colour", () => {
+  it("the frame falls back to the design's ratio, the whole photo on white (owner, 2026-11-26)", () => {
     const nodes = flat(premiumCard(treeBuilder, { ratio: "square" }));
-    expect(nodes.find((n) => n.type === "image")!.style).toMatchObject({ aspectRatio: "square", objectFit: "cover" });
-    expect(nodes.find((n) => n.type === "linkBlock")!.style).toMatchObject({ background: "secondary", overflow: "hidden" });
+    expect(nodes.find((n) => n.type === "image")!.style).toMatchObject({ aspectRatio: "square", objectFit: "contain" });
+    expect(nodes.find((n) => n.type === "linkBlock")!.style).toMatchObject({ background: "white", overflow: "hidden" });
+    // A design on a tinted band still passes its own frame colour.
+    expect(flat(premiumCard(treeBuilder, { frame: "background" })).find((n) => n.type === "linkBlock")!.style).toMatchObject({ background: "background" });
+  });
+
+  it("the product photo helpers show the whole photo on white too", () => {
+    for (const card of [productCard(treeBuilder), plainCard(treeBuilder)]) {
+      const nodes = flat(card);
+      const image = nodes.find((n) => n.type === "image")!;
+      expect(image.style).toMatchObject({ objectFit: "contain" });
+      expect(nodes.find((n) => n.children?.includes(image))!.style).toMatchObject({ background: "white" });
+    }
   });
 
   it("the heading puts View all at the end and stacks it under the title on phones", () => {

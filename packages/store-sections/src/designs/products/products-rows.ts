@@ -3,6 +3,9 @@
  * hairline-ruled table: a 72px photo, the name, the price and the cart button.
  * For accessories and add-ons where shoppers compare prices quickly. One
  * column on mobile.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -11,7 +14,7 @@ import { SHOP_LINK, priceRow, productName, productPhoto } from "./_shared";
 
 export const productsRows = defineDesign({
   id: "products-rows",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "list",
   name: L("صفوف مدمجة", "Compact rows"),

@@ -165,7 +165,7 @@ const DEMO = demoStore({
 
 export const SAFAR = libraryTemplate({
   key: SAFAR_KEY,
-  version: 3,
+  version: 4,
   changelog: "Safar v3: a camp carousel (the store's 1st category) on the home",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("رسائل من الطريق", "Messages from the road"), related: L("جهّز رحلتك", "Pack for your trip") } },
   name: L("سفر", "Safar"),

@@ -258,7 +258,7 @@ const DEMO = demoStore({
 export const GIFTS_WARM = libraryTemplate({
   key: GIFTS_WARM_KEY,
   // v2 (2026-11-16, owner): Amiri headings replace Aref Ruqaa, which read oddly to shoppers.
-  version: 2,
+  version: 3,
   name: L("سَبَت", "Sabat"),
   description: L(
     "هدايا يدوية بروح الورشة: صورة كبيرة، أقسام بعدد المنتجات وحكاية المتجر. لمتاجر المشغولات اليدوية والهدايا الطبيعية.",

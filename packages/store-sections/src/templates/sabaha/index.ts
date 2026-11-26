@@ -181,7 +181,7 @@ const DEMO = demoStore({
 
 export const SABAHA = libraryTemplate({
   key: SABAHA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Sabaha v4: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("منتجات أخرى للشاطئ", "More for the beach") } },
   name: L("سباحة", "Sabaha"),

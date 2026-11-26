@@ -3,6 +3,9 @@
  * with a label, title, short text and button, followed by a row of product
  * cards. Frames a curated pick ("gifts under 1,000") with a message. On mobile
  * the panel sits above the cards.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, ON_BRAND, ON_BRAND_BODY } from "../_kit";
@@ -11,7 +14,7 @@ import { SHOP_LINK, productCard } from "./_shared";
 
 export const productsPanelRail = defineDesign({
   id: "products-panel-rail",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "shelf",
   name: L("لوحة وشريط", "Panel with rail"),

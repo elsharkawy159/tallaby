@@ -3,6 +3,9 @@
  * store's products as compact cards with price and cart button, so a demo or
  * styling video turns straight into sales. With no products the row draws
  * nothing and the video stays.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -11,7 +14,7 @@ import { priceRow, productName, productPhoto } from "../products/_shared";
 
 export const videoShop = defineDesign({
   id: "video-shop",
-  version: 1,
+  version: 2,
   category: "video",
   subcategory: "wide",
   name: L("تسوق من الفيديو", "Shop the video"),

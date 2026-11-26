@@ -271,7 +271,7 @@ const DEMO = demoStore({
 export const TANZIM = editionTemplate({
   key: TANZIM_KEY,
   // v5 (2026-11-16, owner): every home has at least one real products grid.
-  version: 6,
+  version: 7,
   changelog: "Tanzim v6: products by category in a swipe row on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("تنظيم", "Tanzim"),

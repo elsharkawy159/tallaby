@@ -339,7 +339,7 @@ export const KARAT = editionTemplate({
   preview: templatePreview(KARAT_KEY, "glasses", { ar: 1682, en: 1694 }),
   key: KARAT_KEY,
   // v5 (2026-11-25, owner): products by category as a carousel after the lookbook.
-  version: 5,
+  version: 6,
   changelog: "Karat v5: products by category as a carousel on the home",
   name: L("قيراط", "Karat"),
   description: L(

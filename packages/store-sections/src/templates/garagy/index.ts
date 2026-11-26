@@ -176,7 +176,7 @@ const DEMO = demoStore({
 
 export const GARAGY = libraryTemplate({
   key: GARAGY_KEY,
-  version: 4,
+  version: 5,
   changelog: "Garagy v4: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("منتجات أخرى لسيارتك", "More for your car") } },
   name: L("جراجي", "Garagy"),

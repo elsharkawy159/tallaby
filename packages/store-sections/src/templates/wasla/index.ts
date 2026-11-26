@@ -163,7 +163,7 @@ const DEMO = demoStore({
 
 export const WASLA = libraryTemplate({
   key: WASLA_KEY,
-  version: 2,
+  version: 3,
   changelog: "Wasla v2: a cases carousel (the store's 1st category) on the home",
   name: NAME,
   description: L(

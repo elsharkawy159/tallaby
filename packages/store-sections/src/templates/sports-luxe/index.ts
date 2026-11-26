@@ -383,7 +383,7 @@ export const SPORTS_LUXE = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(SPORTS_LUXE_KEY, "sportswear", { ar: 2812, en: 2812 }),
   key: SPORTS_LUXE_KEY,
-  version: 3,
+  version: 4,
   changelog: "Madar v2: the sportswear template, rebuilt look-first",
   name: L("مدار", "Madar"),
   description: L(

@@ -4,6 +4,9 @@
  * button each. The design's tick boxes, live total and "this item" row need
  * a script and the current product, so the shopper adds each piece on its
  * own; the seller picks the products. Mobile hides the photo row.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -12,7 +15,7 @@ import { plusDisc } from "./_shared";
 
 export const bundleTogether = defineDesign({
   id: "bundle-together",
-  version: 1,
+  version: 2,
   category: "bundles",
   subcategory: "fixed",
   name: L("بيتشتروا مع بعض", "Bought together"),

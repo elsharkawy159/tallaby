@@ -227,7 +227,7 @@ const DEMO = demoStore({
 
 export const GIFTS_LUXE = libraryTemplate({
   key: GIFTS_LUXE_KEY,
-  version: 1,
+  version: 2,
   name: L("وَهَج", "Wahag"),
   description: L(
     "هدايا وشموع بروح المشغل اليدوي: فيديو شموع مضاءة، أقسام بخط رفيع وأربعة صفوف للأقسام. لمتاجر الهدايا الراقية والمنتجات اليدوية.",

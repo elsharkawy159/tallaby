@@ -303,7 +303,7 @@ const DEMO = demoStore({
 
 export const MAFRASH = editionTemplate({
   key: MAFRASH_KEY,
-  version: 5,
+  version: 6,
   changelog: "Mafrash v5: a carousel of one category (the store's 1st) on the home",
   productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("مفرش", "Mafrash"),

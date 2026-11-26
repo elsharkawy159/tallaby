@@ -194,7 +194,7 @@ const DEMO = demoStore({
 
 export const MOTO = libraryTemplate({
   key: MOTO_KEY,
-  version: 5,
+  version: 6,
   changelog: "Moto v5: a carousel of the bike's own kit (the store's 3rd category) on the home",
   name: L("موتو", "Moto"),
   description: L(

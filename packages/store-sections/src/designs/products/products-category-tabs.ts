@@ -4,6 +4,9 @@
  * store's first three categories as tab links under it, then two rows of
  * flat centred cards, five across on desktop. There is no tabs element, so
  * the tabs are links to each category's page.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -11,7 +14,7 @@ import { centeredCard, centeredHead } from "../_centered";
 
 export const productsCategoryTabs = defineDesign({
   id: "products-category-tabs",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "new-arrivals",
   name: L("منتجات بتبويبات الأقسام", "Category tabs grid"),

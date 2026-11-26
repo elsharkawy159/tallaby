@@ -3,6 +3,9 @@
  * label, headline, text and button; a tall photo; one of the store's products
  * with its price; and a brand tile with the store rating. On mobile the tiles
  * stack: message, photo, then product and rating side by side.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, ON_BRAND, ON_BRAND_BODY, stars } from "../_kit";
@@ -11,7 +14,7 @@ import { priceRow, productName, productPhoto } from "../products/_shared";
 
 export const heroBento = defineDesign({
   id: "hero-bento",
-  version: 1,
+  version: 2,
   category: "hero",
   subcategory: "editorial",
   name: L("بينتو", "Bento hero"),

@@ -358,7 +358,7 @@ export const JEWELRY_LUXE = editionTemplate({
   preview: templatePreview(JEWELRY_LUXE_KEY, "gold-jewelry", { ar: 2812, en: 2812 }),
   key: JEWELRY_LUXE_KEY,
   // v3 (2026-11-16, owner): every home has at least one real products grid (it replaces the three-piece spotlight).
-  version: 3,
+  version: 4,
   changelog: "Jewelry Luxe v3: a products grid on the home",
   name: L("ماسة", "Masa"),
   description: L(

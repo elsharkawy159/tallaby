@@ -189,7 +189,7 @@ export const FOKHAR = libraryTemplate({
   key: FOKHAR_KEY,
   // v4 (2026-11-16, owner): Noto Naskh Arabic headings replace Reem Kufi, which read oddly to shoppers.
   // v5 (2026-11-16, owner): every home has at least one real products grid.
-  version: 6,
+  version: 7,
   changelog: "Fokhar v6: products by category as a carousel on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قطع أخرى قد تعجبك", "More pieces you may like") } },
   name: L("فخار", "Fokhar"),

@@ -5,6 +5,9 @@
  * button. Per-unit prices would need maths a tree cannot do, and a card
  * cannot set the cart quantity, so the tiers are a still offer: the shopper
  * changes the quantity in the cart. Mobile puts the photo above.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -19,7 +22,7 @@ const TIERS = [
 
 export const bundleQuantity = defineDesign({
   id: "bundle-quantity",
-  version: 1,
+  version: 2,
   category: "bundles",
   subcategory: "quantity",
   name: L("اشتري أكتر ووفّر", "Quantity tiers"),

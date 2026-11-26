@@ -186,7 +186,7 @@ const DEMO = demoStore({
 
 export const HALAWA = libraryTemplate({
   key: HALAWA_KEY,
-  version: 3,
+  version: 4,
   changelog: "Halawa v3: products by category as a carousel on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل طلبك", "Complete your order") } },
   name: L("حلاوة", "Halawa"),

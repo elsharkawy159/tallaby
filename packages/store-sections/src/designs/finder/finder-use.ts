@@ -4,6 +4,9 @@
  * the design the buttons filter the grid; here each one is a link the seller
  * points at the category or collection for that use, so nothing pretends to
  * filter.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, sectionHead } from "../_kit";
@@ -20,7 +23,7 @@ const USES = [
 
 export const finderUse = defineDesign({
   id: "finder-use",
-  version: 1,
+  version: 2,
   category: "finder",
   subcategory: "guided",
   name: L("حسب الاستخدام", "By use"),

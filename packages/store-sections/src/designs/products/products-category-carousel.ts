@@ -14,6 +14,9 @@
  * v2 (look-first pilot, 2026-11-11): the premium card and the calmer heading
  * (`_shared.ts`), the category name rising word by word (motion v2), and
  * the site's product stage.
+ *
+ * v3 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -22,7 +25,7 @@ import { HEAD_GAP, HEAD_ROW, HEAD_TITLE, PRODUCTS_SECTION, premiumCard, viewAllL
 
 export const productsCategoryCarousel = defineDesign({
   id: "products-category-carousel",
-  version: 2,
+  version: 3,
   category: "products",
   subcategory: "by-category",
   name: L("منتجات قسم", "Category carousel"),

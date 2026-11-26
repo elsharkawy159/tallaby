@@ -5,6 +5,9 @@
  * with the old price struck through, a countdown to the deal's end and a
  * full-width Add to cart. A store with nothing on sale shows nothing, and the
  * countdown stays hidden until the seller sets the real end date.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -12,7 +15,7 @@ import { SHOP_LINK, PRODUCT_NAME, productPhoto } from "./_shared";
 
 export const productsDeal = defineDesign({
   id: "products-deal",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "featured",
   name: L("عرض اليوم", "Deal of the day"),

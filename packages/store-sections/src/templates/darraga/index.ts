@@ -176,7 +176,7 @@ const DEMO = demoStore({
 
 export const DARRAGA = libraryTemplate({
   key: DARRAGA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Darraga v5: a lights and gear carousel (the store's 3rd category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء راكبي الدراجات", "From the riders"), related: L("إكسسوارات أخرى لدراجتك", "More for your bike") } },
   name: L("عجلة", "Darraga"),

@@ -193,7 +193,7 @@ const DEMO = demoStore({
 
 export const SOUQ = libraryTemplate({
   key: SOUQ_KEY,
-  version: 4,
+  version: 5,
   changelog: "Souq v4: a fruit and veg carousel (the store's 1st category) on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء المشترين", "Shopper reviews"), related: L("أضف إلى سلتك", "Add to your basket") } },
   name: L("سوق", "Souq"),

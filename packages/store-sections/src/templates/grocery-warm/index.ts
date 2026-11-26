@@ -245,7 +245,7 @@ const DEMO = demoStore({
 export const GROCERY_WARM = libraryTemplate({
   key: GROCERY_WARM_KEY,
   // v2 (2026-11-16, owner): Cairo headings replace Aref Ruqaa, which read oddly to shoppers.
-  version: 2,
+  version: 3,
   name: L("غيط", "Gheit"),
   description: L(
     "بقالة دافئة بروح المزرعة: صورة حقل كبيرة، منتجات الموسم وحكاية المتجر. لمتاجر الأكل البيتي والمنتجات الطبيعية.",

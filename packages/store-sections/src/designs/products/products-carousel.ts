@@ -4,6 +4,9 @@
  * cards, four across on desktop. On phones the row swipes sideways with the
  * next card peeking in. Our lists have no arrow buttons or progress line,
  * so the desktop row shows four products and the phone row swipes.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -12,7 +15,7 @@ import { plainCard, premiumHead } from "./_premium";
 
 export const productsCarousel = defineDesign({
   id: "products-carousel",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "best-sellers",
   name: L("شريط منتجات", "Product carousel"),

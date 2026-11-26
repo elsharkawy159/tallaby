@@ -6,6 +6,9 @@
  * tree has no pin-to-product link, so tapping a pin does not highlight its
  * product. The products come from the store (featured first). On phones the
  * photo comes first and the products swipe sideways.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type TreeBuilder } from "../builder";
@@ -41,7 +44,7 @@ function pin(t: TreeBuilder, n: number, at: { top: string; start: string }): Nod
 
 export const aboutShopLook = defineDesign({
   id: "about-shop-look",
-  version: 1,
+  version: 2,
   category: "image-text",
   subcategory: "story",
   name: L("تسوّق اللوك", "Shop the look"),

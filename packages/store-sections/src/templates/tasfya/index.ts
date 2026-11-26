@@ -378,7 +378,7 @@ export const TASFYA = editionTemplate({
   preview: templatePreview(TASFYA_KEY, "slippers-clogs", { ar: 2535, en: 2558 }),
   key: TASFYA_KEY,
   // v6 (2026-11-16, owner): every home has at least one real products grid (it replaces the pick-of-the-week feature).
-  version: 6,
+  version: 7,
   changelog: "Tasfya v6: a products grid on the home",
   name: L("تصفية", "Tasfya"),
   description: L(

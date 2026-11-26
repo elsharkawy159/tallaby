@@ -2,6 +2,9 @@
  * Compact list (library P-e): a title column on the start side and, on the end
  * side, two columns of slim rows (thumbnail, name, price, cart button) for
  * catalogues that shoppers scan rather than browse.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, PAPER_CARD, arrowLink } from "../_kit";
@@ -9,7 +12,7 @@ import { SHOP_LINK, priceRow, productName, productPhoto } from "./_shared";
 
 export const productsList = defineDesign({
   id: "products-list",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "list",
   name: L("قائمة مدمجة", "Compact list"),

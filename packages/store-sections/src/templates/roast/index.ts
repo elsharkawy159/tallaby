@@ -180,7 +180,7 @@ const DEMO = demoStore({
 
 export const ROAST = libraryTemplate({
   key: ROAST_KEY,
-  version: 6,
+  version: 7,
   changelog: "Roast v6: products by category in a swipe row on the home, in place of the photo feed",
   name: L("روست", "Roast"),
   description: L(

@@ -4,6 +4,9 @@
  * and the cart button. For small add-ons beside or under the cart. The
  * products come from the store (the seller picks the source); there is no
  * "related to the cart" source, so it starts from the best sellers.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -11,7 +14,7 @@ import { priceRow, productName, productPhoto } from "../products/_shared";
 
 export const cartExtras = defineDesign({
   id: "cart-extras",
-  version: 1,
+  version: 2,
   category: "cart",
   subcategory: "upsell",
   name: L("كمّل طلبك", "Complete your order"),

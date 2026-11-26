@@ -363,7 +363,7 @@ export const STREETWEAR = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(STREETWEAR_KEY, "tshirts", { ar: 2577, en: 2610 }),
   key: STREETWEAR_KEY,
-  version: 6,
+  version: 7,
   changelog: "Streetwear v6: a carousel of one category (the store's 1st) on the home",
   name: L("ستريت وير", "Streetwear"),
   description: L(

@@ -352,7 +352,7 @@ const DEMO = demoStore({
 
 export const BEAUTY_BOLD = editionTemplate({
   key: BEAUTY_BOLD_KEY,
-  version: 2,
+  version: 3,
   name: L("بمبي", "Bombi"),
   description: L(
     "مكياج بألوان جريئة: سلايدر ألوان، أقسام بخط كبير، تبويبات منتجات وصفوف بإطارات مدورة. لمتاجر المكياج والجمال.",

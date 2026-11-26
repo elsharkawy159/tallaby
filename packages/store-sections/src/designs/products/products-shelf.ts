@@ -2,6 +2,9 @@
  * Shop your way (library P-d): a centred eyebrow over three pill links (new,
  * best sellers, on sale) and a 3-column grid of tall cards. The library's
  * tabs are links here, so the shelf works without scripts.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -11,7 +14,7 @@ const PILLS = [L("وصل جديد", "New in"), L("الأكثر مبيعًا", "B
 
 export const productsShelf = defineDesign({
   id: "products-shelf",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "shelf",
   name: L("تسوّق حسب مزاجك", "Shop your way"),

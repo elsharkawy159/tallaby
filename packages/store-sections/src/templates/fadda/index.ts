@@ -201,7 +201,7 @@ const DEMO = demoStore({
 
 export const FADDA = libraryTemplate({
   key: FADDA_KEY,
-  version: 6,
+  version: 7,
   changelog: "Fadda v6: products by category as a carousel on the home",
   name: L("فضة", "Fadda"),
   description: L(

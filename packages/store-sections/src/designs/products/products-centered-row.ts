@@ -3,6 +3,9 @@
  * Popular Products"): a centred head (brand line, title, muted line) over one
  * row of six flat centred cards of the store's best sellers; tablets show
  * three across and phones two.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -10,7 +13,7 @@ import { centeredCard, centeredHead } from "../_centered";
 
 export const productsCenteredRow = defineDesign({
   id: "products-centered-row",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "best-sellers",
   name: L("صف منتجات في النص", "Centred row"),

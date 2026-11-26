@@ -304,7 +304,7 @@ const DEMO = demoStore({
 
 export const MATBAKH = editionTemplate({
   key: MATBAKH_KEY,
-  version: 4,
+  version: 5,
   changelog: "Matbakh v4: a carousel of one category (the store's 1st) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("مطبخ", "Matbakh"),

@@ -344,7 +344,7 @@ const DEMO = demoStore({
 
 export const LAHMA = editionTemplate({
   key: LAHMA_KEY,
-  version: 6,
+  version: 7,
   changelog: "Lahma v6: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("لحمة", "Lahma"),

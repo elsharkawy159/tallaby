@@ -168,7 +168,7 @@ const DEMO = demoStore({
 
 export const BUNN = libraryTemplate({
   key: BUNN_KEY,
-  version: 5,
+  version: 6,
   changelog: "Bunn v5: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "brand", copy: { reviews: L("آراء محبي القهوة", "From coffee drinkers"), related: L("قد يعجبك أيضًا", "More to try") } },
   name: L("بُن", "Bunn"),

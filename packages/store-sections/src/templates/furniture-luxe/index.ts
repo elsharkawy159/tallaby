@@ -322,7 +322,7 @@ const DEMO = demoStore({
 
 export const FURNITURE_LUXE = editionTemplate({
   key: FURNITURE_LUXE_KEY,
-  version: 2,
+  version: 3,
   name: L("مرمر", "Marmar"),
   description: L(
     "أثاث فاخر بهدوء: فيديو صالة بالرخام، صور غرف كبيرة وأربع صفوف للأقسام. لمعارض الأثاث الراقي.",

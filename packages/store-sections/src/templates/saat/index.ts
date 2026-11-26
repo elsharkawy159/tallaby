@@ -418,7 +418,7 @@ export const SAAT = editionTemplate({
   preview: templatePreview(SAAT_KEY, "watches", { ar: 2812, en: 2812 }),
   key: SAAT_KEY,
   // v6 (2026-11-16, owner): Noto Kufi Arabic headings replace Reem Kufi, which read oddly to shoppers.
-  version: 6,
+  version: 7,
   changelog: "Saat v6: Noto Kufi Arabic headings",
   productPage: {
     surface: "flat",

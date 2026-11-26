@@ -7,6 +7,9 @@
  * v3 (look-first pilot, 2026-11-11): the premium card and the calmer heading
  * (`_shared.ts`); the photos sit on the site's product stage when it has one;
  * on phones it is a real two-column grid, not a swipe row.
+ *
+ * v4 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -14,7 +17,7 @@ import { PRODUCTS_SECTION, SHOP_LINK, premiumCard, productsHead } from "./_share
 
 export const productsGrid = defineDesign({
   id: "products-grid",
-  version: 3,
+  version: 4,
   category: "products",
   subcategory: "featured",
   name: L("شبكة نظيفة", "Clean grid"),

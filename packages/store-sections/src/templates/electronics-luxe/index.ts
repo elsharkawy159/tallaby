@@ -225,7 +225,7 @@ const DEMO = demoStore({
 
 export const ELECTRONICS_LUXE = libraryTemplate({
   key: ELECTRONICS_LUXE_KEY,
-  version: 2,
+  version: 3,
   changelog: "Atheer v2: a products grid on the home",
   name: L("أثير", "Atheer"),
   description: L(

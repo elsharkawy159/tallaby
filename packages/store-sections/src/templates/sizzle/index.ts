@@ -233,7 +233,7 @@ const DEMO = demoStore({
 
 export const SIZZLE = libraryTemplate({
   key: SIZZLE_KEY,
-  version: 4,
+  version: 5,
   changelog: "Sizzle v4: products by category in a swipe row on the home",
   name: L("سيزل", "Sizzle"),
   description: L(

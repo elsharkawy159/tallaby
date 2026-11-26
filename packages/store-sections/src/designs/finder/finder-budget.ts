@@ -5,6 +5,9 @@
  * needs a script and a price filter the shop page does not have, so the panel
  * links to the shop sorted by price instead, and the grid shows the cheapest
  * products for real.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -14,7 +17,7 @@ import { CHEAPEST_FIRST, DEAREST_FIRST } from "./_shared";
 
 export const finderBudget = defineDesign({
   id: "finder-budget",
-  version: 1,
+  version: 2,
   category: "finder",
   subcategory: "budget",
   name: L("على قد الميزانية", "Budget first"),

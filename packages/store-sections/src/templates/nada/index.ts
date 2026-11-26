@@ -172,7 +172,7 @@ const DEMO = demoStore({
 
 export const NADA = libraryTemplate({
   key: NADA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Nada v4: products by category in a swipe row on the home",
   productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل روتينك", "Complete your routine") } },
   name: L("ندى", "Nada"),

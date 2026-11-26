@@ -4,6 +4,9 @@
  * and a button. Tabs need a script, so the chips are links (the first marked
  * as current) and only the first kit's pane is drawn. Mobile shows a 2-up
  * grid with the total cell under it.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -15,7 +18,7 @@ const KITS = [L("طقم التنقل", "Commuter kit"), L("طقم الرياضة
 
 export const bundleTabs = defineDesign({
   id: "bundle-tabs",
-  version: 1,
+  version: 2,
   category: "bundles",
   subcategory: "several",
   name: L("أطقم بتابات", "Kit tabs"),

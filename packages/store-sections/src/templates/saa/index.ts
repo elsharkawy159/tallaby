@@ -170,7 +170,7 @@ const DEMO = demoStore({
 export const SAA = libraryTemplate({
   key: SAA_KEY,
   // v3 (2026-11-16, owner): every home has at least one real products grid.
-  version: 4,
+  version: 5,
   changelog: "Saa v4: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("سيور وإكسسوارات", "Straps and extras") } },
   name: L("ساعة", "Saa"),

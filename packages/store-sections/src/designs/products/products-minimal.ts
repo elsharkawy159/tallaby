@@ -6,6 +6,9 @@
  * "View all" at the foot. For drinks, cosmetics and small goods shot on
  * plain backgrounds. The links go to that sort of the shop (there is no tabs
  * element); the cart button is the store's own, not a round plus.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type DesignText, type TreeBuilder } from "../builder";
@@ -51,7 +54,7 @@ function tab(t: TreeBuilder, text: DesignText, href: string, active: boolean): N
 
 export const productsMinimal = defineDesign({
   id: "products-minimal",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "best-sellers",
   name: L("منتجات بسيطة", "Minimal grid"),

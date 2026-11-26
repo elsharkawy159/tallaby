@@ -299,7 +299,7 @@ export const ZAY = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ZAY_KEY, "menswear", { ar: 2100, en: 2140 }),
   key: ZAY_KEY,
-  version: 5,
+  version: 6,
   changelog: "Zay v5: the reorders row became a carousel of the store's 2nd category",
   productPage: { thumbs: "side", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("زي", "Zay"),

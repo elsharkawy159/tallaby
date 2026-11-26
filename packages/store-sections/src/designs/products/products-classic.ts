@@ -2,6 +2,9 @@
  * Classic product grid (library P, Classic template): eyebrow and heading with
  * "view all", then white bordered cards (photo well with the sale chip, name,
  * price with the list price, and the cart button), 4 across.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, sectionHead } from "../_kit";
@@ -9,7 +12,7 @@ import { SHOP_LINK, productCard } from "./_shared";
 
 export const productsClassic = defineDesign({
   id: "products-classic",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "new-arrivals",
   name: L("منتجات كلاسيك", "Classic product grid"),

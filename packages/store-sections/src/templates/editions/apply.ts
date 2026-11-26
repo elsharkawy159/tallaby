@@ -218,6 +218,8 @@ type BuildOptions = {
   extras?: readonly EditionExtra[];
   /** True for an edition: category rows are limited to what the pack's categories hold (`categoryListFit`). */
   fitCategoryRows?: boolean;
+  /** An edition's product card style, over the look's. */
+  card?: LibraryTemplateSpec["card"];
   label: string;
 };
 
@@ -257,6 +259,7 @@ function build(spec: EditionLookSpec, content: object, journey: LookJourney, o: 
     ...base,
     ...(o.productStage && { productStage: o.productStage }),
     ...(o.productPage && { productPage: o.productPage }),
+    ...(o.card && { card: o.card }),
     header: parts.header,
     footer: parts.footer,
     pages,
@@ -312,6 +315,6 @@ export function applyEdition(template: TemplateDefinition, pack: Edition): Templ
   const productPage = edition.productPage
     ? { ...spec.productPage, ...edition.productPage, copy: { ...spec.productPage?.copy, ...edition.productPage.copy } }
     : undefined;
-  const built = build(spec, content, journey, { demo, productStage: edition.productStage, productPage, extras: edition.extras, fitCategoryRows: true, label });
+  const built = build(spec, content, journey, { demo, productStage: edition.productStage, productPage, extras: edition.extras, fitCategoryRows: true, card: edition.card, label });
   return { ...built, edition: edition.niche, ...(spec.preview && { preview: spec.preview }) };
 }

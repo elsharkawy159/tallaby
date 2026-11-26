@@ -180,7 +180,7 @@ const DEMO = demoStore({
 
 export const BASECAMP = libraryTemplate({
   key: BASECAMP_KEY,
-  version: 6,
+  version: 7,
   changelog: "Basecamp v6: products by category as a carousel on the home",
   name: L("بيس كامب", "Basecamp"),
   description: L(

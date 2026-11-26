@@ -351,7 +351,7 @@ export const ZAKI = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(ZAKI_KEY, "lighting-smart-home", { ar: 2508, en: 2519 }),
   key: ZAKI_KEY,
-  version: 6,
+  version: 7,
   changelog: "Zaki v6: a carousel of one category (the store's 1st) on the home",
   productPage: { thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("زكي", "Zaki"),

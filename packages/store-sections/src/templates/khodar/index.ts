@@ -297,7 +297,7 @@ const DEMO = demoStore({
 
 export const KHODAR = editionTemplate({
   key: KHODAR_KEY,
-  version: 6,
+  version: 7,
   changelog: "Khodar v6: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("خضار", "Khodar"),

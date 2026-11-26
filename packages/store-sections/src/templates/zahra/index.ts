@@ -292,7 +292,7 @@ export const ZAHRA = editionTemplate({
   preview: templatePreview(ZAHRA_KEY, "fashion-jewelry", { ar: 2812, en: 2812 }),
   key: ZAHRA_KEY,
   // v5 (2026-11-16, owner): El Messiri headings replace Aref Ruqaa, which read oddly to shoppers.
-  version: 5,
+  version: 6,
   changelog: "Zahra v5: El Messiri headings",
   productPage: {
     surface: "flat",

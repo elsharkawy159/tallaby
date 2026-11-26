@@ -6,6 +6,9 @@
  * to a product, because a tree has no product-to-point link. The products
  * come from the store (featured first; "Picked by hand" lists the look).
  * Mobile puts the photo above the list.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type TreeBuilder } from "../builder";
@@ -39,7 +42,7 @@ function hotspot(t: TreeBuilder, n: number, at: { top: string; start: string }):
 
 export const galleryShoppable = defineDesign({
   id: "gallery-shoppable",
-  version: 1,
+  version: 2,
   category: "gallery",
   subcategory: "lookbook",
   name: L("صور قابلة للتسوق", "Shoppable photo"),

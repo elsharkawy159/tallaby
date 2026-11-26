@@ -167,7 +167,7 @@ const DEMO = demoStore({
 
 export const STRIDE = libraryTemplate({
   key: STRIDE_KEY,
-  version: 4,
+  version: 5,
   changelog: "Stride v4: products by category in a swipe row on the home",
   name: L("سترايد", "Stride"),
   description: L(

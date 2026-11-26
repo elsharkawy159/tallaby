@@ -201,7 +201,7 @@ const DEMO = demoStore({
 
 export const FARHA = libraryTemplate({
   key: FARHA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Farha v5: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الأهالي", "What parents say"), related: L("ألعاب أخرى قد تعجبك", "More toys to love") } },
   name: L("فرحة", "Farha"),

@@ -328,7 +328,7 @@ export const ATARA = editionTemplate({
   key: ATARA_KEY,
   // v5 (2026-11-16, owner): El Messiri headings replace Reem Kufi, which read oddly to shoppers.
   // v7 (2026-11-25, owner): products by category as a carousel after the best sellers.
-  version: 7,
+  version: 8,
   changelog: "Atara v7: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("عطارة", "Atara"),

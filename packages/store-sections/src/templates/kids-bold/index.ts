@@ -230,7 +230,7 @@ const DEMO = demoStore({
 
 export const KIDS_BOLD = libraryTemplate({
   key: KIDS_BOLD_KEY,
-  version: 2,
+  version: 3,
   changelog: "Farfoosh v2: a products grid on the home",
   name: L("فرفوش", "Farfoosh"),
   description: L(

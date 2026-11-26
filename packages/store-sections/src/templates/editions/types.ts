@@ -7,6 +7,7 @@
  */
 import type { SiteConfig } from "../../config/schema";
 import type { Localized } from "../../core/types";
+import type { CardStyleId } from "../../designs/products/card-styles";
 import type { LibraryPatch } from "../_library";
 import type { ProductPageSpec } from "../_product-page";
 import type { TemplateDemo } from "../types";
@@ -140,6 +141,8 @@ export type Edition = {
   extras?: readonly EditionExtra[];
   /** Merged over the look's product page spec (its reviews and related titles often name the trade). */
   productPage?: Partial<ProductPageSpec>;
+  /** The product card style on its look (`designs/products/card-styles.ts`); default: the look's own. */
+  card?: CardStyleId;
 };
 
 /** Any part of a value: objects merge key by key, a list replaces the whole list. */

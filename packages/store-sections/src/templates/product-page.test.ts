@@ -113,7 +113,7 @@ describe("productPage", () => {
   it("productSitePage is the hidden product page", () => {
     const page = productSitePage(productPage(lib));
     expect(page).toMatchObject({ slug: PRODUCT_PAGE_SLUG, kind: "product", isHome: false, showInNav: false, name: "صفحة المنتج", seo: {} });
-    expect(page.content.sections.map((s) => s.source)).toEqual(["tpl-product-main@2", "tpl-product-content@1", "tpl-product-reviews@1", "tpl-product-related@1"]);
+    expect(page.content.sections.map((s) => s.source)).toEqual(["tpl-product-main@2", "tpl-product-content@1", "tpl-product-reviews@1", "tpl-product-related@2"]);
   });
 });
 

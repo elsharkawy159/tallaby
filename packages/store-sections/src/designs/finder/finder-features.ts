@@ -5,6 +5,9 @@
  * the list live, which needs a script and product tags; here each feature is
  * a link row the seller points at a collection of products with it, and the
  * list shows the store's best sellers.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -21,7 +24,7 @@ const FEATURES = [
 
 export const finderFeatures = defineDesign({
   id: "finder-features",
-  version: 1,
+  version: 2,
   category: "finder",
   subcategory: "guided",
   name: L("حسب الميزة", "Shop by feature"),

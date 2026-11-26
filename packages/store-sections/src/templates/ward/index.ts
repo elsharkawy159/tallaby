@@ -188,7 +188,7 @@ const DEMO = demoStore({
 
 export const WARD = libraryTemplate({
   key: WARD_KEY,
-  version: 4,
+  version: 5,
   changelog: "Ward v4: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل روتينك", "Finish the routine") } },
   name: L("ورد", "Ward"),

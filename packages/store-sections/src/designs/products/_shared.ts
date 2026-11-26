@@ -16,15 +16,19 @@ export const PRODUCT_NAME = L("اسم المنتج", "Product name");
 const PRICE = L("٢٥٠ ج.م", "EGP 250");
 const WAS = L("٣٠٠ ج.م", "EGP 300");
 
-/** The product photo as a link, with the sale chip on its corner. */
+/**
+ * The product photo as a link, with the sale chip on its corner. The whole
+ * photo shows on a white frame (`contain`, owner 2026-11-26), so a packshot
+ * of any shape is never cropped; a site's product stage still overrides both.
+ */
 export function productPhoto(t: TreeBuilder, o: { ratio?: StyleValues["aspectRatio"]; radius?: number; chip?: boolean } = {}): NodeTemplate {
   const radius = o.radius ?? 16;
   return t.box(
     [
-      t.link(SHOP_LINK, [t.image("", PRODUCT_NAME, { bind: "image", style: { aspectRatio: o.ratio ?? "square", objectFit: "cover", width: "100%" } })], {
+      t.link(SHOP_LINK, [t.image("", PRODUCT_NAME, { bind: "image", style: { aspectRatio: o.ratio ?? "square", objectFit: "contain", width: "100%" } })], {
         label: L("صورة المنتج", "Product photo"),
         bind: "href",
-        style: { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0, radius, overflow: "hidden", background: "secondary" },
+        style: { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0, radius, overflow: "hidden", background: "white" },
       }),
       ...(o.chip === false
         ? []
@@ -167,7 +171,7 @@ export function premiumPrice(t: TreeBuilder, o: { large?: boolean } = {}): NodeT
 export type PremiumCardOptions = {
   /** The photo's ratio when the site has no product stage (default portrait). */
   ratio?: StyleValues["aspectRatio"];
-  /** The frame colour behind the photo when the site has no product stage (default `secondary`; `background` on a tinted band). */
+  /** The frame colour behind the photo when the site has no product stage (default `white`; `background` on a tinted band). */
   frame?: string;
   radius?: number;
   /** The wishlist heart on the photo's end corner. */
@@ -179,7 +183,8 @@ export type PremiumCardOptions = {
 /**
  * The one product card of the product sections (pilot L2): the photo in one
  * frame (the site's product stage when it has one, `elements/style.ts`; else
- * this ratio on the `secondary` colour), a small sale chip on its start
+ * this ratio, the whole photo (`contain`) on white, owner 2026-11-26), a
+ * small sale chip on its start
  * corner, then the name (regular weight, two lines at most), the price (the
  * list price struck through beside it) and a slim cart button. No border and
  * no shadow. The second photo on hover comes from the list (motion v2).
@@ -193,8 +198,8 @@ export function premiumCard(t: TreeBuilder, o: PremiumCardOptions = {}): NodeTem
         [
           t.link(
             SHOP_LINK,
-            [t.image("", PRODUCT_NAME, { label: L("صورة البطاقة", "Card photo"), bind: "image", style: { aspectRatio: o.ratio ?? "portrait", objectFit: "cover", width: "100%" } })],
-            { label: L("صورة المنتج", "Product photo"), bind: "href", style: { ...NO_PAD, radius, overflow: "hidden", background: o.frame ?? "secondary" } },
+            [t.image("", PRODUCT_NAME, { label: L("صورة البطاقة", "Card photo"), bind: "image", style: { aspectRatio: o.ratio ?? "portrait", objectFit: "contain", width: "100%" } })],
+            { label: L("صورة المنتج", "Product photo"), bind: "href", style: { ...NO_PAD, radius, overflow: "hidden", background: o.frame ?? "white" } },
           ),
           t.badge(L("خصم ٢٠٪", "20% Off"), {
             label: L("شارة الخصم", "Sale chip"),

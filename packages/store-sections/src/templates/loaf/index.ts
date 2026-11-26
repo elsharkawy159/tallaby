@@ -325,7 +325,7 @@ const DEMO = demoStore({
 
 export const LOAF = editionTemplate({
   key: LOAF_KEY,
-  version: 6,
+  version: 7,
   changelog: "Loaf v6: products by category in a swipe row on the home",
   name: L("لوف", "Loaf"),
   description: L(

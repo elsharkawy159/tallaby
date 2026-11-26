@@ -4,6 +4,9 @@
  * kit price and a button; beside it a shelf photo tile with the first product
  * large, the next two under it, and a round saving sticker. Mobile stacks the
  * photo tile under the brand tile.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, ON_BRAND } from "../_kit";
@@ -13,7 +16,7 @@ import { BUNDLE_LINK, BUNDLE_PCT, BUNDLE_PRICE, BUNDLE_WAS, tickName } from "./_
 
 export const bundlePoster = defineDesign({
   id: "bundle-poster",
-  version: 1,
+  version: 2,
   category: "bundles",
   subcategory: "fixed",
   name: L("بوستر الطقم", "Kit poster"),

@@ -180,7 +180,7 @@ const DEMO = demoStore({
 
 export const BAMBINO = libraryTemplate({
   key: BAMBINO_KEY,
-  version: 5,
+  version: 6,
   changelog: "Bambino v5: products by category as a carousel on the home",
   name: L("بامبينو", "Bambino"),
   description: L(

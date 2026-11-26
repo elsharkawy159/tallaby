@@ -322,7 +322,7 @@ export const VELLA = editionTemplate({
   preview: templatePreview(VELLA_KEY, "lingerie-sleepwear", { ar: 2682, en: 2691 }),
   key: VELLA_KEY,
   // v3 (2026-11-16, owner): every home has at least one real products grid (it takes the marquee band's place).
-  version: 3,
+  version: 4,
   changelog: "Vella v3: a products grid on the home",
   name: NAME,
   description: L(

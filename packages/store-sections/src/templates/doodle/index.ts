@@ -174,7 +174,7 @@ const DEMO = demoStore({
 
 export const DOODLE = libraryTemplate({
   key: DOODLE_KEY,
-  version: 5,
+  version: 6,
   changelog: "Doodle v5: a blocks carousel (the store's 1st category) on the home",
   name: L("دودل", "Doodle"),
   description: L(

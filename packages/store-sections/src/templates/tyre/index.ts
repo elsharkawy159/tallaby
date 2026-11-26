@@ -158,7 +158,7 @@ const DEMO = demoStore({
 
 export const TYRE = libraryTemplate({
   key: TYRE_KEY,
-  version: 5,
+  version: 6,
   changelog: "Tyre v5: a tyres carousel (the store's 1st category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("إضافات لسيارتك", "Add-ons for your car") } },
   name: L("إطارات", "Kawetch"),

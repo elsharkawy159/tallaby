@@ -202,7 +202,7 @@ const DEMO = demoStore({
 
 export const ZAREA = libraryTemplate({
   key: ZAREA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Zarea v4: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("ركن أخضر عند عملائنا", "Customers' green corners"), related: L("نباتات تناسبه", "A plant to go with it") } },
   name: L("زرعة", "Zarea"),

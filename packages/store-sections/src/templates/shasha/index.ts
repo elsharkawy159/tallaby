@@ -179,7 +179,7 @@ const DEMO = demoStore({
 
 export const SHASHA = libraryTemplate({
   key: SHASHA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Shasha v5: an audio carousel (the store's 1st category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء المستخدمين", "Customer reviews"), related: L("أجهزة تكمّل جهازك", "Pairs well with this") } },
   name: L("شاشة", "Shasha"),

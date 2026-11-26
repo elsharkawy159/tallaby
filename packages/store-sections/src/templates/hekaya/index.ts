@@ -158,7 +158,7 @@ const DEMO = demoStore({
 
 export const HEKAYA = libraryTemplate({
   key: HEKAYA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Hekaya v5: products by category as a carousel on the home",
   name: L("حكاية", "Hekaya"),
   description: L(

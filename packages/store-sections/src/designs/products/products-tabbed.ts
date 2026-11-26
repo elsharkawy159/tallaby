@@ -3,6 +3,9 @@
  * best sellers, offers) at the end, and a four-column grid of the store's
  * products below. Each chip links to that collection in the shop; the grid
  * shows the newest products.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -13,7 +16,7 @@ const TABS = [L("وصل جديد", "New"), L("الأكثر مبيعًا", "Best 
 
 export const productsTabbed = defineDesign({
   id: "products-tabbed",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "new-arrivals",
   name: L("شبكة بتبويبات", "Tabbed grid"),

@@ -5,6 +5,9 @@
  * cart button). The photo comes first on phones. The source numbers its
  * rows; a list repeats one card per product and can't count them, so the
  * rows go without numbers.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -15,7 +18,7 @@ const FILL = { position: "absolute", insetTop: "0px", insetBottom: "0px", insetS
 
 export const productsCampaign = defineDesign({
   id: "products-campaign",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "featured",
   name: L("حملة مع منتجات", "Campaign with products"),

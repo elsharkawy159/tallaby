@@ -250,7 +250,7 @@ const DEMO = demoStore({
 
 export const FASHION_WARM = libraryTemplate({
   key: FASHION_WARM_KEY,
-  version: 2,
+  version: 3,
   changelog: "Nawl v2: a products grid on the home",
   name: L("نَوْل", "Nawl"),
   description: L(

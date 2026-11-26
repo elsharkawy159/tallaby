@@ -193,7 +193,7 @@ const DEMO = demoStore({
 
 export const ZEINA = libraryTemplate({
   key: ZEINA_KEY,
-  version: 3,
+  version: 4,
   changelog: "Zeina v3: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "bottom", gallery: "end", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("منتجات أخرى لداخل السيارة", "More for the interior") } },
   name: L("زينة", "Zeina"),

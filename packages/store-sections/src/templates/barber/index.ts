@@ -314,7 +314,7 @@ const DEMO = demoStore({
 export const BARBER = editionTemplate({
   key: BARBER_KEY,
   // v5 (2026-11-25, owner): products by category as a carousel after the service prices.
-  version: 5,
+  version: 6,
   changelog: "Barber v5: products by category as a carousel on the home",
   productPage: { surface: "flat", thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("باربر", "Barber"),

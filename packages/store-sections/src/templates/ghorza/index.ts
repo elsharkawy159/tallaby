@@ -390,7 +390,7 @@ export const GHORZA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(GHORZA_KEY, "mens-shoes", { ar: 2694, en: 2694 }),
   key: GHORZA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Ghorza v4: the men's shoes template, rebuilt look-first",
   productPage: {
     surface: "flat",

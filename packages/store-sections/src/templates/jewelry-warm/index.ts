@@ -413,7 +413,7 @@ export const JEWELRY_WARM = editionTemplate({
   preview: templatePreview(JEWELRY_WARM_KEY, "belts-wallets", { ar: 2798, en: 2798 }),
   key: JEWELRY_WARM_KEY,
   // v4 (2026-11-16, owner): Noto Naskh Arabic headings replace Aref Ruqaa, which read oddly to shoppers.
-  version: 4,
+  version: 5,
   name: L("تِبر", "Tibr"),
   description: L(
     "ورشة صغيرة بروح دافية: صورة الورشة بعرض الشاشة، أقسام بصور طولية، حكاية الصنعة وركن للعناية بالقطعة. للجلديات والقطع المعمولة باليد.",

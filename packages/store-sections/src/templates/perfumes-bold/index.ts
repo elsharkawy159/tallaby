@@ -333,7 +333,7 @@ const DEMO = demoStore({
 
 export const PERFUMES_BOLD = libraryTemplate({
   key: PERFUMES_BOLD_KEY,
-  version: 2,
+  version: 3,
   name: L("شذا", "Shaza"),
   description: L(
     "عطور جريئة: فيديو في الواجهة، صور أقسام دافئة، زجاجة بتفاصيلها على الصورة، وكل المنتجات بأسلوب تصوير واحد.",

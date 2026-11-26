@@ -6,6 +6,9 @@
  * seller picks them); the spec rows are text the seller types for those two
  * products. The design's price row is left out: each side already shows its
  * real price.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type DesignText, type TreeBuilder } from "../builder";
@@ -106,7 +109,7 @@ function value(t: TreeBuilder, text: DesignText, win: boolean): NodeTemplate {
 
 export const finderVersus = defineDesign({
   id: "finder-versus",
-  version: 1,
+  version: 2,
   category: "finder",
   subcategory: "compare",
   name: L("وش لوش", "Head to head"),

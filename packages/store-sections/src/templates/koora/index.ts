@@ -164,7 +164,7 @@ const DEMO = demoStore({
 
 export const KOORA = libraryTemplate({
   key: KOORA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Koora v5: products by category as a carousel on the home",
   productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الفرق", "From teams"), related: L("جهّز الفريق", "Kit out the team") } },
   name: L("كورة", "Koora"),

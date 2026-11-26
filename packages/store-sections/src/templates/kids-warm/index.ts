@@ -222,7 +222,7 @@ const DEMO = demoStore({
 
 export const KIDS_WARM = libraryTemplate({
   key: KIDS_WARM_KEY,
-  version: 2,
+  version: 3,
   changelog: "Hodn v2: a products grid on the home",
   name: L("حُضن", "Hodn"),
   description: L(

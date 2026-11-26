@@ -255,7 +255,7 @@ export const VOLT = editionTemplate({
   preview: templatePreview(VOLT_KEY, "phone-cases", { ar: 1683, en: 1683 }),
   key: VOLT_KEY,
   // v6 (2026-11-16, owner): every home has at least one real products grid.
-  version: 7,
+  version: 8,
   changelog: "Volt v7: products by category in a swipe row on the home",
   name: L("فولت", "Volt"),
   description: L(

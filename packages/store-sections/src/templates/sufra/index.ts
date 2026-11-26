@@ -236,7 +236,7 @@ export const SUFRA = editionTemplate({
   key: SUFRA_KEY,
   // v5 (2026-11-16, owner): Noto Kufi Arabic headings replace Reem Kufi, which read oddly to shoppers.
   // v6 (2026-11-16, owner): every home has at least one real products grid.
-  version: 7,
+  version: 8,
   changelog: "Sufra v7: products by category in a swipe row on the home",
   productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("سفرة", "Sufra"),

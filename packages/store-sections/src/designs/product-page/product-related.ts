@@ -2,6 +2,9 @@
  * Related products: a heading row with "view all", then four of the store's
  * products from the same category as the page's product (the store's newest
  * when there are too few), drawn with the catalog's own product card.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, sectionHead } from "../_kit";
@@ -9,7 +12,7 @@ import { SHOP_LINK, productCard } from "../products/_shared";
 
 export const productRelated = defineDesign({
   id: "product-related",
-  version: 1,
+  version: 2,
   category: "product-page",
   subcategory: "upsell",
   name: L("منتجات مشابهة", "Related products"),

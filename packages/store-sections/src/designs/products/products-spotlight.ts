@@ -9,6 +9,9 @@
  * v2 (look-first pilot, 2026-11-11): the premium card (`_shared.ts`) on the
  * site's product stage, a calmer row head, and the collection name rising
  * word by word (motion v2).
+ *
+ * v3 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -18,7 +21,7 @@ const FILL = { position: "absolute", insetTop: "0px", insetBottom: "0px", insetS
 
 export const productsSpotlight = defineDesign({
   id: "products-spotlight",
-  version: 2,
+  version: 3,
   category: "products",
   subcategory: "featured",
   name: L("مجموعة مميزة", "Collection spotlight"),

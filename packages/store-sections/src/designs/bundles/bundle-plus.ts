@@ -4,6 +4,9 @@
  * sum, the saving and a button. The products are a list (photo, name and price
  * bound); the bundle figures are typed by the seller, since a tree cannot add
  * prices up. On mobile the plus signs go and the total card drops underneath.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, ON_BRAND } from "../_kit";
@@ -13,7 +16,7 @@ import { BUNDLE_LINK, BUNDLE_PRICE, BUNDLE_SAVE, BUNDLE_WAS, plusDisc } from "./
 
 export const bundlePlus = defineDesign({
   id: "bundle-plus",
-  version: 1,
+  version: 2,
   category: "bundles",
   subcategory: "fixed",
   name: L("زائد ويساوي", "Plus row"),

@@ -737,7 +737,7 @@ export const FASHION_LUXE = editionTemplate({
   preview: templatePreview(FASHION_LUXE_KEY, "dresses", { ar: 2812, en: 2812 }),
   key: FASHION_LUXE_KEY,
   // v5 (2026-11-16, owner): El Messiri headings replace Reem Kufi, which read oddly to shoppers.
-  version: 5,
+  version: 6,
   name: L("حرير", "Hareer"),
   description: L(
     "أزياء راقية بهدوء: فيديو لشماعة الموسم، أقسام بصور طولية، لوك تتسوقه بالنقط وصفوف منتجات على خلفية واحدة. لبوتيكات الملابس الراقية.",

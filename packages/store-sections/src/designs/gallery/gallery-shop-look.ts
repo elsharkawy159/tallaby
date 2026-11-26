@@ -18,6 +18,8 @@
  * seller who picks other products for the dots sets the list's source to
  * match. Calm heading, a quiet eyebrow and a 16px corner. Same field names
  * as v1 for everything v1 had.
+ * v3 (2026-11-26): the row photos show whole (`contain`) on white, like every
+ * product card (owner).
  *
  * `about-shop-look` and `gallery-shoppable` are the earlier designs with
  * static numbered pins beside a product list.
@@ -38,7 +40,7 @@ const NO_PAD = { paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0
 
 export const galleryShopLook = defineDesign({
   id: "gallery-shop-look",
-  version: 2,
+  version: 3,
   category: "gallery",
   subcategory: "lookbook",
   name: L("تسوّق اللوك بالنقط", "Shop the look with dots"),
@@ -79,10 +81,10 @@ export const galleryShopLook = defineDesign({
                         [
                           t.row(
                             [
-                              t.link(SHOP_LINK, [t.image("", PRODUCT_NAME, { label: L("صورة القطعة", "Piece photo"), bind: "image", style: { aspectRatio: "square", objectFit: "cover", width: "100%" } })], {
+                              t.link(SHOP_LINK, [t.image("", PRODUCT_NAME, { label: L("صورة القطعة", "Piece photo"), bind: "image", style: { aspectRatio: "square", objectFit: "contain", width: "100%" } })], {
                                 label: L("صورة المنتج", "Product photo"),
                                 bind: "href",
-                                style: { ...NO_PAD, width: "64px", radius: 8, overflow: "hidden", background: "secondary" },
+                                style: { ...NO_PAD, width: "64px", radius: 8, overflow: "hidden", background: "white" },
                               }),
                               t.stack(
                                 [

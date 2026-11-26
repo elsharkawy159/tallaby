@@ -197,7 +197,7 @@ export const SITARA = libraryTemplate({
   key: SITARA_KEY,
   // v3 (2026-11-16, owner): every home has at least one real products grid.
   // v4 (2026-11-25, owner): every home has products by category and a carousel.
-  version: 4,
+  version: 5,
   changelog: "Sitara v4: a layers carousel (the store's 3rd category) on the home",
   productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { reviews: L("آراء عميلاتنا", "What our customers say"), related: L("تنسيقات تكمّلها", "Styles to go with it") } },
   name: L("سِتارة", "Sitara"),

@@ -165,7 +165,7 @@ const DEMO = demoStore({
 
 export const CORE = libraryTemplate({
   key: CORE_KEY,
-  version: 5,
+  version: 6,
   changelog: "Core v5: a dumbbells carousel (the store's 2nd category) on the home",
   name: L("كور", "Core"),
   description: L(

@@ -230,7 +230,7 @@ const DEMO = demoStore({
 
 export const BEAUTY_LUXE = libraryTemplate({
   key: BEAUTY_LUXE_KEY,
-  version: 2,
+  version: 3,
   changelog: "Safa v2: a products grid on the home",
   name: L("صفا", "Safa"),
   description: L(

@@ -314,7 +314,7 @@ const DEMO = demoStore({
 
 export const ROKN = editionTemplate({
   key: ROKN_KEY,
-  version: 6,
+  version: 7,
   changelog: "Rokn v6: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("ركن", "Rokn"),

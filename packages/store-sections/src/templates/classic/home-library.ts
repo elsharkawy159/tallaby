@@ -24,6 +24,10 @@ import { LINKS } from "./_shared";
 /** Classic's corners on a library design; ids read `tallaby-classic-<library id>`. */
 export const classicLib = (id: string, patch: LibraryPatch = {}): Design => fromLibrary("tallaby-classic", getDesign(id)!, { corners: 16, ...patch });
 
+// The three product sections below keep the library version they were built from (products-grid v3,
+// products-rail v2, products-category-carousel v2): the library card shows the whole photo on white
+// since 2026-11-26, and Classic keeps its cover photo through node patches (CLAUDE.md rule 12).
+
 export const classicHomeHero = classicLib("hero-carousel", {
   photo: [CLASSIC_PHOTOS.heroGifts, CLASSIC_PHOTOS.heroParcel, CLASSIC_PHOTOS.heroBoxes],
   text: {
@@ -50,7 +54,7 @@ export const classicHomeCategories = classicLib("categories-photo-tiles", {
   text: { "تسوّق حسب القسم": L("تسوّق حسب القسم", "Shop by category") },
 });
 
-export const classicHomeBestSellers = classicLib("products-grid", {
+export const classicHomeBestSellers = { ...classicLib("products-grid", {
   as: "best-sellers",
   text: {
     "وصل حديثًا": L("الأكثر مبيعًا", "Best sellers"),
@@ -59,8 +63,9 @@ export const classicHomeBestSellers = classicLib("products-grid", {
   links: { "/products": LINKS.bestSellers },
   lists: [{ source: "best-sellers" }],
   // A hairline round every photo: a packshot on pure white would otherwise have no frame on the white page.
-  nodes: { "صورة المنتج": { style: { borderWidth: 1, borderColor: "border" } } },
-});
+  // The library card shows the whole photo on white since 2026-11-26; Classic keeps its cover photo on the shelf colour (rule 12).
+  nodes: { "صورة البطاقة": { style: { objectFit: "cover" } }, "صورة المنتج": { style: { borderWidth: 1, borderColor: "border", background: "secondary" } } },
+}), version: 3 };
 
 export const classicHomeStory = classicLib("about-two-tone", {
   photo: [undefined, undefined, CLASSIC_PHOTOS.parcelShelf],
@@ -74,7 +79,7 @@ export const classicHomeStory = classicLib("about-two-tone", {
   links: { "/products": LINKS.about },
 });
 
-export const classicHomeNewArrivals = classicLib("products-rail", {
+export const classicHomeNewArrivals = { ...classicLib("products-rail", {
   as: "new-arrivals",
   text: {
     "المفضلة لدى العملاء": L("جديد", "New"),
@@ -82,17 +87,20 @@ export const classicHomeNewArrivals = classicLib("products-rail", {
   },
   links: { "/products": LINKS.newest },
   lists: [{ source: "newest", limit: 4 }],
-});
+  // Classic keeps its cover photo (the library card shows the whole photo since 2026-11-26; rule 12).
+  nodes: { "صورة البطاقة": { style: { objectFit: "cover" } } },
+}), version: 2 };
 
 /**
  * The store's first category as a carousel: its name and View all, then
  * four cards in view with arrows on desktop and a swipe on phones. The
  * same hairline round every photo as the best sellers grid.
  */
-export const classicHomeCategoryCarousel = classicLib("products-category-carousel", {
+export const classicHomeCategoryCarousel = { ...classicLib("products-category-carousel", {
   lists: [undefined, { limit: 4 }],
-  nodes: { "صورة المنتج": { style: { borderWidth: 1, borderColor: "border" } } },
-});
+  // Classic keeps its cover photo on the shelf colour (the library card shows the whole photo on white since 2026-11-26; rule 12).
+  nodes: { "صورة البطاقة": { style: { objectFit: "cover" } }, "صورة المنتج": { style: { borderWidth: 1, borderColor: "border", background: "secondary" } } },
+}), version: 2 };
 
 /** The four promises (v8's sixth section; off the v9 home, kept for the stores that hold it). */
 export const classicHomePromises = classicLib("features-icon-cards", {

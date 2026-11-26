@@ -182,7 +182,7 @@ const DEMO = demoStore({
 
 export const KAHRABA = libraryTemplate({
   key: KAHRABA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Kahraba v5: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء مستخدمي الشواحن", "From charger owners"), related: L("إكسسوارات للسيارة", "Accessories for the car") } },
   name: L("كهربا", "Kahraba"),

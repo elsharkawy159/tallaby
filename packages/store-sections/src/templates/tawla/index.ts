@@ -184,7 +184,7 @@ const DEMO = demoStore({
 
 export const TAWLA = libraryTemplate({
   key: TAWLA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Tawla v4: a napkins carousel (the store's 2nd category) on the home",
   productPage: { gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أكمل طاولتك", "Dress the whole table") } },
   name: L("طاولة", "Tawla"),

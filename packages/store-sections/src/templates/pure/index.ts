@@ -315,7 +315,7 @@ const DEMO = demoStore({
 
 export const PURE = editionTemplate({
   key: PURE_KEY,
-  version: 6,
+  version: 7,
   changelog: "Pure v6: products by category in a swipe row on the home",
   name: L("بيور", "Pure"),
   description: L(

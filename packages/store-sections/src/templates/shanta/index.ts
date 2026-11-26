@@ -377,7 +377,7 @@ export const SHANTA = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(SHANTA_KEY, "handbags", { ar: 2812, en: 2812 }),
   key: SHANTA_KEY,
-  version: 5,
+  version: 6,
   changelog: "Shanta v4: the handbags template, rebuilt look-first",
   productPage: {
     gallery: "end",

@@ -183,7 +183,7 @@ const DEMO = demoStore({
 
 export const BEITY = libraryTemplate({
   key: BEITY_KEY,
-  version: 4,
+  version: 5,
   changelog: "Beity v4: a tableware carousel (the store's 1st category) on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { reviews: L("آراء المشترين", "Buyer reviews"), related: L("منتجات أخرى للمطبخ", "More for your kitchen") } },
   name: L("بيتي", "Beity"),

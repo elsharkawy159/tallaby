@@ -220,7 +220,7 @@ const DEMO = demoStore({
 
 export const GROCERY_LUXE = libraryTemplate({
   key: GROCERY_LUXE_KEY,
-  version: 1,
+  version: 2,
   name: L("مذاق", "Mazaq"),
   description: L(
     "بقالة فاخرة بهدوء: فيديو خضار طازج، صور أقسام طويلة وأربعة صفوف للأقسام. لمتاجر الأكل الراقي والمنتجات المختارة.",

@@ -5,6 +5,9 @@
  * seller in the same order as the products. The design's table scrolls inside
  * itself with a pinned first column; here the columns shrink on small screens
  * instead (no horizontal scroll style exists).
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type TreeBuilder } from "../builder";
@@ -68,7 +71,7 @@ function mark(t: TreeBuilder, yes: boolean): NodeTemplate {
 
 export const finderMatrix = defineDesign({
   id: "finder-matrix",
-  version: 1,
+  version: 2,
   category: "finder",
   subcategory: "compare",
   name: L("جدول المواصفات", "Spec matrix"),

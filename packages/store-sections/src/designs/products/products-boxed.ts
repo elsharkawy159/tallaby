@@ -5,6 +5,9 @@
  * across the foot. The heading sits at the start with "View all" at the end.
  * On phones the cards swipe sideways with the next one peeking in. For stores
  * where shoppers compare and add straight from the home page.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L, PAPER_CARD } from "../_kit";
@@ -13,7 +16,7 @@ import { premiumHead, premiumPhoto, ratingLine } from "./_premium";
 
 export const productsBoxed = defineDesign({
   id: "products-boxed",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "best-sellers",
   name: L("كروت منتجات", "Boxed cards"),

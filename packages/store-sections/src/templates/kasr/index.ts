@@ -455,7 +455,7 @@ export const KASR = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KASR_KEY, "womens-shoes", { ar: 2812, en: 2812 }),
   key: KASR_KEY,
-  version: 6,
+  version: 7,
   changelog: "Kasr v5: the womens-shoes template, rebuilt look-first",
   name: L("قصر", "Kasr"),
   description: L(

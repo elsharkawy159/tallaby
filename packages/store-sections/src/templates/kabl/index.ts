@@ -323,7 +323,7 @@ export const KABL = editionTemplate({
   // Gallery card screenshots of the home with its niche pack (owner, 2026-11-12; apps/ecommerce/public/template-previews).
   preview: templatePreview(KABL_KEY, "chargers-cables", { ar: 1625, en: 1625 }),
   key: KABL_KEY,
-  version: 6,
+  version: 7,
   changelog: "Kabl v6: products by category as a carousel on the home",
   productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("كابل", "Kabl"),

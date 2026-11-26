@@ -162,7 +162,7 @@ const DEMO = demoStore({
 export const GARAGE = libraryTemplate({
   key: GARAGE_KEY,
   // v5 (2026-11-16, owner): every home has at least one real products grid (the newest upgrades, rows before).
-  version: 6,
+  version: 7,
   changelog: "Garage v6: products by category as a carousel on the home",
   name: L("جراج", "Garage"),
   description: L(

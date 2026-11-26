@@ -282,7 +282,7 @@ const DEMO = demoStore({
 
 export const QAHWA = editionTemplate({
   key: QAHWA_KEY,
-  version: 6,
+  version: 7,
   changelog: "Qahwa v6: products by category in a swipe row on the home",
   productPage: { thumbs: "bottom", band: "brand", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("قد يعجبك أيضًا", "You may also like") } },
   name: L("قهوة", "Qahwa"),

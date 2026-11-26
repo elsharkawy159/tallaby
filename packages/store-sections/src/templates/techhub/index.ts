@@ -177,7 +177,7 @@ const DEMO = demoStore({
 
 export const TECHHUB = libraryTemplate({
   key: TECHHUB_KEY,
-  version: 4,
+  version: 5,
   changelog: "TechHub v4: products by category in a swipe row (phones) after the brands",
   name: L("تك هب", "TechHub"),
   description: L(

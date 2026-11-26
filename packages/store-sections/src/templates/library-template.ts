@@ -10,7 +10,9 @@ import type { Localized } from "../core/types";
 import type { StoreFontName } from "../core/fonts";
 import { getDesign } from "../designs";
 import { instantiateDesign, type Design } from "../designs/builder";
+import { applyCardStyle, hasProductList, type CardStyleId } from "../designs/products/card-styles";
 import { fromLibrary } from "./_library";
+import { TEMPLATE_CARD_STYLES } from "./card-styles";
 import type { Lib } from "./_pages";
 import { PRODUCT_PAGE_NAME, productPage, productSitePage, type ProductPageSpec } from "./_product-page";
 import { isDiscountDesign } from "./no-discounts";
@@ -59,18 +61,47 @@ export type LibraryTemplateSpec = {
   lib?: Lib;
   /** How its product page looks; the page is always added after `pages`. */
   productPage?: ProductPageSpec;
+  /**
+   * The product card style of every product list in its pages and product
+   * page (`designs/products/card-styles.ts`). Default: the template's entry
+   * in `TEMPLATE_CARD_STYLES` (`./card-styles.ts`), else `classic`.
+   */
+  card?: CardStyleId;
 };
 
 /** A design as a template section: its id doubles as the instance id, so a re-apply keeps matching sections. */
 const section = (design: Design) => instantiateDesign(design, { id: design.id, defaultLocale: "ar" });
 
+/**
+ * A page section with its product cards in the template's card style: same
+ * id, library id and ref (the ref values are read from the built tree, so
+ * the section still stores as a ref). Heroes keep their own art-directed
+ * product card, and a tree with no product list is built as it is.
+ */
+function withCardStyle(design: Design, card: CardStyleId): Design {
+  if (card === "classic" || design.category === "hero") return design;
+  const tree = design.tree;
+  const corners = design.libraryRef?.patch?.corners;
+  return {
+    ...design,
+    tree: (t) => {
+      const built = tree(t);
+      return hasProductList(built) ? applyCardStyle(built, card, { corners }) : built;
+    },
+  };
+}
+
 export function libraryTemplate(input: LibraryTemplateSpec): TemplateDefinition {
   // No promotion, bundle or discount-only sections in a template (`./no-discounts.ts`).
-  const spec: LibraryTemplateSpec = { ...input, pages: input.pages.map((page) => ({ ...page, sections: page.sections.filter((d) => !isDiscountDesign(d)) })) };
+  const card = input.card ?? TEMPLATE_CARD_STYLES[input.key] ?? "classic";
+  const spec: LibraryTemplateSpec = {
+    ...input,
+    pages: input.pages.map((page) => ({ ...page, sections: page.sections.filter((d) => !isDiscountDesign(d)).map((d) => withCardStyle(d, card)) })),
+  };
   const lib: Lib = spec.lib ?? ((id, patch) => fromLibrary(spec.key, getDesign(id)!, { corners: spec.radius, ...patch }));
   // Square templates get a flat buy column, rounded ones a card.
   const productPageSpec: ProductPageSpec = { ...spec.productPage, surface: spec.productPage?.surface ?? (spec.radius === 0 ? "flat" : "card") };
-  const product = productPage(lib, productPageSpec);
+  const product = productPage(lib, productPageSpec).map((d) => withCardStyle(d, card));
   const config = (): SiteConfig => ({
     schemaVersion: SITE_CONFIG_VERSION,
     designSystem: {

@@ -210,7 +210,7 @@ const DEMO = demoStore({
 
 export const BOTANICA = libraryTemplate({
   key: BOTANICA_KEY,
-  version: 6,
+  version: 7,
   changelog: "Sage v6: products by category as a carousel on the home",
   name: L("سيج", "Sage"),
   description: L("عناية طبيعية بالشعر والجسم: من النبتة إلى العبوة، أحجام متعددة، تقييمات ورسالة المتجر. أربع صفحات جاهزة.", "Natural hair and body care: plant to bottle, several sizes, reviews and the store's letter. Four ready pages."),

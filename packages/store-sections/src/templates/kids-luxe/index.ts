@@ -224,7 +224,7 @@ const DEMO = demoStore({
 
 export const KIDS_LUXE = libraryTemplate({
   key: KIDS_LUXE_KEY,
-  version: 1,
+  version: 2,
   name: L("توت", "Toot"),
   description: L(
     "متجر ألعاب هادئ: فيديو ألعاب خشبية، أقسام بخطوط رفيعة وأربعة صفوف للأقسام. لمتاجر ألعاب المونتيسوري والهدايا الراقية.",

@@ -5,6 +5,9 @@
  * amount needs maths on the product price that a tree cannot do (and a typed
  * figure would be wrong for any other product), so the brand tile states the
  * term instead; the month chips are a still list. Mobile stacks the tiles.
+ *
+ * v2 (2026-11-26): the product photo shows whole (`contain`) on white, like
+ * every product card (owner).
  */
 import { defineDesign } from "../builder";
 import { L, N, ON_BRAND, ON_BRAND_BODY } from "../_kit";
@@ -16,7 +19,7 @@ const TERMS = ["3", "6", "12", "24"];
 
 export const payInstallments = defineDesign({
   id: "pay-installments",
-  version: 1,
+  version: 2,
   category: "payment",
   subcategory: "installments",
   name: L("حاسبة التقسيط", "Installments"),
@@ -40,7 +43,7 @@ export const payInstallments = defineDesign({
                             [
                               t.image("", L("اسم المنتج", "Product name"), {
                                 bind: "image",
-                                style: { width: "80px", aspectRatio: "square", objectFit: "cover", radius: 10, background: "secondary" },
+                                style: { width: "80px", aspectRatio: "square", objectFit: "contain", radius: 10, background: "white" },
                               }),
                               t.stack(
                                 [t.text(L("اسم المنتج", "Product name"), { bind: "title", style: { fontWeight: "medium", lineHeight: "snug" } }), priceRow(t)],

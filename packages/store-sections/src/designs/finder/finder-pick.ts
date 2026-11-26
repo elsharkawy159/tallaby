@@ -6,6 +6,9 @@
  * before), so every card keeps its own label; the reasons are text the seller
  * types for the product they pick. Runner-ups hide when the store has fewer
  * products.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import type { NodeTemplate } from "../../elements/tree";
 import { defineDesign, type DesignText, type TreeBuilder } from "../builder";
@@ -74,7 +77,7 @@ function runnerUp(
 
 export const finderPick = defineDesign({
   id: "finder-pick",
-  version: 1,
+  version: 2,
   category: "finder",
   subcategory: "picks",
   name: L("اختيارنا", "Our pick"),

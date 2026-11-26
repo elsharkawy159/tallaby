@@ -197,7 +197,7 @@ const DEMO = demoStore({
 
 export const HADAYA = libraryTemplate({
   key: HADAYA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Hadaya v4: a building-toys carousel (the store's 1st category) on the home",
   productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { reviews: L("آراء الأهل", "What parents say"), related: L("هدايا أخرى قد تعجبك", "More gifts they will love") } },
   name: L("هدايا", "Hadaya"),

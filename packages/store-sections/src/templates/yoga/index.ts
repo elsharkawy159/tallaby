@@ -199,7 +199,7 @@ const DEMO = demoStore({
 
 export const YOGA = libraryTemplate({
   key: YOGA_KEY,
-  version: 4,
+  version: 5,
   changelog: "Yoga v4: products by category in a swipe row on the home",
   productPage: { surface: "shelf", thumbs: "side", button: "outline", gallery: "end", band: "paper", copy: { reviews: L("آراء العملاء", "Customer reviews"), related: L("أدوات أخرى لتمرينك", "More gear for your practice") } },
   name: L("سكون", "Sukoon"),

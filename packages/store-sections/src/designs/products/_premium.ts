@@ -53,7 +53,7 @@ type PhotoOptions = {
   radius?: number;
   /** Space between the frame and the photo (a packshot on a soft square). */
   inset?: number;
-  /** Frame colour behind the photo. */
+  /** Frame colour behind the photo (default white; the whole photo shows, `contain`, owner 2026-11-26). */
   frame?: string;
   wishlist?: boolean;
 };
@@ -69,13 +69,13 @@ export function premiumPhoto(t: TreeBuilder, o: PhotoOptions = {}): NodeTemplate
         [
           t.image("", PRODUCT_NAME, {
             bind: "image",
-            style: { aspectRatio: o.ratio ?? "portrait", objectFit: "cover", width: "100%", ...(inset > 0 && { radius: Math.max(radius - 6, 6) }) },
+            style: { aspectRatio: o.ratio ?? "portrait", objectFit: "contain", width: "100%", ...(inset > 0 && { radius: Math.max(radius - 6, 6) }) },
           }),
         ],
         {
           label: L("صورة المنتج", "Product photo"),
           bind: "href",
-          style: { paddingTop: inset, paddingBottom: inset, paddingStart: inset, paddingEnd: inset, radius, overflow: "hidden", background: o.frame ?? "secondary" },
+          style: { paddingTop: inset, paddingBottom: inset, paddingStart: inset, paddingEnd: inset, radius, overflow: "hidden", background: o.frame ?? "white" },
           ...(inset > 0 && { mobile: { paddingTop: 10, paddingBottom: 10, paddingStart: 10, paddingEnd: 10 } }),
         },
       ),

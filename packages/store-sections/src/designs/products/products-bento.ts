@@ -2,6 +2,9 @@
  * Product bento (Modular set): the first product in a large shelf tile with a
  * big photo, name, price and cart button, and the next four in smaller tiles
  * beside it. On mobile the large tile comes first, then a 2×2 grid.
+ *
+ * v2 (2026-11-26, owner): product photos show whole (`contain`) on a white
+ * frame (`_shared.ts` / `_premium.ts`); a site's product stage still wins.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
@@ -10,7 +13,7 @@ import { SHOP_LINK, priceRow, productName, productPhoto } from "./_shared";
 
 export const productsBento = defineDesign({
   id: "products-bento",
-  version: 1,
+  version: 2,
   category: "products",
   subcategory: "best-sellers",
   name: L("بينتو منتجات", "Product bento"),
