@@ -9370,8 +9370,228 @@
     "aiMeta": "Write what you want in your own words",
     "manualTitle": "Manual edit",
     "manualBody": "Drag & Drop sections and edit every element yourself.",
-    "manualMeta": "Full control over every element",
-    "aiSoon": "Editing with AI is coming in the next step. For now, you can edit your website by hand."
+    "manualMeta": "Full control over every element"
+  },
+  "editWithAi": {
+    "title": "Edit with AI",
+    "readOnly": "This store can't be edited right now, so the chat is read-only.",
+    "topBar": {
+      "back": "Back to ways to edit",
+      "manual": "Manual edit",
+      "publish": "Publish",
+      "publishing": "Publishing…",
+      "unpublished": "You have changes that aren't published yet",
+      "upToDate": "Everything is published"
+    },
+    "publish": {
+      "success": "Your website is published.",
+      "topUpRequired": "Top up your wallet to bring your store back online.",
+      "templateNotChosen": "Choose a design for your store before you publish it.",
+      "chooseTemplate": "Choose a design",
+      "nothingToPublish": "There are no changes to publish.",
+      "rateLimited": "Too many publishes in a short time. Try again in a few minutes.",
+      "readOnly": "This store can't be published right now.",
+      "publishBlocked": "Publishing is paused for this store. Contact support if you need help.",
+      "invalidSite": "Some parts of the website need fixing before you can publish. Open the manual editor to check them.",
+      "noActiveProduct": "Add your first product before you publish your store.",
+      "generic": "We couldn't publish your website. Try again."
+    },
+    "preview": {
+      "title": "Preview",
+      "frame": "Preview of your website's draft",
+      "open": "Preview",
+      "sheetHint": "Your website as it looks with the changes, before you publish.",
+      "device": "Preview size",
+      "desktop": "Computer",
+      "mobile": "Phone",
+      "refresh": "Refresh preview",
+      "newTab": "Open in a new tab",
+      "loading": "Loading the preview…",
+      "unavailable": "The preview isn't available right now. Your changes are still saved."
+    },
+    "chat": {
+      "label": "Chat with the AI",
+      "log": "Messages",
+      "you": "You",
+      "assistant": "Tallaby AI",
+      "thinking": "Working on it…",
+      "stopped": "Stopped. Any answer that comes later is ignored.",
+      "changesTitle": "Saved to your website's draft",
+      "undo": "Undo",
+      "undoing": "Undoing…",
+      "undone": "Undone.",
+      "undoExpired": "This change can't be undone anymore.",
+      "undoChanged": "The website was changed after this, so it can't be undone here. Use the manual editor.",
+      "skipped": "{count, plural, one {One change couldn't be made.} other {# changes couldn't be made.}}",
+      "credits": "{count, plural, one {1 AI credit} other {# AI credits}}",
+      "clear": "Clear chat"
+    },
+    "card": {
+      "fallbackTitle": "Confirm this change",
+      "highRisk": "Check carefully: this replaces or removes something.",
+      "confirm": "Confirm",
+      "confirming": "Saving…",
+      "cancel": "Cancel",
+      "cancelled": "Cancelled. Nothing was changed.",
+      "done": "Done.",
+      "productDraft": "Product created as a draft.",
+      "productLive": "Product created and published.",
+      "openProduct": "Open the product",
+      "costs": "{count, plural, one {1 AI credit when you confirm} other {# AI credits when you confirm}}",
+      "credits": "{count, plural, one {1 AI credit} other {# AI credits}}"
+    },
+    "importCard": {
+      "title": "Import the products in your file",
+      "open": "Review and import",
+      "kept": "You'll review the products before they're added. This chat stays here when you come back."
+    },
+    "empty": {
+      "title": "What do you want to change?",
+      "body": "Write what you want in your own words. You can attach photos and product files, and see every change in the preview before you publish."
+    },
+    "suggestions": {
+      "label": "Ideas to start with",
+      "chip": {
+        "hero": "Change the hero image",
+        "faq": "Add an FAQ section",
+        "product": "Add a new product from a photo",
+        "announcement": "Change the announcement bar text",
+        "import": "Import products from a file"
+      },
+      "text": {
+        "hero": "Use this photo as the hero image",
+        "faq": "Add an FAQ section with common questions about my store",
+        "product": "Add a new product from this photo",
+        "announcement": "Change the announcement bar text to: ",
+        "import": "Import the products in this file"
+      }
+    },
+    "composer": {
+      "label": "Your message",
+      "placeholder": "Write what you want to change…",
+      "attach": "Attach photos or files",
+      "attachments": "Attachments",
+      "send": "Send",
+      "stop": "Stop",
+      "hint": "Enter to send, Shift+Enter for a new line. Drag & Drop photos or files here.",
+      "dropHere": "Drop photos or files here",
+      "waitingUploads": "Sending when the uploads finish…",
+      "uploading": "Uploading…",
+      "uploadingName": "Uploading {name}",
+      "ready": "Ready",
+      "remove": "Remove {name}",
+      "counter": "{count} / {max}"
+    },
+    "attachError": {
+      "type": "Only JPEG, PNG or WebP photos, or CSV, Excel or PDF files.",
+      "size": "Too big. The limit is 5 MB.",
+      "tooMany": "You can attach up to 6 files to one message.",
+      "upload": "Upload failed. Remove it and try again.",
+      "uploadUnavailable": "Files can't be uploaded right now. Try again later."
+    },
+    "errors": {
+      "notFound": "We couldn't find this store. Reload the page and try again.",
+      "readOnly": "This store can't be edited right now.",
+      "aiUnavailable": "The AI isn't available right now. Try again later, or use the manual editor.",
+      "rateLimited": "Too many messages in a short time. Wait a minute and try again.",
+      "invalidInput": "We couldn't read that message. Make it shorter and try again.",
+      "attachmentInvalid": "One of the attachments can't be used. Remove it and try again.",
+      "aiDailyLimit": "You've reached today's limit for AI edits. Try again tomorrow, or use the manual editor.",
+      "aiNoCredits": "You don't have AI credits left.",
+      "aiFailed": "The AI couldn't finish that. Try again, or say it in a different way.",
+      "draftChanged": "The website was changed in another tab. Reload the preview, then try again.",
+      "undoExpired": "This change can't be undone anymore.",
+      "actionExpired": "This suggestion has expired. Ask again to get a new one.",
+      "actionRunning": "This change is already being saved. Wait a moment.",
+      "actionFailed": "We couldn't save this change. Nothing was changed, and no credit was used.",
+      "uploadUnavailable": "Files can't be uploaded right now. Try again later.",
+      "generic": "Something went wrong. Try again.",
+      "getCredits": "Get AI credits"
+    }
+  },
+  "agent": {
+    "card": {
+      "design": {
+        "colors": {
+          "title": "Change the main colour to {primary}",
+          "palette": "Matching colours: {secondary} and {accent}",
+          "note": {
+            "primary_darkened_for_text": "The colour was made a little darker so text on it stays easy to read.",
+            "primary_lightened_for_text": "The colour was made a little lighter so text on it stays easy to read."
+          }
+        },
+        "fonts": {
+          "title": "Change the fonts: {heading} for headings, {body} for text"
+        },
+        "draftOnly": "Saved to your draft. Shoppers see it after you publish."
+      },
+      "products": {
+        "create": {
+          "title": "Add the product \"{name}\""
+        },
+        "price": "Price: EGP {price}",
+        "compareAt": "Price before discount: EGP {price}",
+        "stock": "Stock: {quantity}",
+        "photos": "{count, plural, =0 {No photos} one {1 photo} other {# photos}}",
+        "goesLive": "It goes live on your store right away.",
+        "staysDraft": "It's saved as a draft. Shoppers don't see it until you publish it.",
+        "updateCopy": {
+          "title": "Rewrite the product's text"
+        },
+        "field": {
+          "title": "Product name",
+          "description": "Description",
+          "bulletPoints": "Key features",
+          "seo": "Search engine text (SEO)"
+        },
+        "publish": {
+          "title": "Publish the product"
+        },
+        "hide": {
+          "title": "Hide the product (make it a draft)"
+        }
+      },
+      "settings": {
+        "contact": {
+          "title": "Change the store's contact details",
+          "phone": "Phone: {value}",
+          "whatsapp": "WhatsApp: {value}",
+          "email": "Email: {value}"
+        },
+        "social": {
+          "title": "Set the {platform} link",
+          "value": "Link: {value}"
+        },
+        "seo": {
+          "title": "Change what search engines show",
+          "titleTemplate": "Page title: {value}",
+          "description": "Description: {value}"
+        },
+        "returnPolicy": {
+          "title": "Set the return and exchange policy",
+          "accountWide": "This policy shows on all your stores.",
+          "excerpt": "\"{text}\""
+        }
+      },
+      "shipping": {
+        "template": {
+          "title": "{count, plural, one {Set up 1 delivery zone} other {Set up # delivery zones}}"
+        },
+        "zoneLine": "{name}: {places} (EGP {price})",
+        "replaces": "{count, plural, one {Replaces your current delivery zone} other {Replaces your # current delivery zones}}",
+        "addZone": {
+          "title": "Add the delivery zone \"{name}\""
+        },
+        "editZone": {
+          "title": "Change the delivery zone \"{name}\""
+        },
+        "places": "Places: {places}",
+        "price": "Delivery price: EGP {price}",
+        "days": "Delivery time: {min} to {max} days",
+        "freeOver": "Free delivery on orders over EGP {amount}",
+        "unmatched": "Places we couldn't find: {names}"
+      }
+    }
   },
   "tutorialVideos": {
     "button": "How it works?",
