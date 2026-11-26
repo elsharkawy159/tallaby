@@ -2134,6 +2134,33 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-26 — Code sections connected to save, publish and the storefront, switched off (F-101c; no migration)
+
+- **Built (`65f2611e`, `22b5eb90`):**
+  - **Schema:** the `code` node type, and optional `customCss` on elements and sections.
+  - **Save and publish:**
+    - Code nodes skip the rich-text prop cleaning, which would mangle Liquid, and get their own normaliser.
+    - Every save, header/footer save, publish and draft preview checks Liquid, blocked code and CSS. Those checks are injected from `@workspace/store-sections/code-server`, so they never reach the editor bundle.
+    - Code is capped at 400 KB per page.
+  - **Storefront:**
+    - The code element is drawn on the server only, through `@workspace/store-sections/code-render`.
+    - Picked products and categories join the existing up-front catalog query, scoped to the store.
+    - Output is cleaned and cached for 60 s per store, node, locale and data hash; never in previews.
+    - Scoped custom CSS goes into the page style block.
+    - Nothing is drawn while `platform_switches.code_sections` is off (a missing row means off), outside builder pages and the product page, or on checkout, orders and account routes.
+  - **Builder canvas:** shows a placeholder.
+- **Checks:**
+  - The new code and config tests pass, and the design and template snapshots are unchanged.
+  - 3 tests timed out under load and pass when run alone.
+  - Typecheck passes for store-sections, store-editor and lib.
+  - ecommerce has 16 type errors in `profile.chunks.tsx`, a file this work didn't touch.
+- **Not done:**
+  - the editor (Code tab, sidebar fields from the schema, blocks, server preview action, the "Code section" entry in the Add panel);
+  - the storefront CSP (§7.1–7.2);
+  - the security review and staging check (F-101f), then turning the switch on (owner);
+  - Liquid `routes` don't add the second-language prefix;
+  - `image_url` doesn't resize.
+
 ### 2026-11-26 — Code sections: Liquid core modules built (F-101b–d core; no migration)
 
 - **Built:** in `packages/store-sections/src/code/`, all new files and not yet connected to anything:
