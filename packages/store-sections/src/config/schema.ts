@@ -66,6 +66,8 @@ export const ALLOWED_NODE_TYPES = [
   "marquee", "countdown",
   // Before/after slider and photo dots (look-first pilot L5, 2026-11-11); additive.
   "beforeAfter", "hotspot",
+  // Code sections: seller HTML + Liquid + CSS, rendered and cleaned on the server, never JS (ROADMAP.md F-101, rule 9); additive.
+  "code",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 
@@ -109,6 +111,9 @@ export const slugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "invalid_slug")
   .refine((s) => !(RESERVED_PAGE_SLUGS as readonly string[]).includes(s), "reserved_slug");
 
+/** Cap of one element's or section's custom CSS (F-101b, design note §3.3). */
+export const MAX_CUSTOM_CSS_BYTES = 8 * 1024;
+
 export type ComponentNode = {
   id: string;
   type: AllowedNodeType;
@@ -117,6 +122,8 @@ export type ComponentNode = {
   style?: Record<string, unknown>;
   breakpointStyles?: Record<string, Record<string, unknown>>;
   layout?: "grid" | "absolute";
+  /** Seller CSS for this element, scoped to it at render (F-101b). */
+  customCss?: string;
 };
 
 export const componentNodeSchema: z.ZodType<ComponentNode> = z.lazy(() =>
@@ -128,6 +135,7 @@ export const componentNodeSchema: z.ZodType<ComponentNode> = z.lazy(() =>
     style: styleSchema.optional(),
     breakpointStyles: z.record(z.string(), styleSchema).optional(),
     layout: z.enum(["grid", "absolute"]).optional(),
+    customCss: z.string().max(MAX_CUSTOM_CSS_BYTES).optional(),
   }),
 );
 
@@ -235,6 +243,8 @@ export const sectionInstanceSchema = z.object({
   source: z.string().max(100).regex(/^[a-z0-9-]+@\d{1,4}$/).optional(),
   /** Template configs only: the library section this one is built from (`componentTree` then comes from the library). */
   libraryRef: libraryRefSchema.optional(),
+  /** Seller CSS for the whole section, scoped to it at render (F-101b). */
+  customCss: z.string().max(MAX_CUSTOM_CSS_BYTES).optional(),
 });
 export type SectionInstance = z.output<typeof sectionInstanceSchema>;
 
