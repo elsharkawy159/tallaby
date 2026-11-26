@@ -182,6 +182,8 @@ function splitDeclarations(css: string): string[] | null {
 
 const STYLE_FORBIDDEN = /[\\{}@]|\/\*|\*\/|<!--|-->|(?:^|[^a-z-])(?:-webkit-)?(?:image-set|image|cross-fade|element|src)\s*\(/i;
 const STYLE_PROPERTY = /^(?:-?[a-z][a-z0-9-]*|--[a-z0-9-]+)$/i;
+/** Most `url(` in one inline style. */
+const MAX_STYLE_URLS = 8;
 
 /**
  * Cleans an inline `style` value: every declaration must parse and pass the
@@ -193,6 +195,9 @@ function cleanStyle(value: string): string | null {
   // Control characters can hide a keyword from a pattern; refuse them.
   if (/[\u0000-\u0008\u000b\u000e-\u001f\u007f-\u009f]/.test(value)) return null;
   if (STYLE_FORBIDDEN.test(value)) return null;
+  // Each `url(` costs a scan to the end of the value in the url() patterns
+  // below; a real inline style has a few, so many are refused before they run.
+  if ((value.match(/url\s*\(/gi)?.length ?? 0) > MAX_STYLE_URLS) return null;
   if (!isSafeStyleString(value)) return null;
   const parts = splitDeclarations(value);
   if (!parts) return null;
@@ -393,9 +398,11 @@ const ALLOWED_ATTRIBUTES: Record<string, string[]> = {
 };
 
 function buildOptions(nodeId: string): sanitizeHtml.IOptions {
-  // Open-element stack, fed by the parser's own open/close events, so a tag
-  // knows whether it sits inside an <svg>.
+  // Open-element stack, fed by the parser's own open/close events, and the
+  // number of <svg> on it, so a tag knows in O(1) whether it sits inside one.
+  // `checkCodeOutput` keeps the stack at most CODE_OUTPUT_MAX_DEPTH deep.
   const stack: string[] = [];
+  let svgDepth = 0;
   return {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: ALLOWED_ATTRIBUTES,
@@ -412,11 +419,15 @@ function buildOptions(nodeId: string): sanitizeHtml.IOptions {
     parseStyleAttributes: false,
     enforceHtmlBoundary: false,
     onOpenTag: (name) => {
-      stack.push(name.toLowerCase());
+      const lower = name.toLowerCase();
+      stack.push(lower);
+      if (lower === "svg") svgDepth++;
     },
     onCloseTag: (name) => {
       const at = stack.lastIndexOf(name.toLowerCase());
-      if (at !== -1) stack.length = at;
+      if (at === -1) return;
+      for (let i = stack.length - 1; i >= at; i--) if (stack[i] === "svg") svgDepth--;
+      stack.length = at;
     },
     transformTags: {
       "*": (tagName, attribs) => {
@@ -425,7 +436,8 @@ function buildOptions(nodeId: string): sanitizeHtml.IOptions {
         // so `<Script>` or `<foreignObject>` still meet nonTextTags.
         const canonical = SVG_TAG_BY_LOWER.get(lower) ?? lower;
         if (!ALLOWED_TAGS.includes(canonical)) return { tagName: lower, attribs: {} };
-        const inSvg = stack.slice(0, -1).includes("svg");
+        // onOpenTag already pushed this tag: count only the <svg> around it.
+        const inSvg = svgDepth - (lower === "svg" ? 1 : 0) > 0;
         // No links inside SVG.
         if (canonical === "a" && inSvg) return { tagName: BLOCKED_TAG, attribs: {} };
         return { tagName: canonical, attribs: cleanAttributes(canonical, attribs as Attribs, nodeId) };
@@ -467,11 +479,200 @@ function isSafeOutput(html: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Input limits
+//
+// sanitize-html and its parser do work per open element for every tag (the
+// parser's element stack is an array it unshifts and searches), so their cost
+// grows with tags × depth: 41k unclosed tags took 0.6 s. A template can build
+// that much markup in under a millisecond (`append` doubling), so the input is
+// bounded before it is parsed. A real section is far below these.
+
+/** Most characters of Liquid output the cleaner accepts. */
+export const CODE_OUTPUT_MAX_CHARS = 128 * 1024;
+/** Most tags (`<name`) in it. */
+export const CODE_OUTPUT_MAX_TAGS = 4000;
+/** Deepest element nesting in it. */
+export const CODE_OUTPUT_MAX_DEPTH = 128;
+
+export type CodeOutputLimit =
+  | { code: "output_too_large"; message: string; params: { kb: number } }
+  | { code: "output_too_many_tags"; message: string; params: { tags: number } }
+  | { code: "output_too_deep"; message: string; params: { depth: number } };
+
+/** Elements the parser never pushes (htmlparser2's void elements). */
+const VOID_ELEMENTS = new Set([
+  "area", "base", "basefont", "br", "col", "command", "embed", "frame", "hr", "img", "input",
+  "isindex", "keygen", "link", "meta", "param", "source", "track", "wbr",
+]);
+/** Elements that start foreign content, where `/>` closes a tag. */
+const FOREIGN_ELEMENTS = new Set(["svg", "math"]);
+/** Elements that go back to HTML inside foreign content. */
+const INTEGRATION_ELEMENTS = new Set(["mi", "mo", "mn", "ms", "mtext", "annotation-xml", "foreignobject", "desc", "title"]);
+const P_CLOSERS = [
+  "address", "article", "aside", "blockquote", "details", "div", "dl", "fieldset", "figcaption", "figure",
+  "footer", "form", "header", "hr", "main", "nav", "ol", "pre", "section", "table", "ul",
+];
+const HEADINGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
+/** The open elements a new tag closes (the common part of htmlparser2's table). */
+const OPEN_IMPLIES_CLOSE = new Map<string, ReadonlySet<string>>([
+  ...P_CLOSERS.map((tag) => [tag, new Set(["p"])] as const),
+  ...HEADINGS.map((h) => [h, new Set([...HEADINGS, "p"])] as const),
+  ["tr", new Set(["tr", "th", "td"])],
+  ["th", new Set(["th"])],
+  ["td", new Set(["thead", "th", "td"])],
+  ["li", new Set(["li"])],
+  ["p", new Set(["p"])],
+  ["dd", new Set(["dd", "dt"])],
+  ["dt", new Set(["dd", "dt"])],
+  ["option", new Set(["option"])],
+  ["tbody", new Set(["thead", "tbody"])],
+  ["tfoot", new Set(["thead", "tbody"])],
+]);
+
+const isTagStart = (code: number) => (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+const isSpace = (code: number) => code === 32 || code === 9 || code === 10 || code === 12 || code === 13;
+
+const CH_BANG = 33;
+const CH_DQUOTE = 34;
+const CH_SQUOTE = 39;
+const CH_SLASH = 47;
+const CH_EQUALS = 61;
+const CH_GT = 62;
+const CH_QUESTION = 63;
+
+/**
+ * One linear pass over `html` that refuses what would make the cleaner slow:
+ * more than CODE_OUTPUT_MAX_CHARS characters, more than CODE_OUTPUT_MAX_TAGS
+ * tags (every `<` followed by a letter, inside attribute values too, so it
+ * never counts fewer than the parser sees), or elements nested deeper than
+ * CODE_OUTPUT_MAX_DEPTH (a model of the parser's open-element stack: void
+ * elements, `/>` in SVG, a closing tag closing everything above its match,
+ * and the usual implied closes). Returns null when the output is within them.
+ */
+export function checkCodeOutput(html: string): CodeOutputLimit | null {
+  if (html.length > CODE_OUTPUT_MAX_CHARS) {
+    const kb = CODE_OUTPUT_MAX_CHARS / 1024;
+    return { code: "output_too_large", message: `The section's HTML is too long (more than ${kb} KB).`, params: { kb } };
+  }
+  const n = html.length;
+  let tags = 0;
+  for (let i = html.indexOf("<"); i !== -1; i = html.indexOf("<", i + 1)) {
+    if (i + 1 < n && isTagStart(html.charCodeAt(i + 1))) tags++;
+  }
+  if (tags > CODE_OUTPUT_MAX_TAGS) {
+    return { code: "output_too_many_tags", message: `The section's HTML has more than ${CODE_OUTPUT_MAX_TAGS} tags.`, params: { tags: CODE_OUTPUT_MAX_TAGS } };
+  }
+
+  const stack: string[] = [];
+  const open = new Map<string, number>();
+  // The parser's foreign-content stack: one entry per foreign or integration element open.
+  const foreign: boolean[] = [false];
+  const pop = () => {
+    const name = stack.pop()!;
+    open.set(name, open.get(name)! - 1);
+    if (FOREIGN_ELEMENTS.has(name) || INTEGRATION_ELEMENTS.has(name)) foreign.pop();
+  };
+
+  let i = html.indexOf("<");
+  while (i !== -1 && i + 1 < n) {
+    if (html.startsWith("<!--", i)) {
+      const end = html.indexOf("-->", i + 4);
+      if (end === -1) break;
+      i = html.indexOf("<", end + 3);
+      continue;
+    }
+    const next = html.charCodeAt(i + 1);
+    const closing = next === CH_SLASH && i + 2 < n && isTagStart(html.charCodeAt(i + 2));
+    if (!closing && !isTagStart(next)) {
+      // `<!doctype>`, `<?…>` and `</ …>` run to their `>`; any other `<` is text.
+      if (next === CH_BANG || next === CH_QUESTION || next === CH_SLASH) {
+        const end = html.indexOf(">", i + 2);
+        if (end === -1) break;
+        i = html.indexOf("<", end + 1);
+      } else {
+        i = html.indexOf("<", i + 1);
+      }
+      continue;
+    }
+    let j = i + (closing ? 2 : 1);
+    const nameStart = j;
+    while (j < n) {
+      const c = html.charCodeAt(j);
+      if (isSpace(c) || c === CH_SLASH || c === CH_GT) break;
+      j++;
+    }
+    const name = html.slice(nameStart, j).toLowerCase();
+
+    if (closing) {
+      const end = html.indexOf(">", j);
+      if (end === -1) break;
+      if (!VOID_ELEMENTS.has(name) && (open.get(name) ?? 0) > 0) {
+        while (stack[stack.length - 1] !== name) pop();
+        pop();
+      }
+      i = html.indexOf("<", end + 1);
+      continue;
+    }
+
+    // Attributes: a quote opens a value only right after `=`; `/>` self-closes
+    // unless the `/` ends an unquoted value.
+    let selfClosing = false;
+    let ended = false;
+    while (j < n) {
+      const c = html.charCodeAt(j);
+      if (c === CH_GT) {
+        ended = true;
+        break;
+      }
+      if (c === CH_EQUALS) {
+        j++;
+        while (j < n && isSpace(html.charCodeAt(j))) j++;
+        const q = html.charCodeAt(j);
+        if (q === CH_DQUOTE || q === CH_SQUOTE) {
+          const close = html.indexOf(q === CH_DQUOTE ? '"' : "'", j + 1);
+          if (close === -1) break;
+          j = close + 1;
+        } else {
+          while (j < n && !isSpace(html.charCodeAt(j)) && html.charCodeAt(j) !== CH_GT) j++;
+        }
+        selfClosing = false;
+        continue;
+      }
+      selfClosing = c === CH_SLASH && html.charCodeAt(j + 1) === CH_GT;
+      j++;
+    }
+    // An unterminated tag: the parser reads the rest as part of it.
+    if (!ended) break;
+
+    const implied = OPEN_IMPLIES_CLOSE.get(name);
+    if (implied) while (stack.length && implied.has(stack[stack.length - 1]!)) pop();
+    if (!VOID_ELEMENTS.has(name)) {
+      stack.push(name);
+      open.set(name, (open.get(name) ?? 0) + 1);
+      if (FOREIGN_ELEMENTS.has(name)) foreign.push(true);
+      else if (INTEGRATION_ELEMENTS.has(name)) foreign.push(false);
+      if (stack.length > CODE_OUTPUT_MAX_DEPTH) {
+        return {
+          code: "output_too_deep",
+          message: `The section's HTML nests elements more than ${CODE_OUTPUT_MAX_DEPTH} levels deep.`,
+          params: { depth: CODE_OUTPUT_MAX_DEPTH },
+        };
+      }
+      if (selfClosing && foreign[foreign.length - 1]) pop();
+    }
+    i = html.indexOf("<", j + 1);
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 
 /**
  * Cleans the HTML a code section rendered. `nodeId` (the code node's id) is
  * used to prefix every `id` as `c-<nodeId>-…`. Throws on a malformed nodeId.
- * Returns '' when the final check finds anything executable.
+ * Returns '' when the final check finds anything executable, and when the
+ * input is over the limits of `checkCodeOutput` (the renderer refuses such
+ * output first, with a reason; this keeps the cleaner bounded for any caller).
  */
 export function sanitizeCodeHtml(html: string, options: { nodeId: string }): string {
   const nodeId = options?.nodeId;
@@ -479,6 +680,7 @@ export function sanitizeCodeHtml(html: string, options: { nodeId: string }): str
     throw new Error("sanitizeCodeHtml: invalid nodeId");
   }
   if (typeof html !== "string" || html === "") return "";
+  if (checkCodeOutput(html)) return "";
   // Browsers turn NUL into U+FFFD; dropping it can only join a tag name that
   // the allowlist then sees whole.
   const input = html.replace(/\u0000/g, "");

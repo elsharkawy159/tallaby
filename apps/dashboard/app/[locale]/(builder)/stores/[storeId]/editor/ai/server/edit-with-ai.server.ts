@@ -155,6 +155,7 @@ export async function editWithAiImportFile(storeId: string, fileRef: string): Pr
   const who = await access(storeId);
   if (typeof who === "string") return fail(who);
   try {
+    if (!(await switchOn())) return fail("notFound");
     if (!actionLimiter.check(`edit-ai-file:${who.sellerId}`)) return fail("rateLimited");
     const link = await signEditWithAiFileLink(who.sellerId, who.storeId, String(fileRef ?? ""));
     return link ? { success: true, data: link } : fail("notFound");
@@ -533,6 +534,7 @@ export async function cancelEditWithAiAction(storeId: string, actionId: string):
   const who = await access(storeId);
   if (typeof who === "string") return fail(who);
   try {
+    if (!(await switchOn())) return fail("notFound");
     if (!actionLimiter.check(`edit-ai-cancel:${who.sellerId}`)) return fail("rateLimited");
     if (!actionIdSchema.safeParse(actionId).success) return fail("invalidInput");
     const ctx = editWithAiContext({ sellerId: who.sellerId, storeId: who.storeId, userId: who.userId, locale: "ar", publishProducts: false });

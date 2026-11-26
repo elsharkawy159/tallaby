@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { normalizeCodeNodeProps } from "../code/code-node";
 import { readCodeProps } from "../code/code-props";
 import { toLiquidBlock, toLiquidProduct } from "../code/liquid-objects";
-import { ALLOWED_TAGS, checkLiquidSource, DROPPED_TAG_NAMES } from "../code/liquid.server";
+import { ALLOWED_TAGS, checkLiquidSource, DROPPED_TAG_NAMES, LIQUID_MAX_LIST_ITEMS, REMOVED_FILTER_NAMES } from "../code/liquid.server";
 import { CODE_FILTER_NAMES } from "../code/liquid-filters";
 import { buildCodeScope } from "../code/render-code.server";
 import { sanitizeCodeHtml } from "../code/sanitize-code";
@@ -52,6 +52,12 @@ describe("editor agent system prompt", () => {
     for (const filter of CODE_FILTER_NAMES) expect(withCode).toContain(filter);
     for (const type of SETTING_TYPES) expect(withCode).toContain(type);
     for (const key of STYLE_KEYS) expect(plain).toContain(key);
+  });
+
+  it("states the render limits and never teaches a removed filter", () => {
+    expect(withCode).toContain(`at most ${LIQUID_MAX_LIST_ITEMS} items`);
+    expect(withCode).toContain("128 KB, 4000 tags and 128 levels");
+    for (const filter of REMOVED_FILTER_NAMES) expect(withCode).not.toContain(filter);
   });
 
   it("teaches RTL-safe, mobile-first CSS with the store's variables", () => {

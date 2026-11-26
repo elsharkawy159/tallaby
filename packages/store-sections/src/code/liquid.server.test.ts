@@ -215,7 +215,7 @@ describe("limits", () => {
   });
 
   it("stops a slow nested loop at the time limit", () => {
-    const list = Array.from({ length: 3000 }, (_, i) => i);
+    const list = Array.from({ length: 1000 }, (_, i) => i);
     const start = performance.now();
     const out = render("{% for i in list %}{% for j in list %}{{ j }}{% endfor %}{% endfor %}", { list });
     const ms = performance.now() - start;

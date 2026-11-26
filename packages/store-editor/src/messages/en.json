@@ -1030,6 +1030,12 @@
         "memory_limit": "The section builds too much text or too long a list.",
         "time_limit": "The section took longer than {ms} ms to draw.",
         "source_too_large": "The template is too long (more than {kb} KB).",
+        "filter_not_allowed": "The \"{filter}\" filter isn't available in code sections. Use '{%' for %'}' with '{%' if %'}' instead.",
+        "range_too_large": "A range can have at most {max} items.",
+        "list_too_large": "A list can have at most {max} items.",
+        "output_too_large": "The section's HTML is too long (more than {kb} KB).",
+        "output_too_many_tags": "The section's HTML has more than {tags} tags.",
+        "output_too_deep": "The section's HTML nests tags more than {depth} levels deep.",
         "unclosed_stylesheet": "'{%' stylesheet %'}' isn't closed. Add '{%' endstylesheet %'}'.",
         "unclosed_schema": "'{%' schema %'}' isn't closed. Add '{%' endschema %'}'.",
         "unclosed_javascript": "'{%' javascript %'}' isn't closed. Add '{%' endjavascript %'}'.",
@@ -1094,7 +1100,12 @@
         "unscopable": "It can't be limited to this section.",
         "memory": "It builds too much text or too long a list.",
         "time": "It took longer than {ms} ms.",
-        "size": "The template is longer than {kb} KB."
+        "size": "The template is longer than {kb} KB.",
+        "range": "A range is longer than {max} items.",
+        "list": "A list is longer than {max} items.",
+        "output": "Its HTML is longer than {kb} KB.",
+        "tags": "Its HTML has more than {tags} tags.",
+        "depth": "Its HTML nests tags more than {depth} levels deep."
       }
     }
   },

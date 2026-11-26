@@ -93,7 +93,7 @@ describe("code issue codes", () => {
   it("codes a render limit with its reason", () => {
     const preview = renderCodePreview({
       nodeId: "n1",
-      file: "{% for a in (1..100000) %}{% for b in (1..100000) %}x{% endfor %}{% endfor %}",
+      file: "{% for a in (1..1000) %}{% for b in (1..1000) %}x{% endfor %}{% endfor %}",
       settings: {},
       blocks: [],
       locale: "en",

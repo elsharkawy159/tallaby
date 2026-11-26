@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   previewLink: vi.fn(),
   verify: vi.fn(),
   signUploads: vi.fn(),
+  fileLink: vi.fn(async () => null),
   runStoreAgentTurn: vi.fn(),
   confirmAction: vi.fn(),
   cancelAction: vi.fn(),
@@ -69,7 +70,7 @@ vi.mock("../../server/agent-images.server", () => ({
 vi.mock("./edit-with-ai-files.server", () => ({
   verifyEditWithAiAttachments: mocks.verify,
   signEditWithAiUploads: mocks.signUploads,
-  signEditWithAiFileLink: async () => null,
+  signEditWithAiFileLink: mocks.fileLink,
 }));
 vi.mock("./edit-with-ai-agent.server", () => ({
   agentErrorKey: () => "actionFailed",
@@ -81,7 +82,7 @@ vi.mock("./edit-with-ai-agent.server", () => ({
   toProposalView: (p: unknown) => p,
 }));
 
-const { editWithAiTurn, undoEditWithAi, confirmEditWithAiAction, createEditWithAiUploads } = await import("./edit-with-ai.server");
+const { editWithAiTurn, undoEditWithAi, confirmEditWithAiAction, cancelEditWithAiAction, createEditWithAiUploads, editWithAiImportFile } = await import("./edit-with-ai.server");
 
 const STORE_ID = "11111111-1111-4111-8111-111111111111";
 const PAGE_ID = "22222222-2222-4222-8222-222222222222";
@@ -262,6 +263,10 @@ describe("editWithAiTurn", () => {
     mocks.isSwitchOn.mockImplementation(async (key: string) => key !== "editor_agent");
     expect(await editWithAiTurn(STORE_ID, input())).toEqual({ success: false, error: "notFound" });
     expect(await createEditWithAiUploads(STORE_ID, { files: [{ kind: "image", type: "image/jpeg", size: 10, name: "a.jpg" }] })).toEqual({ success: false, error: "notFound" });
+    expect(await editWithAiImportFile(STORE_ID, "s/t/products.csv")).toEqual({ success: false, error: "notFound" });
+    expect(await cancelEditWithAiAction(STORE_ID, "act_x")).toEqual({ success: false, error: "notFound" });
+    expect(mocks.fileLink).not.toHaveBeenCalled();
+    expect(mocks.cancelAction).not.toHaveBeenCalled();
     expect(mocks.verify).not.toHaveBeenCalled();
     expect(mocks.generateStructured).not.toHaveBeenCalled();
   });

@@ -29,6 +29,13 @@ export const CODE_ISSUE_CODES = [
   "memory_limit",
   "time_limit",
   "source_too_large",
+  "filter_not_allowed",
+  "range_too_large",
+  "list_too_large",
+  // sanitize-code.ts (checkCodeOutput, refused by liquid.server.ts before cleaning)
+  "output_too_large",
+  "output_too_many_tags",
+  "output_too_deep",
   // section-file.ts
   "unclosed_stylesheet",
   "unclosed_schema",
@@ -96,6 +103,11 @@ export const CODE_ISSUE_REASONS = [
   "memory",
   "time",
   "size",
+  "range",
+  "list",
+  "output",
+  "tags",
+  "depth",
 ] as const;
 
 export type CodeIssueReason = (typeof CODE_ISSUE_REASONS)[number];

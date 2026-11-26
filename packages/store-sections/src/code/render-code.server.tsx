@@ -9,8 +9,12 @@
  *   with `codeSections`), of the request's store only (rule 5).
  * - Every result is cleaned by `sanitizeCodeHtml` (the security boundary) and
  *   drawn in one `<div data-node-id class="code-node">`. No script is emitted.
- * - Nothing is drawn when the switch is off, on a page type other than a
- *   builder page or the product page, or on a pass-through route (§4.8).
+ * - Nothing is drawn when the switch is off, on a pass-through route (§4.8),
+ *   or for a page type other than `CODE_PAGE_TYPES` ("page", "product"). The
+ *   storefront draws builder pages as "page" and the product page as
+ *   "product", and the shared header and footer as "page" on every route that
+ *   isn't pass-through (the catalog, blog and search pages too), so code in
+ *   them shows site-wide; the catalog's own product cards are "catalog".
  * - Output is cached in-process for 60 s per store, revision, node, locale and
  *   data hash (rule 8); never in a preview.
  */

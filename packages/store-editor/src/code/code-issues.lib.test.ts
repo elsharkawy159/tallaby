@@ -11,7 +11,7 @@ const translator = (locale: "ar" | "en") =>
   createTranslator({ locale, messages: LOCALES[locale], namespace: "storeEditor.code", timeZone: "Africa/Cairo" }) as unknown as CodeIssueTranslator;
 
 /** A value for every placeholder the core fills. */
-const PARAMS = { tag: "form", filter: "evil", ms: 50, kb: 64, at: "import", property: "color", selector: ".a", name: "spin", pseudo: "::part" };
+const PARAMS = { tag: "form", filter: "evil", ms: 50, kb: 64, at: "import", property: "color", selector: ".a", name: "spin", pseudo: "::part", max: 1000, tags: 4000, depth: 128 };
 
 describe("code issue messages", () => {
   for (const locale of ["ar", "en"] as const) {

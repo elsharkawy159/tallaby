@@ -9,22 +9,60 @@
  *   a missing field renders empty.
  * - Every `{{ }}`, `{% echo %}` and `{% cycle %}` value is HTML-escaped;
  *   `| raw` opts out (the output is still cleaned by `sanitize-code.ts`).
- * - Limits: 64 KB of source, 50 ms per render, 1e6 memory units.
+ * - Limits: 64 KB of source, 50 ms per render, 1e6 memory units, and the
+ *   output limits of `checkCodeOutput` (128 KB, 4,000 tags, 128 levels).
  * - Dropped tags are a parse error that names the tag, never a silent no-op.
+ * - The time limit is only checked between template steps, so no single step
+ *   may do much work: the filters that run an expression per item are removed
+ *   (`REMOVED_FILTER_NAMES`, a parse error), and a range, a `{% for %}`
+ *   list, a list printed by `{{ }}` and every list a filter takes or returns
+ *   holds at most `LIQUID_MAX_LIST_ITEMS` items (a limit error).
  *
  * Parsed templates are kept in a 500-entry LRU keyed by the source's sha256.
  * `renderLiquid` is synchronous (the React renderer is) and never throws.
  */
 import { createHash } from "node:crypto";
-import { Context, Liquid, Tag, type FS, type Template, type TagToken, type TopLevelToken } from "liquidjs";
-import type { CodeIssue, CodeIssueParams, CodeIssueReason } from "./code-issues";
+import {
+  Context,
+  evalToken,
+  evalTokenValue,
+  ForTag,
+  Liquid,
+  Tag,
+  TokenKind,
+  toValue,
+  type FilterImplOptions,
+  type FS,
+  type Parser,
+  type RangeToken,
+  type Template,
+  type TagToken,
+  type TopLevelToken,
+} from "liquidjs";
+import { positionAt, type CodeIssue, type CodeIssueParams, type CodeIssueReason } from "./code-issues";
 import { FILTER_CONTEXT_REGISTER, registerCodeFilters, type FilterContext } from "./liquid-filters";
 import { LiquidHtml, type LiquidScope } from "./liquid-objects";
+import { checkCodeOutput } from "./sanitize-code";
 
 export const LIQUID_PARSE_LIMIT = 64 * 1024;
 export const LIQUID_RENDER_LIMIT_MS = 50;
+/**
+ * liquidjs charges a range's length, a list filter's input length and a string
+ * filter's text length. With lists capped at LIQUID_MAX_LIST_ITEMS and output
+ * at 128 KB, 1e6 still leaves a real section (a few hundred products and
+ * blocks, 128 KB of text) ample room while capping the text a render may build.
+ */
 export const LIQUID_MEMORY_LIMIT = 1e6;
 export const LIQUID_CACHE_SIZE = 500;
+/** Most items in a range, a `{% for %}` list, a printed list, or a list a filter takes or returns. */
+export const LIQUID_MAX_LIST_ITEMS = 1000;
+
+/**
+ * Standard filters that evaluate an expression for every item. liquidjs only
+ * checks the time limit between template steps, so one call over a long list
+ * ran for seconds. They are removed: using one is a parse error.
+ */
+export const REMOVED_FILTER_NAMES = ["where_exp", "reject_exp", "group_by_exp", "has_exp", "find_index_exp", "find_exp"] as const;
 
 /** Tags a code section may use (liquidjs names; `#` is the inline comment). */
 export const ALLOWED_TAGS = [
@@ -50,6 +88,36 @@ const DROPPED_TAGS: Record<string, { block: boolean; key: CodeIssueReason; reaso
   schema: { block: true, key: "schema_nested", reason: "{% schema %} belongs once at the top level of the section file, not inside the template." },
 };
 export const DROPPED_TAG_NAMES = Object.keys(DROPPED_TAGS);
+
+/** A code-section limit reached while rendering; `issue` is the matching `CodeIssue` (without position). */
+class CodeLimitError extends Error {
+  constructor(readonly issue: { code: string; message: string; params: CodeIssueParams }) {
+    super(issue.message);
+    this.name = "CodeLimitError";
+  }
+}
+
+function rangeTooLarge(): CodeLimitError {
+  return new CodeLimitError({
+    code: "range_too_large",
+    message: `A range can have at most ${LIQUID_MAX_LIST_ITEMS} items.`,
+    params: { max: LIQUID_MAX_LIST_ITEMS },
+  });
+}
+
+function listTooLarge(): CodeLimitError {
+  return new CodeLimitError({
+    code: "list_too_large",
+    message: `A list can have at most ${LIQUID_MAX_LIST_ITEMS} items.`,
+    params: { max: LIQUID_MAX_LIST_ITEMS },
+  });
+}
+
+/** Throws when `value` is a list longer than LIQUID_MAX_LIST_ITEMS. */
+function capList(value: unknown): void {
+  const v = toValue(value);
+  if (Array.isArray(v) && v.length > LIQUID_MAX_LIST_ITEMS) throw listTooLarge();
+}
 
 class TagNotAllowedError extends Error {
   constructor(readonly tag: string, readonly reasonKey: CodeIssueReason, reason: string) {
@@ -97,6 +165,7 @@ const NO_FS: FS = {
 /** Escapes every output value except `LiquidHtml`, charging the memory limit like liquidjs's own `escape`. */
 function escapeOutput(this: { context: Context }, value: unknown): string {
   if (value instanceof LiquidHtml) return value.html;
+  capList(value);
   const text = stringify(value);
   this.context.memoryLimit.use(text.length);
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
@@ -111,6 +180,139 @@ function stringify(value: unknown): string {
     if (v !== value) return stringify(v);
   }
   return String(value);
+}
+
+// ---------------------------------------------------------------------------
+// List and range caps
+// ---------------------------------------------------------------------------
+
+type TokenLike = { kind: number; getText(): string; getPosition(): [number, number]; input: string; begin: number; end: number };
+type Evaluate = (ctx: Context, inner: TokenLike, lenient?: boolean) => Generator<unknown, unknown, unknown>;
+
+/**
+ * A value token that runs `evaluate` with `inner` (the token it stands for).
+ * liquidjs evaluates a filtered-value token as `initial.evaluate(ctx)`
+ * followed by its (here: no) filters, so this is how a check runs with the
+ * render context. `inner` stays a property, so `eachRange` still reaches a
+ * range inside it.
+ */
+function guardedToken(inner: TokenLike, evaluate: Evaluate): TokenLike {
+  const token = {
+    kind: TokenKind.FilteredValue,
+    input: inner.input,
+    begin: inner.begin,
+    end: inner.end,
+    inner,
+    getText: () => token.inner.getText(),
+    getPosition: () => token.inner.getPosition(),
+    initial: { evaluate: (ctx: Context, lenient?: boolean) => evaluate(ctx, token.inner, lenient) },
+    filters: [],
+  };
+  return token;
+}
+
+/** `(a..b)`, refusing more than LIQUID_MAX_LIST_ITEMS items before liquidjs builds the list. */
+function guardedRange(range: RangeToken): TokenLike {
+  return guardedToken(range as unknown as TokenLike, function* (ctx) {
+    const low = +((yield evalTokenValue(range.lhs, ctx)) as number);
+    const high = +((yield evalTokenValue(range.rhs, ctx)) as number);
+    if (high - low + 1 > LIQUID_MAX_LIST_ITEMS) throw rangeTooLarge();
+    return yield evalToken(range, ctx);
+  });
+}
+
+const isRangeToken = (value: unknown): value is RangeToken =>
+  value != null && typeof value === "object" && (value as { kind?: unknown }).kind === TokenKind.Range;
+
+/** Parsed-template keys that never hold a template's own value tokens (the engine, source text, handlers). */
+const WALK_SKIP = new Set(["liquid", "token", "tokenizer", "handler", "input", "file"]);
+
+/**
+ * Visits every range token in parsed templates (in tag arguments, outputs,
+ * filter arguments, loop collections, `{% liquid %}` bodies…) and puts
+ * `replace(range)` in its place. Templates are small (64 KB of source).
+ */
+function eachRange(root: unknown, replace: (range: RangeToken) => unknown): void {
+  const seen = new Set<object>();
+  const visit = (node: unknown): void => {
+    if (node == null || typeof node !== "object" || seen.has(node)) return;
+    seen.add(node);
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) {
+        if (isRangeToken(node[i])) node[i] = replace(node[i]);
+        else visit(node[i]);
+      }
+      return;
+    }
+    const record = node as Record<string, unknown>;
+    for (const key of Object.keys(record)) {
+      if (WALK_SKIP.has(key)) continue;
+      if (isRangeToken(record[key])) record[key] = replace(record[key] as RangeToken);
+      else visit(record[key]);
+    }
+  };
+  visit(root);
+}
+
+const literalNumber = (token: unknown): number | null => {
+  const content = (token as { content?: unknown } | undefined)?.content;
+  if (typeof content !== "number" && typeof content !== "string") return null;
+  const n = Number(content);
+  return Number.isFinite(n) ? n : null;
+};
+
+/** Save-time issues for ranges with literal bounds over the cap (`(1..5000)`). */
+function literalRangeIssues(templates: Template[], source: string): CodeIssue[] {
+  const issues: CodeIssue[] = [];
+  eachRange(templates, (range) => {
+    const low = literalNumber(range.lhs);
+    const high = literalNumber(range.rhs);
+    if (low !== null && high !== null && high - low + 1 > LIQUID_MAX_LIST_ITEMS) {
+      const at = range.input === source ? positionAt(source, range.begin) : {};
+      issues.push({ ...rangeTooLarge().issue, ...at });
+    }
+    return range;
+  });
+  return issues;
+}
+
+/** `{% for %}` that refuses a list of more than LIQUID_MAX_LIST_ITEMS items. */
+class CappedForTag extends ForTag {
+  constructor(token: TagToken, remainTokens: TopLevelToken[], liquid: Liquid, parser: Parser) {
+    super(token, remainTokens, liquid, parser);
+    // A range collection is guarded by `eachRange` through `inner`, before it is built.
+    this.collection = guardedToken(this.collection as unknown as TokenLike, function* (ctx, inner, lenient) {
+      const value = yield evalToken(inner as never, ctx, lenient);
+      capList(value);
+      return value;
+    }) as unknown as ForTag["collection"];
+  }
+}
+
+/** The filter, refusing a list of more than LIQUID_MAX_LIST_ITEMS items as its input, an argument or its result. */
+function cappedFilter(impl: FilterImplOptions): FilterImplOptions {
+  const handler = typeof impl === "function" ? impl : impl.handler;
+  if (typeof handler !== "function") return impl;
+  const capped = function (this: unknown, value: unknown, ...args: unknown[]): unknown {
+    capList(value);
+    for (const arg of args) {
+      capList(arg);
+      // A named argument is passed as [name, value].
+      if (Array.isArray(arg) && arg.length === 2 && typeof arg[0] === "string") capList(arg[1]);
+    }
+    const out: unknown = handler.call(this as never, value, ...args);
+    if (out != null && typeof (out as { next?: unknown }).next === "function") {
+      // A generator filter (sort, map, where…): liquidjs runs what is yielded.
+      return (function* (): Generator<unknown, unknown, unknown> {
+        const result = yield out;
+        capList(result);
+        return result;
+      })();
+    }
+    capList(out);
+    return out;
+  };
+  return typeof impl === "function" ? capped : { ...impl, handler: capped };
 }
 
 function createEngine(catchAllErrors: boolean): Liquid {
@@ -134,7 +336,10 @@ function createEngine(catchAllErrors: boolean): Liquid {
     if (!(ALLOWED_TAGS as readonly string[]).includes(name)) delete engine.tags[name];
   }
   for (const [name, { block, key, reason }] of Object.entries(DROPPED_TAGS)) engine.registerTag(name, droppedTag(name, block, key, reason));
+  engine.registerTag("for", CappedForTag);
   registerCodeFilters(engine);
+  for (const name of REMOVED_FILTER_NAMES) delete engine.filters[name];
+  for (const [name, impl] of Object.entries(engine.filters)) engine.filters[name] = cappedFilter(impl);
   return engine;
 }
 
@@ -160,7 +365,9 @@ function parseCached(source: string): Parsed {
   }
   let parsed: Parsed;
   try {
-    parsed = { templates: liquidEngine.parse(source) };
+    const templates = liquidEngine.parse(source);
+    eachRange(templates, guardedRange);
+    parsed = { templates };
   } catch (error) {
     parsed = { error };
   }
@@ -188,6 +395,7 @@ type LiquidLikeError = Error & {
 };
 
 function isLimitError(error: unknown): boolean {
+  if (rootCause(error) instanceof CodeLimitError) return true;
   const e = error as LiquidLikeError;
   const messages = [e?.message, (e?.originalError as Error | undefined)?.message];
   return messages.some((m) => typeof m === "string" && /limit exceeded/.test(m));
@@ -227,13 +435,22 @@ function toIssue(error: unknown): CodeIssue {
   const e = error as LiquidLikeError;
   const position = e?.token?.getPosition?.();
   const at = position ? { line: position[0], column: position[1] } : {};
-  const dropped = rootCause(e);
-  if (dropped instanceof TagNotAllowedError) {
-    return { code: "tag_not_allowed", message: dropped.message, params: { tag: dropped.tag, reason: dropped.reasonKey }, ...at };
+  const root = rootCause(e);
+  if (root instanceof TagNotAllowedError) {
+    return { code: "tag_not_allowed", message: root.message, params: { tag: root.tag, reason: root.reasonKey }, ...at };
   }
+  if (root instanceof CodeLimitError) return { ...root.issue, ...at };
   if (isLimitError(e)) return limitIssue(e, at);
   const message = bareMessage(e);
   const filter = /^undefined filter: (\S+)/.exec(message);
+  if (filter && (REMOVED_FILTER_NAMES as readonly string[]).includes(filter[1]!)) {
+    return {
+      code: "filter_not_allowed",
+      message: `The "${filter[1]}" filter isn't available in code sections. Use {% for %} with {% if %} instead.`,
+      params: { filter: filter[1]! },
+      ...at,
+    };
+  }
   if (filter) return { code: "unknown_filter", message: `Unknown filter "${filter[1]}".`, params: { filter: filter[1]! }, ...at };
   return { code: "liquid_syntax", message, params: { detail: message }, ...at };
 }
@@ -244,8 +461,7 @@ export function checkLiquidSource(source: string): CodeIssue[] {
     return [sourceTooLarge()];
   }
   try {
-    checkEngine.parse(source);
-    return [];
+    return literalRangeIssues(checkEngine.parse(source), source);
   } catch (error) {
     const list = (error as LiquidLikeError).errors;
     return Array.isArray(list) && list.length ? list.map(toIssue) : [toIssue(error)];
@@ -282,8 +498,12 @@ export function renderLiquid(
     }
     const context = new Context(scope, liquidEngine.options, { sync: true }, { liquid: liquidEngine });
     context.setRegister(FILTER_CONTEXT_REGISTER, { locale: ctx.locale, currency: ctx.currency, currencyLabel: ctx.currencyLabel });
-    const html = liquidEngine.renderSync(parsed.templates, context);
-    return { html: typeof html === "string" ? html : String(html ?? "") };
+    const rendered = liquidEngine.renderSync(parsed.templates, context);
+    const html = typeof rendered === "string" ? rendered : String(rendered ?? "");
+    // Refused before it reaches the cleaner, whose cost grows with tags × depth.
+    const limit = checkCodeOutput(html);
+    if (limit) return { html: "", error: { kind: "limit", message: limit.message, code: limit.code, params: limit.params } };
+    return { html };
   } catch (error) {
     return { html: "", error: { kind: isLimitError(error) ? "limit" : "render", ...errorOf(error) } };
   }

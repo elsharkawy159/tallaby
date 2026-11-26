@@ -13,9 +13,10 @@
  * The prompt and everything the model writes face sellers: they never name
  * another platform (code-sections design §11.8). A test greps the built prompt.
  */
-import { ALLOWED_TAGS, DROPPED_TAG_NAMES } from "../code/liquid.server";
+import { ALLOWED_TAGS, DROPPED_TAG_NAMES, LIQUID_MAX_LIST_ITEMS } from "../code/liquid.server";
 import { CODE_FILTER_NAMES, STOREFRONT_STRINGS } from "../code/liquid-filters";
 import { MAX_CODE_CSS_BYTES, MAX_CODE_SOURCE_BYTES } from "../code/code-node";
+import { CODE_OUTPUT_MAX_CHARS, CODE_OUTPUT_MAX_DEPTH, CODE_OUTPUT_MAX_TAGS } from "../code/sanitize-code";
 import {
   MAX_BLOCK_SETTINGS,
   MAX_BLOCK_TYPES,
@@ -174,6 +175,7 @@ Liquid:
 - Filters: ${list(CODE_FILTER_NAMES)}, plus ${list(STANDARD_FILTERS_FOR_PROMPT)}. No other filter exists (an unknown filter fails the save).
 - money filters take minor units (product.price is in 1/100 of the currency): {{ product.price | money }}.
 - {{ … }} output is escaped. richtext and inline_richtext settings print as cleaned HTML.
+- Limits (over one, the section isn't shown): a range such as (1..n), a {% for %} list and any list a filter takes or makes hold at most ${LIQUID_MAX_LIST_ITEMS} items; the drawn HTML is at most ${CODE_OUTPUT_MAX_CHARS / 1024} KB, ${CODE_OUTPUT_MAX_TAGS} tags and ${CODE_OUTPUT_MAX_DEPTH} levels of nested tags. Loop over the section's blocks and picked products; never build long lists or repeat markup in a loop.
 - Images: {{ section.settings.image | image_url: width: 800 }} or {{ section.settings.image | image_tag: alt: section.settings.title, class: "photo" }}; when no image is set, {{ "image" | placeholder_svg_tag: "photo" }}.
 - "t" prints a built-in storefront word: ${list(Object.keys(STOREFRONT_STRINGS).map((k) => `"${k}"`))}.
 - Loop blocks with {% for block in section.blocks %} and put {{ block.attributes }} on each block's outer tag (the editor uses it to select the block).

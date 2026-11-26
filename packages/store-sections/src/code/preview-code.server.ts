@@ -115,7 +115,16 @@ function designSystemOf(value: unknown): { colors?: Record<string, unknown>; typ
 /** "(line 3, column 7)" that `renderLiquid` appends, relative to the stored source. */
 const RENDER_POSITION = /\s*\(line (\d+), column (\d+)\)$/;
 
-const LIMIT_REASONS: Record<string, CodeIssueReason> = { memory_limit: "memory", time_limit: "time", source_too_large: "size" };
+const LIMIT_REASONS: Record<string, CodeIssueReason> = {
+  memory_limit: "memory",
+  time_limit: "time",
+  source_too_large: "size",
+  range_too_large: "range",
+  list_too_large: "list",
+  output_too_large: "output",
+  output_too_many_tags: "tags",
+  output_too_deep: "depth",
+};
 
 /** A render error's params for the editor: the limit hit (`reason` and its numbers), else liquidjs's English detail. */
 function renderParams(error: LiquidRenderError): CodeIssueParams {
