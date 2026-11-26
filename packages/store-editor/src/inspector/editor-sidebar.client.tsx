@@ -130,7 +130,7 @@ export function EditorSidebar({
             </button>
           )}
         </div>
-        <AgentDock store={store} uiLocale={uiLocale} />
+        <AgentDock store={store} uiLocale={uiLocale} storeId={storeId} readOnly={readOnly} />
       </div>
     );
   }
@@ -322,7 +322,7 @@ export function EditorSidebar({
           />
         )}
       </div>
-      <AgentDock store={store} uiLocale={uiLocale} />
+      <AgentDock store={store} uiLocale={uiLocale} storeId={storeId} readOnly={readOnly} />
     </div>
   );
 }

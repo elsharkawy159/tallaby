@@ -19,6 +19,8 @@ export type EditorLinks = {
   formEditBase: string | null;
   /** Canvas empty states: show the "add records" links (Pages buttons always show). */
   dataActions: boolean;
+  /** AI assistant: where the seller gets more AI credits (plan and credits page). */
+  aiCredits: string | null;
 };
 
 export type EditorLinkOverrides = { [K in keyof EditorLinks]?: EditorLinks[K] };
@@ -34,6 +36,7 @@ export function defaultEditorLinks(storeId: string): EditorLinks {
     formSubmissions: `/stores/${storeId}/website/forms/submissions`,
     formEditBase: `/stores/${storeId}/website/forms`,
     dataActions: true,
+    aiCredits: "/settings/plan",
   };
 }
 

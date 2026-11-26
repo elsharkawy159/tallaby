@@ -184,6 +184,17 @@ export function createCodePreviewRunner({
       );
     },
 
+    /**
+     * Shows a preview the host already rendered for this input (the AI agent's
+     * turn returns one per code node it wrote), so the canvas doesn't ask again.
+     */
+    seed(input: CodePreviewInput, view: { html: string; css: string }) {
+      const pending = canvasTimers.get(input.nodeId);
+      if (pending !== undefined) timers.clear(pending);
+      canvasTimers.delete(input.nodeId);
+      setEntry(input.nodeId, { key: previewKey(input), status: "ready", html: view.html, css: view.css, issues: [] });
+    },
+
     /** Forgets a node's Code tab check (the file was put back to the stored one). */
     resetFile(nodeId: string) {
       const pending = fileTimers.get(nodeId);

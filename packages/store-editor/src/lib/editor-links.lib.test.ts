@@ -11,6 +11,7 @@ describe("resolveEditorLinks", () => {
       formSubmissions: "/stores/s1/website/forms/submissions",
       formEditBase: "/stores/s1/website/forms",
       dataActions: true,
+      aiCredits: "/settings/plan",
     });
   });
 
