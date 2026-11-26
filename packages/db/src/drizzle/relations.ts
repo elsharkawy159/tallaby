@@ -5,7 +5,7 @@ import { productStoreSplit } from "./schema";
 import { storeSizeCharts, storeSizeChartTargets } from "./schema";
 import { productAiPrompts } from "./schema";
 import { tallabyPayWallets, tallabyPaySales, tallabyPayPayouts, tallabyPayEntries, tallabyPayKyc } from "./schema";
-import { sellerSetupReminders } from "./schema";
+import { sellerSetupReminders, sellerEmailOptOuts } from "./schema";
 import { storeWhatsappSettings, whatsappSettings, whatsappContacts, whatsappMessages, whatsappInbound } from "./schema";
 import { stores, storeBlockedPhones, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, adminNotifications, sellerNotifications, shipmentCarrierEvents, aiUsageLogs, featureRequests, featureRequestVotes, referralCommissions, referralPayouts, sellerWelcomeGifts, storeCheckoutLeads, storeCustomerNotes, sellerPushSubscriptions, sellerPushSettings, adminPushSubscriptions, stockMovements, storeStockSubscriptions, storeEmailCampaigns, storeEmailCampaignRecipients, storeEmailUnsubscribes, storeWinbackSends, storeAppRequests, storeAppInstalls, themeRequests } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
@@ -1530,6 +1530,10 @@ export const productAiPromptsRelations = relations(productAiPrompts, ({one}) => 
 
 export const sellerSetupRemindersRelations = relations(sellerSetupReminders, ({one}) => ({
 	seller: one(sellers, { fields: [sellerSetupReminders.sellerId], references: [sellers.id] }),
+}));
+
+export const sellerEmailOptOutsRelations = relations(sellerEmailOptOuts, ({one}) => ({
+	seller: one(sellers, { fields: [sellerEmailOptOuts.sellerId], references: [sellers.id] }),
 }));
 
 export const storeDiscountRulesRelations = relations(storeDiscountRules, ({one}) => ({

@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { z } from "zod";
 import { ORDERS_FROM_ADDRESS, sendEmail } from "../lib/resend";
 import {
@@ -31,7 +31,7 @@ import {
 } from "../lib/emails/seller-emails";
 import { sendFeeTrialReminder } from "../lib/fee-trial-reminder";
 import { sendSellerSetupReminder } from "../lib/emails/setup-reminder-email";
-import { sendSellerFirstWeekEmails } from "../lib/emails/seller-first-week-email";
+import { sendSellerInsightsEmails } from "../lib/emails/seller-insights-email";
 import { sendBackInStock } from "../lib/emails/stock-alert-email";
 import {
   renderStoreCampaignPreview,
@@ -247,14 +247,23 @@ app.post("/fee-trial-reminder", async (c) => {
   }
 });
 
-app.post("/seller-first-week", async (c) => {
+/**
+ * Seller store-offline and weekly insights emails (ROADMAP.md F-113), one
+ * bounded batch per hourly ecommerce cron run. Replaces F-104's first-week
+ * email: `/seller-first-week` is kept as an alias so a cron deployed before
+ * this backend keeps working.
+ */
+async function sellerInsightsBatch(c: Context) {
   try {
-    return c.json(await sendSellerFirstWeekEmails());
+    return c.json(await sendSellerInsightsEmails());
   } catch {
-    console.error("[email] first-week insights batch failed");
-    return c.json({ error: "Failed to run first-week insights batch" }, 500);
+    console.error("[email] seller insights batch failed");
+    return c.json({ error: "Failed to run seller insights batch" }, 500);
   }
-});
+}
+
+app.post("/seller-insights", sellerInsightsBatch);
+app.post("/seller-first-week", sellerInsightsBatch);
 
 const setupReminderSchema = z.object({
   sellerId: z.string().uuid(),

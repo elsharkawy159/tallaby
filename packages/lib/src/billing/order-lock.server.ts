@@ -93,32 +93,42 @@ export async function isActivatedByMoney(sellerId: string): Promise<boolean> {
  */
 export async function getOrderLock(sellerId: string, reads: OrderLockReads = {}): Promise<OrderLock> {
   try {
-    const { usdLive } = await (reads.billing ?? getBillingState)();
-    // No more queries before the switch.
-    if (!usdLive) return ORDERS_UNLOCKED;
-
-    const [seller, facts] = await Promise.all([
-      (reads.seller ?? (() => readLockSeller(sellerId)))(),
-      loadActivationFacts(sellerId),
-    ]);
-
-    const activation = {
-      usdLive,
-      seller: seller ?? null,
-      hasTopUp: facts.hasTopUp,
-      hasHadPositiveBalance: facts.hasHadPositiveBalance,
-    };
-    if (isActivated(activation)) return ORDERS_UNLOCKED;
-
-    return orderLockState({
-      ...activation,
-      hasPendingManualTopUp: facts.hasPendingManualTopUp,
-      firstOrders: await loadGraceOrders(sellerId, orderGraceStart(seller?.createdAt)),
-    });
+    return await readOrderLockStrict(sellerId, reads);
   } catch (error) {
     logServerError("wallet", "order lock check failed", { sellerId }, error);
     return ORDERS_UNLOCKED;
   }
+}
+
+/**
+ * The same answer as getOrderLock, but a database error throws instead of
+ * failing open. For a caller where "unlocked" after an error would do the
+ * wrong thing, such as the store-offline email (ROADMAP.md F-113), which must
+ * skip the seller for that run rather than guess.
+ */
+export async function readOrderLockStrict(sellerId: string, reads: OrderLockReads = {}): Promise<OrderLock> {
+  const { usdLive } = await (reads.billing ?? getBillingState)();
+  // No more queries before the switch.
+  if (!usdLive) return ORDERS_UNLOCKED;
+
+  const [seller, facts] = await Promise.all([
+    (reads.seller ?? (() => readLockSeller(sellerId)))(),
+    loadActivationFacts(sellerId),
+  ]);
+
+  const activation = {
+    usdLive,
+    seller: seller ?? null,
+    hasTopUp: facts.hasTopUp,
+    hasHadPositiveBalance: facts.hasHadPositiveBalance,
+  };
+  if (isActivated(activation)) return ORDERS_UNLOCKED;
+
+  return orderLockState({
+    ...activation,
+    hasPendingManualTopUp: facts.hasPendingManualTopUp,
+    firstOrders: await loadGraceOrders(sellerId, orderGraceStart(seller?.createdAt)),
+  });
 }
 
 /**

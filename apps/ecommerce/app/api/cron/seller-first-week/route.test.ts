@@ -12,7 +12,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("first-week insights cron", () => {
+describe("seller insights cron", () => {
   it("rejects an unauthorized job before contacting the backend", async () => {
     vi.stubEnv("CRON_SECRET", "cron-only");
     const fetch = vi.fn();
@@ -25,12 +25,12 @@ describe("first-week insights cron", () => {
     vi.stubEnv("CRON_SECRET", "cron-only");
     vi.stubEnv("INTERNAL_API_SECRET", "email-only");
     vi.stubEnv("BACKEND_API_URL", "https://backend.example/");
-    const counts = { sent: 2, failed: 1, skipped: 0 };
+    const counts = { offline: { sent: 1, failed: 0, skipped: 0 }, weekly: { sent: 2, failed: 1, skipped: 0 } };
     const fetch = vi.fn().mockResolvedValueOnce(Response.json(counts)).mockResolvedValueOnce(new Response(null, { status: 500 }));
     vi.stubGlobal("fetch", fetch);
 
     expect(await (await GET(request("cron-only"))).json()).toEqual(counts);
-    expect(fetch).toHaveBeenCalledWith("https://backend.example/api/emails/seller-first-week", expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith("https://backend.example/api/emails/seller-insights", expect.objectContaining({
       method: "POST",
       headers: { Authorization: "Bearer email-only" },
     }));

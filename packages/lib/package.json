@@ -681,6 +681,14 @@
       "types": "./src/emails/email-policy.server.ts",
       "default": "./src/emails/email-policy.server.ts"
     },
+    "./emails/seller-insights": {
+      "types": "./src/emails/seller-insights.lib.ts",
+      "default": "./src/emails/seller-insights.lib.ts"
+    },
+    "./emails/seller-insights/server": {
+      "types": "./src/emails/seller-insights.server.ts",
+      "default": "./src/emails/seller-insights.server.ts"
+    },
     "./orders/test-order": {
       "types": "./src/orders/test-order.server.ts",
       "default": "./src/orders/test-order.server.ts"

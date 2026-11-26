@@ -39,7 +39,11 @@ export const EMAIL_RULES = {
   // Store setup reminders, 24 hours and 7 days after signup (F-94; own claim table, 0170)
   seller_setup_reminder_day1: "keep",
   seller_setup_reminder_day7: "keep",
+  // F-104's first-week email: no longer sent (F-113 replaced it), kept so old delivery rows keep a rule
   seller_first_week: "keep",
+  // F-113: store offline after the trial (once per seller) and weekly store insights (activated sellers)
+  seller_store_offline: "keep",
+  seller_weekly_insights: "keep",
   // Campaigns a seller sends, and their test sends
   store_campaign: "manual",
   store_campaign_test: "manual",

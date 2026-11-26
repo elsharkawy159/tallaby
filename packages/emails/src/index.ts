@@ -17,4 +17,5 @@ export * from "./SellerEmails.js";
 export * from "./kit/brand.js";
 export type * from "./kit/types.js";
 export * from "./SellerSetupReminderEmail.js";
-export * from "./SellerFirstWeekEmail.js";
+export * from "./SellerStoreOfflineEmail.js";
+export * from "./SellerWeeklyInsightsEmail.js";

@@ -343,6 +343,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 81  | F-104 | First-week store insights email for sellers | P1 | no | Built locally, rollout pending |
 | 82  | F-105 | QR codes for the storefront, published pages and products | P1 | no | Built locally, rollout pending |
 | 83  | F-106 | Admin sellers list: trial filter and "offline, no top-up" badge | P1 | no | Built 2026-11-24 (uncommitted); not tried in a browser |
+| 84  | F-113 | Store-offline top-up email (once) and weekly store insights email for sellers; replaces F-104 | P1 | yes (0183, not applied) | Owner request 2026-11-26; built 2026-11-26 (uncommitted); 0183 not applied anywhere |
 
 ---
 
@@ -1481,7 +1482,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-104 First-week store insights email — P1 · Owner request 2026-11-22
 
-**Status:** Built locally. Backend and ecommerce deployments and backend GA4 configuration are pending.
+**Status:** Built locally. Backend and ecommerce deployments and backend GA4 configuration are pending. **Replaced by F-113 (2026-11-26):** the first-week email is no longer sent; week 1 of the weekly insights email takes its place (a seller who already got it is not sent week 1 again).
 
 - **F-104a:** Send one first-week recap via the existing email service. Include store visits, real orders received, and a dashboard analytics link. Use Arabic for delivery and provide an English template.
 
@@ -1535,12 +1536,25 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-112b · P1 · deps: F-112a** Apply the rule in every seller price writer; product form hint. Done.
 - **F-112c · P1 · deps: F-112a** "Round existing prices" with preview. Done.
 
+### F-113 Seller emails: store offline (top up) and weekly store insights — P1 · Owner request 2026-11-26
+
+**Why:** A seller whose trial ends without a top-up often doesn't notice the store went offline; an active seller has no regular view of how the store is doing outside the dashboard.
+**What:** Two Arabic seller emails (English templates for the preview) from the backend, hourly ecommerce cron (`/api/cron/seller-first-week`, path kept) → backend `/api/emails/seller-insights`:
+- **Store offline** (`seller_store_offline`): once per seller, ever, when a seller who isn't activated reaches the end of the trial days and every store goes offline (`storeOffline`; `docs/seller-top-up-rules.md` §4), only while that is at most 7 days ago. Store name, "visitors see the store is unavailable and can't order", a "Top up your wallet" button to `/wallet?topup=1&notice=store-offline`, and three wallet lines from code (Free fee `FREE_ORDER_FEE_USD_CENTS`, when it's taken per the `fee_on_delivery` switch, top-ups from `TOP_UP_MIN_USD_CENTS` by Kashier or InstaPay, order amounts never go into the wallet).
+- **Weekly insights** (`seller_weekly_insights`): activated sellers, once per finished week counted from the sign-up's Cairo date (only the latest week, no backfill); week 1 replaces F-104. Per live store (up to 10): GA4 visits (one report for all stores; "not available" when GA4 fails), real orders, sales in the store's currency (Reports' definition) and the 3 best sellers, each with last week's number, plus a link to the store's analytics. One-click opt-out (HMAC-signed link, key derived from `INTEGRATIONS_ENCRYPTION_KEY`; `seller_email_opt_outs`, 0183).
+- Caps (Resend's 100 a day for everything): offline 15 a day and 5 a run, weekly 20 a day and 5 a run; offline goes first. Details: `docs/email-inventory.md`.
+**Status:** [Built] 2026-11-26 (uncommitted). Migration 0183 is **not applied anywhere** (additive; owner approval needed for production); without it the weekly email reports `migration_missing` and sends nothing, the offline email still sends. The SQL wasn't run against a database (no `TEST_DATABASE_URL`). Deploy the backend before the ecommerce cron; the backend needs `INTEGRATIONS_ENCRYPTION_KEY` (same value as the dashboard) for the weekly email.
+
+- **F-113a · P1** Rules lib + tests (week, caps, reference id, token, GA4 parsing), queries, strict order-lock read, both email templates, backend batch, cron repoint, opt-out route, 0183. Done.
+- **F-113b · P1 · deps: F-113a** Apply 0183 on staging, then production (owner); deploy backend, then dashboard and ecommerce; check the first sends. Not started.
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Feature ID                                                                                       | Status                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-11-26 | "Send weekly email to sellers about insights about their store. Who didn't top up: send him the email on the 7th day, only one time, about his store became offline, top up the wallet now to activate it, and a short description about how the wallet works. For who topped up, keep sending a weekly email with insights." | F-113 | Built 2026-11-26 (uncommitted); 0183 not applied |
 | 2026-11-26 | Admin home analytics: flexible periods (today, yesterday, 3 / 7 / 30 / 90 days, this month, last month, this year) with comparisons, and how many stores there are, how many are published, how many sellers topped up, the balance held in wallets, and who got the $5 manual credit from the dashboard | — (Admin app, no feature ID; `docs/admin-saas.md` §3.9) | Built 2026-11-26 (no migration); see §7 |
 | 2026-11-26 | Fee timing (answers to explicit questions): all orders, cash and card, pay the Free-plan fee when the order becomes delivered; a cancelled or returned order that was never delivered never pays; an order still not cancelled, returned or refunded 14 days after it was created pays automatically through a daily job; behind a platform switch `fee_on_delivery`, off = today's behaviour; orders already charged are never charged twice | — (business model, `PLAN.md` §13.1, §13.3; no feature ID) | Built 2026-11-26 behind the switch (off); no migration; see §7. Owner: add the Coolify task for `/api/cron/aged-order-fees`, then turn the switch on |
 | 2026-11-26 | "on /products page on dashboard project, enable dragging a product image and drop on the product card so I can upload all products images easily" | — (dashboard polish, no feature ID) | Done 2026-11-26: grid cards take dropped photos (shared `useProductImageDrop` hook, also used by the table thumbnail); list limit now 8 like the form; list refreshes after upload. |
@@ -2137,8 +2151,17 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-112a Round prices: rule, setting, settings card (Store settings › General) — 2026-11-26; lib and dashboard tests and typecheck pass; not tried in a browser
 - [x] F-112b Round prices: applied in every seller price writer, product form hint — 2026-11-26; lib, dashboard and backend typecheck and tests pass; not tried in a browser
 - [x] F-112c Round prices: "Round existing prices" with preview — 2026-11-26; dashboard typecheck and tests pass; not tried in a browser
+- [x] F-113a Store-offline and weekly insights seller emails, opt-out route, migration 0183 (not applied) — 2026-11-26; lib, emails, dashboard and ecommerce tests pass; SQL not run against a database
+- [ ] F-113b Apply 0183 (staging, then production with owner approval), deploy backend first, check the first sends
 
 ## 7. Log
+
+### 2026-11-26 — Seller emails: store offline and weekly insights (F-113, owner request; migration 0183, not applied)
+
+- **Owner:** "Send weekly email to sellers about insights about their store. Who didn't top up: send him the email on the 7th day, only one time, about his store became offline … For who topped up, keep sending a weekly email with insights."
+- **Built:** `packages/lib/src/emails/seller-insights.{lib,server}.ts` (due rules, Cairo weeks, caps, md5 reference id, HMAC opt-out token, GA4 parsing; bounded queries: one candidate query per kind, two grouped stats queries and one GA4 report per seller); `readOrderLockStrict` in `order-lock.server.ts` (getOrderLock now wraps it, behaviour unchanged); `SellerStoreOfflineEmail` and `SellerWeeklyInsightsEmail` in `packages/emails` (the F-104 `SellerFirstWeekEmail` and its sender are removed); backend `seller-insights-email.ts` and `POST /api/emails/seller-insights` (`/seller-first-week` kept as an alias); the ecommerce cron calls the new route; dashboard `/api/email/weekly-insights/unsubscribe` (GET confirms, POST opts out); `sendOnce` takes `headers` (List-Unsubscribe).
+- **Migration:** `0183_seller_email_opt_outs.sql`: server-only `seller_email_opt_outs` (seller × kind, `weekly_insights`), RLS on, no policies. **Not applied anywhere**; additive; owner approval needed for production. Without it the weekly email sends nothing (`migration_missing`).
+- **Checks:** see F-113a in §6. Not sent for real; the SQL wasn't run against a database.
 
 ### 2026-11-26 — Admin home analytics with periods and money panels (owner request; no migration)
 

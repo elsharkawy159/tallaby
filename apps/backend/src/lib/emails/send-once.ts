@@ -32,6 +32,8 @@ export async function sendOnce(params: {
   fromName?: string;
   replyTo?: string;
   metadata?: Record<string, unknown>;
+  /** Extra mail headers, e.g. List-Unsubscribe for a one-click opt-out. */
+  headers?: Record<string, string>;
   /** A customer order email: decides the subscription check and the per-order charge. */
   order?: { id: string; storeId: string | null };
 }): Promise<SendOnceResult> {
@@ -55,6 +57,7 @@ export async function sendOnce(params: {
       ...(params.from ? { from: params.from } : {}),
       ...(params.fromName ? { fromName: params.fromName } : {}),
       ...(params.replyTo ? { replyTo: params.replyTo } : {}),
+      ...(params.headers ? { headers: params.headers } : {}),
       idempotencyKey: `${params.emailType}:${params.referenceId}`,
     });
     await markEmailSent(claim.delivery.id, id);

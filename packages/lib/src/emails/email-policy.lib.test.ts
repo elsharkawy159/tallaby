@@ -16,6 +16,8 @@ describe("email policy", () => {
       "seller_setup_reminder_day1",
       "seller_setup_reminder_day7",
       "seller_store_created",
+      "seller_store_offline",
+      "seller_weekly_insights",
       "tallaby_pay_kyc_rejected",
       "tallaby_pay_payout_paid",
       "tallaby_pay_payout_rejected",

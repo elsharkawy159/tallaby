@@ -3441,6 +3441,21 @@ export const sellerSetupReminders = pgTable("seller_setup_reminders", {
 	check("seller_setup_reminders_error_check", sql`error IS NULL OR char_length(error) <= 500`),
 ]);
 
+/**
+ * Seller email opt-outs (0183, ROADMAP.md F-113): one row per (seller, kind)
+ * turned off with the email's one-click link. Server-only: RLS on, no policies.
+ * Rules in packages/lib/src/emails/seller-insights.lib.ts.
+ */
+export const sellerEmailOptOuts = pgTable("seller_email_opt_outs", {
+	sellerId: uuid("seller_id").notNull().references(() => sellers.id, { onDelete: "cascade" }),
+	/** 'weekly_insights' */
+	kind: text().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.sellerId, table.kind], name: "seller_email_opt_outs_pkey" }),
+	check("seller_email_opt_outs_kind_check", sql`kind IN ('weekly_insights')`),
+]);
+
 /** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
 /** One AI credit balance per seller account (0137, ROADMAP.md F-57). Server-only: RLS on, no policies. */
 export const sellerAiCredits = pgTable("seller_ai_credits", {

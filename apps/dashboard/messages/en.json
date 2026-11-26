@@ -9361,6 +9361,14 @@
     "done": "Done. You won't get more store setup reminders.",
     "invalid": "This link doesn't work or has expired."
   },
+  "weeklyInsightsUnsubscribe": {
+    "title": "Weekly store summary",
+    "confirm": "Stop your weekly store summary emails?",
+    "button": "Yes, stop the summary",
+    "done": "Done. You won't get the weekly store summary any more.",
+    "invalid": "This link doesn't work.",
+    "unavailable": "We can't stop the summary right now. Please try again later."
+  },
   "editorSmallScreen": {
     "message": "Editing is easier on a computer or tablet. You can still continue on your phone.",
     "dismiss": "Dismiss"

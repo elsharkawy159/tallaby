@@ -32,8 +32,12 @@ export const EMAIL_TYPES = {
   sellerWalletTopUp: "seller_wallet_top_up",
   /** reference_id = stores.id. */
   sellerStoreCreated: "seller_store_created",
-  /** reference_id = sellers.id. */
+  /** reference_id = sellers.id. F-104; no longer sent (F-113 replaced it), kept for its delivery rows. */
   sellerFirstWeek: "seller_first_week",
+  /** reference_id = sellers.id: once per seller, ever (F-113). */
+  sellerStoreOffline: "seller_store_offline",
+  /** reference_id = weeklyInsightsReferenceId(seller id, week start), a derived uuid (F-113). */
+  sellerWeeklyInsights: "seller_weekly_insights",
   /** reference_id = theme_requests.id: one per request and outcome (F-77, 0156). */
   themeRequestReady: "theme_request_ready",
   themeRequestDeclined: "theme_request_declined",
