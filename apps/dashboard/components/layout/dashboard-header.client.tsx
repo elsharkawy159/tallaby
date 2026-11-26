@@ -30,6 +30,7 @@ export function DashboardHeader({
   siteLive,
   storeId,
   setupNextStep,
+  userId,
 }: {
   walletBalance: number | null;
   walletCurrency: string;
@@ -40,6 +41,8 @@ export function DashboardHeader({
   storeId: string | null;
   /** The selected store's next home setup step, or done (setup-next-step.lib.ts). */
   setupNextStep: SetupNextStep | null;
+  /** The signed-in seller (getSessionUser), for the bell's realtime topic only. */
+  userId: string | null;
 }) {
   const t = useTranslations("header");
   const locale = useLocale();
@@ -144,7 +147,7 @@ export function DashboardHeader({
           </span>
         )}
 
-        <NotificationBell />
+        <NotificationBell userId={userId} />
 
         <div className="flex items-center gap-1 max-[600px]:hidden">
           <InstallAppButton />

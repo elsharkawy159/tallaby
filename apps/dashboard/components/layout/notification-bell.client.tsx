@@ -34,7 +34,7 @@ const POLL_MS = 60_000;
  * seller's own `user:<id>` topic (0098), a slow poll while the tab is visible,
  * and a refetch when the tab comes back.
  */
-function useSellerNotificationFeed() {
+function useSellerNotificationFeed(userId: string | null) {
   const [feed, setFeed] = useState<Feed | null>(null);
 
   const refresh = useCallback(async () => {
@@ -62,12 +62,17 @@ function useSellerNotificationFeed() {
     let cancelled = false;
     void (async () => {
       try {
-        const { data } = await supabase.auth.getUser();
-        if (cancelled || !data.user) return;
+        // The id comes from the server render; the channel's RLS (0098), not
+        // this prop, decides who may join. getSession() only reads the cookie
+        // (no Auth round trip) to skip the socket when there is no session;
+        // setAuth() then hands realtime that session's access token.
+        if (!userId) return;
+        const { data } = await supabase.auth.getSession();
+        if (cancelled || !data.session) return;
         await supabase.realtime.setAuth();
         if (cancelled) return;
         channel = supabase
-          .channel(`user:${data.user.id}`, { config: { private: true } })
+          .channel(`user:${userId}`, { config: { private: true } })
           .on("broadcast", { event: "seller_notification" }, () => void refresh())
           .subscribe((status) => {
             live = status === "SUBSCRIBED";
@@ -83,15 +88,15 @@ function useSellerNotificationFeed() {
       document.removeEventListener("visibilitychange", onVisible);
       if (channel) void supabase.removeChannel(channel);
     };
-  }, [refresh]);
+  }, [refresh, userId]);
 
   return { feed, setFeed, refresh };
 }
 
 /** The bell and its panel (`.ntf`): anchored on desktop, a bottom sheet on phones. */
-export function NotificationBell() {
+export function NotificationBell({ userId }: { userId: string | null }) {
   const t = useTranslations("notifications");
-  const { feed, setFeed, refresh } = useSellerNotificationFeed();
+  const { feed, setFeed, refresh } = useSellerNotificationFeed(userId);
   const [open, setOpen] = useState(false);
   const unread = feed?.unreadCount ?? 0;
   const markRead = useCallback(

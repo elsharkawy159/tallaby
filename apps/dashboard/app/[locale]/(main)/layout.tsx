@@ -105,6 +105,7 @@ export default async function DashboardLayout({
             siteLive={selected?.siteStatus === "published" && !billingOffline}
             storeId={selected?.id ?? null}
             setupNextStep={setupNextStep}
+            userId={user?.id ?? null}
           />
           {access.status === "restricted" && (
             <div className="border-b border-(--s-line) bg-accent-soft px-7 py-3 text-sm text-accent-ink max-[1020px]:px-4">

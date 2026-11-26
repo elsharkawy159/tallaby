@@ -68,9 +68,21 @@ export async function updateSession(request: NextRequest, response: NextResponse
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() refreshes an expiring session through getSession() (cookies
+  // written by setAll above, as getUser() did), then verifies the access token
+  // locally against the cached JWKS when the project signs with asymmetric
+  // keys; with a symmetric key it calls the Auth server itself. The render's
+  // getUser() (lib/auth/session.server.ts) stays the authoritative check, so
+  // the proxy only decides redirects (docs/plans/dashboard-performance.md A1).
+  // getClaims() rethrows non-auth errors (e.g. a failed JWKS fetch); like a
+  // failed getUser() before, anything but valid claims reads as signed out.
+  let signedIn = false;
+  try {
+    const { data, error } = await supabase.auth.getClaims();
+    signedIn = !error && typeof data?.claims?.sub === "string" && data.claims.sub !== "";
+  } catch {
+    signedIn = false;
+  }
 
   const url = request.nextUrl;
   // Path checks use the path without its locale prefix; redirects keep the
@@ -85,7 +97,7 @@ export async function updateSession(request: NextRequest, response: NextResponse
     path.startsWith("/signup/") ||
     path === "/roadmap" ||
     path.startsWith("/.well-known/");
-  if (!user && !isPublic) {
+  if (!signedIn && !isPublic) {
     const login = new URL(`${prefix}/login`, request.url);
     // MCP consent (F-29b): come back to the same authorize request after signing in.
     if (path === "/oauth/authorize") login.searchParams.set("next", `${path}${url.search}`);
@@ -95,7 +107,7 @@ export async function updateSession(request: NextRequest, response: NextResponse
     return NextResponse.redirect(login);
   }
 
-  if (user && path.startsWith("/login")) {
+  if (signedIn && path.startsWith("/login")) {
     return NextResponse.redirect(new URL(prefix || "/", request.url));
   }
 
