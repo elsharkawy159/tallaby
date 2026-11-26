@@ -79,16 +79,39 @@ export function CategoryAndActivitySkeleton () {
 
 const panel = 'rounded-[14px] border bg-card'
 
+/** "Right now": four point-in-time tiles. */
+export function OverviewSnapshotSkeleton () {
+  return (
+    <div className="flex flex-col gap-2.5">
+      <Skeleton className="h-3.5 w-20" />
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className={`${panel} space-y-2.5 px-[18px] py-4`}>
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-3.5 w-full" />
+            <Skeleton className="h-3.5 w-4/5" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** Twelve period KPI tiles. */
 export function OverviewKpisSkeleton () {
   return (
-    <div className="grid grid-cols-2 gap-5 lg:grid-cols-3 xl:grid-cols-5">
-      {Array.from({ length: 5 }, (_, i) => (
-        <div key={i} className={`${panel} space-y-2.5 px-[18px] py-4`}>
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="h-4 w-full" />
-        </div>
-      ))}
+    <div className="flex flex-col gap-2.5">
+      <Skeleton className="h-3.5 w-48" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        {Array.from({ length: 12 }, (_, i) => (
+          <div key={i} className={`${panel} space-y-2 px-4 py-3.5`}>
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-3.5 w-full" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -105,10 +128,9 @@ export function OverviewPanelSkeleton ({ height = 'h-[360px]', className = '' }:
 
 export function OverviewMixSkeleton () {
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
-      <OverviewPanelSkeleton height="h-44" />
-      <OverviewPanelSkeleton height="h-44" />
-      <OverviewPanelSkeleton height="h-44" className="lg:col-span-2 xl:col-span-1" />
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <OverviewPanelSkeleton height="h-52" />
+      <OverviewPanelSkeleton height="h-52" />
     </div>
   )
 }

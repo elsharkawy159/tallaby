@@ -1,158 +1,172 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import {
-  ArrowDownRight,
-  ArrowUpRight,
+  Activity,
   Banknote,
   ChevronRight,
+  CircleDollarSign,
+  Globe,
+  HandCoins,
   Landmark,
   Megaphone,
   Package,
+  PackageCheck,
   PlugZap,
+  Receipt,
   ShieldAlert,
   ShoppingCart,
   Sparkles,
   Store,
   UserCheck,
+  UserPlus,
+  Users,
   Wallet,
   type LucideIcon
 } from 'lucide-react'
-import { formatCurrency } from '@workspace/lib'
 import { getBillingState } from '@workspace/lib/billing/server'
-import { walletMoney } from './wallets/store-wallets.lib'
 import { storeHostname } from '@workspace/lib/storefront'
 import { cn } from '@workspace/ui/lib/utils'
 import { RemoteImage } from '@/components/media/remote-image'
 import {
   getOverviewMix,
+  getOverviewSnapshot,
   getOverviewStores,
   getOverviewTrend
 } from '@/lib/analytics/overview.server'
 import {
   biggestFunnelDrop,
   initials,
-  sharePercent
+  sharePercent,
+  sparkSeries
 } from '@/lib/analytics/overview.lib'
-import type { OverviewDay, OverviewKpi, OverviewRange } from '@/lib/analytics/overview.types'
+import type { OverviewKpi, OverviewPeriod } from '@/lib/analytics/overview.types'
 import { getSidebarCounts } from './_components/layout/sidebar.server'
 import { relativeTime } from './_components/layout/notification-bell.lib'
-import { GmvFeesChart } from './dashboard-chart.client'
+import { GmvFeesChart, GrowthChart } from './dashboard-chart.client'
+import {
+  Delta,
+  Empty,
+  money,
+  Note,
+  num,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  Pill,
+  SITE_TONE,
+  Sparkline,
+  storeWallet,
+  td,
+  th
+} from './dashboard.ui'
 
 /**
- * The admin home ("Platform overview", Claude Design "Admin Dashboard").
- * Each export is an async Server Component owning one query; page.tsx wraps
- * each in its own Suspense boundary so a slow aggregate delays only its cards.
+ * The admin home ("Platform overview"). Each export is an async Server
+ * Component owning one query; page.tsx wraps each in its own Suspense boundary
+ * so a slow aggregate delays only its cards. Money panels: dashboard.money.tsx.
  */
 
-const num = (value: number) => Math.round(value).toLocaleString('en-US')
-const money = (value: number) => formatCurrency(value, 'en-EG', { maximumFractionDigits: 0 })
-const storeWallet = (value: number, currency: string) => (currency === 'USD' ? walletMoney(value, 'USD') : money(value))
+/* ── Right now ─────────────────────────────────────────────────────────── */
 
-export function Panel ({ className, children }: { className?: string, children: ReactNode }) {
-  return (
-    <div className={cn('flex min-w-0 flex-col rounded-[14px] border bg-card shadow-xs', className)}>
-      {children}
-    </div>
-  )
-}
-
-export function PanelHeader ({ title, description, action }: {
+function SnapshotTile ({ title, icon: Icon, href, value, unit, children }: {
   title: string
-  description: string
-  action?: ReactNode
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3 px-5 pt-[18px]">
-      <div>
-        <h3 className="text-[15px] font-bold">{title}</h3>
-        <p className="mt-0.5 text-[12.5px] text-muted-foreground">{description}</p>
-      </div>
-      {action}
-    </div>
-  )
-}
-
-function PanelBody ({ className, children }: { className?: string, children: ReactNode }) {
-  return <div className={cn('flex flex-1 flex-col px-5 pt-4 pb-5', className)}>{children}</div>
-}
-
-function Note ({ children, className }: { children: ReactNode, className?: string }) {
-  return (
-    <div className={cn('mt-auto border-t pt-3.5 text-xs text-muted-foreground [&_b]:text-foreground', className)}>
-      {children}
-    </div>
-  )
-}
-
-function Pill ({ tone = 'neutral', children }: {
-  tone?: 'neutral' | 'primary' | 'accent' | 'success' | 'danger'
+  icon: LucideIcon
+  href: string
+  value: string
+  unit?: string
   children: ReactNode
 }) {
   return (
-    <span
-      className={cn(
-        'inline-block rounded-full border px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap capitalize',
-        tone === 'neutral' && 'bg-muted text-muted-foreground',
-        tone === 'primary' && 'border-transparent bg-primary-soft text-primary-ink',
-        tone === 'accent' && 'border-transparent bg-accent-soft text-accent-ink',
-        tone === 'success' && 'border-transparent bg-success-soft text-success',
-        tone === 'danger' && 'border-transparent bg-destructive-soft text-destructive'
-      )}
-    >
-      {children}
-    </span>
+    <Panel className="gap-1.5 px-[18px] py-4">
+      <Link href={href} className="group flex items-center justify-between text-[12.5px] font-medium text-muted-foreground hover:text-foreground">
+        {title}
+        <Icon className="size-4 text-faint group-hover:text-primary-ink" strokeWidth={1.75} />
+      </Link>
+      <Link href={href} className="w-fit text-2xl font-bold tracking-tight tabular-nums hover:text-primary-ink">
+        {value}
+        {unit && <small className="ml-1 text-[13px] font-semibold text-muted-foreground">{unit}</small>}
+      </Link>
+      <div className="flex flex-col gap-1 text-xs text-muted-foreground tabular-nums [&_a:hover]:text-foreground [&_a:hover]:underline [&_b]:font-semibold [&_b]:text-foreground">
+        {children}
+      </div>
+    </Panel>
   )
 }
 
-const SITE_TONE: Record<string, 'success' | 'neutral' | 'accent'> = {
-  published: 'success',
-  draft: 'neutral',
-  unpublished: 'accent'
-}
+const pct = (value: number, total: number) => `${Math.round(sharePercent(value, total))}%`
 
-function Delta ({ value }: { value: number }) {
-  const up = value >= 0
-  const Icon = up ? ArrowUpRight : ArrowDownRight
+export async function SnapshotSection () {
+  const snap = await getOverviewSnapshot()
+  const { stores, sellers, pendingTopUps } = snap
+  const [main, ...others] = snap.wallets
   return (
-    <span className={cn('inline-flex items-center gap-0.5 font-semibold', up ? 'text-success' : 'text-destructive')}>
-      <Icon className="size-[13px]" strokeWidth={2.25} />
-      {Math.abs(value)}%
-    </span>
+    <section aria-labelledby="snapshot-title" className="flex flex-col gap-2.5">
+      <h3 id="snapshot-title" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Right now</h3>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <SnapshotTile title="Live stores" icon={Store} href="/stores" value={num(stores.total)}>
+          <span>
+            <Link href="/stores?site=published"><b>{num(stores.published)}</b> published</Link>{' '}
+            <span className="text-faint">({pct(stores.published, stores.total)})</span>
+          </span>
+          <span>
+            <Link href="/stores?site=draft"><b>{num(stores.neverPublished)}</b> never published</Link> ·{' '}
+            <Link href="/stores?site=unpublished"><b>{num(stores.offline)}</b> offline</Link> ·{' '}
+            <Link href="/stores?status=suspended">
+              <b className={cn(stores.suspended > 0 && 'text-destructive!')}>{num(stores.suspended)}</b> suspended
+            </Link>
+          </span>
+        </SnapshotTile>
+
+        <SnapshotTile title="Sellers" icon={Users} href="/sellers" value={num(sellers.total)}>
+          <span>
+            <b>{num(sellers.activated)}</b> activated <span className="text-faint">({pct(sellers.activated, sellers.total)})</span>
+          </span>
+          <span>
+            <b className="text-success!">{num(sellers.paidTopUp)}</b> paid a top-up · <b>{num(sellers.creditOnly)}</b> by admin credit only
+          </span>
+        </SnapshotTile>
+
+        <SnapshotTile
+          title="Held in store wallets"
+          icon={Wallet}
+          href="/wallets?balance=positive"
+          value={main ? storeWallet(main.positiveTotal, main.currency) : storeWallet(0, 'USD')}
+        >
+          {main
+            ? (
+              <>
+                <span>
+                  <Link href="/wallets?balance=positive"><b>{num(main.positiveCount)}</b> wallets above zero</Link> · net{' '}
+                  <b>{storeWallet(main.positiveTotal + main.negativeTotal, main.currency)}</b>
+                </span>
+                <span>
+                  <Link href="/wallets?balance=negative" className={cn(main.negativeCount > 0 && 'text-destructive')}>
+                    <b className={cn(main.negativeCount > 0 && 'text-destructive!')}>{num(main.negativeCount)}</b> below zero
+                    {main.negativeCount > 0 && <> ({storeWallet(main.negativeTotal, main.currency)})</>}
+                  </Link>
+                </span>
+                {others.map((w) => (
+                  <span key={w.currency}>
+                    {w.currency}: <b>{storeWallet(w.positiveTotal, w.currency)}</b> held · {num(w.wallets)} wallets
+                  </span>
+                ))}
+              </>
+              )
+            : <span>No store wallets yet.</span>}
+        </SnapshotTile>
+
+        <SnapshotTile title="Top-ups awaiting review" icon={Receipt} href="/store-top-ups" value={num(pendingTopUps.count)}>
+          <span><b>{money(pendingTopUps.amount)}</b> paid by sellers, waiting for a proof check</span>
+          <span>
+            <Link href="/store-top-ups">Review InstaPay and wallet proofs</Link>
+          </span>
+        </SnapshotTile>
+      </div>
+    </section>
   )
 }
 
-function Sparkline ({ values, up }: { values: number[], up: boolean }) {
-  if (values.length < 2) return null
-  const w = 84
-  const h = 28
-  const max = Math.max(...values)
-  const min = Math.min(...values)
-  const points = values
-    .map((v, i) => `${((i / (values.length - 1)) * w).toFixed(1)},${(h - 2 - ((v - min) / (max - min || 1)) * (h - 4)).toFixed(1)}`)
-    .join(' ')
-  return (
-    <svg className="h-7 w-[84px] shrink-0" viewBox={`0 0 ${w} ${h}`} aria-hidden>
-      <polyline
-        points={points}
-        fill="none"
-        stroke={up ? 'var(--success)' : 'var(--destructive)'}
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-/** Sums days into at most 14 buckets so a 90-day sparkline stays readable. */
-function bucket (days: OverviewDay[], key: keyof Omit<OverviewDay, 'date'>): number[] {
-  const size = Math.max(1, Math.ceil(days.length / 14))
-  const out: number[] = []
-  for (let i = 0; i < days.length; i += size) {
-    out.push(days.slice(i, i + size).reduce((total, day) => total + day[key], 0))
-  }
-  return out
-}
+/* ── Period KPIs ───────────────────────────────────────────────────────── */
 
 function KpiTile ({ title, icon: Icon, value, unit, metric, hint, spark, href }: {
   title: string
@@ -160,99 +174,114 @@ function KpiTile ({ title, icon: Icon, value, unit, metric, hint, spark, href }:
   value: string
   unit?: string
   metric: OverviewKpi
-  hint: string
+  hint?: ReactNode
   spark?: number[]
   href: string
 }) {
   return (
     <Link href={href} className="group">
-      <Panel className="h-full gap-1.5 px-[18px] py-4 transition-colors group-hover:border-primary/40">
-        <div className="flex items-center justify-between text-[12.5px] font-medium text-muted-foreground">
-          {title}
-          <Icon className="size-4 text-faint" strokeWidth={1.75} />
+      <Panel className="h-full gap-1 px-4 py-3.5 transition-colors group-hover:border-primary/40">
+        <div className="flex items-center justify-between gap-2 text-[12.5px] font-medium text-muted-foreground">
+          <span className="truncate">{title}</span>
+          <Icon className="size-4 shrink-0 text-faint" strokeWidth={1.75} />
         </div>
-        <div className="text-2xl font-bold tracking-tight tabular-nums">
-          {value}
-          {unit && <small className="ml-1 text-[13px] font-semibold text-muted-foreground">{unit}</small>}
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground">
-          <span className="whitespace-nowrap">
-            <Delta value={metric.changePercent} /> {hint}
-          </span>
+        <div className="flex items-end justify-between gap-2">
+          <div className="text-[22px] font-bold tracking-tight tabular-nums">
+            {value}
+            {unit && <small className="ml-1 text-[12px] font-semibold text-muted-foreground">{unit}</small>}
+          </div>
           {spark && <Sparkline values={spark} up={metric.changePercent >= 0} />}
         </div>
+        <div className="text-xs text-muted-foreground tabular-nums" title={`Previous period: ${metric.previous.toLocaleString('en-US')}`}>
+          <Delta metric={metric} /> <span className="text-faint">vs {num(metric.previous)}</span>
+        </div>
+        {hint && <div className="truncate text-[11.5px] text-muted-foreground">{hint}</div>}
       </Panel>
     </Link>
   )
 }
 
-export async function KpiSection ({ range }: { range: OverviewRange }) {
-  const [trend, billing] = await Promise.all([getOverviewTrend(range), getBillingState()])
+export async function KpiSection ({ period }: { period: OverviewPeriod }) {
+  const [trend, billing] = await Promise.all([getOverviewTrend(period), getBillingState()])
+  const p = trend.points
   return (
-    <section className="grid grid-cols-2 gap-5 lg:grid-cols-3 xl:grid-cols-5">
-      <KpiTile
-        title="GMV (EGP orders)"
-        icon={Banknote}
-        value={num(trend.gmv.current)}
-        unit="EGP"
-        metric={trend.gmv}
-        hint="vs previous"
-        spark={bucket(trend.days, 'gmv')}
-        href="/orders"
-      />
-      <KpiTile
-        title="Platform fees"
-        icon={Landmark}
-        value={num(trend.fees.current)}
-        unit="EGP"
-        metric={trend.fees}
-        hint={billing.usdLive ? '$0.03 per order on Free, shown in EGP' : 'EGP 5 per delivered order'}
-        spark={bucket(trend.days, 'fees')}
-        href="/wallets?tab=ledger"
-      />
-      <KpiTile
-        title="Active stores"
-        icon={Store}
-        value={num(trend.activeStores.current)}
-        metric={trend.activeStores}
-        hint="≥1 storefront order"
-        href="/stores"
-      />
-      <KpiTile
-        title="Orders"
-        icon={ShoppingCart}
-        value={num(trend.orders.current)}
-        metric={trend.orders}
-        hint="vs previous"
-        spark={bucket(trend.days, 'orders')}
-        href="/orders"
-      />
-      <KpiTile
-        title="New stores"
-        icon={Sparkles}
-        value={num(trend.newStores.current)}
-        metric={trend.newStores}
-        hint="vs previous"
-        spark={bucket(trend.days, 'newStores')}
-        href="/stores"
-      />
+    <section aria-labelledby="period-title" className="flex flex-col gap-2.5">
+      <h3 id="period-title" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        {period.label} · {period.rangeLabel}
+      </h3>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <KpiTile title="GMV (EGP orders)" icon={Banknote} value={num(trend.gmv.current)} unit="EGP" metric={trend.gmv} spark={sparkSeries(p, 'gmv')} href="/orders" />
+        <KpiTile title="Orders" icon={ShoppingCart} value={num(trend.orders.current)} metric={trend.orders} spark={sparkSeries(p, 'orders')} href="/orders" />
+        <KpiTile
+          title="Platform fees"
+          icon={Landmark}
+          value={num(trend.fees.current)}
+          unit="EGP"
+          metric={trend.fees}
+          spark={sparkSeries(p, 'fees')}
+          hint={billing.usdLive ? '$0.03 per order on Free, in EGP' : 'EGP 5 per order'}
+          href="/wallets?tab=ledger&type=fee"
+        />
+        <KpiTile title="Average order" icon={Receipt} value={num(trend.averageOrder.current)} unit="EGP" metric={trend.averageOrder} href="/orders" />
+        <KpiTile title="Active stores" icon={Activity} value={num(trend.activeStores.current)} metric={trend.activeStores} hint="≥1 counted order" href="/stores" />
+        <KpiTile title="Delivered orders" icon={PackageCheck} value={num(trend.deliveredOrders.current)} metric={trend.deliveredOrders} href="/orders" />
+        <KpiTile title="New sellers" icon={UserPlus} value={num(trend.newSellers.current)} metric={trend.newSellers} spark={sparkSeries(p, 'newSellers')} href="/sellers" />
+        <KpiTile title="New stores" icon={Sparkles} value={num(trend.newStores.current)} metric={trend.newStores} spark={sparkSeries(p, 'newStores')} href="/stores" />
+        <KpiTile
+          title="Published first time"
+          icon={Globe}
+          value={num(trend.firstPublished.current)}
+          metric={trend.firstPublished}
+          spark={sparkSeries(p, 'firstPublished')}
+          href="/stores?site=published"
+        />
+        <KpiTile
+          title="Top-ups"
+          icon={CircleDollarSign}
+          value={num(trend.topUps.current)}
+          metric={trend.topUps}
+          spark={sparkSeries(p, 'topUps')}
+          hint={<>{num(trend.topUpSellers)} sellers · {money(trend.topUpPaid.current)} · {storeWallet(trend.topUpCredited, 'USD')} · {num(trend.firstTopUps)} first</>}
+          href="/wallets?tab=topups&status=succeeded"
+        />
+        <KpiTile
+          title="Admin credits"
+          icon={HandCoins}
+          value={num(trend.adminCredits.current)}
+          metric={trend.adminCredits}
+          hint={<>{num(trend.adminCreditSellers)} sellers · net {storeWallet(trend.adminCreditNet, 'USD')}</>}
+          href="/wallets?tab=ledger&type=adjustment"
+        />
+        <KpiTile
+          title="Newly activated"
+          icon={UserCheck}
+          value={num(trend.newlyActivated.current)}
+          metric={trend.newlyActivated}
+          hint="First top-up or credit"
+          href="/sellers"
+        />
+      </div>
     </section>
   )
 }
 
-export async function TrendSection ({ range }: { range: OverviewRange }) {
-  const trend = await getOverviewTrend(range)
+/* ── Charts ────────────────────────────────────────────────────────────── */
+
+const BUCKET_WORD: Record<OverviewPeriod['bucket'], string> = { hour: 'hour', day: 'day', week: 'week' }
+
+export async function TrendSection ({ period }: { period: OverviewPeriod }) {
+  const trend = await getOverviewTrend(period)
   const summary: Array<[string, string]> = [
     ['Platform fees', money(trend.fees.current)],
-    ['Delivered orders', num(trend.deliveredOrders)],
-    ['Average order', money(trend.gmvOrders > 0 ? trend.gmv.current / trend.gmvOrders : 0)],
-    ['Wallet top-ups', money(trend.topUps)]
+    ['Delivered orders', num(trend.deliveredOrders.current)],
+    ['Average order', money(trend.averageOrder.current)],
+    ['Top-ups paid', money(trend.topUpPaid.current)]
   ]
   return (
     <Panel>
       <PanelHeader
         title="GMV (EGP orders) and platform fees"
-        description="Merchant sales processed vs. what Tallaby earned"
+        description={`Per ${BUCKET_WORD[period.bucket]}, Cairo time: merchant sales vs what Tallaby earned`}
         action={
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
             <span><i className="mr-1.5 inline-block size-2.5 rounded-[3px] bg-primary align-[-1px]" />GMV</span>
@@ -261,7 +290,7 @@ export async function TrendSection ({ range }: { range: OverviewRange }) {
         }
       />
       <PanelBody>
-        <GmvFeesChart days={trend.days} />
+        <GmvFeesChart points={trend.points} />
         <div className="mt-1 grid grid-cols-2 gap-3 md:grid-cols-4">
           {summary.map(([label, value]) => (
             <div key={label} className="rounded-[10px] bg-muted px-3 py-2.5">
@@ -274,6 +303,23 @@ export async function TrendSection ({ range }: { range: OverviewRange }) {
     </Panel>
   )
 }
+
+export async function GrowthSection ({ period }: { period: OverviewPeriod }) {
+  const trend = await getOverviewTrend(period)
+  return (
+    <Panel>
+      <PanelHeader
+        title="Growth"
+        description={`Per ${BUCKET_WORD[period.bucket]}: sign-ups, new stores, first publishes and succeeded top-ups`}
+      />
+      <PanelBody className="pt-2">
+        <GrowthChart points={trend.points} />
+      </PanelBody>
+    </Panel>
+  )
+}
+
+/* ── Needs attention ───────────────────────────────────────────────────── */
 
 type Tone = 'primary' | 'accent' | 'danger'
 
@@ -321,12 +367,14 @@ export async function AttentionSection () {
   )
 }
 
-function Bar ({ label, value, color }: { label: string, value: number, color: string }) {
+/* ── Funnel and order outcomes ─────────────────────────────────────────── */
+
+function Bar ({ label, value, count, color }: { label: string, value: number, count: number, color: string }) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex justify-between text-[12.5px]">
         <span className="text-muted-foreground">{label}</span>
-        <b className="font-semibold tabular-nums">{value}%</b>
+        <span className="tabular-nums"><span className="text-faint">{num(count)} · </span><b className="font-semibold">{value}%</b></span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-muted">
         <i className={cn('block h-full rounded-full', color)} style={{ width: `${value}%` }} />
@@ -335,14 +383,8 @@ function Bar ({ label, value, color }: { label: string, value: number, color: st
   )
 }
 
-export async function MixSection ({ range }: { range: OverviewRange }) {
-  const [mix, billing] = await Promise.all([getOverviewMix(range), getBillingState()])
-  const sites = [
-    { key: 'published', label: 'Published', value: mix.sites.published ?? 0, color: 'bg-primary' },
-    { key: 'draft', label: 'Never published', value: mix.sites.draft ?? 0, color: 'bg-secondary' },
-    { key: 'unpublished', label: 'Taken offline', value: mix.sites.unpublished ?? 0, color: 'bg-accent' }
-  ]
-  const storeTotal = sites.reduce((total, site) => total + site.value, 0)
+export async function MixSection ({ period }: { period: OverviewPeriod }) {
+  const mix = await getOverviewMix(period)
   const signedUp = mix.funnel[0]?.value ?? 0
   const drop = biggestFunnelDrop(mix.funnel)
   const outcomeTotal = mix.outcomes.reduce((total, row) => total + row.value, 0)
@@ -355,43 +397,15 @@ export async function MixSection ({ range }: { range: OverviewRange }) {
   }
 
   return (
-    <section className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+    <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <Panel>
-        <PanelHeader
-          title="Stores"
-          description="Every live store, by website status"
-          action={<Pill tone="success">{num(storeTotal)} stores</Pill>}
-        />
-        <PanelBody>
-          <div className="mt-1 mb-3.5 flex h-3 gap-0.5 overflow-hidden rounded-full bg-muted">
-            {sites.map((site) => site.value > 0 && (
-              <i key={site.key} className={cn('block h-full', site.color)} style={{ flex: site.value }} />
-            ))}
-          </div>
-          <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2.5 text-[13px]">
-            {sites.map((site) => (
-              <SiteRow key={site.key} color={site.color} label={site.label} value={`${num(site.value)} stores`} />
-            ))}
-            <SiteRow color="bg-destructive" label="Suspended" value={`${num(mix.suspendedStores)} stores`} />
-          </div>
-          <Note className="mt-4">
-            Fee trial <b>{num(mix.sellersInTrial)}</b> sellers · Past trial <b>{num(mix.sellersPastTrial)}</b> ·{' '}
-            <Link href="/wallets?balance=negative" className="hover:underline">
-              Negative wallets <b className={cn(mix.negativeWallets > 0 && 'text-destructive!')}>{num(mix.negativeWallets)}</b>
-              {mix.negativeWallets > 0 && <> ({billing.usdLive ? walletMoney(mix.negativeTotal, 'USD') : money(mix.negativeTotal)})</>}
-            </Link>
-          </Note>
-        </PanelBody>
-      </Panel>
-
-      <Panel>
-        <PanelHeader title="Seller activation" description="Sellers who signed up this period, by step reached" />
+        <PanelHeader title="Seller activation" description="Sellers who signed up this period, by step reached so far" />
         <PanelBody>
           <div className="flex flex-col gap-2.5">
             {mix.funnel.map((step) => {
               const share = sharePercent(step.value, signedUp)
               return (
-                <div key={step.key} className="grid grid-cols-[110px_minmax(0,1fr)_48px] items-center gap-3 text-[12.5px]">
+                <div key={step.key} className="grid grid-cols-[104px_minmax(0,1fr)_44px] items-center gap-3 text-[12.5px]">
                   <span className="text-muted-foreground">{step.label}</span>
                   <div>
                     <div
@@ -408,28 +422,33 @@ export async function MixSection ({ range }: { range: OverviewRange }) {
           </div>
           <Note className="mt-4">
             {drop
-              ? <>Biggest drop: <b>{drop.from.toLowerCase()} → {drop.to.toLowerCase()}</b> ({Math.round(drop.lost * 100)}% lost).</>
+              ? <>Biggest drop: <b>{drop.from.toLowerCase()} → {drop.to.toLowerCase()}</b> ({Math.round(drop.lost * 100)}% lost). “Activated” means a top-up or a wallet credit, by the order-lock rule.</>
               : 'No seller sign-ups in this period.'}
           </Note>
         </PanelBody>
       </Panel>
 
-      <Panel className="lg:col-span-2 xl:col-span-1">
+      <Panel>
         <PanelHeader title="Order outcomes" description="Orders placed this period, by current status" />
         <PanelBody>
-          <div className="flex flex-col gap-3.5">
-            {mix.outcomes.map((row) => (
-              <Bar
-                key={row.key}
-                label={row.label}
-                value={sharePercent(row.value, outcomeTotal)}
-                color={outcomeColor[row.key] ?? 'bg-primary'}
-              />
-            ))}
-          </div>
+          {outcomeTotal === 0
+            ? <Empty>No orders in this period.</Empty>
+            : (
+              <div className="flex flex-col gap-3.5">
+                {mix.outcomes.map((row) => (
+                  <Bar
+                    key={row.key}
+                    label={row.label}
+                    count={row.value}
+                    value={sharePercent(row.value, outcomeTotal)}
+                    color={outcomeColor[row.key] ?? 'bg-primary'}
+                  />
+                ))}
+              </div>
+              )}
           <Note className="mt-4">
             {paymentTotal > 0
-              ? <>Payment mix: {mix.payments.slice(0, 3).map((row, i) => {
+              ? <>Payment mix: {mix.payments.slice(0, 4).map((row, i) => {
                   const text = `${row.label} ${Math.round(sharePercent(row.value, paymentTotal))}%`
                   return (
                     <span key={row.label}>
@@ -438,7 +457,7 @@ export async function MixSection ({ range }: { range: OverviewRange }) {
                     </span>
                   )
                 })}</>
-              : 'No orders in this period.'}
+              : 'No counted orders in this period.'}
           </Note>
         </PanelBody>
       </Panel>
@@ -446,17 +465,7 @@ export async function MixSection ({ range }: { range: OverviewRange }) {
   )
 }
 
-function SiteRow ({ color, label, value }: { color: string, label: string, value: string }) {
-  return (
-    <>
-      <span className="flex items-center gap-2 text-muted-foreground">
-        <i className={cn('size-2 shrink-0 rounded-[2px]', color)} />
-        {label}
-      </span>
-      <b className="text-right font-semibold tabular-nums">{value}</b>
-    </>
-  )
-}
+/* ── Stores ────────────────────────────────────────────────────────────── */
 
 const LOGO_COLORS = ['#145163', '#b7791f', '#2f6f62', '#8a4f5a', '#3d5a80', '#6b5b3e']
 
@@ -482,22 +491,20 @@ function StoreLogo ({ name, logoUrl, index }: { name: string, logoUrl: string | 
   )
 }
 
-export async function StoresSection ({ range }: { range: OverviewRange }) {
-  const { top, latest } = await getOverviewStores(range)
-  const th = 'px-2.5 pb-2.5 text-xs font-medium whitespace-nowrap text-muted-foreground first:pl-0 last:pr-0'
-  const td = 'border-t px-2.5 py-[11px] whitespace-nowrap tabular-nums first:pl-0 last:pr-0'
+export async function StoresSection ({ period }: { period: OverviewPeriod }) {
+  const { top, latest } = await getOverviewStores(period)
 
   return (
     <section className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <Panel>
         <PanelHeader
           title="Top stores"
-          description="Ranked by GMV in this period"
+          description="Ranked by GMV in this period, growth vs the previous one"
           action={<Link href="/stores" className="text-[13px] font-semibold text-primary-ink hover:underline">View all stores</Link>}
         />
         <PanelBody className="overflow-x-auto">
           {top.length === 0
-            ? <p className="py-8 text-sm text-muted-foreground">No store orders in this period.</p>
+            ? <Empty>No store orders in this period.</Empty>
             : (
               <table className="w-full border-collapse text-[13px]">
                 <thead>
@@ -525,7 +532,7 @@ export async function StoresSection ({ range }: { range: OverviewRange }) {
                           </span>
                         </Link>
                       </td>
-                      <td className={td}><Pill tone={SITE_TONE[store.siteStatus] ?? 'neutral'}>{store.siteStatus}</Pill></td>
+                      <td className={td}><Pill tone={SITE_TONE[store.siteStatus] ?? 'neutral'} className="capitalize">{store.siteStatus}</Pill></td>
                       <td className={cn(td, 'text-right')}>{num(store.orders)}</td>
                       <td className={cn(td, 'text-right')}><b>{num(store.gmv)}</b> EGP</td>
                       <td className={cn(td, 'text-right')}>
@@ -560,7 +567,7 @@ export async function StoresSection ({ range }: { range: OverviewRange }) {
           action={<Link href="/stores" className="text-[13px] font-semibold text-primary-ink hover:underline">All</Link>}
         />
         <PanelBody>
-          {latest.length === 0 && <p className="py-8 text-sm text-muted-foreground">No stores yet.</p>}
+          {latest.length === 0 && <Empty>No stores yet.</Empty>}
           {latest.map((store, i) => (
             <Link
               key={store.id}
@@ -572,7 +579,7 @@ export async function StoresSection ({ range }: { range: OverviewRange }) {
                 <b className="block truncate text-[13px] font-semibold group-hover:text-primary-ink">{store.name}</b>
                 <small className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="truncate">{[store.category, store.sellerName].filter(Boolean).join(' · ') || 'No category'}</span>
-                  <Pill tone={SITE_TONE[store.siteStatus] ?? 'neutral'}>{store.siteStatus}</Pill>
+                  <Pill tone={SITE_TONE[store.siteStatus] ?? 'neutral'} className="capitalize">{store.siteStatus}</Pill>
                 </small>
               </span>
               <time className="ml-auto text-[11.5px] whitespace-nowrap text-faint" dateTime={store.createdAt}>

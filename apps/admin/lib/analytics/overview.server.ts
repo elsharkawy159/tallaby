@@ -3,145 +3,332 @@
 
 import { cache } from 'react'
 import { db } from '@workspace/db'
-import { sql } from 'drizzle-orm'
+import { sql, type SQL } from 'drizzle-orm'
 import { customDomainPublicHostRawSql } from '@workspace/lib/storefront/server'
 import { getAdminUser } from '@/actions/auth'
 import { runLimited, toNumber } from './analytics.lib'
 import {
+  bucketCount,
   buildFunnel,
+  buildTrend,
   groupOutcomes,
-  kpi,
+  isIsoDate,
   paymentLabel,
-  splitDays,
-  type RawOverviewDay
+  type RawOverviewPoint
 } from './overview.lib'
 import type {
   OverviewMix,
   OverviewNewStore,
-  OverviewRange,
+  OverviewPeriod,
+  OverviewSnapshot,
   OverviewStoreRow,
   OverviewTrend
 } from './overview.types'
 
 /** Statuses that never count toward GMV (same rule as commerce.server.ts). */
-const EXCLUDED = sql.raw(`('cancelled', 'refunded', 'returned')`)
+export const EXCLUDED = sql.raw(`('cancelled', 'refunded', 'returned')`)
 
-function rows (result: unknown): Array<Record<string, unknown>> {
+/** Top-up methods an admin reviews from a proof (same list as the sidebar count). */
+const REVIEWED_TOP_UP_PROVIDERS = ['instapay', 'vodafone_cash', 'e_cash', 'orange_cash', 'we_pay'] as const
+
+export function rows (result: unknown): Array<Record<string, unknown>> {
   return Array.isArray(result)
     ? (result as Array<Record<string, unknown>>)
     : [...(result as Iterable<Record<string, unknown>>)]
 }
 
 /**
- * The window bounds as SQL CTEs. Days are Cairo calendar days; the current
- * window is the last `range` days including today, the previous window the
- * `range` days before it. `range` is one of 7 | 30 | 90 and inlined (never bound).
+ * The period bounds as a one-row CTE `b`: `s`/`e` the current window, `ps`/`pe`
+ * the previous one (instants, `e`/`pe` exclusive), `sd` the first Cairo day.
+ * The dates come from resolveOverviewPeriod and are bound as parameters, never
+ * inlined; they are checked again here.
  */
-function windows (range: OverviewRange) {
-  const span = sql.raw(String(range * 2 - 1))
-  const len = sql.raw(String(range))
-  return sql`
-    w AS (
-      SELECT
-        start_local,
-        start_local AT TIME ZONE 'Africa/Cairo' AS start_at,
-        (start_local + interval '${len} days') AT TIME ZONE 'Africa/Cairo' AS mid_at
-      FROM (
-        SELECT date_trunc('day', now() AT TIME ZONE 'Africa/Cairo') - interval '${span} days' AS start_local
-      ) b
-    )`
+export function periodBounds (period: OverviewPeriod): SQL {
+  for (const date of [period.start, period.end, period.prevStart, period.prevEnd]) {
+    if (!isIsoDate(date)) throw new Error('Invalid overview period')
+  }
+  return sql`b AS (
+    SELECT
+      (${period.start}::date)::timestamp AT TIME ZONE 'Africa/Cairo' AS s,
+      (${period.end}::date)::timestamp AT TIME ZONE 'Africa/Cairo' AS e,
+      (${period.prevStart}::date)::timestamp AT TIME ZONE 'Africa/Cairo' AS ps,
+      (${period.prevEnd}::date)::timestamp AT TIME ZONE 'Africa/Cairo' AS pe,
+      ${period.start}::date AS sd
+  )`
 }
 
-/** KPI tiles, sparklines and the GMV / fees chart: one round trip, shared per request. */
+/** USD → EGP at the switch's rate, so fees sit beside EGP GMV. */
+const FEE_EGP = sql`(t.amount * CASE WHEN t.currency = 'USD'
+  THEN coalesce((SELECT bs.conversion_rate FROM billing_settings bs WHERE bs.id), 1) ELSE 1 END)`
+
+/** The bucket number (0-based) of a timestamp column, in Cairo local time. */
+function bucketOf (column: string, period: OverviewPeriod): SQL {
+  // `column` is one of the fixed column names below, never user input.
+  const local = sql`(${sql.raw(column)} AT TIME ZONE 'Africa/Cairo')`
+  if (period.bucket === 'hour') return sql`((${local}::date - b.sd) * 24 + extract(hour FROM ${local})::int)`
+  if (period.bucket === 'week') return sql`((${local}::date - b.sd) / 7)`
+  return sql`(${local}::date - b.sd)`
+}
+
+/** `column` in the current window. */
+const cur = (column: string) => sql`(${sql.raw(column)} >= b.s AND ${sql.raw(column)} < b.e)`
+/** `column` in the previous window. */
+const prv = (column: string) => sql`(${sql.raw(column)} >= b.ps AND ${sql.raw(column)} < b.pe)`
+/** Either window (the previous one always starts first). */
+const either = (column: string) => sql`(${sql.raw(column)} >= b.ps AND ${sql.raw(column)} < b.e)`
+
+/**
+ * Each seller's first activation event, mirroring loadActivationFacts in
+ * packages/lib/src/billing/order-lock.server.ts: a succeeded top-up row, a
+ * `top_up` ledger entry, or a USD ledger entry leaving the balance above zero.
+ * ("Balance above zero now" has no date of its own; such a balance always comes
+ * from a USD entry with `balance_after > 0`.)
+ */
+const FIRST_ACTIVATION = sql`
+  SELECT ev.seller_id, min(ev.at) AS at FROM (
+    SELECT u.seller_id, u.created_at AS at FROM seller_wallet_top_ups u WHERE u.status = 'succeeded'
+    UNION ALL
+    SELECT t.seller_id, t.created_at FROM wallet_transactions t WHERE t.type = 'top_up'
+    UNION ALL
+    SELECT t.seller_id, t.created_at FROM wallet_transactions t WHERE t.currency = 'USD' AND t.balance_after > 0
+  ) ev GROUP BY ev.seller_id`
+
+/**
+ * "Right now" tiles: stores by status, sellers by activation, money held in
+ * store wallets and manual top-ups waiting for review. One statement.
+ * "Activated" mirrors loadActivationFacts (order-lock.server.ts); it applies
+ * once the USD switch is live, as it is on production.
+ */
+export const getOverviewSnapshot = cache(async function getOverviewSnapshot (): Promise<OverviewSnapshot> {
+  await getAdminUser()
+
+  const providers = sql.join(REVIEWED_TOP_UP_PROVIDERS.map((p) => sql`${p}`), sql`, `)
+  const [result] = await runLimited([
+    () => db.execute(sql`
+      WITH act AS (
+        SELECT se.id,
+          EXISTS (SELECT 1 FROM seller_wallet_top_ups u WHERE u.seller_id = se.id AND u.status = 'succeeded') AS paid,
+          EXISTS (SELECT 1 FROM wallet_transactions t WHERE t.seller_id = se.id AND t.type = 'top_up') AS top_up_entry,
+          coalesce((SELECT w.balance FROM seller_wallet w WHERE w.seller_id = se.id LIMIT 1), 0) > 0 AS positive_now,
+          EXISTS (SELECT 1 FROM wallet_transactions t
+            WHERE t.seller_id = se.id AND t.currency = 'USD' AND t.balance_after > 0) AS positive_entry
+        FROM sellers se
+      )
+      SELECT
+        (SELECT json_build_object(
+          'total', count(*),
+          'published', count(*) FILTER (WHERE site_status = 'published'),
+          'draft', count(*) FILTER (WHERE site_status = 'draft'),
+          'unpublished', count(*) FILTER (WHERE site_status = 'unpublished'),
+          'suspended', count(*) FILTER (WHERE status = 'suspended')
+        ) FROM stores WHERE deleted_at IS NULL) AS stores,
+        (SELECT json_build_object(
+          'total', count(*),
+          'activated', count(*) FILTER (WHERE paid OR top_up_entry OR positive_now OR positive_entry),
+          'paid', count(*) FILTER (WHERE paid),
+          'credit_only', count(*) FILTER (WHERE NOT paid AND NOT top_up_entry AND (positive_now OR positive_entry))
+        ) FROM act) AS sellers,
+        (SELECT json_agg(x ORDER BY x.wallets DESC) FROM (
+          SELECT coalesce(currency, 'EGP') AS currency,
+            count(*)::int AS wallets,
+            coalesce(sum(balance) FILTER (WHERE balance > 0), 0)::numeric(14,2)::text AS positive_total,
+            count(*) FILTER (WHERE balance > 0)::int AS positive_count,
+            coalesce(sum(balance) FILTER (WHERE balance < 0), 0)::numeric(14,2)::text AS negative_total,
+            count(*) FILTER (WHERE balance < 0)::int AS negative_count
+          FROM seller_wallet GROUP BY 1
+        ) x) AS wallets,
+        (SELECT json_build_object('count', count(*), 'amount', coalesce(sum(amount), 0)::numeric(14,2)::text)
+          FROM seller_wallet_top_ups WHERE status = 'pending' AND provider IN (${providers})) AS pending
+    `)
+  ])
+
+  const row = rows(result)[0] ?? {}
+  const stores = (row.stores ?? {}) as Record<string, unknown>
+  const sellers = (row.sellers ?? {}) as Record<string, unknown>
+  const pending = (row.pending ?? {}) as Record<string, unknown>
+  const wallets = (Array.isArray(row.wallets) ? row.wallets : []) as Array<Record<string, unknown>>
+  return {
+    stores: {
+      total: toNumber(stores.total),
+      published: toNumber(stores.published),
+      neverPublished: toNumber(stores.draft),
+      offline: toNumber(stores.unpublished),
+      suspended: toNumber(stores.suspended)
+    },
+    sellers: {
+      total: toNumber(sellers.total),
+      activated: toNumber(sellers.activated),
+      paidTopUp: toNumber(sellers.paid),
+      creditOnly: toNumber(sellers.credit_only)
+    },
+    wallets: wallets.map((w) => ({
+      currency: String(w.currency),
+      wallets: toNumber(w.wallets),
+      positiveTotal: toNumber(w.positive_total),
+      positiveCount: toNumber(w.positive_count),
+      negativeTotal: toNumber(w.negative_total),
+      negativeCount: toNumber(w.negative_count)
+    })),
+    pendingTopUps: { count: toNumber(pending.count), amount: toNumber(pending.amount) }
+  }
+})
+
+/**
+ * Period KPIs (current and previous window) and the chart series, in two
+ * statements. Shared per request by the KPI, chart and growth sections.
+ */
 export const getOverviewTrend = cache(async function getOverviewTrend (
-  range: OverviewRange
+  period: OverviewPeriod
 ): Promise<OverviewTrend> {
   await getAdminUser()
 
-  const span = sql.raw(String(range * 2 - 1))
-  const [result] = await runLimited([
+  const bounds = periodBounds(period)
+  const lastBucket = bucketCount(period) - 1
+  const [totalsResult, seriesResult] = await runLimited([
     () => db.execute(sql`
-      WITH ${windows(range)},
-      idx AS (SELECT generate_series(0, ${span}) AS i),
+      WITH ${bounds},
       o AS (
-        SELECT ((o.created_at AT TIME ZONE 'Africa/Cairo')::date - w.start_local::date) AS i,
-          count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED}) AS orders,
+        SELECT
+          count(*) FILTER (WHERE x.cur AND x.counted)::int AS orders_cur,
+          count(*) FILTER (WHERE x.prv AND x.counted)::int AS orders_prev,
           -- EGP only, so the figure never adds two currencies (F-61).
-          coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'), 0) AS gmv,
-          count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP') AS gmv_orders,
-          count(*) FILTER (WHERE o.status = 'delivered') AS delivered
-        FROM orders o, w WHERE NOT o.is_test AND o.created_at >= w.start_at GROUP BY 1
+          coalesce(sum(x.total_amount) FILTER (WHERE x.cur AND x.counted AND x.egp), 0)::numeric(14,2)::text AS gmv_cur,
+          coalesce(sum(x.total_amount) FILTER (WHERE x.prv AND x.counted AND x.egp), 0)::numeric(14,2)::text AS gmv_prev,
+          count(*) FILTER (WHERE x.cur AND x.counted AND x.egp)::int AS gmv_orders_cur,
+          count(*) FILTER (WHERE x.prv AND x.counted AND x.egp)::int AS gmv_orders_prev,
+          count(*) FILTER (WHERE x.cur AND x.status = 'delivered')::int AS delivered_cur,
+          count(*) FILTER (WHERE x.prv AND x.status = 'delivered')::int AS delivered_prev,
+          count(DISTINCT x.store_id) FILTER (WHERE x.cur AND x.counted)::int AS active_stores_cur,
+          count(DISTINCT x.store_id) FILTER (WHERE x.prv AND x.counted)::int AS active_stores_prev
+        FROM (
+          SELECT ${cur('o.created_at')} AS cur, ${prv('o.created_at')} AS prv,
+            o.status NOT IN ${EXCLUDED} AS counted,
+            coalesce(o.currency, 'EGP') = 'EGP' AS egp,
+            o.status, o.total_amount, o.store_id
+          FROM orders o, b WHERE NOT o.is_test AND ${either('o.created_at')}
+        ) x
       ),
       f AS (
-        SELECT ((t.created_at AT TIME ZONE 'Africa/Cairo')::date - w.start_local::date) AS i,
-          -- USD fees at the switch's rate, so the chart stays in one currency beside GMV.
-          -sum(t.amount * CASE WHEN t.currency = 'USD' THEN coalesce((SELECT b.conversion_rate FROM billing_settings b WHERE b.id), 1) ELSE 1 END) AS fees
-        FROM wallet_transactions t, w
-        WHERE t.type IN ('fee', 'fee_reversal') AND t.created_at >= w.start_at GROUP BY 1
+        SELECT
+          coalesce(-sum(${FEE_EGP}) FILTER (WHERE ${cur('t.created_at')}), 0)::numeric(14,2)::text AS fees_cur,
+          coalesce(-sum(${FEE_EGP}) FILTER (WHERE ${prv('t.created_at')}), 0)::numeric(14,2)::text AS fees_prev
+        FROM wallet_transactions t, b
+        WHERE t.type IN ('fee', 'fee_reversal') AND ${either('t.created_at')}
       ),
-      s AS (
-        SELECT ((st.created_at AT TIME ZONE 'Africa/Cairo')::date - w.start_local::date) AS i, count(*) AS new_stores
-        FROM stores st, w WHERE st.deleted_at IS NULL AND st.created_at >= w.start_at GROUP BY 1
+      se AS (
+        SELECT
+          count(*) FILTER (WHERE ${cur('se.created_at')})::int AS new_sellers_cur,
+          count(*) FILTER (WHERE ${prv('se.created_at')})::int AS new_sellers_prev
+        FROM sellers se, b WHERE ${either('se.created_at')}
+      ),
+      st AS (
+        SELECT
+          count(*) FILTER (WHERE ${cur('st.created_at')})::int AS new_stores_cur,
+          count(*) FILTER (WHERE ${prv('st.created_at')})::int AS new_stores_prev,
+          count(*) FILTER (WHERE ${cur('st.first_published_at')})::int AS first_published_cur,
+          count(*) FILTER (WHERE ${prv('st.first_published_at')})::int AS first_published_prev
+        FROM stores st, b
+        WHERE st.deleted_at IS NULL AND (${either('st.created_at')} OR ${either('st.first_published_at')})
       ),
       tu AS (
-        SELECT ((u.created_at AT TIME ZONE 'Africa/Cairo')::date - w.start_local::date) AS i, sum(u.amount) AS top_ups
-        FROM seller_wallet_top_ups u, w WHERE u.status = 'succeeded' AND u.created_at >= w.start_at GROUP BY 1
-      ),
-      a AS (
         SELECT
-          count(DISTINCT o.store_id) FILTER (WHERE o.created_at >= w.mid_at)::int AS active_cur,
-          count(DISTINCT o.store_id) FILTER (WHERE o.created_at < w.mid_at)::int AS active_prev
-        FROM orders o, w
-        WHERE NOT o.is_test AND o.store_id IS NOT NULL AND o.created_at >= w.start_at AND o.status NOT IN ${EXCLUDED}
+          count(*) FILTER (WHERE ${cur('u.created_at')})::int AS top_ups_cur,
+          count(*) FILTER (WHERE ${prv('u.created_at')})::int AS top_ups_prev,
+          count(DISTINCT u.seller_id) FILTER (WHERE ${cur('u.created_at')})::int AS top_up_sellers,
+          coalesce(sum(u.amount) FILTER (WHERE ${cur('u.created_at')}), 0)::numeric(14,2)::text AS top_up_paid_cur,
+          coalesce(sum(u.amount) FILTER (WHERE ${prv('u.created_at')}), 0)::numeric(14,2)::text AS top_up_paid_prev,
+          coalesce(sum(u.credit_amount) FILTER (WHERE ${cur('u.created_at')} AND u.credit_currency = 'USD'), 0)::numeric(14,2)::text AS top_up_credited,
+          count(*) FILTER (WHERE ${cur('u.created_at')} AND u.first)::int AS first_top_ups
+        FROM (
+          SELECT u.*, row_number() OVER (PARTITION BY u.seller_id ORDER BY u.created_at, u.id) = 1 AS first
+          FROM seller_wallet_top_ups u WHERE u.status = 'succeeded'
+        ) u, b
+        WHERE ${either('u.created_at')}
+      ),
+      ad AS (
+        SELECT
+          count(*) FILTER (WHERE ${cur('t.created_at')})::int AS admin_credits_cur,
+          count(*) FILTER (WHERE ${prv('t.created_at')})::int AS admin_credits_prev,
+          count(DISTINCT t.seller_id) FILTER (WHERE ${cur('t.created_at')})::int AS admin_credit_sellers,
+          coalesce(sum(t.amount) FILTER (WHERE ${cur('t.created_at')} AND t.currency = 'USD'), 0)::numeric(14,2)::text AS admin_credit_net
+        FROM wallet_transactions t, b
+        WHERE t.type = 'adjustment' AND t.reference_type = 'admin' AND ${either('t.created_at')}
+      ),
+      ac AS (
+        SELECT
+          count(*) FILTER (WHERE ${cur('a.at')})::int AS activated_cur,
+          count(*) FILTER (WHERE ${prv('a.at')})::int AS activated_prev
+        FROM (${FIRST_ACTIVATION}) a, b
+        WHERE ${either('a.at')}
+      )
+      SELECT * FROM o, f, se, st, tu, ad, ac
+    `),
+    () => db.execute(sql`
+      WITH ${bounds},
+      idx AS (SELECT generate_series(0, ${lastBucket}::int) AS i),
+      o AS (
+        SELECT ${bucketOf('o.created_at', period)} AS i,
+          count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED}) AS orders,
+          coalesce(sum(o.total_amount) FILTER (
+            WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'), 0) AS gmv
+        FROM orders o, b WHERE NOT o.is_test AND ${cur('o.created_at')} GROUP BY 1
+      ),
+      f AS (
+        SELECT ${bucketOf('t.created_at', period)} AS i, -sum(${FEE_EGP}) AS fees
+        FROM wallet_transactions t, b
+        WHERE t.type IN ('fee', 'fee_reversal') AND ${cur('t.created_at')} GROUP BY 1
+      ),
+      se AS (
+        SELECT ${bucketOf('se.created_at', period)} AS i, count(*) AS new_sellers
+        FROM sellers se, b WHERE ${cur('se.created_at')} GROUP BY 1
+      ),
+      st AS (
+        SELECT ${bucketOf('st.created_at', period)} AS i, count(*) AS new_stores
+        FROM stores st, b WHERE st.deleted_at IS NULL AND ${cur('st.created_at')} GROUP BY 1
+      ),
+      fp AS (
+        SELECT ${bucketOf('st.first_published_at', period)} AS i, count(*) AS first_published
+        FROM stores st, b WHERE st.deleted_at IS NULL AND ${cur('st.first_published_at')} GROUP BY 1
+      ),
+      tu AS (
+        SELECT ${bucketOf('u.created_at', period)} AS i, count(*) AS top_ups
+        FROM seller_wallet_top_ups u, b WHERE u.status = 'succeeded' AND ${cur('u.created_at')} GROUP BY 1
       )
       SELECT idx.i,
-        to_char(w.start_local + idx.i * interval '1 day', 'YYYY-MM-DD') AS date,
         coalesce(o.gmv, 0)::numeric(14,2)::text AS gmv,
-        coalesce(o.gmv_orders, 0)::int AS gmv_orders,
         coalesce(o.orders, 0)::int AS orders,
-        coalesce(o.delivered, 0)::int AS delivered,
         coalesce(f.fees, 0)::numeric(14,2)::text AS fees,
-        coalesce(s.new_stores, 0)::int AS new_stores,
-        coalesce(tu.top_ups, 0)::numeric(14,2)::text AS top_ups,
-        a.active_cur, a.active_prev
-      FROM idx CROSS JOIN w CROSS JOIN a
+        coalesce(se.new_sellers, 0)::int AS new_sellers,
+        coalesce(st.new_stores, 0)::int AS new_stores,
+        coalesce(fp.first_published, 0)::int AS first_published,
+        coalesce(tu.top_ups, 0)::int AS top_ups
+      FROM idx
       LEFT JOIN o ON o.i = idx.i
       LEFT JOIN f ON f.i = idx.i
-      LEFT JOIN s ON s.i = idx.i
+      LEFT JOIN se ON se.i = idx.i
+      LEFT JOIN st ON st.i = idx.i
+      LEFT JOIN fp ON fp.i = idx.i
       LEFT JOIN tu ON tu.i = idx.i
       ORDER BY idx.i
     `)
   ])
 
-  const list = rows(result)
-  const first = list[0] ?? {}
-  const split = splitDays(
-    list.map((row) => ({ ...row, i: toNumber(row.i), date: String(row.date) }) as RawOverviewDay),
-    range
+  return buildTrend(
+    period,
+    rows(totalsResult)[0] ?? {},
+    rows(seriesResult) as unknown as RawOverviewPoint[]
   )
-  return {
-    range,
-    ...split,
-    activeStores: kpi(toNumber(first.active_cur), toNumber(first.active_prev))
-  }
 })
 
-/** Store mix, fee trial, seller activation funnel, order outcomes and payment mix. */
-export async function getOverviewMix (range: OverviewRange): Promise<OverviewMix> {
+/** Seller activation funnel, order outcomes and payment mix of the period. */
+export async function getOverviewMix (period: OverviewPeriod): Promise<OverviewMix> {
   await getAdminUser()
 
   const [result] = await runLimited([
     () => db.execute(sql`
-      WITH ${windows(range)}
+      WITH ${periodBounds(period)},
+      act AS (${FIRST_ACTIVATION})
       SELECT
-        (SELECT json_object_agg(site_status, n) FROM (
-          SELECT site_status, count(*)::int AS n FROM stores WHERE deleted_at IS NULL GROUP BY site_status
-        ) x) AS sites,
-        (SELECT count(*)::int FROM stores WHERE deleted_at IS NULL AND status = 'suspended') AS suspended,
-        (SELECT count(*)::int FROM sellers WHERE fee_trial_ends_at > now()) AS in_trial,
-        (SELECT count(*)::int FROM sellers WHERE fee_trial_ends_at <= now()) AS past_trial,
-        (SELECT count(*)::int FROM seller_wallet WHERE balance < 0) AS negative_wallets,
-        (SELECT coalesce(sum(balance), 0)::numeric(14,2)::text FROM seller_wallet WHERE balance < 0) AS negative_total,
         (SELECT json_build_object(
           'signed_up', count(*),
           'store', count(*) FILTER (WHERE EXISTS (
@@ -149,28 +336,23 @@ export async function getOverviewMix (range: OverviewRange): Promise<OverviewMix
           'product', count(*) FILTER (WHERE EXISTS (SELECT 1 FROM products p WHERE p.seller_id = se.id)),
           'published', count(*) FILTER (WHERE EXISTS (
             SELECT 1 FROM stores st WHERE st.seller_id = se.id AND st.first_published_at IS NOT NULL)),
+          'activated', count(*) FILTER (WHERE EXISTS (SELECT 1 FROM act WHERE act.seller_id = se.id)),
           'order', count(*) FILTER (WHERE EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = se.id))
-        ) FROM sellers se, w WHERE se.created_at >= w.mid_at) AS funnel,
+        ) FROM sellers se, b WHERE ${cur('se.created_at')}) AS funnel,
         (SELECT json_object_agg(status, n) FROM (
-          SELECT o.status, count(*)::int AS n FROM orders o, w WHERE NOT o.is_test AND o.created_at >= w.mid_at GROUP BY o.status
+          SELECT o.status, count(*)::int AS n FROM orders o, b
+          WHERE NOT o.is_test AND ${cur('o.created_at')} GROUP BY o.status
         ) x) AS outcomes,
         (SELECT json_object_agg(payment_method, n) FROM (
-          SELECT o.payment_method, count(*)::int AS n FROM orders o, w
-          WHERE NOT o.is_test AND o.created_at >= w.mid_at AND o.status NOT IN ${EXCLUDED} GROUP BY o.payment_method
+          SELECT o.payment_method, count(*)::int AS n FROM orders o, b
+          WHERE NOT o.is_test AND ${cur('o.created_at')} AND o.status NOT IN ${EXCLUDED} GROUP BY o.payment_method
         ) x) AS payments
     `)
   ])
 
   const row = rows(result)[0] ?? {}
-  const sites = (row.sites ?? {}) as Record<string, unknown>
   const payments = (row.payments ?? {}) as Record<string, unknown>
   return {
-    sites: Object.fromEntries(Object.entries(sites).map(([key, value]) => [key, toNumber(value)])),
-    suspendedStores: toNumber(row.suspended),
-    sellersInTrial: toNumber(row.in_trial),
-    sellersPastTrial: toNumber(row.past_trial),
-    negativeWallets: toNumber(row.negative_wallets),
-    negativeTotal: toNumber(row.negative_total),
     funnel: buildFunnel(row.funnel as Record<string, unknown> | null),
     outcomes: groupOutcomes(row.outcomes as Record<string, unknown> | null),
     payments: [...Object.entries(payments).reduce((byLabel, [method, value]) => {
@@ -183,8 +365,8 @@ export async function getOverviewMix (range: OverviewRange): Promise<OverviewMix
   }
 }
 
-/** Top stores by GMV in the window, plus the latest stores created. */
-export async function getOverviewStores (range: OverviewRange): Promise<{
+/** Top stores by GMV in the period (growth vs the previous one), plus the latest stores. */
+export async function getOverviewStores (period: OverviewPeriod): Promise<{
   top: OverviewStoreRow[]
   latest: OverviewNewStore[]
 }> {
@@ -192,19 +374,19 @@ export async function getOverviewStores (range: OverviewRange): Promise<{
 
   const [topResult, latestResult] = await runLimited([
     () => db.execute(sql`
-      WITH ${windows(range)},
+      WITH ${periodBounds(period)},
       cur AS (
         SELECT o.store_id,
           count(*) FILTER (WHERE o.status NOT IN ${EXCLUDED})::int AS orders,
           coalesce(sum(o.total_amount) FILTER (WHERE o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'), 0) AS gmv,
           count(*) FILTER (WHERE o.status = 'delivered')::int AS delivered,
           count(*) FILTER (WHERE o.status = 'returned')::int AS returned
-        FROM orders o, w WHERE NOT o.is_test AND o.store_id IS NOT NULL AND o.created_at >= w.mid_at GROUP BY o.store_id
+        FROM orders o, b WHERE NOT o.is_test AND o.store_id IS NOT NULL AND ${cur('o.created_at')} GROUP BY o.store_id
       ),
       prev AS (
         SELECT o.store_id, coalesce(sum(o.total_amount), 0) AS gmv
-        FROM orders o, w
-        WHERE NOT o.is_test AND o.store_id IS NOT NULL AND o.created_at >= w.start_at AND o.created_at < w.mid_at
+        FROM orders o, b
+        WHERE NOT o.is_test AND o.store_id IS NOT NULL AND ${prv('o.created_at')}
           AND o.status NOT IN ${EXCLUDED} AND coalesce(o.currency, 'EGP') = 'EGP'
         GROUP BY o.store_id
       )
