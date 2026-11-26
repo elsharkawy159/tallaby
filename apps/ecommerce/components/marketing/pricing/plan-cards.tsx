@@ -25,9 +25,8 @@ export async function PlanCards({ reveal = true }: { reveal?: boolean } = {}) {
   const t = await getTranslations("pricing.plans");
   const { free, pro } = PLAN_PRICES;
 
-  // F-84i: stores take orders from day one; orders stay hidden until the first
-  // top-up, and every store goes offline when the trial days end without one.
-  // EGP at the live rate. `{days}` (ORDER_GRACE_DAYS_SHORT) comes with PRICE_TOKENS.
+  // The order fee is taken only for delivered orders (fee_on_delivery, owner 2026-11-26).
+  // PRICE_TOKENS stays in case the line names a price again.
   const activation = withPrices(t("freeActivation", PRICE_TOKENS));
 
   const cards = [
