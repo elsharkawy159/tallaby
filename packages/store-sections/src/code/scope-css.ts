@@ -13,8 +13,14 @@ import postcss, { CssSyntaxError } from "postcss";
 import type { AtRule, ChildNode, Container, Declaration, Node, Root, Rule } from "postcss";
 import selectorParser from "postcss-selector-parser";
 import { isSafeStyleString } from "../config/sanitize";
+import type { CodeIssueParams, CodeIssueReason } from "./code-issues";
 
-export type CssIssue = { line: number; column: number; message: string };
+/**
+ * `code` (one of `CODE_ISSUE_CODES`, `css_*`) and `params` let the editor show
+ * the issue in the seller's language; `message` is the English fallback.
+ * Optional so older readers of `{ line, column, message }` keep working.
+ */
+export type CssIssue = { line: number; column: number; message: string; code?: string; params?: CodeIssueParams };
 
 export type ScopeCssOptions = {
   /** e.g. `.site-root [data-node-id="n_abc"]`; built and trusted by the caller. */
@@ -58,12 +64,13 @@ function position(node: Node | undefined): { line: number; column: number } {
   return { line: start?.line ?? 1, column: start?.column ?? 1 };
 }
 
-function issueAt(node: Node | undefined, message: string): CssIssue {
-  return { ...position(node), message };
+function issueAt(node: Node | undefined, code: string, message: string, params?: CodeIssueParams): CssIssue {
+  return { ...position(node), message, code, ...(params && { params }) };
 }
 
 function sizeIssue(max: number): CssIssue {
-  return { line: 1, column: 1, message: `CSS is larger than ${max} bytes` };
+  // KB rounded up to one decimal: the editor says "more than {kb} KB".
+  return { line: 1, column: 1, message: `CSS is larger than ${max} bytes`, code: "css_too_large", params: { kb: Math.ceil((max / 1024) * 10) / 10 } };
 }
 
 /** Parses or returns the syntax issue. */
@@ -72,18 +79,18 @@ function parse(input: string): { root: Root } | { issue: CssIssue } {
     return { root: postcss.parse(input) };
   } catch (error) {
     if (error instanceof CssSyntaxError) {
-      return { issue: { line: error.line ?? 1, column: error.column ?? 1, message: error.reason } };
+      return { issue: { line: error.line ?? 1, column: error.column ?? 1, message: error.reason, code: "css_syntax", params: { detail: error.reason } } };
     }
-    return { issue: { line: 1, column: 1, message: "CSS could not be parsed" } };
+    return { issue: { line: 1, column: 1, message: "CSS could not be parsed", code: "css_syntax", params: { detail: "CSS could not be parsed" } } };
   }
 }
 
-/** Why an at-rule is removed, or null when it is one we keep. */
-function blockedAtRuleReason(atRule: AtRule): string | null {
+/** The issue of an at-rule that is removed, or null when it is one we keep. */
+function blockedAtRuleIssue(atRule: AtRule): CssIssue | null {
   const name = atRule.name.toLowerCase();
   if (CONDITIONAL_AT_RULES.has(name) || name === "keyframes") return null;
-  if (BLOCKED_AT_RULES.has(name)) return `@${name} is not allowed`;
-  return `Unknown at-rule @${name} is not allowed`;
+  if (BLOCKED_AT_RULES.has(name)) return issueAt(atRule, "css_at_rule_blocked", `@${name} is not allowed`, { at: name });
+  return issueAt(atRule, "css_at_rule_unknown", `Unknown at-rule @${name} is not allowed`, { at: name });
 }
 
 /** `@media`/`@supports` conditions: the value rules, with range operators (`<`, `>=`) allowed. */
@@ -140,7 +147,8 @@ function renameAnimationNames(
   return out;
 }
 
-type ScopeResult = { selector: string } | { dropped: string };
+type ScopeResult = { selector: string } | Dropped;
+type Dropped = { dropped: string; reason: CodeIssueReason; pseudo?: string };
 
 function isRootLike(node: selectorParser.Node): boolean {
   if (node.type === "tag") {
@@ -154,16 +162,16 @@ function isRootLike(node: selectorParser.Node): boolean {
   return false;
 }
 
-function unscopable(selector: selectorParser.Selector): string | null {
-  let reason: string | null = null;
+function unscopable(selector: selectorParser.Selector): Dropped | null {
+  let reason: Dropped | null = null;
   selector.walk((node) => {
     if (reason) return;
-    if (node.type === "nesting") reason = "uses &";
+    if (node.type === "nesting") reason = { dropped: "uses &", reason: "nesting" };
     if (node.type === "pseudo") {
       const pseudo = node.value.toLowerCase();
-      if (pseudo === ":has") reason = "uses :has()";
-      else if (pseudo === ":host" && node.nodes.length > 0) reason = "uses :host()";
-      else if (pseudo === ":host-context" || pseudo === "::slotted" || pseudo === "::part") reason = `uses ${pseudo}`;
+      if (pseudo === ":has") reason = { dropped: "uses :has()", reason: "has" };
+      else if (pseudo === ":host" && node.nodes.length > 0) reason = { dropped: "uses :host()", reason: "host_function" };
+      else if (pseudo === ":host-context" || pseudo === "::slotted" || pseudo === "::part") reason = { dropped: `uses ${pseudo}`, reason: "shadow_dom", pseudo };
     }
   });
   return reason;
@@ -171,10 +179,10 @@ function unscopable(selector: selectorParser.Selector): string | null {
 
 function scopeSelector(selector: selectorParser.Selector, scope: string): ScopeResult {
   const reason = unscopable(selector);
-  if (reason) return { dropped: reason };
+  if (reason) return reason;
   const nodes = selector.nodes;
-  if (nodes.length === 0) return { dropped: "is empty" };
-  if (nodes[0]!.type === "combinator") return { dropped: "starts with a combinator" };
+  if (nodes.length === 0) return { dropped: "is empty", reason: "empty" };
+  if (nodes[0]!.type === "combinator") return { dropped: "starts with a combinator", reason: "leading_combinator" };
 
   const firstCombinator = nodes.findIndex((n) => n.type === "combinator");
   const compound = firstCombinator === -1 ? nodes : nodes.slice(0, firstCombinator);
@@ -182,15 +190,15 @@ function scopeSelector(selector: selectorParser.Selector, scope: string): ScopeR
 
   if (!compound.some(isRootLike)) {
     const text = selector.toString().trim();
-    return text ? { selector: `${scope} ${text}` } : { dropped: "is empty" };
+    return text ? { selector: `${scope} ${text}` } : { dropped: "is empty", reason: "empty" };
   }
 
   // `html`, `body`, `:root`, `:scope`, `:host` become the scope itself.
   const next = tail[0];
-  if (next?.type === "combinator" && /[+~]/.test(next.value)) return { dropped: "reaches siblings of the scope" };
+  if (next?.type === "combinator" && /[+~]/.test(next.value)) return { dropped: "reaches siblings of the scope", reason: "siblings" };
   const rest = compound.filter((n) => !isRootLike(n));
   if (rest[0] && (rest[0].type === "tag" || rest[0].type === "universal")) {
-    return { dropped: "can't be scoped" };
+    return { dropped: "can't be scoped", reason: "unscopable" };
   }
   const restText = rest.map(String).join("").trim();
   return { selector: `${scope}${restText}${tail.map(String).join("")}`.trim() };
@@ -201,17 +209,21 @@ function scopeRuleSelectors(rule: Rule, scope: string): { selector: string | nul
   const issues: CssIssue[] = [];
   const kept: string[] = [];
   if (HTML_BREAKOUT_LOOSE.test(rule.selector)) {
-    return { selector: null, issues: [issueAt(rule, "Selector contains markup")] };
+    return { selector: null, issues: [issueAt(rule, "css_markup", "Selector contains markup")] };
   }
   try {
     const root = selectorParser().astSync(rule.selector);
     for (const selector of root.nodes) {
       const result = scopeSelector(selector, scope);
       if ("selector" in result) kept.push(result.selector);
-      else issues.push(issueAt(rule, `Selector "${selector.toString().trim()}" was removed: it ${result.dropped}`));
+      else {
+        const text = selector.toString().trim();
+        const params: CodeIssueParams = { selector: text, reason: result.reason, ...(result.pseudo && { pseudo: result.pseudo }) };
+        issues.push(issueAt(rule, "css_selector_removed", `Selector "${text}" was removed: it ${result.dropped}`, params));
+      }
     }
   } catch {
-    return { selector: null, issues: [issueAt(rule, `Selector "${rule.selector}" is not valid`)] };
+    return { selector: null, issues: [issueAt(rule, "css_selector_invalid", `Selector "${rule.selector}" is not valid`, { selector: rule.selector })] };
   }
   return { selector: kept.length ? kept.join(", ") : null, issues };
 }
@@ -228,7 +240,7 @@ function cleanDeclarations(container: Rule, ctx: Context, inKeyframes: boolean):
       child.remove();
     } else if (child.type === "decl") {
       if (!isSafeDeclaration(child)) {
-        ctx.issues.push(issueAt(child, `Declaration "${child.prop}" was removed: its value is not allowed`));
+        ctx.issues.push(issueAt(child, "css_value_removed", `Declaration "${child.prop}" was removed: its value is not allowed`, { property: child.prop }));
         child.remove();
         continue;
       }
@@ -241,7 +253,7 @@ function cleanDeclarations(container: Rule, ctx: Context, inKeyframes: boolean):
       }
     } else {
       // Nested rules and at-rules inside a rule (CSS nesting) could reach outside the scope.
-      ctx.issues.push(issueAt(child, "Nested rules are not supported"));
+      ctx.issues.push(issueAt(child, "css_nested_rule", "Nested rules are not supported"));
       child.remove();
     }
   }
@@ -251,7 +263,7 @@ function processKeyframes(atRule: AtRule, ctx: Context): void {
   const name = atRule.params.trim();
   const renamed = ctx.rename.get(name);
   if (!renamed) {
-    ctx.issues.push(issueAt(atRule, `@keyframes "${name}" was removed: the name is not valid`));
+    ctx.issues.push(issueAt(atRule, "css_keyframes_name", `@keyframes "${name}" was removed: the name is not valid`, { name }));
     atRule.remove();
     return;
   }
@@ -263,7 +275,7 @@ function processKeyframes(atRule: AtRule, ctx: Context): void {
     } else if (child.type === "rule") {
       const parts = child.selector.split(",").map((s) => s.trim());
       if (!parts.every((p) => KEYFRAME_SELECTOR.test(p))) {
-        ctx.issues.push(issueAt(child, `Keyframe selector "${child.selector}" is not valid`));
+        ctx.issues.push(issueAt(child, "css_keyframe_selector", `Keyframe selector "${child.selector}" is not valid`, { selector: child.selector }));
         child.remove();
         continue;
       }
@@ -271,7 +283,7 @@ function processKeyframes(atRule: AtRule, ctx: Context): void {
       cleanDeclarations(child, ctx, true);
       if (!child.nodes?.length) child.remove();
     } else {
-      ctx.issues.push(issueAt(child, "Only keyframe blocks are allowed inside @keyframes"));
+      ctx.issues.push(issueAt(child, "css_keyframes_content", "Only keyframe blocks are allowed inside @keyframes"));
       child.remove();
     }
   }
@@ -282,20 +294,20 @@ function processContainer(container: Container<ChildNode>, ctx: Context): void {
     if (child.type === "comment") {
       child.remove();
     } else if (child.type === "decl") {
-      ctx.issues.push(issueAt(child, `Declaration "${child.prop}" outside a rule was removed`));
+      ctx.issues.push(issueAt(child, "css_declaration_outside", `Declaration "${child.prop}" outside a rule was removed`, { property: child.prop }));
       child.remove();
     } else if (child.type === "atrule") {
-      const reason = blockedAtRuleReason(child);
-      if (reason) {
-        ctx.issues.push(issueAt(child, reason));
+      const blocked = blockedAtRuleIssue(child);
+      if (blocked) {
+        ctx.issues.push(blocked);
         child.remove();
       } else if (child.name.toLowerCase() === "keyframes") {
         processKeyframes(child, ctx);
       } else if (!child.nodes) {
-        ctx.issues.push(issueAt(child, `@${child.name} needs a block`));
+        ctx.issues.push(issueAt(child, "css_at_rule_no_block", `@${child.name} needs a block`, { at: child.name }));
         child.remove();
       } else if (!isSafeCondition(child.params)) {
-        ctx.issues.push(issueAt(child, `@${child.name} condition is not allowed`));
+        ctx.issues.push(issueAt(child, "css_condition_blocked", `@${child.name} condition is not allowed`, { at: child.name }));
         child.remove();
       } else {
         child.name = child.name.toLowerCase();
@@ -352,7 +364,7 @@ export function scopeCss(input: string, options: ScopeCssOptions): { css: string
 
   const css = root.toString().trim();
   if (HTML_BREAKOUT.test(css)) {
-    return { css: "", issues: [...ctx.issues, { line: 1, column: 1, message: "CSS contains markup" }] };
+    return { css: "", issues: [...ctx.issues, { line: 1, column: 1, message: "CSS contains markup", code: "css_markup" }] };
   }
   return { css, issues: ctx.issues };
 }
@@ -363,8 +375,8 @@ export function checkCss(input: string, maxBytes: number = DEFAULT_MAX_CSS_BYTES
   if ("issue" in parsed) return [parsed.issue];
   const issues: CssIssue[] = [];
   parsed.root.walkAtRules((atRule) => {
-    const reason = blockedAtRuleReason(atRule);
-    if (reason) issues.push(issueAt(atRule, reason));
+    const blocked = blockedAtRuleIssue(atRule);
+    if (blocked) issues.push(blocked);
   });
   return issues;
 }

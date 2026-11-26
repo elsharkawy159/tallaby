@@ -107,7 +107,7 @@ function cleanRichValues(defs: readonly SettingDef[], values: Record<string, unk
 function normalizeSource(raw: unknown, issues: CodeNodeIssue[]): string {
   let source = typeof raw === "string" ? raw.replace(CONTROL_CHARS, "") : "";
   if (utf8Length(source) > MAX_CODE_SOURCE_BYTES) {
-    issues.push({ code: "source_too_large", field: "source", message: `The template is too long (more than ${MAX_CODE_SOURCE_BYTES / 1024} KB).` });
+    issues.push({ code: "source_too_large", field: "source", message: `The template is too long (more than ${MAX_CODE_SOURCE_BYTES / 1024} KB).`, params: { kb: MAX_CODE_SOURCE_BYTES / 1024 } });
     source = capUtf8(source, MAX_CODE_SOURCE_BYTES);
   }
   // The stylesheet and schema are stored apart; a block left in the template would never run.
@@ -127,7 +127,7 @@ function normalizeCss(raw: unknown, issues: CodeNodeIssue[]): string | undefined
   if (typeof raw !== "string") return undefined;
   let css = raw.replace(CONTROL_CHARS, "").trim();
   if (utf8Length(css) > MAX_CODE_CSS_BYTES) {
-    issues.push({ code: "css_too_large", field: "css", message: `The stylesheet is too long (more than ${MAX_CODE_CSS_BYTES / 1024} KB).` });
+    issues.push({ code: "css_too_large", field: "css", message: `The stylesheet is too long (more than ${MAX_CODE_CSS_BYTES / 1024} KB).`, params: { kb: MAX_CODE_CSS_BYTES / 1024 } });
     css = capUtf8(css, MAX_CODE_CSS_BYTES).trim();
   }
   return css || undefined;

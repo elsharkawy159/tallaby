@@ -36,6 +36,8 @@ import {
   type CodeBlockDef,
   type CodeSettingDef,
 } from "./code-file.lib";
+import type { CodeIssueView } from "../adapter.types";
+import { codeIssueLine, codeIssueText, type CodeIssueText, type CodeIssueTranslator } from "./code-issues.lib";
 import { codePreviewInput } from "./code-preview.lib";
 import { IDLE_PREVIEW_STORE, useCodePreview } from "./code-preview.client";
 
@@ -460,6 +462,7 @@ function SortableBlock({ id, label, disabled, children }: { id: string; label: s
 function CodeTab({ node, onEdit, readOnly }: { node: ComponentNode; onEdit: CodeNodeEdit; readOnly: boolean }) {
   const t = useTranslations("storeEditor.code.editor");
   const tErrors = useTranslations("storeEditor.errors");
+  const tCode = useTranslations("storeEditor.code") as unknown as CodeIssueTranslator;
   const preview = useCodePreview();
   const stored = useMemo(() => codeFileOf(node.props), [node.props]);
   const [draft, setDraft] = useState(stored);
@@ -497,7 +500,9 @@ function CodeTab({ node, onEdit, readOnly }: { node: ComponentNode; onEdit: Code
     );
   };
 
-  const issues = check?.issues ?? [];
+  const issues = useMemo(() => check?.issues ?? [], [check?.issues]);
+  // The editor's lint marks read in the seller's language too.
+  const localized = useMemo(() => issues.map((issue) => ({ ...issue, message: codeIssueLine(tCode, issue) })), [issues, tCode]);
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">{t("help")}</p>
@@ -510,7 +515,7 @@ function CodeTab({ node, onEdit, readOnly }: { node: ComponentNode; onEdit: Code
             </p>
           }
         >
-          <CodeEditor value={draft} onChange={onChange} issues={issues} readOnly={readOnly || !preview} label={t("label")} />
+          <CodeEditor value={draft} onChange={onChange} issues={localized} readOnly={readOnly || !preview} label={t("label")} />
         </Suspense>
       </div>
       <CodeStatus status={check?.status} issues={issues} error={check?.error ? tErrors(check.error) : undefined} />
@@ -518,8 +523,9 @@ function CodeTab({ node, onEdit, readOnly }: { node: ComponentNode; onEdit: Code
   );
 }
 
-function CodeStatus({ status, issues, error }: { status?: "checking" | "ok" | "issues" | "error"; issues: { message: string; line?: number; column?: number }[]; error?: string }) {
+function CodeStatus({ status, issues, error }: { status?: "checking" | "ok" | "issues" | "error"; issues: readonly CodeIssueView[]; error?: string }) {
   const t = useTranslations("storeEditor.code.editor");
+  const tCode = useTranslations("storeEditor.code") as unknown as CodeIssueTranslator;
   if (status === "checking") {
     return (
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-live="polite">
@@ -559,10 +565,25 @@ function CodeStatus({ status, issues, error }: { status?: "checking" | "ok" | "i
                 {issue.column != null ? t("lineColumn", { line: issue.line, column: issue.column }) : t("line", { line: issue.line })}
               </span>
             )}
-            <span dir="auto">{issue.message}</span>
+            <IssueText {...codeIssueText(tCode, issue)} />
           </li>
         ))}
       </ul>
     </div>
+  );
+}
+
+/** An issue's localized line, then its technical detail or the host's English message (left to right, muted). */
+function IssueText({ text, detail, fallback }: CodeIssueText) {
+  const extra = detail ?? fallback;
+  return (
+    <>
+      <span dir="auto">{text}</span>
+      {extra && (
+        <span dir="ltr" className="ms-1 break-words font-mono text-[11px] text-muted-foreground">
+          {extra}
+        </span>
+      )}
+    </>
   );
 }

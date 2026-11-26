@@ -6,6 +6,7 @@ import { useStore } from "zustand";
 import type { ComponentNode, SiteLocale } from "@workspace/store-sections";
 import type { RenderContext } from "@workspace/store-sections/render";
 import type { EditorAdapter } from "../adapter.types";
+import { codeIssueLine, type CodeIssueTranslator } from "./code-issues.lib";
 import {
   codePreviewInput,
   createCodePreviewRunner,
@@ -75,6 +76,7 @@ const BOX = "flex min-h-24 items-center justify-center gap-2 rounded-(--sf-radiu
  */
 function CanvasCodeNode({ node }: { node: ComponentNode }) {
   const t = useTranslations("storeEditor.code.canvas");
+  const tCode = useTranslations("storeEditor.code") as unknown as CodeIssueTranslator;
   const preview = useCodePreview();
   const input = useMemo(() => (preview ? codePreviewInput(node, preview.target) : null), [node, preview]);
   const runner = preview?.runner;
@@ -89,7 +91,8 @@ function CanvasCodeNode({ node }: { node: ComponentNode }) {
 
   if (entry?.status === "error") {
     const issue = entry.issues[0];
-    const message = issue ? (issue.line ? t("errorLine", { line: issue.line, message: issue.message }) : issue.message) : t("errorGeneric");
+    const text = issue ? codeIssueLine(tCode, issue) : "";
+    const message = issue ? (issue.line ? t("errorLine", { line: issue.line, message: text }) : text) : t("errorGeneric");
     return (
       <div data-node-id={node.id} data-node-type="code" role="alert" className={`${BOX} border-red-400 bg-red-50 text-red-700`}>
         <span aria-hidden>{"</>"}</span>

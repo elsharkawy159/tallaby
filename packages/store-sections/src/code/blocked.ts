@@ -8,19 +8,23 @@
  * blocks, so an author is never told code is fine when it isn't.
  */
 
+/** Every construct `findBlockedConstructs` reports; each is the issue code `blocked_<kind>`. */
+export const BLOCKED_KINDS = [
+  "script",
+  "event_handler",
+  "javascript_url",
+  "form",
+  "iframe",
+  "style_tag",
+  "javascript_tag",
+  "object",
+  "meta",
+  "base",
+  "link",
+] as const;
+
 export type BlockedIssue = {
-  kind:
-    | "script"
-    | "event_handler"
-    | "javascript_url"
-    | "form"
-    | "iframe"
-    | "style_tag"
-    | "javascript_tag"
-    | "object"
-    | "meta"
-    | "base"
-    | "link";
+  kind: (typeof BLOCKED_KINDS)[number];
   line: number;
   column: number;
   message: string;

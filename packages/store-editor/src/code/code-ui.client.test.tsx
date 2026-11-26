@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { ComponentNode } from "@workspace/store-sections";
 import { EditorAdapterProvider } from "../adapter.client";
 import type { EditorAdapter } from "../adapter.types";
+import { codeNodeFromFile } from "@workspace/store-sections/code-server";
+import ar from "../messages/ar.json";
 import en from "../messages/en.json";
 import { CodeSectionEntry } from "../panels/add/code-section-entry.client";
 import { CodeNodeInspector } from "./code-inspector.client";
@@ -190,7 +192,24 @@ describe("canvas code node", () => {
     expect(draw()).toContain(en.storeEditor.code.canvas.loading);
     const failed = draw(() => ({ entries: { n1: { key: "x", status: "error", html: "", css: "", issues: [{ code: "liquid", message: "Unknown tag", line: 3 }] } } }));
     expect(failed).toContain('role="alert"');
-    expect(failed).toContain("Line 3: Unknown tag");
+    // An unknown code: a generic line, then the host's English message.
+    expect(failed).toContain(`Line 3: ${en.storeEditor.code.issueUnknown.replace("'", "&#x27;")} Unknown tag`);
     expect(failed).not.toContain("secret-source");
+  });
+
+  it("shows a <script> issue in Arabic in the Arabic editor", () => {
+    const issue = codeNodeFromFile("<p>x</p>\n<script>alert(1)</script>").issues.find((i) => i.code === "blocked_script")!;
+    const node = codeNode();
+    const store = createCodePreviewStore({ entries: { n1: { key: "x", status: "error", html: "", css: "", issues: [{ ...issue, line: 2 }] } } });
+    const runner = createCodePreviewRunner({ preview: () => new Promise<never>(() => {}), store });
+    const html = renderToString(
+      <NextIntlClientProvider locale="ar" messages={ar} timeZone="Africa/Cairo">
+        <EditorAdapterProvider adapter={withCode}>
+          <CodePreviewValueProvider value={{ runner, store, target: { locale: "ar", pageId: "home" } }}>{renderCanvasCodeNode(node, {} as never, undefined)}</CodePreviewValueProvider>
+        </EditorAdapterProvider>
+      </NextIntlClientProvider>,
+    );
+    expect(html).toContain("السطر 2: وسوم &lt;script&gt; غير مسموحة.");
+    expect(html).not.toContain(issue.message);
   });
 });

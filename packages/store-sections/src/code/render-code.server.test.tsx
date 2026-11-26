@@ -9,7 +9,7 @@ import { collectPageCss } from "../elements/style";
 import { PageStyles, SITE_ROOT_CLASS, SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
 import { toMinorUnits } from "./liquid-objects";
-import { clearCodeRenderCache, codePageCss, codeRenderCacheSize, renderCodeNode } from "./render-code.server";
+import { clearCodeRenderCache, codeLocalePrefix, codePageCss, codeRenderCacheSize, localizeCodePath, renderCodeNode } from "./render-code.server";
 
 const SCHEMA = {
   name: "Promo",
@@ -192,6 +192,50 @@ describe("code node data", () => {
     const sections = [section([node])];
     expect(collectCatalogQueries(sections, storeSectionRegistry)).toEqual({});
     expect(Object.keys(collectCatalogQueries(sections, storeSectionRegistry, { codeSections: true }))).toHaveLength(3);
+  });
+});
+
+describe("code node URLs follow the page language", () => {
+  const LINKS =
+    "{{ routes.root_url }}|{{ routes.collections_url }}|{{ routes.cart_url }}|{{ routes.search_url }}|{{ section.settings.pick.url }}|{{ section.settings.shelf.url }}|{{ section.settings.link }}|{{ section.settings.away }}";
+  const schema = {
+    ...SCHEMA,
+    settings: [...SCHEMA.settings, { id: "link", type: "url", label: "Link" }, { id: "away", type: "url", label: "Away" }],
+  };
+  const node = codeNode(`<p>${LINKS}</p>`, { schema, settings: { pick: "p1", shelf: "c1", link: "/pages/about", away: "https://x.example/a" } });
+  const catalog = {
+    products: { [codeProductsKey("code1")]: [product("p1", 10)], [codeCollectionKey("code1", "c1")]: [] },
+    categories: [{ id: "c1", key: "shoes", name: "Shoes", href: "/products?category=shoes", image: null }],
+  } as unknown as RenderContext["catalog"];
+  const linksOf = (locale: "ar" | "en", defaultLocale?: "ar" | "en") =>
+    /<p>([^<]*)<\/p>/.exec(draw(node, ctx({ locale, dir: locale === "ar" ? "rtl" : "ltr", catalog, codeSections: { ...CODE_ON, defaultLocale } })))?.[1]?.split("|");
+
+  it("prefixes /en on the English page of an Arabic-default store", () => {
+    expect(linksOf("en", "ar")).toEqual([
+      "/en", "/en/products", "/en/cart", "/en/products", "/en/products/slug-p1", "/en/products?category=shoes", "/en/pages/about", "https://x.example/a",
+    ]);
+    // No defaultLocale is an Arabic-default store, as the storefront's routing.
+    expect(linksOf("en")).toEqual(linksOf("en", "ar"));
+  });
+
+  it("keeps the default language unprefixed", () => {
+    expect(linksOf("ar", "ar")).toEqual(["/", "/products", "/cart", "/products", "/products/slug-p1", "/products?category=shoes", "/pages/about", "https://x.example/a"]);
+    expect(linksOf("en", "en")).toEqual(linksOf("ar", "ar"));
+  });
+
+  it("prefixes /ar on the Arabic page of an English-default store", () => {
+    expect(linksOf("ar", "en")?.slice(0, 4)).toEqual(["/ar", "/ar/products", "/ar/cart", "/ar/products"]);
+  });
+
+  it("leaves links that already name a language, or point elsewhere, alone", () => {
+    expect(localizeCodePath("/en/products", "/en")).toBe("/en/products");
+    expect(localizeCodePath("/ar", "/en")).toBe("/ar");
+    expect(localizeCodePath("//evil.example/x", "/en")).toBe("//evil.example/x");
+    expect(localizeCodePath("#top", "/en")).toBe("#top");
+    expect(localizeCodePath("mailto:a@b.c", "/en")).toBe("mailto:a@b.c");
+    expect(localizeCodePath("/arabic", "/en")).toBe("/en/arabic");
+    expect(codeLocalePrefix("en", null)).toBe("/en");
+    expect(codeLocalePrefix("ar", "en")).toBe("/ar");
   });
 });
 

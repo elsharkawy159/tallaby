@@ -600,6 +600,11 @@ export type CodeSectionsContext = {
   currencyLabel?: string;
   /** The store design system, read by Liquid's `settings` object. */
   designSystem?: { colors?: Record<string, unknown>; typography?: Record<string, unknown>; spacing?: Record<string, unknown> } | null;
+  /**
+   * The language of the store's unprefixed address (`stores.default_locale`; absent = Arabic).
+   * Liquid's URLs (`routes`, product and collection `url`) get `/<locale>` on a page in the other language.
+   */
+  defaultLocale?: "ar" | "en";
 };
 
 export type SectionRenderProps<P> = {

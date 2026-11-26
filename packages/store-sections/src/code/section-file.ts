@@ -122,7 +122,7 @@ function parseSchemaJson(text: string, block: Found): { value?: unknown; issue?:
     const message = /^Unexpected token/.test(raw) && ch
       ? `unexpected "${ch}"` // V8's own text quotes a slice of the JSON; keep it short
       : raw.replace(/\s*\(line \d+ column \d+\)/, "").replace(/ in JSON at position \d+/, "");
-    return { issue: { code: "schema_json", message: `The {% schema %} JSON is invalid: ${message}.`, ...at } };
+    return { issue: { code: "schema_json", message: `The {% schema %} JSON is invalid: ${message}.`, params: { detail: message }, ...at } };
   }
 }
 

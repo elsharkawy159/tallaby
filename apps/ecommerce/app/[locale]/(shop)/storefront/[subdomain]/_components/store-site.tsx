@@ -136,6 +136,8 @@ async function buildContext(
     currency: store.currency,
     currencyLabel: currencyLabelText(store.currencyLabel, locale),
     designSystem: site.designSystem,
+    // Liquid's URLs follow the page language as the storefront's links do (`@/i18n/navigation` Link).
+    defaultLocale: store.defaultLocale,
   };
   const queries = collectCatalogQueries(sections, storeSectionRegistry, {
     ...(product && { product }),

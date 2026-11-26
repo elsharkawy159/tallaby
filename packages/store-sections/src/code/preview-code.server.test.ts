@@ -89,8 +89,9 @@ describe("renderCodePreview", () => {
   it("positions a stylesheet error in the file", () => {
     const text = `<p>x</p>\n{% stylesheet %}\n  .a { color: red; }\n  .b { color: \n{% endstylesheet %}\n`;
     const result = renderCodePreview({ nodeId: "code1", file: text, settings: {}, blocks: [], ...env() });
-    const issue = result.issues.find((i) => i.code === "css_invalid");
+    const issue = result.issues.find((i) => i.code === "css_syntax");
     expect(issue?.line).toBeGreaterThanOrEqual(3);
+    expect(issue?.params?.detail).toEqual(expect.any(String));
   });
 
   it("scopes the css to the node on the canvas root and prefixes keyframes", () => {

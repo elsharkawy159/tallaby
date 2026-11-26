@@ -17,6 +17,7 @@ export async function loadCodePreviewStore(sellerId: string, storeId: string, pa
       name: stores.name,
       subdomain: stores.subdomain,
       logoUrl: stores.logoUrl,
+      defaultLocale: stores.defaultLocale,
       settings: stores.settings,
       colors: storeDesignSystems.colors,
       typography: storeDesignSystems.typography,

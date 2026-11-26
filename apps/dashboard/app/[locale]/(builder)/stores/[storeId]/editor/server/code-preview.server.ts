@@ -2,7 +2,7 @@
 
 import { currencyLabelText, parseStoreCurrency } from "@workspace/lib";
 import { getStorePreviewProduct } from "@workspace/lib/store-sites/preview-product";
-import { storeUrl } from "@workspace/lib/storefront";
+import { storeBaseLocale, storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import type { CodePreviewView, EditorAdapter } from "@workspace/store-editor";
 import { EDITOR_ERRORS, type EditorErrorKey, type EditorResult } from "@workspace/store-editor/editor.dto";
@@ -63,6 +63,8 @@ export async function previewCodeNode(storeId: string, input: CodePreviewInput):
       store: { name: row.name, url: storeUrl(row.subdomain, customDomain), logoUrl: row.logoUrl },
       currency,
       currencyLabel: currencyLabelText(label, locale),
+      // Liquid's URLs follow the storefront's language rule for this store.
+      defaultLocale: storeBaseLocale(row.defaultLocale),
       designSystem: { colors: row.colors, typography: row.typography, spacing: row.spacing },
       catalog,
       product,

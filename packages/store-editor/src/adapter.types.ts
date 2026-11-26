@@ -72,8 +72,12 @@ export type CodePreviewInput = {
   productId?: string;
 };
 
-/** One problem in the file, positioned in the joined file (1-based). */
-export type CodeIssueView = { code: string; message: string; line?: number; column?: number };
+/**
+ * One problem in the file, positioned in the joined file (1-based). `code` and
+ * `params` pick the seller's-language text (`storeEditor.code.issues`);
+ * `message` is the host's English fallback.
+ */
+export type CodeIssueView = { code: string; message: string; params?: Record<string, string | number>; line?: number; column?: number };
 
 export type CodePreviewView = {
   /** The node's props to store (`apiVersion`, `source`, `css`, `schema`, `settings`, `blocks`, `name`), normalised by the host. */

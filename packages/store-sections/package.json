@@ -19,6 +19,10 @@
       "types": "./src/code/section-file.ts",
       "default": "./src/code/section-file.ts"
     },
+    "./code-issues": {
+      "types": "./src/code/code-issues.ts",
+      "default": "./src/code/code-issues.ts"
+    },
     "./code-server": {
       "types": "./src/code/code-node.server.ts",
       "default": "./src/code/code-node.server.ts"

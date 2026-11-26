@@ -162,7 +162,7 @@ describe("dropped tags", () => {
 
 describe("errors", () => {
   it("makes an unknown filter a parse error", () => {
-    expect(checkLiquidSource("<p>\n{{ x | evil }}</p>")).toEqual([{ code: "unknown_filter", message: 'Unknown filter "evil".', line: 2, column: 1 }]);
+    expect(checkLiquidSource("<p>\n{{ x | evil }}</p>")).toEqual([{ code: "unknown_filter", message: 'Unknown filter "evil".', params: { filter: "evil" }, line: 2, column: 1 }]);
     expect(render("{{ x | evil }}").error?.kind).toBe("parse");
   });
 

@@ -172,7 +172,8 @@ export function parseSectionSchema(input: unknown): { schema: SectionSchema; iss
       const type = issue.path.at(-1) === "type" ? at : (at as { type?: unknown } | undefined)?.type;
       message = typeof type === "string" ? `"${type}" isn't a supported setting type` : "needs a supported setting type";
     }
-    return { code: "schema_invalid", message: path ? `schema ${path}: ${message}` : `schema: ${message}` };
+    // zod's (and our own) detail stays English; the editor shows it after a localized line.
+    return { code: "schema_invalid", message: path ? `schema ${path}: ${message}` : `schema: ${message}`, params: { detail: path ? `${path}: ${message}` : message } };
   });
   return { schema: { ...FALLBACK_SCHEMA, settings: [], blocks: [] }, issues };
 }

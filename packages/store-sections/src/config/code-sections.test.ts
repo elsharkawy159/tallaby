@@ -118,7 +118,7 @@ describe("validatePageContent and code nodes", () => {
     const result = validatePageContent(content([codeNode("c1", { css: "@import url(https://x.example/a.css);" })]), server);
     expect(result.success).toBe(false);
     if (result.success) return;
-    expect(result.issues[0]).toMatchObject({ code: "invalid_code", detail: "css_invalid", path: expect.arrayContaining(["props", "css"]), line: 1 });
+    expect(result.issues[0]).toMatchObject({ code: "invalid_code", detail: "css_at_rule_blocked", path: expect.arrayContaining(["props", "css"]), line: 1 });
   });
 
   it("rejects an element's custom CSS with @import", () => {

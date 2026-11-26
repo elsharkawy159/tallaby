@@ -17,7 +17,7 @@
  */
 import { createHash } from "node:crypto";
 import { Context, Liquid, Tag, type FS, type Template, type TagToken, type TopLevelToken } from "liquidjs";
-import type { CodeIssue } from "./code-issues";
+import type { CodeIssue, CodeIssueParams, CodeIssueReason } from "./code-issues";
 import { FILTER_CONTEXT_REGISTER, registerCodeFilters, type FilterContext } from "./liquid-filters";
 import { LiquidHtml, type LiquidScope } from "./liquid-objects";
 
@@ -33,32 +33,32 @@ export const ALLOWED_TAGS = [
 ] as const;
 
 /** Tags that are a parse error, with the end tag of the block ones. */
-const DROPPED_TAGS: Record<string, { block: boolean; reason: string }> = {
-  include: { block: false, reason: "Snippets aren't available in code sections. Put the markup in this section." },
-  render: { block: false, reason: "Snippets aren't available in code sections. Put the markup in this section." },
-  layout: { block: false, reason: "Layouts aren't available in code sections." },
-  block: { block: true, reason: "Layout blocks aren't available in code sections. Use section blocks from the schema." },
-  tablerow: { block: true, reason: "Use {% for %} with an HTML table instead." },
-  javascript: { block: true, reason: "JavaScript isn't allowed in code sections." },
-  form: { block: true, reason: "Forms aren't available in code sections. Use the built-in form element." },
-  paginate: { block: true, reason: "Paging isn't available in code sections. Use the built-in product list." },
-  section: { block: false, reason: "A code section can't include other sections." },
-  sections: { block: false, reason: "A code section can't include other sections." },
-  content_for: { block: false, reason: "Nested blocks aren't available in code sections. Use section blocks from the schema." },
-  style: { block: true, reason: "Put CSS in the section's {% stylesheet %} block." },
-  stylesheet: { block: true, reason: "{% stylesheet %} belongs once at the top level of the section file, not inside the template." },
-  schema: { block: true, reason: "{% schema %} belongs once at the top level of the section file, not inside the template." },
+const DROPPED_TAGS: Record<string, { block: boolean; key: CodeIssueReason; reason: string }> = {
+  include: { block: false, key: "snippets", reason: "Snippets aren't available in code sections. Put the markup in this section." },
+  render: { block: false, key: "snippets", reason: "Snippets aren't available in code sections. Put the markup in this section." },
+  layout: { block: false, key: "layouts", reason: "Layouts aren't available in code sections." },
+  block: { block: true, key: "layout_blocks", reason: "Layout blocks aren't available in code sections. Use section blocks from the schema." },
+  tablerow: { block: true, key: "tablerow", reason: "Use {% for %} with an HTML table instead." },
+  javascript: { block: true, key: "javascript", reason: "JavaScript isn't allowed in code sections." },
+  form: { block: true, key: "forms", reason: "Forms aren't available in code sections. Use the built-in form element." },
+  paginate: { block: true, key: "paging", reason: "Paging isn't available in code sections. Use the built-in product list." },
+  section: { block: false, key: "sections", reason: "A code section can't include other sections." },
+  sections: { block: false, key: "sections", reason: "A code section can't include other sections." },
+  content_for: { block: false, key: "nested_blocks", reason: "Nested blocks aren't available in code sections. Use section blocks from the schema." },
+  style: { block: true, key: "style_tag", reason: "Put CSS in the section's {% stylesheet %} block." },
+  stylesheet: { block: true, key: "stylesheet_nested", reason: "{% stylesheet %} belongs once at the top level of the section file, not inside the template." },
+  schema: { block: true, key: "schema_nested", reason: "{% schema %} belongs once at the top level of the section file, not inside the template." },
 };
 export const DROPPED_TAG_NAMES = Object.keys(DROPPED_TAGS);
 
 class TagNotAllowedError extends Error {
-  constructor(readonly tag: string, reason: string) {
+  constructor(readonly tag: string, readonly reasonKey: CodeIssueReason, reason: string) {
     super(`The {% ${tag} %} tag isn't allowed. ${reason}`);
     this.name = "TagNotAllowedError";
   }
 }
 
-function droppedTag(name: string, block: boolean, reason: string) {
+function droppedTag(name: string, block: boolean, key: CodeIssueReason, reason: string) {
   return class extends Tag {
     constructor(token: TagToken, remainTokens: TopLevelToken[], liquid: Liquid) {
       super(token, remainTokens, liquid);
@@ -69,7 +69,7 @@ function droppedTag(name: string, block: boolean, reason: string) {
           if (next.name === `end${name}`) break;
         }
       }
-      throw new TagNotAllowedError(name, reason);
+      throw new TagNotAllowedError(name, key, reason);
     }
     // eslint-disable-next-line require-yield
     *render(): Generator<unknown, void, unknown> {
@@ -133,7 +133,7 @@ function createEngine(catchAllErrors: boolean): Liquid {
   for (const name of Object.keys(engine.tags)) {
     if (!(ALLOWED_TAGS as readonly string[]).includes(name)) delete engine.tags[name];
   }
-  for (const [name, { block, reason }] of Object.entries(DROPPED_TAGS)) engine.registerTag(name, droppedTag(name, block, reason));
+  for (const [name, { block, key, reason }] of Object.entries(DROPPED_TAGS)) engine.registerTag(name, droppedTag(name, block, key, reason));
   registerCodeFilters(engine);
   return engine;
 }
@@ -213,9 +213,14 @@ function limitIssue(e: LiquidLikeError, at: { line?: number; column?: number }):
     return { code: "memory_limit", message: "The section builds too much text or too big a list (memory limit reached).", ...at };
   }
   if (/template render/.test(text)) {
-    return { code: "time_limit", message: `The section took longer than ${LIQUID_RENDER_LIMIT_MS} ms to render.`, ...at };
+    return { code: "time_limit", message: `The section took longer than ${LIQUID_RENDER_LIMIT_MS} ms to render.`, params: { ms: LIQUID_RENDER_LIMIT_MS }, ...at };
   }
-  return { code: "source_too_large", message: `The template is too long (more than ${LIQUID_PARSE_LIMIT / 1024} KB).`, ...at };
+  return sourceTooLarge(at);
+}
+
+function sourceTooLarge(at: { line?: number; column?: number } = {}): CodeIssue {
+  const kb = LIQUID_PARSE_LIMIT / 1024;
+  return { code: "source_too_large", message: `The template is too long (more than ${kb} KB).`, params: { kb }, ...at };
 }
 
 function toIssue(error: unknown): CodeIssue {
@@ -223,18 +228,20 @@ function toIssue(error: unknown): CodeIssue {
   const position = e?.token?.getPosition?.();
   const at = position ? { line: position[0], column: position[1] } : {};
   const dropped = rootCause(e);
-  if (dropped instanceof TagNotAllowedError) return { code: "tag_not_allowed", message: dropped.message, ...at };
+  if (dropped instanceof TagNotAllowedError) {
+    return { code: "tag_not_allowed", message: dropped.message, params: { tag: dropped.tag, reason: dropped.reasonKey }, ...at };
+  }
   if (isLimitError(e)) return limitIssue(e, at);
   const message = bareMessage(e);
   const filter = /^undefined filter: (\S+)/.exec(message);
-  if (filter) return { code: "unknown_filter", message: `Unknown filter "${filter[1]}".`, ...at };
-  return { code: "liquid_syntax", message, ...at };
+  if (filter) return { code: "unknown_filter", message: `Unknown filter "${filter[1]}".`, params: { filter: filter[1]! }, ...at };
+  return { code: "liquid_syntax", message, params: { detail: message }, ...at };
 }
 
 /** Save-time check of a template (`source`, without its stylesheet and schema). */
 export function checkLiquidSource(source: string): CodeIssue[] {
   if (source.length > LIQUID_PARSE_LIMIT) {
-    return [{ code: "source_too_large", message: `The template is too long (more than ${LIQUID_PARSE_LIMIT / 1024} KB).` }];
+    return [sourceTooLarge()];
   }
   try {
     checkEngine.parse(source);
@@ -249,7 +256,8 @@ export function checkLiquidSource(source: string): CodeIssue[] {
 // Render
 // ---------------------------------------------------------------------------
 
-export type LiquidRenderError = { kind: "parse" | "limit" | "render"; message: string };
+/** `code` and `params` are those of the matching `CodeIssue` (`message` adds its position). */
+export type LiquidRenderError = { kind: "parse" | "limit" | "render"; message: string; code: string; params?: CodeIssueParams };
 export type LiquidRenderContext = FilterContext;
 
 /**
@@ -264,23 +272,25 @@ export function renderLiquid(
 ): { html: string; error?: LiquidRenderError } {
   try {
     if (source.length > LIQUID_PARSE_LIMIT) {
-      return { html: "", error: { kind: "limit", message: `The template is longer than ${LIQUID_PARSE_LIMIT / 1024} KB.` } };
+      const issue = sourceTooLarge();
+      return { html: "", error: { kind: "limit", message: `The template is longer than ${LIQUID_PARSE_LIMIT / 1024} KB.`, code: issue.code, params: issue.params } };
     }
     const parsed = parseCached(source);
     if ("error" in parsed) {
       const kind = isLimitError(parsed.error) ? "limit" : "parse";
-      return { html: "", error: { kind, message: errorMessage(parsed.error) } };
+      return { html: "", error: { kind, ...errorOf(parsed.error) } };
     }
     const context = new Context(scope, liquidEngine.options, { sync: true }, { liquid: liquidEngine });
     context.setRegister(FILTER_CONTEXT_REGISTER, { locale: ctx.locale, currency: ctx.currency, currencyLabel: ctx.currencyLabel });
     const html = liquidEngine.renderSync(parsed.templates, context);
     return { html: typeof html === "string" ? html : String(html ?? "") };
   } catch (error) {
-    return { html: "", error: { kind: isLimitError(error) ? "limit" : "render", message: errorMessage(error) } };
+    return { html: "", error: { kind: isLimitError(error) ? "limit" : "render", ...errorOf(error) } };
   }
 }
 
-function errorMessage(error: unknown): string {
+function errorOf(error: unknown): Pick<LiquidRenderError, "message" | "code" | "params"> {
   const issue = toIssue(error);
-  return issue.line ? `${issue.message} (line ${issue.line}, column ${issue.column})` : issue.message;
+  const message = issue.line ? `${issue.message} (line ${issue.line}, column ${issue.column})` : issue.message;
+  return { message, code: issue.code, ...(issue.params && { params: issue.params }) };
 }

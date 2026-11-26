@@ -124,7 +124,7 @@ describe("checkCodeNode", () => {
 
   it("reports stylesheet problems", () => {
     const issues = checkCodeNode(normalizeCodeNodeProps(props({ css: "@import url(https://x.example/a.css);" })).props);
-    expect(issues[0]).toMatchObject({ code: "css_invalid", field: "css", line: 1 });
+    expect(issues[0]).toMatchObject({ code: "css_at_rule_blocked", field: "css", params: { at: "import" }, line: 1 });
   });
 });
 

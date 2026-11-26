@@ -109,6 +109,29 @@ function localText(value: unknown, locale: "ar" | "en"): string {
 
 const image = (src: string | null | undefined, alt = ""): LiquidImage | null => (src ? { src, alt, width: null, height: null } : null);
 
+/**
+ * The path prefix of the page's language on the store, by the storefront's own
+ * link rule (`storeLocalePrefix` in `@workspace/lib/storefront`, which the
+ * storefront's `Link` follows): "" in the language of the store's unprefixed
+ * address, else "/ar" or "/en".
+ */
+export function codeLocalePrefix(locale: "ar" | "en", defaultLocale: string | null | undefined): string {
+  const base = defaultLocale === "en" ? "en" : "ar";
+  return locale === base ? "" : `/${locale}`;
+}
+
+/**
+ * A storefront path ("/", "/products/x", "/products?category=y") in the page's
+ * language, as the storefront's `Link` writes it. Links to other sites,
+ * `mailto:`/`tel:`, "#…" and paths that already start with a language stay
+ * as they are.
+ */
+export function localizeCodePath(url: string, prefix: string): string {
+  if (!prefix || !url.startsWith("/") || url.startsWith("//") || url.startsWith("/\\")) return url;
+  if (/^\/(?:ar|en)(?=$|[/?#])/.test(url)) return url;
+  return url === "/" ? prefix : `${prefix}${url}`;
+}
+
 /** The slug of a storefront product link (`/products/<slug>`), else the id. */
 function slugOf(p: ProductSummary): string {
   const match = /^\/products\/([^/?#]+)/.exec(p.href);
@@ -120,12 +143,12 @@ function slugOf(p: ProductSummary): string {
   }
 }
 
-function summaryInput(p: ProductSummary): LiquidProductInput {
+function summaryInput(p: ProductSummary, prefix: string): LiquidProductInput {
   return {
     id: p.id,
     title: p.title,
     slug: slugOf(p),
-    url: p.href,
+    url: localizeCodePath(p.href, prefix),
     price: p.price ?? 0,
     compareAtPrice: p.compareAtPrice ?? null,
     available: p.inStock !== false,
@@ -134,9 +157,9 @@ function summaryInput(p: ProductSummary): LiquidProductInput {
   };
 }
 
-function detailInput(p: ProductDetail): LiquidProductInput {
+function detailInput(p: ProductDetail, prefix: string): LiquidProductInput {
   return {
-    ...summaryInput(p),
+    ...summaryInput(p, prefix),
     slug: p.slug || slugOf(p),
     images: (p.images.length ? p.images : [p.image]).filter((src): src is string => typeof src === "string" && src !== "").map((url) => ({ url })),
     brandName: p.brand,
@@ -147,14 +170,14 @@ function detailInput(p: ProductDetail): LiquidProductInput {
 }
 
 /** The product around the node: the list card it repeats in, or the product page's product. */
-function scopeProduct(scope: DataRecord | undefined): LiquidProduct | null {
-  if (scope?.kind === "productList") return toLiquidProduct(summaryInput(scope.record));
-  if (scope?.kind === "product") return toLiquidProduct(detailInput(scope.record));
+function scopeProduct(scope: DataRecord | undefined, prefix: string): LiquidProduct | null {
+  if (scope?.kind === "productList") return toLiquidProduct(summaryInput(scope.record, prefix));
+  if (scope?.kind === "product") return toLiquidProduct(detailInput(scope.record, prefix));
   return null;
 }
 
 /** Resolves picked products and categories from the page's catalog: only records the host returned for this store. */
-function catalogLookup(nodeId: string, ctx: CodeScopeContext) {
+function catalogLookup(nodeId: string, ctx: CodeScopeContext, prefix: string) {
   const picked = new Map((ctx.catalog.products[codeProductsKey(nodeId)] ?? []).map((p) => [p.id, p]));
   const products = new Map<string, LiquidProduct | null>();
   const collections = new Map<string, LiquidCollection | null>();
@@ -162,7 +185,7 @@ function catalogLookup(nodeId: string, ctx: CodeScopeContext) {
     if (typeof id !== "string") return null;
     if (!products.has(id)) {
       const row = picked.get(id);
-      products.set(id, row ? toLiquidProduct(summaryInput(row)) : null);
+      products.set(id, row ? toLiquidProduct(summaryInput(row, prefix)) : null);
     }
     return products.get(id) ?? null;
   };
@@ -172,12 +195,12 @@ function catalogLookup(nodeId: string, ctx: CodeScopeContext) {
       const category: CategorySummary | undefined = ctx.catalog.categories.find((c) => c.id === id);
       if (!category) collections.set(id, null);
       else {
-        const list = (ctx.catalog.products[codeCollectionKey(nodeId, id)] ?? []).map((p) => toLiquidProduct(summaryInput(p)));
+        const list = (ctx.catalog.products[codeCollectionKey(nodeId, id)] ?? []).map((p) => toLiquidProduct(summaryInput(p, prefix)));
         collections.set(id, {
           id: category.id,
           title: category.name,
           handle: category.key,
-          url: category.href,
+          url: localizeCodePath(category.href, prefix),
           image: image(category.image, category.name),
           products: list,
           products_count: category.productCount ?? list.length,
@@ -189,7 +212,7 @@ function catalogLookup(nodeId: string, ctx: CodeScopeContext) {
   return { product, collection };
 }
 
-type Lookup = ReturnType<typeof catalogLookup>;
+type Lookup = ReturnType<typeof catalogLookup> & { prefix: string };
 
 /** Setting values in the request locale, with picks resolved; only the defined settings. */
 function localizeSettings(defs: readonly SettingDef[], values: Record<string, unknown>, ctx: CodeScopeContext, lookup: Lookup): Record<string, unknown> {
@@ -222,8 +245,12 @@ function localizeSettings(defs: readonly SettingDef[], values: Record<string, un
       case "collection_list":
         out[def.id] = Array.isArray(value) ? value.map(lookup.collection).filter((c): c is LiquidCollection => c !== null) : [];
         break;
+      case "url":
+        // A store page link follows the page's language, as a link element's does.
+        out[def.id] = typeof value === "string" ? localizeCodePath(value, lookup.prefix) : value;
+        break;
       default:
-        // number, range, checkbox, select, radio, text_alignment, color(s), url, video_url: already plain values.
+        // number, range, checkbox, select, radio, text_alignment, color(s), video_url: already plain values.
         out[def.id] = value;
     }
   }
@@ -271,11 +298,13 @@ export function buildCodeScope(
   node: Pick<ComponentNode, "id">,
   code: RenderableCodeProps,
   ctx: CodeScopeContext,
-  cs: Pick<CodeSectionsContext, "pageType" | "currency" | "designSystem">,
+  cs: Pick<CodeSectionsContext, "pageType" | "currency" | "designSystem" | "defaultLocale">,
   scope: DataRecord | undefined,
   options: { designMode?: boolean } = {},
 ): LiquidScope {
-  const lookup = catalogLookup(node.id, ctx);
+  const prefix = codeLocalePrefix(ctx.locale, cs.defaultLocale);
+  const lookup: Lookup = { ...catalogLookup(node.id, ctx, prefix), prefix };
+  const path = (p: string) => localizeCodePath(p, prefix);
   const shop = {
     name: ctx.store.name,
     url: ctx.store.url,
@@ -292,11 +321,11 @@ export function buildCodeScope(
         toLiquidBlock({ id: block.id, type: block.type, settings: localizeSettings(blockSettingDefs(code.schema, block.type), block.settings, ctx, lookup) }),
       ),
     },
-    product: scopeProduct(scope),
+    product: scopeProduct(scope, prefix),
     shop,
     store: shop,
     request: { locale: ctx.locale, page_type: cs.pageType, design_mode: options.designMode === true },
-    routes: { root_url: "/", collections_url: "/products", cart_url: "/cart", search_url: "/products" },
+    routes: { root_url: path("/"), collections_url: path("/products"), cart_url: path("/cart"), search_url: path("/products") },
     settings: designSettings(cs.designSystem),
     localization: {
       language: { iso_code: ctx.locale, name: ctx.locale === "ar" ? "العربية" : "English" },

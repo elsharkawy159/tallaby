@@ -17,7 +17,16 @@ export function checkCodeNode(props: CodeNodeProps): CodeNodeIssue[] {
   issues.push(...checkLiquidSource(props.source).map((issue): CodeNodeIssue => ({ ...issue, field: "source" })));
   issues.push(...blockedCodeIssues(props));
   if (props.css) {
-    issues.push(...checkCss(props.css).map(({ line, column, message }): CodeNodeIssue => ({ code: "css_invalid", field: "css", message, line, column })));
+    issues.push(
+      ...checkCss(props.css).map(({ line, column, message, code, params }): CodeNodeIssue => ({
+        code: code ?? "css_invalid",
+        field: "css",
+        message,
+        ...(params && { params }),
+        line,
+        column,
+      })),
+    );
   }
   return issues;
 }

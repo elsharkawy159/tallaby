@@ -17,11 +17,11 @@ import { DEMO_PRODUCT } from "../core/demo-product";
 import { SITE_ROOT_CLASS } from "../core/theme";
 import { nodeCodeCatalogQueries, type DataRecord } from "../elements/data";
 import { codeKeyframePrefix } from "../elements/style";
-import type { CodeIssue } from "./code-issues";
+import type { CodeIssue, CodeIssueParams, CodeIssueReason } from "./code-issues";
 import type { CodeNodeIssue, CodeNodeProps } from "./code-node";
 import { codeNodeFromFile } from "./code-node.server";
 import { readCodeProps } from "./code-props";
-import { renderLiquid } from "./liquid.server";
+import { renderLiquid, type LiquidRenderError } from "./liquid.server";
 import { buildCodeScope, type CodeScopeContext } from "./render-code.server";
 import { sanitizeCodeHtml } from "./sanitize-code";
 import { scopeCss } from "./scope-css";
@@ -53,6 +53,8 @@ export type CodePreviewEnv = {
   store: { name: string; url: string; logoUrl?: string | null };
   currency: string;
   currencyLabel?: string;
+  /** The language of the store's unprefixed address (absent = Arabic): Liquid's URLs follow the storefront's rule. */
+  defaultLocale?: "ar" | "en";
   /** The store's design-system draft (`{ colors, typography, spacing }`); anything else is ignored. */
   designSystem?: unknown;
   /** The rows `codePreviewQueries` asked for, of this store only: an id of another store is simply absent. */
@@ -113,6 +115,15 @@ function designSystemOf(value: unknown): { colors?: Record<string, unknown>; typ
 /** "(line 3, column 7)" that `renderLiquid` appends, relative to the stored source. */
 const RENDER_POSITION = /\s*\(line (\d+), column (\d+)\)$/;
 
+const LIMIT_REASONS: Record<string, CodeIssueReason> = { memory_limit: "memory", time_limit: "time", source_too_large: "size" };
+
+/** A render error's params for the editor: the limit hit (`reason` and its numbers), else liquidjs's English detail. */
+function renderParams(error: LiquidRenderError): CodeIssueParams {
+  if (error.kind === "limit") return { ...error.params, reason: LIMIT_REASONS[error.code] ?? "memory" };
+  const detail = error.params?.detail ?? error.message.replace(RENDER_POSITION, "");
+  return { detail: String(detail) };
+}
+
 /** Renders a prepared draft for the canvas. Never caches, never throws. */
 export function renderPreparedCodePreview(prepared: PreparedCodePreview, file: string, env: CodePreviewEnv): CodePreviewResult {
   const { nodeId, props } = prepared;
@@ -132,7 +143,7 @@ export function renderPreparedCodePreview(prepared: PreparedCodePreview, file: s
         store: { name: env.store.name, url: env.store.url, logoUrl: env.store.logoUrl ?? null },
         catalog: env.catalog,
       };
-      const cs = { pageType: env.pageType, currency: env.currency, designSystem: designSystemOf(env.designSystem) };
+      const cs = { pageType: env.pageType, currency: env.currency, designSystem: designSystemOf(env.designSystem), defaultLocale: env.defaultLocale };
       const data = buildCodeScope({ id: nodeId }, code, ctx, cs, scope, { designMode: true });
       const result = renderLiquid(code.source, data, { locale: env.locale, currency: env.currency, currencyLabel: env.currencyLabel });
       if (result.error) {
@@ -141,7 +152,7 @@ export function renderPreparedCodePreview(prepared: PreparedCodePreview, file: s
           const match = RENDER_POSITION.exec(result.error.message);
           const message = result.error.message.replace(RENDER_POSITION, "");
           const at = match ? sectionFilePositions(file).fromSource(Number(match[1]), Number(match[2])) : {};
-          issues.push({ code: result.error.kind === "limit" ? "render_limit" : "render_failed", message, ...at });
+          issues.push({ code: result.error.kind === "limit" ? "render_limit" : "render_failed", message, params: renderParams(result.error), ...at });
         }
       } else {
         html = sanitizeCodeHtml(result.html, { nodeId });
