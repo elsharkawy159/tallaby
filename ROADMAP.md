@@ -2141,6 +2141,46 @@ Add each new request here first, with the date and the owner's words, then turn 
 - Shared hook `_components/use-product-image-drop.client.ts`, also used by the table thumbnail. The limit is now `MAX_PRODUCT_IMAGES` (8, moved to `products/add/product-images.lib.ts`) instead of a hard-coded 5. Files past the limit are skipped with a toast, and the list refreshes after an upload.
 - Checks: dashboard typecheck passes and the changed files lint clean. Full lint has 30 errors and tests have 1 failure (`order-lock-copy.lib.test.ts`), all outside this change. Not tried in a browser yet.
 
+### 2026-11-26 — Code sections editor, server preview and CSP (F-101e, F-101 §7; no migration)
+
+- **Built:**
+  - **`a5ae728b`:** the adapter contract `code.preview`, and the CodeMirror packages.
+  - **`433f5a05`:** the dashboard action `previewCodeNode`. In order, it checks:
+    1. the store belongs to the seller and can be edited;
+    2. the `code_sections` switch is on;
+    3. no more than 60 previews a minute per seller;
+    4. the input limits (zod).
+
+    It then loads only the products and categories the node picks, from this store, renders with `design_mode`, cleans the result, and points issue positions at the joined file. The seller adapter gets `code` only while the switch is on; the admin editors don't get it.
+  - **`c2988d1f`:** the editor:
+    - Add › Code section, with a starter we wrote ourselves.
+    - A Content tab built from the schema, with blocks added, reordered with Drag & Drop and removed.
+    - A Code tab with CodeMirror in Liquid mode, loaded only when opened. Code is previewed on the server 600 ms after typing stops, and props change only when the server returns them with no issues.
+    - The canvas draws only HTML and CSS the server has already cleaned.
+  - **`dab2e9eb`:** Content-Security-Policy on every store host and on the builder route.
+    - Enforced: `object-src 'none'; base-uri 'self'`.
+    - Report-only: `form-action` (Paymob, Kashier, EasyKash) and `frame-src` (videos, payment gateways, tracking, Supabase).
+    - No `script-src` yet (that is F-101i).
+- **Checks:**
+  - **Tests:**
+    - store-sections `src/code`: 364 pass. One time-limit test failed once while 3 agents loaded the machine and passed on two re-runs.
+    - store-editor: 280 pass.
+    - The CSP tests and the whole lib suite pass.
+  - **Typecheck:**
+    - Passes for store-sections, store-editor, dashboard and lib.
+    - ecommerce still has 16 errors in `profile.chunks.tsx`, which this work didn't touch.
+  - **Build:** the ecommerce build showed the CSP headers on store hosts and checkout, and none on tallaby.com, API routes or assets.
+- **Not done:**
+  - **Browser test:** nothing tried in a browser yet. That needs the `code_sections` row on staging (owner).
+  - **Staging checks before the report-only CSP can be enforced:** payments, pixels and videos.
+  - **Arabic error messages:** server issue messages are English only; the editor should map issue codes to ar/en.
+  - **Render time limit:** 50 ms may be tight under load; decide in F-101f.
+  - **Rich text:** shown as a textarea, since there is no rich-text control.
+  - **Builder CSP:** missing when the editor is reached by a client-side jump from another dashboard page.
+  - **Code inside a product list:** all cards share one preview.
+  - **Still open from earlier:** routes without the second-language prefix; `image_url` doesn't resize.
+  - **Later tasks:** F-101f security review, F-101g AI, F-101h docs.
+
 ### 2026-11-26 — Code sections connected to save, publish and the storefront, switched off (F-101c; no migration)
 
 - **Built (`65f2611e`, `22b5eb90`):**
