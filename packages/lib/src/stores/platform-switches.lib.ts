@@ -6,7 +6,13 @@
  * `platform_switches` (0160). `tallaby_pay_live` (0175, F-100) is the Tallaby
  * Pay launch switch, turned on by the owner. Pure: safe to import anywhere.
  */
-export const PLATFORM_SWITCHES = ["stores_catalog_split", "stores_wallet_split", "tallaby_pay_live"] as const;
+export const PLATFORM_SWITCHES = [
+  "stores_catalog_split",
+  "stores_wallet_split",
+  "tallaby_pay_live",
+  // Code sections (F-101): off until the owner turns it on. A missing row reads as off, so it needs no migration.
+  "code_sections",
+] as const;
 
 export type PlatformSwitchKey = (typeof PLATFORM_SWITCHES)[number];
 

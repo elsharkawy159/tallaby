@@ -1,6 +1,9 @@
 import { CrossSellOffers } from "@/components/storefront/cross-sell-offers.client";
 import type { ReactNode } from "react";
-import { formatPriceMarked, formatPricePlain, SAUDI_RIYAL_LABEL } from "@workspace/lib";
+import { currencyLabelText, formatPriceMarked, formatPricePlain, SAUDI_RIYAL_LABEL } from "@workspace/lib";
+import { codePageCss, codeSectionsAllowed, renderCodeNode } from "@workspace/store-sections/code-render";
+import { isSwitchOn } from "@/lib/platform-switches.server";
+import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { PriceText } from "@/components/storefront/price-text";
 import { storeUrl } from "@workspace/lib/storefront";
 import type { SectionInstance, SiteConfig } from "@workspace/store-sections";
@@ -15,6 +18,7 @@ import {
   drawChrome,
   flushHeaderOnMobile,
   storeSectionRegistry,
+  type CodeSectionsContext,
   type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
@@ -118,8 +122,25 @@ async function buildContext(
   paging?: ProductPaging,
   /** The product of a product page: seeds its elements and the "related" lists. */
   product?: ProductDetail,
+  /** Where the sections are drawn, for code sections (F-101): `page`/`product` draw code; a pass-through route (checkout, orders, account) draws no code and no custom CSS. */
+  code: { pageType: string; passThrough: boolean } = { pageType: product ? "product" : "page", passThrough: false },
 ): Promise<RenderContext> {
-  const queries = collectCatalogQueries(sections, storeSectionRegistry, product ? { product } : undefined);
+  // Code sections (F-101): the platform switch (once per request) and whether this is a verified draft preview (never cached).
+  const [codeOn, { preview }] = await Promise.all([isSwitchOn("code_sections"), getStorefrontSite(store.id, store.storeId, store.subdomain)]);
+  const codeSections: CodeSectionsContext = {
+    enabled: codeOn,
+    storeId: store.storeId,
+    preview: preview === "active",
+    pageType: code.pageType,
+    passThrough: code.passThrough,
+    currency: store.currency,
+    currencyLabel: currencyLabelText(store.currencyLabel, locale),
+    designSystem: site.designSystem,
+  };
+  const queries = collectCatalogQueries(sections, storeSectionRegistry, {
+    ...(product && { product }),
+    codeSections: codeSectionsAllowed(codeSections),
+  });
   // Paginated product lists show the requested page (`?page=N`).
   for (const query of Object.values(queries)) if (query.kind === "products" && query.paginate) query.page = paging?.page ?? 1;
   const formIds = collectFormIds(sections, storeSectionRegistry);
@@ -204,6 +225,9 @@ async function buildContext(
     renderForm: (form, instanceId, options) => <StoreForm form={form} instanceId={instanceId} layout={options?.layout} />,
     // A seller-placed low-stock badge (F-34d) takes the alert over from the stock line.
     ...(product && { product, ...PRODUCT_HOOKS, stockBadgeOnPage: pageHasStockBadge(sections), crossSellOnPage: pageHasCrossSell(sections) }),
+    // Code sections (F-101): drawn here, on the server only; the renderer refuses them when the switch is off or the route doesn't allow code.
+    codeSections,
+    ...(codeSectionsAllowed(codeSections) && { renderCodeNode }),
   };
 }
 
@@ -213,11 +237,14 @@ export async function StoreSiteChrome({
   site,
   locale,
   part,
+  passThrough = false,
 }: {
   store: Storefront;
   site: SiteConfig;
   locale: string;
   part: "header" | "footer";
+  /** A shared page (checkout, orders, account, sign-in: the storefront routing's PASS_THROUGH): no code nodes and no custom CSS (F-101, design §4.8). */
+  passThrough?: boolean;
 }): Promise<ReactNode> {
   // Remove Tallaby badge app (F-110): read on the server for the store the request host resolved.
   const hideTallabyCredit = part === "footer" && (await storeHidesTallabyCredit(store.id, store.storeId));
@@ -239,10 +266,11 @@ export async function StoreSiteChrome({
     </footer>
   );
   if (!instance) return credit || null;
-  const ctx = await buildContext(store, site, locale, [instance]);
+  // The header and footer show on every storefront page: they draw code like a builder page, except on pass-through routes.
+  const ctx = await buildContext(store, site, locale, [instance], undefined, undefined, { pageType: "page", passThrough });
   const chrome = (
     <>
-      <PageStyles sections={[instance]} />
+      <PageStyles sections={[instance]} extraCss={codePageCss([instance], ctx.codeSections)} />
       <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
       {credit}
     </>
@@ -289,7 +317,8 @@ export async function StoreSiteProductGrid({
   rows: readonly unknown[];
 }) {
   const { products, withVariants } = toProductSummaries(rows);
-  const base = await buildContext(store, site, locale, []);
+  // The /products catalog is not a builder page: its card draws no code nodes (custom CSS still applies).
+  const base = await buildContext(store, site, locale, [], undefined, undefined, { pageType: "catalog", passThrough: false });
   const ctx: RenderContext = {
     ...base,
     reveal: true,
@@ -300,7 +329,7 @@ export async function StoreSiteProductGrid({
   };
   return (
     <>
-      <PageStyles sections={[instance]} />
+      <PageStyles sections={[instance]} extraCss={codePageCss([instance], ctx.codeSections)} />
       <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
     </>
   );
@@ -349,7 +378,7 @@ export async function StoreSitePage({
   return (
     <>
       {/* Section, part and element styles from the editor (P4B-01). */}
-      <PageStyles sections={page.content.sections} />
+      <PageStyles sections={page.content.sections} extraCss={codePageCss(page.content.sections, ctx.codeSections)} />
       {page.content.sections.map((instance, index) => (
         <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} aboveFold={index === 0} />
       ))}

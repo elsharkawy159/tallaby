@@ -15,6 +15,14 @@
       "types": "./src/config/index.ts",
       "default": "./src/config/index.ts"
     },
+    "./code-server": {
+      "types": "./src/code/code-node.server.ts",
+      "default": "./src/code/code-node.server.ts"
+    },
+    "./code-render": {
+      "types": "./src/code/render-code.server.tsx",
+      "default": "./src/code/render-code.server.tsx"
+    },
     "./seo-keywords": {
       "types": "./src/config/seo-keywords.ts",
       "default": "./src/config/seo-keywords.ts"

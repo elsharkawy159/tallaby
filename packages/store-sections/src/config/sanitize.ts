@@ -5,10 +5,11 @@
  * load arbitrary resources are dropped. Never mutates its input.
  */
 import sanitizeHtml from "sanitize-html";
-import type { ComponentNode, SectionInstance, SiteConfig } from "./schema";
+import { MAX_CUSTOM_CSS_BYTES, type ComponentNode, type SectionInstance, type SiteConfig } from "./schema";
 import { hasDangerousScheme } from "./url";
 import { flushHeaderOnMobile } from "./header";
 import { normalizeBreakpointStyles, normalizeSectionBreakpointStyle, normalizeSectionStyle, normalizeStyle } from "../elements/style";
+import { capUtf8, normalizeCodeNodeProps } from "../code/code-node";
 
 const RICH_TEXT_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
@@ -126,11 +127,27 @@ function sanitizeBreakpoints(styles: Record<string, Record<string, unknown>>) {
   return Object.fromEntries(Object.entries(styles).map(([bp, s]) => [bp, sanitizeStyle(s)]));
 }
 
+/**
+ * Seller CSS (F-101b) is kept as written, only trimmed and capped: it is not
+ * HTML, and rich-text cleaning would break selectors such as `a > b`. It is
+ * checked on save (`validate.ts`) and scoped and checked at render.
+ */
+function sanitizeCustomCss(value: string | undefined): { customCss?: string } {
+  if (typeof value !== "string") return {};
+  const css = capUtf8(value.trim(), MAX_CUSTOM_CSS_BYTES).trim();
+  return css ? { customCss: css } : {};
+}
+
 function sanitizeNode(node: ComponentNode): ComponentNode {
+  const { customCss, ...rest } = node;
+  // A code node's Liquid, CSS and schema must never go through rich-text cleaning (it strips
+  // tags and Liquid): its own rules apply, and it is always a leaf (F-101, design note §3.1).
+  const isCode = node.type === "code";
   return {
-    ...node,
-    props: sanitizeProps(node.props),
-    children: node.children.map(sanitizeNode),
+    ...rest,
+    props: isCode ? normalizeCodeNodeProps(node.props, { cleanRichText: sanitizeRichText }).props : sanitizeProps(node.props),
+    children: isCode ? [] : node.children.map(sanitizeNode),
+    ...sanitizeCustomCss(customCss),
     // Element styles keep only the whitelist (P4B-01); nothing else reaches CSS.
     ...(node.style && { style: normalizeStyle(node.style) }),
     ...(node.breakpointStyles && { breakpointStyles: normalizeBreakpointStyles(node.breakpointStyles, normalizeStyle) }),
@@ -138,9 +155,11 @@ function sanitizeNode(node: ComponentNode): ComponentNode {
 }
 
 function sanitizeSection(section: SectionInstance): SectionInstance {
+  const { customCss, ...rest } = section;
   return {
-    ...section,
+    ...rest,
     props: sanitizeProps(section.props),
+    ...sanitizeCustomCss(customCss),
     ...(section.translations && {
       translations: sanitizeValue(section.translations) as SectionInstance["translations"],
     }),

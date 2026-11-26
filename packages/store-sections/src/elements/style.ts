@@ -678,3 +678,53 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
 export function escapeStyleBlock(css: string): string {
   return css.replace(/</g, "\\3c ");
 }
+
+// ---------------------------------------------------------------------------
+// Seller CSS (ROADMAP F-101, code-sections design §3.3 and §6)
+// ---------------------------------------------------------------------------
+
+/** Ids that may go into a selector or a keyframe name (`:` is not allowed here, unlike `ID_RE`). */
+const CODE_CSS_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+/** A seller stylesheet and where it may apply, for the server's CSS scoper (`code/render-code.server.tsx`). */
+export type CodeCssTarget = { scope: string; keyframePrefix: string; css: string };
+
+/** `c<id>-`, kept within the scoper's 41-character keyframe prefix (long ids keep their start plus a hash). */
+function codeKeyframePrefix(id: string): string {
+  const safe = id.replace(/[^A-Za-z0-9_-]/g, "");
+  if (safe.length <= 39) return `c${safe}-`;
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < safe.length; i++) hash = Math.imul(hash ^ safe.charCodeAt(i), 0x01000193) >>> 0;
+  return `c${safe.slice(0, 30)}${hash.toString(36)}-`;
+}
+
+/**
+ * Every seller stylesheet of a page, in page order: a section's `customCss`
+ * (scoped to `[data-section-id]`, the section renderer's wrapper), each
+ * node's `customCss` and, with `codeNodes`, each code node's own `css`
+ * (scoped to `[data-node-id]`). Ids that don't match `[A-Za-z0-9_-]{1,64}`
+ * are skipped, so nothing but a checked id reaches a selector. Pure: the
+ * scoping itself runs on the server, which appends the result after
+ * `collectPageCss`.
+ */
+export function codeCssTargets(sections: readonly (SectionInstance | null | undefined)[], opts: { codeNodes: boolean }): CodeCssTarget[] {
+  const out: CodeCssTarget[] = [];
+  const push = (attr: "data-section-id" | "data-node-id", id: string, css: unknown) => {
+    if (typeof css !== "string" || !css.trim() || !CODE_CSS_ID_RE.test(id)) return;
+    out.push({ scope: `.${SITE_ROOT_CLASS} [${attr}="${id}"]`, keyframePrefix: codeKeyframePrefix(id), css });
+  };
+  const visit = (nodes: readonly ComponentNode[] | undefined, depth: number) => {
+    if (depth > 12) return;
+    for (const node of nodes ?? []) {
+      push("data-node-id", node.id, node.customCss);
+      if (opts.codeNodes && node.type === "code") push("data-node-id", node.id, node.props?.css);
+      visit(node.children, depth + 1);
+    }
+  };
+  for (const instance of sections) {
+    if (!instance) continue;
+    push("data-section-id", instance.id, instance.customCss);
+    visit(instance.componentTree, 0);
+  }
+  return out;
+}

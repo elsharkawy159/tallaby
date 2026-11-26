@@ -148,6 +148,8 @@ export const SECTION_COPY = {
   perkQualityNote: { ar: "منتجات متختارة بعناية", en: "Carefully picked products" },
   productNoDetails: { ar: "أضف وصفًا أو مميزات للمنتج لتظهر هنا.", en: "Add a description or key features to the product to show them here." },
   productNoContent: { ar: "أضف محتوى للمنتج من صفحة المنتج في لوحة التحكم ليظهر هنا.", en: "Add content to the product in your dashboard to show it here." },
+  /** A code section in the builder canvas, until its preview ships (F-101e). */
+  codePreviewSoon: { ar: "قسم بالكود، معاينته قريبًا", en: "Code section, preview coming soon" },
   soldBy: { ar: "يبيعه", en: "Sold by" },
   productSellerHidden: {
     ar: "اسم البائع مش بيظهر في متجرك، لأن كل المنتجات بتاعتك. تقدر تحذف العنصر ده.",

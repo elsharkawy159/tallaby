@@ -76,6 +76,7 @@ import {
   SquareSplitHorizontal,
   CircleDot,
   Signpost,
+  Code,
 } from "lucide-react";
 import type { ElementType, SectionCategory } from "@workspace/store-sections/render";
 import type { SectionGroupKey } from "./editor-palette.lib";
@@ -120,6 +121,7 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   countdown: Timer,
   beforeAfter: SquareSplitHorizontal,
   hotspot: CircleDot,
+  code: Code,
   languageSwitcher: Languages,
   storeLogo: BadgeCheck,
   themeToggle: SunMoon,

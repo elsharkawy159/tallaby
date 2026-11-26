@@ -1,5 +1,5 @@
 import type { SectionInstance } from "../config/schema";
-import { nodeCatalogQuery, nodeContentQuery, nodeFormId, walkNodes } from "../elements/data";
+import { nodeCatalogQuery, nodeCodeCatalogQueries, nodeContentQuery, nodeFormId, walkNodes } from "../elements/data";
 import type { AnySectionDefinition, CatalogQuery, ContentQuery, ProductDetail, SectionCategory } from "./types";
 
 export type SectionRegistry = {
@@ -85,13 +85,21 @@ export function collectFormIds(sections: readonly SectionInstance[], registry: S
   return [...out];
 }
 
-/** Every catalog query of a page, keyed by section instance id or, for data nodes of tree sections, by node id (for the host resolver). */
-export function collectCatalogQueries(sections: readonly SectionInstance[], registry: SectionRegistry, opts?: { product?: ProductDetail }): Record<string, CatalogQuery> {
+/**
+ * Every catalog query of a page, keyed by section instance id or, for data nodes of tree sections, by node id (for the host resolver).
+ * `codeSections`: also the picks of code nodes (F-101, `nodeCodeCatalogQueries`); only a host that renders them passes it.
+ */
+export function collectCatalogQueries(
+  sections: readonly SectionInstance[],
+  registry: SectionRegistry,
+  opts?: { product?: ProductDetail; codeSections?: boolean },
+): Record<string, CatalogQuery> {
   const out: Record<string, CatalogQuery> = {};
   for (const instance of sections) {
     walkNodes(instance.componentTree, (node) => {
       const query = nodeCatalogQuery(node, opts);
       if (query) out[node.id] = query;
+      if (opts?.codeSections && node.type === "code") Object.assign(out, nodeCodeCatalogQueries(node));
     });
     const definition = registry.get(instance.sectionId);
     if (!definition?.catalogQuery) continue;

@@ -12,7 +12,8 @@
 import type { ComponentType, ReactNode } from "react";
 import type { z } from "zod";
 import type { AnimationDefault } from "@workspace/motion/presets";
-import type { SectionInstance, SiteLocale } from "../config/schema";
+import type { ComponentNode, SectionInstance, SiteLocale } from "../config/schema";
+import type { DataRecord } from "../elements/data";
 import type { LowStockSetting } from "./low-stock";
 import type { SlotDefinition } from "./slots";
 import type { ScrollPlan } from "../elements/scroll-plan";
@@ -562,7 +563,44 @@ export interface RenderContext {
   forms?: Record<string, PublicStoreForm>;
   /** The interactive storefront form; without it (editor canvas) a static preview is drawn. `options.layout`: the node's layout (`inline`: fields and button on one row). */
   renderForm?: (form: PublicStoreForm, instanceId: string, options?: { layout?: "stacked" | "inline" }) => ReactNode;
+  /**
+   * Code sections (ROADMAP F-101): what the storefront's server render knows
+   * about the request. Absent (the editor, previews, other hosts): code nodes
+   * and custom CSS draw nothing publicly.
+   */
+  codeSections?: CodeSectionsContext;
+  /**
+   * Draws a `code` node (`renderCodeNode` from `@workspace/store-sections/code-render`).
+   * Only the storefront's server render sets it, so the Liquid engine never
+   * enters a client bundle; without it the editor shows a still box and a
+   * public page draws nothing. `scope`: the list record or page product around the node.
+   */
+  renderCodeNode?: (node: ComponentNode, ctx: RenderContext, scope: DataRecord | undefined) => ReactNode;
 }
+
+/** The page types a code node renders on (design §4.8); anything else draws no code. */
+export const CODE_PAGE_TYPES = ["page", "product"] as const;
+
+export type CodeSectionsContext = {
+  /** The `code_sections` platform switch. */
+  enabled: boolean;
+  /** The request host's store (never a client value); part of every code cache key. */
+  storeId: string;
+  /** The published revision drawn, when the host knows it; part of the output cache key. */
+  revisionId?: string | null;
+  /** A verified draft preview: output is never cached. */
+  preview?: boolean;
+  /** `page` (a builder page), `product` (the product page), or another route (`catalog`, `chrome`…) that draws no code. */
+  pageType: string;
+  /** A cart, checkout, order, account or sign-in route (`PASS_THROUGH` in the storefront routing): no code nodes and no custom CSS. */
+  passThrough: boolean;
+  /** ISO code of the store currency, for the `money` filters. */
+  currency: string;
+  /** The store's currency label as text. */
+  currencyLabel?: string;
+  /** The store design system, read by Liquid's `settings` object. */
+  designSystem?: { colors?: Record<string, unknown>; typography?: Record<string, unknown>; spacing?: Record<string, unknown> } | null;
+};
 
 export type SectionRenderProps<P> = {
   instance: SectionInstance;

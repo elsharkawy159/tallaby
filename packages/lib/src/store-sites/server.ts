@@ -42,6 +42,7 @@ import {
   validatePageContent,
   validateSiteConfig,
 } from "@workspace/store-sections";
+import { CODE_SERVER_CHECKS } from "@workspace/store-sections/code-server";
 import { ensureStoreSiteScaffold } from "../stores/server";
 import { startFeeTrialIfNeeded } from "../sellers/fee-trial.server";
 import { designSystemColumns, withStoredMotion } from "./design-system.lib";
@@ -170,7 +171,7 @@ export async function saveStorePageDraft(
   if (!store) return { success: false, error: "not_found" };
   if (store.status !== "active") return { success: false, error: "store_read_only" };
 
-  const validated = validatePageContent(content, { allowedSections: options.allowedSections });
+  const validated = validatePageContent(content, { allowedSections: options.allowedSections, serverChecks: CODE_SERVER_CHECKS });
   if (!validated.success) return { success: false, error: "invalid_content", issues: validated.issues };
 
   const [updated] = await q
@@ -345,7 +346,7 @@ export async function publishStoreSite(
       if (needsProduct && !(await storeHasActiveProduct(tx, sellerId, store.id))) throw new SiteError("no_active_product");
 
       const raw = await buildDraftSiteConfig(tx, store);
-      const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections });
+      const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections, serverChecks: CODE_SERVER_CHECKS });
       if (!validated.success) throw new SiteError("invalid_site", validated.issues);
 
       const [{ last } = { last: 0 }] = await tx
@@ -556,7 +557,7 @@ export async function getStoreDraftSiteForPreview(
 
   const raw = await buildDraftSiteConfig(q, store);
   if (storeDraftKey(raw) !== draftKey) return { success: false, error: "draft_changed" };
-  const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections });
+  const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections, serverChecks: CODE_SERVER_CHECKS });
   return validated.success ? { success: true, site: validated.data } : { success: false, error: "invalid_site" };
 }
 
@@ -639,7 +640,7 @@ export async function saveStoreChrome(
   if ("error" in found) return { success: false, error: found.error };
   let value: unknown = null;
   if (instance !== null) {
-    const validated = validatePageContent({ sections: [instance] }, { allowedSections: options.allowedSections });
+    const validated = validatePageContent({ sections: [instance] }, { allowedSections: options.allowedSections, serverChecks: CODE_SERVER_CHECKS });
     if (!validated.success) return { success: false, error: "invalid_content", issues: validated.issues };
     if (validated.data.sections.length !== 1) return { success: false, error: "invalid_content" };
     value = validated.data.sections[0];

@@ -887,6 +887,17 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     }
     case "hotspot":
       return <HotspotElement attrs={attrs} node={node} props={props} ctx={ctx} />;
+    case "code":
+      // Code sections (F-101): only the storefront's server render draws them (`ctx.renderCodeNode`, from
+      // `code/render-code.server.tsx`), so Liquid never reaches the browser. The builder canvas, which
+      // renders this tree on the client, shows a still box until the code preview ships.
+      if (ctx.renderCodeNode) return ctx.renderCodeNode(node, ctx, scope);
+      return ctx.mode === "edit" ? (
+        <div {...attrs} className="flex min-h-24 items-center justify-center gap-2 rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-4 text-center font-mono text-xs text-(--sf-muted)">
+          <span aria-hidden>{"</>"}</span>
+          {sectionText("codePreviewSoon", ctx.locale)}
+        </div>
+      ) : null;
     case "divider":
       return <hr {...attrs} className="border-(--sf-line)" />;
     case "spacer":

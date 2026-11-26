@@ -8,9 +8,18 @@
  */
 import { CURRENT_SITE_CONFIG_VERSION, migrateSiteConfig } from "./migrate";
 import { sanitizeSiteConfig } from "./sanitize";
-import { type ComponentNode, type PageContent, type SectionInstance, type SiteConfig, siteConfigSchema } from "./schema";
+import {
+  MAX_CUSTOM_CSS_BYTES,
+  type ComponentNode,
+  type PageContent,
+  type SectionInstance,
+  type SiteConfig,
+  siteConfigSchema,
+} from "./schema";
 import { MAX_NODES_PER_SECTION } from "../elements/registry";
 import { countNodes } from "../elements/tree";
+import type { CodeIssue } from "../code/code-issues";
+import { blockedCodeIssues, normalizeCodeNodeProps, utf8Length, type CodeNodeIssue, type CodeNodeProps } from "../code/code-node";
 
 export type SiteConfigIssueCode =
   | "invalid_config"
@@ -22,12 +31,34 @@ export type SiteConfigIssueCode =
   | "tree_too_large"
   | "duplicate_section_id"
   | "unknown_section"
-  | "unsupported_section_version";
+  | "unsupported_section_version"
+  /** A code element's template, stylesheet or schema (F-101); `detail` says what. */
+  | "invalid_code"
+  /** An element's or section's custom CSS (F-101b). */
+  | "invalid_css"
+  /** A page's code and custom CSS together are over `MAX_PAGE_CODE_BYTES`. */
+  | "code_too_large";
 
 export type SiteConfigIssue = {
   code: SiteConfigIssueCode;
   path: (string | number)[];
   message: string;
+  /** Code issues only: the element (or section) id, the specific problem (e.g. `blocked_script`) and its 1-based position in the field `path` ends with. */
+  nodeId?: string;
+  detail?: string;
+  line?: number;
+  column?: number;
+};
+
+/**
+ * The checks that load the Liquid engine (`node:crypto`) and the CSS parser,
+ * so they never ship to the browser. Server callers pass `CODE_SERVER_CHECKS`
+ * from `@workspace/store-sections/code-server`. Without them only the
+ * browser-safe checks run (schema, sizes, blocked constructs in templates).
+ */
+export type CodeServerChecks = {
+  checkCodeNode: (props: CodeNodeProps) => CodeIssue[];
+  checkCss: (css: string, maxBytes: number) => { line: number; column: number; message: string }[];
 };
 
 export type ValidateSiteConfigOptions = {
@@ -37,7 +68,12 @@ export type ValidateSiteConfigOptions = {
   maxBytes?: number;
   /** Max nesting of free-form nodes. Default 20. */
   maxTreeDepth?: number;
+  /** Full code-section checks (Liquid parse, CSS). Every server save and publish passes them. */
+  serverChecks?: CodeServerChecks;
 };
+
+/** Per page: code templates + stylesheets + every custom CSS (header and footer included), in UTF-8 bytes (design note §3.4). */
+export const MAX_PAGE_CODE_BYTES = 400 * 1024;
 
 export type ValidateSiteConfigResult =
   | { success: true; data: SiteConfig; migrated: boolean; fromVersion: number }
@@ -75,7 +111,7 @@ export function validateSiteConfig(
   raw: unknown,
   options: ValidateSiteConfigOptions = {},
 ): ValidateSiteConfigResult {
-  const { allowedSections, maxBytes = DEFAULT_MAX_BYTES, maxTreeDepth = DEFAULT_MAX_TREE_DEPTH } = options;
+  const { allowedSections, maxBytes = DEFAULT_MAX_BYTES, maxTreeDepth = DEFAULT_MAX_TREE_DEPTH, serverChecks } = options;
 
   const migration = migrateSiteConfig(raw);
   if (!migration.ok) {
@@ -104,14 +140,55 @@ export function validateSiteConfig(
   const config = parsed.data;
   const issues: SiteConfigIssue[] = [];
 
-  const checkSection = (section: SectionInstance, path: (string | number)[]) => {
+  // Code sections (F-101): every code node at any depth and every custom CSS. Each call returns
+  // the UTF-8 bytes of code and custom CSS it saw, for the per-page cap.
+  const checkCustomCss = (css: string | undefined, path: (string | number)[], nodeId: string): number => {
+    if (!css) return 0;
+    for (const found of serverChecks?.checkCss(css, MAX_CUSTOM_CSS_BYTES) ?? []) {
+      issues.push({ code: "invalid_css", path, message: found.message, nodeId, detail: "css_invalid", line: found.line, column: found.column });
+    }
+    return utf8Length(css);
+  };
+
+  const checkNodes = (nodes: ComponentNode[] | undefined, path: (string | number)[]): number => {
+    let total = 0;
+    nodes?.forEach((node, index) => {
+      const nodePath = [...path, index];
+      total += checkCustomCss(node.customCss, [...nodePath, "customCss"], node.id);
+      if (node.type !== "code") {
+        total += checkNodes(node.children, [...nodePath, "children"]);
+        return;
+      }
+      // A code node is a leaf: sanitizing drops any children, so they are not checked.
+      const { props, issues: found } = normalizeCodeNodeProps(node.props);
+      const checked: CodeNodeIssue[] = serverChecks ? serverChecks.checkCodeNode(props) : blockedCodeIssues(props);
+      for (const issue of [...found, ...checked]) {
+        issues.push({
+          code: "invalid_code",
+          path: [...nodePath, "props", issue.field ?? "source"],
+          message: issue.message,
+          nodeId: node.id,
+          detail: issue.code,
+          ...(issue.line !== undefined && { line: issue.line }),
+          ...(issue.column !== undefined && { column: issue.column }),
+        });
+      }
+      total += utf8Length(props.source) + utf8Length(props.css ?? "");
+    });
+    return total;
+  };
+
+  const checkSection = (section: SectionInstance, path: (string | number)[]): number => {
     if (treeDepth(section.componentTree) > maxTreeDepth) {
       issues.push({ code: "tree_too_deep", path: [...path, "componentTree"], message: `> ${maxTreeDepth}` });
     }
     if (section.componentTree && countNodes(section.componentTree) > MAX_NODES_PER_SECTION) {
       issues.push({ code: "tree_too_large", path: [...path, "componentTree"], message: `> ${MAX_NODES_PER_SECTION} elements` });
     }
-    if (!allowedSections) return;
+    const codeBytes =
+      checkCustomCss(section.customCss, [...path, "customCss"], section.id) +
+      checkNodes(section.componentTree, [...path, "componentTree"]);
+    if (!allowedSections) return codeBytes;
     const maxVersion = allowedSections[section.sectionId];
     if (maxVersion === undefined) {
       issues.push({ code: "unknown_section", path: [...path, "sectionId"], message: section.sectionId });
@@ -122,14 +199,18 @@ export function validateSiteConfig(
         message: `${section.sectionId}@${section.version} > ${maxVersion}`,
       });
     }
+    return codeBytes;
   };
 
-  if (config.header) checkSection(config.header, ["header"]);
-  if (config.footer) checkSection(config.footer, ["footer"]);
+  // The shared header and footer render on every page, so they count toward each page's cap.
+  const chromeBytes =
+    (config.header ? checkSection(config.header, ["header"]) : 0) +
+    (config.footer ? checkSection(config.footer, ["footer"]) : 0);
 
   config.pages.forEach((page, pageIndex) => {
     const sectionsPath = ["pages", pageIndex, "content", "sections"];
     const ids = new Set<string>();
+    let pageBytes = chromeBytes;
     page.content.sections.forEach((section, sectionIndex) => {
       if (ids.has(section.id)) {
         issues.push({
@@ -139,16 +220,21 @@ export function validateSiteConfig(
         });
       }
       ids.add(section.id);
-      checkSection(section, [...sectionsPath, sectionIndex]);
+      pageBytes += checkSection(section, [...sectionsPath, sectionIndex]);
     });
     for (const [key, nodes] of Object.entries(page.content.injectedChildren ?? {})) {
+      const injectedPath = ["pages", pageIndex, "content", "injectedChildren", key];
       if (treeDepth(nodes) > maxTreeDepth) {
-        issues.push({
-          code: "tree_too_deep",
-          path: ["pages", pageIndex, "content", "injectedChildren", key],
-          message: `> ${maxTreeDepth}`,
-        });
+        issues.push({ code: "tree_too_deep", path: injectedPath, message: `> ${maxTreeDepth}` });
       }
+      pageBytes += checkNodes(nodes, injectedPath);
+    }
+    if (pageBytes > MAX_PAGE_CODE_BYTES) {
+      issues.push({
+        code: "code_too_large",
+        path: ["pages", pageIndex, "content"],
+        message: `This page has too much custom code: ${Math.ceil(pageBytes / 1024)} KB, the limit is ${MAX_PAGE_CODE_BYTES / 1024} KB.`,
+      });
     }
   });
 

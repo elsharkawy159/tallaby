@@ -205,6 +205,8 @@ function buildContext(
   const previewHref = previewHrefFor(site, routeLocale, key, edition);
   return {
     mode: "public",
+    // Code sections (F-101) never draw in the gallery preview: it sets no `renderCodeNode` and adds no seller CSS.
+    codeSections: { enabled: false, storeId: "", pageType: "page", passThrough: false, currency: "EGP" },
     reveal: true,
     revealDefault: site.designSystem.motion?.default,
     locale,

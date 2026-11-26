@@ -280,6 +280,11 @@ const ELEMENT_PREVIEWS: Record<ElementType, () => ReactNode> = {
       <span className="absolute end-1 top-1/2 h-2.5 w-5 rounded-sm bg-background shadow-sm" />
     </span>
   ),
+  code: () => (
+    <Frame className="w-3/4 p-1 text-center font-mono text-[8px] leading-none text-muted-foreground">
+      {"</>"}
+    </Frame>
+  ),
   languageSwitcher: () => (
     <Row className="rounded-md border p-0.5 text-[8px] font-semibold leading-none">
       <span className="rounded-sm bg-primary/70 px-1 py-0.5 text-primary-foreground">ع</span>

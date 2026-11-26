@@ -36,8 +36,15 @@ describe("package boundaries", () => {
       code.includes("dangerouslySetInnerHTML={{ __html: html }}") &&
       code.includes('const descriptionHtml = description ? (product.descriptionHtml?.trim() ?? "") : "";') &&
       code.includes("dangerouslySetInnerHTML={{ __html: descriptionHtml }}");
+    // A code section (F-101) prints its Liquid output once, right after `sanitizeCodeHtml` cleaned it.
+    const cleanedCodeOutput = (path: string, code: string) =>
+      /code[\\/]render-code\.server\.tsx$/.test(path) &&
+      code.split("dangerouslySetInnerHTML").length === 2 &&
+      code.includes("html = sanitizeCodeHtml(result.html, { nodeId: node.id });") &&
+      code.includes('<div data-node-id={node.id} className="code-node" dangerouslySetInnerHTML={{ __html: html }} />');
     const offenders = sources.filter(
-      ({ path, code }) => code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path) && !sanitisedProductContent(path, code),
+      ({ path, code }) =>
+        code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path) && !sanitisedProductContent(path, code) && !cleanedCodeOutput(path, code),
     );
     expect(offenders.map((o) => o.path)).toEqual([]);
   });
@@ -57,5 +64,8 @@ describe("package boundaries", () => {
     visit(join(__dirname, "index.ts"));
     expect(seen.size).toBeGreaterThan(20);
     expect([...seen].filter((path) => /config[\\/]sanitize\.ts$/.test(path))).toEqual([]);
+    // Nor the Liquid engine (`node:crypto`), the CSS scoper (postcss) or the code renderer (F-101):
+    // the storefront's server render injects `renderCodeNode` instead.
+    expect([...seen].filter((path) => /code[\\/](liquid\.server|liquid-filters|render-code\.server|scope-css|sanitize-code)\.tsx?$/.test(path))).toEqual([]);
   });
 });

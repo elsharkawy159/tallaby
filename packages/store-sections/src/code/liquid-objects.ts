@@ -155,9 +155,16 @@ export interface LiquidProductInput {
   variants?: readonly { id: string; title: string; price: number; available: boolean }[];
 }
 
-/** Major units → integer minor units (1/100). */
+/**
+ * Major units → integer minor units (1/100). The two decimals of a
+ * `numeric(10,2)` amount are read as digits, so float error in `amount * 100`
+ * (e.g. 1.1 * 100 = 110.00000000000001) never reaches the result.
+ */
 export function toMinorUnits(amount: number): number {
-  return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
+  if (!Number.isFinite(amount)) return 0;
+  const [whole = "0", fraction = ""] = Math.abs(amount).toFixed(2).split(".");
+  const minor = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
+  return amount < 0 ? -minor : minor;
 }
 
 function toImage(image: NonNullable<LiquidProductInput["images"]>[number], fallbackAlt: string): LiquidImage {

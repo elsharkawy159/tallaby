@@ -28,6 +28,7 @@ import {
   type RenderContext,
 } from "../core/types";
 import { hotspotKind, hotspotProductIndex } from "./hotspot.lib";
+import { codeNodeRefs, readCodeProps } from "../code/code-props";
 
 export const DATA_LIST_TYPES = ["productList", "categoryList", "postList"] as const;
 export type DataListType = (typeof DATA_LIST_TYPES)[number];
@@ -131,6 +132,46 @@ export function nodeCatalogQuery(node: ComponentNode, opts?: { product?: Product
     return { kind: "categories", limit: wide ? 200 : clampLimit(props.limit, 8) + offsetOf(props.offset) };
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Code nodes (ROADMAP F-101, code-sections design §4.3)
+// ---------------------------------------------------------------------------
+
+/** Most products one code node's `product`/`product_list` settings load together (the host's page cap). */
+export const MAX_CODE_PRODUCTS = 48;
+/** Most categories one code node's `collection`/`collection_list` settings load, each with ≤ 24 products. */
+export const MAX_CODE_COLLECTIONS = 6;
+
+/**
+ * Catalog keys of a code node's picks. Node ids match `[A-Za-z0-9_-]`, so a
+ * `~` key never collides with another node's.
+ */
+export const codeProductsKey = (nodeId: string) => `${nodeId}~products`;
+export const codeCollectionKey = (nodeId: string, categoryId: string) => `${nodeId}~c~${categoryId}`;
+export const codeCategoriesKey = (nodeId: string) => `${nodeId}~categories`;
+
+/**
+ * The catalog queries of a code node's picked products and categories, joined
+ * to the page's up-front queries (`collectCatalogQueries` with `codeSections`),
+ * so rendering never starts a query. The host resolves them for its own store
+ * only (rule 5): an id of another store comes back as nothing.
+ */
+export function nodeCodeCatalogQueries(node: ComponentNode): Record<string, CatalogQuery> {
+  if (node.type !== "code" || !idOf(node.id)) return {};
+  const code = readCodeProps(node.props);
+  if (!code) return {};
+  const { productIds, collectionIds } = codeNodeRefs(code);
+  const out: Record<string, CatalogQuery> = {};
+  const products = productIds.filter((id) => idOf(id)).slice(0, MAX_CODE_PRODUCTS);
+  if (products.length) out[codeProductsKey(node.id)] = { kind: "products", source: "selected", productIds: products, sort: "default", limit: products.length };
+  const collections = collectionIds.filter((id) => idOf(id)).slice(0, MAX_CODE_COLLECTIONS);
+  for (const categoryId of collections) {
+    out[codeCollectionKey(node.id, categoryId)] = { kind: "products", source: "category", categoryId, sort: "default", limit: MAX_LIST_LIMIT };
+  }
+  // A picked category may sit anywhere in the store's list: load the whole list for its name and photo.
+  if (collections.length) out[codeCategoriesKey(node.id)] = { kind: "categories", limit: 200 };
+  return out;
 }
 
 /** The blog query of a post list. */

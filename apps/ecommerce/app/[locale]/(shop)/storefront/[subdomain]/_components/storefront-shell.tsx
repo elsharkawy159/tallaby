@@ -103,9 +103,9 @@ export async function StorefrontShell({
         {/* Dialogs, popovers and toasts render in <body>, outside the site root: give them the store's colors too. */}
         {site && <style dangerouslySetInnerHTML={{ __html: designSystemToCss(site.designSystem, "body").replace(/</g, "\\3c ") }} />}
         {preview && <StorePreviewBanner state={preview} />}
-        {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
+        {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" passThrough={shared} /> : <StorefrontHeader store={store} />}
         <main className="flex-1">{children}</main>
-        {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}
+        {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" passThrough={shared} /> : <StorefrontFooter store={store} />}
         {/* Phones: the bottom navigation (on by default; its cart badge replaces the floating cart bar). */}
         {site && bottomNavOn(site.header) ? <StoreSiteBottomNav site={site} locale={locale} /> : !shared && <MobileCartBar />}
         {/* The cart opens as a sheet from every cart link and after add-to-cart (not on shared pages: orders, checkout). */}

@@ -120,7 +120,8 @@ export type ElementType =
   | "marquee"
   | "countdown"
   | "beforeAfter"
-  | "hotspot";
+  | "hotspot"
+  | "code";
 
 export interface ElementDefinition {
   type: ElementType;
@@ -1337,6 +1338,19 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     defaultProps: {},
     fields: [],
   },
+  // A code section (ROADMAP F-101, code-sections design §4): HTML + Liquid + CSS the seller wrote,
+  // rendered on the storefront server only (`code/render-code.server.tsx`). A leaf; its props
+  // (`apiVersion`, `source`, `css`, `schema`, `settings`, `blocks`) are written by the code editor
+  // (a later task), so it has no inspector fields and stays out of the palette for now.
+  {
+    type: "code",
+    group: "basic",
+    label: L("قسم بالكود", "Code section"),
+    keywords: ["code", "html", "liquid", "css", "custom", "كود", "برمجة"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
 ];
 
 const REVEAL_LABELS: Record<RevealChoice, Localized> = {
@@ -1409,7 +1423,7 @@ export function getElementDefinition(type: string): ElementDefinition | undefine
  * is added to the header for translated stores (`withLanguageSwitcher`), never by hand, and so
  * are the store logo, theme toggle and sign-in (the header/footer options, `drawChrome`).
  */
-const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher", "storeLogo", "themeToggle", "accountLink", "appInstall", "mobileMenu"];
+const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher", "storeLogo", "themeToggle", "accountLink", "appInstall", "mobileMenu", "code"];
 
 /** Types shown in the palette. */
 export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => !NOT_IN_PALETTE.includes(d.type)).map((d) => d.type);

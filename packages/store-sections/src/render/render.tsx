@@ -136,11 +136,14 @@ export function SiteTheme({ designSystem, dark = false }: { designSystem: ThemeI
 export function PageStyles({
   sections,
   mode = "public",
+  extraCss,
 }: {
   sections: readonly (SectionInstance | null | undefined)[];
   mode?: StyleCssMode;
+  /** Already-scoped seller CSS (F-101, `codePageCss` from `@workspace/store-sections/code-render`), after the page's own. */
+  extraCss?: string;
 }) {
-  const css = collectPageCss(sections, mode);
+  const css = collectPageCss(sections, mode) + (extraCss ?? "");
   if (!css) return null;
   return <style data-page-styles dangerouslySetInnerHTML={{ __html: escapeStyleBlock(css) }} />;
 }
