@@ -2167,6 +2167,22 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-26 — F-101f security review done; DoS fixed (owner: "handle everything yourself")
+
+- **Review:** independent; it found two high-severity DoS paths (the cleaner, and expression filters). No XSS, sandbox escape or tenant leak.
+- **Response:**
+  - `code_sections` was off from 20:57 to 21:35Z.
+  - Fix `b95a2119`: output, tag and depth caps, a linear cleaner, expression filters removed, 1,000-item caps, and 57 benchmark tests.
+  - Deployed, then switched back on. The `tallabya` code sections render.
+- **Also:**
+  - 0182 applied on production.
+  - The aged-fee job runs through the `manual-order-links` task (`4af50f51`).
+- **Open:**
+  - a worker-thread hard timeout;
+  - a `script-src` CSP (F-101i);
+  - signed-in E2E;
+  - an optional `img-src` restriction.
+
 ### 2026-11-26 — Welcome tour for new sellers (F-114, owner request; no migration)
 
 - **Owner:** "Welcome flow pop-up for new users on dashboard: Add product, Theme and edit website, Payment gateway, Tallaby Wallet, with Next and Skip."

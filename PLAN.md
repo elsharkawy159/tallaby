@@ -4800,6 +4800,27 @@ Owner asked to keep only the current version of each template in `template_versi
 - Browser pixels only, same path as the Meta Pixel identifier app (§9.1, §9.2): validated public ids, fixed script templates, store host only, after consent. No migration, no money or ledger code touched.
 - Checks: `@workspace/lib` and `@workspace/apps` tests pass; ecommerce tests pass (storefront event bus + TikTok/Snap mapper tests); marketing tests pass; dashboard tests pass except the pre-existing `order-lock-copy.lib.test.ts` `formatUsdShort` failure (file untouched); typecheck clean in lib, apps, dashboard, marketing; ecommerce only the known `profile.chunks.tsx` errors; eslint clean on the changed ecommerce, dashboard and marketing files. Integration test for the two pixels written in `store-integrations.integration.test.ts`, not run (no `TEST_DATABASE_URL`). No browser E2E.
 
+### 2026-11-26 — Security review of code sections; DoS fixed; 0182 applied (owner: "handle everything yourself")
+
+- **Migration `0182`:** applied on production at about 20:45Z. The `edit-with-ai-files` bucket (private, 5 MB, CSV/XLS/XLSX/PDF) is in place.
+- **Aged-fee cron:** the Coolify token has no write access (403 "Missing required permissions: write"), so `manual-order-links` (05:35Z, 330 s) now also runs the aged-order-fees job. Commit `4af50f51`, pushed and deployed.
+- **Independent security review (F-101f):**
+  - Found: two high-severity denial-of-service paths, both reproduced by running the real functions.
+    - A 126-byte template made the HTML cleaner run for 16 s (it was quadratic).
+    - Expression filters ran past the 50 ms limit (32 s).
+  - Not found: XSS, a sandbox escape, a tenant leak or a prompt-injection path. About 40 payloads were tried.
+  - Low findings: no `script-src` CSP yet (F-101i); outside image and font URLs are allowed; replies with no edit are free (within the daily cap); two Edit with AI actions had no switch check.
+- **Mitigation:** `code_sections` switched off at 20:57:58Z. One store, `tallabya`, had code sections.
+- **Fix `b95a2119`:**
+  - Output caps (128 KB, 4,000 tags, depth 128) and a linear cleaner.
+  - Expression filters removed; ranges and lists capped at 1,000 items.
+  - 57 benchmark tests, each under 150 ms; the reported templates now take 0.1–1.7 ms.
+  - The two switch checks added.
+  - Deployed healthy at 21:34Z.
+- **Switched back on:** `code_sections` at 21:35:20Z. `tallabya.tallaby.com` returns 200 and draws both of its code sections (a marquee top bar and a hero).
+- **Follow-up:** a hard timeout in a worker thread (design note §7.6); a nonce-based `script-src`.
+- **Signed-in E2E:** not run. The Chrome extension isn't connected, and Claude doesn't enter production passwords.
+
 ### 2026-11-26 — Fee on delivery switched on; Edit with AI and the top bar deployed (owner: "enable it and push")
 
 - **Deploy:** pushed `main` at `1ec585a2`. All 5 image workflows succeeded, and Coolify had every app healthy at 20:28Z.
