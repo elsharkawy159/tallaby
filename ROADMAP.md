@@ -2076,7 +2076,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-82m Switch on (owner)
 - [x] F-83a Agent core + 4 skills, DB persistence 0158 (2026-11-09; `9236adb1`, `c63da4c9`; builder not yet moved onto the core)
 - [ ] F-83b Shipping and Products page agents
-- [ ] F-83c Design agent in the editor
+- [~] F-83c Design agent in the editor: built 2026-11-26 (`68900f4a` server, `ed5b5242` chat); not yet tried in a browser; code ops wait for the `code_sections` switch
 - [ ] F-83d Global assistant, router, Help, Insights
 - [ ] F-83e Marketing, Integrations, Apps, Orders skills
 - [ ] F-83f MCP on shared tools
@@ -2141,6 +2141,27 @@ Add each new request here first, with the date and the owner's words, then turn 
 - Products › grid view: drop one or more image files on a card to add them to that product (signed upload, then `updateProduct`, which checks seller and store). Overlay while dragging, spinner while uploading, a hint on cards with no photo. Click, checkbox, switch and menu keep working.
 - Shared hook `_components/use-product-image-drop.client.ts`, also used by the table thumbnail. The limit is now `MAX_PRODUCT_IMAGES` (8, moved to `products/add/product-images.lib.ts`) instead of a hard-coded 5. Files past the limit are skipped with a toast, and the list refreshes after an upload.
 - Checks: dashboard typecheck passes and the changed files lint clean. Full lint has 30 errors and tests have 1 failure (`order-lock-copy.lib.test.ts`), all outside this change. Not tried in a browser yet.
+
+### 2026-11-26 — Website editor AI agent, and code-section fixes (F-83c, F-101g/j, owner request; no migration)
+
+- **Built:**
+  - **`5530249a` (code-section fixes):**
+    - Every code-section issue now has a code, and the editor shows it in Arabic or English (61 codes).
+    - Liquid links get `/ar` or `/en` on second-language pages.
+  - **`68900f4a` (agent, server side):**
+    - 13 section ops: add, update and convert code sections; set text, style, custom CSS and links; remove, duplicate and hide elements; move, remove and duplicate sections.
+    - Every op is checked in place, with one retry when a code op fails.
+    - The prompt is built from the code's own lists of tags, filters, objects and CSS variables.
+    - Limits: 10 turns a minute, 60 model calls a day (×10 on Pro), and 1 AI credit only when an op is applied.
+    - Measured about $0.0017 a turn (`PLAN.md` §23).
+  - **`ed5b5242` (the sidebar chat):**
+    - The mention is always the whole section, whatever is clicked inside it. With nothing selected, the turn targets the page.
+    - Each answer is applied as one undo step with an Undo button, and the server's previews show code sections at once.
+- **Checks:** store-editor 328 tests, store-sections agent, code and config 1,252, dashboard editor 15. Typecheck is clean.
+- **Not done:**
+  - **Browser test:** not tried in a browser; code ops need the `code_sections` row on staging (owner).
+  - **Design quality:** only validity was measured. A 20-request screenshot test, and maybe a stronger model for writing code sections through `AI_MODEL_SMART`, are proposed.
+  - **Mobile:** page-level requests (nothing selected) work on desktop only for now.
 
 ### 2026-11-26 — Code sections editor, server preview and CSP (F-101e, F-101 §7; no migration)
 
