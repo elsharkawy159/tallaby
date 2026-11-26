@@ -713,7 +713,7 @@
     "failedToCreateProduct": "Failed to create product",
     "uploadError": "An error occurred during upload of {fileName}!",
     "maxImagesAllowed": "Maximum {max} images allowed",
-    "maxImagesAllowedPerProduct": "Maximum 5 images allowed per product",
+    "maxImagesAllowedPerProduct": "Maximum 8 images allowed per product",
     "productImagesUpdated": "Product images updated successfully",
     "failedToUpdateProductImages": "Failed to update product images",
     "failedToUploadImages": "Failed to upload images",
@@ -1516,6 +1516,7 @@
       "selectAllFailed": "Couldn't select all the products. Try again.",
       "moreActions": "More actions",
       "noImage": "No image",
+      "dropPhotosHint": "Drop photos here",
       "undo": "Undo",
       "restored": "{count, plural, one {# product restored} other {# products restored}}",
       "restoreFailed": "Couldn't restore. Open Trash and try again.",
@@ -1540,7 +1541,10 @@
     },
     "imageUpload": {
       "dropHere": "Drag and drop images here",
-      "dropMore": "Drag and drop to add more images"
+      "dropMore": "Drag and drop to add more images",
+      "dropToAdd": "Drop to add photos",
+      "uploading": "Uploading photos…",
+      "skipped": "{count, plural, one {# photo was} other {# photos were}} skipped: a product can have up to {max} photos."
     },
     "importExport": {
       "modalBody": "Choose what to do with your products file.",

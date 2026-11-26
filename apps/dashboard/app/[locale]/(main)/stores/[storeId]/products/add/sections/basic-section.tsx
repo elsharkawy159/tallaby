@@ -18,9 +18,10 @@ import { EDITOR_PHONE_TOOLBAR_CLASS, useFieldError } from "./fields";
 import { useContentImageUpload } from "./use-content-image-upload";
 import { PRODUCT_IMAGE_ACCEPT_ATTR } from "@/lib/images/image-format.lib";
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add-product.schema";
+import { MAX_PRODUCT_IMAGES } from "../product-images.lib";
 
 const TITLE_MAX = 255;
-export const MAX_PRODUCT_IMAGES = 8;
+export { MAX_PRODUCT_IMAGES };
 
 
 interface BasicSectionProps {

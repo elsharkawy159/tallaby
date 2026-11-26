@@ -713,7 +713,7 @@
     "failedToCreateProduct": "فشل إنشاء المنتج",
     "uploadError": "حدث خطأ أثناء رفع {fileName}!",
     "maxImagesAllowed": "الحد الأقصى {max} صور",
-    "maxImagesAllowedPerProduct": "الحد الأقصى 5 صور لكل منتج",
+    "maxImagesAllowedPerProduct": "الحد الأقصى 8 صور لكل منتج",
     "productImagesUpdated": "تم تحديث صور المنتج بنجاح",
     "failedToUpdateProductImages": "فشل تحديث صور المنتج",
     "failedToUploadImages": "فشل رفع الصور",
@@ -1516,6 +1516,7 @@
       "selectAllFailed": "تعذّر تحديد كل المنتجات. حاول مرة أخرى.",
       "moreActions": "المزيد",
       "noImage": "بدون صورة",
+      "dropPhotosHint": "اسحب الصور وأفلتها هنا",
       "undo": "تراجع",
       "restored": "{count, plural, one {تم استرجاع منتج واحد} two {تم استرجاع منتجين} few {تم استرجاع # منتجات} many {تم استرجاع # منتجًا} other {تم استرجاع # منتج}}",
       "restoreFailed": "تعذّر الاسترجاع. افتح سلة المحذوفات وحاول مرة أخرى.",
@@ -1540,7 +1541,10 @@
     },
     "imageUpload": {
       "dropHere": "اسحب الصور وأفلتها هنا",
-      "dropMore": "اسحب الصور وأفلتها لإضافة المزيد"
+      "dropMore": "اسحب الصور وأفلتها لإضافة المزيد",
+      "dropToAdd": "أفلت الصور لإضافتها",
+      "uploading": "جارٍ رفع الصور…",
+      "skipped": "تم تخطي {count, plural, one {صورة واحدة} two {صورتين} few {# صور} many {# صورة} other {# صورة}}: الحد الأقصى {max} صور للمنتج."
     },
     "importExport": {
       "modalBody": "اختر ما تريد فعله بملف منتجاتك.",

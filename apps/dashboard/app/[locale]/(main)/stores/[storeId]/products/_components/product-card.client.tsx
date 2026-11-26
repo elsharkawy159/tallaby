@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ExternalLink, ImageIcon, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, ImageIcon, ImageUp, LoaderCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { SellerButton } from "@/components/seller-ui";
 import { Checkbox } from "@workspace/ui/components/checkbox";
@@ -22,6 +22,7 @@ import { Money } from "@/components/money";
 import { ProductPublishSwitch } from "./product-publish-toggle.client";
 import { useProductsHref } from "./product-store.client";
 import { discountPercent, effectivePrice, stockLevel } from "./products-view.lib";
+import { useProductImageDrop } from "./use-product-image-drop.client";
 import type { VendorProduct } from "./vendor-products.section";
 
 const stockStyles = {
@@ -152,6 +153,14 @@ export function ProductCard({
 }) {
   const t = useTranslations("products.list");
   const tPublish = useTranslations("products.publish");
+  const tUpload = useTranslations("products.imageUpload");
+  // The whole card takes dropped photos; clicks and keys keep their old jobs.
+  const { getRootProps, getInputProps, isDragActive, isUploading } = useProductImageDrop({
+    productId: product.id,
+    images: product.images ?? [],
+    noClick: true,
+    noKeyboard: true,
+  });
   const editHref = useProductsHref()(`/${product.id}/edit`);
   const image = product.images?.[0] ? getPublicUrl(product.images[0], "products") : "";
   const discount = discountPercent(product);
@@ -159,11 +168,16 @@ export function ProductCard({
 
   return (
     <article
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-glass) shadow-(--s-shadow-card) transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-[3px] hover:shadow-(--s-shadow-card-hover)",
-        selected && "border-(--s-primary) shadow-[0_0_0_3px_var(--s-focus-soft)]",
-      )}
+      {...getRootProps({
+        role: "article",
+        className: cn(
+          "group relative flex flex-col overflow-hidden rounded-[20px] border border-(--s-line) bg-(--s-glass) shadow-(--s-shadow-card) transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-[3px] hover:shadow-(--s-shadow-card-hover)",
+          selected && "border-(--s-primary) shadow-[0_0_0_3px_var(--s-focus-soft)]",
+          isDragActive && "border-(--s-primary) shadow-[0_0_0_3px_var(--s-focus-soft)]",
+        ),
+      })}
     >
+      <input {...getInputProps()} />
       <div className="relative aspect-[1/1.02] border-b border-(--s-line-soft) bg-(--s-surface)">
         <Link href={editHref} className="absolute inset-0 grid place-items-center" tabIndex={-1} aria-hidden>
           {image ? (
@@ -178,6 +192,7 @@ export function ProductCard({
             <span className="flex flex-col items-center gap-1 text-xs text-(--s-faint)">
               <ImageIcon className="size-8" aria-hidden="true" />
               {t("noImage")}
+              <span className="text-[11px] text-(--s-faint) opacity-80">{t("dropPhotosHint")}</span>
             </span>
           )}
         </Link>
@@ -213,7 +228,28 @@ export function ProductCard({
             <StockBadge quantity={product.quantity} trackStock={product.trackStock} />
           </div>
         )}
+
+        {isUploading && (
+          <div
+            role="status"
+            className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-(--s-surface)/70"
+          >
+            <span className="flex flex-col items-center gap-1.5 text-xs font-semibold text-(--s-text)">
+              <LoaderCircle className="size-7 animate-spin text-(--s-primary)" aria-hidden="true" />
+              {tUpload("uploading")}
+            </span>
+          </div>
+        )}
       </div>
+
+      {isDragActive && !isUploading && (
+        <div className="pointer-events-none absolute inset-1.5 z-20 grid place-items-center rounded-[16px] border-2 border-dashed border-(--s-primary) bg-(--s-surface)/85">
+          <span className="flex flex-col items-center gap-1.5 text-sm font-bold text-(--s-primary)">
+            <ImageUp className="size-8" aria-hidden="true" />
+            {tUpload("dropToAdd")}
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-1 flex-col gap-1 p-3 pb-3 min-[721px]:px-3.5">
         <span className="truncate text-xs text-(--s-faint)">{product.category?.name || "—"}</span>

@@ -1,17 +1,11 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React from "react";
 import Image from "next/image";
-import { useDropzone } from "react-dropzone";
-import { Upload, ImageIcon, LoaderCircle } from "lucide-react";
+import { Upload, LoaderCircle } from "lucide-react";
 import { getPublicUrl } from "@/lib/utils";
-import { updateProduct } from "@/actions/products";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { PRODUCT_IMAGE_ACCEPT } from "@/lib/images/image-format.lib";
-import { prepareImageForUpload } from "@/lib/images/prepare-image.client";
-import { uploadProductImage } from "@/components/inputs/use-seller-upload";
-import { useProductStoreId } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
+import { useProductImageDrop } from "./use-product-image-drop.client";
 
 interface ProductImageUploadProps {
   productId: string;
@@ -24,85 +18,10 @@ export function ProductImageUpload({
   images,
   productTitle,
 }: ProductImageUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
-  const tToast = useTranslations("toast");
-  const productStoreId = useProductStoreId();
   const t = useTranslations("products.imageUpload");
-
-  const handleFileUpload = useCallback(
-    async (file: File): Promise<string | null> => {
-      try {
-        // Checks the format and size; HEIC, BMP, TIFF… are uploaded as a JPEG.
-        const upload = await prepareImageForUpload(file);
-
-        // Signed upload into the seller's own folder (the bucket refuses direct writes, 0153).
-        return await uploadProductImage(upload);
-      } catch (error) {
-        console.error("File upload error:", error);
-        const key = error instanceof Error ? error.message : "";
-        toast.error(
-          ["imageFormatInvalid", "imageTooLarge", "imageUnreadable"].includes(key)
-            ? tToast(key)
-            : tToast("failedToUploadImage")
-        );
-        return null;
-      }
-    },
-    [tToast]
-  );
-
-  const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      if (acceptedFiles.length === 0) return;
-
-      // Check if adding new files would exceed max limit of 5
-      if (images.length + acceptedFiles.length > 5) {
-        toast.error(tToast("maxImagesAllowedPerProduct"));
-        return;
-      }
-
-      setIsUploading(true);
-
-      try {
-        const uploadedPaths = await Promise.all(
-          acceptedFiles.map(handleFileUpload)
-        );
-        const successfulUploads = uploadedPaths.filter(
-          (path): path is string => path !== null
-        );
-
-        if (successfulUploads.length > 0) {
-          const newImages = [...images, ...successfulUploads];
-          const result = await updateProduct(productStoreId, productId, { images: newImages });
-
-          if (result.success) {
-            toast.success(
-              tToast("imagesUploadedSuccessfully", {
-                count: successfulUploads.length,
-              })
-            );
-            // Trigger a page refresh to show updated images
-            // window.location.reload();
-          } else {
-            toast.error(tToast("failedToUpdateProductImages"));
-          }
-        }
-      } catch (error) {
-        console.error("Upload error:", error);
-        toast.error(tToast("failedToUploadImages"));
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [images, handleFileUpload, productId, productStoreId, tToast]
-  );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: PRODUCT_IMAGE_ACCEPT,
-    onDrop,
-    disabled: isUploading,
-    maxFiles: 5,
-    multiple: true,
+  const { getRootProps, getInputProps, isDragActive, isUploading } = useProductImageDrop({
+    productId,
+    images,
   });
 
   // If no images, show drag and drop button
