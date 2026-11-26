@@ -1,18 +1,18 @@
 "use client";
 import type { getSiteData } from "@/actions/site-data";
-import { createContext, use, useContext } from "react";
+import { createContext, use } from "react";
 
 type SiteData = Awaited<ReturnType<typeof getSiteData>>;
-// Create the context
-const SiteDataContext = createContext<SiteData | undefined>(undefined);
+// The layout passes the read as a promise, so the frame never waits for it.
+const SiteDataContext = createContext<Promise<SiteData> | undefined>(undefined);
 
-// Custom hook to use the site data context
+/** Suspends until the seller summary arrives: call it under a <Suspense> boundary. */
 export const useSiteData = () => {
-  const context = useContext(SiteDataContext);
-  if (!context) {
+  const promise = use(SiteDataContext);
+  if (!promise) {
     throw new Error("useSiteData must be used within a SiteDataProvider");
   }
-  return context;
+  return use(promise);
 };
 
 export function SiteDataProvider({
@@ -22,6 +22,5 @@ export function SiteDataProvider({
   children: React.ReactNode;
   promise: Promise<SiteData>;
 }) {
-    const siteData = use(promise);
-    return <SiteDataContext.Provider value={siteData}>{children}</SiteDataContext.Provider>;
+  return <SiteDataContext value={promise}>{children}</SiteDataContext>;
 }

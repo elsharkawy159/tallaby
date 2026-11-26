@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import "@workspace/ui/globals.css";
@@ -14,10 +15,6 @@ import { MetaPixel } from "@/components/meta-pixel.client";
 import { ClarityScript } from "@/components/clarity.client";
 import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
 import { routing } from "@/i18n/routing";
-
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -71,9 +68,9 @@ export async function generateMetadata({ params }: Pick<RootLayoutProps, "params
 }
 
 // Cache Components is on (next.config.ts). The page language comes from the
-// URL (the `[locale]` param), never from the locale cookie; every page and
-// layout keeps `instant = false` until it adopts a static shell
-// (docs/plans/dashboard-static-shell.md).
+// URL (the `[locale]` param), never from the locale cookie. This layout reads
+// only that param, so it prerenders into every route's static shell; pages keep
+// `instant = false` until they adopt one (docs/plans/dashboard-performance.md B1, B3).
 
 export default async function RootLayout({ children, params }: RootLayoutProps) {
   const { locale } = await params;
@@ -95,7 +92,10 @@ export default async function RootLayout({ children, params }: RootLayoutProps) 
       <body
         className={`${locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable} antialiased`}
       >
-        <MetaPixel />
+        {/* usePathname suspends in routes with unknown params ([storeId], …), so it streams in. */}
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
         {clarityId && <ClarityScript projectId={clarityId} />}
         <DirectionProvider dir={direction}>
           <NextIntlClientProvider>

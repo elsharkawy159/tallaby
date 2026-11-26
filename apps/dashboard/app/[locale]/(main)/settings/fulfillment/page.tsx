@@ -2,7 +2,7 @@ import { CalendarRange, Clock, FileText, Info } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getUser } from "@/actions/auth";
+import { requireSeller } from "@/lib/auth/require-seller.server";
 import { Note, PageContainer, PageHeader, SectionCard, StatusBadge, Tag, type BadgeTone } from "@/components/seller-ui";
 import {
   FULFILLMENT_SERVICE_TYPES,
@@ -54,8 +54,9 @@ export default async function FulfillmentSetupPage() {
   if (!TALLABY_SERVICES_ENABLED) notFound();
   const t = await getTranslations("fulfillment");
   const locale = await getLocale();
-  const { user } = await getUser();
-  const { profile, services, plans, agreements } = await getSellerFulfillmentOverview(user!.id, {
+  // The page's own access check: the layout's gate streams beside the page, it doesn't block it (sellers.id = users.id).
+  const { sellerId } = await requireSeller();
+  const { profile, services, plans, agreements } = await getSellerFulfillmentOverview(sellerId, {
     includeAgreements: true,
   });
   // No Tallaby plan is on offer while Tallaby services are "Soon": every

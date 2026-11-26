@@ -10,8 +10,10 @@ import { ClarityIdentify } from "@/components/clarity.client";
 import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
 import { resolvePlanId } from "@workspace/lib/plans";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+// Kept blocking on purpose (docs/plans/dashboard-performance.md B2, B3 exceptions):
+// the builder and editor load the seller's drafts and the whole editor at once,
+// and the gate must decide before any of it renders, so a static frame would
+// gain nothing here.
 export const instant = false;
 
 /**

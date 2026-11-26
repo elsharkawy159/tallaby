@@ -1,149 +1,68 @@
-import { SidebarData } from "@/components/dashboard/sidebar.data";
-import { BottomNav } from "@/components/layout/bottom-nav.client";
-import { DashboardHeader } from "@/components/layout/dashboard-header.client";
+import { Suspense } from "react";
+import { SidebarSkeleton } from "@/components/dashboard/sidebar-skeleton.client";
+import { HeaderSkeleton } from "@/components/layout/header-skeleton";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
-import { NegativeWalletDialog } from "@/components/layout/negative-wallet-dialog.client";
-import { HeardAboutUsDialog } from "@/components/layout/heard-about-us-dialog.client";
-import { needsHeardAboutUs } from "@/components/layout/heard-about-us.data";
-import { WelcomeGiftDialog } from "@/components/layout/welcome-gift-dialog.client";
-import { loadWelcomeGiftWatch } from "@/components/layout/welcome-gift.data";
-import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
-import { getSellerAccess } from "@/lib/auth/seller-access";
-import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
-import { getSellerStores } from "@/lib/stores/current-store.server";
+import {
+  AccountMoneyShell,
+  BottomNavData,
+  GatedSidebar,
+  HeaderData,
+  RestrictedBanner,
+  SellerGate,
+  ShellDialogs,
+  ShellProviders,
+} from "@/components/layout/shell.data";
 // Replaced by the header Next step button (owner, 2026-11-18).
 // import { SetupPrompts } from "./_components/setup-prompts.client";
-import { loadSetupNextStep } from "./_components/setup-next-step.server";
-import { StoreLiveCelebration } from "./_components/store-live-celebration.client";
-import { getStoreWalletBalance } from "./wallet/store-wallet.server";
-import { getSessionUser } from "@/lib/auth/session.server";
-import { loadOrderLock, loadSeller } from "@/lib/auth/require-seller.server";
-import { storeMayBeBillingOffline } from "@workspace/lib/billing/order-lock";
-import { ClarityIdentify } from "@/components/clarity.client";
-import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
-import { resolvePlanId } from "@workspace/lib/plans";
-import { AccountMoneyProvider } from "@/components/account-money.client";
-import { loadAccountMoney } from "@/lib/stores/account-money.server";
-import { EGP_ACCOUNT } from "@/lib/stores/account-money.lib";
-import { getLocale, getTranslations } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
-import { getSiteData } from "@/actions/site-data";
-import { SiteDataProvider } from "@/providers/site-data";
-import { EgpRateProvider } from "@/components/egp-rate.client";
-import { getEgpPerUsd } from "@/lib/billing/egp-rate.server";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
-export default async function DashboardLayout({
+/**
+ * The dashboard frame (docs/plans/dashboard-performance.md B2). It awaits
+ * nothing, so the frame (sidebar and header skeletons) is a prerendered static
+ * shell, the same bytes for every seller; each piece of seller data streams
+ * into its own <Suspense> hole (components/layout/shell.data.tsx). The access
+ * gate is one of those holes: a blocked seller gets a full-screen notice over
+ * the frame, a customer account is sent to /signup, and the pages' own loaders
+ * still refuse them (lib/auth/require-seller.server.ts).
+ */
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // The proxy guarantees a session; this gate decides whether that session
-  // belongs to a seller who may use the dashboard right now.
-  const user = await getSessionUser();
-  const access = user
-    ? await getSellerAccess(user.id)
-    : ({ allowed: false, reason: "no_seller" } as const);
-
-  const t = await getTranslations();
-
-  // Signed in but not a seller yet (e.g. a customer account): finish signup.
-  if (user && !access.allowed && access.reason === "no_seller") {
-    redirect({ href: "/signup", locale: await getLocale() });
-  }
-
-  if (!access.allowed) {
-    return <SellerAccessBlocked access={access} />;
-  }
-
-  // Seller profile + store link for the sidebar, header and Help page: started now, with the other reads.
-  const siteData = getSiteData();
-  // Per-request memo: getSellerAccess already read this row, so this costs no query.
-  const seller = user ? await loadSeller(user.id) : null;
-  // A seller still not activated when the trial's days are over has every store offline (owner, 2026-11-17): the header dot says so.
-  // The lock is read only once the sign-up date says it can apply (loadOrderLock is cached per request; the sidebar reads it too).
-  const mayBeBillingOffline = Boolean(user) && storeMayBeBillingOffline(seller?.createdAt);
-
-  // sellers.id = users.id; the header shows the store wallet balance.
-  const [
-    wallet,
-    askHeardAboutUs,
-    welcomeGift,
-    storeLink,
-    accountMoney,
-    { selected },
-    egpRate,
-    setupNextStep,
-    billingOffline,
-  ] = await Promise.all([
-    user ? getStoreWalletBalance(user.id) : null,
-    user ? needsHeardAboutUs(user.id) : false,
-    user ? loadWelcomeGiftWatch(user.id) : ({ state: "none" } as const),
-    getSelectedStoreLink().catch(() => null),
-    user ? loadAccountMoney(user.id).catch(() => EGP_ACCOUNT) : EGP_ACCOUNT,
-    getSellerStores(),
-    getEgpPerUsd(),
-    user ? loadSetupNextStep(user.id).catch(() => null) : null,
-    user && mayBeBillingOffline ? loadOrderLock(user.id).then((lock) => lock.storeOffline) : false,
-  ]);
-  const walletBalance = wallet?.balance ?? null;
-  // Clarity session tag: internal seller id + plan only.
-  const clarityPlan = user && enabledClarityProjectId() ? resolvePlanId(seller?.plan) : null;
-
   return (
-    // .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched.
-    // Seller profile + store link for the sidebar, header and Help page (only used here, so not in the root layout).
-    <SiteDataProvider promise={siteData}>
-      {/* USD wallet amounts and prices are shown in EGP at this rate (owner, 2026-11-09). */}
-      <EgpRateProvider rate={egpRate}>
+    // Seller profile + store link and the EGP rate for the sidebar, header and pages, as promises (never awaited here).
+    <ShellProviders>
+      {/* .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched. */}
       <div className="seller-shell flex min-h-screen w-full overflow-x-clip bg-background">
-        <SidebarData />
+        <Suspense fallback={<SidebarSkeleton />}>
+          <GatedSidebar />
+        </Suspense>
 
         {/* Main Content Area */}
         <MainContentWrapper>
-          <DashboardHeader
-            walletBalance={walletBalance}
-            walletCurrency={wallet?.currency ?? "EGP"}
-            storeLink={storeLink}
-            siteLive={selected?.siteStatus === "published" && !billingOffline}
-            storeId={selected?.id ?? null}
-            setupNextStep={setupNextStep}
-            userId={user?.id ?? null}
-          />
-          {access.status === "restricted" && (
-            <div className="border-b border-(--s-line) bg-accent-soft px-7 py-3 text-sm text-accent-ink max-[1020px]:px-4">
-              <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}
-              {t("sellerStatus.restricted.message")}
-            </div>
-          )}
+          <Suspense fallback={<HeaderSkeleton />}>
+            <HeaderData />
+          </Suspense>
+          <Suspense fallback={null}>
+            <RestrictedBanner />
+          </Suspense>
           {/* Replaced by the header Next step button (owner, 2026-11-18). */}
           {/* <SetupPrompts /> */}
-          <AccountMoneyProvider value={accountMoney}>
+          <AccountMoneyShell>
             <main className="min-w-0 flex-1">{children}</main>
-          </AccountMoneyProvider>
+          </AccountMoneyShell>
         </MainContentWrapper>
-        {/* Phones and tablets: Home, Products, Orders, Search (owner, 2026-11-18). */}
-        <BottomNav storeId={selected?.id ?? null} />
-        <NegativeWalletDialog
-          balance={walletBalance}
-          currency={wallet?.currency ?? "EGP"}
-        />
-        {/* One pop-up at a time: a negative wallet is the more urgent one, then the welcome gift. */}
-        <HeardAboutUsDialog
-          show={
-            askHeardAboutUs &&
-            !(walletBalance != null && walletBalance < 0) &&
-            welcomeGift.state !== "unseen"
-          }
-        />
-        <WelcomeGiftDialog initial={welcomeGift} />
-        <StoreLiveCelebration />
-        {user && clarityPlan && <ClarityIdentify sellerId={user.id} plan={clarityPlan} />}
+        {/* Phones and tablets: Home, Products, Orders, Search (owner, 2026-11-18). Fixed, so no fallback is needed for layout. */}
+        <Suspense fallback={null}>
+          <BottomNavData />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ShellDialogs />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SellerGate />
+        </Suspense>
       </div>
-      </EgpRateProvider>
-    </SiteDataProvider>
+    </ShellProviders>
   );
 }

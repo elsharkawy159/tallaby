@@ -1,15 +1,19 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 
-const EgpRateContext = createContext<number | null>(null);
+const EgpRateContext = createContext<Promise<number | null> | null>(null);
 
-/** Set once by the dashboard layout from `getEgpPerUsd`. Display only. */
-export function EgpRateProvider({ rate, children }: { rate: number | null; children: React.ReactNode }) {
-  return <EgpRateContext.Provider value={rate}>{children}</EgpRateContext.Provider>;
+/** Set once by the dashboard layout from `getEgpPerUsd`, as a promise so the frame never waits for it. Display only. */
+export function EgpRateProvider({ rate, children }: { rate: Promise<number | null>; children: React.ReactNode }) {
+  return <EgpRateContext value={rate}>{children}</EgpRateContext>;
 }
 
-/** Today's EGP per USD for showing USD prices in EGP, or null before there is a rate. */
+/**
+ * Today's EGP per USD for showing USD prices in EGP, or null before there is a rate.
+ * Suspends until the rate arrives: call it under a <Suspense> boundary.
+ */
 export function useEgpRate() {
-  return useContext(EgpRateContext);
+  const rate = use(EgpRateContext);
+  return rate ? use(rate) : null;
 }

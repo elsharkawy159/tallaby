@@ -1,21 +1,25 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import { useTranslations } from "next-intl";
 import { Info } from "lucide-react";
 import { EGP_ACCOUNT, type AccountMoney } from "@/lib/stores/account-money.lib";
 import { cn } from "@/lib/utils";
 
-const AccountMoneyContext = createContext<AccountMoney>(EGP_ACCOUNT);
+const AccountMoneyContext = createContext<Promise<AccountMoney> | null>(null);
 
-/** Set once by the dashboard layout, from the session seller's stores. Display only. */
-export function AccountMoneyProvider({ value, children }: { value: AccountMoney; children: React.ReactNode }) {
-  return <AccountMoneyContext.Provider value={value}>{children}</AccountMoneyContext.Provider>;
+/** Set once by the dashboard layout, from the session seller's stores, as a promise so the frame never waits for it. Display only. */
+export function AccountMoneyProvider({ value, children }: { value: Promise<AccountMoney>; children: React.ReactNode }) {
+  return <AccountMoneyContext value={value}>{children}</AccountMoneyContext>;
 }
 
-/** The currency of amounts that belong to the account, not to one store: product prices, coupons, offers. */
+/**
+ * The currency of amounts that belong to the account, not to one store: product prices, coupons, offers.
+ * Suspends until it arrives: call it under a <Suspense> boundary (every (main) page has a loading.tsx above it).
+ */
 export function useAccountMoney() {
-  return useContext(AccountMoneyContext);
+  const value = use(AccountMoneyContext);
+  return value ? use(value) : EGP_ACCOUNT;
 }
 
 /** Beside account-level amounts when the seller's stores use different currencies. */
