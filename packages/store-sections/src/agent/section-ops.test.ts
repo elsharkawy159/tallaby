@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance } from "../config/schema";
 import { joinSectionFile } from "../code/section-file";
 import {
+  codeSectionNode,
   applySectionOps,
   codeSectionInstance,
   describeAppliedOp,
@@ -462,5 +463,20 @@ describe("codeSectionInstance", () => {
     expect(made.instance).toMatchObject({ id: "s-1", sectionId: "custom-section", version: 1, props: {} });
     expect(made.instance.componentTree![0]!.type).toBe("section");
     expect(made.instance.componentTree![0]!.children[0]).toMatchObject({ id: "n-code", type: "code" });
+  });
+});
+
+describe("codeSectionNode", () => {
+  const code = { id: "c1", type: "code", props: {}, children: [] } as unknown as ComponentNode;
+  const text = { id: "t1", type: "text", props: {}, children: [] } as unknown as ComponentNode;
+  it("finds the code element of a code section (root holding only code)", () => {
+    expect(codeSectionNode([{ id: "r", type: "section", props: {}, children: [code] } as unknown as ComponentNode])?.id).toBe("c1");
+    expect(codeSectionNode([code])?.id).toBe("c1");
+  });
+  it("treats a tree that merely contains code (a header with a code top bar) as a tree section", () => {
+    const bar = { id: "bar", type: "div", props: {}, children: [code] } as unknown as ComponentNode;
+    expect(codeSectionNode([{ id: "h", type: "section", props: {}, children: [bar, text] } as unknown as ComponentNode])).toBeNull();
+    expect(codeSectionNode([{ id: "r", type: "section", props: {}, children: [code, text] } as unknown as ComponentNode])).toBeNull();
+    expect(codeSectionNode(undefined)).toBeNull();
   });
 });

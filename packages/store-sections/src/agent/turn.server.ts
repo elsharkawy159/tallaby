@@ -18,7 +18,7 @@ import { buildEditorAgentSystemPrompt, buildEditorAgentTurnText, type EditorAgen
 import {
   applySectionOps,
   describeAppliedOp,
-  findCodeNode,
+  codeSectionNode,
   type AgentIssue,
   type AppliedOp,
   type ApplySectionOpsOptions,
@@ -169,7 +169,7 @@ export async function runEditorAgentTurn(req: EditorAgentTurnRequest, deps: { ca
   for (const item of result.applied) {
     if (!item.codeNodeId) continue;
     const section = result.content.sections.find((s) => s.id === item.sectionId);
-    const node = findCodeNode(section?.componentTree);
+    const node = codeSectionNode(section?.componentTree);
     if (!node || node.id !== item.codeNodeId) continue;
     const props = node.props as unknown as CodeNodeProps;
     codeNodes.set(node.id, { nodeId: node.id, opIndex: item.index, props, file: joinSectionFile({ source: props.source, css: props.css ?? "", schema: props.schema }) });

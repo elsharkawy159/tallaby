@@ -936,6 +936,8 @@
         "outside_target": "it was outside the selected section",
         "chrome_locked": "the header and footer can't be added, moved or removed",
         "node_not_found": "an element wasn't found in the section",
+        "not_image": "that element doesn't show a photo",
+        "image_not_allowed": "that photo isn't in your store's media",
         "not_code_section": "this section isn't a code section",
         "code_node": "a code element is changed through its code",
         "bound_node": "this text comes from your products, so change it there",

@@ -236,6 +236,21 @@ export function findCodeNode(nodes: readonly ComponentNode[] | undefined): Compo
   return null;
 }
 
+/**
+ * The code element of a code section: a tree whose single root holds only the
+ * `code` element (what `codeSectionInstance` builds), or a bare `code` root.
+ * A tree that merely contains a code element somewhere, such as a header with
+ * a code top bar moved into it, is a tree section, so its other elements stay
+ * editable.
+ */
+export function codeSectionNode(nodes: readonly ComponentNode[] | undefined): ComponentNode | null {
+  if (!nodes || nodes.length !== 1) return null;
+  const root = nodes[0]!;
+  if (root.type === "code") return root;
+  const only = root.children ?? [];
+  return only.length === 1 && only[0]!.type === "code" ? only[0]! : null;
+}
+
 const defaultCodeProps: CodePropsBuilder = (file, rest) => {
   const split = splitSectionFile(file);
   const normalized = normalizeCodeNodeProps(
@@ -540,7 +555,7 @@ export function applySectionOps<T extends { sections: SectionInstance[] }>(
     section: SectionInstance,
     replace: (s: SectionInstance) => SectionInstance[],
   ): Step {
-    const node = findCodeNode(section.componentTree);
+    const node = codeSectionNode(section.componentTree);
     if (!node) return reject("not_code_section");
     const current = normalizeCodeNodeProps(node.props).props;
     const file = op.file ?? joinSectionFile({ source: current.source, css: current.css ?? "", schema: current.schema });

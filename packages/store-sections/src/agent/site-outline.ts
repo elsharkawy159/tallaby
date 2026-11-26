@@ -7,7 +7,7 @@
  */
 import type { ComponentNode, SectionInstance, SiteLocale } from "../config/schema";
 import { getElementDefinition } from "../elements/registry";
-import { findCodeNode, sectionImageSrcs, textPropsOf } from "./section-ops";
+import { codeSectionNode, sectionImageSrcs, textPropsOf } from "./section-ops";
 import { promptText } from "./serialize";
 
 export const MAX_SITE_OUTLINE_SECTIONS = 40;
@@ -32,7 +32,7 @@ export function sectionDisplayName(section: SectionInstance, locale: SiteLocale)
     const label = overlay(root.props ?? {}, locale, "label") ?? root.props?.label;
     if (typeof label === "string" && label.trim()) return label.trim().slice(0, MAX_NAME);
   }
-  const code = findCodeNode(section.componentTree);
+  const code = codeSectionNode(section.componentTree);
   if (code && typeof code.props?.name === "string" && code.props.name.trim()) return code.props.name.trim().slice(0, MAX_NAME);
   return section.sectionId.slice(0, MAX_NAME);
 }
@@ -55,7 +55,7 @@ function firstText(nodes: readonly ComponentNode[], defaultLocale: SiteLocale): 
 }
 
 function codeSummary(section: SectionInstance, defaultLocale: SiteLocale): string {
-  const code = findCodeNode(section.componentTree);
+  const code = codeSectionNode(section.componentTree);
   const settings = isBag(code?.props?.settings) ? code.props.settings : {};
   for (const value of Object.values(settings)) {
     if (typeof value === "string" && value.trim() && !/^(https?:|\/|#)/.test(value)) return value;
@@ -65,7 +65,7 @@ function codeSummary(section: SectionInstance, defaultLocale: SiteLocale): strin
 }
 
 export function siteOutlineEntry(section: SectionInstance, defaultLocale: SiteLocale): SiteOutlineEntry {
-  const code = findCodeNode(section.componentTree) !== null;
+  const code = codeSectionNode(section.componentTree) !== null;
   return {
     id: section.id,
     name: sectionDisplayName(section, defaultLocale),

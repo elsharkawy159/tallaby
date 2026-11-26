@@ -13,7 +13,7 @@ import { capUtf8, normalizeCodeNodeProps, utf8Length } from "../code/code-node";
 import { joinSectionFile } from "../code/section-file";
 import { getElementDefinition } from "../elements/registry";
 import { normalizeStyle } from "../elements/style";
-import { findCodeNode, imageFieldOf, sectionBackgroundImage, textPropsOf } from "./section-ops";
+import { codeSectionNode, imageFieldOf, sectionBackgroundImage, textPropsOf } from "./section-ops";
 
 /** Photo srcs are shown whole (up to this), so set_image can name one exactly. */
 const MAX_SRC_IN_PROMPT = 400;
@@ -105,7 +105,7 @@ function countAll(nodes: readonly ComponentNode[]): number {
 
 /** A code section: its joined file and current values, at most `MAX_CODE_PROMPT_BYTES`; `truncated` when the file didn't fit. */
 export function serializeCodeSection(section: SectionInstance): { text: string; truncated: boolean } {
-  const node = findCodeNode(section.componentTree);
+  const node = codeSectionNode(section.componentTree);
   if (!node) return { text: serializeTreeSection(section, "ar"), truncated: false };
   const props = normalizeCodeNodeProps(node.props).props;
   const file = joinSectionFile({ source: props.source, css: props.css ?? "", schema: props.schema });
@@ -126,7 +126,7 @@ export function serializeCodeSection(section: SectionInstance): { text: string; 
 }
 
 export function isCodeSection(section: SectionInstance): boolean {
-  return findCodeNode(section.componentTree) !== null;
+  return codeSectionNode(section.componentTree) !== null;
 }
 
 export type OutlineEntry = { id: string; name: string; kind: string };

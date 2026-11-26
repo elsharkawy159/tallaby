@@ -6,7 +6,7 @@
  * before anything changes. Pure.
  */
 import type { PageContent, SectionInstance } from "@workspace/store-sections";
-import { findCodeNode } from "@workspace/store-sections/agent";
+import { codeSectionNode } from "@workspace/store-sections/agent";
 import { findPath, storeSectionRegistry } from "@workspace/store-sections/render";
 import type { SectionRef, Selection } from "../state/editor.store";
 import { nodeLabel, refOf } from "./editor-selection.lib";
@@ -43,7 +43,7 @@ export function sectionKey(ref: SectionRef): string {
 
 /** "tree" for an element tree, "code" for a code section (a tree holding a `code` element). */
 export function sectionKindOf(instance: SectionInstance): AgentSectionKind {
-  return findCodeNode(instance.componentTree) ? "code" : "tree";
+  return codeSectionNode(instance.componentTree) ? "code" : "tree";
 }
 
 /** The section's name: its tree root's name, else its code element's name, else the section type's name. */
@@ -51,7 +51,7 @@ export function sectionNameOf(instance: SectionInstance, uiLocale: string): stri
   const root = instance.componentTree?.[0];
   const rootName = root ? nodeLabel(root, uiLocale).trim() : "";
   if (rootName) return rootName;
-  const code = findCodeNode(instance.componentTree);
+  const code = codeSectionNode(instance.componentTree);
   const codeName = code ? nodeLabel(code, uiLocale).trim() : "";
   if (codeName) return codeName;
   const definition = storeSectionRegistry.get(instance.sectionId);
