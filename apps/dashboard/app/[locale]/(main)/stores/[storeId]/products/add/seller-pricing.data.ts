@@ -1,4 +1,4 @@
-import { getSellerProfile } from "@/actions/seller";
+import { getSellerProfile } from "@/lib/sellers/seller-profile.server";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { DEFAULT_COMMISSION_RATE, type SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 

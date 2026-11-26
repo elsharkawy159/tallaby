@@ -4,28 +4,13 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { getTranslations } from "next-intl/server";
-import {
-  getSellerDocuments,
-  getSellerProfile,
-  uploadSellerDocument,
-  updateSellerProfile,
-} from "@/actions/seller";
+import { uploadSellerDocument, updateSellerProfile } from "@/actions/seller";
 import { getSessionUser } from "@/lib/auth/session.server";
 import { sellerProfileSchema } from "./seller-settings.schema";
 import { isOwnSellerDocumentUrl } from "./seller-documents.lib";
 
-export async function fetchSellerSettings() {
-  const [profileRes, docsRes] = await Promise.all([
-    getSellerProfile(),
-    getSellerDocuments(),
-  ]);
-
-  return {
-    profile: profileRes.success ? profileRes.data : null,
-    documents: docsRes.success ? docsRes.data : [],
-    error: !profileRes.success ? profileRes.error : null,
-  };
-}
+// fetchSellerSettings moved to seller-settings.data.tsx: an export of this
+// "use server" file is a public action, and it returned the full sellers row.
 
 export async function handleUpdateSellerProfile(input: unknown) {
   const t = await getTranslations("settings.messages");

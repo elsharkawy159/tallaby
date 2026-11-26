@@ -11,7 +11,7 @@ import { getProduct } from "@/actions/products";
 import { getAllCategories } from "@/actions/categories";
 import { EditProduct } from "./edit-product";
 import { buildEditDefaultValues } from "./edit-product.lib";
-import { getSellerProfile } from "@/actions/seller";
+import { getSellerProfile } from "@/lib/sellers/seller-profile.server";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
 import { loadProductStorePage, taxonomyScopeOf } from "@/lib/products/product-store.server";

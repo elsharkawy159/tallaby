@@ -21,27 +21,8 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { getUser } from "./auth";
 
 
-export async function getSellerProfile() {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const seller = await db.query.sellers.findFirst({
-      where: eq(sellers.id, session.user.id),
-    });
-
-    if (!seller) {
-      throw new Error("Seller profile not found");
-    }
-
-    return { success: true, data: seller };
-  } catch (error) {
-    console.error("Error fetching seller profile:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
+// getSellerProfile moved to lib/sellers/seller-profile.server.ts: as an export
+// of this "use server" file it was a public action returning the full row.
 
 export async function updateSellerProfile(data: {
   businessName?: string;

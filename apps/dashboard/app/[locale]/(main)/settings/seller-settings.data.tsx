@@ -1,5 +1,6 @@
 import { storeUrl } from "@workspace/lib/storefront";
-import { fetchSellerSettings } from "./seller-settings.server";
+import { getSellerDocuments } from "@/actions/seller";
+import { getSellerProfile } from "@/lib/sellers/seller-profile.server";
 import type { SellerSettingsInitialData } from "./seller-settings.types";
 import { SellerSettingsForm } from "./seller-settings.client";
 import { StoreLinkSection } from "./store-link.client";
@@ -11,6 +12,20 @@ import { requireSeller } from "@/lib/auth/require-seller.server";
 import { DomainPageLink } from "./domain-page-link";
 import { PushAlertsSection } from "./push-alerts.client";
 import { getSellerPushPrefs, getVapidPublicKey } from "@/lib/push/push-alerts.server";
+
+/** Server-only read (not an action): the page narrows the row before the client sees it. */
+async function fetchSellerSettings() {
+  const [profileRes, docsRes] = await Promise.all([
+    getSellerProfile(),
+    getSellerDocuments(),
+  ]);
+
+  return {
+    profile: profileRes.success ? profileRes.data : null,
+    documents: docsRes.success ? docsRes.data : [],
+    error: !profileRes.success ? profileRes.error : null,
+  };
+}
 
 export async function SellerSettingsData() {
   const seller = await requireSeller();
