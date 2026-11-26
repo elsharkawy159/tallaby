@@ -277,6 +277,10 @@
       "types": "./src/http/rate-limit.lib.ts",
       "default": "./src/http/rate-limit.lib.ts"
     },
+    "./security/csp": {
+      "types": "./src/security/csp.lib.ts",
+      "default": "./src/security/csp.lib.ts"
+    },
     "./referrals": {
       "types": "./src/referrals/index.ts",
       "default": "./src/referrals/index.ts"

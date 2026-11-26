@@ -5,6 +5,7 @@ import { LOCALE_COOKIE, defaultLocale, resolveLocale } from "@/i18n/config";
 import { routing } from "@/i18n/routing";
 import { englishPreferenceRedirect, LOCALE_PREFERENCE_REDIRECT_HEADERS } from "@/lib/i18n/locale-preference.lib";
 import { REFERRAL_COOKIE, referralCookieOptions, referralCookieToSet } from "@workspace/lib/referrals";
+import { applyCsp, builderCsp, cspOriginOf, isStoreEditorPath } from "@workspace/lib/security/csp";
 
 /** Arabic unprefixed (rewritten to /ar/...), English under /en; never writes a cookie (i18n/routing.ts). */
 const handleI18nRouting = createMiddleware(routing);
@@ -42,6 +43,9 @@ async function route(request: NextRequest): Promise<NextResponse> {
   return updateSession(request, handleI18nRouting(request));
 }
 
+/** Its canvas and preview frames inherit it; the Supabase storage host is framed by a video-file playlist. */
+const BUILDER_CSP = builderCsp([cspOriginOf(process.env.NEXT_PUBLIC_SUPABASE_URL)].filter((o): o is string => o !== null));
+
 export async function proxy(request: NextRequest) {
   // if (
   //   process.env.NEXT_PUBLIC_MAINTENANCE_MODE &&
@@ -65,6 +69,9 @@ export async function proxy(request: NextRequest) {
   // Affiliate link (F-37): remember ?ref= for 60 days; the first link wins.
   const referral = referralCookieToSet(request.nextUrl.searchParams.get("ref"), request.cookies.get(REFERRAL_COOKIE)?.value);
   if (referral) response.cookies.set(REFERRAL_COOKIE, referral, referralCookieOptions(process.env.REFERRAL_COOKIE_DOMAIN));
+
+  // Builder CSP (F-101, lib/security/csp.lib.ts): the editor page only, both locales.
+  if (isStoreEditorPath(request.nextUrl.pathname)) applyCsp(response.headers, BUILDER_CSP);
 
   return response;
 }

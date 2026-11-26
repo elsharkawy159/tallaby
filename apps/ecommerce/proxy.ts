@@ -28,6 +28,7 @@ import {
 } from "@/lib/custom-domain-lookup";
 import { updateSession } from "./supabase/middleware";
 import { getClientCountry } from "@workspace/lib/http/client-ip";
+import { applyCsp, cspOriginOf, storefrontCsp } from "@workspace/lib/security/csp";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -69,9 +70,27 @@ async function wwwToApexRedirect(request: NextRequest, hostname: string): Promis
  * same path on tallaby.com. Every response from them is noindex. Every other
  * host goes straight to routeRequest, unchanged.
  */
+/**
+ * Storefront CSP (F-101, lib/security/csp.lib.ts): enforced object-src/base-uri
+ * plus a report-only frame-src/form-action. Set here, not in next.config
+ * headers(), because a store host (subdomain or any custom domain) is only
+ * known from the Host header at request time. Every store-host response gets
+ * it, so checkout and sign-in (which fall through to the i18n routing on an
+ * Arabic-default store) are covered too; tallaby.com is unchanged. The
+ * matcher already skips api/, _next assets and images; crawl files are left out.
+ * The Supabase storage host is framed by a video-file playlist.
+ */
+const STOREFRONT_CSP = storefrontCsp([cspOriginOf(process.env.NEXT_PUBLIC_SUPABASE_URL)].filter((o): o is string => o !== null));
+
+function withStorefrontCsp(request: NextRequest, response: NextResponse): NextResponse {
+  if (isMarketplaceHost(request.headers.get("host")) || isCrawlFilePath(request.nextUrl.pathname)) return response;
+  applyCsp(response.headers, STOREFRONT_CSP);
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   const site = platformSiteOf(request.headers.get("host"));
-  if (!site) return routeRequest(request);
+  if (!site) return withStorefrontCsp(request, await routeRequest(request));
   const response = platformSiteRedirect(site, request.nextUrl, SITE_URL) ?? (await routeRequest(request));
   return markPlatformSite(response);
 }
