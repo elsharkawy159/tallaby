@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HELP_SHORTCUTS, HELP_TOPICS, resolveHelpHref, resolveHelpLink } from "./help.lib";
+import { HELP_SHORTCUTS, HELP_TOPICS, ON_DELIVERY_ANSWER_FAQS, USD_ANSWER_FAQS, resolveHelpHref, resolveHelpLink } from "./help.lib";
 import en from "../../../../messages/en.json";
 import ar from "../../../../messages/ar.json";
 
@@ -27,6 +27,11 @@ describe("help links", () => {
         }
       }
       for (const link of HELP_SHORTCUTS) expect(messages.nav[link.nav]).toBeTypeOf("string");
+      for (const key of USD_ANSWER_FAQS) expect(messages.help.faqs[key]?.answerUsd).toBeTypeOf("string");
+      for (const key of ON_DELIVERY_ANSWER_FAQS) {
+        expect(USD_ANSWER_FAQS.has(key)).toBe(true);
+        expect(messages.help.faqs[key]?.answerOnDelivery).toBeTypeOf("string");
+      }
     }
   });
 });

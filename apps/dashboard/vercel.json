@@ -11,6 +11,7 @@
     { "path": "/api/cron/exchange-rate", "schedule": "5 */3 * * *" },
     { "path": "/api/cron/plan-renewals", "schedule": "20 5 * * *" },
     { "path": "/api/cron/manual-order-links", "schedule": "35 5 * * *" },
+    { "path": "/api/cron/aged-order-fees", "schedule": "40 5 * * *" },
     { "path": "/api/cron/top-up-reminders", "schedule": "50 * * * *" }
   ]
 }

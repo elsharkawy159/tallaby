@@ -8,7 +8,8 @@ import { PageContainer, PageHeader, Row, Rows, SectionCard, Tag } from "@/compon
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
-import { HELP_SHORTCUTS, HELP_TOPICS, HELP_VIDEOS, USD_ANSWER_FAQS, resolveHelpLink } from "./help.lib";
+import { HELP_SHORTCUTS, HELP_TOPICS, HELP_VIDEOS, ON_DELIVERY_ANSWER_FAQS, USD_ANSWER_FAQS, resolveHelpLink } from "./help.lib";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { ContactDesk, FaqBrowser, type FaqTopicView } from "./help.client";
 
 /**
@@ -17,18 +18,26 @@ import { ContactDesk, FaqBrowser, type FaqTopicView } from "./help.client";
  * The selected store only fills navigation links (never a write target).
  */
 export async function HelpData() {
-  const [seller, { selected }, t, tNav, billing, locale] = await Promise.all([
+  const [seller, { selected }, t, tNav, billing, locale, feeOnDelivery] = await Promise.all([
     requireSeller(),
     getSellerStores(),
     getTranslations("help"),
     getTranslations("nav"),
     getBillingState(),
     getLocale(),
+    isSwitchOn("fee_on_delivery"),
   ]);
   // Prices in the answers show in EGP at the live rate (owner, 2026-11-09).
   const usdPrice = (cents: number) => formatUsdPrice(cents, locale, billing.marketRate);
   const prices = { fee: usdPrice(FREE_ORDER_FEE_USD_CENTS), pro: usdPrice(PRO_MONTHLY_USD_CENTS), min: usdPrice(TOP_UP_MIN_USD_CENTS), max: usdPrice(TOP_UP_MAX_USD_CENTS) };
   const ctx = { storeId: selected?.id ?? null, builder: storeBuilderEnabled(seller.sellerId) };
+
+  const answerKey = (key: string) =>
+    !billing.usdLive || !USD_ANSWER_FAQS.has(key)
+      ? `faqs.${key}.answer`
+      : feeOnDelivery && ON_DELIVERY_ANSWER_FAQS.has(key)
+        ? `faqs.${key}.answerOnDelivery`
+        : `faqs.${key}.answerUsd`;
 
   const topics: FaqTopicView[] = HELP_TOPICS.map((topic) => ({
     key: topic.key,
@@ -38,7 +47,7 @@ export async function HelpData() {
       return {
         key: faq.key,
         question: t(`faqs.${faq.key}.question`),
-        answer: t(billing.usdLive && USD_ANSWER_FAQS.has(faq.key) ? `faqs.${faq.key}.answerUsd` : `faqs.${faq.key}.answer`, prices),
+        answer: t(answerKey(faq.key), prices),
         link: link ? { href: link.href, label: t("openPage", { page: tNav(link.nav) }) } : null,
       };
     }),

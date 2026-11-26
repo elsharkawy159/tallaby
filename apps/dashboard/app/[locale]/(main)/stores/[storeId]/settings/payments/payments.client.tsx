@@ -99,6 +99,7 @@ export function StorePaymentsSettings({
   easykashCallbackUrl,
   readOnly,
   usdLive,
+  feeOnDelivery = false,
 }: {
   /** The store's currency: the cash fee and maximum are in it. */
   money: MoneyUnit;
@@ -112,6 +113,8 @@ export function StorePaymentsSettings({
   readOnly: boolean;
   /** The USD switch (0136): the order fee is no longer EGP 5. */
   usdLive: boolean;
+  /** `fee_on_delivery` (owner, 2026-11-26): the order fee is taken when the order is delivered. */
+  feeOnDelivery?: boolean;
 }) {
   const t = useTranslations("storePayments");
   const tSetup = useTranslations("storeSetup");
@@ -260,7 +263,7 @@ export function StorePaymentsSettings({
           <Rows>{WALLETS.map(row)}</Rows>
         </SectionCard>
 
-        <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} usdLive={usdLive} currency={money.currency ?? DEFAULT_CURRENCY} easykashCallbackUrl={easykashCallbackUrl} />
+        <StoreGatewaysCard storeId={storeId} initial={gateways} readOnly={readOnly} usdLive={usdLive} feeOnDelivery={feeOnDelivery} currency={money.currency ?? DEFAULT_CURRENCY} easykashCallbackUrl={easykashCallbackUrl} />
 
         <SectionCard icon={Clock} tone="accent" title={t("soonTitle")} description={t("soonDescription")}>
           <ul className="flex flex-wrap gap-1.5">

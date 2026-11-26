@@ -14,6 +14,10 @@ export const PLATFORM_SWITCHES = [
   "code_sections",
   // The website editor AI agent (F-83c): off until the owner turns it on. A missing row reads as off, so it needs no migration.
   "editor_agent",
+  // The platform fee is taken when an order is delivered, or 14 days after it was created (owner, 2026-11-26).
+  // Off until the owner turns it on. A missing row reads as off, so it needs no migration. Also read in
+  // packages/db (FEE_ON_DELIVERY_SWITCH in wallet/fee-switch.ts), which cannot import this list.
+  "fee_on_delivery",
 ] as const;
 
 export type PlatformSwitchKey = (typeof PLATFORM_SWITCHES)[number];

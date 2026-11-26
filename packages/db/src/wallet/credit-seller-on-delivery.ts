@@ -1,10 +1,12 @@
-import { and, eq, isNull, ne, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, notInArray, sql } from "drizzle-orm";
 
 import type { db as dbType } from "../drizzle/database";
 import { logServerError } from "../log";
 import { orderItems, orders, sellerWallet, stores, walletTransactions } from "../drizzle/schema";
 import { postStoreWalletEntryOnce, STORE_WALLET_REFERENCE_TYPES } from "./store-wallet";
 import { orderPaysPlatformFee } from "./test-order.lib";
+import { AGED_FEE_CLOSED_LINE_STATUSES, orderOpenForAgedFee } from "./aged-fee.lib";
+import { readFeeOnDeliverySwitch } from "./fee-switch";
 
 type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
 
@@ -42,16 +44,41 @@ function heldSellers(metadata: unknown): Set<string> {
   );
 }
 
-type FeeMoment = "placed" | "delivered";
+/**
+ * When the fee is posted: `placed` (created, or a card order paid), `delivered`
+ * (that seller's part delivered) or `aged` (the daily job, 14 days after an
+ * order that was never closed; only while `fee_on_delivery` is on).
+ */
+type FeeMoment = "placed" | "delivered" | "aged";
+
+function linesWhere(orderId: string, moment: FeeMoment) {
+  if (moment === "delivered") {
+    return and(eq(orderItems.orderId, orderId), eq(orderItems.status, "delivered"), eq(orderItems.isRefunded, false));
+  }
+  if (moment === "aged") {
+    return and(
+      eq(orderItems.orderId, orderId),
+      notInArray(orderItems.status, [...AGED_FEE_CLOSED_LINE_STATUSES]),
+      sql`coalesce(${orderItems.isRefunded}, false) = false`
+    );
+  }
+  return and(eq(orderItems.orderId, orderId), ne(orderItems.status, "cancelled"));
+}
 
 /**
- * Posts each seller's EGP 5 `fee` for one order (PLAN.md §13.3, owner
- * 2026-10-31). The claim is `order:<orderId>` per seller and type, the same
- * at creation and at delivery, so a seller pays at most once per order.
- * No `sale` entry is ever posted: the order amount never enters the store
- * wallet (owner, 2026-10-31).
+ * Posts each seller's `fee` for one order (PLAN.md §13.3, owner 2026-10-31)
+ * and returns how many entries it posted. The claim is `order:<orderId>` per
+ * seller and type, the same at every moment, so a seller pays at most once
+ * per order. No `sale` entry is ever posted: the order amount never enters
+ * the store wallet (owner, 2026-10-31).
  */
-async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promise<void> {
+async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promise<number> {
+  // `aged` locks the order first, so a cancel or return committing meanwhile
+  // is waited for and then seen: the job never charges a just-closed order.
+  if (moment === "aged") {
+    await tx.select({ id: orders.id }).from(orders).where(eq(orders.id, orderId)).for("update");
+  }
+
   const lines: FeeLine[] = await tx
     .select({
       sellerId: orderItems.sellerId,
@@ -59,30 +86,35 @@ async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promis
       metadata: orderItems.metadata,
     })
     .from(orderItems)
-    .where(
-      moment === "delivered"
-        ? and(eq(orderItems.orderId, orderId), eq(orderItems.status, "delivered"), eq(orderItems.isRefunded, false))
-        : and(eq(orderItems.orderId, orderId), ne(orderItems.status, "cancelled"))
-    );
-  if (lines.length === 0) return;
+    .where(linesWhere(orderId, moment));
+  if (lines.length === 0) return 0;
 
   const [order] = await tx
-    .select({ metadata: orders.metadata, storeId: orders.storeId, isTest: orders.isTest })
+    .select({
+      metadata: orders.metadata,
+      storeId: orders.storeId,
+      isTest: orders.isTest,
+      status: orders.status,
+      paymentStatus: orders.paymentStatus,
+    })
     .from(orders)
     .where(eq(orders.id, orderId));
-  if (!order) return;
+  if (!order) return 0;
   // A test order (0155, F-76) pays no fee at any moment: placed, paid or delivered.
-  if (!orderPaysPlatformFee(order)) return;
+  if (!orderPaysPlatformFee(order)) return 0;
+  if (moment === "aged" && !orderOpenForAgedFee(order)) return 0;
 
   // Storefront orders carry their store; entries keep it for per-store reports.
   const [store] = order.storeId
     ? await tx.select({ sellerId: stores.sellerId }).from(stores).where(eq(stores.id, order.storeId))
     : [];
-  const held = moment === "placed" ? heldSellers(order.metadata) : new Set<string>();
+  // A held part pays only once it is delivered: never when placed, never through the job.
+  const held = moment === "delivered" ? new Set<string>() : heldSellers(order.metadata);
 
   const bySeller = new Map<string, FeeLine[]>();
   for (const line of lines) bySeller.set(line.sellerId, [...(bySeller.get(line.sellerId) ?? []), line]);
 
+  let posted = 0;
   for (const [sellerId, sellerLines] of bySeller) {
     // A held order (looks fake or duplicated) pays only once it is delivered.
     if (held.has(sellerId)) continue;
@@ -115,7 +147,7 @@ async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promis
         : 0;
     if (fee <= 0) continue;
 
-    await postStoreWalletEntryOnce(tx, {
+    const entry = await postStoreWalletEntryOnce(tx, {
       sellerId,
       storeId: store?.sellerId === sellerId ? order.storeId : null,
       orderId,
@@ -127,30 +159,43 @@ async function postOrderFees(tx: Tx, orderId: string, moment: FeeMoment): Promis
       description: "Tallaby platform fee",
       metadata: { chargedAt: moment },
     });
+    if (entry) posted += 1;
   }
+  return posted;
 }
 
 /**
- * The EGP 5 fee when an order is created (or, for a card order, when its
- * payment is confirmed). Sellers whose part is held (fake or duplicate,
+ * The fee when an order is created (or, for a card order, when its payment is
+ * confirmed). Sellers whose part is held (fake or duplicate,
  * `orders.metadata.feeHolds`) are skipped; delivery charges them.
+ *
+ * While the `fee_on_delivery` switch is on (owner, 2026-11-26) it charges
+ * nothing: the fee waits for delivery or the 14-day job. The switch is read
+ * inside the same savepoint, so every placement and payment path (checkout,
+ * card callbacks, seller gateways, manual order links) follows it with no
+ * change at the caller.
  *
  * Never fails the order: it runs in a savepoint and a failure is only logged
  * as `[fee]`; the delivery charge then takes the fee instead.
  */
 export async function chargeOrderPlacementFee(tx: Tx, orderId: string): Promise<void> {
   try {
-    await tx.transaction((sp) => postOrderFees(sp as unknown as Tx, orderId, "placed"));
+    await tx.transaction(async (sp) => {
+      const savepoint = sp as unknown as Tx;
+      if ((await readFeeOnDeliverySwitch(savepoint)).on) return;
+      await postOrderFees(savepoint, orderId, "placed");
+    });
   } catch (error) {
     logServerError("fee", "placement fee failed", { orderId }, error);
   }
 }
 
 /**
- * Called from every delivered path (shipping app, seller shipments, admin)
- * inside their transaction. Posts the fee for any seller not charged yet
- * (held orders, card orders whose payment never confirmed, orders placed
- * before 2026-10-31); the shared claim makes it a no-op otherwise.
+ * Called from every delivered path (shipping app, seller shipments, admin,
+ * the dashboard's line status action) inside their transaction. Posts the fee
+ * for any seller not charged yet (held orders, card orders whose payment never
+ * confirmed, orders placed before 2026-10-31, and every order while
+ * `fee_on_delivery` is on); the shared claim makes it a no-op otherwise.
  *
  * A failure is logged as `[fee]` (P9-03) and rethrown, so the caller's
  * transaction (the delivered status change) rolls back as before.
@@ -162,4 +207,15 @@ export async function creditSellerOnDelivery(tx: Tx, orderId: string): Promise<v
     logServerError("fee", "delivery fee failed", { orderId }, error);
     throw error;
   }
+}
+
+/**
+ * The 14-day charge for one order (aged-order-fees.ts runs it daily while
+ * `fee_on_delivery` is on). Same claim as placement and delivery, so it never
+ * charges a seller twice; held parts, test orders and closed orders pay
+ * nothing. Returns how many fee entries it posted. Errors are thrown: the job
+ * logs them and goes on with the next order.
+ */
+export async function chargeAgedOrderFee(tx: Tx, orderId: string): Promise<number> {
+  return postOrderFees(tx, orderId, "aged");
 }

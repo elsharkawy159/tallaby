@@ -103,13 +103,18 @@ export const APP_SETTINGS_SCREENS: Record<AppSettingsRoute, (ctx: AppSettingsCon
 
   // F-39 / F-100: the same card as Store settings › Payment methods, showing only this gateway (Tallaby Pay: Turn on / off).
   gateway: async ({ store, manifest, readOnly }) => {
-    const [{ usdLive }, overview] = await Promise.all([getBillingState(), getStoreGatewayOverview(store.sellerId, store.id)]);
+    const [{ usdLive }, overview, feeOnDelivery] = await Promise.all([
+      getBillingState(),
+      getStoreGatewayOverview(store.sellerId, store.id),
+      isSwitchOn("fee_on_delivery"),
+    ]);
     return (
       <StoreGatewaysCard
         storeId={store.id}
         initial={overview ?? { connected: null, webhooksReady: false, tallabyPay: { ...TALLABY_PAY_DEFAULT_SETTINGS } }}
         readOnly={readOnly}
         usdLive={usdLive}
+        feeOnDelivery={feeOnDelivery}
         currency={parseStoreCurrency(store.settings).currency ?? DEFAULT_CURRENCY}
         only={[manifest.id]}
         // The store was loaded for the session seller, so this is their own URL (never from the client).

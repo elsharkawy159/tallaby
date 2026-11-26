@@ -24,6 +24,9 @@ import { GATEWAY_FIELDS } from "./gateways.dto";
 /** Tallaby Pay first, then Paymob, Kashier, EasyKash and PayPal: the catalog's payments group. */
 const GATEWAYS = storeAppsInGroup("payments");
 
+/** The "how it works" line about Tallaby's order fee: EGP 5, the USD plan fee, or the plan fee on delivery. */
+type GatewayFeeKey = "howItWorks.fee" | "howItWorks.feeUsd" | "howItWorks.feeUsdOnDelivery";
+
 /**
  * Store settings › Payment methods › Online card payments (ROADMAP.md F-39):
  * Tallaby Pay (F-100: no keys, turned on with its terms, paid to the store's
@@ -36,6 +39,7 @@ export function StoreGatewaysCard({
   initial,
   readOnly,
   usdLive,
+  feeOnDelivery = false,
   currency,
   only,
   easykashCallbackUrl = null,
@@ -44,6 +48,8 @@ export function StoreGatewaysCard({
   initial: StoreGatewayOverview;
   readOnly: boolean;
   usdLive: boolean;
+  /** `fee_on_delivery` (owner, 2026-11-26): the order fee is taken when the order is delivered. */
+  feeOnDelivery?: boolean;
   /** The store's currency: a gateway that can't charge in it can't be connected or used. */
   currency: string;
   /** App Center › <gateway> › Settings shows just that gateway (F-93); Payment methods shows them all. */
@@ -54,6 +60,7 @@ export function StoreGatewaysCard({
   const t = useTranslations("storePayments.gateways");
   const tApp = useTranslations("storeApps.providers");
   const router = useRouter();
+  const feeKey: GatewayFeeKey = !usdLive ? "howItWorks.fee" : feeOnDelivery ? "howItWorks.feeUsdOnDelivery" : "howItWorks.feeUsd";
   const [overview, setOverview] = useState(initial);
   const [editing, setEditing] = useState<StoreGatewayProvider | null>(null);
   const [confirming, setConfirming] = useState<StoreGatewayProvider | null>(null);
@@ -239,7 +246,7 @@ export function StoreGatewaysCard({
         <TallabyPaySheet
           storeId={storeId}
           settings={overview.tallabyPay}
-          feeKey={usdLive ? "howItWorks.feeUsd" : "howItWorks.fee"}
+          feeKey={feeKey}
           onClose={() => setTurningOn(false)}
           onTurnedOn={(next) => {
             setOverview(next);
@@ -251,7 +258,7 @@ export function StoreGatewaysCard({
       )}
       {editing && (
         <GatewaySheet
-          feeKey={usdLive ? "howItWorks.feeUsd" : "howItWorks.fee"}
+          feeKey={feeKey}
           key={editing}
           provider={editing}
           storeId={storeId}
@@ -339,7 +346,7 @@ function TallabyPaySheet({
 }: {
   storeId: string;
   settings: StoreGatewayOverview["tallabyPay"];
-  feeKey: "howItWorks.fee" | "howItWorks.feeUsd";
+  feeKey: GatewayFeeKey;
   onClose: () => void;
   onTurnedOn: (overview: StoreGatewayOverview) => void;
 }) {
@@ -452,7 +459,7 @@ function GatewaySheet({
   feeKey,
   callbackUrl,
 }: {
-  feeKey: "howItWorks.fee" | "howItWorks.feeUsd";
+  feeKey: GatewayFeeKey;
   /** EasyKash only: the URL the seller pastes in EasyKash (server-computed). */
   callbackUrl: string | null;
   provider: StoreGatewayProvider;

@@ -7,6 +7,7 @@ import { getStoreGatewayOverview } from "@workspace/lib/payments/store-gateways/
 import { TALLABY_PAY_DEFAULT_SETTINGS } from "@workspace/lib/tallaby-pay";
 import { requireStore } from "@/lib/auth/require-seller.server";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { StorePaymentsSettings } from "./payments.client";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
@@ -19,12 +20,12 @@ export default async function StorePaymentsPage({ params }: { params: Promise<{ 
   const payments = parseStorePayments((store.settings as Record<string, unknown> | null)?.payments);
   // loadStorePage already handled access; this only reads the session seller.
   const { seller } = await requireStore(store.id);
-  const { usdLive } = await getBillingState();
+  const [{ usdLive }, feeOnDelivery] = await Promise.all([getBillingState(), isSwitchOn("fee_on_delivery")]);
   const gateways = (await getStoreGatewayOverview(seller.sellerId, store.id)) ?? {
     connected: null,
     webhooksReady: false,
     tallabyPay: { ...TALLABY_PAY_DEFAULT_SETTINGS },
   };
 
-  return <StorePaymentsSettings money={parseStoreCurrency(store.settings)} usdLive={usdLive} storeId={store.id} initial={payments} initialDeposit={parseCodDeposit(store.settings)} gateways={gateways} easykashCallbackUrl={easykashCallbackUrl(seller.sellerId)} readOnly={store.status !== "active"} />;
+  return <StorePaymentsSettings money={parseStoreCurrency(store.settings)} usdLive={usdLive} feeOnDelivery={feeOnDelivery} storeId={store.id} initial={payments} initialDeposit={parseCodDeposit(store.settings)} gateways={gateways} easykashCallbackUrl={easykashCallbackUrl(seller.sellerId)} readOnly={store.status !== "active"} />;
 }

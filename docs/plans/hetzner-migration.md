@@ -144,7 +144,10 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
   | Exchange rate        | `/api/cron/exchange-rate`        | `5 */3 * * *`  | 30 s                |
   | Plan renewals        | `/api/cron/plan-renewals`        | `20 5 * * *`   | 300 s               |
   | Manual order links   | `/api/cron/manual-order-links`   | `35 5 * * *`   | 300 s               |
+  | Aged order fees      | `/api/cron/aged-order-fees`      | `40 5 * * *`   | 300 s               |
   | Top-up reminders     | `/api/cron/top-up-reminders`     | `50 * * * *`   | 60 s                |
+
+  `aged-order-fees` (added 2026-11-26, fee on delivery, PLAN.md §13.3) is **not a Coolify task yet**: the owner adds it on the dashboard app (same command, timeout 330 s). It does nothing while `fee_on_delivery` is off, so adding it early is safe.
 
 - **External callers** (WAF skip list, §5): Supabase Database Webhook on `seller_notifications` INSERT → `POST /api/cron/seller-push` (Bearer `CRON_SECRET`, so the webhook header must match the Coolify value); MCP OAuth `/.well-known/oauth-authorization-server`, `/oauth/authorize` (page), `/api/oauth/register|token|revoke`; Supabase Auth redirects to `/api/auth/callback`; Google OAuth redirects to `/api/integrations/google/callback` (redirect URI built from the request origin, so the proxy must pass `Host` and `X-Forwarded-Proto: https`); `/api/revalidate` (cache broadcast from the other apps, `REVALIDATE_SECRET`); `/api/email/setup-reminders/unsubscribe` (links in emails). Payment and Bosta webhooks go to `api.tallaby.com` (backend), not the dashboard.
 - **Vercel assumptions:** `maxDuration` is ignored self-hosted (no limit; Traefik/Coolify timeouts apply, keep them ≥ 300 s for the long crons, `marketing/emails` and the AI routes); `after()` runs in the same Node process; image optimization runs on our CPU (`sharp`); no ISR/`revalidate` exports; `VERCEL` only sizes the DB pool.

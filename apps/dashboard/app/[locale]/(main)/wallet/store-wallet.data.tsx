@@ -19,6 +19,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
 import { cn } from "@workspace/ui/lib/utils";
 import { getBillingState } from "@workspace/lib/billing/server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { EmptyState, IconTile, Note, Row, Rows, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { loadOrderLock } from "@/lib/auth/require-seller.server";
 import { formatDate } from "@/lib/i18n/format";
@@ -58,7 +59,7 @@ export async function StoreWalletSection({
   openTopUp?: boolean;
 }) {
   const { ordersLocked: locked } = await loadOrderLock(sellerId);
-  const [overview, rows, topUps, gift, t, tStatus, locale, billing] = await Promise.all([
+  const [overview, rows, topUps, gift, t, tStatus, locale, billing, feeOnDelivery] = await Promise.all([
     getStoreWalletOverview(sellerId),
     listStoreWalletEntries(sellerId, { filter, before, hideSales: locked }),
     listManualStoreTopUps(sellerId),
@@ -68,6 +69,8 @@ export async function StoreWalletSection({
     getTranslations("status"),
     getLocale(),
     getBillingState(),
+    // The fee is taken on delivery (or after 14 days) while this is on (owner, 2026-11-26).
+    isSwitchOn("fee_on_delivery"),
   ]);
   if (!overview) return null;
   const usd = overview.currency === "USD";
@@ -340,7 +343,7 @@ export async function StoreWalletSection({
                 />
               </summary>
               <p className="mt-2.5 text-pretty text-[12.5px] leading-[1.8] text-(--s-muted)">
-                {usd ? t("howUsd", { fee: money(FEE_PER_ORDER_USD) }) : t("how")}
+                {usd ? t(feeOnDelivery ? "howUsdOnDelivery" : "howUsd", { fee: money(FEE_PER_ORDER_USD) }) : t("how")}
               </p>
               {usd && (
                 <ul className="mt-2.5 flex flex-col gap-1.5 text-[12.5px] text-(--s-muted)">

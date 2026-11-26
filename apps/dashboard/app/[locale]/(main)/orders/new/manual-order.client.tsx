@@ -45,7 +45,18 @@ function useDebounced<T>(value: T, ms: number): T {
   return debounced;
 }
 
-export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: MoneyUnit; storeId: string; storeName: string }) {
+export function ManualOrderForm({
+  money: unit,
+  storeId,
+  storeName,
+  feeOnDelivery = false,
+}: {
+  money?: MoneyUnit;
+  storeId: string;
+  storeName: string;
+  /** `fee_on_delivery` (owner, 2026-11-26): the fee is taken on delivery, not when the customer confirms. */
+  feeOnDelivery?: boolean;
+}) {
   const t = useTranslations("manualOrder");
   const locale = useLocale();
   const router = useRouter();
@@ -355,7 +366,7 @@ export function ManualOrderForm({ money: unit, storeId, storeName }: { money?: M
               {t("sendLink")}
             </SellerButton>
           )}
-          {payment === "cod" && <p className="text-pretty text-xs text-(--s-subtle)">{t("sendLinkHint")}</p>}
+          {payment === "cod" && <p className="text-pretty text-xs text-(--s-subtle)">{t(feeOnDelivery ? "sendLinkHintOnDelivery" : "sendLinkHint")}</p>}
         </div>
       </SellerCard>
     </div>

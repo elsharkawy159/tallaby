@@ -37,6 +37,9 @@ const L = {
 /** FAQs whose answer changes at the USD switch: they have an `answerUsd` too. */
 export const USD_ANSWER_FAQS: ReadonlySet<string> = new Set(["fees", "topUp"]);
 
+/** USD FAQs whose answer changes while the fee is taken on delivery (`fee_on_delivery`, owner 2026-11-26): they have an `answerOnDelivery` too. */
+export const ON_DELIVERY_ANSWER_FAQS: ReadonlySet<string> = new Set(["fees"]);
+
 export const HELP_TOPICS: HelpTopic[] = [
   {
     key: "start",

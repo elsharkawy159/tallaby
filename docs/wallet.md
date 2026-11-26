@@ -225,3 +225,20 @@ without the snapshot are untouched.
 ## 14. Affiliate commissions are not a wallet (2026-10-29)
 
 The Tallaby affiliate program (ROADMAP.md F-37, migration 0117) keeps its own ledger: `referral_commissions` (since 2026-11-12, 0168: one EGP 100 `signup_bonus` row per referred seller, on the succeeded top-up that takes their total to $5; before that, `percent` rows of 20–25 % of each succeeded top-up, unique per `top_up_id`) and `referral_payouts` (cash withdrawals an admin pays by hand). It is posted inside the top-up success transaction but never writes `user_wallets`, `seller_wallet`, `wallet_transactions` or calls `postStoreWalletEntry`. Code: `packages/lib/src/referrals/`.
+
+## 15. When the order fee is taken: the `fee_on_delivery` switch (2026-11-26)
+
+Seller (store) wallet, not the user wallet. Owner-approved 2026-11-26 (`PLAN.md` §13.1, §13.3), off until the owner turns
+the `fee_on_delivery` row on in `platform_switches` (a missing row is off; no migration).
+
+- **Off:** unchanged. `chargeOrderPlacementFee` posts the fee when the order is created (card orders: when paid), held
+  (fake or duplicate) parts pay on delivery.
+- **On:** `chargeOrderPlacementFee` reads the switch in its savepoint and posts nothing. `creditSellerOnDelivery` posts
+  the fee when a seller's lines are delivered (every delivered path calls it). The daily dashboard cron
+  `/api/cron/aged-order-fees` (`chargeAgedOrderFees`, `packages/db/src/wallet/aged-order-fees.ts`) charges orders
+  created since `changed_at` that are still not cancelled, returned or refunded 14 days after creation; held parts,
+  test orders and zero-fee (Pro, trial, exempt) parts are skipped. Entries carry `metadata.chargedAt` =
+  `placed | delivered | aged`.
+- Every moment posts through `postStoreWalletEntryOnce` with the same `order:<orderId>` claim per seller and type, so a
+  seller pays at most once per order whichever moment comes first, and an order charged before the switch is never
+  charged again. The wallet may go negative, as for every fee.

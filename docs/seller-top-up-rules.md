@@ -73,3 +73,8 @@ shorten it.
 - A store the seller unpublished themselves stays offline until they publish it.
 - A never-published store still needs a template and one published product, or
   the seller's Publish button, to go live (`CLAUDE.md` rule 12).
+- When the order fee is taken is a wallet rule, not a top-up rule: while the
+  `fee_on_delivery` switch is on (owner, 2026-11-26), it is taken when the order
+  is delivered, or 14 days after it was created if still open, instead of when
+  it is created (`PLAN.md` §13.1, §13.3; `docs/wallet.md` §15). The trial,
+  activation and offline rules above are the same either way.

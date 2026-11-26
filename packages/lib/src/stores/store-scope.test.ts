@@ -31,7 +31,7 @@ const PRODUCT = "33333333-3333-4333-8333-333333333333";
 
 describe("platform switch keys", () => {
   it("knows exactly the two F-87 switches, the Tallaby Pay launch switch and the code sections switch", () => {
-    expect(PLATFORM_SWITCHES).toEqual(["stores_catalog_split", "stores_wallet_split", "tallaby_pay_live", "code_sections", "editor_agent"]);
+    expect(PLATFORM_SWITCHES).toEqual(["stores_catalog_split", "stores_wallet_split", "tallaby_pay_live", "code_sections", "editor_agent", "fee_on_delivery"]);
     expect(isPlatformSwitchKey("stores_catalog_split")).toBe(true);
     expect(isPlatformSwitchKey("stores_wallet_split")).toBe(true);
     expect(isPlatformSwitchKey("tallaby_pay_live")).toBe(true);

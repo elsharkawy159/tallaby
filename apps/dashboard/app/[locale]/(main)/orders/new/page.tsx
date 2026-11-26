@@ -6,6 +6,7 @@ import { IconTile, PageContainer, PageHeader, Row, Rows } from "@/components/sel
 import { currentOrderLock, requireSeller } from "@/lib/auth/require-seller.server";
 import { loadStoreMoney } from "@/lib/stores/account-money.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { ManualOrderForm } from "./manual-order.client";
 import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
 
@@ -18,11 +19,13 @@ export default async function NewManualOrderPage({ searchParams }: { searchParam
   const lock = await currentOrderLock();
   if (lock.ordersLocked) return <OrdersLocked lock={lock} />;
 
-  const [seller, { store: storeParam }, { stores }, t] = await Promise.all([
+  const [seller, { store: storeParam }, { stores }, t, feeOnDelivery] = await Promise.all([
     requireSeller(),
     searchParams,
     getSellerStores(),
     getTranslations("manualOrder"),
+    // The fee waits for delivery (or 14 days) while this is on (owner, 2026-11-26).
+    isSwitchOn("fee_on_delivery"),
   ]);
   const storeMoney = stores.length > 0 ? await loadStoreMoney(seller.sellerId) : {};
   const wanted = Array.isArray(storeParam) ? storeParam[0] : storeParam;
@@ -36,7 +39,7 @@ export default async function NewManualOrderPage({ searchParams }: { searchParam
         actions={<TutorialVideoButton video="T-18" />}
       />
       {store ? (
-        <ManualOrderForm money={storeMoney[store.id]} storeId={store.id} storeName={store.name} />
+        <ManualOrderForm money={storeMoney[store.id]} storeId={store.id} storeName={store.name} feeOnDelivery={feeOnDelivery} />
       ) : (
         <Rows>
           {stores.map((s) => (

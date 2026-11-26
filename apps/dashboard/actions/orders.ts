@@ -4,6 +4,7 @@ import { getOrderLock } from "@workspace/lib/billing/order-lock";
 import { db } from "@workspace/db";
 import { orders, orderItems, shipments } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
+import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { getUser } from "./auth";
 
 export async function getSellerOrders(params?: {
@@ -175,28 +176,34 @@ export async function updateOrderItemStatus(
       throw new Error("Unauthorized");
     }
 
-    const updatedItem = await db
-      .update(orderItems)
-      .set({
-        status,
-        updatedAt: new Date().toISOString(),
-        ...(status === "shipped"
-          ? { shippedAt: new Date().toISOString() }
-          : {}),
-        ...(status === "delivered"
-          ? { deliveredAt: new Date().toISOString() }
-          : {}),
-        ...(status === "cancelled"
-          ? { cancelledAt: new Date().toISOString() }
-          : {}),
-      })
-      .where(
-        and(
-          eq(orderItems.id, orderItemId),
-          eq(orderItems.sellerId, session.user.id)
+    // One transaction: a line marked delivered takes its platform fee with it,
+    // like every other delivered path (creditSellerOnDelivery; idempotent).
+    const updatedItem = await db.transaction(async (tx) => {
+      const rows = await tx
+        .update(orderItems)
+        .set({
+          status,
+          updatedAt: new Date().toISOString(),
+          ...(status === "shipped"
+            ? { shippedAt: new Date().toISOString() }
+            : {}),
+          ...(status === "delivered"
+            ? { deliveredAt: new Date().toISOString() }
+            : {}),
+          ...(status === "cancelled"
+            ? { cancelledAt: new Date().toISOString() }
+            : {}),
+        })
+        .where(
+          and(
+            eq(orderItems.id, orderItemId),
+            eq(orderItems.sellerId, session.user.id)
+          )
         )
-      )
-      .returning();
+        .returning();
+      if (status === "delivered" && rows[0]) await creditSellerOnDelivery(tx, rows[0].orderId);
+      return rows;
+    });
 
     if (!updatedItem.length) {
       throw new Error("Order item not found or unauthorized");
