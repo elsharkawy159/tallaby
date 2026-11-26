@@ -154,7 +154,7 @@ function scopeProduct(scope: DataRecord | undefined): LiquidProduct | null {
 }
 
 /** Resolves picked products and categories from the page's catalog: only records the host returned for this store. */
-function catalogLookup(nodeId: string, ctx: RenderContext) {
+function catalogLookup(nodeId: string, ctx: CodeScopeContext) {
   const picked = new Map((ctx.catalog.products[codeProductsKey(nodeId)] ?? []).map((p) => [p.id, p]));
   const products = new Map<string, LiquidProduct | null>();
   const collections = new Map<string, LiquidCollection | null>();
@@ -192,7 +192,7 @@ function catalogLookup(nodeId: string, ctx: RenderContext) {
 type Lookup = ReturnType<typeof catalogLookup>;
 
 /** Setting values in the request locale, with picks resolved; only the defined settings. */
-function localizeSettings(defs: readonly SettingDef[], values: Record<string, unknown>, ctx: RenderContext, lookup: Lookup): Record<string, unknown> {
+function localizeSettings(defs: readonly SettingDef[], values: Record<string, unknown>, ctx: CodeScopeContext, lookup: Lookup): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const def of defs) {
     if (!hasValue(def) || !Object.hasOwn(values, def.id)) continue;
@@ -253,8 +253,28 @@ function designSettings(ds: CodeSectionsContext["designSystem"]): Record<string,
   };
 }
 
-/** The Liquid data of one code node (design §4.3, §11.4). */
-export function buildCodeScope(node: ComponentNode, code: RenderableCodeProps, ctx: RenderContext, cs: CodeSectionsContext, scope: DataRecord | undefined): LiquidScope {
+/**
+ * What building a code node's Liquid data reads from the render context: the
+ * storefront passes its `RenderContext`, the editor preview (`preview-code.server.ts`)
+ * a context of the seller's own store.
+ */
+export type CodeScopeContext = Pick<RenderContext, "locale" | "dir" | "imageUrl"> & {
+  store: Pick<RenderContext["store"], "name" | "url" | "logoUrl">;
+  catalog: Pick<RenderContext["catalog"], "products" | "categories">;
+};
+
+/**
+ * The Liquid data of one code node (design §4.3, §11.4). `designMode`: the
+ * editor canvas draws it (`request.design_mode`); false on the storefront.
+ */
+export function buildCodeScope(
+  node: Pick<ComponentNode, "id">,
+  code: RenderableCodeProps,
+  ctx: CodeScopeContext,
+  cs: Pick<CodeSectionsContext, "pageType" | "currency" | "designSystem">,
+  scope: DataRecord | undefined,
+  options: { designMode?: boolean } = {},
+): LiquidScope {
   const lookup = catalogLookup(node.id, ctx);
   const shop = {
     name: ctx.store.name,
@@ -275,7 +295,7 @@ export function buildCodeScope(node: ComponentNode, code: RenderableCodeProps, c
     product: scopeProduct(scope),
     shop,
     store: shop,
-    request: { locale: ctx.locale, page_type: cs.pageType, design_mode: false },
+    request: { locale: ctx.locale, page_type: cs.pageType, design_mode: options.designMode === true },
     routes: { root_url: "/", collections_url: "/products", cart_url: "/cart", search_url: "/products" },
     settings: designSettings(cs.designSystem),
     localization: {

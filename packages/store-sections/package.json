@@ -23,6 +23,10 @@
       "types": "./src/code/render-code.server.tsx",
       "default": "./src/code/render-code.server.tsx"
     },
+    "./code-preview": {
+      "types": "./src/code/preview-code.server.ts",
+      "default": "./src/code/preview-code.server.ts"
+    },
     "./seo-keywords": {
       "types": "./src/config/seo-keywords.ts",
       "default": "./src/config/seo-keywords.ts"

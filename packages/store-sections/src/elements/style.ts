@@ -690,7 +690,7 @@ const CODE_CSS_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 export type CodeCssTarget = { scope: string; keyframePrefix: string; css: string };
 
 /** `c<id>-`, kept within the scoper's 41-character keyframe prefix (long ids keep their start plus a hash). */
-function codeKeyframePrefix(id: string): string {
+export function codeKeyframePrefix(id: string): string {
   const safe = id.replace(/[^A-Za-z0-9_-]/g, "");
   if (safe.length <= 39) return `c${safe}-`;
   let hash = 0x811c9dc5;

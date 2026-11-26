@@ -1,4 +1,4 @@
-import { and, db, desc, eq, isNull, productTranslations, products, sql, stores } from "@workspace/db";
+import { and, db, desc, eq, inArray, isNull, productTranslations, products, sql, stores } from "@workspace/db";
 import { productShownInStore, type StoreCatalogScope } from "@workspace/lib/stores/scope/server";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { parsePriceJson } from "@workspace/lib";
@@ -163,12 +163,15 @@ export async function loadEditorStoreData(sellerId: string, catalog: StoreCatalo
  * With `catalog`, only the products that store shows are listed (`productInStore`, scope
  * `shown`: its picks in selected catalog mode (D24), its own products after the split); null is the account.
  * With `salesStoreId`, units sold in that store's orders are loaded too (best sellers, trending).
+ * With `productIds`, only those products (still only ones the store shows) and no categories (the code preview's picks).
  */
 export async function loadEditorCatalog(
   sellerId: string,
   catalog: StoreCatalogScope | null,
-  options: { salesStoreId?: string } = {},
+  options: { salesStoreId?: string; productIds?: readonly string[] } = {},
 ): Promise<{ products: EditorProduct[]; categories: EditorCategory[]; salesFailed: boolean }> {
+  const onlyIds = options.productIds;
+  if (onlyIds && onlyIds.length === 0) return { products: [], categories: [], salesFailed: false };
   const salesFailed: "sales"[] = [];
   const salesStoreId = options.salesStoreId;
   const [sales90, sales14] = salesStoreId
@@ -202,6 +205,7 @@ export async function loadEditorCatalog(
         eq(products.sellerId, sellerId),
         eq(products.status, "active"),
         catalog ? productShownInStore(catalog) : undefined,
+        onlyIds ? inArray(products.id, [...onlyIds]) : undefined,
       ),
     )
     .orderBy(desc(products.createdAt))
@@ -230,6 +234,8 @@ export async function loadEditorCatalog(
       seasonal: row.isSeasonal === true,
     };
   });
+
+  if (onlyIds) return { salesFailed: salesFailed.length > 0, products: list, categories: [] };
 
   // The store's categories as the storefront shows them (seller categories, else Tallaby roots), in its order.
   const groups = await storeCategoryGroups(sellerId, catalog);

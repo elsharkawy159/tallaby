@@ -15,6 +15,7 @@ import { designSystemSchema, preferTemplatePresets, sectionInstanceSchema, type 
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { storeFontVariables } from "@/app/[locale]/(main)/stores/[storeId]/website/_components/store-fonts";
 import { toTemplateCardViews } from "@/app/[locale]/(main)/stores/[storeId]/website/templates/templates.lib";
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
@@ -45,7 +46,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  const [editor, status, catalog, gallery, presets, customDomain, previewProduct] = await Promise.all([
+  const [editor, status, catalog, gallery, presets, customDomain, previewProduct, codeSections] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
     loadEditorSnapshot(store.sellerId, store.id),
@@ -54,6 +55,8 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     findActiveCustomDomainForSubdomain(store.subdomain),
     // The product page canvas's product: the newest the store shows (uncached, store-checked).
     getStorePreviewProduct(store.sellerId, store.id, undefined, { locale: asLocale(store.defaultLocale) }).catch(() => null),
+    // Code sections (F-101e): the editor offers them only while the platform switch is on.
+    isSwitchOn("code_sections").catch(() => false),
   ]);
   // The store's live address: its active custom domain, else its subdomain.
   const liveUrl = storeUrl(store.subdomain, customDomain);
@@ -123,7 +126,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
 
   return (
     <SmallScreenNoticeFrame>
-      <SellerEditor initial={initial} />
+      <SellerEditor initial={initial} codeSections={codeSections} />
     </SmallScreenNoticeFrame>
   );
 }

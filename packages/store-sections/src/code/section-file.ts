@@ -33,8 +33,8 @@ function closeTag(name: BlockName): RegExp {
 
 type Found = { name: "stylesheet" | "schema" | "javascript"; start: number; end: number; contentStart: number; content: string };
 
-export function splitSectionFile(file: string): SectionFileParts & { issues: CodeIssue[] } {
-  const text = String(file ?? "");
+/** The stylesheet, schema and javascript blocks of a file, in order (not those inside raw or comment). */
+function scanSectionFile(text: string): { found: Found[]; issues: CodeIssue[] } {
   const issues: CodeIssue[] = [];
   const found: Found[] = [];
 
@@ -60,6 +60,12 @@ export function splitSectionFile(file: string): SectionFileParts & { issues: Cod
     if (name === "raw" || name === "comment") continue;
     found.push({ name, start: open, end: blockEnd, contentStart, content: text.slice(contentStart, end.index) });
   }
+  return { found, issues };
+}
+
+export function splitSectionFile(file: string): SectionFileParts & { issues: CodeIssue[] } {
+  const text = String(file ?? "");
+  const { found, issues } = scanSectionFile(text);
 
   let css = "";
   let schema: unknown = { ...DEFAULT_SECTION_SCHEMA, settings: [] };
@@ -219,6 +225,59 @@ function findJsonError(json: string): number | null {
   } catch (offset) {
     return typeof offset === "number" ? offset : null;
   }
+}
+
+/** 0-based offset of a 1-based line and column in `text` (the inverse of `positionAt`), clamped to the text. */
+function offsetAt(text: string, line: number, column: number): number {
+  let offset = 0;
+  for (let l = 1; l < line; l++) {
+    const next = text.indexOf("\n", offset);
+    if (next < 0) return text.length;
+    offset = next + 1;
+  }
+  return Math.min(offset + Math.max(column - 1, 0), text.length);
+}
+
+type FilePosition = { line: number; column: number };
+
+/**
+ * Maps positions in the parts `splitSectionFile` returns back to the file, so
+ * an editor can underline a Liquid or stylesheet problem in the file it shows
+ * (`checkCodeNode` positions issues in the stored `source` and `css`). Both
+ * take and return 1-based lines and columns.
+ */
+export function sectionFilePositions(file: string): {
+  fromSource(line: number, column: number): FilePosition;
+  fromCss(line: number, column: number): FilePosition;
+} {
+  const text = String(file ?? "");
+  const { found } = scanSectionFile(text);
+  // `source` is the file with every found block cut out: where each kept piece starts in both.
+  const pieces: Array<{ sourceStart: number; fileStart: number }> = [];
+  let source = "";
+  let cursor = 0;
+  for (const block of found) {
+    pieces.push({ sourceStart: source.length, fileStart: cursor });
+    source += text.slice(cursor, block.start);
+    cursor = block.end;
+  }
+  pieces.push({ sourceStart: source.length, fileStart: cursor });
+  source += text.slice(cursor);
+  const stylesheet = found.find((block) => block.name === "stylesheet");
+  const css = stylesheet ? stylesheet.content.trim() : "";
+  const cssStart = stylesheet ? stylesheet.contentStart + (stylesheet.content.length - stylesheet.content.trimStart().length) : 0;
+  return {
+    fromSource(line, column) {
+      const offset = offsetAt(source, line, column);
+      // The last piece starting at or before the offset (a cut block sits between two pieces).
+      let piece = pieces[0] as { sourceStart: number; fileStart: number };
+      for (const p of pieces) if (p.sourceStart <= offset) piece = p;
+      return positionAt(text, piece.fileStart + (offset - piece.sourceStart));
+    },
+    fromCss(line, column) {
+      return positionAt(text, cssStart + offsetAt(css, line, column));
+    },
+  };
 }
 
 export function joinSectionFile(parts: SectionFileParts): string {

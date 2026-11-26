@@ -29,6 +29,7 @@ import {
   updatePage,
 } from "./server/editor.server";
 import { importStockPhoto, searchStockPhotos } from "./server/explore.server";
+import { previewCodeNode } from "./server/code-preview.server";
 import { translateSiteWithAi } from "./server/ai-translate.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 import { usePublishNeedsProductToast } from "@/lib/stores/publish-needs-product.client";
@@ -53,9 +54,10 @@ const SELLER_CAPABILITIES: EditorCapabilities = {
  * server actions for one store. Built in the browser (server actions are
  * imported here), so no functions cross the server/client boundary. Every
  * action re-checks the store against the session seller; `storeId` is only
- * the URL's id.
+ * the URL's id. `codeSections`: the `code_sections` switch, read by the page;
+ * only then the adapter has `code` (Add › Code section and the Code tab).
  */
-export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<EditorCapabilities>): EditorAdapter {
+export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<EditorCapabilities>, codeSections = false): EditorAdapter {
   // Callers may pass a fresh object each render; the adapter changes only when a value does.
   const overridesKey = JSON.stringify(capabilities ?? {});
   // eslint-disable-next-line react-hooks/exhaustive-deps -- overridesKey stands for `capabilities`
@@ -114,7 +116,8 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
         import: (photoId) => importStockPhoto(storeId, photoId),
       },
       media: sellerMediaAdapter(storeId),
+      ...(codeSections && { code: { preview: (input) => previewCodeNode(storeId, input) } }),
     }),
-    [storeId, merged, router, needsProduct],
+    [storeId, merged, router, needsProduct, codeSections],
   );
 }
