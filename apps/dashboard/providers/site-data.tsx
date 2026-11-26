@@ -1,5 +1,5 @@
 "use client";
-import { getSiteData } from "@/actions/site-data";
+import type { getSiteData } from "@/actions/site-data";
 import { createContext, use, useContext } from "react";
 
 type SiteData = Awaited<ReturnType<typeof getSiteData>>;
