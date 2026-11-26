@@ -2138,6 +2138,32 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-26 — Edit with AI (F-83c, owner request; migration 0182 written, not applied)
+
+- **Built:**
+  - **`a06b0d26` (chooser):** `/editor` opens on a choice between "Edit with AI" and "Manual edit", in the Add product style. With AI off it opens the editor as before. Links that mean manual editing go to `?mode=manual`.
+  - **`2fa2c533` (server):** `editWithAiTurn`.
+    - **Routing:** code decides first; otherwise one cheap call picks the route and the section.
+    - **Site edits:** the editor agent runs on the stored draft, the ops are applied on the server, and the draft is saved with the version it loaded. A draft changed in another tab is refused. Undo works for 30 minutes (kept in memory).
+    - **Store data:** products, settings, shipping and theme go through the agent core's confirm cards. New products stay drafts unless the seller asks to publish.
+    - **Photos:** a new `set_image` op that accepts only the store's own media.
+    - **Uploads:** photos go into the media library; product files go into the `edit-with-ai-files` bucket (0182), and the import opens with `?aiFile=`.
+    - **Limits and cost:** 1 credit per changed site turn, 10 a minute, 60 a day (×10 on Pro). Measured about $0.0013 a request.
+  - **`c98b8b1f` (page):**
+    - Full-page chat with a live draft preview, the device toggle and Publish.
+    - Attach or drop photos and files.
+    - Replies show Undo, confirm cards, the import card, a credit note and clear errors.
+    - The chat is kept per store in the session.
+- **Checks:**
+  - **Tests:** store-sections agent, code and config 1,263; agent 65; dashboard editor and from-file 251; the `editor/ai` page 132. All pass.
+  - **Typecheck and lint:** clean in the dashboard.
+- **Not done:**
+  - **0182:** not applied. Until it is, products files can't be attached; photos work. Owner approval needed for production.
+  - **Browser test:** not tried signed in.
+  - **Push:** not pushed.
+  - **Undo:** doesn't survive a restart.
+  - **Upload progress:** a spinner, not a percentage.
+
 ### 2026-11-26 — Drop photos on product cards (dashboard polish; no migration)
 
 - Products › grid view: drop one or more image files on a card to add them to that product (signed upload, then `updateProduct`, which checks seller and store). Overlay while dragging, spinner while uploading, a hint on cards with no photo. Click, checkbox, switch and menu keep working.
