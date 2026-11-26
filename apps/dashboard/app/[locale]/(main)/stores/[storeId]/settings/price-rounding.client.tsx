@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Calculator, Plus, Trash2 } from "lucide-react";
+import { Calculator, Plus, Trash2, Wand2 } from "lucide-react";
 
 import {
   PRICE_ROUNDING_DIRECTIONS,
@@ -14,6 +14,7 @@ import {
 import { Field, IconButton, InputGroup, NativeSelect, Note, SectionCard, SellerButton, Toggle } from "@/components/seller-ui";
 import { formatNumber, moneyUnitText, type MoneyUnit } from "@/lib/i18n/format";
 import { saveStorePriceRounding } from "./price-rounding.server";
+import { StorePriceRoundingApplyDialog } from "./price-rounding-apply.client";
 import { CUSTOM_STEP, ruleToRows, rowStep, rowUpTo, rowsToRule, type PriceRoundingRow } from "./price-rounding.dto";
 
 type Snapshot = { enabled: boolean; rows: PriceRoundingRow[] };
@@ -55,7 +56,7 @@ export function useStorePriceRounding(storeId: string, initial: PriceRoundingRul
     setRows(saved.rows);
   };
 
-  return { enabled, setEnabled, rows, setRows, dirty, validate, save, reset };
+  return { storeId, enabled, setEnabled, rows, setRows, dirty, validate, save, reset };
 }
 
 export type StorePriceRoundingState = ReturnType<typeof useStorePriceRounding>;
@@ -102,6 +103,9 @@ export function StorePriceRoundingCard({
   const locale = useLocale();
   const unit = moneyUnitText(locale, money);
   const { enabled, setEnabled, rows, setRows } = state;
+  const [applyOpen, setApplyOpen] = useState(false);
+  // "Round existing prices" uses the SAVED rule, so it waits for the save bar.
+  const canApply = enabled && !state.dirty && !disabled;
   const num = (value: number) => formatNumber(value, locale, { maximumFractionDigits: 2 });
 
   const update = (index: number, patch: Partial<PriceRoundingRow>) =>
@@ -234,7 +238,16 @@ export function StorePriceRoundingCard({
         </>
       )}
       <Note>{t("appliesOnSave")}</Note>
-      {/* F-112c: the "Round all now" preview and apply go here. */}
+      {enabled && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <SellerButton type="button" variant="mini" size="sm" onClick={() => setApplyOpen(true)} disabled={!canApply}>
+            <Wand2 aria-hidden />
+            {t("apply.open")}
+          </SellerButton>
+          {state.dirty && !disabled && <span className="text-xs text-(--s-subtle)">{t("apply.saveFirst")}</span>}
+        </div>
+      )}
+      {applyOpen && <StorePriceRoundingApplyDialog storeId={state.storeId} money={money} open onOpenChange={setApplyOpen} />}
     </SectionCard>
   );
 }

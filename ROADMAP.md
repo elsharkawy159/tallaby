@@ -1,4 +1,9 @@
 # Tallaby
+### 2026-11-26 — Round prices: "Round existing prices" (F-112c, owner request; no migration)
+
+- **Built:** dashboard `settings/price-rounding-apply.{lib,dto,server,client}`: a button in the Round prices card (only with the rule saved and on, and no unsaved changes) opens a dialog (bottom sheet on phones) with old → new prices of the changed products and variants (first 200, then "and N more"). The client sends only the store id. Apply runs in one transaction: the saved rule is read `FOR SHARE`, the store's products (seller + store, not in Trash, ≤ 5,000) `FOR UPDATE`, every price is recomputed, and `UPDATE … FROM (VALUES …)` in chunks of 500 writes only rows whose price is still the one read (a concurrent edit is skipped). A dropped variant discount clears its `discount_ends_at`. Cache purge as bulk edit (`invalidateProduct` per changed product). Rate limits: 30 previews and 5 applies per 10 minutes.
+- **Checks:** dashboard typecheck pass; apply lib tests 7 pass; full dashboard suite passes except the old locale-dependent `formatUsdShort` test; eslint 0 errors. Not tried in a browser.
+
 ### 2026-11-26 — Round prices: applied on save (F-112b, owner request; no migration)
 
 - **Built:** pure `roundPricePayload` / `roundVariantPriceRow` (`packages/lib/src/products/price-rounding-payload.lib.ts`) and `loadStorePriceRounding` (`price-rounding.server.ts`; seller + store, not deleted, not cached), read once per request or batch. Covered: `createProduct` (so the AI uploader, autofill, URL and file imports), `updateProduct` (only when it writes a price or variants), `createProductVariant`, the bulk insert/create actions (rule loaded once through the non-exported `createProductInStore`, never from the client), bulk edit (price and discount changes, after `roundWhole`), Excel update, the MCP agent (`agentCreateProduct`/`agentUpdateProduct` return `savedPrice`; the backend tools show it) and the Shopify import. The product form and variant rows show "Will be saved as …" and warn when a discount would be dropped.
@@ -1524,11 +1529,11 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **Why:** Sellers want clean prices (240, 250, 1,200) without fixing each price by hand, especially after a bulk % change, an import or AI autofill.
 **What:** Store settings › General gets a "Round prices" card (under the Catalog cards) saved in `stores.settings.priceRounding` (no migration): on/off plus 1–5 **price-range tiers**, each with an upper bound (the last tier has none), a step (1, 5, 10, 20, 50, 100 or a whole number up to 10,000 in the store's currency) and a direction (up, down, nearest). The tier is picked by the price before rounding. Computed in integer piastres; a price never rounds to 0 (it goes up one step instead). The rule rounds the price the customer pays and the compare-at price, of products and of variants; when the rounded compare-at price is not higher than the rounded price, the discount is dropped (no fake discounts). **Applied on save** by every seller price writer: product form (it shows the price that will be saved), bulk edit, Excel update, product import, AI uploader/autofill, the MCP agent and the Shopify import. The stored price is what the customer pays, so cart and checkout code are unchanged. Not rounded: cost price, quantity offers, customer-field extras, coupons, shipping, orders. Admin product edits are unchanged. **"Round all now"**: a preview of old → new prices of the store's products and variants (not in Trash), then one confirmed apply that recomputes on the server from the saved rule.
 **Owner decisions 2026-11-26:** applies to every price on save (not display-only); tiers by price range; existing prices through "Round all now" with a preview.
-**Status:** [In progress] 2026-11-26. F-112a and F-112b done.
+**Status:** [Built] 2026-11-26. No migration. Not tried in a browser. A store with more than 5,000 products (not in Trash) can't use "Round existing prices" yet; there is no undo for it; old-format prices stored as a plain number are left alone.
 
 - **F-112a · P1** Rounding rule (pure lib + tests), setting save, settings card in Store settings › General (saved with the page's save bar). Done.
 - **F-112b · P1 · deps: F-112a** Apply the rule in every seller price writer; product form hint. Done.
-- **F-112c · P1 · deps: F-112a** "Round all now" with preview.
+- **F-112c · P1 · deps: F-112a** "Round existing prices" with preview. Done.
 
 ## 5. Owner feature requests (intake)
 
@@ -2125,7 +2130,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-111a Different product cards per template, `addToCart` look, contained photos on white, white gallery — 2026-11-26; store-sections tests and typecheck pass; checked in the template preview
 - [x] F-112a Round prices: rule, setting, settings card (Store settings › General) — 2026-11-26; lib and dashboard tests and typecheck pass; not tried in a browser
 - [x] F-112b Round prices: applied in every seller price writer, product form hint — 2026-11-26; lib, dashboard and backend typecheck and tests pass; not tried in a browser
-- [ ] F-112c Round prices: "Round all now" with preview
+- [x] F-112c Round prices: "Round existing prices" with preview — 2026-11-26; dashboard typecheck and tests pass; not tried in a browser
 
 ## 7. Log
 
