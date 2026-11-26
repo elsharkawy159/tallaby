@@ -105,6 +105,11 @@ const COALESCE_MS = 1000;
 export type EditorActions = {
   editPage: (pageId: string, update: (content: PageContent) => PageContent, coalesceKey?: string) => void;
   editChrome: (part: "header" | "footer", value: SectionInstance | null, coalesceKey?: string) => void;
+  /**
+   * One page and the header or footer in one undo step (a section moved above the header, and back):
+   * undo and redo restore both, and both are marked unsaved.
+   */
+  editPageAndChrome: (pageId: string, update: (content: PageContent) => PageContent, part: "header" | "footer", value: SectionInstance | null) => void;
   /** Edits one section of the active page, or the header/footer. */
   editSection: (ref: SectionRef, update: (instance: SectionInstance) => SectionInstance, coalesceKey?: string) => void;
   editDesign: (update: (ds: DesignSystem) => DesignSystem, coalesceKey?: string) => void;
@@ -221,6 +226,13 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
         ),
       editChrome: (part, value, coalesceKey) =>
         commit((state) => ({ [part]: value, dirtyChrome: { ...state.dirtyChrome, [part]: true } }), coalesceKey),
+      editPageAndChrome: (pageId, update, part, value) =>
+        commit((state) => ({
+          pages: state.pages.map((p) => (p.id === pageId ? { ...p, content: update(p.content) } : p)),
+          dirtyPages: { ...state.dirtyPages, [pageId]: true },
+          [part]: value,
+          dirtyChrome: { ...state.dirtyChrome, [part]: true },
+        })),
       editSection: (ref, update, coalesceKey) => {
         const state = get();
         if (ref.target === "page") {

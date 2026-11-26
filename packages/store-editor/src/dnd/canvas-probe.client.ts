@@ -24,6 +24,8 @@ export type CanvasGeometry = {
   part?: { line: Line; container: Rect } | null;
   /** The marker for a dragged library section that replaces the header or footer. */
   chrome?: { header: Rect; footer: Rect };
+  /** For a dragged page section: the "Above header (all pages)" zone, the header's top half (absent with no header in view). */
+  aboveHeader?: Rect;
 };
 
 export type CanvasSample = { probe: CanvasProbe; geometry: CanvasGeometry };
@@ -51,6 +53,19 @@ function chromeBox(doc: Document, part: "header" | "footer"): Rect {
   const box = el && visible(el) ? rectOf(el) : { top: part === "header" ? 0 : view, bottom: part === "header" ? 0 : view, left: 0, right: doc.documentElement.clientWidth };
   const top = Math.max(0, Math.min(box.top, view - CHROME_BAND));
   return { ...box, top, bottom: Math.max(Math.min(box.bottom, view), top + CHROME_BAND) };
+}
+
+/**
+ * The "Above header (all pages)" zone for a dragged page section: the top
+ * half of the header (at least 24px), while the header is in view; its lower
+ * half still drops at the top of the page.
+ */
+function aboveHeaderZone(doc: Document): Rect | null {
+  const el = doc.querySelector(`[data-editor-chrome="header"]`);
+  if (!el || !visible(el)) return null;
+  const box = rectOf(el);
+  if (box.bottom <= 0) return null;
+  return { ...box, bottom: box.top + Math.max(24, (box.bottom - box.top) / 2) };
 }
 
 /** Top-level page sections in order (header and footer are outside `main`). */
@@ -217,6 +232,12 @@ export function sampleCanvas(doc: Document, point: Point, payload?: CanvasPayloa
     const target = chromeSlots(doc, payload.part, point, rtl, chromeIds);
     probe.slots = target.slots;
     geometry.slots = target.geometry;
+  } else if (payload?.kind === "move-section") {
+    const zone = aboveHeaderZone(doc);
+    if (zone) {
+      geometry.aboveHeader = zone;
+      probe.aboveHeader = point.y >= zone.top && point.y <= zone.bottom && point.x >= zone.left && point.x <= zone.right;
+    }
   } else if (payload?.kind === "move-item") {
     const target = probeItem(doc, payload.ref, payload.collection, point);
     probe.itemInsertAt = target?.insertAt ?? null;

@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { findNode, findParent } from "../elements/tree";
 import { normalizeStyle } from "../elements/style";
-import { chromeHasThemeToggle, chromeOptionOn, drawChrome, flushHeaderOnMobile, footerCreditsTallaby, setChromeOption, TALLABY_HOME, TALLABY_MARK_URL, withLanguageSwitcher } from "./header";
+import {
+  chromeHasThemeToggle,
+  chromeOptionOn,
+  drawChrome,
+  flushHeaderOnMobile,
+  footerCreditsTallaby,
+  isTopBarRow,
+  mobileMenuRows,
+  setChromeOption,
+  TALLABY_HOME,
+  TALLABY_MARK_URL,
+  TOP_BAR_PROP,
+  withLanguageSwitcher,
+} from "./header";
 import { sanitizeSiteConfig } from "./sanitize";
 import type { SectionInstance, SiteConfig } from "./schema";
 import { CODE_TEMPLATES } from "../templates/catalog";
@@ -497,5 +510,56 @@ describe("header and footer options (drawChrome)", () => {
     expect(typesIn(header)).toEqual(expect.arrayContaining(["storeLogo", "languageSwitcher", "themeToggle", "accountLink"]));
     const footer = drawChrome({ ...config.footer!, props: { themeToggle: true } }, "footer", all);
     expect(typesIn(footer)).toEqual(expect.arrayContaining(["themeToggle"]));
+  });
+});
+
+describe("rows moved above the header (TOP_BAR_PROP)", () => {
+  type Tree = NonNullable<SectionInstance["componentTree"]>;
+  const n = (id: string, type: string, props: Record<string, unknown> = {}, children: Tree = [], style?: Record<string, unknown>): Tree[number] =>
+    ({ id, type, props, children, ...(style && { style }) }) as Tree[number];
+  // A moved section: a row with no alignItems, a link to the cart and a store name of its own, which the
+  // header's drawn pieces would otherwise reach into.
+  const topBar = () =>
+    n("top", "div", { [TOP_BAR_PROP]: { id: "s-top", source: "promo-marquee@2" } }, [
+      n("top-row", "hFlex", {}, [n("top-name", "text", { role: "storeName", text: "Sale" }), n("top-cart", "button", { href: "/cart", label: "Cart" })], { gap: 8 }),
+    ]);
+  const bar = () =>
+    n("bar", "hFlex", {}, [
+      n("logo", "linkBlock", { role: "logo", href: "/" }, [n("name", "text", { role: "storeName" })]),
+      n("menu", "hFlex", { role: "menu" }, [n("m1", "textLink", { href: "/products", text: "Shop" })]),
+      n("cart", "linkBlock", { href: "/cart" }, [n("cart-icon", "icon", { name: "shopping-bag" })]),
+    ]);
+  const chrome = (children: Tree): SectionInstance => ({ id: "c", sectionId: "custom-section", version: 1, props: {}, componentTree: [n("root", "section", {}, children)] });
+  const opts = { translated: true, hasLogo: true, locale: "ar" };
+  const root = (h: SectionInstance | null | undefined) => h!.componentTree![0]!;
+
+  it("recognises only a row that carries where it came from", () => {
+    expect(isTopBarRow(topBar())).toBe(true);
+    expect(isTopBarRow(n("x", "div", { [TOP_BAR_PROP]: "s-top" }))).toBe(false);
+    expect(isTopBarRow(n("x", "div"))).toBe(false);
+  });
+
+  it("draws a moved row first and untouched, and the rest of the header as without it", () => {
+    const withTop = drawChrome(flushHeaderOnMobile(chrome([topBar(), bar()])), "header", opts)!;
+    const without = drawChrome(flushHeaderOnMobile(chrome([bar()])), "header", opts)!;
+    expect(root(withTop).children[0]).toEqual(topBar());
+    expect(root(withTop).children.slice(1)).toEqual(root(without).children);
+    // The language switch went beside the header's cart, not the row's; the logo into the header's logo link.
+    expect(findParent(withTop.componentTree!, "c-language")!.parentId).not.toBe("top-row");
+    expect(findNode(root(withTop).children[0]!.children, "c-logo")).toBeNull();
+  });
+
+  it("keeps the row out of the header's centring, the phone layout and the burger menu", () => {
+    const flushed = flushHeaderOnMobile(chrome([topBar(), bar()]));
+    expect(root(flushed).children[0]).toEqual(topBar());
+    expect(mobileMenuRows(chrome([topBar(), bar()]), "ar")).toEqual(mobileMenuRows(chrome([bar()]), "ar"));
+    // Rows before the bar stay shown on phones (only rows after it hide).
+    const drawn = drawChrome(chrome([topBar(), bar()]), "header", opts)!;
+    expect(root(drawn).children[0]!.breakpointStyles?.mobile?.hidden).toBeUndefined();
+  });
+
+  it("is a header thing only: a footer draws such a row like any other", () => {
+    const footer = chrome([topBar(), n("copy", "text", { role: "copyright", text: "©" })]);
+    expect(findNode(drawChrome(footer, "footer", opts)!.componentTree!, "c-powered-by")).not.toBeNull();
   });
 });

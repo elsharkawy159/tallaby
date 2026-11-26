@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { createPortal, flushSync } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useDroppable } from "@dnd-kit/core";
-import { RefreshCw } from "lucide-react";
+import { ArrowUpToLine, RefreshCw } from "lucide-react";
 import { useStore } from "zustand";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
@@ -32,7 +32,7 @@ import { DEVICE_TONE } from "../lib/editor-devices.lib";
 import { styleKindOf } from "../lib/editor-style.lib";
 import type { EditorCommands } from "../lib/editor-commands.lib";
 import { CANVAS_DROP_ID, isCanvasPayload } from "../dnd/dnd.types";
-import { InvalidBadge, useEditorDnd, type DropMarker } from "../dnd/editor-dnd.client";
+import { InvalidBadge, useEditorDnd, type AboveHeaderZone, type DropMarker } from "../dnd/editor-dnd.client";
 import { getInstance, inlineTextInfo, isImageSelection, refOf, sameRef, splitPartAttr } from "../lib/editor-selection.lib";
 import type { Device, EditorStore, SectionRef, Selection } from "../state/editor.store";
 
@@ -697,11 +697,35 @@ export function EditorCanvas({
  */
 function CanvasDropMarker({ dnd, frame }: { dnd: ReturnType<typeof useEditorDnd>["dnd"]; frame: CanvasBox }) {
   const t = useTranslations("storeEditor.dnd");
+  const tTopBar = useTranslations("storeEditor.topBar");
   const marker = useStore(dnd, (s) => s.marker);
-  if (!marker) return null;
+  const zone = useStore(dnd, (s) => s.zone);
+  if (!marker && !zone) return null;
   return (
     <div className="pointer-events-none absolute z-40 overflow-hidden rounded-lg" style={{ top: frame.top, left: frame.left, width: frame.width, height: frame.height }} aria-hidden>
-      <MarkerShape marker={marker} frame={frame} label={marker.kind === "image" ? t("replaceImage") : marker.kind === "line" && marker.note ? t("newSection") : marker.kind === "invalid" ? t(marker.reason) : null} />
+      {zone && <AboveHeaderZoneShape zone={zone} label={tTopBar("dropZone")} />}
+      {marker && (
+        <MarkerShape marker={marker} frame={frame} label={marker.kind === "image" ? t("replaceImage") : marker.kind === "line" && marker.note ? t("newSection") : marker.kind === "invalid" ? t(marker.reason) : null} />
+      )}
+    </div>
+  );
+}
+
+/** "Above header (all pages)" over the header's top half while a page section drags; lit when it would drop there. */
+function AboveHeaderZoneShape({ zone, label }: { zone: AboveHeaderZone; label: string }) {
+  const r = zone.rect;
+  return (
+    <div
+      className={cn(
+        "absolute grid place-items-center rounded-[3px] border-2 border-dashed transition-colors duration-150 motion-reduce:transition-none",
+        zone.active ? "border-solid border-primary bg-primary/15" : "border-primary/50 bg-primary/5",
+      )}
+      style={{ top: Math.max(0, r.top), left: r.left, width: r.right - r.left, height: r.bottom - Math.max(0, r.top) }}
+    >
+      <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold shadow-md", zone.active ? "bg-primary text-primary-foreground" : "bg-background text-primary")}>
+        <ArrowUpToLine className="size-3.5" aria-hidden />
+        {label}
+      </span>
     </div>
   );
 }

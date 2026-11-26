@@ -46,6 +46,7 @@ import type { CanvasPayload, DropPlan, ImageCandidate } from "../dnd/dnd.types";
 import { applyChromeMove, applyDropPlan, isImageTarget } from "../dnd/drop-plan.lib";
 import { starterCodeProps } from "../code/code-file.lib";
 import { codeSectionInstance } from "@workspace/store-sections/agent";
+import { canMoveAboveHeader, sectionToTopBar, topBarRowOf, topBarToSection } from "./top-bar.lib";
 
 type Clip = { kind: "section"; instance: SectionInstance } | { kind: "nodes"; nodes: ComponentNode[] };
 
@@ -244,6 +245,21 @@ export function createEditorCommands(store: EditorStore) {
     state().select(null);
   }
 
+  /**
+   * "Move above header (all pages)": the page section becomes the header's
+   * first row (top-bar.lib.ts) and leaves the page, in one undo step; the
+   * moved row is selected. False (nothing changes) when it can't go there.
+   */
+  function moveSectionAboveHeader(sectionId: string): boolean {
+    const page = activePage();
+    const section = page.content.sections.find((s) => s.id === sectionId);
+    const header = section ? sectionToTopBar(section, state().header) : null;
+    if (!section || !header) return false;
+    state().editPageAndChrome(page.id, (content) => removeSection(content, section.id), "header", header);
+    state().select({ target: "header", nodeId: section.componentTree![0]!.id });
+    return true;
+  }
+
   return {
     addSection(definition: AnySectionDefinition) {
       return insertSectionInstance(createInstance(definition));
@@ -386,6 +402,51 @@ export function createEditorCommands(store: EditorStore) {
       state().editPage(activePage().id, (content) => duplicateSection(content, sectionId).content);
     },
 
+    /**
+     * The page section "Move above header" takes for the selection: the
+     * selected section (or its root element) when it can go there; else null.
+     */
+    aboveHeaderTarget(): string | null {
+      const sel = state().selection;
+      if (sel?.target !== "page" || sel.part) return null;
+      const section = activePage().content.sections.find((s) => s.id === sel.sectionId);
+      if (sel.nodeId && sel.nodeId !== section?.componentTree?.[0]?.id) return null;
+      return section && canMoveAboveHeader(section, state().header) ? section.id : null;
+    },
+
+    /** Whether "Move above header" can take this page section (menus and drags). */
+    canMoveSectionAboveHeader(sectionId: string): boolean {
+      return canMoveAboveHeader(activePage().content.sections.find((s) => s.id === sectionId), state().header);
+    },
+
+    moveSectionAboveHeader,
+
+    /** The header's top row "Move to page" takes for the selection (the row, or an element in it); else null. */
+    toPageTarget(): string | null {
+      const sel = state().selection;
+      if (sel?.target !== "header" || sel.part) return null;
+      return topBarRowOf(state().header, sel.nodeId);
+    },
+
+    /**
+     * "Move to page": a header top row goes back to the top of this page as a
+     * section (top-bar.lib.ts), in one undo step; the section is selected.
+     * False when the page is full or `rowId` is not a top row.
+     */
+    moveTopBarToPage(rowId: string): boolean {
+      if (!canAddSection()) return false;
+      const page = activePage();
+      const moved = topBarToSection(state().header, rowId, {
+        sectionTaken: (id) => page.content.sections.some((s) => s.id === id),
+        makeSectionId: () => newId(),
+        makeNodeId,
+      });
+      if (!moved) return false;
+      state().editPageAndChrome(page.id, (content) => insertSection(content, moved.section, 0), "header", moved.header);
+      state().select({ target: "page", sectionId: moved.section.id });
+      return true;
+    },
+
     selectParent() {
       const sel = state().selection;
       if (!sel) return;
@@ -518,6 +579,10 @@ export function createEditorCommands(store: EditorStore) {
         state().editSection(ref, () => next);
         state().select({ ...ref, nodeId: plan.nodeId });
         return true;
+      }
+      if (plan.kind === "move-above-header") {
+        // The page section becomes the header's first row (one edit of the page and the header).
+        return pageId === state().activePageId && moveSectionAboveHeader(plan.instanceId);
       }
       if (plan.kind === "replace-chrome") {
         const preset = payload.kind === "section" ? payloadPreset(payload.sectionId, payload.presetId, state().presets) : undefined;

@@ -2,7 +2,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslations } from "next-intl";
-import { CopyPlus, Eye, EyeOff, GripVertical, ImagePlus, Trash2, X } from "lucide-react";
+import { ArrowDownToLine, CopyPlus, Eye, EyeOff, GripVertical, ImagePlus, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
 import { useStore } from "zustand";
 import type { SectionInstance } from "@workspace/store-sections";
 import { storeSectionRegistry, updateNode, type StyleKey, type StyleValues } from "@workspace/store-sections/render";
@@ -81,6 +82,7 @@ export function ElementPopover({
   selectedElement: () => HTMLElement | null;
 }) {
   const t = useTranslations("storeEditor.popover");
+  const tTopBar = useTranslations("storeEditor.topBar");
   const selection = useStore(store, (s) => s.selection);
   const device = useStore(store, (s) => s.device);
   const [closed, setClosed] = useState(false);
@@ -146,6 +148,8 @@ export function ElementPopover({
   };
 
   const title = t(`kinds.${kind}`);
+  // A header top row (or an element in it) can go back to the page (top-bar.lib.ts).
+  const toPage = commands.toPageTarget();
 
   return (
     <div
@@ -169,6 +173,11 @@ export function ElementPopover({
         <PopButton label={t(hidden ? "show" : "hide")} onClick={() => commands.toggleHidden()}>
           {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
         </PopButton>
+        {toPage && (
+          <PopButton label={tTopBar("moveToPage")} onClick={() => !commands.moveTopBarToPage(toPage) && toast.error(tTopBar("pageFull"))}>
+            <ArrowDownToLine className="size-3.5" />
+          </PopButton>
+        )}
         {node && (
           <PopButton label={t("delete")} onClick={() => commands.remove()}>
             <Trash2 className="size-3.5" />

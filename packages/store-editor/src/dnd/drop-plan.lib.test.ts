@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { MAX_SECTIONS_PER_PAGE, type ComponentNode, type PageContent, type SectionInstance } from "@workspace/store-sections";
-import { findNode, findParent } from "@workspace/store-sections/render";
+import { CODE_TEMPLATES, MAX_SECTIONS_PER_PAGE, type ComponentNode, type PageContent, type SectionInstance } from "@workspace/store-sections";
+import { findNode, findParent, getDesign, instantiateDesign } from "@workspace/store-sections/render";
 import type { CanvasPayload, CanvasProbe, DropPlan } from "./dnd.types";
 import { applyChromeMove, applyDropPlan, planDrop, sectionMoveTarget } from "./drop-plan.lib";
 import { chromeDragNodeId } from "../canvas/editor-overlay.client";
@@ -293,5 +293,30 @@ describe("header element drops", () => {
     expect(chromeDragNodeId(h, "root")).toBeNull();
     expect(chromeDragNodeId(h, "hdr-language")).toBeNull();
     expect(chromeDragNodeId(null, "cart")).toBeNull();
+  });
+});
+
+describe("the Above header (all pages) zone", () => {
+  const header = () => CODE_TEMPLATES.find((t) => t.key === "tallaby-classic")!.config().header!;
+  const topBar = instantiateDesign(getDesign("promo-marquee")!, { id: "top" });
+  const content = (): PageContent => ({ sections: [section("first", "custom-section", [node("r", "section")]), topBar] });
+  const move: CanvasPayload = { kind: "move-section", instanceId: "top" };
+
+  it("moves a page section above the header when it is dropped over the header's top half", () => {
+    expect(planDrop(move, probe({ aboveHeader: true }), { content: content(), header: header(), footer: null })).toEqual({ kind: "move-above-header", instanceId: "top" });
+  });
+
+  it("sorts it on the page anywhere else, or when the section can't go above the header", () => {
+    const source = { content: content(), header: header(), footer: null };
+    expect(planDrop(move, probe({ sectionIndex: 0 }), source)).toEqual({ kind: "move-section", instanceId: "top", to: 0 });
+    expect(planDrop(move, probe({ sectionIndex: 0, aboveHeader: false }), source)).toEqual({ kind: "move-section", instanceId: "top", to: 0 });
+    // No header to move into, or a section with a section background (it would be lost in a row).
+    expect(planDrop(move, probe({ aboveHeader: true }), { ...source, header: null })).toEqual({ kind: "move-section", instanceId: "top", to: 0 });
+    const styled = { ...source, content: { sections: [content().sections[0]!, { ...topBar, style: { background: "accent" } }] } };
+    expect(planDrop(move, probe({ aboveHeader: true }), styled)).toEqual({ kind: "move-section", instanceId: "top", to: 0 });
+  });
+
+  it("never applies as a page edit (the commands move it, with the header, in one step)", () => {
+    expect(applyDropPlan(content(), { kind: "move-above-header", instanceId: "top" }, move, deps)).toBeNull();
   });
 });

@@ -2,7 +2,8 @@
 
 import { Fragment } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, CopyPlus, CornerLeftUp, Eye, EyeOff, LayoutGrid, PanelTop, Trash2 } from "lucide-react";
+import { ArrowDownToLine, ArrowUpToLine, ChevronLeft, CopyPlus, CornerLeftUp, Eye, EyeOff, LayoutGrid, PanelTop, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { SectionInstance } from "@workspace/store-sections";
 import { findNode, getElementDefinition, type ElementType } from "@workspace/store-sections/render";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
@@ -42,6 +43,7 @@ export function SidebarHeader({
   device: Device;
 }) {
   const t = useTranslations("storeEditor.sidebar");
+  const tTopBar = useTranslations("storeEditor.topBar");
   const ref = refOf(selection);
   const tree = instance.componentTree ?? [];
   const node = selection.nodeId ? findNode(tree, selection.nodeId) : null;
@@ -50,6 +52,9 @@ export function SidebarHeader({
   const hidden = readOwnStyle(instance, styleTargetOf(selection), device).hidden === true;
   const canStructure = !readOnly && (Boolean(node) || (ref.target === "page" && !selection.part));
   const canParent = Boolean(selection.nodeId || selection.part);
+  // Above the header and back (top-bar.lib.ts): a page section that can go there, or a header top row.
+  const aboveHeader = readOnly ? null : commands.aboveHeaderTarget();
+  const toPage = readOnly ? null : commands.toPageTarget();
 
   // Section › …ancestors (the last three, so long paths stay on one line).
   const ancestors = ancestorsOf(instance, selection.nodeId)
@@ -89,6 +94,16 @@ export function SidebarHeader({
           {!readOnly && (
             <HeaderAction label={t(hidden ? "actions.show" : "actions.hide")} onClick={() => commands.toggleHidden()} pressed={hidden}>
               {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+            </HeaderAction>
+          )}
+          {aboveHeader && (
+            <HeaderAction label={tTopBar("moveAbove")} onClick={() => !commands.moveSectionAboveHeader(aboveHeader) && toast.error(tTopBar("refused"))}>
+              <ArrowUpToLine className="size-3.5" />
+            </HeaderAction>
+          )}
+          {toPage && (
+            <HeaderAction label={tTopBar("moveToPage")} onClick={() => !commands.moveTopBarToPage(toPage) && toast.error(tTopBar("pageFull"))}>
+              <ArrowDownToLine className="size-3.5" />
             </HeaderAction>
           )}
           {canStructure && (

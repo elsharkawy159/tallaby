@@ -2,22 +2,25 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, ChevronRight, Copy, Eye, EyeOff, Footprints, GripVertical, LayoutGrid, PanelTop, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpToLine, ChevronRight, Copy, Eye, EyeOff, Footprints, GripVertical, LayoutGrid, PanelTop, Trash2 } from "lucide-react";
+import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { toast } from "sonner";
 import { CSS } from "@dnd-kit/utilities";
 import { useStore } from "zustand";
 import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
 import { findPath, getElementDefinition, storeSectionRegistry, type ElementType } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
 import { useEditorAdapter } from "../adapter.client";
-import type { DragPayload } from "../dnd/dnd.types";
-import { useDragData, useReducedMotion } from "../dnd/editor-dnd.client";
+import { LAYERS_ABOVE_HEADER_ID, type DragPayload } from "../dnd/dnd.types";
+import { useDragData, useEditorDnd, useReducedMotion } from "../dnd/editor-dnd.client";
 import type { EditorCommands } from "../lib/editor-commands.lib";
 import { ELEMENT_ICONS, SECTION_GROUP_ICONS } from "../lib/editor-icons.lib";
 import { SECTION_GROUPS } from "../lib/editor-palette.lib";
 import { DEVICE_TONE } from "../lib/editor-devices.lib";
 import { hasDeviceOverrides, readOwnStyle, type StyleTarget } from "../lib/editor-style.lib";
 import { nodeLabel, renameNode, sameRef, withTree } from "../lib/editor-selection.lib";
+import { topBarRowIds } from "../lib/top-bar.lib";
 import type { EditorStore, SectionRef, Selection } from "../state/editor.store";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
@@ -37,6 +40,7 @@ function sectionIcon(sectionId: string) {
  */
 export function LayersPanel({ store, commands, uiLocale }: { store: EditorStore; commands: EditorCommands; uiLocale: string }) {
   const t = useTranslations("storeEditor.layers");
+  const tTopBar = useTranslations("storeEditor.topBar");
   const pages = useStore(store, (s) => s.pages);
   const activePageId = useStore(store, (s) => s.activePageId);
   const header = useStore(store, (s) => s.header);
@@ -79,26 +83,59 @@ export function LayersPanel({ store, commands, uiLocale }: { store: EditorStore;
   };
 
   const keepsChrome = useEditorAdapter().capabilities.designSystem;
+  // The header's top rows (sections moved above it, announcement bars): each can go back to the page.
+  const topRows = header && keepsChrome ? topBarRowIds(header).flatMap((id) => header.componentTree?.[0]?.children.find((n) => n.id === id) ?? []) : [];
   const chromeRow = (part: "header" | "footer", instance: SectionInstance | null) => {
     if (!instance || !keepsChrome) return null;
     const definition = storeSectionRegistry.get(instance.sectionId);
     const Icon = part === "header" ? PanelTop : Footprints;
+    const rows = part === "header" ? topRows : [];
+    const open = expanded.has(`chrome:${part}`);
     return (
-      <Row
-        depth={0}
-        icon={<Icon className="size-3.5" aria-hidden />}
-        label={definition ? pick(definition.displayName, uiLocale) : t(part)}
-        hint={t("everyPage")}
-        active={selection?.target === part && !selection.part && !selection.nodeId}
-        onSelect={() => store.getState().select({ target: part })}
-      />
+      <>
+        <Row
+          depth={0}
+          icon={<Icon className="size-3.5" aria-hidden />}
+          label={definition ? pick(definition.displayName, uiLocale) : t(part)}
+          hint={t("everyPage")}
+          active={selection?.target === part && !selection.part && !selection.nodeId}
+          expandable={rows.length > 0}
+          expanded={open}
+          onToggle={() => toggle(`chrome:${part}`)}
+          onSelect={() => store.getState().select({ target: part })}
+        />
+        {open &&
+          rows.map((node) => {
+            const definition = getElementDefinition(node.type);
+            const Icon = ELEMENT_ICONS[node.type as ElementType] ?? LayoutGrid;
+            const label = nodeLabel(node, uiLocale) || (definition ? pick(definition.label, uiLocale) : node.type);
+            return (
+              <Row
+                key={node.id}
+                depth={1}
+                icon={<Icon className="size-3.5" aria-hidden />}
+                label={label}
+                active={selection?.target === part && selection.nodeId === node.id}
+                onSelect={() => store.getState().select({ target: part, nodeId: node.id })}
+                actions={
+                  <RowAction label={tTopBar("moveToPage")} onClick={() => !commands.moveTopBarToPage(node.id) && toast.error(tTopBar("pageFull"))}>
+                    <ArrowDownToLine className="size-3.5" />
+                  </RowAction>
+                }
+              />
+            );
+          })}
+      </>
     );
   };
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-2.5">
       <div role="tree" aria-label={t("title")} className="space-y-0.5">
-        {chromeRow("header", header)}
+        <div className="relative">
+          {header && keepsChrome && <AboveHeaderDropRow label={tTopBar("dropZone")} />}
+          {chromeRow("header", header)}
+        </div>
         <SortableContext id="layers:sections" items={page.content.sections.map((s) => layerId("section", s.id))} strategy={verticalListSortingStrategy}>
         {page.content.sections.map((instance, index) => {
           const ref: SectionRef = { target: "page", sectionId: instance.id };
@@ -142,6 +179,15 @@ export function LayersPanel({ store, commands, uiLocale }: { store: EditorStore;
                     <RowAction label={t("duplicate")} onClick={() => run(sectionSel, () => commands.duplicate())}>
                       <Copy className="size-3.5" />
                     </RowAction>
+                    {header && keepsChrome && (
+                      <RowAction
+                        label={commands.canMoveSectionAboveHeader(instance.id) ? tTopBar("moveAbove") : tTopBar("unavailable")}
+                        disabled={!commands.canMoveSectionAboveHeader(instance.id)}
+                        onClick={() => !commands.moveSectionAboveHeader(instance.id) && toast.error(tTopBar("refused"))}
+                      >
+                        <ArrowUpToLine className="size-3.5" />
+                      </RowAction>
+                    )}
                     <RowAction label={t("delete")} onClick={() => run(sectionSel, () => commands.remove())}>
                       <Trash2 className="size-3.5" />
                     </RowAction>
@@ -287,6 +333,35 @@ function NodeRows({
         );
       })}
       </SortableContext>
+    </div>
+  );
+}
+
+/**
+ * "Above header (all pages)" over the header's row in Layers: shown while a
+ * page section's row drags; dropping the row here moves that section above
+ * the header (`EditorDndProvider` handles the drop). Always laid out (over
+ * the header row, so nothing below it moves), so its box is measured when a
+ * drag starts.
+ */
+function AboveHeaderDropRow({ label }: { label: string }) {
+  const { dnd } = useEditorDnd();
+  const active = useStore(dnd, (s) => s.active);
+  const { setNodeRef, isOver } = useDroppable({ id: LAYERS_ABOVE_HEADER_ID });
+  const payload = active?.payload;
+  const shown = payload?.kind === "layer" && payload.ref.target === "page" && !payload.nodeId;
+  return (
+    <div
+      ref={setNodeRef}
+      aria-hidden={!shown}
+      className={cn(
+        "pointer-events-none absolute inset-x-0 top-0 z-10 flex h-8 items-center gap-1.5 rounded-[10px] border-2 border-dashed bg-background px-2 text-[12px] font-semibold text-(--s-primary) transition-colors max-lg:h-11",
+        !shown && "invisible",
+        isOver ? "border-solid border-(--s-primary) bg-(--s-hover)" : "border-(--s-line)",
+      )}
+    >
+      <ArrowUpToLine className="size-3.5" aria-hidden />
+      {label}
     </div>
   );
 }

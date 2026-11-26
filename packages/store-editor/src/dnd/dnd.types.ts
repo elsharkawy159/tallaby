@@ -48,6 +48,9 @@ export const isCanvasPayload = (payload: DragPayload | null | undefined): payloa
 /** The one droppable the canvas registers; the exact place inside it comes from the probe. */
 export const CANVAS_DROP_ID = "editor-canvas";
 
+/** The Layers panel's "Above header (all pages)" drop row, shown while a page section's row drags. */
+export const LAYERS_ABOVE_HEADER_ID = "layers:above-header";
+
 /** An image under the pointer: an image part of a section, or an Image element. */
 export type ImageCandidate = { ref: SectionRef; part: string } | { ref: SectionRef; nodeId: string };
 
@@ -74,6 +77,8 @@ export type CanvasProbe = {
   part?: PartSlotHit | null;
   /** For a dragged item: where it would be inserted among its collection (counted before removal). */
   itemInsertAt?: number | null;
+  /** For a dragged page section: the pointer is over the top half of the header (the "Above header" zone). */
+  aboveHeader?: boolean;
 };
 
 export type DropPlan =
@@ -81,6 +86,8 @@ export type DropPlan =
   /** A header or footer design: takes the place of the shared one, wherever it is dropped. */
   | { kind: "replace-chrome"; part: "header" | "footer" }
   | { kind: "move-section"; instanceId: string; to: number }
+  /** A page section dropped on the "Above header (all pages)" zone: it becomes the header's first row. */
+  | { kind: "move-above-header"; instanceId: string }
   /** New element(s), or a photo as an Image element, inside a custom section. */
   | { kind: "insert-nodes"; sectionInstanceId: string; parentId: string | null; index: number; slot: number }
   /** New element(s) wrapped in a new custom section at `index` (pre-built sections hold no elements). */

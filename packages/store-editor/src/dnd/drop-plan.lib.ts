@@ -25,6 +25,7 @@ import {
 } from "@workspace/store-sections/render";
 import { payloadPreset, presetChromePart } from "../lib/editor-library.lib";
 import { getInstance, partField } from "../lib/editor-selection.lib";
+import { canMoveAboveHeader } from "../lib/top-bar.lib";
 import type { Selection } from "../state/editor.store";
 import type { CanvasPayload, CanvasProbe, DropPlan, ImageCandidate, NodeSlot } from "./dnd.types";
 import { planItemMove, planPartMove } from "./part-drop.lib";
@@ -137,7 +138,10 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
 
   if (payload.kind === "move-section") {
     const from = sections.findIndex((s) => s.id === payload.instanceId);
-    return from < 0 ? null : { kind: "move-section", instanceId: payload.instanceId, to: sectionMoveTarget(from, at) };
+    if (from < 0) return null;
+    // Over the header's top half: above the header (every page), when the section can go there (top-bar.lib.ts).
+    if (probe.aboveHeader && canMoveAboveHeader(sections[from], source.header)) return { kind: "move-above-header", instanceId: payload.instanceId };
+    return { kind: "move-section", instanceId: payload.instanceId, to: sectionMoveTarget(from, at) };
   }
 
   // Parts and items stay in their section (P4B-16): away from it the drop is refused, not reinterpreted.

@@ -2,7 +2,8 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, ClipboardPaste, Copy, CopyPlus, Eye, GripVertical, Paintbrush, Plus, Scissors, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpToLine, ClipboardPaste, Copy, CopyPlus, Eye, GripVertical, Paintbrush, Plus, Scissors, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { useDraggable } from "@dnd-kit/core";
 import { useStore } from "zustand";
 import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
@@ -91,6 +92,7 @@ export function EditorOverlay({
   selectedElement: () => HTMLElement | null;
 }) {
   const t = useTranslations("storeEditor.canvas");
+  const tTopBar = useTranslations("storeEditor.topBar");
   const selection = useStore(store, (s) => s.selection);
   const gridOverlay = useStore(store, (s) => s.gridOverlay);
   const source = { content: { sections }, header, footer };
@@ -110,6 +112,22 @@ export function EditorOverlay({
   const dragInstance = dragTarget ? getInstance(source, refOf(dragTarget)) : null;
   const dragPayload = elementDragPayload(dragTarget, dragInstance);
   const dragLabel = selectionLabel(dragInstance, dragTarget, uiLocale)?.title ?? "";
+  // Above the header and back (top-bar.lib.ts): only with a header to move into.
+  const topBar = {
+    toolbar: header && toolbarInstance ? commands.canMoveSectionAboveHeader(toolbarInstance.id) : null,
+    // The menu offers it for a selected page section or its root element (undefined: not offered).
+    menu:
+      header && selection?.target === "page" && !selection.part && (!selection.nodeId || selection.nodeId === selectedInstance?.componentTree?.[0]?.id)
+        ? commands.aboveHeaderTarget()
+        : undefined,
+    toPage: commands.toPageTarget(),
+    moveAbove: (sectionId: string) => {
+      if (!commands.moveSectionAboveHeader(sectionId)) toast.error(tTopBar("refused"));
+    },
+    moveToPage: (rowId: string) => {
+      if (!commands.moveTopBarToPage(rowId)) toast.error(tTopBar("pageFull"));
+    },
+  };
 
   // "+" between sections: around the hovered section, or the selected one.
   const plusIndex = insertIndex.hovered >= 0 ? insertIndex.hovered : insertIndex.selected;
@@ -167,6 +185,8 @@ export function EditorOverlay({
                 action();
               }}
               commands={commands}
+              aboveHeader={topBar.toolbar}
+              onMoveAboveHeader={() => topBar.moveAbove(toolbarInstance.id)}
             />
           )}
           {dragTarget && dragPayload && dragBox && (
@@ -193,7 +213,18 @@ export function EditorOverlay({
           selectedElement={selectedElement}
         />
       )}
-      <ContextMenu menu={menu} onClose={onCloseMenu} commands={commands} isPageSection={isPageSection} isSection={isSection} hasSelection={!!selection} />
+      <ContextMenu
+        menu={menu}
+        onClose={onCloseMenu}
+        commands={commands}
+        isPageSection={isPageSection}
+        isSection={isSection}
+        hasSelection={!!selection}
+        aboveHeader={topBar.menu}
+        toPage={topBar.toPage}
+        onMoveAboveHeader={topBar.moveAbove}
+        onMoveToPage={topBar.moveToPage}
+      />
     </div>
   );
 }
@@ -279,6 +310,8 @@ function SectionToolbar({
   onPointer,
   run,
   commands,
+  aboveHeader,
+  onMoveAboveHeader,
 }: {
   box: CanvasBox;
   frame: CanvasBox;
@@ -290,8 +323,12 @@ function SectionToolbar({
   onPointer: (inside: boolean) => void;
   run: (action: () => void) => void;
   commands: EditorCommands;
+  /** "Move above header": null with no header (not shown), false when this section can't go there. */
+  aboveHeader: boolean | null;
+  onMoveAboveHeader: () => void;
 }) {
   const t = useTranslations("storeEditor.canvas");
+  const tTopBar = useTranslations("storeEditor.topBar");
   // Kept inside the frame when the section starts above it.
   const top = Math.max(box.top - frame.top, 0) + 4;
   return (
@@ -311,6 +348,11 @@ function SectionToolbar({
       <ToolButton label={t("duplicate")} onClick={() => run(() => commands.duplicate())}>
         <CopyPlus className="size-3.5" />
       </ToolButton>
+      {aboveHeader !== null && (
+        <ToolButton label={aboveHeader ? tTopBar("moveAbove") : tTopBar("unavailable")} disabled={!aboveHeader} onClick={() => run(onMoveAboveHeader)}>
+          <ArrowUpToLine className="size-3.5" />
+        </ToolButton>
+      )}
       <ToolButton label={t("delete")} onClick={() => run(() => commands.remove())}>
         <Trash2 className="size-3.5" />
       </ToolButton>
@@ -397,6 +439,10 @@ function ContextMenu({
   isPageSection,
   isSection,
   hasSelection,
+  aboveHeader,
+  toPage,
+  onMoveAboveHeader,
+  onMoveToPage,
 }: {
   menu: { x: number; y: number } | null;
   onClose: () => void;
@@ -404,8 +450,15 @@ function ContextMenu({
   isPageSection: boolean;
   isSection: boolean;
   hasSelection: boolean;
+  /** "Move above header": the section it moves, null when the selected section can't go there, undefined when not offered. */
+  aboveHeader: string | null | undefined;
+  /** "Move to page": the header top row it moves, or null. */
+  toPage: string | null;
+  onMoveAboveHeader: (sectionId: string) => void;
+  onMoveToPage: (rowId: string) => void;
 }) {
   const t = useTranslations("storeEditor.canvas");
+  const tTopBar = useTranslations("storeEditor.topBar");
   if (!menu) return null;
   const canStructure = isPageSection || !isSection;
   return (
@@ -461,6 +514,18 @@ function ContextMenu({
           <ArrowDown aria-hidden />
           {t("moveDown")}
         </DropdownMenuItem>
+        {aboveHeader !== undefined && (
+          <DropdownMenuItem disabled={!aboveHeader} title={aboveHeader ? undefined : tTopBar("unavailable")} onSelect={() => aboveHeader && onMoveAboveHeader(aboveHeader)}>
+            <ArrowUpToLine aria-hidden />
+            {tTopBar("moveAbove")}
+          </DropdownMenuItem>
+        )}
+        {toPage && (
+          <DropdownMenuItem onSelect={() => onMoveToPage(toPage)}>
+            <ArrowDownToLine aria-hidden />
+            {tTopBar("moveToPage")}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem disabled={!canStructure} variant="destructive" onSelect={() => commands.remove()}>
           <Trash2 aria-hidden />
           {t("delete")}

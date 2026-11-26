@@ -33,7 +33,7 @@ import type { EditorStore } from "../state/editor.store";
 import { useEditorAdapter } from "../adapter.client";
 import type { Line, Point, Rect } from "./canvas-geometry.lib";
 import { sampleCanvas, type CanvasSample } from "./canvas-probe.client";
-import { CANVAS_DROP_ID, isCanvasPayload, type CanvasPayload, type DragData, type DragPayload, type DropPlan } from "./dnd.types";
+import { CANVAS_DROP_ID, LAYERS_ABOVE_HEADER_ID, isCanvasPayload, type CanvasPayload, type DragData, type DragPayload, type DropPlan } from "./dnd.types";
 import { planDrop } from "./drop-plan.lib";
 import { trackPointer } from "./pointer-tracker.lib";
 
@@ -44,7 +44,10 @@ export type DropMarker =
   | { kind: "image"; rect: Rect }
   | { kind: "invalid"; line: Line; reason: "limit" | "oneSection" | "unsupported" };
 
-export type DndState = { active: DragData | null; plan: DropPlan | null; marker: DropMarker | null };
+/** The "Above header (all pages)" zone while a page section that can go there drags (`active`: it would drop there). */
+export type AboveHeaderZone = { rect: Rect; active: boolean };
+
+export type DndState = { active: DragData | null; plan: DropPlan | null; marker: DropMarker | null; zone: AboveHeaderZone | null };
 
 /** The canvas frame, registered by the canvas so drags can be resolved inside it. */
 export type CanvasHandle = { doc: Document; frame: HTMLIFrameElement; pressedElement: () => HTMLElement | null };
@@ -72,6 +75,9 @@ function markerOf(plan: DropPlan, sample: CanvasSample): DropMarker | null {
     case "insert-section":
     case "move-section":
       return { kind: "line", line: geometry.sectionLine };
+    case "move-above-header":
+      // The zone itself lights up (`DndState.zone`).
+      return null;
     case "new-section":
     case "move-node-new-section":
       return { kind: "line", line: geometry.sectionLine, note: "newSection" };
@@ -142,8 +148,9 @@ export function EditorDndProvider({
   const t = useTranslations("storeEditor.dnd");
   const tExplore = useTranslations("storeEditor.explore");
   const tLibrary = useTranslations("storeEditor.add.library");
+  const tTopBar = useTranslations("storeEditor.topBar");
   const [value] = useState<EditorDndValue>(() => ({
-    dnd: createStore<DndState>()(() => ({ active: null, plan: null, marker: null })),
+    dnd: createStore<DndState>()(() => ({ active: null, plan: null, marker: null, zone: null })),
     canvas: { current: null },
   }));
   const [overlay, setOverlay] = useState<DragData | null>(null);
@@ -210,10 +217,20 @@ export function EditorDndProvider({
     const scrolled = autoScroll();
     const target = resolve();
     const marker = target ? markerOf(target.plan, target.sample) : null;
+    const payload = drag.current.payload;
+    const zoneRect = target?.sample.geometry.aboveHeader;
+    const zone: AboveHeaderZone | null =
+      zoneRect && payload?.kind === "move-section" && commands.canMoveSectionAboveHeader(payload.instanceId)
+        ? { rect: zoneRect, active: target.plan.kind === "move-above-header" }
+        : null;
     const prev = value.dnd.getState();
     // State changes only when the target or its marker moved (no re-render per pointer event).
-    if (JSON.stringify(prev.plan) !== JSON.stringify(target?.plan ?? null) || JSON.stringify(prev.marker) !== JSON.stringify(marker)) {
-      value.dnd.setState({ plan: target?.plan ?? null, marker });
+    if (
+      JSON.stringify(prev.plan) !== JSON.stringify(target?.plan ?? null) ||
+      JSON.stringify(prev.marker) !== JSON.stringify(marker) ||
+      JSON.stringify(prev.zone) !== JSON.stringify(zone)
+    ) {
+      value.dnd.setState({ plan: target?.plan ?? null, marker, zone });
     }
     if (scrolled) schedule();
   };
@@ -225,7 +242,7 @@ export function EditorDndProvider({
     if (drag.current.raf) cancelAnimationFrame(drag.current.raf);
     drag.current.untrack?.();
     drag.current = { payload: null, pointer: null, raf: 0, untrack: null };
-    value.dnd.setState({ active: null, plan: null, marker: null });
+    value.dnd.setState({ active: null, plan: null, marker: null, zone: null });
     setOverlay(null);
     setGhost(null);
   };
@@ -250,7 +267,7 @@ export function EditorDndProvider({
         schedule();
       });
     }
-    value.dnd.setState({ active: data, plan: null, marker: null });
+    value.dnd.setState({ active: data, plan: null, marker: null, zone: null });
     setOverlay(data);
     // An element, part or item dragged on the canvas shows itself under the pointer.
     const kind = data.payload.kind;
@@ -319,6 +336,11 @@ export function EditorDndProvider({
       const from = (event.active.data.current as { sortable?: { index: number } }).sortable?.index;
       const to = over?.sortable?.index;
       const layer = data.payload;
+      // A page section's row dropped on "Above header (all pages)".
+      if (event.over?.id === LAYERS_ABOVE_HEADER_ID) {
+        if (layer.ref.target === "page" && !layer.nodeId && !commands.moveSectionAboveHeader(layer.ref.sectionId)) toast.error(tTopBar("refused"));
+        return;
+      }
       if (!over || over.payload.kind !== "layer" || over.payload.container !== layer.container || from === undefined || to === undefined || from === to) return;
       if (layer.nodeId) commands.moveNodeTo(layer.ref, layer.nodeId, layer.parentId ?? null, to);
       else if (layer.ref.target === "page") commands.moveSectionTo(layer.ref.sectionId, to);
@@ -338,6 +360,8 @@ export function EditorDndProvider({
     if (commands.applyDrop(payload, plan)) {
       const key = usageKey(payload);
       if (key) recordUse(key);
+    } else if (plan.kind === "move-above-header") {
+      toast.error(tTopBar("refused"));
     }
   };
 
@@ -345,7 +369,10 @@ export function EditorDndProvider({
   const collisionDetection: CollisionDetection = (args) => {
     const payload = (args.active.data.current as DragData | undefined)?.payload;
     if (payload?.kind === "layer") {
+      // A page section's row also meets the "Above header" row (Layers panel).
+      const toHeader = payload.ref.target === "page" && !payload.nodeId;
       const siblings = args.droppableContainers.filter((c) => {
+        if (toHeader && c.id === LAYERS_ABOVE_HEADER_ID) return true;
         const other = (c.data.current as DragData | undefined)?.payload;
         return other?.kind === "layer" && other.container === payload.container;
       });
@@ -363,6 +390,8 @@ export function EditorDndProvider({
         return t("announce.insertSection", { position: plan.index + 1 });
       case "move-section":
         return t("announce.moveSection", { position: plan.to + 1 });
+      case "move-above-header":
+        return t("announce.aboveHeader");
       case "new-section":
       case "move-node-new-section":
         return t("announce.newSection", { position: plan.index + 1 });

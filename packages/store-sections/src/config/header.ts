@@ -41,6 +41,8 @@ type TreeNode = NonNullable<SectionInstance["componentTree"]>[number];
 function centerRows(nodes: TreeNode[]): TreeNode[] {
   let changed = false;
   const next = nodes.map((node) => {
+    // A page section moved above the header keeps its own design (see `TOP_BAR_PROP`).
+    if (isTopBarRow(node)) return node;
     const children = centerRows(node.children ?? []);
     const style = node.style as Record<string, unknown> | undefined;
     const center = node.type === "hFlex" && style?.alignItems === undefined;
@@ -49,6 +51,45 @@ function centerRows(nodes: TreeNode[]): TreeNode[] {
     return { ...node, children, ...(center && { style: { ...style, alignItems: "center" } }) };
   });
   return changed ? next : nodes;
+}
+
+/**
+ * A page section moved above the header (owner, 2026-11-26: "allow moving
+ * sections above the header"): the editor puts its tree into the header as a
+ * top row (a Box in place of its section root, ids and field names kept) and
+ * marks that row with `props.pageSection`, which holds what the section needs
+ * to go back to a page (`TopBarOrigin`). A top row before the header's bar is
+ * an announcement bar: it stays shown on phones and scrolls with the sticky
+ * header. The header's drawn pieces (logo, tools, burger, phone bar) never
+ * reach into marked rows at the top of the header, and the header's row
+ * centring skips them, so they draw as they did on the page. Headers without
+ * one draw exactly as before.
+ */
+export const TOP_BAR_PROP = "pageSection";
+
+/** What a moved section keeps for its way back to a page (only the keys it had). */
+export type TopBarOrigin = { id: string; source?: string; style?: Record<string, unknown>; animation?: Record<string, unknown> };
+
+/** Whether a node is a page section moved above the header (it carries a `TopBarOrigin`). */
+export function isTopBarRow(node: { props: Record<string, unknown> }): boolean {
+  const origin = node.props[TOP_BAR_PROP];
+  return Boolean(origin && typeof origin === "object" && !Array.isArray(origin) && typeof (origin as { id?: unknown }).id === "string");
+}
+
+/** The marked rows at the very top of the header's root section, and the tree without them; null when it has none. */
+function splitTopBars(tree: Node[]): { rows: Node[]; rest: Node[] } | null {
+  const [root, ...others] = tree;
+  if (root?.type !== "section") return null;
+  const at = root.children.findIndex((child) => !isTopBarRow(child));
+  const lead = at < 0 ? root.children.length : at;
+  if (!lead) return null;
+  return { rows: root.children.slice(0, lead), rest: [{ ...root, children: root.children.slice(lead) }, ...others] };
+}
+
+/** Puts the rows back first in the root section (the inverse of `splitTopBars`). */
+function joinTopBars(rows: Node[], tree: Node[]): Node[] {
+  const [root, ...others] = tree;
+  return [{ ...root!, children: [...rows, ...root!.children] }, ...others];
 }
 
 /**
@@ -509,7 +550,9 @@ function sheetLinks(tree: Node[], id: string): Node[] {
  * `mobileMenu` node.
  */
 export function mobileMenuRows(header: SectionInstance | null | undefined, locale: string): MobileMenuEntry[] {
-  const tree = header?.componentTree;
+  const full = header?.componentTree;
+  // Rows moved above the header are not part of its menu (as `drawChrome` draws it).
+  const tree = full && (splitTopBars(full)?.rest ?? full);
   if (!header || !tree?.length || contains(tree, (node) => node.type === "mobileMenu")) return [];
   return mobileMenuEntries(sheetLinks(tree, header.id), readMobileMenu(header), locale, header.id);
 }
@@ -675,8 +718,11 @@ export function drawChrome(
   part: ChromePart,
   opts: { translated: boolean; hasLogo: boolean; logoPlaceholder?: boolean; locale?: string; appInstall?: boolean; hideTallabyCredit?: boolean },
 ): SectionInstance | null | undefined {
-  const tree = instance?.componentTree;
-  if (!instance || !tree?.length) return instance;
+  const full = instance?.componentTree;
+  if (!instance || !full?.length) return instance;
+  // Rows moved above the header (TOP_BAR_PROP) are set aside, then put back first as they are.
+  const topBars = part === "header" ? splitTopBars(full) : null;
+  const tree = topBars?.rest ?? full;
   const on = (option: ChromeOption) => chromeOptionOn(instance, part, option);
   let nodes = tree;
   if (opts.hasLogo && on("logo")) nodes = withStoreLogo(nodes, instance.id, part, on("storeName"), readLogoHeights(instance));
@@ -713,6 +759,7 @@ export function drawChrome(
   if (part === "footer") {
     nodes = opts.hideTallabyCredit ? withoutNodes(nodes, isTallabyCredit) : withTallabyCredit(nodes, instance.id, opts.locale ?? "ar");
   }
+  if (topBars) return { ...instance, componentTree: joinTopBars(topBars.rows, nodes) };
   return nodes === tree ? instance : { ...instance, componentTree: nodes };
 }
 
