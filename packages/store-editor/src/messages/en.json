@@ -902,6 +902,54 @@
     },
     "logo": {
       "upload": "Upload logo"
+    },
+    "code": {
+      "add": {
+        "group": "Code",
+        "label": "Code section",
+        "hint": "HTML, Liquid and CSS you write yourself"
+      },
+      "tabsLabel": "Code section tabs",
+      "tabs": {
+        "content": "Content",
+        "code": "Code"
+      },
+      "name": "Name in Layers",
+      "namePlaceholder": "Code section",
+      "content": {
+        "noSettings": "This code has no settings yet. Add them to the schema in the Code tab.",
+        "richTextHint": "You can use simple HTML for bold text and links.",
+        "align": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        }
+      },
+      "blocks": {
+        "title": "Blocks",
+        "empty": "No blocks yet.",
+        "add": "Add {name}",
+        "remove": "Remove {name}",
+        "dragHandle": "Drag & Drop to reorder {name}",
+        "noSettings": "This block has no settings.",
+        "full": "This section has the most blocks it allows."
+      },
+      "editor": {
+        "label": "Section code",
+        "help": "HTML, Liquid and CSS in one file. JavaScript isn't allowed. Changes are checked, then shown on the page.",
+        "loading": "Loading the code editor…",
+        "checking": "Checking your code…",
+        "ok": "No problems. The page shows your latest code.",
+        "issuesTitle": "{count, plural, one {Fix this problem} other {Fix these # problems}} to see your changes. The page keeps the last working version.",
+        "line": "Line {line}",
+        "lineColumn": "Line {line}, column {column}"
+      },
+      "canvas": {
+        "loading": "Loading the code preview…",
+        "empty": "This code shows nothing yet.",
+        "errorLine": "Line {line}: {message}",
+        "errorGeneric": "This code can't be shown right now."
+      }
     }
   },
   "mediaLibrary": {

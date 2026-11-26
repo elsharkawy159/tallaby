@@ -15,6 +15,10 @@
       "types": "./src/config/index.ts",
       "default": "./src/config/index.ts"
     },
+    "./code-file": {
+      "types": "./src/code/section-file.ts",
+      "default": "./src/code/section-file.ts"
+    },
     "./code-server": {
       "types": "./src/code/code-node.server.ts",
       "default": "./src/code/code-node.server.ts"

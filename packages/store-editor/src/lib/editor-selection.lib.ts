@@ -116,6 +116,8 @@ type Overlays = Record<string, Record<string, unknown>>;
 
 /** A node's Layers name in the editor UI language (designs carry it in both); "" when unnamed. */
 export function nodeLabel(node: ComponentNode, uiLocale: string): string {
+  // A code node keeps its name in `props.name` (its other props are the code's own, F-101e).
+  if (node.type === "code") return typeof node.props.name === "string" ? node.props.name : "";
   const overlay = (node.props.translations as Overlays | undefined)?.[uiLocale]?.label;
   if (typeof overlay === "string" && overlay) return overlay;
   return typeof node.props.label === "string" ? node.props.label : "";
@@ -124,6 +126,10 @@ export function nodeLabel(node: ComponentNode, uiLocale: string): string {
 /** The node renamed by the seller: one name for every language (its old translated names are dropped). */
 export function renameNode(node: ComponentNode, label: string): ComponentNode {
   const name = label.trim().slice(0, 60) || undefined;
+  if (node.type === "code") {
+    const { name: _old, ...rest } = node.props;
+    return { ...node, props: { ...rest, ...(name && { name }) } };
+  }
   const translations = node.props.translations as Overlays | undefined;
   const cleaned = translations
     ? Object.fromEntries(
@@ -157,7 +163,8 @@ export function selectionLabel(
   const node = getNode(instance, selection.nodeId);
   if (node) {
     const elementDef = getElementDefinition(node.type);
-    return { title: elementDef ? pick(elementDef.label) : node.type, detail: sectionName, kind: "element" };
+    const own = node.type === "code" ? nodeLabel(node, locale) : "";
+    return { title: own || (elementDef ? pick(elementDef.label) : node.type), detail: sectionName, kind: "element" };
   }
   if (selection.part) {
     const field = partField(definition, selection.part);

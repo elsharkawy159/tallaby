@@ -44,6 +44,7 @@ import { instantiateTemplatePage } from "./editor-templates.lib";
 import { partAfterItemMove, placeItem, placePart, stepMovable } from "./editor-slots.lib";
 import type { CanvasPayload, DropPlan, ImageCandidate } from "../dnd/dnd.types";
 import { applyChromeMove, applyDropPlan, isImageTarget } from "../dnd/drop-plan.lib";
+import { starterCodeProps } from "../code/code-file.lib";
 
 type Clip = { kind: "section"; instance: SectionInstance } | { kind: "nodes"; nodes: ComponentNode[] };
 
@@ -264,6 +265,19 @@ export function createEditorCommands(store: EditorStore) {
     },
     addPreset(preset: LayoutPreset) {
       return placeNodes(preset.nodes.map((template) => fromTemplate(template, makeNodeId)));
+    },
+    /**
+     * Add › Code section (F-101e): a new section whose tree is `section → code`
+     * with the starter file, inserted after the selection; the code node is selected.
+     */
+    addCodeSection() {
+      const code: ComponentNode = { id: makeNodeId(), type: "code", props: starterCodeProps(), children: [] };
+      const tree = newTreeSection([code], makeNodeId);
+      if (!tree.length) return false;
+      const section = { ...createInstance(storeSectionRegistry.get("custom-section")!), componentTree: tree };
+      if (!insertSectionInstance(section)) return false;
+      state().select({ target: "page", sectionId: section.id, nodeId: code.id });
+      return true;
     },
 
     /**

@@ -51,6 +51,8 @@ type Catalog = {
 
 /** The store whose media library the image fields open (P4-09). */
 const InspectorStore = createContext<{ storeId: string; readOnly: boolean } | null>(null);
+/** Lets inspectors outside this file (the code node's) use `Field` with the store's media library. */
+export const InspectorStoreProvider = InspectorStore.Provider;
 
 const label = (value: Localized, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 

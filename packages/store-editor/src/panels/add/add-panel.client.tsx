@@ -31,6 +31,7 @@ import { SectionLibrary } from "./section-library.client";
 import type { TemplatePreviewHost } from "./template-preview-dialog.client";
 import { useEditorAdapter } from "../../adapter.client";
 import { addTabs } from "../../shell/capabilities.lib";
+import { CodeSectionEntry, codeSectionMatches } from "./code-section-entry.client";
 import { offeredElementGroups, offeredPaletteTypes, offersProductParts } from "../../lib/editor-pages.lib";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
@@ -150,7 +151,9 @@ function ElementsTab({ commands, uiLocale, productParts }: { commands: EditorCom
     { key: "layouts", title: t("layouts"), items: filter(presetKeys), compact: true },
     ...offeredElementGroups(productParts).map((group) => ({ key: group, title: t(`groups.${group}`), items: filter(elementKeys(group)) })),
   ];
-  const empty = groups.every((g) => g.items.length === 0);
+  const tCode = useTranslations("storeEditor.code.add");
+  const codeShown = Boolean(useEditorAdapter().code) && codeSectionMatches(query, tCode("label"), tCode("hint"));
+  const empty = groups.every((g) => g.items.length === 0) && !codeShown;
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
@@ -163,6 +166,7 @@ function ElementsTab({ commands, uiLocale, productParts }: { commands: EditorCom
       {groups.map((group) =>
         group.items.length ? <PaletteGroup key={group.key} groupKey={group.key} title={group.title} icon={group.icon} items={group.items} compact={group.compact} /> : null,
       )}
+      {codeShown && <CodeSectionEntry onAdd={() => commands.addCodeSection()} />}
     </div>
   );
 }

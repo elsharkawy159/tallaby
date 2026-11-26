@@ -23,6 +23,8 @@ import { hasCarousel } from "../lib/section-settings.lib";
 import { sectionScrollTargets } from "../lib/editor-motion.lib";
 import { isProductPage } from "@workspace/store-sections";
 import { nameOf } from "../panels/pages-panel.client";
+import { useEditorAdapter } from "../adapter.client";
+import { CodeNodeInspector } from "../code/code-inspector.client";
 
 /** Three everyday shortcuts under the empty state (the full list is in the shortcuts dialog). */
 const EMPTY_TIPS = [
@@ -78,6 +80,8 @@ export function EditorSidebar({
   // The style-only element the seller still chose Content for.
   const [contentFor, setContentFor] = useState<string | null>(null);
   const focusSelected = useStore(store, (s) => s.focusSelected);
+  // Code nodes are edited only when the host previews them (F-101e); otherwise they are style-only boxes.
+  const codeEditing = Boolean(useEditorAdapter().code);
   const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
 
   const instance = selection ? getInstance({ content: page.content, header, footer }, refOf(selection)) : null;
@@ -138,7 +142,7 @@ export function EditorSidebar({
   const kind = styleKindOf(target, { nodeType: node?.type, fieldType: field?.type, partKey: selection.part?.split(".").pop() });
   const selectionKey = `${instance.id}:${selection.nodeId ?? selection.part ?? ""}`;
   // An element with nothing to fill in (spacer, divider, box…) opens on Style, without changing the tab others open on.
-  const styleOnly = Boolean(node) && getElementDefinition(node!.type)?.fields.length === 0;
+  const styleOnly = Boolean(node) && getElementDefinition(node!.type)?.fields.length === 0 && !(codeEditing && node!.type === "code");
   const tab = styleOnly && contentFor !== selectionKey ? "style" : preferredTab;
   const openTab = (key: "content" | "style") => {
     setContentFor(styleOnly && key === "content" ? selectionKey : null);
@@ -211,7 +215,21 @@ export function EditorSidebar({
           />
         )}
         {tab === "content" ? (
-          node?.type === "carousel" || node?.type === "beforeAfter" ? (
+          node?.type === "code" && codeEditing ? (
+            <CodeNodeInspector
+              key={node.id}
+              node={node}
+              onEdit={(update, key) =>
+                state.editSection(ref, (i) => withTree(i, (nodes) => updateNode(nodes, node.id, update)), `content:${selectionKey}:${key}`)
+              }
+              locale={locale}
+              defaultLocale={defaultLocale}
+              uiLocale={uiLocale}
+              catalog={catalog}
+              storeId={storeId}
+              readOnly={readOnly}
+            />
+          ) : node?.type === "carousel" || node?.type === "beforeAfter" ? (
             // A selected carousel also lists its slides' photos, and a before/after its two photos (the section's options show the same).
             <SectionSettings key={node.id} tree={[node]} {...settingsProps} />
           ) : node ? (

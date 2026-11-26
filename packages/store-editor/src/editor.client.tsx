@@ -63,6 +63,7 @@ import { useDraftWatch } from "./state/use-draft-watch.client";
 import { useEditorShortcuts } from "./state/use-editor-shortcuts.client";
 import { useStorePreview } from "./state/use-store-preview.client";
 import { useIsBelowLg, useIsBelowXl } from "./state/use-media-query.client";
+import { CodePreviewProvider, renderCanvasCodeNode } from "./code/code-preview.client";
 
 type Catalog = EditorCatalogSnapshot;
 
@@ -235,6 +236,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       addPreset: closeAfter(commands.addPreset),
       addLibraryPreset: closeAfter(commands.addLibraryPreset),
       addFormSection: closeAfter(commands.addFormSection),
+      addCodeSection: closeAfter(commands.addCodeSection),
       applyImage: closeAfter(commands.applyImage),
       applyTemplatePage: closeAfter(commands.applyTemplatePage),
     };
@@ -300,6 +302,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const logoUrl = catalog.logoUrl !== undefined ? catalog.logoUrl : (initial.store.logoUrl ?? null);
   const profile = useMemo(() => ({ ...initial.store, logoUrl }), [initial.store, logoUrl]);
   const designHref = useEditorLinks(initial.storeId).design;
+  // Code sections (F-101e): the canvas shows the host's server preview of each code node.
+  const codeEditing = Boolean(adapter.code);
   const brandHref = designHref && !initial.readOnly ? `${designHref}#brand` : null;
 
   // What does not change with page edits (also used by the Add panel's section previews).
@@ -330,8 +334,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       ...(brandHref && {
         renderLogoUploader: (size: "md" | "lg") => <LogoUploader size={size} label={t("logo.upload")} href={brandHref} />,
       }),
+      ...(codeEditing && { renderCodeNode: renderCanvasCodeNode }),
     }),
-    [locale, forms, profile, t, slotIndustry, product, brandHref],
+    [locale, forms, profile, t, slotIndustry, product, brandHref, codeEditing],
   );
 
   const ctx = useMemo<RenderContext>(() => {
@@ -584,6 +589,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         </div>
       )}
 
+      <CodePreviewProvider code={adapter.code} locale={locale} pageId={page.id} productId={productPage ? (previewProduct.productId ?? undefined) : undefined}>
       <EditorDndProvider store={store} commands={commands} readOnly={initial.readOnly}>
       <div className="relative flex min-h-0 flex-1">
         <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} onShowShortcuts={() => setShortcutsOpen(true)} />
@@ -684,6 +690,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         )}
       </div>
       </EditorDndProvider>
+      </CodePreviewProvider>
 
       <QuickInsertDialog
         open={quickInsert.open}
