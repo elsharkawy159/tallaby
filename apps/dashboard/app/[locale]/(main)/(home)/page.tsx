@@ -2,15 +2,15 @@ import { Suspense } from "react";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { AttentionData } from "./_components/attention.data";
-import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "./_components/home-header.data";
-import { HomeKpisData, HomeLockedMetricsData, HomeMetricsData } from "./_components/home-kpis.data";
-import { AffiliateCard } from "./_components/affiliate-card";
-import { CommunityCard } from "./_components/community-card";
-import { CustomerJourneyData } from "./_components/customer-journey.data";
-import { TrafficSourcesData } from "./_components/traffic-sources.data";
-import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_components/home-range.client";
-import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
+import { AttentionData } from "../_components/attention.data";
+import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "../_components/home-header.data";
+import { HomeKpisData, HomeLockedMetricsData, HomeMetricsData } from "../_components/home-kpis.data";
+import { AffiliateCard } from "../_components/affiliate-card";
+import { CommunityCard } from "../_components/community-card";
+import { CustomerJourneyData } from "../_components/customer-journey.data";
+import { TrafficSourcesData } from "../_components/traffic-sources.data";
+import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "../_components/home-range.client";
+import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "../_components/home.shared";
 import { currentOrderLock } from "@/lib/auth/require-seller.server";
 import { OrdersLockedNotice, StoreOfflineHomeCard } from "@/components/orders/orders-locked";
 import { currentGraceNoticeStoreReady } from "@/lib/billing/grace-notice.server";
@@ -25,19 +25,19 @@ import {
   MetricsSkeleton,
   ListCardSkeleton,
   TableCardSkeleton,
-} from "./_components/home.skeletons";
-import { RecentOrdersData } from "./_components/recent-orders.data";
-import { SalesChartData } from "./_components/sales-chart.data";
-import { SetupChecklistData } from "./_components/setup-checklist.data";
-import { TopProductsData } from "./_components/top-products.data";
-import { TrialBannerData } from "./_components/trial-banner.data";
-import { UnansweredQuestionsData } from "./_components/unanswered-questions.data";
-import { WelcomeBanner } from "./_components/welcome-banner.client";
-import { SignupPixelData } from "./_components/signup-pixel.data";
-import { getHomeSnapshot } from "./_components/home.queries";
-import { isSetupDone, showSetupOnlyHome } from "./_components/setup-checklist.lib";
-import { SetupHomeData } from "./_components/setup-home.data";
-import { welcomeLandingHref } from "./stores/[storeId]/welcome/welcome.lib";
+} from "../_components/home.skeletons";
+import { RecentOrdersData } from "../_components/recent-orders.data";
+import { SalesChartData } from "../_components/sales-chart.data";
+import { SetupChecklistData } from "../_components/setup-checklist.data";
+import { TopProductsData } from "../_components/top-products.data";
+import { TrialBannerData } from "../_components/trial-banner.data";
+import { UnansweredQuestionsData } from "../_components/unanswered-questions.data";
+import { WelcomeBanner } from "../_components/welcome-banner.client";
+import { SignupPixelData } from "../_components/signup-pixel.data";
+import { getHomeSnapshot } from "../_components/home.queries";
+import { isSetupDone, showSetupOnlyHome } from "../_components/setup-checklist.lib";
+import { SetupHomeData } from "../_components/setup-home.data";
+import { welcomeLandingHref } from "../stores/[storeId]/welcome/welcome.lib";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components

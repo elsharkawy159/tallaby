@@ -36,7 +36,7 @@ export function KpisSkeleton() {
   );
 }
 
-function CardHeaderSkeleton() {
+export function CardHeaderSkeleton() {
   return (
     <div className="space-y-1.5 px-[22px] pt-5 max-[600px]:px-4 max-[600px]:pt-4">
       <Skeleton className="h-5 w-32" />
