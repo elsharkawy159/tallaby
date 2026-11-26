@@ -2138,6 +2138,22 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-26 — Move a section above the header as a top bar (F-83c, owner request; no migration)
+
+- **Built `27306019`:**
+  - "Move above header (all pages)" in the section toolbar, the right-click menu, the sidebar header and Layers, plus a Drag & Drop zone over the header. It moves an element-tree or code section into the shared header as its first rows.
+  - Marked rows (`props.pageSection`) can go back with "Move to page", and so can template announcement rows.
+  - The page and the header change in one undo step.
+  - The storefront draws marked rows above the logo row and the phone burger. Headers without one draw as before (snapshots unchanged).
+- **Fix `03c35a58`:**
+  - The editor agent now counts as a code section only a section that holds just the code element, so a header with a code top bar stays an editable tree.
+  - Added the chat texts for the `not_image` and `image_not_allowed` reject codes.
+- **Checks:** store-editor 343, store-sections agent, code and config 1,267, config and elements 1,199, and dashboard editor 111 tests pass. Typecheck is clean.
+- **Not done:**
+  - not tried in a browser;
+  - there is no move action on the phone action bar;
+  - "below the footer" is not built (it is the same work).
+
 ### 2026-11-26 — Edit with AI (F-83c, owner request; migration 0182 written, not applied)
 
 - **Built:**
