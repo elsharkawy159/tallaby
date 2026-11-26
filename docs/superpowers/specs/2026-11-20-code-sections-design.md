@@ -2,7 +2,7 @@
 
 - **Feature:** ROADMAP.md F-101 (owner request and approval 2026-11-20; every seller, Free and Pro).
 - **Rule:** CLAUDE.md rule 9 (HTML + Liquid + CSS only, server-rendered, cleaned, scoped, no JavaScript, never on checkout).
-- **Status:** design approved by the owner 2026-11-20 (§10). Shopify-alignment revision §11 added 2026-11-26, waiting for the owner (§11.7). No code. Nothing in this note is built.
+- **Status:** design approved by the owner 2026-11-20 (§10). Shopify-alignment revision §11 added and approved by the owner 2026-11-26 (§11.7). No code. Nothing in this note is built.
 
 ## 1. Goal
 
@@ -337,7 +337,7 @@ Shopify objects we don't have (`cart`, `customer`, `metafields`) render empty, a
 - §3.1: the `code` node gets `blocks`, and setting `type` uses the Shopify names in §11.3.
 - §9: F-101c also covers splitting the single file and storing blocks. F-101e also covers the block editor and the tooling spike. F-101h's starter sections are written from scratch (§11.1).
 
-### 11.7 Owner decisions needed
+### 11.7 Owner decisions (2026-11-26: 1–4 approved as recommended; 5 settled by §11.8)
 
 1. **Shopify-compatible names** for setting types, objects and product fields, with prices in minor units. Recommended: yes. This is a one-time choice, frozen in `apiVersion: 1`.
 2. **Section blocks in v1.** Recommended: yes, section blocks only; theme blocks and nesting come later.

@@ -1441,7 +1441,7 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 
 ### F-101 Code sections (custom CSS + Liquid) in the website builder — P1 · Owner request 2026-11-20 · Approved
 
-- **Status:** approved 2026-11-20 (owner): sellers and their developers may add their own code; CLAUDE.md rule 9 changed the same day. Design written 2026-11-20: [`docs/superpowers/specs/2026-11-20-code-sections-design.md`](docs/superpowers/specs/2026-11-20-code-sections-design.md) (its §9 task list F-101a–i replaces the draft tasks below); owner accepted every default in its §10 on 2026-11-20, so F-101a is done. 2026-11-26 (owner: Shopify's repos are the main reference): the note's §11 proposes Shopify-compatible section files, schema, setting types, objects and filters, plus section blocks in v1; it waits for the owner's answers in §11.7. Nothing built; next F-101b and F-101c.
+- **Status:** approved 2026-11-20 (owner): sellers and their developers may add their own code; CLAUDE.md rule 9 changed the same day. Design written 2026-11-20: [`docs/superpowers/specs/2026-11-20-code-sections-design.md`](docs/superpowers/specs/2026-11-20-code-sections-design.md) (its §9 task list F-101a–i replaces the draft tasks below); owner accepted every default in its §10 on 2026-11-20, so F-101a is done. 2026-11-26 (owner: Shopify's repos are the main reference): the note's §11 proposes Shopify-compatible section files, schema, setting types, objects and filters, plus section blocks in v1; the owner approved it the same day (§11.7). No seller- or shopper-facing text names Shopify (§11.8). Nothing built; next F-101b and F-101c.
 - **Why:** sellers asked to add their own code. Developers and agencies working for sellers need custom layouts the visual sections can't make. The AI website builder can also write a custom section faster as Liquid than as a node tree.
 - **Shape (hybrid, owner 2026-11-20):** the page stays a JSON element tree (rule 17), and drag and drop, reorder, templates and existing stores are unchanged. A new `code-section` node holds HTML + Liquid + CSS plus a settings schema; its fields appear in the builder sidebar, so a seller edits a developer's section without touching code. Rendered on the server with `liquidjs` (parse, render and memory limits), the HTML cleaned (no `<script>`, `on*` attributes or `javascript:` URLs), CSS scoped to the section, inside the React page (cart, carousels and pop-ups keep working). **No JavaScript.** Never on checkout pages.
 - **Not in scope (for now):** custom JavaScript; full developer-built Liquid themes, a developer CLI or a theme marketplace (re-check after we see how much code sections are used); converting existing templates to Liquid.
@@ -2101,7 +2101,8 @@ Add each new request here first, with the date and the owner's words, then turn 
   - allowing the `liquid` and `echo` tags;
   - a spike on `@shopify/liquid-html-parser` and the CodeMirror language client.
 - **License:** liquid, theme-tools and theme-liquid-docs are MIT. Dawn and Horizon may only be used for Shopify themes, so we study them and never copy them.
-- **Not done:** the owner's answers to §11.7; nothing built.
+- **Owner answers (same day):** familiar (Shopify-compatible) names with prices in minor units; one level of section blocks in v1; the one-file format; `liquid` and `echo` allowed. "Shopify" never appears in seller- or shopper-facing text, only on tallaby.com's comparison page (§11.8).
+- **Not done:** nothing built; next F-101b and F-101c.
 
 ### 2026-11-26 — Remove Tallaby badge app (F-110, owner request; no migration)
 
