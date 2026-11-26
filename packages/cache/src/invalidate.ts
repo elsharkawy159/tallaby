@@ -284,9 +284,15 @@ export function invalidateCustomDomain(subdomain: string, domain: string): Cache
   return inv([sellerTags.subdomain(subdomain), sellerTags.customDomain(domain), sellerTags.customDomain(`www.${domain}`)]);
 }
 
-/** A store published or unpublished its builder site: that store's site and storefront profile only. */
+/**
+ * A store published or unpublished its builder site: that store's site, its
+ * storefront profile and its catalog lists (products and categories), so a
+ * publish always shows the current catalog even when products or categories
+ * arrived without a purge (a bulk import straight into the database). Publish
+ * is rare, so the extra catalog refill is cheap. Never a sibling store.
+ */
 export function invalidateStoreSite(sellerId: string, storeId: string, subdomain: string): CacheInvalidation {
-  return inv([storeTags.site(sellerId, storeId), sellerTags.subdomain(subdomain)]);
+  return inv([storeTags.site(sellerId, storeId), sellerTags.subdomain(subdomain), storeTags.catalog(sellerId, storeId)]);
 }
 
 /**

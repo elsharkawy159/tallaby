@@ -434,12 +434,14 @@ describe("invalidateStoreIntegrations", () => {
 });
 
 describe("invalidateStoreSite", () => {
-  it("emits that store's site tag and its storefront profile, nothing for sibling stores", () => {
+  it("emits that store's site tag, storefront profile and catalog, nothing for sibling stores", () => {
     expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).toEqual([
       "store:site:seller-a:store-a1",
       "seller:subdomain:sara",
+      "store:catalog:seller-a:store-a1",
     ]);
     expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).not.toContain(storeTags.site("seller-a", "store-a2"));
+    expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).not.toContain(storeTags.catalog("seller-a", "store-a2"));
   });
 });
 
