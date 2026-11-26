@@ -8,7 +8,7 @@
         },
         {
           "title": "Fees are simple",
-          "body": "Free plan at {orderFee} per order, or Pro at {pro} a month. No percentage of sales."
+          "body": "Free plan at {orderFee} per delivered order, or Pro at {pro} a month. No percentage of sales."
         },
         {
           "title": "Leave anytime",
@@ -61,7 +61,7 @@
           "clauses": [
             {
               "title": "Plans",
-              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of {orderFee} per new order. Pro costs {pro} a month and has no order fee. Each account can have up to 3 stores on Free and up to 10 on Pro. Prices are set in US dollars and shown approximately in Egyptian pounds or your local currency at the current exchange rate; top-ups are paid in Egyptian pounds. Prices may change; we will tell you before a change applies to you."
+              "body": "Tallaby has two plans. Free costs nothing each month and has an order fee of {orderFee} per delivered order. Pro costs {pro} a month and has no order fee. Each account can have up to 3 stores on Free and up to 10 on Pro. Prices are set in US dollars and shown approximately in Egyptian pounds or your local currency at the current exchange rate; top-ups are paid in Egyptian pounds. Prices may change; we will tell you before a change applies to you."
             },
             {
               "title": "Your wallet",
@@ -73,11 +73,11 @@
             },
             {
               "title": "Activating your account",
-              "body": "On the Free plan, your store is public and takes orders from day one. To see your orders you need a first approved top-up, starting from {topUpMin}, or a wallet balance above zero. You have {days} days to make it; after that, every store of yours goes offline until you do. Sending campaigns needs the same top-up, and until then AI features are limited to 20 requests a month. The order fee applies to every order. Once your account is activated, none of this applies."
+              "body": "On the Free plan, your store is public and takes orders from day one. To see your orders you need a first approved top-up, starting from {topUpMin}, or a wallet balance above zero. You have {days} days to make it; after that, every store of yours goes offline until you do. Sending campaigns needs the same top-up, and until then AI features are limited to 20 requests a month. The order fee applies to every delivered order, as set out under Order fees. Once your account is activated, none of this applies."
             },
             {
               "title": "Order fees",
-              "body": "On the Free plan, the fee is taken from your wallet when a new order is placed, or when payment is confirmed for a card order. An order that looks like a test or a duplicate is charged only if it is delivered. The fee doesn't depend on the order's value, and we take no percentage of your sales."
+              "body": "On the Free plan, the fee is taken from your wallet when an order is delivered, whether it is paid in cash or by card. No fee is taken for an order that is cancelled or returned without being delivered. If an order is still not cancelled, returned or refunded 14 days after it was placed, the fee is taken then. An order that looks like a test or a duplicate is charged only if it is delivered, even after 14 days. The fee doesn't depend on the order's value, and we take no percentage of your sales."
             },
             {
               "title": "Payment and shipping costs",

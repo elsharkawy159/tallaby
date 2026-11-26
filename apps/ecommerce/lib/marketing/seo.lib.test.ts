@@ -139,7 +139,7 @@ describe("structured data", () => {
       "@type": "UnitPriceSpecification",
       price: (FREE_ORDER_FEE_USD_CENTS / 100).toFixed(2),
       priceCurrency: "USD",
-      referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "order" },
+      referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "delivered order" },
     });
     expect([pro.name, pro.price, pro.priceCurrency]).toEqual(["Pro", String(PRO_MONTHLY_USD_CENTS / 100), "USD"]);
     expect(pro.priceSpecification).toMatchObject({ price: String(PRO_MONTHLY_USD_CENTS / 100), priceCurrency: "USD", billingDuration: "P1M" });

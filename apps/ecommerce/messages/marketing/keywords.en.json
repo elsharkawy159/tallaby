@@ -6,7 +6,7 @@
     },
     "solution-free-online-store": {
       "title": "Create a free online store, no monthly fee",
-      "description": "Open your online store with no monthly fee: {orderFee} per order, and orders show from day one. Set it up in minutes."
+      "description": "Open your online store with no monthly fee: {orderFee} per delivered order, and orders show from day one. Set it up in minutes."
     },
     "solution-online-store-egypt": {
       "title": "An ecommerce platform built for Egypt",
@@ -86,7 +86,7 @@
         "ordersHead": ["Product", "Governorate", "Total", "Status"],
         "orders": [["Cotton T-shirt", "Cairo", "420 EGP", "New"], ["Handbag", "Giza", "260 EGP", "Shipping"], ["Wristwatch", "Alexandria", "310 EGP", "Delivered"]]
       },
-      "trust": ["No monthly subscription on Free", "{orderFee} per order", "No developer needed", "A store in Arabic and English"],
+      "trust": ["No monthly subscription on Free", "{orderFee} per delivered order", "No developer needed", "A store in Arabic and English"],
       "introTitle": "How do you create an online store yourself?",
       "intro": [
         "Creating an online store takes four steps: claim your store's link, pick a template, add your products, then turn on payments and shipping and publish. On Tallaby every step happens in your dashboard, with no developer and no code.",
@@ -115,7 +115,7 @@
         { "label": "Setup cost", "tallaby": "EGP 0", "other": "The developer's fee, which varies by project" },
         { "label": "Monthly subscription", "tallaby": "None on Free, {pro} a month on Pro", "other": "Depends on the platform" },
         { "label": "Hosting", "tallaby": "Included", "other": "Paid to your hosting provider" },
-        { "label": "Order fees", "tallaby": "{orderFee} per order on Free, none on Pro", "other": "Depends on the platform" },
+        { "label": "Order fees", "tallaby": "{orderFee} per delivered order on Free, none on Pro", "other": "Depends on the platform" },
         { "label": "Maintenance and updates", "tallaby": "Included", "other": "At your cost, with your developer" },
         { "label": "Time to launch", "tallaby": "You can publish the same day", "other": "Weeks to months" },
         { "label": "Payment and shipping", "tallaby": "Ready to connect from your dashboard", "other": "Each connection needs development" }
@@ -129,7 +129,7 @@
         { "q": "How long does it take to create an online store on Tallaby?", "a": "You can sign up, pick a template and add your products in a day, then publish when you're ready." },
         {
           "q": "Is creating a store free?",
-          "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
+          "a": "Creating a store is free. The Free plan has no monthly subscription, you don't need a credit card to sign up, and you pay {orderFee} per delivered order. Cancelled or returned orders cost you nothing. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
         },
         { "q": "Do I need a developer or technical experience?", "a": "No. Every step happens visually in your dashboard, from picking a template to connecting payment and shipping." },
         { "q": "Can I use my own domain?", "a": "Yes. Your store starts on a free link like yourbrand.tallaby.com, and you can connect a domain you own to your main store by adding its DNS records." },
@@ -150,11 +150,11 @@
     "free-online-store": {
       "crumb": "Free online store",
       "title": "A free online store, <em>with no monthly fee</em>",
-      "lead": "Open your store on Tallaby with no monthly fee and no setup fee, and pay only {orderFee} for each order you get.",
+      "lead": "Open your store on Tallaby with no monthly fee and no setup fee, and pay only {orderFee} for each delivered order.",
       "dashboard": {
         "title": "Plan and wallet",
         "greeting": "Your plan: Free",
-        "sub": "No monthly fee. You only pay per order.",
+        "sub": "No monthly fee. You only pay per delivered order.",
         "planName": "Free plan",
         "planHint": "Fees come out of your store wallet",
         "planActive": "Active",
@@ -163,10 +163,10 @@
         "ordersHead": ["Product", "Governorate", "Total", "Status"],
         "orders": [["Summer dress", "Dakahlia", "380 EGP", "New"], ["Leather wallet", "Gharbia", "245 EGP", "Shipping"], ["Sneakers", "Assiut", "510 EGP", "Delivered"]]
       },
-      "trust": ["No monthly fee", "{orderFee} per order", "Orders show from day one", "No credit card"],
+      "trust": ["No monthly fee", "{orderFee} per delivered order", "Orders show from day one", "No credit card"],
       "introTitle": "Can I really create a free online store?",
       "intro": [
-        "Yes. You can create a free online store on Tallaby with no monthly fee and no setup fee. On the Free plan you pay {orderFee} for each order you get, so if no orders come in, you pay no fees.",
+        "Yes. You can create a free online store on Tallaby with no monthly fee and no setup fee. On the Free plan you pay {orderFee} for each delivered order, so cancelled or returned orders cost you nothing.",
         "It's a complete store: a ready-made template you edit by drag and drop, a link with your store's name, cash on delivery on from the start, and Bosta, Paymob and Kashier ready to connect from your dashboard. The two plans differ in fees, AI credits and campaign emails, not in the tools you sell with.",
         "As your orders grow, Pro at {pro} a month with no order fees may cost you less. Check it with the store cost calculator before you decide."
       ],
@@ -187,7 +187,7 @@
       "cost": [
         { "label": "Monthly fee", "tallaby": "None", "other": "Depends on the platform" },
         { "label": "Setup fee", "tallaby": "EGP 0", "other": "The developer's fee" },
-        { "label": "Order fees", "tallaby": "{orderFee} per order", "other": "Depends on the platform" },
+        { "label": "Order fees", "tallaby": "{orderFee} per delivered order", "other": "Depends on the platform" },
         { "label": "Hosting and SSL", "tallaby": "Included", "other": "Paid to your hosting provider" },
         { "label": "Store link", "tallaby": "A free tallaby.com link", "other": "A domain you buy and renew" }
       ],
@@ -195,11 +195,11 @@
       "faq": [
         {
           "q": "Is the store free forever?",
-          "a": "The Free plan has no monthly fee, and we don't ask for a credit card. It isn't cost-free, though: you pay {orderFee} per order, and you need a first wallet top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online."
+          "a": "The Free plan has no monthly fee, and we don't ask for a credit card. It isn't cost-free, though: you pay {orderFee} per delivered order. Cancelled or returned orders cost you nothing."
         },
         {
           "q": "What's the difference between Free and Pro?",
-          "a": "On Free you pay {orderFee} per order and no monthly fee. On Pro you pay {pro} a month and no order fees, with more AI credits and campaign emails. Which costs less depends on how many orders you get."
+          "a": "On Free you pay {orderFee} per delivered order and no monthly fee. On Pro you pay {pro} a month and no order fees, with more AI credits and campaign emails. Which costs less depends on how many orders you get."
         },
         { "q": "Do I need a credit card to sign up?", "a": "No. Sign up with email or a Google account, and top up your wallet later in EGP.", "aOutsideEgypt": "No. Sign up with email or a Google account, and top up your wallet later by card in USD." },
         {
@@ -212,7 +212,7 @@
         },
         {
           "q": "Does Tallaby take a share of my sales?",
-          "a": "No. The Free plan's fee is a fixed amount per order, not a share of its value. If you connect Paymob or Kashier, your payment provider sets its own card fees."
+          "a": "No. The Free plan's fee is a fixed amount per delivered order, not a share of its value. If you connect Paymob or Kashier, your payment provider sets its own card fees."
         }
       ],
       "related": [
@@ -267,7 +267,7 @@
           "q": "What's the easiest way to create an online store in Egypt without a developer?",
           "a": "Use a platform with cash on delivery and local shipping built in. On Tallaby you sign up, pick a template, add your products and set your shipping zones, then publish, all from your dashboard."
         },
-        { "q": "Can I create a free online store in Egypt?", "a": "Yes. The Free plan has no monthly fee, and you pay {orderFee} per order. You top up your wallet in EGP, from {topUpMin}." },
+        { "q": "Can I create a free online store in Egypt?", "a": "Yes. The Free plan has no monthly fee, and you pay {orderFee} per delivered order. You top up your wallet in EGP, from {topUpMin}." },
         {
           "q": "Does Tallaby deliver orders to customers?",
           "a": "No. Tallaby doesn't deliver orders itself. Connect your Bosta account, download the Wassalha sheet for Egypt Post, or use your own riders."

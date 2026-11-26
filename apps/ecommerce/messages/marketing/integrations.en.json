@@ -251,7 +251,7 @@
       "faq": [
         {
           "q": "Does Tallaby take a share of card payments?",
-          "a": "No. The money goes to your Paymob account, and Paymob sets the payment fees. Tallaby's fee is your plan's order fee, such as {orderFee} per order on the Free plan."
+          "a": "No. The money goes to your Paymob account, and Paymob sets the payment fees. Tallaby's fee is your plan's order fee, such as {orderFee} per delivered order on the Free plan."
         },
         { "q": "When do I get the money?", "a": "On your terms with Paymob: the money is paid to your account there, not to Tallaby." },
         { "q": "Can I connect Paymob and Kashier together?", "a": "Each store has one card gateway. Choose Paymob or Kashier for each store." },
@@ -317,7 +317,7 @@
       "faq": [
         {
           "q": "Does Tallaby take a share of my Kashier sales?",
-          "a": "No. The money goes to your Kashier account, and Kashier sets the payment fees. Tallaby's fee is your plan's order fee, such as {orderFee} per order on the Free plan."
+          "a": "No. The money goes to your Kashier account, and Kashier sets the payment fees. Tallaby's fee is your plan's order fee, such as {orderFee} per delivered order on the Free plan."
         },
         { "q": "Can I test before going live?", "a": "Yes. Choose test mode when connecting, and once you're sure, switch to live with your live keys." },
         { "q": "Can I connect Kashier and Paymob together?", "a": "Each store has one card gateway. Choose Kashier or Paymob for each store." },

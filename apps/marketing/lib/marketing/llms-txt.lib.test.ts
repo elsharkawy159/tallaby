@@ -18,7 +18,7 @@ describe("llms.txt", () => {
   it("states the plan prices from the billing module and links absolute English URLs", () => {
     const text = buildLlmsTxt((key) => `Title ${key}`);
     expect(text.startsWith("# Tallaby (طلبي)\n\n> ")).toBe(true);
-    expect(text).toContain(`${formatUsd(FREE_ORDER_FEE_USD_CENTS)} per created order`);
+    expect(text).toContain(`${formatUsd(FREE_ORDER_FEE_USD_CENTS)} per delivered order`);
     expect(text).toContain(`${formatUsd(PRO_MONTHLY_USD_CENTS)} a month`);
     expect(text).toContain(`(${SITE_URL}/en/pricing)`);
     expect(text).toContain(`(${SITE_URL}/en/faq)`);

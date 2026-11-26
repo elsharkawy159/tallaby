@@ -35,7 +35,7 @@
           "plan": "Your Tallaby plan",
           "planFree": "Free",
           "planPro": "Pro",
-          "planFreeNote": "Free plan: {orderFee} per order at today's exchange rate, taken from your store wallet.",
+          "planFreeNote": "Free plan: {orderFee} per delivered order at today's exchange rate, taken from your store wallet.",
           "planProNote": "Pro plan: {pro} a month with no order fee, so it doesn't count against a single order.",
           "sell": "Selling price",
           "sellHint": "what the customer pays"
@@ -83,7 +83,7 @@
         "buy": "Purchase price",
         "ship": "Shipping cost",
         "ad": "Ad cost per order",
-        "fee": "Tallaby fee ({orderFee} per order at today's exchange rate)",
+        "fee": "Tallaby fee ({orderFee} per delivered order at today's exchange rate)",
         "cost": "Total costs",
         "sell": "Selling price",
         "profit": "Net profit ({sell} − {cost})",
@@ -110,10 +110,10 @@
         "saved": { "q": "Are the numbers I enter saved?", "a": "Only on your device, so they're there when you come back. Nothing is sent to a server. Press Reset to go back to the example figures." },
         "fee": {
           "q": "How does the calculator count the Tallaby fee?",
-          "a": "The Free plan's fee is {orderFee} per order at today's exchange rate, taken from your store wallet, while your orders and prices stay in pounds. So the calculator counts {fee} EGP per order. Pro costs {pro} a month with no order fee, so it doesn't count against a single order."
+          "a": "The Free plan's fee is {orderFee} per delivered order at today's exchange rate, taken from your store wallet, while your orders and prices stay in pounds. So the calculator counts {fee} EGP per order. Pro costs {pro} a month with no order fee, so it doesn't count against a single order."
         }
       },
-      "closing": { "title": "Turn your numbers into a store that sells", "body": "No monthly subscription on the Free plan, and {orderFee} per order." },
+      "closing": { "title": "Turn your numbers into a store that sells", "body": "No monthly subscription on the Free plan, and {orderFee} per delivered order." },
       "relatedTitle": "Related tools and pages",
       "related": [
         { "title": "Store cost calculator", "body": "What does your store cost each month?" },
@@ -169,7 +169,7 @@
         "title": "What goes into an online store's cost?",
         "lead": "The cost of an online store in Egypt isn't one number. These are the items you pay each month, and who sets each one.",
         "items": [
-          { "title": "Platform fees", "body": "On Tallaby: {orderFee} per order on the Free plan, or {pro} a month on Pro with no order fees." },
+          { "title": "Platform fees", "body": "On Tallaby: {orderFee} per delivered order on the Free plan, or {pro} a month on Pro with no order fees." },
           { "title": "Payment gateway", "body": "If you take cards through Paymob or Kashier, the gateway charges its fees for your account. Cash on delivery has no gateway fee." },
           { "title": "Domain", "body": "Optional. Your store starts on a free link; for your own domain you pay a registrar each year." },
           { "title": "Shipping", "body": "The customer usually pays it with the order, and you pay your carrier or rider as agreed." },
@@ -191,9 +191,9 @@
       "faq": {
         "total": {
           "q": "How much does it cost to create an online store in Egypt?",
-          "a": "On Tallaby there's no setup fee and no monthly fee on the Free plan, and you pay {orderFee} per order. Add your gateway's fees if you take cards, and a domain if you want your own."
+          "a": "On Tallaby there's no setup fee and no monthly fee on the Free plan, and you pay {orderFee} per delivered order. Add your gateway's fees if you take cards, and a domain if you want your own."
         },
-        "free": { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly fee, and you pay {orderFee} for each order you get." },
+        "free": { "q": "Is creating a store free?", "a": "Creating a store is free. The Free plan has no monthly fee, and you pay {orderFee} for each delivered order." },
         "pro": { "q": "When does Pro cost less?", "a": "When your Free order fees add up to more than Pro's monthly {pro}. Enter your order count in the calculator to see which costs less." },
         "domain": { "q": "Do I need to buy a domain?", "a": "No. Your store starts on a free tallaby.com link, and connecting your own domain is optional and on both plans." },
         "gateway": { "q": "What do payment gateways charge?", "a": "Paymob or Kashier set it for your account, and Tallaby takes no share of sales. Type your account's rate in the calculator." },
@@ -214,7 +214,7 @@
         { "title": "Free online store", "body": "No monthly fee and no credit card." },
         { "title": "Paymob integration", "body": "Card payments on your own account." }
       ],
-      "closing": { "title": "Start your store with no monthly fee", "body": "Free: {orderFee} per order. Pro: {pro} a month with no order fees." }
+      "closing": { "title": "Start your store with no monthly fee", "body": "Free: {orderFee} per delivered order. Pro: {pro} a month with no order fees." }
     }
   },
   "toolsHub": {

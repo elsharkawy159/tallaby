@@ -67,7 +67,7 @@ const usdPrice = (cents: number) => (cents % 100 === 0 ? String(cents / 100) : (
 /**
  * The product itself, for the home and pricing pages. Both plans in USD, the
  * currency sellers are billed in (`@workspace/lib/billing`), so the data does
- * not move with the daily EGP rate: Free is 0 a month plus a fee per order,
+ * not move with the daily EGP rate: Free is 0 a month plus a fee per delivered order,
  * Pro a monthly price and no order fee.
  */
 export function softwareApplicationSchema({ url, description, inLanguage }: { url: string; description: string; inLanguage: string }) {
@@ -91,7 +91,7 @@ export function softwareApplicationSchema({ url, description, inLanguage }: { ur
           "@type": "UnitPriceSpecification",
           price: usdPrice(FREE_ORDER_FEE_USD_CENTS),
           priceCurrency: "USD",
-          referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "order" },
+          referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "delivered order" },
         },
       },
       {

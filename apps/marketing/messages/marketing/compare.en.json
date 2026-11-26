@@ -124,7 +124,7 @@
     "rows": {
       "freePlan": {
         "label": "Free plan",
-        "tallaby": "No monthly subscription: you pay only per order, with no limit on products or orders."
+        "tallaby": "No monthly subscription: you pay only per delivered order, with no limit on products or orders."
       },
       "monthly": {
         "label": "Monthly subscription",
@@ -132,7 +132,7 @@
       },
       "orderFee": {
         "label": "Fee per order",
-        "tallaby": "{orderFee} per order on Free, none on Pro"
+        "tallaby": "{orderFee} per delivered order on Free, none on Pro"
       },
       "salesShare": {
         "label": "Share of sales",
@@ -333,7 +333,7 @@
     "strengthsTallaby": [
       {
         "title": "Start without a subscription",
-        "body": "The Free plan has no monthly fee. You pay {orderFee} per order, with no share of your sales."
+        "body": "The Free plan has no monthly fee. You pay {orderFee} per delivered order, with no share of your sales."
       },
       {
         "title": "Built for selling in Egypt",
@@ -370,7 +370,7 @@
     "faq": {
       "price": {
         "q": "Is Tallaby cheaper than {name}?",
-        "a": "On Tallaby you start on the Free plan with no monthly subscription and pay {orderFee} per order, or choose Pro at {pro} a month with no order fee."
+        "a": "On Tallaby you start on the Free plan with no monthly subscription and pay {orderFee} per delivered order, or choose Pro at {pro} a month with no order fee."
       },
       "move": {
         "q": "Can I move my products from {name} to Tallaby?",
@@ -382,7 +382,7 @@
       },
       "try": {
         "q": "Can I try Tallaby before closing my current store?",
-        "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days to see your orders and keep your store online."
+        "a": "Yes. You can set up and test your store on Tallaby with no monthly subscription, then move when you're ready. We charge the order fee only for delivered orders. Cancelled or returned orders cost you nothing."
       },
       "methods": {
         "q": "What payment and shipping options does Tallaby have?",
@@ -408,7 +408,7 @@
     "moveLinkShopify": "See the integrations",
     "alternativesLink": "{name} alternatives in Egypt",
     "pricingLink": "Tallaby pricing",
-    "pricingLinkBody": "Free at {orderFee} per order, or Pro at {pro} a month.",
+    "pricingLinkBody": "Free at {orderFee} per delivered order, or Pro at {pro} a month.",
     "costTitle": "What {costOrders} orders a month cost",
     "costLead": "A simple example with the prices published on the date shown, before payment-gateway fees, shipping and any extra apps.",
     "costTallaby": "Tallaby: {freeAtVolume} in order fees on Free, or {pro} on Pro with no order fee.",
@@ -426,7 +426,7 @@
     "listNote": "Tallaby is our platform, so we list it first. Check each platform's own pages before you decide.",
     "ours": "Our platform",
     "tallabyName": "Tallaby",
-    "tallabyPrice": "Free plan at {orderFee} per order with no monthly fee, or Pro at {pro} a month with no order fee.",
+    "tallabyPrice": "Free plan at {orderFee} per delivered order with no monthly fee, or Pro at {pro} a month with no order fee.",
     "tallabyPick": {
       "bestFor": "Sellers in Egypt who want cash on delivery, Bosta and their own Paymob or Kashier account in one dashboard, without a monthly fee.",
       "pros": [
@@ -450,7 +450,7 @@
     "faq": {
       "free": {
         "q": "Can I start on Tallaby without a monthly fee?",
-        "a": "Yes. The Free plan has no monthly subscription: you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days to see your orders and keep your store online."
+        "a": "Yes. The Free plan has no monthly subscription: you pay {orderFee} per delivered order. Cancelled or returned orders cost you nothing."
       },
       "how": {
         "q": "How did you put this list together?",
@@ -467,7 +467,7 @@
       "priceNote": "EasyOrders charges {eoOrderFee} per order on its Regular plan, or {eoPro} a month on Professional with no order fee, after a {eoActivation} wallet top-up to activate. It prices in US dollars, converted here at today's rate. Its pages don't say whether cancelled or fake orders are charged.",
       "cost": "EasyOrders: {eoAtVolume} in order fees on Regular, or {eoPro} on Professional with no order fee.",
       "verdictTallaby": [
-        "You want a lower fee per order: Tallaby's Free plan is {orderFee} per order.",
+        "You want a lower fee per order: Tallaby's Free plan is {orderFee} per delivered order.",
         "You want your store in Arabic and English, and a list of abandoned checkouts to follow up on WhatsApp.",
         "You want your own Paymob or Kashier account and Bosta waybills in one dashboard."
       ],
@@ -535,7 +535,7 @@
       "faq": [
         {
           "q": "Does EasyOrders charge for cancelled or fake orders?",
-          "a": "Its pricing page says only that there are no hidden fees, and we found no page that says whether cancelled, fake or returned orders are charged, so ask EasyOrders directly. On Tallaby, Free charges {orderFee} per order and you can block numbers that send fake orders."
+          "a": "Its pricing page says only that there are no hidden fees, and we found no page that says whether cancelled, fake or returned orders are charged, so ask EasyOrders directly. On Tallaby, Free charges {orderFee} per delivered order, cancelled or returned orders cost nothing, and you can block numbers that send fake orders."
         }
       ],
       "shortlist": {
@@ -584,7 +584,7 @@
         "faq": [
           {
             "q": "Is there a platform like EasyOrders with a lower fee per order?",
-            "a": "Tallaby's Free plan has no monthly fee and charges {orderFee} per order, against {eoOrderFee} on EasyOrders' Regular plan when we checked. Both need a first top-up."
+            "a": "Tallaby's Free plan has no monthly fee and charges {orderFee} per delivered order, against {eoOrderFee} on EasyOrders' Regular plan when we checked. Both need a first top-up."
           }
         ]
       }
@@ -597,7 +597,7 @@
       "verdictTallaby": [
         "You sell in Egypt and want Paymob or Kashier with no extra platform fee on card orders.",
         "You want cash on delivery, fake-order protection and Bosta built in, without paid apps.",
-        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per delivered order."
       ],
       "verdict": [
         "You sell in many countries and languages and need the largest app store.",
@@ -720,7 +720,7 @@
         "faq": [
           {
             "q": "Is there a free Shopify alternative in Egypt?",
-            "a": "Tallaby's Free plan has no monthly fee: you pay {orderFee} per order and no share of your sales. Shopify has no free plan, only a short trial."
+            "a": "Tallaby's Free plan has no monthly fee: you pay {orderFee} per delivered order and no share of your sales. Shopify has no free plan, only a short trial."
           }
         ]
       }
@@ -733,7 +733,7 @@
       "verdictTallaby": [
         "You want a store that's hosted, secured and updated for you, with no plugins to maintain.",
         "You want Bosta waybills, fake-order protection and abandoned checkouts built in.",
-        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per delivered order."
       ],
       "verdict": [
         "You want full control of your code, hosting and data, and have someone to run it.",
@@ -827,7 +827,7 @@
       "priceNote": "ExpandCart's plans run from {ecStandard} a month (Standard: up to 100 products and 1 template) to {ecUltimate} a month (Ultimate), as listed on its pricing page, with a yearly discount and no sales commission.",
       "cost": "ExpandCart: {ecStandard} a month on Standard, with no fee per order and no sales commission. A bigger catalog needs a higher plan.",
       "verdictTallaby": [
-        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order.",
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per delivered order.",
         "You want abandoned checkouts, email campaigns and every template on the plan you start with.",
         "You want cash on delivery, fake-order protection and AI product writing from day one."
       ],
@@ -883,7 +883,7 @@
       "faq": [
         {
           "q": "Does ExpandCart have a free plan?",
-          "a": "When we checked, its price cards listed paid plans only, with a free trial of 14 or 15 days (its pages differ). Tallaby's Free plan has no monthly fee and charges {orderFee} per order."
+          "a": "When we checked, its price cards listed paid plans only, with a free trial of 14 or 15 days (its pages differ). Tallaby's Free plan has no monthly fee and charges {orderFee} per delivered order."
         }
       ],
       "shortlist": {
@@ -908,7 +908,7 @@
       "verdictTallaby": [
         "You sell from Egypt: Tallaby works with Egyptian documents, Paymob, Kashier and Bosta.",
         "You want cash on delivery with fake-order protection and Egyptian shipping zones.",
-        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per delivered order."
       ],
       "verdict": [
         "You sell in Saudi Arabia or the UAE and can register a Saudi business.",
@@ -999,7 +999,7 @@
       "verdictTallaby": [
         "You want card payments from the start: on Tallaby you connect your own Paymob or Kashier account on either plan.",
         "You want fake-order protection, Bosta waybills and email campaigns without a paid plan.",
-        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per order."
+        "You want to start with no monthly fee: Tallaby's Free plan is {orderFee} per delivered order."
       ],
       "verdict": [
         "You want a free plan with no fee per order and can live without online payments at first.",

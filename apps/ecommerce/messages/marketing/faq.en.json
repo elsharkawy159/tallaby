@@ -31,7 +31,7 @@
         "items": [
           {
             "q": "How much does Tallaby cost?",
-            "a": "There are two plans. Free has no monthly fee and costs {orderFee} per order, with 100 AI credits and 500 campaign emails a month. Pro costs {pro} a month with no order fee, 2,000 AI credits and 10,000 campaign emails a month."
+            "a": "There are two plans. Free has no monthly fee and costs {orderFee} per delivered order, with 100 AI credits and 500 campaign emails a month. Pro costs {pro} a month with no order fee, 2,000 AI credits and 10,000 campaign emails a month."
           },
           {
             "q": "What do I need to pay before I can start?",
@@ -44,11 +44,11 @@
           },
           {
             "q": "Does the fee change with order value?",
-            "a": "No. The fee is the same for every order, whatever its value, and we never take a percentage of sales."
+            "a": "No. The fee is the same for every delivered order, whatever its value, and we never take a percentage of sales."
           },
           {
             "q": "When is the order fee charged?",
-            "a": "When a new order is placed, or when payment is confirmed for a card order. An order that looks like a test or a duplicate is charged only if it is delivered. The fee can take your balance below zero, and you settle it by topping up."
+            "a": "Only when the order is delivered. Cancelled or returned orders cost you nothing. If an order is still not cancelled or returned 14 days after it was placed, the fee is taken then. The fee can take your balance below zero, and you settle it by topping up."
           },
           {
             "q": "Do customers get order emails on the Free plan?",
@@ -140,15 +140,15 @@
       },
       {
         "q": "How much does Tallaby cost?",
-        "a": "Free has no monthly fee and costs {orderFee} per order. Pro costs {pro} a month with no order fee. On Free, make a first top-up from {topUpMin} within {days} days to see your orders and keep your store online. Customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
+        "a": "Free has no monthly fee and costs {orderFee} per delivered order. Pro costs {pro} a month with no order fee. Cancelled or returned orders cost you nothing. Customer order emails need the Order Notifications app, whose cost you see in your dashboard before you turn it on."
       },
       {
         "q": "Does the fee change with the order value?",
-        "a": "No. The fee is the same for every order, whatever its value, and we never take a percentage of sales."
+        "a": "No. The fee is the same for every delivered order, whatever its value, and we never take a percentage of sales."
       },
       {
         "q": "How is the fee collected?",
-        "a": "Your account has one wallet. On Free, {orderFee} comes out when a new order is placed. The fee can take your balance below zero, and you settle it by topping up."
+        "a": "Your account has one wallet. On Free, {orderFee} comes out when an order is delivered, and nothing for cancelled or returned orders. The fee can take your balance below zero, and you settle it by topping up."
       },
       {
         "q": "Can I use my own couriers?",

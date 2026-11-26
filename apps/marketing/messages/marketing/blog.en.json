@@ -9,7 +9,7 @@
     },
     "post": {
       "breadcrumb": "Breadcrumb",
-      "ctaBody": "Create your store free and add your first product in minutes. The Free plan costs {orderFee} per order, and your store takes orders from day one. Make a first top-up from {topUpMin} within {days} days to see your orders and keep your store online.",
+      "ctaBody": "Create your store free and add your first product in minutes. The Free plan costs {orderFee} per delivered order. Cancelled or returned orders cost you nothing.",
       "copy": "Copy link",
       "keepReading": "Keep reading",
       "ctaTitle": "Ready to put a price on it?"
@@ -18,10 +18,10 @@
       "s2List": [
         "Shipping, if you offer free delivery.",
         "Payment processing for online payments.",
-        "Platform fee: {orderFee} per order on the Tallaby Free plan, or none on Pro.",
+        "Platform fee: {orderFee} per delivered order on the Tallaby Free plan, or none on Pro.",
         "A small buffer for returns and damaged items."
       ],
-      "toolBody": "Enter your numbers in EGP. The suggested price already includes the Tallaby Free plan fee of {orderFee} per order.",
+      "toolBody": "Enter your numbers in EGP. The suggested price already includes the Tallaby Free plan fee of {orderFee} per delivered order.",
       "fee": "Tallaby fee, about",
       "lede": "Pricing is the decision most new sellers get wrong, usually by charging too little. A low price feels safe, but it leaves no room for shipping surprises, returns or a discount code when you need one. Here's a simple way to get it right.",
       "s1": "1. Start from your real cost",

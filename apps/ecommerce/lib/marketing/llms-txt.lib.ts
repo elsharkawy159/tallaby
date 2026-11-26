@@ -90,7 +90,7 @@ function keyFacts(): string[] {
   const free = PLANS.free;
   const pro = PLANS.pro;
   return [
-    `Free plan: no monthly fee and no percentage of sales; ${formatUsd(FREE_ORDER_FEE_USD_CENTS)} per created order, taken from the store's prepaid wallet. Includes ${formatNumber(free.aiCreditsMonthly)} AI credits and ${formatNumber(free.emailsMonthly)} campaign emails a month.`,
+    `Free plan: no monthly fee and no percentage of sales; ${formatUsd(FREE_ORDER_FEE_USD_CENTS)} per delivered order, taken from the store's prepaid wallet. Cancelled or returned orders pay nothing. Includes ${formatNumber(free.aiCreditsMonthly)} AI credits and ${formatNumber(free.emailsMonthly)} campaign emails a month.`,
     `Pro plan: ${formatUsd(PRO_MONTHLY_USD_CENTS)} a month from the store wallet, no order fee, ${formatNumber(pro.aiCreditsMonthly)} AI credits and ${formatNumber(pro.emailsMonthly)} campaign emails a month. Both plans have the same store features.`,
     `A store takes orders from day one with no card. A first wallet top-up (from ${formatUsd(TOP_UP_MIN_USD_CENTS)}, payable in Egyptian pounds) is needed soon after to keep seeing new orders and to send campaigns.`,
     "Payments go to the seller: cash on delivery, InstaPay and mobile wallets pay the seller's own details, and cards go through the seller's own Paymob or Kashier account. Tallaby takes no cut of sales.",
@@ -107,7 +107,7 @@ export function buildLlmsTxt(title: (metaKey: string) => string, sections: LlmsS
   const lines = [
     "# Tallaby (طلبي)",
     "",
-    "> Tallaby is an online store builder. Sellers open their own branded online store, with no code, and sell in Egypt and worldwide. The free plan has no monthly fee and charges a small flat fee per order; Pro is a fixed monthly price with no order fee.",
+    "> Tallaby is an online store builder. Sellers open their own branded online store, with no code, and sell in Egypt and worldwide. The free plan has no monthly fee and charges a small flat fee per delivered order; Pro is a fixed monthly price with no order fee.",
     "",
     "Tallaby is for small sellers and brands, mostly in Egypt and the Arab world, who sell on Instagram, Facebook or WhatsApp and want a store of their own. The site and the dashboard are in Arabic (default) and English.",
     "",

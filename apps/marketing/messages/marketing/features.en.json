@@ -75,7 +75,7 @@
     "stepsKicker": "Step by step",
     "requirementsLead": "Have these ready before you start.",
     "closingBody": "Start with no monthly subscription and no credit card.",
-    "freeTerms": "The Free plan has no monthly subscription, and you pay {orderFee} per order. Your store takes orders from day one; make a first top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
+    "freeTerms": "The Free plan has no monthly subscription, and you pay {orderFee} per delivered order. Cancelled or returned orders cost you nothing. Order emails to your customers need the Order Notifications app, whose cost you see in your dashboard before you turn it on.",
     "dashMock": {
       "home": "Home",
       "products": "Products",
@@ -630,7 +630,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Design your store and publish it today"
@@ -759,7 +759,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Put your store on every customer's phone"
@@ -960,7 +960,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Add your products and start selling today",
@@ -1201,7 +1201,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Run your orders from one screen",
@@ -1428,7 +1428,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Launch your store's first offer today",
@@ -1620,7 +1620,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Send your first campaign",
@@ -1837,7 +1837,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Know your store's numbers from the first order",
@@ -2069,7 +2069,7 @@
         },
         {
           "q": "What does this cost?",
-          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per order; Pro is {pro} a month with no order fee."
+          "a": "It's in both plans at no extra cost. The Free plan has no monthly fee and charges {orderFee} per delivered order; Pro is {pro} a month with no order fee."
         }
       ],
       "closingTitle": "Get your store ready for search",
@@ -2268,7 +2268,7 @@
       "faq": [
         {
           "q": "Does Tallaby take a cut of my sales?",
-          "a": "No. Money comes straight to you. You pay only your plan: {orderFee} per order on Free, or {pro} a month on Pro with no order fee."
+          "a": "No. Money comes straight to you. You pay only your plan: {orderFee} per delivered order on Free, or {pro} a month on Pro with no order fee."
         },
         {
           "q": "How does the deposit work?",

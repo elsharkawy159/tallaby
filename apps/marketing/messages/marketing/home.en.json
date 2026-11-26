@@ -2,7 +2,7 @@
   "meta": {
     "home": {
       "title": "Tallaby | Free AI online store builder",
-      "description": "Build your online store with AI on Tallaby. AI writes your products in Arabic and English, you take cash on delivery orders. Start free ({orderFeeUsd} per order)."
+      "description": "Build your online store with AI on Tallaby. AI writes your products in Arabic and English, you take cash on delivery. Start free ({orderFeeUsd} per delivered order)."
     }
   },
   "home": {
@@ -12,7 +12,7 @@
       "cta": "Create your store free",
       "check1": "Free plan, no card",
       "check2": "Signup in under a minute",
-      "check3": "About EGP 1.5 fee per order",
+      "check3": "About EGP 1.5 fee per delivered order",
       "sample": "Sample data from a demo store.",
       "composer": {
         "label": "Describe your store",
@@ -395,7 +395,7 @@
     "pricing": {
       "kicker": "Pricing",
       "title": "Create your online store in minutes",
-      "body": "Start free and pay a few cents per order, or go Pro for a flat monthly price."
+      "body": "Start free and pay a few cents per delivered order, or go Pro for a flat monthly price."
     },
     "faq": {
       "kicker": "FAQ",
@@ -404,7 +404,7 @@
       "items": [
         {
           "q": "What does an order cost on the free plan?",
-          "a": "{orderFee} per order, with no monthly fee and no percentage of sales. Make a first top-up from {topUpMin} within {days} days to see your orders, send campaigns and keep your store online."
+          "a": "{orderFee} per delivered order, with no monthly fee and no percentage of sales. Cancelled or returned orders cost you nothing."
         },
         {
           "q": "When is Pro worth it?",

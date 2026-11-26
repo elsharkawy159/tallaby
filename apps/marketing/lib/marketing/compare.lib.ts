@@ -100,7 +100,7 @@ export const COMPARE_GROUPS: readonly { id: string; icon: LucideIcon; rows: read
     rows: [
       { id: "freePlan", tallaby: "y" }, // PLANS.free, FREE_ORDER_FEE_USD_CENTS
       { id: "monthly", tallaby: "y" }, // PRO_MONTHLY_USD_CENTS
-      { id: "orderFee", tallaby: "y" }, // Free pays per order, Pro doesn't
+      { id: "orderFee", tallaby: "y" }, // Free pays per delivered order, Pro doesn't
       { id: "salesShare", tallaby: "y" }, // flat fee, no % of the order value
       { id: "activation", tallaby: "p" }, // F-84i trial, ORDER_GRACE_DAYS_SHORT + TOP_UP_MIN
       { id: "yearly", tallaby: "n" }, // Pro is billed monthly from the wallet only (PRO_MONTHLY_USD_CENTS)
