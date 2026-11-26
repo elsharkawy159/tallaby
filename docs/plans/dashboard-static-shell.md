@@ -1,6 +1,6 @@
 # Dashboard: static per-locale shells with client-side data
 
-Status: plan (2026-11-15), not started. Owner decisions (2026-11-15): static shell per locale + client data (not a full SPA); `[locale]` with `localePrefix: 'as-needed'` (Arabic keeps today's URLs, English gets `/en/...`); good storefront ↔ dashboard freshness. Scope: `apps/dashboard`, plus small additive changes in `packages/cache` and the ecommerce revalidation receiver. Rules: CLAUDE.md 3, 4, 5, 8, 10, 13, 14, 15, 16, 21. Add as a feature to `ROADMAP.md` §5 intake before Phase 0 (rule 19).
+Status (2026-11-26): Phases 0 and 1.1–1.5 done; Phases 2–5 are replaced by [`dashboard-performance.md`](dashboard-performance.md), which also covers layout queries, auth round trips and bundle size. §0 below describes the code before Phase 0. Originally: plan (2026-11-15). Owner decisions (2026-11-15): static shell per locale + client data (not a full SPA); `[locale]` with `localePrefix: 'as-needed'` (Arabic keeps today's URLs, English gets `/en/...`); good storefront ↔ dashboard freshness. Scope: `apps/dashboard`, plus small additive changes in `packages/cache` and the ecommerce revalidation receiver. Rules: CLAUDE.md 3, 4, 5, 8, 10, 13, 14, 15, 16, 21. Add as a feature to `ROADMAP.md` §5 intake before Phase 0 (rule 19).
 
 ## 0. What the code does today (verified 2026-11-15)
 
