@@ -2,7 +2,7 @@
 
 - **Feature:** ROADMAP.md F-101 (owner request and approval 2026-11-20; every seller, Free and Pro).
 - **Rule:** CLAUDE.md rule 9 (HTML + Liquid + CSS only, server-rendered, cleaned, scoped, no JavaScript, never on checkout).
-- **Status:** design approved by the owner 2026-11-20 (§10). No code. Nothing in this note is built.
+- **Status:** design approved by the owner 2026-11-20 (§10). Shopify-alignment revision §11 added 2026-11-26, waiting for the owner (§11.7). No code. Nothing in this note is built.
 
 ## 1. Goal
 
@@ -235,3 +235,112 @@ Checks for every task: `pnpm lint`, `pnpm typecheck` and `pnpm test` (rule 15).
 2. **Copying between stores:** allowed; product and category settings are cleared on copy (§5.2).
 3. **Header and footer code:** skipped on cart and checkout pages (§4.8).
 4. **Video embeds:** no `<iframe>` in v1; videos use the existing video element. YouTube/Vimeo iframes may be reconsidered later.
+
+## 11. Shopify alignment (revision 2026-11-26, proposed; owner decisions in §11.7)
+
+Owner, 2026-11-26: take Shopify's repos as the main reference, so a section a developer already knows how to write for Shopify mostly works here. Checked on 2026-11-26 against `Shopify/liquid`, `Shopify/theme-tools`, `Shopify/theme-liquid-docs`, `Shopify/dawn` and `Shopify/horizon`.
+
+### 11.1 What we can use, and what we can't
+
+| Repo | License | Use |
+|---|---|---|
+| `Shopify/liquid` (Ruby) | MIT | The language spec and its safety model. It can't run in Node, so `liquidjs` (MIT, 10.x, built to match Shopify Liquid) stays the engine. |
+| `Shopify/theme-liquid-docs` | MIT | JSON Schemas for the section `{% schema %}` (`schemas/theme/section.json`, `setting.json`, `preset.json`) and docs data (`data/objects.json`, `filters.json`, `tags.json`). We copy the *shape* for our own schema and docs. |
+| `Shopify/theme-tools` | MIT | `liquid-html-parser` (Liquid + HTML AST), `theme-check-common` / `theme-check-browser` (linter), `codemirror-language-client` + `theme-language-server-browser` (autocomplete, hover and errors in CodeMirror). Candidates for the editor (§11.5). |
+| `Shopify/dawn`, `Shopify/horizon` | Shopify-only: "may only be exercised to develop themes that integrate or interoperate with Shopify … All other uses … are strictly prohibited" | **Study only.** Never copy their Liquid, CSS, schema JSON or text into Tallaby. That includes the starter sections in F-101h, which we write from scratch. |
+
+### 11.2 Section file format: one Shopify-style source
+
+A developer writes or pastes one file, the way Shopify sections are written:
+
+```liquid
+<div class="hero">{{ section.settings.title }}</div>
+{% for block in section.blocks %}<div {{ block.attributes }}>{{ block.settings.text }}</div>{% endfor %}
+{% stylesheet %} .hero { padding: 2rem } {% endstylesheet %}
+{% schema %} { "name": "Hero", "settings": [], "blocks": [], "presets": [] } {% endschema %}
+```
+
+On save, the server splits it into the stored props of §3.1 (`source`, `css`, `schema`), so storage and rendering don't change, and the Code tab shows it joined again. `{% javascript %}` and `<script>` are refused with a clear message (rule 9). The `schema` JSON is validated with our own zod schema, modelled on Shopify's `section.json`.
+
+### 11.3 Schema: Shopify keys, our limits
+
+Keys we support (Shopify names): `name`, `tag`, `class`, `settings`, `blocks`, `max_blocks`, `presets`, `default`. Not in v1: `limit`, `enabled_on`, `disabled_on`, `locales` (§11.4), app blocks and theme blocks (`blocks/*.liquid`, `{% content_for 'blocks' %}`, nested blocks).
+
+**Section blocks are added to v1** (new compared with §3.1). Blocks are repeatable items such as slides, FAQ rows or logos, each with its own settings, and the inspector can add, reorder and remove them. Shopify sections lean on them, so without blocks most pasted sections can't be edited. They're stored as `blocks: { id, type, settings }[]` on the `code` node, up to 50 (fewer if the schema's `max_blocks` says so).
+
+**Setting types use Shopify names**, and each maps to an inspector field we already have:
+
+| Shopify type | Our field | Notes |
+|---|---|---|
+| `text`, `textarea`, `inline_richtext`, `richtext` | text, textarea, rich text | stored per language (ar/en) |
+| `number`, `range` | number | `range` keeps `min`/`max`/`step`/`unit` |
+| `checkbox` | switch | |
+| `select`, `radio`, `text_alignment` | select | |
+| `color`, `color_background` | color | `color_background` is checked by `sanitizeStyle` |
+| `image_picker` | image | our media library |
+| `url` | link | same URL rules as §4.2 |
+| `video_url` | text | YouTube/Vimeo only; renders through our video element (no iframe, §10.4) |
+| `product`, `product_list` | product, products | same store only (rule 5) |
+| `collection`, `collection_list` | category | a Tallaby category is a Shopify collection |
+| `header`, `paragraph` | sidebar heading / help text | holds no value |
+| `font_picker`, `color_scheme`, `blog`, `article`, `page`, `link_list`, `metaobject`, `html`, `liquid` | — | not in v1 (`html` and `liquid` settings would let a seller paste raw code into a field) |
+
+Labels may be plain strings or `{ "ar": …, "en": … }`. Shopify's `t:` label keys aren't supported.
+
+### 11.4 Objects, filters and tags: Shopify names where the meaning matches
+
+**Objects.** Names follow Shopify, so pasted code reads our data:
+- `section`: `id`, `settings`, `blocks`.
+- `block`: `id`, `type`, `settings`, and `attributes` (our name for `shopify_attributes`).
+- `product`.
+- `collection`: a Tallaby category.
+- `shop`: the store; `store` from §4.3 stays as an alias.
+- `request`: `locale`, `page_type`, and `design_mode` (true in the builder preview).
+- `routes`: `root_url`, `collections_url`, `cart_url`, `search_url`.
+- `settings`: the store design system (colours, fonts, radius).
+- `localization`: `language`, `direction`.
+
+**Product DTO fields** take Shopify's names: `id`, `title`, `handle`, `url`, `price`, `compare_at_price`, `price_min`, `price_max`, `available` (was `in_stock`), `featured_image`, `images`, `variants[] { id, title, price, available }`, `vendor`, `type`. The Tallaby extras stay: `on_sale`, `rating`, `review_count`. **Prices are in minor units** (piastres or cents), as in Shopify, and `money` formats them. All of this is frozen in `apiVersion: 1`, so it must be settled before F-101d ships.
+
+**Filters.** These use Shopify names:
+- Money: `money`, `money_with_currency`, `money_without_trailing_zeros`.
+- Media and links: `image_url: width:`, `image_tag`, `link_to`, `placeholder_svg_tag`.
+- `t`: built-in storefront strings such as "Add to cart", in ar and en. There are no theme locale files; a section's own text lives in its settings.
+- Text: `handleize`, `default`, `escape`.
+- Plus the `liquidjs` standard filters.
+
+Not in v1: `asset_url` (there are no theme assets), `stylesheet_tag`, `script_tag`, `payment_*`, `customer_*`.
+
+**Tags.** Changes from §4.1:
+- **`liquid` and `echo` are allowed.** They are syntax only, and Shopify code uses `{% liquid %}` a lot.
+- `stylesheet` and `schema` are parsed at save (§11.2).
+- Still dropped: `javascript`, `render`/`include` (no snippets in v1), `form`, `paginate`, `section`, `sections`, `content_for`, `layout`, `tablerow`.
+
+**Safety settings, from Ruby Liquid to `liquidjs`:**
+- `error_mode: :strict2` → strict parsing at save; a parse error blocks the save.
+- `strict_filters` → `strictFilters: true`.
+- `render_score_limit` and `render_length_limit` → `renderLimit` and `memoryLimit` (§4.1).
+
+Shopify objects we don't have (`cart`, `customer`, `metafields`) render empty, as in §4.1. They never cause an error on the live store.
+
+### 11.5 Editor tooling to try first (spike in F-101e)
+
+1. **`@shopify/liquid-html-parser`** for the save-time checks (blocked tags, `on*` attributes, `{% javascript %}`), so they run on a real syntax tree instead of regexes. The render-time cleaning in §4.2 stays the security boundary.
+2. **`@shopify/codemirror-language-client` with `@shopify/theme-language-server-browser`** for autocomplete and errors in the Code tab. We feed it our own objects, filters and tags in the `theme-liquid-docs` JSON format, so it suggests `product.rating` and not Shopify's `cart`. If the language server can't use our docs without a fork, fall back to plain CodeMirror 6 with a Liquid mode and our own error checks.
+3. **Not `theme-check` as a whole.** Most of its checks are about Shopify theme folders. Revisit after the spike.
+
+### 11.6 Corrections to the note above
+
+- §7.4: the kill switch migration can't be `0178`, which is now taken. It gets the next free number when F-101c starts (`0182` today).
+- §4.3 and §4.4: product field names and minor-unit prices change as in §11.4.
+- §4.1: `liquid` and `echo` move from dropped to kept.
+- §3.1: the `code` node gets `blocks`, and setting `type` uses the Shopify names in §11.3.
+- §9: F-101c also covers splitting the single file and storing blocks. F-101e also covers the block editor and the tooling spike. F-101h's starter sections are written from scratch (§11.1).
+
+### 11.7 Owner decisions needed
+
+1. **Shopify-compatible names** for setting types, objects and product fields, with prices in minor units. Recommended: yes. This is a one-time choice, frozen in `apiVersion: 1`.
+2. **Section blocks in v1.** Recommended: yes, section blocks only; theme blocks and nesting come later.
+3. **One-file format with `{% schema %}` and `{% stylesheet %}`.** Recommended: yes.
+4. **Allow the `liquid` and `echo` tags.** Recommended: yes.
+5. **Pasted Shopify sections "mostly work"; that is not a promise.** Sections that use `cart`, `customer`, forms, snippets or JavaScript won't work. Recommended: say so in the seller docs (F-101h).
