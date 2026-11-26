@@ -4800,6 +4800,19 @@ Owner asked to keep only the current version of each template in `template_versi
 - Browser pixels only, same path as the Meta Pixel identifier app (§9.1, §9.2): validated public ids, fixed script templates, store host only, after consent. No migration, no money or ledger code touched.
 - Checks: `@workspace/lib` and `@workspace/apps` tests pass; ecommerce tests pass (storefront event bus + TikTok/Snap mapper tests); marketing tests pass; dashboard tests pass except the pre-existing `order-lock-copy.lib.test.ts` `formatUsdShort` failure (file untouched); typecheck clean in lib, apps, dashboard, marketing; ecommerce only the known `profile.chunks.tsx` errors; eslint clean on the changed ecommerce, dashboard and marketing files. Integration test for the two pixels written in `store-integrations.integration.test.ts`, not run (no `TEST_DATABASE_URL`). No browser E2E.
 
+### 2026-11-26 — Fee on delivery switched on; Edit with AI and the top bar deployed (owner: "enable it and push")
+
+- **Deploy:** pushed `main` at `1ec585a2`. All 5 image workflows succeeded, and Coolify had every app healthy at 20:28Z.
+  - Store, checkout, tallaby.com and the dashboard login return 200.
+  - `/api/cron/aged-order-fees` returns 401 without the secret.
+- **Switch:** `fee_on_delivery` set to true on production at 20:28:50Z.
+  - From then on, new orders pay the fee when delivered, or through the 14-day job.
+  - Orders placed earlier already paid at creation, and the job only sees orders created after this time.
+- **Owner to do:**
+  - Add the Coolify scheduled task on the dashboard app: `/api/cron/aged-order-fees`, daily at 05:40 UTC, timeout 330 s. It must be in place before 2026-12-10, when the first orders reach 14 days.
+  - Migration `0182` (Edit with AI file attachments) is still not applied.
+- **Rollback:** `UPDATE platform_switches SET enabled = false, changed_at = now() WHERE key = 'fee_on_delivery'`. New orders then pay at creation again; orders placed while it was on pay on delivery.
+
 ### 2026-11-26 — Code sections and the editor AI agent deployed and switched on (owner)
 
 - **Push and deploy:** pushed `main` at `85392241`. All 5 image workflows succeeded, and Coolify reported every app healthy at 18:06Z.

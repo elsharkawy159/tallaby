@@ -2139,6 +2139,14 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-26 — Fee on delivery live; Edit with AI and the top bar deployed (owner)
+
+- **Deployed:** pushed `1ec585a2`. Every app was healthy at 20:28Z.
+- **Switch on:** `fee_on_delivery` set to true on production at 20:28:50Z.
+- **Owner to do:**
+  - Add the Coolify scheduled task for `/api/cron/aged-order-fees` (daily at 05:40 UTC) before 2026-12-10.
+  - Migration `0182` is still not applied.
+
 ### 2026-11-26 — Platform fee taken on delivery, behind `fee_on_delivery` (owner-approved; no migration)
 
 - **Owner:** every order pays the Free-plan fee when it is delivered; never-delivered cancelled or returned orders never pay; orders still open 14 days after creation pay through a daily job; behind a platform switch, off = today; never charged twice.
