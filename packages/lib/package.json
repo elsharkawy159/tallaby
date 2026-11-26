@@ -365,6 +365,10 @@
       "types": "./src/products/customer-fields.lib.ts",
       "default": "./src/products/customer-fields.lib.ts"
     },
+    "./products/price-rounding": {
+      "types": "./src/products/price-rounding.lib.ts",
+      "default": "./src/products/price-rounding.lib.ts"
+    },
     "./products/preorder": {
       "types": "./src/products/preorder.lib.ts",
       "default": "./src/products/preorder.lib.ts"

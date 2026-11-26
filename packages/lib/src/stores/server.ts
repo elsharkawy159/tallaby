@@ -42,6 +42,7 @@ import {
   type CodDepositChangeError,
   type CodDepositSetting,
 } from "../orders/cod-deposit.lib";
+import { priceRoundingSchema, type PriceRoundingRule } from "../products/price-rounding.lib";
 import { parseStoreCurrency } from "../utils/formatPrice";
 import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { seedStarterSite } from "./starter-site.server";
@@ -796,6 +797,55 @@ export async function setStoreCodDeposit(
     return { success: true, data };
   } catch (error) {
     if (error instanceof StoreActionError) return { success: false, error: error.code as StoreWriteError | CodDepositChangeError };
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Round prices (ROADMAP.md F-112a). Saved in `stores.settings.priceRounding`
+// (no migration); the seller price writers read it when they save (F-112b).
+
+/**
+ * Saves (or, with null, removes) the store's price rounding rule under a row
+ * lock. The rule is validated again here. Not audited: `store_settings_audit`
+ * only takes payments, shipping and domain rows. The caller purges the store's
+ * cached profile.
+ */
+export async function setStorePriceRounding(
+  sellerId: string,
+  _actorId: string,
+  storeId: string,
+  rule: PriceRoundingRule | null,
+  q: Queryable = db,
+): Promise<StoreResult<PriceRoundingRule | null, StoreWriteError>> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  let next: PriceRoundingRule | null = null;
+  if (rule !== null) {
+    const parsed = priceRoundingSchema.safeParse(rule);
+    if (!parsed.success) return { success: false, error: "invalid_input" };
+    next = parsed.data;
+  }
+  try {
+    const data = await q.transaction(async (tx) => {
+      const [store] = await tx
+        .select({ settings: stores.settings, status: stores.status })
+        .from(stores)
+        .where(ownStore(sellerId, storeId))
+        .for("update");
+      if (!store) throw new StoreActionError("not_found");
+      if (store.status !== "active") throw new StoreActionError("store_read_only");
+
+      const settings = (store.settings ?? {}) as Record<string, unknown>;
+      const { priceRounding: _previous, ...rest } = settings;
+      await tx
+        .update(stores)
+        .set({ settings: next ? { ...rest, priceRounding: next } : rest, updatedAt: sql`now()` })
+        .where(ownStore(sellerId, storeId));
+      return next;
+    });
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof StoreActionError) return { success: false, error: error.code as StoreWriteError };
     throw error;
   }
 }

@@ -8337,6 +8337,41 @@
       "generic": "Couldn't save. Try again."
     }
   },
+  "storePriceRounding": {
+    "title": "Round prices",
+    "description": "Round your product prices to clean numbers like 240 or 1,200 when you save them.",
+    "enabled": "Round prices automatically",
+    "rangeLabel": "Price range",
+    "upToLabel": "Prices up to",
+    "upToPlaceholder": "e.g. 500",
+    "allPrices": "All prices",
+    "andAbove": "And above",
+    "above": "Above {amount} {unit}",
+    "stepLabel": "Round to the nearest",
+    "stepCustom": "Other number",
+    "customStepLabel": "Rounding number",
+    "customStepHint": "A whole number from 1 to 10,000.",
+    "directionLabel": "Direction",
+    "direction": {
+      "up": "Round up",
+      "down": "Round down",
+      "nearest": "Nearest"
+    },
+    "example": "e.g. {before} → {after}",
+    "addRange": "Add a price range",
+    "removeRange": "Remove this range",
+    "appliesOnSave": "Rounding applies to the price and the compare-at price when you save a product. Your current prices don't change for now.",
+    "errors": {
+      "readOnly": "This store isn't active, so you can't change its settings.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many saves. Try again in a few minutes.",
+      "invalidInput": "Check your price rounding settings and try again.",
+      "upToInvalid": "Enter the \"Prices up to\" amount in range {row}, like 500.",
+      "upToOrder": "Range {row} must be higher than the range before it.",
+      "stepInvalid": "Enter a whole rounding number from 1 to 10,000 in range {row}.",
+      "generic": "Couldn't save price rounding. Try again."
+    }
+  },
   "storeCheckoutSettings": {
     "readOnly": "This store is not active, so its settings can't be changed.",
     "formTitle": "Checkout form",

@@ -9,6 +9,7 @@ import { nicheChoices } from "@/lib/stores/niche-choices.lib";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { getBillingState } from "@workspace/lib/billing/server"
+import { readPriceRoundingSetting } from "@workspace/lib/products/price-rounding";
 import { StoreGeneralForm } from "./store-general.client";
 import { loadCatalogProducts } from "./catalog.data";
 import type { StoreGeneralFormValues } from "./store-settings.dto";
@@ -60,6 +61,8 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
         locale,
       )}
       readOnly={readOnly}
+      // Round prices (ROADMAP.md F-112a), on or off; saved with the same button.
+      priceRounding={readPriceRoundingSetting(store.settings)}
       // Builder sellers edit the logo, banner and favicon in Website › Design;
       // the others keep them here.
       brandInSettings={!storeBuilderEnabled(store.sellerId)}

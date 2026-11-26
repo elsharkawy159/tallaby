@@ -1510,11 +1510,11 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 ### F-112 Round product prices (store setting) — P1 · Owner request 2026-11-26
 
 **Why:** Sellers want clean prices (240, 250, 1,200) without fixing each price by hand, especially after a bulk % change, an import or AI autofill.
-**What:** Store settings › Catalog gets a "Round prices" setting saved in `stores.settings.priceRounding` (no migration): on/off plus 1–5 **price-range tiers**, each with an upper bound (the last tier has none), a step (1, 5, 10, 20, 50, 100 or a whole number up to 10,000 in the store's currency) and a direction (up, down, nearest). The tier is picked by the price before rounding. Computed in integer piastres; a price never rounds to 0 (it goes up one step instead). The rule rounds the price the customer pays and the compare-at price, of products and of variants; when the rounded compare-at price is not higher than the rounded price, the discount is dropped (no fake discounts). **Applied on save** by every seller price writer: product form (it shows the price that will be saved), bulk edit, Excel update, product import, AI uploader/autofill, the MCP agent and the Shopify import. The stored price is what the customer pays, so cart and checkout code are unchanged. Not rounded: cost price, quantity offers, customer-field extras, coupons, shipping, orders. Admin product edits are unchanged. **"Round all now"**: a preview of old → new prices of the store's products and variants (not in Trash), then one confirmed apply that recomputes on the server from the saved rule.
+**What:** Store settings › General gets a "Round prices" card (under the Catalog cards) saved in `stores.settings.priceRounding` (no migration): on/off plus 1–5 **price-range tiers**, each with an upper bound (the last tier has none), a step (1, 5, 10, 20, 50, 100 or a whole number up to 10,000 in the store's currency) and a direction (up, down, nearest). The tier is picked by the price before rounding. Computed in integer piastres; a price never rounds to 0 (it goes up one step instead). The rule rounds the price the customer pays and the compare-at price, of products and of variants; when the rounded compare-at price is not higher than the rounded price, the discount is dropped (no fake discounts). **Applied on save** by every seller price writer: product form (it shows the price that will be saved), bulk edit, Excel update, product import, AI uploader/autofill, the MCP agent and the Shopify import. The stored price is what the customer pays, so cart and checkout code are unchanged. Not rounded: cost price, quantity offers, customer-field extras, coupons, shipping, orders. Admin product edits are unchanged. **"Round all now"**: a preview of old → new prices of the store's products and variants (not in Trash), then one confirmed apply that recomputes on the server from the saved rule.
 **Owner decisions 2026-11-26:** applies to every price on save (not display-only); tiers by price range; existing prices through "Round all now" with a preview.
-**Status:** [Planned] 2026-11-26.
+**Status:** [In progress] 2026-11-26. F-112a done.
 
-- **F-112a · P1** Rounding rule (pure lib + tests), setting save, Catalog settings UI.
+- **F-112a · P1** Rounding rule (pure lib + tests), setting save, settings card in Store settings › General (saved with the page's save bar). Done.
 - **F-112b · P1 · deps: F-112a** Apply the rule in every seller price writer; product form hint.
 - **F-112c · P1 · deps: F-112a** "Round all now" with preview.
 
@@ -2111,7 +2111,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [ ] F-109e WhatsApp go-live (owner: Meta account, env, 0180 approval)
 - [x] F-110a Remove Tallaby badge app ($1/month, free with Pro) and the wallet top-up prompt for paid apps — 2026-11-26; unit tests pass, DB integration tests not run (no TEST_DATABASE_URL); not tried in a browser
 - [x] F-111a Different product cards per template, `addToCart` look, contained photos on white, white gallery — 2026-11-26; store-sections tests and typecheck pass; checked in the template preview
-- [ ] F-112a Round prices: rule, setting, Catalog settings UI
+- [x] F-112a Round prices: rule, setting, settings card (Store settings › General) — 2026-11-26; lib and dashboard tests and typecheck pass; not tried in a browser
 - [ ] F-112b Round prices: applied in every seller price writer, product form hint
 - [ ] F-112c Round prices: "Round all now" with preview
 
