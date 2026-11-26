@@ -581,6 +581,7 @@
   "product": {
     "addToCart": "أضف إلى السلة",
     "adding": "جاري الإضافة...",
+    "inCartCount": "{count} في السلة",
     "buyNow": "اشترِ الآن",
     "viewDetails": "عرض التفاصيل",
     "viewMore": "عرض المزيد",

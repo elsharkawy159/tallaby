@@ -73,3 +73,21 @@ describe("defineDesign builder", () => {
     expect(() => defineDesign({ ...sample, id: "Bad Id" })).toThrow();
   });
 });
+
+describe("addToCart builder look", () => {
+  it("adds a look prop only for a non-default look", () => {
+    const design = defineDesign({
+      id: "atc-look",
+      version: 1,
+      category: "statistics",
+      subcategory: "counters",
+      name: L("عينة", "Sample"),
+      description: L("وصف", "Description"),
+      keywords: ["sample"],
+      tree: (t) => t.section({}, [t.addToCart(), t.addToCart({ look: "button" }), t.addToCart({ look: "icon" })]),
+    });
+    const carts = walk(instantiateDesign(design, { id: "s1" }).componentTree!).filter((n) => n.type === "addToCart");
+    expect(carts.map((n) => n.props.look)).toEqual([undefined, undefined, "icon"]);
+    expect(carts[0]!.props).toEqual(carts[1]!.props);
+  });
+});

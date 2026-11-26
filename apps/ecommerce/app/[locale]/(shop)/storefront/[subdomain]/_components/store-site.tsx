@@ -195,8 +195,8 @@ async function buildContext(
     renderAccountButton: () => <StoreAccountButton />,
     renderAppInstall: () => <StoreAppInstallButton storeName={store.displayName} />,
     renderMobileMenu: ({ links, title }) => <StoreMobileMenu title={title} links={links} fontClassName={storefrontFont.variable} />,
-    renderAddToCart: (product) => (
-      <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={catalog.withVariants.has(product.id)} />
+    renderAddToCart: (product, options) => (
+      <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={catalog.withVariants.has(product.id)} look={options?.look} />
     ),
     renderWishlistButton: (product) => <StoreWishlistButton productId={product.id} />,
     // A starter form made in the store's first language reads in the page's language.
@@ -294,8 +294,8 @@ export async function StoreSiteProductGrid({
     ...base,
     reveal: true,
     catalog: { ...base.catalog, products: { [CATALOG_LIST_ID]: products } },
-    renderAddToCart: (product) => (
-      <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={withVariants.has(product.id)} />
+    renderAddToCart: (product, options) => (
+      <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={withVariants.has(product.id)} look={options?.look} />
     ),
   };
   return (

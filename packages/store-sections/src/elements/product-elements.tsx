@@ -137,9 +137,10 @@ function Gallery({ product, props, attrs, ctx }: StillProps) {
   const zoom = props.zoom !== false;
   const [main] = urls;
   const percent = discountOf(product);
-  // A square soft stage (design `.pd-stage`): the photo is contained, so a cut-out product never gets cropped.
+  // A square white stage (design `.pd-stage`; the site's product stage background when it has one):
+  // the photo is contained, so a cut-out product never gets cropped.
   const frame = (
-    <div className="relative min-w-0 flex-1 overflow-hidden rounded-[calc(var(--sf-radius,12px)*1.5)] bg-(--sf-shelf)">
+    <div className="relative min-w-0 flex-1 overflow-hidden rounded-[calc(var(--sf-radius,12px)*1.5)] bg-(--sf-stage-bg,#ffffff)">
       {main ? (
         // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
         <img
@@ -150,7 +151,11 @@ function Gallery({ product, props, attrs, ctx }: StillProps) {
           decoding="async"
         />
       ) : (
-        <div data-part="gallery-placeholder" aria-hidden className="flex aspect-square w-full items-center justify-center text-(--sf-muted)">
+        <div
+          data-part="gallery-placeholder"
+          aria-hidden
+          className="flex aspect-square w-full items-center justify-center rounded-[calc(var(--sf-radius,12px)*1.5)] border border-(--sf-line) text-(--sf-muted)"
+        >
           <ImageIcon className="size-12 opacity-50" />
         </div>
       )}
@@ -181,7 +186,7 @@ function Gallery({ product, props, attrs, ctx }: StillProps) {
             key={url}
             aria-current={i === 0 ? "true" : undefined}
             className={cn(
-              "block size-[72px] shrink-0 overflow-hidden rounded-xl bg-(--sf-shelf) p-1.5 outline-2 -outline-offset-2",
+              "block size-[72px] shrink-0 overflow-hidden rounded-xl border border-(--sf-line) bg-(--sf-stage-bg,#ffffff) p-1.5 outline-2 -outline-offset-2",
               i === 0 ? "outline-(--sf-brand)" : "outline-transparent",
             )}
           >

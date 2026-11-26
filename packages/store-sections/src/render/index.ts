@@ -22,6 +22,7 @@ export { scrollEffectTargets, type ScrollTargets } from "../elements/scroll-plan
 export * from "../library";
 export { DATA_ACTION_CLASS, DataEmpty, EmptySection } from "../sections/_data";
 export { MOBILE_MENU_BUTTON_CLASS } from "../elements/render";
+export { ADD_TO_CART_STILL_CLASS, AddToCartLookStill } from "../elements/add-to-cart-look";
 export {
   BOTTOM_NAV_ATTR,
   BOTTOM_NAV_FIXED_LABELS,

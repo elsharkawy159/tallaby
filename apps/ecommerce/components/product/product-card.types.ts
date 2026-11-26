@@ -60,6 +60,8 @@ export interface AddToCartButtonProps {
   icon?: "cart" | "bag";
   /** Several variants of the product at once (2 black, 1 red); used when it has more than one line. */
   lines?: { variantId?: string; quantity: number }[];
+  /** Accessible name for an icon-only button (`showText: false`); left out, none is set. */
+  ariaLabel?: string;
 }
 
 export interface WishlistButtonProps {

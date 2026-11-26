@@ -41,6 +41,7 @@ export const AddToCartButton = ({
   label,
   icon = "cart",
   lines,
+  ariaLabel,
 }: AddToCartButtonProps) => {
   const { addToCart, addLinesToCart, isProductLoading } = useCart();
   const router = useRouter();
@@ -92,6 +93,7 @@ export const AddToCartButton = ({
       disabled={disabled || isLoading || Number(stock) === 0 || Boolean(customer?.uploading)}
       size={size}
       variant={variant}
+      aria-label={ariaLabel}
     >
       {isLoading ? (
         <Loader2 className={`${styles.loader} animate-spin`} />

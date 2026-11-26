@@ -3,6 +3,7 @@ import { ShoppingCart } from "lucide-react";
 import { formatPricePlain } from "@workspace/lib";
 import { isProductPage, type SiteConfig } from "@workspace/store-sections";
 import {
+  AddToCartLookStill,
   PageStyles,
   SITE_ROOT_CLASS,
   SectionRenderer,
@@ -242,12 +243,17 @@ function buildContext(
       </span>
     ),
     // A still copy of the storefront's card button (store-card-add-to-cart.client.tsx), so a preview shows the card as a store draws it.
-    renderAddToCart: () => (
-      <span aria-hidden className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-(--sf-brand) px-3 text-sm font-medium whitespace-nowrap text-(--sf-brand-ink)">
-        <ShoppingCart className="size-3.5 shrink-0 md:size-4" />
-        <span>{locale === "ar" ? "أضف للسلة" : "Add to cart"}</span>
-      </span>
-    ),
+    renderAddToCart: (_product, options) =>
+      options?.look && options.look !== "button" ? (
+        <span aria-hidden className="contents">
+          <AddToCartLookStill look={options.look} label={locale === "ar" ? "أضف للسلة" : "Add to cart"} />
+        </span>
+      ) : (
+        <span aria-hidden className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-(--sf-brand) px-3 text-sm font-medium whitespace-nowrap text-(--sf-brand-ink)">
+          <ShoppingCart className="size-3.5 shrink-0 md:size-4" />
+          <span>{locale === "ar" ? "أضف للسلة" : "Add to cart"}</span>
+        </span>
+      ),
     renderWishlistButton: () => (
       <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-sm">
         ♡

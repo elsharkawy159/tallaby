@@ -316,3 +316,66 @@ describe("product scope", () => {
     expect(html).not.toContain("Pro Headset");
   });
 });
+
+describe("addToCart look", () => {
+  const card = (props: Record<string, unknown>, over: Partial<RenderContext> = {}) =>
+    renderToStaticMarkup(
+      <>
+        {renderElementTree(
+          [node("productList", { source: "newest" }, [node("vFlex", {}, [node("addToCart", props)])])],
+          ctx({ catalog: { products: { productList: [product] }, categories: [] }, ...over }),
+        )}
+      </>,
+    );
+
+  it("passes no options for the default look, so hosts draw what they drew before", () => {
+    const calls: unknown[][] = [];
+    const hook = (...args: unknown[]) => {
+      calls.push(args);
+      return <button>add</button>;
+    };
+    const plain = card({}, { renderAddToCart: hook });
+    expect(card({ look: "button" }, { renderAddToCart: hook })).toBe(plain);
+    expect(card({ look: "bogus" }, { renderAddToCart: hook })).toBe(plain);
+    expect(card({ look: 3 }, { renderAddToCart: hook })).toBe(plain);
+    expect(calls.every((args) => args.length === 1)).toBe(true);
+  });
+
+  it("hands the chosen look to renderAddToCart", () => {
+    for (const look of ["outline", "icon", "text"] as const) {
+      const seen: unknown[] = [];
+      card({ look }, { renderAddToCart: (_p, options) => (seen.push(options), <button>add</button>) });
+      expect(seen).toEqual([{ look }]);
+    }
+  });
+
+  it("draws the editor still per look, the solid one unchanged", () => {
+    const still = (props: Record<string, unknown>) =>
+      renderToStaticMarkup(<>{renderElementTree([node("section", {}, [node("addToCart", props)])], ctx({ mode: "edit" }))}</>);
+    const solid =
+      '<span class="inline-flex h-9 items-center justify-center rounded-(--sf-radius,12px) bg-(--sf-brand) px-4 text-xs font-semibold text-(--sf-brand-ink,#fff) opacity-70">Add to cart</span>';
+    expect(still({})).toContain(solid);
+    expect(still({ look: "nope" })).toContain(solid);
+    expect(still({ look: "outline" })).toContain("border-(--sf-brand)");
+    expect(still({ look: "outline" })).not.toContain("opacity-70");
+    // The round icon has no visible text, but keeps its name for screen readers.
+    const icon = still({ look: "icon" });
+    expect(icon).toContain("rounded-full");
+    expect(icon).toContain('<span class="sr-only">Add to cart</span>');
+    expect(still({ look: "text" })).toContain("underline");
+  });
+
+  it("stretches the button only when the node is full width", () => {
+    const hook = { renderAddToCart: () => <button>add</button> };
+    expect(card({}, hook)).toContain('class="flex"><button>');
+    const wide = renderToStaticMarkup(
+      <>
+        {renderElementTree(
+          [node("productList", { source: "newest" }, [node("vFlex", {}, [{ ...node("addToCart", { look: "outline" }), style: { width: "100%" } }])])],
+          ctx({ catalog: { products: { productList: [product] }, categories: [] }, ...hook }),
+        )}
+      </>,
+    );
+    expect(wide).toContain('class="flex *:flex-1"><button>');
+  });
+});

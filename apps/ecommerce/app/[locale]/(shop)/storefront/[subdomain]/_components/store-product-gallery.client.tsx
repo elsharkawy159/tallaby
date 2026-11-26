@@ -12,7 +12,7 @@ import { StoreWishlistButton } from "./store-wishlist-button.client";
 
 /**
  * The store product page's gallery (the store look of `ProductImages`): a
- * square stage on the store's shelf colour that swipes on every screen, the
+ * square white stage (the store's product stage colour when it has one) that swipes on every screen, the
  * discount badge at the top start, round wishlist and share buttons at the
  * top end, dots on phones (the active one a pill), and 72px thumbnails below
  * on phones and beside (or below, or none) on desktop. Hover zoom on desktop.
@@ -84,7 +84,7 @@ export function StoreGallery({
           aria-label={t("photoOf", { index: index + 1, total: slides.length })}
           aria-current={index === current}
           className={cn(
-            "relative size-[72px] shrink-0 overflow-hidden rounded-xl bg-(--sf-shelf) outline-2 -outline-offset-2 transition-[outline-color] motion-reduce:transition-none",
+            "relative size-[72px] shrink-0 overflow-hidden rounded-xl border border-(--sf-line) bg-(--sf-stage-bg,#ffffff) outline-2 -outline-offset-2 transition-[outline-color] motion-reduce:transition-none",
             index === current ? "outline-(--sf-brand)" : "outline-transparent hover:outline-(--sf-line)",
           )}
         >
@@ -97,7 +97,7 @@ export function StoreGallery({
   return (
     <div className={cn("grid min-w-0 gap-3", thumbs === "side" && many && "lg:grid-cols-[72px_minmax(0,1fr)] lg:items-start lg:gap-4")}>
       <div className="relative min-w-0">
-        <div className="overflow-hidden rounded-[calc(var(--sf-radius,12px)*1.5)] bg-(--sf-shelf)">
+        <div className="overflow-hidden rounded-[calc(var(--sf-radius,12px)*1.5)] bg-(--sf-stage-bg,#ffffff)">
           <Carousel
             setApi={setApi}
             className="w-full"
@@ -119,7 +119,7 @@ export function StoreGallery({
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       priority={index === 0}
                       fetchPriority={index === 0 ? "high" : "low"}
-                      className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none bg-white"
+                      className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none bg-(--sf-stage-bg,#ffffff)"
                       style={
                         lens && index === current
                           ? { transform: "scale(1.8)", transformOrigin: `${lens.x}% ${lens.y}%` }

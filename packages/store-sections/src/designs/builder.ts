@@ -9,7 +9,7 @@
  * reads). Pure and React-free.
  */
 import type { ComponentNode, LibraryRef, SectionInstance, SiteLocale } from "../config/schema";
-import type { Localized } from "../core/types";
+import type { AddToCartLook, Localized } from "../core/types";
 import type { LibraryCategoryId } from "../library/types";
 import { MOTION_V2_MARK, MOTION_V2_PROP } from "../elements/motion-flags";
 import type { RevealChoice } from "../elements/motion";
@@ -211,8 +211,14 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
       if (layout) node.props = { ...node.props, layout };
       return formTemplate ? { ...node, props: { ...node.props, formTemplate } } : node;
     },
-    /** The cart button of the product a list card shows. */
-    addToCart: (opts?: NodeOptions) => make("addToCart", {}, opts),
+    /**
+     * The cart button of the product a list card shows. `look` picks its style
+     * (outline, round cart icon, text link); left out, the solid button.
+     */
+    addToCart: (opts?: NodeOptions & { look?: AddToCartLook }) => {
+      const { look, ...rest } = opts ?? {};
+      return make("addToCart", look && look !== "button" ? { look } : {}, rest);
+    },
     /** The wishlist heart of the product a list card shows. */
     wishlistButton: (opts?: NodeOptions) => make("wishlistButton", {}, opts),
     // Product page parts (template product page spec §5.3): they show the page's product.

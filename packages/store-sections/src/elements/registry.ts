@@ -1062,8 +1062,21 @@ const DEFINITIONS: readonly ElementDefinition[] = [
     label: L("زر أضف للسلة", "Add to cart"),
     keywords: ["cart", "buy", "سلة", "شراء"],
     container: false,
+    // No `look` saved = the solid button, so existing trees draw as before (`addToCartLook`).
     defaultProps: {},
-    fields: [],
+    fields: [
+      {
+        key: "look",
+        label: L("شكل الزر", "Button style"),
+        type: "select",
+        options: [
+          { value: "button", label: L("زر", "Button") },
+          { value: "outline", label: L("إطار", "Outline") },
+          { value: "icon", label: L("أيقونة سلة", "Cart icon") },
+          { value: "text", label: L("رابط نصي", "Text link") },
+        ],
+      },
+    ],
   },
   {
     type: "wishlistButton",

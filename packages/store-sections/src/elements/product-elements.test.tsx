@@ -186,6 +186,12 @@ describe("product elements", () => {
     expect(draw(node("productGallery", { thumbs: "none" }))).not.toContain('data-part="thumbs"');
   });
 
+  it("productGallery puts the photo and thumbnails on white (or the site's product stage)", () => {
+    const html = draw(node("productGallery", { thumbs: "bottom" }));
+    expect(html).not.toContain("bg-(--sf-shelf)");
+    expect(html.match(/bg-\(--sf-stage-bg,#ffffff\)/g)?.length).toBeGreaterThan(1);
+  });
+
   it("productPrice shows final and struck list price", () => {
     const html = draw(node("productPrice", { showDiscount: true }));
     expect(html).toContain("EGP 900");

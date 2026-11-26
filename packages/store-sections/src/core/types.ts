@@ -251,6 +251,17 @@ export type ProductDetail = ProductSummary & {
   seller: { name: string; rating: number | null; ratingCount: number; freeDelivery: boolean };
 };
 
+/**
+ * How an `addToCart` node draws: the solid brand button (default), an outline
+ * button, a round cart icon, or an underlined text link.
+ */
+export const ADD_TO_CART_LOOKS = ["button", "outline", "icon", "text"] as const;
+export type AddToCartLook = (typeof ADD_TO_CART_LOOKS)[number];
+/** The node's `look` prop, whitelisted: anything unknown is the solid button. */
+export function addToCartLook(value: unknown): AddToCartLook {
+  return (ADD_TO_CART_LOOKS as readonly unknown[]).includes(value) ? (value as AddToCartLook) : "button";
+}
+
 /** A host's interactive copy of a product element: the product plus the node's props. */
 export type ProductElementHook = (product: ProductDetail, props: Record<string, unknown>) => ReactNode;
 
@@ -504,7 +515,8 @@ export interface RenderContext {
    * already drawn; `iconFirst` keeps the authored order of icon and text.
    */
   renderSearch?: (search: { placeholder?: string; icon: ReactNode; iconFirst: boolean }) => ReactNode;
-  renderAddToCart?: (product: ProductSummary) => ReactNode;
+  /** A list card's add-to-cart button; `look` is the `addToCart` node's style (no options = the solid button). */
+  renderAddToCart?: (product: ProductSummary, options?: { look?: AddToCartLook }) => ReactNode;
   /**
    * Interactive product page parts (storefront only). Each gets the page's
    * product and the node's props; without one, the element's still rendering

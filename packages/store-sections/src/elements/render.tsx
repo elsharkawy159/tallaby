@@ -56,7 +56,8 @@ import { MOBILE_COLLAPSE, MOBILE_GROUP, MOBILE_SPLIT } from "../config/header";
 import { clampLogoHeight, defaultLogoHeight, logoMaxWidth } from "../config/logo-size";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
-import { IMAGE_SIZES, imageLoading, imageSource, type RenderContext } from "../core/types";
+import { IMAGE_SIZES, addToCartLook, imageLoading, imageSource, type RenderContext } from "../core/types";
+import { AddToCartStill } from "./add-to-cart-look";
 import { DataEmpty } from "../sections/_data";
 import { CarouselElement, SlideElement } from "./render-carousel";
 import { FORM_SUBMIT_CLASS, FORM_SUBMIT_INLINE_CLASS, FormFieldsView, formCopy, formLayout } from "../sections/forms";
@@ -1217,20 +1218,22 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       // A product with variants needs a chosen variant (the buy box does that), so a plain add
       // button would add it without one: the editor shows the still preview, the storefront nothing.
       const variantProduct = scope?.kind === "product" && scope.record.variants.length > 0;
+      // Unset or unknown = the solid button; the host gets no options then, so its output is unchanged.
+      const look = addToCartLook(node.props?.look);
+      // A full-width cart node (a card style's `width: 100%`) stretches its button too; any other keeps the button's own width.
+      const wrap = (node.style as { width?: unknown } | undefined)?.width === "100%" ? "flex *:flex-1" : "flex";
       if (!variantProduct && (scope?.kind === "productList" || scope?.kind === "product")) {
-        const button = ctx.renderAddToCart?.(scope.record);
+        const button = look === "button" ? ctx.renderAddToCart?.(scope.record) : ctx.renderAddToCart?.(scope.record, { look });
         return button ? (
-          <div {...attrs} className="flex">
+          <div {...attrs} className={wrap}>
             {button}
           </div>
         ) : null;
       }
       // Outside a product list (or for a variant product) there is nothing to add: a still preview in the editor only.
       return ctx.mode === "edit" ? (
-        <div {...attrs} className="flex">
-          <span className="inline-flex h-9 items-center justify-center rounded-(--sf-radius,12px) bg-(--sf-brand) px-4 text-xs font-semibold text-(--sf-brand-ink,#fff) opacity-70">
-            {sectionText("addToCart", ctx.locale)}
-          </span>
+        <div {...attrs} className={wrap}>
+          <AddToCartStill look={look} label={sectionText("addToCart", ctx.locale)} />
         </div>
       ) : null;
     }

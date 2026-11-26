@@ -581,6 +581,7 @@
   "product": {
     "addToCart": "Add to Cart",
     "adding": "Adding...",
+    "inCartCount": "{count} in cart",
     "buyNow": "Buy Now",
     "viewDetails": "View Details",
     "viewMore": "View More",
