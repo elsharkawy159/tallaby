@@ -57,6 +57,34 @@ export type DraftVersions = {
 
 type Localized = { ar?: string; en?: string };
 
+/** What the canvas sends to preview one code node (F-101e). */
+export type CodePreviewInput = {
+  nodeId: string;
+  /** The joined section file (Liquid + {% stylesheet %} + {% schema %}), as edited in the Code tab. */
+  file: string;
+  /** The seller's current values; normalised against the file's schema by the host. */
+  settings: unknown;
+  blocks: unknown;
+  locale: SiteLocale;
+  /** The page being edited, so the host knows the page type (builder page or product page). */
+  pageId?: string;
+  /** The product page canvas's product, when the node sits on the product page. */
+  productId?: string;
+};
+
+/** One problem in the file, positioned in the joined file (1-based). */
+export type CodeIssueView = { code: string; message: string; line?: number; column?: number };
+
+export type CodePreviewView = {
+  /** The node's props to store (`apiVersion`, `source`, `css`, `schema`, `settings`, `blocks`, `name`), normalised by the host. */
+  props: Record<string, unknown>;
+  issues: CodeIssueView[];
+  /** Cleaned HTML for the canvas (already through the server's HTML cleaner); '' when it failed to render. */
+  html: string;
+  /** The node's CSS, already scoped to `[data-node-id="<nodeId>"]` and checked. */
+  css: string;
+};
+
 /**
  * What the editor needs from its host. Every method closes over the target
  * (store, template, section), so none takes a storeId. Parameter and return
@@ -93,6 +121,16 @@ export type EditorAdapter = {
    * credits, and writes them into the empty language of the drafts only.
    */
   translateWithAi?(): Promise<EditorResult<AiTranslateSummary>>;
+
+  /**
+   * Code sections (ROADMAP F-101e): the host checks, normalises and renders one
+   * `code` node on the server for the canvas. Liquid never runs in the browser,
+   * and the canvas only ever shows the cleaned HTML this returns. Absent (or the
+   * platform switch off) = no "Code section" in Add and no Code tab.
+   */
+  code?: {
+    preview(input: CodePreviewInput): Promise<EditorResult<CodePreviewView>>;
+  };
 
   // Optional groups; present iff the matching capability is true.
   pages?: {
