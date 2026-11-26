@@ -343,4 +343,12 @@ Shopify objects we don't have (`cart`, `customer`, `metafields`) render empty, a
 2. **Section blocks in v1.** Recommended: yes, section blocks only; theme blocks and nesting come later.
 3. **One-file format with `{% schema %}` and `{% stylesheet %}`.** Recommended: yes.
 4. **Allow the `liquid` and `echo` tags.** Recommended: yes.
-5. **Pasted Shopify sections "mostly work"; that is not a promise.** Sections that use `cart`, `customer`, forms, snippets or JavaScript won't work. Recommended: say so in the seller docs (F-101h).
+5. **No promise of compatibility.** Code written for other platforms mostly works, but sections that use `cart`, `customer`, forms, snippets or JavaScript won't. The seller docs (F-101h) describe our own objects and limits and never name another platform (§11.8).
+
+### 11.8 Naming rule: never say "Shopify" to sellers or shoppers (owner, 2026-11-26)
+
+The word "Shopify" appears only on tallaby.com's comparison page. Shopify stays our internal reference, but no seller- or shopper-facing surface names it: dashboard UI, editor, error messages, seller docs (`docs/code-sections.md` and the help pages), AI builder output, storefront HTML, and the Liquid API itself.
+
+- The API uses neutral names: `block.attributes` (not `shopify_attributes`), and no `shopify_*` object, filter, CSS class or `data-` attribute.
+- If the `@shopify/*` editor packages (§11.5) show their own text (hover docs, lint messages, links to shopify.dev), every message we surface comes from our own docs data, and any text that names Shopify is replaced or dropped. Check this in the F-101e spike.
+- Internal files (this note, code comments, package names in `package.json`) may name Shopify.
