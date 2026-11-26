@@ -12,6 +12,8 @@ export const PLATFORM_SWITCHES = [
   "tallaby_pay_live",
   // Code sections (F-101): off until the owner turns it on. A missing row reads as off, so it needs no migration.
   "code_sections",
+  // The website editor AI agent (F-83c): off until the owner turns it on. A missing row reads as off, so it needs no migration.
+  "editor_agent",
 ] as const;
 
 export type PlatformSwitchKey = (typeof PLATFORM_SWITCHES)[number];

@@ -127,8 +127,15 @@ describe("editorAgentTurn", () => {
     expect(await editorAgentTurn(STORE_ID, input())).toMatchObject({ success: true, data: { creditsUsed: 0 } });
   });
 
+  it("is off while the editor_agent switch is off", async () => {
+    mocks.isSwitchOn.mockImplementation(async (key: string) => key !== "editor_agent");
+    const result = await editorAgentTurn(STORE_ID, input());
+    expect(result).toEqual({ success: false, error: "notFound" });
+    expect(mocks.generateStructured).not.toHaveBeenCalled();
+  });
+
   it("refuses code ops while the code_sections switch is off", async () => {
-    mocks.isSwitchOn.mockResolvedValue(false);
+    mocks.isSwitchOn.mockImplementation(async (key: string) => key !== "code_sections");
     mocks.generateStructured.mockResolvedValue({ object: { reply: "x", ops: [CODE_OP] }, cached: false });
     const result = await editorAgentTurn(STORE_ID, input());
     expect(result).toMatchObject({ success: true, data: { ops: [], rejected: [{ index: 0, code: "code_disabled" }], creditsUsed: 0 } });

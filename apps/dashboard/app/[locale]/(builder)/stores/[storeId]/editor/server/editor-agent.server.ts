@@ -98,6 +98,8 @@ export async function editorAgentTurn(storeId: string, input: EditorAgentTurnInp
   };
 
   try {
+    // The platform kill switch (F-83c): a missing row means off.
+    if (!(await isSwitchOn("editor_agent").catch(() => false))) return fail("notFound");
     if (!aiConfigured()) return fail("aiUnavailable");
     if (!burstLimiter.check(`agent:${sellerId}`)) return fail("rateLimited");
     const parsed = editorAgentInputSchema.safeParse(input);
