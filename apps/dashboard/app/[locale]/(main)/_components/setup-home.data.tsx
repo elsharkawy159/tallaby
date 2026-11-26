@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { CardOverlayLink } from "./setup-card-link";
 import { ArrowLeft, Check } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SellerButton, SellerCard } from "@/components/seller-ui";
@@ -78,18 +77,15 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
           const image = HOME_STEP_IMAGES[step.key];
           const next = step.key === nextKey;
           const blocker = homeStepBlocker(steps, step.key, snapshot.setup);
-          return (
-            <li key={step.key} className="flex">
+          const card = (
               <SellerCard
                 className={cn(
                   "relative flex w-full flex-col gap-2.5 p-5 max-[600px]:p-4",
-                  // The whole card opens the step (owner, 2026-11-26): its one link is stretched over it.
                   !blocker && "transition-[border-color,box-shadow] duration-150 hover:border-(--s-outline) hover:shadow-(--s-shadow-hover)",
                   next && "border-accent shadow-(--s-shadow-hover)",
                   step.done && "border-dashed shadow-none",
                 )}
               >
-                {!blocker && <CardOverlayLink href={step.href} />}
                 <div className="flex items-center justify-between gap-2">
                   {image ? (
                     <Image src={image} alt="" aria-hidden width={88} height={88} loading="eager" className="size-[88px] select-none" />
@@ -131,9 +127,7 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                         <Check className="size-4" aria-hidden />
                         {tSetup("stepDone")}
                       </span>
-                      <Link href={step.href} className="relative z-[1] text-[12.5px] font-bold text-(--s-subtle) no-underline hover:text-(--s-ink) hover:underline">
-                        {t("edit")}
-                      </Link>
+                      <span className="text-[12.5px] font-bold text-(--s-subtle) group-hover:text-(--s-ink) group-hover:underline">{t("edit")}</span>
                     </div>
                   ) : blocker ? (
                     <div className="flex flex-col gap-1.5">
@@ -143,15 +137,20 @@ export async function SetupHomeData({ snapshot }: { snapshot: HomeSnapshot }) {
                       <p className="text-pretty text-[12.5px] text-(--s-muted)">{tSetup(`locked.${blocker}`)}</p>
                     </div>
                   ) : (
-                    <SellerButton asChild size="sm" variant={next ? "amber" : "outline"} className="relative z-[1] max-[600px]:w-full">
-                      <Link href={step.href}>
+                    <SellerButton asChild size="sm" variant={next ? "amber" : "outline"} className="max-[600px]:w-full">
+                      <span>
                         {tSetup(`tasks.${step.key}.cta`)}
                         <ArrowLeft className="ltr:rotate-180" aria-hidden />
-                      </Link>
+                      </span>
                     </SellerButton>
                   )}
                 </div>
               </SellerCard>
+          );
+          // The whole card opens the step (owner, 2026-11-26); a step waiting on an earlier one isn't a link.
+          return (
+            <li key={step.key} className="flex">
+              {blocker ? card : <Link href={step.href} className="group flex w-full no-underline">{card}</Link>}
             </li>
           );
         })}
