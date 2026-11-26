@@ -144,7 +144,7 @@ Already portable: `after()` works when self-hosted; the cross-app cache broadcas
   | Exchange rate        | `/api/cron/exchange-rate`        | `5 */3 * * *`  | 30 s                |
   | Plan renewals        | `/api/cron/plan-renewals`        | `20 5 * * *`   | 300 s               |
   | Manual order links   | `/api/cron/manual-order-links`   | `35 5 * * *`   | 300 s               |
-  | Aged order fees      | `/api/cron/aged-order-fees`      | `40 5 * * *`   | 300 s               |
+  | Aged order fees      | `/api/cron/aged-order-fees`      | `40 5 * * *`   | 300 s (not yet a Coolify task: the token has no write access; until it is added, `manual-order-links` runs the same job right after its own work) |
   | Top-up reminders     | `/api/cron/top-up-reminders`     | `50 * * * *`   | 60 s                |
 
   `aged-order-fees` (added 2026-11-26, fee on delivery, PLAN.md §13.3) is **not a Coolify task yet**: the owner adds it on the dashboard app (same command, timeout 330 s). It does nothing while `fee_on_delivery` is off, so adding it early is safe.
