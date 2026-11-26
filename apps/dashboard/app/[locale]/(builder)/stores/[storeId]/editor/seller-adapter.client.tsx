@@ -30,6 +30,7 @@ import {
 } from "./server/editor.server";
 import { importStockPhoto, searchStockPhotos } from "./server/explore.server";
 import { previewCodeNode } from "./server/code-preview.server";
+import { editorAgentTurn } from "./server/editor-agent.server";
 import { translateSiteWithAi } from "./server/ai-translate.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 import { usePublishNeedsProductToast } from "@/lib/stores/publish-needs-product.client";
@@ -116,6 +117,8 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
         import: (photoId) => importStockPhoto(storeId, photoId),
       },
       media: sellerMediaAdapter(storeId),
+      // Always there for sellers; only its code ops need the `code_sections` switch (checked by the action).
+      agent: { turn: (input) => editorAgentTurn(storeId, input) },
       ...(codeSections && { code: { preview: (input) => previewCodeNode(storeId, input) } }),
     }),
     [storeId, merged, router, needsProduct, codeSections],

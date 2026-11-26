@@ -45,6 +45,7 @@ import { partAfterItemMove, placeItem, placePart, stepMovable } from "./editor-s
 import type { CanvasPayload, DropPlan, ImageCandidate } from "../dnd/dnd.types";
 import { applyChromeMove, applyDropPlan, isImageTarget } from "../dnd/drop-plan.lib";
 import { starterCodeProps } from "../code/code-file.lib";
+import { codeSectionInstance } from "@workspace/store-sections/agent";
 
 type Clip = { kind: "section"; instance: SectionInstance } | { kind: "nodes"; nodes: ComponentNode[] };
 
@@ -271,12 +272,11 @@ export function createEditorCommands(store: EditorStore) {
      * with the starter file, inserted after the selection; the code node is selected.
      */
     addCodeSection() {
-      const code: ComponentNode = { id: makeNodeId(), type: "code", props: starterCodeProps(), children: [] };
-      const tree = newTreeSection([code], makeNodeId);
-      if (!tree.length) return false;
-      const section = { ...createInstance(storeSectionRegistry.get("custom-section")!), componentTree: tree };
-      if (!insertSectionInstance(section)) return false;
-      state().select({ target: "page", sectionId: section.id, nodeId: code.id });
+      // The same builder the AI agent's add_code_section uses (store-sections/agent).
+      const made = codeSectionInstance(starterCodeProps(), { sectionId: newId(), codeNodeId: makeNodeId(), makeNodeId });
+      if (!made) return false;
+      if (!insertSectionInstance(made.instance)) return false;
+      state().select({ target: "page", sectionId: made.instance.id, nodeId: made.codeNodeId });
       return true;
     },
 

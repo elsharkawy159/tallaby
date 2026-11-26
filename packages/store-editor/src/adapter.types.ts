@@ -15,6 +15,7 @@ import type {
   StoreRevisionRow,
 } from "./editor.dto";
 import type { SiteLocale } from "@workspace/store-sections";
+import type { SectionOp } from "@workspace/store-sections/agent";
 import type { ProductDetail } from "@workspace/store-sections/render";
 import type { TemplateActionResult, TemplatePreviewView } from "./templates.dto";
 import type { EditorLinkOverrides } from "./lib/editor-links.lib";
@@ -89,6 +90,46 @@ export type CodePreviewView = {
   css: string;
 };
 
+export type { AgentDevice, AgentTarget, AppliedOp, RejectedOp, SectionOp, SectionOpName, SectionOpRejectCode } from "@workspace/store-sections/agent";
+
+/** One message of the editor agent's chat (F-83c). */
+export type EditorAgentHistoryTurn = { role: "user" | "assistant"; text: string };
+
+/**
+ * What the editor sends for one agent turn. `section` is the targeted section
+ * from the seller's unsaved draft (the host validates it, never trusts it);
+ * `outline` is the page's sections in order (id, name, kind: "tree" | "code").
+ */
+export type EditorAgentTurnInput = {
+  message: string;
+  uiLocale: SiteLocale;
+  contentLocale: SiteLocale;
+  pageId?: string;
+  target: { kind: "page" | "header" | "footer"; sectionId?: string };
+  section?: unknown;
+  outline: { id: string; name: string; kind: string }[];
+  history: EditorAgentHistoryTurn[];
+};
+
+export type EditorAgentTurnView = {
+  /** The agent's answer, in the seller's language (≤ 600 characters). */
+  reply: string;
+  /**
+   * The ops to apply, in order, normalised by the host (cleaned values, new
+   * ids filled in): apply them with `applySectionOps` from
+   * `@workspace/store-sections/agent` to the draft, as one undo step.
+   */
+  ops: SectionOp[];
+  /** One line per applied op, in the UI language. */
+  applied: string[];
+  /** The model's ops the host refused (index in the model's list). */
+  rejected: { index: number; code: string }[];
+  /** Canvas previews of the code elements the ops wrote, by code node id (html already cleaned, css scoped). */
+  previews: Record<string, { html: string; css: string; props: Record<string, unknown> }>;
+  /** AI credits this turn used (0 when no op applied). */
+  creditsUsed: number;
+};
+
 /**
  * What the editor needs from its host. Every method closes over the target
  * (store, template, section), so none takes a storeId. Parameter and return
@@ -134,6 +175,15 @@ export type EditorAdapter = {
    */
   code?: {
     preview(input: CodePreviewInput): Promise<EditorResult<CodePreviewView>>;
+  };
+
+  /**
+   * The editor's AI agent (F-83c, F-101g/j): one chat turn about a section or
+   * the page. The host returns validated ops that the editor applies to its
+   * drafts; it writes nothing itself. Absent = no agent.
+   */
+  agent?: {
+    turn(input: EditorAgentTurnInput): Promise<EditorResult<EditorAgentTurnView>>;
   };
 
   // Optional groups; present iff the matching capability is true.
