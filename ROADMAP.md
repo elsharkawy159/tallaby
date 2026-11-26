@@ -344,6 +344,7 @@ Priorities are the owner's (`Roadmap_new.md` §9). The order inside them is prop
 | 82  | F-105 | QR codes for the storefront, published pages and products | P1 | no | Built locally, rollout pending |
 | 83  | F-106 | Admin sellers list: trial filter and "offline, no top-up" badge | P1 | no | Built 2026-11-24 (uncommitted); not tried in a browser |
 | 84  | F-113 | Store-offline top-up email (once) and weekly store insights email for sellers; replaces F-104 | P1 | yes (0183, not applied) | Owner request 2026-11-26; built 2026-11-26 (uncommitted); 0183 not applied anywhere |
+| 85  | F-114 | Welcome tour pop-up for new sellers (products, website, payments, wallet) | P1 | no | Owner request 2026-11-26; built 2026-11-26 (uncommitted); not tried in a browser |
 
 ---
 
@@ -1548,12 +1549,21 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 - **F-113a · P1** Rules lib + tests (week, caps, reference id, token, GA4 parsing), queries, strict order-lock read, both email templates, backend batch, cron repoint, opt-out route, 0183. Done.
 - **F-113b · P1 · deps: F-113a** Apply 0183 on staging, then production (owner); deploy backend, then dashboard and ecommerce; check the first sends. Not started.
 
+### F-114 Welcome tour for new sellers — P1 · Owner request 2026-11-26
+
+**Why:** A new seller doesn't know where the main areas of the dashboard are.
+**What:** A pop-up in the dashboard shell (`components/layout/welcome-tour-dialog.client.tsx`, mounted in `ShellDialogs`) that opens by itself once, for sellers created in the last 14 days (`welcome-tour.lib.ts`), with one step per screen and Next, Back and Skip: add products (AI, product link, CSV/Excel file, manually), theme and editing (pick a theme, Edit with AI, Drag & Drop), payment methods (cash on delivery, the seller's own Paymob or Kashier, Tallaby Pay with "Soon" while `tallaby_pay_live` is off) and the Tallaby wallet (Free: a small fee per order, Pro: the monthly price; top up; store stays online). Tiles link to the real pages of the selected store. Seen is kept in `localStorage` per user (`tallaby:welcome-tour:<userId>`), set as it opens, on the first dashboard page (the store welcome page included); never with the negative-wallet, heard-about-us or welcome-gift pop-ups. No migration, no DB writes.
+**Status:** [Built] 2026-11-26. Not tried in a browser yet.
+
+- **F-114a · P1** Tour rule lib + tests, dialog, shell mount, ar/en strings. Done.
+
 ## 5. Owner feature requests (intake)
 
 Add each new request here first, with the date and the owner's words, then turn it into a §4 feature and place it in §3.
 
 | Date       | Request (owner's words)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Feature ID                                                                                       | Status                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-11-26 | "Welcome flow pop-up for new users on dashboard: Add product, Theme and edit website, Payment gateway, Tallaby Wallet, with Next and Skip" | F-114 | Built 2026-11-26 (uncommitted); no migration; not tried in a browser |
 | 2026-11-26 | "Send weekly email to sellers about insights about their store. Who didn't top up: send him the email on the 7th day, only one time, about his store became offline, top up the wallet now to activate it, and a short description about how the wallet works. For who topped up, keep sending a weekly email with insights." | F-113 | Built 2026-11-26 (uncommitted); 0183 not applied |
 | 2026-11-26 | Admin home analytics: flexible periods (today, yesterday, 3 / 7 / 30 / 90 days, this month, last month, this year) with comparisons, and how many stores there are, how many are published, how many sellers topped up, the balance held in wallets, and who got the $5 manual credit from the dashboard | — (Admin app, no feature ID; `docs/admin-saas.md` §3.9) | Built 2026-11-26 (no migration); see §7 |
 | 2026-11-26 | Fee timing (answers to explicit questions): all orders, cash and card, pay the Free-plan fee when the order becomes delivered; a cancelled or returned order that was never delivered never pays; an order still not cancelled, returned or refunded 14 days after it was created pays automatically through a daily job; behind a platform switch `fee_on_delivery`, off = today's behaviour; orders already charged are never charged twice | — (business model, `PLAN.md` §13.1, §13.3; no feature ID) | Built 2026-11-26 behind the switch (off); no migration; see §7. Owner: add the Coolify task for `/api/cron/aged-order-fees`, then turn the switch on |
@@ -2153,8 +2163,15 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-112c Round prices: "Round existing prices" with preview — 2026-11-26; dashboard typecheck and tests pass; not tried in a browser
 - [x] F-113a Store-offline and weekly insights seller emails, opt-out route, migration 0183 (not applied) — 2026-11-26; lib, emails, dashboard and ecommerce tests pass; SQL not run against a database
 - [ ] F-113b Apply 0183 (staging, then production with owner approval), deploy backend first, check the first sends
+- [x] F-114a Welcome tour pop-up for new sellers (rule lib, dialog, shell mount, strings) — 2026-11-26; dashboard typecheck and lib tests pass; not tried in a browser
 
 ## 7. Log
+
+### 2026-11-26 — Welcome tour for new sellers (F-114, owner request; no migration)
+
+- **Owner:** "Welcome flow pop-up for new users on dashboard: Add product, Theme and edit website, Payment gateway, Tallaby Wallet, with Next and Skip."
+- **Built:** `apps/dashboard/components/layout/welcome-tour.lib.ts` (+ test), `welcome-tour-dialog.client.tsx`, mounted in `ShellDialogs` (`shell.data.tsx`); `welcomeTour` strings in `ar.json`/`en.json`. Sellers created in the last 14 days; once per user per browser (`localStorage`); opens on the first dashboard page, the store welcome page included; hidden while another shell pop-up is due. The selected store and the `editor_agent`/`tallaby_pay_live` switches are read only when the tour may show.
+- **Checks:** see F-114a in §6.
 
 ### 2026-11-26 — Seller emails: store offline and weekly insights (F-113, owner request; migration 0183, not applied)
 

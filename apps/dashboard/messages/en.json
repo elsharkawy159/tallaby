@@ -7906,6 +7906,55 @@
     "saved": "Thanks! Your answer is saved.",
     "error": "Your answer could not be saved. Try again."
   },
+  "welcomeTour": {
+    "progress": "Step {current} of {total}",
+    "skip": "Skip",
+    "back": "Back",
+    "next": "Next",
+    "start": "Let's start",
+    "soon": "Soon",
+    "products": {
+      "title": "Add your products",
+      "body": "Pick the way that suits you. Add one product or many at once.",
+      "tiles": {
+        "ai": { "title": "With AI", "body": "Upload a photo, and we write the name and description." },
+        "url": { "title": "From a product link", "body": "Paste a product link from another store." },
+        "file": { "title": "From a file", "body": "Upload a CSV or Excel file." },
+        "manual": { "title": "Manually", "body": "Fill in the product details yourself." }
+      }
+    },
+    "website": {
+      "title": "Pick a theme and edit your website",
+      "body": "Choose a theme that fits your business, then make it yours.",
+      "tiles": {
+        "theme": { "title": "Pick a theme", "body": "Ready-made themes for every business." },
+        "ai": { "title": "Edit with AI", "body": "Write what you want to change." },
+        "dnd": { "title": "Edit with Drag & Drop", "body": "Move sections and edit every element yourself." }
+      }
+    },
+    "payments": {
+      "title": "Payment methods",
+      "body": "Choose how your customers pay. The money goes to you.",
+      "tiles": {
+        "cod": { "title": "Cash on delivery", "body": "The customer pays when the order arrives." },
+        "gateway": { "title": "Your own card gateway", "body": "Connect your Paymob or Kashier account to take cards." },
+        "tallabyPay": { "title": "Tallaby Pay", "body": "Online payments from Tallaby, no gateway account needed." }
+      }
+    },
+    "wallet": {
+      "title": "Tallaby wallet",
+      "body": "Your store's wallet on Tallaby. Tallaby's fees are paid from it, and your order money never goes into it.",
+      "tiles": {
+        "fee": {
+          "title": "What it pays for",
+          "bodyFree": "A small fee is taken for each order.",
+          "bodyPro": "Your Pro plan's monthly price is taken from it."
+        },
+        "topUp": { "title": "Top up", "body": "Top it up from the wallet page any time." },
+        "online": { "title": "Your store stays online", "body": "Topping up keeps your store online and shows you your orders." }
+      }
+    }
+  },
   "themeRequests": {
     "bannerTitle": "Didn't find a theme for your business?",
     "bannerBody": "Tell us what you have in mind. We'll build it, add it to the gallery and let you know when it's ready.",

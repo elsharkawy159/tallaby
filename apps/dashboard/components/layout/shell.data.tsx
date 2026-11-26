@@ -12,6 +12,9 @@ import { enabledClarityProjectId } from "@/lib/analytics/clarity.lib";
 import { loadOrderLock, loadSeller } from "@/lib/auth/require-seller.server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { getSelectedStoreLink } from "@/lib/stores/store-link.server";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
+import { editorAiEnabled } from "@/app/[locale]/(builder)/stores/[storeId]/editor/server/editor-entry.data";
+import { aiConfigured } from "@workspace/ai";
 import { storeMayBeBillingOffline } from "@workspace/lib/billing/order-lock";
 import { resolvePlanId } from "@workspace/lib/plans";
 import { BottomNav } from "./bottom-nav.client";
@@ -22,6 +25,8 @@ import { NegativeWalletDialog } from "./negative-wallet-dialog.client";
 import { SellerAccessBlocked } from "./seller-access-blocked";
 import { WelcomeGiftDialog } from "./welcome-gift-dialog.client";
 import { loadWelcomeGiftWatch } from "./welcome-gift.data";
+import { WelcomeTourDialog } from "./welcome-tour-dialog.client";
+import { isWelcomeTourEligible } from "./welcome-tour.lib";
 import { loadShellAccess, shellAccountMoney, shellEgpRate, shellSiteData } from "./shell.server";
 
 /*
@@ -108,7 +113,7 @@ export async function BottomNavData() {
   return <BottomNav storeId={selected?.id ?? null} />;
 }
 
-/** The shell's pop-ups and the Clarity session tag. One pop-up at a time: a negative wallet first, then the welcome gift. */
+/** The shell's pop-ups and the Clarity session tag. One pop-up at a time: a negative wallet first, then the welcome gift, then the rest. */
 export async function ShellDialogs() {
   const { user, access } = await loadShellAccess();
   if (!user || !access.allowed) return null;
@@ -120,19 +125,46 @@ export async function ShellDialogs() {
     loadSeller(user.id),
   ]);
   const walletBalance = wallet?.balance ?? null;
+  const walletNegative = walletBalance != null && walletBalance < 0;
   // Clarity session tag: internal seller id + plan only.
   const clarityPlan = enabledClarityProjectId() ? resolvePlanId(seller?.plan) : null;
+  // The welcome tour (F-114): new sellers only, never next to another pop-up.
+  const showTour =
+    isWelcomeTourEligible({ sellerCreatedAt: seller?.createdAt }) &&
+    !walletNegative &&
+    !askHeardAboutUs &&
+    welcomeGift.state !== "unseen";
+  // Its tile facts are read only when it may show: the selected store (per-request memo,
+  // the header reads it too) and two platform switches (one small read each, memoised).
+  const [tourStores, editorAi, tallabyPayLive] = showTour
+    ? await Promise.all([
+        getSellerStores().catch(() => null),
+        editorAiEnabled(),
+        isSwitchOn("tallaby_pay_live").catch(() => false),
+      ])
+    : [null, false, false];
   return (
     <>
       <NegativeWalletDialog balance={walletBalance} currency={wallet?.currency ?? "EGP"} />
       <HeardAboutUsDialog
         show={
           askHeardAboutUs &&
-          !(walletBalance != null && walletBalance < 0) &&
+          !walletNegative &&
           welcomeGift.state !== "unseen"
         }
       />
       <WelcomeGiftDialog initial={welcomeGift} />
+      {showTour && (
+        <WelcomeTourDialog
+          show
+          userId={user.id}
+          storeId={tourStores?.selected?.id ?? null}
+          productAi={aiConfigured()}
+          editorAi={editorAi}
+          tallabyPayLive={tallabyPayLive}
+          plan={resolvePlanId(seller?.plan)}
+        />
+      )}
       <StoreLiveCelebration />
       {clarityPlan && <ClarityIdentify sellerId={user.id} plan={clarityPlan} />}
     </>
