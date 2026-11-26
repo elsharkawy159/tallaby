@@ -1,27 +1,18 @@
 "use server";
 
-import { db } from "@workspace/db";
-import {
-  orderItems,
-  products,
-  reviews,
-  coupons,
-  sellerPayouts,
-  shipments,
-} from "@workspace/db";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { countNewFormSubmissions } from "@workspace/lib/store-forms/server";
+import { cache } from "react";
 import { getUser } from "@/actions/auth";
 import { loadOrderLock } from "@/lib/auth/require-seller.server";
-import { couponInStore, productInStore } from "@workspace/lib/stores/scope/server";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
+import { countSidebarItems } from "./sidebar-counts.server";
 import {
   EMPTY_SIDEBAR_COUNTS,
   type SidebarCounts,
 } from "./sidebar.types";
 
-export async function getSidebarCounts(): Promise<SidebarCounts> {
+// Once per request (React cache()); a "use server" file may only export async functions, so the memo stays inside.
+const loadSidebarCounts = cache(async (): Promise<SidebarCounts> => {
   try {
     const session = await getUser();
     if (!session?.user?.id) {
@@ -29,78 +20,24 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
     }
 
     const sellerId = session.user.id;
-    // A seller who isn't activated gets no count that follows from orders (ROADMAP.md F-68).
-    const locked = (await loadOrderLock(sellerId)).ordersLocked;
-    const hidden = [{ count: 0 }];
-    // Products: the selected store's (the store the Products link opens, F-87c); no store = the account, as before.
-    const [{ selected }, catalogSplit] = await Promise.all([getSellerStores(), isSwitchOn("stores_catalog_split")]);
-    const productsInStore = selected ? productInStore(selected.id, { catalogSplit, scope: "managed" }) : undefined;
-
-    const [
-      orderCountResult,
-      productCountResult,
-      reviewCountResult,
-      couponCountResult,
-      payoutCountResult,
-      shippingCountResult,
-      formSubmissionCount,
-    ] = await Promise.all([
-      locked
-        ? hidden
-        : db
-            .select({ count: sql<number>`count(*)` })
-            .from(orderItems)
-            .where(eq(orderItems.sellerId, sellerId)),
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(products)
-        .where(and(eq(products.sellerId, sellerId), isNull(products.deletedAt), productsInStore)),
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(reviews)
-        .where(eq(reviews.sellerId, sellerId)),
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(coupons)
-        // The selected store's coupons plus "All stores" ones, as the Coupons page lists (F-87k).
-        .where(and(eq(coupons.sellerId, sellerId), selected ? couponInStore(selected.id) : undefined)),
-      locked
-        ? hidden
-        : db
-            .select({ count: sql<number>`count(*)` })
-            .from(sellerPayouts)
-            .where(eq(sellerPayouts.sellerId, sellerId)),
-      // Deliveries the seller still has to see through (rider assigned or on the road).
-      locked
-        ? hidden
-        : db
-            .select({ count: sql<number>`count(*)` })
-            .from(shipments)
-            .where(
-              and(
-                eq(shipments.sellerId, sellerId),
-                inArray(shipments.status, ["assigned", "out_for_delivery"])
-              )
-            ),
-      // New store form submissions across the seller's stores (Website › Forms, P4-10).
-      countNewFormSubmissions(sellerId),
+    // The lock, the selected store and the catalog switch don't depend on each other.
+    const [lock, { selected }, catalogSplit] = await Promise.all([
+      loadOrderLock(sellerId),
+      getSellerStores(),
+      isSwitchOn("stores_catalog_split"),
     ]);
-
-    const orderCount = Number(orderCountResult[0]?.count ?? 0);
-
-    return {
-      dashboard: orderCount,
-      orders: orderCount,
-      shipping: Number(shippingCountResult[0]?.count ?? 0),
-      products: Number(productCountResult[0]?.count ?? 0),
-      reviews: Number(reviewCountResult[0]?.count ?? 0),
-      promotions: Number(couponCountResult[0]?.count ?? 0),
-      marketing: 0,
-      financial: Number(payoutCountResult[0]?.count ?? 0),
-      forms: formSubmissionCount,
-    };
+    return await countSidebarItems(sellerId, {
+      // A seller who isn't activated gets no count that follows from orders (ROADMAP.md F-68).
+      ordersLocked: lock.ordersLocked,
+      storeId: selected?.id ?? null,
+      catalogSplit,
+    });
   } catch (error) {
     console.error("Error fetching sidebar counts:", error);
     return EMPTY_SIDEBAR_COUNTS;
   }
+});
+
+export async function getSidebarCounts(): Promise<SidebarCounts> {
+  return loadSidebarCounts();
 }

@@ -2,6 +2,7 @@ import { getOrderLock, type OrderLock } from "@workspace/lib/billing/order-lock"
 import { cache } from "react";
 import { and, db, eq, isNull, sellers, stores } from "@workspace/db";
 import { getSessionUser } from "./session.server";
+import { loadBillingState } from "@/lib/billing/billing-state.server";
 import {
   type AccessCode,
   type AccessOptions,
@@ -57,6 +58,12 @@ export const loadSeller = cache(async (userId: string) => {
       planGraceUntil: sellers.planGraceUntil,
       maxStoresOverride: sellers.maxStoresOverride,
       createdAt: sellers.createdAt,
+      // The shell's seller summary (getSiteSellerSummary) reads these from this same row.
+      businessName: sellers.businessName,
+      logoUrl: sellers.logoUrl,
+      subdomain: sellers.subdomain,
+      // needsHeardAboutUs: an answered seller needs no further read.
+      heardAboutUsAt: sellers.heardAboutUsAt,
     })
     .from(sellers)
     .where(eq(sellers.id, userId))
@@ -120,7 +127,10 @@ export async function requireStore(
  * F-84). `ordersLocked` hides orders; `activated` gates AI and campaign emails.
  * Never cached across requests.
  */
-export const loadOrderLock = cache((sellerId: string) => getOrderLock(sellerId));
+// Billing and the seller row come from this request's memos (sellers.id = users.id), not a second read.
+export const loadOrderLock = cache((sellerId: string) =>
+  getOrderLock(sellerId, { billing: loadBillingState, seller: () => loadSeller(sellerId) }),
+);
 
 /** The session seller's lock, for a page deciding what to show. */
 export async function currentOrderLock(): Promise<OrderLock> {

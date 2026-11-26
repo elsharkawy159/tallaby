@@ -1,11 +1,11 @@
 import { storeUrl } from "@workspace/lib/storefront";
-import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
+import { findCustomDomainForSubdomain } from "@/lib/stores/store-link.server";
 import { getSiteSellerSummary } from "./site-seller.server";
 
 /** The seller's store address: its active custom domain, else {subdomain}.tallaby.com. */
 const getSellerStoreUrl = async (subdomain: string | undefined) => {
   if (!subdomain) return null;
-  const customDomain = await findActiveCustomDomainForSubdomain(subdomain).catch(() => null);
+  const customDomain = await findCustomDomainForSubdomain(subdomain).catch(() => null);
   return storeUrl(subdomain, customDomain);
 };
 

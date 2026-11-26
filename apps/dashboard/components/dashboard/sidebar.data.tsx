@@ -13,18 +13,20 @@ import { storeHasTallabyPay } from "@workspace/lib/tallaby-pay/server";
 export async function SidebarData() {
   // requireSeller and getSellerStores are memoized per request (the layout already gated access).
   // getSessionUser is memoized too (requireSeller already read it), so the email costs no extra call.
-  const [seller, counts, { stores, selected, maxStores }, user] = await Promise.all([
-    requireSeller(),
+  // The lock and the Tallaby Pay read start as soon as their inputs resolve, alongside the rest.
+  const sellerRead = requireSeller();
+  const storesRead = getSellerStores();
+  const [seller, counts, { stores, selected, maxStores }, user, ordersLocked, tallabyPayEarnings] = await Promise.all([
+    sellerRead,
     getSidebarCounts(),
-    getSellerStores(),
+    storesRead,
     getSessionUser(),
-  ]);
-
-  const [ordersLocked, tallabyPayEarnings] = await Promise.all([
-    loadOrderLock(seller.sellerId).then((lock) => lock.ordersLocked),
+    sellerRead.then((s) => loadOrderLock(s.sellerId)).then((lock) => lock.ordersLocked),
     // Earnings shows only for a store with Tallaby Pay on or an earnings wallet (F-100f). Never cached (rule 8);
     // a failed read (e.g. before migration 0175) just hides the link.
-    selected ? storeHasTallabyPay(seller.sellerId, selected.id).catch(() => false) : false,
+    Promise.all([sellerRead, storesRead]).then(([s, { selected: store }]) =>
+      store ? storeHasTallabyPay(s.sellerId, store.id).catch(() => false) : false,
+    ),
   ]);
   // In dollars ("$5"), like the orders-lock banner (owner, 2026-11-18).
   const minTopUp = ordersLocked

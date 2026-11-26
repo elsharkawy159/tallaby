@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { getBillingState } from "@workspace/lib/billing/server";
+import { loadBillingState } from "./billing-state.server";
 
 /**
  * Today's EGP per USD, once per request: every USD price a seller sees is shown in
@@ -8,6 +8,6 @@ import { getBillingState } from "@workspace/lib/billing/server";
  * Display only: nothing is charged from this read.
  */
 export const getEgpPerUsd = cache(async (): Promise<number | null> => {
-  const billing = await getBillingState().catch(() => null);
+  const billing = await loadBillingState().catch(() => null);
   return billing?.marketRate && billing.marketRate > 0 ? billing.marketRate : null;
 });

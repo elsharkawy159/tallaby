@@ -59,6 +59,14 @@ export default async function DashboardLayout({
     return <SellerAccessBlocked access={access} />;
   }
 
+  // Seller profile + store link for the sidebar, header and Help page: started now, with the other reads.
+  const siteData = getSiteData();
+  // Per-request memo: getSellerAccess already read this row, so this costs no query.
+  const seller = user ? await loadSeller(user.id) : null;
+  // A seller still not activated when the trial's days are over has every store offline (owner, 2026-11-17): the header dot says so.
+  // The lock is read only once the sign-up date says it can apply (loadOrderLock is cached per request; the sidebar reads it too).
+  const mayBeBillingOffline = Boolean(user) && storeMayBeBillingOffline(seller?.createdAt);
+
   // sellers.id = users.id; the header shows the store wallet balance.
   const [
     wallet,
@@ -69,6 +77,7 @@ export default async function DashboardLayout({
     { selected },
     egpRate,
     setupNextStep,
+    billingOffline,
   ] = await Promise.all([
     user ? getStoreWalletBalance(user.id) : null,
     user ? needsHeardAboutUs(user.id) : false,
@@ -78,19 +87,16 @@ export default async function DashboardLayout({
     getSellerStores(),
     getEgpPerUsd(),
     user ? loadSetupNextStep(user.id).catch(() => null) : null,
+    user && mayBeBillingOffline ? loadOrderLock(user.id).then((lock) => lock.storeOffline) : false,
   ]);
   const walletBalance = wallet?.balance ?? null;
-  // Clarity session tag: internal seller id + plan only (loadSeller is per-request cached; getSellerAccess already read it).
-  const clarityPlan = user && enabledClarityProjectId() ? resolvePlanId((await loadSeller(user.id))?.plan) : null;
-  // A seller still not activated when the trial's days are over has every store offline (owner, 2026-11-17): the header dot says so.
-  // The lock is read only once the sign-up date says it can apply (loadOrderLock is cached per request).
-  const billingOffline =
-    user && storeMayBeBillingOffline((await loadSeller(user.id))?.createdAt) ? (await loadOrderLock(user.id)).storeOffline : false;
+  // Clarity session tag: internal seller id + plan only.
+  const clarityPlan = user && enabledClarityProjectId() ? resolvePlanId(seller?.plan) : null;
 
   return (
     // .seller-shell switches on the design system (app/globals.css). Only this layout has it, so (builder) is untouched.
     // Seller profile + store link for the sidebar, header and Help page (only used here, so not in the root layout).
-    <SiteDataProvider promise={getSiteData()}>
+    <SiteDataProvider promise={siteData}>
       {/* USD wallet amounts and prices are shown in EGP at this rate (owner, 2026-11-09). */}
       <EgpRateProvider rate={egpRate}>
       <div className="seller-shell flex min-h-screen w-full overflow-x-clip bg-background">

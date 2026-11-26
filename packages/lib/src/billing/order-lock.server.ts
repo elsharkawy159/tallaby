@@ -2,6 +2,7 @@ import { and, asc, db, eq, gte, inArray, ne, orderItems, orders, sellers, seller
 import { logServerError } from "@workspace/db/log";
 import { MANUAL_TOP_UP_METHODS } from "../store-wallet/top-up.lib";
 import { getBillingState } from "./billing.server";
+import type { BillingState } from "./billing.lib";
 import { ORDERS_UNLOCKED, isActivated, orderGraceStart, orderLockState, type OrderLock } from "./order-lock.lib";
 
 export type { OrderLock, OrderGrace } from "./order-lock.lib";
@@ -10,35 +11,60 @@ export { ORDER_GRACE_DAYS, ORDER_GRACE_DAYS_SHORT, daysUntilOffline, graceDaysLe
 /**
  * What activates a seller, read fresh: a succeeded top-up row of any provider or a
  * `top_up` ledger entry, and ever having a store wallet balance above zero (the
- * balance now, or a USD ledger entry with `balance_after` above zero). Throws on a
+ * balance now, or a USD ledger entry with `balance_after` above zero). One
+ * statement: the aggregate over the seller's top-ups always returns one row, and
+ * the other facts are uncorrelated sub-selects on the same seller. Throws on a
  * database error; the callers decide how to fail.
  */
 async function loadActivationFacts(sellerId: string) {
-  const [[topUps], [ledger], [wallet], [positiveEntry]] = await Promise.all([
-    db
-      .select({
-        succeeded: sql<boolean>`bool_or(${sellerWalletTopUps.status} = 'succeeded')`,
-        pendingManual: sql<boolean>`bool_or(${sellerWalletTopUps.status} = 'pending' AND ${inArray(sellerWalletTopUps.provider, [...MANUAL_TOP_UP_METHODS])})`,
-      })
-      .from(sellerWalletTopUps)
-      .where(eq(sellerWalletTopUps.sellerId, sellerId)),
-    db
-      .select({ one: sql<number>`1` })
-      .from(walletTransactions)
-      .where(and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.type, "top_up")))
-      .limit(1),
-    db.select({ balance: sellerWallet.balance }).from(sellerWallet).where(eq(sellerWallet.sellerId, sellerId)).limit(1),
-    db
-      .select({ one: sql<number>`1` })
-      .from(walletTransactions)
-      .where(and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.currency, "USD"), sql`${walletTransactions.balanceAfter} > 0`))
-      .limit(1),
-  ]);
+  const [facts] = await db
+    .select({
+      succeeded: sql<boolean | null>`bool_or(${sellerWalletTopUps.status} = 'succeeded')`,
+      pendingManual: sql<boolean | null>`bool_or(${sellerWalletTopUps.status} = 'pending' AND ${inArray(sellerWalletTopUps.provider, [...MANUAL_TOP_UP_METHODS])})`,
+      hasTopUpEntry: sql<boolean>`EXISTS (SELECT 1 FROM ${walletTransactions} WHERE ${and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.type, "top_up"))})`,
+      balance: sql<string | null>`(SELECT ${sellerWallet.balance} FROM ${sellerWallet} WHERE ${eq(sellerWallet.sellerId, sellerId)} LIMIT 1)`,
+      hasPositiveEntry: sql<boolean>`EXISTS (SELECT 1 FROM ${walletTransactions} WHERE ${and(eq(walletTransactions.sellerId, sellerId), eq(walletTransactions.currency, "USD"), sql`${walletTransactions.balanceAfter} > 0`)})`,
+    })
+    .from(sellerWalletTopUps)
+    .where(eq(sellerWalletTopUps.sellerId, sellerId));
   return {
-    hasTopUp: topUps?.succeeded === true || Boolean(ledger),
-    hasHadPositiveBalance: Number(wallet?.balance ?? 0) > 0 || Boolean(positiveEntry),
-    hasPendingManualTopUp: topUps?.pendingManual === true,
+    hasTopUp: facts?.succeeded === true || facts?.hasTopUpEntry === true,
+    hasHadPositiveBalance: Number(facts?.balance ?? 0) > 0 || facts?.hasPositiveEntry === true,
+    hasPendingManualTopUp: facts?.pendingManual === true,
   };
+}
+
+/** The `sellers` columns the lock reads. */
+export type OrderLockSeller = {
+  plan: string;
+  planExpiresAt: string | null;
+  planGraceUntil: string | null;
+  createdAt: string | null;
+};
+
+/**
+ * Reads getOrderLock can take from its caller instead of running them again
+ * (a dashboard render already has billing and the seller row, memoized per
+ * request with React cache()). Each defaults to a fresh read. A caller must
+ * never pass a value cached across requests (CLAUDE.md rule 8).
+ */
+export type OrderLockReads = {
+  billing?: () => Promise<BillingState>;
+  seller?: () => Promise<OrderLockSeller | null>;
+};
+
+async function readLockSeller(sellerId: string): Promise<OrderLockSeller | null> {
+  const [seller] = await db
+    .select({
+      plan: sellers.plan,
+      planExpiresAt: sellers.planExpiresAt,
+      planGraceUntil: sellers.planGraceUntil,
+      createdAt: sellers.createdAt,
+    })
+    .from(sellers)
+    .where(eq(sellers.id, sellerId))
+    .limit(1);
+  return seller ?? null;
 }
 
 /**
@@ -65,23 +91,14 @@ export async function isActivatedByMoney(sellerId: string): Promise<boolean> {
  * positive USD conversion entry and does. Read fresh for one seller, never cached. If
  * the check throws nothing is locked: an error must not hide someone's orders.
  */
-export async function getOrderLock(sellerId: string): Promise<OrderLock> {
+export async function getOrderLock(sellerId: string, reads: OrderLockReads = {}): Promise<OrderLock> {
   try {
-    const { usdLive } = await getBillingState();
+    const { usdLive } = await (reads.billing ?? getBillingState)();
     // No more queries before the switch.
     if (!usdLive) return ORDERS_UNLOCKED;
 
-    const [[seller], facts] = await Promise.all([
-      db
-        .select({
-          plan: sellers.plan,
-          planExpiresAt: sellers.planExpiresAt,
-          planGraceUntil: sellers.planGraceUntil,
-          createdAt: sellers.createdAt,
-        })
-        .from(sellers)
-        .where(eq(sellers.id, sellerId))
-        .limit(1),
+    const [seller, facts] = await Promise.all([
+      (reads.seller ?? (() => readLockSeller(sellerId)))(),
       loadActivationFacts(sellerId),
     ]);
 

@@ -33,9 +33,16 @@ describe("loadWelcomeGiftWatch", () => {
     expect(await loadWelcomeGiftWatch("s")).toEqual(unseen);
   });
 
-  it("skips the billing read when there is nothing to show", async () => {
-    getWelcomeGiftWatch.mockResolvedValue({ state: "none" });
+  // Billing is read once per request anyway; once the gift has ended the gift row isn't read.
+  it("skips the gift read once the USD switch is on", async () => {
+    getBillingState.mockResolvedValue({ usdLive: true });
     expect(await loadWelcomeGiftWatch("s")).toEqual({ state: "none" });
-    expect(getBillingState).not.toHaveBeenCalled();
+    expect(getWelcomeGiftWatch).not.toHaveBeenCalled();
+  });
+
+  it("shows nothing when the gift read fails", async () => {
+    getBillingState.mockResolvedValue({ usdLive: false });
+    getWelcomeGiftWatch.mockRejectedValue(new Error("no column"));
+    expect(await loadWelcomeGiftWatch("s")).toEqual({ state: "none" });
   });
 });

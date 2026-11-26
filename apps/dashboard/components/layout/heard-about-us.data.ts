@@ -1,9 +1,17 @@
+import { cache } from "react";
 import { db, eq, sellers, sql } from "@workspace/db";
+import { loadSeller } from "@/lib/auth/require-seller.server";
 import { shouldAskHeardAboutUs } from "./heard-about-us.lib";
 
-/** True while the seller should be asked the "where did you hear about us" pop-up (0099). */
-export async function needsHeardAboutUs(sellerId: string): Promise<boolean> {
+/**
+ * True while the seller should be asked the "where did you hear about us" pop-up (0099).
+ * Once per request. The answer comes from loadSeller's row (already read by the
+ * access check), so a seller who answered costs no query.
+ */
+export const needsHeardAboutUs = cache(async (sellerId: string): Promise<boolean> => {
   try {
+    const seller = await loadSeller(sellerId);
+    if (!seller || seller.heardAboutUsAt) return false;
     const [row] = await db
       .select({
         answeredAt: sellers.heardAboutUsAt,
@@ -15,7 +23,7 @@ export async function needsHeardAboutUs(sellerId: string): Promise<boolean> {
       .limit(1);
     return Boolean(row) && shouldAskHeardAboutUs(row!);
   } catch {
-    // Column missing before 0099 is applied, or a DB hiccup: never block the dashboard.
+    // A DB hiccup: never block the dashboard.
     return false;
   }
-}
+});

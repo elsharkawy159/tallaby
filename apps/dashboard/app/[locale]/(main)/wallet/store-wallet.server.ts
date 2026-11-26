@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, orders, sellerWallet, sellers, stores, walletTransactions } from "@workspace/db";
 
@@ -144,8 +145,8 @@ export async function listStoreWalletEntries(
   }));
 }
 
-/** The header's wallet box: the balance and its currency, read fresh (never cached). */
-export async function getStoreWalletBalance(sellerId: string): Promise<{ balance: number; currency: string } | null> {
+/** The header's wallet box: the balance and its currency, read fresh (never cached across requests; React cache() shares it between the layout and the page of one request). */
+export const getStoreWalletBalance = cache(async (sellerId: string): Promise<{ balance: number; currency: string } | null> => {
   const [row] = await db
     .select({
       balance: sql<string>`coalesce(${sellerWallet.balance}, 0)::text`,
@@ -156,4 +157,4 @@ export async function getStoreWalletBalance(sellerId: string): Promise<{ balance
     .leftJoin(sellerWallet, eq(sellerWallet.sellerId, sellers.id))
     .where(eq(sellers.id, sellerId));
   return row ? { balance: Number(row.balance), currency: row.currency } : null;
-}
+});
