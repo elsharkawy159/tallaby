@@ -4791,6 +4791,17 @@ Owner asked to keep only the current version of each template in `template_versi
 - Browser pixels only, same path as the Meta Pixel identifier app (§9.1, §9.2): validated public ids, fixed script templates, store host only, after consent. No migration, no money or ledger code touched.
 - Checks: `@workspace/lib` and `@workspace/apps` tests pass; ecommerce tests pass (storefront event bus + TikTok/Snap mapper tests); marketing tests pass; dashboard tests pass except the pre-existing `order-lock-copy.lib.test.ts` `formatUsdShort` failure (file untouched); typecheck clean in lib, apps, dashboard, marketing; ecommerce only the known `profile.chunks.tsx` errors; eslint clean on the changed ecommerce, dashboard and marketing files. Integration test for the two pixels written in `store-integrations.integration.test.ts`, not run (no `TEST_DATABASE_URL`). No browser E2E.
 
+### 2026-11-26 — Code sections and the editor AI agent deployed and switched on (owner)
+
+- **Push and deploy:** pushed `main` at `85392241`. All 5 image workflows succeeded, and Coolify reported every app healthy at 18:06Z.
+- **Switches:** set `code_sections` and `editor_agent` to true on production at 18:08:28Z (owner: "make everything ready and switch it on"). A missing or false row turns either one off again.
+- **Checked by hand (no sign-in):**
+  - `faster-egy.com` `/`, `/products`, `/en` and `/cart/checkout` return 200 after the switch.
+  - Enforced CSP on the store host; none on tallaby.com.
+- **Still to do by hand:**
+  - signed in: the editor's Code tab, the agent chat, and publishing a code section;
+  - checkout with Paymob, Kashier and EasyKash, watching the CSP report-only console.
+
 ### 2026-11-26 — Code sections (F-101) and the editor AI agent (F-83c), built and switched off
 
 - **Code sections:** the Liquid engine, the HTML cleaner, the CSS scoper, the save and publish checks, the storefront render, the editor (Code tab, Content tab, blocks) and the server preview are built, along with an enforced CSP plus a report-only one (ROADMAP.md §7 logs, commits `8006211d` … `5530249a`). They are off while `platform_switches.code_sections` has no row. A missing row means off, so there is no migration.

@@ -2142,6 +2142,23 @@ Add each new request here first, with the date and the owner's words, then turn 
 - Shared hook `_components/use-product-image-drop.client.ts`, also used by the table thumbnail. The limit is now `MAX_PRODUCT_IMAGES` (8, moved to `products/add/product-images.lib.ts`) instead of a hard-coded 5. Files past the limit are skipped with a toast, and the list refreshes after an upload.
 - Checks: dashboard typecheck passes and the changed files lint clean. Full lint has 30 errors and tests have 1 failure (`order-lock-copy.lib.test.ts`), all outside this change. Not tried in a browser yet.
 
+### 2026-11-26 — Code sections and the editor AI agent are live on production (F-101, F-83c; owner: "make everything ready and switch it on")
+
+- **Before the push:**
+  - `85392241` added the `editor_agent` platform switch: the chat and its server action are off without it.
+  - Full repo typecheck: every package passes except the 16 known errors in ecommerce `profile.chunks.tsx`.
+  - Full test run: the only failures were timeouts that passed alone, plus the known `formatUsdShort` failure.
+  - Lint: errors only in files this work didn't touch.
+  - Local production build of the storefront against production data: a real store's home, products, product page, `/en`, cart and checkout return 200 with the CSP; tallaby.com has none.
+- **Deployed:** `main` was pushed at `85392241`. All 5 images built and Coolify deployed them healthy at 18:06Z. The live custom-domain store answers 200 with the CSP.
+- **Switched on:** on production at 18:08:28Z, `platform_switches` got `code_sections = true` and `editor_agent = true`. Storefront pages are still 200 and every app is healthy.
+  - **To turn either off:** `UPDATE platform_switches SET enabled = false, changed_at = now() WHERE key = 'code_sections'` (or `'editor_agent'`). It takes effect on the next request; no deploy needed.
+- **Not done:**
+  - The editor and the chat have not been tried in a signed-in browser on production yet.
+  - The report-only CSP isn't enforced yet; that needs card payments, pixels and videos checked first.
+  - The F-101f security review.
+  - The 20-request design-quality test of the agent.
+
 ### 2026-11-26 — Website editor AI agent, and code-section fixes (F-83c, F-101g/j, owner request; no migration)
 
 - **Built:**
