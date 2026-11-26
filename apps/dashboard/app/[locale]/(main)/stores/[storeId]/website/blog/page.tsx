@@ -5,7 +5,7 @@ import { ExternalLink, FileText, ImageOff, Pencil, Plus, Search, X } from "lucid
 import { listBlogPosts } from "@workspace/lib/cms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { EmptyState, IconButton, PageHeader, SellerButton, SellerCard, StatusBadge, type BadgeTone } from "@/components/seller-ui";
-import { loadStorePage } from "@/lib/stores/store-page.server";
+import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { cn } from "@/lib/utils";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import type { BlogPostListItem, BlogPostState } from "./blog.dto";
@@ -43,7 +43,7 @@ export default async function StoreBlogPage({
 }) {
   const { storeId } = await params;
   const query = await searchParams;
-  const store = await loadStorePage(storeId);
+  const store = await loadWebsiteStorePage(storeId);
   const state: StateFilter = (STATES as readonly string[]).includes(first(query.state) ?? "") ? (first(query.state) as StateFilter) : "all";
   const tag = first(query.tag)?.trim().toLowerCase().slice(0, 40) || undefined;
   const q = first(query.q)?.trim().slice(0, 80) || undefined;

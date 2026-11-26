@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Inbox, LayoutList } from "lucide-react";
 import { listFormSubmissions, listStoreFormDefinitions, listStoreForms } from "@workspace/lib/store-forms/server";
 import { PageHeader } from "@/components/seller-ui";
-import { loadStorePage } from "@/lib/stores/store-page.server";
+import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { SiteOfflineNote } from "../_components/site-offline-note";
 import { InPageNav } from "../_components/section-group";
 import { INBOX_STATUSES, type InboxFilter } from "./forms.dto";
@@ -34,7 +34,7 @@ export default async function StoreFormsPage({
   searchParams: Promise<{ form?: string; status?: string; page?: string }>;
 }) {
   const [{ storeId }, query] = await Promise.all([params, searchParams]);
-  const store = await loadStorePage(storeId);
+  const store = await loadWebsiteStorePage(storeId);
   const [forms, definitions, t, tNav, tw] = await Promise.all([
     listStoreForms(store.sellerId, store.id),
     listStoreFormDefinitions(store.sellerId, store.id),

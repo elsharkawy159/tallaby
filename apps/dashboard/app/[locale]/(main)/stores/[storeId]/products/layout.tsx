@@ -1,29 +1,26 @@
 import type { ReactNode } from "react";
-import { loadStorePageAccess } from "@/lib/stores/store-page.server";
 import { ProductStoreProvider } from "./_components/product-store.client";
 import { PendingProductSavedToast } from "./_components/product-saved-toast.client";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 /**
  * Gives every Products page the store it acts on (ROADMAP.md F-87c slice 2):
- * the `[storeId]` segment, after loadStorePageAccess has checked it against the
- * session (a foreign, deleted or forged store is a 404). Pages and actions
- * still check it themselves (requireProductStore): a layout is not a guard.
+ * the `[storeId]` segment, as a promise the client consumers unwrap with
+ * `use()`. The layout awaits nothing, so the products `loading.tsx` skeletons
+ * are in the static shell (docs/plans/dashboard-performance.md B4). It is not
+ * a guard: every page checks the store against the session itself
+ * (loadProductStorePage: a foreign, deleted or forged store is a 404), and
+ * every action does too (requireProductStore).
  */
-export default async function ProductsLayout({
+export default function ProductsLayout({
   children,
   params,
 }: {
   children: ReactNode;
   params: Promise<{ storeId: string }>;
 }) {
-  const { storeId } = await params;
-  const store = await loadStorePageAccess(storeId);
+  const storeId = params.then((p) => p.storeId);
   return (
-    <ProductStoreProvider storeId={store.id}>
+    <ProductStoreProvider storeId={storeId}>
       {children}
       {/* The "product added" toast after the add form's full page load. */}
       <PendingProductSavedToast />

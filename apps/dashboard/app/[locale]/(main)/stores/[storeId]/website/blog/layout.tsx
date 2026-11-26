@@ -1,19 +1,10 @@
 import { PageContainer } from "@/components/seller-ui";
-import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
-export default async function StoreBlogLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ storeId: string }>;
-}) {
-  const { storeId } = await params;
-  await loadWebsiteStorePage(storeId);
-
+/**
+ * Website › Blog frame. It awaits nothing (docs/plans/dashboard-performance.md
+ * B4): every blog page checks the store and the store-builder rollout itself
+ * (loadWebsiteStorePage: a foreign store or a seller outside the rollout is a 404).
+ */
+export default function StoreBlogLayout({ children }: { children: React.ReactNode }) {
   return <PageContainer narrow>{children}</PageContainer>;
 }

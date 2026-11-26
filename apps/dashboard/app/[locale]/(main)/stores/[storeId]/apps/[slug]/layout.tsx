@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { APP_DEVELOPERS, appPaths, getAppBySlug, localize } from "@workspace/apps";
 import { getStoreApp } from "@workspace/lib/integrations";
 import { PageContainer, PageTabs, Tag, TextAction } from "@/components/seller-ui";
@@ -10,16 +12,44 @@ import { AppStateBadge } from "../app-center.client";
 import { loadAppCenterPage } from "../app-center.data";
 import { appState } from "../app-center.lib";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
+type AppParams = Promise<{ storeId: string; slug: string }>;
 
 /**
  * Store › App Center › <app> (ROADMAP.md F-93): the app's header and its
- * Overview / Settings tabs. `slug` comes from the registry; an unknown one is
- * a 404. The store is the session seller's (loadStorePage, rule 5).
+ * Overview / Settings tabs. The layout awaits nothing: the header streams in
+ * its own <Suspense> hole and the pages render beside it
+ * (docs/plans/dashboard-performance.md B4). `slug` comes from the registry; an
+ * unknown one is a 404. The store is the session seller's (loadStorePage,
+ * rule 5); both pages check slug and store themselves, so this is not their guard.
  */
-export default async function AppLayout({ params, children }: { params: Promise<{ storeId: string; slug: string }>; children: React.ReactNode }) {
+export default function AppLayout({ params, children }: { params: AppParams; children: React.ReactNode }) {
+  return (
+    <PageContainer className="max-w-[1080px]">
+      <Suspense fallback={<AppHeaderSkeleton />}>
+        <AppHeader params={params} />
+      </Suspense>
+      {children}
+    </PageContainer>
+  );
+}
+
+/** Sized like AppHeader's back link, logo and title lines (the tabs depend on the app, so they are left out). */
+function AppHeaderSkeleton() {
+  return (
+    <div className="flex flex-col items-start gap-3">
+      <Skeleton className="h-9 w-24 rounded-full max-[600px]:h-10" />
+      <div className="flex w-full items-center gap-4">
+        <Skeleton className="size-16 shrink-0 rounded-[20px] max-[600px]:size-14 max-[600px]:rounded-[18px]" />
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Skeleton className="h-8 w-48 max-w-full" />
+          <Skeleton className="h-4 w-64 max-w-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+async function AppHeader({ params }: { params: AppParams }) {
   const { storeId, slug } = await params;
   const manifest = getAppBySlug(slug);
   if (!manifest) notFound();
@@ -28,7 +58,7 @@ export default async function AppLayout({ params, children }: { params: Promise<
   const developer = localize(APP_DEVELOPERS[manifest.developer].name, locale);
 
   return (
-    <PageContainer className="max-w-[1080px]">
+    <>
       <header className="flex flex-col items-start gap-3">
         <TextAction asChild className="-ms-2.5 max-[600px]:min-h-10">
           <Link href={appPaths.center(store.id)}>
@@ -65,8 +95,6 @@ export default async function AppLayout({ params, children }: { params: Promise<
           ]}
         />
       )}
-
-      {children}
-    </PageContainer>
+    </>
   );
 }

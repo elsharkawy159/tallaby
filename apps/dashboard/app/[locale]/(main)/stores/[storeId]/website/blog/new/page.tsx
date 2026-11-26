@@ -1,5 +1,5 @@
 import { storeUrl } from "@workspace/lib/storefront";
-import { loadStorePage } from "@/lib/stores/store-page.server";
+import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { EMPTY_POST } from "../blog.lib";
 import { PostEditor } from "../post-editor.client";
 
@@ -9,7 +9,7 @@ export const instant = false;
 
 export default async function NewBlogPostPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
-  const store = await loadStorePage(storeId);
+  const store = await loadWebsiteStorePage(storeId);
   return (
     <PostEditor
       storeId={store.id}

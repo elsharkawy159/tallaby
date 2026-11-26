@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getStoreForm } from "@workspace/lib/store-forms/server";
-import { loadStorePage } from "@/lib/stores/store-page.server";
+import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { FormEditor } from "./form-editor.client";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Field editor for one form; the form must belong to this store (404 otherwise). */
 export default async function StoreFormEditorPage({ params }: { params: Promise<{ storeId: string; formId: string }> }) {
   const { storeId, formId } = await params;
-  const store = await loadStorePage(storeId);
+  const store = await loadWebsiteStorePage(storeId);
   const form = await getStoreForm(store.sellerId, store.id, formId);
   if (!form) notFound();
 

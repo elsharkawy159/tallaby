@@ -1,24 +1,12 @@
-import { notFound } from "next/navigation";
-import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { PageContainer } from "@/components/seller-ui";
-import { loadStorePage } from "@/lib/stores/store-page.server";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
-/** Website › Forms (PLAN.md §8.4, P4-10): one page with the forms list and the submissions inbox, plus the form editor. */
-export default async function StoreFormsLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ storeId: string }>;
-}) {
-  const { storeId } = await params;
-  const store = await loadStorePage(storeId);
-  // Same rollout gate as the website editor (forms are placed with it).
-  if (!storeBuilderEnabled(store.sellerId)) notFound();
-
+/**
+ * Website › Forms (PLAN.md §8.4, P4-10): one page with the forms list and the
+ * submissions inbox, plus the form editor. The layout awaits nothing
+ * (docs/plans/dashboard-performance.md B4): every forms page checks the store
+ * and the website-editor rollout gate itself (loadWebsiteStorePage: a foreign
+ * store or a seller outside the rollout is a 404).
+ */
+export default function StoreFormsLayout({ children }: { children: React.ReactNode }) {
   return <PageContainer narrow>{children}</PageContainer>;
 }
