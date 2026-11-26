@@ -30,7 +30,7 @@ export function BuilderReviewPanel({
   const t = useTranslations("aiBuilder");
   if (!review) return <Loader2 className="mx-auto size-5 animate-spin" aria-label={t("reviewLoading")} />;
 
-  const editor = review.storeId ? `/stores/${review.storeId}/editor` : null;
+  const editor = review.storeId ? `/stores/${review.storeId}/editor?mode=manual` : null;
   return (
     <>
       <PageHeader

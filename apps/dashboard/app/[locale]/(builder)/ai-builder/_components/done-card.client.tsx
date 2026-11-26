@@ -64,7 +64,7 @@ export function DoneCard({
   const [copied, setCopied] = useState(false);
   const shown = address ?? (review.subdomain ? `${review.subdomain}.tallaby.com` : null);
   const url = shown ? `https://${shown}` : null;
-  const editor = review.storeId ? `/stores/${review.storeId}/editor` : null;
+  const editor = review.storeId ? `/stores/${review.storeId}/editor?mode=manual` : null;
   const issues = review.issues;
 
   const copy = async () => {

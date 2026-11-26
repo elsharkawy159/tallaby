@@ -148,7 +148,7 @@ export function WebsitePages({
   const [pending, startTransition] = useTransition();
 
   const errorText = (error: string) => te(`errors.${error}` as "errors.generic");
-  const editorHref = `/stores/${storeId}/editor`;
+  const editorHref = `/stores/${storeId}/editor?mode=manual`;
 
   const reorder = (index: number, direction: -1 | 1) => {
     const previous = pages;

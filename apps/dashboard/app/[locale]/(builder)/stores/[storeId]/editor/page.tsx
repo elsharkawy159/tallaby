@@ -3,7 +3,9 @@ import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/ser
 import { parseStoreCurrency } from "@workspace/lib";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
 import { getStoreForEditor, getStoreSiteStatus, getStoreTemplateLibraryKeys, listStoreTemplates } from "@workspace/lib/store-sites/server";
 import { storePreviewSecret } from "@workspace/lib/store-sites/preview";
 import { getStorePreviewProduct } from "@workspace/lib/store-sites/preview-product";
@@ -22,6 +24,10 @@ import type { EditorInitial } from "@workspace/store-editor/editor.client";
 import { findIndustry, templatesForIndustry } from "@workspace/store-editor/lib/industries.lib";
 import { SellerEditor } from "./seller-editor.client";
 import { SmallScreenNoticeFrame } from "./small-screen-notice.client";
+import { EditorEntryChooser } from "./editor-entry-chooser";
+import { aiEditorHref, resolveEditorEntry } from "./editor-entry.lib";
+import { EditorEntrySkeleton } from "./editor-entry-skeleton";
+import { editorAiEnabled } from "./server/editor-entry.data";
 import { loadEditorSnapshot } from "./server/editor.data";
 import { loadLibraryPresets } from "./server/library.data";
 
@@ -39,12 +45,31 @@ const asLocale = (value: unknown): SiteLocale => (value === "en" ? "en" : "ar");
 /**
  * Website editor for one store (PLAN.md P4-06). The store id comes from the
  * URL and is checked by loadStorePage (404 for a foreign or missing store);
- * every save goes through the editor actions, which check it again.
+ * every save goes through the editor actions, which check it again. While AI
+ * is on, a bare /editor first asks: edit with AI or by hand (`resolveEditorEntry`).
  */
-export default async function StoreEditorPage({ params }: { params: Promise<{ storeId: string }> }) {
-  const { storeId } = await params;
+export default async function StoreEditorPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ storeId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [{ storeId }, query, aiEnabled] = await Promise.all([params, searchParams, editorAiEnabled()]);
+  // Edit with AI or by hand (owner, 2026-11-26). Decided before any editor data loads,
+  // so the choice streams its skeleton at once and reads only the checked store.
+  const entry = resolveEditorEntry(query, { aiEnabled });
+  if (entry === "choose") {
+    return (
+      <Suspense fallback={<EditorEntrySkeleton />}>
+        <EditorEntryChooser storeId={storeId} />
+      </Suspense>
+    );
+  }
+
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
+  if (entry === "ai") redirect({ href: aiEditorHref(store.id), locale: await getLocale() });
 
   const [editor, status, catalog, gallery, presets, customDomain, previewProduct, codeSections, editorAgent] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),

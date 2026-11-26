@@ -247,7 +247,7 @@ export function TemplateGallery({
             <TutorialVideoButton video="T-04" />
             {data && !showCurrent && (
               <SellerButton asChild variant="outline">
-                <Link href={`/stores/${storeId}/editor`}>
+                <Link href={`/stores/${storeId}/editor?mode=manual`}>
                   <Pencil aria-hidden />
                   {t("openEditor")}
                 </Link>
@@ -287,7 +287,7 @@ export function TemplateGallery({
           </div>
           <div className="flex flex-col items-stretch gap-2 max-[900px]:flex-row max-[900px]:flex-wrap max-[900px]:[&>*]:flex-1">
             <SellerButton asChild variant="solid">
-              <Link href={`/stores/${storeId}/editor`}>
+              <Link href={`/stores/${storeId}/editor?mode=manual`}>
                 <Pencil aria-hidden />
                 {t("openEditor")}
               </Link>

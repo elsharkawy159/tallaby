@@ -9361,6 +9361,18 @@
     "message": "Editing is easier on a computer or tablet. You can still continue on your phone.",
     "dismiss": "Dismiss"
   },
+  "editorEntry": {
+    "back": "Website",
+    "label": "Ways to edit your website",
+    "title": "How do you want to edit your website?",
+    "aiTitle": "Edit with AI",
+    "aiBody": "Tell the AI what to change: sections, photos, products and more. Upload photos and product files.",
+    "aiMeta": "Write what you want in your own words",
+    "manualTitle": "Manual edit",
+    "manualBody": "Drag & Drop sections and edit every element yourself.",
+    "manualMeta": "Full control over every element",
+    "aiSoon": "Editing with AI is coming in the next step. For now, you can edit your website by hand."
+  },
   "tutorialVideos": {
     "button": "How it works?",
     "titles": {

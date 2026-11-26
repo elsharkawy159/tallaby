@@ -471,8 +471,8 @@ export function reviewIssues(snapshot: ReviewSnapshot): BuilderIssue[] {
   if (noPhoto) issues.push({ code: "productsWithoutPhoto", params: { count: noPhoto }, href: `${store}/products` });
 
   const siteCopy = items.get("site_copy")?.status;
-  if (siteCopy !== "done") issues.push({ code: "siteCopyMissing", href: `${store}/editor` });
-  if (snapshot.invalidPages) issues.push({ code: "pagesInvalid", params: { count: snapshot.invalidPages }, href: `${store}/editor` });
+  if (siteCopy !== "done") issues.push({ code: "siteCopyMissing", href: `${store}/editor?mode=manual` });
+  if (snapshot.invalidPages) issues.push({ code: "pagesInvalid", params: { count: snapshot.invalidPages }, href: `${store}/editor?mode=manual` });
   if (!state.logo) issues.push({ code: "noLogo", href: `${store}/settings` });
 
   const shipping = items.get("shipping");
@@ -534,9 +534,9 @@ export function reviewIssuesV2(snapshot: ReviewSnapshotV2): BuilderIssue[] {
   if (count("stock")) issues.push({ code: "productsWithoutStock", params: { count: count("stock") }, href: `${store}/products` });
   if (count("name")) issues.push({ code: "productsToCheck", params: { count: count("name") }, href: `${store}/products` });
 
-  if (items.get("site_copy")?.status !== "done") issues.push({ code: "siteCopyMissing", href: `${store}/editor` });
-  if (snapshot.invalidPages) issues.push({ code: "pagesInvalid", params: { count: snapshot.invalidPages }, href: `${store}/editor` });
-  for (const flag of snapshot.flags) if (flag.count > 0) issues.push({ code: flag.code, params: { count: flag.count }, href: `${store}/editor` });
+  if (items.get("site_copy")?.status !== "done") issues.push({ code: "siteCopyMissing", href: `${store}/editor?mode=manual` });
+  if (snapshot.invalidPages) issues.push({ code: "pagesInvalid", params: { count: snapshot.invalidPages }, href: `${store}/editor?mode=manual` });
+  for (const flag of snapshot.flags) if (flag.count > 0) issues.push({ code: flag.code, params: { count: flag.count }, href: `${store}/editor?mode=manual` });
   if (!state.logo) issues.push({ code: "noLogo", href: `${store}/settings` });
 
   const shipping = items.get("shipping");

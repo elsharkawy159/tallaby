@@ -644,7 +644,7 @@ export function BuilderWorkspace({
   const storeName = preview?.storeName ?? state?.name ?? null;
   const openStoreHref = preview?.published ? preview.src : null;
   const editorStore = review?.storeId ?? (status === "review" ? view?.storeId : null);
-  const editorHref = editorStore ? `/stores/${editorStore}/editor` : null;
+  const editorHref = editorStore ? `/stores/${editorStore}/editor?mode=manual` : null;
 
   const pane = (
     <PreviewPane
