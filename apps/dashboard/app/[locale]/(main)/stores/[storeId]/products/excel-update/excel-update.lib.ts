@@ -1,4 +1,6 @@
 import { hasProductImage, type ProductStatus } from "@/lib/products/product-status.lib";
+import type { PriceRoundingRule } from "@workspace/lib/products/price-rounding";
+import { priceHasDiscount, roundPricePayload } from "@workspace/lib/products/price-rounding/payload";
 import { canonicalTime, readPrice, toPounds } from "../bulk-edit/bulk-edit.lib";
 import {
   EXCEL_UPDATE_COLUMNS,
@@ -411,7 +413,11 @@ export type PlannedRow =
 
 export type ExcelPlan = { rows: PlannedRow[]; edits: ProductEdit[] };
 
-export type ExcelPlanContext = { canPublish: boolean };
+export type ExcelPlanContext = {
+  canPublish: boolean;
+  /** The store's price rounding rule (F-112b): a price a row writes is rounded by it; null/absent = none. */
+  rounding?: PriceRoundingRule | null;
+};
 
 /** The status word a product shows in the sheet. */
 export const sheetStatusOf = (status: ProductStatus): SheetStatus =>
@@ -503,9 +509,14 @@ export function planExcelUpdate(
       const result = applySheetPrice(current.price, row.price, row.salePrice);
       if ("fail" in result) { skip(result.fail); continue; }
       if ("next" in result) {
-        nextPrice = result.next;
-        removedDiscount = result.removedDiscount;
-        lines.push(...priceLines(current.price, result.next));
+        // The store's rounding rule (F-112b) on the price the sheet writes; unchanged after it = no price change.
+        const rounded = roundPricePayload(result.next, ctx.rounding);
+        const roundedLines = priceLines(current.price, rounded);
+        if (roundedLines.length) {
+          nextPrice = rounded;
+          removedDiscount = priceHasDiscount(current.price) && !priceHasDiscount(rounded);
+          lines.push(...roundedLines);
+        }
       }
     }
 

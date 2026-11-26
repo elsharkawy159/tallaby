@@ -369,6 +369,14 @@
       "types": "./src/products/price-rounding.lib.ts",
       "default": "./src/products/price-rounding.lib.ts"
     },
+    "./products/price-rounding/payload": {
+      "types": "./src/products/price-rounding-payload.lib.ts",
+      "default": "./src/products/price-rounding-payload.lib.ts"
+    },
+    "./products/price-rounding/server": {
+      "types": "./src/products/price-rounding.server.ts",
+      "default": "./src/products/price-rounding.server.ts"
+    },
     "./products/preorder": {
       "types": "./src/products/preorder.lib.ts",
       "default": "./src/products/preorder.lib.ts"

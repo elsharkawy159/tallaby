@@ -1,5 +1,6 @@
 import { normalizePrice } from '@workspace/lib'
 import { computeSellerPlatformFee, type FeeBilling } from '@workspace/lib/orders/platform-fee'
+import type { PriceRoundingRule } from '@workspace/lib/products/price-rounding'
 
 export { normalizePrice }
 
@@ -15,6 +16,12 @@ export interface SellerPricingSettings {
   plan?: string | null
   planExpiresAt?: string | null
   planGraceUntil?: string | null
+  /**
+   * The store's price rounding rule when it is on (F-112b; null = off), so the
+   * product form can show the price that will be saved. Display only: the
+   * server reads the rule again when it saves.
+   */
+  priceRounding?: PriceRoundingRule | null
 }
 
 export const DEFAULT_COMMISSION_RATE = 5

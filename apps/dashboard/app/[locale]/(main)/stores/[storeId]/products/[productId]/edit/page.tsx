@@ -15,6 +15,7 @@ import { getSellerProfile } from "@/lib/sellers/seller-profile.server";
 import { getBillingState } from "@workspace/lib/billing/server";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
 import { loadProductStorePage, taxonomyScopeOf } from "@/lib/products/product-store.server";
+import { loadProductStoreRounding } from "@/lib/products/price-rounding.server";
 import { storeProductsHref } from "@/lib/products/product-routes.lib";
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
 import { loadProductLinkHost } from "../../add/product-link-host.data";
@@ -50,7 +51,7 @@ export default async function EditProductPage({
   const access = await loadProductStorePage(storeId);
   const { store } = access;
   const sellerId = access.seller.sellerId;
-  const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost, socialProof, billing] =
+  const [productResult, categoriesRes, sellerProfile, sellerTaxonomy, linkHost, socialProof, billing, priceRounding] =
     await Promise.all([
       getProduct(store.id, productId),
       getAllCategories(),
@@ -59,6 +60,8 @@ export default async function EditProductPage({
       loadProductLinkHost(sellerId),
       loadProductSocialProof(sellerId, productId, access.inStore),
       getBillingState(),
+      // The store's price rounding rule (F-112b): the form shows the price that will be saved.
+      loadProductStoreRounding(access),
     ]);
 
   if (!productResult.success || !productResult.data) {
@@ -80,6 +83,7 @@ export default async function EditProductPage({
     plan: seller?.plan ?? null,
     planExpiresAt: seller?.planExpiresAt ?? null,
     planGraceUntil: seller?.planGraceUntil ?? null,
+    priceRounding,
   };
   const defaultValues = {
     ...buildEditDefaultValues(product as Parameters<typeof buildEditDefaultValues>[0], sellerPricing),

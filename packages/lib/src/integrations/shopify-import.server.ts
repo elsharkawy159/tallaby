@@ -11,6 +11,9 @@ import {
   storeIntegrations,
 } from "@workspace/db";
 import { setStockContext } from "@workspace/db/inventory";
+import type { PriceRoundingRule } from "../products/price-rounding.lib";
+import { roundPricePayload } from "../products/price-rounding-payload.lib";
+import { loadStorePriceRounding } from "../products/price-rounding.server";
 import { decryptCredentials, encryptCredentials } from "./crypto.server";
 import { INTEGRATIONS } from "./registry";
 import {
@@ -290,6 +293,8 @@ async function insertDraftProduct(
   mapped: MappedProduct,
   images: string[],
   variantImage: (url: string | null) => string | null,
+  /** The store's price rounding rule (F-112b), read once per chunk; null = prices as Shopify has them. */
+  rounding: PriceRoundingRule | null = null,
 ): Promise<string | null> {
   const slug = await freeSlug(q, mapped.slugBase, mapped.shopifyId);
   return q.transaction(async (tx) => {
@@ -304,7 +309,7 @@ async function insertDraftProduct(
         sku: mapped.sku,
         status: "draft",
         quantity: String(mapped.quantity),
-        price: mapped.price,
+        price: roundPricePayload(mapped.price, rounding),
         images: images.length ? images : null,
       })
       // No conflict target: the SKU key is (seller_id, sku) before 0163 and
@@ -321,7 +326,7 @@ async function insertDraftProduct(
             productId: created.id,
             title: v.title,
             sku: v.sku,
-            price: v.price,
+            price: roundPricePayload(v.price, rounding),
             stock: v.stock,
             imageUrl: path,
             images: path ? [path] : null,
@@ -393,6 +398,7 @@ export async function importShopifyChunk(
         .where(and(eq(products.sellerId, sellerId), inArray(products.sku, nodes.map((n) => shopifySku(n.legacyResourceId)))))
     : [];
   const existingSkus = new Set(existing.map((e) => e.sku));
+  const rounding = nodes.length ? await loadStorePriceRounding(sellerId, storeId, q) : null;
 
   const items: ShopifyImportItem[] = [];
   let created = 0;
@@ -412,7 +418,7 @@ export async function importShopifyChunk(
       const warnings = [...mapped.warnings];
       if (skipped) warnings.push("image_skipped");
       const images = mapped.imageUrls.map((u) => paths.get(u)).filter((p): p is string => Boolean(p));
-      const productId = await insertDraftProduct(q, sellerId, storeId, mapped, images, (url) => (url ? (paths.get(url) ?? null) : null));
+      const productId = await insertDraftProduct(q, sellerId, storeId, mapped, images, (url) => (url ? (paths.get(url) ?? null) : null), rounding);
       if (!productId) {
         items.push({ ...base, status: "skipped", error: "already_imported" });
         continue;

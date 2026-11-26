@@ -1,4 +1,16 @@
-# Tallaby Seller Features — Roadmap
+# Tallaby
+### 2026-11-26 — Round prices: applied on save (F-112b, owner request; no migration)
+
+- **Built:** pure `roundPricePayload` / `roundVariantPriceRow` (`packages/lib/src/products/price-rounding-payload.lib.ts`) and `loadStorePriceRounding` (`price-rounding.server.ts`; seller + store, not deleted, not cached), read once per request or batch. Covered: `createProduct` (so the AI uploader, autofill, URL and file imports), `updateProduct` (only when it writes a price or variants), `createProductVariant`, the bulk insert/create actions (rule loaded once through the non-exported `createProductInStore`, never from the client), bulk edit (price and discount changes, after `roundWhole`), Excel update, the MCP agent (`agentCreateProduct`/`agentUpdateProduct` return `savedPrice`; the backend tools show it) and the Shopify import. The product form and variant rows show "Will be saved as …" and warn when a discount would be dropped.
+- **Note:** Admin › store products creates through `agentCreateProduct`, so admin-created products follow the store's rule too; admin edits of existing products are unchanged. `from-file-run.server.ts` reads the rule once per row (small batches).
+- **Checks:** lib, dashboard and backend typecheck pass; lib product tests and the full dashboard suite pass except the old locale-dependent `formatUsdShort` test; eslint 0 errors. Not tried in a browser.
+
+### 2026-11-26 — Round prices: rule and setting (F-112a, owner request; no migration)
+
+- **Owner:** round product prices up, down or to the nearest step (10, 20, 50, 100 …), several steps by price range; applied on every save; existing prices through "Round all now" with a preview.
+- **Built:** `packages/lib/src/products/price-rounding.lib.ts` (`priceRoundingSchema`, `parsePriceRounding`, `readPriceRoundingSetting`, `roundPriceByRule`, `roundPriceJsonByRule`; integer piastres, half up, never 0), `setStorePriceRounding` in `packages/lib/src/stores/server.ts` (row lock, own store, active only; not audited, since `store_settings_audit` takes only payments, shipping and domain), dashboard `settings/price-rounding.{dto,server,client}` (card under the Catalog cards in Store settings › General, saved with the page's save bar; purges the storefront profile).
+- **Checks:** lib price-rounding tests 18 pass, dashboard dto tests 4 pass; lib and dashboard typecheck pass; eslint clean on the changed files. Not tried in a browser.
+ Seller Features — Roadmap
 
 > **Status:** Created 2026-10-28; EasyOrders dashboard and public roadmap added the same day (§2.3, §2.4, F-21 … F-31; all 88 EasyOrders roadmap ideas mapped). Since then most P0/P1 features have been built (see §6 and §7; synced with the code at `b45f4bb1`, 2026-11-01); F-29 (MCP) is in progress. The owner will add more feature requests in chat; each one is added here (§5 intake, then a feature in §4). **2026-11-03:** the owner's new roadmap and pricing (Free and Pro, USD wallet, AI credits) added as F-42 … F-60; all planned, none built (§3.1, §4).
 > **Scope:** New **seller features** only, mostly in the seller dashboard (`apps/dashboard`) and the store website (`apps/ecommerce` storefront). Platform work (multi-store, builder, templates, fees, wallets, admin) stays in [`PLAN.md`](PLAN.md). **Exception:** the 2026-11-03 business update (F-55, F-56, F-57) is planned here at the owner's request, with the agreed rules recorded in `PLAN.md` §13.1.
@@ -1512,10 +1524,10 @@ Not the same as F-18 (a seller's own marketers for their store) and not the mark
 **Why:** Sellers want clean prices (240, 250, 1,200) without fixing each price by hand, especially after a bulk % change, an import or AI autofill.
 **What:** Store settings › General gets a "Round prices" card (under the Catalog cards) saved in `stores.settings.priceRounding` (no migration): on/off plus 1–5 **price-range tiers**, each with an upper bound (the last tier has none), a step (1, 5, 10, 20, 50, 100 or a whole number up to 10,000 in the store's currency) and a direction (up, down, nearest). The tier is picked by the price before rounding. Computed in integer piastres; a price never rounds to 0 (it goes up one step instead). The rule rounds the price the customer pays and the compare-at price, of products and of variants; when the rounded compare-at price is not higher than the rounded price, the discount is dropped (no fake discounts). **Applied on save** by every seller price writer: product form (it shows the price that will be saved), bulk edit, Excel update, product import, AI uploader/autofill, the MCP agent and the Shopify import. The stored price is what the customer pays, so cart and checkout code are unchanged. Not rounded: cost price, quantity offers, customer-field extras, coupons, shipping, orders. Admin product edits are unchanged. **"Round all now"**: a preview of old → new prices of the store's products and variants (not in Trash), then one confirmed apply that recomputes on the server from the saved rule.
 **Owner decisions 2026-11-26:** applies to every price on save (not display-only); tiers by price range; existing prices through "Round all now" with a preview.
-**Status:** [In progress] 2026-11-26. F-112a done.
+**Status:** [In progress] 2026-11-26. F-112a and F-112b done.
 
 - **F-112a · P1** Rounding rule (pure lib + tests), setting save, settings card in Store settings › General (saved with the page's save bar). Done.
-- **F-112b · P1 · deps: F-112a** Apply the rule in every seller price writer; product form hint.
+- **F-112b · P1 · deps: F-112a** Apply the rule in every seller price writer; product form hint. Done.
 - **F-112c · P1 · deps: F-112a** "Round all now" with preview.
 
 ## 5. Owner feature requests (intake)
@@ -2112,7 +2124,7 @@ Add each new request here first, with the date and the owner's words, then turn 
 - [x] F-110a Remove Tallaby badge app ($1/month, free with Pro) and the wallet top-up prompt for paid apps — 2026-11-26; unit tests pass, DB integration tests not run (no TEST_DATABASE_URL); not tried in a browser
 - [x] F-111a Different product cards per template, `addToCart` look, contained photos on white, white gallery — 2026-11-26; store-sections tests and typecheck pass; checked in the template preview
 - [x] F-112a Round prices: rule, setting, settings card (Store settings › General) — 2026-11-26; lib and dashboard tests and typecheck pass; not tried in a browser
-- [ ] F-112b Round prices: applied in every seller price writer, product form hint
+- [x] F-112b Round prices: applied in every seller price writer, product form hint — 2026-11-26; lib, dashboard and backend typecheck and tests pass; not tried in a browser
 - [ ] F-112c Round prices: "Round all now" with preview
 
 ## 7. Log

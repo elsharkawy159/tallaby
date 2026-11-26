@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { FieldError, FieldHint, FieldLabel, SectionCard } from "@/app/[locale]/(main)/stores/[storeId]/products/add/form-kit";
 import { DiscountExpiryField } from "../steps/discount-expiry-field";
 import { MoneyField, useFieldError } from "./fields";
+import { PriceRoundingHint } from "./price-rounding-hint.client";
 import type { AddProductFormData } from "../add-product.schema";
 
 const positive = (value: unknown): value is number => typeof value === "number" && value > 0;
@@ -159,6 +160,8 @@ export function PricingSection({
           )}
         </div>
       )}
+      {/* The store rounds prices on save (F-112b): show what will be stored. */}
+      <PriceRoundingHint list={listPrice} final={discountOn ? finalPrice : undefined} rule={sellerPricing.priceRounding} className="mt-3" />
     </SectionCard>
   );
 }

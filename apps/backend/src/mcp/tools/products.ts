@@ -133,7 +133,8 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
     run: async (args) => {
       const created = await agentCreateProduct(contextFor(actor, args.storeId), args, uploadProductImageFromUrl);
       const site = created.wentLive ? await storeGoesLive(actor, args.storeId, created.invalidation) : null;
-      const data = { productId: created.productId, status: created.status, slug: created.slug, ...(site?.storeWentLive && { storeWentLive: true }) };
+      // The stored price: the store's price rounding rule (F-112b) may have changed what was sent.
+      const data = { productId: created.productId, status: created.status, slug: created.slug, ...created.savedPrice, ...(site?.storeWentLive && { storeWentLive: true }) };
       return { data, storeId: args.storeId, resultRef: data, invalidation: site?.invalidation ?? created.invalidation };
     },
   });
@@ -155,7 +156,7 @@ export function registerProductTools(server: McpServer, actor: AgentActor) {
       const updated = await agentUpdateProduct(contextFor(actor, args.storeId), args, uploadProductImageFromUrl);
       // Only a legacy "pending" product goes live on an edit.
       const site = updated.wentLive ? await storeGoesLive(actor, args.storeId, updated.invalidation) : null;
-      const data = { productId: updated.productId, status: updated.status, slug: updated.slug, ...(site?.storeWentLive && { storeWentLive: true }) };
+      const data = { productId: updated.productId, status: updated.status, slug: updated.slug, ...updated.savedPrice, ...(site?.storeWentLive && { storeWentLive: true }) };
       return { data, storeId: args.storeId, resultRef: { productId: updated.productId, fields: Object.keys(args).filter((k) => k !== "storeId" && k !== "productId") }, invalidation: site?.invalidation ?? updated.invalidation };
     },
   });

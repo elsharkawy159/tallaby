@@ -1,4 +1,6 @@
 import { hasProductImage, type ProductStatus } from "@/lib/products/product-status.lib";
+import type { PriceRoundingRule } from "@workspace/lib/products/price-rounding";
+import { priceHasDiscount, roundPricePayload } from "@workspace/lib/products/price-rounding/payload";
 import type { BulkChange, BulkPreviewLine, BulkPreviewRow, BulkSkipReason } from "./bulk-edit.dto";
 
 /**
@@ -10,6 +12,8 @@ import type { BulkChange, BulkPreviewLine, BulkPreviewRow, BulkSkipReason } from
  * price jsonb as pounds with at most 2 decimals. With `roundWhole` (the UI
  * default) each new price is rounded to the nearest whole pound. A product is
  * skipped whole (never half-changed) when any of its prices would be <= 0.
+ * With the store's price rounding rule on (F-112b, `ctx.rounding`) every new
+ * price is then rounded by it, after `roundWhole`; the preview shows the same.
  */
 
 export type BulkVariantRow = {
@@ -39,7 +43,11 @@ export type PlannedEdit =
   | { id: string; outcome: "same" }
   | { id: string; outcome: "skip"; reason: BulkSkipReason };
 
-export type PlanContext = { canPublish: boolean };
+export type PlanContext = {
+  canPublish: boolean;
+  /** The store's price rounding rule (F-112b), applied to every new price; null/absent = none. */
+  rounding?: PriceRoundingRule | null;
+};
 
 type Fail = { fail: BulkSkipReason };
 const isFail = (value: unknown): value is Fail => typeof value === "object" && value !== null && "fail" in value;
@@ -220,8 +228,10 @@ export function planProductEdit(row: BulkProductRow, change: BulkChange, ctx: Pl
     after.quantity = nextStock(row.quantity, change);
     after.variants = row.variants.map((v) => ({ id: v.id, stock: nextStock(v.stock, change) }));
   } else {
-    const transform = (price: unknown, isProduct: boolean) =>
-      change.kind === "price" ? adjustPrice(price, change) : applyDiscount(price, change, isProduct);
+    const transform = (price: unknown, isProduct: boolean) => {
+      const next = change.kind === "price" ? adjustPrice(price, change) : applyDiscount(price, change, isProduct);
+      return isFail(next) ? next : roundPricePayload(next, ctx.rounding);
+    };
     const productPrice = transform(row.price, true);
     if (isFail(productPrice)) return { id: row.id, outcome: "skip", reason: productPrice.fail };
     after.price = productPrice;
@@ -233,6 +243,8 @@ export function planProductEdit(row: BulkProductRow, change: BulkChange, ctx: Pl
       if (isFail(price)) return { id: row.id, outcome: "skip", reason: price.fail };
       const value: VariantValues = { id: v.id, price };
       if (change.kind === "discount") value.discountEndsAt = change.mode === "none" ? null : canonicalTime(change.endsAt);
+      // A discount the rounding dropped takes its end date with it.
+      if (value.discountEndsAt && ctx.rounding && !priceHasDiscount(price)) value.discountEndsAt = null;
       variants.push(value);
     }
     after.variants = variants;

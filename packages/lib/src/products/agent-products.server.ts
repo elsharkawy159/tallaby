@@ -85,6 +85,8 @@ import {
   type ProductStatusValue,
 } from "./agent-products.lib";
 import { restoreProducts, trashProducts } from "./trash.server";
+import { roundPricePayload, roundVariantPriceRow } from "./price-rounding-payload.lib";
+import { loadStorePriceRounding } from "./price-rounding.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -419,6 +421,11 @@ export type AgentProductWriteResult = {
   /** This write made the product live (it was new or not live before). */
   wentLive: boolean;
   invalidation: CacheInvalidation;
+  /**
+   * The product price as stored, when this write set it: the store's price
+   * rounding rule (F-112b) may have changed what was sent.
+   */
+  savedPrice?: { price: number; compareAtPrice: number | null };
 };
 
 export async function agentCreateProduct(
@@ -452,6 +459,9 @@ export async function agentCreateProduct(
   const discountEndsAt = input.discountEndsAt ?? null;
   const quantity = input.quantity ?? (variants.length ? variantStockTotal(variants) : 0);
   const pickNeeded = !store.catalogSplit && store.catalogMode === "selected";
+  // The store's price rounding rule (F-112b): product and variant prices are saved rounded.
+  const rounding = await loadStorePriceRounding(ctx.sellerId, store.id);
+  const price = roundPricePayload(buildAgentPrice(input.price, input.compareAtPrice, discountEndsAt), rounding);
 
   const created = await db.transaction(async (tx) => {
     await setStockContext(tx, { reason: "edit", actorId: ctx.userId, storeId: store.id });
@@ -467,7 +477,7 @@ export async function agentCreateProduct(
         quantity: String(quantity),
         ...(input.trackStock !== undefined && { trackStock: input.trackStock }),
         images,
-        price: buildAgentPrice(input.price, input.compareAtPrice, discountEndsAt),
+        price,
         status,
         condition: input.condition ?? "new",
         freeDelivery: input.freeDelivery ?? false,
@@ -497,7 +507,7 @@ export async function agentCreateProduct(
 
     if (variants.length) {
       const rows = buildVariantRows(variants, { productSku: sku, productImages: images, variantImages: variantImagesFor(variants, resolved), discountEndsAt });
-      await tx.insert(productVariants).values(rows.map(({ id: _id, ...v }) => ({ ...v, productId })));
+      await tx.insert(productVariants).values(rows.map(({ id: _id, ...v }) => ({ ...roundVariantPriceRow(v, rounding), productId })));
     }
 
     // Before the split, a "selected" store shows only its picks; after it, store_id is enough (never store_products).
@@ -521,7 +531,15 @@ export async function agentCreateProduct(
     ...(taxonomy.taxonomyChanged ? [invalidateSellerProducts(ctx.sellerId)] : []),
     ...(pickNeeded ? [invalidateStoreCatalog(ctx.sellerId, store.id, store.subdomain)] : []),
   );
-  return { productId: created.productId, status, slug: created.slug, wentLive: status === "active", invalidation };
+  const stored = readAgentPrice(price);
+  return {
+    productId: created.productId,
+    status,
+    slug: created.slug,
+    wentLive: status === "active",
+    invalidation,
+    savedPrice: { price: stored.price, compareAtPrice: stored.compareAtPrice },
+  };
 }
 
 export async function agentUpdateProduct(
@@ -566,18 +584,24 @@ export async function agentUpdateProduct(
   const priceNow = readAgentPrice(storedPrice?.price);
   const priceChanged = input.price !== undefined || input.compareAtPrice !== undefined || input.discountEndsAt !== undefined;
   const discountEndsAt = input.discountEndsAt !== undefined ? input.discountEndsAt : priceNow.discountEndsAt;
+  // The store's price rounding rule (F-112b), only when this write sets a product or variant price.
+  const rounding = priceChanged || input.variants ? await loadStorePriceRounding(ctx.sellerId, store.id) : null;
+  const newPrice = priceChanged
+    ? roundPricePayload(
+        buildAgentPrice(
+          input.price ?? priceNow.price,
+          input.compareAtPrice !== undefined ? input.compareAtPrice : priceNow.compareAtPrice,
+          discountEndsAt,
+        ),
+        rounding,
+      )
+    : null;
 
   const slug = await db.transaction(async (tx) => {
     await setStockContext(tx, { reason: "edit", actorId: ctx.userId, storeId: store.id });
     const patch: Partial<typeof products.$inferInsert> = { status, updatedAt: new Date().toISOString() };
     if (input.images) patch.images = images;
-    if (priceChanged) {
-      patch.price = buildAgentPrice(
-        input.price ?? priceNow.price,
-        input.compareAtPrice !== undefined ? input.compareAtPrice : priceNow.compareAtPrice,
-        discountEndsAt,
-      );
-    }
+    if (newPrice) patch.price = newPrice;
     if (input.trackStock !== undefined) patch.trackStock = input.trackStock;
     if (input.quantity !== undefined) patch.quantity = String(input.quantity);
     else if (input.variants?.length) patch.quantity = String(variantStockTotal(input.variants));
@@ -632,7 +656,7 @@ export async function agentUpdateProduct(
         variantImages: variantImagesFor(input.variants, resolved),
         discountEndsAt,
       });
-      await syncProductVariants(tx, input.productId, variantRows);
+      await syncProductVariants(tx, input.productId, variantRows.map((row) => roundVariantPriceRow(row, rounding)));
     }
     return productSlug ?? "";
   });
@@ -651,7 +675,15 @@ export async function agentUpdateProduct(
     ...(taxonomy.taxonomyChanged ? [invalidateSellerProducts(ctx.sellerId)] : []),
   );
   const finalStatus = (after?.status ?? status) as ProductStatusValue;
-  return { productId: input.productId, status: finalStatus, slug, wentLive: finalStatus === "active" && before.status !== "active", invalidation };
+  const stored = newPrice ? readAgentPrice(newPrice) : null;
+  return {
+    productId: input.productId,
+    status: finalStatus,
+    slug,
+    wentLive: finalStatus === "active" && before.status !== "active",
+    invalidation,
+    ...(stored && { savedPrice: { price: stored.price, compareAtPrice: stored.compareAtPrice } }),
+  };
 }
 
 /** Publish (active) or hide (draft) a product, with the dashboard's rules. */

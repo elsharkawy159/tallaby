@@ -268,3 +268,35 @@ describe("input", () => {
     expect(bulkEditInputSchema.safeParse({ ids: ids.slice(0, 500), change: c }).success).toBe(true);
   });
 });
+
+describe("store price rounding (F-112b)", () => {
+  const rounding = { enabled: true, tiers: [{ upTo: null, step: 50, direction: "up" as const }] };
+
+  it("rounds every new price after roundWhole, product and variants", () => {
+    const r = row({ variants: [{ id: "v", title: "Red", price: { base: 90, list: 90, final: 90 }, stock: 3, discountEndsAt: null }] });
+    const plan = planProductEdit(r, change({ kind: "price", mode: "percent", direction: "increase", value: 10 }), { ...ctx, rounding });
+    if (plan.outcome !== "change") throw new Error(plan.outcome);
+    expect(plan.after.price).toMatchObject({ base: 250, list: 250, final: 200, discountType: "amount", discountValue: 50 });
+    expect(plan.after.variants?.[0]?.price).toMatchObject({ list: 100, final: 100, discountType: null });
+  });
+
+  it("drops a discount the rounding makes fake, with a variant's end date", () => {
+    const r = row({
+      price: { base: 210, list: 210, final: 210 },
+      variants: [{ id: "v", title: "Red", price: { base: 210, list: 210, final: 210 }, stock: 3, discountEndsAt: null }],
+    });
+    const plan = planProductEdit(
+      r,
+      change({ kind: "discount", mode: "amount", value: 5, endsAt: "2030-01-01T00:00:00.000Z" }),
+      { ...ctx, rounding },
+    );
+    if (plan.outcome !== "change") throw new Error(plan.outcome);
+    expect(plan.after.price).toMatchObject({ list: 250, final: 250, discountType: null, discountEndsAt: null });
+    expect(plan.after.variants?.[0]).toMatchObject({ discountEndsAt: null });
+  });
+
+  it("changes nothing without a rule", () => {
+    const c = change({ kind: "price", mode: "percent", direction: "increase", value: 10 });
+    expect(planProductEdit(row(), c, { ...ctx, rounding: null })).toEqual(planProductEdit(row(), c, ctx));
+  });
+});

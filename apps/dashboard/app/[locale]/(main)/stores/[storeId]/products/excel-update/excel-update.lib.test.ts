@@ -296,3 +296,23 @@ describe("buildUpdateSheet", () => {
     expect(buildUpdateSheet(many, "en", 2)).toMatchObject({ productCount: 1, truncated: true });
   });
 });
+
+describe("store price rounding (F-112b)", () => {
+  const rounding = { enabled: true, tiers: [{ upTo: null, step: 50, direction: "up" as const }] };
+
+  it("rounds the prices a row writes", () => {
+    const plan = planExcelUpdate([row({ productId: P1, price: 21300, salePrice: 18700 })], [product()], { ...ctx, rounding });
+    expect(plan.edits[0]!.after.price).toMatchObject({ list: 250, final: 200, discountType: "amount", discountValue: 50 });
+  });
+
+  it("is the same when the rounded price is what is stored", () => {
+    const plan = planExcelUpdate([row({ productId: P1, price: 20000, salePrice: 14000 })], [product()], { ...ctx, rounding });
+    expect(plan.rows[0]).toMatchObject({ outcome: "same" });
+  });
+
+  it("drops a discount the rounding makes fake, with a variant's end date", () => {
+    const variant = { id: V1, title: "Red", sku: "R", price: { list: 300, final: 250, discountType: "amount", discountValue: 50 }, stock: 3, discountEndsAt: "2026-12-01T00:00:00.000Z" };
+    const plan = planExcelUpdate([row({ variantId: V1, price: 22000, salePrice: 21000 })], [product({ variants: [variant] })], { ...ctx, rounding });
+    expect(plan.edits[0]!.after.variants![0]).toMatchObject({ price: { list: 250, final: 250, discountType: null }, discountEndsAt: null });
+  });
+});

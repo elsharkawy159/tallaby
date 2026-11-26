@@ -17,6 +17,7 @@ import { getLocale } from "next-intl/server";
 import type { SQL } from "drizzle-orm";
 import { isAccessError, type SellerContext } from "@/lib/auth/require-seller.server";
 import { requireProductStore } from "@/lib/products/product-store.server";
+import { loadProductStoreRounding } from "@/lib/products/price-rounding.server";
 import { hasProductImage, type ProductStatus } from "@/lib/products/product-status.lib";
 import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import {
@@ -245,16 +246,21 @@ const wentLive = (changes: { before: ProductValues; after: ProductValues }[]) =>
 
 const undoKey = () => deriveUndoKey(parseIntegrationKey());
 
+/** Price and discount changes write prices, so they follow the store's rounding rule (F-112b). */
+const isPriceChange = (change: { kind: string }) => change.kind === "price" || change.kind === "discount";
+
 /** Before → after for every selected product; writes nothing. */
 export async function previewBulkEditAction(storeId: unknown, input: unknown): Promise<BulkPreviewResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId);
+    const productStore = await requireProductStore(storeId);
+    const { seller, inStore } = productStore;
     const parsed = bulkEditInputSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const ids = [...new Set(parsed.data.ids)];
     const locale = await getLocale();
     const rows = await loadRows(db, seller.sellerId, inStore, ids, false, locale);
-    const plans = planBulkEdit(rows, parsed.data.change, { canPublish: canPublishFor(seller) });
+    const rounding = isPriceChange(parsed.data.change) ? await loadProductStoreRounding(productStore) : null;
+    const plans = planBulkEdit(rows, parsed.data.change, { canPublish: canPublishFor(seller), rounding });
     const found = new Set(rows.map((r) => r.id));
     const preview = previewRows(rows, plans, ids.filter((id) => !found.has(id)));
     return {
@@ -271,18 +277,21 @@ export async function previewBulkEditAction(storeId: unknown, input: unknown): P
 /** Applies the change in one transaction and returns a signed 10-minute Undo token. */
 export async function applyBulkEditAction(storeId: unknown, input: unknown): Promise<BulkApplyResult> {
   try {
-    const { seller, store, inStore } = await requireProductStore(storeId);
+    const productStore = await requireProductStore(storeId);
+    const { seller, store, inStore } = productStore;
     const parsed = bulkEditInputSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "invalidInput" };
     const ids = [...new Set(parsed.data.ids)];
     const key = undoKey(); // fail before writing if the key is missing
     const locale = await getLocale();
     const now = new Date().toISOString();
+    // The store's price rounding rule (F-112b), read once for the whole change.
+    const rounding = isPriceChange(parsed.data.change) ? await loadProductStoreRounding(productStore) : null;
 
     const { changes, skipped } = await db.transaction(async (tx) => {
       await setStockContext(tx, { reason: "bulk_edit", actorId: seller.userId });
       const rows = await loadRows(tx, seller.sellerId, inStore, ids, true, locale);
-      const plans = planBulkEdit(rows, parsed.data.change, { canPublish: canPublishFor(seller) });
+      const plans = planBulkEdit(rows, parsed.data.change, { canPublish: canPublishFor(seller), rounding });
       const done: { row: LoadedRow; before: ProductValues; after: ProductValues }[] = [];
       let skip = ids.length - rows.length;
       for (let i = 0; i < rows.length; i++) {

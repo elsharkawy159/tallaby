@@ -26,6 +26,7 @@ import { toAsciiDigits } from "@/components/form/form-ui";
 import { VariantPricingFields } from "../steps/variant-pricing-fields";
 import type { AddProductFormData, SupportedLocale, VariantOptionKind } from "../add-product.schema";
 import { MoneyField, useFieldError } from "./fields";
+import { PriceRoundingHint } from "./price-rounding-hint.client";
 import { isValidVariantType, missingComboCount, reconcileCombos, type ComboRow } from "./variant-combos.lib";
 
 const MAX_OPTION_TYPES = 3;
@@ -1085,6 +1086,10 @@ function CombinationRow({
       </div>
 
       {priceError && <p className="mt-1.5 text-xs font-semibold text-destructive">{priceError}</p>}
+      {/* The default row mirrors the product price, whose hint is in the Pricing section (F-112b). */}
+      {!isDefault && !priceError && (
+        <PriceRoundingHint list={row?.listPrice} final={row?.price} rule={sellerPricing.priceRounding} className="mt-1.5" />
+      )}
       {skuError && <p className="mt-1.5 text-xs font-semibold text-destructive">{skuError}</p>}
       {duplicateSku && !skuError && <p className="mt-1.5 text-xs font-semibold text-accent-ink">{t("duplicateSku")}</p>}
 

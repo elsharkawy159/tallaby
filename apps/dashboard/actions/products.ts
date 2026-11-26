@@ -34,6 +34,7 @@ import { resolveProductSlug } from "@workspace/lib/products/slug/server";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { assertProductTaxonomyInStore, requireProductStore, requireStoreProduct } from "@/lib/products/product-store.server";
 import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
+import { loadProductStoreRounding, loadStorePriceRounding, resolveProductStoreRounding, roundPricePayload, roundVariantPriceRow, type PriceRoundingRule } from "@/lib/products/price-rounding.server";
 import {
   hasProductImage,
   nextProductStatus,
@@ -774,9 +775,10 @@ export async function bulkInsertProductsAction(storeId: string, records: ParsedB
       errors: [],
     };
 
+    const priceRounding = await loadStorePriceRounding(session.user.id, storeId);
     for (const rec of records) {
       try {
-        const res = await createProduct(storeId, {
+        const res = await createProductInStore(storeId, {
           title: rec.product.title,
           slug: rec.product.slug,
           description: rec.product.description,
@@ -800,7 +802,7 @@ export async function bulkInsertProductsAction(storeId: string, records: ParsedB
           isFeatured: rec.product.isFeatured,
           taxClass: "standard",
           variants: rec.variants || [],
-        }, { stockReason: "import" });
+        }, { stockReason: "import" }, priceRounding);
 
         if (!res.success || !res.data?.id) {
           results.failed++;
@@ -895,12 +897,13 @@ export async function bulkCreateProductsAction(
       errors: [],
     };
 
+    const priceRounding = await loadStorePriceRounding(session.user.id, storeId);
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
       if (!product) continue;
 
       try {
-        const res = await createProduct(storeId, product as any, { stockReason: "import" });
+        const res = await createProductInStore(storeId, product as any, { stockReason: "import" }, priceRounding);
         if (!res.success || !res.data?.id) {
           results.failed++;
           results.errors.push({
@@ -1119,6 +1122,20 @@ export async function createProduct(
    */
   options?: { stockReason?: "import"; willHide?: boolean }
 ) {
+  return createProductInStore(storeId, data, options, undefined);
+}
+
+/**
+ * createProduct's body. Not exported (not a server action), so the client can
+ * never send `preloadedRule`: the store's price rounding rule (F-112b) a bulk
+ * caller in this file loaded once for its batch; `undefined` = read it now.
+ */
+async function createProductInStore(
+  storeId: string,
+  data: CreateProductLegacy | CreateProductNew,
+  options: { stockReason?: "import"; willHide?: boolean } | undefined,
+  preloadedRule: PriceRoundingRule | null | undefined
+) {
   try {
     const session = await getUser();
     if (!session?.user?.id) {
@@ -1175,8 +1192,10 @@ export async function createProduct(
       }),
     } as any;
 
+    // The store's price rounding rule (F-112b), applied to the product and variant prices.
+    const priceRounding = await resolveProductStoreRounding(productStore, preloadedRule);
     if (productPayload.price != null) {
-      productPayload.price = normalizeProductPricePayload(productPayload.price);
+      productPayload.price = roundPricePayload(normalizeProductPricePayload(productPayload.price), priceRounding);
     }
     // The bulk imports send their own category and brand here: both must be this store's (F-87d).
     await assertProductTaxonomyInStore(productStore, productPayload);
@@ -1200,7 +1219,7 @@ export async function createProduct(
         );
         const variantValues = normalizedVariants.map((v: any, index: number) => ({
           productId: created.id,
-          ...mapVariantFormToDb(v, index),
+          ...roundVariantPriceRow(mapVariantFormToDb(v, index), priceRounding),
         }));
         await tx.insert(productVariants).values(variantValues);
       }
@@ -1450,10 +1469,12 @@ export async function updateProduct(
       ...productData
     } = data as typeof data & FormOnly;
 
+    // Only prices this save writes are rounded (F-112b): the product price and, when sent, the variants.
+    const priceRounding = productData.price != null || variants ? await loadProductStoreRounding(productStore) : null;
     if (productData.price != null) {
-      (productData as any).price = normalizeProductPricePayload(
+      (productData as any).price = roundPricePayload(normalizeProductPricePayload(
         productData.price
-      );
+      ), priceRounding);
     }
     // A category or brand in the payload must be this store's (F-87d).
     await assertProductTaxonomyInStore(productStore, productData as { sellerCategoryId?: unknown; sellerBrandId?: unknown });
@@ -1607,7 +1628,7 @@ export async function updateProduct(
           );
           const variantValues = normalizedVariants.map((v, index) => ({
             id: (v as { id?: string }).id,
-            ...mapVariantFormToDb(v, index),
+            ...roundVariantPriceRow(mapVariantFormToDb(v, index), priceRounding),
           }));
 
           await syncProductVariants(tx, productId, variantValues);
@@ -1780,7 +1801,8 @@ export async function createProductVariant(data: {
     }
 
     // Verify product ownership: the store is the session seller's and the product is in it.
-    const { inStore } = await requireStoreProduct(data.storeId, data.productId);
+    const productStore = await requireStoreProduct(data.storeId, data.productId);
+    const { inStore } = productStore;
     const product = await db.query.products.findFirst({
       where: and(
         eq(products.id, data.productId),
@@ -1794,11 +1816,11 @@ export async function createProductVariant(data: {
     }
 
     const finalPrice = Number(data.price);
-    const price = buildPriceObject({
+    const price = roundPricePayload(buildPriceObject({
       base: finalPrice,
       list: finalPrice,
       final: finalPrice,
-    });
+    }), await loadProductStoreRounding(productStore));
 
     const newVariant = await db
       .insert(productVariants)

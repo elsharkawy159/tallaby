@@ -1998,6 +1998,12 @@
       "endsToday": "The discount ends today at {time}.",
       "endsIn": "The discount ends in {count, plural, =1 {1 day} other {# days}}."
     },
+    "priceRounding": {
+      "priceSaved": "Will be saved as {amount} after rounding.",
+      "salePriceSaved": "The sale price will be saved as {amount} after rounding.",
+      "discountDropped": "After rounding, the sale price is no longer lower than the price, so the discount will be removed and the price saved as {amount}.",
+      "settingsLink": "Change rounding in settings"
+    },
     "variantPricing": {
       "usesMainPrice": "Uses main product price",
       "youReceive": "You receive {amount}",

@@ -17,7 +17,8 @@ import { and, db, eq, inArray, isNull, or, productTranslations, productVariants,
 import { syncCategoryProductCountForProductChange } from "@workspace/db/categories";
 import { setStockContext } from "@workspace/db/inventory";
 import { isAccessError, type SellerContext } from "@/lib/auth/require-seller.server";
-import { requireProductStore } from "@/lib/products/product-store.server";
+import { requireProductStore, type ProductStoreContext } from "@/lib/products/product-store.server";
+import { loadProductStoreRounding } from "@/lib/products/price-rounding.server";
 import type { ProductStatus } from "@/lib/products/product-status.lib";
 import { autoPublishStoreIfReady } from "@/lib/stores/auto-publish-store.server";
 import { canonicalTime } from "../bulk-edit/bulk-edit.lib";
@@ -223,19 +224,22 @@ async function readSheet(formData: unknown): Promise<SheetRead> {
   return { ok: true, rows };
 }
 
-async function planFor(q: Queryable, seller: SellerContext, inStore: SQL, rows: ParsedSheetRow[], lock: boolean, locale: string) {
+async function planFor(q: Queryable, ctx: ProductStoreContext, rows: ParsedSheetRow[], lock: boolean, locale: string) {
+  const { seller, inStore } = ctx;
   const match = sheetMatch(rows);
   const catalog = match ? await loadProducts(q, seller.sellerId, inStore, match, lock, locale) : [];
-  return { catalog, plan: planExcelUpdate(rows, catalog, { canPublish: canPublishFor(seller) }) };
+  // The store's price rounding rule (F-112b), read once per sheet, only when a row sets a price.
+  const rounding = rows.some((r) => r.price != null || r.salePrice != null) ? await loadProductStoreRounding(ctx) : null;
+  return { catalog, plan: planExcelUpdate(rows, catalog, { canPublish: canPublishFor(seller), rounding }) };
 }
 
 /** Before → after for every row of the uploaded sheet; writes nothing. */
 export async function previewExcelUpdateAction(storeId: string, formData: FormData): Promise<ExcelPreviewResult> {
   try {
-    const { seller, inStore } = await requireProductStore(storeId, { read: true });
+    const productStore = await requireProductStore(storeId, { read: true });
     const sheet = await readSheet(formData);
     if (!sheet.ok) return { success: false, error: sheet.error };
-    const { plan } = await planFor(db, seller, inStore, sheet.rows, false, await getLocale());
+    const { plan } = await planFor(db, productStore, sheet.rows, false, await getLocale());
     return { success: true, ...previewFromPlan(plan) };
   } catch (error) {
     return failure(error, "preview");
@@ -320,7 +324,8 @@ async function afterWrite(edits: { row: LoadedProduct; before: ProductWrite; aft
 /** Applies the sheet in one transaction (rows locked, re-planned) and clears caches. */
 export async function applyExcelUpdateAction(storeId: string, formData: FormData): Promise<ExcelApplyResult> {
   try {
-    const { seller, store, inStore } = await requireProductStore(storeId);
+    const productStore = await requireProductStore(storeId);
+    const { seller, store, inStore } = productStore;
     const sheet = await readSheet(formData);
     if (!sheet.ok) return { success: false, error: sheet.error };
     const locale = await getLocale();
@@ -328,7 +333,7 @@ export async function applyExcelUpdateAction(storeId: string, formData: FormData
 
     const result = await db.transaction(async (tx) => {
       await setStockContext(tx, { reason: "import", actorId: seller.userId });
-      const { catalog, plan } = await planFor(tx, seller, inStore, sheet.rows, true, locale);
+      const { catalog, plan } = await planFor(tx, productStore, sheet.rows, true, locale);
       const byId = new Map(catalog.map((p) => [p.id, p]));
       const done: { row: LoadedProduct; before: ProductWrite; after: ProductWrite }[] = [];
       let changedRows = 0;

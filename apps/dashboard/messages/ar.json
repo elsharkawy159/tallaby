@@ -1998,6 +1998,12 @@
       "endsToday": "ينتهي الخصم اليوم الساعة {time}.",
       "endsIn": "ينتهي الخصم بعد {count, plural, =1 {يوم واحد} =2 {يومين} few {# أيام} other {# يومًا}}."
     },
+    "priceRounding": {
+      "priceSaved": "سيُحفظ السعر {amount} بعد التقريب.",
+      "salePriceSaved": "سيُحفظ سعر الخصم {amount} بعد التقريب.",
+      "discountDropped": "بعد التقريب لن يكون سعر الخصم أقل من السعر، لذلك سيُحذف الخصم ويُحفظ السعر {amount}.",
+      "settingsLink": "غيّر التقريب من الإعدادات"
+    },
     "variantPricing": {
       "usesMainPrice": "يستخدم سعر المنتج الرئيسي",
       "youReceive": "ستحصل على {amount}",
