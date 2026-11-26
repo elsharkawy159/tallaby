@@ -26,6 +26,6 @@ export function welcomeTourStorageKey(userId: string): string {
   return `tallaby:welcome-tour:${userId}`;
 }
 
-/** The tour's steps, most important first. */
-export const WELCOME_TOUR_STEPS = ["products", "website", "payments", "wallet"] as const;
+/** The tour's steps: a welcome, then the four areas, most important first. */
+export const WELCOME_TOUR_STEPS = ["welcome", "products", "website", "payments", "wallet"] as const;
 export type WelcomeTourStep = (typeof WELCOME_TOUR_STEPS)[number];

@@ -7913,6 +7913,10 @@
     "next": "Next",
     "start": "Let's start",
     "soon": "Soon",
+    "welcome": {
+      "title": "Welcome to Tallaby",
+      "body": "We're glad you joined. In a few short steps, we'll show you what you can do on Tallaby: add products, design your website, choose payment methods and use the wallet."
+    },
     "products": {
       "title": "Add your products",
       "body": "Pick the way that suits you. Add one product or many at once.",
@@ -7927,7 +7931,7 @@
       "title": "Pick a theme and edit your website",
       "body": "Choose a theme that fits your business, then make it yours.",
       "tiles": {
-        "theme": { "title": "Pick a theme", "body": "Ready-made themes for every business." },
+        "theme": { "title": "Ready-made themes", "body": "A theme for every kind of business." },
         "ai": { "title": "Edit with AI", "body": "Write what you want to change." },
         "dnd": { "title": "Edit with Drag & Drop", "body": "Move sections and edit every element yourself." }
       }
@@ -7950,7 +7954,7 @@
           "bodyFree": "A small fee is taken for each order.",
           "bodyPro": "Your Pro plan's monthly price is taken from it."
         },
-        "topUp": { "title": "Top up", "body": "Top it up from the wallet page any time." },
+        "topUp": { "title": "Topping up", "body": "Top it up from the wallet page any time." },
         "online": { "title": "Your store stays online", "body": "Topping up keeps your store online and shows you your orders." }
       }
     }

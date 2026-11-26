@@ -134,15 +134,10 @@ export async function ShellDialogs() {
     !walletNegative &&
     !askHeardAboutUs &&
     welcomeGift.state !== "unseen";
-  // Its tile facts are read only when it may show: the selected store (per-request memo,
-  // the header reads it too) and two platform switches (one small read each, memoised).
-  const [tourStores, editorAi, tallabyPayLive] = showTour
-    ? await Promise.all([
-        getSellerStores().catch(() => null),
-        editorAiEnabled(),
-        isSwitchOn("tallaby_pay_live").catch(() => false),
-      ])
-    : [null, false, false];
+  // Its tile facts are read only when it may show: two platform switches (one small read each, memoised).
+  const [editorAi, tallabyPayLive] = showTour
+    ? await Promise.all([editorAiEnabled(), isSwitchOn("tallaby_pay_live").catch(() => false)])
+    : [false, false];
   return (
     <>
       <NegativeWalletDialog balance={walletBalance} currency={wallet?.currency ?? "EGP"} />
@@ -158,7 +153,6 @@ export async function ShellDialogs() {
         <WelcomeTourDialog
           show
           userId={user.id}
-          storeId={tourStores?.selected?.id ?? null}
           productAi={aiConfigured()}
           editorAi={editorAi}
           tallabyPayLive={tallabyPayLive}

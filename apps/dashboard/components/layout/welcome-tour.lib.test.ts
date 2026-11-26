@@ -42,7 +42,7 @@ describe("welcomeTourStorageKey", () => {
 });
 
 describe("WELCOME_TOUR_STEPS", () => {
-  it("runs products, website, payments, wallet", () => {
-    expect(WELCOME_TOUR_STEPS).toEqual(["products", "website", "payments", "wallet"]);
+  it("opens with a welcome, then runs products, website, payments, wallet", () => {
+    expect(WELCOME_TOUR_STEPS).toEqual(["welcome", "products", "website", "payments", "wallet"]);
   });
 });

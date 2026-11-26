@@ -15,7 +15,6 @@ import {
   WalletCards,
   type LucideIcon,
 } from "lucide-react";
-import { Link } from "@/i18n/navigation";
 import { Tag } from "@/components/seller-ui";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -26,8 +25,6 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { cn } from "@workspace/ui/lib/utils";
-import { storeProductsHref } from "@/lib/products/product-routes.lib";
-import { aiEditorHref, manualEditorHref } from "@/app/[locale]/(builder)/stores/[storeId]/editor/editor-entry.lib";
 import {
   WELCOME_TOUR_STEPS,
   welcomeTourStorageKey,
@@ -38,8 +35,6 @@ export type WelcomeTourProps = {
   /** Server rule: a new seller (welcome-tour.lib) and no other shell pop-up is due. */
   show: boolean;
   userId: string;
-  /** The sidebar's selected store, for the tiles' links. None yet: the store tiles are not links. */
-  storeId: string | null;
   /** Add with AI is offered on the add-product page (an AI provider is configured). */
   productAi: boolean;
   /** Edit with AI is offered in the website editor (editorAiEnabled). */
@@ -56,11 +51,11 @@ type Tile = {
   body: string;
   image?: string;
   icon?: LucideIcon;
-  href?: string;
   badge?: string;
 };
 
 const STEP_IMAGE: Record<WelcomeTourStep, string | null> = {
+  welcome: "/illustrations/onboarding/welcome.png",
   products: "/illustrations/onboarding/setup-product.png",
   website: "/illustrations/onboarding/setup-design.png",
   payments: "/illustrations/onboarding/setup-payments.png",
@@ -70,17 +65,16 @@ const STEP_IMAGE: Record<WelcomeTourStep, string | null> = {
 const OPEN_DELAY_MS = 400;
 
 const TILE =
-  "flex h-full w-full items-center gap-3 rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-start transition-colors";
-const TILE_LINK =
-  "cursor-pointer hover:border-(--s-primary) focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-(--s-focus)";
+  "flex h-full w-full items-center gap-3 rounded-2xl border border-(--s-line) bg-(--s-surface) p-3 text-start";
 
 /**
- * A short welcome tour for new sellers (ROADMAP.md F-114): the four areas that
- * matter first, one step per screen. Opens by itself once per user per browser
+ * A short welcome tour for new sellers (ROADMAP.md F-114): a welcome, then the
+ * four areas that matter first, one step per screen. Info only: the tiles are
+ * plain cards, not links (owner, 2026-11-27). Opens by itself once per user per browser
  * (localStorage, marked seen the moment it opens), on the first dashboard page
  * a new seller sees, and only when the server says no other shell pop-up is due.
  */
-export function WelcomeTourDialog({ show, userId, storeId, productAi, editorAi, tallabyPayLive, plan }: WelcomeTourProps) {
+export function WelcomeTourDialog({ show, userId, productAi, editorAi, tallabyPayLive, plan }: WelcomeTourProps) {
   const t = useTranslations("welcomeTour");
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
@@ -112,24 +106,19 @@ export function WelcomeTourDialog({ show, userId, storeId, productAi, editorAi, 
   const close = () => setOpen(false);
   const step = WELCOME_TOUR_STEPS[index]!;
   const last = index === WELCOME_TOUR_STEPS.length - 1;
-  const storeHref = (sub: string) => (storeId ? `/stores/${encodeURIComponent(storeId)}${sub}` : undefined);
-  const productHref = (sub: string) => (storeId ? storeProductsHref(storeId, sub) : undefined);
 
   const tiles: Record<WelcomeTourStep, Tile[]> = {
+    welcome: [],
     products: [
-      ...(productAi
-        ? [{ key: "ai", image: "/illustrations/features/add-ai.png", href: productHref("/add?method=ai") }]
-        : []),
-      { key: "url", image: "/illustrations/features/add-url.png", href: productHref("/add?method=url") },
-      { key: "file", image: "/illustrations/features/add-file.png", href: productHref("/add/from-file") },
-      { key: "manual", image: "/illustrations/features/add-manual.png", href: productHref("/add?method=manual") },
+      ...(productAi ? [{ key: "ai", image: "/illustrations/features/add-ai.png" }] : []),
+      { key: "url", image: "/illustrations/features/add-url.png" },
+      { key: "file", image: "/illustrations/features/add-file.png" },
+      { key: "manual", image: "/illustrations/features/add-manual.png" },
     ].map((tile) => ({ ...tile, title: t(`products.tiles.${tile.key}.title`), body: t(`products.tiles.${tile.key}.body`) })),
     website: [
-      { key: "theme", icon: LayoutTemplate, href: storeHref("/website/templates") },
-      ...(editorAi
-        ? [{ key: "ai", image: "/illustrations/features/add-ai.png", href: storeId ? aiEditorHref(storeId) : undefined }]
-        : []),
-      { key: "dnd", image: "/illustrations/onboarding/setup-design.png", href: storeId ? manualEditorHref(storeId) : undefined },
+      { key: "theme", icon: LayoutTemplate },
+      ...(editorAi ? [{ key: "ai", image: "/illustrations/features/add-ai.png" }] : []),
+      { key: "dnd", image: "/illustrations/onboarding/setup-design.png" },
     ].map((tile) => ({ ...tile, title: t(`website.tiles.${tile.key}.title`), body: t(`website.tiles.${tile.key}.body`) })),
     payments: [
       { key: "cod", icon: Banknote },
@@ -137,13 +126,12 @@ export function WelcomeTourDialog({ show, userId, storeId, productAi, editorAi, 
       { key: "tallabyPay", icon: WalletCards, badge: tallabyPayLive ? undefined : t("soon") },
     ].map((tile) => ({
       ...tile,
-      href: storeHref("/settings/payments"),
       title: t(`payments.tiles.${tile.key}.title`),
       body: t(`payments.tiles.${tile.key}.body`),
     })),
     wallet: [
       { key: "fee", icon: ReceiptText, body: t(plan === "free" ? "wallet.tiles.fee.bodyFree" : "wallet.tiles.fee.bodyPro") },
-      { key: "topUp", icon: Wallet, href: "/wallet", body: t("wallet.tiles.topUp.body") },
+      { key: "topUp", icon: Wallet, body: t("wallet.tiles.topUp.body") },
       { key: "online", icon: ShieldCheck, body: t("wallet.tiles.online.body") },
     ].map((tile) => ({ ...tile, title: t(`wallet.tiles.${tile.key}.title`) })),
   };
@@ -188,24 +176,20 @@ export function WelcomeTourDialog({ show, userId, storeId, productAi, editorAi, 
               </DialogDescription>
             </div>
 
-            <ul
-              aria-label={t(`${step}.title`)}
-              className={cn("grid grid-cols-1 gap-2", stepTiles.length % 2 === 0 && "sm:grid-cols-2")}
-            >
-              {stepTiles.map((tile) => (
-                <li key={tile.key}>
-                  {tile.href ? (
-                    <Link href={tile.href} onClick={close} className={cn(TILE, TILE_LINK)}>
-                      <TileBody tile={tile} />
-                    </Link>
-                  ) : (
+            {stepTiles.length > 0 && (
+              <ul
+                aria-label={t(`${step}.title`)}
+                className={cn("grid grid-cols-1 gap-2", stepTiles.length % 2 === 0 && "sm:grid-cols-2")}
+              >
+                {stepTiles.map((tile) => (
+                  <li key={tile.key}>
                     <div className={TILE}>
                       <TileBody tile={tile} />
                     </div>
-                  )}
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
