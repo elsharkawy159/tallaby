@@ -22,7 +22,7 @@ import { cn, getPublicUrl } from "@/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
 import Image from "next/image";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -33,7 +33,7 @@ import { InstallAppButton } from "@/components/layout/install-app-button.client"
 import { LanguageToggle } from "@/components/layout/language-toggle.client";
 import { ThemeToggle } from "@/components/layout/theme-toggle.client";
 import { useSiteData } from "@/providers/site-data";
-import { useSidebarStore } from "@/stores";
+import { useSidebarStore } from "@/stores/sidebar.store";
 import { logout } from "@/actions/auth";
 import type { SidebarCounts } from "./sidebar.types";
 import {

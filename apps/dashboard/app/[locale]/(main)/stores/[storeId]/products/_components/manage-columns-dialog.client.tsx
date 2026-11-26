@@ -1,18 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import {
-  DragDropContext,
-  Draggable,
-  Droppable,
-  type DropResult,
-} from "@hello-pangea/dnd";
 import type { Table } from "@tanstack/react-table";
-import { Columns3Icon, GripVertical } from "lucide-react";
+import { Columns3Icon } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Label } from "@workspace/ui/components/label";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +24,21 @@ import {
   reconcileColumnOrder,
   useProductColumnsStore,
 } from "@/stores/product-columns.store";
+
+const loadColumnsList = () => import("./manage-columns-list.client");
+
+// @hello-pangea/dnd loads with the list, only once the dialog opens (the
+// trigger starts the download on hover/focus so it is usually ready).
+const ManageColumnsList = dynamic(() => loadColumnsList().then((m) => m.ManageColumnsList), {
+  ssr: false,
+  loading: () => (
+    <div className="space-y-1" aria-hidden>
+      {Array.from({ length: 4 }, (_, i) => (
+        <Skeleton key={i} className="h-[38px] rounded-md" />
+      ))}
+    </div>
+  ),
+});
 
 /**
  * Column visibility + ordering for the products table. Writes straight to the
@@ -62,14 +71,11 @@ export function ManageColumnsDialog<TData>({
 
   const reorderable = orderedColumns.filter((column) => column.getCanHide());
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || result.destination.index === result.source.index)
-      return;
-
+  const handleMove = (from: number, to: number) => {
     const moved = reorderable.map((column) => column.id);
-    const [dragged] = moved.splice(result.source.index, 1);
+    const [dragged] = moved.splice(from, 1);
     if (!dragged) return;
-    moved.splice(result.destination.index, 0, dragged);
+    moved.splice(to, 0, dragged);
 
     // Splice the reordered ids back into the slots reorderable columns already
     // occupy, so pinned columns (image, actions) keep their positions.
@@ -77,7 +83,6 @@ export function ManageColumnsDialog<TData>({
     const nextOrder = orderedColumns.map((column) =>
       column.getCanHide() ? (moved[cursor++] as string) : column.id
     );
-
     setOrder(nextOrder);
   };
 
@@ -85,10 +90,14 @@ export function ManageColumnsDialog<TData>({
     setVisibility({ ...visibility, [columnId]: checked });
   };
 
+  const preload = () => {
+    void loadColumnsList();
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" onPointerEnter={preload} onFocus={preload}>
           <Columns3Icon
             className="-ms-1 opacity-60"
             size={16}
@@ -104,59 +113,15 @@ export function ManageColumnsDialog<TData>({
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="product-columns" direction="vertical">
-            {(droppableProvided) => (
-              <div
-                className="space-y-1"
-                {...droppableProvided.droppableProps}
-                ref={droppableProvided.innerRef}
-              >
-                {reorderable.map((column, index) => (
-                  <Draggable
-                    key={column.id}
-                    draggableId={column.id}
-                    index={index}
-                  >
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className={`flex items-center gap-3 rounded-md border px-3 py-2 transition-colors ${
-                          snapshot.isDragging
-                            ? "bg-accent shadow-md"
-                            : "bg-background"
-                        }`}
-                      >
-                        <span
-                          {...provided.dragHandleProps}
-                          className="text-muted-foreground cursor-grab active:cursor-grabbing"
-                          aria-label={t("reorder", { column: columnLabel(column) })}
-                        >
-                          <GripVertical size={16} />
-                        </span>
-                        <Checkbox
-                          id={`manage-column-${column.id}`}
-                          checked={column.getIsVisible()}
-                          onCheckedChange={(value) =>
-                            toggle(column.id, !!value)
-                          }
-                        />
-                        <Label
-                          htmlFor={`manage-column-${column.id}`}
-                          className="flex-1 cursor-pointer"
-                        >
-                          {columnLabel(column)}
-                        </Label>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {droppableProvided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <ManageColumnsList
+          columns={reorderable.map((column) => ({
+            id: column.id,
+            label: columnLabel(column),
+            visible: column.getIsVisible(),
+          }))}
+          onMove={handleMove}
+          onToggle={toggle}
+        />
 
         <DialogFooter>
           <Button variant="outline" onClick={reset}>

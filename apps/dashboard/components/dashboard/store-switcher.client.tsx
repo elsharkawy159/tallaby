@@ -8,7 +8,7 @@ import { storeHostname } from "@workspace/lib/storefront";
 import { AnchoredSheet, Tag } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { StoreLogo } from "@/components/stores/store-logo.client";
-import { useSidebarStore } from "@/stores";
+import { useSidebarStore } from "@/stores/sidebar.store";
 import { logout } from "@/actions/auth";
 import { selectStore } from "./store-switcher.server";
 

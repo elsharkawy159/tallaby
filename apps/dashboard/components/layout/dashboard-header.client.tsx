@@ -7,7 +7,7 @@ import { ChevronRight, Menu, Plus } from "lucide-react";
 import { IconButton } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
 import { formatWalletMoney, moneyDir } from "@/lib/i18n/format";
-import { useSidebarStore } from "@/stores";
+import { useSidebarStore } from "@/stores/sidebar.store";
 import type { SetupNextStep } from "@/app/[locale]/(main)/_components/setup-next-step.lib";
 import { CommandPalette } from "./command-palette.client";
 import { OPEN_COMMAND_PALETTE_EVENT } from "./command-palette.lib";

@@ -1,7 +1,7 @@
 "use client";
 
 import { Store } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 import { cn, getPublicUrl } from "@/lib/utils";
 
 /** Store logos are full URLs or paths in the `sellers` bucket (backfilled from sellers.logo_url). */

@@ -1,20 +1,20 @@
 "use client";
 
 import { useTransition } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Eye, LineChart, RefreshCw, Users } from "lucide-react";
-import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { EmptyState, KpiCard, Note, PageTabs, SellerButton, SellerCard, SellerCardHeader } from "@/components/seller-ui";
 import { cn } from "@/lib/utils";
-import { formatCompactNumber, formatDate, formatNumber, formatRelativeTime } from "@/lib/i18n/format";
+import { formatNumber, formatRelativeTime } from "@/lib/i18n/format";
 import { useAutoRefresh } from "@/hooks/use-auto-refresh";
 import { STORE_VIEWS_AUTO_REFRESH_MS, STORE_VIEWS_RANGES, type StoreViewsRange, type StoreViewsReport } from "@/lib/analytics/store-views.lib";
 import { refreshStoreViews } from "./analytics.server";
 
-const VIEWS = "var(--primary)";
-const VISITORS = "var(--accent)";
+// recharts loads as its own chunk; the sized box in ViewsChart holds the space meanwhile.
+const ViewsChartCanvas = dynamic(() => import("./analytics-chart.client").then((m) => m.ViewsChartCanvas));
 
 export function StoreViews({
   storeId,
@@ -100,66 +100,12 @@ export function StoreViews({
 /** Daily views (area) and visitors (line). RTL puts the newest day on the left. */
 function ViewsChart({ data }: { data: StoreViewsReport["daily"] }) {
   const t = useTranslations("storeAnalytics");
-  const locale = useLocale();
-  const rtl = locale.startsWith("ar");
-  const labelOf = (day: string) => formatDate(`${day}T00:00:00`, locale, { day: "numeric", month: "short" });
   const empty = data.every((d) => d.views === 0);
-  const every = data.length <= 7 ? 1 : data.length <= 30 ? 5 : 15;
-  const ticks = data.filter((_, i) => (data.length - 1 - i) % every === 0).map((d) => d.day);
 
   return (
     <div className="relative px-3 pt-3">
       <div className="h-[260px] w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-(--s-faint) [&_.recharts-surface]:outline-hidden">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 10, right: 4, left: 4, bottom: 0 }}>
-            <CartesianGrid vertical={false} strokeDasharray="3 4" className="stroke-(--s-line-soft)" />
-            <XAxis
-              dataKey="day"
-              reversed={rtl}
-              ticks={ticks}
-              tickFormatter={labelOf}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              className="text-[11px]"
-            />
-            <YAxis
-              orientation={rtl ? "right" : "left"}
-              width={40}
-              allowDecimals={false}
-              tickLine={false}
-              axisLine={false}
-              tickCount={5}
-              tickFormatter={(v: number) => formatCompactNumber(v, locale)}
-              className="font-montserrat text-[11px]"
-            />
-            <Tooltip
-              cursor={{ stroke: "var(--s-line)" }}
-              content={({ active, payload }) => {
-                const point = payload?.[0]?.payload as StoreViewsReport["daily"][number] | undefined;
-                if (!active || !point) return null;
-                return (
-                  <div className="rounded-[10px] bg-(--s-solid) px-2.5 py-2 text-xs leading-normal text-(--s-solid-fg) shadow-(--s-shadow-menu)">
-                    <div>{labelOf(point.day)}</div>
-                    <b className="font-montserrat">{formatNumber(point.views, locale)}</b> {t("views")} ·{" "}
-                    <b className="font-montserrat">{formatNumber(point.visitors, locale)}</b> {t("visitors")}
-                  </div>
-                );
-              }}
-            />
-            <Area
-              dataKey="views"
-              type="monotone"
-              stroke={VIEWS}
-              strokeWidth={2.25}
-              fill={VIEWS}
-              fillOpacity={0.08}
-              activeDot={{ r: 5, strokeWidth: 2.5, fill: "var(--card)", stroke: VIEWS }}
-              isAnimationActive={!empty}
-            />
-            <Line dataKey="visitors" type="monotone" stroke={VISITORS} strokeWidth={2} dot={false} isAnimationActive={!empty} />
-          </ComposedChart>
-        </ResponsiveContainer>
+        <ViewsChartCanvas data={data} empty={empty} />
       </div>
       {empty && (
         <div className="absolute inset-0 grid place-items-center text-center text-[13px] text-(--s-muted)">

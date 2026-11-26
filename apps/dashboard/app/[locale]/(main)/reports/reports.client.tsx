@@ -1,10 +1,10 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { cn } from "@workspace/ui/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 import { PageContainer, PageHeader } from "@/components/seller-ui";
@@ -96,6 +96,11 @@ export function ReportsShell({
   );
 }
 
+// recharts loads as its own chunk; each chart's sized box holds the space meanwhile.
+const FunnelBars = dynamic(() => import("./reports-charts.client").then((m) => m.FunnelBars));
+const SourcesDonut = dynamic(() => import("./reports-charts.client").then((m) => m.SourcesDonut));
+const GovernorateBars = dynamic(() => import("./reports-charts.client").then((m) => m.GovernorateBars));
+
 function ChartTooltip({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-[10px] bg-foreground px-2.5 py-2 text-xs leading-normal text-background shadow-lg">{children}</div>
@@ -110,46 +115,24 @@ export function FunnelChart({ steps }: { steps: FunnelStep[] }) {
   const t = useTranslations("reports.funnel");
   const locale = useLocale();
   const rtl = locale.startsWith("ar");
-  const data = steps.map((s) => ({ ...s, label: t(s.key) }));
   const fills = ["var(--primary)", "color-mix(in oklab, var(--primary) 75%, transparent)", "var(--accent)", "var(--success)"];
   const offset = 4 - steps.length;
+  const data = steps.map((s, i) => ({ ...s, label: t(s.key), fill: fills[i + offset] as string }));
 
   return (
     // LTR box: in an RTL document the axis's text-anchor flips and the labels land on the bars.
     <div dir="ltr" className="h-[220px] w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-surface]:outline-hidden">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 12, bottom: 4 }}>
-          <XAxis type="number" hide reversed={rtl} />
-          <YAxis
-            type="category"
-            dataKey="label"
-            orientation={rtl ? "right" : "left"}
-            width={110}
-            tickLine={false}
-            axisLine={false}
-            className="text-[12px]"
-          />
-          <Tooltip
-            cursor={{ fill: "var(--muted)", opacity: 0.5 }}
-            content={({ active, payload }) => {
-              const step = payload?.[0]?.payload as (FunnelStep & { label: string }) | undefined;
-              if (!active || !step) return null;
-              return (
-                <ChartTooltip>
-                  <div>{step.label}</div>
-                  <b className="font-montserrat">{formatNumber(step.value, locale)}</b>
-                  {step.fromPrevious !== null && <> · {t("ofPrevious", { percent: pct(step.fromPrevious, locale) })}</>}
-                </ChartTooltip>
-              );
-            }}
-          />
-          <Bar dataKey="value" radius={6} maxBarSize={30} minPointSize={2}>
-            {data.map((s, i) => (
-              <Cell key={s.key} fill={fills[i + offset]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <FunnelBars
+        data={data}
+        rtl={rtl}
+        tooltip={(step) => (
+          <ChartTooltip>
+            <div>{step.label}</div>
+            <b className="font-montserrat">{formatNumber(step.value, locale)}</b>
+            {step.fromPrevious !== null && <> · {t("ofPrevious", { percent: pct(step.fromPrevious, locale) })}</>}
+          </ChartTooltip>
+        )}
+      />
     </div>
   );
 }
@@ -172,27 +155,16 @@ export function SourcesChart({ rows, unit }: { rows: SourceRow[]; unit: string }
     <div className="flex flex-col items-center gap-4 sm:flex-row">
       <div className="relative size-[170px] shrink-0">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={data} dataKey="revenuePiastres" nameKey="source" innerRadius={52} outerRadius={80} paddingAngle={2} stroke="none">
-                {data.map((r) => (
-                  <Cell key={r.source} fill={SOURCE_COLORS[r.source]} />
-                ))}
-              </Pie>
-              <Tooltip
-                content={({ active, payload }) => {
-                  const row = payload?.[0]?.payload as SourceRow | undefined;
-                  if (!active || !row) return null;
-                  return (
-                    <ChartTooltip>
-                      <div>{t(row.source)}</div>
-                      <b className="font-montserrat">{money(row.revenuePiastres)}</b> {unit} · {pct(row.share, locale)}
-                    </ChartTooltip>
-                  );
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <SourcesDonut
+            data={data}
+            colors={SOURCE_COLORS}
+            tooltip={(row) => (
+              <ChartTooltip>
+                <div>{t(row.source)}</div>
+                <b className="font-montserrat">{money(row.revenuePiastres)}</b> {unit} · {pct(row.share, locale)}
+              </ChartTooltip>
+            )}
+          />
         ) : (
           <div className="size-full rounded-full border-[18px] border-muted" aria-hidden />
         )}
@@ -236,41 +208,21 @@ export function GovernorateChart({ rows }: { rows: GovernorateChartRow[] }) {
         className="w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-surface]:outline-hidden"
         style={{ height: Math.max(120, rows.length * 34 + 20) }}
       >
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 12, left: 12, bottom: 4 }}>
-            <CartesianGrid horizontal={false} strokeDasharray="3 4" className="stroke-border" />
-            <XAxis type="number" allowDecimals={false} reversed={rtl} tickLine={false} axisLine={false} className="font-montserrat text-[11px]" />
-            <YAxis
-              type="category"
-              dataKey="label"
-              orientation={rtl ? "right" : "left"}
-              width={96}
-              tickLine={false}
-              axisLine={false}
-              className="text-[12px]"
-            />
-            <Tooltip
-              cursor={{ fill: "var(--muted)", opacity: 0.5 }}
-              content={({ active, payload }) => {
-                const row = payload?.[0]?.payload as GovernorateChartRow | undefined;
-                if (!active || !row) return null;
-                return (
-                  <ChartTooltip>
-                    <div className="font-semibold">{row.label}</div>
-                    {series.map((s) => (
-                      <div key={s.key}>
-                        {t(s.key)}: <b className="font-montserrat">{formatNumber(row[s.key], locale)}</b>
-                      </div>
-                    ))}
-                  </ChartTooltip>
-                );
-              }}
-            />
-            {series.map((s) => (
-              <Bar key={s.key} dataKey={s.key} stackId="outcome" fill={s.fill} maxBarSize={20} />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+        <GovernorateBars
+          rows={rows}
+          rtl={rtl}
+          series={series}
+          tooltip={(row) => (
+            <ChartTooltip>
+              <div className="font-semibold">{row.label}</div>
+              {series.map((s) => (
+                <div key={s.key}>
+                  {t(s.key)}: <b className="font-montserrat">{formatNumber(row[s.key], locale)}</b>
+                </div>
+              ))}
+            </ChartTooltip>
+          )}
+        />
       </div>
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         {series.map((s) => (

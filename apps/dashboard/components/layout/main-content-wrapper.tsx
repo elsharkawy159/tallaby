@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useSidebarStore } from "@/stores";
+import { useSidebarStore } from "@/stores/sidebar.store";
 
 interface MainContentWrapperProps {
   children: React.ReactNode;
