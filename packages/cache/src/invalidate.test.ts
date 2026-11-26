@@ -17,6 +17,7 @@ import {
   invalidateStoreIntegrations,
   invalidateStoreSizeCharts,
   invalidateStoreSite,
+  invalidateWholeStore,
   invalidateSellerProducts,
   invalidateStoreProducts,
   mergeInvalidations,
@@ -506,5 +507,36 @@ describe("invalidateStoreSizeCharts", () => {
     expect(result.tags).toEqual(["store:size-charts:seller-a:store-a1"]);
     expect(result.tags).not.toContain(storeTags.sizeCharts("seller-a", "store-a2"));
     expect(result.paths).toEqual([]);
+  });
+});
+
+describe("invalidateWholeStore", () => {
+  const inv = invalidateWholeStore({
+    sellerId: "seller-a",
+    storeId: "store-a1",
+    subdomain: "sara",
+    domains: ["sara.com"],
+    productIds: ["p1"],
+  });
+
+  it("purges the store's site, catalog, profile, domains and products", () => {
+    expect(inv.tags).toEqual(
+      expect.arrayContaining([
+        storeTags.site("seller-a", "store-a1"),
+        storeTags.catalog("seller-a", "store-a1"),
+        productTags.store("seller-a", "store-a1"),
+        "seller:subdomain:sara",
+        "seller:domain:sara.com",
+        "seller:domain:www.sara.com",
+        productTags.detail("p1"),
+        productTags.quantityOffers("seller-a", "p1"),
+      ]),
+    );
+    expect(new Set(inv.tags).size).toBe(inv.tags.length);
+  });
+
+  it("never touches a sibling store's store tags", () => {
+    expect(inv.tags).not.toContain(storeTags.site("seller-a", "store-a2"));
+    expect(inv.tags).not.toContain(productTags.store("seller-a", "store-a2"));
   });
 });

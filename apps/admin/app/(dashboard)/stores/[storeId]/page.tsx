@@ -29,6 +29,7 @@ import { IdentityHeader } from "../../_components/entity/identity-header";
 import { accountChips } from "../../_components/entity/relation-chips.lib";
 import { getAccountRelations } from "../../_components/entity/relations.server";
 import { SiteStatusBadge, StoreStatusBadge } from "../stores.lib";
+import { RefreshStoreCacheButton } from "./refresh-cache-button.client";
 import { StoreSectionNav, type StoreNavItem } from "./store-section-nav.client";
 import {
   StoreAuditSection,
@@ -129,6 +130,7 @@ export default async function StoreDetailPage({ params }: PageProps) {
         }
         actions={
           <>
+            {canWrite && <RefreshStoreCacheButton storeId={store.id} />}
             {canWrite && (
               <Button asChild size="sm">
                 <Link href={`/stores/${storeId}/editor`}>

@@ -296,6 +296,48 @@ export function invalidateStoreSite(sellerId: string, storeId: string, subdomain
 }
 
 /**
+ * Admin's "Refresh cache" on a store page: everything a store host caches for
+ * that one store, for when its design or products were changed straight in
+ * the database (no app write purged them). Store tags carry the seller id
+ * (rule 8); the seller-wide tags are the ones that store's own reads use
+ * (seller reviews and coupons, the seller profile). `productIds` adds each
+ * product's own tags (product page extras such as size charts and quantity
+ * tiers). Never a sibling store's store-scoped tags.
+ */
+export function invalidateWholeStore(input: {
+  sellerId: string;
+  storeId: string;
+  subdomain: string;
+  domains: readonly string[];
+  productIds: readonly string[];
+}): CacheInvalidation {
+  const { sellerId, storeId } = input;
+  const tags: string[] = [
+    storeTags.site(sellerId, storeId),
+    storeTags.catalog(sellerId, storeId),
+    storeTags.cms(sellerId, storeId),
+    storeTags.forms(sellerId, storeId),
+    storeTags.integrations(sellerId, storeId),
+    storeTags.crossSells(sellerId, storeId),
+    storeTags.sizeCharts(sellerId, storeId),
+    productTags.store(sellerId, storeId),
+    productTags.seller(sellerId),
+    sellerTags.storefront(sellerId),
+    sellerTags.detail(sellerId),
+    sellerTags.subdomain(input.subdomain),
+    reviewTags.seller(sellerId),
+    couponTags.seller(sellerId),
+  ];
+  for (const domain of input.domains) {
+    tags.push(sellerTags.customDomain(domain), sellerTags.customDomain(`www.${domain}`));
+  }
+  for (const id of input.productIds) {
+    tags.push(productTags.detail(id), productTags.inventory(id), productTags.quantityOffers(sellerId, id));
+  }
+  return inv(tags);
+}
+
+/**
  * A store changed its catalog mode or selection (P4-07): that store's catalog
  * lists and its storefront profile (which carries the mode). Never a sibling store.
  */
