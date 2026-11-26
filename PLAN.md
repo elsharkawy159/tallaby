@@ -4791,6 +4791,27 @@ Owner asked to keep only the current version of each template in `template_versi
 - Browser pixels only, same path as the Meta Pixel identifier app (§9.1, §9.2): validated public ids, fixed script templates, store host only, after consent. No migration, no money or ledger code touched.
 - Checks: `@workspace/lib` and `@workspace/apps` tests pass; ecommerce tests pass (storefront event bus + TikTok/Snap mapper tests); marketing tests pass; dashboard tests pass except the pre-existing `order-lock-copy.lib.test.ts` `formatUsdShort` failure (file untouched); typecheck clean in lib, apps, dashboard, marketing; ecommerce only the known `profile.chunks.tsx` errors; eslint clean on the changed ecommerce, dashboard and marketing files. Integration test for the two pixels written in `store-integrations.integration.test.ts`, not run (no `TEST_DATABASE_URL`). No browser E2E.
 
+### 2026-11-26 — Code sections (F-101) and the editor AI agent (F-83c), built and switched off
+
+- **Code sections:** the Liquid engine, the HTML cleaner, the CSS scoper, the save and publish checks, the storefront render, the editor (Code tab, Content tab, blocks) and the server preview are built, along with an enforced CSP plus a report-only one (ROADMAP.md §7 logs, commits `8006211d` … `5530249a`). They are off while `platform_switches.code_sections` has no row. A missing row means off, so there is no migration.
+- **Editor AI agent, server side (`68900f4a`):**
+  - 13 section ops, checked in place.
+  - One `generateStructured` call per turn (`fast` tier, thinking `minimal`, capped inputs, no catalog data), with one retry when a code op fails its checks.
+  - A daily cap of 60 model calls (×10 on Pro); 1 AI credit per turn that applies an op.
+- **Live cost (rule 20):** one run on `gemini-3.1-flash-lite` with 5 sample requests in ar and en, about 3.6k tokens in. All 5 applied, with no retries.
+
+  | Request | Cost |
+  |---|---|
+  | FAQ section | $0.00248 |
+  | Title bigger and red on mobile | $0.00088 |
+  | Convert to a comparison table | $0.00203 |
+  | Size guide | $0.00214 |
+  | Button text | $0.00085 |
+
+  Average $0.00168 a turn. Not re-run after a prompt change that makes the reply follow the request's language.
+- **Checks:** store-sections agent, code and config tests (1,252), store-editor (291) and the dashboard editor tests (15) pass. Typecheck is clean in store-sections, store-editor and the dashboard.
+- **Manual E2E:** not run. It needs the `code_sections` row on staging (owner): add a code section, edit it, publish it, check the storefront, and watch the CSP report-only console while paying with Paymob, Kashier and EasyKash. Also check the agent chat once its UI lands.
+
 ### 2026-11-26 — Dashboard performance, steps A1–A6, B1, B2, B4 (`docs/plans/dashboard-performance.md`)
 
 Commits `f9ddf7ba` … `005ab130` on `main` (not pushed). No migrations.
