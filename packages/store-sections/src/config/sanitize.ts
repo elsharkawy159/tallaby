@@ -86,7 +86,7 @@ export function articlePlainText(value: string): string {
 const UNSAFE_STYLE_VALUE = /expression\s*\(|javascript:|vbscript:|[<>]|@import|behavior\s*:|-moz-binding/i;
 const CSS_URL = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
 
-function isSafeStyleString(value: string): boolean {
+export function isSafeStyleString(value: string): boolean {
   if (UNSAFE_STYLE_VALUE.test(value)) return false;
   for (const match of value.matchAll(CSS_URL)) {
     const target = (match[2] ?? "").trim();
