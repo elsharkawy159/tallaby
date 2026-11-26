@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   getBillingState: vi.fn(),
   isSwitchOn: vi.fn(),
   loadCodePreviewCatalog: vi.fn(),
+  ownMediaImages: vi.fn(),
 }));
 
 class FakeAccessError extends Error {
@@ -54,6 +55,8 @@ vi.mock("./code-preview.data", () => ({
   loadCodePreviewCatalog: mocks.loadCodePreviewCatalog,
 }));
 
+vi.mock("./agent-images.server", async (original) => ({ ...(await original<typeof import("./agent-images.server")>()), ownMediaImages: mocks.ownMediaImages }));
+
 const { editorAgentTurn } = await import("./editor-agent.server");
 
 const STORE_ID = "11111111-1111-4111-8111-111111111111";
@@ -67,7 +70,7 @@ const hero = {
 };
 
 const EMPTY_ROW = {
-  sectionId: null, nodeId: null, after: null, to: null, file: null, name: null, prop: null, ar: null, en: null,
+  sectionId: null, nodeId: null, after: null, to: null, file: null, name: null, prop: null, src: null, ar: null, en: null,
   breakpoint: null, device: null, styleJson: null, css: null, href: null, settingsJson: null, blocksJson: null,
 };
 const TEXT_OP = { ...EMPTY_ROW, op: "set_text", sectionId: "s-hero", nodeId: "n-title", prop: "text", ar: "اطلب الآن", en: "Order now" };
@@ -125,6 +128,20 @@ describe("editorAgentTurn", () => {
   it("gives the credit back for a cached answer", async () => {
     mocks.generateStructured.mockResolvedValue({ object: { reply: "تم", ops: [TEXT_OP] }, cached: true });
     expect(await editorAgentTurn(STORE_ID, input())).toMatchObject({ success: true, data: { creditsUsed: 0 } });
+  });
+
+  it("set_image takes only a photo of the store's media the seller linked", async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://x.supabase.co";
+    const path = "11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222/33333333-3333-4333-8333-333333333333.jpg";
+    const url = `https://x.supabase.co/storage/v1/object/public/store-media/${path}`;
+    const withImage = { ...hero, componentTree: [{ ...hero.componentTree[0]!, children: [...hero.componentTree[0]!.children, { id: "n-img", type: "image", props: { src: "", alt: "" }, children: [] }] }] };
+    const imageOp = (src: string) => ({ ...EMPTY_ROW, op: "set_image", sectionId: "s-hero", nodeId: "n-img", src });
+    mocks.ownMediaImages.mockResolvedValue([{ path, src: url, label: "hero.jpg" }]);
+    mocks.generateStructured.mockResolvedValue({ object: { reply: "تم", ops: [imageOp(url), imageOp("https://evil.example/x.jpg")] }, cached: false });
+    const result = await editorAgentTurn(STORE_ID, input({ message: `use ${url} in the hero`, section: withImage }));
+    expect(result).toMatchObject({ success: true, data: { ops: [{ op: "set_image", src: url }], rejected: [{ index: 1, code: "image_not_allowed" }] } });
+    expect(mocks.ownMediaImages).toHaveBeenCalledWith(expect.any(String), STORE_ID, [path]);
+    expect(mocks.generateStructured.mock.calls[0]?.[0].content[0].text).toContain(`- ${url} | "hero.jpg"`);
   });
 
   it("is off while the editor_agent switch is off", async () => {

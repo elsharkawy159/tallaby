@@ -37,6 +37,8 @@ export type EditorAgentTurnRequest = Omit<EditorAgentTurnText, "previousIssues">
   /** Model calls the daily cap still allows (the retry needs 2). */
   maxModelCalls: number;
   makeId?: ApplySectionOpsOptions["makeId"];
+  /** set_image: the host's check of a photo not already in the section (default: refuse every such photo). */
+  allowImage?: ApplySectionOpsOptions["allowImage"];
 };
 
 export type EditorAgentCodeNode = { nodeId: string; opIndex: number; file: string; props: CodeNodeProps };
@@ -59,8 +61,9 @@ export type EditorAgentTurnResult = {
 
 const MAX_RETRY_ISSUES_BYTES = 3 * 1024;
 
-export { buildEditorAgentSystemPrompt, buildEditorAgentTurnText, EDITOR_AGENT_FEATURE } from "./prompt.lib";
+export { buildEditorAgentSystemPrompt, buildEditorAgentTurnText, EDITOR_AGENT_FEATURE, MAX_AGENT_IMAGES, type EditorAgentImage } from "./prompt.lib";
 export { editorAgentModelOutputSchema, type EditorAgentModelOutput } from "./model-output";
+export { MAX_SITE_OUTLINE_SECTIONS, sectionDisplayName, serializeSiteOutline, siteOutline, siteOutlineEntry, type SiteOutlineEntry } from "./site-outline";
 
 /**
  * What a page turn's ops apply to on the server: the page outline as empty
@@ -135,6 +138,8 @@ export async function runEditorAgentTurn(req: EditorAgentTurnRequest, deps: { ca
     codeProps: serverCodeProps,
     validate: validateAgentContent,
     ...(req.makeId && { makeId: req.makeId }),
+    // The server never takes a photo it can't vouch for: without the host's check only the section's own photos.
+    allowImage: req.allowImage ?? (() => null),
   };
   const attempt = (output: EditorAgentModelOutput): Attempt => ({
     output,

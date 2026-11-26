@@ -20,6 +20,7 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { loadCodePreviewCatalog, loadCodePreviewStore } from "./code-preview.data";
 import { editorAgentInputSchema } from "./editor-agent.dto";
+import { mediaImageCheck, mediaPathsIn, ownMediaImages } from "./agent-images.server";
 
 type EditorAgentTurnInput = Parameters<NonNullable<EditorAdapter["agent"]>["turn"]>[0];
 
@@ -122,6 +123,9 @@ export async function editorAgentTurn(storeId: string, input: EditorAgentTurnInp
     }
     const content = buildAgentContent({ target: turn.target, section, outlineIds: turn.outline.map((s) => s.id) });
     if (!content) return fail("invalidInput");
+    // set_image: besides the section's own photos, only the store's media the seller linked in the message.
+    const mediaPaths = mediaPathsIn(turn.message);
+    const media = mediaPaths.length ? await ownMediaImages(sellerId, ownStoreId, mediaPaths) : [];
 
     const billing = await getBillingState().catch(() => null);
     if (!billing) return fail("generic");
@@ -170,6 +174,8 @@ export async function editorAgentTurn(storeId: string, input: EditorAgentTurnInp
           allowCode,
           content,
           maxModelCalls: cap.remaining,
+          images: media.map(({ src, label }) => ({ src, label })),
+          allowImage: mediaImageCheck(media),
         },
         {
           callModel: async ({ system, text }) => {

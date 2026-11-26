@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
@@ -55,6 +56,7 @@ import {
 } from "./from-file-parse.client";
 import { addBatchAction, findExistingSkusAction, getBulkStatusAction, mapColumnsAction } from "./from-file.server";
 import { useProductStoreId, useProductsHref } from "@/app/[locale]/(main)/stores/[storeId]/products/_components/product-store.client";
+import { editWithAiImportFile } from "@/app/[locale]/(builder)/stores/[storeId]/editor/ai/server/edit-with-ai.server";
 
 /**
  * Add many products from a file (PLAN.md AI-3). One screen to confirm, one button
@@ -264,6 +266,28 @@ export function FromFile({ aiEnabled }: { aiEnabled: boolean }) {
       setStage("pick");
     }
   };
+
+  // "Edit with AI" hands its attached products file over as `?aiFile=<path>`: the server checks the
+  // path is this seller's and store's and signs a short link; the file is then read here like a picked one.
+  const aiFile = useSearchParams().get("aiFile");
+  const aiFileTaken = useRef(false);
+  useEffect(() => {
+    if (!aiFile || aiFileTaken.current || !productStoreId) return;
+    aiFileTaken.current = true;
+    void (async () => {
+      try {
+        const link = await editWithAiImportFile(productStoreId, aiFile);
+        if (!link.success) throw new Error(link.error);
+        const response = await fetch(link.data.url);
+        if (!response.ok) throw new Error("download");
+        await readFile(new File([await response.blob()], link.data.name, { type: link.data.type }));
+      } catch {
+        setReadError(t("errors.failed"));
+      }
+    })();
+    // readFile is recreated each render; the ref makes this run once per file.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiFile, productStoreId]);
 
   const dropzone = useDropzone({
     multiple: false,

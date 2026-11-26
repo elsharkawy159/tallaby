@@ -18,6 +18,14 @@ describe("serialize for the prompt", () => {
     expect(serializeTreeSection(section, "ar")).toContain("bound=price");
   });
 
+  it("shows photo srcs whole, and the section's background photo, so set_image can name them", () => {
+    const src = "https://x.supabase.co/storage/v1/object/public/store-media/" + "a".repeat(150) + ".jpg";
+    const section: SectionInstance = { id: "s", sectionId: "custom-section", version: 1, props: {}, style: { shell: { bgImage: "https://x/bg.jpg" } } as SectionInstance["style"], componentTree: [{ id: "root", type: "section", props: {}, children: [{ id: "n", type: "image", props: { src, alt: "" }, children: [] }] }] };
+    const text = serializeTreeSection(section, "ar");
+    expect(text).toContain(`src=${JSON.stringify(src)}`);
+    expect(text).toContain(`section background photo src="https://x/bg.jpg"`);
+  });
+
   it("cuts a huge code file and tells the model not to rewrite it", () => {
     const code: ComponentNode = { id: "n-code", type: "code", props: { apiVersion: 1, source: `<p>${"x".repeat(60_000)}</p>`, schema: { name: "X", settings: [] }, settings: {}, blocks: [] }, children: [] };
     const section: SectionInstance = { id: "s", sectionId: "custom-section", version: 1, props: {}, componentTree: [{ id: "root", type: "section", props: {}, children: [code] }] };

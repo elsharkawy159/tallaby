@@ -22,6 +22,9 @@
  * - No op can create product, money or store data. Product and category
  *   picks of a code section keep only the seller's own values: the seller
  *   picks the items in the sidebar.
+ * - `set_image` puts a photo the store owns into an image element (or as the
+ *   section's background photo): one already in that section, or one the
+ *   host's `allowImage` accepts. Any other link is refused.
  */
 import { z } from "zod";
 import { sanitizeRichText } from "../config/sanitize";
@@ -95,6 +98,15 @@ export const sectionOpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("set_style"), sectionId: idSchema, nodeId: idSchema.optional(), breakpoint: z.enum(AGENT_DEVICES).optional(), style: valuesSchema }),
   z.object({ op: z.literal("set_custom_css"), sectionId: idSchema, nodeId: idSchema.optional(), css: z.string().max(MAX_CUSTOM_CSS_BYTES * 2) }),
   z.object({ op: z.literal("set_link"), sectionId: idSchema, nodeId: idSchema, href: z.string().max(MAX_URL_LENGTH) }),
+  z.object({
+    op: z.literal("set_image"),
+    sectionId: idSchema,
+    /** An image element (or an element with an image field), or the section's root element for its background photo. */
+    nodeId: idSchema,
+    src: z.string().max(MAX_URL_LENGTH),
+    /** The photo's description (alt text); a language left out keeps its text. */
+    alt: z.object({ ar: z.string().max(2000).optional(), en: z.string().max(2000).optional() }).optional(),
+  }),
   z.object({ op: z.literal("remove_node"), sectionId: idSchema, nodeId: idSchema }),
   z.object({ op: z.literal("duplicate_node"), sectionId: idSchema, nodeId: idSchema }),
   z.object({ op: z.literal("hide_node"), sectionId: idSchema, nodeId: idSchema, device: z.enum(AGENT_DEVICES).optional() }),
@@ -127,6 +139,8 @@ export const SECTION_OP_REJECT_CODES = [
   "empty_text",
   "not_link",
   "unsafe_url",
+  "not_image",
+  "image_not_allowed",
   "invalid_style",
   "css_too_large",
   "invalid_code",
@@ -171,6 +185,15 @@ export type ApplySectionOpsOptions = {
    * any issue refuses the op.
    */
   codeProps?: CodePropsBuilder;
+  /**
+   * `set_image`: a photo that isn't already in the section it goes into is
+   * accepted only when this returns the src to store (null refuses it as
+   * `image_not_allowed`). The servers pass a strict check (the store's own
+   * media library, this turn's uploads). Default: any safe image src
+   * (`isSafeImageSrc`), because the editor re-applies ops its server already
+   * checked, and the seller can pick any photo in the sidebar anyway.
+   */
+  allowImage?: (src: string) => string | null;
   /** Run after each op on the whole content; issues refuse that op. The server passes `validatePageContent` with the server checks. */
   validate?: (content: { sections: SectionInstance[] }) => AgentIssue[] | null;
 };
@@ -261,6 +284,44 @@ export function isSafeAgentHref(value: string): boolean {
   const v = value.trim();
   if (!v || v.length > MAX_URL_LENGTH || hasDangerousScheme(v)) return false;
   return isHttpOrRelativeUrl(v) || /^#[A-Za-z][\w-]{0,63}$/.test(v) || /^(?:mailto|tel):[^\s<>"']{1,200}$/i.test(v);
+}
+
+/** An image src a store may hold: an http(s) URL or a store path (no other scheme, no `//host`, no spaces). The rule of a section's background photo. */
+export function isSafeImageSrc(value: string): boolean {
+  const v = value.trim();
+  if (!v || v.length > MAX_URL_LENGTH || hasDangerousScheme(v) || /\s/.test(v)) return false;
+  if (/^https?:\/\//i.test(v)) return true;
+  return !v.startsWith("//") && !/^[a-z][a-z0-9+.-]*:/i.test(v);
+}
+
+/** The key of an element's image field (`src` of an image, `poster` of a video), or null. */
+export function imageFieldOf(def: ElementDefinition): string | null {
+  return def.fields.find((f) => f.type === "image")?.key ?? null;
+}
+
+/** The section's background photo (`style.shell.bgImage`), or null. */
+export function sectionBackgroundImage(section: SectionInstance): string | null {
+  const style = isBag(section.style) ? section.style : null;
+  const shell = style && isBag(style.shell) ? style.shell : null;
+  return typeof shell?.bgImage === "string" && shell.bgImage.trim() ? shell.bgImage.trim() : null;
+}
+
+/** Every photo a section shows: its elements' image fields and its background photo. */
+export function sectionImageSrcs(section: SectionInstance): Set<string> {
+  const out = new Set<string>();
+  const background = sectionBackgroundImage(section);
+  if (background) out.add(background);
+  const walk = (nodes: readonly ComponentNode[]) => {
+    for (const node of nodes) {
+      const def = node.type === "code" ? undefined : getElementDefinition(node.type);
+      const key = def ? imageFieldOf(def) : null;
+      const value = key ? node.props?.[key] : undefined;
+      if (typeof value === "string" && value.trim()) out.add(value.trim());
+      walk(node.children ?? []);
+    }
+  };
+  walk(section.componentTree ?? []);
+  return out;
 }
 
 const PICK_TYPES = new Set(["product", "product_list", "collection", "collection_list"]);
@@ -537,8 +598,58 @@ export function applySectionOps<T extends { sections: SectionInstance[] }>(
     return { ok: true, sections: replace({ ...section, componentTree: tree }), op: { ...normalized, nodeId }, sectionId: section.id };
   }
 
+  function setImage(
+    op: Extract<SectionOp, { op: "set_image" }>,
+    section: SectionInstance,
+    node: ComponentNode,
+    isRoot: boolean,
+    replace: (s: SectionInstance) => SectionInstance[],
+  ): Step {
+    if (node.type === "code") return reject("code_node");
+    if (typeof node.props.bind === "string") return reject("bound_node");
+    const def = isRoot ? undefined : getElementDefinition(node.type);
+    const field = def ? imageFieldOf(def) : null;
+    if (!isRoot && !field) return reject("not_image");
+    const wanted = op.src.trim();
+    if (!isSafeImageSrc(wanted)) return reject("unsafe_url");
+    // A photo already in this section is always fine (a swap or a reuse); any other must pass the host's check.
+    const src = sectionImageSrcs(section).has(wanted) ? wanted : opts.allowImage ? opts.allowImage(wanted) : wanted;
+    if (!src || !isSafeImageSrc(src)) return reject("image_not_allowed");
+
+    if (isRoot) {
+      // The section's background photo, drawn behind its tree (`style.shell.bgImage`).
+      const style: Bag = isBag(section.style) ? section.style : {};
+      const shell: Bag = isBag(style.shell) ? style.shell : {};
+      const next = { ...section, style: { ...style, shell: { ...shell, bgImage: src } } } as SectionInstance;
+      return { ok: true, sections: replace(next), op: { op: "set_image", sectionId: section.id, nodeId: node.id, src }, sectionId: section.id };
+    }
+
+    const altMax = def ? textPropsOf(def).get("alt") : undefined;
+    const alt: Partial<Record<SiteLocale, string>> = {};
+    if (altMax !== undefined && op.alt) {
+      // Alt text is plain: no markup at all.
+      const plain = (value: string) => value.replace(CONTROL_CHARS, "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, altMax);
+      if (op.alt.ar !== undefined) alt.ar = plain(op.alt.ar);
+      if (op.alt.en !== undefined) alt.en = plain(op.alt.en);
+    }
+    const key = field!;
+    const tree = updateNode(section.componentTree ?? [], node.id, (n) => {
+      let props: Bag = { ...n.props, [key]: src };
+      for (const [locale, value] of Object.entries(alt) as [SiteLocale, string][]) {
+        if (locale === opts.defaultLocale) props = { ...props, alt: value };
+        else {
+          const translations = isBag(props.translations) ? (props.translations as Record<string, Bag>) : {};
+          props = { ...props, translations: { ...translations, [locale]: { ...(isBag(translations[locale]) ? translations[locale] : {}), alt: value } } };
+        }
+      }
+      return { ...n, props };
+    });
+    const normalized: SectionOp = { op: "set_image", sectionId: section.id, nodeId: node.id, src, ...(Object.keys(alt).length > 0 && { alt }) };
+    return { ok: true, sections: replace({ ...section, componentTree: tree }), op: normalized, sectionId: section.id };
+  }
+
   function nodeOp(
-    op: Extract<SectionOp, { op: "set_text" | "set_link" | "remove_node" | "duplicate_node" | "hide_node" }>,
+    op: Extract<SectionOp, { op: "set_text" | "set_link" | "set_image" | "remove_node" | "duplicate_node" | "hide_node" }>,
     section: SectionInstance,
     replace: (s: SectionInstance) => SectionInstance[],
   ): Step {
@@ -571,6 +682,8 @@ export function applySectionOps<T extends { sections: SectionInstance[] }>(
         if (!isSafeAgentHref(href)) return reject("unsafe_url");
         return done(updateNode(tree, node.id, (n) => ({ ...n, props: { ...n.props, href } })), { ...op, href });
       }
+      case "set_image":
+        return setImage(op, section, node, isRoot, replace);
       case "set_text": {
         if (node.type === "code") return reject("code_node");
         const def = getElementDefinition(node.type);
@@ -620,6 +733,7 @@ const SUMMARY: Record<SectionOpName, { ar: string; en: string }> = {
   set_style: { ar: "غيّرت التنسيق", en: "Changed the style" },
   set_custom_css: { ar: "غيّرت الـ CSS المخصص", en: "Changed the custom CSS" },
   set_link: { ar: "غيّرت رابطًا", en: "Changed a link" },
+  set_image: { ar: "غيّرت صورة", en: "Changed a photo" },
   remove_node: { ar: "حذفت عنصرًا", en: "Removed an element" },
   duplicate_node: { ar: "كرّرت عنصرًا", en: "Duplicated an element" },
   hide_node: { ar: "أخفيت عنصرًا", en: "Hid an element" },

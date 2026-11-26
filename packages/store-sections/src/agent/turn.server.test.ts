@@ -28,6 +28,7 @@ const row = (fields: Partial<EditorAgentModelOp> & { op: EditorAgentModelOp["op"
   file: null,
   name: null,
   prop: null,
+  src: null,
   ar: null,
   en: null,
   breakpoint: null,
@@ -67,6 +68,22 @@ const request = (extra: Partial<EditorAgentTurnRequest> = {}): EditorAgentTurnRe
 const answer = (ops: EditorAgentModelOp[], reply = "Done"): EditorAgentModelOutput => ({ reply, ops });
 
 describe("runEditorAgentTurn", () => {
+  it("set_image: refuses a photo the host didn't vouch for, takes one it did, and lists it for the model", async () => {
+    const MEDIA = "https://x.supabase.co/storage/v1/object/public/store-media/a/b/c.jpg";
+    const withImage = { ...hero, componentTree: [{ ...hero.componentTree![0]!, children: [...hero.componentTree![0]!.children, { id: "n-img", type: "image" as const, props: { src: "", alt: "" }, children: [] }] }] };
+    const content = buildAgentContent({ target: { kind: "page", sectionId: "s-hero" }, section: withImage, outlineIds: ["s-hero"] })!;
+    const op = row({ op: "set_image", sectionId: "s-hero", nodeId: "n-img", src: MEDIA, ar: "صورة", en: "Photo" });
+    const refused = await runEditorAgentTurn(request({ section: withImage, content }), { callModel: async () => answer([op]) });
+    expect(refused.rejected).toMatchObject([{ code: "image_not_allowed" }]);
+    const callModel = vi.fn(async () => answer([op]));
+    const taken = await runEditorAgentTurn(
+      request({ section: withImage, content, images: [{ src: MEDIA, label: "hero.jpg" }], allowImage: (src) => (src === MEDIA ? src : null) }),
+      { callModel },
+    );
+    expect(taken.ops).toEqual([{ op: "set_image", sectionId: "s-hero", nodeId: "n-img", src: MEDIA, alt: { ar: "صورة", en: "Photo" } }]);
+    expect((callModel.mock.calls[0] as unknown as [{ text: string }])[0].text).toContain(`- ${MEDIA} | "hero.jpg"`);
+  });
+
   it("applies tree ops and describes them", async () => {
     const callModel = vi.fn(async () =>
       answer([

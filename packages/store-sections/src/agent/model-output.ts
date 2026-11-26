@@ -25,8 +25,9 @@ export const editorAgentModelOpSchema = z.object({
   file: text("Code ops: the whole section file (HTML + Liquid, {% stylesheet %}, {% schema %}). Else null."),
   name: text("Code ops: a short section name. Else null."),
   prop: text("set_text: the text prop of the element (as listed). Else null."),
-  ar: text("set_text: the Arabic text. Null to leave it."),
-  en: text("set_text: the English text. Null to leave it."),
+  ar: text("set_text: the Arabic text; set_image: the Arabic photo description. Null to leave it."),
+  en: text("set_text: the English text; set_image: the English photo description. Null to leave it."),
+  src: text("set_image: the photo, exactly as listed. Else null."),
   breakpoint: z.enum(AGENT_DEVICES).nullable().describe("set_style: desktop (default, all sizes), tablet or mobile."),
   device: z.enum(AGENT_DEVICES).nullable().describe("hide_node: the device to hide on; null hides everywhere."),
   styleJson: text('set_style: a JSON object of style keys, e.g. {"fontSize":"4xl","color":"#d92d20"}. Else null.'),
@@ -84,6 +85,11 @@ export function toSectionOpCandidate(row: EditorAgentModelOp): unknown {
       return pick("sectionId", "nodeId", "css");
     case "set_link":
       return pick("sectionId", "nodeId", "href");
+    case "set_image": {
+      const out = pick("sectionId", "nodeId", "src");
+      const alt = { ...(row.ar != null && { ar: row.ar }), ...(row.en != null && { en: row.en }) };
+      return Object.keys(alt).length ? { ...out, alt } : out;
+    }
     case "remove_node":
     case "duplicate_node":
       return pick("sectionId", "nodeId");

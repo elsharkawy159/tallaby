@@ -81,7 +81,7 @@ describe("applySectionOps", () => {
   });
 
   it("lists every op name", () => {
-    expect(SECTION_OP_NAMES).toHaveLength(13);
+    expect(SECTION_OP_NAMES).toHaveLength(14);
   });
 
   describe("set_text", () => {
@@ -129,6 +129,90 @@ describe("applySectionOps", () => {
         opts(),
       );
       expect(applied).toHaveLength(2);
+    });
+  });
+
+  describe("set_image", () => {
+    const MEDIA = "https://cdn.example/storage/v1/object/public/store-media/a/b/c.jpg";
+    const own = (src: string) => (src === MEDIA ? src : null);
+    const withPhoto = () => {
+      const content = page();
+      const img = content.sections[1]!.componentTree![0]!.children[3]!;
+      img.props = { ...img.props, src: "https://images.example/old.jpg" };
+      return content;
+    };
+
+    it("puts an allowed photo and its alt text in both languages", () => {
+      const { content, applied, rejected } = applySectionOps(
+        page(),
+        [{ op: "set_image", sectionId: "s-hero", nodeId: "s-hero-img", src: ` ${MEDIA} `, alt: { ar: "فستان <b>أحمر</b>", en: "Red dress" } }],
+        opts({ allowImage: own }),
+      );
+      expect(rejected).toEqual([]);
+      const img = content.sections[1]!.componentTree![0]!.children[3]!;
+      expect(img.props.src).toBe(MEDIA);
+      expect(img.props.alt).toBe("فستان أحمر");
+      expect((img.props.translations as Record<string, Record<string, string>>).en!.alt).toBe("Red dress");
+      expect(applied[0]!.op).toEqual({ op: "set_image", sectionId: "s-hero", nodeId: "s-hero-img", src: MEDIA, alt: { ar: "فستان أحمر", en: "Red dress" } });
+      expect(describeAppliedOp(applied[0]!, "en")).toBe("Changed a photo");
+    });
+
+    it("refuses a link the host doesn't own, and unsafe links", () => {
+      const { rejected, applied } = applySectionOps(
+        page(),
+        [
+          { op: "set_image", sectionId: "s-hero", nodeId: "s-hero-img", src: "https://evil.example/x.jpg" },
+          { op: "set_image", sectionId: "s-hero", nodeId: "s-hero-img", src: "javascript:alert(1)" },
+          { op: "set_image", sectionId: "s-hero", nodeId: "s-hero-img", src: "//evil.example/x.jpg" },
+        ],
+        opts({ allowImage: own }),
+      );
+      expect(applied).toEqual([]);
+      expect(rejected.map((r) => r.code)).toEqual(["image_not_allowed", "unsafe_url", "unsafe_url"]);
+    });
+
+    it("always accepts a photo already in the same section", () => {
+      const content = withPhoto();
+      const title = content.sections[1]!.componentTree![0]!.children;
+      title.push({ id: "s-hero-img2", type: "image", props: { src: "", alt: "" }, children: [] });
+      const { applied } = applySectionOps(content, [{ op: "set_image", sectionId: "s-hero", nodeId: "s-hero-img2", src: "https://images.example/old.jpg" }], opts({ allowImage: () => null }));
+      expect(applied).toHaveLength(1);
+    });
+
+    it("does not reuse a photo of another section without the host's check", () => {
+      const content = withPhoto();
+      const { rejected } = applySectionOps(
+        content,
+        [{ op: "set_image", sectionId: "s-a", nodeId: "s-a-img", src: "https://images.example/old.jpg" }],
+        opts({ target: { kind: "page", sectionId: "s-a" }, allowImage: () => null }),
+      );
+      expect(rejected.map((r) => r.code)).toEqual(["image_not_allowed"]);
+    });
+
+    it("sets the section's background photo on its root element", () => {
+      const { content, applied } = applySectionOps(page(), [{ op: "set_image", sectionId: "s-hero", nodeId: "s-hero-root", src: MEDIA, alt: { ar: "x" } }], opts({ allowImage: own }));
+      expect(applied[0]!.op).toEqual({ op: "set_image", sectionId: "s-hero", nodeId: "s-hero-root", src: MEDIA });
+      expect((content.sections[1]!.style as { shell: { bgImage: string } }).shell.bgImage).toBe(MEDIA);
+    });
+
+    it("refuses elements without a photo and bound photos", () => {
+      const content = page();
+      content.sections[1]!.componentTree![0]!.children.push({ id: "s-hero-pimg", type: "image", props: { bind: "image", src: "" }, children: [] });
+      const { rejected } = applySectionOps(
+        content,
+        [
+          { op: "set_image", sectionId: "s-hero", nodeId: "s-hero-title", src: MEDIA },
+          { op: "set_image", sectionId: "s-hero", nodeId: "s-hero-pimg", src: MEDIA },
+          { op: "set_image", sectionId: "s-hero", nodeId: "nope", src: MEDIA },
+        ],
+        opts({ allowImage: own }),
+      );
+      expect(rejected.map((r) => r.code)).toEqual(["not_image", "bound_node", "node_not_found"]);
+    });
+
+    it("without a host check, takes any safe src (the editor re-applying the server's ops)", () => {
+      const { applied } = applySectionOps(page(), [{ op: "set_image", sectionId: "s-hero", nodeId: "s-hero-img", src: "https://images.example/new.jpg" }], opts());
+      expect(applied).toHaveLength(1);
     });
   });
 

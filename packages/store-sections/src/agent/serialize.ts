@@ -13,7 +13,10 @@ import { capUtf8, normalizeCodeNodeProps, utf8Length } from "../code/code-node";
 import { joinSectionFile } from "../code/section-file";
 import { getElementDefinition } from "../elements/registry";
 import { normalizeStyle } from "../elements/style";
-import { findCodeNode, textPropsOf } from "./section-ops";
+import { findCodeNode, imageFieldOf, sectionBackgroundImage, textPropsOf } from "./section-ops";
+
+/** Photo srcs are shown whole (up to this), so set_image can name one exactly. */
+const MAX_SRC_IN_PROMPT = 400;
 
 export const MAX_TREE_PROMPT_BYTES = 12 * 1024;
 export const MAX_CODE_PROMPT_BYTES = 24 * 1024;
@@ -56,6 +59,9 @@ function nodeLine(node: ComponentNode, depth: number, defaultLocale: SiteLocale)
       parts.push(`${prop}: ${defaultLocale}=${promptText(main)} ${other}=${promptText(second)}`);
     }
     if (typeof props.href === "string" && def?.fields.some((f) => f.key === "href")) parts.push(`href=${promptText(props.href, 120)}`);
+    const imageKey = def ? imageFieldOf(def) : null;
+    const src = imageKey ? props[imageKey] : undefined;
+    if (typeof src === "string" && src.trim()) parts.push(`src=${promptText(src, MAX_SRC_IN_PROMPT)}`);
   }
   const base = styleText(node.style);
   if (base) parts.push(`style: ${base}`);
@@ -71,6 +77,8 @@ function nodeLine(node: ComponentNode, depth: number, defaultLocale: SiteLocale)
 export function serializeTreeSection(section: SectionInstance, defaultLocale: SiteLocale): string {
   const lines: string[] = [`TREE SECTION ${section.id}`];
   if (section.customCss) lines.push(`section customCss=${promptText(section.customCss, 200)}`);
+  const background = sectionBackgroundImage(section);
+  if (background) lines.push(`section background photo src=${promptText(background, MAX_SRC_IN_PROMPT)}`);
   let bytes = utf8Length(lines.join("\n"));
   let left = 0;
   const walk = (nodes: readonly ComponentNode[], depth: number) => {

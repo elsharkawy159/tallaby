@@ -146,6 +146,7 @@ const TREE_OPS = `Ops on the existing section (tree sections are made of element
 - set_style {sectionId, nodeId, breakpoint, styleJson}: change the look. breakpoint: "desktop" (the base, all screen sizes), "tablet" or "mobile" (an override for that size only). nodeId null styles the section itself. styleJson keys (anything else is dropped): ${list(STYLE_KEYS)}.
   Values: fontSize ${list([...Object.keys(FONT_SIZES), ...Object.keys(DISPLAY_SIZES)])}; fontWeight ${list(Object.keys(FONT_WEIGHTS))}; colours (color, background, borderColor) are a theme token (${list(Object.keys(COLOR_TOKEN_VARS))}) or a hex colour like "#d92d20"; padding*/margin*/gap/minHeight/radius/borderWidth are numbers in px; width/maxWidth like "100%", "640px" or "auto"; textAlign start|center|end|justify; direction row|column; columns 1–12; gradient ${list(Object.keys(GRADIENTS))}; hidden true|false.
   Prefer theme tokens for colours so the section follows the store's brand; use a hex colour only when the seller names a colour.
+- set_image {sectionId, nodeId, src, ar, en}: put a photo into an image element (its line shows src=…), or behind the whole section as its background photo (nodeId = the section's root element). "src" must be a photo listed under "Photos you may use", or a src already shown in that section; any other link is refused. "ar"/"en": a short description of the photo for screen readers (null keeps it).
 - set_link {sectionId, nodeId, href}: a button's or link's target: a page path ("/products", "/about"), "#section-id", https://…, mailto: or tel:.
 - set_custom_css {sectionId, nodeId, css}: CSS for one element (nodeId) or the section (nodeId null), at most ${MAX_CUSTOM_CSS_BYTES / 1024} KB. It is scoped to that element automatically: ":root { … }" styles the element itself and "h2 { … }" the headings inside it. Use it only for what set_style can't do (shadows with colour, transforms, animations).
 - hide_node {sectionId, nodeId, device}: hide an element on one device ("mobile", "tablet", "desktop"), or everywhere (device null).
@@ -233,6 +234,11 @@ export type EditorAgentStoreContext = {
 
 export type EditorAgentHistoryTurn = { role: "user" | "assistant"; text: string };
 
+/** A photo the turn may put in with set_image: the seller's upload of this turn, or one of the store's media. */
+export type EditorAgentImage = { src: string; label: string };
+
+export const MAX_AGENT_IMAGES = 8;
+
 export type EditorAgentTurnText = {
   message: string;
   uiLocale: SiteLocale;
@@ -245,6 +251,8 @@ export type EditorAgentTurnText = {
   store: EditorAgentStoreContext;
   /** Problems with the previous answer, for the one retry. */
   previousIssues?: string;
+  /** Photos set_image may use besides those already in the section (at most `MAX_AGENT_IMAGES`). */
+  images?: readonly EditorAgentImage[];
 };
 
 function plainEntries(source: Record<string, unknown> | null | undefined, max: number): string {
@@ -289,6 +297,8 @@ export function buildEditorAgentTurnText(input: EditorAgentTurnText): string {
   } else if (target.kind === "page") {
     parts.push("No section is selected: the request is about the page (add a section, or move or remove one from the outline).");
   }
+  const images = (input.images ?? []).slice(0, MAX_AGENT_IMAGES);
+  if (images.length) parts.push(`Photos you may use (src | what it is):\n${images.map((i) => `- ${i.src} | ${promptText(i.label, 80)}`).join("\n")}`);
   const history = historyText(input.history);
   if (history) parts.push(`Recent chat:\n${history}`);
   parts.push(`Seller's request:\n${input.message.slice(0, MAX_AGENT_MESSAGE_LENGTH)}`);
