@@ -2117,6 +2117,20 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-26 — Code sections: Liquid core modules built (F-101b–d core; no migration)
+
+- **Built:** in `packages/store-sections/src/code/`, all new files and not yet connected to anything:
+  - `scope-css.ts` (`8006211d`): keeps seller CSS inside one element and drops unsafe values.
+  - `sanitize-code.ts` and `blocked.ts` (`be63c837`): the HTML cleaner that is the security boundary, plus the save-time check for blocked code; 145 XSS vectors in the tests.
+  - `liquid.server.ts`, `section-file.ts`, `section-schema.ts`, `liquid-objects.ts` and `liquid-filters.ts` (`efc52ecf`): the restricted `liquidjs` 10.30.1 engine (no files; 64 KB / 50 ms / 1e6 memory limits; dropped tags refuse to parse), the one-file section format, the schema with familiar setting types and section blocks, the v1 data types and the filters.
+  - New dependencies: `liquidjs`, `postcss`, `postcss-selector-parser`.
+- **Checks:** 320 tests in `src/code` pass; store-sections typecheck passes. The package has no eslint config.
+- **Found:** `sanitizeSiteConfig` runs every prop string through the rich-text cleaner, which would mangle Liquid. The `code` node must be exempted when it is connected.
+- **Not done:**
+  - connecting it: `code` node type, registry, renderer, page data, validation, CSS in the page style block, kill switch migration, storefront CSP;
+  - the editor (F-101e), security review and staging (F-101f), AI (F-101g), docs (F-101h);
+  - `image_url` doesn't resize yet (TODO in F-101d).
+
 ### 2026-11-26 — Product cards differ per template; photos contained on white (F-111, owner request; no migration)
 
 - **Built:** `designs/products/card-styles.ts` (7 styles, props and styles only), `templates/card-styles.ts` (83 templates: icon 15, outline 15, framed 13, quiet 11, compact 11, classic 9, editorial 9; neighbours in an industry never share one), `libraryTemplate` `card`, `Edition.card`; `addToCart` `look` (store-sections registry, render, `AddToCartStill`; ecommerce `StoreCardAddToCart`, template preview); library card photos `contain` on `white` (39 designs bumped); product page gallery on `--sf-stage-bg` (white). Tallaby Classic keeps its cover photos through node patches and pinned design versions (rule 12).
