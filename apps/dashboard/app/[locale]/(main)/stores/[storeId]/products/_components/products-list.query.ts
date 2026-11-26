@@ -213,15 +213,22 @@ async function loadInOrder(sellerId: string, inStore: SQL | undefined, ids: stri
 
 /** One page of the list, its filtered total, and the page actually used. */
 export async function listSellerProductsPage(sellerId: string, inStore: SQL | undefined, filters: ProductsListFilters, locale: string) {
-  const countRows = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(products)
-    .where(filterConditions(sellerId, inStore, filters));
+  const pageIds = (page: number) =>
+    selectIds(sellerId, inStore, filters, locale, { limit: filters.size, offset: (page - 1) * filters.size });
+  // The count and the requested page's ids run together: the page is almost
+  // always in range, so this saves a round trip.
+  const [countRows, requestedIds] = await Promise.all([
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(products)
+      .where(filterConditions(sellerId, inStore, filters)),
+    pageIds(filters.page),
+  ]);
   const total = countRows[0]?.count ?? 0;
   const pages = Math.max(1, Math.ceil(total / filters.size));
-  // A deleted last row or an old link can point past the end.
+  // A deleted last row or an old link can point past the end: read the last page instead.
   const page = Math.min(filters.page, pages);
-  const ids = await selectIds(sellerId, inStore, filters, locale, { limit: filters.size, offset: (page - 1) * filters.size });
+  const ids = page === filters.page ? requestedIds : await pageIds(page);
   return { products: await loadInOrder(sellerId, inStore, ids, locale, false), total, page, pages };
 }
 

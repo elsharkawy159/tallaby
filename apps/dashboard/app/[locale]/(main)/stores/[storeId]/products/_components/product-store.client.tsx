@@ -8,7 +8,7 @@ import { storeProductsHref } from "@/lib/products/product-routes.lib";
  * action takes it as an explicit `storeId` and the server checks it against
  * the session (requireProductStore); this value is never trusted. It is the
  * `/stores/[storeId]/products` segment, set by products/layout.tsx once
- * loadStorePage has checked the store against the session.
+ * loadStorePageAccess has checked the store against the session.
  */
 const ProductStoreContext = createContext<string>("");
 
