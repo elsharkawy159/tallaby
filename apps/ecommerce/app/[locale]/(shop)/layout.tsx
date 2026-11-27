@@ -86,7 +86,8 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   return (
     <BaseMessagesProvider>
       <NextTopLoader
-        color="var(--accent)"
+        // Storefronts: the store's brand colour (StorefrontShell puts --sf-brand on <body>); elsewhere the UI accent.
+        color="var(--sf-brand, var(--accent))"
         crawlSpeed={200}
         height={3}
         showSpinner={false}

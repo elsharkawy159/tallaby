@@ -1,5 +1,5 @@
 import { cn } from "@workspace/ui/lib/utils";
-import { SITE_ROOT_CLASS, SiteTheme, bottomNavOn, chromeHasThemeToggle, designSystemToCss, siteMotionAttrs } from "@workspace/store-sections/render";
+import { CLASSIC_TOKENS, SITE_ROOT_CLASS, SiteTheme, bottomNavOn, chromeHasThemeToggle, designSystemToCss, siteMotionAttrs } from "@workspace/store-sections/render";
 import { CarouselRuntime, MotionRuntime, PhotoToolsRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
@@ -102,6 +102,8 @@ export async function StorefrontShell({
         {site && <SiteTheme designSystem={site.designSystem} dark={chromeHasThemeToggle(site.header, site.footer)} />}
         {/* Dialogs, popovers and toasts render in <body>, outside the site root: give them the store's colors too. */}
         {site && <style dangerouslySetInnerHTML={{ __html: designSystemToCss(site.designSystem, "body").replace(/</g, "\\3c ") }} />}
+        {/* No design system: the Classic brand, so the top loader (in <body>) still uses the store's colour. */}
+        {!site && <style dangerouslySetInnerHTML={{ __html: `body { --sf-brand: ${CLASSIC_TOKENS["--sf-brand"]}; }` }} />}
         {preview && <StorePreviewBanner state={preview} />}
         {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" passThrough={shared} /> : <StorefrontHeader store={store} />}
         <main className="flex-1">{children}</main>
