@@ -23,4 +23,19 @@ describe("getMarketingSitemapEntries", () => {
     expect(urls.some((u) => u.includes("/blog/first-post"))).toBe(true);
     for (const url of urls) expect(new URL(url).host, url).toBe(host);
   });
+
+  it("lists no address that redirects (redirects.mjs, or the pages moved to account. and preview.)", async () => {
+    const { redirects } = await import("../../redirects.mjs");
+    const { platformRedirects } = await import("../../platform-redirects.mjs");
+    const sources = [...redirects, ...platformRedirects("tallaby.com")].map((row: { source: string }) => row.source);
+    // `/page/:path*` covers every path under /page.
+    const redirected = (pathname: string) =>
+      sources.some((source) => source === pathname || (source.endsWith("/:path*") && pathname.startsWith(`${source.slice(0, -"/:path*".length)}/`)));
+    const entries = await getMarketingSitemapEntries();
+    for (const entry of entries) {
+      const { pathname } = new URL(entry.url);
+      expect(redirected(pathname), pathname).toBe(false);
+    }
+    expect(entries.some((e) => /^(\/en)?\/(shipping|returns|products|categories|wishlist)(\/|$)/.test(new URL(e.url).pathname))).toBe(false);
+  });
 });
