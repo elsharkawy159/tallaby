@@ -698,56 +698,67 @@ function SidebarGroup({
           />
         </span>
       </button>
-      {open && (
-        <ul
-          id={subId}
-          className="relative mb-1.5 mt-0.5 flex flex-col gap-px ps-9 before:absolute before:inset-y-1 before:start-[20.5px] before:w-[1.5px] before:rounded-sm before:bg-(--s-field)"
-        >
-          {group.items.map((item) => {
-            const isActive = item.href === activeHref;
-            const copyLink = supportTools && !item.disabled;
-            return (
-              <li
-                key={item.href}
-                className={copyLink ? "group/copy relative" : undefined}
-              >
-                <Link
-                  href={item.disabled ? "#" : item.href}
-                  aria-disabled={item.disabled || undefined}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "relative flex min-h-[34px] items-center justify-between gap-2 rounded-[9px] px-2.5 py-1.5 text-[13px] text-(--s-muted) no-underline transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) max-[1020px]:min-h-10",
-                    isActive &&
-                      "bg-(--s-hover) font-bold text-(--s-ink) before:absolute before:inset-y-[7px] before:-start-4 before:w-[3px] before:rounded-[3px] before:bg-(--s-primary)",
-                    item.disabled && "pointer-events-none opacity-60",
-                    copyLink && "pe-9",
-                  )}
+      {/* Always rendered so it can slide open and shut (grid rows 0fr ↔ 1fr, no JS measuring); `inert` keeps a closed list out of focus and screen readers. */}
+      <div
+        inert={!open}
+        className={cn(
+          "grid transition-[grid-template-rows,opacity] duration-[250ms] ease-out motion-reduce:transition-none",
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <ul
+            id={subId}
+            className="relative mb-1.5 mt-0.5 flex flex-col gap-px ps-9 before:absolute before:inset-y-1 before:start-[20.5px] before:w-[1.5px] before:rounded-sm before:bg-(--s-field)"
+          >
+            {group.items.map((item) => {
+              const isActive = item.href === activeHref;
+              const copyLink = supportTools && !item.disabled;
+              return (
+                <li
+                  key={item.href}
+                  className={copyLink ? "group/copy relative" : undefined}
                 >
-                  <span className="min-w-0 flex-1 truncate">{t(item.key)}</span>
-                  {ordersLocked && LOCKED_HREFS.includes(item.href) && (
-                    <OrdersWarning />
-                  )}
-                  {item.disabled ? (
-                    <SoonBadge />
-                  ) : (
-                    <CountBadge
-                      count={item.countKey ? counts[item.countKey] : 0}
-                      strong={item.href === "/orders"}
+                  <Link
+                    href={item.disabled ? "#" : item.href}
+                    aria-disabled={item.disabled || undefined}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "relative flex min-h-[34px] items-center justify-between gap-2 rounded-[9px] px-2.5 py-1.5 text-[13px] text-(--s-muted) no-underline transition-colors duration-150 hover:bg-(--s-hover) hover:text-(--s-ink) max-[1020px]:min-h-10",
+                      isActive &&
+                        "bg-(--s-hover) font-bold text-(--s-ink) before:absolute before:inset-y-[7px] before:-start-4 before:w-[3px] before:rounded-[3px] before:bg-(--s-primary)",
+                      item.disabled && "pointer-events-none opacity-60",
+                      copyLink && "pe-9",
+                    )}
+                  >
+                    <span className="min-w-0 flex-1 truncate">
+                      {t(item.key)}
+                    </span>
+                    {ordersLocked && LOCKED_HREFS.includes(item.href) && (
+                      <OrdersWarning />
+                    )}
+                    {item.disabled ? (
+                      <SoonBadge />
+                    ) : (
+                      <CountBadge
+                        count={item.countKey ? counts[item.countKey] : 0}
+                        strong={item.href === "/orders"}
+                      />
+                    )}
+                  </Link>
+                  {copyLink && (
+                    <CopyPageLinkButton
+                      href={item.href}
+                      trail={[label, t(item.key)]}
+                      className="end-1"
                     />
                   )}
-                </Link>
-                {copyLink && (
-                  <CopyPageLinkButton
-                    href={item.href}
-                    trail={[label, t(item.key)]}
-                    className="end-1"
-                  />
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
     </li>
   );
 }

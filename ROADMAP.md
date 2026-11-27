@@ -2173,6 +2173,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Sidebar groups open and close smoothly (owner request; no migration)
+
+- **Owner:** "make the accordions on sidebar to collapse and uncollapse smoothly".
+- **Changed:** `SidebarGroup` in `components/dashboard/Sidebar.tsx` always renders its links in a grid-rows 0fr ↔ 1fr wrapper (height + opacity, 250 ms ease-out like the chevron, `motion-reduce:transition-none`); a closed list is `inert`. The current page’s group is open on first render with no slide-in.
+- **Checks:** sidebar vitest 53 pass, eslint clean; not tried in a browser.
+
 ### 2026-11-27 — Website › SEO simplified; Google Search Console is its own app (owner request; no migration)
 
 - **Owner:** "simplify the /website/seo page, move 'Google Search Console' to be a separated app on /apps, keep page very simple and easy."
