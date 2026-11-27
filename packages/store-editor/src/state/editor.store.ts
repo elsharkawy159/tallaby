@@ -205,7 +205,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       future: [],
       saveStatus: "saved",
       rail: "add",
-      addTab: "elements",
+      addTab: "sections",
       mediaTab: "library",
       libraryWide: false,
       inspectorTab: "content",
