@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { policyTextFor, storePageFallback } from "./store-policy.lib";
+import { BUILT_IN_PAGE_SLUGS } from "@workspace/store-sections";
+import { policyTextFor, storePageFallback, type StorePolicyKind } from "./store-policy.lib";
 
 describe("store page fallback", () => {
   it("keeps policy and contact pages on the store", () => {
@@ -19,6 +20,14 @@ describe("store page fallback", () => {
     expect(storePageFallback("anything")).toBeNull();
     expect(storePageFallback("constructor")).toBeNull();
     expect(storePageFallback("__proto__")).toBeNull();
+  });
+
+  it("matches the editor's built-in page list", () => {
+    // A Record makes the compiler require every policy kind here.
+    const kinds: Record<StorePolicyKind, true> = { returns: true, shipping: true, contact: true, privacy: true, terms: true };
+    const builtIn: readonly string[] = BUILT_IN_PAGE_SLUGS;
+    for (const slug of builtIn) expect(storePageFallback(slug), slug).not.toBeNull();
+    for (const slug of [...Object.keys(kinds), "about", "faq"]) expect(builtIn, slug).toContain(slug);
   });
 });
 

@@ -79,6 +79,15 @@ export const RESERVED_PAGE_SLUGS = [
   "blog",
 ] as const;
 
+/**
+ * Pages a store site answers with built-in text (or a redirect home) when the
+ * store has no page with that slug (ROADMAP.md F-46, `storePageFallback` in
+ * `apps/ecommerce/lib/store-site/store-policy.lib.ts`). Template footers link
+ * to them; the editor's Pages panel offers to make each one a real page.
+ */
+export const BUILT_IN_PAGE_SLUGS = ["shipping", "returns", "privacy", "terms", "contact", "about", "faq"] as const;
+export type BuiltInPageSlug = (typeof BUILT_IN_PAGE_SLUGS)[number];
+
 export const MAX_PAGES = 50;
 export const MAX_SECTIONS_PER_PAGE = 80;
 export const MAX_NODES_PER_LIST = 200;

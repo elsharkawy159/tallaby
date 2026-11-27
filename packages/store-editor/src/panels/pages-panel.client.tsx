@@ -11,7 +11,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { cn } from "@workspace/ui/lib/utils";
 import { useEditorAdapter } from "../adapter.client";
-import { pagesPanelOrder } from "../lib/editor-pages.lib";
+import { BUILT_IN_PAGE_NAMES, missingBuiltInPages, pagesPanelOrder } from "../lib/editor-pages.lib";
 import { hasPendingChanges, type EditorPage, type EditorStore } from "../state/editor.store";
 
 export const nameOf = (value: { ar?: string; en?: string }, locale: string) => (locale === "en" ? value.en || value.ar : value.ar || value.en) || "";
@@ -24,18 +24,18 @@ export function PagesPanel({ store, uiLocale }: { store: EditorStore; uiLocale: 
   const state = useStore(store);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [busy, setBusy] = useState(false);
+  // What is being created: "new" (the form) or a built-in page's slug; null when idle.
+  const [busy, setBusy] = useState<string | null>(null);
 
-  const add = async () => {
-    if (!pagesApi) return;
-    setBusy(true);
-    const result = await pagesApi.create({ name: { [state.defaultLocale]: name }, slug });
-    setBusy(false);
+  const createPage = async (pageName: { ar?: string; en?: string }, pageSlug: string, busyKey: string): Promise<boolean> => {
+    if (!pagesApi || busy) return false;
+    setBusy(busyKey);
+    const result = await pagesApi.create({ name: pageName, slug: pageSlug });
+    setBusy(null);
     if (!result.success) {
       toast.error(tErrors(result.error));
-      return;
+      return false;
     }
-    const pageName = { [state.defaultLocale]: name } as { ar?: string; en?: string };
     state.setPages([...state.pages, { id: result.data.id, slug: result.data.slug, isHome: false, name: pageName, seo: {}, showInNav: true, content: { sections: [] }, version: 1 }]);
     state.setActivePage(result.data.id);
     // A new page starts by choosing a design: Add › Templates, filtered to this page.
@@ -43,9 +43,17 @@ export function PagesPanel({ store, uiLocale }: { store: EditorStore; uiLocale: 
       state.setAddTab("templates");
       state.setRail("add");
     }
-    setName("");
-    setSlug("");
+    return true;
   };
+
+  const add = async () => {
+    if (await createPage({ [state.defaultLocale]: name }, slug, "new")) {
+      setName("");
+      setSlug("");
+    }
+  };
+
+  const builtIn = missingBuiltInPages(state.pages);
 
   const toggleNav = async (page: EditorPage) => {
     if (!pagesApi) return;
@@ -93,6 +101,30 @@ export function PagesPanel({ store, uiLocale }: { store: EditorStore; uiLocale: 
           </li>
         ))}
       </ul>
+      {builtIn.length > 0 && (
+        <div className="space-y-1.5">
+          <div>
+            <p className="text-[12.5px] font-bold text-(--s-body)">{t("builtInTitle")}</p>
+            <p className="text-xs text-muted-foreground">{t("builtInHint")}</p>
+          </div>
+          <ul className="space-y-1">
+            {builtIn.map((builtInSlug) => (
+              <li key={builtInSlug} className="flex min-h-11 items-center gap-2 rounded-[14px] border border-(--s-line) px-3 py-2 text-[13px]">
+                <div className="flex min-w-0 flex-1 flex-col items-start text-start font-semibold text-(--s-text)">
+                  <span className="max-w-full truncate">{nameOf(BUILT_IN_PAGE_NAMES[builtInSlug], uiLocale)}</span>
+                  <span dir="ltr" className="max-w-full truncate font-montserrat text-[11px] font-medium text-(--s-subtle)">
+                    /{builtInSlug}
+                  </span>
+                </div>
+                <Button type="button" size="sm" variant="outline" disabled={busy !== null} onClick={() => void createPage({ ...BUILT_IN_PAGE_NAMES[builtInSlug] }, builtInSlug, builtInSlug)}>
+                  {busy === builtInSlug && <LoaderCircle className="animate-spin" aria-hidden />}
+                  {t("customize")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <form
         className="space-y-2.5 rounded-[14px] border border-(--s-line) p-3"
         onSubmit={(event) => {
@@ -110,8 +142,8 @@ export function PagesPanel({ store, uiLocale }: { store: EditorStore; uiLocale: 
           <Input id="new-page-slug" dir="ltr" value={slug} placeholder="about" onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} />
           <p className="text-xs text-muted-foreground">{t("slugHint")}</p>
         </div>
-        <Button type="submit" size="sm" className="w-full" disabled={busy || !name.trim() || !slug}>
-          {busy ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
+        <Button type="submit" size="sm" className="w-full" disabled={busy !== null || !name.trim() || !slug}>
+          {busy === "new" ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
           {t("create")}
         </Button>
       </form>

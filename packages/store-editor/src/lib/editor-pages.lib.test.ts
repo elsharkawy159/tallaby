@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { EditorPage } from "../state/editor.store";
 import { getElementDefinition } from "@workspace/store-sections/render";
-import { offeredElementGroups, offeredPaletteTypes, offeredPresets, offersProductParts, pagesPanelOrder } from "./editor-pages.lib";
+import { BUILT_IN_PAGE_NAMES, missingBuiltInPages, offeredElementGroups, offeredPaletteTypes, offeredPresets, offersProductParts, pagesPanelOrder } from "./editor-pages.lib";
 
 const page = (id: string, over: Partial<EditorPage> = {}): EditorPage => ({
   id,
@@ -46,5 +46,26 @@ describe("product parts in the Add panel", () => {
     const presets = [{ id: "a", category: "hero" }, { id: "b", category: "product-page" }] as const;
     expect(offeredPresets(presets, false).map((p) => p.id)).toEqual(["a"]);
     expect(offeredPresets(presets, true).map((p) => p.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("missingBuiltInPages", () => {
+  it("lists every built-in page when the store has none", () => {
+    expect(missingBuiltInPages([page("home", { isHome: true })])).toEqual(["shipping", "returns", "privacy", "terms", "contact", "about", "faq"]);
+  });
+
+  it("drops the ones the store already made, keeping the order", () => {
+    expect(missingBuiltInPages([page("home", { isHome: true }), page("faq"), page("shipping"), page("lookbook")])).toEqual(["returns", "privacy", "terms", "contact", "about"]);
+  });
+
+  it("has a name in both languages for each one", () => {
+    for (const slug of missingBuiltInPages([])) {
+      expect(BUILT_IN_PAGE_NAMES[slug].ar.trim(), slug).not.toBe("");
+      expect(BUILT_IN_PAGE_NAMES[slug].en.trim(), slug).not.toBe("");
+    }
+  });
+
+  it("does not count the home page's slug", () => {
+    expect(missingBuiltInPages([page("about", { isHome: true })])).toContain("about");
   });
 });

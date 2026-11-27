@@ -178,7 +178,10 @@
       "slug": "Address",
       "slugHint": "Lowercase letters, numbers and dashes, e.g. about-us.",
       "create": "Create page",
-      "productBadge": "Product page"
+      "productBadge": "Product page",
+      "builtInTitle": "Built-in store pages",
+      "builtInHint": "Until you design them, these show standard store text or open the home page.",
+      "customize": "Customize"
     },
     "errors": {
       "notFound": "This store or page wasn't found.",
