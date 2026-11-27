@@ -13,7 +13,7 @@ import { LOCALE_COOKIE, routing } from "@/i18n/routing";
 import { englishLandingRedirect, LOCALE_LANDING_REDIRECT_HEADERS } from "@/lib/marketing/locale-landing.lib";
 import { LLMS_TXT_PATH } from "@/lib/marketing/llms-txt-path.lib";
 import { SITE_URL } from "@/lib/marketing/site.lib";
-import { markPlatformSite, platformSiteOf, platformSiteRedirect } from "@/lib/platform-site-routing";
+import { accountOwnRoute, markPlatformSite, platformSiteOf, platformSiteRedirect } from "@/lib/platform-site-routing";
 import { geoServerTiming, requestCountry } from "@/lib/marketing/visitor-country.lib";
 import {
   isCrawlFilePath,
@@ -67,7 +67,8 @@ async function wwwToApexRedirect(request: NextRequest, hostname: string): Promis
 /**
  * account.<root> and preview.<root> (lib/platform-site-routing.ts): only their
  * own pages, routed exactly as on tallaby.com; any other path goes to the
- * same path on tallaby.com. Every response from them is noindex. Every other
+ * same path on tallaby.com, except the account host's download page (/d/…)
+ * and robots.txt (accountOwnRoute). Every response from them is noindex. Every other
  * host goes straight to routeRequest, unchanged.
  */
 /**
@@ -91,6 +92,9 @@ function withStorefrontCsp(request: NextRequest, response: NextResponse): NextRe
 export async function proxy(request: NextRequest) {
   const site = platformSiteOf(request.headers.get("host"));
   if (!site) return withStorefrontCsp(request, await routeRequest(request));
+  const own = accountOwnRoute(site, request.nextUrl.pathname);
+  if (own === "download") return NextResponse.next();
+  if (own === "robots") return markPlatformSite(NextResponse.next());
   const response = platformSiteRedirect(site, request.nextUrl, SITE_URL) ?? (await routeRequest(request));
   return markPlatformSite(response);
 }

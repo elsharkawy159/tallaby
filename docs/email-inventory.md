@@ -37,6 +37,7 @@ These send only for a store subscribed to the app (catalog key `customer_notific
 | First-week store insights (Arabic) | `seller_first_week` | F-104, **no longer sent** since F-113 (2026-11-26); its delivery rows still mark week 1 as sent. |
 | Theme request ready / declined | `theme_request_ready`, `theme_request_declined` | Owner, 2026-11-06 (ROADMAP.md F-77): the seller asked for it. Always sends, once per request and outcome. |
 | Store setup reminders (Arabic) | `seller_setup_reminder_day1`, `seller_setup_reminder_day7` | Owner, 2026-11-13 (ROADMAP.md F-94): 24 hours and 7 days after signup while the store is not set up; once each per seller (own claim table `seller_setup_reminders`, 0170, not `email_deliveries`), capped 40 a Cairo day and 10 a run, one-click opt-out. Always sends. |
+| Customer: digital delivery (Arabic or English) | `digital_delivery` | Owner, 2026-11-27 (ROADMAP.md F-108c): after an online payment (Paymob, Kashier, other gateways, Admin marking an order paid), `fulfillDigitalOrderItems` posts `{ orderId, digitalOrderIds }` to `POST /api/emails/digital-delivery`. One `account.<root>/d/<token>` link per digital order line that is `delivered` (a manual-delivery line waits), each opening once and expiring after 7 days. Sent under the store's name and colours for a store order, in the buyer's language (else the store's default). Goes to the order's own email, else the account's real one; a buyer with neither is skipped (`no_email`), as is a test order. Once per set of links (reference derived from their tokens), so a repeated webhook sends nothing and a new link mails again. Needs `BACKEND_API_URL` and `INTERNAL_API_SECRET` on the caller. Always sends, never charged. |
 
 ## Not automatic, unchanged
 
@@ -59,7 +60,6 @@ These send only for a store subscribed to the app (catalog key `customer_notific
 | Customer: back in stock | `back_in_stock` | Daily cron | Cron stops before claiming, so alerts wait |
 | Customer: win-back | `store_winback` | Campaign cron | Cron stops before planning, so nothing is queued |
 | Customer: welcome | `welcome` | Backend route, no caller in this repo | Not sent later |
-| Customer: digital delivery | `digital_delivery` | Backend route, no caller in this repo | Not sent later. Digital products are delayed for now (owner, 2026-11-04) |
 
 ## Enforcement
 

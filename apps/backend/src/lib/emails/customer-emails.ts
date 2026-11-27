@@ -1,7 +1,8 @@
 import { createElement } from "react";
-import { and, cartItems, carts, db, eq, isNull } from "@workspace/db";
+import { and, asc, cartItems, carts, db, digitalOrders, eq, inArray, isNull, licenseKeys, orderItems } from "@workspace/db";
 import {
   AbandonedCartEmail,
+  DigitalDeliveryEmail,
   emailPathPrefix,
   getEmailMessages,
   interpolate,
@@ -16,6 +17,7 @@ import {
   type EmailLocale,
   type RefundMethod,
 } from "@workspace/emails";
+import { digitalDeliveryReferenceId, digitalDownloadUrl } from "@workspace/lib/digital";
 import { formatVariantTitleFromCart, pickProductTitle } from "@workspace/lib/orders";
 import { cashDuePiastres, readOrderDeposit } from "@workspace/lib/orders/cod-deposit";
 import { describeCustomerInputs, parseCustomerInputsSnapshot } from "@workspace/lib/products/customer-fields";
@@ -353,4 +355,66 @@ export async function sendAbandonedCart(cartId: string): Promise<SendOnceResult>
     await db.update(carts).set({ reminderSentAt: new Date().toISOString() }).where(eq(carts.id, cartId));
   }
   return result;
+}
+
+/* ------------------------------------------------------------------------ */
+
+/**
+ * The buyer's download links (F-108c), one per purchased digital item, for
+ * the given rows of the order that are ready (`delivered`). Sent once per set
+ * of links: the claim's reference is derived from their tokens, so a repeated
+ * payment webhook sends nothing while a new link mails again. A buyer with no
+ * real email is skipped (WhatsApp comes with F-108d).
+ */
+export async function sendDigitalDelivery(orderId: string, digitalOrderIds: string[]): Promise<SendOnceResult> {
+  const ctx = await loadOrderEmailContext(orderId);
+  if (!ctx) return skipped("not_found");
+  // A test order (F-76) sends the buyer nothing.
+  if (ctx.order.isTest) return skipped("test_order");
+  if (!ctx.recipient) return skipped("no_email");
+
+  const rows = await db
+    .select({
+      token: digitalOrders.downloadToken,
+      expiresAt: digitalOrders.expiresAt,
+      maxDownloads: digitalOrders.maxDownloads,
+      productName: orderItems.productName,
+      licenseKey: licenseKeys.code,
+    })
+    .from(digitalOrders)
+    .leftJoin(orderItems, eq(orderItems.id, digitalOrders.orderItemId))
+    .leftJoin(licenseKeys, eq(licenseKeys.id, digitalOrders.licenseKeyId))
+    .where(
+      and(
+        eq(digitalOrders.orderId, orderId),
+        inArray(digitalOrders.id, digitalOrderIds),
+        eq(digitalOrders.fulfillmentStatus, "delivered"),
+      ),
+    )
+    .orderBy(asc(digitalOrders.createdAt));
+  if (rows.length === 0) return skipped("nothing_to_deliver");
+
+  const orderNumber = ctx.order.orderNumber;
+  return sendOnce({
+    emailType: EMAIL_TYPES.digitalDelivery,
+    referenceId: digitalDeliveryReferenceId(rows.map((row) => row.token)),
+    recipient: ctx.recipient,
+    subject: interpolate(getEmailMessages(ctx.locale).digitalDelivery.subject, { orderNumber }),
+    content: createElement(DigitalDeliveryEmail, {
+      locale: ctx.locale,
+      brand: ctx.brand,
+      storeName: ctx.store?.name ?? null,
+      customerName: customer(ctx).name,
+      orderNumber,
+      items: rows.map((row) => ({
+        productName: row.productName ?? "",
+        downloadUrl: digitalDownloadUrl(row.token, { lang: ctx.locale }),
+        licenseKey: row.licenseKey ?? null,
+        expiresAt: row.expiresAt,
+        maxDownloads: row.maxDownloads,
+      })),
+    }),
+    metadata: { orderId, orderNumber, digitalOrderIds },
+    ...customerSender(ctx),
+  });
 }

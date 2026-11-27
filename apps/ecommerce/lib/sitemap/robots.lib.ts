@@ -19,9 +19,10 @@ export const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot"
 /**
  * The same crawl rules on every host (store paths are a subset of these).
  * `defaultLocale`: the host's unprefixed language; an English-default store
- * blocks the /ar copies instead of the /en ones.
+ * blocks the /ar copies instead of the /en ones. `extraDisallow`: a host's own
+ * extra paths (account.<root>'s download links).
  */
-export function crawlRules(defaultLocale: string = routing.defaultLocale): MetadataRoute.Robots["rules"] {
+export function crawlRules(defaultLocale: string = routing.defaultLocale, extraDisallow: readonly string[] = []): MetadataRoute.Robots["rules"] {
   const prefixed = routing.locales.filter((l) => l !== defaultLocale);
   return [
     {
@@ -34,6 +35,7 @@ export function crawlRules(defaultLocale: string = routing.defaultLocale): Metad
         "/dashboard/",
         "/api/",
         "/private/",
+        ...extraDisallow,
       ],
     },
     // Block crawlers that collect model-training data. AI *search* and
@@ -49,6 +51,17 @@ export function crawlRules(defaultLocale: string = routing.defaultLocale): Metad
 
 export function marketplaceRobots(baseUrl: string): MetadataRoute.Robots {
   return { rules: crawlRules(), sitemap: `${baseUrl}/sitemap.xml`, host: baseUrl };
+}
+
+/** Download links on account.<root> (F-108c): one-time, so crawlers keep off them. */
+export const ACCOUNT_DOWNLOAD_PATHS = ["/d/", "/api/downloads/"];
+
+/**
+ * account.<root>'s robots.txt: the marketplace rules plus the download links.
+ * No sitemap and no host: nothing there is meant for search.
+ */
+export function accountRobots(): MetadataRoute.Robots {
+  return { rules: crawlRules(undefined, ACCOUNT_DOWNLOAD_PATHS) };
 }
 
 /**

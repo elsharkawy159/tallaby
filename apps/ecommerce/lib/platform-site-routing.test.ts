@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
-import { isPlatformSitePath, platformSiteOf } from "./platform-site-routing";
+import { accountOwnRoute, isPlatformSitePath, platformSiteOf } from "./platform-site-routing";
 
 // The proxy's database lookups and Supabase session refresh are not what these tests cover.
 vi.mock("@/lib/custom-domain-lookup", () => ({
@@ -86,10 +86,22 @@ describe("proxy on the reserved subdomains", () => {
   it("sends other account paths to tallaby.com (308, noindex), keeping the query", async () => {
     expect(await shape("account.tallaby.com", "/pricing?x=1")).toMatchObject({ status: 308, location: `${MARKETING}/pricing?x=1`, robots: "noindex, nofollow" });
     expect(await shape("account.tallaby.com", "/")).toMatchObject({ status: 308, location: `${MARKETING}/` });
-    expect(await shape("account.tallaby.com", "/robots.txt")).toMatchObject({ status: 308, location: `${MARKETING}/robots.txt` });
+    // Its own robots.txt (app/robots.ts) keeps crawlers off the download links (F-108c).
+    expect(await shape("account.tallaby.com", "/robots.txt")).toMatchObject({ status: 200, next: "1", location: null, robots: "noindex, nofollow" });
     expect(await shape("account.tallaby.com", "/template-preview/sage")).toMatchObject({ status: 308 });
   });
 
+  it("passes the download page straight to its route on account.<root> only (F-108c)", async () => {
+    const token = "a".repeat(64);
+    for (const path of [`/d/${token}`, `/d/${token}?lang=en`]) {
+      expect(await shape("account.tallaby.com", path)).toMatchObject({ status: 200, next: "1", location: null, rewrite: null });
+    }
+    expect(accountOwnRoute("account", `/d/${token}`)).toBe("download");
+    expect(accountOwnRoute("account", "/robots.txt")).toBe("robots");
+    for (const path of ["/d", "/d/", `/d/${token}/x`, `/en/d/${token}`, "/dx/1"]) expect(accountOwnRoute("account", path)).toBeNull();
+    expect(accountOwnRoute("preview", `/d/${token}`)).toBeNull();
+    expect((await shape("preview.tallaby.com", `/d/${token}`)).status).toBe(308);
+  });
   it("serves the template preview on preview.<root> and sends the rest to tallaby.com", async () => {
     const preview = await shape("preview.tallaby.com", "/template-preview/sage?thumb=1");
     expect(preview).toEqual({ ...(await shape("tallaby.com", "/template-preview/sage?thumb=1")), robots: "noindex, nofollow" });

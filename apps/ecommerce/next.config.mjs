@@ -62,6 +62,15 @@ const nextConfig = {
         has: [{ type: "host", value: "(?:www\\.)?tallaby\\.com" }],
         headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }],
       })),
+      // One-time digital download links (F-108c): never indexed, and the token never leaves as a Referer.
+      // After the baseline rule, so its Referrer-Policy wins; the routes also set these and no-store.
+      ...["/d/:token", "/api/downloads/:token"].map((source) => ({
+        source,
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      })),
       // The section and template library is open but never indexed (also a noindex meta).
       ...["/dev-library", "/dev-library/:path*", "/:locale(ar|en)/dev-library", "/:locale(ar|en)/dev-library/:path*"].map((source) => ({
         source,

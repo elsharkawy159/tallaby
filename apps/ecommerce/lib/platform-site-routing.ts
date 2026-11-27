@@ -37,6 +37,22 @@ export function isPlatformSitePath(site: PlatformSite, pathname: string): boolea
   return SITE_PAGES[site].test(pathname);
 }
 
+/** The one-time digital download page, `/d/<token>` (app/d/[token], F-108c). */
+const DOWNLOAD_PAGE = /^\/d\/[^/]+\/?$/;
+
+/**
+ * Account-host routes outside the locale routing: the download page (its own
+ * noindex/no-store headers, so it isn't marked here) and the host's own
+ * robots.txt (app/robots.ts), which keeps crawlers off download links.
+ * `null` for every other path.
+ */
+export function accountOwnRoute(site: PlatformSite, pathname: string): "download" | "robots" | null {
+  if (site !== "account") return null;
+  if (DOWNLOAD_PAGE.test(pathname)) return "download";
+  if (pathname === "/robots.txt") return "robots";
+  return null;
+}
+
 /**
  * A 308 to the same path on the marketing site (`marketingOrigin`, no
  * trailing slash) for a path that is not `site`'s own page, else null.

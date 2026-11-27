@@ -56,12 +56,18 @@ export async function deleteDigitalFile(path: string) {
  */
 export async function getSignedUrlForPath(
   path: string,
-  expiresInSeconds: number = SIGNED_URL_EXPIRY_SECONDS
+  expiresInSeconds: number = SIGNED_URL_EXPIRY_SECONDS,
+  options: { downloadName?: string } = {}
 ): Promise<string> {
   const supabase = getServiceClient();
+  // `download` makes the browser save the file under its real name, not the storage path.
   const { data, error } = await supabase.storage
     .from(DIGITAL_PRODUCTS_BUCKET)
-    .createSignedUrl(path, expiresInSeconds);
+    .createSignedUrl(
+      path,
+      expiresInSeconds,
+      options.downloadName ? { download: options.downloadName } : undefined
+    );
 
   if (error || !data?.signedUrl) {
     throw new Error(`Failed to create signed URL: ${error?.message ?? "unknown error"}`);

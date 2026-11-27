@@ -1,21 +1,15 @@
 /**
- * Fires the digital-delivery email via the Hono backend. Best-effort: a
- * failure here must never roll back fulfillment (the buyer still has access
- * via "My Digital Products"), so errors are logged, not thrown.
+ * Asks the Hono backend to email the buyer their download links
+ * (`/api/emails/digital-delivery`). Only ids travel: the backend reads the
+ * links, the address (an order's own email, else the account's real one),
+ * the language and the store from the database. Best-effort: a failure here
+ * never undoes fulfillment, so errors are logged, not thrown.
  */
 export async function sendDigitalDeliveryEmail(params: {
-  email: string;
-  name: string;
-  orderNumber: string;
-  preferredLanguage?: string | null;
-  items: Array<{
-    productName: string;
-    downloadUrl: string;
-    licenseKey?: string | null;
-    expiresAt?: string | null;
-    maxDownloads?: number | null;
-  }>;
-}) {
+  orderId: string;
+  /** digital_orders rows of that order to include (one link per order line). */
+  digitalOrderIds: string[];
+}): Promise<{ success: boolean; error?: string }> {
   const backendUrl = process.env.BACKEND_API_URL;
   const apiSecret = process.env.INTERNAL_API_SECRET;
 
@@ -25,6 +19,7 @@ export async function sendDigitalDeliveryEmail(params: {
     );
     return { success: false, error: "Email backend not configured" };
   }
+  if (params.digitalOrderIds.length === 0) return { success: true };
 
   try {
     const res = await fetch(`${backendUrl}/api/emails/digital-delivery`, {

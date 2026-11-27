@@ -36,6 +36,8 @@ export const EMAIL_RULES = {
   tallaby_pay_payout_paid: "keep",
   tallaby_pay_payout_rejected: "keep",
   tallaby_pay_kyc_rejected: "keep",
+  // The buyer's download links after an online payment (F-108c): the purchase itself, never charged
+  digital_delivery: "keep",
   // Store setup reminders, 24 hours and 7 days after signup (F-94; own claim table, 0170)
   seller_setup_reminder_day1: "keep",
   seller_setup_reminder_day7: "keep",
@@ -56,7 +58,6 @@ export const EMAIL_RULES = {
   fee_trial_reminder_t1: "paused",
   // Other customers' mail
   welcome: "paused",
-  digital_delivery: "paused",
   abandoned_cart: "paused",
   back_in_stock: "paused",
   store_winback: "paused",

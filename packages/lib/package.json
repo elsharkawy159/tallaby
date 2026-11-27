@@ -41,6 +41,10 @@
       "types": "./src/digital/index.ts",
       "default": "./src/digital/index.ts"
     },
+    "./digital/access": {
+      "types": "./src/digital/access.lib.ts",
+      "default": "./src/digital/access.lib.ts"
+    },
     "./shipping": {
       "types": "./src/shipping/index.ts",
       "default": "./src/shipping/index.ts"

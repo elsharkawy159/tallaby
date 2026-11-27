@@ -12,6 +12,7 @@ describe("email policy", () => {
     );
     expect(ofRule("store_order")).toEqual(["order_confirmation"]);
     expect(ofRule("keep").sort()).toEqual([
+      "digital_delivery",
       "seller_first_week",
       "seller_setup_reminder_day1",
       "seller_setup_reminder_day7",

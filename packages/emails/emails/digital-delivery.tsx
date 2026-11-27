@@ -8,10 +8,10 @@ export default function DigitalDelivery() {
     items: [
       {
         productName: "Pattern pack",
-        downloadUrl: "https://www.tallaby.com/profile/downloads",
+        downloadUrl: "https://account.tallaby.com/d/0000000000000000000000000000000000000000000000000000000000000000",
         licenseKey: "TLBY-XXXX-2026",
         expiresAt: "2027-01-01T00:00:00.000Z",
-        maxDownloads: 5,
+        maxDownloads: 1,
       },
     ],
   });

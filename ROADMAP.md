@@ -2174,6 +2174,13 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Digital products step 3: one-time download page and the delivery email (F-108c; no migration)
+
+- **Download page** `account.<root>/d/<token>` (`apps/ecommerce/app/d/[token]/route.ts`): GET only reads (WhatsApp and Gmail link previews never use a link up) and shows the store, product, files and one Download button; POST signs the storage links, then uses the link up with one conditional UPDATE, so of two downloads at once only one wins. One file gets a 303 to a 15-minute signed link with its real name; several files get a page of links. A used, expired, revoked or unknown link is the same 404 "This link isn't available". Every response is noindex/nofollow/noarchive, no-store and no-referrer; the account host's robots.txt disallows `/d/` and `/api/downloads/`. Arabic by default, English by `?lang=`, the buyer's language or the browser's. Old `/api/downloads/<token>` links redirect (308) to `/d/<token>`.
+- **Links:** new links open once and expire after 7 days (`packages/lib/src/digital/access.lib.ts`); `reissueDigitalAccess` gives a fresh token for the seller of that order line only (for F-108d). `fulfillDigitalOrderItems` now runs in one transaction under a per-order advisory lock (no duplicate links from two webhooks), one query for existing rows, and license keys claimed with SKIP LOCKED.
+- **Email:** `digital_delivery` is back on (`keep`). The backend reads the links, address, language and store from the database, sends once per set of links, skips a buyer with no email and test orders, and the email names the store, says the link works once and gives the expiry.
+- **Open:** `digital_orders.order_item_id` has no unique index; the advisory lock covers it, but a guarded unique index is the stronger fix (needs a migration). Not tried in a browser, no real email sent; the integration test is skipped (no `TEST_DATABASE_URL`).
+
 ### 2026-11-27 — Digital products step 2: no cash on delivery, digital note on the product page, publish needs a file (F-108b, owner "keep going"; no migration)
 
 - **Checkout:** a cart with any digital product takes no cash on delivery and so no COD deposit (`allowedPaymentMethodsForCart` in `packages/lib/src/payments/digital-checkout.lib.ts`). The checkout hides COD, and `placeOrderFromCart` refuses it for storefront and marketplace orders with `digitalNoCashOnDelivery`, even for a forged request. A store whose only method is COD shows "This store can't take payment for digital products yet". Physical-only carts get the exact same methods as before.

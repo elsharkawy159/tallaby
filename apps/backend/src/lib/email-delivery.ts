@@ -13,6 +13,8 @@ export const EMAIL_TYPES = {
   refundIssued: "refund_issued",
   /** reference_id = cart id. */
   abandonedCart: "abandoned_cart",
+  /** reference_id = digitalDeliveryReferenceId(the links' tokens): once per set of links (F-108c). */
+  digitalDelivery: "digital_delivery",
   /** reference_id = store_stock_subscriptions.id (one per alert, 0126). */
   backInStock: "back_in_stock",
   /** reference_id = store_email_campaign_recipients.id (F-16a, 0129). */

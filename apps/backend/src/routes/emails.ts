@@ -3,7 +3,6 @@ import { z } from "zod";
 import { ORDERS_FROM_ADDRESS, sendEmail } from "../lib/resend";
 import {
   WelcomeEmail,
-  DigitalDeliveryEmail,
   OrderConfirmationEmail,
   getEmailMessages,
   interpolate,
@@ -13,6 +12,7 @@ import { chargeOrderNotification, decideEmail } from "@workspace/lib/emails/poli
 import { isTestOrder } from "@workspace/lib/orders/test-order";
 import {
   buildOrderConfirmation,
+  sendDigitalDelivery,
   sendAbandonedCart,
   sendOrderCancelled,
   sendOrderDelivered,
@@ -98,40 +98,24 @@ app.post("/welcome", async (c) => {
   }
 });
 
+/**
+ * The buyer's download links (F-108c). Only ids come in: the links, address,
+ * language and store are read from the database, and the send is claimed
+ * once per set of links.
+ */
+const digitalDeliverySchema = z.object({
+  orderId: z.string().uuid(),
+  digitalOrderIds: z.array(z.string().uuid()).min(1).max(100),
+});
+
 app.post("/digital-delivery", async (c) => {
   try {
-    const body = await c.req.json();
-    const { email, name, orderNumber, items, preferredLanguage } = body;
-
-    if (!email || typeof email !== "string") {
-      return c.json({ error: "Invalid email address" }, 400);
+    const parsed = digitalDeliverySchema.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) {
+      return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
     }
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return c.json({ error: "No items to deliver" }, 400);
-    }
-
-    const locale = resolveEmailLocale(
-      typeof preferredLanguage === "string" ? preferredLanguage : null
-    );
-    const copy = getEmailMessages(locale).digitalDelivery;
-
-    const decision = await decideEmail("digital_delivery", null);
-    if (decision.action === "skip") return c.json({ success: true, skipped: true, reason: decision.reason });
-
-    await sendEmail({
-      decision,
-      to: email,
-      subject: interpolate(copy.subject, { orderNumber: orderNumber ?? "" }),
-      content: DigitalDeliveryEmail({
-        customerName: name,
-        orderNumber,
-        items,
-        locale,
-      }),
-    });
-
-    return c.json({ success: true });
+    const result = await sendDigitalDelivery(parsed.data.orderId, parsed.data.digitalOrderIds);
+    return c.json({ success: true, ...result });
   } catch (error) {
     console.error("Error sending digital delivery email:", error);
     return c.json({ error: "Failed to send digital delivery email" }, 500);

@@ -68,12 +68,16 @@ export interface DigitalDeliveryCopy {
   body: string;
   licenseKey: string;
   accessDownload: string;
+  /** The link opens once (F-108c). */
+  once: string;
+  /** Links made before F-108c, with more than one download. */
   maxDownloads: string;
   expires: string;
-  noExpiration: string;
-  findPurchases: string;
-  myDigitalProducts: string;
-  questions: string;
+  saveFiles: string;
+  /** {store}: the store's name, or Tallaby's. */
+  needNewLink: string;
+  /** Tallaby's name in this language, for a marketplace order. */
+  platformName: string;
 }
 
 export interface FeeTrialReminderCopy {
@@ -162,18 +166,18 @@ const en: EmailMessages = {
     questions: "Questions? Contact us at",
   },
   digitalDelivery: {
-    preview: "Your digital order {orderNumber} is ready — access it now",
-    subject: "Your digital order #{orderNumber} is ready",
+    preview: "Your order {orderNumber} is ready to download",
+    subject: "Your order #{orderNumber} is ready to download",
     greeting: "Hi {name},",
-    body: "Your digital order #{orderNumber} is ready. Your download links and access details are below.",
+    body: "Thanks for buying from {store}. Download what you bought from the links below.",
     licenseKey: "License key:",
-    accessDownload: "Access / Download",
-    maxDownloads: "Up to {count} downloads.",
-    expires: "Link expires {date}.",
-    noExpiration: "No expiration.",
-    findPurchases: "You can always find your purchases under",
-    myDigitalProducts: "My Digital Products",
-    questions: "Questions? Contact us at",
+    accessDownload: "Download",
+    once: "This link works once.",
+    maxDownloads: "Downloads allowed: {count}.",
+    expires: "It expires on {date}.",
+    saveFiles: "Save the files to your device after you download them.",
+    needNewLink: "If a link doesn't work, contact {store} for a new one.",
+    platformName: "Tallaby",
   },
   feeTrialReminder: {
     previewT7: "Your free trial ends in 7 days. No platform fee until {date}.",
@@ -259,18 +263,18 @@ const ar: EmailMessages = {
     questions: "لديك سؤال؟ تواصل معنا عبر",
   },
   digitalDelivery: {
-    preview: "طلبك الرقمي {orderNumber} جاهز — يمكنك الوصول إليه الآن",
-    subject: "طلبك الرقمي #{orderNumber} جاهز",
+    preview: "طلبك {orderNumber} جاهز للتحميل",
+    subject: "طلبك #{orderNumber} جاهز للتحميل",
     greeting: "مرحبًا {name}،",
-    body: "طلبك الرقمي #{orderNumber} جاهز. روابط التحميل وتفاصيل الوصول أدناه.",
+    body: "شكرًا لشرائك من {store}. يمكنك تحميل مشترياتك من الروابط أدناه.",
     licenseKey: "مفتاح الترخيص:",
-    accessDownload: "الوصول / التحميل",
-    maxDownloads: "حتى {count} تحميلات.",
-    expires: "ينتهي الرابط في {date}.",
-    noExpiration: "بدون تاريخ انتهاء.",
-    findPurchases: "يمكنك دائمًا العثور على مشترياتك من",
-    myDigitalProducts: "منتجاتي الرقمية",
-    questions: "لديك سؤال؟ تواصل معنا عبر",
+    accessDownload: "تحميل",
+    once: "يعمل الرابط مرة واحدة فقط.",
+    maxDownloads: "عدد مرات التحميل: {count}.",
+    expires: "ينتهي في {date}.",
+    saveFiles: "احفظ الملفات على جهازك بعد تحميلها.",
+    needNewLink: "إذا لم يعمل أحد الروابط، تواصل مع {store} لإرسال رابط جديد.",
+    platformName: "طلبي",
   },
   feeTrialReminder: {
     previewT7: "تنتهي تجربتك المجانية بعد 7 أيام. لا رسوم منصة حتى {date}.",
