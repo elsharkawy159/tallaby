@@ -8,7 +8,7 @@ import { formatUsdShort } from "@/lib/billing/order-lock-copy.lib";
 import { Sidebar } from "./Sidebar";
 import { storeBuilderEnabled } from "./sidebar.config";
 import { getSidebarCounts } from "./sidebar.server";
-import { storeHasTallabyPay } from "@workspace/lib/tallaby-pay/server";
+import { storeHasTallabyPayOn } from "./sidebar-tallaby-pay.server";
 
 export async function SidebarData() {
   // requireSeller and getSellerStores are memoized per request (the layout already gated access).
@@ -22,10 +22,10 @@ export async function SidebarData() {
     storesRead,
     getSessionUser(),
     sellerRead.then((s) => loadOrderLock(s.sellerId)).then((lock) => lock.ordersLocked),
-    // Earnings shows only for a store with Tallaby Pay on or an earnings wallet (F-100f). Never cached (rule 8);
-    // a failed read (e.g. before migration 0175) just hides the link.
+    // Earnings shows only for a store with Tallaby Pay on as a payment method (owner, 2026-11-27; the page
+    // stays open by URL). Never cached (rule 8); a failed read just hides the link.
     Promise.all([sellerRead, storesRead]).then(([s, { selected: store }]) =>
-      store ? storeHasTallabyPay(s.sellerId, store.id).catch(() => false) : false,
+      store ? storeHasTallabyPayOn(s.sellerId, store.id).catch(() => false) : false,
     ),
   ]);
   // In dollars ("$5"), like the orders-lock banner (owner, 2026-11-18).

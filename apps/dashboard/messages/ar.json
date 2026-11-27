@@ -494,7 +494,8 @@
     "storeLive": "متاح",
     "manageStores": "إدارة متاجري",
     "seo": "تحسين الظهور (SEO)",
-    "tallabyPayEarnings": "أرباح طلبي باي"
+    "tallabyPayEarnings": "أرباح طلبي باي",
+    "transactions": "المعاملات"
   },
   "errorPages": {
     "notFoundTitle": "هذه الصفحة غير موجودة",
@@ -6715,11 +6716,9 @@
           "fee": "رسوم الشحن",
           "free": "مجانًا",
           "total": "ستدفع",
-          "after": "رصيدك بعد الشحن:",
-          "rateUsd": "سعر الدولار اليوم",
           "totalTransfer": "ستحوّل"
         },
-        "cta": "ادفع عبر Kashier",
+        "cta": "اشحن الآن",
         "redirecting": "جارٍ فتح صفحة الدفع…",
         "ctaInstapay": "إرسال للمراجعة",
         "sending": "جارٍ الإرسال…",
@@ -6728,20 +6727,18 @@
           "instant": "يُضاف الرصيد فور نجاح الدفع",
           "noExpiry": "رصيد دائم مدى الحياة",
           "noExpiryEgp": "الرصيد لا تنتهي صلاحيته",
-          "feeUsd": "يخصم فقط {fee} لكل طلب"
+          "feeUsd": "{count, plural, one {يخصم فقط سنت واحد لكل طلب} two {يخصم فقط سنتين لكل طلب} other {يخصم فقط {formatted} سنت لكل طلب}}",
+          "activeForLife": "متجرك سيظل مفعّلًا مدى الحياة"
         }
       },
       "limits": "من 100 إلى 20,000 جنيه.",
       "instapay": {
-        "sendExactly": "حوّل المبلغ بالضبط",
+        "sendAmount": "حوّل المبلغ",
         "to": "إلى رقم إنستاباي",
         "holder": "باسم {name}",
         "copyAmount": "نسخ المبلغ",
         "copyNumber": "نسخ الرقم",
         "copyFailed": "تعذّر النسخ. انسخه يدويًا.",
-        "sender": "رقم الهاتف المرتبط بإنستاباي",
-        "optional": "اختياري",
-        "senderHint": "يساعدنا على مطابقة التحويل بسرعة.",
         "receipt": {
           "pick": "اختر صورة الإيصال",
           "pickHint": "JPG أو PNG أو WEBP، حتى 5 ميجابايت",

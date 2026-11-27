@@ -71,15 +71,29 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", P, `${P}/add`, `${P}/categories`, "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", P, `${P}/add`, `${P}/categories`, "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/wallet/transactions", "/stores", "/settings", "/settings/plan", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });
 
+  it("keeps Finance to the wallet, Tallaby Pay earnings and transactions (owner, 2026-11-27)", () => {
+    const finance = (features: { tallabyPayEarnings?: boolean }) => {
+      const group = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features }).find(
+        (e) => e.kind === "group" && e.key === "finance",
+      );
+      return group?.kind === "group" ? group.items.map((i) => i.href) : [];
+    };
+    expect(finance({ tallabyPayEarnings: true })).toEqual(["/wallet", `/stores/${STORE}/earnings`, "/wallet/transactions"]);
+    expect(finance({})).toEqual(["/wallet", "/wallet/transactions"]);
+    // Account statements and Reports left the sidebar but keep their header title (still open by URL).
+    expect(resolveDashboardRoute("/financial").title).toBe("accountStatements");
+    expect(resolveDashboardRoute("/wallet/transactions").title).toBe("transactions");
+  });
+
   it("puts every store-scoped page in the sidebar once a store exists", () => {
     const linked = new Set(allLinks(SIDEBAR_CONFIG).map((l) => l.href));
-    // Hidden from the sidebar, still open by URL (F-65a, F-65c).
-    const hidden = new Set(["/marketing", "/stores/[storeId]/analytics"]);
+    // Hidden from the sidebar, still open by URL (F-65a, F-65c; /financial and /reports since 2026-11-27, owner).
+    const hidden = new Set(["/marketing", "/stores/[storeId]/analytics", "/financial", "/reports"]);
     for (const route of DASHBOARD_ROUTES) {
       if (hidden.has(route.href)) continue;
       expect(linked.has(route.href), route.href).toBe(true);

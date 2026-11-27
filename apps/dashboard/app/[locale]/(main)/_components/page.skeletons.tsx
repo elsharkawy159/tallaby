@@ -76,12 +76,20 @@ export function ChartPageSkeleton() {
   );
 }
 
-/** Store wallet: the dark balance banner, the top-up card and the entries list. */
+/** Store wallet: the dark balance banner and the top-up card (the entries are on Transactions since 2026-11-27). */
 export function WalletSkeleton() {
   return (
     <PageContainer>
       <Skeleton className="h-[200px] w-full rounded-[28px] max-[720px]:rounded-[24px]" />
       <FormCardSkeleton rows={2} />
+    </PageContainer>
+  );
+}
+
+/** Wallet › Transactions: one card of entries. */
+export function TransactionsSkeleton() {
+  return (
+    <PageContainer>
       <ListCardSkeleton rows={6} />
     </PageContainer>
   );

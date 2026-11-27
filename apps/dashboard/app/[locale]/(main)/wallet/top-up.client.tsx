@@ -18,7 +18,7 @@ import {
   Plus,
   Send,
   ShieldCheck,
-  TrendingUp,
+  Store,
   X,
   Zap,
 } from "lucide-react";
@@ -34,14 +34,14 @@ import {
   parseStoreTopUpAmount,
 } from "@workspace/lib/store-wallet";
 import { useRouter } from "@/i18n/navigation";
-import { DropZone, Field, IconButton, Note, SellerButton, SellerCard, TextInput } from "@/components/seller-ui";
+import { DropZone, IconButton, Note, SellerButton, SellerCard } from "@/components/seller-ui";
 import { toAsciiDigits } from "@/components/form/form-ui";
 import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { PaymentMethodLogos } from "@/components/payments/payment-method-logos";
 import { cn } from "@/lib/utils";
 import { FREE_ORDER_FEE_USD_CENTS, TOP_UP_MAX_USD_CENTS, TOP_UP_MIN_USD_CENTS, minorToAmount, parseUsdTopUp, quoteTopUp, type BillingState } from "@workspace/lib/billing";
-import { formatUsdPrice } from "@/lib/i18n/format";
+import { formatNumber, formatUsdPrice } from "@/lib/i18n/format";
 import { DEFAULT_TOP_UP_USD, POPULAR_TOP_UP, POPULAR_TOP_UP_USD, TOP_UP_PRESETS, TOP_UP_PRESETS_USD, TOP_UP_STEP_EGP, TOP_UP_STEP_USD, orderCountValues, ordersCovered, stepTopUpAmount, stepUsdTopUp, TOP_UP_MAX_EGP, walletMoney, walletPoundLabel } from "./store-wallet.lib";
 import { startTopUp, submitManualTopUp } from "./top-up.server";
 import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-button.client";
@@ -69,6 +69,10 @@ const PAY_METHODS: readonly PayMethod[] = ["kashier", "instapay"];
 /** Groups a phone number 4-3-rest, easier to read off a screen and type into the InstaPay app. */
 const groupNumber = (n: string) => n.replace(/^(\d{4})(\d{3})(\d+)$/, "$1 $2 $3");
 
+/** Unicode first-strong isolate and its closing mark (keeps a Latin name in one piece inside Arabic text). */
+const FSI = String.fromCharCode(0x2068);
+const PDI = String.fromCharCode(0x2069);
+
 /** The amount field shows thousands separators; the state keeps plain digits. */
 const groupDigits = (digits: string) => (digits ? Number(digits).toLocaleString("en-US") : "");
 
@@ -86,7 +90,6 @@ const groupDigits = (digits: string) => (digits ? Number(digits).toLocaleString(
  */
 export function TopUpPanel({
   sellerId,
-  balance,
   disabled,
   defaultOpen,
   billing,
@@ -97,8 +100,6 @@ export function TopUpPanel({
   billing?: BillingState | null;
   /** The receipt goes into this seller's own folder of the private proof bucket. */
   sellerId: string;
-  /** The current balance, for "balance after the top-up". */
-  balance: number;
   disabled?: boolean;
   /** /wallet?topup=1 from the negative-balance pop-up: puts the cursor in the amount. */
   defaultOpen?: boolean;
@@ -109,7 +110,6 @@ export function TopUpPanel({
 }) {
   const t = useTranslations("storeWallet.manualTopUp");
   const tErrors = useTranslations("storeWallet.topUp.errors");
-  const tWallet = useTranslations("storeWallet");
   const tInsta = useTranslations("storeWallet.manualTopUp.instapay");
   const locale = useLocale();
   const router = useRouter();
@@ -123,7 +123,6 @@ export function TopUpPanel({
   // Stays true once Kashier's page is opening, so a second tap can't start a second session.
   const [leaving, setLeaving] = useState(false);
   const [method, setMethod] = useState<PayMethod>("kashier");
-  const [senderPhone, setSenderPhone] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -203,7 +202,6 @@ export function TopUpPanel({
 
   const sendAnother = () => {
     setSent(null);
-    setSenderPhone("");
     setFileError(null);
     clearFile();
   };
@@ -224,7 +222,7 @@ export function TopUpPanel({
         return;
       }
       // The typed amount (dollars on a USD wallet); the server validates and prices it again.
-      const result = await submitManualTopUp({ method: SELLER_MANUAL_TOP_UP_METHOD, amount: parsed.amount, proofPath: path, senderPhone });
+      const result = await submitManualTopUp({ method: SELLER_MANUAL_TOP_UP_METHOD, amount: parsed.amount, proofPath: path });
       if (!result.success) {
         const error = result.error;
         toast.error(
@@ -258,8 +256,6 @@ export function TopUpPanel({
   };
 
   const total = parsed.success ? money : "—";
-  const afterBalance = parsed.success ? balance + Number(parsed.amount) : null;
-  const walletCurrency = usd ? "USD" : "EGP";
 
   // Each method's details, shown inside its own card once chosen.
   const kashierDetails = (
@@ -292,7 +288,7 @@ export function TopUpPanel({
       <legend className="sr-only">{t("panel.methods.instapay.name")}</legend>
       <div className="flex flex-col gap-2">
         <CopyRow
-          label={tInsta("sendExactly")}
+          label={tInsta("sendAmount")}
           copyLabel={tInsta("copyAmount")}
           done={copied === "amount"}
           disabled={!parsed.success}
@@ -302,7 +298,8 @@ export function TopUpPanel({
         </CopyRow>
         <CopyRow
           label={tInsta("to")}
-          note={tInsta("holder", { name: TALLABY_INSTAPAY_ACCOUNT.holder })}
+          // The masked Latin name in a bidi isolate, so its trailing asterisks stay on its right in Arabic.
+          note={tInsta("holder", { name: `${FSI}${TALLABY_INSTAPAY_ACCOUNT.holder}${PDI}` })}
           copyLabel={tInsta("copyNumber")}
           done={copied === "number"}
           onCopy={() => copy(TALLABY_INSTAPAY_ACCOUNT.number, "number")}
@@ -311,19 +308,7 @@ export function TopUpPanel({
         </CopyRow>
       </div>
 
-      <Field label={tInsta("sender")} hint={tInsta("optional")} note={tInsta("senderHint")} htmlFor={`${ids}-sender`}>
-        <TextInput
-          id={`${ids}-sender`}
-          dir="ltr"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="01XXXXXXXXX"
-          className="text-start font-montserrat"
-          value={senderPhone}
-          onChange={(e) => setSenderPhone(toAsciiDigits(e.target.value))}
-        />
-      </Field>
-
+      {/* No sender phone field (owner, 2026-11-27): the receipt is enough; the server still accepts one from old clients. */}
       {preview && file ? (
         <div className="flex items-center gap-3 rounded-[18px] border-[1.5px] border-success/40 bg-success-soft/40 p-3">
           {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
@@ -429,13 +414,14 @@ export function TopUpPanel({
                       />
                     </span>
                     {presetQuote ? (
-                      // USD wallet: the EGP the seller pays leads; the dollars credited (the typed amount) are small.
+                      // USD wallet: the dollars credited lead, big; the EGP the seller pays sits under them, smaller,
+                      // so it reads as "topping up dollars, paying in pounds" (owner, 2026-11-27).
                       <>
-                        <bdi className="whitespace-nowrap font-montserrat text-[15px]/6 font-extrabold text-(--s-ink) tabular-nums">
-                          {walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}
-                        </bdi>
-                        <bdi dir="ltr" className="font-montserrat text-[11.5px]/4 text-(--s-subtle) tabular-nums">
+                        <bdi dir="ltr" className="font-montserrat text-xl/7 font-extrabold text-(--s-ink) tabular-nums">
                           ${preset.toLocaleString("en-US")}
+                        </bdi>
+                        <bdi className="whitespace-nowrap font-montserrat text-[12.5px]/5 font-semibold text-(--s-muted) tabular-nums">
+                          {walletMoney(presetQuote.totalPiastres / 100, "EGP", locale)}
                         </bdi>
                       </>
                     ) : (
@@ -572,7 +558,6 @@ export function TopUpPanel({
             {t("panel.summary.title")}
           </h3>
           <SummaryRow label={t("panel.summary.amount")} value={usd ? credited : total} />
-          {quote && <SummaryRow label={t("panel.summary.rateUsd")} value={walletMoney(quote.rate, "EGP", locale)} />}
           {quote && quote.taxPiastres > 0 && (
             <SummaryRow label={t("panel.summary.tax")} value={walletMoney(quote.taxPiastres / 100, "EGP", locale)} />
           )}
@@ -581,14 +566,6 @@ export function TopUpPanel({
             <span className="whitespace-nowrap text-[13.5px] font-bold text-accent-ink">{t(instapay ? "panel.summary.totalTransfer" : "panel.summary.total")}</span>
             <bdi className="whitespace-nowrap font-montserrat text-[26px] font-extrabold leading-none text-(--s-ink) tabular-nums">{total}</bdi>
           </div>
-          <p className="flex items-start gap-2 text-[12.5px] font-semibold text-success">
-            <TrendingUp className="mt-0.5 size-[15px] shrink-0" aria-hidden />
-            <span>
-              {t("panel.summary.after")}{" "}
-              <bdi className="font-montserrat tabular-nums">{afterBalance === null ? "—" : walletMoney(afterBalance, walletCurrency, locale)}</bdi>
-              {afterBalance !== null && <> · {tWallet("runway", orderCountValues(ordersCovered(afterBalance, walletCurrency), locale))}</>}
-            </span>
-          </p>
           <SellerButton className="h-[52px] w-full text-[15px]" disabled={!canStart} aria-busy={busy || undefined} onClick={start}>
             {busy ? (
               <>
@@ -618,10 +595,17 @@ export function TopUpPanel({
               {usd ? t("panel.trust.noExpiry") : t("panel.trust.noExpiryEgp")}
             </li>
             {usd && (
-              <li className="flex items-center gap-2">
-                <Coins className="size-[15px] shrink-0 text-success" aria-hidden />
-                {t("panel.trust.feeUsd", { fee: formatUsdPrice(FREE_ORDER_FEE_USD_CENTS, locale, rate) })}
-              </li>
+              <>
+                <li className="flex items-center gap-2">
+                  <Coins className="size-[15px] shrink-0 text-success" aria-hidden />
+                  {/* In US cents, from the Free plan's per-order fee (owner, 2026-11-27). */}
+                  {t("panel.trust.feeUsd", { count: FREE_ORDER_FEE_USD_CENTS, formatted: formatNumber(FREE_ORDER_FEE_USD_CENTS, locale) })}
+                </li>
+                <li className="flex items-center gap-2">
+                  <Store className="size-[15px] shrink-0 text-success" aria-hidden />
+                  {t("panel.trust.activeForLife")}
+                </li>
+              </>
             )}
           </ul>
         </SellerCard>

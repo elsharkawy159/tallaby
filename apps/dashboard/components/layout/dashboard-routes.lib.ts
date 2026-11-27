@@ -21,6 +21,7 @@ import {
   DollarSign,
   FileBarChart,
   FileText,
+  ReceiptText,
   FolderTree,
   Trash2,
   Boxes,
@@ -111,6 +112,8 @@ export type NavKey =
   | "walletBalance"
   // Tallaby Pay earnings of a store (F-100f)
   | "tallabyPayEarnings"
+  // Store wallet entries, moved off /wallet (owner, 2026-11-27)
+  | "transactions"
   | "coupons"
   | "campaigns"
   | "subscribers"
@@ -145,7 +148,7 @@ export interface DashboardRoute {
 /**
  * Every dashboard page, in sidebar order. Used by the command palette and the
  * header title; the sidebar config test checks every sidebar link is here.
- * /marketing and Store views have no sidebar link but keep their header title.
+ * /marketing, Store views, /financial and /reports have no sidebar link but keep their header title.
  */
 export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/", title: "dashboard", icon: LayoutDashboard },
@@ -173,6 +176,8 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/wallet", title: "walletBalance", parent: "finance", icon: Wallet },
   // Only stores with Tallaby Pay have it (F-100f), so it stays out of the command palette.
   { href: "/stores/[storeId]/earnings", title: "tallabyPayEarnings", parent: "finance", icon: Banknote, hiddenFromPalette: true },
+  { href: "/wallet/transactions", title: "transactions", parent: "finance", icon: ReceiptText },
+  // Out of the sidebar since 2026-11-27 (owner); both stay open by URL and in the command palette.
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
   { href: "/stores/[storeId]/website", title: "websiteOverview", parent: "websiteContent", icon: Globe },

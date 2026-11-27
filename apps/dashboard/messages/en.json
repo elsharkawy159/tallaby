@@ -494,7 +494,8 @@
     "storeLive": "Live",
     "manageStores": "Manage my stores",
     "seo": "SEO",
-    "tallabyPayEarnings": "Tallaby Pay earnings"
+    "tallabyPayEarnings": "Tallaby Pay earnings",
+    "transactions": "Transactions"
   },
   "errorPages": {
     "notFoundTitle": "This page doesn't exist",
@@ -6715,11 +6716,9 @@
           "fee": "Top-up fee",
           "free": "Free",
           "total": "You pay",
-          "after": "Balance after top-up:",
-          "rateUsd": "Dollar rate today",
           "totalTransfer": "You transfer"
         },
-        "cta": "Pay with Kashier",
+        "cta": "Top up now",
         "redirecting": "Opening the payment page…",
         "ctaInstapay": "Send for review",
         "sending": "Sending…",
@@ -6728,20 +6727,18 @@
           "instant": "Added as soon as the payment goes through",
           "noExpiry": "Lifetime balance, it never expires",
           "noExpiryEgp": "Your balance never expires",
-          "feeUsd": "Only {fee} per order"
+          "feeUsd": "{count, plural, one {Only {formatted} cent per order} other {Only {formatted} cents per order}}",
+          "activeForLife": "Your store stays active for life"
         }
       },
       "limits": "From 100 to 20,000 EGP.",
       "instapay": {
-        "sendExactly": "Send exactly",
+        "sendAmount": "Send the amount",
         "to": "To InstaPay number",
         "holder": "Account name: {name}",
         "copyAmount": "Copy amount",
         "copyNumber": "Copy number",
         "copyFailed": "Couldn't copy. Copy it by hand.",
-        "sender": "Phone number linked to InstaPay",
-        "optional": "Optional",
-        "senderHint": "Helps us match your transfer faster.",
         "receipt": {
           "pick": "Choose the receipt picture",
           "pickHint": "JPG, PNG or WEBP, up to 5 MB",

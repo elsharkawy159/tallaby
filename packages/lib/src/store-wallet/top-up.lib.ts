@@ -74,7 +74,7 @@ export const SELLER_MANUAL_TOP_UP_METHOD = "instapay" satisfies ManualTopUpMetho
  * restored 2026-11-18). Shown only inside the InstaPay option of the dashboard
  * Wallet › Top up panel: never in FAQ, terms, emails or other copy (owner).
  */
-export const TALLABY_INSTAPAY_ACCOUNT = { number: "01152372358", holder: "عمر م*** ع******* ا**** م***" } as const;
+export const TALLABY_INSTAPAY_ACCOUNT = { number: "01152372358", holder: "Omar M****** A******* E****** M******" } as const;
 
 /**
  * Top-ups through Kashier (card, Meeza, mobile wallets, Apple Pay), the only way

@@ -135,18 +135,18 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
         : []),
     ],
   },
-  // Money (balance, ledger) first, then analytics.
+  // Money only: the balance, Tallaby Pay earnings and the wallet's transactions (owner, 2026-11-27).
+  // Account statements (/financial) and Reports (/reports) left the sidebar; both stay open by URL.
   {
     kind: "group",
     key: "finance",
     icon: Wallet,
     items: [
       { key: "walletBalance", href: "/wallet", status: "live" },
-      // The selected store's Tallaby Pay earnings (ROADMAP.md F-100f): only while Tallaby Pay is on or the store has an earnings wallet.
+      // The selected store's Tallaby Pay earnings (ROADMAP.md F-100f): only while the store has Tallaby Pay on as a payment method.
       { key: "tallabyPayEarnings", href: "/stores/[storeId]/earnings", status: "live", feature: "tallabyPayEarnings" },
-      { key: "accountStatements", href: "/financial", countKey: "financial", status: "live" },
-      // Per-store funnel, sources, refusals by governorate, best/worst products (ROADMAP.md F-15a).
-      { key: "reports", href: "/reports", status: "live", exact: true },
+      // Every store wallet entry, moved off /wallet (owner, 2026-11-27).
+      { key: "transactions", href: "/wallet/transactions", status: "live" },
     ],
   },
   // Growing and configuring the selected store.
