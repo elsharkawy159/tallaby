@@ -2172,6 +2172,12 @@ Add each new request here first, with the date and the owner's words, then turn 
 
 ## 7. Log
 
+### 2026-11-27 — Sidebar: a group label only opens its group (owner request; no migration)
+
+- **Owner:** "on clicking on the accordion on the side bar, I don't like to make the accordion trigger to be a link, clicking on it should just open the dropdown, and make the accordion trigger link to be a page in the accordion, for example: Product accordion trigger, first page is All Products".
+- **Changed:** `sidebar.config.ts` gives groups with a landing page an `overviewKey`, and `resolveSidebar` lists that page as the group's first item: All products, All orders (new `nav.allOrders`), Overview, General. `ResolvedGroup` loses `ownHref`/`exact`. In `Sidebar.tsx` the label is always one disclosure button (`aria-expanded`, chevron inside); the label link, its copy-link button and the drawer's stay-open-on-label logic are gone, and unused `nav.toggleGroup` is removed. The icon-only sidebar still opens the group's first item.
+- **Checks:** dashboard sidebar/layout tests 72 pass, typecheck clean, eslint clean on the changed files (dashboard-wide lint has 30 errors in untouched files); not tried in a browser.
+
 ### 2026-11-27 — Checkout: governorate and area lists, two-column page (owner request; no migration)
 
 - **Owner:** "the customer picks the governorate first from a list, then sees only its cities, areas and districts, picks the area from a list instead of typing the address, and the delivery price is worked out from the area"; then "make the page two halves: form, payment method and buy button on the left; order summary with each item in a row (photo, quantity +/−, price), the discount code, the products total, shipping and the total".

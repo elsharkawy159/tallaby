@@ -33,17 +33,18 @@ describe("storeBuilderEnabled", () => {
 });
 
 type AnyLink = { href: string; key: string; status?: string };
-type AnyGroup = { key: string; href?: string | null; ownHref?: boolean; items: AnyLink[] };
-/** A group's own landing page: `href` in the config, `href` + `ownHref` once resolved. */
-const groupOwnHref = (g: AnyGroup) => (g.href && g.ownHref !== false ? g.href : null);
-/** Every link in the sidebar, groups' own landing pages included (they count as live). */
+type AnyGroup = { key: string; href?: string | null; overviewKey?: string; items: AnyLink[] };
+/**
+ * Every link in the sidebar. Resolved groups already list their landing page
+ * as the first item; in the config it is the group's `href` + `overviewKey`.
+ */
 const allLinks = (entries: readonly { kind: string }[]): AnyLink[] =>
   entries.flatMap((e) => {
     if (e.kind === "link") return [e as unknown as AnyLink];
     if (e.kind !== "group") return [];
     const g = e as unknown as AnyGroup;
-    const own = groupOwnHref(g);
-    return [...(own ? [{ href: own, key: g.key, status: "live" }] : []), ...g.items];
+    const own = g.href && g.overviewKey ? [{ href: g.href, key: g.overviewKey, status: "live" }] : [];
+    return [...own, ...g.items];
   });
 
 /** Top-level keys, with dividers shown as "|". */
@@ -149,19 +150,19 @@ describe("SIDEBAR_CONFIG", () => {
     }
   });
 
-  it("opens the overview pages from the group label, not a repeated first item (owner, 2026-11-10)", () => {
+  it("names each overview page, listed once as the group's first item (owner, 2026-11-27)", () => {
     const group = (key: string) => SIDEBAR_CONFIG.find((e) => e.kind === "group" && e.key === key) as AnyGroup;
-    const landing: Record<string, string> = {
-      products: "/stores/[storeId]/products",
-      ordersGroup: "/orders",
-      websiteContent: "/stores/[storeId]/website",
-      settingsGroup: "/stores/[storeId]/settings",
+    const landing: Record<string, [string, string]> = {
+      products: ["/stores/[storeId]/products", "manageProducts"],
+      ordersGroup: ["/orders", "allOrders"],
+      websiteContent: ["/stores/[storeId]/website", "websiteOverview"],
+      settingsGroup: ["/stores/[storeId]/settings", "general"],
     };
-    for (const [key, href] of Object.entries(landing)) {
-      expect(group(key).href, key).toBe(href);
+    for (const [key, [href, overviewKey]] of Object.entries(landing)) {
+      expect(group(key), key).toMatchObject({ href, overviewKey });
       expect(group(key).items.map((i) => i.href), key).not.toContain(href);
     }
-    // The other groups have no overview page: the label opens their first item, which stays listed.
+    // The other groups have no overview page.
     for (const key of ["fulfillmentShipping", "finance", "marketing", "accountHelp"]) {
       expect(group(key).href, key).toBeUndefined();
     }
@@ -275,26 +276,40 @@ describe("resolveSidebar", () => {
     expect(resolved).toEqual([]);
   });
 
-  it("gives each group a label link: its own page, else its first enabled item", () => {
+  it("lists each group's landing page as its first item, and points the group at its first enabled item", () => {
     const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: { storeBuilder: true } });
     const group = (key: string) => entries.find((e) => e.kind === "group" && e.key === key) as ResolvedGroup;
-    expect(group("products")).toMatchObject({ href: P, ownHref: true, exact: true, countKey: "products" });
-    expect(group("ordersGroup")).toMatchObject({ href: "/orders", ownHref: true, countKey: "orders" });
-    expect(group("websiteContent")).toMatchObject({ href: `/stores/${STORE}/website`, ownHref: true });
-    expect(group("settingsGroup")).toMatchObject({ href: `/stores/${STORE}/settings`, ownHref: true });
-    expect(group("fulfillmentShipping")).toMatchObject({ href: "/orders/delivery", ownHref: false, countKey: undefined });
-    expect(group("finance")).toMatchObject({ href: "/wallet", ownHref: false });
-    expect(group("marketing")).toMatchObject({ href: "/coupons", ownHref: false });
-    expect(group("accountHelp")).toMatchObject({ href: "/stores", ownHref: false });
+    const first = (key: string) => group(key).items[0];
+    const landing: Record<string, [string, string]> = {
+      products: [P, "manageProducts"],
+      ordersGroup: ["/orders", "allOrders"],
+      websiteContent: [`/stores/${STORE}/website`, "websiteOverview"],
+      settingsGroup: [`/stores/${STORE}/settings`, "general"],
+    };
+    for (const [key, [href, itemKey]] of Object.entries(landing)) {
+      expect(first(key), key).toEqual({ kind: "link", key: itemKey, href, disabled: false, exact: true });
+      expect(group(key), key).not.toHaveProperty("ownHref");
+      expect(group(key).href, key).toBe(href);
+      // Listed once.
+      expect(group(key).items.filter((i) => i.href === href), key).toHaveLength(1);
+    }
+    // The group label keeps its landing page's number.
+    expect(group("products")).toMatchObject({ countKey: "products" });
+    expect(group("ordersGroup")).toMatchObject({ countKey: "orders" });
+    expect(group("fulfillmentShipping")).toMatchObject({ href: "/orders/delivery", countKey: undefined });
+    expect(group("finance")).toMatchObject({ href: "/wallet" });
+    expect(group("marketing")).toMatchObject({ href: "/coupons" });
+    expect(group("accountHelp")).toMatchObject({ href: "/stores" });
   });
 
-  it("falls back to the first item when a store-scoped landing page has no store", () => {
+  it("hides a store-scoped landing item with no store, and points the group at its first enabled item", () => {
     const config: NavEntry[] = [
       {
         kind: "group",
         key: "settingsGroup",
         icon: undefined as never,
         href: "/stores/[storeId]/settings",
+        overviewKey: "general",
         exact: true,
         items: [
           { key: "paymentMethods", href: "/soon", status: "soon" },
@@ -302,12 +317,13 @@ describe("resolveSidebar", () => {
         ],
       },
     ];
-    expect(resolveSidebar(config, { storeId: null, features: {} })).toEqual([
-      expect.objectContaining({ href: "/help", ownHref: false, exact: false }),
-    ]);
-    expect(resolveSidebar(config, { storeId: STORE, features: {} })).toEqual([
-      expect.objectContaining({ href: `/stores/${STORE}/settings`, ownHref: true, exact: true }),
-    ]);
+    const [noStore] = resolveSidebar(config, { storeId: null, features: {} }) as ResolvedGroup[];
+    expect(noStore?.href).toBe("/help");
+    expect(noStore?.items.map((i) => i.href)).toEqual(["/soon", "/help"]);
+    const [withStore] = resolveSidebar(config, { storeId: STORE, features: {} }) as ResolvedGroup[];
+    expect(withStore?.href).toBe(`/stores/${STORE}/settings`);
+    expect(withStore?.items[0]).toMatchObject({ key: "general", href: `/stores/${STORE}/settings`, exact: true });
+    expect(withStore?.items.map((i) => i.href)).toEqual([`/stores/${STORE}/settings`, "/soon", "/help"]);
   });
 
   it("shows feature-gated items only when the feature is on", () => {
@@ -360,12 +376,14 @@ describe("findActiveHref", () => {
     expect(active(P)).toBe(P);
   });
 
-  it("lights the group label on its own page and the child on a child page", () => {
+  it("lights the landing item on its own page and the child on a child page", () => {
     const group = (key: string) => entries.find((e) => e.kind === "group" && e.key === key) as ResolvedGroup;
     const products = group("products");
-    // /products: only the label (it is no longer an item).
-    expect(products.items.some((i) => i.href === active(P))).toBe(false);
+    // /products: the All products item, the group's first item.
+    expect(products.items[0]?.href).toBe(active(P));
     expect(isGroupActive(products, active(P))).toBe(true);
+    expect(group("ordersGroup").items[0]?.href).toBe(active("/orders"));
+    expect(isGroupActive(group("ordersGroup"), active("/orders"))).toBe(true);
     // /products/add: the Add products item; the group stays open.
     expect(active(`${P}/add`)).toBe(`${P}/add`);
     expect(isGroupActive(products, active(`${P}/add`))).toBe(true);
@@ -418,7 +436,8 @@ describe("Products under their store (F-87c slice 2)", () => {
   it("keeps the Products label for a seller with no store (the old list), without the store-only items", () => {
     const entries = resolveSidebar(SIDEBAR_CONFIG, { storeId: null, features: {} });
     const products = entries.find((e) => e.kind === "group" && e.key === "products") as ResolvedGroup;
-    expect(products).toMatchObject({ href: "/products", ownHref: true });
-    expect(products.items.map((i) => i.href)).toEqual(["/reviews"]);
+    expect(products.href).toBe("/products");
+    expect(products.items.map((i) => i.href)).toEqual(["/products", "/reviews"]);
+    expect(products.items[0]).toMatchObject({ key: "manageProducts", exact: true });
   });
 });

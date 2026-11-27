@@ -70,6 +70,7 @@ export type NavKey =
   | "fulfillment"
   // Sidebar groups and items added with the multi-store sitemap (PLAN.md §7.2)
   | "ordersGroup"
+  | "allOrders"
   | "missedOrders"
   | "pendingCarts"
   | "crossSellReport"

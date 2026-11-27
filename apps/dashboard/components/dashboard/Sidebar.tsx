@@ -6,7 +6,6 @@ import {
   useEffect,
   useId,
   useMemo,
-  useRef,
   useState,
   useTransition,
 } from "react";
@@ -95,15 +94,8 @@ export const Sidebar = ({
     useSidebarStore();
   const pathname = usePathname();
   const closeMobile = () => setMobileOpen(false);
-  // Set when a group label navigates, so the drawer stays open on the expanded group.
-  const keepMobileOpenRef = useRef(false);
-
-  // Close the mobile drawer after navigating (except through a group label).
+  // Close the mobile drawer after navigating.
   useEffect(() => {
-    if (keepMobileOpenRef.current) {
-      keepMobileOpenRef.current = false;
-      return;
-    }
     setMobileOpen(false);
   }, [pathname, setMobileOpen]);
 
@@ -205,9 +197,6 @@ export const Sidebar = ({
           {...content}
           isCollapsed={false}
           showTools
-          onGroupNavigate={(href) => {
-            if (href !== pathname) keepMobileOpenRef.current = true;
-          }}
         />
       </aside>
     </MinTopUpContext.Provider>
@@ -263,8 +252,6 @@ interface SidebarContentProps {
   isCollapsed: boolean;
   /** The drawer also holds what the top bar drops at 600px and below. */
   showTools?: boolean;
-  /** Called when a group label is clicked to open its landing page (the drawer uses it to stay open). */
-  onGroupNavigate?: (href: string) => void;
 }
 
 const SidebarContent = ({
@@ -276,7 +263,6 @@ const SidebarContent = ({
   maxStores,
   isCollapsed,
   showTools = false,
-  onGroupNavigate,
 }: SidebarContentProps) => {
   const pathname = usePathname();
   const t = useTranslations();
@@ -361,7 +347,9 @@ const SidebarContent = ({
               href={group.href ?? "#"}
               aria-label={label}
               aria-current={
-                group.ownHref && group.href === activeHref ? "page" : undefined
+                group.href !== null && group.href === activeHref
+                  ? "page"
+                  : undefined
               }
               className={cn(
                 NAV_ITEM,
@@ -398,10 +386,6 @@ const SidebarContent = ({
         ordersLocked={ordersLocked}
         open={openGroupKey === group.key}
         onOpenChange={(open) => setOpenGroupKey(open ? group.key : null)}
-        onNavigate={(href) => {
-          setOpenGroupKey(group.key);
-          onGroupNavigate?.(href);
-        }}
       />
     );
   };
@@ -662,7 +646,6 @@ function SidebarGroup({
   ordersLocked,
   open,
   onOpenChange,
-  onNavigate,
 }: {
   group: ResolvedGroup;
   label: string;
@@ -674,97 +657,47 @@ function SidebarGroup({
   ordersLocked: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The label was clicked: it opens the group and goes to its landing page. */
-  onNavigate: (href: string) => void;
 }) {
   const t = useTranslations("nav");
   const format = useFormatter();
-  // The label itself is the current page (the group's own landing page, e.g. All products).
-  const current =
-    group.ownHref && group.href !== null && group.href === activeHref;
   const subId = useId();
   const supportTools = useSupportTools();
-  const labelContent = (
-    <>
-      <group.icon
-        className={cn(
-          NAV_ICON,
-          current ? "text-current" : active && "text-(--s-primary)",
-        )}
-      />
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-      {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
-      {groupCount > 0 &&
-        (strongCount ? (
-          <StrongCount value={format.number(groupCount)} />
-        ) : (
-          <CountBadge count={groupCount} strong={false} />
-        ))}
-    </>
-  );
 
   return (
     <li>
-      {/* The label goes to the group's page and opens it; the chevron only opens or closes it. */}
-      <div className={cn("relative", supportTools && group.href && "group/copy")}>
-        {group.href ? (
-          <Link
-            href={group.href}
-            aria-current={current ? "page" : undefined}
-            onClick={() => onNavigate(group.href!)}
-            className={cn(
-              NAV_ITEM,
-              // Room for the copy button beside the chevron.
-              supportTools ? "pe-[4.5rem]" : "pe-10",
-              active && "font-bold text-(--s-ink)",
-              current && NAV_ITEM_ACTIVE,
-            )}
-          >
-            {labelContent}
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() => onOpenChange(!open)}
-            className={cn(
-              NAV_ITEM,
-              "pe-10",
-              active && "font-bold text-(--s-ink)",
-            )}
-          >
-            {labelContent}
-          </button>
+      {/* The label only opens or closes the group; its pages, landing page first, are the items (owner, 2026-11-27). */}
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={subId}
+        onClick={() => onOpenChange(!open)}
+        className={cn(
+          NAV_ITEM,
+          "relative pe-10",
+          active && "font-bold text-(--s-ink)",
         )}
-        {supportTools && group.href && (
-          <CopyPageLinkButton
-            href={group.href}
-            trail={[label]}
-            onActive={current}
-            className="end-9"
-          />
-        )}
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls={subId}
-          aria-label={t("toggleGroup", { name: label })}
-          onClick={() => onOpenChange(!open)}
-          className={cn(
-            "absolute inset-y-1 end-1 grid w-8 cursor-pointer place-items-center rounded-lg transition-colors duration-150",
-            current
-              ? "text-primary-foreground hover:bg-white/15"
-              : "text-(--s-subtle) hover:bg-(--s-hover) hover:text-(--s-ink)",
-          )}
+      >
+        <group.icon className={cn(NAV_ICON, active && "text-(--s-primary)")} />
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+        {ordersLocked && LOCKED_GROUPS.includes(group.key) && <OrdersWarning />}
+        {groupCount > 0 &&
+          (strongCount ? (
+            <StrongCount value={format.number(groupCount)} />
+          ) : (
+            <CountBadge count={groupCount} strong={false} />
+          ))}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-1 end-1 grid w-8 place-items-center text-(--s-subtle)"
         >
           <ChevronDown
-            aria-hidden
             className={cn(
               "size-[15px] shrink-0 transition-transform duration-[250ms]",
               open && "rotate-180",
             )}
           />
-        </button>
-      </div>
+        </span>
+      </button>
       {open && (
         <ul
           id={subId}

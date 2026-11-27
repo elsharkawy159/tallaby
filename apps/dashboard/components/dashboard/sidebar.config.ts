@@ -51,11 +51,14 @@ export type NavGroupConfig = {
   icon: LucideIcon;
   feature?: NavFeature;
   /**
-   * The group's own landing page (its "overview"), opened by clicking the group
-   * label and not repeated in `items`. Without it the label opens the first item.
+   * The group's own landing page (its "overview"), shown as the group's first
+   * item, labelled `overviewKey`. The group label only opens or closes the
+   * group and never navigates (owner, 2026-11-27).
    */
   href?: string;
-  /** With a store-scoped `href`: the landing page when the seller has no store (else the group falls back to its first item). */
+  /** With `href`: the label of that first item (e.g. All products). */
+  overviewKey?: NavKey;
+  /** With a store-scoped `href`: the landing page when the seller has no store (else the item is hidden). */
   noStoreHref?: string;
   /** With `href`: active only on that exact path. */
   exact?: boolean;
@@ -77,9 +80,10 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     kind: "group",
     key: "products",
     icon: Package,
-    // The group label opens All products; it is no longer an item (owner, 2026-11-10).
+    // All products is the first item; the label only opens the group (owner, 2026-11-27).
     // Products live under their store (F-87c); with no store the old list still opens.
     href: "/stores/[storeId]/products",
+    overviewKey: "manageProducts",
     noStoreHref: "/products",
     exact: true,
     countKey: "products",
@@ -99,6 +103,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "ordersGroup",
     icon: ShoppingBag,
     href: "/orders",
+    overviewKey: "allOrders",
     exact: true,
     countKey: "orders",
     items: [
@@ -153,6 +158,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     icon: Globe,
     feature: "storeBuilder",
     href: "/stores/[storeId]/website",
+    overviewKey: "websiteOverview",
     exact: true,
     items: [
       { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "live" },
@@ -194,6 +200,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "settingsGroup",
     icon: Settings,
     href: "/stores/[storeId]/settings",
+    overviewKey: "general",
     exact: true,
     items: [
       { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "live" },
@@ -240,11 +247,8 @@ export type ResolvedGroup = {
   kind: "group";
   key: NavKey;
   icon: LucideIcon;
-  /** Where the group label goes: its own landing page, else its first enabled item. Null when neither. */
+  /** Where the group icon goes on the icon-only (collapsed) sidebar: its first enabled item. Null when none. */
   href: string | null;
-  /** `href` is the group's own page (not one of `items`), so the label itself lights up there. */
-  ownHref: boolean;
-  exact: boolean;
   countKey?: keyof SidebarCounts;
   items: ResolvedLink[];
 };
@@ -293,16 +297,23 @@ export function resolveSidebar(config: NavEntry[], ctx: SidebarContext): Resolve
     }
     if (entry.feature && !ctx.features[entry.feature]) continue;
     const items = entry.items.map((item) => resolveLink(item, ctx)).filter((l): l is ResolvedLink => l !== null);
-    if (!items.length) continue;
-    // A store-scoped landing page with no store falls back to the first item, like before.
+    // The landing page is the first item; a store-scoped one with no store uses `noStoreHref`, else it is hidden.
     const ownHref = entry.href ? (resolveHref(entry.href, ctx) ?? entry.noStoreHref ?? null) : null;
+    if (ownHref) {
+      items.unshift({
+        kind: "link",
+        key: entry.overviewKey ?? entry.key,
+        href: ownHref,
+        disabled: false,
+        exact: entry.exact ?? false,
+      });
+    }
+    if (!items.length) continue;
     out.push({
       kind: "group",
       key: entry.key,
       icon: entry.icon,
-      href: ownHref ?? items.find((i) => !i.disabled)?.href ?? null,
-      ownHref: ownHref !== null,
-      exact: ownHref !== null && (entry.exact ?? false),
+      href: items.find((i) => !i.disabled)?.href ?? null,
       countKey: ownHref !== null ? entry.countKey : undefined,
       items,
     });
@@ -317,26 +328,21 @@ export function isActiveHref(pathname: string, href: string, options: { exact?: 
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Every place the sidebar links to: top links, groups' own landing pages and group items. */
-function navTargets(entries: ResolvedEntry[]): { href: string; exact: boolean; disabled: boolean }[] {
-  return entries.flatMap((e) => {
-    if (e.kind === "link") return [e];
-    if (e.kind !== "group") return [];
-    const own = e.ownHref && e.href ? [{ href: e.href, exact: e.exact, disabled: false }] : [];
-    return [...own, ...e.items];
-  });
+/** Every place the sidebar links to: top links and group items (landing pages included). */
+function navTargets(entries: ResolvedEntry[]): ResolvedLink[] {
+  return entries.flatMap((e) => (e.kind === "link" ? [e] : e.kind === "group" ? e.items : []));
 }
 
-/** Whether a group holds the current page: its own landing page or one of its items. */
+/** Whether a group holds the current page. */
 export function isGroupActive(group: ResolvedGroup, activeHref: string | null): boolean {
   if (!activeHref) return false;
-  return (group.ownHref && group.href === activeHref) || group.items.some((item) => item.href === activeHref);
+  return group.items.some((item) => item.href === activeHref);
 }
 
 /**
  * The one sidebar link for the current page: the most specific link that
  * matches, so /settings/plan picks Plan & usage rather than Settings, and only
- * one group opens. Groups' own landing pages count as links. Null when no link
+ * one group opens. Null when no link
  * matches.
  */
 export function findActiveHref(entries: ResolvedEntry[], pathname: string): string | null {
