@@ -1,4 +1,5 @@
 import { FREE_ORDER_FEE_USD_CENTS, PRO_MONTHLY_USD_CENTS, TOP_UP_MIN_USD_CENTS } from "@workspace/lib/billing";
+import { ORDER_GRACE_DAYS_SHORT } from "@workspace/lib/billing/order-grace";
 import { PLANS } from "@workspace/lib/plans";
 import { COMPARE_PUBLIC, compareSlug, publicCompetitors } from "./compare.lib";
 import { FEATURE_PAGES, INTEGRATION_PAGES } from "./detail-pages.lib";
@@ -8,6 +9,7 @@ import { formatNumber, formatUsd } from "./pricing.lib";
 import { localizedUrl } from "./seo.lib";
 import { SITE_URL } from "./site.lib";
 import { SOLUTIONS } from "./solutions.lib";
+import type { TallabyPayFacts } from "./tallaby-pay.server";
 import { TOOL_SLUGS } from "./tools.lib";
 
 /**
@@ -85,25 +87,44 @@ export function llmsTxtSections(comparePublic: boolean = COMPARE_PUBLIC, now: nu
   return sections;
 }
 
-/** The facts paragraph list, numbers from code. */
-function keyFacts(): string[] {
+/**
+ * The facts paragraph list, numbers from code. `pay`: Tallaby Pay's switch
+ * and fee (`getTallabyPayFacts`); it is named only while live, and with no
+ * answer it isn't named at all, as on the home page.
+ */
+function keyFacts(pay: TallabyPayFacts | null): string[] {
   const free = PLANS.free;
   const pro = PLANS.pro;
+  const payLive = pay?.live === true;
   return [
+    "Tallaby's Arabic brand name is طلبي. Tallaby is an Egyptian company based in Cairo.",
     `Free plan: no monthly fee and no percentage of sales; ${formatUsd(FREE_ORDER_FEE_USD_CENTS)} per delivered order, taken from the store's prepaid wallet. Cancelled or returned orders pay nothing. Includes ${formatNumber(free.aiCreditsMonthly)} AI credits and ${formatNumber(free.emailsMonthly)} campaign emails a month.`,
     `Pro plan: ${formatUsd(PRO_MONTHLY_USD_CENTS)} a month from the store wallet, no order fee, ${formatNumber(pro.aiCreditsMonthly)} AI credits and ${formatNumber(pro.emailsMonthly)} campaign emails a month. Both plans have the same store features.`,
-    `A store takes orders from day one with no card. A first wallet top-up (from ${formatUsd(TOP_UP_MIN_USD_CENTS)}, payable in Egyptian pounds) is needed soon after to keep seeing new orders and to send campaigns.`,
-    "Payments go to the seller: cash on delivery, InstaPay and mobile wallets pay the seller's own details, and cards go through the seller's own Paymob or Kashier account. Tallaby takes no cut of sales.",
-    "Tallaby does not deliver orders. Sellers ship with their own riders or a shipping company; Bosta is the built-in carrier integration.",
+    `A store is public and takes orders from day one with no card. On the Free plan, a first wallet top-up within ${ORDER_GRACE_DAYS_SHORT} days (from ${formatUsd(TOP_UP_MIN_USD_CENTS)}, paid in Egyptian pounds, or by card in US dollars outside Egypt) is needed to see orders, send campaigns and keep the store online.`,
+    `Payments go to the seller: cash on delivery (with an optional deposit before shipping), InstaPay and mobile wallets pay the seller's own details, and cards go through the seller's own Paymob or Kashier account. Tallaby takes no cut of ${payLive ? "these sales" : "sales"}.`,
+    ...(payLive
+      ? [
+          `Tallaby Pay, for stores selling in Egyptian pounds: shoppers pay online by card, mobile wallet or Meeza, in cash at Fawry and Aman, or in instalments, with no payment gateway account. Tallaby Pay's fee is ${pay.feePercent}%; the seller can withdraw the money once the order is delivered.`,
+        ]
+      : []),
+    "Tallaby does not deliver orders. Sellers ship with their own riders or a shipping company; Bosta is the built-in carrier integration, and Wassalha orders are exported as an upload sheet.",
     "Sell in Egypt and worldwide: each store chooses its own currency and the countries it ships to.",
-    "Live integrations: Bosta, Paymob, Kashier, Meta Pixel and Conversions API, Google Analytics 4, Google Tag Manager, Google Sheets, Shopify product import and product feeds.",
+    "Live integrations: Bosta, Paymob, Kashier, Meta Pixel and Conversions API, TikTok Pixel, Snapchat Pixel, Google Analytics 4, Google Tag Manager, Google Sheets, Shopify product import and product feeds.",
+    "Stores add optional apps from the App Center, such as a size chart that suggests a shopper's size on the product page. Each app's price is shown in the dashboard before the seller turns it on.",
     "Stores are built from ready-made templates and edited in a visual builder, in Arabic and English. AI writes product titles and descriptions in both languages.",
     "Every store gets a free yourbrand.tallaby.com address and can connect its own domain.",
   ];
 }
 
-/** The whole file. `title(metaKey)` gives a page's English meta title. */
-export function buildLlmsTxt(title: (metaKey: string) => string, sections: LlmsSection[] = llmsTxtSections()): string {
+/**
+ * The whole file. `title(metaKey)` gives a page's English meta title; `pay`
+ * is Tallaby Pay's live switch and fee (null: not named).
+ */
+export function buildLlmsTxt(
+  title: (metaKey: string) => string,
+  sections: LlmsSection[] = llmsTxtSections(),
+  pay: TallabyPayFacts | null = null,
+): string {
   const lines = [
     "# Tallaby (طلبي)",
     "",
@@ -113,7 +134,7 @@ export function buildLlmsTxt(title: (metaKey: string) => string, sections: LlmsS
     "",
     "## Key facts",
     "",
-    ...keyFacts().map((fact) => `- ${fact}`),
+    ...keyFacts(pay).map((fact) => `- ${fact}`),
     "",
     ...sections.flatMap((section) => [
       `## ${section.heading}`,
