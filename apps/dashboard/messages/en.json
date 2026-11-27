@@ -1072,7 +1072,8 @@
       "titleRequired": "Enter the product name (in Arabic or English)",
       "descriptionRequired": "Enter a short description (in Arabic or English)",
       "reviewerNameRequired": "Enter the customer's name",
-      "preorderDateRequired": "Pick a delivery date from today on"
+      "preorderDateRequired": "Pick a delivery date from today on",
+      "digitalFilesRequired": "Add at least one file for the customer to download"
     },
     "seller": {
       "businessNameRequired": "Business name is required",
@@ -2375,6 +2376,8 @@
         "trackStockOn": "Orders take from the quantity, and the product sells out when it reaches zero.",
         "trackStockOff": "Unlimited stock: for digital products, services and made-to-order items. Orders take nothing and it never sells out.",
         "summaryUnlimited": "Unlimited stock",
+        "summaryDigital": "No stock needed",
+        "digitalHint": "A digital product never runs out, so there is no stock to count, no pre-order and no options.",
         "variantsHeading": "Variants & options",
         "summaryVariants": "{count, plural, one {# variant} other {# variants}} · {stock} in stock",
         "summaryStock": "{stock} in stock",
@@ -2463,6 +2466,30 @@
         "lowStockThreshold": "Show when stock is at or below",
         "lowStockThresholdHint": "{count, plural, one {Shows at # piece left.} other {Shows at # pieces or fewer.}} Leave it empty for 5.",
         "lowStockThresholdInvalid": "Enter a whole number from {min} to {max}."
+      },
+      "digital": {
+        "title": "Product type",
+        "description": "Is this something you ship, or files the customer downloads?",
+        "physical": "Physical",
+        "physicalHint": "You ship it to the customer.",
+        "digital": "Digital",
+        "digitalHint": "The customer downloads files after paying.",
+        "optionsRemoved": "A digital product has no options. Its options will be removed when you save. Pick Physical to keep them.",
+        "filesTitle": "Files",
+        "addFiles": "Add files",
+        "emptyTitle": "Add the files the customer gets",
+        "emptyHint": "Books, designs, cutting files, music, videos or zip files",
+        "limits": "Up to {max} files, 100 MB each. PDF, Word, Excel, PowerPoint, DXF, DWG, PLT, SVG, AI, EPS, PSD, images, audio, video, ZIP, RAR and 7Z.",
+        "removeFile": "Remove {name}",
+        "uploading": "Uploading {name}",
+        "uploadFailed": "Couldn't upload {name}. Try again.",
+        "badType": "{name} isn't a supported file type.",
+        "tooLarge": "{name} is over 100 MB.",
+        "emptyFile": "{name} is empty.",
+        "tooMany": "You can add up to {max} files.",
+        "saveFailed": "The product was saved, but its files weren't. Open it and save again.",
+        "unpublished": "A digital product needs a file to be live, so it was saved as a draft.",
+        "waitForUploads": "Wait for the files to finish uploading, then save."
       },
       "customerFields": {
         "title": "Customer requirements",

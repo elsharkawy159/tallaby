@@ -23,6 +23,7 @@ import { loadProductStoreLinks } from "../../_components/product-store-links.dat
 import { loadProductViewStats } from "../../_components/product-views.data";
 import { loadProductSocialProof } from "../../social-proof/social-proof.data";
 import { parseCustomerFields } from "@workspace/lib/products/customer-fields";
+import { loadProductDigital } from "../../_digital/digital-files.data";
 import type { EditProductStatus } from "./edit-product-actions.client";
 import type { CategoryOption } from "../../add/add-product.schema";
 
@@ -71,6 +72,8 @@ export default async function EditProductPage({
   const product = productResult.data;
   // In Trash (0123, F-35): it is restored from there before it can be edited.
   if ((product as { deletedAt?: string | null }).deletedAt) redirect({ href: storeProductsHref(store.id, "/trash"), locale: await getLocale() });
+  // Product type and files (F-108a): names and sizes only, no download links.
+  const digital = await loadProductDigital(sellerId, productId, access.inStore);
   const categories = (categoriesRes.data || []) as CategoryOption[];
   const seller = sellerProfile.success ? sellerProfile.data : null;
   const sellerPricing = {
@@ -96,6 +99,8 @@ export default async function EditProductPage({
     preorderShipsAt: socialProof.preorderShipsAt ?? null,
     sellerReviews: socialProof.reviews,
     customerFields: parseCustomerFields((product as { customerFields?: unknown }).customerFields),
+    productType: digital.productType,
+    digitalFiles: digital.files,
   };
 
   // Not awaited: the views stat streams into the header (F-15b); never rejects.

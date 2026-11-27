@@ -233,6 +233,9 @@ export function buildEditDefaultValues(
     sellerReviews: [],
     // Filled from products.customer_fields by the edit page (F-91).
     customerFields: [],
+    // Filled from loadProductDigital by the edit page (F-108a).
+    productType: "physical",
+    digitalFiles: [],
     variantTypes,
     variants,
     localized: {

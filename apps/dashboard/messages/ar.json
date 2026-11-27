@@ -1072,7 +1072,8 @@
       "titleRequired": "اكتب اسم المنتج (بالعربية أو بالإنجليزية)",
       "descriptionRequired": "اكتب وصفًا مختصرًا للمنتج (بالعربية أو بالإنجليزية)",
       "reviewerNameRequired": "اكتب اسم العميل",
-      "preorderDateRequired": "اختر موعد تسليم من اليوم فصاعدًا"
+      "preorderDateRequired": "اختر موعد تسليم من اليوم فصاعدًا",
+      "digitalFilesRequired": "أضف ملفًا واحدًا على الأقل ليحمّله العميل"
     },
     "seller": {
       "businessNameRequired": "اسم النشاط التجاري مطلوب",
@@ -2375,6 +2376,8 @@
         "trackStockOn": "تُخصم الطلبات من الكمية، ويظهر المنتج «نفد» عند انتهائها.",
         "trackStockOff": "مخزون غير محدود: مناسب للمنتجات الرقمية والخدمات وما يُصنع حسب الطلب. الطلبات لا تخصم شيئًا والمنتج لا ينفد أبدًا.",
         "summaryUnlimited": "مخزون غير محدود",
+        "summaryDigital": "لا يحتاج مخزون",
+        "digitalHint": "المنتج الرقمي لا ينفد، فلا يوجد مخزون ولا طلب مسبق ولا اختيارات.",
         "variantsHeading": "الأنواع والخيارات",
         "summaryVariants": "{count, plural, one {نوع واحد} two {نوعان} few {# أنواع} many {# نوعًا} other {# نوع}} · {stock} قطعة",
         "summaryStock": "{stock} قطعة متاحة",
@@ -2463,6 +2466,30 @@
         "lowStockThreshold": "اعرضه عندما يصل المخزون إلى",
         "lowStockThresholdHint": "{count, plural, one {يظهر عند بقاء قطعة واحدة.} two {يظهر عند بقاء قطعتين أو أقل.} few {يظهر عند بقاء # قطع أو أقل.} many {يظهر عند بقاء # قطعة أو أقل.} other {يظهر عند بقاء # قطعة أو أقل.}} اتركه فارغًا ليصبح 5.",
         "lowStockThresholdInvalid": "اكتب رقمًا صحيحًا من {min} إلى {max}."
+      },
+      "digital": {
+        "title": "نوع المنتج",
+        "description": "هل هو شيء تشحنه، أم ملفات يحمّلها العميل؟",
+        "physical": "منتج عادي",
+        "physicalHint": "تشحنه للعميل.",
+        "digital": "منتج رقمي",
+        "digitalHint": "يحمّل العميل الملفات بعد الدفع.",
+        "optionsRemoved": "المنتج الرقمي ليس له اختيارات. ستُحذف اختياراته عند الحفظ. اختر «منتج عادي» للاحتفاظ بها.",
+        "filesTitle": "الملفات",
+        "addFiles": "أضف ملفات",
+        "emptyTitle": "أضف الملفات التي يحصل عليها العميل",
+        "emptyHint": "كتب، تصميمات، ملفات قص، صوتيات، فيديوهات أو ملفات مضغوطة",
+        "limits": "حتى {max} ملفات، كل ملف حتى 100 ميجابايت. PDF وWord وExcel وPowerPoint وDXF وDWG وPLT وSVG وAI وEPS وPSD والصور والصوت والفيديو وZIP وRAR و7Z.",
+        "removeFile": "احذف {name}",
+        "uploading": "جارٍ رفع {name}",
+        "uploadFailed": "تعذر رفع {name}. حاول مرة أخرى.",
+        "badType": "نوع الملف {name} غير مدعوم.",
+        "tooLarge": "حجم {name} أكبر من 100 ميجابايت.",
+        "emptyFile": "الملف {name} فارغ.",
+        "tooMany": "يمكنك إضافة حتى {max} ملفات.",
+        "saveFailed": "تم حفظ المنتج لكن لم تُحفظ ملفاته. افتحه واحفظه مرة أخرى.",
+        "unpublished": "المنتج الرقمي يحتاج ملفًا ليظهر في المتجر، فحُفظ كمسودة.",
+        "waitForUploads": "انتظر حتى ينتهي رفع الملفات، ثم احفظ."
       },
       "customerFields": {
         "title": "مطلوب من العميل",

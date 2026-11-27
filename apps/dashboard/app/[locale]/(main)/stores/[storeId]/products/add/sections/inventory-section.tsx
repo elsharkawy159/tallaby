@@ -42,10 +42,12 @@ export function InventorySection({
   const quantityError = useFieldError("quantity");
   const variantsError = useFieldError("variants");
   const preorderDateError = useFieldError("preorderShipsAt");
-  const [variants, quantity, sku, trackStockValue, minOrderQuantity, preorderEnabled, preorderShipsAt] = useWatch({
+  const [variants, quantity, sku, trackStockValue, minOrderQuantity, preorderEnabled, preorderShipsAt, productType] = useWatch({
     control: form.control,
-    name: ["variants", "quantity", "sku", "trackStock", "minOrderQuantity", "preorderEnabled", "preorderShipsAt"],
+    name: ["variants", "quantity", "sku", "trackStock", "minOrderQuantity", "preorderEnabled", "preorderShipsAt", "productType"],
   });
+  // A digital product (F-108a): no stock count, no pre-order and no options.
+  const digital = productType === "digital";
   // Pre-order (0179, F-23b): stock isn't counted while it is on; turning it off gives back the switch's earlier value.
   const trackStockBeforePreorder = useRef<boolean | null>(null);
   const preorder = preorderEnabled === true;
@@ -60,7 +62,9 @@ export function InventorySection({
     : typeof quantity === "number"
       ? quantity
       : 0;
-  const summary = preorder
+  const summary = digital
+    ? t("summaryDigital")
+    : preorder
     ? t("summaryPreorder", { date: isPreorderDay(preorderShipsAt) ? formatDate(preorderDayToDate(preorderShipsAt), locale, { dateStyle: "medium", timeZone: "UTC" }) : "—" })
     : !trackStock
     ? t("summaryUnlimited")
@@ -78,11 +82,13 @@ export function InventorySection({
       help={<TutorialVideoButton video="T-11" compact />}
       description={t("description")}
       summary={summary}
-      summaryTone={preorder ? (preorderDateError ? "bad" : "ok") : !trackStock || stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
+      summaryTone={digital ? "ok" : preorder ? (preorderDateError ? "bad" : "ok") : !trackStock || stock > 0 ? "ok" : submitCount > 0 ? "bad" : "need"}
       invalid={Boolean(quantityError || variantsError || preorderDateError)}
       filled={hasVariants || !trackStock || preorder || Boolean(sku?.trim()) || quantity !== defaultValues.quantity || (minOrderQuantity ?? 1) > 1}
     >
-      <Controller
+      {digital && <FieldHint>{t("digitalHint")}</FieldHint>}
+
+      {!digital && <Controller
         control={form.control}
         name="trackStock"
         render={({ field }) => (
@@ -94,9 +100,9 @@ export function InventorySection({
             <Switch id="track-stock" checked={field.value !== false} onCheckedChange={field.onChange} disabled={preorder} />
           </label>
         )}
-      />
+      />}
 
-      <Controller
+      {!digital && <Controller
         control={form.control}
         name="preorderEnabled"
         render={({ field }) => (
@@ -119,7 +125,7 @@ export function InventorySection({
             description={t("preorderHint")}
           />
         )}
-      />
+      />}
 
       {preorder && (
         <div className="flex flex-col gap-1.5">
@@ -184,7 +190,7 @@ export function InventorySection({
         </div>
 
         {/* With combinations, stock is set per combination below (the default one holds the product's quantity); this is the total. */}
-        {trackStock && hasVariants && <div className="flex flex-col gap-1.5">
+        {!digital && trackStock && hasVariants && <div className="flex flex-col gap-1.5">
           <FieldLabel>{t("totalStock")}</FieldLabel>
           <div className="flex h-[46px] items-center rounded-[14px] border-[1.5px] border-(--s-line) bg-(--s-surface-2) px-3.5 font-montserrat text-sm font-semibold tabular-nums text-(--s-text)">
             {formatNumber(stock, locale)}
@@ -193,7 +199,7 @@ export function InventorySection({
           <FieldError>{quantityError}</FieldError>
         </div>}
 
-        {trackStock && !hasVariants && <div className="flex flex-col gap-1.5">
+        {!digital && trackStock && !hasVariants && <div className="flex flex-col gap-1.5">
           <FieldLabel htmlFor="quantity" required>
             {t("quantity")}
           </FieldLabel>
@@ -240,9 +246,13 @@ export function InventorySection({
         </div>
       </div>
 
-      <SubHeading>{t("variantsHeading")}</SubHeading>
-      <VariantsEditor sellerPricing={sellerPricing} activeLocale={activeLocale} />
-      <FieldError>{variantsError}</FieldError>
+      {!digital && (
+        <>
+          <SubHeading>{t("variantsHeading")}</SubHeading>
+          <VariantsEditor sellerPricing={sellerPricing} activeLocale={activeLocale} />
+          <FieldError>{variantsError}</FieldError>
+        </>
+      )}
     </CollapsibleSection>
   );
 }

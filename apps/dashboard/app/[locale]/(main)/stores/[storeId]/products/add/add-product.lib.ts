@@ -180,7 +180,9 @@ export function getSectionProgress(
       !!values.isSeasonal,
   };
 
-  return PRODUCT_SECTIONS.map(({ id, nav }) => {
+  // A digital product (F-108a) has no shipping section.
+  const sections = values.productType === "digital" ? PRODUCT_SECTIONS.filter(({ id }) => id !== "sec-shipping") : PRODUCT_SECTIONS;
+  return sections.map(({ id, nav }) => {
     const list = checks[id];
     const done = list.filter(Boolean).length;
     const hasError =

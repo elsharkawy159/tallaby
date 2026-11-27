@@ -96,8 +96,9 @@ export function prepareProductForSubmit (data: AddProductFormData): AddProductFo
 
 /**
  * Product fields for createProduct / updateProduct. The store category, the
- * reviews, live views, stock tracking and customer fields are saved by their
- * own actions, never written to the row from the form.
+ * reviews, live views, stock tracking, customer fields and the product type
+ * with its files are saved by their own actions, never written to the row
+ * from the form.
  */
 export function toProductPayload (data: AddProductFormData) {
   const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
@@ -113,7 +114,11 @@ export function toProductPayload (data: AddProductFormData) {
     preorderShipsAt: _preorderShipsAt,
     sellerReviews: _reviews,
     customerFields: _customerFields,
+    productType,
+    digitalFiles: _digitalFiles,
     ...payload
   } = rest
+  // A digital product (F-108a) has no options: an edit removes any it had.
+  if (productType === "digital") return { payload: { ...payload, variants: [], variantTypes: [] }, taxonomy }
   return { payload, taxonomy }
 }

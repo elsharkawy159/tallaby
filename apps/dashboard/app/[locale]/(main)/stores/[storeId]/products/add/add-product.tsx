@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
   useForm,
   useFormContext,
@@ -27,7 +27,7 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { IconButton, PHONE_COMPACT_ACTIONS, SellerButton } from "@/components/seller-ui";
 import { Form } from "@workspace/ui/components/form";
-import { createProduct, updateProduct } from "@/actions/products";
+import { createProduct, setProductPublished, updateProduct } from "@/actions/products";
 import { cn } from "@/lib/utils";
 import { useLocalizedResolver } from "@/lib/i18n/localized-resolver";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
@@ -56,6 +56,8 @@ import { SocialProofSection } from "../social-proof/social-proof-section.client"
 import { saveProductSocialProof } from "../social-proof/social-proof.server";
 import { CustomerFieldsSection } from "../customer-fields/customer-fields-section.client";
 import { saveProductCustomerFields } from "../customer-fields/customer-fields.server";
+import { DigitalProductSection, PRODUCT_TYPE_SECTION_ID } from "../_digital/digital-product-section.client";
+import { saveProductDigital } from "../_digital/digital-files.server";
 import {
   MobilePublishBar,
   PublishChecklist,
@@ -189,6 +191,7 @@ function AddProductForm({
   const productsHref = useProductsHref();
   const tSocialProof = useTranslations("productForm.sections.socialProof");
   const tCustomerFields = useTranslations("productForm.sections.customerFields");
+  const tDigital = useTranslations("productForm.sections.digital");
   const tCommon = useTranslations("common");
   const resolver = useLocalizedResolver(
     zodResolver(addProductFormSchema) as any,
@@ -197,6 +200,11 @@ function AddProductForm({
   // AI fills still in the form (applied minus undone): the saved product is marked for the admin.
   const aiFills = useRef(0);
   const [aiReview, setAiReview] = useState<AutofillReview | null>(null);
+  // A digital file still uploading (F-108a): saving waits for it.
+  const digitalBusy = useRef(false);
+  const onDigitalBusy = useCallback((busy: boolean) => {
+    digitalBusy.current = busy;
+  }, []);
 
   const form = useForm<AddProductFormData>({
     resolver: resolver as any,
@@ -204,6 +212,8 @@ function AddProductForm({
     mode: "onChange",
     shouldUnregister: false,
   });
+  // A digital product (F-108a) has no shipping section.
+  const isDigital = useWatch({ control: form.control, name: "productType" }) === "digital";
 
   // New products autosave a draft; edits only save on "Save changes", so guard those.
   // `isDirty` alone isn't enough: the pricing section syncs `price.base` on mount with
@@ -310,6 +320,26 @@ function AddProductForm({
     if (!fields.success) toast.warning(tCustomerFields("saveFailed"));
   };
 
+  /**
+   * The product type and files (F-108a), saved before the stock settings so a
+   * product switched back to physical counts its stock again. A new product that
+   * should be digital but failed to save as one is hidden, never left live as physical.
+   */
+  const saveDigital = async (productId: string, data: AddProductFormData, isNew: boolean) => {
+    // Physical before and after: nothing to save, so physical products behave exactly as before.
+    if (data.productType !== "digital" && edit?.defaultValues.productType !== "digital") return;
+    const saved = await saveProductDigital(productStoreId, productId, {
+      productType: data.productType ?? "physical",
+      files: (data.digitalFiles ?? []).map(({ path, name }) => ({ path, name })),
+    });
+    if (!saved.success) {
+      toast.warning(tDigital("saveFailed"));
+      if (isNew && data.productType === "digital") await setProductPublished(productStoreId, productId, false);
+      return;
+    }
+    if (saved.unpublished) toast.warning(tDigital("unpublished"));
+  };
+
   const linkStoreCategory = async (
     productId: string,
     data: AddProductFormData,
@@ -346,6 +376,7 @@ function AddProductForm({
 
         if (result.success) {
           if (result.data?.id) {
+            await saveDigital(result.data.id, data, true);
             await linkStoreCategory(result.data.id, data, taxonomy);
             await saveSocialProof(result.data.id, data);
             if (aiFills.current > 0)
@@ -386,6 +417,7 @@ function AddProductForm({
         } as unknown as Parameters<typeof updateProduct>[2]);
 
         if (result.success) {
+          await saveDigital(productId, data, false);
           // Always sent on edit, so a changed category replaces the old link.
           await linkStoreCategory(productId, data, taxonomy);
           await saveSocialProof(productId, data);
@@ -412,7 +444,8 @@ function AddProductForm({
   // scrolls to the first invalid section. Only an in-flight save disables it.
   const validateAndSubmit = form.handleSubmit(handleSubmit, (errors) => {
     toast.error(t("fixRequired"));
-    const first = getFirstInvalidSection(errors) ?? (errors.customerFields ? "sec-customer-fields" : null);
+    // The product type card (F-108a) is the first on the page.
+    const first = (errors.digitalFiles ? PRODUCT_TYPE_SECTION_ID : null) ?? getFirstInvalidSection(errors) ?? (errors.customerFields ? "sec-customer-fields" : null);
     if (first) {
       // Errors in the other language are invisible until we switch to it.
       const en = errors.localized?.en;
@@ -432,6 +465,10 @@ function AddProductForm({
   const validating = useRef(false);
   const publish = async () => {
     if (validating.current || isPending) return;
+    if (digitalBusy.current) {
+      toast.message(tDigital("waitForUploads"));
+      return;
+    }
     validating.current = true;
     try {
       await validateAndSubmit();
@@ -659,6 +696,7 @@ function AddProductForm({
                 {aiReview && (
                   <AiFillBanner review={aiReview} onUndo={undoAiFill} onDismiss={() => setAiReview(null)} />
                 )}
+                <DigitalProductSection onBusyChange={onDigitalBusy} />
                 <BasicSection
                   categories={categories}
                   activeLocale={activeLocale}
@@ -674,7 +712,7 @@ function AddProductForm({
                 <PricingSection sellerPricing={sellerPricing} />
                 <ContentSection activeLocale={activeLocale} />
                 <InventorySection sellerPricing={sellerPricing} activeLocale={activeLocale} />
-                <ShippingSection sellerPricing={sellerPricing} />
+                {!isDigital && <ShippingSection sellerPricing={sellerPricing} />}
                 <CustomerFieldsSection />
                 <SocialProofSection />
                 <VisibilitySection activeLocale={activeLocale} />

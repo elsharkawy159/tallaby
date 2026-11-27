@@ -4,6 +4,8 @@ import { META_KEYWORD_MAX_LENGTH, META_KEYWORDS_MAX } from "./meta-keywords.lib"
 import { lowStockThresholdSchema, minOrderQuantitySchema, SELLER_REVIEWS_MAX, sellerReviewSchema } from "../social-proof/social-proof.dto";
 import { customerFieldsSchema } from "@workspace/lib/products/customer-fields";
 import { isAllowedPreorderDay } from "@workspace/lib/products/preorder";
+import { digitalFormFileSchema, PRODUCT_TYPES } from "../_digital/digital-files.dto";
+import { DIGITAL_FILES_MAX } from "../_digital/digital-files.lib";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -206,6 +208,9 @@ export const addProductFormSchema = z
     sellerReviews: z.array(sellerReviewSchema).max(SELLER_REVIEWS_MAX).default([]),
     // Saved by saveProductCustomerFields (0167, F-91), not createProduct / updateProduct.
     customerFields: customerFieldsSchema.default([]),
+    // Saved by saveProductDigital (F-108a), not createProduct / updateProduct. Physical unless the seller picks Digital.
+    productType: z.enum(PRODUCT_TYPES).default("physical"),
+    digitalFiles: z.array(digitalFormFileSchema).max(DIGITAL_FILES_MAX).default([]),
 
     // localized: Record<locale, { title, description, bullet_points, slug, meta_title, meta_description }>
     localized: z.object({
@@ -288,6 +293,15 @@ export const addProductFormSchema = z
         path: ["preorderShipsAt"],
       })
     }
+
+    // A digital product (F-108a) is sold as its files: it needs at least one.
+    if (data.productType === "digital" && (data.digitalFiles ?? []).length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "product.digitalFilesRequired",
+        path: ["digitalFiles"],
+      })
+    }
   })
 
 export const defaultLocalizedFields = (): LocalizedFields => ({
@@ -346,6 +360,8 @@ export const defaultValues = {
   preorderShipsAt: null,
   sellerReviews: [],
   customerFields: [],
+  productType: "physical" as const,
+  digitalFiles: [],
   variantTypes: [],
   variants: [],
   localized: {

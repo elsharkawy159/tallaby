@@ -72,9 +72,19 @@ export async function saveProductSocialProof(storeId: string, productId: string,
           : { preorderEnabled: false, preorderShipsAt: null };
 
     const owned = await db.transaction(async (tx) => {
+      // A digital product (F-108a) has no stock and no pre-order: its stock is never counted.
+      const [current] = await tx
+        .select({ productType: products.productType })
+        .from(products)
+        .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), inStore))
+        .limit(1)
+        .for("update");
+      if (!current) return false;
+      const digital = current.productType === "digital";
+      if (digital && preorderEnabled === true) return "digital" as const;
       const updated = await tx
         .update(products)
-        .set({ showLiveViews, trackStock, showLowStockBadge, lowStockThreshold, ...(minOrderQuantity !== undefined && { minOrderQuantity }), ...preorder })
+        .set({ showLiveViews, trackStock: digital ? false : trackStock, showLowStockBadge, lowStockThreshold, ...(minOrderQuantity !== undefined && { minOrderQuantity }), ...preorder })
         .where(and(eq(products.id, productId), eq(products.sellerId, seller.sellerId), inStore))
         .returning({ id: products.id });
       if (!updated.length) return false;
@@ -106,6 +116,7 @@ export async function saveProductSocialProof(storeId: string, productId: string,
       }
       return true;
     });
+    if (owned === "digital") return { success: false, error: "invalidInput" };
     if (!owned) return { success: false, error: "notFound" };
 
     await syncProductRating(productId);
