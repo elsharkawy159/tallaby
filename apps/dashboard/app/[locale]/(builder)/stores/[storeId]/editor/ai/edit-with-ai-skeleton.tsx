@@ -1,6 +1,6 @@
 import { Skeleton } from "@workspace/ui/components/skeleton";
 
-/** The "Edit with AI" page while the store loads: the top bar, the chat and the preview. */
+/** The "Edit with AI" page while the editor loads: the top bar, the chat and the canvas. */
 export function EditWithAiSkeleton() {
   return (
     <div className="seller-shell flex h-dvh flex-col overflow-hidden bg-(--s-surface-2)">

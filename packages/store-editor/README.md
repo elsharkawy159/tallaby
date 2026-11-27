@@ -29,6 +29,25 @@ The seller dashboard builds its adapter in the browser from its server actions
 (`apps/dashboard/app/(builder)/stores/[storeId]/editor/seller-adapter.client.tsx`), so no function
 crosses the server/client boundary. Its server actions, loaders and `page.tsx` stay in the dashboard.
 
+## The AI layout (`assistant`)
+
+```tsx
+<StoreEditor initial={initial} adapter={adapter} assistant={(api) => <MyChat api={api} />} />
+```
+
+With `assistant`, the editor opens in its AI layout: the same top bar, the host's assistant (a chat)
+in a resizable panel on the start side and the canvas beside it, with no rail, panels, inspector or
+agent dock. Below `lg` the assistant fills the screen and the canvas opens in a full-height sheet
+(`api.showCanvas()`). The host's chat talks to its own server; `EditorAssistantApi`
+(`shell/editor-assistant.client.tsx`) gives it the active page and canvas language, the section
+selected on the canvas (`mention` / `target`, always a whole section), `flush()`, `applyTurn()`
+(a turn's validated ops as ONE undo step, with the code previews), `canUndo()` / `undo()` for that
+step, `refreshData()`, `readOnly` and `compact`. Without `assistant` nothing changes.
+
+The top bar shows an "AI | Manual" switch when the host gives the other editor's link
+(`links.aiEditor` in the manual editor, `links.manualEditor` in the AI layout; both default to
+`null`). It saves pending edits first and stays put if the save fails.
+
 ## Folder map
 
 | Folder | What lives there | Edit here when… |
@@ -38,7 +57,7 @@ crosses the server/client boundary. Its server actions, loaders and `page.tsx` s
 | `editor.dto.ts`, `templates.dto.ts` | Result/error types and the shapes shared with the hosts' server code (`@workspace/store-editor/editor.dto` is safe to import from server files) | changing what is saved or loaded |
 | `state/` | The zustand store (`editor.store.ts`: selection, history, dirty pages) and the hooks bound to it: autosave, store-data refresh, shortcuts, preview link | changing editor state or a background behaviour |
 | `lib/` | Pure logic, no React, each with a `*.test.ts`: section tree ops (`editor.lib`), commands, selection, per-device style, slots, section library/presets, Add palette, page templates, empty-state data, icons, industries, design presets | changing a rule; add a test next to it |
-| `shell/` | Chrome around the canvas: top bar, left tab rail, Ctrl+K quick insert and `?` shortcuts dialogs, capability gating | changing the frame of the editor |
+| `shell/` | Chrome around the canvas: top bar (with the "AI \| Manual" switch), left tab rail, Ctrl+K quick insert and `?` shortcuts dialogs, capability gating, and the AI layout (`editor-assistant.client.tsx`: `EditorAssistantApi`, the resizable assistant + canvas split) | changing the frame of the editor |
 | `canvas/` | The iframe canvas, the selection/hover overlay, the element popover and the empty-state buttons | changing what happens on the page itself |
 | `inspector/` | Right sidebar: `editor-sidebar` (Content \| Style tabs), `editor-inspector` (content fields), `style-panel`, and `controls/` (shared style inputs) | changing a field or a style control |
 | `panels/` | Left rail tabs: layers, pages, media, explore, brand, forms. `panels/add/` is the Add tab: elements, section library + thumbnails, page templates and their preview | changing a rail tab |

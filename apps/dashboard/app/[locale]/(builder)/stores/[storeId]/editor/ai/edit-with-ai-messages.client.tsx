@@ -14,9 +14,10 @@ import type { AssistantMessage, ChatMessage, ProposalView } from "./edit-with-ai
 
 /**
  * The "Edit with AI" conversation: the seller's bubbles, the AI's replies
- * with what they changed (a checklist with Undo), confirm cards for store
- * changes, the products-file card, skipped changes and credits. Replies are
- * announced (`role="log"`, `aria-live="polite"`).
+ * with what they changed on the canvas (a checklist; Undo while that change
+ * is still the editor's newest undo step), confirm cards for store changes,
+ * the products-file card, skipped changes and credits. Replies are announced
+ * (`role="log"`, `aria-live="polite"`).
  */
 
 /** Every error code of the server, plus nothing else: unknown ones are the generic text. */
@@ -31,7 +32,6 @@ const ERROR_KEYS = new Set<string>([
   "aiNoCredits",
   "aiFailed",
   "draftChanged",
-  "undoExpired",
   "actionExpired",
   "actionRunning",
   "actionFailed",
@@ -61,6 +61,8 @@ export function ErrorText({ error }: { error: EditWithAiError }) {
 
 type Handlers = {
   storeId: string;
+  /** The turn's change is still the editor's newest undo step. */
+  canUndo: (messageId: string) => boolean;
   onUndo: (messageId: string) => void;
   onConfirm: (messageId: string, actionId: string) => void;
   onCancel: (messageId: string, actionId: string) => void;
@@ -128,7 +130,7 @@ function SentAttachments({ attachments }: { attachments: Extract<ChatMessage, { 
   );
 }
 
-function AssistantTurn({ message, storeId, onUndo, onConfirm, onCancel }: { message: AssistantMessage } & Handlers) {
+function AssistantTurn({ message, storeId, canUndo, onUndo, onConfirm, onCancel }: { message: AssistantMessage } & Handlers) {
   const t = useTranslations("editWithAi.chat");
   const changes = message.siteChanges;
   return (
@@ -136,20 +138,33 @@ function AssistantTurn({ message, storeId, onUndo, onConfirm, onCancel }: { mess
       <span className="sr-only">{t("assistant")}: </span>
       <div className="flex flex-col gap-3">
         {message.text && <span className="whitespace-pre-line break-words">{message.text}</span>}
-        {changes && (
+        {changes && changes.lines.length > 0 && (
           <div className="flex flex-col gap-2 rounded-2xl border border-(--s-line) bg-(--s-surface) px-3.5 py-3">
             <span className="text-[12.5px] font-bold text-(--s-ink)">{t("changesTitle")}</span>
             <ul className="flex flex-col gap-1">
               {changes.lines.map((line, i) => (
-                <li key={i} className={cn("flex items-start gap-2 text-[13px] text-(--s-muted)", changes.undo === "done" && "line-through opacity-70")}>
+                <li key={i} className="flex items-start gap-2 text-[13px] text-(--s-muted)">
                   <Check className="mt-1 size-3.5 shrink-0 text-(--s-primary)" aria-hidden />
                   <span className="min-w-0 break-words">{line}</span>
                 </li>
               ))}
             </ul>
-            <UndoRow messageId={message.id} state={changes.undo} error={changes.error} onUndo={onUndo} />
+            {canUndo(message.id) && (
+              <span>
+                <button
+                  type="button"
+                  onClick={() => onUndo(message.id)}
+                  aria-label={t("undoLabel")}
+                  className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-[12.5px] font-semibold text-(--s-primary) hover:bg-(--s-hover)"
+                >
+                  <Undo2 className="size-3.5 rtl:-scale-x-100" aria-hidden />
+                  {t("undo")}
+                </button>
+              </span>
+            )}
           </div>
         )}
+        {changes?.stale && <span className="text-[12.5px] text-(--s-subtle)">{t("stale")}</span>}
         {message.proposals.map((proposal) => (
           <ConfirmCard key={proposal.actionId} proposal={proposal} storeId={storeId} onConfirm={() => onConfirm(message.id, proposal.actionId)} onCancel={() => onCancel(message.id, proposal.actionId)} />
         ))}
@@ -160,31 +175,6 @@ function AssistantTurn({ message, storeId, onUndo, onConfirm, onCancel }: { mess
         {message.creditsUsed > 0 && <span className="text-[11.5px] text-(--s-subtle)">{t("credits", { count: message.creditsUsed })}</span>}
       </div>
     </AssistantRow>
-  );
-}
-
-function UndoRow({ messageId, state, error, onUndo }: { messageId: string; state: NonNullable<AssistantMessage["siteChanges"]>["undo"]; error?: EditWithAiError; onUndo: (id: string) => void }) {
-  const t = useTranslations("editWithAi.chat");
-  if (state === "done") return <span className="text-[12.5px] font-semibold text-(--s-muted)">{t("undone")}</span>;
-  if (state === "expired") return <span className="text-[12.5px] text-(--s-subtle)">{t("undoExpired")}</span>;
-  if (state === "changed") return <span className="text-[12.5px] text-(--s-subtle)">{t("undoChanged")}</span>;
-  return (
-    <span className="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        disabled={state === "undoing"}
-        onClick={() => onUndo(messageId)}
-        className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-[12.5px] font-semibold text-(--s-primary) hover:bg-(--s-hover) disabled:cursor-default disabled:opacity-60"
-      >
-        {state === "undoing" ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Undo2 className="size-3.5 rtl:-scale-x-100" aria-hidden />}
-        {state === "undoing" ? t("undoing") : t("undo")}
-      </button>
-      {error && (
-        <span role="alert" className="text-[12px] text-destructive">
-          <ErrorText error={error} />
-        </span>
-      )}
-    </span>
   );
 }
 

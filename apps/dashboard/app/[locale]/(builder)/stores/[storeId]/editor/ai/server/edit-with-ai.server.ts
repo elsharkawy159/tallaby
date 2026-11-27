@@ -1,13 +1,12 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
 import { aiConfigured, aiErrorKind, checkDailyCap, generateStructured, logAiUsage, modelIdForTier } from "@workspace/ai";
 import { db, eq, sellers } from "@workspace/db";
 import { parseStoreCurrency } from "@workspace/lib";
 import { isProActive } from "@workspace/lib/billing";
-import { claimAiCredit, refundAiCredit } from "@workspace/lib/billing/credits";
+import { claimAiCredit, getAiCreditStatus, refundAiCredit } from "@workspace/lib/billing/credits";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { getStoreForEditor, saveStoreChrome, saveStorePageDraft } from "@workspace/lib/store-sites/server";
+import { getStoreForEditor } from "@workspace/lib/store-sites/server";
 import { validatePageContent, type SectionInstance, type SiteLocale } from "@workspace/store-sections";
 import {
   editorAgentModelOutputSchema,
@@ -19,25 +18,24 @@ import {
   type SiteOutlineEntry,
 } from "@workspace/store-sections/agent-server";
 import { CODE_SERVER_CHECKS } from "@workspace/store-sections/code-server";
-import { storeSectionRegistry } from "@workspace/store-sections/render";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { revalidateDashboardPath } from "@/lib/i18n/revalidate-dashboard-path.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
 import { mediaImageCheck, mediaPathsIn, ownMediaImages, type AgentMediaImage } from "../../server/agent-images.server";
+import { renderAgentCodePreviews } from "../../server/agent-previews.server";
 import { loadCodePreviewStore } from "../../server/code-preview.data";
-import { previewLink } from "../../server/editor.server";
 import {
   actionIdSchema,
   editWithAiInputSchema,
   editWithAiUploadsInputSchema,
-  undoTokenSchema,
   type EditWithAiCard,
+  type EditWithAiConfirmView,
   type EditWithAiError,
   type EditWithAiInput,
   type EditWithAiResult,
   type EditWithAiRoute,
-  type EditWithAiTarget,
+  type EditWithAiTargetInput,
   type EditWithAiTurnView,
   type EditWithAiUpload,
   type EditWithAiUploadsInput,
@@ -45,7 +43,6 @@ import {
 import {
   EDIT_WITH_AI_FEATURE,
   EDIT_WITH_AI_ROUTER_SYSTEM,
-  UndoStore,
   editWithAiRouterSchema,
   editWithAiRouterText,
   pickTargetByCode,
@@ -57,19 +54,25 @@ import { agentErrorKey, editWithAiContext, editWithAiRuntime, pendingPublishes, 
 import { signEditWithAiFileLink, signEditWithAiUploads, verifyEditWithAiAttachments } from "./edit-with-ai-files.server";
 
 /**
- * "Edit with AI" (owner request 2026-11-26): the website editor's chat page.
- * One turn can change the site's DRAFTS (applied and saved here, on the
- * server, through the normal validated draft save), propose store changes
- * (products, settings, shipping, theme) as confirm cards of the agent core,
- * or turn an attached products file into a card that opens the existing
- * from-file import. Nothing is published: the seller's Publish button calls
- * the editor's existing `publish` action.
+ * "Edit with AI" (owner request 2026-11-26): the chat of the website editor's
+ * AI layout. One turn can change the site's DRAFTS (it returns validated ops
+ * that the editor applies to its own drafts as one undo step; this action
+ * writes nothing, and autosave saves them through the normal validated draft
+ * save), propose store changes (products, settings, shipping, theme) as
+ * confirm cards of the agent core, or turn an attached products file into a
+ * card that opens the existing from-file import. Nothing is published: the
+ * seller's Publish button calls the editor's existing `publish` action.
+ *
+ * A site turn reads the SAVED drafts: the editor saves its pending edits
+ * before every turn, so they are what the canvas shows. The page and the
+ * selected section come from the client as ids only and must exist in those
+ * drafts.
  *
  * Order of checks: the store is the session seller's and writable, the
  * `editor_agent` switch, AI is set up, a burst limit, the input caps and the
  * attachments (uploaded, this seller's and store's, real type), the daily
  * cap, then 1 AI credit for a site turn (claimed before the edit call, given
- * back when nothing was saved or the answer came from the result cache).
+ * back when no op applied or the answer came from the result cache).
  * Store-data turns cost nothing here: the core charges 1 credit when the
  * seller confirms a card. Logs ids and counts only.
  *
@@ -82,7 +85,6 @@ const RESULT_CACHE_MS = 10 * 60_000;
 const MAX_OUTPUT_TOKENS = 12_000;
 const ROUTER_OUTPUT_TOKENS = 300;
 const PRO_DAILY_MULTIPLIER = 10;
-const ALLOWED = storeSectionRegistry.allowedSections();
 
 /** Model calls a day for this feature (router + edit); ×10 on Pro. */
 const dailyLimit = () => {
@@ -93,9 +95,6 @@ const dailyLimit = () => {
 // Bursts per instance; the daily cap is the real, cross-instance limit.
 const turnLimiter = createRateLimiter({ limit: 10, windowMs: 60_000 });
 const actionLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
-
-/** Previous drafts of saved turns, per instance (see `UndoStore`). */
-const undoStore = new UndoStore();
 
 const fail = <T>(error: EditWithAiError): EditWithAiResult<T> => ({ success: false, error });
 
@@ -115,7 +114,15 @@ async function access(storeId: unknown): Promise<Access | EditWithAiError> {
 const switchOn = () => isSwitchOn("editor_agent").catch(() => false);
 
 function emptyView(route: EditWithAiRoute, reply: string): EditWithAiTurnView {
-  return { reply, route, siteChanges: null, proposals: [], cards: [], rejected: [], creditsUsed: 0 };
+  return { reply, route, siteChanges: null, proposals: [], cards: [], rejected: [], creditsUsed: 0, creditsRemaining: null };
+}
+
+/** The seller's AI credits now, read after the turn's claim or refund settled. Never cached; null before the USD switch or when the read fails. */
+async function creditsLeft(sellerId: string, usdLive: boolean): Promise<number | null> {
+  if (!usdLive) return null;
+  return getAiCreditStatus(sellerId)
+    .then((status) => status.total)
+    .catch(() => null);
 }
 
 const REPLIES = {
@@ -229,6 +236,8 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     if (!editor || !row) return fail("notFound");
     const defaultLocale: SiteLocale = editor.store.defaultLocale === "en" ? "en" : "ar";
     const locales = (editor.store.supportedLocales ?? []).filter((l): l is SiteLocale => l === "ar" || l === "en");
+    // The language the canvas shows, only when it is one of the store's.
+    const contentLocale: SiteLocale = turn.contentLocale && (turn.contentLocale === defaultLocale || locales.includes(turn.contentLocale)) ? turn.contentLocale : defaultLocale;
     const page = turn.pageId ? editor.pages.find((p) => p.id === turn.pageId) : (editor.pages.find((p) => p.isHome) ?? editor.pages[0]);
     if (!page) return fail("notFound");
     const pageContent = validatePageContent(page.draftContent ?? { sections: [] }, { serverChecks: CODE_SERVER_CHECKS });
@@ -236,6 +245,9 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     const header = validChrome(editor.store.sharedHeader);
     const footer = validChrome(editor.store.sharedFooter);
     const outline = siteOutline(pageContent.data.sections, defaultLocale);
+    // The canvas selection: ids only, used only when they are in the loaded drafts.
+    const selected = selectedTarget(turn.target, pageContent.data.sections, !!header, !!footer);
+    const withCredits = async (view: EditWithAiTurnView): Promise<EditWithAiTurnView> => ({ ...view, creditsRemaining: await creditsLeft(sellerId, billing.usdLive) });
 
     // Route and section: code first, else one cheap router call on the outline.
     let route: Exclude<EditWithAiRoute, "import"> | null = code ? code.route : null;
@@ -270,7 +282,8 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     };
 
     if (route === null || route === "site") {
-      target = route === "site" ? pickTargetByCode({ message: turn.message, outline, hasHeader: !!header, hasFooter: !!footer }) : null;
+      // A selected section is the target; else code picks it when it can.
+      target = route === "site" ? (selected ?? pickTargetByCode({ message: turn.message, outline, hasHeader: !!header, hasFooter: !!footer })) : null;
       if (!target) {
         let routed: Awaited<ReturnType<typeof routerCall>>;
         try {
@@ -282,23 +295,25 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
         if (route === null) route = routed.route;
         if (route === "none") {
           console.info("[edit-with-ai] turn", { storeId: ownStoreId, route: "none", calls });
-          return { success: true, data: emptyView("none", (routed.reply ?? "").trim().slice(0, 300) || REPLIES.none[turn.uiLocale]) };
+          return { success: true, data: await withCredits(emptyView("none", (routed.reply ?? "").trim().slice(0, 300) || REPLIES.none[turn.uiLocale])) };
         }
-        if (route === "site") target = targetFromRouter(routed, outline, !!header, !!footer);
+        if (route === "site") target = selected ?? targetFromRouter(routed, outline, !!header, !!footer);
       }
     }
 
     if (route !== "site") {
-      return await storeTurn({ who, route: route!, message: turn.message, uiLocale: turn.uiLocale, history: turn.history, images: verified.images, currency: parseStoreCurrency(row.settings).currency });
+      const answered = await storeTurn({ who, route: route!, message: turn.message, uiLocale: turn.uiLocale, history: turn.history, images: verified.images, currency: parseStoreCurrency(row.settings).currency });
+      return answered.success ? { success: true, data: await withCredits(answered.data) } : answered;
     }
 
     // ---- A site turn ----
-    if (!target) return { success: true, data: emptyView("site", REPLIES.noTarget[turn.uiLocale]) };
+    const noTarget = async () => ({ success: true as const, data: await withCredits(emptyView("site", REPLIES.noTarget[turn.uiLocale])) });
+    if (!target) return await noTarget();
     const chrome = target.kind === "header" ? header : target.kind === "footer" ? footer : null;
-    if (target.kind !== "page" && !chrome) return { success: true, data: emptyView("site", REPLIES.noTarget[turn.uiLocale]) };
+    if (target.kind !== "page" && !chrome) return await noTarget();
     const sectionId = target.kind === "page" ? target.sectionId : undefined;
     const section = target.kind === "page" ? (sectionId ? (pageContent.data.sections.find((s) => s.id === sectionId) ?? null) : null) : chrome;
-    if (target.kind === "page" && sectionId && !section) return { success: true, data: emptyView("site", REPLIES.noTarget[turn.uiLocale]) };
+    if (target.kind === "page" && sectionId && !section) return await noTarget();
 
     // Photos: this turn's uploads, and the store's media the seller linked in the message.
     const mentioned = mediaPathsIn(turn.message);
@@ -325,14 +340,14 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
         {
           message: turn.message,
           uiLocale: turn.uiLocale,
-          contentLocale: defaultLocale,
+          contentLocale,
           target: agentTarget,
           section,
           outline: outline.map(({ id, name, kind }) => ({ id, name, kind })),
           history: turn.history,
           store: { name: row.name, defaultLocale, locales: locales.length ? locales : [defaultLocale], colors: asRecord(row.colors), typography: asRecord(row.typography) },
           allowCode,
-          // The real drafts: the page as stored, or the header or footer alone.
+          // The saved drafts (the editor saved its pending edits before the turn): the page, or the header or footer alone.
           content: target.kind === "page" ? { sections: pageContent.data.sections } : { sections: [chrome!] },
           maxModelCalls: Math.max(1, cap.remaining - calls),
           images,
@@ -367,35 +382,17 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
     const rejected = result.rejected.map(({ index, code: reason }) => ({ index, code: reason }));
     if (result.applied.length === 0) {
       await giveBack();
-      return { success: true, data: { ...emptyView("site", result.reply), rejected } };
+      return { success: true, data: await withCredits({ ...emptyView("site", result.reply), rejected }) };
     }
 
-    // Save with the version that was loaded: an edit made meanwhile (the manual editor in another tab) is never overwritten.
-    const saved =
-      target.kind === "page"
-        ? await saveStorePageDraft(sellerId, ownStoreId, page.id, result.content, page.draftVersion, { allowedSections: ALLOWED })
-        : await saveStoreChrome(sellerId, ownStoreId, target.kind, result.content.sections[0] ?? null, editor.store.chromeVersion, { allowedSections: ALLOWED });
-    if (!saved.success) {
-      await giveBack();
-      console.info("[edit-with-ai] save refused", { storeId: ownStoreId, error: saved.error });
-      return fail(saved.error === "version_conflict" ? "draftChanged" : saved.error === "store_read_only" ? "readOnly" : saved.error === "not_found" ? "notFound" : "generic");
-    }
-    const version = "draftVersion" in saved.data ? saved.data.draftVersion : saved.data.version;
-
-    const undoToken = randomBytes(18).toString("base64url");
-    undoStore.put(undoToken, {
-      sellerId,
-      storeId: ownStoreId,
-      target: target.kind === "page" ? { kind: "page", pageId: page.id } : { kind: target.kind },
-      previous: target.kind === "page" ? page.draftContent : chrome,
-      version,
-    });
-
+    // Nothing is written here: the editor applies the ops to its drafts (one undo step) and autosave saves them.
     // A turn that came back from the result cache is free.
     if (calls > 0 && cachedCalls === calls) await giveBack();
     const creditsUsed = creditReference ? 1 : 0;
-    const preview = await previewLink(ownStoreId).catch(() => null);
-    const viewTarget: EditWithAiTarget = target.kind === "page" ? { kind: "page", pageId: page.id, ...(sectionId && { sectionId }) } : { kind: target.kind };
+    // The code elements the ops wrote, rendered for the canvas exactly as the editor's own agent does.
+    const previews = result.codeNodes.length
+      ? await renderAgentCodePreviews(sellerId, ownStoreId, { ...row, pageKind: page.kind ?? null }, contentLocale, defaultLocale, result.codeNodes).catch(() => ({}))
+      : {};
 
     console.info("[edit-with-ai] turn", { storeId: ownStoreId, route: "site", target: target.kind, applied: result.applied.length, rejected: rejected.length, calls, retried: result.retried, code: allowCode, images: images.length });
     return {
@@ -403,11 +400,12 @@ export async function editWithAiTurn(storeId: string, input: EditWithAiInput): P
       data: {
         reply: result.reply,
         route: "site",
-        siteChanges: { target: viewTarget, lines: result.summary, undoToken, previewUrl: preview?.success ? preview.data.url : null },
+        siteChanges: { pageId: page.id, target: agentTarget, ops: result.ops, applied: result.summary, previews, contentLocale },
         proposals: [],
         cards: [],
         rejected,
         creditsUsed,
+        creditsRemaining: await creditsLeft(sellerId, billing.usdLive),
       },
     };
   } catch (error) {
@@ -462,6 +460,13 @@ function targetFromRouter(routed: { target: "page" | "header" | "footer" | null;
   return outline.some((entry) => entry.id === routed.sectionId) ? { kind: "page", sectionId: routed.sectionId } : null;
 }
 
+/** The client's selection as a target, only when the saved drafts have it; anything else is no selection. */
+function selectedTarget(input: EditWithAiTargetInput | undefined, sections: readonly SectionInstance[], hasHeader: boolean, hasFooter: boolean): CodeTarget | null {
+  if (!input) return null;
+  if (input.kind !== "page") return (input.kind === "header" ? hasHeader : hasFooter) ? { kind: input.kind } : null;
+  return sections.some((section) => section.id === input.sectionId) ? { kind: "page", sectionId: input.sectionId } : null;
+}
+
 function validChrome(value: unknown): SectionInstance | null {
   if (!value) return null;
   const checked = validatePageContent({ sections: [value] }, { serverChecks: CODE_SERVER_CHECKS });
@@ -473,44 +478,11 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 // ---------------------------------------------------------------------------
-// Undo
-// ---------------------------------------------------------------------------
-
-/**
- * Puts back the draft a turn replaced, only while the draft is still the
- * version that turn saved (a newer edit, from this chat or the manual
- * editor, refuses it with `draftChanged`). One use per token.
- */
-export async function undoEditWithAi(storeId: string, token: string): Promise<EditWithAiResult<{ previewUrl: string | null }>> {
-  const who = await access(storeId);
-  if (typeof who === "string") return fail(who);
-  try {
-    if (!(await switchOn())) return fail("notFound");
-    if (!actionLimiter.check(`edit-ai-undo:${who.sellerId}`)) return fail("rateLimited");
-    if (!undoTokenSchema.safeParse(token).success) return fail("invalidInput");
-    const entry = undoStore.get(who.storeId, token, who.sellerId);
-    if (!entry) return fail("undoExpired");
-    const saved =
-      entry.target.kind === "page"
-        ? await saveStorePageDraft(who.sellerId, who.storeId, entry.target.pageId, entry.previous, entry.version, { allowedSections: ALLOWED })
-        : await saveStoreChrome(who.sellerId, who.storeId, entry.target.kind, entry.previous ?? null, entry.version, { allowedSections: ALLOWED });
-    if (!saved.success) return fail(saved.error === "version_conflict" ? "draftChanged" : saved.error === "store_read_only" ? "readOnly" : saved.error === "not_found" ? "notFound" : "generic");
-    undoStore.delete(who.storeId, token);
-    const preview = await previewLink(who.storeId).catch(() => null);
-    console.info("[edit-with-ai] undo", { storeId: who.storeId, target: entry.target.kind });
-    return { success: true, data: { previewUrl: preview?.success ? preview.data.url : null } };
-  } catch {
-    console.error("[edit-with-ai] undo failed", { storeId: who.storeId });
-    return fail("generic");
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Confirm and cancel (the agent core's pending actions)
 // ---------------------------------------------------------------------------
 
 /** Runs one proposed store change the seller confirmed. The core charges its credit (1 per write) and refunds it when the run fails. */
-export async function confirmEditWithAiAction(storeId: string, actionId: string): Promise<EditWithAiResult<{ tool: string; result: unknown; creditsUsed: number }>> {
+export async function confirmEditWithAiAction(storeId: string, actionId: string): Promise<EditWithAiResult<EditWithAiConfirmView>> {
   const who = await access(storeId);
   if (typeof who === "string") return fail(who);
   try {
@@ -522,7 +494,8 @@ export async function confirmEditWithAiAction(storeId: string, actionId: string)
     const ctx = editWithAiContext({ sellerId: who.sellerId, storeId: who.storeId, userId: who.userId, locale: "ar", publishProducts: publishes });
     const done = await editWithAiRuntime(who.sellerId, who.storeId).confirmAction(ctx, actionId);
     console.info("[edit-with-ai] confirmed", { storeId: who.storeId, tool: done.tool, credits: done.creditsCharged, replayed: done.replayed });
-    return { success: true, data: { tool: done.tool, result: done.result, creditsUsed: done.creditsCharged } };
+    const billing = await getBillingState().catch(() => null);
+    return { success: true, data: { tool: done.tool, result: done.result, creditsUsed: done.creditsCharged, creditsRemaining: await creditsLeft(who.sellerId, billing?.usdLive === true) } };
   } catch (error) {
     const key = agentErrorKey(error);
     console.error("[edit-with-ai] confirm failed", { storeId: who.storeId, error: key });

@@ -5,10 +5,12 @@ import {
   type EditAiFileExt,
   type EditWithAiAttachment,
   type EditWithAiCard,
+  type EditWithAiConfirmView,
   type EditWithAiError,
   type EditWithAiInput,
   type EditWithAiProposal,
   type EditWithAiResult,
+  type EditWithAiTargetInput,
   type EditWithAiTurnView,
   type EditWithAiUpload,
   type EditWithAiUploadsInput,
@@ -17,11 +19,17 @@ import {
 /**
  * The "Edit with AI" chat's state, outside React (owner request 2026-11-26):
  * messages, the composer's draft and attachments, a turn in flight, undo and
- * the confirm cards. The server actions and the browser upload are injected,
- * so every flow is unit-tested with mocks. The chat is kept per store in
- * `sessionStorage` (the last 50 messages and the draft), so a visit to the
- * from-file import and back restores it. Paths sent back are only the ones
- * the server signed; nothing here builds a storage path.
+ * the confirm cards. The server actions, the browser upload and the editor
+ * (save before a turn, apply a site turn's ops) are injected, so every flow
+ * is unit-tested with mocks. The chat is kept per store in `sessionStorage`
+ * (the last 50 messages and the draft), so a visit to the from-file import
+ * and back restores it. Paths sent back are only the ones the server signed;
+ * nothing here builds a storage path.
+ *
+ * A site turn: the editor's pending edits are saved first (the server reads
+ * the saved drafts), the answer's ops are applied to the editor's drafts as
+ * one undo step, and that step's marker is kept in memory only: after a
+ * reload the change stays, and Undo is simply not offered here.
  */
 
 export const CHAT_MAX_MESSAGES = 50;
@@ -53,7 +61,26 @@ export type ProposalView = EditWithAiProposal & {
   creditsUsed?: number;
 };
 
-export type UndoState = "available" | "undoing" | "done" | "expired" | "changed" | "failed";
+/** What a site turn's answer changed on the canvas. */
+export type SiteChangesView = {
+  /** One line per op applied to the drafts. */
+  lines: string[];
+  /** The drafts changed while the AI worked, so nothing was applied. */
+  stale?: boolean;
+};
+
+/** The turn's context, read from the editor when the seller sends. */
+export type TurnContext = {
+  /** The page active in the editor. */
+  pageId?: string;
+  /** The section selected on the canvas, when there is one. */
+  target?: EditWithAiTargetInput;
+  /** The language the canvas shows. */
+  contentLocale?: "ar" | "en";
+};
+
+export type SiteTurnChanges = NonNullable<EditWithAiTurnView["siteChanges"]>;
+export type AppliedSiteTurn = { applied: string[]; undoMarker: object | null; stale: boolean };
 
 export type ChatMessage =
   | { id: string; role: "user"; text: string; attachments: SentAttachment[] }
@@ -61,7 +88,7 @@ export type ChatMessage =
       id: string;
       role: "assistant";
       text: string;
-      siteChanges: { lines: string[]; undoToken: string; undo: UndoState; error?: EditWithAiError } | null;
+      siteChanges: SiteChangesView | null;
       proposals: ProposalView[];
       cards: EditWithAiCard[];
       rejected: number;
@@ -85,8 +112,7 @@ export type ChatState = {
 export type ChatActions = {
   turn: (input: EditWithAiInput) => Promise<EditWithAiResult<EditWithAiTurnView>>;
   uploads: (input: EditWithAiUploadsInput) => Promise<EditWithAiResult<EditWithAiUpload[]>>;
-  undo: (token: string) => Promise<EditWithAiResult<{ previewUrl: string | null }>>;
-  confirm: (actionId: string) => Promise<EditWithAiResult<{ tool: string; result: unknown; creditsUsed: number }>>;
+  confirm: (actionId: string) => Promise<EditWithAiResult<EditWithAiConfirmView>>;
   cancel: (actionId: string) => Promise<EditWithAiResult<null>>;
 };
 
@@ -97,10 +123,14 @@ export type ChatDeps = {
   uploadFile: (upload: EditWithAiUpload, file: File) => Promise<void>;
   storage?: Pick<Storage, "getItem" | "setItem"> | null;
   storageKey?: string;
-  /** A site turn or an undo saved the drafts (a fresh preview link, or null). */
-  onSiteChanged?: (previewUrl: string | null) => void;
-  /** A confirmed store change ran (products, settings, shipping, theme). */
-  onStoreChanged?: (tool: string) => void;
+  /** Saves the editor's pending edits before a turn; false stops the turn (`draftChanged`). */
+  beforeTurn: () => Promise<boolean>;
+  /** Applies a site turn's ops to the editor's drafts as one undo step. */
+  applySiteTurn: (changes: SiteTurnChanges) => AppliedSiteTurn;
+  /** A confirmed store change ran; `skill` says what kind (products, settings, shipping, design). */
+  onStoreChanged?: (tool: string, skill: string) => void;
+  /** The seller's AI credits after a turn or a confirmed card. */
+  onCredits?: (remaining: number) => void;
   objectUrl?: { create: (file: File) => string; revoke: (url: string) => void };
   makeId?: () => string;
 };
@@ -166,7 +196,9 @@ export function restoreChat(raw: string | null): { messages: ChatMessage[]; draf
             p.status === "confirming" || p.status === "cancelling" ? { ...p, status: "pending" } : p,
           ),
           cards: Array.isArray(message.cards) ? message.cards : [],
-          siteChanges: message.siteChanges ? { ...message.siteChanges, undo: message.siteChanges.undo === "undoing" ? "available" : message.siteChanges.undo } : null,
+          siteChanges: isRecord(message.siteChanges) && Array.isArray(message.siteChanges.lines)
+            ? { lines: (message.siteChanges.lines as unknown[]).filter((line): line is string => typeof line === "string"), ...(message.siteChanges.stale === true && { stale: true }) }
+            : null,
         };
       });
     return { messages, draft: typeof parsed.draft === "string" ? parsed.draft.slice(0, EDIT_WITH_AI_LIMITS.message) : "" };
@@ -196,6 +228,10 @@ export function createEditWithAiChat(deps: ChatDeps) {
   /** Bumped by every turn and by Stop: an answer for an older number is ignored. */
   let turnSeq = 0;
   const files = new Map<string, File>();
+  /** The undo step each site turn made, by message id. In memory only (never stored). */
+  const undoMarkers = new Map<string, object>();
+  /** The context of a Send that is waiting for uploads. */
+  let waitingContext: TurnContext = {};
 
   const persist = () => {
     if (!deps.storage || !deps.storageKey) return;
@@ -246,7 +282,7 @@ export function createEditWithAiChat(deps: ChatDeps) {
       }
     }
     files.delete(id);
-    if (state.waitingUploads && !uploading()) void chat.send();
+    if (state.waitingUploads && !uploading()) void chat.send(waitingContext);
   }
 
   const chat = {
@@ -291,11 +327,14 @@ export function createEditWithAiChat(deps: ChatDeps) {
       if (found?.previewUrl) deps.objectUrl?.revoke(found.previewUrl);
       files.delete(id);
       set({ attachments: state.attachments.filter((a) => a.id !== id) }, false);
-      if (state.waitingUploads && !uploading()) void chat.send();
+      if (state.waitingUploads && !uploading()) void chat.send(waitingContext);
     },
 
-    /** Sends the draft (or `text`). With uploads still running it waits for them, then sends. */
-    async send(text?: string) {
+    /**
+     * Sends the draft (or `text`) about the page and section the editor shows
+     * (`context`). With uploads still running it waits for them, then sends.
+     */
+    async send(context: TurnContext = {}, text?: string) {
       if (text !== undefined) set({ draft: text.slice(0, EDIT_WITH_AI_LIMITS.message) });
       const message = state.draft.trim();
       if (state.pending || !message) {
@@ -303,6 +342,7 @@ export function createEditWithAiChat(deps: ChatDeps) {
         return;
       }
       if (uploading()) {
+        waitingContext = context;
         set({ waitingUploads: true }, false);
         return;
       }
@@ -321,7 +361,20 @@ export function createEditWithAiChat(deps: ChatDeps) {
 
       let result: EditWithAiResult<EditWithAiTurnView>;
       try {
-        result = await deps.actions.turn({ message, uiLocale: deps.uiLocale, history, attachments });
+        // The server edits the SAVED drafts, so they must be what the canvas shows.
+        const saved = await deps.beforeTurn().catch(() => false);
+        if (seq !== turnSeq) return;
+        result = saved
+          ? await deps.actions.turn({
+              message,
+              uiLocale: deps.uiLocale,
+              history,
+              attachments,
+              ...(context.pageId && { pageId: context.pageId }),
+              ...(context.target && { target: context.target }),
+              ...(context.contentLocale && { contentLocale: context.contentLocale }),
+            })
+          : { success: false, error: "draftChanged" };
       } catch {
         result = { success: false, error: "generic" };
       }
@@ -329,24 +382,38 @@ export function createEditWithAiChat(deps: ChatDeps) {
       if (seq !== turnSeq) return;
       set({ pending: false }, false);
       if (!result.success) {
+        if (result.error === "aiNoCredits") deps.onCredits?.(0);
         push({ id: makeId(), role: "error", error: result.error });
         return;
       }
       const view = result.data;
+      // The ops go onto the canvas now, as one undo step of the editor.
+      let siteChanges: SiteChangesView | null = null;
+      const id = makeId();
+      if (view.siteChanges) {
+        let outcome: AppliedSiteTurn;
+        try {
+          outcome = deps.applySiteTurn(view.siteChanges);
+        } catch {
+          outcome = { applied: [], undoMarker: null, stale: true };
+        }
+        siteChanges = { lines: outcome.applied, ...(outcome.stale && { stale: true }) };
+        if (outcome.undoMarker) undoMarkers.set(id, outcome.undoMarker);
+      }
+      if (typeof view.creditsRemaining === "number") deps.onCredits?.(view.creditsRemaining);
       push({
-        id: makeId(),
+        id,
         role: "assistant",
         text: view.reply,
-        siteChanges: view.siteChanges ? { lines: view.siteChanges.lines, undoToken: view.siteChanges.undoToken, undo: "available" } : null,
+        siteChanges,
         proposals: view.proposals.map((p) => ({ ...p, status: "pending" as const })),
         cards: view.cards,
         rejected: view.rejected.length,
         creditsUsed: view.creditsUsed,
       });
-      if (view.siteChanges) deps.onSiteChanged?.(view.siteChanges.previewUrl);
     },
 
-    /** Stops waiting: the late answer is ignored (the server may still finish it; its Undo isn't offered). */
+    /** Stops waiting: the late answer is ignored, so nothing is applied to the website. */
     stop() {
       if (!state.pending) return;
       turnSeq += 1;
@@ -354,23 +421,12 @@ export function createEditWithAiChat(deps: ChatDeps) {
       push({ id: makeId(), role: "notice", notice: "stopped" });
     },
 
-    async undo(messageId: string) {
-      const message = state.messages.find((m): m is AssistantMessage => m.id === messageId && m.role === "assistant");
-      const changes = message?.siteChanges;
-      if (!changes || changes.undo !== "available") return;
-      updateMessage(messageId, (m) => ({ ...m, siteChanges: m.siteChanges && { ...m.siteChanges, undo: "undoing", error: undefined } }));
-      let result: EditWithAiResult<{ previewUrl: string | null }>;
-      try {
-        result = await deps.actions.undo(changes.undoToken);
-      } catch {
-        result = { success: false, error: "generic" };
-      }
-      const undo: UndoState = result.success ? "done" : result.error === "undoExpired" ? "expired" : result.error === "draftChanged" ? "changed" : "failed";
-      updateMessage(messageId, (m) => ({
-        ...m,
-        siteChanges: m.siteChanges && { ...m.siteChanges, undo: undo === "failed" ? "available" : undo, ...(!result.success && { error: result.error }) },
-      }));
-      if (result.success) deps.onSiteChanged?.(result.data.previewUrl);
+    /**
+     * The undo step a site turn made (the editor says whether it is still its
+     * newest step); null for other messages and after a reload.
+     */
+    undoMarkerOf(messageId: string): object | null {
+      return undoMarkers.get(messageId) ?? null;
     },
 
     async confirm(messageId: string, actionId: string) {
@@ -390,7 +446,8 @@ export function createEditWithAiChat(deps: ChatDeps) {
       }
       const product = productOfResult(result.data.tool, result.data.result);
       updateProposal(messageId, actionId, { status: "done", creditsUsed: result.data.creditsUsed, ...(product && { product }) });
-      deps.onStoreChanged?.(result.data.tool);
+      if (typeof result.data.creditsRemaining === "number") deps.onCredits?.(result.data.creditsRemaining);
+      deps.onStoreChanged?.(result.data.tool, proposal.skill);
     },
 
     async cancel(messageId: string, actionId: string) {
@@ -413,6 +470,7 @@ export function createEditWithAiChat(deps: ChatDeps) {
     clear() {
       for (const a of state.attachments) if (a.previewUrl) deps.objectUrl?.revoke(a.previewUrl);
       turnSeq += 1;
+      undoMarkers.clear();
       set({ messages: [], draft: "", attachments: [], pending: false, waitingUploads: false });
     },
   };

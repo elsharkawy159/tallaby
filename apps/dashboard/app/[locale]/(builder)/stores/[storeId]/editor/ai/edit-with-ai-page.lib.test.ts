@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canPublish, editWithAiGate, publishErrorKey } from "./edit-with-ai-page.lib";
+import { creditsTone, editWithAiGate, turnContextOf } from "./edit-with-ai-page.lib";
 
 describe("editWithAiGate", () => {
   it("sends the seller to the editor while AI is off", () => {
@@ -14,19 +14,26 @@ describe("editWithAiGate", () => {
   });
 });
 
-describe("canPublish", () => {
-  it("only with unpublished changes, not while publishing, never read-only", () => {
-    expect(canPublish({ hasUnpublishedChanges: true, publishing: false, readOnly: false })).toBe(true);
-    expect(canPublish({ hasUnpublishedChanges: false, publishing: false, readOnly: false })).toBe(false);
-    expect(canPublish({ hasUnpublishedChanges: true, publishing: true, readOnly: false })).toBe(false);
-    expect(canPublish({ hasUnpublishedChanges: true, publishing: false, readOnly: true })).toBe(false);
+describe("creditsTone", () => {
+  it("warns at 3 or fewer and offers credits at none", () => {
+    expect(creditsTone(40)).toBe("ok");
+    expect(creditsTone(4)).toBe("ok");
+    expect(creditsTone(3)).toBe("low");
+    expect(creditsTone(1)).toBe("low");
+    expect(creditsTone(0)).toBe("empty");
   });
 });
 
-describe("publishErrorKey", () => {
-  it("keeps the errors the page explains and folds the rest into generic", () => {
-    expect(publishErrorKey("noActiveProduct")).toBe("noActiveProduct");
-    expect(publishErrorKey("topUpRequired")).toBe("topUpRequired");
-    expect(publishErrorKey("versionConflict")).toBe("generic");
+describe("turnContextOf", () => {
+  const editor = { pageId: "22222222-2222-4222-8222-222222222222", contentLocale: "en" as const };
+
+  it("sends the active page and the canvas language, and no target with nothing selected", () => {
+    expect(turnContextOf({ ...editor, mention: null, target: { kind: "page" } })).toEqual({ pageId: editor.pageId, contentLocale: "en" });
+  });
+
+  it("sends the selected section, header or footer as the target", () => {
+    const mention = { label: "Hero" };
+    expect(turnContextOf({ ...editor, mention, target: { kind: "page", sectionId: "s-hero" } }).target).toEqual({ kind: "page", sectionId: "s-hero" });
+    expect(turnContextOf({ ...editor, mention, target: { kind: "footer" } }).target).toEqual({ kind: "footer" });
   });
 });

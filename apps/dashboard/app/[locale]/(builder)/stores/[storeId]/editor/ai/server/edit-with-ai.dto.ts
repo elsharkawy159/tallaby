@@ -1,13 +1,16 @@
 import { z } from "zod";
 import type { ConfirmCard } from "@workspace/agent";
+import type { AgentTarget, SectionOp } from "@workspace/store-sections/agent";
 import { BULK_LIMITS } from "@/app/[locale]/(main)/stores/[storeId]/products/add/from-file/from-file.dto";
 
 /**
- * Inputs and results of "Edit with AI" (owner request 2026-11-26): the
- * website editor's chat page that changes the site's drafts and, through the
- * store agent's confirm cards, products, settings and shipping. Every input
- * is parsed here and never trusted (attachment paths are checked again
- * against the session seller on the server).
+ * Inputs and results of "Edit with AI" (owner request 2026-11-26): the chat
+ * of the website editor's AI layout. A site turn answers with validated ops
+ * the editor applies to its drafts (the server writes nothing); products,
+ * settings and shipping go through the store agent's confirm cards. Every
+ * input is parsed here and never trusted (the page, the selected section and
+ * the attachment paths are checked again against the session seller's store
+ * on the server).
  */
 
 export const EDIT_WITH_AI_LIMITS = {
@@ -44,6 +47,14 @@ export const EDIT_AI_FILE_CONTENT_TYPES: Record<EditAiFileExt, string> = {
 
 const locale = z.enum(["ar", "en"]);
 const path = z.string().min(1).max(200);
+const sectionId = z.string().regex(/^[A-Za-z0-9_:-]{1,64}$/);
+
+/** The section selected on the canvas (or the header or footer): ids only, checked against the saved drafts. */
+export const editWithAiTargetSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("page"), sectionId }).strict(),
+  z.object({ kind: z.enum(["header", "footer"]) }).strict(),
+]);
+export type EditWithAiTargetInput = z.infer<typeof editWithAiTargetSchema>;
 
 export const editWithAiAttachmentSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("image"), path }).strict(),
@@ -56,8 +67,12 @@ export const editWithAiInputSchema = z
     message: z.string().trim().min(1).max(EDIT_WITH_AI_LIMITS.message),
     /** The seller's dashboard language (replies and summaries). */
     uiLocale: locale,
-    /** The page to edit; the home page when left out. */
+    /** The page to edit (the one active in the editor); the home page when left out. */
     pageId: z.uuid().optional(),
+    /** The section the seller selected on the canvas; a site turn then edits it. */
+    target: editWithAiTargetSchema.optional(),
+    /** The language the canvas shows; the store's default language when it isn't one of the store's. */
+    contentLocale: locale.optional(),
     history: z
       .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(EDIT_WITH_AI_LIMITS.historyText) }).strict())
       .max(EDIT_WITH_AI_LIMITS.history)
@@ -87,7 +102,6 @@ export const editWithAiUploadsInputSchema = z
 export type EditWithAiUploadsInput = z.input<typeof editWithAiUploadsInputSchema>;
 
 export const actionIdSchema = z.string().regex(/^act_[A-Za-z0-9_-]{20,40}$/);
-export const undoTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{22,64}$/);
 
 export type EditWithAiError =
   | "notFound"
@@ -100,7 +114,6 @@ export type EditWithAiError =
   | "aiNoCredits"
   | "aiFailed"
   | "draftChanged"
-  | "undoExpired"
   | "actionExpired"
   | "actionRunning"
   | "actionFailed"
@@ -110,8 +123,6 @@ export type EditWithAiError =
 export type EditWithAiResult<T> = { success: true; data: T } | { success: false; error: EditWithAiError };
 
 export type EditWithAiRoute = "site" | "products" | "settings" | "shipping" | "design" | "import" | "none";
-
-export type EditWithAiTarget = { kind: "page"; pageId: string; sectionId?: string } | { kind: "header" | "footer" };
 
 export type EditWithAiProposal = {
   actionId: string;
@@ -136,13 +147,20 @@ export type EditWithAiCard = {
 export type EditWithAiTurnView = {
   reply: string;
   route: EditWithAiRoute;
-  /** What a site turn saved to the drafts; null when nothing was saved. */
+  /**
+   * A site turn's changes for the editor to apply to its drafts as one undo
+   * step (`applyAgentTurn`); nothing was written. Null when no op applied.
+   */
   siteChanges: {
-    target: EditWithAiTarget;
-    lines: string[];
-    undoToken: string;
-    /** A fresh "preview on my store" link for the drafts as saved (null when previews are off). */
-    previewUrl: string | null;
+    pageId: string;
+    target: AgentTarget;
+    /** The ops, in order, already validated and normalised against the saved drafts. */
+    ops: SectionOp[];
+    /** One line per op, in the seller's dashboard language. */
+    applied: string[];
+    /** Canvas previews of the code elements the ops wrote, by code node id (html cleaned, css scoped). */
+    previews: Record<string, { html: string; css: string; props: Record<string, unknown> }>;
+    contentLocale: "ar" | "en";
   } | null;
   /** Store changes waiting for the seller's Confirm (nothing is written before). */
   proposals: EditWithAiProposal[];
@@ -150,7 +168,11 @@ export type EditWithAiTurnView = {
   /** Ops or proposals that were refused, by code only. */
   rejected: { code: string; index?: number; tool?: string }[];
   creditsUsed: number;
+  /** AI credits the seller has left after this turn; null when unknown or credits don't apply (before the USD switch). */
+  creditsRemaining: number | null;
 };
+
+export type EditWithAiConfirmView = { tool: string; result: unknown; creditsUsed: number; creditsRemaining: number | null };
 
 export type EditWithAiUpload = {
   kind: "image" | "file";

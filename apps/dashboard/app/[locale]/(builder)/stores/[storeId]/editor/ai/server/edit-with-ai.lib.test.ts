@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { UNDO_TTL_MS, UndoStore, editAiFilePath, fileBytesMatch, isOwnEditAiFilePath, pickTargetByCode, routeByCode, wantsPublish } from "./edit-with-ai.lib";
+import { editAiFilePath, fileBytesMatch, isOwnEditAiFilePath, pickTargetByCode, routeByCode, wantsPublish } from "./edit-with-ai.lib";
 
 const SELLER = "11111111-1111-4111-8111-111111111111";
 const STORE = "22222222-2222-4222-8222-222222222222";
@@ -77,27 +77,5 @@ describe("files", () => {
     expect(isOwnEditAiFilePath(path, SELLER, OTHER)).toBe(false);
     expect(isOwnEditAiFilePath(`${path}/../x.csv`, SELLER, STORE)).toBe(false);
     expect(isOwnEditAiFilePath(path.replace(".csv", ".exe"), SELLER, STORE)).toBe(false);
-  });
-});
-
-describe("UndoStore", () => {
-  const entry = (storeId = STORE) => ({ sellerId: SELLER, storeId, target: { kind: "header" as const }, previous: null, version: 3 });
-
-  it("keeps an entry for its own seller and store for 30 minutes", () => {
-    let now = 0;
-    const store = new UndoStore(() => now);
-    store.put("tok", entry());
-    expect(store.get(STORE, "tok", SELLER)).toMatchObject({ version: 3 });
-    expect(store.get(STORE, "tok", OTHER)).toBeNull();
-    expect(store.get(OTHER, "tok", SELLER)).toBeNull();
-    now = UNDO_TTL_MS + 1;
-    expect(store.get(STORE, "tok", SELLER)).toBeNull();
-  });
-
-  it("keeps the last 10 turns of a store", () => {
-    const store = new UndoStore(() => 0);
-    for (let i = 0; i < 12; i++) store.put(`t${i}`, entry());
-    expect(store.get(STORE, "t0", SELLER)).toBeNull();
-    expect(store.get(STORE, "t11", SELLER)).not.toBeNull();
   });
 });

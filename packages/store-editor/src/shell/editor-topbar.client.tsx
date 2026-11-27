@@ -16,6 +16,7 @@ import {
   Languages,
   LoaderCircle,
   Monitor,
+  PenLine,
   Redo2,
   RotateCw,
   Smartphone,
@@ -57,7 +58,9 @@ const DEVICES = [
  * Top bar (P4B-03, Claude Design "Seller Editor v3"): back, page switcher and
  * store address; device sizes in the middle; history, language, preview, More,
  * save state and publish on the end side. Grid, motion, store link and help
- * live in the More menu; below sm, language and preview join them.
+ * live in the More menu; below sm, language and preview join them. With the
+ * host's link to the other editor (`aiEditor` / `manualEditor`) it also shows
+ * the "AI | Manual" switch (in the More menu below md).
  */
 export function EditorTopbar({
   store,
@@ -76,6 +79,9 @@ export function EditorTopbar({
   onPublish,
   onShowShortcuts,
   fillTranslations,
+  mode = "manual",
+  onSwitchMode,
+  switchingMode = false,
 }: {
   store: EditorStore;
   storeId: string;
@@ -95,6 +101,11 @@ export function EditorTopbar({
   onShowShortcuts: () => void;
   /** More › Fill missing translations (hosts with store drafts only). */
   fillTranslations?: { run: () => void; running: boolean };
+  /** Which editor this is: the manual one, or the AI layout (no panels, so no "Manage pages"). */
+  mode?: "manual" | "ai";
+  /** Saves, then opens the other editor. */
+  onSwitchMode?: (href: string) => void;
+  switchingMode?: boolean;
 }) {
   const t = useTranslations("storeEditor");
   const { capabilities } = useEditorAdapter();
@@ -112,6 +123,9 @@ export function EditorTopbar({
   const host = storeUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
   // Template and section editing have no store to open.
   const hasStore = capabilities.publishLabel === "site";
+  // The other editor's link; null (hosts without one, or AI off) shows no switch.
+  const otherMode = mode === "ai" ? "manual" : "ai";
+  const otherHref = onSwitchMode ? (mode === "ai" ? links.manualEditor : links.aiEditor) : null;
 
   return (
     <header className="relative z-30 flex h-14 min-w-0 shrink-0 items-center gap-2 border-b border-(--s-field) bg-(--s-surface) px-2.5 max-md:h-[52px] max-md:gap-1 max-md:px-1.5">
@@ -145,13 +159,45 @@ export function EditorTopbar({
                 </span>
               </DropdownMenuItem>
             ))}
-            {capabilities.pages && (
+            {capabilities.pages && mode === "manual" && (
               <DropdownMenuItem onSelect={() => state.setRail("pages")} className="text-muted-foreground">
                 {t("managePages")}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        {otherHref && (
+          <div role="group" aria-label={t("modeSwitch.label")} className="hidden shrink-0 items-center gap-0.5 rounded-xl bg-(--s-fill) p-[3px] md:flex">
+            {(["ai", "manual"] as const).map((value) => {
+              const Icon = value === "ai" ? Sparkles : PenLine;
+              const tone = "flex h-8 items-center gap-1.5 rounded-[9px] px-2.5 text-[12.5px] font-bold whitespace-nowrap";
+              return value === mode ? (
+                <span key={value} aria-current="true" className={cn(tone, "bg-(--s-surface) text-(--s-ink) shadow-sm")}>
+                  <Icon className="size-3.5" aria-hidden />
+                  {t(`modeSwitch.${value}`)}
+                </span>
+              ) : (
+                <a
+                  key={value}
+                  href={otherHref}
+                  aria-label={t(`modeSwitch.to.${value}`)}
+                  title={t(`modeSwitch.to.${value}`)}
+                  aria-busy={switchingMode || undefined}
+                  onClick={(event) => {
+                    // A plain click saves first; a new tab or window opens the link as it is.
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                    event.preventDefault();
+                    if (!switchingMode) onSwitchMode?.(otherHref);
+                  }}
+                  className={cn(tone, "text-(--s-subtle) transition-colors hover:text-(--s-ink)", switchingMode && "opacity-60")}
+                >
+                  {switchingMode ? <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden /> : <Icon className="size-3.5" aria-hidden />}
+                  {t(`modeSwitch.${value}`)}
+                </a>
+              );
+            })}
+          </div>
+        )}
         {hasStore && (
           <a
             href={storeUrl}
@@ -223,6 +269,15 @@ export function EditorTopbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
+            {otherHref && (
+              <div className="md:hidden">
+                <DropdownMenuItem onSelect={() => onSwitchMode?.(otherHref)} disabled={switchingMode}>
+                  {otherMode === "ai" ? <Sparkles aria-hidden /> : <PenLine aria-hidden />}
+                  {t(`modeSwitch.to.${otherMode}`)}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </div>
+            )}
             {locales.length > 1 && (
               <div className="sm:hidden">
                 <DropdownMenuLabel className="text-xs text-muted-foreground">{t("editingLanguage")}</DropdownMenuLabel>

@@ -1107,6 +1107,17 @@
         "tags": "Its HTML has more than {tags} tags.",
         "depth": "Its HTML nests tags more than {depth} levels deep."
       }
+    },
+    "modeSwitch": {
+      "label": "Way to edit",
+      "ai": "AI",
+      "manual": "Manual",
+      "to": { "ai": "Edit with AI", "manual": "Edit manually" }
+    },
+    "assistant": {
+      "panel": "Chat with the AI",
+      "canvas": "Your website",
+      "resize": "Change the chat's width"
     }
   },
   "mediaLibrary": {

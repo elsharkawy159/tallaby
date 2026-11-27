@@ -12,7 +12,15 @@ describe("resolveEditorLinks", () => {
       formEditBase: "/stores/s1/website/forms",
       dataActions: true,
       aiCredits: "/settings/plan",
+      aiEditor: null,
+      manualEditor: null,
     });
+  });
+
+  it("has no mode switch until the host gives the other editor's link", () => {
+    const links = resolveEditorLinks("s1", { aiEditor: "/stores/s1/editor/ai" });
+    expect(links.aiEditor).toBe("/stores/s1/editor/ai");
+    expect(links.manualEditor).toBeNull();
   });
 
   it("applies overrides, null hides a link and undefined keeps the default", () => {

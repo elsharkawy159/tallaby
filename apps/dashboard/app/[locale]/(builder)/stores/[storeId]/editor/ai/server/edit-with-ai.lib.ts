@@ -6,8 +6,8 @@ import type { EditAiFileExt, EditWithAiRoute } from "./edit-with-ai.dto";
 /**
  * Pure rules of "Edit with AI" (owner request 2026-11-26): what code decides
  * before any model runs (docs/ai.md rule 1, CLAUDE.md rule 20), the cheap
- * router call's prompt and schema, the publish intent, the file type checks
- * and the undo store. No database, no model.
+ * router call's prompt and schema, the publish intent and the file type
+ * checks. No database, no model.
  */
 
 // ---------------------------------------------------------------------------
@@ -176,61 +176,4 @@ export function isOwnEditAiFilePath(path: string, sellerId: string, storeId: str
 
 export function editAiFilePath(sellerId: string, storeId: string, ext: EditAiFileExt, id: string): string {
   return `${sellerId.toLowerCase()}/${storeId.toLowerCase()}/${id.toLowerCase()}.${ext}`;
-}
-
-// ---------------------------------------------------------------------------
-// Undo (in memory, per instance)
-// ---------------------------------------------------------------------------
-
-export type UndoEntry = {
-  sellerId: string;
-  storeId: string;
-  target: { kind: "page"; pageId: string } | { kind: "header" | "footer" };
-  /** The draft before the turn: page content, or the header/footer section (null = none). */
-  previous: unknown;
-  /** The draft version the turn's save produced; undo applies only while it is still this. */
-  version: number;
-  expiresAt: number;
-};
-
-export const UNDO_TTL_MS = 30 * 60_000;
-const MAX_UNDO_PER_STORE = 10;
-const MAX_UNDO_TOTAL = 500;
-
-/**
- * The previous drafts of the last turns, keyed by store and an unguessable
- * token, for 30 minutes. In memory on purpose (no table fits: store_site_revisions
- * are published snapshots, and drafts keep no history): an undo after a
- * restart or on another instance answers `undoExpired`, and nothing is lost,
- * since the seller can still undo in the manual editor's history or restore a revision.
- */
-export class UndoStore {
-  private entries = new Map<string, UndoEntry>();
-  constructor(private now: () => number = Date.now) {}
-
-  put(token: string, entry: Omit<UndoEntry, "expiresAt">): void {
-    this.sweep();
-    const key = `${entry.storeId}:${token}`;
-    this.entries.delete(key);
-    this.entries.set(key, { ...entry, expiresAt: this.now() + UNDO_TTL_MS });
-    const ofStore = [...this.entries.keys()].filter((k) => k.startsWith(`${entry.storeId}:`));
-    for (const old of ofStore.slice(0, Math.max(0, ofStore.length - MAX_UNDO_PER_STORE))) this.entries.delete(old);
-    while (this.entries.size > MAX_UNDO_TOTAL) this.entries.delete(this.entries.keys().next().value!);
-  }
-
-  /** The entry for this store and token, only for its own seller. */
-  get(storeId: string, token: string, sellerId: string): UndoEntry | null {
-    const entry = this.entries.get(`${storeId}:${token}`);
-    if (!entry || entry.expiresAt <= this.now()) return null;
-    return entry.sellerId === sellerId && entry.storeId === storeId ? entry : null;
-  }
-
-  delete(storeId: string, token: string): void {
-    this.entries.delete(`${storeId}:${token}`);
-  }
-
-  private sweep() {
-    const now = this.now();
-    for (const [key, entry] of this.entries) if (entry.expiresAt <= now) this.entries.delete(key);
-  }
 }

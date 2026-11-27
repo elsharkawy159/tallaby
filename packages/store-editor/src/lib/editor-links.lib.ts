@@ -21,6 +21,10 @@ export type EditorLinks = {
   dataActions: boolean;
   /** AI assistant: where the seller gets more AI credits (plan and credits page). */
   aiCredits: string | null;
+  /** Top bar mode switch: this store's AI editor (shown in the manual editor). Null (the default) hides the switch. */
+  aiEditor: string | null;
+  /** Top bar mode switch: this store's manual editor (shown in the AI editor). Null (the default) hides the switch. */
+  manualEditor: string | null;
 };
 
 export type EditorLinkOverrides = { [K in keyof EditorLinks]?: EditorLinks[K] };
@@ -37,6 +41,8 @@ export function defaultEditorLinks(storeId: string): EditorLinks {
     formEditBase: `/stores/${storeId}/website/forms`,
     dataActions: true,
     aiCredits: "/settings/plan",
+    aiEditor: null,
+    manualEditor: null,
   };
 }
 

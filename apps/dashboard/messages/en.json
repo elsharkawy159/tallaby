@@ -9440,53 +9440,19 @@
   "editWithAi": {
     "title": "Edit with AI",
     "readOnly": "This store can't be edited right now, so the chat is read-only.",
-    "topBar": {
-      "back": "Back to ways to edit",
-      "manual": "Manual edit",
-      "publish": "Publish",
-      "publishing": "Publishing…",
-      "unpublished": "You have changes that aren't published yet",
-      "upToDate": "Everything is published"
-    },
-    "publish": {
-      "success": "Your website is published.",
-      "topUpRequired": "Top up your wallet to bring your store back online.",
-      "templateNotChosen": "Choose a design for your store before you publish it.",
-      "chooseTemplate": "Choose a design",
-      "nothingToPublish": "There are no changes to publish.",
-      "rateLimited": "Too many publishes in a short time. Try again in a few minutes.",
-      "readOnly": "This store can't be published right now.",
-      "publishBlocked": "Publishing is paused for this store. Contact support if you need help.",
-      "invalidSite": "Some parts of the website need fixing before you can publish. Open the manual editor to check them.",
-      "noActiveProduct": "Add your first product before you publish your store.",
-      "generic": "We couldn't publish your website. Try again."
-    },
     "preview": {
-      "title": "Preview",
-      "frame": "Preview of your website's draft",
-      "open": "Preview",
-      "sheetHint": "Your website as it looks with the changes, before you publish.",
-      "device": "Preview size",
-      "desktop": "Computer",
-      "mobile": "Phone",
-      "refresh": "Refresh preview",
-      "newTab": "Open in a new tab",
-      "loading": "Loading the preview…",
-      "unavailable": "The preview isn't available right now. Your changes are still saved."
+      "open": "Preview"
     },
     "chat": {
-      "label": "Chat with the AI",
       "log": "Messages",
       "you": "You",
       "assistant": "Tallaby AI",
       "thinking": "Working on it…",
       "stopped": "Stopped. Any answer that comes later is ignored.",
-      "changesTitle": "Saved to your website's draft",
+      "changesTitle": "Changed on your website",
       "undo": "Undo",
-      "undoing": "Undoing…",
-      "undone": "Undone.",
-      "undoExpired": "This change can't be undone anymore.",
-      "undoChanged": "The website was changed after this, so it can't be undone here. Use the manual editor.",
+      "undoLabel": "Undo the AI's changes",
+      "stale": "Your website changed while the AI was working, so nothing was changed. Try again.",
       "skipped": "{count, plural, one {One change couldn't be made.} other {# changes couldn't be made.}}",
       "credits": "{count, plural, one {1 AI credit} other {# AI credits}}",
       "clear": "Clear chat"
@@ -9512,7 +9478,7 @@
     },
     "empty": {
       "title": "What do you want to change?",
-      "body": "Write what you want in your own words. You can attach photos and product files, and see every change in the preview before you publish."
+      "body": "Write what you want in your own words. You can attach photos and product files, and you see every change on your website right away, before you publish."
     },
     "suggestions": {
       "label": "Ideas to start with",
@@ -9547,6 +9513,10 @@
       "remove": "Remove {name}",
       "counter": "{count} / {max}"
     },
+    "credits": {
+      "left": "{count, plural, =0 {No AI credits left} one {1 AI credit left} other {# AI credits left}}",
+      "get": "Get AI credits"
+    },
     "attachError": {
       "type": "Only JPEG, PNG or WebP photos, or CSV, Excel or PDF files.",
       "size": "Too big. The limit is 5 MB.",
@@ -9564,8 +9534,7 @@
       "aiDailyLimit": "You've reached today's limit for AI edits. Try again tomorrow, or use the manual editor.",
       "aiNoCredits": "You don't have AI credits left.",
       "aiFailed": "The AI couldn't finish that. Try again, or say it in a different way.",
-      "draftChanged": "The website was changed in another tab. Reload the preview, then try again.",
-      "undoExpired": "This change can't be undone anymore.",
+      "draftChanged": "We couldn't save your latest changes, so your message wasn't sent. Reload the page, then try again.",
       "actionExpired": "This suggestion has expired. Ask again to get a new one.",
       "actionRunning": "This change is already being saved. Wait a moment.",
       "actionFailed": "We couldn't save this change. Nothing was changed, and no credit was used.",

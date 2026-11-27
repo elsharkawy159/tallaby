@@ -10,9 +10,8 @@ const mocks = vi.hoisted(() => ({
   refundAiCredit: vi.fn(),
   getBillingState: vi.fn(),
   getStoreForEditor: vi.fn(),
-  saveStorePageDraft: vi.fn(),
-  saveStoreChrome: vi.fn(),
-  previewLink: vi.fn(),
+  getAiCreditStatus: vi.fn(),
+  renderPreviews: vi.fn(),
   verify: vi.fn(),
   signUploads: vi.fn(),
   fileLink: vi.fn(async () => null),
@@ -48,17 +47,12 @@ vi.mock("@workspace/db", () => ({
 }));
 vi.mock("@workspace/lib", () => ({ parseStoreCurrency: () => ({ currency: "EGP", label: null }) }));
 vi.mock("@workspace/lib/billing", () => ({ isProActive: () => false }));
-vi.mock("@workspace/lib/billing/credits", () => ({ claimAiCredit: mocks.claimAiCredit, refundAiCredit: mocks.refundAiCredit }));
+vi.mock("@workspace/lib/billing/credits", () => ({ claimAiCredit: mocks.claimAiCredit, refundAiCredit: mocks.refundAiCredit, getAiCreditStatus: mocks.getAiCreditStatus }));
 vi.mock("@workspace/lib/billing/server", () => ({ getBillingState: mocks.getBillingState }));
-vi.mock("@workspace/lib/store-sites/server", () => ({
-  getStoreForEditor: mocks.getStoreForEditor,
-  saveStorePageDraft: mocks.saveStorePageDraft,
-  saveStoreChrome: mocks.saveStoreChrome,
-}));
-vi.mock("@workspace/store-sections/render", () => ({ storeSectionRegistry: { allowedSections: () => undefined } }));
+vi.mock("@workspace/lib/store-sites/server", () => ({ getStoreForEditor: mocks.getStoreForEditor }));
 vi.mock("@/lib/stores/platform-switches.server", () => ({ isSwitchOn: mocks.isSwitchOn }));
 vi.mock("@/lib/i18n/revalidate-dashboard-path.server", () => ({ revalidateDashboardPath: mocks.revalidate }));
-vi.mock("../../server/editor.server", () => ({ previewLink: mocks.previewLink }));
+vi.mock("../../server/agent-previews.server", () => ({ renderAgentCodePreviews: mocks.renderPreviews }));
 vi.mock("../../server/code-preview.data", () => ({
   loadCodePreviewStore: async () => ({ name: "متجري", subdomain: "shop", settings: {}, colors: { primary: "#145163" }, typography: {}, spacing: {} }),
 }));
@@ -82,10 +76,13 @@ vi.mock("./edit-with-ai-agent.server", () => ({
   toProposalView: (p: unknown) => p,
 }));
 
-const { editWithAiTurn, undoEditWithAi, confirmEditWithAiAction, cancelEditWithAiAction, createEditWithAiUploads, editWithAiImportFile } = await import("./edit-with-ai.server");
+const { editWithAiTurn, confirmEditWithAiAction, cancelEditWithAiAction, createEditWithAiUploads, editWithAiImportFile } = await import("./edit-with-ai.server");
+const { applySectionOps } = await import("@workspace/store-sections/agent");
+const serverModule = await import("./edit-with-ai.server");
 
 const STORE_ID = "11111111-1111-4111-8111-111111111111";
 const PAGE_ID = "22222222-2222-4222-8222-222222222222";
+const ABOUT_ID = "33333333-3333-4333-8333-333333333333";
 const PHOTO = "https://x.supabase.co/storage/v1/object/public/store-media/s/t/new.jpg";
 
 const heroSection = () => ({
@@ -112,6 +109,13 @@ const faqSection = () => ({
   props: {},
   componentTree: [{ id: "n-froot", type: "section", props: { label: "Returns" }, children: [{ id: "n-ftext", type: "text", props: { text: "Easy returns" }, children: [] }] }],
 });
+const aboutSection = () => ({
+  id: "s-about",
+  sectionId: "custom-section",
+  version: 1,
+  props: {},
+  componentTree: [{ id: "n-aroot", type: "section", props: { label: "Our story" }, children: [{ id: "n-atext", type: "text", props: { text: "Since 2020" }, children: [] }] }],
+});
 const headerSection = () => ({
   id: "s-header",
   sectionId: "custom-section",
@@ -123,7 +127,10 @@ const headerSection = () => ({
 const editorData = () => ({
   store: { defaultLocale: "ar", supportedLocales: ["ar", "en"], sharedHeader: headerSection(), sharedFooter: null, chromeVersion: 4 },
   designSystem: { colors: {}, typography: {}, spacing: {}, version: 1 },
-  pages: [{ id: PAGE_ID, isHome: true, draftVersion: 7, draftContent: { sections: [heroSection(), faqSection()] } }],
+  pages: [
+    { id: PAGE_ID, isHome: true, kind: "page", draftVersion: 7, draftContent: { sections: [heroSection(), faqSection()] } },
+    { id: ABOUT_ID, isHome: false, kind: "page", draftVersion: 2, draftContent: { sections: [aboutSection()] } },
+  ],
 });
 
 const ROW = {
@@ -147,50 +154,118 @@ describe("editWithAiTurn", () => {
     mocks.claimAiCredit.mockResolvedValue({ ok: true, reference: "ref-1" });
     mocks.refundAiCredit.mockResolvedValue(undefined);
     mocks.getStoreForEditor.mockImplementation(async () => editorData());
-    mocks.saveStorePageDraft.mockResolvedValue({ success: true, data: { draftVersion: 8 } });
-    mocks.saveStoreChrome.mockResolvedValue({ success: true, data: { version: 5 } });
-    mocks.previewLink.mockResolvedValue({ success: true, data: { url: "https://shop.example/api/store-preview?token=t", expiresAt: 1 } });
+    mocks.getAiCreditStatus.mockResolvedValue({ total: 41 });
+    mocks.renderPreviews.mockResolvedValue({});
     mocks.verify.mockResolvedValue({ ok: true, images: [{ path: "s/t/new.jpg", src: PHOTO, label: "photo 1" }], files: [], recorded: true });
     mocks.generateStructured.mockResolvedValue(editAnswer([IMAGE_OP]));
   });
 
-  it("puts the uploaded photo in the hero, saves the draft with the loaded version and charges one credit", async () => {
+  it("returns the ops for the editor to apply, writes nothing and charges one credit", async () => {
     const result = await editWithAiTurn(STORE_ID, input());
     if (!result.success) throw new Error(result.error);
-    expect(result.data).toMatchObject({ route: "site", creditsUsed: 1, rejected: [], proposals: [], cards: [] });
-    expect(result.data.siteChanges).toMatchObject({ target: { kind: "page", pageId: PAGE_ID, sectionId: "s-hero" }, lines: ["Changed a photo"], previewUrl: expect.stringContaining("store-preview") });
+    expect(result.data).toMatchObject({ route: "site", creditsUsed: 1, creditsRemaining: 41, rejected: [], proposals: [], cards: [] });
+    const changes = result.data.siteChanges!;
+    expect(changes).toMatchObject({ pageId: PAGE_ID, target: { kind: "page", sectionId: "s-hero" }, applied: ["Changed a photo"], previews: {}, contentLocale: "ar" });
     // Code picked the hero: one model call (the edit), no router call.
     expect(mocks.generateStructured).toHaveBeenCalledTimes(1);
     expect(mocks.generateStructured.mock.calls[0]![0]).toMatchObject({ feature: "edit_with_ai", tier: "fast", thinkingLevel: "minimal" });
     expect(mocks.generateStructured.mock.calls[0]![0].content[0].text).toContain(PHOTO);
-    const [, , pageId, content, version] = mocks.saveStorePageDraft.mock.calls[0]!;
-    expect([pageId, version]).toEqual([PAGE_ID, 7]);
-    expect(content.sections[0].componentTree[0].children[1].props.src).toBe(PHOTO);
-    expect(content.sections[1]).toEqual(faqSection());
+    // The ops are what the editor applies to its own drafts (`applyAgentTurn`): the same result, no other section touched.
+    const drafts = { sections: [heroSection(), faqSection()] } as unknown as Parameters<typeof applySectionOps>[0];
+    const applied = applySectionOps(drafts, changes.ops, { target: changes.target, defaultLocale: "ar", allowCode: true });
+    expect(applied.applied).toHaveLength(1);
+    expect((applied.content.sections[0] as unknown as ReturnType<typeof heroSection>).componentTree[0]!.children[1]!.props.src).toBe(PHOTO);
+    expect(applied.content.sections[1]).toEqual(faqSection());
     expect(mocks.claimAiCredit).toHaveBeenCalledTimes(1);
     expect(mocks.refundAiCredit).not.toHaveBeenCalled();
+    // The credits left are read after the claim settled.
+    expect(mocks.getAiCreditStatus.mock.invocationCallOrder[0]!).toBeGreaterThan(mocks.claimAiCredit.mock.invocationCallOrder[0]!);
     expect(mocks.revalidate).toHaveBeenCalledWith(`/stores/${STORE_ID}/website/media`);
   });
 
-  it("refuses a photo that isn't the seller's, saves nothing and gives the credit back", async () => {
+  it("has no action that saves a draft or undoes one any more", () => {
+    expect(Object.keys(serverModule).sort()).toEqual(["cancelEditWithAiAction", "confirmEditWithAiAction", "createEditWithAiUploads", "editWithAiImportFile", "editWithAiTurn"]);
+  });
+
+  it("refuses a photo that isn't the seller's, returns no ops and gives the credit back", async () => {
     mocks.generateStructured.mockResolvedValue(editAnswer([{ ...IMAGE_OP, src: "https://evil.example/x.jpg" }]));
     const result = await editWithAiTurn(STORE_ID, input());
-    expect(result).toMatchObject({ success: true, data: { siteChanges: null, creditsUsed: 0, rejected: [{ index: 0, code: "image_not_allowed" }] } });
-    expect(mocks.saveStorePageDraft).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ success: true, data: { siteChanges: null, creditsUsed: 0, creditsRemaining: 41, rejected: [{ index: 0, code: "image_not_allowed" }] } });
+    expect(mocks.refundAiCredit).toHaveBeenCalledWith(expect.any(String), "ref-1");
+    // Read after the refund, so the number is the one the seller has.
+    expect(mocks.getAiCreditStatus.mock.invocationCallOrder[0]!).toBeGreaterThan(mocks.refundAiCredit.mock.invocationCallOrder[0]!);
+  });
+
+  it("a turn answered from the result cache is free", async () => {
+    mocks.generateStructured.mockResolvedValue({ ...editAnswer([IMAGE_OP]), cached: true });
+    const result = await editWithAiTurn(STORE_ID, input());
+    expect(result).toMatchObject({ success: true, data: { creditsUsed: 0, siteChanges: { applied: ["Changed a photo"] } } });
     expect(mocks.refundAiCredit).toHaveBeenCalledWith(expect.any(String), "ref-1");
   });
 
-  it("never overwrites a draft edited meanwhile", async () => {
-    mocks.saveStorePageDraft.mockResolvedValue({ success: false, error: "version_conflict" });
-    expect(await editWithAiTurn(STORE_ID, input())).toEqual({ success: false, error: "draftChanged" });
-    expect(mocks.refundAiCredit).toHaveBeenCalled();
-  });
-
-  it("edits the header for the announcement, with the chrome version", async () => {
+  it("edits the header for the announcement", async () => {
     mocks.generateStructured.mockResolvedValue(editAnswer([{ op: "set_text", sectionId: "s-header", nodeId: "n-ann", prop: "text", ar: "شحن مجاني فوق ١٠٠٠", en: "Free shipping over 1000" }]));
     const result = await editWithAiTurn(STORE_ID, input({ message: "make the announcement text: free shipping over 1000", attachments: [] }));
-    expect(result).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "header" } } } });
-    expect(mocks.saveStoreChrome.mock.calls[0]!.slice(2, 5)).toEqual(["header", expect.objectContaining({ id: "s-header" }), 4]);
+    expect(result).toMatchObject({ success: true, data: { siteChanges: { pageId: PAGE_ID, target: { kind: "header" }, ops: [expect.objectContaining({ op: "set_text", sectionId: "s-header" })] } } });
+  });
+
+  it("edits the page the editor shows", async () => {
+    mocks.verify.mockResolvedValue({ ok: true, images: [], files: [], recorded: false });
+    mocks.generateStructured.mockResolvedValue(editAnswer([{ op: "set_text", sectionId: "s-about", nodeId: "n-atext", prop: "text", ar: "منذ 2015", en: "Since 2015" }]));
+    const result = await editWithAiTurn(STORE_ID, input({ message: "change the Our story section text to say since 2015", attachments: [], pageId: ABOUT_ID }));
+    expect(result).toMatchObject({ success: true, data: { siteChanges: { pageId: ABOUT_ID, target: { kind: "page", sectionId: "s-about" } } } });
+    // A page of another store is not found.
+    expect(await editWithAiTurn(STORE_ID, input({ pageId: "44444444-4444-4444-8444-444444444444" }))).toEqual({ success: false, error: "notFound" });
+  });
+
+  it("targets the section selected on the canvas, without asking the router where", async () => {
+    mocks.verify.mockResolvedValue({ ok: true, images: [], files: [], recorded: false });
+    mocks.generateStructured.mockResolvedValue(editAnswer([{ op: "set_text", sectionId: "s-faq", nodeId: "n-ftext", prop: "text", ar: "استرجاع سهل", en: "Returns in 14 days" }]));
+    // "section" makes it a site request by code; the selection says which one.
+    const result = await editWithAiTurn(STORE_ID, input({ message: "make this section say 14 days", attachments: [], target: { kind: "page", sectionId: "s-faq" }, contentLocale: "en" }));
+    expect(result).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "page", sectionId: "s-faq" }, contentLocale: "en" } } });
+    expect(mocks.generateStructured).toHaveBeenCalledTimes(1);
+  });
+
+  it("still asks the router for the route when it is unknown, and keeps the selection as the target", async () => {
+    mocks.verify.mockResolvedValue({ ok: true, images: [], files: [], recorded: false });
+    mocks.generateStructured
+      .mockResolvedValueOnce({ object: { route: "site", target: "page", sectionId: "s-hero", reply: null }, cached: false })
+      .mockResolvedValueOnce(editAnswer([{ op: "set_text", sectionId: "s-faq", nodeId: "n-ftext", prop: "text", ar: "استرجاع سهل", en: "Returns in 14 days" }]));
+    const result = await editWithAiTurn(STORE_ID, input({ message: "make it say 14 days instead", attachments: [], target: { kind: "page", sectionId: "s-faq" } }));
+    expect(result).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "page", sectionId: "s-faq" } } } });
+    expect(mocks.generateStructured).toHaveBeenCalledTimes(2);
+  });
+
+  it("never trusts a selection that is not in the saved drafts, or a language the store doesn't have", async () => {
+    // A made-up section id is no selection: code picks the hero as before.
+    const madeUp = await editWithAiTurn(STORE_ID, input({ target: { kind: "page", sectionId: "s-made-up" } }));
+    expect(madeUp).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "page", sectionId: "s-hero" } } } });
+    // The store has no footer: the selection is dropped.
+    const footer = await editWithAiTurn(STORE_ID, input({ target: { kind: "footer" } }));
+    expect(footer).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "page", sectionId: "s-hero" } } } });
+    // Malformed ids never reach the drafts.
+    expect(await editWithAiTurn(STORE_ID, input({ target: { kind: "page", sectionId: "../x" } }))).toEqual({ success: false, error: "invalidInput" });
+    expect(await editWithAiTurn(STORE_ID, input({ target: { kind: "header", sectionId: "s-hero" } }))).toEqual({ success: false, error: "invalidInput" });
+
+    mocks.getStoreForEditor.mockImplementation(async () => ({ ...editorData(), store: { ...editorData().store, supportedLocales: ["ar"] } }));
+    const locale = await editWithAiTurn(STORE_ID, input({ contentLocale: "en" }));
+    expect(locale).toMatchObject({ success: true, data: { siteChanges: { contentLocale: "ar" } } });
+  });
+
+  it("renders the previews of the code a turn wrote, as the editor's own agent does", async () => {
+    const FILE = '<div class="x">Hi</div>\n{% schema %}\n{"name":"Hello","settings":[]}\n{% endschema %}';
+    mocks.verify.mockResolvedValue({ ok: true, images: [], files: [], recorded: false });
+    mocks.generateStructured.mockResolvedValue(editAnswer([{ op: "add_code_section", file: FILE, name: "Hello" }]));
+    mocks.renderPreviews.mockImplementation(async (_seller: string, _store: string, _row: unknown, _locale: string, _default: string, nodes: { nodeId: string }[]) =>
+      Object.fromEntries(nodes.map((node) => [node.nodeId, { html: "<div>Hi</div>", css: "", props: {} }])),
+    );
+    const result = await editWithAiTurn(STORE_ID, input({ message: "add a new section that says hi", attachments: [], contentLocale: "en" }));
+    if (!result.success || !result.data.siteChanges) throw new Error("expected ops");
+    expect(Object.values(result.data.siteChanges.previews)).toEqual([{ html: "<div>Hi</div>", css: "", props: {} }]);
+    const [, storeId, row, locale, defaultLocale] = mocks.renderPreviews.mock.calls[0]!;
+    expect([storeId, locale, defaultLocale]).toEqual([STORE_ID, "en", "ar"]);
+    expect(row).toMatchObject({ pageKind: "page" });
   });
 
   it("asks the router when code can't pick the section, and uses only an id of the outline", async () => {
@@ -199,7 +274,7 @@ describe("editWithAiTurn", () => {
       .mockResolvedValueOnce({ object: { route: "site", target: "page", sectionId: "s-faq", reply: null }, cached: false })
       .mockResolvedValueOnce(editAnswer([{ op: "set_text", sectionId: "s-faq", nodeId: "n-ftext", prop: "text", ar: "استرجاع سهل", en: "Returns in 14 days" }]));
     const result = await editWithAiTurn(STORE_ID, input({ message: "make it say 14 days instead", attachments: [] }));
-    expect(result).toMatchObject({ success: true, data: { siteChanges: { target: { sectionId: "s-faq" } }, creditsUsed: 1 } });
+    expect(result).toMatchObject({ success: true, data: { siteChanges: { target: { kind: "page", sectionId: "s-faq" } }, creditsUsed: 1 } });
     expect(mocks.generateStructured.mock.calls[0]![0].content[0].text).toContain('1. s-faq | "Returns" | tree | photo: no | "Easy returns"');
     expect(mocks.claimAiCredit).toHaveBeenCalledTimes(1);
 
@@ -229,7 +304,6 @@ describe("editWithAiTurn", () => {
     expect(turn).toMatchObject({ skillId: "products", stateSummary: `photos: ${PHOTO}` });
     expect(mocks.generateStructured).not.toHaveBeenCalled();
     expect(mocks.claimAiCredit).not.toHaveBeenCalled();
-    expect(mocks.saveStorePageDraft).not.toHaveBeenCalled();
     expect(mocks.confirmAction).not.toHaveBeenCalled();
   });
 
@@ -244,6 +318,14 @@ describe("editWithAiTurn", () => {
     expect(mocks.generateStructured).not.toHaveBeenCalled();
     expect(mocks.checkDailyCap).not.toHaveBeenCalled();
     expect(mocks.claimAiCredit).not.toHaveBeenCalled();
+  });
+
+  it("reports no credits before the USD switch", async () => {
+    mocks.getBillingState.mockResolvedValue({ usdLive: false });
+    const result = await editWithAiTurn(STORE_ID, input());
+    expect(result).toMatchObject({ success: true, data: { creditsUsed: 0, creditsRemaining: null } });
+    expect(mocks.claimAiCredit).not.toHaveBeenCalled();
+    expect(mocks.getAiCreditStatus).not.toHaveBeenCalled();
   });
 
   it("refuses attachments that aren't the seller's own uploads, before any AI", async () => {
@@ -284,60 +366,22 @@ describe("editWithAiTurn", () => {
   });
 });
 
-describe("undoEditWithAi", () => {
-  const seller = crypto.randomUUID();
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.requireStore.mockImplementation(async () => ({ seller: { sellerId: seller, userId: "u1" }, store: { id: STORE_ID, name: "متجري" } }));
-    mocks.isSwitchOn.mockResolvedValue(true);
-    mocks.checkDailyCap.mockResolvedValue({ allowed: true, remaining: 10 });
-    mocks.getBillingState.mockResolvedValue({ usdLive: false });
-    mocks.getStoreForEditor.mockImplementation(async () => editorData());
-    mocks.saveStorePageDraft.mockResolvedValue({ success: true, data: { draftVersion: 8 } });
-    mocks.previewLink.mockResolvedValue({ success: false, error: "previewUnavailable" });
-    mocks.verify.mockResolvedValue({ ok: true, images: [{ path: "s/t/new.jpg", src: PHOTO, label: "photo 1" }], files: [], recorded: true });
-    mocks.generateStructured.mockResolvedValue(editAnswer([IMAGE_OP]));
-  });
-
-  const saveTurn = async () => {
-    const result = await editWithAiTurn(STORE_ID, input());
-    if (!result.success || !result.data.siteChanges) throw new Error("expected a saved turn");
-    return result.data.siteChanges.undoToken;
-  };
-
-  it("puts the previous draft back while the draft is still the turn's version, once", async () => {
-    const token = await saveTurn();
-    mocks.saveStorePageDraft.mockClear();
-    expect(await undoEditWithAi(STORE_ID, token)).toEqual({ success: true, data: { previewUrl: null } });
-    expect(mocks.saveStorePageDraft.mock.calls[0]!.slice(2, 5)).toEqual([PAGE_ID, editorData().pages[0]!.draftContent, 8]);
-    expect(await undoEditWithAi(STORE_ID, token)).toEqual({ success: false, error: "undoExpired" });
-  });
-
-  it("refuses after a newer edit", async () => {
-    const token = await saveTurn();
-    mocks.saveStorePageDraft.mockResolvedValue({ success: false, error: "version_conflict" });
-    expect(await undoEditWithAi(STORE_ID, token)).toEqual({ success: false, error: "draftChanged" });
-  });
-
-  it("knows no token of another seller", async () => {
-    const token = await saveTurn();
-    mocks.requireStore.mockImplementationOnce(async () => ({ seller: { sellerId: crypto.randomUUID(), userId: "u2" }, store: { id: STORE_ID, name: "x" } }));
-    expect(await undoEditWithAi(STORE_ID, token)).toEqual({ success: false, error: "undoExpired" });
-  });
-});
-
 describe("confirmEditWithAiAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireStore.mockImplementation(async () => ({ seller: { sellerId: crypto.randomUUID(), userId: "u1" }, store: { id: STORE_ID, name: "x" } }));
     mocks.isSwitchOn.mockResolvedValue(true);
+    mocks.getBillingState.mockResolvedValue({ usdLive: true });
+    mocks.getAiCreditStatus.mockResolvedValue({ total: 40 });
   });
 
   it("runs the seller's own pending action through the core, which charges its credit", async () => {
     mocks.pendingPublishes.mockResolvedValue(true);
     mocks.confirmAction.mockResolvedValue({ actionId: "act_x", tool: "create_product", result: { productId: "p" }, creditsCharged: 1, replayed: false });
     const result = await confirmEditWithAiAction(STORE_ID, "act_abcdefghijklmnopqrstuvwx");
-    expect(result).toEqual({ success: true, data: { tool: "create_product", result: { productId: "p" }, creditsUsed: 1 } });
+    expect(result).toEqual({ success: true, data: { tool: "create_product", result: { productId: "p" }, creditsUsed: 1, creditsRemaining: 40 } });
+    // The credits left are read after the core charged the confirmed write.
+    expect(mocks.getAiCreditStatus.mock.invocationCallOrder[0]!).toBeGreaterThan(mocks.confirmAction.mock.invocationCallOrder[0]!);
     expect(mocks.confirmAction.mock.calls[0]![0]).toMatchObject({ publishProducts: true, source: "in_app" });
   });
 

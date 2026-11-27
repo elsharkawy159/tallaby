@@ -1,9 +1,10 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import editorAr from "@workspace/store-editor/messages/ar.json";
+import editorEn from "@workspace/store-editor/messages/en.json";
 import ar from "@/messages/ar.json";
 import en from "@/messages/en.json";
-import { publishErrorKey } from "./edit-with-ai-page.lib";
 
 /**
  * Every `agent.card.*` key the agent skills can put on a confirm card
@@ -71,10 +72,13 @@ describe("editWithAi messages", () => {
     expect(flat((ar as Record<string, unknown>).agent).sort()).toEqual(flat((en as Record<string, unknown>).agent).sort());
   });
 
-  it("has a publish message for every publish error the page shows", () => {
-    for (const error of ["noActiveProduct", "topUpRequired", "templateNotChosen", "nothingToPublish", "rateLimited", "readOnly", "publishBlocked", "invalidSite", "somethingElse"]) {
-      expect(typeof lookup(en, `editWithAi.publish.${publishErrorKey(error)}`)).toBe("string");
+  it("publishes through the editor's own top bar: the editor has the publish errors' texts, and the chat has none", () => {
+    for (const error of ["noActiveProduct", "topUpRequired", "templateNotChosen", "nothingToPublish", "rateLimited", "readOnly", "saveFirst", "versionConflict", "generic"]) {
+      expect(typeof lookup(editorEn, `storeEditor.errors.${error}`)).toBe("string");
+      expect(typeof lookup(editorAr, `storeEditor.errors.${error}`)).toBe("string");
     }
+    expect(lookup(en, "editWithAi.publish")).toBeUndefined();
+    expect(lookup(en, "editWithAi.topBar")).toBeUndefined();
   });
 
   it("no longer has the placeholder copy", () => {

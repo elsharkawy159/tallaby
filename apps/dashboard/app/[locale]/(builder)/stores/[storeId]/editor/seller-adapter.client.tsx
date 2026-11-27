@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
+import { getPathname, useRouter } from "@/i18n/navigation";
 import { TOP_UP_TO_GO_ONLINE_HREF } from "@/lib/billing/top-up-to-go-online.lib";
 import type { EditorAdapter, EditorCapabilities } from "@workspace/store-editor";
 import { sellerMediaAdapter } from "@/components/media/media-adapter.client";
@@ -34,6 +35,7 @@ import { editorAgentTurn } from "./server/editor-agent.server";
 import { translateSiteWithAi } from "./server/ai-translate.server";
 import { requestWelcomeGiftCheck } from "@/components/layout/welcome-gift.lib";
 import { usePublishNeedsProductToast } from "@/lib/stores/publish-needs-product.client";
+import { aiEditorHref, manualEditorHref } from "./editor-entry.lib";
 
 /** The seller's editor has everything. */
 const SELLER_CAPABILITIES: EditorCapabilities = {
@@ -57,17 +59,30 @@ const SELLER_CAPABILITIES: EditorCapabilities = {
  * action re-checks the store against the session seller; `storeId` is only
  * the URL's id. `codeSections`: the `code_sections` switch, read by the page;
  * only then the adapter has `code` (Add › Code section and the Code tab).
+ * `aiEditor`: editing with AI is on (`editorAiEnabled`), so the top bar gets
+ * the "AI | Manual" switch; its links carry the seller's language.
  */
-export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<EditorCapabilities>, codeSections = false, editorAgent = false): EditorAdapter {
+export function useSellerEditorAdapter(
+  storeId: string,
+  capabilities?: Partial<EditorCapabilities>,
+  codeSections = false,
+  editorAgent = false,
+  aiEditor = false,
+): EditorAdapter {
   // Callers may pass a fresh object each render; the adapter changes only when a value does.
   const overridesKey = JSON.stringify(capabilities ?? {});
   // eslint-disable-next-line react-hooks/exhaustive-deps -- overridesKey stands for `capabilities`
   const merged = useMemo(() => ({ ...SELLER_CAPABILITIES, ...capabilities }), [overridesKey]);
   const router = useRouter();
+  const locale = useLocale();
   const needsProduct = usePublishNeedsProductToast(storeId);
   return useMemo<EditorAdapter>(
     () => ({
       capabilities: merged,
+      links: {
+        aiEditor: aiEditor ? getPathname({ href: aiEditorHref(storeId), locale }) : null,
+        manualEditor: aiEditor ? getPathname({ href: manualEditorHref(storeId), locale }) : null,
+      },
       saveDraft: (pageId, content, clientVersion) => saveDraft(storeId, pageId, content, clientVersion),
       saveDesignSystem: (designSystem, clientVersion) => saveDesignSystem(storeId, designSystem, clientVersion),
       saveChrome: (part, instance, clientVersion) => saveChrome(storeId, part, instance, clientVersion),
@@ -122,6 +137,6 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       ...(editorAgent && { agent: { turn: (input: Parameters<typeof editorAgentTurn>[1]) => editorAgentTurn(storeId, input) } }),
       ...(codeSections && { code: { preview: (input) => previewCodeNode(storeId, input) } }),
     }),
-    [storeId, merged, router, needsProduct, codeSections, editorAgent],
+    [storeId, merged, router, locale, needsProduct, codeSections, editorAgent, aiEditor],
   );
 }

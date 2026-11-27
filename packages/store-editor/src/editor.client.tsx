@@ -1,7 +1,8 @@
 "use client";
 
 import "./editor-chrome.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useStore } from "zustand";
@@ -35,6 +36,7 @@ import { createEditorCommands } from "./lib/editor-commands.lib";
 import { QuickInsertDialog, ShortcutsDialog } from "./shell/editor-dialogs.client";
 import { EditorRail } from "./shell/editor-rail.client";
 import { EditorSheet } from "./shell/editor-sheet.client";
+import { EditorAssistantHost, EditorAssistantSplit, type EditorAssistantApi } from "./shell/editor-assistant.client";
 import { PhoneActionBar } from "./shell/phone-action-bar.client";
 import { EditorSidebar } from "./inspector/editor-sidebar.client";
 import { EditorTopbar } from "./shell/editor-topbar.client";
@@ -66,6 +68,12 @@ import { useIsBelowLg, useIsBelowXl } from "./state/use-media-query.client";
 import { CodePreviewProvider, renderCanvasCodeNode } from "./code/code-preview.client";
 
 type Catalog = EditorCatalogSnapshot;
+
+export type { EditorAssistantApi, EditorAssistantApplied, EditorAssistantRequest, EditorAssistantTurn } from "./shell/editor-assistant.client";
+export type { AgentMention } from "./lib/editor-agent.lib";
+
+/** The host's assistant (a chat) for the AI layout: rendered beside the canvas with the editor's API. */
+export type EditorAssistant = (api: EditorAssistantApi) => ReactNode;
 
 export type EditorInitial = {
   storeId: string;
@@ -114,18 +122,21 @@ export type EditorInitial = {
  * The website editor. Every server call goes through `adapter` (the host's
  * EditorAdapter: seller dashboard, admin, template or section editing), and
  * panels the host does not support (`adapter.capabilities`) are not shown.
+ * With `assistant` it opens in the AI layout: the same top bar, the host's
+ * assistant in a resizable panel and the canvas, with no rail, panels or
+ * inspector (`shell/editor-assistant.client.tsx`).
  */
-export function StoreEditor({ initial, adapter }: { initial: EditorInitial; adapter: EditorAdapter }) {
+export function StoreEditor({ initial, adapter, assistant }: { initial: EditorInitial; adapter: EditorAdapter; assistant?: EditorAssistant }) {
   return (
     <EditorAdapterProvider adapter={adapter}>
-      <EditorRoot initial={initial} />
+      <EditorRoot initial={initial} assistant={assistant} />
     </EditorAdapterProvider>
   );
 }
 
 const PUBLISHED_MESSAGE = { site: "published", section: "publishedSection", templateVersion: "publishedTemplate" } as const;
 
-function EditorRoot({ initial }: { initial: EditorInitial }) {
+function EditorRoot({ initial, assistant }: { initial: EditorInitial; assistant?: EditorAssistant }) {
   const t = useTranslations("storeEditor");
   const storeRef = useRef<EditorStore | null>(null);
   const droppedRef = useRef(0);
@@ -152,14 +163,14 @@ function EditorRoot({ initial }: { initial: EditorInitial }) {
   useEffect(() => {
     if (droppedRef.current) toast.info(t("legacySectionsDropped", { count: droppedRef.current }), { id: "legacy-sections" });
   }, [t]);
-  return <EditorShell initial={initial} store={storeRef.current} />;
+  return <EditorShell initial={initial} store={storeRef.current} assistant={assistant} />;
 }
 
 /**
  * The editor layout (P4B-03, like the reference workspace): top bar, tab
  * rail and its panel, the canvas, and the Content/Style sidebar.
  */
-function EditorShell({ initial, store }: { initial: EditorInitial; store: EditorStore }) {
+function EditorShell({ initial, store, assistant }: { initial: EditorInitial; store: EditorStore; assistant?: EditorAssistant }) {
   const t = useTranslations("storeEditor");
   const adapter = useEditorAdapter();
   const { capabilities } = adapter;
@@ -197,10 +208,14 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const [quickInsert, setQuickInsert] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
+  // AI layout, below lg: the canvas opens in a sheet over the chat.
+  const [canvasSheetOpen, setCanvasSheetOpen] = useState(false);
+  const showCanvas = useCallback(() => setCanvasSheetOpen(true), []);
   const preview = useStorePreview(previewLinkOf(adapter), flush);
   // Store data refreshes when the seller comes back to this tab (P4B-05); forms also refresh from the Forms tab.
   const { data: catalog, state: dataState, refresh: refreshData, setForms } = useEditorData(initial.catalog);
   const forms = catalog.forms;
+  const forceRefreshData = useCallback(() => void refreshData(true), [refreshData]);
   const baseCommands = useMemo(() => createEditorCommands(store), [store]);
   const commands = useDeviceCommands(store, baseCommands);
 
@@ -460,11 +475,28 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     }
   };
 
+  // The top bar's "AI | Manual" switch: everything is saved before the other editor opens.
+  const router = useRouter();
+  const [switchingMode, setSwitchingMode] = useState(false);
+  const onSwitchMode = async (href: string) => {
+    if (switchingMode) return;
+    setSwitchingMode(true);
+    try {
+      if (!(await flush())) {
+        toast.error(t(store.getState().saveStatus === "conflict" ? "errors.versionConflict" : "errors.saveFirst"));
+        return;
+      }
+      router.push(href);
+    } finally {
+      setSwitchingMode(false);
+    }
+  };
+
   // Selecting an image opens Explore, so a photo can be dropped onto it right away
-  // (not on small screens: the inspector sheet opens there instead).
+  // (not on small screens: the inspector sheet opens there instead; never in the AI layout, which has no panels).
   useEffect(
     () =>
-      compact ? undefined : store.subscribe((state, prev) => {
+      compact || assistant ? undefined : store.subscribe((state, prev) => {
         const { selection } = state;
         if (!selection || selection === prev.selection) return;
         const page = state.pages.find((p) => p.id === state.activePageId) ?? state.pages[0];
@@ -476,7 +508,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         state.setMediaTab(capabilities.explore ? "explore" : "library");
         setPanelOpen(true);
       }),
-    [store, capabilities, compact],
+    [store, capabilities, compact, assistant],
   );
 
   const toggleRail = (next: Rail) => {
@@ -550,6 +582,41 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   );
   const hasSelection = selection !== null;
 
+  const canvasMain = (
+    <main className={cn("flex min-w-0 flex-1 flex-col", !assistant && "max-md:pb-[calc(62px+env(safe-area-inset-bottom))]")}>
+      <DeviceBanner store={store} />
+      {productPage && (
+        <PreviewProductPicker
+          products={catalog.products}
+          current={previewProduct.productId ? { id: previewProduct.productId, title: previewProduct.product.title } : null}
+          busy={previewProduct.busy}
+          onPick={previewProduct.pick}
+          uiLocale={uiLocale}
+        />
+      )}
+      <div className="min-h-0 flex-1">
+        <EditorCanvas
+          ctx={ctx}
+          sections={shown.sections}
+          header={shown.header}
+          footer={shown.footer}
+          designSystem={designSystem}
+          fontClassName={initial.fontClassName}
+          defaultLocale={defaultLocale}
+          device={device}
+          store={store}
+          commands={commands}
+          uiLocale={uiLocale}
+          onRequestImage={() => setImagePickerOpen(true)}
+          onQuickInsert={(index) => setQuickInsert({ open: true, index })}
+          onFrameKeyDown={onFrameKeyDown}
+          translated={new Set(initial.locales).size > 1}
+          bottomNavPages={bottomNavPages}
+        />
+      </div>
+    </main>
+  );
+
   return (
     <div className={`store-editor-chrome flex h-dvh flex-col overflow-x-clip bg-background ${initial.fontClassName}`} style={themeVars as React.CSSProperties}>
       <EditorTopbar
@@ -569,6 +636,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         onPublish={() => void onPublish()}
         onShowShortcuts={() => setShortcutsOpen(true)}
         fillTranslations={onFillTranslations && { run: () => void onFillTranslations(), running: filling || aiRunning }}
+        mode={assistant ? "ai" : "manual"}
+        onSwitchMode={(href) => void onSwitchMode(href)}
+        switchingMode={switchingMode}
       />
       {adapter.translateWithAi && (
         <AiTranslateDialog offer={aiOffer} running={aiRunning} onTranslate={() => void onTranslateWithAi()} onSkip={onSkipAi} />
@@ -592,6 +662,31 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       <CodePreviewProvider code={adapter.code} locale={locale} pageId={page.id} productId={productPage ? (previewProduct.productId ?? undefined) : undefined}>
       <EditorDndProvider store={store} commands={commands} readOnly={initial.readOnly}>
       <div className="relative flex min-h-0 flex-1">
+        {assistant ? (
+          <EditorAssistantHost
+            store={store}
+            uiLocale={uiLocale}
+            readOnly={initial.readOnly}
+            compact={compact}
+            flush={flush}
+            refreshData={forceRefreshData}
+            showCanvas={showCanvas}
+          >
+            {(api) => (
+              <EditorAssistantSplit
+                dir={uiLocale === "en" ? "ltr" : "rtl"}
+                compact={compact}
+                assistant={assistant(api)}
+                canvas={canvasMain}
+                canvasOpen={canvasSheetOpen}
+                onCanvasOpenChange={setCanvasSheetOpen}
+                sheetClassName={initial.fontClassName}
+                sheetStyle={themeVars as React.CSSProperties}
+              />
+            )}
+          </EditorAssistantHost>
+        ) : (
+        <>
         <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} onShowShortcuts={() => setShortcutsOpen(true)} />
         {!compact && panelOpen && railEnabled(rail, capabilities) && (
           <aside
@@ -626,38 +721,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
           </EditorSheet>
         )}
 
-        <main className="flex min-w-0 flex-1 flex-col max-md:pb-[calc(62px+env(safe-area-inset-bottom))]">
-          <DeviceBanner store={store} />
-          {productPage && (
-            <PreviewProductPicker
-              products={catalog.products}
-              current={previewProduct.productId ? { id: previewProduct.productId, title: previewProduct.product.title } : null}
-              busy={previewProduct.busy}
-              onPick={previewProduct.pick}
-              uiLocale={uiLocale}
-            />
-          )}
-          <div className="min-h-0 flex-1">
-            <EditorCanvas
-              ctx={ctx}
-              sections={shown.sections}
-              header={shown.header}
-              footer={shown.footer}
-              designSystem={designSystem}
-              fontClassName={initial.fontClassName}
-              defaultLocale={defaultLocale}
-              device={device}
-              store={store}
-              commands={commands}
-              uiLocale={uiLocale}
-              onRequestImage={() => setImagePickerOpen(true)}
-              onQuickInsert={(index) => setQuickInsert({ open: true, index })}
-              onFrameKeyDown={onFrameKeyDown}
-              translated={new Set(initial.locales).size > 1}
-              bottomNavPages={bottomNavPages}
-            />
-          </div>
-        </main>
+        {canvasMain}
 
         {/* Small laptops: the inspector floats over the canvas while something is selected, so the page keeps its desktop width (F-74). */}
         {!compact && (!floatingPanel || hasSelection) && (
@@ -687,6 +751,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         )}
         {compact && hasSelection && !inspectorOpen && !panelSheetOpen && (
           <PhoneActionBar store={store} commands={commands} uiLocale={uiLocale} readOnly={initial.readOnly} onEdit={() => setInspectorOpen(true)} />
+        )}
+        </>
         )}
       </div>
       </EditorDndProvider>

@@ -2,23 +2,19 @@
 
 import { aiConfigured, aiErrorKind, checkDailyCap, generateStructured, logAiUsage, modelIdForTier } from "@workspace/ai";
 import { and, db, eq, isNull, sellers, stores } from "@workspace/db";
-import { currencyLabelText, parseStoreCurrency } from "@workspace/lib";
 import { isProActive } from "@workspace/lib/billing";
 import { claimAiCredit, refundAiCredit } from "@workspace/lib/billing/credits";
 import { getBillingState } from "@workspace/lib/billing/server";
-import { getStorePreviewProduct } from "@workspace/lib/store-sites/preview-product";
-import { storeUrl } from "@workspace/lib/storefront";
-import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import type { EditorAdapter, EditorAgentTurnView } from "@workspace/store-editor";
 import type { EditorErrorKey, EditorResult } from "@workspace/store-editor/editor.dto";
 import { validatePageContent, type SectionInstance, type SiteLocale } from "@workspace/store-sections";
 import { buildAgentContent, EDITOR_AGENT_FEATURE, editorAgentModelOutputSchema, runEditorAgentTurn } from "@workspace/store-sections/agent-server";
 import { CODE_SERVER_CHECKS } from "@workspace/store-sections/code-server";
-import { codePreviewQueries, prepareCodePreview, renderPreparedCodePreview } from "@workspace/store-sections/code-preview";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { isSwitchOn } from "@/lib/stores/platform-switches.server";
-import { loadCodePreviewCatalog, loadCodePreviewStore } from "./code-preview.data";
+import { loadCodePreviewStore } from "./code-preview.data";
+import { renderAgentCodePreviews } from "./agent-previews.server";
 import { editorAgentInputSchema } from "./editor-agent.dto";
 import { mediaImageCheck, mediaPathsIn, ownMediaImages } from "./agent-images.server";
 
@@ -59,13 +55,6 @@ const dailyLimit = () => {
 const burstLimiter = createRateLimiter({ limit: 10, windowMs: 60_000 });
 
 const fail = (error: EditorErrorKey): EditorResult<EditorAgentTurnView> => ({ success: false, error });
-
-/** Stored image path or URL to a URL, as the editor canvas resolves it (same as the code preview). */
-function imageUrl(path: string): string | null {
-  if (!path) return null;
-  if (/^(https?:)?\/\//.test(path)) return path;
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/sellers/${path}`;
-}
 
 async function loadStoreLocales(sellerId: string, storeId: string): Promise<{ defaultLocale: SiteLocale; locales: SiteLocale[] } | null> {
   const [row] = await db
@@ -209,7 +198,7 @@ export async function editorAgentTurn(storeId: string, input: EditorAgentTurnInp
     const creditsUsed = creditReference ? 1 : 0;
 
     const previews = result.codeNodes.length
-      ? await renderPreviews(sellerId, ownStoreId, row, turn.contentLocale, locales.defaultLocale, result.codeNodes).catch(() => ({}))
+      ? await renderAgentCodePreviews(sellerId, ownStoreId, row, turn.contentLocale, locales.defaultLocale, result.codeNodes).catch(() => ({}))
       : {};
 
     console.info("[editor-agent] turn", {
@@ -238,48 +227,6 @@ export async function editorAgentTurn(storeId: string, input: EditorAgentTurnInp
     console.error("[editor-agent] failed", { storeId: ownStoreId });
     return fail("generic");
   }
-}
-
-type StoreRow = NonNullable<Awaited<ReturnType<typeof loadCodePreviewStore>>>;
-
-/** The canvas previews of the code elements a turn wrote, through the same path as the Code tab's preview. Never cached. */
-async function renderPreviews(
-  sellerId: string,
-  storeId: string,
-  row: StoreRow,
-  locale: SiteLocale,
-  defaultLocale: SiteLocale,
-  nodes: Awaited<ReturnType<typeof runEditorAgentTurn>>["codeNodes"],
-): Promise<EditorAgentTurnView["previews"]> {
-  const pageType = row.pageKind === "product" ? "product" : "page";
-  const [product, customDomain] = await Promise.all([
-    pageType === "product" ? getStorePreviewProduct(sellerId, storeId, undefined, { locale }).catch(() => null) : null,
-    findActiveCustomDomainForSubdomain(row.subdomain).catch(() => null),
-  ]);
-  const { currency, label } = parseStoreCurrency(row.settings);
-  const out: EditorAgentTurnView["previews"] = {};
-  await Promise.all(
-    nodes.map(async (node) => {
-      const prepared = prepareCodePreview({ nodeId: node.nodeId, file: node.file, name: node.props.name, settings: node.props.settings, blocks: node.props.blocks });
-      const catalog = await loadCodePreviewCatalog(sellerId, storeId, codePreviewQueries(prepared), locale);
-      const rendered = renderPreparedCodePreview(prepared, node.file, {
-        locale,
-        pageType,
-        storeId,
-        store: { name: row.name, url: storeUrl(row.subdomain, customDomain), logoUrl: row.logoUrl },
-        currency,
-        currencyLabel: currencyLabelText(label, locale),
-        // Liquid's URLs follow the storefront's language rule for this store (as the Code tab's preview).
-        defaultLocale,
-        designSystem: { colors: row.colors, typography: row.typography, spacing: row.spacing },
-        catalog,
-        product,
-        imageUrl,
-      });
-      out[node.nodeId] = { html: rendered.html, css: rendered.css, props: rendered.props as unknown as Record<string, unknown> };
-    }),
-  );
-  return out;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

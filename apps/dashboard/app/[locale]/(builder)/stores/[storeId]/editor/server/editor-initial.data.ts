@@ -1,0 +1,121 @@
+import { parseStoreCurrency } from "@workspace/lib";
+import { storeProfilePaymentMethods } from "@workspace/lib/payments/store-methods";
+import { getStorefrontGateway } from "@workspace/lib/payments/store-gateways/server";
+import { storePreviewSecret } from "@workspace/lib/store-sites/preview";
+import { getStorePreviewProduct } from "@workspace/lib/store-sites/preview-product";
+import { getStoreForEditor, getStoreSiteStatus, getStoreTemplateLibraryKeys, listStoreTemplates } from "@workspace/lib/store-sites/server";
+import { storeUrl } from "@workspace/lib/storefront";
+import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
+import { publicStoreSocialLinks } from "@workspace/lib/stores";
+import { effectiveStoreNiche } from "@workspace/lib/stores/niche";
+import type { StoreRow } from "@workspace/lib/stores/server";
+import type { EditorInitial } from "@workspace/store-editor/editor.client";
+import { findIndustry, templatesForIndustry } from "@workspace/store-editor/lib/industries.lib";
+import { designSystemSchema, preferTemplatePresets, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
+import { storeFontVariables } from "@/app/[locale]/(main)/stores/[storeId]/website/_components/store-fonts";
+import { toTemplateCardViews } from "@/app/[locale]/(main)/stores/[storeId]/website/templates/templates.lib";
+import { loadCachedTemplateCards, loadCachedTemplateConfig } from "@/lib/store-templates.data";
+import { isSwitchOn } from "@/lib/stores/platform-switches.server";
+import { loadEditorSnapshot } from "./editor.data";
+import { loadLibraryPresets } from "./library.data";
+
+const asLocale = (value: unknown): SiteLocale => (value === "en" ? "en" : "ar");
+
+export type EditorInitialLoad = {
+  initial: EditorInitial;
+  /** Code sections (F-101e): the editor offers them only while the platform switch is on. */
+  codeSections: boolean;
+  /** The editor AI agent (F-83c): shown only while its platform switch is on. */
+  editorAgent: boolean;
+};
+
+/**
+ * Everything the website editor opens with, for the manual editor
+ * (`editor/page.tsx`) and the AI layout (`editor/ai/page.tsx`). `store` is the
+ * row the page already checked against the session seller (`loadStorePage`);
+ * every read here is scoped to that seller and store again. Null when the
+ * store has no site to edit. Never cached (drafts).
+ */
+export async function loadEditorInitial(store: StoreRow): Promise<EditorInitialLoad | null> {
+  const [editor, status, catalog, gallery, presets, customDomain, previewProduct, codeSections, editorAgent] = await Promise.all([
+    getStoreForEditor(store.sellerId, store.id),
+    getStoreSiteStatus(store.sellerId, store.id),
+    loadEditorSnapshot(store.sellerId, store.id),
+    listStoreTemplates(store.sellerId, store.id, undefined, loadCachedTemplateCards),
+    loadLibraryPresets(),
+    findActiveCustomDomainForSubdomain(store.subdomain),
+    // The product page canvas's product: the newest the store shows (uncached, store-checked).
+    getStorePreviewProduct(store.sellerId, store.id, undefined, { locale: asLocale(store.defaultLocale) }).catch(() => null),
+    // Code sections (F-101e): the editor offers them only while the platform switch is on.
+    isSwitchOn("code_sections").catch(() => false),
+    // The editor AI agent (F-83c): the sidebar chat shows only while its platform switch is on.
+    isSwitchOn("editor_agent").catch(() => false),
+  ]);
+  // The store's live address: its active custom domain, else its subdomain.
+  const liveUrl = storeUrl(store.subdomain, customDomain);
+  if (!editor) return null;
+  // Add › Sections lists the designs of the store's template first in each category.
+  const templateKeys = await getStoreTemplateLibraryKeys(store.sellerId, store.id, gallery?.currentKey ?? "", undefined, loadCachedTemplateConfig).catch(() => []);
+  // Add › Templates lists the store's industry only (owner request 2026-10-29).
+  const storeCategory = { en: store.storeCategory, ar: store.storeCategoryAr };
+  const industry = findIndustry(storeCategory);
+  // No "current" template until the seller picks one (the new-store Classic drafts are a placeholder).
+  const templatesCurrentKey = gallery?.templateChosen ? gallery.currentKey : "";
+  // Most relevant first: the store niche's template, its industry, related industries (owner, 2026-11-15).
+  const templateItems = toTemplateCardViews(gallery?.templates ?? [], { industryId: industry?.id, nicheId: effectiveStoreNiche(store, industry?.id) });
+
+  const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
+  const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);
+  const designSystem = designSystemSchema.safeParse(editor.designSystem);
+  const contact = (store.contact ?? {}) as { phone?: string; email?: string; whatsapp?: string };
+  const locales = (editor.store.supportedLocales ?? ["ar", "en"]).map(asLocale);
+
+  const initial: EditorInitial = {
+    storeId: store.id,
+    storeUrl: liveUrl,
+    readOnly: store.status !== "active",
+    store: {
+      name: store.name,
+      description: store.description,
+      logoUrl: store.logoUrl,
+      bannerUrl: store.bannerUrl,
+      url: liveUrl,
+      // WhatsApp is its own store setting; sections fall back to the phone number themselves.
+      contact: { phone: contact.phone ?? null, email: contact.email ?? null, whatsapp: contact.whatsapp ?? null },
+      social: publicStoreSocialLinks(store.contact),
+      paymentMethods: storeProfilePaymentMethods(store.settings, await getStorefrontGateway(store.id, store.sellerId).catch(() => null)),
+      currency: parseStoreCurrency(store.settings).currency,
+      policies: [],
+    },
+    pages: editor.pages.map((page) => ({
+      id: page.id,
+      slug: page.slug,
+      isHome: page.isHome,
+      ...(page.kind === "product" && { kind: "product" as const }),
+      name: (page.name ?? {}) as { ar?: string; en?: string },
+      seo: (page.seo ?? {}) as Record<string, unknown>,
+      showInNav: page.showInNav,
+      content: (page.draftContent as EditorInitial["pages"][number]["content"]) ?? { sections: [] },
+      version: page.draftVersion,
+    })),
+    header: header.success ? header.data : null,
+    footer: footer.success ? footer.data : null,
+    designSystem: designSystem.success ? designSystem.data : { colors: {}, typography: {}, spacing: {} },
+    designVersion: editor.designSystem.version,
+    chromeVersion: editor.store.chromeVersion,
+    defaultLocale: asLocale(editor.store.defaultLocale),
+    locales: [...new Set(locales)],
+    catalog,
+    catalogMode: store.catalogMode ?? "all",
+    isLive: Boolean(status?.isLive),
+    hasUnpublishedChanges: status?.hasUnpublishedChanges ?? true,
+    previewEnabled: storePreviewSecret() !== null,
+    templates: { currentKey: templatesCurrentKey, items: templatesForIndustry(templateItems, industry?.id, templatesCurrentKey) },
+    fontClassName: storeFontVariables,
+    category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
+    presets: presets && preferTemplatePresets(presets, templateKeys),
+    previewProduct,
+  };
+
+  return { initial, codeSections, editorAgent };
+}

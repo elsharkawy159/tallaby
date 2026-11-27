@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowUp, FileSpreadsheet, Loader2, Paperclip, Square, TriangleAlert, X } from "lucide-react";
-import { useLayoutEffect, type RefObject } from "react";
+import { ArrowUp, AtSign, FileSpreadsheet, Loader2, Paperclip, Square, TriangleAlert, X } from "lucide-react";
+import { useLayoutEffect, type ReactNode, type RefObject } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { EDIT_WITH_AI_LIMITS } from "./server/edit-with-ai.dto";
@@ -38,6 +38,9 @@ export function Composer({
   touch,
   inputRef,
   fileRef,
+  mention,
+  onRemoveMention,
+  footer,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -52,8 +55,14 @@ export function Composer({
   touch: boolean;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   fileRef: RefObject<HTMLInputElement | null>;
+  /** The section selected on the canvas: a site edit then changes it. */
+  mention?: { label: string; context: string } | null;
+  onRemoveMention?: () => void;
+  /** Beside the send button (the AI credits chip). */
+  footer?: ReactNode;
 }) {
   const t = useTranslations("editWithAi.composer");
+  const tAgent = useTranslations("storeEditor.agent");
   const max = EDIT_WITH_AI_LIMITS.message;
   const canSend = !pending && !disabled && !waitingUploads && value.trim().length > 0;
 
@@ -75,6 +84,26 @@ export function Composer({
         if (canSend) onSend();
       }}
     >
+      {mention && (
+        <div className="flex px-1 pt-1">
+          <span
+            className="inline-flex max-w-full items-center gap-1 rounded-lg bg-(--s-tint) py-1 ps-2 pe-1 text-[12.5px] text-(--s-ink)"
+            title={tAgent("mentionTitle", { name: mention.label, context: mention.context })}
+          >
+            <AtSign className="size-3.5 shrink-0 text-(--s-subtle)" aria-hidden />
+            <span className="truncate font-semibold">{mention.label}</span>
+            {mention.context && mention.context !== mention.label && <span className="truncate text-(--s-subtle)">· {mention.context}</span>}
+            <button
+              type="button"
+              aria-label={tAgent("removeMention")}
+              onClick={onRemoveMention}
+              className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-md text-(--s-subtle) hover:bg-(--s-hover) hover:text-(--s-ink) max-lg:size-8"
+            >
+              <X className="size-3.5" aria-hidden />
+            </button>
+          </span>
+        </div>
+      )}
       {attachments.length > 0 && (
         <ul aria-label={t("attachments")} className="flex flex-wrap gap-1.5 px-1 pt-1">
           {attachments.map((a) => (
@@ -91,7 +120,7 @@ export function Composer({
         // Read-only (not disabled) while waiting, so focus stays and Escape still stops.
         readOnly={pending}
         aria-disabled={pending || undefined}
-        placeholder={t("placeholder")}
+        placeholder={mention ? tAgent("placeholderMention", { name: mention.label }) : t("placeholder")}
         aria-label={t("label")}
         className={cn(
           "max-h-[200px] min-h-11 w-full resize-none bg-transparent px-2.5 py-2 text-[14.5px] leading-[1.7] text-(--s-ink) outline-none placeholder:text-(--s-placeholder) focus-visible:outline-none disabled:cursor-not-allowed max-lg:text-base",
@@ -137,6 +166,7 @@ export function Composer({
         <span className="min-w-0 flex-1 truncate px-1 text-[11.5px] text-(--s-faint)" aria-live="polite">
           {waitingUploads ? t("waitingUploads") : value.length > max * 0.8 ? t("counter", { count: value.length, max }) : ""}
         </span>
+        {footer}
         {pending ? (
           <button
             type="button"

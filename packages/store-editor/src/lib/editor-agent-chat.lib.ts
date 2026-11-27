@@ -60,7 +60,12 @@ export type AgentSendArgs = {
   preview?: AgentPreviewSink;
 };
 
-type Request = { pageId: string; target: AgentTarget; contentLocale: SiteLocale };
+/** Where a turn's ops go: the page (or one of its sections), or the shared header or footer. */
+export type AgentTurnRequest = { pageId: string; target: AgentTarget; contentLocale: SiteLocale };
+type Request = AgentTurnRequest;
+
+/** What `applyAgentTurn` reads of a turn's answer. */
+export type AgentTurnOps = Pick<EditorAgentTurnView, "ops" | "applied" | "previews">;
 
 export function createAgentChat(editor: EditorStore) {
   const store = createStore<AgentChatState>()(() => ({ messages: [], pending: null, open: false, draft: "", dismissed: null }));
@@ -184,7 +189,7 @@ function withPreviewProps(sections: SectionInstance[], applied: readonly Applied
 export function applyAgentTurn(
   editor: EditorStore,
   request: Request,
-  view: EditorAgentTurnView,
+  view: AgentTurnOps,
   preview: AgentPreviewSink,
 ): { applied: string[]; undoMarker: object | null; stale: boolean } {
   if (!view.ops.length) return { applied: [], undoMarker: null, stale: false };
