@@ -59,27 +59,41 @@ export async function loadSellerTaxonomyList(scope: TaxonomyScope, kind: Taxonom
 }
 
 /**
- * The store's category list, slim, for the product form's category picker and
- * AI autofill matching, in tree order, each sub-category with its main
- * category's names (for "Main › Sub").
+ * The store's category and brand lists, slim, for the product form's pickers
+ * and AI autofill matching. Categories in tree order, each sub-category with
+ * its main category's names (for "Main › Sub"); brands in their list order.
+ * `brands: false` skips the brand query (the AI autofill prompt only names
+ * categories) and returns an empty brand list.
  */
-export async function loadSellerTaxonomyOptions(scope: TaxonomyScope): Promise<{ categories: SellerTaxonomyOption[] }> {
-  const rows = await db
-    .select({
-      id: sellerProductCategories.id,
-      name: sellerProductCategories.name,
-      nameAr: sellerProductCategories.nameAr,
-      sourceId: sellerProductCategories.sourceCategoryId,
-      parentId: sellerProductCategories.parentId,
-      position: sellerProductCategories.position,
-    })
-    .from(sellerProductCategories)
-    .where(taxonomyInStore(sellerProductCategories, scope))
-    .orderBy(asc(sellerProductCategories.position), asc(sellerProductCategories.createdAt));
+export async function loadSellerTaxonomyOptions(
+  scope: TaxonomyScope,
+  options: { brands?: boolean } = {},
+): Promise<{ categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] }> {
+  const [rows, brands] = await Promise.all([
+    db
+      .select({
+        id: sellerProductCategories.id,
+        name: sellerProductCategories.name,
+        nameAr: sellerProductCategories.nameAr,
+        sourceId: sellerProductCategories.sourceCategoryId,
+        parentId: sellerProductCategories.parentId,
+        position: sellerProductCategories.position,
+      })
+      .from(sellerProductCategories)
+      .where(taxonomyInStore(sellerProductCategories, scope))
+      .orderBy(asc(sellerProductCategories.position), asc(sellerProductCategories.createdAt)),
+    options.brands === false
+      ? Promise.resolve([] as SellerTaxonomyOption[])
+      : db
+          .select({ id: sellerProductBrands.id, name: sellerProductBrands.name, nameAr: sellerProductBrands.nameAr })
+          .from(sellerProductBrands)
+          .where(taxonomyInStore(sellerProductBrands, scope))
+          .orderBy(asc(sellerProductBrands.position), asc(sellerProductBrands.createdAt)),
+  ]);
   const byId = new Map(rows.map((r) => [r.id, r]));
   const categories = flattenCategoryTree(rows).map(({ position: _position, ...r }) => {
     const parent = r.parentId ? byId.get(r.parentId) : undefined;
     return { ...r, parentName: parent?.name ?? null, parentNameAr: parent?.nameAr ?? null };
   });
-  return { categories };
+  return { categories, brands };
 }

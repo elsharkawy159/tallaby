@@ -20,8 +20,8 @@ interface EditProductProps {
   defaultValues: AddProductFormData;
   categories: CategoryOption[];
   sellerPricing: SellerPricingSettings;
-  /** The seller's own category list. */
-  sellerTaxonomy: { categories: SellerTaxonomyOption[] };
+  /** The store's own category and brand lists. */
+  sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] };
   linkHost: string | null;
   /** Shows the AI box that edits the product on request. */
   aiEnabled: boolean;

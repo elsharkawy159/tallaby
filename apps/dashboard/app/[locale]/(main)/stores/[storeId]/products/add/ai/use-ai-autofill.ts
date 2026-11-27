@@ -14,6 +14,7 @@ import type { AddProductFormData, CategoryOption, SupportedLocale } from "../add
 import { buildFormValuesFromImport } from "../build-form-values-from-import.lib"
 import { OPEN_SECTION_EVENT } from "../add-product.lib"
 import { useProductStoreId } from "../../_components/product-store.client"
+import { useSellerTaxonomy } from "../../categories-brands/seller-taxonomy-fields.client"
 import {
   AUTOFILL_LIMITS,
   AUTOFILL_PDF_TYPE,
@@ -26,6 +27,7 @@ import {
   contentBlocksToHtml,
   describeCurrentListing,
   pickAutofillCategory,
+  pickAutofillStoreBrand,
   planAutofillChanges,
   sectionForPath,
   toParsedImport,
@@ -101,6 +103,8 @@ export function useAiAutofill ({
   const tToast = useTranslations("toast")
   const isEdit = mode === "edit"
   const productStoreId = useProductStoreId()
+  // The store's brands (Products › Brands). Outside the product form's provider (the quick uploader) there is no brand box, so none is set.
+  const taxonomy = useSellerTaxonomy()
   // The prompt has its own small form: registered (uncontrolled), so typing
   // never re-renders the product form and no keystroke is lost.
   const promptForm = useForm<PromptValues>({ defaultValues: { prompt: "" } })
@@ -297,6 +301,8 @@ export function useAiAutofill ({
         categoryId,
         brandId: built.brandMatched ? built.values.brandId : undefined,
         storeCategoryName: output.storeCategoryName,
+        // Matched in code from the AI's brandName; the prompt carries no brand list (docs/ai.md).
+        storeBrand: taxonomy ? pickAutofillStoreBrand(taxonomy.brands, output) : undefined,
         contentHtml,
       }
       const fillMode = isEdit ? "edit" : replace ? "replace" : "empty"

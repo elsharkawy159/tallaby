@@ -45,6 +45,7 @@ import {
   ShoppingCart,
   Star,
   Store,
+  Tag,
   TrendingUp,
   Truck,
   Users,
@@ -122,6 +123,7 @@ export type NavKey =
   | "catalogShare"
   | "accountHelp"
   | "sellerCategories"
+  | "sellerBrands"
   | "productTrash"
   | "inventory"
   | "storeAnalytics"
@@ -156,6 +158,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: PRODUCTS, title: "manageProducts", parent: "products", parentHref: PRODUCTS, icon: Package },
   { href: `${PRODUCTS}/add`, title: "addProducts", parent: "products", parentHref: PRODUCTS, icon: PackagePlus },
   { href: `${PRODUCTS}/categories`, title: "sellerCategories", parent: "products", parentHref: PRODUCTS, icon: FolderTree },
+  { href: `${PRODUCTS}/brands`, title: "sellerBrands", parent: "products", parentHref: PRODUCTS, icon: Tag },
   { href: `${PRODUCTS}/inventory`, title: "inventory", parent: "products", parentHref: PRODUCTS, icon: Boxes },
   { href: `${PRODUCTS}/trash`, title: "productTrash", parent: "products", parentHref: PRODUCTS, icon: Trash2 },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },

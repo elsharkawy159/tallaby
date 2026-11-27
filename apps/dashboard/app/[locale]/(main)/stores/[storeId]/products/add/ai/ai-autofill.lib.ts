@@ -1,6 +1,8 @@
 import { suggestCategories } from "../add-product.lib"
 import { defaultValues, type AddProductFormData, type CategoryOption, type SupportedLocale } from "../add-product.schema"
 import type { ParsedProductImport } from "../parse-product-import.types"
+import { matchTaxonomyOptionByName } from "../../categories-brands/categories-brands.lib"
+import type { SellerTaxonomyOption } from "../../categories-brands/categories-brands.dto"
 import { SELLER_REVIEWS_MAX } from "../../social-proof/social-proof.dto"
 import { cairoToday, paragraphsToHtml, type ProductAutofillOutput } from "@workspace/lib/products/autofill"
 
@@ -38,6 +40,23 @@ export function pickAutofillCategory(categories: CategoryOption[], output: Produ
     1,
   )
   return best?.category.id ?? null
+}
+
+/**
+ * The store brand for the AI output: the model only reads the brand name off
+ * the input (`brandName`, free text, no list in the prompt); the code matches
+ * it to the store's brands (any case, accents, Arabic or English name). With
+ * no match the name comes back as a suggested new brand, which the form shows
+ * as "New brand" and adds to the list only when the seller saves.
+ */
+export function pickAutofillStoreBrand(
+  brands: readonly SellerTaxonomyOption[],
+  output: Pick<ProductAutofillOutput, "brandName">,
+): { brandId: string | null; brandName: string | null } {
+  const name = output.brandName?.trim().replace(/\s+/g, " ") || null
+  if (!name) return { brandId: null, brandName: null }
+  const match = matchTaxonomyOptionByName(brands, name)
+  return match ? { brandId: match.id, brandName: null } : { brandId: null, brandName: name.slice(0, 80) }
 }
 
 
@@ -130,6 +149,8 @@ export function planAutofillChanges(
     categoryId: string | null
     brandId?: string
     storeCategoryName: string | null
+    /** The store brand matched in code (pickAutofillStoreBrand), or a new brand name to suggest. */
+    storeBrand?: { brandId: string | null; brandName: string | null }
     /** The detailed description per language, built by contentBlocksToHtml. */
     contentHtml?: Partial<Record<SupportedLocale, string>>
   },
@@ -167,6 +188,12 @@ export function planAutofillChanges(
   takeOnce("categoryId", extra.categoryId)
   if (extra.brandId) takeOnce("brandId", extra.brandId)
   if (extra.storeCategoryName && !current.sellerCategoryId) takeOnce("sellerCategoryName", extra.storeCategoryName)
+  // The store brand: only when the product has none yet (picked or typed), in every mode.
+  const brand = extra.storeBrand
+  if (brand && !current.sellerBrandId && !current.sellerBrandName?.trim()) {
+    if (brand.brandId) take("sellerBrandId", brand.brandId)
+    else if (brand.brandName) take("sellerBrandName", brand.brandName)
+  }
 
   if (output.price.list) {
     for (const key of ["list", "base", "final", "discountValue", "discountType"] as const) {

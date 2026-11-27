@@ -103,6 +103,7 @@ export function toProductPayload (data: AddProductFormData) {
   const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
   const {
     sellerCategoryName: _typedCategory,
+    sellerBrandName: _typedBrand,
     showLiveViews: _liveViews,
     trackStock: _trackStock,
     showLowStockBadge: _lowStockBadge,

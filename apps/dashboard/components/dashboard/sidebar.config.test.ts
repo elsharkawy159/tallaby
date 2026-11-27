@@ -71,7 +71,7 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", P, `${P}/add`, `${P}/categories`, "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/wallet/transactions", "/stores", "/settings", "/settings/plan", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", P, `${P}/add`, `${P}/categories`, `${P}/brands`, "/reviews", "/coupons", "/marketing/subscribers", "/marketing/emails", "/marketing/catalog", "/wallet", "/wallet/transactions", "/stores", "/settings", "/settings/plan", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });
@@ -385,8 +385,9 @@ describe("findActiveHref", () => {
     expect(active(`${P}/abc/edit`)).toBeNull();
   });
 
-  it("lights only Categories on its page, not Manage products", () => {
+  it("lights only Categories or Brands on its page, not Manage products", () => {
     expect(active(`${P}/categories`)).toBe(`${P}/categories`);
+    expect(active(`${P}/brands`)).toBe(`${P}/brands`);
     expect(active(P)).toBe(P);
   });
 
@@ -441,8 +442,8 @@ describe("Products under their store (F-87c slice 2)", () => {
 
   it("keeps the Products pages in the command palette, filled with the selected store", () => {
     const products = COMMAND_PALETTE_ROUTES.filter((r) => r.href.startsWith("/stores/[storeId]/products"));
-    expect(products.map((r) => fillStoreHref(r.href, STORE))).toEqual([P, `${P}/add`, `${P}/categories`, `${P}/inventory`, `${P}/trash`]);
-    expect(products.map((r) => fillStoreHref(r.href, null))).toEqual([null, null, null, null, null]);
+    expect(products.map((r) => fillStoreHref(r.href, STORE))).toEqual([P, `${P}/add`, `${P}/categories`, `${P}/brands`, `${P}/inventory`, `${P}/trash`]);
+    expect(products.map((r) => fillStoreHref(r.href, null))).toEqual([null, null, null, null, null, null]);
     // Other store-scoped pages stay out of the palette, as before.
     expect(COMMAND_PALETTE_ROUTES.some((r) => r.href.startsWith("/stores/[storeId]/settings"))).toBe(false);
   });

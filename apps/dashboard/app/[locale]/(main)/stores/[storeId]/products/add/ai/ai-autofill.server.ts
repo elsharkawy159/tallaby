@@ -38,7 +38,8 @@ export async function autofillProduct(
 ): Promise<AutofillRun> {
   const { sellerId } = taxonomy
   const today = cairoToday()
-  const owned = await loadSellerTaxonomyOptions(taxonomy)
+  // Brands are matched in code on the client from the output's brandName, never listed in the prompt.
+  const owned = await loadSellerTaxonomyOptions(taxonomy, { brands: false })
   const storeCategories = owned.categories.map((c) => c.nameAr || c.name).filter(Boolean)
 
   const content: GenerateContentPart[] = [

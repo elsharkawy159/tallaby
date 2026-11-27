@@ -19,6 +19,8 @@ import {
   sortTaxonomyByLabel,
   splitSellerTaxonomy,
   taxonomyLabel,
+  matchTaxonomyOptionByName,
+  taxonomyMatchKey,
   taxonomyNameKey,
 } from "./categories-brands.lib";
 
@@ -198,5 +200,35 @@ describe("parentId in the schemas", () => {
     expect(addTaxonomyItemSchema.safeParse({ sourceId: ID, parentId: null }).success).toBe(true);
     expect(updateTaxonomyItemSchema.safeParse({ name: "Wires", parentId: "nope" }).success).toBe(false);
     expect(updateTaxonomyItemSchema.parse({ name: "Wires" }).parentId).toBeUndefined();
+  });
+});
+
+describe("matchTaxonomyOptionByName", () => {
+  const brands = [
+    { id: "b1", name: "L'Oréal", nameAr: "لوريال" },
+    { id: "b2", name: "Nike", nameAr: null },
+    { id: "b3", name: "Samsung", nameAr: "سامسونج" },
+  ];
+
+  it("folds case, accents, punctuation and spaces", () => {
+    expect(taxonomyMatchKey(" L'ORÉAL ")).toBe(taxonomyMatchKey("loreal"));
+    expect(taxonomyMatchKey("Coca-Cola")).toBe(taxonomyMatchKey("coca cola"));
+    expect(matchTaxonomyOptionByName(brands, "LOREAL")?.id).toBe("b1");
+    expect(matchTaxonomyOptionByName(brands, "nike ")?.id).toBe("b2");
+  });
+
+  it("matches the Arabic name, ignoring tashkeel, tatweel and alef forms", () => {
+    expect(matchTaxonomyOptionByName(brands, "لوريـال")?.id).toBe("b1");
+    expect(matchTaxonomyOptionByName(brands, "سَامسُونج")?.id).toBe("b3");
+    expect(taxonomyMatchKey("أحمد")).toBe(taxonomyMatchKey("احمد"));
+    expect(taxonomyMatchKey("هدية")).toBe(taxonomyMatchKey("هديه"));
+  });
+
+  it("returns null for no match or an empty name", () => {
+    expect(matchTaxonomyOptionByName(brands, "Adidas")).toBeNull();
+    expect(matchTaxonomyOptionByName(brands, "  -- ")).toBeNull();
+    expect(matchTaxonomyOptionByName(brands, null)).toBeNull();
+    // A partial name is not a match (the form offers it as a new brand).
+    expect(matchTaxonomyOptionByName(brands, "Sams")).toBeNull();
   });
 });

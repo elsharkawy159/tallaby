@@ -100,6 +100,8 @@ export const addProductFormSchema = z
     sellerBrandId: z.string().optional(),
     // A new store category the seller typed; added to their list on save (then it becomes sellerCategoryId).
     sellerCategoryName: z.string().max(80).optional(),
+    // A new store brand the seller typed (or the AI read off the product); added to their list on save (then it becomes sellerBrandId).
+    sellerBrandName: z.string().max(80).optional(),
     sku: z.string().optional(),
     quantity: z.number().int().min(0).default(0),
     maxOrderQuantity: z.number().int().optional(),

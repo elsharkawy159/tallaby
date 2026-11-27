@@ -10,6 +10,38 @@ export function taxonomyNameKey(name: string): string {
   return cleanTaxonomyName(name).toLowerCase();
 }
 
+/**
+ * A loose key for matching a name read by the AI (or typed) to a list item:
+ * case-, accent- and Arabic-diacritics-insensitive, alef/yaa/taa-marbuta
+ * forms folded, and spaces, dashes, dots, apostrophes and the like dropped, so
+ * "L'Oréal", "loreal" and "LOREAL" match, and «لوريال» matches «لوريـال».
+ */
+export function taxonomyMatchKey(name: string): string {
+  return name
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[̀-ͯ]/g, "") // Latin accents
+    .replace(/[ً-ٰٟـ]/g, "") // Arabic tashkeel, superscript alef, tatweel
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+/**
+ * The list item whose English or Arabic name matches `name` (taxonomyMatchKey),
+ * the first in list order; null when none does or the name has no letters.
+ * Matching is done in code, never by listing the items in an AI prompt (rule 20).
+ */
+export function matchTaxonomyOptionByName<T extends { name: string; nameAr: string | null }>(
+  options: readonly T[],
+  name: string | null | undefined,
+): T | null {
+  const key = name ? taxonomyMatchKey(name) : "";
+  if (!key) return null;
+  return options.find((o) => taxonomyMatchKey(o.name) === key || (o.nameAr != null && taxonomyMatchKey(o.nameAr) === key)) ?? null;
+}
+
 /** The label to show: Arabic when the UI is Arabic and one exists. */
 export function taxonomyLabel(item: { name: string; nameAr: string | null }, locale: string): string {
   return locale === "ar" && item.nameAr?.trim() ? item.nameAr : item.name;

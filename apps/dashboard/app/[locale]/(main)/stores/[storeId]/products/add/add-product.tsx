@@ -91,8 +91,8 @@ import { TutorialVideoButton } from "@/components/tutorials/tutorial-video-butto
 interface AddProductProps {
   categories: CategoryOption[];
   sellerPricing: SellerPricingSettings;
-  /** The seller's own category list, offered first in the category box. */
-  sellerTaxonomy: { categories: SellerTaxonomyOption[] };
+  /** The store's own category list (offered first in the category box) and brand list. */
+  sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] };
   /** The seller's live custom domain, shown in the product link preview. */
   linkHost?: string | null;
   /**
@@ -270,6 +270,23 @@ function AddProductForm({
     return result.data.id;
   };
 
+  /**
+   * The store brand to link: a typed-in (or AI-suggested) new name is found in
+   * (or added to) the store's list; else the picked one. null for none or on failure.
+   */
+  const resolveStoreBrand = async (
+    data: AddProductFormData,
+  ): Promise<string | null> => {
+    const name = data.sellerBrandName?.trim();
+    if (!name) return data.sellerBrandId || null;
+    const result = await ensureTaxonomyItem(productStoreId, "brand", { name });
+    if (!result.success) return null;
+    taxonomyContext?.addBrand(result.data);
+    form.setValue("sellerBrandId", result.data.id);
+    form.setValue("sellerBrandName", "");
+    return result.data.id;
+  };
+
   /** Product fields for createProduct / updateProduct: the store category, reviews and live views are saved separately. */
   const toPayload = toProductPayload;
 
@@ -298,16 +315,23 @@ function AddProductForm({
     data: AddProductFormData,
     taxonomy: { sellerCategoryId: string | null; sellerBrandId: string | null },
   ) => {
-    const sellerCategoryId = await resolveStoreCategory(data);
+    const [sellerCategoryId, sellerBrandId] = await Promise.all([
+      resolveStoreCategory(data),
+      resolveStoreBrand(data),
+    ]);
     const linked = await setProductSellerTaxonomy(productStoreId, productId, {
       ...taxonomy,
       sellerCategoryId,
+      sellerBrandId,
     });
     const wanted = Boolean(
       data.sellerCategoryName?.trim() || data.sellerCategoryId,
     );
+    const wantedBrand = Boolean(data.sellerBrandName?.trim() || data.sellerBrandId);
     if (!linked.success || (wanted && !sellerCategoryId))
       toast.warning(tTaxonomy("linkFailed"));
+    else if (wantedBrand && !sellerBrandId)
+      toast.warning(tTaxonomy("brandLinkFailed"));
   };
 
   const handleSubmit = (data: AddProductFormData) => {

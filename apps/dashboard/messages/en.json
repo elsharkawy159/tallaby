@@ -2563,6 +2563,19 @@
       "fromStore": "From your store's categories",
       "fromTallaby": "Tallaby category · {path}",
       "newCategory": "New category · added to your store's categories when you save"
+    },
+    "brandField": {
+      "label": "Brand",
+      "optional": "Optional",
+      "placeholder": "Search your brands or type a new one",
+      "placeholderEmpty": "Type a brand name",
+      "clear": "Clear",
+      "addNew": "Add “{name}”",
+      "addNewHint": "A new brand, added to your store's brands",
+      "empty": "No brands found",
+      "hint": "Pick one of your store's brands, or type a new one.",
+      "manage": "Manage brands",
+      "newBrand": "New brand · added to your store's brands when you save"
     }
   },
   "settings": {
@@ -7653,7 +7666,8 @@
       "noMatches": "No matches",
       "emptyListHint": "Your list is empty. Type a name to add one.",
       "categoryAdded": "“{name}” was added to your categories.",
-      "brandAdded": "“{name}” was added to your brands."
+      "brandAdded": "“{name}” was added to your brands.",
+      "brandLinkFailed": "The product was saved, but its brand wasn't saved. Edit the product to set it again."
     }
   },
   "notifications": {

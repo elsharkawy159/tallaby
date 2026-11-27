@@ -6,6 +6,7 @@ import {
   contentBlocksToHtml,
   paragraphsToHtml,
   pickAutofillCategory,
+  pickAutofillStoreBrand,
   planAutofillChanges,
   sellerGaveFigures,
   seoDescription,
@@ -383,5 +384,40 @@ describe("edit mode", () => {
       storeCategoryName: null,
     }).find((c) => c.path === "sellerReviews")
     expect((change?.value as unknown[]).length).toBe(2)
+  })
+})
+
+describe("store brand", () => {
+  const brands = [
+    { id: "brand-nike", name: "Nike", nameAr: "نايكي" },
+    { id: "brand-own", name: "Hanafi", nameAr: null },
+  ]
+
+  it("matches the AI's brand name to the store's brands in code", () => {
+    expect(pickAutofillStoreBrand(brands, { brandName: " NIKE " })).toEqual({ brandId: "brand-nike", brandName: null })
+    expect(pickAutofillStoreBrand(brands, { brandName: "نايكى" })).toEqual({ brandId: "brand-nike", brandName: null })
+  })
+
+  it("suggests an unknown brand as a new one, and nothing for no brand", () => {
+    expect(pickAutofillStoreBrand(brands, { brandName: "Adidas  Originals" })).toEqual({ brandId: null, brandName: "Adidas Originals" })
+    expect(pickAutofillStoreBrand(brands, { brandName: null })).toEqual({ brandId: null, brandName: null })
+    expect(pickAutofillStoreBrand([], { brandName: "  " })).toEqual({ brandId: null, brandName: null })
+  })
+
+  const plan = (current: AddProductFormData, storeBrand: { brandId: string | null; brandName: string | null }, mode: "empty" | "edit" = "empty") =>
+    planAutofillChanges(current, emptyForm(), cleanAutofillOutput(output(), ctx), mode, { categoryId: null, storeCategoryName: null, storeBrand })
+
+  it("pre-selects a matched brand, or prefills a new name, on a product with none", () => {
+    expect(plan(emptyForm(), { brandId: "brand-nike", brandName: null })).toContainEqual({ path: "sellerBrandId", value: "brand-nike" })
+    const suggested = plan(emptyForm(), { brandId: null, brandName: "Adidas" })
+    expect(suggested).toContainEqual({ path: "sellerBrandName", value: "Adidas" })
+    expect(suggested.map((c) => c.path)).not.toContain("sellerBrandId")
+  })
+
+  it("never replaces a brand the seller already picked or typed", () => {
+    const picked = { ...emptyForm(), sellerBrandId: "brand-own" }
+    expect(plan(picked, { brandId: "brand-nike", brandName: null }, "edit").map((c) => c.path)).not.toContain("sellerBrandId")
+    const typed = { ...emptyForm(), sellerBrandName: "Mine" }
+    expect(plan(typed, { brandId: null, brandName: "Adidas" }).map((c) => c.path)).not.toContain("sellerBrandName")
   })
 })

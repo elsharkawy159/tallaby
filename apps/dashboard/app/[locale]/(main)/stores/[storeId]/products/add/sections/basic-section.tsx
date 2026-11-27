@@ -13,6 +13,7 @@ import { ImageUpload } from "@/components/inputs/image-upload";
 import { useProductLinkHost } from "../product-link-host.client";
 import { FIELD_CLASS, FieldError, FieldHint, FieldLabel, SectionCard } from "@/app/[locale]/(main)/stores/[storeId]/products/add/form-kit";
 import { CategoryField } from "../category-field";
+import { BrandField } from "../brand-field";
 import { isEmptyHtml, slugFromNames, toSlug } from "../prepare-product-submit.lib";
 import { EDITOR_PHONE_TOOLBAR_CLASS, useFieldError } from "./fields";
 import { useContentImageUpload } from "./use-content-image-upload";
@@ -187,6 +188,7 @@ export function BasicSection({ id = "sec-basic", categories, activeLocale, actio
       </div>
 
       <CategoryField categories={categories} />
+      <BrandField />
     </SectionCard>
   );
 }

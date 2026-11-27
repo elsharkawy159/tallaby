@@ -89,8 +89,9 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     countKey: "products",
     items: [
       { key: "addProducts", href: "/stores/[storeId]/products/add", status: "live" },
-      // The seller's own category list (0068). Which products a store shows is in Store settings › General.
+      // The store's own category and brand lists (0068, per store since 0163). Which products a store shows is in Store settings › General.
       { key: "sellerCategories", href: "/stores/[storeId]/products/categories", status: "live" },
+      { key: "sellerBrands", href: "/stores/[storeId]/products/brands", status: "live" },
       // Low stock, quick restock and stock history (0125, F-10).
       { key: "inventory", href: "/stores/[storeId]/products/inventory", status: "live" },
       // Deleted products wait here 30 days (0123, F-35).
